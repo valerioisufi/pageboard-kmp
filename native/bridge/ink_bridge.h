@@ -1,0 +1,134 @@
+#ifndef INK_BRIDGE_H
+#define INK_BRIDGE_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stdint.h>
+#include <stdbool.h>
+
+typedef void* InkBrushHandle;
+typedef void* InkStrokeBuilderHandle;
+
+// Brush family types matching Ink stock brushes
+typedef enum {
+    INK_BRUSH_PRESSURE_PEN = 0,
+    INK_BRUSH_MARKER = 1,
+    INK_BRUSH_HIGHLIGHTER = 2,
+    INK_BRUSH_DASHED_LINE = 3
+} InkBrushFamily;
+
+// Input tool types (mirrors ink::StrokeInput::ToolType)
+typedef enum {
+    INK_TOOL_UNKNOWN = 0,
+    INK_TOOL_MOUSE = 1,
+    INK_TOOL_TOUCH = 2,
+    INK_TOOL_STYLUS = 3
+} InkToolType;
+
+/**
+ * Creates a new Brush instance.
+ * @param family_type 0 = PressurePen, 1 = Marker, 2 = Highlighter, 3 = DashedLine
+ * @param size Brush tip size / stroke thickness in stroke units
+ * @param r Red component (0.0 to 1.0)
+ * @param g Green component (0.0 to 1.0)
+ * @param b Blue component (0.0 to 1.0)
+ * @param a Alpha component (0.0 to 1.0)
+ * @param epsilon Visual fidelity / simplification threshold in stroke units
+ * @return Handle to the brush or NULL on error.
+ */
+InkBrushHandle ink_create_brush(
+    int family_type,
+    float size,
+    float r, float g, float b, float a,
+    float epsilon
+);
+
+/**
+ * Destroys a brush handle previously created with ink_create_brush.
+ */
+void ink_destroy_brush(InkBrushHandle handle);
+
+/**
+ * Creates a new InProgressStroke builder handle.
+ */
+InkStrokeBuilderHandle ink_stroke_builder_create(void);
+
+/**
+ * Starts a new stroke with the specified brush.
+ * @param stroke_unit_length_cm Physical length (in centimeters) of one stroke unit, or a value
+ *        <= 0 if the relationship between stroke space and physical space is unknown.
+ *        DrawView feeds strokes in page millimeters, so it passes 0.1.
+ */
+void ink_stroke_builder_start(
+    InkStrokeBuilderHandle handle,
+    InkBrushHandle brush_handle,
+    float stroke_unit_length_cm
+);
+
+/**
+ * Adds an input point to the current stroke.
+ * @param handle The builder handle.
+ * @param x X coordinate in stroke space.
+ * @param y Y coordinate in stroke space.
+ * @param pressure Stylus pressure (0.0 to 1.0) or a negative value if not available.
+ * @param time_ms Timestamp in milliseconds (any monotonic origin).
+ * @param tool_type One of InkToolType.
+ */
+void ink_stroke_builder_add_point(
+    InkStrokeBuilderHandle handle,
+    float x, float y,
+    float pressure,
+    int64_t time_ms,
+    int32_t tool_type
+);
+
+/**
+ * Notifies the builder that pointer inputs have completed (e.g. pointer up).
+ */
+void ink_stroke_builder_finish_inputs(InkStrokeBuilderHandle handle);
+
+/**
+ * Resets the builder state so it can be reused for a new stroke without reallocating.
+ */
+void ink_stroke_builder_clear(InkStrokeBuilderHandle handle);
+
+/**
+ * Destroys the stroke builder handle.
+ */
+void ink_stroke_builder_destroy(InkStrokeBuilderHandle handle);
+
+/**
+ * Returns the current number of vertices in the modeled stroke mesh (all brush coats).
+ */
+int32_t ink_stroke_builder_get_vertex_count(InkStrokeBuilderHandle handle);
+
+/**
+ * Returns the current number of triangles in the modeled stroke mesh (all brush coats).
+ */
+int32_t ink_stroke_builder_get_triangle_count(InkStrokeBuilderHandle handle);
+
+/**
+ * Extracts the modeled mesh data (all brush coats concatenated).
+ * @param handle The builder handle.
+ * @param out_positions Output buffer for vertex coordinates (x, y pairs -> 2 floats per vertex).
+ * @param max_positions Maximum floats the out_positions buffer can hold (must be >= 2 * vertex_count).
+ * @param out_indices Output buffer for triangle indices (3 indices per triangle). Indices are
+ *        32-bit: meshes with more than 65535 vertices are partitioned on the Kotlin side.
+ * @param max_indices Maximum indices the out_indices buffer can hold (must be >= 3 * triangle_count).
+ * @return 0 on success, or -1 on error/buffer too small.
+ */
+int32_t ink_stroke_builder_get_mesh(
+    InkStrokeBuilderHandle handle,
+    float* out_positions,
+    int32_t max_positions,
+    uint32_t* out_indices,
+    int32_t max_indices
+);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // INK_BRIDGE_H

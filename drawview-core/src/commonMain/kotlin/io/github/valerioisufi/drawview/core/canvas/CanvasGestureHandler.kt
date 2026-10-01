@@ -1,0 +1,684 @@
+package io.github.valerioisufi.drawview.core.canvas
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.AwaitPointerEventScope
+import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerId
+import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.PointerInputScope
+import androidx.compose.ui.input.pointer.PointerType
+import androidx.compose.ui.input.pointer.changedToDownIgnoreConsumed
+import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
+import androidx.compose.ui.input.pointer.isCtrlPressed
+import androidx.compose.ui.input.pointer.isMetaPressed
+import androidx.compose.ui.input.pointer.isPrimaryPressed
+import androidx.compose.ui.input.pointer.isSecondaryPressed
+import androidx.compose.ui.input.pointer.isShiftPressed
+import androidx.compose.ui.input.pointer.isTertiaryPressed
+import androidx.compose.ui.input.pointer.util.VelocityTracker
+import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
+import io.github.valerioisufi.drawview.core.model.BrushConfig
+import io.github.valerioisufi.drawview.core.model.InputToolType
+import io.github.valerioisufi.drawview.core.model.StrokeMesh
+import io.github.valerioisufi.drawview.core.model.Tool
+import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.exp
+import kotlin.math.hypot
+import kotlin.math.min
+
+/**
+ * Live (not yet committed) state of the canvas, drawn on top of the tiles.
+ */
+class CanvasLiveState {
+    /** Incremented whenever the live layer changes. */
+    var tick by mutableIntStateOf(0)
+        private set
+
+    var liveMesh: StrokeMesh? = null
+        private set
+    var livePageIndex: Int = -1
+        private set
+
+    /** Eraser cursor (screen pixels) and radius in pixels. */
+    var eraserCursor: Offset? = null
+        private set
+    var eraserRadiusPx: Float = 0f
+        private set
+
+    /** Vertical auto-scroll speed (pixels per frame) while dragging near the viewport edges. */
+    var autoScrollPerFrame: Float = 0f
+
+    fun setLiveMesh(mesh: StrokeMesh?, pageIndex: Int) {
+        liveMesh = mesh
+        livePageIndex = pageIndex
+        tick++
+    }
+
+    fun setEraserCursor(position: Offset?, radiusPx: Float) {
+        if (eraserCursor == position && eraserRadiusPx == radiusPx) return
+        eraserCursor = position
+        eraserRadiusPx = radiusPx
+        tick++
+    }
+
+    fun invalidate() {
+        tick++
+    }
+}
+
+/**
+ * Routes the pointer events of the canvas (stylus, touch, mouse, wheel) to inking, erasing,
+ * lasso selection, selection transformations, text tool, page reordering and camera gestures,
+ * like the `CanvasTouchDispatcher` of the original Android implementation.
+ */
+internal class CanvasGestureHandler(
+    private val controller: DrawViewController,
+    private val engine: InkStrokeEngine,
+    private val live: CanvasLiveState
+) {
+    private enum class Mode {
+        NONE, INK, LASSO, ERASE, PAN, PINCH,
+        SELECTION_MOVE, SELECTION_SCALE, SELECTION_ROTATE, TEXT_RESIZE_LEFT, TEXT_RESIZE_RIGHT,
+        PAGE_REORDER, TEXT_TAP, IGNORED
+    }
+
+    private var mode = Mode.NONE
+    private var activePointer: PointerId? = null
+    private var activeType: PointerType = PointerType.Unknown
+    private var downPosition = Offset.Zero
+    private var downTime = 0L
+    private var lastPosition = Offset.Zero
+    private var movedBeyondSlop = false
+    private var longPressCandidate = false
+    private var inkPageIndex = -1
+    private var inkBrush: BrushConfig? = null
+    private var lastTapTime = 0L
+    private var lastTapPosition = Offset.Zero
+    private var hasSeenStylus = false
+
+    // Pinch tracking
+    private var pinchCentroid = Offset.Zero
+    private var pinchDistance = 0f
+
+    private val velocityTracker = VelocityTracker()
+
+    private val isDrawingTool: Boolean
+        get() = controller.toolManager.isInkTool || controller.toolManager.isLassoTool || controller.toolManager.isEraserTool
+
+    suspend fun PointerInputScope.run() {
+        val touchSlop = viewConfiguration.touchSlop
+        val longPressTimeout = viewConfiguration.longPressTimeoutMillis
+        val doubleTapTimeout = viewConfiguration.doubleTapTimeoutMillis
+
+        awaitPointerEventScope {
+            while (true) {
+                val event = if (longPressCandidate) {
+                    val remaining = longPressTimeout - (currentEventTime() - downTime)
+                    if (remaining <= 0L) null else withTimeoutOrNull(remaining) { awaitPointerEvent() }
+                } else {
+                    awaitPointerEvent()
+                }
+
+                if (event == null) {
+                    onLongPress()
+                    continue
+                }
+                handle(event, touchSlop, doubleTapTimeout)
+            }
+        }
+    }
+
+    private var lastEventTime = 0L
+
+    private fun currentEventTime(): Long = lastEventTime
+
+    private fun AwaitPointerEventScope.handle(event: PointerEvent, touchSlop: Float, doubleTapTimeout: Long) {
+        val changes = event.changes
+        changes.firstOrNull()?.let { lastEventTime = it.uptimeMillis }
+
+        when (event.type) {
+            PointerEventType.Scroll -> {
+                onScroll(event)
+                return
+            }
+            PointerEventType.Exit -> {
+                live.setEraserCursor(null, 0f)
+                return
+            }
+            else -> {}
+        }
+
+        val pressed = changes.filter { it.pressed }
+        val anyDown = changes.any { it.changedToDownIgnoreConsumed() }
+        val anyUp = changes.any { it.changedToUpIgnoreConsumed() }
+
+        // Hover (desktop mouse, stylus hover): eraser cursor
+        if (pressed.isEmpty() && !anyUp) {
+            val hover = changes.firstOrNull()
+            if (hover != null && controller.toolManager.isEraserTool && controller.isDrawingMode && mode == Mode.NONE) {
+                live.setEraserCursor(hover.position, eraserRadiusPx(hover.position))
+            }
+            return
+        }
+
+        if (anyDown && mode == Mode.NONE && pressed.size == 1) {
+            onFirstDown(pressed[0], event)
+            return
+        }
+
+        if (anyDown && pressed.size >= 2) {
+            onAdditionalPointer(pressed)
+            changes.forEach { it.consume() }
+            return
+        }
+
+        if (pressed.isEmpty() && anyUp) {
+            val up = changes.firstOrNull { it.changedToUpIgnoreConsumed() } ?: changes.first()
+            onAllUp(up, touchSlop, doubleTapTimeout)
+            changes.forEach { it.consume() }
+            return
+        }
+
+        // Move
+        if (mode == Mode.PINCH) {
+            onPinchMove(pressed)
+            changes.forEach { it.consume() }
+            return
+        }
+        val change = pressed.firstOrNull { it.id == activePointer } ?: return
+        onMove(change, touchSlop)
+        change.consume()
+    }
+
+    // ==========================================================
+    // Down
+    // ==========================================================
+
+    private fun onFirstDown(change: PointerInputChange, event: PointerEvent) {
+        val position = change.position
+        activePointer = change.id
+        activeType = change.type
+        downPosition = position
+        lastPosition = position
+        downTime = change.uptimeMillis
+        movedBeyondSlop = false
+        longPressCandidate = false
+        velocityTracker.resetTracking()
+        velocityTracker.addPosition(change.uptimeMillis, position)
+        change.consume()
+
+        controller.contextMenuPosition = null
+        controller.cameraPhysics.stopAllAnimations()
+
+        val isStylus = change.type == PointerType.Stylus || change.type == PointerType.Eraser
+        if (isStylus && !hasSeenStylus) {
+            hasSeenStylus = true
+            controller.onFirstStylusDetected()
+        }
+
+        // Page reordering takes over every gesture
+        if (controller.pageManager.isReorderingPages) {
+            mode = if (controller.pageManager.startDraggingPage(position)) Mode.PAGE_REORDER else Mode.IGNORED
+            return
+        }
+
+        val isMouse = change.type == PointerType.Mouse
+        if (isMouse && event.buttons.isSecondaryPressed) {
+            mode = Mode.IGNORED
+            showContextMenu(position)
+            return
+        }
+        if (isMouse && event.buttons.isTertiaryPressed) {
+            startPan()
+            return
+        }
+
+        if (!controller.isDrawingMode) {
+            startPan()
+            return
+        }
+
+        // Selection handles and body
+        val selection = controller.selectionManager.currentSelection
+        if (selection != null) {
+            val frame = SelectionFrame.compute(controller, selection)
+            if (frame != null) {
+                val handleRadius = if (change.type == PointerType.Touch) 36f else 24f
+                val hitMode = when {
+                    hypot(position.x - frame.rotationHandle.x, position.y - frame.rotationHandle.y) <= handleRadius -> Mode.SELECTION_ROTATE
+                    frame.corners.any { hypot(position.x - it.x, position.y - it.y) <= handleRadius } -> Mode.SELECTION_SCALE
+                    frame.sideHandles.size == 2 && hypot(position.x - frame.sideHandles[0].x, position.y - frame.sideHandles[0].y) <= handleRadius -> Mode.TEXT_RESIZE_LEFT
+                    frame.sideHandles.size == 2 && hypot(position.x - frame.sideHandles[1].x, position.y - frame.sideHandles[1].y) <= handleRadius -> Mode.TEXT_RESIZE_RIGHT
+                    frame.contains(position) -> Mode.SELECTION_MOVE
+                    else -> null
+                }
+                if (hitMode != null) {
+                    mode = hitMode
+                    controller.selectionManager.beginTransformation()
+                    return
+                }
+            }
+            // Touch outside the selection: drop it and continue with the active tool
+            controller.selectionManager.clearSelection()
+        }
+
+        val stylusOnly = controller.isStylusOnlyMode
+        val isFinger = change.type == PointerType.Touch
+        val tool = controller.toolManager.selectedTool
+
+        if (tool == Tool.PAN || (stylusOnly && isFinger)) {
+            startPan()
+            longPressCandidate = isFinger && tool != Tool.PAN
+            return
+        }
+
+        if (tool == Tool.TEXT) {
+            mode = Mode.TEXT_TAP
+            longPressCandidate = !isStylus
+            return
+        }
+
+        if (change.type == PointerType.Eraser || tool == Tool.ERASER) {
+            mode = Mode.ERASE
+            controller.eraserManager.eraseAlongSegment(position, position)
+            live.setEraserCursor(position, eraserRadiusPx(position))
+            longPressCandidate = !isStylus
+            return
+        }
+
+        if (isDrawingTool) {
+            val pageIndex = controller.findPageIndexAtScreen(position)
+            val brush = pageIndex?.let { controller.brushForActiveTool(it) }
+            if (pageIndex == null || brush == null) {
+                // Outside of any page: the gesture pans the canvas
+                startPan()
+                longPressCandidate = !isStylus
+                return
+            }
+            inkPageIndex = pageIndex
+            inkBrush = brush
+            mode = if (tool == Tool.LAZO) Mode.LASSO else Mode.INK
+            engine.startStroke(brush)
+            addInkInput(change, position, change.uptimeMillis, change.pressure)
+            live.setLiveMesh(engine.currentMesh(), pageIndex)
+            longPressCandidate = !isStylus
+            return
+        }
+
+        startPan()
+    }
+
+    private fun startPan() {
+        mode = Mode.PAN
+        controller.cameraPhysics.onDragStart()
+    }
+
+    private fun onAdditionalPointer(pressed: List<PointerInputChange>) {
+        // A finger landing while the stylus is drawing is a palm: ignore it
+        val stylusDrawing = (mode == Mode.INK || mode == Mode.LASSO || mode == Mode.ERASE) &&
+                (activeType == PointerType.Stylus || activeType == PointerType.Eraser)
+        if (stylusDrawing) return
+
+        when (mode) {
+            Mode.INK, Mode.LASSO -> {
+                engine.cancelStroke()
+                live.setLiveMesh(null, -1)
+            }
+            Mode.ERASE -> {
+                controller.eraserManager.commitGesture()
+                live.setEraserCursor(null, 0f)
+            }
+            Mode.SELECTION_MOVE, Mode.SELECTION_SCALE, Mode.SELECTION_ROTATE,
+            Mode.TEXT_RESIZE_LEFT, Mode.TEXT_RESIZE_RIGHT -> {
+                controller.selectionManager.applyTransformation()
+            }
+            Mode.PAGE_REORDER -> return
+            else -> {}
+        }
+        longPressCandidate = false
+        mode = Mode.PINCH
+        controller.cameraPhysics.onDragStart()
+        val p1 = pressed[0].position
+        val p2 = pressed[1].position
+        pinchCentroid = (p1 + p2) / 2f
+        pinchDistance = (p1 - p2).getDistance().coerceAtLeast(1f)
+    }
+
+    // ==========================================================
+    // Move
+    // ==========================================================
+
+    private fun onMove(change: PointerInputChange, touchSlop: Float) {
+        val position = change.position
+        velocityTracker.addPosition(change.uptimeMillis, position)
+        if (!movedBeyondSlop && (position - downPosition).getDistance() > touchSlop) {
+            movedBeyondSlop = true
+            longPressCandidate = false
+        }
+
+        when (mode) {
+            Mode.INK, Mode.LASSO -> {
+                for (h in change.historical) {
+                    addInkInput(change, h.position, h.uptimeMillis, change.pressure)
+                }
+                addInkInput(change, position, change.uptimeMillis, change.pressure)
+                live.setLiveMesh(engine.currentMesh(), inkPageIndex)
+            }
+
+            Mode.ERASE -> {
+                var previous = lastPosition
+                for (h in change.historical) {
+                    controller.eraserManager.eraseAlongSegment(previous, h.position)
+                    previous = h.position
+                }
+                controller.eraserManager.eraseAlongSegment(previous, position)
+                live.setEraserCursor(position, eraserRadiusPx(position))
+            }
+
+            Mode.PAN -> {
+                val delta = position - lastPosition
+                controller.cameraPhysics.onDrag(delta.x, delta.y, 1f, position.x, position.y)
+                controller.requestRedraw()
+            }
+
+            Mode.TEXT_TAP -> {
+                if (movedBeyondSlop) {
+                    mode = Mode.PAN
+                    controller.cameraPhysics.onDragStart()
+                    val delta = position - downPosition
+                    controller.cameraPhysics.onDrag(delta.x, delta.y, 1f, position.x, position.y)
+                }
+            }
+
+            Mode.SELECTION_MOVE -> {
+                val selection = controller.selectionManager.currentSelection
+                if (selection != null) {
+                    val pxPerMm = controller.pixelsPerMm(selection.pageIndex).coerceAtLeast(0.01f)
+                    val delta = position - lastPosition
+                    controller.selectionManager.translateBy(delta.x / pxPerMm, delta.y / pxPerMm)
+                }
+                updateAutoScroll(position)
+            }
+
+            Mode.SELECTION_SCALE -> {
+                val frame = controller.selectionManager.currentSelection?.let { SelectionFrame.compute(controller, it) }
+                if (frame != null) {
+                    val c = frame.center
+                    val previous = (lastPosition - c).getDistance()
+                    val current = (position - c).getDistance()
+                    if (previous > 10f) controller.selectionManager.scaleBy(current / previous)
+                }
+            }
+
+            Mode.SELECTION_ROTATE -> {
+                val frame = controller.selectionManager.currentSelection?.let { SelectionFrame.compute(controller, it) }
+                if (frame != null) {
+                    val c = frame.center
+                    val previous = atan2(lastPosition.y - c.y, lastPosition.x - c.x)
+                    val current = atan2(position.y - c.y, position.x - c.x)
+                    var delta = (current - previous) * 180f / kotlin.math.PI.toFloat()
+                    if (delta > 180f) delta -= 360f
+                    if (delta < -180f) delta += 360f
+                    controller.selectionManager.rotateBy(delta)
+                }
+            }
+
+            Mode.TEXT_RESIZE_LEFT, Mode.TEXT_RESIZE_RIGHT -> {
+                val selection = controller.selectionManager.currentSelection
+                if (selection != null) {
+                    controller.screenToPageMm(selection.pageIndex, position)?.let {
+                        controller.selectionManager.resizeText(it, mode == Mode.TEXT_RESIZE_RIGHT)
+                    }
+                }
+            }
+
+            Mode.PAGE_REORDER -> {
+                controller.pageManager.updateDragPosition(position)
+                updateAutoScroll(position)
+            }
+
+            else -> {}
+        }
+        lastPosition = position
+    }
+
+    private fun onPinchMove(pressed: List<PointerInputChange>) {
+        if (pressed.isEmpty()) return
+        if (pressed.size == 1) {
+            // One finger lifted: keep panning with the remaining one
+            val p = pressed[0]
+            val delta = p.position - p.previousPosition
+            controller.cameraPhysics.onDrag(delta.x, delta.y, 1f, p.position.x, p.position.y)
+            pinchCentroid = p.position
+            controller.requestRedraw()
+            return
+        }
+        val p1 = pressed[0].position
+        val p2 = pressed[1].position
+        val centroid = (p1 + p2) / 2f
+        val distance = (p1 - p2).getDistance().coerceAtLeast(1f)
+        val pressedCountChanged = pressed.any { it.changedToDownIgnoreConsumed() }
+        if (!pressedCountChanged) {
+            val delta = centroid - pinchCentroid
+            controller.cameraPhysics.onDrag(delta.x, delta.y, distance / pinchDistance, centroid.x, centroid.y)
+            controller.requestRedraw()
+        }
+        pinchCentroid = centroid
+        pinchDistance = distance
+    }
+
+    // ==========================================================
+    // Up
+    // ==========================================================
+
+    private fun onAllUp(up: PointerInputChange, touchSlop: Float, doubleTapTimeout: Long) {
+        val position = up.position
+        val wasTap = !movedBeyondSlop && (position - downPosition).getDistance() <= touchSlop
+        longPressCandidate = false
+        live.autoScrollPerFrame = 0f
+
+        when (mode) {
+            Mode.INK -> {
+                if (activePointer == up.id) addInkInput(up, position, up.uptimeMillis, up.pressure)
+                val mesh = engine.finishStroke()
+                val brush = inkBrush
+                live.setLiveMesh(null, -1)
+                if (mesh != null && brush != null) controller.commitInkStroke(mesh, inkPageIndex, brush)
+            }
+
+            Mode.LASSO -> {
+                val points = engine.inputs.toList()
+                engine.cancelStroke()
+                live.setLiveMesh(null, -1)
+                val polygon = FloatArray(points.size * 2)
+                points.forEachIndexed { i, p ->
+                    polygon[i * 2] = p.x
+                    polygon[i * 2 + 1] = p.y
+                }
+                controller.selectionManager.selectWithLasso(inkPageIndex, polygon)
+            }
+
+            Mode.ERASE -> {
+                controller.eraserManager.commitGesture()
+                if (activeType != PointerType.Mouse) live.setEraserCursor(null, 0f)
+            }
+
+            Mode.PAN -> {
+                val velocity = velocityTracker.calculateVelocity()
+                controller.cameraPhysics.onRelease(velocity.x, velocity.y)
+                controller.requestRedraw()
+            }
+
+            Mode.PINCH -> {
+                controller.cameraPhysics.onRelease(0f, 0f)
+                controller.requestRedraw()
+            }
+
+            Mode.SELECTION_MOVE, Mode.SELECTION_SCALE, Mode.SELECTION_ROTATE,
+            Mode.TEXT_RESIZE_LEFT, Mode.TEXT_RESIZE_RIGHT -> {
+                controller.selectionManager.applyTransformation()
+            }
+
+            Mode.PAGE_REORDER -> {
+                controller.pageManager.finishPageReorderMode()
+            }
+
+            Mode.TEXT_TAP -> {
+                if (wasTap) onTextToolTap(position)
+            }
+
+            else -> {}
+        }
+
+        // Double tap on a text block: edit it (whatever the active tool)
+        if (wasTap && mode != Mode.IGNORED && mode != Mode.PAGE_REORDER) {
+            val isDouble = up.uptimeMillis - lastTapTime <= doubleTapTimeout &&
+                    (position - lastTapPosition).getDistance() <= touchSlop * 2f
+            if (isDouble && mode != Mode.TEXT_TAP) {
+                editTextAt(position)
+            }
+            lastTapTime = up.uptimeMillis
+            lastTapPosition = position
+        }
+
+        mode = Mode.NONE
+        activePointer = null
+    }
+
+    private fun onLongPress() {
+        longPressCandidate = false
+        if (movedBeyondSlop) return
+        when (mode) {
+            Mode.INK, Mode.LASSO -> {
+                engine.cancelStroke()
+                live.setLiveMesh(null, -1)
+            }
+            Mode.ERASE -> controller.eraserManager.commitGesture()
+            Mode.PAN -> controller.cameraPhysics.onRelease(0f, 0f)
+            else -> {}
+        }
+        mode = Mode.IGNORED
+        showContextMenu(downPosition)
+    }
+
+    private fun showContextMenu(position: Offset) {
+        val pageIndex = controller.findPageIndexAtScreen(position) ?: return
+        controller.pageManager.contextMenuTargetPageIndex = pageIndex
+        val page = controller.document.pages.getOrNull(pageIndex)
+        val mm = controller.screenToPageMm(pageIndex, position)
+        if (page != null && mm != null) {
+            val image = page.images.lastOrNull { it.containsPoint(mm.x, mm.y) }
+            if (image != null) controller.selectionManager.selectImage(pageIndex, image)
+        }
+        controller.contextMenuPosition = position
+        controller.cameraPhysics.stopAllAnimations()
+    }
+
+    // ==========================================================
+    // Text tool
+    // ==========================================================
+
+    private fun onTextToolTap(position: Offset) {
+        if (editTextAt(position)) return
+        val pageIndex = controller.findPageIndexAtScreen(position) ?: return
+        val page = controller.document.pages.getOrNull(pageIndex) ?: return
+        val mm = controller.screenToPageMm(pageIndex, position) ?: return
+        val width = min(70f, page.widthMm - mm.x - 5f).coerceAtLeast(25f)
+        controller.textEditorManager.startEditing(null, pageIndex, mm.x, mm.y, width)
+    }
+
+    /**
+     * Opens the editor on the text block under [position].
+     * @return `true` if a text block was found.
+     */
+    private fun editTextAt(position: Offset): Boolean {
+        val pageIndex = controller.findPageIndexAtScreen(position) ?: return false
+        val page = controller.document.pages.getOrNull(pageIndex) ?: return false
+        val mm = controller.screenToPageMm(pageIndex, position) ?: return false
+        val text = page.texts.lastOrNull { it.containsPoint(mm.x, mm.y) } ?: return false
+        controller.textEditorManager.startEditing(text, pageIndex, text.x, text.y, text.width)
+        return true
+    }
+
+    // ==========================================================
+    // Wheel / trackpad
+    // ==========================================================
+
+    private fun onScroll(event: PointerEvent) {
+        val change = event.changes.firstOrNull() ?: return
+        val delta = change.scrollDelta
+        val modifiers = event.keyboardModifiers
+        if (modifiers.isCtrlPressed || modifiers.isMetaPressed) {
+            val factor = exp(-delta.y * 0.1f).coerceIn(0.5f, 2f)
+            controller.cameraPhysics.onDrag(0f, 0f, factor, change.position.x, change.position.y)
+        } else {
+            val step = 48f
+            val dx = if (modifiers.isShiftPressed) -delta.y * step else -delta.x * step
+            val dy = if (modifiers.isShiftPressed) 0f else -delta.y * step
+            controller.cameraPhysics.onDrag(dx, dy, 1f, change.position.x, change.position.y)
+        }
+        controller.cameraPhysics.restoreToBounds(animated = false)
+        controller.requestRedraw()
+        change.consume()
+    }
+
+    // ==========================================================
+    // Helpers
+    // ==========================================================
+
+    private fun addInkInput(change: PointerInputChange, screen: Offset, timeMs: Long, pressure: Float) {
+        val mm = controller.screenToPageMm(inkPageIndex, screen) ?: return
+        val toolType = when (change.type) {
+            PointerType.Stylus, PointerType.Eraser -> InputToolType.STYLUS
+            PointerType.Touch -> InputToolType.TOUCH
+            PointerType.Mouse -> InputToolType.MOUSE
+            else -> InputToolType.UNKNOWN
+        }
+        engine.addInput(mm.x, mm.y, pressure, timeMs, toolType)
+    }
+
+    private fun eraserRadiusPx(position: Offset): Float {
+        val pageIndex = controller.findPageIndexAtScreen(position) ?: controller.firstVisiblePageIndex() ?: 0
+        val diameterMm = controller.toolManager.activePreset(Tool.ERASER)?.sizeMm ?: 8f
+        return diameterMm / 2f * controller.pixelsPerMm(pageIndex)
+    }
+
+    private fun updateAutoScroll(position: Offset) {
+        val edge = 80f
+        val height = controller.viewportHeight
+        live.autoScrollPerFrame = when {
+            position.y < edge -> (edge - position.y) * 0.25f
+            position.y > height - edge -> -(position.y - (height - edge)) * 0.25f
+            else -> 0f
+        }
+    }
+
+    /**
+     * Applied once per frame while dragging near the edges of the viewport.
+     */
+    fun onAutoScrollFrame() {
+        val delta = live.autoScrollPerFrame
+        if (delta == 0f || abs(delta) < 0.01f) return
+        controller.cameraPhysics.onDrag(0f, delta, 1f, controller.viewportWidth / 2f, controller.viewportHeight / 2f)
+        controller.cameraPhysics.restoreToBounds(animated = false)
+        when (mode) {
+            Mode.SELECTION_MOVE -> {
+                // Keep the selection under the finger while the camera moves
+                val selection = controller.selectionManager.currentSelection
+                if (selection != null) {
+                    val pxPerMm = controller.pixelsPerMm(selection.pageIndex).coerceAtLeast(0.01f)
+                    controller.selectionManager.translateBy(0f, -delta / pxPerMm)
+                }
+            }
+            Mode.PAGE_REORDER -> controller.pageManager.onCameraMovedWhileDragging()
+            else -> {}
+        }
+        controller.requestRedraw()
+    }
+}

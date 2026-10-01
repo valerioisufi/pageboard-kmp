@@ -1,0 +1,348 @@
+package io.github.valerioisufi.drawview.core.camera
+
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import kotlin.math.abs
+import kotlin.math.sign
+
+/**
+ * Unified physics engine for managing the document camera's viewport and transformations.
+ *
+ * Utilizes a framerate-independent spring physics model for X-axis, Y-axis, and scaling (zoom).
+ * Handles fling deceleration, elastic bounce-back, and rubber-band resistance.
+ *
+ * @param density Screen pixel density (used for dp to px scale bounds).
+ * @param getContentRect Lambda returning the unscaled bounding box of document pages.
+ */
+class CameraPhysicsEngine(
+    var density: Float = 1f,
+    private val getContentRect: () -> Rect
+) {
+    /** Friction coefficient applied during fling gesture deceleration. */
+    var friction: Float = 3.5f
+
+    /** Stiffness of the spring for elastic bounce-back when viewport exceeds boundaries. */
+    var springStiffness: Float = 250f
+
+    /** Damping factor of the spring to prevent infinite oscillations during bounce. */
+    var springDamping: Float = 25f
+
+    /** Visual tension resistance applied when dragging outside boundaries (rubber-banding). */
+    var rubberBandTension: Float = 0.55f
+
+    /** Minimum allowed ratio of screen dp per mm of document (maximum zoom out). */
+    var minDpPerMm: Float = 0.2f
+
+    /** Maximum allowed ratio of screen dp per mm of document (maximum zoom in). */
+    var maxDpPerMm: Float = 50f
+
+    /** Dynamic minimum scale factor. */
+    val minScale: Float
+        get() = minDpPerMm * density
+
+    /** Dynamic maximum scale factor. */
+    val maxScale: Float
+        get() = maxDpPerMm * density
+
+    /** Horizontal padding around document content in pixels. */
+    var horizontalPaddingPx: Float = 40f
+
+    /** Top padding around document content in pixels. */
+    var topPaddingPx: Float = 40f
+
+    /** Bottom padding around document content in pixels. */
+    var bottomPaddingPx: Float = 40f
+
+    private val axisX = AxisPhysics1D()
+    private val axisY = AxisPhysics1D()
+    private val scaleAxis = ScalePhysics1D()
+
+    private var isUserDragging = false
+    private var viewportRect = Rect.Zero
+    private val renderMatrix = Matrix2D()
+
+    init {
+        val defaultStartScale = 1.0f * density
+        scaleAxis.position = defaultStartScale.coerceIn(minScale, maxScale)
+    }
+
+    /**
+     * Updates viewport dimensions and recalculates boundaries.
+     */
+    fun setViewport(width: Float, height: Float) {
+        viewportRect = Rect(0f, 0f, width, height)
+        updateDynamicBoundaries()
+    }
+
+    /**
+     * Centers camera on a specific document point at the specified scale.
+     */
+    fun centerOnWorldPoint(worldX: Float, worldY: Float, scale: Float, screenWidth: Float, screenHeight: Float) {
+        stopAllAnimations()
+        scaleAxis.position = scale.coerceIn(minScale, maxScale)
+
+        axisX.position = (screenWidth / 2f) - (worldX * scaleAxis.position)
+        axisY.position = (screenHeight / 2f) - (worldY * scaleAxis.position)
+
+        updateDynamicBoundaries()
+    }
+
+    fun getCurrentScale(): Float = scaleAxis.position
+
+    fun getCurrentTranslation(): Offset = Offset(axisX.position, axisY.position)
+
+    fun isAnimating(): Boolean {
+        return !isUserDragging && (
+            axisX.state != PhysicsState.IDLE ||
+            axisY.state != PhysicsState.IDLE ||
+            scaleAxis.state != PhysicsState.IDLE
+        )
+    }
+
+    fun onDragStart() {
+        isUserDragging = true
+        stopAllAnimations()
+    }
+
+    /**
+     * Processes drag and zoom gestures.
+     *
+     * @param dx Translation delta X in pixels.
+     * @param dy Translation delta Y in pixels.
+     * @param scaleFactor Scale multiplier.
+     * @param focusX Screen X coordinate of gesture focus.
+     * @param focusY Screen Y coordinate of gesture focus.
+     */
+    fun onDrag(dx: Float, dy: Float, scaleFactor: Float = 1f, focusX: Float = 0f, focusY: Float = 0f) {
+        if (scaleFactor != 1f && scaleFactor > 0f) {
+            val oldScale = scaleAxis.position
+            scaleAxis.position = (oldScale * scaleFactor).coerceIn(minScale, maxScale)
+
+            val currentScale = scaleAxis.position
+            val scaleRatio = currentScale / oldScale
+
+            axisX.position = focusX - (focusX - axisX.position) * scaleRatio
+            axisY.position = focusY - (focusY - axisY.position) * scaleRatio
+        }
+
+        axisX.position += dx
+        axisY.position += dy
+
+        updateDynamicBoundaries()
+    }
+
+    /**
+     * Initiates fling or bounce animation based on release velocity.
+     *
+     * @param velocityX Velocity along X in pixels per second.
+     * @param velocityY Velocity along Y in pixels per second.
+     */
+    fun onRelease(velocityX: Float = 0f, velocityY: Float = 0f) {
+        isUserDragging = false
+        updateDynamicBoundaries()
+
+        if (axisX.calculateExcess() != 0f) {
+            axisX.startBounce()
+        } else if (abs(velocityX) > 20f) {
+            axisX.startFling(velocityX)
+        }
+
+        if (axisY.calculateExcess() != 0f) {
+            axisY.startBounce()
+        } else if (abs(velocityY) > 20f) {
+            axisY.startFling(velocityY)
+        }
+    }
+
+    fun stopAllAnimations() {
+        axisX.stop()
+        axisY.stop()
+        scaleAxis.stop()
+    }
+
+    fun restoreToBounds(animated: Boolean = true) {
+        updateDynamicBoundaries()
+
+        if (animated) {
+            if (axisX.calculateExcess() != 0f) axisX.startBounce()
+            if (axisY.calculateExcess() != 0f) axisY.startBounce()
+            if (scaleAxis.calculateExcess() != 0f) scaleAxis.startBounce()
+        } else {
+            if (axisX.calculateExcess() != 0f) axisX.position -= axisX.calculateExcess()
+            if (axisY.calculateExcess() != 0f) axisY.position -= axisY.calculateExcess()
+            if (scaleAxis.calculateExcess() != 0f) scaleAxis.position -= scaleAxis.calculateExcess()
+            stopAllAnimations()
+        }
+    }
+
+    /**
+     * Advances simulation step by delta time.
+     *
+     * @param deltaTimeMillis Elapsed milliseconds.
+     */
+    fun update(deltaTimeMillis: Long) {
+        if (isUserDragging || deltaTimeMillis <= 0) return
+
+        val dt = (deltaTimeMillis / 1000f).coerceAtMost(0.05f)
+        updateDynamicBoundaries()
+
+        scaleAxis.update(dt)
+        axisX.update(dt)
+        axisY.update(dt)
+    }
+
+    /**
+     * Generates transformation matrix for rendering with scale, translation,
+     * and rubber-band tension.
+     */
+    fun getRenderMatrix(outMatrix: Matrix2D = renderMatrix): Matrix2D {
+        val renderScale = scaleAxis.position
+        val renderX = axisX.getRubberBandPosition(viewportRect.width.coerceAtLeast(1f), rubberBandTension)
+        val renderY = axisY.getRubberBandPosition(viewportRect.height.coerceAtLeast(1f), rubberBandTension)
+
+        outMatrix.reset()
+        outMatrix.postScale(renderScale, renderScale)
+        outMatrix.postTranslate(renderX, renderY)
+
+        return outMatrix
+    }
+
+    private fun updateDynamicBoundaries() {
+        if (viewportRect.isEmpty) return
+        val content = getContentRect()
+        if (content.isEmpty) return
+
+        val currentScale = scaleAxis.position
+        val scaledWidth = content.width * currentScale
+        val scaledHeight = content.height * currentScale
+
+        if (scaledWidth <= viewportRect.width - (horizontalPaddingPx * 2)) {
+            val centeredX = (viewportRect.width - scaledWidth) / 2f
+            axisX.minValue = centeredX
+            axisX.maxValue = centeredX
+        } else {
+            axisX.minValue = viewportRect.width - scaledWidth - horizontalPaddingPx
+            axisX.maxValue = horizontalPaddingPx
+        }
+
+        if (scaledHeight <= viewportRect.height - (topPaddingPx + bottomPaddingPx)) {
+            axisY.minValue = topPaddingPx
+            axisY.maxValue = topPaddingPx
+        } else {
+            axisY.minValue = viewportRect.height - scaledHeight - bottomPaddingPx
+            axisY.maxValue = topPaddingPx
+        }
+    }
+
+    enum class PhysicsState { IDLE, FLINGING, BOUNCING }
+
+    private inner class AxisPhysics1D {
+        var state = PhysicsState.IDLE
+        var position: Float = 0f
+        var velocity: Float = 0f
+        var minValue: Float = 0f
+        var maxValue: Float = 0f
+
+        fun startFling(v: Float) {
+            velocity = v
+            state = PhysicsState.FLINGING
+        }
+
+        fun startBounce() {
+            state = PhysicsState.BOUNCING
+        }
+
+        fun stop() {
+            state = PhysicsState.IDLE
+            velocity = 0f
+        }
+
+        fun calculateExcess(): Float {
+            return when {
+                position < minValue -> position - minValue
+                position > maxValue -> position - maxValue
+                else -> 0f
+            }
+        }
+
+        fun update(dt: Float) {
+            if (state == PhysicsState.IDLE) return
+            val excess = calculateExcess()
+
+            when (state) {
+                PhysicsState.FLINGING -> {
+                    velocity -= velocity * friction * dt
+                    position += velocity * dt
+
+                    if (calculateExcess() != 0f) {
+                        state = PhysicsState.BOUNCING
+                    }
+
+                    if (abs(velocity) < 10f && calculateExcess() == 0f) {
+                        stop()
+                    }
+                }
+                PhysicsState.BOUNCING -> {
+                    val springForce = (-springStiffness * excess) - (springDamping * velocity)
+                    velocity += springForce * dt
+                    position += velocity * dt
+
+                    if (abs(excess) < 0.5f && abs(velocity) < 10f) {
+                        position -= calculateExcess()
+                        stop()
+                    }
+                }
+                else -> {}
+            }
+        }
+
+        fun getRubberBandPosition(dimension: Float, tension: Float): Float {
+            val excess = calculateExcess()
+            if (excess == 0f) return position
+
+            val validPosition = position - excess
+            val absExcess = abs(excess)
+            val rubberBandedExcess = (absExcess * dimension * tension) / (dimension + tension * absExcess)
+
+            return validPosition + (rubberBandedExcess * sign(excess))
+        }
+    }
+
+    private inner class ScalePhysics1D {
+        var state = PhysicsState.IDLE
+        var position: Float = 1f
+        var velocity: Float = 0f
+
+        fun startBounce() {
+            state = PhysicsState.BOUNCING
+        }
+
+        fun stop() {
+            state = PhysicsState.IDLE
+            velocity = 0f
+        }
+
+        fun calculateExcess(): Float {
+            return when {
+                position < minScale -> position - minScale
+                position > maxScale -> position - maxScale
+                else -> 0f
+            }
+        }
+
+        fun update(dt: Float) {
+            if (state != PhysicsState.BOUNCING) return
+            val excess = calculateExcess()
+
+            val springForce = (-springStiffness * 1.5f * excess) - (springDamping * velocity)
+            velocity += springForce * dt
+            position += velocity * dt
+
+            if (abs(excess) < 0.005f && abs(velocity) < 0.05f) {
+                position -= calculateExcess()
+                stop()
+            }
+        }
+    }
+}
