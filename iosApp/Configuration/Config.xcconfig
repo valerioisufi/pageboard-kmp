@@ -1,4 +1,7 @@
+// Apple development team used for signing: set it in Local.xcconfig (not versioned), e.g.
+//   TEAM_ID=ABCDE12345
 TEAM_ID=
+#include? "Local.xcconfig"
 
 PRODUCT_NAME=DrawView-KMP
 PRODUCT_BUNDLE_IDENTIFIER=io.github.valerioisufi.drawview.DrawView-KMP$(TEAM_ID)
