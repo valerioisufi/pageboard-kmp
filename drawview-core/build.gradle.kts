@@ -90,5 +90,11 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
         }
+        jvmMain {
+            // JNI library of Google Ink (native/scripts/build_desktop.sh)
+            resources.srcDir(
+                files(rootProject.layout.buildDirectory.dir("nativeLibs/jvm/drawview-core")).builtBy(":buildDesktopNativeLibs")
+            )
+        }
     }
 }

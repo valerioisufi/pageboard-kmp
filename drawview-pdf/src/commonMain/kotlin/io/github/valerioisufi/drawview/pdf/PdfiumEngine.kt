@@ -14,12 +14,20 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
- * Platform PDF backend: PDFium on the desktop, `android.graphics.pdf.PdfRenderer` on Android,
- * CoreGraphics on iOS. Not available in the browser.
+ * PDF backend: PDFium on the desktop JVM, Android and iOS (see [PdfiumBindings]).
+ * Not available in the browser.
  */
-expect object PdfPlatform {
-    fun openDocument(filePath: String, password: String? = null): PdfDocument
-    fun isAvailable(): Boolean
+object PdfPlatform {
+    fun openDocument(filePath: String, password: String? = null): PdfDocument {
+        if (!PdfiumBindings.load()) {
+            throw UnsupportedOperationException("PDF documents are not supported on this platform")
+        }
+        val handle = PdfiumBindings.openDocument(filePath, password)
+        require(handle != 0L) { "Failed to open PDF document at: $filePath" }
+        return PdfiumDocument(handle)
+    }
+
+    fun isAvailable(): Boolean = PdfiumBindings.load()
 }
 
 /**

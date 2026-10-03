@@ -65,7 +65,7 @@ private val THIRD_PARTY_LIBRARIES = listOf(
         name = "PDFium",
         license = "BSD 3-Clause / MIT",
         copyright = "Copyright © 2014 The PDFium Authors.\nPrecompiled binaries Copyright © 2014-2025 Benoit Blanchon.",
-        purpose = "PDF document rendering engine used on Desktop (JVM).",
+        purpose = "PDF document rendering engine used on Desktop (JVM), Android and iOS.",
         notice = "Redistribution and use in source and binary forms, with or without modification, are permitted provided that the copyright notice and disclaimers are retained.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES ARE DISCLAIMED."
     ),
     ThirdPartyItem(

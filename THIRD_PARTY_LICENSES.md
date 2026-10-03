@@ -12,7 +12,7 @@ This document details the respective licenses, copyright notices, and disclaimer
 | **Google Ink** | Google LLC / Android Open Source Project | [Apache License 2.0](#apache-license-version-20) | Freehand stroke generation and geometry modeling |
 | **Abseil C++** | The Abseil Authors / Google LLC | [Apache License 2.0](#apache-license-version-20) | C++ foundation library used by Google Ink |
 | **libtess2** | Silicon Graphics, Inc. / Mikko Mononen | [SGI Free Software License B](#sgi-free-software-license-b) | Polygon tessellation used by Google Ink |
-| **PDFium** | The PDFium Authors / Chromium Project | [BSD 3-Clause License](#bsd-3-clause-license-pdfium) | PDF rendering engine (Desktop JVM backend) |
+| **PDFium** | The PDFium Authors / Chromium Project | [BSD 3-Clause License](#bsd-3-clause-license-pdfium) | PDF rendering engine (Desktop JVM, Android and iOS) |
 | **pdfium-binaries** | Benoit Blanchon | [MIT License](#mit-license-bblanchonpdfium-binaries) | Precompiled native binaries for PDFium |
 | **The FreeType Project** | David Turner, Robert Wilhelm, Werner Lemberg | [FreeType Project License](#the-freetype-project-license-ftl) | Font rasterization engine statically linked in PDFium |
 | **MicroTeX** | NanoMichael | [MIT License](#mit-license-microtex) | Dynamic LaTeX mathematical formula rendering |
@@ -544,3 +544,8 @@ The precompiled PDFium library also incorporates the following permissive third-
 - **simdutf**: Apache License 2.0 / MIT License
 - **fast_float**: Apache License 2.0 / MIT License
 - **llvm-libc**: Apache License 2.0 with LLVM Exception
+
+The Android builds of PDFium additionally incorporate:
+- **catapult**: BSD 3-Clause License (The Chromium Authors)
+- **cpu_features**: Apache License 2.0 (Google LLC)
+- **libunwind**: Apache License 2.0 with LLVM Exception (The LLVM Project)

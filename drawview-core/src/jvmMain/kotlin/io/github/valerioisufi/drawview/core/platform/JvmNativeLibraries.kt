@@ -7,8 +7,8 @@ import java.nio.file.StandardCopyOption
 /**
  * Loads the JNI libraries bundled as resources of the desktop (JVM) artifacts.
  *
- * The libraries are stored under `/native/<platform>/` (see `native/scripts/build_desktop.sh`)
- * and extracted into a private temporary directory before being loaded, since the JVM cannot
+ * The libraries are stored under `/native/<platform>/` (built by `./gradlew buildDesktopNativeLibs`,
+ * see `native/scripts/build_desktop.sh`) and extracted into a private temporary directory before being loaded, since the JVM cannot
  * load a shared library from inside a jar.
  */
 object JvmNativeLibraries {
@@ -78,7 +78,8 @@ object JvmNativeLibraries {
         }
 
         // 3. Local development build (native/scripts/build_desktop.sh)
-        val candidates = listOf("native/build/desktop", "../native/build/desktop", "../../native/build/desktop")
+        val buildDir = "native/build/desktop-$platformFolder"
+        val candidates = listOf(buildDir, "../$buildDir", "../../$buildDir")
         for (dir in candidates) {
             val file = File(dir, fileName)
             if (file.exists()) {

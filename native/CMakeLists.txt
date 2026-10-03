@@ -9,7 +9,8 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # Target platform
 # ==============================================================================
 # - Android (NDK, driven by the :drawview-native Gradle module): JNI shared libraries.
-# - Desktop JVM (macOS / Linux / Windows): JNI shared libraries bundled as jvmMain resources.
+# - Desktop JVM (macOS / Linux / Windows with clang-cl, driven by scripts/build_desktop.sh): JNI
+#   shared libraries bundled as jvmMain resources.
 # - iOS (driven by scripts/build_ios.sh): static libraries exposing the plain C API,
 #   consumed by Kotlin/Native through cinterop.
 if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
@@ -31,6 +32,15 @@ if(NOT MSVC)
     add_compile_options(-O2)
 endif()
 add_compile_definitions(NDEBUG)
+
+# Windows (clang-cl): static C/C++ runtime, so that the JNI libraries do not depend on the
+# Visual C++ redistributable; M_PI & co. from <cmath>; no min/max macros from <windows.h>.
+if(MSVC)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+endif()
+if(WIN32)
+    add_compile_definitions(_USE_MATH_DEFINES NOMINMAX)
+endif()
 
 # ==============================================================================
 # Abseil
@@ -110,10 +120,12 @@ target_link_libraries(ink_core PUBLIC
 # JNI headers (desktop JVM only: the NDK sysroot already provides jni.h)
 # ==============================================================================
 if(DRAWVIEW_BUILD_JNI AND NOT ANDROID)
-    if(DEFINED ENV{JAVA_HOME} AND EXISTS "$ENV{JAVA_HOME}/include")
-        set(DRAWVIEW_JAVA_HOME "$ENV{JAVA_HOME}")
-    elseif(EXISTS "/Library/Java/JavaVirtualMachines/openjdk-21.jdk/Contents/Home/include")
-        set(DRAWVIEW_JAVA_HOME "/Library/Java/JavaVirtualMachines/openjdk-21.jdk/Contents/Home")
+    # JAVA_HOME is set by the Gradle task buildDesktopNativeLibs to the JDK running Gradle
+    if(DEFINED ENV{JAVA_HOME})
+        file(TO_CMAKE_PATH "$ENV{JAVA_HOME}" DRAWVIEW_JAVA_HOME)
+        if(NOT EXISTS "${DRAWVIEW_JAVA_HOME}/include")
+            unset(DRAWVIEW_JAVA_HOME)
+        endif()
     endif()
 
     if(DRAWVIEW_JAVA_HOME)
@@ -214,12 +226,14 @@ set_target_properties(tex PROPERTIES
     CXX_EXTENSIONS OFF
 )
 
-target_compile_options(tex PRIVATE
-    -Wno-dynamic-exception-spec
-    -Wno-deprecated-declarations
-    -Wno-non-c-typedef-for-linkage
-    -Wno-parentheses
-)
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+    target_compile_options(tex PRIVATE
+        -Wno-dynamic-exception-spec
+        -Wno-deprecated-declarations
+        -Wno-non-c-typedef-for-linkage
+        -Wno-parentheses
+    )
+endif()
 
 target_include_directories(tex PUBLIC
     tex/src
@@ -227,22 +241,58 @@ target_include_directories(tex PUBLIC
 )
 
 # ==============================================================================
-# PDFium bridge (desktop JVM only: Android uses android.graphics.pdf.PdfRenderer and
-# iOS uses CoreGraphics, both provided by the operating system)
+# PDFium bridge (prebuilt PDFium from pdfium-binaries, every platform but the web)
 # ==============================================================================
-if(DRAWVIEW_BUILD_JNI AND NOT ANDROID AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/pdfium/lib/libpdfium.dylib")
-    add_library(pdfium_bridge SHARED
-        bridge/pdfium_bridge.cpp
-    )
-    target_include_directories(pdfium_bridge PUBLIC
-        bridge
-        pdfium/include
-    )
-    target_link_directories(pdfium_bridge PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/pdfium/lib
-    )
-    target_link_libraries(pdfium_bridge PRIVATE
-        pdfium
-    )
-    drawview_configure_shared_library(pdfium_bridge)
+# DRAWVIEW_PDFIUM_DIR: an extracted pdfium-binaries package (build/pdfium/<package>, prepared
+# by the Gradle tasks extractPdfium-<package>). On Android it defaults to the package of the
+# ABI being built, under DRAWVIEW_PDFIUM_ROOT.
+set(DRAWVIEW_PDFIUM_DIR "" CACHE PATH "Extracted pdfium-binaries package")
+set(DRAWVIEW_PDFIUM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../build/pdfium" CACHE PATH "Folder of the extracted pdfium-binaries packages")
+file(TO_CMAKE_PATH "${DRAWVIEW_PDFIUM_DIR}" DRAWVIEW_PDFIUM_DIR) # Windows paths from Gradle
+if(ANDROID AND NOT DRAWVIEW_PDFIUM_DIR)
+    set(DRAWVIEW_PDFIUM_ANDROID_PACKAGES_arm64-v8a android-arm64)
+    set(DRAWVIEW_PDFIUM_ANDROID_PACKAGES_armeabi-v7a android-arm)
+    set(DRAWVIEW_PDFIUM_ANDROID_PACKAGES_x86_64 android-x64)
+    set(DRAWVIEW_PDFIUM_DIR "${DRAWVIEW_PDFIUM_ROOT}/${DRAWVIEW_PDFIUM_ANDROID_PACKAGES_${ANDROID_ABI}}")
+endif()
+
+if(EXISTS "${DRAWVIEW_PDFIUM_DIR}/include/fpdfview.h")
+    if(DRAWVIEW_BUILD_JNI)
+        # Imported by hand: PDFiumConfig.cmake uses find_library, which the Android toolchain
+        # restricts to the NDK sysroot.
+        add_library(pdfium SHARED IMPORTED)
+        if(WIN32)
+            set_target_properties(pdfium PROPERTIES
+                IMPORTED_LOCATION "${DRAWVIEW_PDFIUM_DIR}/bin/pdfium.dll"
+                IMPORTED_IMPLIB "${DRAWVIEW_PDFIUM_DIR}/lib/pdfium.dll.lib"
+            )
+        elseif(APPLE)
+            set_target_properties(pdfium PROPERTIES IMPORTED_LOCATION "${DRAWVIEW_PDFIUM_DIR}/lib/libpdfium.dylib")
+        else()
+            set_target_properties(pdfium PROPERTIES IMPORTED_LOCATION "${DRAWVIEW_PDFIUM_DIR}/lib/libpdfium.so")
+        endif()
+        set_target_properties(pdfium PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${DRAWVIEW_PDFIUM_DIR}/include")
+
+        # JNI shared library (desktop JVM / Android); libpdfium is shipped next to it
+        add_library(pdfium_bridge SHARED
+            bridge/pdfium_bridge.cpp
+            bridge/pdfium_bridge_jni.cpp
+        )
+        target_link_libraries(pdfium_bridge PRIVATE pdfium)
+        drawview_configure_shared_library(pdfium_bridge)
+        # No absolute build path in the rpath
+        set_target_properties(pdfium_bridge PROPERTIES BUILD_WITH_INSTALL_RPATH ON)
+        if(APPLE)
+            set_target_properties(pdfium_bridge PROPERTIES INSTALL_RPATH "@loader_path")
+        elseif(UNIX AND NOT ANDROID)
+            set_target_properties(pdfium_bridge PROPERTIES INSTALL_RPATH "$ORIGIN")
+        endif()
+    else()
+        # Plain C API (iOS): PDFium itself is linked by the app as PDFium.xcframework
+        add_library(pdfium_bridge STATIC
+            bridge/pdfium_bridge.cpp
+        )
+        target_include_directories(pdfium_bridge PRIVATE "${DRAWVIEW_PDFIUM_DIR}/include")
+    endif()
+    target_include_directories(pdfium_bridge PUBLIC bridge)
 endif()

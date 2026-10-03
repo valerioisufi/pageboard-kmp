@@ -95,6 +95,12 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
         }
+        jvmMain {
+            // JNI library of MicroTeX (native/scripts/build_desktop.sh)
+            resources.srcDir(
+                files(rootProject.layout.buildDirectory.dir("nativeLibs/jvm/drawview-latex")).builtBy(":buildDesktopNativeLibs")
+            )
+        }
     }
 }
 
