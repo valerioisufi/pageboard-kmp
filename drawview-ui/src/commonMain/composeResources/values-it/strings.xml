@@ -120,4 +120,11 @@
         <item>nov</item>
         <item>dic</item>
     </string-array>
+    <string name="about_dialog_title">Info e Licenze</string>
+    <string name="about_dialog_version">Versione 1.0.0</string>
+    <string name="about_dialog_app_description">Applicazione multipiattaforma per disegno e note realizzata con Kotlin Multiplatform e Compose Multiplatform.</string>
+    <string name="about_dialog_libraries_header">Librerie Open Source e Licenze</string>
+    <string name="about_dialog_freetype_notice">Portions of this software are copyright © The FreeType Project (www.freetype.org). All rights reserved.</string>
+    <string name="draw_menu_about_licenses">Info e Licenze</string>
+    <string name="about_dialog_close">Chiudi</string>
 </resources>

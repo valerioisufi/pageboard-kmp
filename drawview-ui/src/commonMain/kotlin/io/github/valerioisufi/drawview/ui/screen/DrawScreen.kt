@@ -36,8 +36,10 @@ import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Draw
 import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Palette
+import io.github.valerioisufi.drawview.ui.components.AboutLicensesDialog
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -185,6 +187,7 @@ fun DrawScreen(
     var showSinglePageConfigurator by remember { mutableStateOf(false) }
     var showDocumentConfigurator by remember { mutableStateOf(false) }
     var pendingDocumentTemplate by remember { mutableStateOf<Pair<Dimension, PageBackground>?>(null) }
+    var showAboutDialog by remember { mutableStateOf(false) }
 
     val toolManager = controller.toolManager
 
@@ -296,6 +299,30 @@ fun DrawScreen(
                                             )
                                             Text(
                                                 text = stringResource(Res.string.draw_menu_document_background),
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+
+                                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    moreOptionsExpanded = false
+                                                    showAboutDialog = true
+                                                }
+                                                .padding(vertical = 8.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Outlined.Info,
+                                                contentDescription = null,
+                                                modifier = Modifier.padding(end = 16.dp),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                            Text(
+                                                text = stringResource(Res.string.draw_menu_about_licenses),
                                                 color = MaterialTheme.colorScheme.onSurface
                                             )
                                         }
@@ -690,6 +717,10 @@ fun DrawScreen(
                 }
             }
         )
+    }
+
+    if (showAboutDialog) {
+        AboutLicensesDialog(onDismiss = { showAboutDialog = false })
     }
 }
 

@@ -120,4 +120,11 @@
         <item>Nov.</item>
         <item>Dez.</item>
     </string-array>
+    <string name="about_dialog_title">Über &amp; Lizenzen</string>
+    <string name="about_dialog_version">Version 1.0.0</string>
+    <string name="about_dialog_app_description">Plattformübergreifende Zeichen- und Notizen-App, entwickelt mit Kotlin Multiplatform und Compose Multiplatform.</string>
+    <string name="about_dialog_libraries_header">Open-Source-Bibliotheken &amp; Lizenzen</string>
+    <string name="about_dialog_freetype_notice">Portions of this software are copyright © The FreeType Project (www.freetype.org). All rights reserved.</string>
+    <string name="draw_menu_about_licenses">Über &amp; Lizenzen</string>
+    <string name="about_dialog_close">Schließen</string>
 </resources>

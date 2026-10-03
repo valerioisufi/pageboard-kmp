@@ -51,8 +51,11 @@ install_lib() {
 }
 
 install_lib "libink_bridge.$EXT" drawview-core
+cp "$NATIVE_DIR/ink/LICENSE" "$ROOT_DIR/drawview-core/src/jvmMain/resources/native/$PLATFORM/INK_LICENSE.txt"
 install_lib "libtex.$EXT" drawview-latex
 if [[ " ${TARGETS[*]} " == *" pdfium_bridge "* ]]; then
     install_lib "libpdfium_bridge.$EXT" drawview-pdf
     cp "$NATIVE_DIR/pdfium/lib/libpdfium.dylib" "$ROOT_DIR/drawview-pdf/src/jvmMain/resources/native/$PLATFORM/libpdfium.dylib"
+    cp "$NATIVE_DIR/pdfium/LICENSE" "$ROOT_DIR/drawview-pdf/src/jvmMain/resources/native/$PLATFORM/PDFIUM_LICENSE.txt"
+    cp -r "$NATIVE_DIR/pdfium/licenses" "$ROOT_DIR/drawview-pdf/src/jvmMain/resources/native/$PLATFORM/"
 fi

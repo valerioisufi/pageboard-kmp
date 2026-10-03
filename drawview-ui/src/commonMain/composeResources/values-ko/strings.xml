@@ -120,4 +120,11 @@
         <item>11월</item>
         <item>12월</item>
     </string-array>
+    <string name="about_dialog_title">정보 및 라이선스</string>
+    <string name="about_dialog_version">버전 1.0.0</string>
+    <string name="about_dialog_app_description">Kotlin Multiplatform 및 Compose Multiplatform으로 구축된 크로스 플랫폼 드로잉 및 메모 앱.</string>
+    <string name="about_dialog_libraries_header">오픈 소스 라이브러리 및 라이선스</string>
+    <string name="about_dialog_freetype_notice">Portions of this software are copyright © The FreeType Project (www.freetype.org). All rights reserved.</string>
+    <string name="draw_menu_about_licenses">정보 및 라이선스</string>
+    <string name="about_dialog_close">닫기</string>
 </resources>

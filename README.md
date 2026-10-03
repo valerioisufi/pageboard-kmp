@@ -1,48 +1,61 @@
-This is a Kotlin Multiplatform project targeting Android, iOS, Web, Desktop (JVM).
+# DrawView-KMP
 
-* [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
-
-* [/shared](./shared/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-    - [commonMain](./shared/src/commonMain/kotlin) is for code that’s common for all targets.
-    - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-      For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-      the [iosMain](./shared/src/iosMain/kotlin) folder would be the right place for such calls.
-      Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
-      folder is the appropriate location.
-
-### Running the apps
-
-Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and
-options:
-
-- Android app: `./gradlew :androidApp:assembleDebug`
-- Desktop app:
-    - Hot reload: `./gradlew :desktopApp:hotRun --auto`
-    - Standard run: `./gradlew :desktopApp:run`
-- Web app:
-    - Wasm target (faster, modern browsers): `./gradlew :webApp:wasmJsBrowserDevelopmentRun`
-    - JS target (slower, supports older browsers): `./gradlew :webApp:jsBrowserDevelopmentRun`
-- iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
-
-### Running tests
-
-Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
-
-- Android tests: `./gradlew :shared:testAndroidHostTest`
-- Desktop tests: `./gradlew :shared:jvmTest`
-- Web tests:
-    - Wasm target: `./gradlew :shared:wasmJsTest`
-    - JS target: `./gradlew :shared:jsTest`
-- iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
+DrawView-KMP is a modern cross-platform drawing, handwriting, and note-taking application targeting **Android**, **iOS**, **Desktop (JVM)**, and **Web (Wasm / JS)**, built with [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html) and [Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/).
 
 ---
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
-[Compose Multiplatform](https://kotlinlang.org/compose-multiplatform/),
-[Kotlin/Wasm](https://kotl.in/wasm/)…
+## Project Structure
 
-We would appreciate your feedback on Compose/Web and Kotlin/Wasm in the public Slack
-channel [#compose-web](https://slack-chats.kotlinlang.org/c/compose-web).
-If you face any issues, please report them on [YouTrack](https://youtrack.jetbrains.com/newIssue?project=CMP).
+* [`/iosApp`](./iosApp) contains the iOS application entry point (SwiftUI wrapper).
+* [`/desktopApp`](./desktopApp) contains the desktop application entry point.
+* [`/androidApp`](./androidApp) contains the Android application entry point.
+* [`/webApp`](./webApp) contains the Wasm and JS web browser entry points.
+* [`/drawview-core`](./drawview-core) handles drawing logic, strokes, brushes, and rendering abstractions.
+* [`/drawview-data`](./drawview-data) handles persistence, Room / SQLite database, and documents store.
+* [`/drawview-ui`](./drawview-ui) contains the shared Compose Multiplatform user interface and components.
+* [`/drawview-pdf`](./drawview-pdf) provides PDF document rendering (PDFium on Desktop JVM, Android PdfRenderer, iOS CoreGraphics).
+* [`/drawview-latex`](./drawview-latex) handles dynamic mathematical formula rendering via MicroTeX.
+* [`/native`](./native) contains the native C++ engines and JNI bridges for Google Ink, MicroTeX, and PDFium.
+
+---
+
+## Running the Apps
+
+* **Android app**: `./gradlew :androidApp:assembleDebug`
+* **Desktop app**:
+  * Hot reload: `./gradlew :desktopApp:hotRun --auto`
+  * Standard run: `./gradlew :desktopApp:run`
+* **Web app**:
+  * Wasm target: `./gradlew :webApp:wasmJsBrowserDevelopmentRun`
+  * JS target: `./gradlew :webApp:jsBrowserDevelopmentRun`
+* **iOS app**: Open the [`/iosApp`](./iosApp) directory in Xcode and run it on a simulator or device.
+
+---
+
+## Running Tests
+
+* **Android tests**: `./gradlew :shared:testAndroidHostTest`
+* **Desktop tests**: `./gradlew :shared:jvmTest`
+* **Web tests**:
+  * Wasm: `./gradlew :shared:wasmJsTest`
+  * JS: `./gradlew :shared:jsTest`
+* **iOS tests**: `./gradlew :shared:iosSimulatorArm64Test`
+
+---
+
+## License & Third-Party Credits
+
+DrawView-KMP is licensed under the [MIT License](./LICENSE).
+
+### Third-Party Open Source Libraries
+This project relies on and incorporates several open-source libraries:
+* **[Google Ink](https://github.com/google/ink)** ([Apache 2.0](./native/ink/LICENSE)) - Freehand stroke generation and geometry modeling.
+* **[Abseil C++](https://github.com/abseil/abseil-cpp)** ([Apache 2.0](./native/external/abseil-cpp/LICENSE)) - C++ standard library extensions used by Google Ink.
+* **[libtess2](https://github.com/memononen/libtess2)** ([SGI Free Software License B](./native/external/libtess2/LICENSE.txt)) - Polygon tessellation used by Google Ink.
+* **[PDFium](https://pdfium.googlesource.com/pdfium)** ([BSD 3-Clause](./native/pdfium/licenses/pdfium.txt)) & **[pdfium-binaries](https://github.com/bblanchon/pdfium-binaries)** ([MIT](./native/pdfium/LICENSE)) - PDF rendering engine for Desktop JVM.
+* **[The FreeType Project](https://www.freetype.org)** ([FTL](./native/pdfium/licenses/freetype.txt)) - *Portions of this software are copyright © 1996-2024 The FreeType Project (www.freetype.org). All rights reserved.*
+* **[MicroTeX](https://github.com/NanoMichael/MicroTeX)** ([MIT](./native/tex/README.md)) - Dynamic LaTeX mathematical formula rendering.
+* **[Nunito Font](https://github.com/googlefonts/nunito)** ([SIL OFL 1.1](./drawview-ui/NUNITO_OFL_LICENSE.txt)) - Application typography.
+* **Computer Modern, Doublestroke & AMS Fonts** ([Knuth / dsrom / OFL](./drawview-latex/src/commonMain/composeResources/files/tex/fonts/licences/)) - LaTeX mathematical typography.
+
+For complete license texts, copyright notices, and disclaimers, please see [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md).

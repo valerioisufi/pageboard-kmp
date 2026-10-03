@@ -120,4 +120,11 @@
         <item>11月</item>
         <item>12月</item>
     </string-array>
+    <string name="about_dialog_title">アプリ情報とライセンス</string>
+    <string name="about_dialog_version">バージョン 1.0.0</string>
+    <string name="about_dialog_app_description">Kotlin Multiplatform と Compose Multiplatform で構築されたクロスプラットフォーム描画・ノート作成アプリ。</string>
+    <string name="about_dialog_libraries_header">オープンソースライブラリとライセンス</string>
+    <string name="about_dialog_freetype_notice">Portions of this software are copyright © The FreeType Project (www.freetype.org). All rights reserved.</string>
+    <string name="draw_menu_about_licenses">アプリ情報とライセンス</string>
+    <string name="about_dialog_close">閉じる</string>
 </resources>
