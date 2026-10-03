@@ -2,6 +2,7 @@
 
 DrawView-KMP incorporates and relies on open-source software libraries, components, and fonts.
 This document details the respective licenses, copyright notices, and disclaimers for each third-party component.
+The PencilNotes application (`pencilnotes/`) includes every DrawView component plus the fonts marked *PencilNotes*.
 
 ---
 
@@ -17,6 +18,7 @@ This document details the respective licenses, copyright notices, and disclaimer
 | **The FreeType Project** | David Turner, Robert Wilhelm, Werner Lemberg | [FreeType Project License](#the-freetype-project-license-ftl) | Font rasterization engine statically linked in PDFium |
 | **MicroTeX** | NanoMichael | [MIT License](#mit-license-microtex) | Dynamic LaTeX mathematical formula rendering |
 | **Nunito Font** | Vernon Adams, Cyreal, Jacques Le Bailly | [SIL Open Font License 1.1](#sil-open-font-license-11) | UI typography |
+| **Cherry Bomb One Font** | The Cherry Bomb Project Authors (satsuyako) | [SIL Open Font License 1.1](#sil-open-font-license-11) | *PencilNotes*: title typography |
 | **Computer Modern Fonts**| Donald E. Knuth | [Knuth License](#knuth-license) | Math typography for LaTeX formula rendering |
 | **Doublestroke Fonts**| Olaf Kummer | [Doublestroke License](#doublestroke-font-license) | Blackboard bold font for LaTeX formula rendering |
 | **AMS Fonts** | American Mathematical Society | [SIL Open Font License 1.1](#sil-open-font-license-11) | Mathematical symbols for LaTeX formula rendering |
@@ -48,6 +50,10 @@ This document details the respective licenses, copyright notices, and disclaimer
 ### Nunito Font
 > Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito)
 > Licensed under the SIL Open Font License, Version 1.1.
+
+### Cherry Bomb One Font (PencilNotes)
+> Copyright 2019 The Cherry Bomb Project Authors (https://github.com/satsuyako/CherryBomb)
+> Licensed under the SIL Open Font License, Version 1.1 (see [`pencilnotes/shared/CHERRY_BOMB_ONE_OFL_LICENSE.txt`](./pencilnotes/shared/CHERRY_BOMB_ONE_OFL_LICENSE.txt)).
 
 ---
 

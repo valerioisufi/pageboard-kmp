@@ -127,11 +127,11 @@ jobs:
       - uses: gradle/actions/setup-gradle@v5
 
       - name: Build the debug APK
-        run: ./gradlew :androidApp:assembleDebug
+        run: ./gradlew :sample-android:assembleDebug :pencilnotes-android:assembleDebug
 
       - name: Check the native libraries of the APK
         run: |
-          apk=$(ls androidApp/build/outputs/apk/debug/*.apk | head -1)
+          apk=$(ls sample/androidApp/build/outputs/apk/debug/*.apk | head -1)
           missing=0
           for abi in arm64-v8a armeabi-v7a x86_64; do
             for lib in ink_bridge tex pdfium_bridge pdfium; do
@@ -160,7 +160,7 @@ jobs:
       - name: Build the app for the simulator
         # -target: the iosApp scheme is not shared (xcuserdata)
         run: >
-          xcodebuild -project iosApp/iosApp.xcodeproj -target iosApp -configuration Debug
+          xcodebuild -project sample/iosApp/iosApp.xcodeproj -target iosApp -configuration Debug
           -sdk iphonesimulator -arch arm64 SYMROOT="$PWD/build/xcode" CODE_SIGNING_ALLOWED=NO build
 
       - name: Check that PDFium.framework is embedded

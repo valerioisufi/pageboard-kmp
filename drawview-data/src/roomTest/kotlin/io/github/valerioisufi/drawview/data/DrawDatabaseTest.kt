@@ -261,4 +261,9 @@ class DrawDatabaseTest {
         assertEquals(listOf("B"), remaining.map { it.name })
         assertNull(repository.loadDocument(a.dbId))
     }
+
+    @Test
+    fun testFolderOperations() = runTest {
+        checkFolderOperations(RoomDocumentStore(database))
+    }
 }

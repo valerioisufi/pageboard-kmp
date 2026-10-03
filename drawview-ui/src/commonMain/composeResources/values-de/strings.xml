@@ -10,15 +10,7 @@
     <string name="document_info_label_format">Format</string>
     <string name="document_info_label_elements_count">Elemente</string>
     <string name="document_info_value_dimensions">%1$d x %2$d mm</string>
-    <string name="document_list_title_main">Meine Notizen</string>
-    <string name="document_list_action_create">Neu erstellen</string>
-    <string name="document_list_state_empty">Keine Dokumente vorhanden.\nVerwende die +-Taste, um ein neues zu erstellen!</string>
-    <string name="document_list_action_swipe">Wischaktion</string>
-    <string name="document_list_title_rename_dialog">Dokument umbenennen</string>
-    <string name="document_list_input_rename_hint">Neuer Name</string>
-    <string name="common_button_rename">Umbenennen</string>
     <string name="common_button_cancel">Abbrechen</string>
-    <string name="document_list_label_last_modified">Zuletzt geändert: %1$s</string>
     <string name="common_action_back">Zurück</string>
     <string name="draw_toolbar_action_grid_view">Rasteransicht</string>
     <string name="draw_toolbar_action_draw">Zeichnen</string>
@@ -41,7 +33,6 @@
     <string name="draw_toolbar_action_pan">Hand-Werkzeug</string>
     <string name="draw_toolbar_action_import_pdf">PDF importieren</string>
     <string name="draw_toolbar_action_import_image">Bild importieren</string>
-    <string name="document_default_name">Neues Dokument</string>
     <string name="common_action_cut">Ausschneiden</string>
     <string name="common_action_copy">Kopieren</string>
     <string name="common_action_delete">Löschen</string>

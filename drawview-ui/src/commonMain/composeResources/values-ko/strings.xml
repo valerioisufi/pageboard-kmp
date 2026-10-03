@@ -10,15 +10,7 @@
     <string name="document_info_label_format">포맷</string>
     <string name="document_info_label_elements_count">요소</string>
     <string name="document_info_value_dimensions">%1$d x %2$d mm</string>
-    <string name="document_list_title_main">내 노트</string>
-    <string name="document_list_action_create">새로 만들기</string>
-    <string name="document_list_state_empty">문서가 없습니다.\n+ 버튼을 눌러 새 문서를 만들어보세요!</string>
-    <string name="document_list_action_swipe">스와이프 동작</string>
-    <string name="document_list_title_rename_dialog">문서 이름 변경</string>
-    <string name="document_list_input_rename_hint">새 이름</string>
-    <string name="common_button_rename">이름 변경</string>
     <string name="common_button_cancel">취소</string>
-    <string name="document_list_label_last_modified">최근 수정일: %1$s</string>
     <string name="common_action_back">뒤로</string>
     <string name="draw_toolbar_action_grid_view">그리드 뷰</string>
     <string name="draw_toolbar_action_draw">그리기</string>
@@ -41,7 +33,6 @@
     <string name="draw_toolbar_action_pan">이동 도구</string>
     <string name="draw_toolbar_action_import_pdf">PDF 불러오기</string>
     <string name="draw_toolbar_action_import_image">이미지 불러오기</string>
-    <string name="document_default_name">새 문서</string>
     <string name="common_action_cut">잘라내기</string>
     <string name="common_action_copy">복사</string>
     <string name="common_action_delete">삭제</string>

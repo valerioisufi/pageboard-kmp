@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="explorer_fab_item_note">Archivo</string>
+    <string name="explorer_fab_item_folder">Carpeta</string>
+    <string name="explorer_fab_state_expanded">Expandido</string>
+    <string name="explorer_fab_state_collapsed">Contraído</string>
+    <string name="explorer_fab_toggle_menu">Alternar menú</string>
+    <string name="explorer_fab_close_menu">Cerrar menú</string>
+    <string name="explorer_dialog_new_note">Nueva nota</string>
+    <string name="explorer_dialog_new_folder">Crear carpeta</string>
+    <string name="explorer_input_name">Elige un nombre</string>
+    <string name="explorer_action_confirm">Confirmar</string>
+    <string name="explorer_action_cancel">Cancelar</string>
+    <string name="explorer_action_back">Navegar hacia arriba</string>
+    <string name="explorer_action_details">Info</string>
+    <string name="explorer_action_rename">Renombrar</string>
+    <string name="explorer_action_move_to">Mover a</string>
+    <string name="explorer_action_move">Mover</string>
+    <string name="explorer_action_delete">Eliminar</string>
+    <string name="explorer_action_select_all">Seleccionar todo</string>
+    <string name="explorer_action_clear_selection">Borrar selección</string>
+    <string name="explorer_selected_count">%1$d Seleccionados</string>
+    <string name="explorer_label_last_modified">Última modificación: %1$s</string>
+    <string name="explorer_sort_name">Nombre</string>
+    <string name="explorer_sort_date_created">Fecha de creación</string>
+    <string name="explorer_sort_last_modified">Última modificación</string>
+    <string name="explorer_sort_last_opened">Última vez abierto</string>
+    <string name="explorer_sort_invert">Invertir orden</string>
+    <string name="explorer_sort_folders_on_top">Mantener carpetas arriba</string>
+    <string name="explorer_recents_title">Recientes</string>
+    <string name="explorer_root_folder">Inicio</string>
+    <string name="explorer_move_empty_state">No se encontraron carpetas</string>
+    <string name="explorer_move_here">Mover aquí</string>
+    <string name="explorer_dialog_delete_description">Los elementos eliminados no se pueden recuperar.</string>
+    <string name="explorer_dialog_delete_multiple_description">¿Quieres eliminar %1$d elementos?</string>
+    <string name="explorer_error_name_empty">El nombre no puede estar vacío</string>
+    <string name="explorer_error_name_invalid_chars">El nombre no puede contener barras</string>
+    <string name="explorer_error_name_exists">Este nombre ya existe</string>
+    <string name="explorer_error_create_failed">Error durante la creación</string>
+</resources>

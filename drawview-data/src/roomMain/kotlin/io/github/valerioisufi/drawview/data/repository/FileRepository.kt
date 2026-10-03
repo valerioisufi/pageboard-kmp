@@ -58,8 +58,13 @@ class FileRepository(
     }
 
     suspend fun moveFolder(folderId: Int, newParentId: Int?): Boolean = withContext(Dispatchers.IO) {
-        if (folderId == newParentId) return@withContext false
         val folder = folderDao.getFolderById(folderId) ?: return@withContext false
+        // A folder cannot be moved into itself or into one of its sub-folders
+        var ancestorId = newParentId
+        while (ancestorId != null) {
+            if (ancestorId == folderId) return@withContext false
+            ancestorId = folderDao.getFolderById(ancestorId)?.parentId
+        }
         if (folderDao.getFolderByNameAndParent(folder.name, newParentId) != null) return@withContext false
 
         folderDao.moveFolder(folderId, newParentId)
@@ -142,6 +147,9 @@ class FileRepository(
 
     /** Every document, most recently modified first (updated on every database change). */
     fun getAllDocumentsFlow(): Flow<List<DocumentEntity>> = documentDao.getAllDocumentsFlow()
+
+    /** Every folder, at any depth (updated on every database change). */
+    fun getAllFoldersFlow(): Flow<List<FolderEntity>> = folderDao.getAllFoldersFlow()
 
     suspend fun getFolderById(folderId: Int): FolderEntity? = withContext(Dispatchers.IO) {
         folderDao.getFolderById(folderId)

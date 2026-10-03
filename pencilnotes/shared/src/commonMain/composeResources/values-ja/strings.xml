@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_version">バージョン 3.0</string>
+    <string name="about_description">スタイラス入力向けに設計されたノートアプリ。DrawView を使用しています。</string>
+</resources>

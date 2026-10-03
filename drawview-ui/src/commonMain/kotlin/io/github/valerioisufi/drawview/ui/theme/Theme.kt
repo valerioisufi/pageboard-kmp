@@ -101,4 +101,4 @@ fun DrawViewTheme(
  * The dynamic (wallpaper based) color scheme of the platform, or `null` when not supported.
  */
 @Composable
-internal expect fun dynamicColorScheme(darkTheme: Boolean): ColorScheme?
+expect fun dynamicColorScheme(darkTheme: Boolean): ColorScheme?

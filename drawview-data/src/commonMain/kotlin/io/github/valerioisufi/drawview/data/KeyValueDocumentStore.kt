@@ -68,8 +68,9 @@ class InMemoryKeyValueStorage : KeyValueStorage {
 }
 
 /**
- * [DocumentStore] that keeps every document as a JSON value of a [KeyValueStorage]. Used in the
- * browser, where Room is not available.
+ * [DocumentStore] that keeps every document as a JSON value of a [KeyValueStorage] (the folders
+ * and the document summaries are kept in a single index value). Used in the browser, where Room
+ * is not available.
  *
  * While a document is open, its in-memory model is the source of truth: every persistence
  * operation marks the document as modified and its whole content is written shortly after
@@ -96,6 +97,9 @@ class KeyValueDocumentStore(
     private val _documents = MutableStateFlow(sortedSummaries(index))
     override val documents: StateFlow<List<DocumentSummary>> = _documents.asStateFlow()
 
+    private val _folders = MutableStateFlow(folderSummaries(index))
+    override val folders: StateFlow<List<FolderSummary>> = _folders.asStateFlow()
+
     private var storedPreferences: StoredPreferences = readPreferences()
     private val _preferences = MutableStateFlow(storedPreferences.toDrawPreferences())
     override val preferences: StateFlow<DrawPreferences> = _preferences.asStateFlow()
@@ -114,7 +118,8 @@ class KeyValueDocumentStore(
         name: String,
         widthMm: Float,
         heightMm: Float,
-        background: PageBackground
+        background: PageBackground,
+        folderId: Int?
     ): DrawDocument {
         val now = currentTimeMillis()
         val document = syncLock(lock) {
@@ -122,6 +127,7 @@ class KeyValueDocumentStore(
             val summary = StoredSummary(
                 id = id,
                 name = name,
+                folderId = folderId,
                 createdAt = now,
                 modifiedAt = now,
                 lastOpenedAt = now,
@@ -214,18 +220,19 @@ class KeyValueDocumentStore(
     override suspend fun deleteDocument(documentId: Int): Boolean {
         syncLock(lock) {
             if (index.documents.none { it.id == documentId }) return false
-            val stored = storage.get(documentKey(documentId))?.let { decodeOrNull<StoredDocument>(it) }
-            stored?.resources?.forEach { resource ->
-                storage.remove(resourceKey(resource.uri))
-                try {
-                    PlatformFiles.delete(resource.uri)
-                } catch (_: Throwable) {
-                }
-            }
-            storage.remove(documentKey(documentId))
-            openDocuments.remove(documentId)
-            dirtyDocuments.remove(documentId)
-            index = index.copy(documents = index.documents.filter { it.id != documentId })
+            deleteDocumentLocked(documentId)
+            writeIndexLocked()
+        }
+        publishSummaries()
+        return true
+    }
+
+    override suspend fun moveDocument(documentId: Int, folderId: Int?): Boolean {
+        syncLock(lock) {
+            val summary = index.documents.firstOrNull { it.id == documentId } ?: return false
+            if (folderId != null && index.folders.none { it.id == folderId }) return false
+            if (index.documents.any { it.folderId == folderId && it.name == summary.name }) return false
+            updateSummaryLocked(documentId) { it.copy(folderId = folderId, modifiedAt = currentTimeMillis()) }
             writeIndexLocked()
         }
         publishSummaries()
@@ -240,6 +247,65 @@ class KeyValueDocumentStore(
             writeIndexLocked()
         }
         publishSummaries()
+    }
+
+    override suspend fun createFolder(name: String, parentId: Int?): Boolean {
+        syncLock(lock) {
+            if (parentId != null && index.folders.none { it.id == parentId }) return false
+            if (index.folders.any { it.parentId == parentId && it.name == name }) return false
+            val now = currentTimeMillis()
+            val folder = StoredFolder(index.nextFolderId, name, parentId, createdAt = now, modifiedAt = now)
+            index = index.copy(nextFolderId = folder.id + 1, folders = index.folders + folder)
+            writeIndexLocked()
+        }
+        publishSummaries()
+        return true
+    }
+
+    override suspend fun renameFolder(folderId: Int, newName: String): Boolean {
+        syncLock(lock) {
+            val folder = index.folders.firstOrNull { it.id == folderId } ?: return false
+            if (index.folders.any { it.parentId == folder.parentId && it.name == newName }) return false
+            updateFolderLocked(folderId) { it.copy(name = newName, modifiedAt = currentTimeMillis()) }
+            writeIndexLocked()
+        }
+        publishSummaries()
+        return true
+    }
+
+    override suspend fun deleteFolder(folderId: Int): Boolean {
+        syncLock(lock) {
+            if (index.folders.none { it.id == folderId }) return false
+            // The folder and every sub-folder, at any depth
+            val deleted = mutableSetOf(folderId)
+            var added = true
+            while (added) {
+                added = index.folders.filter { it.parentId in deleted }.map { it.id }.let { deleted.addAll(it) }
+            }
+            index.documents.filter { it.folderId in deleted }.forEach { deleteDocumentLocked(it.id) }
+            index = index.copy(folders = index.folders.filter { it.id !in deleted })
+            writeIndexLocked()
+        }
+        publishSummaries()
+        return true
+    }
+
+    override suspend fun moveFolder(folderId: Int, parentId: Int?): Boolean {
+        syncLock(lock) {
+            val folder = index.folders.firstOrNull { it.id == folderId } ?: return false
+            if (parentId != null && index.folders.none { it.id == parentId }) return false
+            // A folder cannot be moved into itself or into one of its sub-folders
+            var ancestorId = parentId
+            while (ancestorId != null) {
+                if (ancestorId == folderId) return false
+                ancestorId = index.folders.firstOrNull { it.id == ancestorId }?.parentId
+            }
+            if (index.folders.any { it.parentId == parentId && it.name == folder.name }) return false
+            updateFolderLocked(folderId) { it.copy(parentId = parentId, modifiedAt = currentTimeMillis()) }
+            writeIndexLocked()
+        }
+        publishSummaries()
+        return true
     }
 
     override suspend fun flush() = flushNow()
@@ -412,6 +478,26 @@ class KeyValueDocumentStore(
         index = index.copy(documents = index.documents.map { if (it.id == documentId) transform(it) else it })
     }
 
+    private inline fun updateFolderLocked(folderId: Int, transform: (StoredFolder) -> StoredFolder) {
+        index = index.copy(folders = index.folders.map { if (it.id == folderId) transform(it) else it })
+    }
+
+    /** Removes a document, its stored content and its resources (the caller writes the index). */
+    private fun deleteDocumentLocked(documentId: Int) {
+        val stored = storage.get(documentKey(documentId))?.let { decodeOrNull<StoredDocument>(it) }
+        stored?.resources?.forEach { resource ->
+            storage.remove(resourceKey(resource.uri))
+            try {
+                PlatformFiles.delete(resource.uri)
+            } catch (_: Throwable) {
+            }
+        }
+        storage.remove(documentKey(documentId))
+        openDocuments.remove(documentId)
+        dirtyDocuments.remove(documentId)
+        index = index.copy(documents = index.documents.filter { it.id != documentId })
+    }
+
     private fun nextElementIdLocked(): Int {
         val id = index.nextElementId
         index = index.copy(nextElementId = id + 1)
@@ -419,7 +505,9 @@ class KeyValueDocumentStore(
     }
 
     private fun publishSummaries() {
-        _documents.value = syncLock(lock) { sortedSummaries(index) }
+        val (documents, folders) = syncLock(lock) { sortedSummaries(index) to folderSummaries(index) }
+        _documents.value = documents
+        _folders.value = folders
     }
 
     private fun writeIndexLocked() {
@@ -466,6 +554,9 @@ class KeyValueDocumentStore(
     private fun sortedSummaries(index: StoredIndex): List<DocumentSummary> =
         index.documents.sortedByDescending { it.modifiedAt }.map { it.toSummary() }
 
+    private fun folderSummaries(index: StoredIndex): List<FolderSummary> =
+        index.folders.sortedBy { it.name }.map { it.toSummary() }
+
     companion object {
         private const val PREFIX = "drawview."
         private const val INDEX_KEY = PREFIX + "index"
@@ -484,8 +575,21 @@ class KeyValueDocumentStore(
 internal data class StoredIndex(
     val nextDocumentId: Int = 1,
     val nextElementId: Int = 1,
-    val documents: List<StoredSummary> = emptyList()
+    val documents: List<StoredSummary> = emptyList(),
+    val nextFolderId: Int = 1,
+    val folders: List<StoredFolder> = emptyList()
 )
+
+@Serializable
+internal data class StoredFolder(
+    val id: Int,
+    val name: String,
+    val parentId: Int? = null,
+    val createdAt: Long,
+    val modifiedAt: Long
+) {
+    fun toSummary() = FolderSummary(id = id, name = name, parentId = parentId, createdAt = createdAt, modifiedAt = modifiedAt)
+}
 
 @Serializable
 internal data class StoredSummary(

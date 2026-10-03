@@ -11,15 +11,7 @@
     <string name="document_info_label_format">Format</string>
     <string name="document_info_label_elements_count">Elements</string>
     <string name="document_info_value_dimensions">%1$d x %2$d mm</string>
-    <string name="document_list_title_main">My Notes</string>
-    <string name="document_list_action_create">Create New</string>
-    <string name="document_list_state_empty">No documents found.\nUse the + button to create a new one!</string>
-    <string name="document_list_action_swipe">Swipe Action</string>
-    <string name="document_list_title_rename_dialog">Rename Document</string>
-    <string name="document_list_input_rename_hint">New Name</string>
-    <string name="common_button_rename">Rename</string>
     <string name="common_button_cancel">Cancel</string>
-    <string name="document_list_label_last_modified">Last modified: %1$s</string>
     <string name="common_action_back">Back</string>
     <string name="draw_toolbar_action_grid_view">Grid View</string>
     <string name="draw_toolbar_action_draw">Draw</string>
@@ -50,7 +42,6 @@
     <string name="draw_toolbar_action_pan">Pan Tool</string>
     <string name="draw_toolbar_action_import_pdf">Import PDF</string>
     <string name="draw_toolbar_action_import_image">Import Image</string>
-    <string name="document_default_name">New Document</string>
     <string name="common_action_cut">Cut</string>
     <string name="common_action_copy">Copy</string>
     <string name="common_action_delete">Delete</string>

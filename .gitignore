@@ -23,4 +23,4 @@ native/build/
 hs_err_pid*.log
 
 # Local Xcode settings (Apple development team)
-iosApp/Configuration/Local.xcconfig
+**/iosApp/Configuration/Local.xcconfig

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_version">Versión 3.0</string>
+    <string name="about_description">App de notas diseñada para el uso con lápiz, basada en DrawView.</string>
+</resources>

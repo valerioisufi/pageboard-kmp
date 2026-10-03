@@ -1,0 +1,18 @@
+// Apple development team used for signing: set it in Local.xcconfig (not versioned), e.g.
+//   TEAM_ID=ABCDE12345
+TEAM_ID=
+#include? "Local.xcconfig"
+
+PRODUCT_NAME=PencilNotes
+PRODUCT_BUNDLE_IDENTIFIER=io.github.valerioisufi.pencilnotes.PencilNotes$(TEAM_ID)
+
+CURRENT_PROJECT_VERSION=4
+MARKETING_VERSION=3.0
+
+// Google Ink, MicroTeX and the PDFium bridge are C++ libraries linked into the static
+// PencilNotesShared framework. PDFium is a dynamic framework (build/pdfium/PDFium.xcframework,
+// assembled by Gradle): linked from the slice of the current SDK, embedded and signed by the
+// "Compile Kotlin Framework" build phase (./gradlew :embedPdfiumForXcode).
+FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*] = $(inherited) $(SRCROOT)/../../build/pdfium/PDFium.xcframework/ios-arm64
+FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*] = $(inherited) $(SRCROOT)/../../build/pdfium/PDFium.xcframework/ios-arm64-simulator
+OTHER_LDFLAGS = $(inherited) -lc++ -framework PDFium

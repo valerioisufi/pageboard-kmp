@@ -1,0 +1,77 @@
+package io.github.valerioisufi.drawview.ui.session
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
+import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.ui.screen.DrawScreen
+
+/**
+ * The editor of an open document: a progress bar while the document is being loaded, then the
+ * [DrawScreen]. [onClose] is called by the back button of the editor and by the system back.
+ */
+@Composable
+fun EditorSessionScreen(
+    session: EditorSession,
+    onClose: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val controller = session.controller
+    if (controller == null) {
+        // The document is being loaded
+        Box(
+            modifier = modifier.background(MaterialTheme.colorScheme.surface)
+        ) {
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
+                color = MaterialTheme.colorScheme.secondary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        }
+    } else {
+        EditorBackHandler(controller, onClose = onClose)
+        DrawScreen(
+            controller = controller,
+            onNavigateBack = onClose,
+            modifier = modifier
+        )
+    }
+}
+
+/**
+ * System back (Android back gesture, Escape on the desktop, ...): closes the page grid, the text
+ * editor (saving the text), the selection or the context menu, then the document.
+ */
+@Composable
+private fun EditorBackHandler(controller: DrawViewController, onClose: () -> Unit) {
+    if (LocalNavigationEventDispatcherOwner.current == null) return
+    val state = rememberNavigationEventState(NavigationEventInfo.None)
+    NavigationBackHandler(
+        state = state,
+        isBackEnabled = true,
+        onBackCompleted = {
+            when {
+                controller.isPageGridVisible -> controller.togglePageGrid()
+                controller.textEditorManager.isEditing -> controller.textEditorManager.requestFinishEditing()
+                controller.contextMenuPosition != null -> controller.contextMenuPosition = null
+                controller.selectionManager.currentSelection != null -> controller.selectionManager.clearSelection()
+                else -> onClose()
+            }
+        }
+    )
+}

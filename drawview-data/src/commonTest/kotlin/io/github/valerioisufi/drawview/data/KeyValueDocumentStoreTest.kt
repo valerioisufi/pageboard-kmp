@@ -108,6 +108,28 @@ class KeyValueDocumentStoreTest {
     }
 
     @Test
+    fun foldersAreSupported() = runTest {
+        val storage = InMemoryKeyValueStorage()
+        checkFolderOperations(KeyValueDocumentStore(storage, scope = backgroundScope))
+    }
+
+    @Test
+    fun foldersSurviveAReload() = runTest {
+        val storage = InMemoryKeyValueStorage()
+        val store = KeyValueDocumentStore(storage, scope = backgroundScope)
+        assertTrue(store.createFolder("Math", null))
+        val folder = store.folders.first().single()
+        store.createDocument("Notes", folderId = folder.id)
+
+        val reloaded = KeyValueDocumentStore(storage, scope = backgroundScope)
+        assertEquals(listOf("Math"), reloaded.folders.first().map { it.name })
+        assertEquals(folder.id, reloaded.documents.first().single().folderId)
+        // Identifiers are not reused after a reload
+        assertTrue(reloaded.createFolder("Physics", null))
+        assertTrue(reloaded.folders.first().single { it.name == "Physics" }.id != folder.id)
+    }
+
+    @Test
     fun preferencesArePersisted() = runTest {
         val storage = InMemoryKeyValueStorage()
         val store = KeyValueDocumentStore(storage, scope = backgroundScope)

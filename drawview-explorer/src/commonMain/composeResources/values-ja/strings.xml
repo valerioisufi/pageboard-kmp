@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="explorer_fab_item_note">ファイル</string>
+    <string name="explorer_fab_item_folder">フォルダ</string>
+    <string name="explorer_fab_state_expanded">展開済み</string>
+    <string name="explorer_fab_state_collapsed">折りたたみ済み</string>
+    <string name="explorer_fab_toggle_menu">メニューを切り替え</string>
+    <string name="explorer_fab_close_menu">メニューを閉じる</string>
+    <string name="explorer_dialog_new_note">新規ノート</string>
+    <string name="explorer_dialog_new_folder">フォルダを作成</string>
+    <string name="explorer_input_name">名前を入力</string>
+    <string name="explorer_action_confirm">確認</string>
+    <string name="explorer_action_cancel">キャンセル</string>
+    <string name="explorer_action_back">戻る</string>
+    <string name="explorer_action_details">情報</string>
+    <string name="explorer_action_rename">名前を変更</string>
+    <string name="explorer_action_move_to">移動先</string>
+    <string name="explorer_action_move">移動</string>
+    <string name="explorer_action_delete">削除</string>
+    <string name="explorer_action_select_all">すべて選択</string>
+    <string name="explorer_action_clear_selection">選択を解除</string>
+    <string name="explorer_selected_count">%1$d件選択</string>
+    <string name="explorer_label_last_modified">最終更新: %1$s</string>
+    <string name="explorer_sort_name">名前</string>
+    <string name="explorer_sort_date_created">作成日</string>
+    <string name="explorer_sort_last_modified">最終更新日</string>
+    <string name="explorer_sort_last_opened">最後に開いた日時</string>
+    <string name="explorer_sort_invert">順序を反転</string>
+    <string name="explorer_sort_folders_on_top">フォルダを上に表示</string>
+    <string name="explorer_recents_title">最近の項目</string>
+    <string name="explorer_root_folder">ホーム</string>
+    <string name="explorer_move_empty_state">フォルダが見つかりません</string>
+    <string name="explorer_move_here">ここに移動</string>
+    <string name="explorer_dialog_delete_description">削除されたアイテムは元に戻せません。</string>
+    <string name="explorer_dialog_delete_multiple_description">%1$d件のアイテムを削除しますか？</string>
+    <string name="explorer_error_name_empty">名前は空にできません</string>
+    <string name="explorer_error_name_invalid_chars">名前にスラッシュは使用できません</string>
+    <string name="explorer_error_name_exists">この名前は既に存在します</string>
+    <string name="explorer_error_create_failed">作成中にエラーが発生しました</string>
+</resources>

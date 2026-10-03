@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="explorer_fab_item_note">File</string>
+    <string name="explorer_fab_item_folder">Folder</string>
+    <string name="explorer_fab_state_expanded">Expanded</string>
+    <string name="explorer_fab_state_collapsed">Collapsed</string>
+    <string name="explorer_fab_toggle_menu">Toggle menu</string>
+    <string name="explorer_fab_close_menu">Close menu</string>
+    <string name="explorer_dialog_new_note">New note</string>
+    <string name="explorer_dialog_new_folder">Create folder</string>
+    <string name="explorer_input_name">Choose a name</string>
+    <string name="explorer_action_confirm">Confirm</string>
+    <string name="explorer_action_cancel">Cancel</string>
+    <string name="explorer_action_back">Navigate up</string>
+    <string name="explorer_action_details">Info</string>
+    <string name="explorer_action_rename">Rename</string>
+    <string name="explorer_action_move_to">Move to</string>
+    <string name="explorer_action_move">Move</string>
+    <string name="explorer_action_delete">Delete</string>
+    <string name="explorer_action_select_all">Select all</string>
+    <string name="explorer_action_clear_selection">Clear selection</string>
+    <string name="explorer_selected_count">%1$d Selected</string>
+    <string name="explorer_label_last_modified">Last modified: %1$s</string>
+    <string name="explorer_sort_name">Name</string>
+    <string name="explorer_sort_date_created">Date created</string>
+    <string name="explorer_sort_last_modified">Last modified</string>
+    <string name="explorer_sort_last_opened">Last open</string>
+    <string name="explorer_sort_invert">Invert order</string>
+    <string name="explorer_sort_folders_on_top">Keep folders on top</string>
+    <string name="explorer_recents_title">Recents</string>
+    <string name="explorer_root_folder">Home</string>
+    <string name="explorer_move_empty_state">No folders found</string>
+    <string name="explorer_move_here">Move here</string>
+    <string name="explorer_dialog_delete_description">Deleted items are not recoverable.</string>
+    <string name="explorer_dialog_delete_multiple_description">Do you want to delete %1$d items?</string>
+    <string name="explorer_error_name_empty">Name cannot be empty</string>
+    <string name="explorer_error_name_invalid_chars">Name cannot contain slashes</string>
+    <string name="explorer_error_name_exists">This name already exists</string>
+    <string name="explorer_error_create_failed">Error during creation</string>
+</resources>

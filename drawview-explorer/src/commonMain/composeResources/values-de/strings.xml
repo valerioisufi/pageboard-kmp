@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="explorer_fab_item_note">Datei</string>
+    <string name="explorer_fab_item_folder">Ordner</string>
+    <string name="explorer_fab_state_expanded">Erweitert</string>
+    <string name="explorer_fab_state_collapsed">Zugeklappt</string>
+    <string name="explorer_fab_toggle_menu">Menü umschalten</string>
+    <string name="explorer_fab_close_menu">Menü schließen</string>
+    <string name="explorer_dialog_new_note">Neue Notiz</string>
+    <string name="explorer_dialog_new_folder">Ordner erstellen</string>
+    <string name="explorer_input_name">Namen wählen</string>
+    <string name="explorer_action_confirm">Bestätigen</string>
+    <string name="explorer_action_cancel">Abbrechen</string>
+    <string name="explorer_action_back">Nach oben navigieren</string>
+    <string name="explorer_action_details">Info</string>
+    <string name="explorer_action_rename">Umbenennen</string>
+    <string name="explorer_action_move_to">Verschieben nach</string>
+    <string name="explorer_action_move">Verschieben</string>
+    <string name="explorer_action_delete">Löschen</string>
+    <string name="explorer_action_select_all">Alles auswählen</string>
+    <string name="explorer_action_clear_selection">Auswahl aufheben</string>
+    <string name="explorer_selected_count">%1$d Ausgewählt</string>
+    <string name="explorer_label_last_modified">Zuletzt geändert: %1$s</string>
+    <string name="explorer_sort_name">Name</string>
+    <string name="explorer_sort_date_created">Erstellungsdatum</string>
+    <string name="explorer_sort_last_modified">Zuletzt geändert</string>
+    <string name="explorer_sort_last_opened">Zuletzt geöffnet</string>
+    <string name="explorer_sort_invert">Reihenfolge umkehren</string>
+    <string name="explorer_sort_folders_on_top">Ordner oben behalten</string>
+    <string name="explorer_recents_title">Zuletzt verwendet</string>
+    <string name="explorer_root_folder">Startseite</string>
+    <string name="explorer_move_empty_state">Keine Ordner gefunden</string>
+    <string name="explorer_move_here">Hierher verschieben</string>
+    <string name="explorer_dialog_delete_description">Gelöschte Elemente können nicht wiederhergestellt werden.</string>
+    <string name="explorer_dialog_delete_multiple_description">Möchtest du %1$d Elemente löschen?</string>
+    <string name="explorer_error_name_empty">Name darf nicht leer sein</string>
+    <string name="explorer_error_name_invalid_chars">Name darf keine Schrägstriche enthalten</string>
+    <string name="explorer_error_name_exists">Dieser Name existiert bereits</string>
+    <string name="explorer_error_create_failed">Fehler beim Erstellen</string>
+</resources>

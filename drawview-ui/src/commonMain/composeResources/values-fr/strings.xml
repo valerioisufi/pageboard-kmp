@@ -10,15 +10,7 @@
     <string name="document_info_label_format">Format</string>
     <string name="document_info_label_elements_count">Éléments</string>
     <string name="document_info_value_dimensions">%1$d x %2$d mm</string>
-    <string name="document_list_title_main">Mes Notes</string>
-    <string name="document_list_action_create">Créer un nouveau</string>
-    <string name="document_list_state_empty">Aucun document trouvé.\nUtilisez le bouton + pour en créer un nouveau !</string>
-    <string name="document_list_action_swipe">Action de balayage</string>
-    <string name="document_list_title_rename_dialog">Renommer le document</string>
-    <string name="document_list_input_rename_hint">Nouveau nom</string>
-    <string name="common_button_rename">Renommer</string>
     <string name="common_button_cancel">Annuler</string>
-    <string name="document_list_label_last_modified">Dernière modification : %1$s</string>
     <string name="common_action_back">Retour</string>
     <string name="draw_toolbar_action_grid_view">Vue en grille</string>
     <string name="draw_toolbar_action_draw">Dessiner</string>
@@ -41,7 +33,6 @@
     <string name="draw_toolbar_action_pan">Outil Panoramique</string>
     <string name="draw_toolbar_action_import_pdf">Importer un PDF</string>
     <string name="draw_toolbar_action_import_image">Importer une image</string>
-    <string name="document_default_name">Nouveau document</string>
     <string name="common_action_cut">Couper</string>
     <string name="common_action_copy">Copier</string>
     <string name="common_action_delete">Supprimer</string>

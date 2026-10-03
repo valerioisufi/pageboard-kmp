@@ -10,15 +10,7 @@
     <string name="document_info_label_format">フォーマット</string>
     <string name="document_info_label_elements_count">要素数</string>
     <string name="document_info_value_dimensions">%1$d x %2$d mm</string>
-    <string name="document_list_title_main">マイノート</string>
-    <string name="document_list_action_create">新規作成</string>
-    <string name="document_list_state_empty">ドキュメントがありません。\n+ボタンを押して新しく作成してください！</string>
-    <string name="document_list_action_swipe">スワイプアクション</string>
-    <string name="document_list_title_rename_dialog">ドキュメント名を変更</string>
-    <string name="document_list_input_rename_hint">新しい名前</string>
-    <string name="common_button_rename">名前を変更</string>
     <string name="common_button_cancel">キャンセル</string>
-    <string name="document_list_label_last_modified">最終更新: %1$s</string>
     <string name="common_action_back">戻る</string>
     <string name="draw_toolbar_action_grid_view">グリッド表示</string>
     <string name="draw_toolbar_action_draw">描画</string>
@@ -41,7 +33,6 @@
     <string name="draw_toolbar_action_pan">手のひらツール</string>
     <string name="draw_toolbar_action_import_pdf">PDFをインポート</string>
     <string name="draw_toolbar_action_import_image">画像をインポート</string>
-    <string name="document_default_name">新規ドキュメント</string>
     <string name="common_action_cut">切り取り</string>
     <string name="common_action_copy">コピー</string>
     <string name="common_action_delete">削除</string>

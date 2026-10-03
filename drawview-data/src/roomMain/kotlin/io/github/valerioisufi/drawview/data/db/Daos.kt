@@ -77,6 +77,9 @@ interface FolderDao {
     @Query("SELECT * FROM folders WHERE id = :id")
     suspend fun getFolderById(id: Int): FolderEntity?
 
+    @Query("SELECT * FROM folders ORDER BY name")
+    fun getAllFoldersFlow(): Flow<List<FolderEntity>>
+
     @Query("UPDATE folders SET name = :newName, modifiedAt = :timestamp WHERE id = :id")
     suspend fun renameFolder(id: Int, newName: String, timestamp: Long = currentTimeMillis())
 

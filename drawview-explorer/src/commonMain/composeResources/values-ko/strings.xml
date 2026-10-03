@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="explorer_fab_item_note">파일</string>
+    <string name="explorer_fab_item_folder">폴더</string>
+    <string name="explorer_fab_state_expanded">확장됨</string>
+    <string name="explorer_fab_state_collapsed">축소됨</string>
+    <string name="explorer_fab_toggle_menu">메뉴 전환</string>
+    <string name="explorer_fab_close_menu">메뉴 닫기</string>
+    <string name="explorer_dialog_new_note">새 노트</string>
+    <string name="explorer_dialog_new_folder">폴더 만들기</string>
+    <string name="explorer_input_name">이름 선택</string>
+    <string name="explorer_action_confirm">확인</string>
+    <string name="explorer_action_cancel">취소</string>
+    <string name="explorer_action_back">위로 탐색</string>
+    <string name="explorer_action_details">정보</string>
+    <string name="explorer_action_rename">이름 변경</string>
+    <string name="explorer_action_move_to">이동</string>
+    <string name="explorer_action_move">이동</string>
+    <string name="explorer_action_delete">삭제</string>
+    <string name="explorer_action_select_all">모두 선택</string>
+    <string name="explorer_action_clear_selection">선택 취소</string>
+    <string name="explorer_selected_count">%1$d개 선택됨</string>
+    <string name="explorer_label_last_modified">최근 수정일: %1$s</string>
+    <string name="explorer_sort_name">이름</string>
+    <string name="explorer_sort_date_created">생성일</string>
+    <string name="explorer_sort_last_modified">최근 수정일</string>
+    <string name="explorer_sort_last_opened">최근 열어본 시간</string>
+    <string name="explorer_sort_invert">순서 반전</string>
+    <string name="explorer_sort_folders_on_top">폴더를 항상 위에 표시</string>
+    <string name="explorer_recents_title">최근 항목</string>
+    <string name="explorer_root_folder">홈</string>
+    <string name="explorer_move_empty_state">폴더를 찾을 수 없습니다</string>
+    <string name="explorer_move_here">여기로 이동</string>
+    <string name="explorer_dialog_delete_description">삭제된 항목은 복구할 수 없습니다.</string>
+    <string name="explorer_dialog_delete_multiple_description">%1$d개의 항목을 삭제하시겠습니까?</string>
+    <string name="explorer_error_name_empty">이름은 비워 둘 수 없습니다</string>
+    <string name="explorer_error_name_invalid_chars">이름에 슬래시를 포함할 수 없습니다</string>
+    <string name="explorer_error_name_exists">이미 존재하는 이름입니다</string>
+    <string name="explorer_error_create_failed">생성 중 오류 발생</string>
+</resources>

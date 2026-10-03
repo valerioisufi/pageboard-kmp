@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_version">Version 3.0</string>
+    <string name="about_description">Notiz-App für die Eingabe mit dem Stift, basierend auf DrawView.</string>
+</resources>
