@@ -85,7 +85,7 @@ internal class CanvasGestureHandler(
     private enum class Mode {
         NONE, INK, LASSO, ERASE, PAN, PINCH,
         SELECTION_MOVE, SELECTION_SCALE, SELECTION_ROTATE, TEXT_RESIZE_LEFT, TEXT_RESIZE_RIGHT,
-        PAGE_REORDER, TEXT_TAP, IGNORED
+        PAGE_REORDER, TEXT_TAP, PLACE_TAP, IGNORED
     }
 
     private var mode = Mode.NONE
@@ -149,6 +149,7 @@ internal class CanvasGestureHandler(
             }
             PointerEventType.Exit -> {
                 live.setEraserCursor(null, 0f)
+                controller.placementManager.pointer = null
                 return
             }
             else -> {}
@@ -158,10 +159,12 @@ internal class CanvasGestureHandler(
         val anyDown = changes.any { it.changedToDownIgnoreConsumed() }
         val anyUp = changes.any { it.changedToUpIgnoreConsumed() }
 
-        // Hover (desktop mouse, stylus hover): eraser cursor
+        // Hover (desktop mouse, stylus hover): eraser cursor, preview of a pending placement
         if (pressed.isEmpty() && !anyUp) {
             val hover = changes.firstOrNull()
-            if (hover != null && controller.toolManager.isEraserTool && controller.isDrawingMode && mode == Mode.NONE) {
+            if (hover != null && controller.placementManager.isActive) {
+                controller.placementManager.pointer = hover.position
+            } else if (hover != null && controller.toolManager.isEraserTool && controller.isDrawingMode && mode == Mode.NONE) {
                 live.setEraserCursor(hover.position, eraserRadiusPx(hover.position))
             }
             return
@@ -236,6 +239,17 @@ internal class CanvasGestureHandler(
         }
         if (isMouse && event.buttons.isTertiaryPressed) {
             startPan()
+            return
+        }
+
+        // Pending placement: a tap places the element, a drag moves the canvas (whatever the tool)
+        if (controller.placementManager.isActive) {
+            if (controller.isStylusOnlyMode && change.type == PointerType.Touch) {
+                startPan()
+            } else {
+                mode = Mode.PLACE_TAP
+                controller.placementManager.pointer = position
+            }
             return
         }
 
@@ -387,7 +401,7 @@ internal class CanvasGestureHandler(
                 controller.requestRedraw()
             }
 
-            Mode.TEXT_TAP -> {
+            Mode.TEXT_TAP, Mode.PLACE_TAP -> {
                 if (movedBeyondSlop) {
                     mode = Mode.PAN
                     controller.cameraPhysics.onDragStart()
@@ -533,6 +547,10 @@ internal class CanvasGestureHandler(
                 if (wasTap) onTextToolTap(position)
             }
 
+            Mode.PLACE_TAP -> {
+                if (wasTap) controller.placementManager.placeAt(position)
+            }
+
             else -> {}
         }
 
@@ -540,7 +558,7 @@ internal class CanvasGestureHandler(
         if (wasTap && mode != Mode.IGNORED && mode != Mode.PAGE_REORDER) {
             val isDouble = up.uptimeMillis - lastTapTime <= doubleTapTimeout &&
                     (position - lastTapPosition).getDistance() <= touchSlop * 2f
-            if (isDouble && mode != Mode.TEXT_TAP) {
+            if (isDouble && mode != Mode.TEXT_TAP && mode != Mode.PLACE_TAP) {
                 editTextAt(position)
             }
             lastTapTime = up.uptimeMillis

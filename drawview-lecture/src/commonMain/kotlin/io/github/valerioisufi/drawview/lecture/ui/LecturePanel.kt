@@ -35,6 +35,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.automirrored.outlined.VolumeUp
+import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DoneAll
 import androidx.compose.material.icons.outlined.ErrorOutline
@@ -46,6 +47,8 @@ import androidx.compose.material.icons.outlined.Slideshow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -151,7 +154,7 @@ internal fun LecturePanel(assistant: LectureAssistant, documentId: Int, controll
                     HorizontalDivider()
                     if (session != null) {
                         ProfessorPageBanner(session, controller)
-                        LectureTabs(session, controller)
+                        LectureTabs(assistant, session, controller)
                     }
                 }
             }
@@ -350,7 +353,7 @@ private fun ProfessorPageBanner(session: LectureSession, controller: DrawViewCon
 // ==========================================================
 
 @Composable
-private fun LectureTabs(session: LectureSession, controller: DrawViewController) {
+private fun LectureTabs(assistant: LectureAssistant, session: LectureSession, controller: DrawViewController) {
     var tab by remember(session) { mutableIntStateOf(0) }
     val newCount = session.suggestions.count { it.status == SuggestionStatus.NEW }
     val labels = listOf(
@@ -375,7 +378,7 @@ private fun LectureTabs(session: LectureSession, controller: DrawViewController)
     }
     Box(modifier = Modifier.fillMaxSize()) {
         when (tab) {
-            0 -> NotesTab(session, controller, inserter)
+            0 -> NotesTab(assistant, session, controller, inserter)
             1 -> TranscriptTab(session)
             2 -> OutlineTab(session)
             else -> ReviewTab(session, controller, inserter)
@@ -384,7 +387,7 @@ private fun LectureTabs(session: LectureSession, controller: DrawViewController)
 }
 
 @Composable
-private fun NotesTab(session: LectureSession, controller: DrawViewController, inserter: NoteInserter) {
+private fun NotesTab(assistant: LectureAssistant, session: LectureSession, controller: DrawViewController, inserter: NoteInserter) {
     val newNotes = session.suggestions.filter { it.status == SuggestionStatus.NEW }.sortedByDescending { it.atMs }
     val handled = session.suggestions.filter { it.status != SuggestionStatus.NEW }.sortedByDescending { it.atMs }
     var showHandled by remember { mutableStateOf(false) }
@@ -401,9 +404,20 @@ private fun NotesTab(session: LectureSession, controller: DrawViewController, in
             SuggestionCard(
                 note = note,
                 canListen = session.canPlayAudio,
+                placing = assistant.placingNote?.id == note.id,
                 onInsert = {
-                    if (inserter.insert(controller, note)) session.updateSuggestion(note.id, SuggestionStatus.INSERTED)
+                    val started = inserter.startPlacement(
+                        controller = controller,
+                        suggestion = note,
+                        onInserted = {
+                            assistant.placingNote = null
+                            session.updateSuggestion(note.id, SuggestionStatus.INSERTED)
+                        },
+                        onCancel = { if (assistant.placingNote?.id == note.id) assistant.placingNote = null }
+                    )
+                    if (started) assistant.placingNote = note
                 },
+                onCancelPlacing = { controller.placementManager.cancel() },
                 onListen = { session.play(note) },
                 onAlreadyNoted = { session.updateSuggestion(note.id, SuggestionStatus.ALREADY_NOTED) },
                 onDismiss = { session.updateSuggestion(note.id, SuggestionStatus.DISMISSED) },
@@ -441,7 +455,9 @@ private fun NotesTab(session: LectureSession, controller: DrawViewController, in
 private fun SuggestionCard(
     note: NoteSuggestion,
     canListen: Boolean,
+    placing: Boolean,
     onInsert: () -> Unit,
+    onCancelPlacing: () -> Unit,
     onListen: () -> Unit,
     onAlreadyNoted: () -> Unit,
     onDismiss: () -> Unit,
@@ -478,11 +494,25 @@ private fun SuggestionCard(
             SelectionContainer {
                 MarkdownText(note.content)
             }
+            if (placing) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = stringResource(Res.string.lecture_place_hint),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                FilledTonalButton(onClick = onInsert, contentPadding = PaddingValues(horizontal = 12.dp)) {
-                    Icon(Icons.Outlined.PostAdd, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(stringResource(Res.string.lecture_note_insert))
+                if (placing) {
+                    OutlinedButton(onClick = onCancelPlacing, contentPadding = PaddingValues(horizontal = 12.dp)) {
+                        Text(stringResource(Res.string.lecture_action_cancel))
+                    }
+                } else {
+                    FilledTonalButton(onClick = onInsert, contentPadding = PaddingValues(horizontal = 12.dp)) {
+                        Icon(Icons.Outlined.PostAdd, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text(stringResource(Res.string.lecture_note_insert))
+                    }
                 }
                 Spacer(Modifier.weight(1f))
                 if (canListen && !note.fromFinalReview) {
@@ -634,11 +664,7 @@ private fun ReviewTab(session: LectureSession, controller: DrawViewController, i
                 }
             }
             review != null -> {
-                FilledTonalButton(onClick = { inserter.insertPages(controller, review) }) {
-                    Icon(Icons.Outlined.PostAdd, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(stringResource(Res.string.lecture_review_insert))
-                }
+                InsertPagesButton(controller) { afterPageIndex -> inserter.insertPages(controller, review, afterPageIndex) }
                 SelectionContainer { MarkdownText(review) }
             }
             else -> MutedText(stringResource(Res.string.lecture_review_none))
@@ -659,6 +685,51 @@ private fun ReviewTab(session: LectureSession, controller: DrawViewController, i
         }
     }
 }
+
+/**
+ * "Insert as new pages", with the position of the pages: after the page the student is looking
+ * at, or at the end of the notebook.
+ */
+@Composable
+private fun InsertPagesButton(controller: DrawViewController, onInsert: (afterPageIndex: Int?) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    var currentPage by remember { mutableStateOf<Int?>(null) }
+    Box {
+        FilledTonalButton(onClick = {
+            currentPage = mostVisiblePageIndex(controller)
+            expanded = true
+        }) {
+            Icon(Icons.Outlined.PostAdd, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(stringResource(Res.string.lecture_review_insert))
+            Icon(Icons.Outlined.ArrowDropDown, contentDescription = null, modifier = Modifier.size(18.dp))
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            currentPage?.let { page ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(Res.string.lecture_review_insert_after, page + 1)) },
+                    onClick = {
+                        expanded = false
+                        onInsert(page)
+                    }
+                )
+            }
+            DropdownMenuItem(
+                text = { Text(stringResource(Res.string.lecture_review_insert_end)) },
+                onClick = {
+                    expanded = false
+                    onInsert(null)
+                }
+            )
+        }
+    }
+}
+
+/** The page taking the largest part of the viewport. */
+internal fun mostVisiblePageIndex(controller: DrawViewController): Int? =
+    controller.visiblePages().maxByOrNull { page ->
+        minOf(page.rect.bottom, controller.viewportHeight) - maxOf(page.rect.top, 0f)
+    }?.index
 
 // ==========================================================
 // Common

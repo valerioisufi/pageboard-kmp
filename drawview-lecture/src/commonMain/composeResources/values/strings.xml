@@ -57,6 +57,10 @@
     <string name="lecture_review_none">When the recording stops, Gemini reviews the whole lecture with the complete recording and writes organized notes.</string>
     <string name="lecture_review_running">Gemini is reviewing the whole lecture with the complete recording…</string>
     <string name="lecture_review_failed">The final review failed.</string>
+    <string name="lecture_place_hint">Click or tap the page where to insert the note</string>
+    <string name="lecture_place_go_to_page">Go to p. %1$d</string>
+    <string name="lecture_review_insert_after">After page %1$d (the one you are looking at)</string>
+    <string name="lecture_review_insert_end">At the end of the notebook</string>
     <string name="lecture_review_insert">Insert as new pages</string>
     <string name="lecture_usage">%1$d requests · %2$s input tokens (%3$s cached) · %4$s output tokens</string>
     <string name="lecture_settings_api_key">Gemini API key</string>

@@ -35,6 +35,10 @@ class LectureAssistant(
 
     var isPanelOpen: Boolean by mutableStateOf(false)
 
+    /** The suggestion the student is placing in the notebook, if any. */
+    var placingNote: NoteSuggestion? by mutableStateOf(null)
+        internal set
+
     /** Why the last recording could not start, if it could not. */
     var startError: String? by mutableStateOf(null)
         private set
@@ -80,6 +84,7 @@ class LectureAssistant(
 
     /** The editor of [documentId] has been closed: its lecture stops (and is reviewed). */
     fun onEditorClosed(documentId: Int) {
+        placingNote = null
         sessionFor(documentId)?.let { session ->
             session.stopPlayback()
             session.stop()

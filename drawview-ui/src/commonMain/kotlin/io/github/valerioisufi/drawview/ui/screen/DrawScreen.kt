@@ -12,6 +12,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -117,6 +118,7 @@ import org.jetbrains.compose.resources.stringResource
  * @param isLoading shows a progress bar while the document is loaded.
  * @param toolbarActions additional actions of the top bar, before the drawing mode toggle.
  * @param sidePanel panel shown at the end of the canvas (e.g. an assistant), sharing its height.
+ * @param canvasOverlay content drawn over the canvas (e.g. hints of an assistant).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -126,7 +128,8 @@ fun DrawScreen(
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     toolbarActions: @Composable RowScope.() -> Unit = {},
-    sidePanel: @Composable () -> Unit = {}
+    sidePanel: @Composable () -> Unit = {},
+    canvasOverlay: @Composable BoxScope.() -> Unit = {}
 ) {
     // Immersive editor (Android), as in the original app
     HideSystemBarsEffect()
@@ -640,6 +643,8 @@ fun DrawScreen(
                         )
 
                         TextEditorOverlay(controller = controller)
+
+                        canvasOverlay()
                     }
 
                     SnackbarHost(

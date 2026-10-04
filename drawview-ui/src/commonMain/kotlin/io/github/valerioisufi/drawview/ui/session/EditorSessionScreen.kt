@@ -53,14 +53,16 @@ fun EditorSessionScreen(
             onNavigateBack = onClose,
             modifier = modifier,
             toolbarActions = { extension?.toolbarActions?.invoke(this, session, controller) },
-            sidePanel = { extension?.sidePanel?.invoke(session, controller) }
+            sidePanel = { extension?.sidePanel?.invoke(session, controller) },
+            canvasOverlay = { extension?.canvasOverlay?.invoke(this, session, controller) }
         )
     }
 }
 
 /**
- * System back (Android back gesture, Escape on the desktop, ...): closes the page grid, the text
- * editor (saving the text), the selection or the context menu, then the document.
+ * System back (Android back gesture, Escape on the desktop, ...): cancels a pending placement,
+ * closes the page grid, the text editor (saving the text), the selection or the context menu,
+ * then the document.
  */
 @Composable
 private fun EditorBackHandler(controller: DrawViewController, onClose: () -> Unit) {
@@ -71,6 +73,7 @@ private fun EditorBackHandler(controller: DrawViewController, onClose: () -> Uni
         isBackEnabled = true,
         onBackCompleted = {
             when {
+                controller.placementManager.isActive -> controller.placementManager.cancel()
                 controller.isPageGridVisible -> controller.togglePageGrid()
                 controller.textEditorManager.isEditing -> controller.textEditorManager.requestFinishEditing()
                 controller.contextMenuPosition != null -> controller.contextMenuPosition = null

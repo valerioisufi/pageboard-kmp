@@ -16,6 +16,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -28,6 +29,7 @@ import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.BrushConfig
+import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.StrokeMesh
 
 /**
@@ -169,6 +171,40 @@ fun DrawCanvas(
             }
             drawRect(Color(theme.primaryColor), topLeft = floatingPage.topLeft, size = floatingPage.size, style = Stroke(width = 4f))
         }
+
+        // 8. Element waiting to be placed, under the mouse or the hovering stylus
+        val placement = controller.placementManager
+        val placementRequest = placement.request
+        val pointer = placement.pointer
+        if (placementRequest != null && pointer != null) {
+            placement.targetAt(pointer)?.let { (pageIndex, topLeft) ->
+                drawPlacementPreview(controller, placementRequest.preview, pageIndex, topLeft, Color(theme.primaryColor))
+            }
+        }
+    }
+}
+
+/** The text of a pending placement at [topLeft] (page millimeters), in a dashed frame. */
+private fun DrawScope.drawPlacementPreview(
+    controller: DrawViewController,
+    preview: DrawText,
+    pageIndex: Int,
+    topLeft: Offset,
+    primary: Color
+) {
+    val mmToScreen = controller.pageMmToScreen(pageIndex) ?: return
+    preview.x = topLeft.x
+    preview.y = topLeft.y
+    val frame = mmToScreen.mapRect(Rect(topLeft.x, topLeft.y, topLeft.x + preview.width, topLeft.y + preview.height))
+    drawRect(primary.copy(alpha = 0.08f), topLeft = frame.topLeft, size = frame.size)
+    drawRect(
+        primary,
+        topLeft = frame.topLeft,
+        size = frame.size,
+        style = Stroke(width = 2f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 6f)))
+    )
+    controller.tileManager.tileRenderer.textAdapter?.let { adapter ->
+        drawIntoCanvas { canvas -> adapter.drawText(canvas, preview, mmToScreen) }
     }
 }
 

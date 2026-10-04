@@ -57,6 +57,10 @@
     <string name="lecture_review_none">Quando la registrazione si ferma, Gemini rivede l\'intera lezione con la registrazione completa e scrive appunti ordinati.</string>
     <string name="lecture_review_running">Gemini sta rivedendo l\'intera lezione con la registrazione completa…</string>
     <string name="lecture_review_failed">La revisione finale non è riuscita.</string>
+    <string name="lecture_place_hint">Clicca o tocca la pagina dove inserire la nota</string>
+    <string name="lecture_place_go_to_page">Vai a p. %1$d</string>
+    <string name="lecture_review_insert_after">Dopo la pagina %1$d (quella che stai guardando)</string>
+    <string name="lecture_review_insert_end">In fondo al quaderno</string>
     <string name="lecture_review_insert">Inserisci come nuove pagine</string>
     <string name="lecture_usage">%1$d richieste · %2$s token in ingresso (%3$s in cache) · %4$s token in uscita</string>
     <string name="lecture_settings_api_key">Chiave API di Gemini</string>

@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Color
 import io.github.valerioisufi.drawview.core.controller.DrawPersistence
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.PersistenceQueue
+import io.github.valerioisufi.drawview.core.controller.PlacementRequest
 import io.github.valerioisufi.drawview.core.engine.KotlinStrokeEngineDelegate
 import io.github.valerioisufi.drawview.core.geometry.HitTesting
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
@@ -15,6 +16,7 @@ import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawStroke
+import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.InputToolType
 import io.github.valerioisufi.drawview.core.model.StrokeMesh
 import io.github.valerioisufi.drawview.core.model.StrokePoint
@@ -28,6 +30,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
@@ -232,6 +235,51 @@ class EditorCoreTest {
         assertEquals(listOf(miss), page.strokes.toList())
         controller.undo()
         assertEquals(listOf(hit, miss), page.strokes.toList())
+    }
+
+    @Test
+    fun pendingPlacementIsPlacedInsideTheTappedPage() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controllerWith(2, backgroundScope)
+        val placement = controller.placementManager
+        val placed = mutableListOf<Triple<Int, Float, Float>>()
+        var cancelled = 0
+        fun request() = PlacementRequest(
+            preview = DrawText().apply {
+                width = 50f
+                height = 20f
+            },
+            onPlace = { pageIndex, x, y -> placed.add(Triple(pageIndex, x, y)) },
+            onCancel = { cancelled++ }
+        )
+
+        placement.start(request())
+        assertTrue(placement.isActive)
+        val mmToScreen = assertNotNull(controller.pageMmToScreen(0))
+        // Near the bottom-right corner of the A4 page: the element stays inside it
+        val (pageIndex, topLeft) = assertNotNull(placement.targetAt(mmToScreen.mapPoint(200f, 290f)))
+        assertEquals(0, pageIndex)
+        assertEquals(160f, topLeft.x, 0.01f)
+        assertEquals(277f, topLeft.y, 0.01f)
+        // Outside of the pages the placement stays pending
+        assertNull(placement.targetAt(Offset(-50f, -50f)))
+        assertFalse(placement.placeAt(Offset(-50f, -50f)))
+        assertTrue(placement.isActive)
+
+        assertTrue(placement.placeAt(mmToScreen.mapPoint(20f, 30f)))
+        val (placedPage, x, y) = placed.single()
+        assertEquals(0, placedPage)
+        assertEquals(20f, x, 0.01f)
+        assertEquals(30f, y, 0.01f)
+        assertFalse(placement.isActive)
+        assertEquals(0, cancelled)
+
+        // A new request cancels the pending one
+        placement.start(request())
+        placement.start(request())
+        assertEquals(1, cancelled)
+        placement.cancel()
+        assertEquals(2, cancelled)
+        assertFalse(placement.isActive)
     }
 
     @Test

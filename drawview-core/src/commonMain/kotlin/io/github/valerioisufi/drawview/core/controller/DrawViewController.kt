@@ -108,6 +108,7 @@ class DrawViewController(
     val textEditorManager = TextEditorManager(this)
     val pageManager = PageManager(this)
     val mediaManager = MediaManager(this)
+    val placementManager = PlacementManager(this)
 
     // ==========================================================
     // Observable state
