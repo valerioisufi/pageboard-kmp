@@ -77,9 +77,20 @@ On the desktop, the microphone button of the editor opens the lecture assistant:
 * **Cost**: the minutes without speech are not analyzed, the outline is rewritten every few minutes, the images are sent at medium resolution; the Review tab shows the estimated cost and the tokens by kind (text, images, audio, PDF).
 * **I missed something**: analyzes the last minutes right away.
 * **Lectures kept**: every lecture of a notebook is saved and listed in the panel (date and duration) with its transcript, its suggestions and what was done with them, its outline and its review; a lecture can be deleted (audio included). The recording goes on when the notebook is closed (an indicator over the library opens it again or stops the recording); exiting the app saves it, and its review can be generated when the notebook is opened again.
-* **Final review**: when the recording stops, the whole lecture is reviewed once more: complete notes (insertable as new pages after the page on screen or at the end of the notebook) and the content still missing. By Gemini with the complete recording, or for free on the computer by a local model of [Ollama](https://ollama.com) (e.g. `gemma4:12b`, which must accept images) with the transcript and the notes of the student: slower (minutes), the model is unloaded from the memory at the end. A review can be written again by the other one.
+* **Final review**: when the recording stops, the whole lecture is reviewed once more: complete notes (insertable as new pages after the page on screen or at the end of the notebook) and the content still missing. By Gemini or for free on the computer (see below); a review can be written again by the other one.
 
-Settings (gear of the panel): the Gemini API key (or the `GEMINI_API_KEY` environment variable), the model (`gemini-3.8-flash` by default), the update interval, the pages sent, the slides, the reasoning, the final review (Gemini or local: Ollama model and address), the Gemini prices used for the cost estimate, the course context and terminology. The key is saved in `lectures/assistant-settings.json` (readable by the user only). On macOS the microphone must be allowed to PencilNotes, or to the terminal running `./gradlew :pencilnotes-desktop:run`. The audio, the pages and the slides are sent to Google: ask the lecturer before recording.
+**Online or on this computer, request by request** (settings, gear of the panel):
+
+| Request | Online | On this computer |
+|---|---|---|
+| Transcription | Gemini, within the requests of the suggestions (the audio is sent to Google) | [whisper.cpp](https://github.com/ggml-org/whisper.cpp): `whisper-server` is started by the app; the audio never leaves the computer and Gemini receives the transcript |
+| Suggestions during the lecture | Gemini | a model of [Ollama](https://ollama.com) (e.g. `gemma4:e4b`, it must keep up with the lecture); it needs the local transcription |
+| I missed something | Gemini | Ollama, on the transcript of the last minutes |
+| Final review | Gemini (the complete recording when the audio may be sent) | Ollama (e.g. `gemma4:12b`), on the transcript and the notes |
+
+The local models must accept images (the notes of the student); they are unloaded from the memory at the end of the lecture or of the review. The whisper model is a ggml file (e.g. `ggml-large-v3-turbo-q5_0.bin` of [whisper.cpp](https://huggingface.co/ggerganov/whisper.cpp)), set in the settings or put in `whisper/` of the data directory.
+
+The other settings: the Gemini API key (or the `GEMINI_API_KEY` environment variable), the reasoning, the Gemini prices used for the cost estimate, the update interval, the pages sent, the slides, the language of the notes, the course context and terminology. The key is saved in `lectures/assistant-settings.json` (readable by the user only). On macOS the microphone must be allowed to PencilNotes, or to the terminal running `./gradlew :pencilnotes-desktop:run`. With an online provider, the audio, the pages or the slides are sent to Google: ask the lecturer before recording.
 
 Running:
 

@@ -8,6 +8,10 @@ import io.github.valerioisufi.drawview.lecture.audio.isSilent
 import io.github.valerioisufi.drawview.lecture.audio.rms
 import io.github.valerioisufi.drawview.lecture.audio.samplesToMs
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiException
+import io.github.valerioisufi.drawview.lecture.local.OllamaException
+import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
+import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
+import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -27,10 +31,13 @@ import kotlin.math.min
  * and cut into chunks of about [AssistantSettings.chunkSeconds] ([SpeechChunker]). The chunks are
  * analyzed one at a time, in order: every request carries the memory of the lecture (outline,
  * suggested notes and their status, end of the transcript), what the student is looking at and
- * writing ([NotebookSource]), the slides and the new audio, and returns the transcript, the
- * updated outline and the missing notes ([ChunkAnalysis]). When the analysis falls behind (slow or
- * missing network) the waiting chunks are merged into a single request. When the recording
- * stops, the lecture is reviewed once more ([Lecture.generateFinalReview]).
+ * writing ([NotebookSource]), the slides and what was said, and returns the updated outline and
+ * the missing notes ([ChunkAnalysis]). What was said is the audio, transcribed by Gemini in the
+ * same request, or the transcript made on this computer ([Transcriber]) when the audio must not
+ * leave it. Every kind of request is answered by the provider of its [LectureTask] (Gemini or a
+ * local model). When the analysis falls behind (slow model or missing network) the waiting chunks
+ * are merged into a single request. When the recording stops, the lecture is reviewed once more
+ * ([Lecture.generateFinalReview]).
  *
  * The recording goes on when the document is closed: the notebook is then detached
  * ([detachNotebook]) and the analysis works on the audio and on the slides already seen, until
@@ -44,8 +51,11 @@ class LectureRecorder internal constructor(
     private val settingsStore: AssistantSettingsStore,
     private val capture: AudioCapture,
     notebook: NotebookSource?,
+    private val transcriber: Transcriber? = null,
     private val onFinished: (LectureRecorder) -> Unit = {}
 ) {
+    private val backends get() = lecture.backends
+
     @Volatile
     private var notebook: NotebookSource? = notebook
 
@@ -171,6 +181,7 @@ class LectureRecorder internal constructor(
             audioJob?.join()
             analysisJob?.join()
             lecture.setState { isAnalyzing = false }
+            releaseLocalModels()
             lecture.runFinalReview(settingsStore.settings.reviewProvider)
             lecture.setState { status = LectureStatus.FINISHED }
             lecture.persist()
@@ -191,12 +202,28 @@ class LectureRecorder internal constructor(
         audioJob?.cancel()
         withTimeoutOrNull(2_000) { audioJob?.join() }
         finishRecordingFile()
+        withTimeoutOrNull(2_000) { transcriber?.close() }
         lecture.status = LectureStatus.FINISHED
         lecture.level = 0f
         lecture.pendingUpdates = 0
         lecture.isAnalyzing = false
         lecture.persistNow()
         onFinished(this)
+    }
+
+    /** The local models of the live requests stay loaded during the lecture: freed at its end. */
+    private suspend fun releaseLocalModels() {
+        try {
+            transcriber?.close()
+        } catch (e: Throwable) {
+            println("DrawView: cannot stop the transcription: ${e.message}")
+        }
+        val settings = settingsStore.settings
+        listOf(LectureTask.LIVE_NOTES, LectureTask.CATCH_UP).map { settings.task(it) }
+            .filter { it.provider == ModelProvider.LOCAL }
+            .map { it.local }
+            .distinct()
+            .forEach { backends.local.unload(it) }
     }
 
     private fun stopMicrophone() {
@@ -229,99 +256,183 @@ class LectureRecorder internal constructor(
         val chunks = group.mapNotNull { it.chunk }
         lecture.setState { isAnalyzing = true }
         try {
-            // Nothing said (a break, an exercise in silence): no request
-            if (!catchUp && chunks.isNotEmpty() && chunks.all { isSilent(it.samples, it.overlapSamples) }) {
-                lecture.setState { usage += TokenUsage(skippedUpdates = chunks.size) }
-                return
-            }
-            val audio = buildRequestAudio(chunks, catchUp) ?: return
-            var attempt = 0
-            while (true) {
-                val apiKey = settingsStore.apiKey
-                if (apiKey.isEmpty()) {
-                    lecture.setState { problem = LectureProblem.MissingApiKey }
-                    return
+            if (chunks.isNotEmpty()) {
+                if (chunks.all { isSilent(it.samples, it.overlapSamples) }) {
+                    // Nothing said (a break, an exercise in silence): no request
+                    lecture.setState { usage += TokenUsage(skippedUpdates = chunks.size) }
+                } else {
+                    analyzeChunks(chunks)
                 }
-                val settings = settingsStore.settings
-                try {
-                    val snapshot = captureNotebook(settings)
-                    val slides = when {
-                        !settings.sendSlides -> emptyList()
-                        snapshot != null -> lecture.uploadSlides(apiKey, snapshot.slides).also { lastSlides = it }
-                        // Notebook closed: the slides seen so far
-                        else -> lastSlides
-                    }
-                    val notebookSnapshot = snapshot?.let { withUnreadableSlides(it, slides) }
-                    val memory = lecture.memory(audio.endMs)
-                    val includeOutline = catchUp || memory.outline.isBlank() || audio.endMs - lastOutlineMs >= OUTLINE_INTERVAL_MS
-                    val request = LecturePrompts.chunkRequest(
-                        settings, memory, notebookSnapshot, slides, audio, catchUp,
-                        includeOutline = includeOutline,
-                        mediaResolution = lecture.mediaResolution
-                    )
-                    val response = lecture.generateContent(apiKey, settings.model, request)
-                    val analysis = LectureAnalysis.parseChunk(response.text())
-                    if (includeOutline && analysis.outline.isNotBlank()) lastOutlineMs = audio.endMs
-
-                    if (notebookSnapshot != null) {
-                        knownStrokeIds = knownStrokeIds.orEmpty() + notebookSnapshot.strokeIds
-                        lecture.rememberNotebook(notebookSnapshot)
-                    }
-                    val defaultPage = notebookSnapshot?.visiblePageIndexes?.firstOrNull()
-                    val usage = with(lecture) { response.usageMetadata.toTokenUsage() }
-                    lecture.setState {
-                        if (analysis.transcript.isNotBlank()) {
-                            transcript.add(TranscriptSegment(audio.newStartMs, audio.endMs, analysis.transcript.trim()))
-                        }
-                        if (analysis.outline.isNotBlank()) outline = analysis.outline.trim()
-                        if (analysis.currentTopic.isNotBlank()) currentTopic = analysis.currentTopic.trim()
-                        analysis.professorPage?.let { it - 1 }?.takeIf { it in 0 until lastPageCount }?.let { professorPageIndex = it }
-                        addNotes(analysis.notes, audio.startMs, audio.endMs, defaultPage, fromFinalReview = false)
-                        this.usage += usage
-                        problem = null
-                    }
-                    return
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Throwable) {
-                    if (lecture.refusesMediaResolution(e)) {
-                        // An API version without the parameter: the default resolution
-                        lecture.mediaResolution = null
-                        continue
-                    }
-                    attempt++
-                    val detail = e.message ?: e::class.simpleName.orEmpty()
-                    if (e is GeminiException && e.isAuthenticationError) {
-                        lecture.setState { problem = LectureProblem.Authentication(detail) }
-                        return
-                    }
-                    val retryable = when (e) {
-                        is GeminiException -> e.isRetryable
-                        // An invalid answer (e.g. a truncated JSON): one more try
-                        is IllegalArgumentException -> attempt < 2
-                        // Network errors
-                        else -> true
-                    }
-                    val maxAttempts = if (isRecording) MAX_ATTEMPTS else Lecture.MAX_ATTEMPTS_WHEN_STOPPED
-                    if (!retryable || attempt >= maxAttempts) {
-                        lecture.setState { problem = LectureProblem.Failed(detail) }
-                        return
-                    }
-                    val waitSeconds = min(30, 2 shl attempt)
-                    lecture.setState { problem = LectureProblem.Retrying(detail, waitSeconds) }
-                    delay(waitSeconds * 1000L)
-                }
+                rememberRecent(chunks)
             }
+            if (catchUp) recapLastMinutes()
         } finally {
-            chunks.forEach { recentChunks.addLast(it) }
-            val latestEnd = recentChunks.lastOrNull()?.endMs ?: 0L
-            while (recentChunks.size > 1 && latestEnd - recentChunks.first().endMs > CATCH_UP_MS) recentChunks.removeFirst()
             withContext(NonCancellable) {
                 lecture.setState {
                     pendingUpdates = (pendingUpdates - group.size).coerceAtLeast(0)
                     isAnalyzing = false
                 }
                 lecture.persist()
+            }
+        }
+    }
+
+    private fun rememberRecent(chunks: List<AudioChunk>) {
+        chunks.forEach { recentChunks.addLast(it) }
+        val latestEnd = recentChunks.lastOrNull()?.endMs ?: 0L
+        while (recentChunks.size > 1 && latestEnd - recentChunks.first().endMs > CATCH_UP_MS) recentChunks.removeFirst()
+    }
+
+    /** The live update of [chunks]: suggestions, outline and (with the audio) transcript. */
+    private suspend fun analyzeChunks(chunks: List<AudioChunk>) {
+        val settings = settingsStore.settings
+        val speech: RequestSpeech = if (settings.sendsAudio) {
+            audioOf(chunks, contextMs = null) ?: return
+        } else {
+            transcribe(chunks, settings) ?: return
+        }
+        var includeOutline = false
+        val result = request(settings.task(LectureTask.LIVE_NOTES), settings) { notebook, slides ->
+            val memory = lecture.memory(speech.endMs)
+            includeOutline = memory.outline.isBlank() || speech.endMs - lastOutlineMs >= OUTLINE_INTERVAL_MS
+            LecturePrompts.chunkPrompt(settings, memory, notebook, slides, speech, includeOutline = includeOutline)
+        } ?: return
+        val analysis = result.analysis
+        if (includeOutline && analysis.outline.isNotBlank()) lastOutlineMs = speech.endMs
+        val defaultPage = result.notebook?.visiblePageIndexes?.firstOrNull()
+        lecture.setState {
+            if (speech is RequestAudio && analysis.transcript.isNotBlank()) {
+                transcript.add(TranscriptSegment(speech.newStartMs, speech.endMs, analysis.transcript.trim()))
+            }
+            if (analysis.outline.isNotBlank()) outline = analysis.outline.trim()
+            if (analysis.currentTopic.isNotBlank()) currentTopic = analysis.currentTopic.trim()
+            analysis.professorPage?.let { it - 1 }?.takeIf { it in 0 until lastPageCount }?.let { professorPageIndex = it }
+            addNotes(analysis.notes, speech.startMs, speech.endMs, defaultPage, fromFinalReview = false)
+            usage += result.usage
+            problem = null
+        }
+    }
+
+    /**
+     * "I missed something": the notes of the last minutes ([CATCH_UP_MS]), from their audio (Gemini,
+     * when the audio may leave the device) or from their transcript.
+     */
+    private suspend fun recapLastMinutes() {
+        val settings = settingsStore.settings
+        val task = settings.task(LectureTask.CATCH_UP)
+        val speech: RequestSpeech = if (task.provider == ModelProvider.GEMINI && settings.sendsAudio) {
+            audioOf(recentChunks.toList(), contextMs = 0L) ?: return
+        } else {
+            val latest = recentChunks.lastOrNull()?.endMs ?: lecture.elapsedMs
+            val segments = lecture.setStateResult { transcript.filter { it.endMs > latest - CATCH_UP_MS } }
+            if (segments.isEmpty()) return
+            RequestTranscript(emptyList(), segments, segments.first().startMs, 0L, segments.last().endMs)
+        }
+        val result = request(task, settings) { notebook, slides ->
+            LecturePrompts.chunkPrompt(
+                settings, lecture.memory(speech.endMs), notebook, slides, speech,
+                catchUp = true, includeOutline = false, includeTranscript = false
+            )
+        } ?: return
+        val defaultPage = result.notebook?.visiblePageIndexes?.firstOrNull()
+        lecture.setState {
+            addNotes(result.analysis.notes, speech.startMs, speech.endMs, defaultPage, fromFinalReview = false)
+            usage += result.usage
+            problem = null
+        }
+    }
+
+    /**
+     * The transcript of [chunks] made on this computer, added to the lecture right away (before
+     * the suggestions); the part repeating the previous chunk is dropped.
+     */
+    private suspend fun transcribe(chunks: List<AudioChunk>, settings: AssistantSettings): RequestTranscript? {
+        val transcriber = transcriber ?: run {
+            lecture.setState { problem = LectureProblem.TranscriptionUnavailable("") }
+            return null
+        }
+        val audio = audioOf(chunks, contextMs = null) ?: return null
+        val segments = try {
+            transcriber.transcribe(audio.wav, settings.whisperLanguage)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            lecture.setState { problem = LectureProblem.TranscriptionUnavailable(e.message ?: e::class.simpleName.orEmpty()) }
+            return null
+        }.map { it.copy(startMs = it.startMs + audio.startMs, endMs = it.endMs + audio.startMs) }
+            .filter { it.endMs > audio.newStartMs + OVERLAP_TOLERANCE_MS && it.text.isNotBlank() }
+        if (segments.isNotEmpty()) {
+            // One segment per update, as the transcripts of Gemini
+            val merged = TranscriptSegment(segments.first().startMs, segments.last().endMs, segments.joinToString(" ") { it.text.trim() })
+            lecture.setState { transcript.add(merged) }
+        }
+        return RequestTranscript(emptyList(), segments, audio.newStartMs, 0L, audio.endMs)
+    }
+
+    private class Answer(val analysis: ChunkAnalysis, val notebook: NotebookSnapshot?, val usage: TokenUsage)
+
+    /**
+     * Sends the prompt built by [build] (given the notebook and the slides of the provider) to the
+     * provider of [task], repeating it after the temporary errors.
+     */
+    private suspend fun request(
+        task: TaskModel,
+        settings: AssistantSettings,
+        build: suspend (NotebookSnapshot?, List<UploadedSlides>) -> ModelPrompt
+    ): Answer? {
+        var attempt = 0
+        while (true) {
+            val apiKey = settingsStore.apiKey
+            if (task.provider == ModelProvider.GEMINI && apiKey.isEmpty()) {
+                lecture.setState { problem = LectureProblem.MissingApiKey }
+                return null
+            }
+            try {
+                val snapshot = captureNotebook(settings)
+                val slides = when {
+                    // The local models receive no PDF: the visible slides as images
+                    task.provider == ModelProvider.LOCAL || !settings.sendSlides -> emptyList()
+                    snapshot != null -> lecture.uploadSlides(apiKey, snapshot.slides).also { lastSlides = it }
+                    // Notebook closed: the slides seen so far
+                    else -> lastSlides
+                }
+                val notebook = snapshot?.let { withUnreadableSlides(it, slides, visibleOnly = task.provider == ModelProvider.LOCAL) }
+                val prompt = build(notebook, slides)
+                val answer = when (task.provider) {
+                    ModelProvider.GEMINI -> backends.gemini.generate(prompt, task.gemini)
+                    ModelProvider.LOCAL -> backends.local.generate(prompt, task.local, OllamaBackend.LIVE_KEEP_LOADED_SECONDS) {}
+                }
+                val analysis = LectureAnalysis.parseChunk(answer.text)
+                if (notebook != null) {
+                    knownStrokeIds = knownStrokeIds.orEmpty() + notebook.strokeIds
+                    lecture.rememberNotebook(notebook)
+                }
+                return Answer(analysis, notebook, answer.usage ?: TokenUsage(localRequests = 1))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                attempt++
+                val problem = Lecture.problemOf(e)
+                if (problem is LectureProblem.Authentication || problem is LectureProblem.LocalModelUnavailable) {
+                    lecture.setState { this.problem = problem }
+                    return null
+                }
+                val retryable = when (e) {
+                    is GeminiException -> e.isRetryable
+                    is OllamaException -> e.statusCode >= 500
+                    // An invalid answer (e.g. a truncated JSON): one more try
+                    is IllegalArgumentException -> attempt < 2
+                    // Network errors
+                    else -> true
+                }
+                val maxAttempts = if (isRecording) MAX_ATTEMPTS else Lecture.MAX_ATTEMPTS_WHEN_STOPPED
+                if (!retryable || attempt >= maxAttempts) {
+                    lecture.setState { this.problem = problem }
+                    return null
+                }
+                val waitSeconds = min(30, 2 shl attempt)
+                lecture.setState { this.problem = LectureProblem.Retrying(e.message ?: e::class.simpleName.orEmpty(), waitSeconds) }
+                delay(waitSeconds * 1000L)
             }
         }
     }
@@ -341,41 +452,38 @@ class LectureRecorder internal constructor(
         }
     }
 
-    /** Slides whose PDF is not sent: the model sees the whole page instead. */
-    private suspend fun withUnreadableSlides(snapshot: NotebookSnapshot, slides: List<UploadedSlides>): NotebookSnapshot {
+    /**
+     * Slides whose PDF is not sent: the model sees the whole page instead ([visibleOnly]: the
+     * visible pages only, for the smaller context of the local models).
+     */
+    private suspend fun withUnreadableSlides(snapshot: NotebookSnapshot, slides: List<UploadedSlides>, visibleOnly: Boolean): NotebookSnapshot {
         val sent = slides.mapTo(mutableSetOf()) { it.document.resourceId }
-        val unreadable = snapshot.pages.filter { it.slide != null && it.slide.resourceId !in sent }.map { it.index }
+        val unreadable = snapshot.pages
+            .filter { it.slide != null && it.slide.resourceId !in sent && (!visibleOnly || it.visible) }
+            .map { it.index }
         if (unreadable.isEmpty()) return snapshot
         val source = notebook ?: return snapshot
         return snapshot.withPageImages(source.renderPages(unreadable).associateBy { it.pageIndex })
     }
 
     /**
-     * The audio of a request: the [chunks] (consecutive), preceded by the last minutes already
-     * analyzed when the student asked to catch up.
+     * The audio of [chunks] (consecutive). [contextMs]: leading audio already analyzed; `null` for
+     * the overlap of the first chunk with the previous one.
      */
-    private fun buildRequestAudio(chunks: List<AudioChunk>, catchUp: Boolean): RequestAudio? {
-        val context = if (catchUp) {
-            val firstNew = chunks.firstOrNull()?.newStartSample ?: Long.MAX_VALUE
-            // The most recent chunks, within the audio budget of a request (inline data is limited)
-            var budgetMs = MAX_REQUEST_AUDIO_MS - chunks.sumOf { it.endMs - it.newStartMs }
-            val selected = ArrayDeque<AudioChunk>()
-            for (chunk in recentChunks.filter { it.newStartSample < firstNew }.asReversed()) {
-                budgetMs -= chunk.endMs - chunk.newStartMs
-                if (budgetMs < 0) break
-                selected.addFirst(chunk)
-            }
-            selected.toList()
-        } else {
-            emptyList()
+    private fun audioOf(chunks: List<AudioChunk>, contextMs: Long?): RequestAudio? {
+        if (chunks.isEmpty()) return null
+        // The most recent audio, within the budget of a request (inline data is limited)
+        var budgetMs = MAX_REQUEST_AUDIO_MS
+        val selected = ArrayDeque<AudioChunk>()
+        for (chunk in chunks.asReversed()) {
+            budgetMs -= chunk.endMs - chunk.newStartMs
+            if (budgetMs < 0 && selected.isNotEmpty()) break
+            selected.addFirst(chunk)
         }
-        val all = context + chunks
-        if (all.isEmpty()) return null
-
-        var end = all.first().startSample
+        var end = selected.first().startSample
         val start = end
         val pieces = mutableListOf<ShortArray>()
-        for (chunk in all) {
+        for (chunk in selected) {
             val skip = (end - chunk.startSample).coerceIn(0L, chunk.samples.size.toLong()).toInt()
             if (skip < chunk.samples.size) {
                 pieces.add(chunk.samples.copyOfRange(skip, chunk.samples.size))
@@ -388,12 +496,10 @@ class LectureRecorder internal constructor(
             piece.copyInto(samples, offset)
             offset += piece.size
         }
-        // Without new audio (catch-up right after a chunk) the whole audio is context
-        val newStart = chunks.firstOrNull()?.newStartSample ?: end
         return RequestAudio(
             wav = Wav.encode(samples),
             startMs = samplesToMs(start),
-            contextMs = samplesToMs(newStart - start),
+            contextMs = contextMs ?: samplesToMs(selected.first().newStartSample - start),
             endMs = samplesToMs(end)
         )
     }
@@ -414,5 +520,8 @@ class LectureRecorder internal constructor(
 
         /** The outline is rewritten (output tokens) every few minutes only. */
         const val OUTLINE_INTERVAL_MS = 210_000L
+
+        /** A segment of the local transcript ending this little after the overlap is repeated. */
+        const val OVERLAP_TOLERANCE_MS = 300L
     }
 }

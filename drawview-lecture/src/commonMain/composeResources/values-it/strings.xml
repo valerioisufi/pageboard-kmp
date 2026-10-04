@@ -67,7 +67,6 @@
     <string name="lecture_settings_api_key_hint">Salvata su questo dispositivo, leggibile solo dal tuo utente.</string>
     <string name="lecture_settings_show_key">Mostra la chiave</string>
     <string name="lecture_settings_hide_key">Nascondi la chiave</string>
-    <string name="lecture_settings_model">Modello</string>
     <string name="lecture_settings_chunk">Aggiorna ogni %1$d s</string>
     <string name="lecture_settings_chunk_hint">Vale dalla prossima registrazione.</string>
     <string name="lecture_settings_neighbors">Pagine inviate attorno a quelle visibili: %1$d</string>
@@ -97,11 +96,6 @@
     <string name="lecture_modality_image">immagini</string>
     <string name="lecture_modality_audio">audio</string>
     <string name="lecture_modality_document">PDF</string>
-    <string name="lecture_settings_review">Revisione finale</string>
-    <string name="lecture_settings_review_gemini">Gemini</string>
-    <string name="lecture_settings_review_local">Locale (Ollama)</string>
-    <string name="lecture_settings_review_local_hint">Gratis e privata: un modello di Ollama su questo computer rilegge la trascrizione e i tuoi appunti, in 10–20 minuti. Deve accettare immagini (es. gemma4:12b).</string>
-    <string name="lecture_settings_local_model">Modello Ollama</string>
     <string name="lecture_settings_local_url">Indirizzo di Ollama</string>
     <string name="lecture_settings_prices">Prezzi Gemini ($ per milione di token)</string>
     <string name="lecture_settings_price_input">Ingresso</string>
@@ -120,4 +114,27 @@
     <string name="lecture_exit_title">Registrazione in corso</string>
     <string name="lecture_exit_message">La registrazione viene salvata: potrai generare la revisione quando riapri il quaderno.</string>
     <string name="lecture_exit_confirm">Interrompi ed esci</string>
+    <string name="lecture_settings_models">Modelli</string>
+    <string name="lecture_settings_local_section">Su questo computer</string>
+    <string name="lecture_settings_gemini_section">Gemini (online)</string>
+    <string name="lecture_settings_lecture_section">Lezione</string>
+    <string name="lecture_settings_whisper_model">Modello di whisper (file ggml .bin)</string>
+    <string name="lecture_settings_whisper_model_hint">Vuoto: il ggml-*.bin più grande di %1$s. Es. ggml-large-v3-turbo-q5_0.bin da huggingface.co/ggerganov/whisper.cpp.</string>
+    <string name="lecture_settings_whisper_server">Programma whisper-server</string>
+    <string name="lecture_settings_whisper_language">Lingua parlata</string>
+    <string name="lecture_settings_gemini_model">Modello Gemini</string>
+    <string name="lecture_settings_ollama_model">Modello Ollama</string>
+    <string name="lecture_provider_online">Online</string>
+    <string name="lecture_provider_local">Locale</string>
+    <string name="lecture_task_transcription">Trascrizione</string>
+    <string name="lecture_task_live_notes">Suggerimenti durante la lezione</string>
+    <string name="lecture_task_catch_up">Mi sono perso qualcosa</string>
+    <string name="lecture_task_final_review">Revisione finale</string>
+    <string name="lecture_hint_transcription_online">Gemini trascrive l\'audio nelle richieste dei suggerimenti: l\'audio viene inviato a Google.</string>
+    <string name="lecture_hint_transcription_local">whisper.cpp trascrive su questo computer: l\'audio non lo lascia mai, Gemini riceve la trascrizione (meno token).</string>
+    <string name="lecture_hint_live_local">Gratis e privato, ma deve tenere il passo della lezione: con 16 GB meglio un modello piccolo (gemma4:e4b). Usa la trascrizione locale.</string>
+    <string name="lecture_hint_catch_up_local">Legge la trascrizione degli ultimi minuti.</string>
+    <string name="lecture_hint_review_local">Rilegge la trascrizione e i tuoi appunti in 10–20 minuti; alla fine il modello viene scaricato. Deve accettare immagini (es. gemma4:12b).</string>
+    <string name="lecture_problem_transcription">L\'audio non può essere trascritto su questo computer: controlla whisper.cpp nelle impostazioni (%1$s)</string>
+    <string name="lecture_settings_whisper_server_hint">Vuoto: %1$s</string>
 </resources>

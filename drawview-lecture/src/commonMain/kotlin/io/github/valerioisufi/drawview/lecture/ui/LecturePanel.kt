@@ -101,6 +101,7 @@ import io.github.valerioisufi.drawview.lecture.ControllerNotebookSource
 import io.github.valerioisufi.drawview.lecture.Lecture
 import io.github.valerioisufi.drawview.lecture.LectureRecorder
 import io.github.valerioisufi.drawview.lecture.LectureSummary
+import io.github.valerioisufi.drawview.lecture.LectureTask
 import io.github.valerioisufi.drawview.lecture.LectureStatus
 import io.github.valerioisufi.drawview.lecture.NoteKind
 import io.github.valerioisufi.drawview.lecture.NoteSuggestion
@@ -389,9 +390,10 @@ private fun RecordingSection(
                 is LectureProblem.Failed -> stringResource(Res.string.lecture_problem_failed, problem.detail)
                 is LectureProblem.LocalModelUnavailable -> stringResource(Res.string.lecture_problem_local_unavailable, problem.detail)
                 LectureProblem.NoTranscript -> stringResource(Res.string.lecture_problem_no_transcript)
+                is LectureProblem.TranscriptionUnavailable -> stringResource(Res.string.lecture_problem_transcription, problem.detail)
             }
             val needsSettings = problem is LectureProblem.MissingApiKey || problem is LectureProblem.Authentication ||
-                problem is LectureProblem.LocalModelUnavailable
+                problem is LectureProblem.LocalModelUnavailable || problem is LectureProblem.TranscriptionUnavailable
             ProblemBanner(message, action = if (needsSettings) Res.string.lecture_action_settings to onOpenSettings else null)
         }
     }
@@ -810,14 +812,14 @@ private fun RegenerateReviewButton(
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             DropdownMenuItem(
-                text = { Text(stringResource(Res.string.lecture_review_with_gemini, settings.model)) },
+                text = { Text(stringResource(Res.string.lecture_review_with_gemini, settings.task(LectureTask.FINAL_REVIEW).gemini)) },
                 onClick = {
                     expanded = false
                     lecture.generateFinalReview(ReviewProvider.GEMINI)
                 }
             )
             DropdownMenuItem(
-                text = { Text(stringResource(Res.string.lecture_review_with_local, settings.localModel)) },
+                text = { Text(stringResource(Res.string.lecture_review_with_local, settings.task(LectureTask.FINAL_REVIEW).local)) },
                 onClick = {
                     expanded = false
                     lecture.generateFinalReview(ReviewProvider.LOCAL)

@@ -3,6 +3,8 @@ package io.github.valerioisufi.drawview.lecture
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiFile
 import io.github.valerioisufi.drawview.lecture.gemini.GenerateContentRequest
+import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
+import io.github.valerioisufi.drawview.lecture.model.PromptPart
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
@@ -56,16 +58,18 @@ class LecturePromptsTest {
     private fun request(
         catchUp: Boolean = false,
         includeOutline: Boolean = true,
-        mediaResolution: String? = LecturePrompts.MEDIA_RESOLUTION
-    ): GenerateContentRequest = LecturePrompts.chunkRequest(
-        settings = settings,
-        memory = memory,
-        notebook = notebook,
-        slides = slides,
-        audio = RequestAudio(byteArrayOf(9, 9, 9), startMs = 55_000, contextMs = 5_000, endMs = 125_000),
-        catchUp = catchUp,
-        includeOutline = includeOutline,
-        mediaResolution = mediaResolution
+        mediaResolution: String? = GeminiBackend.MEDIA_RESOLUTION
+    ): GenerateContentRequest = GeminiBackend.toRequest(
+        LecturePrompts.chunkPrompt(
+            settings = settings,
+            memory = memory,
+            notebook = notebook,
+            slides = slides,
+            speech = RequestAudio(byteArrayOf(9, 9, 9), startMs = 55_000, contextMs = 5_000, endMs = 125_000),
+            catchUp = catchUp,
+            includeOutline = includeOutline
+        ),
+        mediaResolution
     )
 
     @Test
@@ -129,8 +133,8 @@ class LecturePromptsTest {
     }
 
     @Test
-    fun localReviewUsesTheTranscriptAndAttachedImages() {
-        val prompt = LecturePrompts.localReviewPrompt(
+    fun localReviewUsesTheTranscriptAndTheNotes() {
+        val prompt = LecturePrompts.finalReviewPrompt(
             settings = settings,
             documentTitle = "Analisi 1",
             memory = memory,
@@ -138,11 +142,37 @@ class LecturePromptsTest {
             pageImages = listOf(PageImage(7, byteArrayOf(2)), PageImage(4, byteArrayOf(1), isCrop = true))
         )
         assertTrue(prompt.system.contains("notesMarkdown"))
-        assertFalse(prompt.system.contains("recording (or"))
-        assertTrue(prompt.user.contains("[0:00] Buongiorno\n[1:00] Oggi i limiti"))
-        // Images in page order, described in the same order
-        assertEquals(listOf(1.toByte(), 2.toByte()), prompt.images.map { it.single() })
-        assertTrue(prompt.user.indexOf("Notebook page 5, area written by the student") < prompt.user.indexOf("Notebook page 8"))
+        val texts = prompt.parts.filterIsInstance<PromptPart.Text>().joinToString("\n") { it.text }
+        assertTrue(texts.contains("[0:00] Buongiorno\n[1:00] Oggi i limiti"))
+        assertTrue(texts.contains("the recording is not available"))
+        // Neither audio nor files (a local model receives text and images), images in page order
+        assertTrue(prompt.parts.none { it is PromptPart.Audio || it is PromptPart.File })
+        assertEquals(listOf(1.toByte(), 2.toByte()), prompt.parts.filterIsInstance<PromptPart.Image>().map { it.jpeg.single() })
+        assertTrue(texts.indexOf("Notebook page 5, area written by the student") < texts.indexOf("Notebook page 8"))
+    }
+
+    @Test
+    fun withTheLocalTranscriptTheModelReadsTextOnly() {
+        val prompt = LecturePrompts.chunkPrompt(
+            settings = settings,
+            memory = memory,
+            notebook = notebook,
+            slides = emptyList(),
+            speech = RequestTranscript(
+                context = emptyList(),
+                segments = listOf(TranscriptSegment(60_000, 64_000, "Il teorema ponte"), TranscriptSegment(64_000, 70_000, "vale per ogni successione")),
+                startMs = 60_000,
+                contextMs = 0,
+                endMs = 120_000
+            )
+        )
+        assertTrue(prompt.parts.none { it is PromptPart.Audio || it is PromptPart.File })
+        val texts = prompt.parts.filterIsInstance<PromptPart.Text>().joinToString("\n") { it.text }
+        assertTrue(texts.contains("## New transcript"))
+        // Times from the start of the request, as atSeconds
+        assertTrue(texts.contains("[0:00] Il teorema ponte\n[0:04] vale per ogni successione"), texts)
+        assertFalse(prompt.system.contains("- transcript:"))
+        assertFalse(prompt.schema.getValue("properties").jsonObject.containsKey("transcript"))
     }
 
     @Test
@@ -166,14 +196,16 @@ class LecturePromptsTest {
     @Test
     fun finalReviewSendsTheRecordingAndTheTranscript() {
         val audio = GeminiFile(name = "files/rec", uri = "https://example.test/files/rec", mimeType = "audio/wav", state = "ACTIVE")
-        val request = LecturePrompts.finalReviewRequest(
-            settings = settings,
-            documentTitle = "Analisi 1",
-            memory = memory,
-            transcript = listOf(TranscriptSegment(0, 60_000, "Buongiorno")),
-            pageImages = listOf(PageImage(4, byteArrayOf(1))),
-            slides = slides,
-            audioFile = audio
+        val request = GeminiBackend.toRequest(
+            LecturePrompts.finalReviewPrompt(
+                settings = settings,
+                documentTitle = "Analisi 1",
+                memory = memory,
+                transcript = listOf(TranscriptSegment(0, 60_000, "Buongiorno")),
+                pageImages = listOf(PageImage(4, byteArrayOf(1))),
+                slides = slides,
+                audioFile = audio
+            )
         )
         val parts = request.contents.single().parts
         assertEquals("https://example.test/files/rec", parts.last().fileData?.fileUri)
@@ -236,3 +268,28 @@ class LectureAnalysisTest {
         assertEquals("1:02:03", formatLectureTime(3_723_000))
     }
 }
+
+class AssistantSettingsTest {
+    @Test
+    fun theFirstSettingsBecomeTasks() {
+        val saved = """{"apiKey":"k","model":"gemini-old","reviewProvider":"LOCAL","localModel":"gemma4:27b"}"""
+        val json = AssistantSettingsStore.json
+        val settings = AssistantSettingsStore.migrate(json.decodeFromString(AssistantSettings.serializer(), saved), json.parseToJsonElement(saved).jsonObject)
+        assertEquals(TaskModel(ModelProvider.LOCAL, "gemini-old", "gemma4:27b"), settings.task(LectureTask.FINAL_REVIEW))
+        assertEquals("gemini-old", settings.task(LectureTask.LIVE_NOTES).gemini)
+        assertEquals(ModelProvider.GEMINI, settings.task(LectureTask.LIVE_NOTES).provider)
+        assertEquals(ModelProvider.LOCAL, settings.reviewProvider)
+        assertTrue(settings.sendsAudio)
+    }
+
+    @Test
+    fun localSuggestionsNeedTheLocalTranscription() {
+        val settings = AssistantSettings()
+            .withTask(LectureTask.LIVE_NOTES, TaskModel(provider = ModelProvider.LOCAL))
+            .consistent()
+        assertEquals(ModelProvider.LOCAL, settings.task(LectureTask.TRANSCRIPTION).provider)
+        assertFalse(settings.sendsAudio)
+        assertEquals(AssistantSettings.DEFAULT_LOCAL_LIVE_MODEL, AssistantSettings().task(LectureTask.LIVE_NOTES).local)
+    }
+}
+

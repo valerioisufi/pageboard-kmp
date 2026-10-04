@@ -67,7 +67,6 @@
     <string name="lecture_settings_api_key_hint">Saved on this device, readable by your user only.</string>
     <string name="lecture_settings_show_key">Show the key</string>
     <string name="lecture_settings_hide_key">Hide the key</string>
-    <string name="lecture_settings_model">Model</string>
     <string name="lecture_settings_chunk">Update every %1$d s</string>
     <string name="lecture_settings_chunk_hint">Applies to the next recording.</string>
     <string name="lecture_settings_neighbors">Pages sent around the visible ones: %1$d</string>
@@ -97,11 +96,6 @@
     <string name="lecture_modality_image">images</string>
     <string name="lecture_modality_audio">audio</string>
     <string name="lecture_modality_document">PDF</string>
-    <string name="lecture_settings_review">Final review</string>
-    <string name="lecture_settings_review_gemini">Gemini</string>
-    <string name="lecture_settings_review_local">Local (Ollama)</string>
-    <string name="lecture_settings_review_local_hint">Free and private: a model of Ollama on this computer rereads the transcript and your notes, in 10–20 minutes. It must accept images (e.g. gemma4:12b).</string>
-    <string name="lecture_settings_local_model">Ollama model</string>
     <string name="lecture_settings_local_url">Ollama address</string>
     <string name="lecture_settings_prices">Gemini prices ($ per million tokens)</string>
     <string name="lecture_settings_price_input">Input</string>
@@ -120,4 +114,27 @@
     <string name="lecture_exit_title">A lecture is being recorded</string>
     <string name="lecture_exit_message">The recording is saved: you can generate its review when you open the notebook again.</string>
     <string name="lecture_exit_confirm">Stop and exit</string>
+    <string name="lecture_settings_models">Models</string>
+    <string name="lecture_settings_local_section">On this computer</string>
+    <string name="lecture_settings_gemini_section">Gemini (online)</string>
+    <string name="lecture_settings_lecture_section">Lecture</string>
+    <string name="lecture_settings_whisper_model">whisper model (ggml .bin file)</string>
+    <string name="lecture_settings_whisper_model_hint">Empty: the largest ggml-*.bin of %1$s. E.g. ggml-large-v3-turbo-q5_0.bin from huggingface.co/ggerganov/whisper.cpp.</string>
+    <string name="lecture_settings_whisper_server">whisper-server program</string>
+    <string name="lecture_settings_whisper_language">Language spoken</string>
+    <string name="lecture_settings_gemini_model">Gemini model</string>
+    <string name="lecture_settings_ollama_model">Ollama model</string>
+    <string name="lecture_provider_online">Online</string>
+    <string name="lecture_provider_local">Local</string>
+    <string name="lecture_task_transcription">Transcription</string>
+    <string name="lecture_task_live_notes">Suggestions during the lecture</string>
+    <string name="lecture_task_catch_up">I missed something</string>
+    <string name="lecture_task_final_review">Final review</string>
+    <string name="lecture_hint_transcription_online">Gemini transcribes the audio in the requests of the suggestions: the audio is sent to Google.</string>
+    <string name="lecture_hint_transcription_local">whisper.cpp transcribes on this computer: the audio never leaves it, Gemini receives the transcript (fewer tokens).</string>
+    <string name="lecture_hint_live_local">Free and private, but it must keep up with the lecture: on 16 GB prefer a small model (gemma4:e4b). It uses the local transcription.</string>
+    <string name="lecture_hint_catch_up_local">Reads the transcript of the last minutes.</string>
+    <string name="lecture_hint_review_local">Rereads the transcript and your notes in 10–20 minutes; the model is unloaded at the end. It must accept images (e.g. gemma4:12b).</string>
+    <string name="lecture_problem_transcription">The audio cannot be transcribed on this computer: check whisper.cpp in the settings (%1$s)</string>
+    <string name="lecture_settings_whisper_server_hint">Empty: %1$s</string>
 </resources>

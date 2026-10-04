@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -36,12 +38,19 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.lecture.AssistantSettings
 import io.github.valerioisufi.drawview.lecture.AssistantSettingsStore
-import io.github.valerioisufi.drawview.lecture.ReviewProvider
+import io.github.valerioisufi.drawview.lecture.LectureTask
+import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.generated.resources.*
+import io.github.valerioisufi.drawview.lecture.transcription.WhisperTranscriber
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 
-/** Settings of the lecture assistant: API key, model, updates, slides, course. */
+/**
+ * Settings of the lecture assistant: the provider of every kind of request, the local models
+ * (Ollama, whisper.cpp), Gemini (key, reasoning, prices), the lecture (updates, pages, slides,
+ * language, course).
+ */
 @Composable
 internal fun AssistantSettingsDialog(store: AssistantSettingsStore, onDismiss: () -> Unit) {
     var draft by remember { mutableStateOf(store.settings) }
@@ -58,10 +67,61 @@ internal fun AssistantSettingsDialog(store: AssistantSettingsStore, onDismiss: (
         text = {
             Column(
                 modifier = Modifier
-                    .width(460.dp)
+                    .width(500.dp)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // --- Models of every kind of request ---
+                SectionTitle(Res.string.lecture_settings_models)
+                for (task in LectureTask.entries) {
+                    TaskModelRow(
+                        task = task,
+                        settings = draft,
+                        onChange = { draft = it.consistent() }
+                    )
+                }
+
+                // --- On this computer ---
+                HorizontalDivider()
+                SectionTitle(Res.string.lecture_settings_local_section)
+                OutlinedTextField(
+                    value = draft.localUrl,
+                    onValueChange = { draft = draft.copy(localUrl = it) },
+                    label = { Text(stringResource(Res.string.lecture_settings_local_url)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = draft.whisperModel,
+                    onValueChange = { draft = draft.copy(whisperModel = it) },
+                    label = { Text(stringResource(Res.string.lecture_settings_whisper_model)) },
+                    placeholder = { Text(WhisperTranscriber.modelPath(draft).ifEmpty { WhisperTranscriber.modelsDirectory() + "/ggml-large-v3-turbo-q5_0.bin" }) },
+                    supportingText = { Text(stringResource(Res.string.lecture_settings_whisper_model_hint, WhisperTranscriber.modelsDirectory())) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = draft.whisperServer,
+                        onValueChange = { draft = draft.copy(whisperServer = it) },
+                        label = { Text(stringResource(Res.string.lecture_settings_whisper_server)) },
+                        placeholder = { Text(WhisperTranscriber.serverPath(draft)) },
+                        supportingText = { Text(stringResource(Res.string.lecture_settings_whisper_server_hint, WhisperTranscriber.serverPath(draft.copy(whisperServer = "")))) },
+                        singleLine = true,
+                        modifier = Modifier.weight(2f)
+                    )
+                    OutlinedTextField(
+                        value = draft.whisperLanguage,
+                        onValueChange = { draft = draft.copy(whisperLanguage = it) },
+                        label = { Text(stringResource(Res.string.lecture_settings_whisper_language)) },
+                        singleLine = true,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                // --- Gemini ---
+                HorizontalDivider()
+                SectionTitle(Res.string.lecture_settings_gemini_section)
                 OutlinedTextField(
                     value = draft.apiKey,
                     onValueChange = { draft = draft.copy(apiKey = it) },
@@ -89,52 +149,6 @@ internal fun AssistantSettingsDialog(store: AssistantSettingsStore, onDismiss: (
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                OutlinedTextField(
-                    value = draft.model,
-                    onValueChange = { draft = draft.copy(model = it) },
-                    label = { Text(stringResource(Res.string.lecture_settings_model)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Column {
-                    Text(stringResource(Res.string.lecture_settings_chunk, draft.chunkSeconds), style = MaterialTheme.typography.bodyMedium)
-                    val range = AssistantSettings.CHUNK_SECONDS_RANGE
-                    Slider(
-                        value = draft.chunkSeconds.toFloat(),
-                        onValueChange = { draft = draft.copy(chunkSeconds = ((it / 15f).roundToInt() * 15).coerceIn(range)) },
-                        valueRange = range.first.toFloat()..range.last.toFloat(),
-                        steps = (range.last - range.first) / 15 - 1
-                    )
-                    Text(
-                        stringResource(Res.string.lecture_settings_chunk_hint),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Column {
-                    Text(stringResource(Res.string.lecture_settings_neighbors, draft.neighborPages), style = MaterialTheme.typography.bodyMedium)
-                    Slider(
-                        value = draft.neighborPages.toFloat(),
-                        onValueChange = { draft = draft.copy(neighborPages = it.roundToInt()) },
-                        valueRange = 0f..3f,
-                        steps = 2
-                    )
-                }
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(stringResource(Res.string.lecture_settings_slides), style = MaterialTheme.typography.bodyMedium)
-                        Text(
-                            stringResource(Res.string.lecture_settings_slides_hint),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Switch(checked = draft.sendSlides, onCheckedChange = { draft = draft.copy(sendSlides = it) })
-                }
-
                 Column {
                     Text(stringResource(Res.string.lecture_settings_thinking), style = MaterialTheme.typography.bodyMedium)
                     val levels = AssistantSettings.THINKING_LEVELS
@@ -160,52 +174,6 @@ internal fun AssistantSettingsDialog(store: AssistantSettingsStore, onDismiss: (
                 }
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(Res.string.lecture_settings_review), style = MaterialTheme.typography.bodyMedium)
-                    val providers = ReviewProvider.entries
-                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                        providers.forEachIndexed { index, provider ->
-                            SegmentedButton(
-                                selected = draft.reviewProvider == provider,
-                                onClick = { draft = draft.copy(reviewProvider = provider) },
-                                shape = SegmentedButtonDefaults.itemShape(index, providers.size)
-                            ) {
-                                Text(
-                                    stringResource(
-                                        when (provider) {
-                                            ReviewProvider.GEMINI -> Res.string.lecture_settings_review_gemini
-                                            ReviewProvider.LOCAL -> Res.string.lecture_settings_review_local
-                                        }
-                                    )
-                                )
-                            }
-                        }
-                    }
-                    if (draft.reviewProvider == ReviewProvider.LOCAL) {
-                        Text(
-                            stringResource(Res.string.lecture_settings_review_local_hint),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedTextField(
-                                value = draft.localModel,
-                                onValueChange = { draft = draft.copy(localModel = it) },
-                                label = { Text(stringResource(Res.string.lecture_settings_local_model)) },
-                                singleLine = true,
-                                modifier = Modifier.weight(1f)
-                            )
-                            OutlinedTextField(
-                                value = draft.localUrl,
-                                onValueChange = { draft = draft.copy(localUrl = it) },
-                                label = { Text(stringResource(Res.string.lecture_settings_local_url)) },
-                                singleLine = true,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                }
-
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(Res.string.lecture_settings_prices), style = MaterialTheme.typography.bodyMedium)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf(
@@ -223,11 +191,40 @@ internal fun AssistantSettingsDialog(store: AssistantSettingsStore, onDismiss: (
                             )
                         }
                     }
-                    Text(
-                        stringResource(Res.string.lecture_settings_prices_hint),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    Hint(stringResource(Res.string.lecture_settings_prices_hint))
+                }
+
+                // --- The lecture ---
+                HorizontalDivider()
+                SectionTitle(Res.string.lecture_settings_lecture_section)
+                Column {
+                    Text(stringResource(Res.string.lecture_settings_chunk, draft.chunkSeconds), style = MaterialTheme.typography.bodyMedium)
+                    val range = AssistantSettings.CHUNK_SECONDS_RANGE
+                    Slider(
+                        value = draft.chunkSeconds.toFloat(),
+                        onValueChange = { draft = draft.copy(chunkSeconds = ((it / 15f).roundToInt() * 15).coerceIn(range)) },
+                        valueRange = range.first.toFloat()..range.last.toFloat(),
+                        steps = (range.last - range.first) / 15 - 1
                     )
+                    Hint(stringResource(Res.string.lecture_settings_chunk_hint))
+                }
+
+                Column {
+                    Text(stringResource(Res.string.lecture_settings_neighbors, draft.neighborPages), style = MaterialTheme.typography.bodyMedium)
+                    Slider(
+                        value = draft.neighborPages.toFloat(),
+                        onValueChange = { draft = draft.copy(neighborPages = it.roundToInt()) },
+                        valueRange = 0f..3f,
+                        steps = 2
+                    )
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(stringResource(Res.string.lecture_settings_slides), style = MaterialTheme.typography.bodyMedium)
+                        Hint(stringResource(Res.string.lecture_settings_slides_hint))
+                    }
+                    Switch(checked = draft.sendSlides, onCheckedChange = { draft = draft.copy(sendSlides = it) })
                 }
 
                 OutlinedTextField(
@@ -270,4 +267,104 @@ internal fun AssistantSettingsDialog(store: AssistantSettingsStore, onDismiss: (
             }
         }
     )
+}
+
+/**
+ * Online or local for [task], and the model of the chosen provider (none for the transcription:
+ * Gemini transcribes in the requests of the suggestions, whisper.cpp uses its model).
+ */
+@Composable
+private fun TaskModelRow(task: LectureTask, settings: AssistantSettings, onChange: (AssistantSettings) -> Unit) {
+    val model = settings.task(task)
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(taskLabel(task)),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f)
+            )
+            val providers = ModelProvider.entries
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.width(220.dp)) {
+                providers.forEachIndexed { index, provider ->
+                    SegmentedButton(
+                        selected = model.provider == provider,
+                        onClick = {
+                            var changed = settings.withTask(task, model.copy(provider = provider))
+                            // Back to the audio online: the suggestions online as well
+                            if (task == LectureTask.TRANSCRIPTION && provider == ModelProvider.GEMINI) {
+                                changed = changed.withTask(
+                                    LectureTask.LIVE_NOTES,
+                                    changed.task(LectureTask.LIVE_NOTES).copy(provider = ModelProvider.GEMINI)
+                                )
+                            }
+                            onChange(changed)
+                        },
+                        shape = SegmentedButtonDefaults.itemShape(index, providers.size)
+                    ) {
+                        Text(
+                            stringResource(
+                                if (provider == ModelProvider.GEMINI) Res.string.lecture_provider_online else Res.string.lecture_provider_local
+                            )
+                        )
+                    }
+                }
+            }
+        }
+        if (task != LectureTask.TRANSCRIPTION) {
+            OutlinedTextField(
+                value = model.model,
+                onValueChange = { value ->
+                    onChange(
+                        settings.withTask(
+                            task,
+                            if (model.provider == ModelProvider.GEMINI) model.copy(gemini = value) else model.copy(local = value)
+                        )
+                    )
+                },
+                label = {
+                    Text(
+                        stringResource(
+                            if (model.provider == ModelProvider.GEMINI) Res.string.lecture_settings_gemini_model else Res.string.lecture_settings_ollama_model
+                        )
+                    )
+                },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        taskHint(task, settings)?.let { Hint(stringResource(it)) }
+    }
+}
+
+private fun taskLabel(task: LectureTask): StringResource = when (task) {
+    LectureTask.TRANSCRIPTION -> Res.string.lecture_task_transcription
+    LectureTask.LIVE_NOTES -> Res.string.lecture_task_live_notes
+    LectureTask.CATCH_UP -> Res.string.lecture_task_catch_up
+    LectureTask.FINAL_REVIEW -> Res.string.lecture_task_final_review
+}
+
+/** What the choice of [task] implies. */
+private fun taskHint(task: LectureTask, settings: AssistantSettings): StringResource? {
+    val local = settings.task(task).provider == ModelProvider.LOCAL
+    return when (task) {
+        LectureTask.TRANSCRIPTION -> if (local) Res.string.lecture_hint_transcription_local else Res.string.lecture_hint_transcription_online
+        LectureTask.LIVE_NOTES -> if (local) Res.string.lecture_hint_live_local else null
+        LectureTask.CATCH_UP -> if (local) Res.string.lecture_hint_catch_up_local else null
+        LectureTask.FINAL_REVIEW -> if (local) Res.string.lecture_hint_review_local else null
+    }
+}
+
+@Composable
+private fun SectionTitle(text: StringResource) {
+    Text(
+        text = stringResource(text),
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(top = 4.dp)
+    )
+}
+
+@Composable
+private fun Hint(text: String) {
+    Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }

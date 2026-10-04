@@ -1,21 +1,38 @@
 package io.github.valerioisufi.drawview.lecture
 
-import io.github.valerioisufi.drawview.lecture.gemini.GeminiContent
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiFile
-import io.github.valerioisufi.drawview.lecture.gemini.GeminiPart
-import io.github.valerioisufi.drawview.lecture.gemini.GenerateContentRequest
-import io.github.valerioisufi.drawview.lecture.gemini.GenerationConfig
-import io.github.valerioisufi.drawview.lecture.gemini.ThinkingConfig
-import kotlin.io.encoding.Base64
+import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
+import io.github.valerioisufi.drawview.lecture.model.PromptPart
 
 /**
- * Audio of a request.
+ * What was said in the part of the lecture of a request: its audio (Gemini transcribes it) or its
+ * transcript (transcribed on this computer).
  *
  * @param contextMs leading milliseconds already analyzed with the previous request (context only).
  */
-class RequestAudio(val wav: ByteArray, val startMs: Long, val contextMs: Long, val endMs: Long) {
+sealed interface RequestSpeech {
+    val startMs: Long
+    val contextMs: Long
+    val endMs: Long
     val newStartMs: Long get() = startMs + contextMs
 }
+
+/** The audio of a request. */
+class RequestAudio(
+    val wav: ByteArray,
+    override val startMs: Long,
+    override val contextMs: Long,
+    override val endMs: Long
+) : RequestSpeech
+
+/** The transcript of a request: [context] already analyzed, then the new [segments]. */
+class RequestTranscript(
+    val context: List<TranscriptSegment>,
+    val segments: List<TranscriptSegment>,
+    override val startMs: Long,
+    override val contextMs: Long,
+    override val endMs: Long
+) : RequestSpeech
 
 /** What the assistant remembers of the lecture, sent with every request. */
 class LectureMemory(
@@ -26,217 +43,215 @@ class LectureMemory(
     val suggestions: List<NoteSuggestion>
 )
 
-/** A prompt for a local model: system instructions, user text and attached JPEG images. */
-class LocalPrompt(val system: String, val user: String, val images: List<ByteArray>)
-
 /** A PDF document of the notebook uploaded with the Files API. */
 class UploadedSlides(val document: SlideDocument, val file: GeminiFile)
 
 /**
- * The requests of the assistant. The parts are ordered from the most stable (instructions,
- * course, slides) to the most variable (memory, notebook, audio): the stable prefix is reused by
- * the implicit caching of the Gemini API.
+ * The requests of the assistant, as [ModelPrompt]s answered by Gemini or by a local model. The
+ * parts are ordered from the most stable (instructions, course, slides) to the most variable
+ * (memory, notebook, audio): the stable prefix is reused by the implicit caching of Gemini.
+ *
+ * The local models receive neither audio nor files: their prompts carry the transcript instead
+ * of the audio, and the slides as images of the pages (see [NotebookSnapshot]).
  */
 object LecturePrompts {
 
-    private fun languageRule(settings: AssistantSettings): String {
+    private fun languageRule(settings: AssistantSettings, fields: String, withTranscript: Boolean): String {
         val language = settings.notesLanguage.trim().ifEmpty { "the language of the lecture" }
-        return "Language: write the transcript in the language spoken; write currentTopic, outline and notes in $language."
+        return if (withTranscript) "Language: write the transcript in the language spoken; write $fields in $language."
+        else "Language: write $fields in $language."
     }
 
     /** The Markdown rendered by the text blocks of the notebook. */
     private const val MARKDOWN_RULE =
         "Markdown of the notebook: \"-\" for bullet points, **bold**, *italic*, \"#\" headings, LaTeX formulas between \$...\$ (inline) or \$\$...\$\$ (display); no tables, images or links."
 
-    fun chunkSystemInstruction(settings: AssistantSettings): String = """
-        You are a note-taking assistant listening to a university lecture live, next to a student who takes handwritten notes in a notebook app (the lecture slides, when available, are imported as pages of the same notebook).
-        Every minute or so you receive the newest part of the lecture audio together with what the student is looking at and writing. Your goal: make sure the student does not miss anything important, without distracting them.
+    /**
+     * @param withAudio the request carries the audio, which the model transcribes; otherwise its
+     *   transcript.
+     */
+    fun chunkSystemInstruction(settings: AssistantSettings, withAudio: Boolean = true): String {
+        val source = if (withAudio) "audio" else "transcript"
+        val transcriptField = if (withAudio) {
+            "- transcript: faithful transcript of the new audio only (after the context part), not summarized; mark unintelligible parts as [inaudible]; empty when there is no speech.\n"
+        } else {
+            ""
+        }
+        val unclear = if (withAudio) "When the audio is unclear, say so instead of guessing."
+        else "The transcript may contain recognition errors: do not build on words that make no sense."
+        return """
+            You are a note-taking assistant listening to a university lecture live, next to a student who takes handwritten notes in a notebook app (the lecture slides, when available, are imported as pages of the same notebook).
+            Every minute or so you receive the newest part of the lecture ($source) together with what the student is looking at and writing. Your goal: make sure the student does not miss anything important, without distracting them.
 
-        How to work:
-        - Listen to the new audio and compare what the lecturer says with (1) the slides and (2) what the student has already written or typed. Look carefully at the handwriting in the page images and in the close-ups of the new writing.
-        - Suggest a note ONLY for important content said in the new audio that is missing from both the slides and the notes of the student, and that is not among the notes already suggested. Typical cases: definitions, formulas, theorems and their conditions, steps of worked examples, explanations that clarify a slide, anything the lecturer stresses ("this is important", "this will be in the exam"), announcements and deadlines, references (books, papers, websites), answers to the questions of the students.
-        - If the student already wrote it, even abbreviated or in their own words, it is not missing. If it is on a slide, it is not missing, unless the lecturer adds something that is not there (a condition, an intuition, an example).
-        - No note is better than a redundant note: an empty list is the right answer when nothing is missing. Prefer few, high-value notes.
-        - Never invent or complete content that was not said. When the audio is unclear, say so instead of guessing.
-        - The notes are inserted as they are in the notebook: concise and ready to use (short sentences or bullet points, formulas in LaTeX between ${'$'}...${'$'}, no preamble such as "The lecturer said").
-        - The page of a note is the notebook page where it belongs (usually the slide being discussed).
-        - $MARKDOWN_RULE
+            How to work:
+            - Compare what the lecturer says in the new $source with (1) the slides and (2) what the student has already written or typed. Look carefully at the handwriting in the page images and in the close-ups of the new writing.
+            - Suggest a note ONLY for important content said in the new $source that is missing from both the slides and the notes of the student, and that is not among the notes already suggested. Typical cases: definitions, formulas, theorems and their conditions, steps of worked examples, explanations that clarify a slide, anything the lecturer stresses ("this is important", "this will be in the exam"), announcements and deadlines, references (books, papers, websites), answers to the questions of the students.
+            - If the student already wrote it, even abbreviated or in their own words, it is not missing. If it is on a slide, it is not missing, unless the lecturer adds something that is not there (a condition, an intuition, an example).
+            - No note is better than a redundant note: an empty list is the right answer when nothing is missing. Prefer few, high-value notes.
+            - Never invent or complete content that was not said. $unclear
+            - The notes are inserted as they are in the notebook: concise and ready to use (short sentences or bullet points, formulas in LaTeX between ${'$'}...${'$'}, no preamble such as "The lecturer said").
+            - The page of a note is the notebook page where it belongs (usually the slide being discussed).
+            - $MARKDOWN_RULE
 
-        Fields:
-        - transcript: faithful transcript of the new audio only (after the context part), not summarized; mark unintelligible parts as [inaudible]; empty when there is no speech.
-        - currentTopic: the current topic in a few words.
-        - professorPage: the notebook page the lecturer is talking about, when the audio and the slides make it clear (e.g. they moved to the next slide, they describe a figure). Omit it when unsure.
-        - outline (only when the request asks for it, every few minutes): the updated outline of the whole lecture so far, as a Markdown bullet list of at most about 300 words. Integrate the new content into the previous outline keeping its structure, and compress older details rather than dropping topics: it is your memory of the lecture.
-        - notes: the missing content, as described above. atSeconds is measured from the start of the audio of the request.
+            Fields:
+            ${transcriptField}- currentTopic: the current topic in a few words.
+            - professorPage: the notebook page the lecturer is talking about, when the $source and the slides make it clear (e.g. they moved to the next slide, they describe a figure). Omit it when unsure.
+            - outline (only when the request asks for it, every few minutes): the updated outline of the whole lecture so far, as a Markdown bullet list of at most about 300 words. Integrate the new content into the previous outline keeping its structure, and compress older details rather than dropping topics: it is your memory of the lecture.
+            - notes: the missing content, as described above. atSeconds is measured from the start of the $source of the request.
 
-        ${languageRule(settings)}
-    """.trimIndent()
+            ${languageRule(settings, "currentTopic, outline and notes", withAudio)}
+        """.trimIndent()
+    }
 
     fun finalReviewSystemInstruction(settings: AssistantSettings): String = """
-        You are a note-taking assistant. The lecture is over: you receive its recording (or its transcript), the slides when available, the pages of the notebook of the student and the notes suggested during the lecture.
+        You are a note-taking assistant. The lecture is over: you receive its recording or its transcript, the slides when available, the notes of the student and the notes suggested during the lecture.
 
         Write:
         - notesMarkdown: complete, well organized notes of the whole lecture in Markdown, to study from: headings following the structure of the lecture, concise bullet points, definitions, formulas in LaTeX between ${'$'}...${'$'}, examples, and what the lecturer stressed or announced (in a "**Important**" line, translated). Integrate slides and notes of the student without copying the slides verbatim: refer to them (e.g. "p. 12") when useful. Never invent content that was not said or shown.
         - $MARKDOWN_RULE
-        - missing: the important content of the lecture that is still missing from the notebook (slides, notes of the student and suggested notes marked as inserted or already noted), in the same format as the live notes, with the notebook page where it belongs and atSeconds measured from the start of the recording. Empty when nothing is missing.
+        - missing: the important content of the lecture that is still missing from the notebook (slides, notes of the student and suggested notes marked as inserted or already noted), in the same format as the live notes, with the notebook page where it belongs and atSeconds measured from the start of the lecture. Empty when nothing is missing.
 
-        ${languageRule(settings).replace("currentTopic, outline and notes", "notesMarkdown and missing")}
+        ${languageRule(settings, "notesMarkdown and missing", withTranscript = false)}
     """.trimIndent()
 
-    /** Request for a chunk of the lecture ([catchUp]: the student asked what they missed). */
-    fun chunkRequest(
+    /**
+     * A chunk of the lecture ([catchUp]: the student asked what they missed).
+     *
+     * @param slides the PDF documents uploaded to Gemini (none for a local model).
+     */
+    fun chunkPrompt(
         settings: AssistantSettings,
         memory: LectureMemory,
         notebook: NotebookSnapshot?,
         slides: List<UploadedSlides>,
-        audio: RequestAudio,
+        speech: RequestSpeech,
         catchUp: Boolean = false,
         includeOutline: Boolean = true,
-        mediaResolution: String? = MEDIA_RESOLUTION
-    ): GenerateContentRequest {
-        val parts = mutableListOf<GeminiPart>()
-        courseParts(settings, notebook?.documentTitle)?.let { parts.add(it) }
+        includeTranscript: Boolean = speech is RequestAudio
+    ): ModelPrompt {
+        val withAudio = speech is RequestAudio
+        val source = if (withAudio) "audio" else "transcript"
+        val parts = mutableListOf<PromptPart>()
+        courseText(settings, notebook?.documentTitle)?.let { parts.add(PromptPart.Text(it)) }
         parts.addAll(slideParts(slides))
-        parts.add(GeminiPart.text(memoryText(memory)))
+        parts.add(PromptPart.Text(memoryText(memory)))
         if (notebook != null) {
             parts.addAll(notebookParts(notebook, slides))
         } else {
-            parts.add(GeminiPart.text("## Notebook\nThe notebook is closed: the student is not looking at its pages now (they may be taking notes elsewhere)."))
+            parts.add(PromptPart.Text("## Notebook\nThe notebook is closed: the student is not looking at its pages now (they may be taking notes elsewhere)."))
         }
 
-        val contextSeconds = audio.contextMs / 1000
-        val audioIntro = buildString {
-            appendLine("## New audio")
-            append("Lecture time ${formatLectureTime(audio.newStartMs)}–${formatLectureTime(audio.endMs)}.")
-            if (contextSeconds > 0) {
-                append(" The first $contextSeconds s of the audio (from ${formatLectureTime(audio.startMs)}) are context, already analyzed: transcribe and analyze only what follows.")
+        val contextSeconds = speech.contextMs / 1000
+        val intro = buildString {
+            appendLine("## New $source")
+            append("Lecture time ${formatLectureTime(speech.newStartMs)}–${formatLectureTime(speech.endMs)}.")
+            if (withAudio) {
+                if (contextSeconds > 0) {
+                    append(" The first $contextSeconds s of the audio (from ${formatLectureTime(speech.startMs)}) are context, already analyzed: transcribe and analyze only what follows.")
+                }
+            } else {
+                append(" The times in brackets are measured from ${formatLectureTime(speech.startMs)}, as atSeconds.")
+                if (contextSeconds > 0) append(" The context part is already analyzed: analyze what follows it.")
             }
             if (catchUp) {
                 append(
-                    "\nThe student pressed \"I missed something\": they lost track during the last minutes. For this request consider the whole audio, context included, " +
-                        "and suggest the notes that let them catch up (still excluding what is already in their notes, on the slides or among the notes already suggested). " +
-                        "The transcript still covers only the new audio."
+                    "\nThe student pressed \"I missed something\": they lost track during the last minutes. For this request consider the whole $source, context included, " +
+                        "and suggest the notes that let them catch up (still excluding what is already in their notes, on the slides or among the notes already suggested)."
                 )
             }
-            append(
-                if (includeOutline) "\nUpdate the outline in this answer."
-                else "\nThe outline is not updated in this answer."
-            )
+            append(if (includeOutline) "\nUpdate the outline in this answer." else "\nThe outline is not updated in this answer.")
         }
-        parts.add(GeminiPart.text(audioIntro))
-        parts.add(GeminiPart.inline("audio/wav", Base64.encode(audio.wav)))
+        parts.add(PromptPart.Text(intro))
+        when (speech) {
+            is RequestAudio -> parts.add(PromptPart.Audio(speech.wav))
+            is RequestTranscript -> parts.add(PromptPart.Text(transcriptText(speech)))
+        }
 
-        return GenerateContentRequest(
-            contents = listOf(GeminiContent(role = "user", parts = parts)),
-            systemInstruction = GeminiContent(parts = listOf(GeminiPart.text(chunkSystemInstruction(settings)))),
-            generationConfig = GenerationConfig(
-                responseMimeType = "application/json",
-                responseJsonSchema = LectureAnalysis.chunkSchema(includeOutline),
-                maxOutputTokens = 8192,
-                thinkingConfig = ThinkingConfig(settings.thinkingLevel),
-                mediaResolution = mediaResolution
-            )
+        return ModelPrompt(
+            system = chunkSystemInstruction(settings, withAudio),
+            parts = parts,
+            schema = LectureAnalysis.chunkSchema(includeOutline, includeTranscript),
+            maxOutputTokens = 8192,
+            thinkingLevel = settings.thinkingLevel
         )
     }
 
+    /** The transcript of a request, with the times from its start. */
+    private fun transcriptText(speech: RequestTranscript): String = buildString {
+        fun line(segment: TranscriptSegment) = "[${formatLectureTime(segment.startMs - speech.startMs)}] ${segment.text}"
+        if (speech.context.isNotEmpty()) {
+            appendLine("### Context (already analyzed)")
+            speech.context.forEach { appendLine(line(it)) }
+            appendLine("### New")
+        }
+        if (speech.segments.isEmpty()) appendLine("(no speech)")
+        speech.segments.forEach { appendLine(line(it)) }
+    }.trim()
+
     /**
-     * Request for the review of the whole lecture: the complete [audioFile] when it could be
+     * The review of the whole lecture: the complete recording ([audioFile], Gemini) when it could be
      * uploaded, the transcript in any case.
+     *
+     * @param slides the PDF documents uploaded to Gemini (none for a local model).
      */
-    fun finalReviewRequest(
+    fun finalReviewPrompt(
         settings: AssistantSettings,
         documentTitle: String,
         memory: LectureMemory,
         transcript: List<TranscriptSegment>,
         pageImages: List<PageImage>,
-        slides: List<UploadedSlides>,
-        audioFile: GeminiFile?,
-        mediaResolution: String? = MEDIA_RESOLUTION
-    ): GenerateContentRequest {
-        val parts = mutableListOf<GeminiPart>()
-        courseParts(settings, documentTitle)?.let { parts.add(it) }
+        slides: List<UploadedSlides> = emptyList(),
+        audioFile: GeminiFile? = null
+    ): ModelPrompt {
+        val parts = mutableListOf<PromptPart>()
+        courseText(settings, documentTitle)?.let { parts.add(PromptPart.Text(it)) }
         parts.addAll(slideParts(slides))
         if (pageImages.isNotEmpty()) {
-            parts.add(GeminiPart.text("## Notes of the student seen during the lecture (as last seen)"))
+            parts.add(PromptPart.Text("## Notes of the student seen during the lecture (as last seen)"))
             for (image in pageImages.sortedBy { it.pageIndex }) {
-                parts.add(GeminiPart.text(imageLabel(image)))
-                parts.add(GeminiPart.inline("image/jpeg", Base64.encode(image.jpeg)))
+                parts.add(PromptPart.Text(imageLabel(image) + ":"))
+                parts.add(PromptPart.Image(image.jpeg))
             }
         }
-        parts.add(GeminiPart.text(memoryText(memory)))
+        parts.add(PromptPart.Text(memoryText(memory)))
         if (transcript.isNotEmpty()) {
             parts.add(
-                GeminiPart.text(
-                    "## Live transcript (may contain recognition errors" + (if (audioFile != null) "; the recording below is authoritative" else "") + ")\n" +
+                PromptPart.Text(
+                    "## Transcript of the lecture (may contain recognition errors" +
+                        (if (audioFile != null) "; the recording below is authoritative" else "; the recording is not available") + ")\n" +
                         transcript.joinToString("\n") { "[${formatLectureTime(it.startMs)}] ${it.text}" }
                 )
             )
         }
         if (audioFile != null) {
-            parts.add(GeminiPart.text("## Complete recording of the lecture (${formatLectureTime(memory.elapsedMs)})"))
-            parts.add(GeminiPart.file(audioFile.mimeType.ifEmpty { "audio/wav" }, audioFile.uri))
+            parts.add(PromptPart.Text("## Complete recording of the lecture (${formatLectureTime(memory.elapsedMs)})"))
+            parts.add(PromptPart.File(audioFile.uri, audioFile.mimeType.ifEmpty { "audio/wav" }))
         }
-        return GenerateContentRequest(
-            contents = listOf(GeminiContent(role = "user", parts = parts)),
-            systemInstruction = GeminiContent(parts = listOf(GeminiPart.text(finalReviewSystemInstruction(settings)))),
-            generationConfig = GenerationConfig(
-                responseMimeType = "application/json",
-                responseJsonSchema = LectureAnalysis.finalReviewSchema,
-                maxOutputTokens = 32768,
-                thinkingConfig = ThinkingConfig(if (settings.thinkingLevel == "high") "high" else "medium"),
-                mediaResolution = mediaResolution
-            )
+        return ModelPrompt(
+            system = finalReviewSystemInstruction(settings),
+            parts = parts,
+            schema = LectureAnalysis.finalReviewSchema,
+            maxOutputTokens = 32768,
+            thinkingLevel = if (settings.thinkingLevel == "high") "high" else "medium"
         )
     }
 
-    /**
-     * The final review for a local model (Ollama): the transcript instead of the recording, the
-     * notes of the student as attached images, no PDF.
-     */
-    fun localReviewPrompt(
-        settings: AssistantSettings,
-        documentTitle: String,
-        memory: LectureMemory,
-        transcript: List<TranscriptSegment>,
-        pageImages: List<PageImage>
-    ): LocalPrompt {
-        val images = pageImages.sortedBy { it.pageIndex }
-        val user = buildString {
-            courseParts(settings, documentTitle)?.text?.let { appendLine(it).appendLine() }
-            appendLine(memoryText(memory)).appendLine()
-            if (images.isNotEmpty()) {
-                appendLine("## Notes of the student (attached images, in this order)")
-                images.forEach { appendLine("- " + imageLabel(it)) }
-                appendLine()
-            }
-            appendLine("## Transcript of the lecture (the recording is not available: rely on it; it may contain recognition errors)")
-            transcript.forEach { appendLine("[${formatLectureTime(it.startMs)}] ${it.text}") }
-        }
-        return LocalPrompt(
-            system = finalReviewSystemInstruction(settings).replace("its recording (or its transcript)", "its transcript"),
-            user = user.trim(),
-            images = images.map { it.jpeg }
-        )
-    }
-
-    private fun courseParts(settings: AssistantSettings, documentTitle: String?): GeminiPart? {
+    private fun courseText(settings: AssistantSettings, documentTitle: String?): String? {
         val context = settings.courseContext.trim()
         if (context.isEmpty() && documentTitle.isNullOrBlank()) return null
-        return GeminiPart.text(
-            buildString {
-                appendLine("## Course")
-                if (!documentTitle.isNullOrBlank()) appendLine("Notebook: $documentTitle")
-                if (context.isNotEmpty()) appendLine("Notes of the student about the course and its terminology:\n$context")
-            }.trim()
-        )
+        return buildString {
+            appendLine("## Course")
+            if (!documentTitle.isNullOrBlank()) appendLine("Notebook: $documentTitle")
+            if (context.isNotEmpty()) appendLine("Notes of the student about the course and its terminology:\n$context")
+        }.trim()
     }
 
-    private fun slideParts(slides: List<UploadedSlides>): List<GeminiPart> {
+    private fun slideParts(slides: List<UploadedSlides>): List<PromptPart> {
         if (slides.isEmpty()) return emptyList()
-        val parts = mutableListOf(GeminiPart.text("## Slides (PDF documents imported in the notebook)"))
+        val parts = mutableListOf<PromptPart>(PromptPart.Text("## Slides (PDF documents imported in the notebook)"))
         slides.forEachIndexed { i, uploaded ->
-            parts.add(GeminiPart.text("PDF ${i + 1}: ${describeMapping(uploaded.document.pages)}."))
-            parts.add(GeminiPart.file(uploaded.file.mimeType.ifEmpty { "application/pdf" }, uploaded.file.uri))
+            parts.add(PromptPart.Text("PDF ${i + 1}: ${describeMapping(uploaded.document.pages)}."))
+            parts.add(PromptPart.File(uploaded.file.uri, uploaded.file.mimeType.ifEmpty { "application/pdf" }))
         }
         return parts
     }
@@ -293,12 +308,12 @@ object LecturePrompts {
      * The pages around the visible ones described in words (slide, notes of the student, empty),
      * with an image only where the student wrote or where the slide cannot be read in the PDFs.
      */
-    private fun notebookParts(notebook: NotebookSnapshot, slides: List<UploadedSlides>): List<GeminiPart> {
+    private fun notebookParts(notebook: NotebookSnapshot, slides: List<UploadedSlides>): List<PromptPart> {
         val pdfNumbers = slides.withIndex().associate { (i, uploaded) -> uploaded.document.resourceId to i + 1 }
-        val parts = mutableListOf<GeminiPart>()
+        val parts = mutableListOf<PromptPart>()
         val visible = notebook.visiblePageIndexes.map { it + 1 }
         parts.add(
-            GeminiPart.text(
+            PromptPart.Text(
                 buildString {
                     appendLine("## Notebook (${notebook.pageCount} pages)")
                     appendLine("The student is looking at page ${visible.joinToString(", ")}. Pages around:")
@@ -306,14 +321,15 @@ object LecturePrompts {
                         append("- Page ${page.index + 1} (${if (page.visible) "visible" else "nearby"}): ")
                         val slide = page.slide
                         val pdf = slide?.let { pdfNumbers[it.resourceId] }
+                        val image = page.image
                         append(
                             when {
                                 slide != null && pdf != null -> "slide ${slide.pdfPageIndex + 1} of PDF $pdf"
-                                slide != null -> "a slide (see the image)"
+                                slide != null && image != null && !image.isCrop -> "a slide (see the image)"
+                                slide != null -> "a slide (not shown)"
                                 else -> "blank paper"
                             }
                         )
-                        val image = page.image
                         append(
                             when {
                                 image == null -> ", nothing written by the student"
@@ -328,17 +344,17 @@ object LecturePrompts {
         )
         for (page in notebook.pages) {
             val image = page.image ?: continue
-            parts.add(GeminiPart.text(imageLabel(image) + ":"))
-            parts.add(GeminiPart.inline("image/jpeg", Base64.encode(image.jpeg)))
+            parts.add(PromptPart.Text(imageLabel(image) + ":"))
+            parts.add(PromptPart.Image(image.jpeg))
         }
         for (image in notebook.newWriting) {
-            parts.add(GeminiPart.text("Close-up of what the student wrote on page ${image.pageIndex + 1} since the previous update:"))
-            parts.add(GeminiPart.inline("image/jpeg", Base64.encode(image.jpeg)))
+            parts.add(PromptPart.Text("Close-up of what the student wrote on page ${image.pageIndex + 1} since the previous update:"))
+            parts.add(PromptPart.Image(image.jpeg))
         }
         val typed = notebook.pages.filter { it.typedTexts.isNotEmpty() }
         if (typed.isNotEmpty()) {
             parts.add(
-                GeminiPart.text(
+                PromptPart.Text(
                     typed.joinToString("\n") { page ->
                         "Typed text on page ${page.index + 1}:\n" + page.typedTexts.joinToString("\n") { "- " + it.replace('\n', ' ') }
                     }
@@ -353,10 +369,4 @@ object LecturePrompts {
         else "Notebook page ${image.pageIndex + 1}"
 
     private const val MAX_SUGGESTIONS_IN_MEMORY = 60
-
-    /**
-     * Tokens per image and PDF page: medium (560 for Gemini 3) instead of high (1120 by default
-     * for the images); the images show areas of the page, readable at this resolution.
-     */
-    const val MEDIA_RESOLUTION = "MEDIA_RESOLUTION_MEDIUM"
 }

@@ -12,6 +12,11 @@ import io.github.valerioisufi.drawview.lecture.audio.createAudioCapture
 import io.github.valerioisufi.drawview.lecture.audio.createAudioPlayer
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
+import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
+import io.github.valerioisufi.drawview.lecture.model.ModelBackends
+import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
+import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
+import io.github.valerioisufi.drawview.lecture.transcription.WhisperTranscriber
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -36,8 +41,14 @@ class LectureAssistant(
     private val captureFactory: () -> AudioCapture? = ::createAudioCapture,
     private val player: AudioPlayer? = createAudioPlayer(),
     val library: LectureLibrary = LectureLibrary(),
-    private val stateContext: CoroutineContext = Dispatchers.Main
+    private val stateContext: CoroutineContext = Dispatchers.Main,
+    private val transcriberFactory: (AssistantSettings) -> Transcriber? = { WhisperTranscriber.of(it) }
 ) {
+    private val backends = ModelBackends(
+        gemini = GeminiBackend(client) { settingsStore.apiKey },
+        local = OllamaBackend(localClient) { settingsStore.settings.localUrl }
+    )
+
     /** The last recording (being recorded, being reviewed, or finished). */
     var recorder: LectureRecorder? by mutableStateOf(null)
         private set
@@ -117,7 +128,7 @@ class LectureAssistant(
         if (shownLectures[documentId]?.directory == summary.directory) return
         scope.launch {
             val record = library.load(summary.directory) ?: return@launch
-            val lecture = Lecture(documentId, summary.directory, record, settingsStore, client, localClient, player, stateContext)
+            val lecture = Lecture(documentId, summary.directory, record, settingsStore, backends, player, stateContext)
             withContext(stateContext) { shownLectures[documentId] = lecture }
         }
     }
@@ -137,13 +148,14 @@ class LectureAssistant(
             directory = library.newLectureDirectory(documentId, startedAt),
             record = null,
             settingsStore = settingsStore,
-            client = client,
-            localClient = localClient,
+            backends = backends,
             player = player,
             stateContext = stateContext
         ).apply { documentTitle = controller.document.title }
         val notebook = editorNotebooks[documentId] ?: ControllerNotebookSource(controller).also { editorNotebooks[documentId] = it }
-        val newRecorder = LectureRecorder(lecture, settingsStore, capture, notebook, onFinished = { refresh(documentId) })
+        val settings = settingsStore.settings
+        val transcriber = if (settings.sendsAudio) null else transcriberFactory(settings)
+        val newRecorder = LectureRecorder(lecture, settingsStore, capture, notebook, transcriber, onFinished = { refresh(documentId) })
         return try {
             newRecorder.start()
             startError = null

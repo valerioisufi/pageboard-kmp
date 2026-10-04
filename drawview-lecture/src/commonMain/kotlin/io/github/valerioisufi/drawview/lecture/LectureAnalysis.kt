@@ -118,18 +118,25 @@ object LectureAnalysis {
         }
     }
 
-    /** JSON schema of [ChunkAnalysis], with or without the outline (updated every few minutes). */
-    fun chunkSchema(includeOutline: Boolean): JsonObject = if (includeOutline) chunkSchemaWithOutline else chunkSchemaWithoutOutline
+    /**
+     * JSON schema of [ChunkAnalysis], with or without the outline (updated every few minutes) and
+     * the transcript (not asked when the audio is transcribed on this computer).
+     */
+    fun chunkSchema(includeOutline: Boolean, includeTranscript: Boolean = true): JsonObject =
+        chunkSchemas.getValue(includeOutline to includeTranscript)
 
-    private val chunkSchemaWithOutline: JsonObject = buildChunkSchema(includeOutline = true)
-    private val chunkSchemaWithoutOutline: JsonObject = buildChunkSchema(includeOutline = false)
+    private val chunkSchemas: Map<Pair<Boolean, Boolean>, JsonObject> = listOf(true, false).flatMap { outline ->
+        listOf(true, false).map { transcript -> (outline to transcript) to buildChunkSchema(outline, transcript) }
+    }.toMap()
 
-    private fun buildChunkSchema(includeOutline: Boolean): JsonObject = buildJsonObject {
+    private fun buildChunkSchema(includeOutline: Boolean, includeTranscript: Boolean): JsonObject = buildJsonObject {
         put("type", "object")
         putJsonObject("properties") {
-            putJsonObject("transcript") {
-                put("type", "string")
-                put("description", "Faithful transcript of the new audio only.")
+            if (includeTranscript) {
+                putJsonObject("transcript") {
+                    put("type", "string")
+                    put("description", "Faithful transcript of the new audio only.")
+                }
             }
             putJsonObject("currentTopic") {
                 put("type", "string")
@@ -151,7 +158,7 @@ object LectureAnalysis {
             }
         }
         putJsonArray("required") {
-            add("transcript")
+            if (includeTranscript) add("transcript")
             add("currentTopic")
             if (includeOutline) add("outline")
             add("notes")

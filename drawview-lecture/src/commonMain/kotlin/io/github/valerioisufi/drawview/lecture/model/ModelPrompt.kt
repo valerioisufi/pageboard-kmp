@@ -1,0 +1,59 @@
+package io.github.valerioisufi.drawview.lecture.model
+
+import io.github.valerioisufi.drawview.lecture.ModelProvider
+import io.github.valerioisufi.drawview.lecture.TokenUsage
+import kotlinx.serialization.json.JsonObject
+
+/** A piece of the content of a request. */
+sealed interface PromptPart {
+    class Text(val text: String) : PromptPart
+
+    class Image(val jpeg: ByteArray) : PromptPart
+
+    /** Audio sent with the request (Gemini only). */
+    class Audio(val wav: ByteArray) : PromptPart
+
+    /** A file already uploaded to the provider (Gemini only: PDF slides, complete recording). */
+    class File(val uri: String, val mimeType: String) : PromptPart
+}
+
+/**
+ * A request of the assistant, independent of the provider that answers it: instructions,
+ * content (text, images and, for Gemini, audio and files) and the JSON schema of the answer.
+ *
+ * @param thinkingLevel reasoning of the Gemini models (low, medium, high).
+ */
+class ModelPrompt(
+    val system: String,
+    val parts: List<PromptPart>,
+    val schema: JsonObject,
+    val maxOutputTokens: Int,
+    val thinkingLevel: String
+)
+
+/**
+ * The answer to a [ModelPrompt].
+ *
+ * @param usage tokens billed (Gemini); `null` for a local model, which is free.
+ */
+class ModelAnswer(val text: String, val usage: TokenUsage?)
+
+/** A provider of models answering [ModelPrompt]s. */
+interface ModelBackend {
+    val provider: ModelProvider
+
+    /**
+     * Answers [prompt] with [model].
+     *
+     * @param onProgress tokens written so far (local models).
+     */
+    suspend fun generate(prompt: ModelPrompt, model: String, onProgress: (Int) -> Unit = {}): ModelAnswer
+}
+
+/** The providers of the assistant. */
+class ModelBackends(val gemini: GeminiBackend, val local: OllamaBackend) {
+    fun of(provider: ModelProvider): ModelBackend = when (provider) {
+        ModelProvider.GEMINI -> gemini
+        ModelProvider.LOCAL -> local
+    }
+}

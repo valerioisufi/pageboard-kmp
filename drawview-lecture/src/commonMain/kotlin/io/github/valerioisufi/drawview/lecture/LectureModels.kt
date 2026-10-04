@@ -60,6 +60,7 @@ data class TranscriptSegment(val startMs: Long, val endMs: Long, val text: Strin
  *
  * @param promptByModality prompt tokens by modality (TEXT, IMAGE, AUDIO, DOCUMENT, ...).
  * @param skippedUpdates updates not sent because the chunk held no speech.
+ * @param localRequests requests answered by a local model (free, not counted in the tokens).
  */
 @Serializable
 data class TokenUsage(
@@ -68,7 +69,8 @@ data class TokenUsage(
     val cachedTokens: Long = 0,
     val outputTokens: Long = 0,
     val promptByModality: Map<String, Long> = emptyMap(),
-    val skippedUpdates: Int = 0
+    val skippedUpdates: Int = 0,
+    val localRequests: Int = 0
 ) {
     operator fun plus(other: TokenUsage) = TokenUsage(
         requests = requests + other.requests,
@@ -78,7 +80,8 @@ data class TokenUsage(
         promptByModality = (promptByModality.keys + other.promptByModality.keys).associateWith {
             (promptByModality[it] ?: 0L) + (other.promptByModality[it] ?: 0L)
         },
-        skippedUpdates = skippedUpdates + other.skippedUpdates
+        skippedUpdates = skippedUpdates + other.skippedUpdates,
+        localRequests = localRequests + other.localRequests
     )
 
     /** Estimated cost in dollars with the prices of [settings] (per million tokens). */
