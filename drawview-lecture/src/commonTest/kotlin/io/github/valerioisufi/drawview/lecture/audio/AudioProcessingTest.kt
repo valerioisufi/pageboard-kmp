@@ -7,6 +7,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -173,3 +174,34 @@ class SpeechChunkerTest {
         assertNull(chunker.cutNow(minSeconds = 1f))
     }
 }
+
+class SilenceTest {
+    private val rate = LECTURE_SAMPLE_RATE
+
+    private fun seconds(value: Double, sample: (Int) -> Int) = ShortArray((value * rate).toInt()) { sample(it).toShort() }
+
+    @Test
+    fun speechIsNotSilence() {
+        val random = Random(1)
+        assertFalse(isSilent(seconds(60.0) { random.nextInt(-6000, 6000) }))
+        // A quiet lecturer far from the microphone, over a little room noise
+        assertFalse(isSilent(seconds(60.0) { if ((it / rate) % 3 == 0) random.nextInt(-80, 80) else random.nextInt(-700, 700) }))
+        // Ten seconds of speech in a minute
+        assertFalse(isSilent(seconds(10.0) { random.nextInt(-5000, 5000) } + seconds(50.0) { 0 }))
+    }
+
+    @Test
+    fun quietRoomsAndHumsAreSilence() {
+        val random = Random(2)
+        assertTrue(isSilent(seconds(60.0) { 0 }))
+        assertTrue(isSilent(seconds(60.0) { random.nextInt(-60, 60) }))
+        // Steady hum of a projector
+        assertTrue(isSilent(seconds(60.0) { (900 * sin(2 * PI * 120.0 * it / rate)).roundToInt() }))
+        // A couple of words in a minute
+        assertTrue(isSilent(seconds(1.5) { random.nextInt(-5000, 5000) } + seconds(58.5) { random.nextInt(-40, 40) }))
+        // The overlap with the previous chunk is not considered
+        val chunk = seconds(5.0) { random.nextInt(-6000, 6000) } + seconds(55.0) { 0 }
+        assertTrue(isSilent(chunk, from = 5 * rate))
+    }
+}
+

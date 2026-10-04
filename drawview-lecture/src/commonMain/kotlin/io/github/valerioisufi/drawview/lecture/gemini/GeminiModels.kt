@@ -42,7 +42,9 @@ data class GenerationConfig(
     val responseMimeType: String? = null,
     val responseJsonSchema: JsonElement? = null,
     val maxOutputTokens: Int? = null,
-    val thinkingConfig: ThinkingConfig? = null
+    val thinkingConfig: ThinkingConfig? = null,
+    /** Tokens per image and PDF page: MEDIA_RESOLUTION_LOW, _MEDIUM or _HIGH. */
+    val mediaResolution: String? = null
 )
 
 @Serializable
@@ -80,8 +82,13 @@ data class GeminiUsage(
     val candidatesTokenCount: Long = 0,
     val cachedContentTokenCount: Long = 0,
     val thoughtsTokenCount: Long = 0,
-    val totalTokenCount: Long = 0
+    val totalTokenCount: Long = 0,
+    /** Prompt tokens by modality (TEXT, IMAGE, AUDIO, DOCUMENT, ...). */
+    val promptTokensDetails: List<GeminiModalityTokens> = emptyList()
 )
+
+@Serializable
+data class GeminiModalityTokens(val modality: String = "", val tokenCount: Long = 0)
 
 /** Metadata of a file of the Files API (kept for 48 hours). */
 @Serializable

@@ -113,14 +113,15 @@ class SpeechChunker(
 
     /**
      * Quiet level of the chunk: a little above its noise floor (low percentile of the frames), and
-     * well below its typical level (a steady sound has no pauses).
+     * well below its typical level (a steady sound has no pauses); a nearly silent frame is always
+     * quiet.
      */
     private fun computeQuietThreshold(): Float {
         if (frameRms.isEmpty()) return MIN_QUIET_RMS
         val sorted = frameRms.sorted()
         val floor = sorted[(sorted.size * 0.10f).toInt().coerceIn(0, sorted.lastIndex)]
         val median = sorted[sorted.size / 2]
-        return minOf(maxOf(MIN_QUIET_RMS, floor * 1.5f), median * 0.5f)
+        return maxOf(ALWAYS_QUIET_RMS, minOf(maxOf(MIN_QUIET_RMS, floor * 1.5f), median * 0.5f))
     }
 
     private fun cut(end: Int): AudioChunk {
@@ -148,5 +149,8 @@ class SpeechChunker(
     private companion object {
         const val FRAME_MS = 30
         const val MIN_QUIET_RMS = 120f
+
+        /** About -50 dBFS: silence, whatever the rest of the chunk. */
+        const val ALWAYS_QUIET_RMS = 100f
     }
 }

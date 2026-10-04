@@ -93,18 +93,22 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.lecture.AssistantSettings
 import io.github.valerioisufi.drawview.lecture.LectureAssistant
 import io.github.valerioisufi.drawview.lecture.LectureProblem
 import io.github.valerioisufi.drawview.lecture.LectureSession
 import io.github.valerioisufi.drawview.lecture.LectureStatus
 import io.github.valerioisufi.drawview.lecture.NoteKind
 import io.github.valerioisufi.drawview.lecture.NoteSuggestion
+import io.github.valerioisufi.drawview.lecture.ReviewProvider
 import io.github.valerioisufi.drawview.lecture.ReviewStatus
 import io.github.valerioisufi.drawview.lecture.SuggestionStatus
+import io.github.valerioisufi.drawview.lecture.TokenUsage
 import io.github.valerioisufi.drawview.lecture.formatLectureTime
 import io.github.valerioisufi.drawview.lecture.generated.resources.*
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
+import io.github.valerioisufi.drawview.ui.util.formatDecimal
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -293,8 +297,11 @@ private fun RecordingSection(
                 is LectureProblem.Authentication -> stringResource(Res.string.lecture_problem_authentication, problem.detail)
                 is LectureProblem.Retrying -> stringResource(Res.string.lecture_problem_retrying, problem.retryInSeconds, problem.detail)
                 is LectureProblem.Failed -> stringResource(Res.string.lecture_problem_failed, problem.detail)
+                is LectureProblem.LocalModelUnavailable -> stringResource(Res.string.lecture_problem_local_unavailable, problem.detail)
+                LectureProblem.NoTranscript -> stringResource(Res.string.lecture_problem_no_transcript)
             }
-            val needsSettings = problem is LectureProblem.MissingApiKey || problem is LectureProblem.Authentication
+            val needsSettings = problem is LectureProblem.MissingApiKey || problem is LectureProblem.Authentication ||
+                problem is LectureProblem.LocalModelUnavailable
             ProblemBanner(message, action = if (needsSettings) Res.string.lecture_action_settings to onOpenSettings else null)
         }
     }
@@ -381,7 +388,7 @@ private fun LectureTabs(assistant: LectureAssistant, session: LectureSession, co
             0 -> NotesTab(assistant, session, controller, inserter)
             1 -> TranscriptTab(session)
             2 -> OutlineTab(session)
-            else -> ReviewTab(session, controller, inserter)
+            else -> ReviewTab(session, controller, inserter, assistant.settingsStore.settings)
         }
     }
 }
@@ -640,7 +647,12 @@ private fun OutlineTab(session: LectureSession) {
 }
 
 @Composable
-private fun ReviewTab(session: LectureSession, controller: DrawViewController, inserter: NoteInserter) {
+private fun ReviewTab(
+    session: LectureSession,
+    controller: DrawViewController,
+    inserter: NoteInserter,
+    settings: AssistantSettings
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -649,40 +661,103 @@ private fun ReviewTab(session: LectureSession, controller: DrawViewController, i
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         val review = session.finalReview
+        val canRegenerate = session.status == LectureStatus.FINISHED
         when {
             session.reviewStatus == ReviewStatus.RUNNING || session.status == LectureStatus.FINALIZING -> {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                     Spacer(Modifier.width(12.dp))
-                    MutedText(stringResource(Res.string.lecture_review_running))
+                    MutedText(
+                        if (session.reviewProvider == ReviewProvider.LOCAL && session.reviewStatus == ReviewStatus.RUNNING) {
+                            stringResource(Res.string.lecture_review_running_local, session.reviewModel.orEmpty(), session.reviewProgressTokens)
+                        } else {
+                            stringResource(Res.string.lecture_review_running)
+                        }
+                    )
                 }
             }
             session.reviewStatus == ReviewStatus.FAILED -> {
                 MutedText(stringResource(Res.string.lecture_review_failed))
-                if (session.status == LectureStatus.FINISHED) {
-                    OutlinedButton(onClick = { session.retryFinalReview() }) { Text(stringResource(Res.string.lecture_action_retry)) }
-                }
+                if (canRegenerate) RegenerateReviewButton(session, settings)
             }
             review != null -> {
                 InsertPagesButton(controller) { afterPageIndex -> inserter.insertPages(controller, review, afterPageIndex) }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    MutedText(
+                        session.reviewModel?.let { stringResource(Res.string.lecture_review_by, it) }.orEmpty(),
+                        Modifier.weight(1f)
+                    )
+                    if (canRegenerate) RegenerateReviewButton(session, settings)
+                }
                 SelectionContainer { MarkdownText(review) }
             }
             else -> MutedText(stringResource(Res.string.lecture_review_none))
         }
 
-        val usage = session.usage
-        if (usage.requests > 0) {
-            HorizontalDivider()
-            MutedText(
-                stringResource(
-                    Res.string.lecture_usage,
-                    usage.requests,
-                    compactNumber(usage.promptTokens),
-                    compactNumber(usage.cachedTokens),
-                    compactNumber(usage.outputTokens)
-                )
+        UsageSummary(session.usage, settings)
+    }
+}
+
+/** Writes the final review again, by Gemini or by the local model. */
+@Composable
+private fun RegenerateReviewButton(session: LectureSession, settings: AssistantSettings) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        TextButton(onClick = { expanded = true }) {
+            Text(stringResource(Res.string.lecture_review_regenerate))
+            Icon(Icons.Outlined.ArrowDropDown, contentDescription = null, modifier = Modifier.size(18.dp))
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(Res.string.lecture_review_with_gemini, settings.model)) },
+                onClick = {
+                    expanded = false
+                    session.retryFinalReview(ReviewProvider.GEMINI)
+                }
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(Res.string.lecture_review_with_local, settings.localModel)) },
+                onClick = {
+                    expanded = false
+                    session.retryFinalReview(ReviewProvider.LOCAL)
+                }
             )
         }
+    }
+}
+
+/** Estimated cost of the lecture and where the tokens went. */
+@Composable
+private fun UsageSummary(usage: TokenUsage, settings: AssistantSettings) {
+    if (usage.requests == 0 && usage.skippedUpdates == 0) return
+    HorizontalDivider()
+    if (usage.requests > 0) {
+        MutedText(
+            stringResource(
+                Res.string.lecture_usage_cost,
+                formatDollars(usage.estimatedCost(settings)),
+                usage.requests,
+                compactNumber(usage.promptTokens),
+                compactNumber(usage.cachedTokens),
+                compactNumber(usage.outputTokens)
+            )
+        )
+    }
+    if (usage.promptByModality.isNotEmpty()) {
+        val parts = usage.promptByModality.entries.sortedByDescending { it.value }.map { (modality, tokens) ->
+            val label = when (modality.uppercase()) {
+                "TEXT" -> stringResource(Res.string.lecture_modality_text)
+                "IMAGE" -> stringResource(Res.string.lecture_modality_image)
+                "AUDIO" -> stringResource(Res.string.lecture_modality_audio)
+                "DOCUMENT" -> stringResource(Res.string.lecture_modality_document)
+                else -> modality.lowercase()
+            }
+            "$label ${compactNumber(tokens)}"
+        }
+        MutedText(stringResource(Res.string.lecture_usage_input, parts.joinToString(" · ")))
+    }
+    if (usage.skippedUpdates > 0) {
+        MutedText(stringResource(Res.string.lecture_usage_skipped, usage.skippedUpdates))
     }
 }
 
@@ -820,6 +895,10 @@ private fun markdownWithFormulas(
     }
     return text to inline
 }
+
+/** 0.1346 -> "$0.13", below one cent "< $0.01". */
+internal fun formatDollars(value: Double): String =
+    if (value > 0.0 && value < 0.01) "< $0.01" else "$" + formatDecimal(value.toFloat(), 2)
 
 /** 1234 -> "1.2k", 2345678 -> "2.3M". */
 internal fun compactNumber(value: Long): String {

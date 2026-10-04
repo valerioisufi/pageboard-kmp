@@ -62,7 +62,6 @@
     <string name="lecture_review_insert_after">After page %1$d (the one you are looking at)</string>
     <string name="lecture_review_insert_end">At the end of the notebook</string>
     <string name="lecture_review_insert">Insert as new pages</string>
-    <string name="lecture_usage">%1$d requests · %2$s input tokens (%3$s cached) · %4$s output tokens</string>
     <string name="lecture_settings_api_key">Gemini API key</string>
     <string name="lecture_settings_api_key_env">The GEMINI_API_KEY environment variable is used.</string>
     <string name="lecture_settings_api_key_hint">Saved on this device, readable by your user only.</string>
@@ -84,4 +83,29 @@
     <string name="lecture_settings_thinking_high">Thorough</string>
     <string name="lecture_action_save">Save</string>
     <string name="lecture_action_cancel">Cancel</string>
+    <string name="lecture_problem_local_unavailable">The local model does not answer: start Ollama and check the model in the settings (%1$s)</string>
+    <string name="lecture_problem_no_transcript">The local review uses the transcript of the lecture, which is empty: use Gemini.</string>
+    <string name="lecture_review_running_local">%1$s is reviewing the lecture on this computer: %2$d tokens written. It can take 10–20 minutes.</string>
+    <string name="lecture_review_by">Review by %1$s</string>
+    <string name="lecture_review_regenerate">Regenerate</string>
+    <string name="lecture_review_with_gemini">With Gemini (%1$s)</string>
+    <string name="lecture_review_with_local">On this computer (%1$s, free)</string>
+    <string name="lecture_usage_cost">≈ %1$s · %2$d requests · input %3$s (%4$s cached) · output %5$s</string>
+    <string name="lecture_usage_input">Input: %1$s</string>
+    <string name="lecture_usage_skipped">Updates skipped (no speech): %1$d</string>
+    <string name="lecture_modality_text">text</string>
+    <string name="lecture_modality_image">images</string>
+    <string name="lecture_modality_audio">audio</string>
+    <string name="lecture_modality_document">PDF</string>
+    <string name="lecture_settings_review">Final review</string>
+    <string name="lecture_settings_review_gemini">Gemini</string>
+    <string name="lecture_settings_review_local">Local (Ollama)</string>
+    <string name="lecture_settings_review_local_hint">Free and private: a model of Ollama on this computer rereads the transcript and your notes, in 10–20 minutes. It must accept images (e.g. gemma4:12b).</string>
+    <string name="lecture_settings_local_model">Ollama model</string>
+    <string name="lecture_settings_local_url">Ollama address</string>
+    <string name="lecture_settings_prices">Gemini prices ($ per million tokens)</string>
+    <string name="lecture_settings_price_input">Input</string>
+    <string name="lecture_settings_price_cached">Cached</string>
+    <string name="lecture_settings_price_output">Output</string>
+    <string name="lecture_settings_prices_hint">Used to estimate the cost of a lecture. Gemini 3.8 Flash: 0.75 / 0.075 / 3.75 until 31/12/2026, twice as much from 2027.</string>
 </resources>

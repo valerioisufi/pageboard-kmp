@@ -26,6 +26,9 @@ class LectureMemory(
     val suggestions: List<NoteSuggestion>
 )
 
+/** A prompt for a local model: system instructions, user text and attached JPEG images. */
+class LocalPrompt(val system: String, val user: String, val images: List<ByteArray>)
+
 /** A PDF document of the notebook uploaded with the Files API. */
 class UploadedSlides(val document: SlideDocument, val file: GeminiFile)
 
@@ -63,7 +66,7 @@ object LecturePrompts {
         - transcript: faithful transcript of the new audio only (after the context part), not summarized; mark unintelligible parts as [inaudible]; empty when there is no speech.
         - currentTopic: the current topic in a few words.
         - professorPage: the notebook page the lecturer is talking about, when the audio and the slides make it clear (e.g. they moved to the next slide, they describe a figure). Omit it when unsure.
-        - outline: the updated outline of the whole lecture so far, as a Markdown bullet list of at most about 300 words. Integrate the new content into the previous outline keeping its structure, and compress older details rather than dropping topics: it is your memory of the lecture.
+        - outline (only when the request asks for it, every few minutes): the updated outline of the whole lecture so far, as a Markdown bullet list of at most about 300 words. Integrate the new content into the previous outline keeping its structure, and compress older details rather than dropping topics: it is your memory of the lecture.
         - notes: the missing content, as described above. atSeconds is measured from the start of the audio of the request.
 
         ${languageRule(settings)}
@@ -87,13 +90,15 @@ object LecturePrompts {
         notebook: NotebookSnapshot?,
         slides: List<UploadedSlides>,
         audio: RequestAudio,
-        catchUp: Boolean = false
+        catchUp: Boolean = false,
+        includeOutline: Boolean = true,
+        mediaResolution: String? = MEDIA_RESOLUTION
     ): GenerateContentRequest {
         val parts = mutableListOf<GeminiPart>()
         courseParts(settings, notebook?.documentTitle)?.let { parts.add(it) }
         parts.addAll(slideParts(slides))
         parts.add(GeminiPart.text(memoryText(memory)))
-        notebook?.let { parts.addAll(notebookParts(it)) }
+        notebook?.let { parts.addAll(notebookParts(it, slides)) }
 
         val contextSeconds = audio.contextMs / 1000
         val audioIntro = buildString {
@@ -109,6 +114,10 @@ object LecturePrompts {
                         "The transcript still covers only the new audio."
                 )
             }
+            append(
+                if (includeOutline) "\nUpdate the outline in this answer."
+                else "\nThe outline is not updated in this answer."
+            )
         }
         parts.add(GeminiPart.text(audioIntro))
         parts.add(GeminiPart.inline("audio/wav", Base64.encode(audio.wav)))
@@ -118,9 +127,10 @@ object LecturePrompts {
             systemInstruction = GeminiContent(parts = listOf(GeminiPart.text(chunkSystemInstruction(settings)))),
             generationConfig = GenerationConfig(
                 responseMimeType = "application/json",
-                responseJsonSchema = LectureAnalysis.chunkSchema,
+                responseJsonSchema = LectureAnalysis.chunkSchema(includeOutline),
                 maxOutputTokens = 8192,
-                thinkingConfig = ThinkingConfig(settings.thinkingLevel)
+                thinkingConfig = ThinkingConfig(settings.thinkingLevel),
+                mediaResolution = mediaResolution
             )
         )
     }
@@ -136,15 +146,16 @@ object LecturePrompts {
         transcript: List<TranscriptSegment>,
         pageImages: List<PageImage>,
         slides: List<UploadedSlides>,
-        audioFile: GeminiFile?
+        audioFile: GeminiFile?,
+        mediaResolution: String? = MEDIA_RESOLUTION
     ): GenerateContentRequest {
         val parts = mutableListOf<GeminiPart>()
         courseParts(settings, documentTitle)?.let { parts.add(it) }
         parts.addAll(slideParts(slides))
         if (pageImages.isNotEmpty()) {
-            parts.add(GeminiPart.text("## Notebook pages seen during the lecture (as last seen)"))
+            parts.add(GeminiPart.text("## Notes of the student seen during the lecture (as last seen)"))
             for (image in pageImages.sortedBy { it.pageIndex }) {
-                parts.add(GeminiPart.text("Notebook page ${image.pageIndex + 1}:"))
+                parts.add(GeminiPart.text(imageLabel(image)))
                 parts.add(GeminiPart.inline("image/jpeg", Base64.encode(image.jpeg)))
             }
         }
@@ -168,8 +179,39 @@ object LecturePrompts {
                 responseMimeType = "application/json",
                 responseJsonSchema = LectureAnalysis.finalReviewSchema,
                 maxOutputTokens = 32768,
-                thinkingConfig = ThinkingConfig(if (settings.thinkingLevel == "high") "high" else "medium")
+                thinkingConfig = ThinkingConfig(if (settings.thinkingLevel == "high") "high" else "medium"),
+                mediaResolution = mediaResolution
             )
+        )
+    }
+
+    /**
+     * The final review for a local model (Ollama): the transcript instead of the recording, the
+     * notes of the student as attached images, no PDF.
+     */
+    fun localReviewPrompt(
+        settings: AssistantSettings,
+        documentTitle: String,
+        memory: LectureMemory,
+        transcript: List<TranscriptSegment>,
+        pageImages: List<PageImage>
+    ): LocalPrompt {
+        val images = pageImages.sortedBy { it.pageIndex }
+        val user = buildString {
+            courseParts(settings, documentTitle)?.text?.let { appendLine(it).appendLine() }
+            appendLine(memoryText(memory)).appendLine()
+            if (images.isNotEmpty()) {
+                appendLine("## Notes of the student (attached images, in this order)")
+                images.forEach { appendLine("- " + imageLabel(it)) }
+                appendLine()
+            }
+            appendLine("## Transcript of the lecture (the recording is not available: rely on it; it may contain recognition errors)")
+            transcript.forEach { appendLine("[${formatLectureTime(it.startMs)}] ${it.text}") }
+        }
+        return LocalPrompt(
+            system = finalReviewSystemInstruction(settings).replace("its recording (or its transcript)", "its transcript"),
+            user = user.trim(),
+            images = images.map { it.jpeg }
         )
     }
 
@@ -243,30 +285,58 @@ object LecturePrompts {
         SuggestionStatus.DISMISSED -> "dismissed"
     }
 
-    private fun notebookParts(notebook: NotebookSnapshot): List<GeminiPart> {
+    /**
+     * The pages around the visible ones described in words (slide, notes of the student, empty),
+     * with an image only where the student wrote or where the slide cannot be read in the PDFs.
+     */
+    private fun notebookParts(notebook: NotebookSnapshot, slides: List<UploadedSlides>): List<GeminiPart> {
+        val pdfNumbers = slides.withIndex().associate { (i, uploaded) -> uploaded.document.resourceId to i + 1 }
         val parts = mutableListOf<GeminiPart>()
         val visible = notebook.visiblePageIndexes.map { it + 1 }
         parts.add(
             GeminiPart.text(
-                "## Notebook (${notebook.pageCount} pages)\n" +
-                    "The student is looking at page ${visible.joinToString(", ")}. The images show the visible pages, then the pages around them."
+                buildString {
+                    appendLine("## Notebook (${notebook.pageCount} pages)")
+                    appendLine("The student is looking at page ${visible.joinToString(", ")}. Pages around:")
+                    for (page in notebook.pages) {
+                        append("- Page ${page.index + 1} (${if (page.visible) "visible" else "nearby"}): ")
+                        val slide = page.slide
+                        val pdf = slide?.let { pdfNumbers[it.resourceId] }
+                        append(
+                            when {
+                                slide != null && pdf != null -> "slide ${slide.pdfPageIndex + 1} of PDF $pdf"
+                                slide != null -> "a slide (see the image)"
+                                else -> "blank paper"
+                            }
+                        )
+                        val image = page.image
+                        append(
+                            when {
+                                image == null -> ", nothing written by the student"
+                                image.isCrop -> ", with notes of the student (image: the written area)"
+                                else -> " (image: the whole page)"
+                            }
+                        )
+                        appendLine(".")
+                    }
+                }.trim()
             )
         )
-        val visibleSet = notebook.visiblePageIndexes.toSet()
-        for (image in notebook.pageImages) {
-            val role = if (image.pageIndex in visibleSet) "visible" else "nearby"
-            parts.add(GeminiPart.text("Notebook page ${image.pageIndex + 1} ($role):"))
+        for (page in notebook.pages) {
+            val image = page.image ?: continue
+            parts.add(GeminiPart.text(imageLabel(image) + ":"))
             parts.add(GeminiPart.inline("image/jpeg", Base64.encode(image.jpeg)))
         }
         for (image in notebook.newWriting) {
             parts.add(GeminiPart.text("Close-up of what the student wrote on page ${image.pageIndex + 1} since the previous update:"))
             parts.add(GeminiPart.inline("image/jpeg", Base64.encode(image.jpeg)))
         }
-        if (notebook.typedTexts.isNotEmpty()) {
+        val typed = notebook.pages.filter { it.typedTexts.isNotEmpty() }
+        if (typed.isNotEmpty()) {
             parts.add(
                 GeminiPart.text(
-                    notebook.typedTexts.entries.sortedBy { it.key }.joinToString("\n") { (index, texts) ->
-                        "Typed text on page ${index + 1}:\n" + texts.joinToString("\n") { "- " + it.replace('\n', ' ') }
+                    typed.joinToString("\n") { page ->
+                        "Typed text on page ${page.index + 1}:\n" + page.typedTexts.joinToString("\n") { "- " + it.replace('\n', ' ') }
                     }
                 )
             )
@@ -274,5 +344,15 @@ object LecturePrompts {
         return parts
     }
 
+    private fun imageLabel(image: PageImage): String =
+        if (image.isCrop) "Notebook page ${image.pageIndex + 1}, area written by the student"
+        else "Notebook page ${image.pageIndex + 1}"
+
     private const val MAX_SUGGESTIONS_IN_MEMORY = 60
+
+    /**
+     * Tokens per image and PDF page: medium (560 for Gemini 3) instead of high (1120 by default
+     * for the images); the images show areas of the page, readable at this resolution.
+     */
+    const val MEDIA_RESOLUTION = "MEDIA_RESOLUTION_MEDIUM"
 }

@@ -84,3 +84,24 @@ fun rms(samples: ShortArray, from: Int = 0, to: Int = samples.size): Float {
     }
     return sqrt(sum / (to - from)).toFloat()
 }
+
+/**
+ * Whether [samples] (from [from]) hold no speech worth analyzing: even the loudest moments are
+ * quiet, or the level never rises much above the noise floor (a steady hum, e.g. a projector).
+ * The loudest moments are the 95th percentile of the 30 ms frames: a few isolated words in a
+ * minute of silence count as silence.
+ */
+fun isSilent(samples: ShortArray, from: Int = 0, sampleRate: Int = LECTURE_SAMPLE_RATE): Boolean {
+    val frame = sampleRate * 30 / 1000
+    if (samples.size - from < frame) return true
+    val levels = (from..samples.size - frame step frame).map { rms(samples, it, it + frame) }.sorted()
+    val floor = levels[(levels.size * 0.10f).toInt().coerceAtMost(levels.lastIndex)]
+    val peak = levels[(levels.size * 0.95f).toInt().coerceAtMost(levels.lastIndex)]
+    return peak < SILENT_PEAK_RMS || (peak < STEADY_SOUND_PEAK_RMS && peak < floor * 2.5f)
+}
+
+/** Below this level (about -40 dBFS) even the loudest moments of a chunk are silence. */
+private const val SILENT_PEAK_RMS = 300f
+
+/** A sound that never exceeds this level (about -30 dBFS) nor rises above its floor is a hum. */
+private const val STEADY_SOUND_PEAK_RMS = 1000f

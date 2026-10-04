@@ -41,19 +41,37 @@ data class NoteSuggestion(
 @Serializable
 data class TranscriptSegment(val startMs: Long, val endMs: Long, val text: String)
 
+/**
+ * Tokens billed by the Gemini API (the local model is free).
+ *
+ * @param promptByModality prompt tokens by modality (TEXT, IMAGE, AUDIO, DOCUMENT, ...).
+ * @param skippedUpdates updates not sent because the chunk held no speech.
+ */
 @Serializable
 data class TokenUsage(
     val requests: Int = 0,
     val promptTokens: Long = 0,
     val cachedTokens: Long = 0,
-    val outputTokens: Long = 0
+    val outputTokens: Long = 0,
+    val promptByModality: Map<String, Long> = emptyMap(),
+    val skippedUpdates: Int = 0
 ) {
     operator fun plus(other: TokenUsage) = TokenUsage(
         requests = requests + other.requests,
         promptTokens = promptTokens + other.promptTokens,
         cachedTokens = cachedTokens + other.cachedTokens,
-        outputTokens = outputTokens + other.outputTokens
+        outputTokens = outputTokens + other.outputTokens,
+        promptByModality = (promptByModality.keys + other.promptByModality.keys).associateWith {
+            (promptByModality[it] ?: 0L) + (other.promptByModality[it] ?: 0L)
+        },
+        skippedUpdates = skippedUpdates + other.skippedUpdates
     )
+
+    /** Estimated cost in dollars with the prices of [settings] (per million tokens). */
+    fun estimatedCost(settings: AssistantSettings): Double =
+        ((promptTokens - cachedTokens).coerceAtLeast(0) * settings.priceInput +
+            cachedTokens * settings.priceCachedInput +
+            outputTokens * settings.priceOutput) / 1_000_000.0
 }
 
 /**
@@ -71,6 +89,8 @@ data class LectureRecord(
     val transcript: List<TranscriptSegment> = emptyList(),
     val suggestions: List<NoteSuggestion> = emptyList(),
     val finalReview: String? = null,
+    /** Model that wrote the final review. */
+    val finalReviewBy: String? = null,
     val usage: TokenUsage = TokenUsage()
 )
 

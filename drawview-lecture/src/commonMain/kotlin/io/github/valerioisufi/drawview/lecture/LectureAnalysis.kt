@@ -47,9 +47,27 @@ object LectureAnalysis {
         coerceInputValues = true
     }
 
-    fun parseChunk(text: String): ChunkAnalysis = parse(text, ChunkAnalysis.serializer())
+    fun parseChunk(text: String): ChunkAnalysis = parse(text, ChunkAnalysis.serializer()).let { analysis ->
+        analysis.copy(
+            outline = normalizeMarkdown(analysis.outline),
+            notes = analysis.notes.map { it.copy(content = normalizeMarkdown(it.content)) }
+        )
+    }
 
-    fun parseFinalReview(text: String): FinalReview = parse(text, FinalReview.serializer())
+    fun parseFinalReview(text: String): FinalReview = parse(text, FinalReview.serializer()).let { review ->
+        review.copy(
+            notesMarkdown = normalizeMarkdown(review.notesMarkdown),
+            missing = review.missing.map { it.copy(content = normalizeMarkdown(it.content)) }
+        )
+    }
+
+    /**
+     * Bullet points as "- ": the canvas reads a single `*` as italic, and the models (the small
+     * local ones in particular) often write "*   item".
+     */
+    internal fun normalizeMarkdown(markdown: String): String = markdown.replace(BULLET, "$1- ")
+
+    private val BULLET = Regex("""(?m)^([ \t]*)[*+][ \t]+""")
 
     /** Decodes a JSON answer, tolerating a Markdown code fence around it. */
     private fun <T> parse(text: String, serializer: KSerializer<T>): T {
@@ -100,8 +118,13 @@ object LectureAnalysis {
         }
     }
 
-    /** JSON schema of [ChunkAnalysis]. */
-    val chunkSchema: JsonObject = buildJsonObject {
+    /** JSON schema of [ChunkAnalysis], with or without the outline (updated every few minutes). */
+    fun chunkSchema(includeOutline: Boolean): JsonObject = if (includeOutline) chunkSchemaWithOutline else chunkSchemaWithoutOutline
+
+    private val chunkSchemaWithOutline: JsonObject = buildChunkSchema(includeOutline = true)
+    private val chunkSchemaWithoutOutline: JsonObject = buildChunkSchema(includeOutline = false)
+
+    private fun buildChunkSchema(includeOutline: Boolean): JsonObject = buildJsonObject {
         put("type", "object")
         putJsonObject("properties") {
             putJsonObject("transcript") {
@@ -116,9 +139,11 @@ object LectureAnalysis {
                 put("type", "integer")
                 put("description", "Notebook page number (1-based) the lecturer is talking about; omit if unsure.")
             }
-            putJsonObject("outline") {
-                put("type", "string")
-                put("description", "Updated outline of the whole lecture so far (Markdown bullet list).")
+            if (includeOutline) {
+                putJsonObject("outline") {
+                    put("type", "string")
+                    put("description", "Updated outline of the whole lecture so far (Markdown bullet list).")
+                }
             }
             putJsonObject("notes") {
                 put("type", "array")
@@ -128,7 +153,7 @@ object LectureAnalysis {
         putJsonArray("required") {
             add("transcript")
             add("currentTopic")
-            add("outline")
+            if (includeOutline) add("outline")
             add("notes")
         }
     }

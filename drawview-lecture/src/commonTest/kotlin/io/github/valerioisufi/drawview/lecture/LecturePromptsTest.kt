@@ -21,9 +21,17 @@ class LecturePromptsTest {
         documentTitle = "Analisi 1",
         pageCount = 10,
         visiblePageIndexes = listOf(4),
-        pageImages = listOf(PageImage(4, byteArrayOf(1, 2, 3)), PageImage(5, byteArrayOf(4, 5))),
-        newWriting = listOf(PageImage(4, byteArrayOf(6))),
-        typedTexts = mapOf(4 to listOf("Teorema ponte")),
+        pages = listOf(
+            // Slide with notes: the written area
+            NotebookPage(4, visible = true, slide = SlidePage("res1", 2), image = PageImage(4, byteArrayOf(1, 2, 3), isCrop = true), typedTexts = listOf("Teorema ponte")),
+            // Slide without notes: in the PDF, no image
+            NotebookPage(3, visible = false, slide = SlidePage("res1", 1), image = null, typedTexts = emptyList()),
+            // Empty page
+            NotebookPage(5, visible = false, slide = null, image = null, typedTexts = emptyList()),
+            // Slide of a PDF not sent: the whole page
+            NotebookPage(6, visible = false, slide = SlidePage("res2", 0), image = PageImage(6, byteArrayOf(4, 5)), typedTexts = emptyList())
+        ),
+        newWriting = listOf(PageImage(4, byteArrayOf(6), isCrop = true)),
         slides = emptyList(),
         strokeIds = setOf("a")
     )
@@ -45,13 +53,19 @@ class LecturePromptsTest {
         )
     )
 
-    private fun request(catchUp: Boolean = false): GenerateContentRequest = LecturePrompts.chunkRequest(
+    private fun request(
+        catchUp: Boolean = false,
+        includeOutline: Boolean = true,
+        mediaResolution: String? = LecturePrompts.MEDIA_RESOLUTION
+    ): GenerateContentRequest = LecturePrompts.chunkRequest(
         settings = settings,
         memory = memory,
         notebook = notebook,
         slides = slides,
         audio = RequestAudio(byteArrayOf(9, 9, 9), startMs = 55_000, contextMs = 5_000, endMs = 125_000),
-        catchUp = catchUp
+        catchUp = catchUp,
+        includeOutline = includeOutline,
+        mediaResolution = mediaResolution
     )
 
     @Test
@@ -71,8 +85,12 @@ class LecturePromptsTest {
     fun notebookAndMemoryAreDescribedWithOneBasedPages() {
         val texts = request().contents.single().parts.mapNotNull { it.text }.joinToString("\n")
         assertTrue(texts.contains("The student is looking at page 5"))
-        assertTrue(texts.contains("Notebook page 5 (visible):"))
-        assertTrue(texts.contains("Notebook page 6 (nearby):"))
+        assertTrue(texts.contains("- Page 5 (visible): slide 3 of PDF 1, with notes of the student (image: the written area)."))
+        assertTrue(texts.contains("- Page 4 (nearby): slide 2 of PDF 1, nothing written by the student."))
+        assertTrue(texts.contains("- Page 6 (nearby): blank paper, nothing written by the student."))
+        assertTrue(texts.contains("- Page 7 (nearby): a slide (see the image) (image: the whole page)."))
+        assertTrue(texts.contains("Notebook page 5, area written by the student:"))
+        assertTrue(texts.contains("Notebook page 7:"))
         assertTrue(texts.contains("Close-up of what the student wrote on page 5"))
         assertTrue(texts.contains("Typed text on page 5:\n- Teorema ponte"))
         assertTrue(texts.contains("PDF pages 1–3 are notebook pages 3–5"))
@@ -80,6 +98,51 @@ class LecturePromptsTest {
         assertTrue(texts.contains("Lecture time 1:00–2:05. The first 5 s"))
         assertFalse(texts.contains("I missed something"))
         assertTrue(request(catchUp = true).contents.single().parts.mapNotNull { it.text }.any { it.contains("I missed something") })
+    }
+
+    @Test
+    fun onlyTheWrittenAreasAndTheUnreadableSlidesAreImages() {
+        val images = request().contents.single().parts.mapNotNull { it.inlineData }.filter { it.mimeType == "image/jpeg" }
+        // Page 5 (written area), page 7 (slide not in the PDFs), close-up of the new writing
+        assertEquals(3, images.size)
+    }
+
+    @Test
+    fun theOutlineIsRequestedOnlyWhenDue() {
+        fun schemaOf(request: GenerateContentRequest) =
+            GeminiClient.json.encodeToJsonElement(GenerateContentRequest.serializer(), request).jsonObject
+                .getValue("generationConfig").jsonObject.getValue("responseJsonSchema").jsonObject
+        val withOutline = schemaOf(request(includeOutline = true))
+        assertTrue("outline" in withOutline.getValue("properties").jsonObject)
+        val withoutOutline = schemaOf(request(includeOutline = false))
+        assertFalse("outline" in withoutOutline.getValue("properties").jsonObject)
+        assertFalse(withoutOutline.getValue("required").jsonArray.any { it.jsonPrimitive.content == "outline" })
+        assertTrue(request(includeOutline = false).contents.single().parts.mapNotNull { it.text }.any { it.contains("The outline is not updated in this answer.") })
+    }
+
+    @Test
+    fun mediaResolutionIsSentUnlessRefused() {
+        fun configOf(request: GenerateContentRequest) =
+            GeminiClient.json.encodeToJsonElement(GenerateContentRequest.serializer(), request).jsonObject.getValue("generationConfig").jsonObject
+        assertEquals("MEDIA_RESOLUTION_MEDIUM", configOf(request()).getValue("mediaResolution").jsonPrimitive.content)
+        assertFalse("mediaResolution" in configOf(request(mediaResolution = null)))
+    }
+
+    @Test
+    fun localReviewUsesTheTranscriptAndAttachedImages() {
+        val prompt = LecturePrompts.localReviewPrompt(
+            settings = settings,
+            documentTitle = "Analisi 1",
+            memory = memory,
+            transcript = listOf(TranscriptSegment(0, 60_000, "Buongiorno"), TranscriptSegment(60_000, 120_000, "Oggi i limiti")),
+            pageImages = listOf(PageImage(7, byteArrayOf(2)), PageImage(4, byteArrayOf(1), isCrop = true))
+        )
+        assertTrue(prompt.system.contains("notesMarkdown"))
+        assertFalse(prompt.system.contains("recording (or"))
+        assertTrue(prompt.user.contains("[0:00] Buongiorno\n[1:00] Oggi i limiti"))
+        // Images in page order, described in the same order
+        assertEquals(listOf(1.toByte(), 2.toByte()), prompt.images.map { it.single() })
+        assertTrue(prompt.user.indexOf("Notebook page 5, area written by the student") < prompt.user.indexOf("Notebook page 8"))
     }
 
     @Test
@@ -148,6 +211,16 @@ class LectureAnalysisTest {
         assertEquals("\$\\lim_{x \\to a} f(x) = L\$", note.content)
         assertEquals(3, note.page)
         assertEquals(12.5, note.atSeconds)
+    }
+
+    @Test
+    fun bulletsAreWrittenWithDashes() {
+        assertEquals(
+            "# Hash\n- **Collisioni**: rare\n    - *nota* in corsivo\n- SHA-256",
+            LectureAnalysis.normalizeMarkdown("# Hash\n*   **Collisioni**: rare\n    *   *nota* in corsivo\n+ SHA-256")
+        )
+        val review = LectureAnalysis.parseFinalReview("""{"notesMarkdown":"*   uno\n*   due","missing":[]}""")
+        assertEquals("- uno\n- due", review.notesMarkdown)
     }
 
     @Test

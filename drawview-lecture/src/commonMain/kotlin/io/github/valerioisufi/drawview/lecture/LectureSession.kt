@@ -15,6 +15,7 @@ import io.github.valerioisufi.drawview.lecture.audio.AudioPlayer
 import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
 import io.github.valerioisufi.drawview.lecture.audio.SpeechChunker
+import io.github.valerioisufi.drawview.lecture.audio.isSilent
 import io.github.valerioisufi.drawview.lecture.audio.Wav
 import io.github.valerioisufi.drawview.lecture.audio.rms
 import io.github.valerioisufi.drawview.lecture.audio.samplesToMs
@@ -23,6 +24,11 @@ import io.github.valerioisufi.drawview.lecture.gemini.GeminiException
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiUsage
 import io.github.valerioisufi.drawview.lecture.gemini.GenerateContentRequest
 import io.github.valerioisufi.drawview.lecture.gemini.GenerateContentResponse
+import io.github.valerioisufi.drawview.lecture.local.OllamaChatRequest
+import io.github.valerioisufi.drawview.lecture.local.OllamaClient
+import io.github.valerioisufi.drawview.lecture.local.OllamaException
+import io.github.valerioisufi.drawview.lecture.local.OllamaMessage
+import io.github.valerioisufi.drawview.lecture.local.OllamaOptions
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -41,6 +47,7 @@ import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.json.Json
 import kotlin.coroutines.CoroutineContext
+import kotlin.io.encoding.Base64
 import kotlin.math.min
 import kotlin.random.Random
 
@@ -60,6 +67,12 @@ sealed interface LectureProblem {
 
     /** An update failed: its content will be covered by the final review. */
     data class Failed(val detail: String) : LectureProblem
+
+    /** The local model (Ollama) cannot be reached or is not installed. */
+    data class LocalModelUnavailable(val detail: String) : LectureProblem
+
+    /** The local review needs the transcript of the live analysis, which is empty. */
+    data object NoTranscript : LectureProblem
 }
 
 /**
@@ -72,7 +85,12 @@ sealed interface LectureProblem {
  * the slides and the new audio, and returns the transcript, the updated outline and the missing
  * notes ([ChunkAnalysis]). When the analysis falls behind (slow or missing network) the waiting
  * chunks are merged into a single request. When the recording stops, the whole lecture is
- * reviewed once more with the complete recording ([FinalReview]).
+ * reviewed once more ([FinalReview]): by Gemini with the complete recording, or by a local model
+ * (Ollama) with the transcript.
+ *
+ * To limit the cost, the chunks without speech are not analyzed, the outline is rewritten every
+ * few minutes only, and the notebook is sent as the areas written by the student (the slides are
+ * in the PDFs).
  *
  * Every observable property is Compose state, updated on [stateContext].
  */
@@ -84,7 +102,8 @@ class LectureSession internal constructor(
     private val client: GeminiClient,
     private val capture: AudioCapture,
     private val player: AudioPlayer?,
-    private val stateContext: CoroutineContext = Dispatchers.Main
+    private val stateContext: CoroutineContext = Dispatchers.Main,
+    private val localClient: OllamaClient = OllamaClient()
 ) {
     val id: String = directory.trimEnd('/').substringAfterLast('/')
     val startedAt: Long = currentTimeMillis()
@@ -133,6 +152,18 @@ class LectureSession internal constructor(
     var reviewStatus by mutableStateOf(ReviewStatus.NONE)
         private set
 
+    /** Model of the final review: the Gemini model or the local one. */
+    var reviewModel by mutableStateOf<String?>(null)
+        private set
+
+    /** Provider of the final review being written (or written). */
+    var reviewProvider by mutableStateOf<ReviewProvider?>(null)
+        private set
+
+    /** Tokens written so far by the local model. */
+    var reviewProgressTokens by mutableIntStateOf(0)
+        private set
+
     var usage by mutableStateOf(TokenUsage())
         private set
 
@@ -155,6 +186,10 @@ class LectureSession internal constructor(
     private val lastPageImages = LinkedHashMap<Int, PageImage>()
     private val recentChunks = ArrayDeque<AudioChunk>()
     private var lastPageCount = Int.MAX_VALUE
+    private var lastOutlineMs = Long.MIN_VALUE
+
+    /** Resolution of the images; `null` once the API refused the parameter. */
+    private var mediaResolution: String? = LecturePrompts.MEDIA_RESOLUTION
 
     private class QueuedChunk(val chunk: AudioChunk?, val catchUp: Boolean)
 
@@ -262,17 +297,20 @@ class LectureSession internal constructor(
         scope.launch {
             audioJob?.join()
             analysisJob?.join()
-            runFinalReview()
+            runFinalReview(settingsStore.settings.reviewProvider)
             setState { status = LectureStatus.FINISHED }
             persist()
         }
     }
 
-    /** Runs the final review again (e.g. after a network error). */
-    fun retryFinalReview() {
+    /**
+     * Runs the final review again (e.g. after a network error), by [provider] (by default the one
+     * of the settings).
+     */
+    fun retryFinalReview(provider: ReviewProvider = settingsStore.settings.reviewProvider) {
         if (status != LectureStatus.FINISHED || reviewStatus == ReviewStatus.RUNNING) return
         scope.launch {
-            runFinalReview()
+            runFinalReview(provider)
             persist()
         }
     }
@@ -313,6 +351,11 @@ class LectureSession internal constructor(
         val chunks = group.mapNotNull { it.chunk }
         setState { isAnalyzing = true }
         try {
+            // Nothing said (a break, an exercise in silence): no request
+            if (!catchUp && chunks.isNotEmpty() && chunks.all { isSilent(it.samples, it.overlapSamples) }) {
+                setState { usage += TokenUsage(skippedUpdates = chunks.size) }
+                return
+            }
             val audio = buildRequestAudio(chunks, catchUp) ?: return
             var attempt = 0
             while (true) {
@@ -323,7 +366,7 @@ class LectureSession internal constructor(
                 }
                 val settings = settingsStore.settings
                 try {
-                    val snapshot = try {
+                    var snapshot = try {
                         notebook.capture(knownStrokeIds, settings.neighborPages)
                     } catch (e: CancellationException) {
                         throw e
@@ -332,9 +375,24 @@ class LectureSession internal constructor(
                         null
                     }
                     val slides = if (settings.sendSlides && snapshot != null) uploadSlides(apiKey, snapshot.slides) else emptyList()
-                    val request = LecturePrompts.chunkRequest(settings, memory(audio.endMs), snapshot, slides, audio, catchUp)
+                    // Slides whose PDF is not sent: the model sees the whole page instead
+                    if (snapshot != null) {
+                        val sent = slides.mapTo(mutableSetOf()) { it.document.resourceId }
+                        val unreadable = snapshot.pages.filter { it.slide != null && it.slide.resourceId !in sent }.map { it.index }
+                        if (unreadable.isNotEmpty()) {
+                            snapshot = snapshot.withPageImages(notebook.renderPages(unreadable).associateBy { it.pageIndex })
+                        }
+                    }
+                    val memory = memory(audio.endMs)
+                    val includeOutline = catchUp || memory.outline.isBlank() || audio.endMs - lastOutlineMs >= OUTLINE_INTERVAL_MS
+                    val request = LecturePrompts.chunkRequest(
+                        settings, memory, snapshot, slides, audio, catchUp,
+                        includeOutline = includeOutline,
+                        mediaResolution = mediaResolution
+                    )
                     val response = client.generateContent(apiKey, settings.model, request)
                     val analysis = LectureAnalysis.parseChunk(response.text())
+                    if (includeOutline && analysis.outline.isNotBlank()) lastOutlineMs = audio.endMs
 
                     if (snapshot != null) {
                         knownStrokeIds = knownStrokeIds + snapshot.strokeIds
@@ -357,6 +415,11 @@ class LectureSession internal constructor(
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Throwable) {
+                    if (refusesMediaResolution(e)) {
+                        // An API version without the parameter: the default resolution
+                        mediaResolution = null
+                        continue
+                    }
                     attempt++
                     val detail = e.message ?: e::class.simpleName.orEmpty()
                     if (e is GeminiException && e.isAuthenticationError) {
@@ -393,6 +456,10 @@ class LectureSession internal constructor(
             }
         }
     }
+
+    private fun refusesMediaResolution(e: Throwable): Boolean =
+        mediaResolution != null && e is GeminiException && e.statusCode == 400 &&
+            e.message.orEmpty().contains("resolution", ignoreCase = true)
 
     /**
      * The audio of a request: the [chunks] (consecutive), preceded by the last minutes already
@@ -517,10 +584,19 @@ class LectureSession internal constructor(
     // Final review
     // ==========================================================
 
-    private suspend fun runFinalReview() {
-        val apiKey = settingsStore.apiKey
+    private suspend fun runFinalReview(provider: ReviewProvider) {
         val transcriptCopy = withContext(stateContext) { transcript.toList() }
         if (transcriptCopy.isEmpty() && recording.pcmBytes() < MIN_REVIEW_SECONDS * LECTURE_SAMPLE_RATE * 2L) return
+        val settings = settingsStore.settings
+        when (provider) {
+            ReviewProvider.GEMINI -> runGeminiReview(settings, transcriptCopy)
+            ReviewProvider.LOCAL -> runLocalReview(settings, transcriptCopy)
+        }
+    }
+
+    /** Review by Gemini with the complete recording (the transcript only if it cannot be uploaded). */
+    private suspend fun runGeminiReview(settings: AssistantSettings, transcriptCopy: List<TranscriptSegment>) {
+        val apiKey = settingsStore.apiKey
         if (apiKey.isEmpty()) {
             setState {
                 problem = LectureProblem.MissingApiKey
@@ -528,8 +604,11 @@ class LectureSession internal constructor(
             }
             return
         }
-        setState { reviewStatus = ReviewStatus.RUNNING }
-        val settings = settingsStore.settings
+        setState {
+            reviewStatus = ReviewStatus.RUNNING
+            reviewProvider = ReviewProvider.GEMINI
+            reviewModel = settings.model
+        }
         try {
             val audioFile = try {
                 recording.readWav()?.let { client.uploadFile(apiKey, it, "audio/wav", "lecture-$id.wav") }
@@ -540,16 +619,24 @@ class LectureSession internal constructor(
                 println("DrawView: cannot upload the recording: ${e.message}")
                 null
             }
-            val request = LecturePrompts.finalReviewRequest(
+            val memory = memory(elapsedMs)
+            fun request() = LecturePrompts.finalReviewRequest(
                 settings = settings,
                 documentTitle = notebook.documentTitle,
-                memory = memory(elapsedMs),
+                memory = memory,
                 transcript = transcriptCopy,
                 pageImages = lastPageImages.values.toList(),
                 slides = if (settings.sendSlides) uploadedSlides.values.toList() else emptyList(),
-                audioFile = audioFile
+                audioFile = audioFile,
+                mediaResolution = mediaResolution
             )
-            val response = generateWithRetries(apiKey, settings.model, request, attempts = MAX_ATTEMPTS_WHEN_STOPPED + 1)
+            val response = try {
+                generateWithRetries(apiKey, settings.model, request(), attempts = MAX_ATTEMPTS_WHEN_STOPPED + 1)
+            } catch (e: GeminiException) {
+                if (!refusesMediaResolution(e)) throw e
+                mediaResolution = null
+                generateWithRetries(apiKey, settings.model, request(), attempts = MAX_ATTEMPTS_WHEN_STOPPED + 1)
+            }
             val review = LectureAnalysis.parseFinalReview(response.text())
             setState {
                 finalReview = review.notesMarkdown.trim().ifEmpty { null }
@@ -571,6 +658,77 @@ class LectureSession internal constructor(
                 }
             }
         }
+    }
+
+    /**
+     * Review by the local model (Ollama, free): the transcript of the live analysis and the notes
+     * of the student, no recording nor PDF. It can take several minutes; the model is unloaded
+     * from the memory at the end.
+     */
+    private suspend fun runLocalReview(settings: AssistantSettings, transcriptCopy: List<TranscriptSegment>) {
+        if (transcriptCopy.isEmpty()) {
+            setState {
+                problem = LectureProblem.NoTranscript
+                reviewStatus = ReviewStatus.FAILED
+            }
+            return
+        }
+        setState {
+            reviewStatus = ReviewStatus.RUNNING
+            reviewProvider = ReviewProvider.LOCAL
+            reviewModel = settings.localModel
+            reviewProgressTokens = 0
+        }
+        try {
+            val prompt = LecturePrompts.localReviewPrompt(
+                settings = settings,
+                documentTitle = notebook.documentTitle,
+                memory = memory(elapsedMs),
+                transcript = transcriptCopy,
+                pageImages = lastPageImages.values.toList().takeLast(MAX_LOCAL_REVIEW_IMAGES)
+            )
+            val request = OllamaChatRequest(
+                model = settings.localModel,
+                messages = listOf(
+                    OllamaMessage("system", prompt.system),
+                    OllamaMessage("user", prompt.user, prompt.images.map { Base64.encode(it) }.ifEmpty { null })
+                ),
+                format = LectureAnalysis.finalReviewSchema,
+                think = false,
+                keepAlive = 0,
+                options = OllamaOptions(numCtx = localContextSize(prompt), temperature = 0.4f)
+            )
+            val result = localClient.chat(settings.localUrl, request) { tokens ->
+                // Written from the network thread: a snapshot state can be
+                if (tokens % 8 == 0) reviewProgressTokens = tokens
+            }
+            val review = LectureAnalysis.parseFinalReview(result.content)
+            setState {
+                finalReview = review.notesMarkdown.trim().ifEmpty { null }
+                addNotes(review.missing, 0L, elapsedMs, defaultPage = null, fromFinalReview = true)
+                reviewProgressTokens = result.outputTokens.toInt()
+                reviewStatus = ReviewStatus.DONE
+                problem = null
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            val detail = e.message ?: e::class.simpleName.orEmpty()
+            setState {
+                reviewStatus = ReviewStatus.FAILED
+                problem = if (e is OllamaException && (e.statusCode == 0 || e.statusCode == 404)) {
+                    LectureProblem.LocalModelUnavailable(detail)
+                } else {
+                    LectureProblem.Failed(detail)
+                }
+            }
+        }
+    }
+
+    /** Context of the local model: the prompt (about 3 characters per token), the images and the answer. */
+    private fun localContextSize(prompt: LocalPrompt): Int {
+        val estimate = (prompt.system.length + prompt.user.length) / 3 + prompt.images.size * LOCAL_TOKENS_PER_IMAGE + LOCAL_ANSWER_TOKENS
+        return ((estimate + 4095) / 4096 * 4096).coerceIn(8192, 65536)
     }
 
     private suspend fun generateWithRetries(
@@ -611,6 +769,7 @@ class LectureSession internal constructor(
                 transcript = transcript.toList(),
                 suggestions = suggestions.toList(),
                 finalReview = finalReview,
+                finalReviewBy = reviewModel,
                 usage = usage
             )
         }
@@ -633,7 +792,11 @@ class LectureSession internal constructor(
         requests = 1,
         promptTokens = this?.promptTokenCount ?: 0,
         cachedTokens = this?.cachedContentTokenCount ?: 0,
-        outputTokens = (this?.candidatesTokenCount ?: 0) + (this?.thoughtsTokenCount ?: 0)
+        outputTokens = (this?.candidatesTokenCount ?: 0) + (this?.thoughtsTokenCount ?: 0),
+        promptByModality = this?.promptTokensDetails.orEmpty()
+            .filter { it.modality.isNotEmpty() }
+            .groupBy({ it.modality }, { it.tokenCount })
+            .mapValues { (_, counts) -> counts.sum() }
     )
 
     internal companion object {
@@ -648,6 +811,12 @@ class LectureSession internal constructor(
         const val MAX_ATTEMPTS_WHEN_STOPPED = 2
         const val MAX_SLIDES_BYTES = 45 * 1024 * 1024
         const val MAX_REVIEW_PAGE_IMAGES = 16
+        const val MAX_LOCAL_REVIEW_IMAGES = 8
+        const val LOCAL_TOKENS_PER_IMAGE = 600
+        const val LOCAL_ANSWER_TOKENS = 8192
+
+        /** The outline is rewritten (output tokens) every few minutes only. */
+        const val OUTLINE_INTERVAL_MS = 210_000L
         const val MIN_REVIEW_SECONDS = 20
         const val PREVIOUS_TRANSCRIPT_CHARS = 600
         const val PLAYBACK_LEAD_MS = 3_000L
