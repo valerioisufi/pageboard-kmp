@@ -22,12 +22,15 @@ import io.github.valerioisufi.drawview.ui.screen.DrawScreen
 /**
  * The editor of an open document: a progress bar while the document is being loaded, then the
  * [DrawScreen]. [onClose] is called by the back button of the editor and by the system back.
+ *
+ * @param extension content contributed to the editor by the application (top bar actions, side panel).
  */
 @Composable
 fun EditorSessionScreen(
     session: EditorSession,
     onClose: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    extension: EditorExtension? = null
 ) {
     val controller = session.controller
     if (controller == null) {
@@ -48,7 +51,9 @@ fun EditorSessionScreen(
         DrawScreen(
             controller = controller,
             onNavigateBack = onClose,
-            modifier = modifier
+            modifier = modifier,
+            toolbarActions = { extension?.toolbarActions?.invoke(this, session, controller) },
+            sidePanel = { extension?.sidePanel?.invoke(session, controller) }
         )
     }
 }

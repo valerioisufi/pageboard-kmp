@@ -178,6 +178,20 @@ class SelectionManager(private val controller: DrawViewController) {
         setSelection(selection, page)
     }
 
+    /**
+     * Selects a single text block (e.g. a text added by the application, so that it can be moved).
+     */
+    fun selectText(pageIndex: Int, text: DrawText) {
+        clearSelection()
+        val page = controller.document.pages.getOrNull(pageIndex) ?: return
+        val selection = SelectionGroup(
+            texts = mutableListOf(text),
+            boundingBox = Rect(text.x, text.y, text.x + text.width, text.y + text.height),
+            pageIndex = pageIndex
+        ).apply { baseRotation = text.rotation }
+        setSelection(selection, page)
+    }
+
     private fun setSelection(selection: SelectionGroup, page: DrawPage) {
         selection.setDragging(true)
         currentSelection = selection

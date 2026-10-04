@@ -38,6 +38,7 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":drawview-ui"))
             implementation(project(":drawview-explorer"))
+            implementation(project(":drawview-lecture"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)

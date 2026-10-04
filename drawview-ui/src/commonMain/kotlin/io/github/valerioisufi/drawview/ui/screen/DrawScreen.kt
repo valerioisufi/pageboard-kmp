@@ -14,9 +14,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -113,6 +115,8 @@ import org.jetbrains.compose.resources.stringResource
  * @param controller editing session of the document.
  * @param onNavigateBack invoked by the back button of the toolbar.
  * @param isLoading shows a progress bar while the document is loaded.
+ * @param toolbarActions additional actions of the top bar, before the drawing mode toggle.
+ * @param sidePanel panel shown at the end of the canvas (e.g. an assistant), sharing its height.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -120,7 +124,9 @@ fun DrawScreen(
     controller: DrawViewController,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
+    toolbarActions: @Composable RowScope.() -> Unit = {},
+    sidePanel: @Composable () -> Unit = {}
 ) {
     // Immersive editor (Android), as in the original app
     HideSystemBarsEffect()
@@ -239,6 +245,8 @@ fun DrawScreen(
                         )
 
                         Row {
+                            toolbarActions()
+
                             ToolButton(
                                 onClick = {
                                     expandedToolSettings = null
@@ -597,44 +605,52 @@ fun DrawScreen(
             }
 
             // =========================================================
-            // CANVAS AND OVERLAYS
+            // CANVAS AND OVERLAYS (+ SIDE PANEL)
             // =========================================================
-            Box(
+            Row(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
             ) {
-                if (isLoading) {
-                    LinearProgressIndicator(
-                        modifier = Modifier.fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.secondary,
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                } else {
-                    DrawCanvas(
-                        controller = controller,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
+                    if (isLoading) {
+                        LinearProgressIndicator(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.secondary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    } else {
+                        DrawCanvas(
+                            controller = controller,
+                            modifier = Modifier.fillMaxSize()
+                        )
 
-                    SelectionActionBar(
-                        controller = controller,
-                        modifier = Modifier.align(Alignment.TopCenter)
-                    )
+                        SelectionActionBar(
+                            controller = controller,
+                            modifier = Modifier.align(Alignment.TopCenter)
+                        )
 
-                    CanvasContextMenu(
-                        controller = controller,
-                        onEditPageBackground = { showSinglePageConfigurator = true }
-                    )
+                        CanvasContextMenu(
+                            controller = controller,
+                            onEditPageBackground = { showSinglePageConfigurator = true }
+                        )
 
-                    TextEditorOverlay(controller = controller)
+                        TextEditorOverlay(controller = controller)
+                    }
+
+                    SnackbarHost(
+                        hostState = snackbarHostState,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(16.dp)
+                    )
                 }
 
-                SnackbarHost(
-                    hostState = snackbarHostState,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp)
-                )
+                sidePanel()
             }
         }
 

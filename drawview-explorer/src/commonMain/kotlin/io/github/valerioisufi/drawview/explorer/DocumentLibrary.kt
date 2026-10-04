@@ -12,6 +12,7 @@ import io.github.valerioisufi.drawview.explorer.ui.AboutLicensesButton
 import io.github.valerioisufi.drawview.explorer.ui.ExplorerScreen
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.ui.session.DocumentEditorViewModel
+import io.github.valerioisufi.drawview.ui.session.EditorExtension
 import io.github.valerioisufi.drawview.ui.session.EditorSessionScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -23,6 +24,7 @@ import kotlinx.coroutines.withContext
  * @param title title shown in the root folder of the library (typically the application name).
  * @param actions actions of the title bar of the root folder: the About & Licenses dialog by default.
  * @param fullScreenEditor hides the system bars while a document is open (Android).
+ * @param editorExtension content contributed to the editor (top bar actions, side panel).
  */
 @Composable
 fun DocumentLibrary(
@@ -30,7 +32,8 @@ fun DocumentLibrary(
     modifier: Modifier = Modifier,
     store: DocumentStore = DrawViewStore.default,
     actions: @Composable RowScope.() -> Unit = { AboutLicensesButton() },
-    fullScreenEditor: Boolean = false
+    fullScreenEditor: Boolean = false,
+    editorExtension: EditorExtension? = null
 ) {
     val fileExplorerViewModel = viewModel { FileExplorerViewModel(store) }
     val editorViewModel = viewModel { DocumentEditorViewModel(store) }
@@ -54,7 +57,8 @@ fun DocumentLibrary(
         EditorSessionScreen(
             session = session,
             onClose = { editorViewModel.closeSession() },
-            modifier = modifier
+            modifier = modifier,
+            extension = editorExtension
         )
     }
 }

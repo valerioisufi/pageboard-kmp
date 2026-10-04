@@ -38,6 +38,7 @@ include(":drawview-latex")
 include(":drawview-pdf")
 include(":drawview-ui")
 include(":drawview-explorer")
+include(":drawview-lecture")
 
 // Sample application: how to build an application with the DrawView modules
 include(":sample-shared")

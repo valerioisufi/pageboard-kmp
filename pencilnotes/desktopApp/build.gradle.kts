@@ -25,6 +25,16 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "PencilNotes"
             packageVersion = "3.0.0"
+
+            macOS {
+                // Lecture assistant: recording of the lectures
+                infoPlist {
+                    extraKeysRawXml = """
+                        <key>NSMicrophoneUsageDescription</key>
+                        <string>PencilNotes records the lectures for the lecture assistant.</string>
+                    """.trimIndent()
+                }
+            }
         }
     }
 }

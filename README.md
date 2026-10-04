@@ -14,6 +14,7 @@ The repository also contains a [sample application](./sample) showing how to bui
 * [`/drawview-explorer`](./drawview-explorer) provides the document library: folders and notes (create, rename, move, delete, multiple selection), sorting, recent documents, and `DocumentLibrary`, a complete note-taking application (library + editor) themed by the caller.
 * [`/drawview-pdf`](./drawview-pdf) provides PDF document rendering with PDFium (Desktop JVM, Android and iOS).
 * [`/drawview-latex`](./drawview-latex) handles dynamic mathematical formula rendering via MicroTeX.
+* [`/drawview-lecture`](./drawview-lecture) provides the lecture assistant: it records the lecture and, with the Gemini API, suggests what is missing from the notes (an `EditorExtension` of the editor; recording on the desktop for now).
 * [`/native`](./native) contains the native C++ engines and JNI bridges for Google Ink, MicroTeX, and PDFium.
 
 A minimal application is a theme around `DocumentLibrary`:
@@ -67,6 +68,17 @@ information, icons and full-screen editor.
 * [`/pencilnotes/shared`](./pencilnotes/shared) (`:pencilnotes-shared`): the `PencilNotesApp` composable, theme and resources.
 * [`/pencilnotes/androidApp`](./pencilnotes/androidApp) (`:pencilnotes-android`), [`/pencilnotes/desktopApp`](./pencilnotes/desktopApp) (`:pencilnotes-desktop`) and [`/pencilnotes/iosApp`](./pencilnotes/iosApp) (Xcode): the entry points (Android, desktop and iOS).
 
+### Lecture assistant
+
+On the desktop, the microphone button of the editor opens the lecture assistant:
+
+* **Recording**: the lecture is recorded (`lectures/doc-<id>/<date>/audio.wav` in the data directory, with `lecture.json`: transcript, outline, suggestions and final review).
+* **Live suggestions**: about every minute (cut at a pause of the speech), Gemini receives the new audio, the memory of the lecture (outline, notes already suggested and what the student did with them), the visible pages and the pages around them, a close-up of what was written since the previous update, the typed texts and the PDF slides of the notebook (uploaded once with the Files API). It answers with the transcript, the page the lecturer is talking about and only the content that is neither on the slides nor in the notes: each suggestion can be inserted in the page (blue Markdown text with formulas), listened to in the recording, marked as already noted or dismissed.
+* **I missed something**: analyzes the last minutes right away.
+* **Final review**: when the recording stops, the whole recording is reviewed once more: complete notes (insertable as new pages) and the content still missing.
+
+Settings (gear of the panel): the Gemini API key (or the `GEMINI_API_KEY` environment variable), the model (`gemini-3.8-flash` by default), the update interval, the pages sent, the slides, the course context and terminology. The key is saved in `lectures/assistant-settings.json` (readable by the user only). On macOS the microphone must be allowed to PencilNotes, or to the terminal running `./gradlew :pencilnotes-desktop:run`. The audio, the pages and the slides are sent to Google: ask the lecturer before recording.
+
 Running:
 
 * **Android**: `./gradlew :pencilnotes-android:assembleDebug`
@@ -77,7 +89,7 @@ Running:
 
 ## Running Tests
 
-* **Modules**: `./gradlew :drawview-<module>:jvmTest` (also `iosSimulatorArm64Test`, `wasmJsTest`, `jsTest`), e.g. `:drawview-data:jvmTest`, `:drawview-explorer:jvmTest`
+* **Modules**: `./gradlew :drawview-<module>:jvmTest` (also `iosSimulatorArm64Test`, `wasmJsTest`, `jsTest`), e.g. `:drawview-data:jvmTest`, `:drawview-explorer:jvmTest`, `:drawview-lecture:jvmTest`
 * **Sample**:
   * Android: `./gradlew :sample-shared:testAndroidHostTest`
   * Desktop: `./gradlew :sample-shared:jvmTest`

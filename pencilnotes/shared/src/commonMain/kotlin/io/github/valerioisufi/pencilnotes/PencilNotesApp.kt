@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
+import io.github.valerioisufi.drawview.lecture.ui.rememberLectureEditorExtension
 import io.github.valerioisufi.drawview.ui.components.AboutAppInfo
 import io.github.valerioisufi.drawview.ui.components.LocalAboutAppInfo
 import io.github.valerioisufi.drawview.ui.components.ThirdPartyLicense
@@ -46,6 +47,8 @@ fun PencilNotesApp() {
                     )
                 },
                 fullScreenEditor = true,
+                // Lecture recording followed by Gemini (desktop)
+                editorExtension = rememberLectureEditorExtension(),
                 modifier = Modifier.fillMaxSize()
             )
         }
