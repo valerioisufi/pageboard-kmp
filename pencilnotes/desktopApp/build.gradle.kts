@@ -10,6 +10,7 @@ dependencies {
     implementation(project(":pencilnotes-shared"))
     implementation(project(":drawview-core"))
     implementation(project(":drawview-ui"))
+    implementation(project(":drawview-lecture"))
 
     implementation(compose.desktop.currentOs)
     implementation(libs.kotlinx.coroutinesSwing)

@@ -98,7 +98,11 @@ object LecturePrompts {
         courseParts(settings, notebook?.documentTitle)?.let { parts.add(it) }
         parts.addAll(slideParts(slides))
         parts.add(GeminiPart.text(memoryText(memory)))
-        notebook?.let { parts.addAll(notebookParts(it, slides)) }
+        if (notebook != null) {
+            parts.addAll(notebookParts(notebook, slides))
+        } else {
+            parts.add(GeminiPart.text("## Notebook\nThe notebook is closed: the student is not looking at its pages now (they may be taking notes elsewhere)."))
+        }
 
         val contextSeconds = audio.contextMs / 1000
         val audioIntro = buildString {

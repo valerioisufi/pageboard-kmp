@@ -108,4 +108,16 @@
     <string name="lecture_settings_price_cached">Cached</string>
     <string name="lecture_settings_price_output">Output</string>
     <string name="lecture_settings_prices_hint">Used to estimate the cost of a lecture. Gemini 3.8 Flash: 0.75 / 0.075 / 3.75 until 31/12/2026, twice as much from 2027.</string>
+    <string name="lecture_recording_elsewhere">A lecture of «%1$s» is being recorded: one lecture at a time.</string>
+    <string name="lecture_delete">Delete this lecture</string>
+    <string name="lecture_delete_title">Delete the lecture?</string>
+    <string name="lecture_delete_message">The recording, the transcript, the suggestions and the review of the lecture of %1$s are deleted. The notes inserted in the notebook stay.</string>
+    <string name="lecture_action_delete">Delete</string>
+    <string name="lecture_review_generate">Generate the review</string>
+    <string name="lecture_review_pending">The lecture was interrupted before its review (e.g. the app was closed).</string>
+    <string name="lecture_indicator_open">Open</string>
+    <string name="lecture_indicator_reviewing">Reviewing «%1$s»…</string>
+    <string name="lecture_exit_title">A lecture is being recorded</string>
+    <string name="lecture_exit_message">The recording is saved: you can generate its review when you open the notebook again.</string>
+    <string name="lecture_exit_confirm">Stop and exit</string>
 </resources>

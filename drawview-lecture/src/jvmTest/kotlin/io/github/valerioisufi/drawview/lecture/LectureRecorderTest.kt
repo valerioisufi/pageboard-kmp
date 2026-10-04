@@ -34,10 +34,11 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
- * A whole lecture against a fake Gemini API: microphone -> chunks -> live analysis -> final review.
+ * Whole lectures against fake model servers: microphone -> chunks -> live analysis -> final
+ * review, with the notebook closed and opened again, the application exiting, the reload.
  */
 @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
-class LectureSessionTest {
+class LectureRecorderTest {
     private val directory: File = Files.createTempDirectory("lecture-test").toFile()
     private val stateContext = newSingleThreadContext("lecture-state")
 
@@ -86,7 +87,8 @@ class LectureSessionTest {
             pages = listOf(NotebookPage(1, visible = true, slide = null, image = PageImage(1, byteArrayOf(1, 2, 3), isCrop = true), typedTexts = emptyList())),
             newWriting = emptyList(),
             slides = emptyList(),
-            strokeIds = setOf("old", "new")
+            strokeIds = setOf("old", "new"),
+            pageDbIds = listOf(10, 11, 12)
         )
 
         override suspend fun renderPages(pageIndexes: List<Int>) = pageIndexes.map { PageImage(it, byteArrayOf(9)) }
@@ -147,17 +149,9 @@ class LectureSessionTest {
             update(settings.copy(apiKey = "test-key", model = "test-model"))
         }
         val microphone = FakeMicrophone()
-        val session = LectureSession(
-            documentId = 7,
-            directory = File(directory, "lecture").absolutePath,
-            settingsStore = settingsStore,
-            notebook = FakeNotebook(),
-            client = GeminiClient(HttpClient(engine)),
-            capture = microphone,
-            player = null,
-            stateContext = stateContext
-        )
-        session.start()
+        val lecture = newLecture(settingsStore, engine)
+        val recorder = LectureRecorder(lecture, settingsStore, microphone, FakeNotebook())
+        recorder.start()
 
         val random = Random(5)
         // 61 s of speech, a pause (cut of the first chunk), 4 s more
@@ -166,22 +160,23 @@ class LectureSessionTest {
         microphone.speak(4.0, loud = true, random = random)
 
         withTimeout(20_000) {
-            while (session.transcript.isEmpty() || session.suggestions.isEmpty()) delay(20)
+            while (lecture.transcript.isEmpty() || lecture.suggestions.isEmpty()) delay(20)
         }
         assertEquals(1, requests.size)
         assertTrue(requests[0].contains("- Page 2 (visible): blank paper, with notes of the student (image: the written area)."))
         assertTrue(requests[0].contains("Update the outline in this answer."))
         assertTrue(requests[0].contains("\"mimeType\":\"audio/wav\""))
-        val note = session.suggestions.single()
+        val note = lecture.suggestions.single()
         assertEquals("Definizione di limite", note.title)
         assertEquals(1, note.pageIndex)
+        assertEquals(11, note.pageDbId)
         assertEquals(10_000L, note.atMs)
-        assertEquals(2, session.professorPageIndex)
+        assertEquals(2, lecture.professorPageIndex)
 
-        session.updateSuggestion(note.id, SuggestionStatus.INSERTED)
-        session.stop()
+        lecture.updateSuggestion(note.id, SuggestionStatus.INSERTED)
+        recorder.stop()
         withTimeout(20_000) {
-            while (session.status != LectureStatus.FINISHED) delay(20)
+            while (lecture.status != LectureStatus.FINISHED) delay(20)
         }
 
         // The last seconds, then the final review
@@ -190,17 +185,17 @@ class LectureSessionTest {
         // The outline was rewritten a few seconds before
         assertTrue(requests[1].contains("The outline is not updated in this answer."))
         assertTrue(requests[2].contains("https://x/files/rec"))
-        assertEquals(2, session.transcript.size)
+        assertEquals(2, lecture.transcript.size)
         // The second chunk repeated the same note: not duplicated
-        assertEquals(listOf("Definizione di limite", "Esercizio d'esame"), session.suggestions.map { it.title })
-        assertTrue(session.suggestions.last().fromFinalReview)
-        assertEquals(ReviewStatus.DONE, session.reviewStatus)
-        assertEquals("# Limiti\n- Definizione", session.finalReview)
-        assertEquals(3, session.usage.requests)
-        assertEquals(mapOf("TEXT" to 1200L, "AUDIO" to 1800L), session.usage.promptByModality)
-        assertEquals(ReviewProvider.GEMINI, session.reviewProvider)
-        assertEquals("test-model", session.reviewModel)
-        assertEquals(66_000L, session.elapsedMs)
+        assertEquals(listOf("Definizione di limite", "Esercizio d'esame"), lecture.suggestions.map { it.title })
+        assertTrue(lecture.suggestions.last().fromFinalReview)
+        assertEquals(ReviewStatus.DONE, lecture.reviewStatus)
+        assertEquals("# Limiti\n- Definizione", lecture.finalReview)
+        assertEquals(3, lecture.usage.requests)
+        assertEquals(mapOf("TEXT" to 1200L, "AUDIO" to 1800L), lecture.usage.promptByModality)
+        assertEquals(ReviewProvider.GEMINI, lecture.reviewProvider)
+        assertEquals("test-model", lecture.reviewModel)
+        assertEquals(66_000L, lecture.elapsedMs)
 
         val wav = File(directory, "lecture/audio.wav")
         assertEquals(Wav.HEADER_SIZE + 66L * LECTURE_SAMPLE_RATE * 2, wav.length())
@@ -210,8 +205,12 @@ class LectureSessionTest {
             File(directory, "lecture/lecture.json").readText()
         )
         assertEquals(7, record.documentId)
+        assertEquals(LectureStatus.FINISHED, record.status)
         assertEquals(SuggestionStatus.INSERTED, record.suggestions.first().status)
         assertNotNull(record.finalReview)
+        // The notes of the student kept for a later review
+        assertEquals(listOf(ReviewPage(1, 11, "p11.jpg", isCrop = true)), record.reviewPages)
+        assertTrue(File(directory, "lecture/pages/p11.jpg").readBytes().contentEquals(byteArrayOf(1, 2, 3)))
     }
 
     @Test
@@ -219,46 +218,45 @@ class LectureSessionTest {
         val engine = MockEngine { respond("", HttpStatusCode.InternalServerError) }
         val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath)
         val microphone = FakeMicrophone()
-        val session = LectureSession(
-            documentId = 1,
-            directory = File(directory, "lecture").absolutePath,
-            settingsStore = settingsStore,
-            notebook = FakeNotebook(),
-            client = GeminiClient(HttpClient(engine)),
-            capture = microphone,
-            player = null,
-            stateContext = stateContext
-        )
+        val lecture = newLecture(settingsStore, engine)
+        val recorder = LectureRecorder(lecture, settingsStore, microphone, FakeNotebook())
         // The key of the environment, if any, would be used: not a test of this machine
         if (settingsStore.hasApiKey) return@runBlocking
-        session.start()
+        recorder.start()
         microphone.speak(62.0, loud = true, random = Random(1))
         microphone.speak(1.0, loud = false, random = Random(1))
         withTimeout(20_000) {
-            while (session.problem == null) delay(20)
+            while (lecture.problem == null) delay(20)
         }
-        assertEquals(LectureProblem.MissingApiKey, session.problem)
-        session.stop()
+        assertEquals(LectureProblem.MissingApiKey, lecture.problem)
+        recorder.stop()
         withTimeout(20_000) {
-            while (session.status != LectureStatus.FINISHED) delay(20)
+            while (lecture.status != LectureStatus.FINISHED) delay(20)
         }
         assertTrue(File(directory, "lecture/audio.wav").length() > Wav.HEADER_SIZE)
     }
 
-    private fun session(settingsStore: AssistantSettingsStore, engine: MockEngine, microphone: FakeMicrophone) = LectureSession(
-        documentId = 3,
-        directory = File(directory, "lecture").absolutePath,
+    private fun newLecture(
+        settingsStore: AssistantSettingsStore,
+        engine: MockEngine,
+        record: LectureRecord? = null,
+        name: String = "lecture"
+    ) = Lecture(
+        documentId = record?.documentId ?: 7,
+        directory = File(directory, name).absolutePath,
+        record = record,
         settingsStore = settingsStore,
-        notebook = FakeNotebook(),
         client = GeminiClient(HttpClient(engine)),
-        capture = microphone,
+        localClient = OllamaClient(HttpClient(engine)),
         player = null,
-        stateContext = stateContext,
-        localClient = OllamaClient(HttpClient(engine))
-    )
+        stateContext = stateContext
+    ).apply { if (record == null) documentTitle = "Analisi 1" }
 
-    private suspend fun awaitFinished(session: LectureSession) = withTimeout(20_000) {
-        while (session.status != LectureStatus.FINISHED) delay(20)
+    private fun recorder(settingsStore: AssistantSettingsStore, engine: MockEngine, microphone: FakeMicrophone) =
+        LectureRecorder(newLecture(settingsStore, engine), settingsStore, microphone, FakeNotebook())
+
+    private suspend fun awaitFinished(lecture: Lecture) = withTimeout(20_000) {
+        while (lecture.status != LectureStatus.FINISHED) delay(20)
     }
 
     @Test
@@ -272,21 +270,22 @@ class LectureSessionTest {
             update(settings.copy(apiKey = "test-key", reviewProvider = ReviewProvider.LOCAL))
         }
         val microphone = FakeMicrophone()
-        val session = session(settingsStore, engine, microphone)
-        session.start()
+        val recorder = recorder(settingsStore, engine, microphone)
+        val lecture = recorder.lecture
+        recorder.start()
         // A minute of room noise, no speech
         microphone.speak(61.0, loud = false, random = Random(2), quietLevel = 60)
         withTimeout(20_000) {
-            while (session.usage.skippedUpdates == 0) delay(20)
+            while (lecture.usage.skippedUpdates == 0) delay(20)
         }
-        session.stop()
-        awaitFinished(session)
+        recorder.stop()
+        awaitFinished(lecture)
 
         assertTrue(requests.isEmpty(), requests.toString())
-        assertEquals(1, session.usage.skippedUpdates)
+        assertEquals(1, lecture.usage.skippedUpdates)
         // Nothing to review locally without a transcript
-        assertEquals(LectureProblem.NoTranscript, session.problem)
-        assertEquals(ReviewStatus.FAILED, session.reviewStatus)
+        assertEquals(LectureProblem.NoTranscript, lecture.problem)
+        assertEquals(ReviewStatus.FAILED, lecture.reviewStatus)
     }
 
     @Test
@@ -327,16 +326,17 @@ class LectureSessionTest {
             update(settings.copy(apiKey = "test-key", reviewProvider = ReviewProvider.LOCAL, localUrl = "http://ollama.test"))
         }
         val microphone = FakeMicrophone()
-        val session = session(settingsStore, engine, microphone)
-        session.start()
+        val recorder = recorder(settingsStore, engine, microphone)
+        val lecture = recorder.lecture
+        recorder.start()
         val random = Random(4)
         microphone.speak(61.0, loud = true, random = random)
         microphone.speak(1.0, loud = false, random = random)
         withTimeout(20_000) {
-            while (session.transcript.isEmpty()) delay(20)
+            while (lecture.transcript.isEmpty()) delay(20)
         }
-        session.stop()
-        awaitFinished(session)
+        recorder.stop()
+        awaitFinished(lecture)
 
         // Refused once with the media resolution, then sent without it
         assertEquals(2, geminiRequests.size)
@@ -347,11 +347,92 @@ class LectureSessionTest {
         assertTrue(ollamaRequest.contains("\"images\":[\"AQID\"]"))
         assertTrue(ollamaRequest.contains("\"keep_alive\":0"))
         assertTrue(ollamaRequest.contains("\"format\":{"))
-        assertEquals("# Limiti", session.finalReview)
-        assertEquals(ReviewProvider.LOCAL, session.reviewProvider)
-        assertEquals("gemma4:12b", session.reviewModel)
-        assertEquals(ReviewStatus.DONE, session.reviewStatus)
+        assertEquals("# Limiti", lecture.finalReview)
+        assertEquals(ReviewProvider.LOCAL, lecture.reviewProvider)
+        assertEquals("gemma4:12b", lecture.reviewModel)
+        assertEquals(ReviewStatus.DONE, lecture.reviewStatus)
         // The local review is free: only the live update is billed
-        assertEquals(1, session.usage.requests)
+        assertEquals(1, lecture.usage.requests)
+    }
+
+    private val plainChunkAnswer = """{"transcript":"Il teorema ponte","currentTopic":"Limiti","outline":"- Limiti","notes":[]}"""
+
+    @Test
+    fun theRecordingGoesOnWithTheNotebookClosed() = runBlocking<Unit> {
+        val requests = Collections.synchronizedList(mutableListOf<String>())
+        val engine = MockEngine { request ->
+            requests.add(request.body.toByteArray().decodeToString())
+            respond(geminiAnswer(plainChunkAnswer), HttpStatusCode.OK, jsonHeaders)
+        }
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath).apply {
+            update(settings.copy(apiKey = "test-key"))
+        }
+        val microphone = FakeMicrophone()
+        val notebook = FakeNotebook()
+        val lecture = newLecture(settingsStore, engine)
+        val recorder = LectureRecorder(lecture, settingsStore, microphone, notebook)
+        recorder.start()
+        assertTrue(lecture.isNotebookAttached)
+
+        // The document is closed: the recording goes on
+        recorder.detachNotebook(notebook)
+        assertFalse(lecture.isNotebookAttached)
+        val random = Random(3)
+        microphone.speak(61.0, loud = true, random = random)
+        microphone.speak(1.0, loud = false, random = random)
+        withTimeout(20_000) { while (requests.isEmpty()) delay(20) }
+        assertTrue(requests[0].contains("The notebook is closed"), requests[0])
+
+        // Opened again: the pages are back
+        recorder.attachNotebook(notebook)
+        microphone.speak(60.0, loud = true, random = random)
+        microphone.speak(1.0, loud = false, random = random)
+        withTimeout(20_000) { while (requests.size < 2) delay(20) }
+        assertTrue(requests[1].contains("## Notebook (3 pages)"), requests[1])
+        assertFalse(requests[1].contains("The notebook is closed"))
+        recorder.finishNow()
+    }
+
+    @Test
+    fun exitingSavesTheLectureAndItsReviewIsWrittenLater() = runBlocking<Unit> {
+        val reviewAnswer = """{"notesMarkdown":"# Limiti","missing":[]}"""
+        val engine = MockEngine { request ->
+            val path = request.url.encodedPath
+            val body = request.body.toByteArray().decodeToString()
+            when {
+                path.endsWith(":generateContent") ->
+                    respond(geminiAnswer(if (body.contains("The lecture is over")) reviewAnswer else plainChunkAnswer), HttpStatusCode.OK, jsonHeaders)
+                path == "/upload/v1beta/files" -> respond("{}", HttpStatusCode.OK, headersOf("X-Goog-Upload-URL", "https://upload.test/1"))
+                path == "/1" -> respond("""{"file":{"name":"files/rec","uri":"https://x/files/rec","mimeType":"audio/wav","state":"ACTIVE"}}""", HttpStatusCode.OK, jsonHeaders)
+                else -> respond("", HttpStatusCode.NotFound)
+            }
+        }
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath).apply {
+            update(settings.copy(apiKey = "test-key"))
+        }
+        val microphone = FakeMicrophone()
+        val lecture = newLecture(settingsStore, engine)
+        val recorder = LectureRecorder(lecture, settingsStore, microphone, FakeNotebook())
+        recorder.start()
+        microphone.speak(30.0, loud = true, random = Random(6))
+        withTimeout(20_000) { while (lecture.elapsedMs < 30_000) delay(20) }
+
+        // The application exits: no review, the audio and the lecture are saved
+        recorder.finishNow()
+        assertEquals(LectureStatus.FINISHED, lecture.status)
+        assertEquals(ReviewStatus.NONE, lecture.reviewStatus)
+        assertTrue(File(directory, "lecture/audio.wav").length() > Wav.HEADER_SIZE)
+        assertFalse(File(directory, "lecture/audio.pcm").exists())
+
+        // Opened again: the review can be written now
+        val library = LectureLibrary(directory.absolutePath)
+        val record = assertNotNull(library.load(File(directory, "lecture").absolutePath))
+        assertEquals(LectureStatus.FINISHED, record.status)
+        val reloaded = newLecture(settingsStore, engine, record)
+        assertEquals("Analisi 1", reloaded.documentTitle)
+        assertTrue(reloaded.canGenerateReview)
+        reloaded.generateFinalReview(ReviewProvider.GEMINI)
+        withTimeout(20_000) { while (reloaded.reviewStatus != ReviewStatus.DONE) delay(20) }
+        assertEquals("# Limiti", reloaded.finalReview)
     }
 }

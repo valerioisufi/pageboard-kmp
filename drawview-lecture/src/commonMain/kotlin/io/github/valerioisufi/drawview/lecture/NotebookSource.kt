@@ -13,6 +13,7 @@ import io.github.valerioisufi.drawview.core.render.tile.TileRenderer
 import io.github.valerioisufi.drawview.lecture.platform.encodeJpeg
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
@@ -29,7 +30,8 @@ class PageImage(val pageIndex: Int, val jpeg: ByteArray, val isCrop: Boolean = f
  *
  * @param pages notebook page index of each PDF page shown in the notebook, by PDF page index.
  */
-class SlideDocument(
+@Serializable
+data class SlideDocument(
     val resourceId: String,
     val path: String,
     val pages: List<Pair<Int, Int>>
@@ -61,6 +63,7 @@ data class NotebookPage(
  * @param newWriting close-ups of the strokes added since the previous update.
  * @param slides PDF documents of the pages around the visible ones.
  * @param strokeIds strokes of the document seen by this capture.
+ * @param pageDbIds database id of every page of the document, by index (0: not saved yet).
  */
 class NotebookSnapshot(
     val documentTitle: String,
@@ -69,7 +72,8 @@ class NotebookSnapshot(
     val pages: List<NotebookPage>,
     val newWriting: List<PageImage>,
     val slides: List<SlideDocument>,
-    val strokeIds: Set<String>
+    val strokeIds: Set<String>,
+    val pageDbIds: List<Int> = emptyList()
 ) {
     val pageImages: List<PageImage> get() = pages.mapNotNull { it.image }
 
@@ -77,7 +81,7 @@ class NotebookSnapshot(
     fun withPageImages(replacements: Map<Int, PageImage>): NotebookSnapshot = NotebookSnapshot(
         documentTitle, pageCount, visiblePageIndexes,
         pages.map { page -> replacements[page.index]?.let { page.copy(image = it) } ?: page },
-        newWriting, slides, strokeIds
+        newWriting, slides, strokeIds, pageDbIds
     )
 }
 
@@ -156,7 +160,8 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
                 pages = notebookPages,
                 newWriting = newWriting,
                 slides = slidesAround(contents.map { c -> c.pdfs.map { pdf -> pdf.resourceId to pdf.pdfPageIndex } }, first, last),
-                strokeIds = strokeIds
+                strokeIds = strokeIds,
+                pageDbIds = pages.map { it.dbId }
             )
         }
     }

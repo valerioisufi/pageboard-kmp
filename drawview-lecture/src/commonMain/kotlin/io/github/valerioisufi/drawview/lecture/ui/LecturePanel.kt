@@ -44,6 +44,7 @@ import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.PostAdd
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Slideshow
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -96,7 +97,10 @@ import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.lecture.AssistantSettings
 import io.github.valerioisufi.drawview.lecture.LectureAssistant
 import io.github.valerioisufi.drawview.lecture.LectureProblem
-import io.github.valerioisufi.drawview.lecture.LectureSession
+import io.github.valerioisufi.drawview.lecture.ControllerNotebookSource
+import io.github.valerioisufi.drawview.lecture.Lecture
+import io.github.valerioisufi.drawview.lecture.LectureRecorder
+import io.github.valerioisufi.drawview.lecture.LectureSummary
 import io.github.valerioisufi.drawview.lecture.LectureStatus
 import io.github.valerioisufi.drawview.lecture.NoteKind
 import io.github.valerioisufi.drawview.lecture.NoteSuggestion
@@ -105,10 +109,15 @@ import io.github.valerioisufi.drawview.lecture.ReviewStatus
 import io.github.valerioisufi.drawview.lecture.SuggestionStatus
 import io.github.valerioisufi.drawview.lecture.TokenUsage
 import io.github.valerioisufi.drawview.lecture.formatLectureTime
+import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.lecture.generated.resources.*
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
 import io.github.valerioisufi.drawview.ui.util.formatDecimal
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -120,9 +129,11 @@ private val PanelWidth = 380.dp
  */
 @Composable
 internal fun LecturePanel(assistant: LectureAssistant, documentId: Int, controller: DrawViewController) {
-    // Closing the editor stops (and reviews) its lecture
-    DisposableEffect(assistant, documentId) {
-        onDispose { assistant.onEditorClosed(documentId) }
+    // The recording of the document sees its pages while the editor is open (and goes on without)
+    DisposableEffect(assistant, documentId, controller) {
+        val notebook = ControllerNotebookSource(controller)
+        assistant.onEditorShown(documentId, notebook)
+        onDispose { assistant.onEditorHidden(documentId, notebook) }
     }
     var showSettings by remember { mutableStateOf(false) }
 
@@ -145,10 +156,13 @@ internal fun LecturePanel(assistant: LectureAssistant, documentId: Int, controll
                         onSettings = { showSettings = true },
                         onClose = { assistant.isPanelOpen = false }
                     )
-                    val session = assistant.sessionFor(documentId)
+                    val lecture = assistant.shownLecture(documentId)
+                    val recorder = assistant.recorderOf(documentId)
+                    LectureSelector(assistant, documentId, lecture)
                     RecordingSection(
                         assistant = assistant,
-                        session = session,
+                        lecture = lecture,
+                        recorder = recorder,
                         onStart = {
                             if (!assistant.settingsStore.hasApiKey) showSettings = true
                             else assistant.start(documentId, controller)
@@ -156,9 +170,9 @@ internal fun LecturePanel(assistant: LectureAssistant, documentId: Int, controll
                         onOpenSettings = { showSettings = true }
                     )
                     HorizontalDivider()
-                    if (session != null) {
-                        ProfessorPageBanner(session, controller)
-                        LectureTabs(assistant, session, controller)
+                    if (lecture != null) {
+                        ProfessorPageBanner(lecture, controller)
+                        LectureTabs(assistant, lecture, controller)
                     }
                 }
             }
@@ -192,6 +206,75 @@ private fun PanelHeader(onSettings: () -> Unit, onClose: () -> Unit) {
     }
 }
 
+/**
+ * The lectures of the document: the one shown, the others to choose from, and the deletion of
+ * the shown one (with its audio).
+ */
+@Composable
+private fun LectureSelector(assistant: LectureAssistant, documentId: Int, lecture: Lecture?) {
+    val lectures = assistant.lecturesOf(documentId)
+    if (lectures.isEmpty() || lecture == null) return
+    var expanded by remember { mutableStateOf(false) }
+    var confirmDelete by remember { mutableStateOf<LectureSummary?>(null) }
+    val shown = lectures.firstOrNull { it.directory == lecture.directory }
+    val isActive = assistant.activeRecorder?.lecture === lecture
+
+    Box(modifier = Modifier.padding(horizontal = 8.dp)) {
+        TextButton(onClick = { expanded = true }) {
+            Text(
+                text = formatLectureDate(lecture.startedAt) + " · " + formatLectureTime(lecture.elapsedMs),
+                style = MaterialTheme.typography.labelLarge
+            )
+            Icon(Icons.Outlined.ArrowDropDown, contentDescription = null, modifier = Modifier.size(18.dp))
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            for (summary in lectures) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            formatLectureDate(summary.startedAt) + " · " + formatLectureTime(summary.durationMs) +
+                                (if (summary.hasReview) " · ✓" else "")
+                        )
+                    },
+                    onClick = {
+                        expanded = false
+                        assistant.show(documentId, summary)
+                    }
+                )
+            }
+            if (shown != null && !isActive) {
+                HorizontalDivider()
+                DropdownMenuItem(
+                    text = { Text(stringResource(Res.string.lecture_delete), color = MaterialTheme.colorScheme.error) },
+                    onClick = {
+                        expanded = false
+                        confirmDelete = shown
+                    }
+                )
+            }
+        }
+    }
+
+    confirmDelete?.let { summary ->
+        AlertDialog(
+            onDismissRequest = { confirmDelete = null },
+            title = { Text(stringResource(Res.string.lecture_delete_title)) },
+            text = { Text(stringResource(Res.string.lecture_delete_message, formatLectureDate(summary.startedAt))) },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmDelete = null
+                    assistant.delete(documentId, summary)
+                }) {
+                    Text(stringResource(Res.string.lecture_action_delete), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmDelete = null }) { Text(stringResource(Res.string.lecture_action_cancel)) }
+            }
+        )
+    }
+}
+
 // ==========================================================
 // Recording
 // ==========================================================
@@ -199,10 +282,13 @@ private fun PanelHeader(onSettings: () -> Unit, onClose: () -> Unit) {
 @Composable
 private fun RecordingSection(
     assistant: LectureAssistant,
-    session: LectureSession?,
+    lecture: Lecture?,
+    recorder: LectureRecorder?,
     onStart: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
+    // One lecture at a time: another document may be recording
+    val recordingElsewhere = assistant.activeRecorder?.takeIf { it !== recorder }?.lecture
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -212,15 +298,15 @@ private fun RecordingSection(
         when {
             !assistant.isRecordingSupported -> MutedText(stringResource(Res.string.lecture_unsupported))
 
-            session == null -> {
+            lecture == null -> {
                 Text(stringResource(Res.string.lecture_idle_description), style = MaterialTheme.typography.bodyMedium)
                 MutedText(stringResource(Res.string.lecture_privacy_note))
-                Button(onClick = onStart, modifier = Modifier.fillMaxWidth()) {
+                Button(onClick = onStart, enabled = recordingElsewhere == null, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(Res.string.lecture_action_record))
                 }
             }
 
-            session.status == LectureStatus.RECORDING -> {
+            lecture.status == LectureStatus.RECORDING && recorder != null -> {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
@@ -230,32 +316,32 @@ private fun RecordingSection(
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = stringResource(Res.string.lecture_status_recording, formatLectureTime(session.elapsedMs)),
+                        text = stringResource(Res.string.lecture_status_recording, formatLectureTime(lecture.elapsedMs)),
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.weight(1f)
                     )
                     LinearProgressIndicator(
-                        progress = { session.level },
+                        progress = { lecture.level },
                         modifier = Modifier.width(72.dp),
                         drawStopIndicator = {}
                     )
                 }
                 MutedText(
                     when {
-                        session.isAnalyzing -> stringResource(Res.string.lecture_status_analyzing)
-                        session.pendingUpdates > 0 -> stringResource(Res.string.lecture_status_pending, session.pendingUpdates)
-                        session.transcript.isEmpty() ->
+                        lecture.isAnalyzing -> stringResource(Res.string.lecture_status_analyzing)
+                        lecture.pendingUpdates > 0 -> stringResource(Res.string.lecture_status_pending, lecture.pendingUpdates)
+                        lecture.transcript.isEmpty() ->
                             stringResource(Res.string.lecture_status_listening, assistant.settingsStore.settings.chunkSeconds)
-                        else -> session.currentTopic.takeIf { it.isNotBlank() }
+                        else -> lecture.currentTopic.takeIf { it.isNotBlank() }
                             ?.let { stringResource(Res.string.lecture_current_topic, it) } ?: ""
                     }
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = { session.catchUp() }, modifier = Modifier.weight(1f)) {
+                    OutlinedButton(onClick = { recorder.catchUp() }, modifier = Modifier.weight(1f)) {
                         Text(stringResource(Res.string.lecture_action_catch_up), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     Button(
-                        onClick = { session.stop() },
+                        onClick = { recorder.stop() },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error,
                             contentColor = MaterialTheme.colorScheme.onError
@@ -266,7 +352,7 @@ private fun RecordingSection(
                 }
             }
 
-            session.status == LectureStatus.FINALIZING -> {
+            lecture.status == LectureStatus.FINALIZING -> {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                     Spacer(Modifier.width(12.dp))
@@ -276,22 +362,26 @@ private fun RecordingSection(
 
             else -> {
                 Text(
-                    text = stringResource(Res.string.lecture_status_finished, formatLectureTime(session.elapsedMs)),
+                    text = stringResource(Res.string.lecture_status_finished, formatLectureTime(lecture.elapsedMs)),
                     style = MaterialTheme.typography.titleSmall
                 )
-                OutlinedButton(onClick = onStart, modifier = Modifier.fillMaxWidth()) {
+                OutlinedButton(onClick = onStart, enabled = recordingElsewhere == null, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(Res.string.lecture_action_new_recording))
                 }
             }
         }
 
+        recordingElsewhere?.let {
+            MutedText(stringResource(Res.string.lecture_recording_elsewhere, it.documentTitle))
+        }
+
         assistant.startError?.let {
             ProblemBanner(stringResource(Res.string.lecture_problem_start, it))
         }
-        if (session?.noAudioWarning == true && session.status == LectureStatus.RECORDING) {
+        if (lecture?.noAudioWarning == true && lecture.status == LectureStatus.RECORDING) {
             ProblemBanner(stringResource(Res.string.lecture_no_audio_warning))
         }
-        session?.problem?.let { problem ->
+        lecture?.problem?.let { problem ->
             val message = when (problem) {
                 LectureProblem.MissingApiKey -> stringResource(Res.string.lecture_problem_no_api_key)
                 is LectureProblem.Authentication -> stringResource(Res.string.lecture_problem_authentication, problem.detail)
@@ -328,9 +418,9 @@ private fun ProblemBanner(message: String, action: Pair<StringResource, () -> Un
 
 /** "The lecturer is on page N": shown when that page is not on screen. */
 @Composable
-private fun ProfessorPageBanner(session: LectureSession, controller: DrawViewController) {
-    val page = session.professorPageIndex ?: return
-    if (session.status != LectureStatus.RECORDING) return
+private fun ProfessorPageBanner(lecture: Lecture, controller: DrawViewController) {
+    val page = lecture.professorPageIndex ?: return
+    if (lecture.status != LectureStatus.RECORDING) return
     // Recomputed at every redraw, recomposed only when the visible pages change
     val visible by remember(controller) {
         derivedStateOf {
@@ -360,9 +450,9 @@ private fun ProfessorPageBanner(session: LectureSession, controller: DrawViewCon
 // ==========================================================
 
 @Composable
-private fun LectureTabs(assistant: LectureAssistant, session: LectureSession, controller: DrawViewController) {
-    var tab by remember(session) { mutableIntStateOf(0) }
-    val newCount = session.suggestions.count { it.status == SuggestionStatus.NEW }
+private fun LectureTabs(assistant: LectureAssistant, lecture: Lecture, controller: DrawViewController) {
+    var tab by remember(lecture) { mutableIntStateOf(0) }
+    val newCount = lecture.suggestions.count { it.status == SuggestionStatus.NEW }
     val labels = listOf(
         stringResource(Res.string.lecture_tab_notes) + if (newCount > 0) " ($newCount)" else "",
         stringResource(Res.string.lecture_tab_transcript),
@@ -385,18 +475,18 @@ private fun LectureTabs(assistant: LectureAssistant, session: LectureSession, co
     }
     Box(modifier = Modifier.fillMaxSize()) {
         when (tab) {
-            0 -> NotesTab(assistant, session, controller, inserter)
-            1 -> TranscriptTab(session)
-            2 -> OutlineTab(session)
-            else -> ReviewTab(session, controller, inserter, assistant.settingsStore.settings)
+            0 -> NotesTab(assistant, lecture, controller, inserter)
+            1 -> TranscriptTab(lecture)
+            2 -> OutlineTab(lecture)
+            else -> ReviewTab(lecture, controller, inserter, assistant.settingsStore.settings)
         }
     }
 }
 
 @Composable
-private fun NotesTab(assistant: LectureAssistant, session: LectureSession, controller: DrawViewController, inserter: NoteInserter) {
-    val newNotes = session.suggestions.filter { it.status == SuggestionStatus.NEW }.sortedByDescending { it.atMs }
-    val handled = session.suggestions.filter { it.status != SuggestionStatus.NEW }.sortedByDescending { it.atMs }
+private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, controller: DrawViewController, inserter: NoteInserter) {
+    val newNotes = lecture.suggestions.filter { it.status == SuggestionStatus.NEW }.sortedByDescending { it.atMs }
+    val handled = lecture.suggestions.filter { it.status != SuggestionStatus.NEW }.sortedByDescending { it.atMs }
     var showHandled by remember { mutableStateOf(false) }
 
     LazyColumn(
@@ -410,7 +500,8 @@ private fun NotesTab(assistant: LectureAssistant, session: LectureSession, contr
         items(newNotes, key = { it.id }) { note ->
             SuggestionCard(
                 note = note,
-                canListen = session.canPlayAudio,
+                pageIndex = note.resolvedPageIndex(controller.document),
+                canListen = lecture.canPlayAudio,
                 placing = assistant.placingNote?.id == note.id,
                 onInsert = {
                     val started = inserter.startPlacement(
@@ -418,16 +509,16 @@ private fun NotesTab(assistant: LectureAssistant, session: LectureSession, contr
                         suggestion = note,
                         onInserted = {
                             assistant.placingNote = null
-                            session.updateSuggestion(note.id, SuggestionStatus.INSERTED)
+                            lecture.updateSuggestion(note.id, SuggestionStatus.INSERTED)
                         },
                         onCancel = { if (assistant.placingNote?.id == note.id) assistant.placingNote = null }
                     )
                     if (started) assistant.placingNote = note
                 },
                 onCancelPlacing = { controller.placementManager.cancel() },
-                onListen = { session.play(note) },
-                onAlreadyNoted = { session.updateSuggestion(note.id, SuggestionStatus.ALREADY_NOTED) },
-                onDismiss = { session.updateSuggestion(note.id, SuggestionStatus.DISMISSED) },
+                onListen = { lecture.play(note) },
+                onAlreadyNoted = { lecture.updateSuggestion(note.id, SuggestionStatus.ALREADY_NOTED) },
+                onDismiss = { lecture.updateSuggestion(note.id, SuggestionStatus.DISMISSED) },
                 onGoToPage = { page -> controller.pageManager.jumpToPage(page) }
             )
         }
@@ -451,7 +542,7 @@ private fun NotesTab(assistant: LectureAssistant, session: LectureSession, contr
             }
             if (showHandled) {
                 items(handled, key = { it.id }) { note ->
-                    HandledRow(note, onRestore = { session.updateSuggestion(note.id, SuggestionStatus.NEW) })
+                    HandledRow(note, onRestore = { lecture.updateSuggestion(note.id, SuggestionStatus.NEW) })
                 }
             }
         }
@@ -461,6 +552,7 @@ private fun NotesTab(assistant: LectureAssistant, session: LectureSession, contr
 @Composable
 private fun SuggestionCard(
     note: NoteSuggestion,
+    pageIndex: Int?,
     canListen: Boolean,
     placing: Boolean,
     onInsert: () -> Unit,
@@ -481,7 +573,7 @@ private fun SuggestionCard(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                note.pageIndex?.let { page ->
+                pageIndex?.let { page ->
                     Text(
                         text = stringResource(Res.string.lecture_note_page, page + 1),
                         style = MaterialTheme.typography.labelSmall,
@@ -590,9 +682,9 @@ private fun KindLabel(kind: NoteKind, important: Boolean) {
 }
 
 @Composable
-private fun TranscriptTab(session: LectureSession) {
+private fun TranscriptTab(lecture: Lecture) {
     val listState = rememberLazyListState()
-    val count = session.transcript.size
+    val count = lecture.transcript.size
     LaunchedEffect(count) {
         if (count > 0) listState.animateScrollToItem(count - 1)
     }
@@ -607,7 +699,7 @@ private fun TranscriptTab(session: LectureSession) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-            items(session.transcript.toList()) { segment ->
+            items(lecture.transcript.toList()) { segment ->
                 Column {
                     Text(
                         text = formatLectureTime(segment.startMs),
@@ -622,8 +714,8 @@ private fun TranscriptTab(session: LectureSession) {
 }
 
 @Composable
-private fun OutlineTab(session: LectureSession) {
-    if (session.outline.isBlank()) {
+private fun OutlineTab(lecture: Lecture) {
+    if (lecture.outline.isBlank()) {
         MutedText(stringResource(Res.string.lecture_outline_empty), Modifier.padding(16.dp))
         return
     }
@@ -634,21 +726,21 @@ private fun OutlineTab(session: LectureSession) {
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-            if (session.currentTopic.isNotBlank()) {
+            if (lecture.currentTopic.isNotBlank()) {
                 Text(
-                    text = stringResource(Res.string.lecture_current_topic, session.currentTopic),
+                    text = stringResource(Res.string.lecture_current_topic, lecture.currentTopic),
                     style = MaterialTheme.typography.titleSmall
                 )
                 Spacer(Modifier.height(8.dp))
             }
-            MarkdownText(session.outline)
+            MarkdownText(lecture.outline)
         }
     }
 }
 
 @Composable
 private fun ReviewTab(
-    session: LectureSession,
+    lecture: Lecture,
     controller: DrawViewController,
     inserter: NoteInserter,
     settings: AssistantSettings
@@ -660,51 +752,60 @@ private fun ReviewTab(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        val review = session.finalReview
-        val canRegenerate = session.status == LectureStatus.FINISHED
+        val review = lecture.finalReview
+        val canRegenerate = lecture.canGenerateReview
         when {
-            session.reviewStatus == ReviewStatus.RUNNING || session.status == LectureStatus.FINALIZING -> {
+            lecture.reviewStatus == ReviewStatus.RUNNING || lecture.status == LectureStatus.FINALIZING -> {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                     Spacer(Modifier.width(12.dp))
                     MutedText(
-                        if (session.reviewProvider == ReviewProvider.LOCAL && session.reviewStatus == ReviewStatus.RUNNING) {
-                            stringResource(Res.string.lecture_review_running_local, session.reviewModel.orEmpty(), session.reviewProgressTokens)
+                        if (lecture.reviewProvider == ReviewProvider.LOCAL && lecture.reviewStatus == ReviewStatus.RUNNING) {
+                            stringResource(Res.string.lecture_review_running_local, lecture.reviewModel.orEmpty(), lecture.reviewProgressTokens)
                         } else {
                             stringResource(Res.string.lecture_review_running)
                         }
                     )
                 }
             }
-            session.reviewStatus == ReviewStatus.FAILED -> {
+            lecture.reviewStatus == ReviewStatus.FAILED -> {
                 MutedText(stringResource(Res.string.lecture_review_failed))
-                if (canRegenerate) RegenerateReviewButton(session, settings)
+                if (canRegenerate) RegenerateReviewButton(lecture, settings)
             }
             review != null -> {
                 InsertPagesButton(controller) { afterPageIndex -> inserter.insertPages(controller, review, afterPageIndex) }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     MutedText(
-                        session.reviewModel?.let { stringResource(Res.string.lecture_review_by, it) }.orEmpty(),
+                        lecture.reviewModel?.let { stringResource(Res.string.lecture_review_by, it) }.orEmpty(),
                         Modifier.weight(1f)
                     )
-                    if (canRegenerate) RegenerateReviewButton(session, settings)
+                    if (canRegenerate) RegenerateReviewButton(lecture, settings)
                 }
                 SelectionContainer { MarkdownText(review) }
+            }
+            lecture.status == LectureStatus.FINISHED -> {
+                // Interrupted before its review (e.g. the application was closed)
+                MutedText(stringResource(Res.string.lecture_review_pending))
+                RegenerateReviewButton(lecture, settings, label = Res.string.lecture_review_generate)
             }
             else -> MutedText(stringResource(Res.string.lecture_review_none))
         }
 
-        UsageSummary(session.usage, settings)
+        UsageSummary(lecture.usage, settings)
     }
 }
 
 /** Writes the final review again, by Gemini or by the local model. */
 @Composable
-private fun RegenerateReviewButton(session: LectureSession, settings: AssistantSettings) {
+private fun RegenerateReviewButton(
+    lecture: Lecture,
+    settings: AssistantSettings,
+    label: StringResource = Res.string.lecture_review_regenerate
+) {
     var expanded by remember { mutableStateOf(false) }
     Box {
         TextButton(onClick = { expanded = true }) {
-            Text(stringResource(Res.string.lecture_review_regenerate))
+            Text(stringResource(label))
             Icon(Icons.Outlined.ArrowDropDown, contentDescription = null, modifier = Modifier.size(18.dp))
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -712,14 +813,14 @@ private fun RegenerateReviewButton(session: LectureSession, settings: AssistantS
                 text = { Text(stringResource(Res.string.lecture_review_with_gemini, settings.model)) },
                 onClick = {
                     expanded = false
-                    session.retryFinalReview(ReviewProvider.GEMINI)
+                    lecture.generateFinalReview(ReviewProvider.GEMINI)
                 }
             )
             DropdownMenuItem(
                 text = { Text(stringResource(Res.string.lecture_review_with_local, settings.localModel)) },
                 onClick = {
                     expanded = false
-                    session.retryFinalReview(ReviewProvider.LOCAL)
+                    lecture.generateFinalReview(ReviewProvider.LOCAL)
                 }
             )
         }
@@ -894,6 +995,14 @@ private fun markdownWithFormulas(
         append(canvasText.text.subSequence(last, canvasText.text.length))
     }
     return text to inline
+}
+
+/** "04/10/2026 14:30" in the local time zone. */
+@OptIn(ExperimentalTime::class)
+internal fun formatLectureDate(epochMs: Long): String {
+    val t = Instant.fromEpochMilliseconds(epochMs).toLocalDateTime(TimeZone.currentSystemDefault())
+    fun two(value: Int) = value.toString().padStart(2, '0')
+    return "${two(t.day)}/${two(t.month.ordinal + 1)}/${t.year} ${two(t.hour)}:${two(t.minute)}"
 }
 
 /** 0.1346 -> "$0.13", below one cent "< $0.01". */

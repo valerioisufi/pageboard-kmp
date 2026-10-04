@@ -11,11 +11,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AdsClick
 import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ButtonDefaults
@@ -32,14 +34,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.lecture.LectureAssistant
+import io.github.valerioisufi.drawview.lecture.LectureRecordings
 import io.github.valerioisufi.drawview.lecture.LectureStatus
 import io.github.valerioisufi.drawview.lecture.SuggestionStatus
 import io.github.valerioisufi.drawview.lecture.formatLectureTime
+import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.lecture.generated.resources.Res
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_action_cancel
+import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_action_stop
+import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_exit_confirm
+import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_exit_message
+import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_exit_title
+import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_indicator_open
+import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_indicator_reviewing
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_place_go_to_page
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_place_hint
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_title
@@ -49,7 +60,8 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * The lecture assistant in the DrawView editor: a button of the top bar (the recording time while
- * recording) and the assistant panel beside the canvas. Closing the editor stops the recording.
+ * recording), the assistant panel beside the canvas and the hints over it. Closing the editor does
+ * not stop the recording (see [LectureRecordingIndicator]).
  */
 fun LectureAssistant.editorExtension(): EditorExtension = EditorExtension(
     toolbarActions = { session, _ -> LectureToolbarButton(this@editorExtension, session.documentId) },
@@ -57,21 +69,91 @@ fun LectureAssistant.editorExtension(): EditorExtension = EditorExtension(
     canvasOverlay = { _, controller -> PlacementHint(this@editorExtension, controller) }
 )
 
-/** A [LectureAssistant] kept for the lifetime of the composition, as an [EditorExtension]. */
+/** A [LectureAssistant] kept for the lifetime of the composition (the application). */
 @Composable
-fun rememberLectureEditorExtension(): EditorExtension {
-    val assistant = remember { LectureAssistant() }
-    return remember(assistant) { assistant.editorExtension() }
+fun rememberLectureAssistant(): LectureAssistant = remember { LectureAssistant() }
+
+/**
+ * The lecture being recorded (or reviewed) while its document is closed, e.g. over the document
+ * library: time, document, and the actions to open it again or to stop the recording.
+ *
+ * @param onOpenDocument opens the editor of a document.
+ */
+@Composable
+fun LectureRecordingIndicator(assistant: LectureAssistant, onOpenDocument: (Int) -> Unit, modifier: Modifier = Modifier) {
+    val recorder = assistant.activeRecorder ?: return
+    val lecture = recorder.lecture
+    val actionColors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.inversePrimary)
+    Surface(
+        color = MaterialTheme.colorScheme.inverseSurface,
+        contentColor = MaterialTheme.colorScheme.inverseOnSurface,
+        shape = RoundedCornerShape(24.dp),
+        shadowElevation = 6.dp,
+        modifier = modifier
+    ) {
+        Row(modifier = Modifier.padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (lecture.status == LectureStatus.RECORDING) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.error)
+                )
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    text = formatLectureTime(lecture.elapsedMs) + " · " + lecture.documentTitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.widthIn(max = 280.dp)
+                )
+            } else {
+                Text(
+                    text = stringResource(Res.string.lecture_indicator_reviewing, lecture.documentTitle),
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.widthIn(max = 320.dp)
+                )
+            }
+            Spacer(Modifier.width(4.dp))
+            TextButton(onClick = { onOpenDocument(lecture.documentId) }, colors = actionColors) {
+                Text(stringResource(Res.string.lecture_indicator_open))
+            }
+            if (lecture.status == LectureStatus.RECORDING) {
+                TextButton(onClick = { recorder.stop() }, colors = actionColors) {
+                    Text(stringResource(Res.string.lecture_action_stop))
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Asks to stop the recording before the application exits ([LectureRecordings.isRecording]).
+ *
+ * @param onExit stops the recordings ([LectureRecordings.finishAll]) and exits.
+ */
+@Composable
+fun LectureExitDialog(onExit: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(Res.string.lecture_exit_title)) },
+        text = { Text(stringResource(Res.string.lecture_exit_message)) },
+        confirmButton = { TextButton(onClick = onExit) { Text(stringResource(Res.string.lecture_exit_confirm)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.lecture_action_cancel)) } }
+    )
 }
 
 @Composable
 private fun LectureToolbarButton(assistant: LectureAssistant, documentId: Int) {
     if (!assistant.isRecordingSupported) return
-    val session = assistant.sessionFor(documentId)
-    val newNotes = session?.suggestions?.count { it.status == SuggestionStatus.NEW } ?: 0
+    val lecture = assistant.shownLecture(documentId)
+    val recording = assistant.recorderOf(documentId)?.lecture?.takeIf { it.status == LectureStatus.RECORDING }
+    val newNotes = (recording ?: lecture)?.suggestions?.count { it.status == SuggestionStatus.NEW } ?: 0
     val togglePanel = { assistant.isPanelOpen = !assistant.isPanelOpen }
 
-    if (session?.status == LectureStatus.RECORDING) {
+    if (recording != null) {
         // Recording: time of the lecture, red dot, new suggestions
         Row(
             modifier = Modifier
@@ -91,7 +173,7 @@ private fun LectureToolbarButton(assistant: LectureAssistant, documentId: Int) {
                     .background(MaterialTheme.colorScheme.error)
             )
             Text(
-                text = formatLectureTime(session.elapsedMs),
+                text = formatLectureTime(recording.elapsedMs),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onErrorContainer,
                 fontWeight = FontWeight.SemiBold
@@ -128,7 +210,7 @@ private fun BoxScope.PlacementHint(assistant: LectureAssistant, controller: Draw
             controller.visiblePages().map { it.index }
         }
     }
-    val notePage = note.pageIndex?.takeIf { it in controller.document.pages.indices && it !in visible }
+    val notePage = note.resolvedPageIndex(controller.document)?.takeIf { it !in visible }
     val actionColors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.inversePrimary)
 
     Surface(

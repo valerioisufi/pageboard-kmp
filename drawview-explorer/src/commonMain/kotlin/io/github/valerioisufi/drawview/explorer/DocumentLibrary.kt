@@ -1,6 +1,9 @@
 package io.github.valerioisufi.drawview.explorer
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -25,6 +28,8 @@ import kotlinx.coroutines.withContext
  * @param actions actions of the title bar of the root folder: the About & Licenses dialog by default.
  * @param fullScreenEditor hides the system bars while a document is open (Android).
  * @param editorExtension content contributed to the editor (top bar actions, side panel).
+ * @param libraryOverlay content drawn over the library (e.g. a recording in progress), given the
+ *   function opening a document.
  */
 @Composable
 fun DocumentLibrary(
@@ -33,7 +38,8 @@ fun DocumentLibrary(
     store: DocumentStore = DrawViewStore.default,
     actions: @Composable RowScope.() -> Unit = { AboutLicensesButton() },
     fullScreenEditor: Boolean = false,
-    editorExtension: EditorExtension? = null
+    editorExtension: EditorExtension? = null,
+    libraryOverlay: @Composable BoxScope.(openDocument: (Int) -> Unit) -> Unit = {}
 ) {
     val fileExplorerViewModel = viewModel { FileExplorerViewModel(store) }
     val editorViewModel = viewModel { DocumentEditorViewModel(store) }
@@ -46,13 +52,16 @@ fun DocumentLibrary(
     val session = editorViewModel.session
     SystemBarsHidden(hidden = fullScreenEditor && session != null)
     if (session == null) {
-        ExplorerScreen(
-            fileExplorerViewModel = fileExplorerViewModel,
-            onOpenDocument = { documentId -> editorViewModel.openDocument(documentId) },
-            title = title,
-            actions = actions,
-            modifier = modifier
-        )
+        Box(modifier = modifier) {
+            ExplorerScreen(
+                fileExplorerViewModel = fileExplorerViewModel,
+                onOpenDocument = { documentId -> editorViewModel.openDocument(documentId) },
+                title = title,
+                actions = actions,
+                modifier = Modifier.fillMaxSize()
+            )
+            libraryOverlay { documentId -> editorViewModel.openDocument(documentId) }
+        }
     } else {
         EditorSessionScreen(
             session = session,

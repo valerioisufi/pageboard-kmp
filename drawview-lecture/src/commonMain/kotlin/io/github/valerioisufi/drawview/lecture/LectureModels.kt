@@ -1,5 +1,7 @@
 package io.github.valerioisufi.drawview.lecture
 
+import io.github.valerioisufi.drawview.core.model.DrawDocument
+import io.github.valerioisufi.drawview.core.model.readSnapshot
 import kotlinx.serialization.Serializable
 
 /** Kind of content suggested by the assistant. */
@@ -21,6 +23,8 @@ enum class SuggestionStatus { NEW, INSERTED, ALREADY_NOTED, DISMISSED }
  *
  * @param content notebook-ready Markdown (formulas between `$...$`).
  * @param pageIndex page of the document where the content belongs (0-based), if known.
+ * @param pageDbId database id of that page: the page is found again when the pages have been
+ *   reordered (see [resolvedPageIndex]).
  * @param importance 1 (detail) to 3 (stressed by the lecturer, exam).
  * @param atMs time of the lecture when it was said.
  * @param fromFinalReview found by the review of the whole lecture.
@@ -32,11 +36,21 @@ data class NoteSuggestion(
     val title: String,
     val content: String,
     val pageIndex: Int? = null,
+    val pageDbId: Int = 0,
     val importance: Int = 2,
     val atMs: Long = 0,
     val fromFinalReview: Boolean = false,
     val status: SuggestionStatus = SuggestionStatus.NEW
 )
+
+/** The page of [document] where the suggestion belongs: by database id, or by index. */
+fun NoteSuggestion.resolvedPageIndex(document: DrawDocument): Int? {
+    if (pageDbId > 0) {
+        val index = readSnapshot { document.pages.indexOfFirst { it.dbId == pageDbId } }
+        if (index >= 0) return index
+    }
+    return pageIndex?.takeIf { it in 0 until document.pages.size }
+}
 
 @Serializable
 data class TranscriptSegment(val startMs: Long, val endMs: Long, val text: String)
@@ -74,6 +88,16 @@ data class TokenUsage(
             outputTokens * settings.priceOutput) / 1_000_000.0
 }
 
+/** State of a lecture. A lecture saved while recording was interrupted (the app was closed). */
+@Serializable
+enum class LectureStatus { RECORDING, FINALIZING, FINISHED }
+
+/**
+ * An image of the notes of the student kept for the final review (`pages/<file>` of the lecture).
+ */
+@Serializable
+data class ReviewPage(val pageIndex: Int, val pageDbId: Int = 0, val file: String, val isCrop: Boolean = true)
+
 /**
  * A recorded lecture, saved as `lecture.json` next to its audio.
  */
@@ -84,6 +108,7 @@ data class LectureRecord(
     val documentTitle: String = "",
     val startedAt: Long,
     val durationMs: Long = 0,
+    val status: LectureStatus = LectureStatus.FINISHED,
     val outline: String = "",
     val currentTopic: String = "",
     val transcript: List<TranscriptSegment> = emptyList(),
@@ -91,7 +116,11 @@ data class LectureRecord(
     val finalReview: String? = null,
     /** Model that wrote the final review. */
     val finalReviewBy: String? = null,
-    val usage: TokenUsage = TokenUsage()
+    val finalReviewProvider: ReviewProvider? = null,
+    val usage: TokenUsage = TokenUsage(),
+    val reviewPages: List<ReviewPage> = emptyList(),
+    /** PDF documents seen during the lecture (uploaded again for a later review). */
+    val slides: List<SlideDocument> = emptyList()
 )
 
 /** Formats [ms] as `m:ss` (or `h:mm:ss`). */

@@ -6,11 +6,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
-import io.github.valerioisufi.drawview.lecture.ui.rememberLectureEditorExtension
+import io.github.valerioisufi.drawview.lecture.ui.LectureRecordingIndicator
+import io.github.valerioisufi.drawview.lecture.ui.editorExtension
+import io.github.valerioisufi.drawview.lecture.ui.rememberLectureAssistant
 import io.github.valerioisufi.drawview.ui.components.AboutAppInfo
 import io.github.valerioisufi.drawview.ui.components.LocalAboutAppInfo
 import io.github.valerioisufi.drawview.ui.components.ThirdPartyLicense
@@ -34,6 +38,9 @@ fun PencilNotesApp() {
             description = stringResource(Res.string.about_description),
             additionalLicenses = listOf(CherryBombOneLicense)
         )
+        // Lecture recording followed by Gemini or a local model (desktop): it goes on in the background
+        val lectureAssistant = rememberLectureAssistant()
+        val lectureExtension = remember(lectureAssistant) { lectureAssistant.editorExtension() }
         CompositionLocalProvider(LocalAboutAppInfo provides aboutAppInfo) {
             DocumentLibrary(
                 title = {
@@ -47,8 +54,16 @@ fun PencilNotesApp() {
                     )
                 },
                 fullScreenEditor = true,
-                // Lecture recording followed by Gemini (desktop)
-                editorExtension = rememberLectureEditorExtension(),
+                editorExtension = lectureExtension,
+                libraryOverlay = { openDocument ->
+                    LectureRecordingIndicator(
+                        assistant = lectureAssistant,
+                        onOpenDocument = openDocument,
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(16.dp)
+                    )
+                },
                 modifier = Modifier.fillMaxSize()
             )
         }

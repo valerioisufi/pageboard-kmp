@@ -16,6 +16,7 @@ import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.lecture.NoteSuggestion
+import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
 import io.github.valerioisufi.drawview.ui.render.PT_TO_MM
 import kotlin.math.ceil
@@ -46,7 +47,7 @@ internal class NoteInserter(private val measurer: TextMeasurer) {
     ): Boolean {
         val document = controller.document
         // Sized for the page of the note (or the visible one), adapted to the page chosen
-        val reference = suggestion.pageIndex?.let { document.pages.getOrNull(it) }
+        val reference = suggestion.resolvedPageIndex(document)?.let { document.pages.getOrNull(it) }
             ?: controller.firstVisiblePageIndex()?.let { document.pages.getOrNull(it) }
             ?: return false
         val content = buildString {
