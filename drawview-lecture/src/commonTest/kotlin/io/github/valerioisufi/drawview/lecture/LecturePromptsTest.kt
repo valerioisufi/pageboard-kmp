@@ -297,6 +297,26 @@ class AssistantSettingsTest {
     }
 
     @Test
+    fun theSettingsSavedWithThePricesAreRead() {
+        val saved = """{"apiKey":"k","tasks":{},"priceInput":0.75,"priceCachedInput":0.075,"priceOutput":3.75,"whisperLanguage":"it"}"""
+        val settings = AssistantSettingsStore.json.decodeFromString(AssistantSettings.serializer(), saved)
+        assertEquals("it", settings.whisperLanguage)
+    }
+
+    @Test
+    fun whatIsSentToGoogle() {
+        val local = TaskModel(provider = ModelProvider.LOCAL)
+        assertEquals(setOf(SharedData.AUDIO, SharedData.NOTEBOOK), AssistantSettings().sentToGoogle)
+        val localAudio = AssistantSettings().withTask(LectureTask.TRANSCRIPTION, local)
+        assertEquals(setOf(SharedData.TRANSCRIPT, SharedData.NOTEBOOK), localAudio.sentToGoogle)
+        val onlyReviewOnline = LectureTask.entries.fold(AssistantSettings()) { s, task -> s.withTask(task, local) }
+            .withTask(LectureTask.FINAL_REVIEW, TaskModel())
+        assertEquals(setOf(SharedData.TRANSCRIPT, SharedData.NOTEBOOK), onlyReviewOnline.sentToGoogle)
+        val allLocal = LectureTask.entries.fold(AssistantSettings()) { s, task -> s.withTask(task, local) }
+        assertTrue(allLocal.sentToGoogle.isEmpty())
+    }
+
+    @Test
     fun localSuggestionsNeedTheLocalTranscription() {
         val settings = AssistantSettings()
             .withTask(LectureTask.LIVE_NOTES, TaskModel(provider = ModelProvider.LOCAL))

@@ -17,6 +17,9 @@ import kotlinx.serialization.json.jsonPrimitive
 @Serializable
 enum class ModelProvider { GEMINI, LOCAL }
 
+/** What a lecture can send to Google. */
+enum class SharedData { AUDIO, TRANSCRIPT, NOTEBOOK }
+
 /** Kept for the code written with the first name of [ModelProvider]. */
 typealias ReviewProvider = ModelProvider
 
@@ -64,8 +67,6 @@ data class TaskModel(
  *   usual places).
  * @param whisperModel path of the ggml model of whisper.cpp (e.g. ggml-large-v3-turbo.bin).
  * @param whisperLanguage language spoken, ISO code ("it", "en") or "auto".
- * @param priceInput Gemini prices in dollars per million tokens (input, cached input, output),
- *   used to estimate the cost of a lecture.
  */
 @Serializable
 data class AssistantSettings(
@@ -80,10 +81,7 @@ data class AssistantSettings(
     val localUrl: String = DEFAULT_LOCAL_URL,
     val whisperServer: String = "",
     val whisperModel: String = "",
-    val whisperLanguage: String = "auto",
-    val priceInput: Double = 0.75,
-    val priceCachedInput: Double = 0.075,
-    val priceOutput: Double = 3.75
+    val whisperLanguage: String = "auto"
 ) {
     /** Provider and models of [task] (the defaults when not configured). */
     fun task(task: LectureTask): TaskModel = tasks[task] ?: defaultTask(task)
@@ -101,6 +99,18 @@ data class AssistantSettings(
 
     /** The audio is sent to Google only when Gemini transcribes it: otherwise it stays on this computer. */
     val sendsAudio: Boolean get() = task(LectureTask.TRANSCRIPTION).provider == ModelProvider.GEMINI
+
+    /** What the requests of a lecture send to Google (empty: everything stays on this computer). */
+    val sentToGoogle: Set<SharedData>
+        get() = buildSet {
+            if (sendsAudio) add(SharedData.AUDIO)
+            val online = listOf(LectureTask.LIVE_NOTES, LectureTask.CATCH_UP, LectureTask.FINAL_REVIEW)
+                .any { task(it).provider == ModelProvider.GEMINI }
+            if (online) {
+                if (!sendsAudio) add(SharedData.TRANSCRIPT)
+                add(SharedData.NOTEBOOK)
+            }
+        }
 
     /**
      * These settings with the combinations that cannot work corrected: the local models do not
@@ -162,10 +172,7 @@ class AssistantSettingsStore(
             localUrl = newSettings.localUrl.trim().trimEnd('/').ifEmpty { AssistantSettings.DEFAULT_LOCAL_URL },
             whisperServer = newSettings.whisperServer.trim(),
             whisperModel = newSettings.whisperModel.trim(),
-            whisperLanguage = newSettings.whisperLanguage.trim().lowercase().ifEmpty { "auto" },
-            priceInput = newSettings.priceInput.coerceAtLeast(0.0),
-            priceCachedInput = newSettings.priceCachedInput.coerceAtLeast(0.0),
-            priceOutput = newSettings.priceOutput.coerceAtLeast(0.0)
+            whisperLanguage = newSettings.whisperLanguage.trim().lowercase().ifEmpty { "auto" }
         ).consistent()
         settings = sanitized
         if (PlatformFiles.writeBytes(path, json.encodeToString(AssistantSettings.serializer(), sanitized).encodeToByteArray())) {

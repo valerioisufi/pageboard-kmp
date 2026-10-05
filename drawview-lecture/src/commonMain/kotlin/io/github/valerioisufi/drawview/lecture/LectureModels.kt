@@ -83,12 +83,6 @@ data class TokenUsage(
         skippedUpdates = skippedUpdates + other.skippedUpdates,
         localRequests = localRequests + other.localRequests
     )
-
-    /** Estimated cost in dollars with the prices of [settings] (per million tokens). */
-    fun estimatedCost(settings: AssistantSettings): Double =
-        ((promptTokens - cachedTokens).coerceAtLeast(0) * settings.priceInput +
-            cachedTokens * settings.priceCachedInput +
-            outputTokens * settings.priceOutput) / 1_000_000.0
 }
 
 /** State of a lecture. A lecture saved while recording was interrupted (the app was closed). */

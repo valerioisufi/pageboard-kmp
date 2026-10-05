@@ -107,6 +107,7 @@ import io.github.valerioisufi.drawview.lecture.NoteKind
 import io.github.valerioisufi.drawview.lecture.NoteSuggestion
 import io.github.valerioisufi.drawview.lecture.ReviewProvider
 import io.github.valerioisufi.drawview.lecture.ReviewStatus
+import io.github.valerioisufi.drawview.lecture.SharedData
 import io.github.valerioisufi.drawview.lecture.SuggestionStatus
 import io.github.valerioisufi.drawview.lecture.TokenUsage
 import io.github.valerioisufi.drawview.lecture.formatLectureTime
@@ -114,7 +115,6 @@ import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.lecture.generated.resources.*
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
-import io.github.valerioisufi.drawview.ui.util.formatDecimal
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
@@ -301,7 +301,7 @@ private fun RecordingSection(
 
             lecture == null -> {
                 Text(stringResource(Res.string.lecture_idle_description), style = MaterialTheme.typography.bodyMedium)
-                MutedText(stringResource(Res.string.lecture_privacy_note))
+                MutedText(privacyNote(assistant.settingsStore.settings))
                 Button(onClick = onStart, enabled = recordingElsewhere == null, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(Res.string.lecture_action_record))
                 }
@@ -766,7 +766,7 @@ private fun ReviewTab(
                         if (lecture.reviewProvider == ReviewProvider.LOCAL && lecture.reviewStatus == ReviewStatus.RUNNING) {
                             stringResource(Res.string.lecture_review_running_local, lecture.reviewModel.orEmpty(), lecture.reviewProgressTokens)
                         } else {
-                            stringResource(Res.string.lecture_review_running)
+                            stringResource(Res.string.lecture_review_running, lecture.reviewModel ?: settings.task(LectureTask.FINAL_REVIEW).model)
                         }
                     )
                 }
@@ -791,14 +791,14 @@ private fun ReviewTab(
                 MutedText(stringResource(Res.string.lecture_review_pending))
                 RegenerateReviewButton(lecture, settings, label = Res.string.lecture_review_generate)
             }
-            else -> MutedText(stringResource(Res.string.lecture_review_none))
+            else -> MutedText(stringResource(Res.string.lecture_review_none, settings.task(LectureTask.FINAL_REVIEW).model))
         }
 
-        UsageSummary(lecture.usage, settings)
+        UsageSummary(lecture.usage)
     }
 }
 
-/** Writes the final review again, by Gemini or by the local model. */
+/** Writes the final review again, online or by the local model. */
 @Composable
 private fun RegenerateReviewButton(
     lecture: Lecture,
@@ -830,16 +830,15 @@ private fun RegenerateReviewButton(
     }
 }
 
-/** Estimated cost of the lecture and where the tokens went. */
+/** The requests of the lecture and where the tokens of the online ones went. */
 @Composable
-private fun UsageSummary(usage: TokenUsage, settings: AssistantSettings) {
-    if (usage.requests == 0 && usage.skippedUpdates == 0) return
+private fun UsageSummary(usage: TokenUsage) {
+    if (usage.requests == 0 && usage.localRequests == 0 && usage.skippedUpdates == 0) return
     HorizontalDivider()
     if (usage.requests > 0) {
         MutedText(
             stringResource(
-                Res.string.lecture_usage_cost,
-                formatDollars(usage.estimatedCost(settings)),
+                Res.string.lecture_usage_tokens,
                 usage.requests,
                 compactNumber(usage.promptTokens),
                 compactNumber(usage.cachedTokens),
@@ -860,9 +859,29 @@ private fun UsageSummary(usage: TokenUsage, settings: AssistantSettings) {
         }
         MutedText(stringResource(Res.string.lecture_usage_input, parts.joinToString(" · ")))
     }
+    if (usage.localRequests > 0) {
+        MutedText(stringResource(Res.string.lecture_usage_local, usage.localRequests))
+    }
     if (usage.skippedUpdates > 0) {
         MutedText(stringResource(Res.string.lecture_usage_skipped, usage.skippedUpdates))
     }
+}
+
+/** What leaves this computer with the current settings, before recording. */
+@Composable
+private fun privacyNote(settings: AssistantSettings): String {
+    val shared = settings.sentToGoogle
+    if (shared.isEmpty()) return stringResource(Res.string.lecture_privacy_local)
+    val parts = SharedData.entries.filter { it in shared }.map { data ->
+        stringResource(
+            when (data) {
+                SharedData.AUDIO -> Res.string.lecture_privacy_audio
+                SharedData.TRANSCRIPT -> Res.string.lecture_privacy_transcript
+                SharedData.NOTEBOOK -> Res.string.lecture_privacy_notebook
+            }
+        )
+    }
+    return stringResource(Res.string.lecture_privacy_online, parts.joinToString(", "))
 }
 
 /**
@@ -1007,10 +1026,6 @@ internal fun formatLectureDate(epochMs: Long): String {
     fun two(value: Int) = value.toString().padStart(2, '0')
     return "${two(t.day)}/${two(t.month.ordinal + 1)}/${t.year} ${two(t.hour)}:${two(t.minute)}"
 }
-
-/** 0.1346 -> "$0.13", below one cent "< $0.01". */
-internal fun formatDollars(value: Double): String =
-    if (value > 0.0 && value < 0.01) "< $0.01" else "$" + formatDecimal(value.toFloat(), 2)
 
 /** 1234 -> "1.2k", 2345678 -> "2.3M". */
 internal fun compactNumber(value: Long): String {
