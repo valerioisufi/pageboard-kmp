@@ -74,8 +74,9 @@ class CanvasLiveState {
 
 /**
  * Routes the pointer events of the canvas (stylus, touch, mouse, wheel, trackpad) to inking,
- * erasing, lasso selection, selection transformations, text tool, page reordering and camera
- * gestures, like the `CanvasTouchDispatcher` of the original Android implementation.
+ * erasing, lasso selection, selection transformations, text tool, selection and marking of the
+ * text of the PDFs, page reordering and camera gestures, like the `CanvasTouchDispatcher` of the
+ * original Android implementation.
  */
 internal class CanvasGestureHandler(
     private val controller: DrawViewController,
@@ -85,7 +86,14 @@ internal class CanvasGestureHandler(
     private enum class Mode {
         NONE, INK, LASSO, ERASE, PAN, PINCH,
         SELECTION_MOVE, SELECTION_SCALE, SELECTION_ROTATE, TEXT_RESIZE_LEFT, TEXT_RESIZE_RIGHT,
-        PAGE_REORDER, TEXT_TAP, PLACE_TAP, EDITOR_TAP, IGNORED
+        PAGE_REORDER, TEXT_TAP, PLACE_TAP, EDITOR_TAP,
+
+        /** Marking the text of a PDF with the text markup tool. */
+        MARKUP,
+
+        /** Dragging an end of the selected text of a PDF. */
+        TEXT_HANDLE,
+        IGNORED
     }
 
     private var mode = Mode.NONE
@@ -101,6 +109,9 @@ internal class CanvasGestureHandler(
     private var lastTapTime = 0L
     private var lastTapPosition = Offset.Zero
     private var hasSeenStylus = false
+
+    /** The text selected before the gesture is dropped when it ends (unless it moves the canvas). */
+    private var clearTextSelectionOnUp = false
 
     // Pinch tracking
     private var pinchCentroid = Offset.Zero
@@ -249,6 +260,19 @@ internal class CanvasGestureHandler(
             return
         }
 
+        // Selected text of a PDF: its handles extend it
+        val textMarkup = controller.textMarkupManager
+        clearTextSelectionOnUp = false
+        if (textMarkup.hasSelection) {
+            val handle = textMarkup.handleAt(position, if (change.type == PointerType.Touch) 36f else 24f)
+            if (handle != null) {
+                textMarkup.beginHandleDrag(handle, position)
+                mode = Mode.TEXT_HANDLE
+                return
+            }
+            clearTextSelectionOnUp = true
+        }
+
         val isMouse = change.type == PointerType.Mouse
 
         // Text editor open: a tap outside the box saves it, a drag or a pinch moves the canvas
@@ -280,6 +304,8 @@ internal class CanvasGestureHandler(
 
         if (!controller.isDrawingMode) {
             startPan()
+            // A long press selects the text of the PDFs
+            longPressCandidate = true
             return
         }
 
@@ -313,7 +339,8 @@ internal class CanvasGestureHandler(
 
         if (tool == Tool.PAN || (stylusOnly && isFinger)) {
             startPan()
-            longPressCandidate = isFinger && tool != Tool.PAN
+            // With the hand tool, a long press only selects the text of the PDFs
+            longPressCandidate = isFinger || tool == Tool.PAN
             return
         }
 
@@ -328,6 +355,17 @@ internal class CanvasGestureHandler(
             controller.eraserManager.eraseAlongSegment(position, position)
             live.setEraserCursor(position, eraserRadiusPx(position))
             longPressCandidate = !isStylus
+            return
+        }
+
+        if (tool == Tool.TEXT_MARKUP) {
+            longPressCandidate = !isStylus
+            if (textMarkup.beginMarking(position, textTolerancePx(change.type))) {
+                mode = Mode.MARKUP
+            } else {
+                // Away from the text of the PDFs: the gesture pans the canvas
+                startPan()
+            }
             return
         }
 
@@ -360,7 +398,7 @@ internal class CanvasGestureHandler(
 
     private fun onAdditionalPointer(pressed: List<PointerInputChange>) {
         // A finger landing while the stylus is drawing is a palm: ignore it
-        val stylusDrawing = (mode == Mode.INK || mode == Mode.LASSO || mode == Mode.ERASE) &&
+        val stylusDrawing = (mode == Mode.INK || mode == Mode.LASSO || mode == Mode.ERASE || mode == Mode.MARKUP) &&
                 (activeType == PointerType.Stylus || activeType == PointerType.Eraser)
         if (stylusDrawing) return
 
@@ -373,6 +411,7 @@ internal class CanvasGestureHandler(
                 controller.eraserManager.commitGesture()
                 live.setEraserCursor(null, 0f)
             }
+            Mode.MARKUP -> controller.textMarkupManager.cancelMarking()
             Mode.SELECTION_MOVE, Mode.SELECTION_SCALE, Mode.SELECTION_ROTATE,
             Mode.TEXT_RESIZE_LEFT, Mode.TEXT_RESIZE_RIGHT -> {
                 controller.selectionManager.applyTransformation()
@@ -424,6 +463,18 @@ internal class CanvasGestureHandler(
                 val delta = position - lastPosition
                 controller.cameraPhysics.onDrag(delta.x, delta.y, 1f, position.x, position.y)
                 controller.requestRedraw()
+            }
+
+            Mode.MARKUP -> {
+                if (movedBeyondSlop) {
+                    controller.textMarkupManager.updateMarking(position)
+                    updateAutoScroll(position)
+                }
+            }
+
+            Mode.TEXT_HANDLE -> {
+                controller.textMarkupManager.dragHandleTo(position)
+                updateAutoScroll(position)
             }
 
             Mode.TEXT_TAP, Mode.PLACE_TAP, Mode.EDITOR_TAP -> {
@@ -522,6 +573,11 @@ internal class CanvasGestureHandler(
         longPressCandidate = false
         live.autoScrollPerFrame = 0f
 
+        if (clearTextSelectionOnUp && mode != Mode.PINCH && !(mode == Mode.PAN && movedBeyondSlop)) {
+            controller.textMarkupManager.clearSelection()
+        }
+        clearTextSelectionOnUp = false
+
         when (mode) {
             Mode.INK -> {
                 if (activePointer == up.id) addInkInput(up, position, up.uptimeMillis, up.pressure)
@@ -557,6 +613,18 @@ internal class CanvasGestureHandler(
             Mode.PINCH -> {
                 controller.cameraPhysics.onRelease(0f, 0f)
                 controller.requestRedraw()
+            }
+
+            Mode.MARKUP -> {
+                val textMarkup = controller.textMarkupManager
+                if (wasTap) {
+                    // A tap of the tool selects the mark under it
+                    textMarkup.cancelMarking()
+                    textMarkup.selectMarkupAt(position, textTolerancePx(up.type))
+                } else {
+                    textMarkup.updateMarking(position)
+                    textMarkup.finishMarking()
+                }
             }
 
             Mode.SELECTION_MOVE, Mode.SELECTION_SCALE, Mode.SELECTION_ROTATE,
@@ -608,10 +676,17 @@ internal class CanvasGestureHandler(
             }
             Mode.ERASE -> controller.eraserManager.commitGesture()
             Mode.PAN -> controller.cameraPhysics.onRelease(0f, 0f)
+            Mode.MARKUP -> controller.textMarkupManager.cancelMarking()
             else -> {}
         }
         mode = Mode.IGNORED
-        showContextMenu(downPosition)
+        // A mark or the text of a PDF under the finger: select it
+        clearTextSelectionOnUp = false
+        if (controller.textMarkupManager.selectAt(downPosition, textTolerancePx(activeType))) {
+            controller.cameraPhysics.stopAllAnimations()
+            return
+        }
+        if (controller.isDrawingMode && !controller.toolManager.isPanTool) showContextMenu(downPosition)
     }
 
     private fun showContextMenu(position: Offset) {
@@ -810,6 +885,10 @@ internal class CanvasGestureHandler(
         engine.addInput(mm.x, mm.y, pressure, timeMs, toolType)
     }
 
+    /** How far from the text of the PDFs a pointer of [type] may be to select or mark it, in pixels. */
+    private fun textTolerancePx(type: PointerType): Float =
+        (if (type == PointerType.Touch) 12f else 6f) * controller.density
+
     private fun eraserRadiusPx(position: Offset): Float {
         val pageIndex = controller.findPageIndexAtScreen(position) ?: controller.firstVisiblePageIndex() ?: 0
         val diameterMm = controller.toolManager.activePreset(Tool.ERASER)?.sizeMm ?: 8f
@@ -844,6 +923,9 @@ internal class CanvasGestureHandler(
                 }
             }
             Mode.PAGE_REORDER -> controller.pageManager.onCameraMovedWhileDragging()
+            // Keep extending the text under the pointer while the camera moves
+            Mode.MARKUP -> controller.textMarkupManager.updateMarking(lastPosition)
+            Mode.TEXT_HANDLE -> controller.textMarkupManager.dragHandleTo(lastPosition)
             else -> {}
         }
         controller.requestRedraw()

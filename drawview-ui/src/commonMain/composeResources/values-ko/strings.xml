@@ -23,6 +23,10 @@
     <string name="draw_toolbar_label_highlighter_color">형광펜 색상</string>
     <string name="draw_toolbar_label_highlighter_size">형광펜 크기</string>
     <string name="draw_toolbar_action_highlighter">형광펜</string>
+    <string name="draw_toolbar_action_text_markup">텍스트 표시</string>
+    <string name="text_markup_highlight">강조 표시</string>
+    <string name="text_markup_underline">밑줄</string>
+    <string name="text_markup_strikeout">취소선</string>
     <string name="draw_toolbar_label_eraser_size">지우개 크기</string>
     <string name="draw_toolbar_action_eraser">지우개</string>
     <string name="draw_toolbar_title_lasso_mode">올가미 모드</string>
@@ -88,6 +92,7 @@
     <string name="message_import_image_failed">이미지를 가져올 수 없습니다</string>
     <string name="message_import_pdf_failed">PDF를 가져올 수 없습니다</string>
     <string name="message_pdf_not_supported">이 플랫폼에서는 PDF 가져오기를 사용할 수 없습니다</string>
+    <string name="message_pdf_page_without_text">이 페이지에는 선택할 수 있는 텍스트가 없습니다(스캔일 수 있습니다)</string>
     <string name="text_editor_action_strikethrough">취소선</string>
     <string name="text_editor_action_code">코드</string>
     <string name="text_editor_action_heading">제목</string>

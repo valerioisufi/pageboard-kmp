@@ -74,7 +74,7 @@ fun DocumentInfoSelector(
 
     var totalElements = 0
     document?.pages?.forEach { page ->
-        totalElements += page.strokes.size + page.images.size + page.texts.size + page.pdfs.size
+        totalElements += page.strokes.size + page.images.size + page.texts.size + page.pdfs.size + page.markups.size
     }
 
     ModularExpandableCard(

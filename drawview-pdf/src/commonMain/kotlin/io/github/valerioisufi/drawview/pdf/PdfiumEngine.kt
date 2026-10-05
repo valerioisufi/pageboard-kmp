@@ -4,7 +4,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Paint
+import io.github.valerioisufi.drawview.core.model.PdfTextLayout
 import io.github.valerioisufi.drawview.core.render.tile.PdfTileAdapter
+import io.github.valerioisufi.drawview.core.render.tile.fitPdfPage
 import io.github.valerioisufi.drawview.core.util.SyncLock
 import io.github.valerioisufi.drawview.core.util.syncLock
 import kotlin.math.ceil
@@ -55,20 +57,6 @@ object PdfiumEngine {
      * `null` when PDFs are not supported on this platform.
      */
     fun createTileAdapter(): PdfTileAdapter? = if (isAvailable()) CachingPdfTileAdapter() else null
-}
-
-/**
- * Rectangle of [pageRect] where a PDF page of the given aspect ratio is drawn (centered fit, so
- * that a page whose format has been changed is not distorted).
- */
-internal fun fitPdfPage(pdfWidth: Double, pdfHeight: Double, pageRect: Rect): Rect {
-    if (pdfWidth <= 0.0 || pdfHeight <= 0.0 || pageRect.isEmpty) return pageRect
-    val scale = min(pageRect.width / pdfWidth, pageRect.height / pdfHeight).toFloat()
-    val w = (pdfWidth * scale).toFloat()
-    val h = (pdfHeight * scale).toFloat()
-    val left = pageRect.left + (pageRect.width - w) / 2f
-    val top = pageRect.top + (pageRect.height - h) / 2f
-    return Rect(left, top, left + w, top + h)
 }
 
 /**
@@ -139,6 +127,11 @@ internal class CachingPdfTileAdapter(private val maxOpenDocuments: Int = 4) : Pd
     override fun getPageText(resourcePath: String, pdfPageIndex: Int): String? = syncLock(lock) {
         val doc = documentLocked(resourcePath) ?: return@syncLock null
         if (pdfPageIndex !in 0 until doc.pageCount) null else doc.getPageText(pdfPageIndex)
+    }
+
+    override fun getTextLayout(resourcePath: String, pdfPageIndex: Int): PdfTextLayout? = syncLock(lock) {
+        val doc = documentLocked(resourcePath) ?: return@syncLock null
+        if (pdfPageIndex !in 0 until doc.pageCount) null else doc.getPageTextLayout(pdfPageIndex)
     }
 
     override fun close() {

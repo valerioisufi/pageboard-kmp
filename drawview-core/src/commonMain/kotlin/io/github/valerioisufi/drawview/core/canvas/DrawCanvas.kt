@@ -144,6 +144,9 @@ fun DrawCanvas(
             SelectionOverlay.draw(this, controller, selection, Color(theme.primaryColor))
         }
 
+        // 4b. Text of the PDFs: passage being marked, selected text, selected mark
+        TextMarkupOverlay.draw(this, controller, Color(theme.primaryColor))
+
         // 5. Stroke in progress
         live.liveMesh?.let { mesh ->
             val mmToScreen = controller.pageMmToScreen(live.livePageIndex)

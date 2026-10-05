@@ -4,14 +4,17 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import io.github.valerioisufi.drawview.core.canvas.StrokeMeshPainter
+import io.github.valerioisufi.drawview.core.canvas.TextMarkupPainter
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawStroke
+import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.readSnapshot
 import io.github.valerioisufi.drawview.core.util.SyncLock
 import io.github.valerioisufi.drawview.core.util.syncLock
@@ -34,8 +37,9 @@ import kotlin.math.min
  *
  * Every page has a content *generation*, incremented by each invalidation: a tile rasterized
  * from a snapshot older than the current generation is published as [TileState.STALE] (so it
- * is rendered again), and the strokes committed while a tile was being rasterized are baked into
- * the result before it is published, so that freshly drawn strokes never disappear.
+ * is rendered again), and the strokes (and marks of the text of the PDFs) committed while a tile
+ * was being rasterized are baked into the result before it is published, so that freshly drawn
+ * strokes never disappear.
  *
  * When a page is laid out at another scale (the window was resized), its tiles are dropped, but the
  * ones on screen keep being drawn, stretched, until the tiles of the new layout are ready.
@@ -63,7 +67,10 @@ class TileManager(
     /** World Space size of each page used by its cached tiles (it changes with the window width). */
     private val pageWorldSizes = mutableMapOf<Long, Size>()
     private var bakeSequence = 0L
-    private val recentBakes = mutableMapOf<Long, MutableList<Pair<Long, DrawStroke>>>()
+    private val recentBakes = mutableMapOf<Long, MutableList<BakedElement>>()
+
+    /** An element committed to a page and baked into its tiles: a stroke or a mark of the text of a PDF. */
+    private class BakedElement(val sequence: Long, val stroke: DrawStroke? = null, val markup: DrawTextMarkup? = null)
 
     private val filterPaint = Paint().apply {
         filterQuality = FilterQuality.Medium
@@ -71,6 +78,7 @@ class TileManager(
         isAntiAlias = false
     }
     private val bakePainter = StrokeMeshPainter()
+    private val markupPaint = Paint()
     private val scratchTileToScreen = Matrix2D()
     private val scratchPageToScreen = Matrix2D()
     private val scratchMmToTile = Matrix2D()
@@ -473,17 +481,20 @@ class TileManager(
         // Publish on the same lock used by the synchronous bake: no stroke committed while
         // the tile was rasterized can be lost.
         syncLock(lock) {
-            val candidates = recentBakes[key.pageUid]?.filter { it.first > sequence }.orEmpty()
-            // A stroke added to the page between the sequence read and the snapshot is
+            val candidates = recentBakes[key.pageUid]?.filter { it.sequence > sequence }.orEmpty()
+            // An element added to the page between the sequence read and the snapshot is
             // already part of the rendered content.
-            val rendered = if (candidates.isEmpty()) emptySet() else content.strokes.toHashSet()
-            val pending = candidates.filter { it.second !in rendered }
+            val renderedStrokes = if (candidates.isEmpty()) emptySet() else content.strokes.toHashSet()
+            val renderedMarkups = if (candidates.isEmpty()) emptySet() else content.markups.toHashSet()
+            val pending = candidates.filter { it.stroke !in renderedStrokes && it.markup !in renderedMarkups }
             if (pending.isNotEmpty()) {
                 val mmToTile = TilePyramid.getMmToTileMatrix(key, content.rect(), pageWorldRect)
                 val tileCanvas = Canvas(bitmap)
                 val painter = StrokeMeshPainter()
-                for ((_, stroke) in pending) {
-                    if (!stroke.isDragging) painter.draw(tileCanvas, stroke.mesh, mmToTile)
+                for (element in pending) {
+                    val stroke = element.stroke
+                    if (stroke != null && !stroke.isDragging) painter.draw(tileCanvas, stroke.mesh, mmToTile)
+                    element.markup?.let { drawMarkup(tileCanvas, it, content.widthMm, content.heightMm, mmToTile) }
                 }
             }
             val upToDate = (pageGenerations[key.pageUid] ?: 0) == generation
@@ -526,7 +537,7 @@ class TileManager(
                 val bakes = recentBakes.getOrPut(page.uid) { mutableListOf() }
                 for (stroke in pageStrokes) {
                     bakeSequence++
-                    bakes.add(bakeSequence to stroke)
+                    bakes.add(BakedElement(bakeSequence, stroke = stroke))
                 }
                 // Keep only the strokes that in-flight jobs may still be missing
                 if (bakes.size > 256) bakes.subList(0, bakes.size - 256).clear()
@@ -563,6 +574,71 @@ class TileManager(
             }
         }
         onInvalidate()
+    }
+
+    /**
+     * Bakes the new marks [markups] of the text of the PDF of [page] into its cached tiles of
+     * every LOD on the UI thread, like [bakeStrokesDirectlySync], then invalidates them: the baked
+     * marks are drawn over the ink, the fresh tiles draw them below it.
+     *
+     * @param pageWorldRect World Space bounds of [page].
+     * @param commit Mutation adding the marks to the page, executed atomically with the bake.
+     */
+    fun bakeMarkupsDirectlySync(page: DrawPage, pageWorldRect: Rect, markups: List<DrawTextMarkup>, commit: () -> Unit) {
+        syncLock(lock) {
+            commit()
+            val bakes = recentBakes.getOrPut(page.uid) { mutableListOf() }
+            for (markup in markups) {
+                bakeSequence++
+                bakes.add(BakedElement(bakeSequence, markup = markup))
+            }
+            if (bakes.size > 256) bakes.subList(0, bakes.size - 256).clear()
+
+            val pageRectMm = page.rect()
+            val scaleX = if (page.widthMm > 0f) pageWorldRect.width / page.widthMm else 1f
+            val scaleY = if (page.heightMm > 0f) pageWorldRect.height / page.heightMm else 1f
+            for (lod in TilePyramid.MIN_LOD..TilePyramid.MAX_LOD) {
+                for (markup in markups) {
+                    val bounds = markup.boundsMm(page)
+                    TilePyramid.getPageIntersectingTileRange(
+                        localLeft = bounds.left * scaleX,
+                        localTop = bounds.top * scaleY,
+                        localRight = bounds.right * scaleX,
+                        localBottom = bounds.bottom * scaleY,
+                        pageWidth = pageWorldRect.width,
+                        pageHeight = pageWorldRect.height,
+                        lod = lod,
+                        overscanMargin = 0
+                    ).forEach { col, row ->
+                        val key = TileKey(page.uid, lod, col, row)
+                        val tile = tileCache.get(key) ?: return@forEach
+                        if (tile.state != TileState.READY && tile.state != TileState.STALE) return@forEach
+                        TilePyramid.getMmToTileMatrix(key, pageRectMm, pageWorldRect, scratchMmToTile)
+                        val tileCanvas = Canvas(tile.bitmap)
+                        tileCanvas.save()
+                        tileCanvas.clipRect(scratchMmToTile.mapRect(pageRectMm))
+                        drawMarkup(tileCanvas, markup, page.widthMm, page.heightMm, scratchMmToTile)
+                        tileCanvas.restore()
+                    }
+                }
+            }
+        }
+        val dirty = markups.map { it.boundsMm(page) }.reduceOrNull { a, b ->
+            Rect(min(a.left, b.left), min(a.top, b.top), max(a.right, b.right), max(a.bottom, b.bottom))
+        }
+        if (dirty != null) invalidatePageRegion(page, dirty, pageWorldRect)
+        onInvalidate()
+    }
+
+    private fun drawMarkup(canvas: Canvas, markup: DrawTextMarkup, widthMm: Float, heightMm: Float, mmToTile: Matrix2D) {
+        TextMarkupPainter.draw(
+            canvas = canvas,
+            rects = markup.rects,
+            kind = markup.kind,
+            color = Color(markup.color),
+            pointsToCanvas = markup.pointsToPageMm(widthMm, heightMm).postConcat(mmToTile),
+            paint = markupPaint
+        )
     }
 
     /**

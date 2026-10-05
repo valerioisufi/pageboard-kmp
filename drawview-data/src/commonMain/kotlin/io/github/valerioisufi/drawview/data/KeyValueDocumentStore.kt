@@ -11,6 +11,7 @@ import io.github.valerioisufi.drawview.core.model.DrawPdf
 import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
+import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.model.readSnapshot
@@ -358,6 +359,10 @@ class KeyValueDocumentStore(
 
     override suspend fun savePdf(page: DrawPage, pdf: DrawPdf) = markPageModified(page)
 
+    override suspend fun saveTextMarkup(page: DrawPage, markup: DrawTextMarkup) = markPageModified(page)
+
+    override suspend fun deleteTextMarkup(markup: DrawTextMarkup) = markAllOpenModified()
+
     @OptIn(ExperimentalEncodingApi::class)
     override suspend fun addResource(document: DrawDocument, type: DrawResource.ResourceType, path: String): String {
         val id = syncLock(lock) {
@@ -409,10 +414,11 @@ class KeyValueDocumentStore(
     }
 
     override suspend fun savePresets(tool: Tool, presets: List<ToolPreset>) = updatePreferences {
-        val data = presets.toBrushSettings()
+        val data = presets.toBrushSettings(tool)
         when (tool) {
             Tool.INK_PEN -> it.copy(penPresets = data)
             Tool.INK_HIGHLIGHTER -> it.copy(highlighterPresets = data)
+            Tool.TEXT_MARKUP -> it.copy(markupPresets = data)
             Tool.ERASER -> it.copy(eraserPresets = data)
             Tool.LAZO -> it.copy(lazoPresets = data)
             else -> it
@@ -635,7 +641,8 @@ internal data class StoredPage(
     val strokes: List<StoredStroke> = emptyList(),
     val texts: List<StoredText> = emptyList(),
     val images: List<StoredImage> = emptyList(),
-    val pdfs: List<StoredPdf> = emptyList()
+    val pdfs: List<StoredPdf> = emptyList(),
+    val markups: List<StoredTextMarkup> = emptyList()
 )
 
 @Serializable
@@ -680,6 +687,22 @@ internal data class StoredImage(
 internal data class StoredPdf(val zIndex: Int, val resourceId: String, val pdfPageIndex: Int)
 
 @Serializable
+internal data class StoredTextMarkup(
+    val zIndex: Int,
+    val resourceId: String,
+    val pdfPageIndex: Int,
+    val pdfWidth: Float,
+    val pdfHeight: Float,
+    val startIndex: Int,
+    val endIndex: Int,
+    val text: String,
+    /** Left, top, right, bottom of each line, in points of the PDF page. */
+    val rects: List<Float>,
+    val kind: String,
+    val color: Int
+)
+
+@Serializable
 internal data class StoredPreferences(
     val isStylusOnlyMode: Boolean = false,
     val lastSelectedTool: String = Tool.INK_PEN.name,
@@ -688,7 +711,8 @@ internal data class StoredPreferences(
     val penPresets: List<BrushSettingsData> = emptyList(),
     val highlighterPresets: List<BrushSettingsData> = emptyList(),
     val eraserPresets: List<BrushSettingsData> = emptyList(),
-    val lazoPresets: List<BrushSettingsData> = emptyList()
+    val lazoPresets: List<BrushSettingsData> = emptyList(),
+    val markupPresets: List<BrushSettingsData> = emptyList()
 ) {
     fun toDrawPreferences(): DrawPreferences = buildDrawPreferences(
         isStylusOnlyMode = isStylusOnlyMode,
@@ -698,7 +722,8 @@ internal data class StoredPreferences(
         penPresets = penPresets,
         highlighterPresets = highlighterPresets,
         eraserPresets = eraserPresets,
-        lazoPresets = lazoPresets
+        lazoPresets = lazoPresets,
+        markupPresets = markupPresets
     )
 }
 
@@ -747,7 +772,22 @@ private fun DrawDocument.toStored(): StoredDocument = StoredDocument(
                     rotation = image.rotation
                 )
             },
-            pdfs = page.pdfs.map { StoredPdf(it.zIndex, it.resourceId, it.pdfPageIndex) }
+            pdfs = page.pdfs.map { StoredPdf(it.zIndex, it.resourceId, it.pdfPageIndex) },
+            markups = page.markups.map { markup ->
+                StoredTextMarkup(
+                    zIndex = markup.zIndex,
+                    resourceId = markup.resourceId,
+                    pdfPageIndex = markup.pdfPageIndex,
+                    pdfWidth = markup.pdfWidthPt,
+                    pdfHeight = markup.pdfHeightPt,
+                    startIndex = markup.startIndex,
+                    endIndex = markup.endIndex,
+                    text = markup.text,
+                    rects = markup.flatRects(),
+                    kind = markup.kind.name,
+                    color = markup.color
+                )
+            }
         )
     },
     resources = resources.map { StoredResource(it.id, it.type.name, it.path) }
@@ -811,6 +851,23 @@ private fun StoredPage.toPage(pageIndex: Int, defaultBackground: PageBackground)
     }
     for (pdf in pdfs.sortedBy { it.zIndex }) {
         page.pdfs.add(DrawPdf(pdf.zIndex, pdf.pdfPageIndex).apply { resourceId = pdf.resourceId })
+    }
+    for (markup in markups.sortedBy { it.zIndex }) {
+        page.markups.add(
+            restoreTextMarkup(
+                resourceId = markup.resourceId,
+                pdfPageIndex = markup.pdfPageIndex,
+                pdfWidthPt = markup.pdfWidth,
+                pdfHeightPt = markup.pdfHeight,
+                startIndex = markup.startIndex,
+                endIndex = markup.endIndex,
+                text = markup.text,
+                rects = markup.rects,
+                kind = markup.kind,
+                color = markup.color,
+                zIndex = markup.zIndex
+            )
+        )
     }
     return page
 }

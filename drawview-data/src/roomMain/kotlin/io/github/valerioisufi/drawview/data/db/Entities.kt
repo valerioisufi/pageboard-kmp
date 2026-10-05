@@ -202,6 +202,41 @@ data class PdfEntity(
     val pdfPageIndex: Int
 )
 
+/**
+ * A highlight, underline or strikeout of the text of a PDF page (added in schema version 3).
+ */
+@Entity(
+    tableName = "text_markups",
+    foreignKeys = [
+        ForeignKey(
+            entity = PageEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["pageId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index("pageId")]
+)
+data class TextMarkupEntity(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val pageId: Int,
+    val zIndex: Int,
+    val resourceId: String,
+    val pdfPageIndex: Int,
+    val pdfWidth: Float, // pt
+    val pdfHeight: Float, // pt
+    /** First character of the passage in the text of the PDF page. */
+    val startIndex: Int,
+    /** End (exclusive) of the passage in the text of the PDF page. */
+    val endIndex: Int,
+    val text: String,
+    /** JSON array of the left, top, right, bottom of each line, in points of the PDF page. */
+    val rects: String,
+    /** HIGHLIGHT, UNDERLINE or STRIKEOUT. */
+    val kind: String,
+    val color: Int
+)
+
 @Entity(
     tableName = "resources",
     foreignKeys = [
@@ -257,5 +292,9 @@ data class UserPreferencesEntity(
 
     val lazoPresets: List<BrushSettingsData> = listOf(
         BrushSettingsData(0.5f, 0xFF8799B2.toInt(), "DASHED")
-    )
+    ),
+
+    /** Presets of the text markup tool, the kind of the marks as family (added in schema version 3). */
+    @ColumnInfo(defaultValue = "[]")
+    val markupPresets: List<BrushSettingsData> = emptyList()
 )

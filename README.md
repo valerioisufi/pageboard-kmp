@@ -12,7 +12,7 @@ The repository also contains a [sample application](./sample) showing how to bui
 * [`/drawview-data`](./drawview-data) handles persistence (Room / SQLite, localStorage on the web): documents, folders and preferences.
 * [`/drawview-ui`](./drawview-ui) contains the editor user interface (`DrawScreen`, `EditorSessionScreen`) and its components.
 * [`/drawview-explorer`](./drawview-explorer) provides the document library: folders and notes (create, rename, move, delete, multiple selection), sorting, recent documents, and `DocumentLibrary`, a complete note-taking application (library + editor) themed by the caller.
-* [`/drawview-pdf`](./drawview-pdf) provides PDF document rendering with PDFium (Desktop JVM, Android and iOS).
+* [`/drawview-pdf`](./drawview-pdf) provides PDF document rendering with PDFium (Desktop JVM, Android and iOS), and the text of the pages with the position of every character.
 * [`/drawview-latex`](./drawview-latex) handles dynamic mathematical formula rendering via MicroTeX.
 * [`/drawview-lecture`](./drawview-lecture) provides the lecture assistant: it records the lecture and, with the Gemini API, suggests what is missing from the notes (an `EditorExtension` of the editor; recording on the desktop for now).
 * [`/native`](./native) contains the native C++ engines and JNI bridges for Google Ink, MicroTeX, and PDFium.
@@ -31,6 +31,14 @@ fun App() {
 ### Trackpad
 
 On the canvas, two fingers on a trackpad move the pages like a finger on a touch screen (beyond the edges with a rubber band, with inertia when they are lifted) and the pinch zooms around the pointer, beyond the zoom limits with a rubber band too. The wheel with Ctrl / Cmd zooms as well (the pinch of the Windows precision touchpads arrives this way). On macOS, the phases of the scroll and the pinch, which AWT does not deliver, come from `libtrackpad_bridge` (an event monitor of the application, bundled in the `drawview-core` jar).
+
+### Text of the PDFs
+
+The text of the PDF pages can be selected, highlighted, underlined and struck out (where the PDF has a text layer: not on a scanned page).
+
+* **Text markup tool** (toolbar, shown with PDF pages): the stylus, the mouse or a finger sweeps the text, which is marked with the active preset (kind of mark and color; tap the selected preset to change them, "+" to add one). A tap on a mark selects it.
+* **Long press** on the text (in reading mode too): selects a word, whose ends are dragged by their handles; the bar above the canvas copies the text or marks it with a preset of the tool. A long press on a mark selects it: copy its text, change its style or delete it.
+* The marks follow the text where the page draws the PDF, even when the format of the page changes; the highlights multiply the colors of the PDF, like a highlighter on paper. The eraser deletes them, and every change can be undone.
 
 ---
 

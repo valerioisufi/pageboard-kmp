@@ -1,6 +1,7 @@
 #include "fpdfview.h"
 #include "fpdf_text.h"
 #include "pdfium_bridge.h"
+#include <cmath>
 #include <cstring>
 #include <mutex>
 
@@ -113,6 +114,67 @@ int32_t pdfium_get_page_text(int64_t doc_handle, int32_t page_index, uint16_t* o
     if (count > 0 && out_text && capacity > count) {
         // Writes count characters and the terminator
         FPDFText_GetText(text_page, 0, count, reinterpret_cast<unsigned short*>(out_text));
+    }
+    FPDFText_ClosePage(text_page);
+    FPDF_ClosePage(page);
+    return count < 0 ? -1 : count;
+}
+
+int32_t pdfium_get_page_text_layout(int64_t doc_handle, int32_t page_index, int32_t* out_chars, float* out_boxes, int32_t capacity) {
+    if (!doc_handle) return -1;
+    std::lock_guard<std::mutex> lock(g_pdfium_mutex);
+    FPDF_DOCUMENT doc = reinterpret_cast<FPDF_DOCUMENT>(doc_handle);
+    FPDF_PAGE page = FPDF_LoadPage(doc, page_index);
+    if (!page) return -1;
+    FPDF_TEXTPAGE text_page = FPDFText_LoadPage(page);
+    if (!text_page) {
+        FPDF_ClosePage(page);
+        return -1;
+    }
+    int count = FPDFText_CountChars(text_page);
+    if (count > 0 && out_chars && out_boxes && capacity >= count) {
+        // The boxes are in the space of the PDF (origin at the bottom-left corner of the media
+        // box, before the rotation of the page): the display matrix of the rendering maps them to
+        // the page as it is displayed. FPDF_PageToDevice works in integers, so it is sampled at
+        // 64 device pixels per point.
+        const double scale = 64.0;
+        int size_x = static_cast<int>(std::lround(FPDF_GetPageWidthF(page) * scale));
+        int size_y = static_cast<int>(std::lround(FPDF_GetPageHeightF(page) * scale));
+        int ox = 0, oy = 0, ax = 0, ay = 0, bx = 0, by = 0;
+        FPDF_PageToDevice(page, 0, 0, size_x, size_y, 0, 0.0, 0.0, &ox, &oy);
+        FPDF_PageToDevice(page, 0, 0, size_x, size_y, 0, 1000.0, 0.0, &ax, &ay);
+        FPDF_PageToDevice(page, 0, 0, size_x, size_y, 0, 0.0, 1000.0, &bx, &by);
+        // device = origin + x * u + y * v, in points
+        const double unit = 1000.0 * scale;
+        const double ux = (ax - ox) / unit, uy = (ay - oy) / unit;
+        const double vx = (bx - ox) / unit, vy = (by - oy) / unit;
+        const double tx = ox / scale, ty = oy / scale;
+
+        for (int i = 0; i < count; i++) {
+            out_chars[i] = static_cast<int32_t>(FPDFText_GetUnicode(text_page, i));
+            float* box = out_boxes + i * 4;
+            FS_RECTF rect;
+            if (FPDFText_IsGenerated(text_page, i) == 1 || !FPDFText_GetLooseCharBox(text_page, i, &rect)) {
+                box[0] = box[1] = box[2] = box[3] = 0.0f;
+                continue;
+            }
+            const double xs[2] = {rect.left, rect.right};
+            const double ys[2] = {rect.bottom, rect.top};
+            double left = 0, top = 0, right = 0, bottom = 0;
+            for (int c = 0; c < 4; c++) {
+                const double x = xs[c & 1], y = ys[c >> 1];
+                const double dx = tx + x * ux + y * vx;
+                const double dy = ty + x * uy + y * vy;
+                if (c == 0 || dx < left) left = dx;
+                if (c == 0 || dx > right) right = dx;
+                if (c == 0 || dy < top) top = dy;
+                if (c == 0 || dy > bottom) bottom = dy;
+            }
+            box[0] = static_cast<float>(left);
+            box[1] = static_cast<float>(top);
+            box[2] = static_cast<float>(right);
+            box[3] = static_cast<float>(bottom);
+        }
     }
     FPDFText_ClosePage(text_page);
     FPDF_ClosePage(page);

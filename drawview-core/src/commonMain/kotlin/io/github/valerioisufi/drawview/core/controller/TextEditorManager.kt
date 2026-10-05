@@ -44,6 +44,7 @@ class TextEditorManager(private val controller: DrawViewController) {
     fun startEditing(item: DrawText?, pageIndex: Int, xMm: Float, yMm: Float, boxWidthMm: Float) {
         if (isEditing) cancelTextEditing()
         controller.selectionManager.clearSelection()
+        controller.textMarkupManager.clearSelection()
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
         activeTextItem = item
         activeTextPageIndex = pageIndex

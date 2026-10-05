@@ -24,6 +24,10 @@
     <string name="draw_toolbar_label_highlighter_color">Highlighter Color</string>
     <string name="draw_toolbar_label_highlighter_size">Highlighter Size</string>
     <string name="draw_toolbar_action_highlighter">Ink Highlighter</string>
+    <string name="draw_toolbar_action_text_markup">Mark Text</string>
+    <string name="text_markup_highlight">Highlight</string>
+    <string name="text_markup_underline">Underline</string>
+    <string name="text_markup_strikeout">Strikethrough</string>
     <string name="draw_toolbar_label_eraser_size">Eraser Size</string>
     <string name="draw_toolbar_action_eraser">Eraser</string>
     <string name="draw_toolbar_title_lasso_mode">Lasso Mode</string>
@@ -89,6 +93,7 @@
     <string name="message_import_image_failed">Unable to import the image</string>
     <string name="message_import_pdf_failed">Unable to import the PDF</string>
     <string name="message_pdf_not_supported">PDF import is not available on this platform</string>
+    <string name="message_pdf_page_without_text">This page has no selectable text (it may be a scan)</string>
     <string name="text_editor_action_strikethrough">Strikethrough</string>
     <string name="text_editor_action_code">Code</string>
     <string name="text_editor_action_heading">Heading</string>

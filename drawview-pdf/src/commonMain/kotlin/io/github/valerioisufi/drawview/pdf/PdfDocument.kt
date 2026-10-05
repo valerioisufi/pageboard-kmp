@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.pdf
 
 import androidx.compose.ui.graphics.ImageBitmap
+import io.github.valerioisufi.drawview.core.model.PdfTextLayout
 
 /**
  * Handle to an open PDF document for page inspection and rasterization.
@@ -46,6 +47,12 @@ interface PdfDocument : AutoCloseable {
      * when the page cannot be read.
      */
     fun getPageText(pageIndex: Int): String?
+
+    /**
+     * Characters of the text of the specified page with their boxes (no character for a scanned
+     * page), or `null` when the page cannot be read.
+     */
+    fun getPageTextLayout(pageIndex: Int): PdfTextLayout?
 
     /**
      * Closes the document and releases native resources.

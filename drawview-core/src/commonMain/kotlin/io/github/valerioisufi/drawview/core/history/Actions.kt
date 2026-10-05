@@ -7,8 +7,10 @@ import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
+import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.StrokeMesh
+import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 
 /**
  * Reference to the page an action applies to. Actions created from the UI reference the page
@@ -229,6 +231,85 @@ class DeleteElementsAction(
         }
         bounds()?.let { context.invalidatePageContent(page, it) }
     }
+}
+
+/**
+ * Action representing the marking of passages of the text of a PDF (highlights, underlines,
+ * strikeouts).
+ */
+class AddTextMarkupsAction(
+    private val page: DrawPage,
+    private val markups: List<DrawTextMarkup>
+) : DrawAction {
+    override suspend fun undo(context: DrawingActionContext) {
+        context.clearSelection()
+        page.markups.removeAll(markups)
+        page.markContentChanged()
+        context.persist { markups.forEach { deleteTextMarkup(it) } }
+        unionBounds(markups.map { it.boundsMm(page) })?.let { context.invalidatePageContent(page, it) }
+    }
+
+    override suspend fun redo(context: DrawingActionContext) {
+        page.markups.addAll(markups.filter { it !in page.markups })
+        page.markContentChanged()
+        context.persist { markups.forEach { saveTextMarkup(page, it) } }
+        unionBounds(markups.map { it.boundsMm(page) })?.let { context.invalidatePageContent(page, it) }
+    }
+}
+
+/**
+ * Action representing the removal of marks of the text of a PDF (eraser, delete). Undo restores
+ * them at their original position.
+ *
+ * @param originalPositions index of each mark in the page list at the moment of its removal
+ * (marks listed in removal order).
+ */
+class EraseTextMarkupsAction(
+    private val page: DrawPage,
+    private val markups: List<DrawTextMarkup>,
+    private val originalPositions: List<Int>
+) : DrawAction {
+    override suspend fun undo(context: DrawingActionContext) {
+        context.clearSelection()
+        for (i in markups.indices.reversed()) {
+            val markup = markups[i]
+            if (markup !in page.markups) page.markups.add(originalPositions[i].coerceIn(0, page.markups.size), markup)
+        }
+        page.markContentChanged()
+        context.persist { markups.forEach { saveTextMarkup(page, it) } }
+        unionBounds(markups.map { it.boundsMm(page) })?.let { context.invalidatePageContent(page, it) }
+    }
+
+    override suspend fun redo(context: DrawingActionContext) {
+        context.clearSelection()
+        page.markups.removeAll(markups)
+        page.markContentChanged()
+        context.persist { markups.forEach { deleteTextMarkup(it) } }
+        unionBounds(markups.map { it.boundsMm(page) })?.let { context.invalidatePageContent(page, it) }
+    }
+}
+
+/**
+ * Action representing a change of the kind and of the color of a mark of the text of a PDF.
+ */
+class ChangeTextMarkupStyleAction(
+    private val page: DrawPage,
+    private val markup: DrawTextMarkup,
+    private val oldKind: TextMarkupKind,
+    private val oldColor: Int,
+    private val newKind: TextMarkupKind,
+    private val newColor: Int
+) : DrawAction {
+    private fun apply(context: DrawingActionContext, kind: TextMarkupKind, color: Int) {
+        markup.kind = kind
+        markup.color = color
+        page.markContentChanged()
+        context.persist { saveTextMarkup(page, markup) }
+        context.invalidatePageContent(page, markup.boundsMm(page))
+    }
+
+    override suspend fun undo(context: DrawingActionContext) = apply(context, oldKind, oldColor)
+    override suspend fun redo(context: DrawingActionContext) = apply(context, newKind, newColor)
 }
 
 /**

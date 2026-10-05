@@ -7,6 +7,7 @@ import io.github.valerioisufi.drawview.core.model.DrawPdf
 import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
+import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.Tool
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -32,6 +33,10 @@ interface DrawPersistence {
     suspend fun deleteImage(image: DrawImage) {}
 
     suspend fun savePdf(page: DrawPage, pdf: DrawPdf) {}
+
+    /** Inserts [markup] when its dbId is 0, updates it otherwise. */
+    suspend fun saveTextMarkup(page: DrawPage, markup: DrawTextMarkup) {}
+    suspend fun deleteTextMarkup(markup: DrawTextMarkup) {}
 
     /** Registers a file owned by [document] and returns the identifier of the resource. */
     suspend fun addResource(document: DrawDocument, type: DrawResource.ResourceType, path: String): String =

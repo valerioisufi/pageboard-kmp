@@ -193,6 +193,7 @@ class SelectionManager(private val controller: DrawViewController) {
     }
 
     private fun setSelection(selection: SelectionGroup, page: DrawPage) {
+        controller.textMarkupManager.clearSelection()
         selection.setDragging(true)
         currentSelection = selection
         // The selected elements are drawn live on top: rasterize the tiles without them

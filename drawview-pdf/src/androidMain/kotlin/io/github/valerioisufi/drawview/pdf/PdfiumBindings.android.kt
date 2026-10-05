@@ -43,5 +43,14 @@ internal actual object PdfiumBindings {
 
     actual fun pageText(document: Long, pageIndex: Int): String? = PdfiumNative.nGetPageText(document, pageIndex)
 
+    actual fun pageTextLayout(document: Long, pageIndex: Int): Pair<IntArray, FloatArray>? {
+        val count = PdfiumNative.nGetPageTextLayout(document, pageIndex, null, null)
+        if (count < 0) return null
+        val chars = IntArray(count)
+        val boxes = FloatArray(count * 4)
+        if (count > 0 && PdfiumNative.nGetPageTextLayout(document, pageIndex, chars, boxes) != count) return null
+        return chars to boxes
+    }
+
     actual fun closeDocument(document: Long) = PdfiumNative.nCloseDocument(document)
 }

@@ -1,6 +1,8 @@
 package io.github.valerioisufi.drawview.data
 
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import io.github.valerioisufi.drawview.core.controller.ToolManager
 import io.github.valerioisufi.drawview.core.controller.ToolPreset
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
 import io.github.valerioisufi.drawview.core.model.BrushConfig
@@ -9,10 +11,12 @@ import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
+import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.InputToolType
 import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
+import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.data.db.*
 import io.github.valerioisufi.drawview.data.repository.DrawDocumentRepository
@@ -220,6 +224,63 @@ class DrawDatabaseTest {
         repository.deleteStrokes(listOf(loadedStroke))
         assertEquals(0, loadedStroke.dbId)
         assertTrue(assertNotNull(repository.loadDocument(doc.dbId)).pages[0].strokes.isEmpty())
+    }
+
+    @Test
+    fun testTextMarkupPersistence() = runTest {
+        val doc = repository.createDocument("Slides", 210f, 297f, PageBackground.Solid())
+        val page = doc.pages[0]
+        val markup = DrawTextMarkup(
+            resourceId = "7",
+            pdfPageIndex = 2,
+            pdfWidthPt = 595f,
+            pdfHeightPt = 842f,
+            startIndex = 10,
+            endIndex = 25,
+            text = "hash\nfunctions",
+            rects = listOf(Rect(72f, 100f, 198.5f, 124f), Rect(72f, 130f, 144f, 154f)),
+            kind = TextMarkupKind.HIGHLIGHT,
+            color = 0xFFFFF176.toInt(),
+            zIndex = 0
+        )
+        repository.saveTextMarkup(page, markup)
+        assertTrue(markup.dbId > 0)
+
+        // A change of style updates the row
+        markup.kind = TextMarkupKind.UNDERLINE
+        markup.color = 0xFFE53935.toInt()
+        repository.saveTextMarkup(page, markup)
+
+        val loaded = assertNotNull(repository.loadDocument(doc.dbId)).pages[0].markups.single()
+        assertEquals(markup.dbId, loaded.dbId)
+        assertEquals("7", loaded.resourceId)
+        assertEquals(2, loaded.pdfPageIndex)
+        assertEquals(595f, loaded.pdfWidthPt)
+        assertEquals(842f, loaded.pdfHeightPt)
+        assertEquals(10, loaded.startIndex)
+        assertEquals(25, loaded.endIndex)
+        assertEquals(markup.text, loaded.text)
+        assertEquals(markup.rects, loaded.rects)
+        assertEquals(TextMarkupKind.UNDERLINE, loaded.kind)
+        assertEquals(0xFFE53935.toInt(), loaded.color)
+
+        // Deleting the mark resets its dbId so that an undo re-inserts it
+        repository.deleteTextMarkup(loaded)
+        assertEquals(0, loaded.dbId)
+        assertTrue(assertNotNull(repository.loadDocument(doc.dbId)).pages[0].markups.isEmpty())
+    }
+
+    @Test
+    fun testTextMarkupPresets() = runTest {
+        // The default presets until the user changes them
+        assertEquals(ToolManager.defaultPresets()[Tool.TEXT_MARKUP], repository.drawPreferencesFlow.first().presets[Tool.TEXT_MARKUP])
+
+        val presets = listOf(
+            ToolPreset(0f, 0xFFE53935.toInt(), StrokeTool.HIGHLIGHTER, TextMarkupKind.STRIKEOUT),
+            ToolPreset(0f, 0xFF90CAF9.toInt(), StrokeTool.HIGHLIGHTER, TextMarkupKind.HIGHLIGHT)
+        )
+        repository.savePresets(Tool.TEXT_MARKUP, presets)
+        assertEquals(presets, repository.drawPreferencesFlow.first().presets[Tool.TEXT_MARKUP])
     }
 
     @Test

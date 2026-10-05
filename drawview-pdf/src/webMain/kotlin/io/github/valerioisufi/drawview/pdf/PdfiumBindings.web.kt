@@ -28,5 +28,7 @@ internal actual object PdfiumBindings {
 
     actual fun pageText(document: Long, pageIndex: Int): String? = null
 
+    actual fun pageTextLayout(document: Long, pageIndex: Int): Pair<IntArray, FloatArray>? = null
+
     actual fun closeDocument(document: Long) {}
 }

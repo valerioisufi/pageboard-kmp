@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.data
 
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import io.github.valerioisufi.drawview.core.controller.ToolPreset
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
@@ -7,10 +8,12 @@ import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
+import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.InputToolType
 import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
+import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -55,6 +58,20 @@ class KeyValueDocumentStoreTest {
         }
         page.texts.add(text)
         store.saveText(page, text)
+        val markup = DrawTextMarkup(
+            resourceId = "pdf",
+            pdfPageIndex = 3,
+            pdfWidthPt = 595f,
+            pdfHeightPt = 842f,
+            startIndex = 4,
+            endIndex = 9,
+            text = "words",
+            rects = listOf(Rect(72f, 100f, 132f, 124f)),
+            kind = TextMarkupKind.STRIKEOUT,
+            color = 0xFF000000.toInt()
+        )
+        page.markups.add(markup)
+        store.saveTextMarkup(page, markup)
 
         val second = DrawPage(index = 1, widthMm = 297f, heightMm = 210f, background = PageBackground.Dotted())
         second.hasCustomBackground = true
@@ -84,6 +101,13 @@ class KeyValueDocumentStoreTest {
         assertEquals(text.text, loadedText.text)
         assertEquals(1, loadedText.alignment)
         assertEquals(20f, loadedText.fontSize)
+
+        val loadedMarkup = firstPage.markups.single()
+        assertEquals("words", loadedMarkup.text)
+        assertEquals(3, loadedMarkup.pdfPageIndex)
+        assertEquals(4 until 9, loadedMarkup.startIndex until loadedMarkup.endIndex)
+        assertEquals(markup.rects, loadedMarkup.rects)
+        assertEquals(TextMarkupKind.STRIKEOUT, loadedMarkup.kind)
 
         assertEquals(297f, loaded.pages[1].widthMm)
         assertTrue(loaded.pages[1].hasCustomBackground)

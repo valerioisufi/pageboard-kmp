@@ -11,6 +11,7 @@ import io.github.valerioisufi.drawview.core.model.DrawPdf
 import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
+import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.data.buildDrawPreferences
@@ -24,15 +25,19 @@ import io.github.valerioisufi.drawview.data.db.ResourceEntity
 import io.github.valerioisufi.drawview.data.db.StrokeEntity
 import io.github.valerioisufi.drawview.data.db.StrokeInputCodec
 import io.github.valerioisufi.drawview.data.db.TextEntity
+import io.github.valerioisufi.drawview.data.db.TextMarkupEntity
 import io.github.valerioisufi.drawview.data.db.UserPreferencesEntity
 import io.github.valerioisufi.drawview.data.db.currentTimeMillis
+import io.github.valerioisufi.drawview.data.flatRects
 import io.github.valerioisufi.drawview.data.restoreStroke
+import io.github.valerioisufi.drawview.data.restoreTextMarkup
 import io.github.valerioisufi.drawview.data.toBrushSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 
 /**
  * Single source of truth of the documents: maps the Room entities to the in-memory model of
@@ -50,8 +55,10 @@ class DrawDocumentRepository(
     private val textDao = database.textDao()
     private val imageDao = database.imageDao()
     private val pdfDao = database.pdfDao()
+    private val textMarkupDao = database.textMarkupDao()
     private val resourceDao = database.resourceDao()
     private val preferencesDao = database.preferencesDao()
+    private val json = Json
 
     override val userPreferencesFlow: Flow<UserPreferencesEntity?>
         get() = preferencesDao.getPreferencesFlow()
@@ -132,6 +139,9 @@ class DrawDocumentRepository(
                         }
                     )
                 }
+                for (markupEntity in pageWithContent.markups.sortedBy { it.zIndex }) {
+                    mapTextMarkup(markupEntity)?.let { page.markups.add(it) }
+                }
                 doc.pages.add(page)
             }
 
@@ -160,6 +170,28 @@ class DrawDocumentRepository(
         dbId = entity.id,
         id = entity.id.toString()
     )
+
+    private fun mapTextMarkup(entity: TextMarkupEntity): DrawTextMarkup? {
+        val rects = try {
+            json.decodeFromString<List<Float>>(entity.rects)
+        } catch (_: Exception) {
+            return null
+        }
+        return restoreTextMarkup(
+            resourceId = entity.resourceId,
+            pdfPageIndex = entity.pdfPageIndex,
+            pdfWidthPt = entity.pdfWidth,
+            pdfHeightPt = entity.pdfHeight,
+            startIndex = entity.startIndex,
+            endIndex = entity.endIndex,
+            text = entity.text,
+            rects = rects,
+            kind = entity.kind,
+            color = entity.color,
+            zIndex = entity.zIndex,
+            dbId = entity.id
+        )
+    }
 
     private fun mapText(entity: TextEntity) = DrawText(entity.zIndex).apply {
         dbId = entity.id
@@ -358,6 +390,8 @@ class DrawDocumentRepository(
 
     override suspend fun updateLazoPresets(presets: List<BrushSettingsData>) = updatePreferences { it.copy(lazoPresets = presets) }
 
+    override suspend fun updateMarkupPresets(presets: List<BrushSettingsData>) = updatePreferences { it.copy(markupPresets = presets) }
+
     override suspend fun updateTextDefaults(fontSize: Float, color: Int, isLatex: Boolean) = updatePreferences {
         it.copy(defaultTextFontSize = fontSize, defaultTextColor = color, defaultTextIsLatex = isLatex)
     }
@@ -458,6 +492,35 @@ class DrawDocumentRepository(
         }
     }
 
+    override suspend fun saveTextMarkup(page: DrawPage, markup: DrawTextMarkup) {
+        if (page.dbId == 0) return
+        withContext(Dispatchers.IO) {
+            val entity = TextMarkupEntity(
+                id = markup.dbId,
+                pageId = page.dbId,
+                zIndex = markup.zIndex,
+                resourceId = markup.resourceId,
+                pdfPageIndex = markup.pdfPageIndex,
+                pdfWidth = markup.pdfWidthPt,
+                pdfHeight = markup.pdfHeightPt,
+                startIndex = markup.startIndex,
+                endIndex = markup.endIndex,
+                text = markup.text,
+                rects = json.encodeToString(markup.flatRects()),
+                kind = markup.kind.name,
+                color = markup.color
+            )
+            if (markup.dbId == 0) markup.dbId = textMarkupDao.insert(entity).toInt()
+            else textMarkupDao.insert(entity)
+        }
+    }
+
+    override suspend fun deleteTextMarkup(markup: DrawTextMarkup) {
+        if (markup.dbId == 0) return
+        withContext(Dispatchers.IO) { textMarkupDao.deleteById(markup.dbId) }
+        markup.dbId = 0
+    }
+
     override suspend fun addResource(document: DrawDocument, type: DrawResource.ResourceType, path: String): String {
         if (document.dbId == 0) return path
         return withContext(Dispatchers.IO) {
@@ -501,10 +564,11 @@ class DrawDocumentRepository(
     }
 
     override suspend fun savePresets(tool: Tool, presets: List<ToolPreset>) {
-        val data = presets.toBrushSettings()
+        val data = presets.toBrushSettings(tool)
         when (tool) {
             Tool.INK_PEN -> updatePenPresets(data)
             Tool.INK_HIGHLIGHTER -> updateHighlighterPresets(data)
+            Tool.TEXT_MARKUP -> updateMarkupPresets(data)
             Tool.ERASER -> updateEraserPresets(data)
             Tool.LAZO -> updateLazoPresets(data)
             else -> {}
@@ -531,5 +595,6 @@ fun UserPreferencesEntity.toDrawPreferences(): DrawPreferences = buildDrawPrefer
     penPresets = penPresets,
     highlighterPresets = highlighterPresets,
     eraserPresets = eraserPresets,
-    lazoPresets = lazoPresets
+    lazoPresets = lazoPresets,
+    markupPresets = markupPresets
 )

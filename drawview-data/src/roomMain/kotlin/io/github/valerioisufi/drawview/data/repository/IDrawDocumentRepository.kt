@@ -36,6 +36,7 @@ interface IDrawDocumentRepository {
     suspend fun updateHighlighterPresets(presets: List<BrushSettingsData>)
     suspend fun updateEraserPresets(presets: List<BrushSettingsData>)
     suspend fun updateLazoPresets(presets: List<BrushSettingsData>)
+    suspend fun updateMarkupPresets(presets: List<BrushSettingsData>)
     suspend fun updateTextDefaults(fontSize: Float, color: Int, isLatex: Boolean)
     suspend fun updateLastSelectedTool(toolName: String)
     suspend fun updatePageFormatAndBackground(documentId: Int, page: DrawPage)

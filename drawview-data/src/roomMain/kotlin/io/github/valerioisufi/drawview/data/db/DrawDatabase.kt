@@ -16,13 +16,16 @@ import androidx.room.TypeConverters
         TextEntity::class,
         ImageEntity::class,
         PdfEntity::class,
+        TextMarkupEntity::class,
         ResourceEntity::class,
         UserPreferencesEntity::class
     ],
-    version = 2,
+    version = 3,
     autoMigrations = [
         // v2: text alignment and Markdown flag
-        AutoMigration(from = 1, to = 2)
+        AutoMigration(from = 1, to = 2),
+        // v3: marks of the text of the PDFs and presets of the text markup tool
+        AutoMigration(from = 2, to = 3)
     ]
 )
 @TypeConverters(
@@ -38,6 +41,7 @@ abstract class DrawDatabase : RoomDatabase() {
     abstract fun textDao(): TextDao
     abstract fun imageDao(): ImageDao
     abstract fun pdfDao(): PdfDao
+    abstract fun textMarkupDao(): TextMarkupDao
     abstract fun resourceDao(): ResourceDao
     abstract fun preferencesDao(): PreferencesDao
 }

@@ -23,6 +23,10 @@
     <string name="draw_toolbar_label_highlighter_color">Colore Evidenziatore</string>
     <string name="draw_toolbar_label_highlighter_size">Dimensione Evidenziatore</string>
     <string name="draw_toolbar_action_highlighter">Evidenziatore</string>
+    <string name="draw_toolbar_action_text_markup">Evidenzia testo</string>
+    <string name="text_markup_highlight">Evidenzia</string>
+    <string name="text_markup_underline">Sottolinea</string>
+    <string name="text_markup_strikeout">Barra</string>
     <string name="draw_toolbar_label_eraser_size">Dimensione Gomma</string>
     <string name="draw_toolbar_action_eraser">Gomma</string>
     <string name="draw_toolbar_title_lasso_mode">Modalità Lazo</string>
@@ -88,6 +92,7 @@
     <string name="message_import_image_failed">Impossibile importare l\'immagine</string>
     <string name="message_import_pdf_failed">Impossibile importare il PDF</string>
     <string name="message_pdf_not_supported">L\'importazione dei PDF non è disponibile su questa piattaforma</string>
+    <string name="message_pdf_page_without_text">Questa pagina non ha testo selezionabile (forse è una scansione)</string>
     <string name="text_editor_action_strikethrough">Barrato</string>
     <string name="text_editor_action_code">Codice</string>
     <string name="text_editor_action_heading">Titolo</string>

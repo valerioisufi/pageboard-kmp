@@ -81,6 +81,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import io.github.valerioisufi.drawview.core.canvas.DrawCanvas
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.core.controller.ToolPreset
 import io.github.valerioisufi.drawview.core.geometry.Dimension
 import io.github.valerioisufi.drawview.core.geometry.mm
 import io.github.valerioisufi.drawview.core.model.LassoMode
@@ -96,9 +97,12 @@ import io.github.valerioisufi.drawview.ui.components.QuickPresetButton
 import io.github.valerioisufi.drawview.ui.components.SizeSlider
 import io.github.valerioisufi.drawview.ui.components.TextColorPaletteRow
 import io.github.valerioisufi.drawview.ui.components.TextColorPickerDialog
+import io.github.valerioisufi.drawview.ui.components.TextMarkupPresetButton
+import io.github.valerioisufi.drawview.ui.components.TextMarkupPresetEditMenu
 import io.github.valerioisufi.drawview.ui.components.ToolButton
 import io.github.valerioisufi.drawview.ui.editor.CanvasContextMenu
 import io.github.valerioisufi.drawview.ui.editor.SelectionActionBar
+import io.github.valerioisufi.drawview.ui.editor.TextMarkupActionBar
 import io.github.valerioisufi.drawview.ui.editor.TextEditorOverlay
 import io.github.valerioisufi.drawview.ui.generated.resources.*
 import io.github.valerioisufi.drawview.ui.platform.HideSystemBarsEffect
@@ -176,6 +180,7 @@ fun DrawScreen(
                 DrawViewController.Message.IMPORT_IMAGE_FAILED -> getString(Res.string.message_import_image_failed)
                 DrawViewController.Message.IMPORT_PDF_FAILED -> getString(Res.string.message_import_pdf_failed)
                 DrawViewController.Message.PDF_NOT_SUPPORTED -> getString(Res.string.message_pdf_not_supported)
+                DrawViewController.Message.PDF_PAGE_WITHOUT_TEXT -> getString(Res.string.message_pdf_page_without_text)
             }
             snackbarHostState.showSnackbar(text)
         }
@@ -428,6 +433,18 @@ fun DrawScreen(
                                 )
 
                                 // ==========================================
+                                // 2b. TEXT MARKUP (text of the PDFs)
+                                // ==========================================
+                                val hasPdfPages = controller.document.pages.any { it.pdfs.isNotEmpty() }
+                                if (pdfImportAvailable && (hasPdfPages || controller.selectedTool == Tool.TEXT_MARKUP)) {
+                                    TextMarkupToolButton(
+                                        controller = controller,
+                                        expanded = expandedToolSettings == Tool.TEXT_MARKUP,
+                                        onExpandedChange = { expandedToolSettings = if (it) Tool.TEXT_MARKUP else null }
+                                    )
+                                }
+
+                                // ==========================================
                                 // 3. ERASER
                                 // ==========================================
                                 var eraserSettingsExpanded by remember { mutableStateOf(false) }
@@ -637,6 +654,11 @@ fun DrawScreen(
                             modifier = Modifier.align(Alignment.TopCenter)
                         )
 
+                        TextMarkupActionBar(
+                            controller = controller,
+                            modifier = Modifier.align(Alignment.TopCenter)
+                        )
+
                         CanvasContextMenu(
                             controller = controller,
                             onEditPageBackground = { showSinglePageConfigurator = true }
@@ -762,6 +784,120 @@ private fun InkToolButton(
     linearProportion: Float
 ) {
     val toolManager = controller.toolManager
+    PresetToolButton(
+        controller = controller,
+        tool = tool,
+        expanded = expanded,
+        onExpandedChange = onExpandedChange,
+        icon = icon,
+        contentDescription = contentDescription,
+        presetButton = { preset, isSelected, onClick ->
+            QuickPresetButton(
+                color = Color(preset.color),
+                size = preset.sizeMm.mm,
+                valueRange = sizeRange,
+                isSelected = isSelected,
+                onClick = onClick
+            )
+        },
+        presetEditMenu = { index, preset, editing, onDismiss ->
+            PresetEditMenu(
+                expanded = editing,
+                onDismissRequest = onDismiss,
+                presetColor = Color(preset.color),
+                presetSize = preset.sizeMm.mm,
+                sizeValueRange = sizeRange,
+                linearThreshold = linearThreshold,
+                linearProportion = linearProportion,
+                showDeleteOption = toolManager.presetsOf(tool).size > 1,
+                onColorChanged = { newColor ->
+                    toolManager.presetsOf(tool).getOrNull(index)?.let {
+                        toolManager.updatePreset(tool, index, it.copy(color = newColor.toArgb()))
+                    }
+                },
+                onSizeChanged = { newSize ->
+                    toolManager.presetsOf(tool).getOrNull(index)?.let {
+                        toolManager.updatePreset(tool, index, it.copy(sizeMm = newSize.mm))
+                    }
+                },
+                onDeleteClicked = {
+                    toolManager.removePreset(tool, index)
+                    onDismiss()
+                }
+            )
+        }
+    )
+}
+
+/**
+ * Button of the text markup tool expanding into its presets (kind of the marks and color): tap a
+ * preset to select it, tap the selected one to edit it, "+" to add a preset.
+ */
+@Composable
+private fun TextMarkupToolButton(
+    controller: DrawViewController,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit
+) {
+    val toolManager = controller.toolManager
+    val tool = Tool.TEXT_MARKUP
+    PresetToolButton(
+        controller = controller,
+        tool = tool,
+        expanded = expanded,
+        onExpandedChange = onExpandedChange,
+        icon = painterResource(Res.drawable.icon_text_markup),
+        contentDescription = stringResource(Res.string.draw_toolbar_action_text_markup),
+        presetButton = { preset, isSelected, onClick ->
+            TextMarkupPresetButton(
+                kind = preset.markup,
+                color = Color(preset.color),
+                isSelected = isSelected,
+                onClick = onClick
+            )
+        },
+        presetEditMenu = { index, preset, editing, onDismiss ->
+            TextMarkupPresetEditMenu(
+                expanded = editing,
+                onDismissRequest = onDismiss,
+                kind = preset.markup,
+                color = Color(preset.color),
+                showDeleteOption = toolManager.presetsOf(tool).size > 1,
+                onKindChanged = { kind ->
+                    toolManager.presetsOf(tool).getOrNull(index)?.let {
+                        toolManager.updatePreset(tool, index, it.copy(markup = kind))
+                    }
+                },
+                onColorChanged = { newColor ->
+                    toolManager.presetsOf(tool).getOrNull(index)?.let {
+                        toolManager.updatePreset(tool, index, it.copy(color = newColor.toArgb()))
+                    }
+                },
+                onDeleteClicked = {
+                    toolManager.removePreset(tool, index)
+                    onDismiss()
+                }
+            )
+        }
+    )
+}
+
+/**
+ * Button of a tool with presets expanding into them: tap a preset to select it, tap the selected
+ * one to edit it ([presetEditMenu], anchored to the preset), "+" to add a preset.
+ */
+@Composable
+private fun PresetToolButton(
+    controller: DrawViewController,
+    tool: Tool,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    icon: Painter,
+    contentDescription: String,
+    presetButton: @Composable (preset: ToolPreset, isSelected: Boolean, onClick: () -> Unit) -> Unit,
+    presetEditMenu: @Composable (index: Int, preset: ToolPreset, expanded: Boolean, onDismiss: () -> Unit) -> Unit
+) {
+    val toolManager = controller.toolManager
     var editingPresetIndex by remember { mutableStateOf<Int?>(null) }
     val isToolSelected = controller.selectedTool == tool
 
@@ -795,41 +931,11 @@ private fun InkToolButton(
                 val isSelected = isToolSelected && selectedIndex == index
 
                 Box {
-                    QuickPresetButton(
-                        color = Color(preset.color),
-                        size = preset.sizeMm.mm,
-                        valueRange = sizeRange,
-                        isSelected = isSelected,
-                        onClick = {
-                            if (isSelected) editingPresetIndex = index
-                            else controller.selectTool(tool, index)
-                        }
-                    )
-
-                    PresetEditMenu(
-                        expanded = editingPresetIndex == index,
-                        onDismissRequest = { editingPresetIndex = null },
-                        presetColor = Color(preset.color),
-                        presetSize = preset.sizeMm.mm,
-                        sizeValueRange = sizeRange,
-                        linearThreshold = linearThreshold,
-                        linearProportion = linearProportion,
-                        showDeleteOption = presets.size > 1,
-                        onColorChanged = { newColor ->
-                            toolManager.presetsOf(tool).getOrNull(index)?.let {
-                                toolManager.updatePreset(tool, index, it.copy(color = newColor.toArgb()))
-                            }
-                        },
-                        onSizeChanged = { newSize ->
-                            toolManager.presetsOf(tool).getOrNull(index)?.let {
-                                toolManager.updatePreset(tool, index, it.copy(sizeMm = newSize.mm))
-                            }
-                        },
-                        onDeleteClicked = {
-                            toolManager.removePreset(tool, index)
-                            editingPresetIndex = null
-                        }
-                    )
+                    presetButton(preset, isSelected) {
+                        if (isSelected) editingPresetIndex = index
+                        else controller.selectTool(tool, index)
+                    }
+                    presetEditMenu(index, preset, editingPresetIndex == index) { editingPresetIndex = null }
                 }
             }
             Spacer(modifier = Modifier.width(8.dp))

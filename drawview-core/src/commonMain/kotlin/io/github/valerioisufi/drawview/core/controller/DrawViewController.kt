@@ -108,6 +108,7 @@ class DrawViewController(
     val pageManager = PageManager(this)
     val mediaManager = MediaManager(this)
     val placementManager = PlacementManager(this)
+    val textMarkupManager = TextMarkupManager(this)
 
     // ==========================================================
     // Observable state
@@ -158,7 +159,7 @@ class DrawViewController(
     val canRedo: Boolean get() = historyManager.canRedo
 
     /** One-shot messages for the UI (snackbars/toasts). */
-    enum class Message { STYLUS_MODE_ACTIVATED, IMPORT_IMAGE_FAILED, IMPORT_PDF_FAILED, PDF_NOT_SUPPORTED }
+    enum class Message { STYLUS_MODE_ACTIVATED, IMPORT_IMAGE_FAILED, IMPORT_PDF_FAILED, PDF_NOT_SUPPORTED, PDF_PAGE_WITHOUT_TEXT }
 
     private val _messages = MutableSharedFlow<Message>(extraBufferCapacity = 8, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     val messages: SharedFlow<Message> = _messages.asSharedFlow()
@@ -181,12 +182,15 @@ class DrawViewController(
     fun selectTool(tool: Tool, presetIndex: Int? = null) {
         if (tool != Tool.LAZO) selectionManager.clearSelection()
         if (tool != Tool.TEXT && textEditorManager.isEditing) textEditorManager.cancelTextEditing()
+        textMarkupManager.clearSelection()
         toolManager.selectTool(tool, presetIndex)
+        if (tool == Tool.TEXT_MARKUP) textMarkupManager.prefetchVisiblePages()
         requestRedraw()
     }
 
     fun toggleDrawingMode() {
         isDrawingMode = !isDrawingMode
+        textMarkupManager.clearSelection()
         if (!isDrawingMode) {
             selectionManager.clearSelection()
             textEditorManager.cancelTextEditing()
@@ -199,6 +203,7 @@ class DrawViewController(
         isPageGridVisible = !isPageGridVisible
         if (isPageGridVisible) {
             selectionManager.clearSelection()
+            textMarkupManager.clearSelection()
             textEditorManager.cancelTextEditing()
             contextMenuPosition = null
         }
@@ -275,6 +280,7 @@ class DrawViewController(
 
     override fun clearSelection() {
         selectionManager.clearSelection()
+        textMarkupManager.clearSelection()
     }
 
     override fun markLayoutNeedsUpdate() {
@@ -576,12 +582,12 @@ class DrawViewController(
     // ==========================================================
 
     fun undo() {
-        selectionManager.clearSelection()
+        clearSelection()
         historyManager.undo(this)
     }
 
     fun redo() {
-        selectionManager.clearSelection()
+        clearSelection()
         historyManager.redo(this)
     }
 

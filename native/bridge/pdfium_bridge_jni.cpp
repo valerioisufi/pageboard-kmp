@@ -65,6 +65,21 @@ JNIEXPORT jstring JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_
     return env->NewString(reinterpret_cast<const jchar*>(text.data()), length);
 }
 
+JNIEXPORT jint JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nGetPageTextLayout(
+    JNIEnv* env, jclass, jlong handle, jint page_index, jintArray out_chars, jfloatArray out_boxes) {
+    if (!out_chars || !out_boxes) return pdfium_get_page_text_layout(handle, page_index, nullptr, nullptr, 0);
+    jsize capacity = env->GetArrayLength(out_chars);
+    if (env->GetArrayLength(out_boxes) < capacity * 4) return -1;
+    jint* chars = env->GetIntArrayElements(out_chars, nullptr);
+    jfloat* boxes = env->GetFloatArrayElements(out_boxes, nullptr);
+    int32_t count = pdfium_get_page_text_layout(
+        handle, page_index, reinterpret_cast<int32_t*>(chars), reinterpret_cast<float*>(boxes), capacity
+    );
+    env->ReleaseFloatArrayElements(out_boxes, boxes, 0);
+    env->ReleaseIntArrayElements(out_chars, chars, 0);
+    return count;
+}
+
 JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nCloseDocument(
     JNIEnv*, jclass, jlong handle) {
     pdfium_close_document(handle);

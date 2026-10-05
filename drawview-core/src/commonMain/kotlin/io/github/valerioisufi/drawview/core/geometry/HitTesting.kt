@@ -7,8 +7,9 @@ import kotlin.math.min
 import kotlin.math.sqrt
 
 /**
- * Exact geometric hit-testing of stroke meshes, used by the eraser (capsule shaped segments)
- * and by the lasso selection (closed polygons). All coordinates are in page millimeters.
+ * Exact geometric hit-testing of stroke meshes (and of the lines of the marks of the text of the
+ * PDFs), used by the eraser (capsule shaped segments) and by the lasso selection (closed
+ * polygons). All coordinates are in page millimeters.
  */
 object HitTesting {
 
@@ -166,6 +167,24 @@ object HitTesting {
         val hasNeg = d1 < 0f || d2 < 0f || d3 < 0f
         val hasPos = d1 > 0f || d2 > 0f || d3 > 0f
         return !(hasNeg && hasPos)
+    }
+
+    /**
+     * Whether [rect] lies within [radius] of the segment ([x1], [y1]) - ([x2], [y2]).
+     */
+    fun rectIntersectsCapsule(rect: Rect, x1: Float, y1: Float, x2: Float, y2: Float, radius: Float): Boolean {
+        if (rect.inflate(radius).let { min(x1, x2) > it.right || max(x1, x2) < it.left || min(y1, y2) > it.bottom || max(y1, y2) < it.top }) {
+            return false
+        }
+        // Segment endpoint inside the rectangle: zero distance
+        if ((x1 in rect.left..rect.right && y1 in rect.top..rect.bottom) || (x2 in rect.left..rect.right && y2 in rect.top..rect.bottom)) {
+            return true
+        }
+        val radiusSq = radius * radius
+        return segmentSegmentDistanceSq(x1, y1, x2, y2, rect.left, rect.top, rect.right, rect.top) <= radiusSq ||
+            segmentSegmentDistanceSq(x1, y1, x2, y2, rect.right, rect.top, rect.right, rect.bottom) <= radiusSq ||
+            segmentSegmentDistanceSq(x1, y1, x2, y2, rect.right, rect.bottom, rect.left, rect.bottom) <= radiusSq ||
+            segmentSegmentDistanceSq(x1, y1, x2, y2, rect.left, rect.bottom, rect.left, rect.top) <= radiusSq
     }
 
     fun segmentsIntersect(

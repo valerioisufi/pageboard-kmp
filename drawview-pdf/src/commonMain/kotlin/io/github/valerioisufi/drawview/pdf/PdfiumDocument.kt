@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.pdf
 
 import androidx.compose.ui.graphics.ImageBitmap
+import io.github.valerioisufi.drawview.core.model.PdfTextLayout
 
 /**
  * Native PDFium entry points (native/bridge/pdfium_bridge.h): JNI on the desktop JVM and on
@@ -34,6 +35,12 @@ internal expect object PdfiumBindings {
     /** Text of a page, or `null` when the page cannot be read. */
     fun pageText(document: Long, pageIndex: Int): String?
 
+    /**
+     * Characters of a page (Unicode code points) and their boxes (four values each, see
+     * `pdfium_get_page_text_layout`), or `null` when the page cannot be read.
+     */
+    fun pageTextLayout(document: Long, pageIndex: Int): Pair<IntArray, FloatArray>?
+
     fun closeDocument(document: Long)
 }
 
@@ -66,6 +73,13 @@ internal class PdfiumDocument(private var handle: Long) : PdfDocument {
 
     override fun getPageText(pageIndex: Int): String? =
         if (handle != 0L) PdfiumBindings.pageText(handle, pageIndex) else null
+
+    override fun getPageTextLayout(pageIndex: Int): PdfTextLayout? {
+        if (handle == 0L) return null
+        val size = PdfiumBindings.pageSize(handle, pageIndex) ?: return null
+        val (chars, boxes) = PdfiumBindings.pageTextLayout(handle, pageIndex) ?: return null
+        return PdfTextLayout(size.widthPt.toFloat(), size.heightPt.toFloat(), chars, boxes)
+    }
 
     override fun close() {
         if (handle != 0L) {

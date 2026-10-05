@@ -50,6 +50,14 @@ internal object PdfiumNative {
     @JvmStatic
     external fun nGetPageText(docHandle: Long, pageIndex: Int): String?
 
+    /**
+     * Characters of a page and their boxes into [outChars] and [outBoxes] (four values per
+     * character), when they are large enough: returns the number of characters (call it first
+     * with `null` arrays to size them), or -1 when the page cannot be read.
+     */
+    @JvmStatic
+    external fun nGetPageTextLayout(docHandle: Long, pageIndex: Int, outChars: IntArray?, outBoxes: FloatArray?): Int
+
     @JvmStatic
     external fun nCloseDocument(docHandle: Long)
 }

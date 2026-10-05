@@ -23,6 +23,10 @@
     <string name="draw_toolbar_label_highlighter_color">蛍光ペンの色</string>
     <string name="draw_toolbar_label_highlighter_size">蛍光ペンのサイズ</string>
     <string name="draw_toolbar_action_highlighter">蛍光ペン</string>
+    <string name="draw_toolbar_action_text_markup">テキストをマーク</string>
+    <string name="text_markup_highlight">ハイライト</string>
+    <string name="text_markup_underline">下線</string>
+    <string name="text_markup_strikeout">取り消し線</string>
     <string name="draw_toolbar_label_eraser_size">消しゴムのサイズ</string>
     <string name="draw_toolbar_action_eraser">消しゴム</string>
     <string name="draw_toolbar_title_lasso_mode">なげなわモード</string>
@@ -88,6 +92,7 @@
     <string name="message_import_image_failed">画像を読み込めませんでした</string>
     <string name="message_import_pdf_failed">PDFを読み込めませんでした</string>
     <string name="message_pdf_not_supported">このプラットフォームではPDFの読み込みは利用できません</string>
+    <string name="message_pdf_page_without_text">このページには選択できるテキストがありません（スキャンかもしれません）</string>
     <string name="text_editor_action_strikethrough">取り消し線</string>
     <string name="text_editor_action_code">コード</string>
     <string name="text_editor_action_heading">見出し</string>

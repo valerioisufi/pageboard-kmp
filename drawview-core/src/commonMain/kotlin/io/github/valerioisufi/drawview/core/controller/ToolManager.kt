@@ -9,6 +9,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.Color
 import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.StrokeTool
+import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 
 /**
@@ -16,11 +17,13 @@ import io.github.valerioisufi.drawview.core.model.Tool
  *
  * @property sizeMm tip size in millimeters.
  * @property color ARGB color.
+ * @property markup how the text is marked ([Tool.TEXT_MARKUP] only).
  */
 data class ToolPreset(
     val sizeMm: Float,
     val color: Int,
-    val family: StrokeTool
+    val family: StrokeTool,
+    val markup: TextMarkupKind = TextMarkupKind.HIGHLIGHT
 )
 
 /**
@@ -68,6 +71,7 @@ class ToolManager(
     val isLassoTool: Boolean get() = selectedTool == Tool.LAZO
     val isEraserTool: Boolean get() = selectedTool == Tool.ERASER
     val isInkTool: Boolean get() = selectedTool == Tool.INK_PEN || selectedTool == Tool.INK_HIGHLIGHTER
+    val isTextMarkupTool: Boolean get() = selectedTool == Tool.TEXT_MARKUP
 
     fun selectTool(tool: Tool, presetIndex: Int? = null) {
         val changed = selectedTool != tool
@@ -143,7 +147,7 @@ class ToolManager(
 
     companion object {
         /** Tools that own presets. */
-        val PRESET_TOOLS = listOf(Tool.INK_PEN, Tool.INK_HIGHLIGHTER, Tool.ERASER, Tool.LAZO)
+        val PRESET_TOOLS = listOf(Tool.INK_PEN, Tool.INK_HIGHLIGHTER, Tool.TEXT_MARKUP, Tool.ERASER, Tool.LAZO)
 
         fun defaultPresets(): Map<Tool, List<ToolPreset>> = mapOf(
             Tool.INK_PEN to listOf(
@@ -154,6 +158,12 @@ class ToolManager(
             Tool.INK_HIGHLIGHTER to listOf(
                 ToolPreset(4.0f, 0x40FFFF00, StrokeTool.HIGHLIGHTER),
                 ToolPreset(4.0f, 0x4000FF00, StrokeTool.HIGHLIGHTER)
+            ),
+            // Opaque colors: the highlights multiply the colors of the PDF
+            Tool.TEXT_MARKUP to listOf(
+                ToolPreset(0f, 0xFFFFF176.toInt(), StrokeTool.HIGHLIGHTER, TextMarkupKind.HIGHLIGHT),
+                ToolPreset(0f, 0xFFA5D6A7.toInt(), StrokeTool.HIGHLIGHTER, TextMarkupKind.HIGHLIGHT),
+                ToolPreset(0f, 0xFFE53935.toInt(), StrokeTool.HIGHLIGHTER, TextMarkupKind.UNDERLINE)
             ),
             Tool.ERASER to listOf(
                 ToolPreset(8.0f, 0xC8FF8DA1.toInt(), StrokeTool.ERASER)

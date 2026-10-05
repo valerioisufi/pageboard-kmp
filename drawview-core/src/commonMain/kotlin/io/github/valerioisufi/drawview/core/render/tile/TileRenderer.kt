@@ -4,10 +4,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import io.github.valerioisufi.drawview.core.canvas.StrokeMeshPainter
+import io.github.valerioisufi.drawview.core.canvas.TextMarkupPainter
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawImage
@@ -21,7 +23,7 @@ import kotlin.math.min
 
 /**
  * Worker responsible for rasterizing a discrete tile in the multi-resolution pyramid.
- * Renders page backgrounds, PDF layers, images, texts, formulas, and vector strokes into the tile's [ImageBitmap].
+ * Renders page backgrounds, PDF layers and the marks of their text, images, texts, formulas, and vector strokes into the tile's [ImageBitmap].
  *
  * The renderer is stateless and thread-safe: every call allocates its own paints, so several
  * tile workers can rasterize concurrently.
@@ -137,7 +139,24 @@ class TileRenderer(
             }
         }
 
-        // --- 3. Images ---
+        // --- 3. Highlights, underlines and strikeouts of the text of the PDFs ---
+        if (content.markups.isNotEmpty()) {
+            val markupPaint = Paint()
+            for (markup in content.markups) {
+                val pointsToMm = markup.pointsToPageMm(content.widthMm, content.heightMm)
+                if (!pointsToMm.mapRect(markup.boundsPoints).overlaps(visibleMmBounds)) continue
+                TextMarkupPainter.draw(
+                    canvas = canvas,
+                    rects = markup.rects,
+                    kind = markup.kind,
+                    color = Color(markup.color),
+                    pointsToCanvas = pointsToMm.postConcat(mmToCanvas),
+                    paint = markupPaint
+                )
+            }
+        }
+
+        // --- 4. Images ---
         if (content.images.isNotEmpty()) {
             val imagePaint = Paint().apply {
                 filterQuality = FilterQuality.Medium
@@ -151,7 +170,7 @@ class TileRenderer(
             }
         }
 
-        // --- 4. Texts & LaTeX formulas ---
+        // --- 5. Texts & LaTeX formulas ---
         val text = textAdapter
         if (text != null && content.texts.isNotEmpty()) {
             for (item in content.texts) {
@@ -164,7 +183,7 @@ class TileRenderer(
             }
         }
 
-        // --- 5. Vector strokes ---
+        // --- 6. Vector strokes ---
         if (content.strokes.isNotEmpty()) {
             val painter = StrokeMeshPainter()
             for (stroke in content.strokes) {

@@ -213,7 +213,8 @@ class DrawImage(var zIndex: Int = 0) : RotatableItem {
 }
 
 /**
- * A page of an imported PDF document rendered as the page background.
+ * A page of an imported PDF document rendered as the page background (its text can be marked,
+ * see [DrawTextMarkup]).
  */
 class DrawPdf(var zIndex: Int = 0, var pdfPageIndex: Int = 0) {
     var resourceId: String = ""
@@ -262,6 +263,9 @@ class DrawPage(
     val images: SnapshotStateList<DrawImage> = mutableStateListOf()
     val pdfs: SnapshotStateList<DrawPdf> = mutableStateListOf()
 
+    /** Highlights, underlines and strikeouts of the text of [pdfs]. */
+    val markups: SnapshotStateList<DrawTextMarkup> = mutableStateListOf()
+
     /** Incremented on every content change (used by thumbnails and caches). */
     var contentVersion: Int by mutableIntStateOf(0)
 
@@ -286,7 +290,8 @@ class DrawPage(
             pdfs = pdfs.toList(),
             background = background,
             widthMm = widthMm,
-            heightMm = heightMm
+            heightMm = heightMm,
+            markups = markups.toList()
         )
     }
 }
@@ -301,7 +306,8 @@ class PageContentSnapshot(
     val pdfs: List<DrawPdf>,
     val background: PageBackground,
     val widthMm: Float,
-    val heightMm: Float
+    val heightMm: Float,
+    val markups: List<DrawTextMarkup> = emptyList()
 ) {
     fun rect(): Rect = Rect(0f, 0f, widthMm, heightMm)
 }

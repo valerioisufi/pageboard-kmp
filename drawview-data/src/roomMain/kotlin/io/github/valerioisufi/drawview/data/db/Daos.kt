@@ -40,7 +40,13 @@ data class PageWithContent(
         parentColumn = "id",
         entityColumn = "pageId"
     )
-    val pdfs: List<PdfEntity>
+    val pdfs: List<PdfEntity>,
+
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "pageId"
+    )
+    val markups: List<TextMarkupEntity>
 )
 
 /**
@@ -262,6 +268,21 @@ interface PdfDao {
 
     @Query("SELECT * FROM pdfs WHERE pageId = :pageId ORDER BY zIndex ASC")
     suspend fun getPdfsForPage(pageId: Int): List<PdfEntity>
+}
+
+/**
+ * Data Access Object for managing the marks of the text of the PDFs.
+ */
+@Dao
+interface TextMarkupDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(markup: TextMarkupEntity): Long
+
+    @Query("SELECT * FROM text_markups WHERE pageId = :pageId ORDER BY zIndex ASC")
+    suspend fun getMarkupsForPage(pageId: Int): List<TextMarkupEntity>
+
+    @Query("DELETE FROM text_markups WHERE id = :markupId")
+    suspend fun deleteById(markupId: Int)
 }
 
 /**

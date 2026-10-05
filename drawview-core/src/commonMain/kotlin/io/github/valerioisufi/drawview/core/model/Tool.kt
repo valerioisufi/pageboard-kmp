@@ -6,6 +6,9 @@ package io.github.valerioisufi.drawview.core.model
 enum class Tool {
     INK_PEN,
     INK_HIGHLIGHTER,
+
+    /** Highlights, underlines or strikes out the text of the PDFs. */
+    TEXT_MARKUP,
     ERASER,
     TEXT,
     LAZO,

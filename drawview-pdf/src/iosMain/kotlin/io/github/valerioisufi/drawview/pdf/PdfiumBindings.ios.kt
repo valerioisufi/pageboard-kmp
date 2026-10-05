@@ -6,6 +6,7 @@ import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_close_document
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_count
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_size
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_text
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_text_layout
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_open_document
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_render_page_bitmap
 import kotlinx.cinterop.DoubleVar
@@ -85,6 +86,22 @@ internal actual object PdfiumBindings {
         val written = units.usePinned { pinned -> pdfium_get_page_text(document, pageIndex, pinned.addressOf(0), length + 1) }
         if (written != length) return null
         return CharArray(length) { units[it].toInt().toChar() }.concatToString()
+    }
+
+    actual fun pageTextLayout(document: Long, pageIndex: Int): Pair<IntArray, FloatArray>? {
+        val count = pdfium_get_page_text_layout(document, pageIndex, null, null, 0)
+        if (count < 0) return null
+        val chars = IntArray(count)
+        val boxes = FloatArray(count * 4)
+        if (count > 0) {
+            val written = chars.usePinned { pinnedChars ->
+                boxes.usePinned { pinnedBoxes ->
+                    pdfium_get_page_text_layout(document, pageIndex, pinnedChars.addressOf(0), pinnedBoxes.addressOf(0), count)
+                }
+            }
+            if (written != count) return null
+        }
+        return chars to boxes
     }
 
     actual fun closeDocument(document: Long) = pdfium_close_document(document)

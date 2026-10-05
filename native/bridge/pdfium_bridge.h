@@ -59,6 +59,17 @@ int32_t pdfium_render_page_bitmap(
 int32_t pdfium_get_page_text(int64_t doc_handle, int32_t page_index, uint16_t* out_text, int32_t capacity);
 
 /**
+ * Characters of the text of a page with their boxes, in reading order: the Unicode code point of
+ * every character into [out_chars] (0 when unknown) and its box into [out_boxes] (four floats:
+ * left, top, right, bottom in points from the top-left corner of the page as it is displayed,
+ * like the pixels of pdfium_render_page_bitmap at one pixel per point). The spaces and line
+ * breaks added by PDFium have an empty box. The buffers are filled when [capacity] is at least
+ * the number of characters. Returns the number of characters (call it first with null buffers
+ * to size them), or -1 when the page cannot be read.
+ */
+int32_t pdfium_get_page_text_layout(int64_t doc_handle, int32_t page_index, int32_t* out_chars, float* out_boxes, int32_t capacity);
+
+/**
  * Closes the document handle.
  */
 void pdfium_close_document(int64_t doc_handle);
