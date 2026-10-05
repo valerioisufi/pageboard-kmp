@@ -4,6 +4,12 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_drawview._tcp</string>
+	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>PencilNotes finds the devices around you to work on the shared documents together.</string>
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>en</string>

@@ -28,8 +28,9 @@ object FractionalIndex {
         val keys = mutableListOf<String>()
         var last = before
         repeat(count) {
-            last = between(last, null)
-            keys.add(last!!)
+            val key = between(last, null)
+            keys.add(key)
+            last = key
         }
         return keys
     }

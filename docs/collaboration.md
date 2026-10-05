@@ -45,7 +45,8 @@ Variations).
 | Encryption | `SecureChannel`, decorator of `SyncChannel` | Indirection |
 | Keys of the shared documents | `SharedDocuments` (kept by the application) | Protected Variations |
 | Files of the resources | asked for and sent in chunks by the `SyncEngine`, written through `ResourceFiles` | Pure Fabrication, Protected Variations |
-| LAN discovery | `LanDiscovery` (expect / actual) | Protected Variations |
+| LAN discovery | `LanDiscovery`: `JmdnsLanDiscovery`, `NsdLanDiscovery`, `BonjourLanDiscovery` | Protected Variations, Polymorphism |
+| Work with the devices of the network | `LanSync` (announces the shared documents, connects to the devices sharing them) | Controller |
 | Sharing, participants, cursors | `SyncEditorExtension` | Low Coupling (like `drawview-lecture`) |
 
 The origin of a change decides what the observers do:
@@ -103,7 +104,7 @@ The origin of a change decides what the observers do:
 drawview-core      DocumentChange, DocumentSession, HybridClock, Operation, DocumentSnapshot
 drawview-data      persistent identifiers, operations log on Room, OpenDocuments
 drawview-sync      SyncEngine, protocol, encryption, InMemoryTransport, SyncEditorExtension
-drawview-sync-lan  LanDiscovery (NsdManager / Bonjour / JmDNS) + TCP sockets
+drawview-sync-lan  LanTransport (TCP), LanDiscovery (JmDNS / NsdManager / Bonjour), LanSync
 drawview-sync-relay (later)
 ```
 
@@ -118,7 +119,7 @@ The documents received from other users are created in a "Shared" folder of the 
 | 2. Changes as data | `DocumentChange`, `DocumentSession`, one manager at a time, with undo parity tests; absolute transforms of the strokes (from phase 3) | done |
 | 3. Convergence | HLC, last-writer-wins stamps, hidden removed pages and elements, fractional page order, operations log | done |
 | 4. Sync engine | Protocol, encryption, attachments, in-memory transport, convergence tests on random delivery orders | done |
-| 5. LAN | Discovery, TCP, permissions (iOS local network and Bonjour, Android multicast lock), invitation | |
+| 5. LAN | Discovery, TCP, permissions (iOS local network and Bonjour, Android local network), invitation | done |
 | 6. UI and presence | Sharing, participants, cursors, live strokes, "Shared" folder and badge | |
 
 ### Phase 0 results
@@ -239,6 +240,28 @@ The application is not released yet, so the stored documents are not migrated:
   joining (folder, live changes, changes made apart, restart), three devices joining through
   each other in cycles, going away and coming back at random (5 seeds in the build, verified on
   40), the file of an image; on the JVM and the iOS simulator.
+
+### Phase 5 results
+
+* `drawview-sync-lan`: `LanTransport` (Ktor sockets, frames of a 4-byte length and their bytes),
+  `LanDiscovery` with an implementation per platform, `LanSync`.
+* A device announces the service `_drawview._tcp` with its name and the tags of the documents it
+  shares (12 hex digits each, in TXT entries `t0`, `t1`… of 19 tags); a device finding another one
+  that shares a document with it connects to it (the one with the smaller identifier, so that two
+  devices make one connection), and connects again every 10 seconds while the other one is
+  there. A device joining through an invitation without an address announces the tag and is
+  found; with an address it connects at once. A device accepting a connection for a document it
+  has the key of but not the content yet (an invitation) receives it.
+* Permissions: `INTERNET` and `ACCESS_LOCAL_NETWORK` in the manifest of the module (from Android
+  17 the application asks for the second one at run time; it also covers `NsdManager`, so no
+  multicast lock); `NSLocalNetworkUsageDescription` and `NSBonjourServices` in the `Info.plist` of
+  PencilNotes.
+* Tests: frames over TCP (1.5 MB too) and three devices finding each other (an in-memory
+  discovery) and synchronizing over TCP on the loopback, on the JVM and the iOS simulator; JmDNS
+  between two processes on the network, run by hand (`DRAWVIEW_MDNS_TESTS=1`): in this session
+  the JVM received no multicast at all (not even its own announcement), most likely the local
+  network permission of macOS; to verify with the desktop application, like `NsdManager` and
+  Bonjour on real devices.
 
 ### Risks
 

@@ -76,7 +76,8 @@ class SyncEngine(
             if (open.protocol != PROTOCOL_VERSION) return@launch
             val (documentId, key) = shared.all().entries.firstOrNull { it.value.tag == open.tag } ?: return@launch
             val secure = SecureChannel.of(channel, key)
-            val sync = acquire(documentId) ?: return@launch
+            // Without the document yet (joined through an invitation): it comes with the first messages
+            val sync = acquire(documentId)
             run(Link(secure, documentId), sync)
         } catch (_: SyncException) {
             // Refused or lost before it started

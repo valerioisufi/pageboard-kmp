@@ -28,6 +28,7 @@ ksp = "2.3.6"
 ktor = "3.6.0"
 kotlinx-io = "0.9.1"
 cryptography = "0.6.0"
+jmdns = "3.6.3"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -66,6 +67,8 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+ktor-network = { module = "io.ktor:ktor-network", version.ref = "ktor" }
+jmdns = { module = "org.jmdns:jmdns", version.ref = "jmdns" }
 kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinx-io" }
 navigationevent-compose = { module = "org.jetbrains.androidx.navigationevent:navigationevent-compose", version.ref = "navigationevent" }
 
