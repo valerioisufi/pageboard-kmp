@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -19,7 +20,6 @@ import androidx.compose.material.icons.outlined.AdsClick
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.lecture.LectureAssistant
 import io.github.valerioisufi.drawview.lecture.LectureRecordings
@@ -152,6 +153,7 @@ private fun LectureToolbarButton(assistant: LectureAssistant, documentId: Int) {
     val recording = assistant.recorderOf(documentId)?.lecture?.takeIf { it.status == LectureStatus.RECORDING }
     val newNotes = (recording ?: lecture)?.suggestions?.count { it.status == SuggestionStatus.NEW } ?: 0
     val togglePanel = { assistant.isPanelOpen = !assistant.isPanelOpen }
+    val newNotesText = if (newNotes > 99) "99+" else newNotes.toString()
 
     if (recording != null) {
         // Recording: time of the lecture, red dot, new suggestions
@@ -179,17 +181,25 @@ private fun LectureToolbarButton(assistant: LectureAssistant, documentId: Int) {
                 fontWeight = FontWeight.SemiBold
             )
             if (newNotes > 0 && !assistant.isPanelOpen) {
-                Badge { Text(newNotes.toString()) }
+                Badge { Text(newNotesText, maxLines = 1) }
             }
         }
     } else {
-        ToolButton(onClick = togglePanel, selected = assistant.isPanelOpen) {
-            BadgedBox(
-                badge = {
-                    if (newNotes > 0 && !assistant.isPanelOpen) Badge { Text(newNotes.toString()) }
+        Box(modifier = Modifier.zIndex(1f)) {
+            ToolButton(onClick = togglePanel, selected = assistant.isPanelOpen) {
+                Icon(
+                    imageVector = Icons.Outlined.Mic,
+                    contentDescription = stringResource(Res.string.lecture_title),
+                )
+            }
+            if (newNotes > 0 && !assistant.isPanelOpen) {
+                Badge(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(y = (-2).dp),
+                ) {
+                    Text(newNotesText, maxLines = 1)
                 }
-            ) {
-                Icon(imageVector = Icons.Outlined.Mic, contentDescription = stringResource(Res.string.lecture_title))
             }
         }
     }
