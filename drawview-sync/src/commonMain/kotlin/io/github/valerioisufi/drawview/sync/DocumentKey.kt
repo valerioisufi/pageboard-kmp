@@ -1,0 +1,58 @@
+package io.github.valerioisufi.drawview.sync
+
+import dev.whyoleg.cryptography.CryptographyProvider
+import dev.whyoleg.cryptography.algorithms.HMAC
+import dev.whyoleg.cryptography.algorithms.SHA256
+import dev.whyoleg.cryptography.random.CryptographyRandom
+import kotlin.io.encoding.Base64
+
+/**
+ * The secret of a shared document: whoever has it can read and change the document. It encrypts
+ * everything the devices exchange about the document (see [SecureChannel]) and travels in the
+ * invitations (see [Invitation]).
+ */
+class DocumentKey private constructor(private val bytes: ByteArray) {
+
+    /** The key (32 bytes). */
+    fun toByteArray(): ByteArray = bytes.copyOf()
+
+    /** The key as text (URL-safe base 64). */
+    fun encode(): String = base64.encode(bytes)
+
+    /**
+     * The tag of the document on the network: it tells a device which of its documents a
+     * connection is about, without revealing the key.
+     */
+    val tag: String by lazy {
+        val key = CryptographyProvider.Default.get(HMAC).keyDecoder(SHA256).decodeFromByteArrayBlocking(HMAC.Key.Format.RAW, bytes)
+        key.signatureGenerator().generateSignatureBlocking(TAG_LABEL).toHex().take(32)
+    }
+
+    override fun equals(other: Any?): Boolean = other is DocumentKey && bytes.contentEquals(other.bytes)
+
+    override fun hashCode(): Int = bytes.contentHashCode()
+
+    override fun toString(): String = "DocumentKey(…)"
+
+    companion object {
+        const val SIZE = 32
+
+        private val TAG_LABEL = "drawview-sync/document-tag".encodeToByteArray()
+        private val base64 = Base64.UrlSafe.withPadding(Base64.PaddingOption.ABSENT_OPTIONAL)
+
+        /** A new random key. */
+        fun generate(): DocumentKey = DocumentKey(CryptographyRandom.nextBytes(SIZE))
+
+        /** The key of [bytes], or `null` when they are not a key. */
+        fun of(bytes: ByteArray): DocumentKey? = bytes.takeIf { it.size == SIZE }?.let { DocumentKey(it.copyOf()) }
+
+        /** The key written by [encode], or `null` when [text] is not a key. */
+        fun decode(text: String): DocumentKey? = try {
+            of(base64.decode(text))
+        } catch (_: IllegalArgumentException) {
+            null
+        }
+    }
+}
+
+private fun ByteArray.toHex(): String = joinToString("") { (it.toInt() and 0xFF).toString(16).padStart(2, '0') }

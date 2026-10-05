@@ -40,6 +40,8 @@ class RoomDocumentStore(val database: DrawDatabase) : DocumentStore {
         folderId: String?
     ): DrawDocument = repository.createDocument(name, widthMm, heightMm, background, folderId)
 
+    override suspend fun insertDocument(document: DrawDocument, folderId: String?) = repository.insertDocument(document, folderId)
+
     override suspend fun loadDocument(documentId: String): DrawDocument? = repository.loadDocument(documentId)
 
     override suspend fun renameDocument(documentId: String, newName: String): Boolean =

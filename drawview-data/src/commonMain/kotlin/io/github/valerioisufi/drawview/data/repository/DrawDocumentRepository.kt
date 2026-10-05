@@ -136,19 +136,6 @@ class DrawDocumentRepository(
                 if (page.removed != null) doc.removedPages[page.id] = page else doc.pages.add(page)
             }
             doc.reindexPages()
-
-            if (doc.pages.isEmpty()) {
-                // A document must always have a page
-                val page = DrawPage(
-                    index = 0,
-                    widthMm = docEntity.defaultWidth,
-                    heightMm = docEntity.defaultHeight,
-                    background = docEntity.defaultBackground,
-                    orderKey = doc.orderKeyAt(0)
-                )
-                savePage(doc, page)
-                doc.pages.add(page)
-            }
             doc
         }
     }
@@ -259,6 +246,45 @@ class DrawDocumentRepository(
         }
         savePage(document, document.pages.single())
         return document
+    }
+
+    /**
+     * Stores [document] with its whole content (removed pages and elements included) in
+     * [folderId] (see [io.github.valerioisufi.drawview.data.DocumentStore.insertDocument]).
+     */
+    suspend fun insertDocument(document: DrawDocument, folderId: String?) {
+        val now = currentTimeMillis()
+        withContext(Dispatchers.IO) {
+            documentDao.insert(
+                DocumentEntity(
+                    id = document.id,
+                    name = document.title,
+                    folderId = folderId,
+                    createdAt = now,
+                    modifiedAt = now,
+                    lastOpenedAt = now,
+                    defaultWidth = document.defaultWidthMm,
+                    defaultHeight = document.defaultHeightMm,
+                    defaultBackground = document.defaultBackground,
+                    defaultsVersion = document.defaultsVersion
+                )
+            )
+        }
+        document.resources.forEach { saveResource(document, it) }
+        for (page in document.allPages()) {
+            savePage(document, page)
+            val elements = page.elements() + page.removedElements
+            saveStrokes(page, elements.filterIsInstance<DrawStroke>())
+            for (element in elements) {
+                when (element) {
+                    is DrawStroke -> {}
+                    is DrawText -> saveText(page, element)
+                    is DrawImage -> saveImage(page, element)
+                    is DrawPdf -> savePdf(page, element)
+                    is DrawTextMarkup -> saveTextMarkup(page, element)
+                }
+            }
+        }
     }
 
     // ==========================================================

@@ -70,6 +70,9 @@ class DocumentSession(
     /** The last operation applied of every replica. */
     val versionVector: Map<String, Long> get() = applied.toMap()
 
+    /** The number of the last operation of [replica] applied (0: none). */
+    fun lastApplied(replica: String): Long = applied[replica] ?: 0L
+
     fun addObserver(observer: ChangeObserver) {
         observers.add(observer)
     }

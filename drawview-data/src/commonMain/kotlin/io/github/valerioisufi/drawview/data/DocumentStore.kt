@@ -61,6 +61,12 @@ interface DocumentStore {
         folderId: String? = null
     ): DrawDocument
 
+    /**
+     * Stores [document] with its whole content (removed pages and elements included) in
+     * [folderId]: a document received from another device (see `DocumentSnapshot`).
+     */
+    suspend fun insertDocument(document: DrawDocument, folderId: String? = null)
+
     /** Loads the whole content of a document, or `null` when it does not exist. */
     suspend fun loadDocument(documentId: String): DrawDocument?
 

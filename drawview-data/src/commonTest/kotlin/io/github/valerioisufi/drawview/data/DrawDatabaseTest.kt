@@ -2,11 +2,18 @@ package io.github.valerioisufi.drawview.data
 
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import io.github.valerioisufi.drawview.core.change.AddElements
+import io.github.valerioisufi.drawview.core.change.AddPage
+import io.github.valerioisufi.drawview.core.change.DocumentSession
+import io.github.valerioisufi.drawview.core.change.RemoveElements
+import io.github.valerioisufi.drawview.core.change.RemovePage
+import io.github.valerioisufi.drawview.core.change.snapshot
 import io.github.valerioisufi.drawview.core.controller.ToolManager
 import io.github.valerioisufi.drawview.core.controller.ToolPreset
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
 import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.model.BrushConfig
+import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawResource
@@ -256,6 +263,30 @@ class DrawDatabaseTest {
         loadedStroke.removed = null
         repository.saveStrokes(page, listOf(loadedStroke))
         assertEquals(stroke.id, assertNotNull(repository.loadDocument(doc.id)).pages.single { it.id == page.id }.strokes.single().id)
+    }
+
+    @Test
+    fun aDocumentReceivedIsStoredWhole() = runTest {
+        // Changed by a session: stamps, removed elements and a removed page
+        val document = DrawDocument(title = "Received")
+        val session = DocumentSession(document, "other-device")
+        val strokes = List(3) { i ->
+            val points = (0 until 6).map { StrokePoint(10f + i * 20f + it, 20f + it, 0.5f, it * 8L) }
+            val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 0.5f, color = Color.Black)
+            DrawStroke(mesh = assertNotNull(InkStrokeEngine.buildMesh(points, brush, InputToolType.STYLUS)), brushConfig = brush)
+        }
+        val page = document.pages[0]
+        session.submit(AddElements.of(page, strokes))
+        session.submit(RemoveElements.of(page, listOf(strokes[1])))
+        val second = DrawPage(orderKey = document.orderKeyAt(1))
+        session.submit(AddPage.of(second))
+        session.submit(RemovePage(second.id))
+
+        repository.insertDocument(document, folderId = null)
+        val loaded = assertNotNull(repository.loadDocument(document.id))
+        assertEquals(document.snapshot(), loaded.snapshot())
+        assertEquals(listOf(strokes[1].id), loaded.pages[0].removedElements.map { it.id })
+        assertEquals(setOf(second.id), loaded.removedPages.keys)
     }
 
     @Test

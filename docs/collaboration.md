@@ -39,10 +39,12 @@ Variations).
 | Tiles and selection | `RenderInvalidator`, `SelectionManager.onElementsRemoved`, subscribed to the session | Low Coupling (observer) |
 | Clock and conflicts | `HybridClock`, `Stamp`s of the pieces of the pages and elements (last-writer-wins) | Pure Fabrication |
 | Operation log and version vector | `DocumentSession` (numbers the operations, applies those of the others once each), `DrawPersistence.appendOperation`, `DocumentStore.versionVector` / `operationsAfter` (Room and key-value implementations in `drawview-data`) | Protected Variations |
-| Synchronize a document | `SyncEngine` | Controller, Pure Fabrication |
+| One session per document, for the editor and the synchronization (documents not open too) | `OpenDocuments` in `drawview-data` | Creator, Information Expert (the store knows the replica, the log, the persistence) |
+| Synchronize the documents | `SyncEngine` (a connection: `Link`; a document: `DocumentSync`) | Controller, Pure Fabrication |
 | Transport | `SyncTransport` / `SyncChannel`: `InMemoryTransport`, `LanTransport`, later `RelayTransport` | Polymorphism, Protected Variations |
 | Encryption | `SecureChannel`, decorator of `SyncChannel` | Indirection |
-| Attachments | `BlobStore` (by content hash, in chunks) | Pure Fabrication |
+| Keys of the shared documents | `SharedDocuments` (kept by the application) | Protected Variations |
+| Files of the resources | asked for and sent in chunks by the `SyncEngine`, written through `ResourceFiles` | Pure Fabrication, Protected Variations |
 | LAN discovery | `LanDiscovery` (expect / actual) | Protected Variations |
 | Sharing, participants, cursors | `SyncEditorExtension` | Low Coupling (like `drawview-lecture`) |
 
@@ -79,22 +81,27 @@ The origin of a change decides what the observers do:
 
 ### Protocol
 
-* `Hello` (protocol version, document tag = HMAC of the document key, replica, version vector),
-  then each side sends the operations the other one misses, then the live operations.
-* Operations are identified by (replica, sequence number): duplicates are ignored.
-* Ephemeral messages (cursor, viewport, points of the stroke being drawn) are rate-limited and
-  never logged.
-* Attachments are requested by content hash, in chunks; a placeholder is drawn until they
-  arrive.
-* Versioned binary envelope (CBOR), encrypted end-to-end (AEAD) with the key of the document,
-  shared through an invitation (link or QR code); the envelope has an optional signature field
-  for read-only roles (asymmetric keys) later.
+* The first frame of a connection, in clear, is the version of the protocol and the tag of the
+  document (an HMAC of its key): the device accepting the connection finds the document. Every
+  other frame is encrypted with AES-256-GCM and the key of the document (a random nonce per
+  frame, the version of the protocol authenticated with it); the key travels with the
+  invitation (a `drawview://join` link, for a QR code or a message).
+* `Hello` (replica, name, version vector, whether the device has the document), then each side
+  sends what the other misses: the `Snapshot` of the document to a device without it, then the
+  operations after its version vector in stamp order (a causal order), in batches; then the
+  operations as they are applied, those of the other devices too (a device relays them, never
+  back to the device they came from).
+* Operations are identified by (replica, sequence number): the duplicates are dropped, an
+  operation arriving before the ones it follows waits for them.
+* The files of the resources are asked for by identifier and sent in chunks of 256 KiB.
+* CBOR frames; ephemeral messages (cursor, viewport, points of the stroke being drawn) come with
+  phase 6, never logged.
 
 ### Modules
 
 ```
-drawview-core      DocumentChange, DocumentSession, HybridClock, Operation
-drawview-data      persistent identifiers, operations log on Room, BlobStore
+drawview-core      DocumentChange, DocumentSession, HybridClock, Operation, DocumentSnapshot
+drawview-data      persistent identifiers, operations log on Room, OpenDocuments
 drawview-sync      SyncEngine, protocol, encryption, InMemoryTransport, SyncEditorExtension
 drawview-sync-lan  LanDiscovery (NsdManager / Bonjour / JmDNS) + TCP sockets
 drawview-sync-relay (later)
@@ -110,7 +117,7 @@ The documents received from other users are created in a "Shared" folder of the 
 | 1. Identity | UUIDs for documents, folders, pages, elements and resources, used as primary keys | done |
 | 2. Changes as data | `DocumentChange`, `DocumentSession`, one manager at a time, with undo parity tests; absolute transforms of the strokes (from phase 3) | done |
 | 3. Convergence | HLC, last-writer-wins stamps, hidden removed pages and elements, fractional page order, operations log | done |
-| 4. Sync engine | Protocol, encryption, attachments, in-memory transport, convergence tests on random delivery orders | |
+| 4. Sync engine | Protocol, encryption, attachments, in-memory transport, convergence tests on random delivery orders | done |
 | 5. LAN | Discovery, TCP, permissions (iOS local network and Bonjour, Android multicast lock), invitation | |
 | 6. UI and presence | Sharing, participants, cursors, live strokes, "Shared" folder and badge | |
 
@@ -206,6 +213,32 @@ The application is not released yet, so the stored documents are not migrated:
   It found the cases the design above answers: elements moved to a page removed meanwhile, the
   order derived from local state, a removed element put back with stale values, partial writes
   of a register (a move and a text edit share no field now).
+
+### Phase 4 results
+
+* `drawview-sync`: `SyncEngine` (`share`, `accept`, `join`, `peers`), `SyncChannel` /
+  `SyncTransport` with `InMemoryNetwork`, `SecureChannel`, `DocumentKey`, `Invitation`,
+  `SharedDocuments`, `ResourceFiles`; `cryptography-kotlin` 0.6.0 (the blocking forms: quick for
+  a frame, and the coroutines keep their thread) and `kotlinx-serialization-cbor`.
+* `DocumentSnapshot` (core): the whole state with the stamps, removed content included, in a
+  canonical form. The operations already applied change nothing in it, so a device joining gets
+  the snapshot and then the whole log (it can then serve the others). The key-value store keeps
+  its documents as snapshots.
+* `OpenDocuments` (data): one `DocumentSession` per document with the persistence of its
+  changes, opened by the synchronization when the document is not open in the editor;
+  `DocumentStore.insertDocument` stores a document received (in the folder the application
+  gives: "Shared").
+* The resources travel by identifier rather than by content hash (they are UUIDs since phase
+  1; each chunk is authenticated by the encryption): deduplicating equal files is left for
+  later.
+* A document without pages gets its page from the editor, by a change (the stores added it
+  outside of the changes: the other devices would not have had it).
+* Fixed on the way: a document closed and opened again at once could be loaded before its last
+  changes were written (its log ahead of its content).
+* Tests: invitations, encryption with the right and a wrong key, the messages in CBOR, a device
+  joining (folder, live changes, changes made apart, restart), three devices joining through
+  each other in cycles, going away and coming back at random (5 seeds in the build, verified on
+  40), the file of an image; on the JVM and the iOS simulator.
 
 ### Risks
 

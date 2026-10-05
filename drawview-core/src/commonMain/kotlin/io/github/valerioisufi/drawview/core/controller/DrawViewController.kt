@@ -174,6 +174,8 @@ class DrawViewController(
         session.addObserver(ChangePersister(::persist))
         session.addObserver(::onChangeCommitted)
         updatePageLayout()
+        // A document always shows a page: added by a change, so that the other devices get it too
+        if (document.pages.isEmpty()) pageManager.addNewPageAtBottom()
     }
 
     // ==========================================================

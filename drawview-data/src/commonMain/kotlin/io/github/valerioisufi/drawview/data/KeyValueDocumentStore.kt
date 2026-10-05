@@ -1,9 +1,8 @@
 package io.github.valerioisufi.drawview.data
 
 import io.github.valerioisufi.drawview.core.change.Operation
-import io.github.valerioisufi.drawview.core.change.ElementData
-import io.github.valerioisufi.drawview.core.change.PageData
-import io.github.valerioisufi.drawview.core.change.toData
+import io.github.valerioisufi.drawview.core.change.PageSnapshot
+import io.github.valerioisufi.drawview.core.change.snapshot
 import io.github.valerioisufi.drawview.core.controller.DrawPersistence
 import io.github.valerioisufi.drawview.core.controller.DrawPreferences
 import io.github.valerioisufi.drawview.core.controller.ToolPreset
@@ -159,9 +158,33 @@ class KeyValueDocumentStore(
         return document
     }
 
+    override suspend fun insertDocument(document: DrawDocument, folderId: String?) {
+        val now = currentTimeMillis()
+        syncLock(lock) {
+            val summary = StoredSummary(
+                id = document.id,
+                name = document.title,
+                folderId = folderId,
+                createdAt = now,
+                modifiedAt = now,
+                lastOpenedAt = now,
+                defaultWidth = document.defaultWidthMm,
+                defaultHeight = document.defaultHeightMm,
+                defaultBackground = document.defaultBackground
+            )
+            index = index.copy(documents = index.documents.filter { it.id != document.id } + summary)
+            openDocuments[document.id] = document
+            writeDocumentLocked(document)
+            writeIndexLocked()
+        }
+        publishSummaries()
+    }
+
     override suspend fun loadDocument(documentId: String): DrawDocument? {
         val document = syncLock(lock) {
             val summary = index.documents.firstOrNull { it.id == documentId } ?: return null
+            // Loaded again while open: with its last changes
+            if (dirtyDocuments.remove(documentId)) openDocuments[documentId]?.let { writeDocumentLocked(it) }
             val stored = storage.get(documentKey(documentId))?.let { decodeOrNull<StoredDocument>(it) }
             val document = DrawDocument(
                 id = documentId,
@@ -185,18 +208,6 @@ class KeyValueDocumentStore(
             stored?.pages?.forEach { storedPage -> document.pages.add(storedPage.toPage(document)) }
             stored?.removedPages?.forEach { storedPage -> storedPage.toPage(document).let { document.removedPages[it.id] = it } }
             document.reindexPages()
-            if (document.pages.isEmpty()) {
-                // A document must always have a page
-                document.pages.add(
-                    DrawPage(
-                        index = 0,
-                        widthMm = summary.defaultWidth,
-                        heightMm = summary.defaultHeight,
-                        background = summary.defaultBackground,
-                        orderKey = document.orderKeyAt(0)
-                    )
-                )
-            }
             openDocuments[documentId] = document
             document
         }
@@ -631,32 +642,14 @@ internal data class StoredSummary(
 
 @Serializable
 internal data class StoredDocument(
-    val pages: List<StoredPage> = emptyList(),
+    val pages: List<PageSnapshot> = emptyList(),
     val resources: List<StoredResource> = emptyList(),
     val defaultsVersion: Stamp = Stamp.ZERO,
-    val removedPages: List<StoredPage> = emptyList()
+    val removedPages: List<PageSnapshot> = emptyList()
 )
 
 @Serializable
 internal data class StoredResource(val id: String, val type: String, val uri: String)
-
-/**
- * A page as its data (see [PageData]), its removed elements (hidden, see
- * [DrawPage.removedElements]) and the stamps of its last changes and of its elements'.
- */
-@Serializable
-internal data class StoredPage(
-    val data: PageData,
-    val added: Stamp = Stamp.ZERO,
-    val removed: Stamp? = null,
-    val orderVersion: Stamp = Stamp.ZERO,
-    val formatVersion: Stamp = Stamp.ZERO,
-    val removedElements: List<ElementData> = emptyList(),
-    val elements: Map<String, StoredVersions> = emptyMap()
-)
-
-@Serializable
-internal data class StoredVersions(val added: Stamp, val removed: Stamp? = null, val placed: Stamp, val updated: Stamp)
 
 @Serializable
 internal data class StoredPreferences(
@@ -684,35 +677,9 @@ internal data class StoredPreferences(
 }
 
 private fun DrawDocument.toStored(): StoredDocument = StoredDocument(
-    pages = pages.map { it.toStored() },
+    pages = pages.map { it.snapshot() },
     resources = resources.map { StoredResource(it.id, it.type.name, it.path) },
     defaultsVersion = defaultsVersion,
-    removedPages = removedPages.values.map { it.toStored() }
+    removedPages = removedPages.values.map { it.snapshot() }
 )
 
-private fun DrawPage.toStored() = StoredPage(
-    data = toData(),
-    added = added,
-    removed = removed,
-    orderVersion = orderVersion,
-    formatVersion = formatVersion,
-    removedElements = removedElements.map { it.toData() },
-    elements = (elements() + removedElements).associate { it.id to StoredVersions(it.added, it.removed, it.placed, it.updated) }
-)
-
-private fun StoredPage.toPage(document: DrawDocument): DrawPage {
-    val page = data.toPage(document)
-    page.added = added
-    page.removed = removed
-    page.orderVersion = orderVersion
-    page.formatVersion = formatVersion
-    removedElements.forEach { page.removedElements.add(it.toElement()) }
-    for (element in page.elements() + page.removedElements) {
-        val versions = elements[element.id] ?: continue
-        element.added = versions.added
-        element.removed = versions.removed
-        element.placed = versions.placed
-        element.updated = versions.updated
-    }
-    return page
-}
