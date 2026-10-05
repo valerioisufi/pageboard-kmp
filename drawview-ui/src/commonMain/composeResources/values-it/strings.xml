@@ -93,6 +93,7 @@
     <string name="text_editor_action_heading">Titolo</string>
     <string name="text_editor_action_math">Matematica / LaTeX</string>
     <string name="text_editor_action_save">Salva</string>
+    <string name="text_editor_action_move">Sposta la casella di testo</string>
     <string name="text_editor_action_alignment">Allineamento</string>
     <string name="text_editor_label_formula">Formula TeX:</string>
     <string name="text_editor_desc_latex_preview">Anteprima LaTeX</string>

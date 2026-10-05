@@ -95,6 +95,7 @@ fun DrawCanvas(
     ) {
         // Observe every source of invalidation
         @Suppress("UNUSED_VARIABLE") val v = controller.version
+        @Suppress("UNUSED_VARIABLE") val camera = controller.cameraPhysics.moveCount
         @Suppress("UNUSED_VARIABLE") val tick = animationTick
         @Suppress("UNUSED_VARIABLE") val liveTick = live.tick
         @Suppress("UNUSED_VARIABLE") val selectionVersion = controller.selectionManager.selectionVersion

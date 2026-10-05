@@ -85,7 +85,7 @@ internal class CanvasGestureHandler(
     private enum class Mode {
         NONE, INK, LASSO, ERASE, PAN, PINCH,
         SELECTION_MOVE, SELECTION_SCALE, SELECTION_ROTATE, TEXT_RESIZE_LEFT, TEXT_RESIZE_RIGHT,
-        PAGE_REORDER, TEXT_TAP, PLACE_TAP, IGNORED
+        PAGE_REORDER, TEXT_TAP, PLACE_TAP, EDITOR_TAP, IGNORED
     }
 
     private var mode = Mode.NONE
@@ -250,6 +250,13 @@ internal class CanvasGestureHandler(
         }
 
         val isMouse = change.type == PointerType.Mouse
+
+        // Text editor open: a tap outside the box saves it, a drag or a pinch moves the canvas
+        if (controller.textEditorManager.isEditing && controller.isDrawingMode) {
+            if (isMouse && event.buttons.isTertiaryPressed) startPan() else mode = Mode.EDITOR_TAP
+            return
+        }
+
         if (isMouse && event.buttons.isSecondaryPressed) {
             mode = Mode.IGNORED
             showContextMenu(position)
@@ -419,7 +426,7 @@ internal class CanvasGestureHandler(
                 controller.requestRedraw()
             }
 
-            Mode.TEXT_TAP, Mode.PLACE_TAP -> {
+            Mode.TEXT_TAP, Mode.PLACE_TAP, Mode.EDITOR_TAP -> {
                 if (movedBeyondSlop) {
                     mode = Mode.PAN
                     controller.cameraPhysics.onDragStart()
@@ -569,11 +576,15 @@ internal class CanvasGestureHandler(
                 if (wasTap) controller.placementManager.placeAt(position)
             }
 
+            Mode.EDITOR_TAP -> {
+                if (wasTap) controller.textEditorManager.requestFinishEditing()
+            }
+
             else -> {}
         }
 
         // Double tap on a text block: edit it (whatever the active tool)
-        if (wasTap && mode != Mode.IGNORED && mode != Mode.PAGE_REORDER) {
+        if (wasTap && mode != Mode.IGNORED && mode != Mode.PAGE_REORDER && mode != Mode.EDITOR_TAP) {
             val isDouble = up.uptimeMillis - lastTapTime <= doubleTapTimeout &&
                     (position - lastTapPosition).getDistance() <= touchSlop * 2f
             if (isDouble && mode != Mode.TEXT_TAP && mode != Mode.PLACE_TAP) {

@@ -8,7 +8,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +35,7 @@ import androidx.compose.material.icons.filled.FormatBold
 import androidx.compose.material.icons.filled.FormatItalic
 import androidx.compose.material.icons.filled.FormatStrikethrough
 import androidx.compose.material.icons.filled.Functions
+import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material.icons.filled.Title
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -94,6 +94,7 @@ import io.github.valerioisufi.drawview.ui.components.TextColorPickerDialog
 import io.github.valerioisufi.drawview.ui.generated.resources.*
 import io.github.valerioisufi.drawview.ui.render.PT_TO_MM
 import org.jetbrains.compose.resources.stringResource
+import kotlin.math.roundToInt
 
 /**
  * On-canvas text editor with Markdown live preview, LaTeX preview, word-wrap handles and a
@@ -116,9 +117,11 @@ fun TextEditorOverlay(controller: DrawViewController) {
 private fun TextEditorSession(controller: DrawViewController) {
     val editor = controller.textEditorManager
     val pageIndex = editor.activeTextPageIndex
-    // Recomposes on every camera change
+    // Recomposes on every camera movement (fling and bounce included) and page change
     @Suppress("UNUSED_VARIABLE")
     val frame = controller.version
+    @Suppress("UNUSED_VARIABLE")
+    val camera = controller.cameraPhysics.moveCount
     val mmToScreen = controller.pageMmToScreen(pageIndex) ?: return
 
     // Scale and position anchored to the page (page millimeters -> screen pixels)
@@ -126,6 +129,8 @@ private fun TextEditorSession(controller: DrawViewController) {
     val origin = mmToScreen.mapPoint(editor.activeTextMmX, editor.activeTextMmY)
     val liveScreenX = origin.x
     val liveScreenY = origin.y
+    // Read by the drag handlers, which must not restart when the canvas moves during a drag
+    val currentScale by rememberUpdatedState(liveScale)
 
     // Raw Markdown text of the block
     val activeItem = editor.activeTextItem
@@ -208,20 +213,15 @@ private fun TextEditorSession(controller: DrawViewController) {
         )
     }
 
-    // The system back saves the text as a tap outside the box
+    // The system back and a tap on the canvas outside the box save the text
     val currentSaveAndFinish by rememberUpdatedState { saveAndFinish() }
     DisposableEffect(editor) {
         editor.finishEditingRequest = { currentSaveAndFinish() }
         onDispose { editor.finishEditingRequest = null }
     }
 
-    BoxWithConstraints(
-        modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                detectTapGestures(onTap = { saveAndFinish() })
-            }
-    ) {
+    // No pointer input of its own: outside the box and the toolbar the canvas keeps its gestures
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val containerHeightPx = constraints.maxHeight.toFloat()
         val primary = MaterialTheme.colorScheme.primary
 
@@ -231,8 +231,8 @@ private fun TextEditorSession(controller: DrawViewController) {
                 modifier = Modifier
                     .offset {
                         IntOffset(
-                            (liveScreenX - borderPaddingPx).toInt(),
-                            (liveScreenY - borderPaddingPx).toInt()
+                            (liveScreenX - borderPaddingPx).roundToInt(),
+                            (liveScreenY - borderPaddingPx).roundToInt()
                         )
                     }
                     .width(boxWidthDp + borderPadding * 2)
@@ -284,10 +284,10 @@ private fun TextEditorSession(controller: DrawViewController) {
                         .size(width = 12.dp, height = 28.dp)
                         .clip(CircleShape)
                         .background(primary)
-                        .pointerInput(liveScale) {
+                        .pointerInput(Unit) {
                             detectDragGestures { change, dragAmount ->
                                 change.consume()
-                                val deltaMm = dragAmount.x / liveScale
+                                val deltaMm = dragAmount.x / currentScale
                                 editor.activeBoxWidthMm = (editor.activeBoxWidthMm + deltaMm).coerceIn(MIN_BOX_WIDTH_MM, MAX_BOX_WIDTH_MM)
                             }
                         }
@@ -301,10 +301,10 @@ private fun TextEditorSession(controller: DrawViewController) {
                         .size(width = 12.dp, height = 28.dp)
                         .clip(CircleShape)
                         .background(primary)
-                        .pointerInput(liveScale) {
+                        .pointerInput(Unit) {
                             detectDragGestures { change, dragAmount ->
                                 change.consume()
-                                val deltaMm = dragAmount.x / liveScale
+                                val deltaMm = dragAmount.x / currentScale
                                 val newWidth = editor.activeBoxWidthMm - deltaMm
                                 if (newWidth >= MIN_BOX_WIDTH_MM) {
                                     editor.activeTextMmX += deltaMm
@@ -313,6 +313,36 @@ private fun TextEditorSession(controller: DrawViewController) {
                             }
                         }
                 )
+
+                // Move handle: drags the box on the page while its text is being edited
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .offset(y = -MOVE_HANDLE_SIZE - 6.dp)
+                        .size(MOVE_HANDLE_SIZE)
+                        .clip(CircleShape)
+                        .background(primary)
+                        .pointerInput(Unit) {
+                            detectDragGestures { change, dragAmount ->
+                                change.consume()
+                                val page = controller.document.pages.getOrNull(pageIndex) ?: return@detectDragGestures
+                                val heightMm = actualTextHeightPx / currentScale
+                                // Part of the box always stays on the page
+                                editor.activeTextMmX = (editor.activeTextMmX + dragAmount.x / currentScale)
+                                    .coerceIn(MIN_VISIBLE_MM - editor.activeBoxWidthMm, page.widthMm - MIN_VISIBLE_MM)
+                                editor.activeTextMmY = (editor.activeTextMmY + dragAmount.y / currentScale)
+                                    .coerceIn(MIN_VISIBLE_MM - heightMm, page.heightMm - MIN_VISIBLE_MM)
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.OpenWith,
+                        contentDescription = stringResource(Res.string.text_editor_action_move),
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
             }
         }
 
@@ -567,8 +597,10 @@ private fun TextEditorSession(controller: DrawViewController) {
             keyboardController?.show()
         }
 
-        // Keeps the edited text above the software keyboard and the formatting toolbar
-        LaunchedEffect(textValue.text, textLayoutResult, imeBottom, containerHeightPx, toolbarHeightPx) {
+        // Keeps the edited text above the software keyboard and the formatting toolbar. Not keyed
+        // on the layout itself, which changes at every zoom step: it would fight a pinch
+        val lineCount = textLayoutResult?.lineCount ?: 0
+        LaunchedEffect(textValue.text, lineCount, imeBottom, containerHeightPx, toolbarHeightPx) {
             val layout = textLayoutResult
             if (layout != null && layout.lineCount > 0) {
                 val textBottomLocal = layout.getLineBottom(layout.lineCount - 1)
@@ -606,6 +638,11 @@ private fun latexBlockHeightMm(text: String, fontSizePt: Float, color: Int, widt
 
 private const val MIN_BOX_WIDTH_MM = 20f
 private const val MAX_BOX_WIDTH_MM = 350f
+
+/** Millimeters of a moved box that always stay on its page. */
+private const val MIN_VISIBLE_MM = 5f
+
+private val MOVE_HANDLE_SIZE = 28.dp
 
 private val MATH_SYMBOLS = listOf(
     "a/b" to ("\\frac{" to "}{}"),

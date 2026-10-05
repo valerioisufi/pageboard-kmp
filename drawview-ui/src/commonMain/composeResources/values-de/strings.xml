@@ -93,6 +93,7 @@
     <string name="text_editor_action_heading">Überschrift</string>
     <string name="text_editor_action_math">Mathematik / LaTeX</string>
     <string name="text_editor_action_save">Speichern</string>
+    <string name="text_editor_action_move">Textfeld verschieben</string>
     <string name="text_editor_action_alignment">Ausrichtung</string>
     <string name="text_editor_label_formula">TeX-Formel:</string>
     <string name="text_editor_desc_latex_preview">LaTeX-Vorschau</string>

@@ -93,6 +93,7 @@
     <string name="text_editor_action_heading">Título</string>
     <string name="text_editor_action_math">Matemáticas / LaTeX</string>
     <string name="text_editor_action_save">Guardar</string>
+    <string name="text_editor_action_move">Mover el cuadro de texto</string>
     <string name="text_editor_action_alignment">Alineación</string>
     <string name="text_editor_label_formula">Fórmula TeX:</string>
     <string name="text_editor_desc_latex_preview">Vista previa de LaTeX</string>

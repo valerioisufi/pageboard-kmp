@@ -1,5 +1,8 @@
 package io.github.valerioisufi.drawview.core.camera
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
@@ -63,6 +66,13 @@ class CameraPhysicsEngine(
     private val axisY = AxisPhysics1D()
     private val scaleAxis = ScalePhysics1D()
 
+    /**
+     * Incremented whenever the camera moves (gestures, fling, bounce): observable, so that what is
+     * anchored to the pages follows the camera in the same frame as the canvas.
+     */
+    var moveCount by mutableIntStateOf(0)
+        private set
+
     private var isUserDragging = false
     private var viewportRect = Rect.Zero
 
@@ -86,6 +96,7 @@ class CameraPhysicsEngine(
     fun setViewport(width: Float, height: Float) {
         viewportRect = Rect(0f, 0f, width, height)
         updateDynamicBoundaries()
+        moveCount++
     }
 
     /**
@@ -99,6 +110,7 @@ class CameraPhysicsEngine(
         axisY.position = (screenHeight / 2f) - (worldY * scaleAxis.position)
 
         updateDynamicBoundaries()
+        moveCount++
     }
 
     fun getCurrentScale(): Float = scaleAxis.position
@@ -149,6 +161,7 @@ class CameraPhysicsEngine(
         axisY.position += dy
 
         updateDynamicBoundaries()
+        moveCount++
     }
 
     /**
@@ -194,6 +207,7 @@ class CameraPhysicsEngine(
             if (axisY.calculateExcess() != 0f) axisY.position -= axisY.calculateExcess()
             if (scaleAxis.calculateExcess() != 0f) scaleAxis.position -= scaleAxis.calculateExcess()
             stopAllAnimations()
+            moveCount++
         }
     }
 
@@ -203,7 +217,7 @@ class CameraPhysicsEngine(
      * @param deltaTimeMillis Elapsed milliseconds.
      */
     fun update(deltaTimeMillis: Long) {
-        if (isUserDragging || deltaTimeMillis <= 0) return
+        if (isUserDragging || deltaTimeMillis <= 0 || !isAnimating()) return
 
         val dt = (deltaTimeMillis / 1000f).coerceAtMost(0.05f)
         updateDynamicBoundaries()
@@ -219,6 +233,7 @@ class CameraPhysicsEngine(
         }
         axisX.update(dt)
         axisY.update(dt)
+        moveCount++
     }
 
     /** Keeps the point at ([focusX], [focusY]) in place while the scale is multiplied by [ratio]. */

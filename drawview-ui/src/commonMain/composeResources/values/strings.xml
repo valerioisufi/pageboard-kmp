@@ -94,6 +94,7 @@
     <string name="text_editor_action_heading">Heading</string>
     <string name="text_editor_action_math">Math / LaTeX</string>
     <string name="text_editor_action_save">Save</string>
+    <string name="text_editor_action_move">Move text box</string>
     <string name="text_editor_action_alignment">Alignment</string>
     <string name="text_editor_label_formula">TeX formula:</string>
     <string name="text_editor_desc_latex_preview">LaTeX preview</string>
