@@ -69,7 +69,11 @@ fi
 BUILD_DIR="$NATIVE_DIR/build/desktop-$PLATFORM"
 cmake -S "$NATIVE_DIR" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release -DDRAWVIEW_BUILD_JNI=ON \
     -DDRAWVIEW_PDFIUM_DIR="$PDFIUM_DIR" ${CMAKE_ARGS[@]+"${CMAKE_ARGS[@]}"}
-cmake --build "$BUILD_DIR" ${BUILD_ARGS[@]+"${BUILD_ARGS[@]}"} --target ink_bridge tex pdfium_bridge \
+TARGETS=(ink_bridge tex pdfium_bridge)
+if [[ "$PLATFORM" == darwin-* ]]; then
+    TARGETS+=(trackpad_bridge) # scroll phases and pinch of the trackpad
+fi
+cmake --build "$BUILD_DIR" ${BUILD_ARGS[@]+"${BUILD_ARGS[@]}"} --target "${TARGETS[@]}" \
     -j "$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)"
 
 OUT_DIR="$ROOT_DIR/build/nativeLibs/jvm"
@@ -85,6 +89,9 @@ install_lib() {
 }
 
 install_lib ink_bridge drawview-core
+if [[ "$PLATFORM" == darwin-* ]]; then
+    install_lib trackpad_bridge drawview-core
+fi
 cp "$NATIVE_DIR/ink/LICENSE" "$OUT_DIR/drawview-core/native/$PLATFORM/INK_LICENSE.txt"
 install_lib tex drawview-latex
 install_lib pdfium_bridge drawview-pdf

@@ -215,7 +215,7 @@ val nativeLibsPrebuilt = providers.gradleProperty("drawview.native.prebuilt").or
 
 tasks.register<Exec>("buildDesktopNativeLibs") {
     group = "native"
-    description = "Builds the Google Ink, MicroTeX and PDFium bridge JNI libraries for $desktopPlatform"
+    description = "Builds the Google Ink, MicroTeX, PDFium and trackpad (macOS) bridge JNI libraries for $desktopPlatform"
     val prebuilt = nativeLibsPrebuilt
     onlyIf { !prebuilt }
     val pdfium = extractPdfiumTasks.getValue(desktopPdfiumPackage)

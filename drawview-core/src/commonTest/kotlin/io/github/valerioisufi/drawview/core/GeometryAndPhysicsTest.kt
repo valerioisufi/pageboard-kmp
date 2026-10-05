@@ -132,6 +132,32 @@ class GeometryAndPhysicsTest {
         assertEquals(40f, finalPos.y, 2f)
     }
 
+    @Test
+    fun testCameraPinchBeyondTheZoomLimits() {
+        val engine = CameraPhysicsEngine(density = 1f, getContentRect = { Rect(0f, 0f, 800f, 2000f) })
+        engine.setViewport(800f, 1000f)
+
+        // A zoom apart from a gesture (zoom buttons, wheel) stops at the limit
+        engine.onDrag(dx = 0f, dy = 0f, scaleFactor = 1000f, focusX = 400f, focusY = 500f)
+        assertEquals(engine.maxScale, engine.getCurrentScale())
+
+        // A pinch goes beyond it with a rubber band...
+        engine.onDragStart()
+        repeat(20) { engine.onDrag(dx = 0f, dy = 0f, scaleFactor = 1.3f, focusX = 400f, focusY = 500f) }
+        val stretched = engine.getCurrentScale()
+        assertTrue(stretched > engine.maxScale && stretched < engine.maxScale * engine.maxScaleOverscroll)
+        // ...and moving back the fingers shrinks it at once
+        engine.onDrag(dx = 0f, dy = 0f, scaleFactor = 0.9f, focusX = 400f, focusY = 500f)
+        assertTrue(engine.getCurrentScale() < stretched)
+
+        // Released: it springs back into the limits
+        engine.onRelease(0f, 0f)
+        assertTrue(engine.isAnimating())
+        repeat(200) { engine.update(16L) }
+        assertFalse(engine.isAnimating())
+        assertTrue(engine.getCurrentScale() <= engine.maxScale && engine.getCurrentScale() > engine.maxScale * 0.9f)
+    }
+
     // --- 5. HISTORY MANAGER (UNDO/REDO) TESTS ---
 
     @OptIn(ExperimentalCoroutinesApi::class)

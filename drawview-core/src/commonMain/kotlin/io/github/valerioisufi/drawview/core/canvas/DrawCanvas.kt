@@ -88,6 +88,7 @@ fun DrawCanvas(
                 }
             }
             .unbufferedStylusInput()
+            .trackpadInput(gestures::onTrackpadPinch, gestures::onTrackpadScrollPhase)
             .pointerInput(controller, engine) {
                 with(gestures) { run() }
             }

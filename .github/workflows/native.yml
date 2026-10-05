@@ -95,11 +95,16 @@ jobs:
               linux-*) pre=lib; ext=so ;;
               windows-*) pre=; ext=dll ;;
             esac
-            for entry in \
-              "drawview-core:${pre}ink_bridge" \
-              "drawview-latex:${pre}tex" \
-              "drawview-pdf:${pre}pdfium_bridge" \
-              "drawview-pdf:${pre}pdfium"; do
+            entries=(
+              "drawview-core:${pre}ink_bridge"
+              "drawview-latex:${pre}tex"
+              "drawview-pdf:${pre}pdfium_bridge"
+              "drawview-pdf:${pre}pdfium"
+            )
+            if [[ "$platform" == darwin-* ]]; then
+              entries+=("drawview-core:${pre}trackpad_bridge")
+            fi
+            for entry in "${entries[@]}"; do
               module="${entry%%:*}"; file="native/$platform/${entry#*:}.$ext"
               if ! unzip -l "$module/build/libs/$module-jvm.jar" | grep -q " $file$"; then
                 echo "::error::$file missing from the $module jar"

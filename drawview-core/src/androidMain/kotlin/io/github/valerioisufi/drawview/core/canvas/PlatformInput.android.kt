@@ -4,6 +4,7 @@ import android.view.MotionEvent
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.platform.LocalView
 
@@ -19,3 +20,10 @@ actual fun Modifier.unbufferedStylusInput(): Modifier = composed {
         }
     }
 }
+
+internal actual fun scrollUnitPx(density: Float): Float = DEFAULT_SCROLL_UNIT_PX
+
+internal actual fun Modifier.trackpadInput(
+    onPinch: (phase: TrackpadPinchPhase, factor: Float, focus: Offset) -> Unit,
+    onScrollPhase: (phase: TrackpadScrollPhase, timeMillis: Long) -> Unit
+): Modifier = this

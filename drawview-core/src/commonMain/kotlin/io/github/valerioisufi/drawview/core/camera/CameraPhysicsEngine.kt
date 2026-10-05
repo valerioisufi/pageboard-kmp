@@ -4,6 +4,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import kotlin.math.abs
+import kotlin.math.exp
+import kotlin.math.ln
 import kotlin.math.sign
 
 /**
@@ -30,6 +32,9 @@ class CameraPhysicsEngine(
 
     /** Visual tension resistance applied when dragging outside boundaries (rubber-banding). */
     var rubberBandTension: Float = 0.55f
+
+    /** How far a pinch can zoom beyond the scale limits (rubber-banding), as a ratio of the limit. */
+    var maxScaleOverscroll: Float = 1.5f
 
     /** Minimum allowed ratio of screen dp per mm of document (maximum zoom out). */
     var minDpPerMm: Float = 0.2f
@@ -60,6 +65,14 @@ class CameraPhysicsEngine(
 
     private var isUserDragging = false
     private var viewportRect = Rect.Zero
+
+    // Scale asked by the pinch in progress, beyond the limits too
+    private var gestureScale = 1f
+
+    // Focus of the last zoom, kept while the scale springs back into its limits
+    private var scaleFocusX = 0f
+    private var scaleFocusY = 0f
+
     private val renderMatrix = Matrix2D()
 
     init {
@@ -103,6 +116,7 @@ class CameraPhysicsEngine(
     fun onDragStart() {
         isUserDragging = true
         stopAllAnimations()
+        gestureScale = scaleAxis.position
     }
 
     /**
@@ -117,13 +131,18 @@ class CameraPhysicsEngine(
     fun onDrag(dx: Float, dy: Float, scaleFactor: Float = 1f, focusX: Float = 0f, focusY: Float = 0f) {
         if (scaleFactor != 1f && scaleFactor > 0f) {
             val oldScale = scaleAxis.position
-            scaleAxis.position = (oldScale * scaleFactor).coerceIn(minScale, maxScale)
-
-            val currentScale = scaleAxis.position
-            val scaleRatio = currentScale / oldScale
-
-            axisX.position = focusX - (focusX - axisX.position) * scaleRatio
-            axisY.position = focusY - (focusY - axisY.position) * scaleRatio
+            scaleAxis.position = if (isUserDragging) {
+                // Pinch: beyond the limits the zoom resists, and springs back on release. Within
+                // the limits it follows the scale, which may have changed apart from the pinch
+                if (oldScale in minScale..maxScale) gestureScale = oldScale
+                gestureScale *= scaleFactor
+                rubberBandScale(gestureScale)
+            } else {
+                (oldScale * scaleFactor).coerceIn(minScale, maxScale)
+            }
+            scaleFocusX = focusX
+            scaleFocusY = focusY
+            scaleAround(scaleAxis.position / oldScale, focusX, focusY)
         }
 
         axisX.position += dx
@@ -153,6 +172,8 @@ class CameraPhysicsEngine(
         } else if (abs(velocityY) > 20f) {
             axisY.startFling(velocityY)
         }
+
+        if (scaleAxis.calculateExcess() != 0f) scaleAxis.startBounce()
     }
 
     fun stopAllAnimations() {
@@ -187,9 +208,39 @@ class CameraPhysicsEngine(
         val dt = (deltaTimeMillis / 1000f).coerceAtMost(0.05f)
         updateDynamicBoundaries()
 
+        val oldScale = scaleAxis.position
         scaleAxis.update(dt)
+        if (scaleAxis.position != oldScale) {
+            // The scale springs back around the focus of the pinch, then the pages into the edges
+            scaleAround(scaleAxis.position / oldScale, scaleFocusX, scaleFocusY)
+            updateDynamicBoundaries()
+            if (axisX.state == PhysicsState.IDLE && axisX.calculateExcess() != 0f) axisX.startBounce()
+            if (axisY.state == PhysicsState.IDLE && axisY.calculateExcess() != 0f) axisY.startBounce()
+        }
         axisX.update(dt)
         axisY.update(dt)
+    }
+
+    /** Keeps the point at ([focusX], [focusY]) in place while the scale is multiplied by [ratio]. */
+    private fun scaleAround(ratio: Float, focusX: Float, focusY: Float) {
+        axisX.position = focusX - (focusX - axisX.position) * ratio
+        axisY.position = focusY - (focusY - axisY.position) * ratio
+    }
+
+    /**
+     * Scale shown for the [scale] asked by a pinch: beyond the limits it resists more and more
+     * (rubber-banding in logarithmic space), up to [maxScaleOverscroll] times the limit.
+     */
+    private fun rubberBandScale(scale: Float): Float {
+        val limit = when {
+            scale > maxScale -> maxScale
+            scale < minScale -> minScale
+            else -> return scale
+        }
+        val excess = ln(scale / limit)
+        val dimension = ln(maxScaleOverscroll)
+        val banded = (abs(excess) * dimension * rubberBandTension) / (dimension + rubberBandTension * abs(excess))
+        return limit * exp(banded * sign(excess))
     }
 
     /**

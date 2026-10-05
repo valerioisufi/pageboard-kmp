@@ -180,6 +180,19 @@ target_include_directories(ink_bridge PUBLIC
 target_link_libraries(ink_bridge PRIVATE ink_core)
 
 # ==============================================================================
+# Trackpad bridge (desktop JVM on macOS): phases of the scroll and pinch of the trackpad
+# ==============================================================================
+if(DRAWVIEW_BUILD_JNI AND APPLE AND NOT ANDROID)
+    enable_language(OBJC)
+    add_library(trackpad_bridge SHARED
+        bridge/trackpad_bridge_mac.m
+    )
+    target_compile_options(trackpad_bridge PRIVATE -fobjc-arc)
+    target_link_libraries(trackpad_bridge PRIVATE "-framework AppKit")
+    drawview_configure_shared_library(trackpad_bridge)
+endif()
+
+# ==============================================================================
 # MicroTeX (LaTeX math engine)
 # ==============================================================================
 file(GLOB_RECURSE TEX_CORE_SRCS

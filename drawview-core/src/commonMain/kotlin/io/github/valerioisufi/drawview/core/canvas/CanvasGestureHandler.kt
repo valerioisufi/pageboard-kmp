@@ -73,9 +73,9 @@ class CanvasLiveState {
 }
 
 /**
- * Routes the pointer events of the canvas (stylus, touch, mouse, wheel) to inking, erasing,
- * lasso selection, selection transformations, text tool, page reordering and camera gestures,
- * like the `CanvasTouchDispatcher` of the original Android implementation.
+ * Routes the pointer events of the canvas (stylus, touch, mouse, wheel, trackpad) to inking,
+ * erasing, lasso selection, selection transformations, text tool, page reordering and camera
+ * gestures, like the `CanvasTouchDispatcher` of the original Android implementation.
  */
 internal class CanvasGestureHandler(
     private val controller: DrawViewController,
@@ -107,6 +107,16 @@ internal class CanvasGestureHandler(
     private var pinchDistance = 0f
 
     private val velocityTracker = VelocityTracker()
+
+    // Two fingers moving on a trackpad: content offset since the start of the gesture
+    private val trackpadVelocityTracker = VelocityTracker()
+    private var trackpadPanPosition = Offset.Zero
+    private var lastTrackpadSampleTime = 0L
+    private var isTrackpadPanning = false
+
+    // Phases of the two-finger scroll of a macOS trackpad (onTrackpadScrollPhase)
+    private var trackpadFingersDown = false
+    private var trackpadMomentum = false
 
     private val isDrawingTool: Boolean
         get() = controller.toolManager.isInkTool || controller.toolManager.isLassoTool || controller.toolManager.isEraserTool
@@ -145,6 +155,14 @@ internal class CanvasGestureHandler(
         when (event.type) {
             PointerEventType.Scroll -> {
                 onScroll(event)
+                return
+            }
+            PointerEventType.PanStart, PointerEventType.PanMove, PointerEventType.PanEnd -> {
+                onTrackpadPan(event)
+                return
+            }
+            PointerEventType.ScaleStart, PointerEventType.ScaleChange, PointerEventType.ScaleEnd -> {
+                onTrackpadScale(event)
                 return
             }
             PointerEventType.Exit -> {
@@ -633,17 +651,137 @@ internal class CanvasGestureHandler(
         val delta = change.scrollDelta
         val modifiers = event.keyboardModifiers
         if (modifiers.isCtrlPressed || modifiers.isMetaPressed) {
-            val factor = exp(-delta.y * 0.1f).coerceIn(0.5f, 2f)
-            controller.cameraPhysics.onDrag(0f, 0f, factor, change.position.x, change.position.y)
+            // Also the pinch of the Windows precision touchpads, reported as Ctrl + wheel
+            zoomBy(exp(-delta.y * 0.1f).coerceIn(0.5f, 2f), change.position)
         } else {
-            val step = 48f
-            val dx = if (modifiers.isShiftPressed) -delta.y * step else -delta.x * step
-            val dy = if (modifiers.isShiftPressed) 0f else -delta.y * step
-            controller.cameraPhysics.onDrag(dx, dy, 1f, change.position.x, change.position.y)
+            val unit = scrollUnitPx(controller.density)
+            // Shift + wheel scrolls horizontally. The desktop already reports it as a horizontal
+            // delta, like the horizontal scroll of a macOS trackpad (which comes with Shift)
+            val swapAxes = modifiers.isShiftPressed && delta.x == 0f
+            val pan = Offset(
+                if (swapAxes) -delta.y * unit else -delta.x * unit,
+                if (swapAxes) 0f else -delta.y * unit
+            )
+            when {
+                // The canvas keeps the speed of the fingers by itself (endTrackpadPan)
+                trackpadMomentum -> {}
+                // Two fingers on a macOS trackpad: like a touch pan, beyond the edges too
+                trackpadFingersDown -> {
+                    if (!isTrackpadPanning) startTrackpadPan()
+                    trackpadPanBy(pan, change)
+                }
+                else -> {
+                    controller.cameraPhysics.onDrag(pan.x, pan.y, 1f, change.position.x, change.position.y)
+                    controller.cameraPhysics.restoreToBounds(animated = false)
+                    controller.requestRedraw()
+                }
+            }
         }
+        change.consume()
+    }
+
+    /** Zooms by [factor] around [focus] at once (wheel with Ctrl / Cmd). */
+    private fun zoomBy(factor: Float, focus: Offset) {
+        controller.cameraPhysics.onDrag(0f, 0f, factor, focus.x, focus.y)
         controller.cameraPhysics.restoreToBounds(animated = false)
         controller.requestRedraw()
+    }
+
+    /** Phases of the two-finger scroll of a macOS trackpad, reported apart from its scroll events. */
+    fun onTrackpadScrollPhase(phase: TrackpadScrollPhase, timeMillis: Long) {
+        when (phase) {
+            TrackpadScrollPhase.FINGERS_DOWN -> {
+                trackpadFingersDown = true
+                trackpadMomentum = false
+                // Like a finger on a touch screen, the fingers on the trackpad stop the canvas
+                if (controller.cameraPhysics.isAnimating()) startTrackpadPan()
+            }
+            TrackpadScrollPhase.FINGERS_UP -> {
+                trackpadFingersDown = false
+                endTrackpadPan(timeMillis)
+            }
+            TrackpadScrollPhase.MOMENTUM_START -> trackpadMomentum = true
+            TrackpadScrollPhase.MOMENTUM_END -> trackpadMomentum = false
+            TrackpadScrollPhase.WHEEL -> {
+                trackpadFingersDown = false
+                trackpadMomentum = false
+                endTrackpadPan(timeMillis)
+            }
+        }
+    }
+
+    /**
+     * Two fingers moving on a trackpad (Android, iOS): the canvas follows them and keeps their
+     * speed when they are lifted, like with a touch pan.
+     */
+    private fun onTrackpadPan(event: PointerEvent) {
+        val change = event.changes.firstOrNull() ?: return
+        if (event.type == PointerEventType.PanStart) startTrackpadPan()
+        // The pan offset is a scroll distance: the content moves the other way
+        var delta = -change.panOffset
+        for (h in change.historical) delta -= h.panOffset
+        trackpadPanBy(delta, change)
+        if (event.type == PointerEventType.PanEnd) endTrackpadPan(change.uptimeMillis)
         change.consume()
+    }
+
+    private fun startTrackpadPan() {
+        isTrackpadPanning = true
+        controller.cameraPhysics.onDragStart()
+        trackpadVelocityTracker.resetTracking()
+        trackpadPanPosition = Offset.Zero
+        lastTrackpadSampleTime = 0L
+    }
+
+    /** Moves the canvas with the fingers, beyond its edges too (rubber band). */
+    private fun trackpadPanBy(delta: Offset, change: PointerInputChange) {
+        if (delta == Offset.Zero) return
+        controller.cameraPhysics.onDrag(delta.x, delta.y, 1f, change.position.x, change.position.y)
+        trackpadPanPosition += delta
+        trackpadVelocityTracker.addPosition(change.uptimeMillis, trackpadPanPosition)
+        lastTrackpadSampleTime = change.uptimeMillis
+        controller.requestRedraw()
+    }
+
+    /**
+     * Fingers lifted at [timeMillis]: the canvas keeps their speed and bounces back into its
+     * edges.
+     */
+    private fun endTrackpadPan(timeMillis: Long) {
+        if (!isTrackpadPanning) return
+        isTrackpadPanning = false
+        // Where the fingers were lifted: no fling if they had stopped before
+        if (timeMillis > lastTrackpadSampleTime) {
+            trackpadVelocityTracker.addPosition(timeMillis, trackpadPanPosition)
+        }
+        val velocity = trackpadVelocityTracker.calculateVelocity()
+        controller.cameraPhysics.onRelease(velocity.x, velocity.y)
+        controller.requestRedraw()
+    }
+
+    /** Pinch on a trackpad reported as pointer events (Android, iOS). */
+    private fun onTrackpadScale(event: PointerEvent) {
+        val change = event.changes.firstOrNull() ?: return
+        var factor = change.scaleFactor
+        for (h in change.historical) factor *= h.scaleFactor
+        val phase = when (event.type) {
+            PointerEventType.ScaleStart -> TrackpadPinchPhase.START
+            PointerEventType.ScaleEnd -> TrackpadPinchPhase.END
+            else -> TrackpadPinchPhase.CHANGE
+        }
+        onTrackpadPinch(phase, factor, change.position)
+        change.consume()
+    }
+
+    /**
+     * Pinch on a trackpad: zoom around the pointer like with a touch pinch, beyond the limits
+     * with a rubber band.
+     */
+    fun onTrackpadPinch(phase: TrackpadPinchPhase, factor: Float, focus: Offset) {
+        if (phase == TrackpadPinchPhase.START) controller.cameraPhysics.onDragStart()
+        if (factor > 0f && factor != 1f) controller.cameraPhysics.onDrag(0f, 0f, factor, focus.x, focus.y)
+        if (phase == TrackpadPinchPhase.END) controller.cameraPhysics.onRelease(0f, 0f)
+        controller.requestRedraw()
     }
 
     // ==========================================================
