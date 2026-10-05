@@ -199,9 +199,36 @@ tasks.register<Sync>("preparePdfiumJvmResources") {
 }
 
 // =====================================================================================
-// Desktop JVM native engines (Google Ink, MicroTeX, PDFium bridge): JNI libraries built by
-// native/scripts/build_desktop.sh into build/nativeLibs/jvm/<module>/native/<platform>/, added
-// to the jvmMain resources of :drawview-core, :drawview-latex and :drawview-pdf.
+// whisper.cpp: source of the release, downloaded and verified (native/whisper/whisper.properties),
+// built with the desktop JNI libraries (speech recognition of the lecture assistant)
+// =====================================================================================
+val whisperProperties = Properties().apply {
+    load(StringReader(providers.fileContents(layout.projectDirectory.file("native/whisper/whisper.properties")).asText.get()))
+}
+val whisperVersion: String = whisperProperties.getProperty("version")
+val whisperBuildDir = layout.buildDirectory.dir("whisper")
+
+val downloadWhisperSource = tasks.register<DownloadVerifiedFile>("downloadWhisperSource") {
+    group = "whisper"
+    description = "Downloads and verifies the source of whisper.cpp $whisperVersion"
+    url.set("https://github.com/ggml-org/whisper.cpp/archive/refs/tags/v$whisperVersion.tar.gz")
+    sha256.set(whisperProperties.getProperty("sha256"))
+    destination.set(whisperBuildDir.map { it.file("downloads/whisper.cpp-$whisperVersion.tar.gz") })
+}
+
+val extractWhisperSource = tasks.register<Sync>("extractWhisperSource") {
+    group = "whisper"
+    description = "Extracts the source of whisper.cpp $whisperVersion into build/whisper/src"
+    from(downloadWhisperSource.map { tarTree(resources.gzip(it.destination.get().asFile)) })
+    into(whisperBuildDir.map { it.dir("src") })
+}
+val whisperSourceDir = whisperBuildDir.map { it.dir("src/whisper.cpp-$whisperVersion") }
+
+// =====================================================================================
+// Desktop JVM native engines (Google Ink, MicroTeX, PDFium bridge, whisper.cpp bridge): JNI
+// libraries built by native/scripts/build_desktop.sh into
+// build/nativeLibs/jvm/<module>/native/<platform>/, added to the jvmMain resources of
+// :drawview-core, :drawview-latex, :drawview-pdf and :drawview-lecture.
 //   -Pdrawview.desktop.platform=<platform>  platform to build (default: the host; macOS hosts can
 //                                           also build the other darwin architecture)
 //   -Pdrawview.native.prebuilt=true         skip the build: build/nativeLibs/jvm already holds the
@@ -215,11 +242,11 @@ val nativeLibsPrebuilt = providers.gradleProperty("drawview.native.prebuilt").or
 
 tasks.register<Exec>("buildDesktopNativeLibs") {
     group = "native"
-    description = "Builds the Google Ink, MicroTeX, PDFium and trackpad (macOS) bridge JNI libraries for $desktopPlatform"
+    description = "Builds the Google Ink, MicroTeX, PDFium, whisper.cpp and trackpad (macOS) bridge JNI libraries for $desktopPlatform"
     val prebuilt = nativeLibsPrebuilt
     onlyIf { !prebuilt }
     val pdfium = extractPdfiumTasks.getValue(desktopPdfiumPackage)
-    if (!prebuilt) dependsOn(pdfium)
+    if (!prebuilt) dependsOn(pdfium, extractWhisperSource)
     inputs.files(
         fileTree(nativeSourcesDir) {
             include("CMakeLists.txt", "bridge/**", "tex/src/**", "tex/port/**", "ink/ink/**", "ink/LICENSE", "external/**", "scripts/build_desktop.sh")
@@ -227,10 +254,12 @@ tasks.register<Exec>("buildDesktopNativeLibs") {
         }
     ).withPropertyName("nativeSources").withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.property("platform", desktopPlatform)
-    listOf("drawview-core", "drawview-latex", "drawview-pdf").forEach { module ->
+    inputs.property("whisperVersion", whisperVersion)
+    listOf("drawview-core", "drawview-latex", "drawview-pdf", "drawview-lecture").forEach { module ->
         outputs.dir(layout.buildDirectory.dir("nativeLibs/jvm/$module/native/$desktopPlatform")).withPropertyName(module)
     }
     environment("DRAWVIEW_PDFIUM_DIR", pdfiumBuildDir.get().dir(desktopPdfiumPackage).asFile.absolutePath)
+    environment("DRAWVIEW_WHISPER_DIR", whisperSourceDir.get().asFile.absolutePath)
     // JNI headers of the JDK running Gradle
     environment("JAVA_HOME", System.getProperty("java.home"))
     workingDir(nativeSourcesDir)

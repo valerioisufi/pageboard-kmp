@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Builds the JNI libraries used by the desktop (JVM) targets into
+# Builds the JNI libraries used by the desktop (JVM) targets (and whisper.cpp, built from the
+# source of its release) into
 #   build/nativeLibs/jvm/<module>/native/<platform>/
 # which Gradle adds to the jvmMain resources of the Kotlin modules, where the native loaders
 # look for them. libpdfium itself is added by Gradle too (preparePdfiumJvmResources).
@@ -66,10 +67,18 @@ if [[ -z "$PDFIUM_DIR" ]]; then
     "$ROOT_DIR/gradlew" -p "$ROOT_DIR" -q ":extractPdfium-$PDFIUM_PACKAGE"
 fi
 
+# Source of whisper.cpp (downloaded and verified by Gradle)
+WHISPER_DIR="${DRAWVIEW_WHISPER_DIR:-}"
+if [[ -z "$WHISPER_DIR" ]]; then
+    WHISPER_VERSION="$(sed -n 's/^version=//p' "$NATIVE_DIR/whisper/whisper.properties")"
+    WHISPER_DIR="$ROOT_DIR/build/whisper/src/whisper.cpp-$WHISPER_VERSION"
+    "$ROOT_DIR/gradlew" -p "$ROOT_DIR" -q ":extractWhisperSource"
+fi
+
 BUILD_DIR="$NATIVE_DIR/build/desktop-$PLATFORM"
 cmake -S "$NATIVE_DIR" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release -DDRAWVIEW_BUILD_JNI=ON \
-    -DDRAWVIEW_PDFIUM_DIR="$PDFIUM_DIR" ${CMAKE_ARGS[@]+"${CMAKE_ARGS[@]}"}
-TARGETS=(ink_bridge tex pdfium_bridge)
+    -DDRAWVIEW_PDFIUM_DIR="$PDFIUM_DIR" -DDRAWVIEW_WHISPER_DIR="$WHISPER_DIR" ${CMAKE_ARGS[@]+"${CMAKE_ARGS[@]}"}
+TARGETS=(ink_bridge tex pdfium_bridge whisper_bridge)
 if [[ "$PLATFORM" == darwin-* ]]; then
     TARGETS+=(trackpad_bridge) # scroll phases and pinch of the trackpad
 fi
@@ -95,3 +104,5 @@ fi
 cp "$NATIVE_DIR/ink/LICENSE" "$OUT_DIR/drawview-core/native/$PLATFORM/INK_LICENSE.txt"
 install_lib tex drawview-latex
 install_lib pdfium_bridge drawview-pdf
+install_lib whisper_bridge drawview-lecture
+cp "$WHISPER_DIR/LICENSE" "$OUT_DIR/drawview-lecture/native/$PLATFORM/WHISPER_CPP_LICENSE.txt"

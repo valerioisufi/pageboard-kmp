@@ -108,7 +108,6 @@
     <string name="lecture_settings_lecture_section">Lecture</string>
     <string name="lecture_settings_whisper_model">whisper model (ggml .bin file)</string>
     <string name="lecture_settings_whisper_model_hint">Empty: the largest ggml-*.bin of %1$s. E.g. ggml-large-v3-turbo-q5_0.bin from huggingface.co/ggerganov/whisper.cpp.</string>
-    <string name="lecture_settings_whisper_server">whisper-server program</string>
     <string name="lecture_settings_whisper_language">Language spoken</string>
     <string name="lecture_settings_gemini_model">Gemini model</string>
     <string name="lecture_settings_ollama_model">Ollama model</string>
@@ -124,7 +123,6 @@
     <string name="lecture_hint_catch_up_local">Reads the transcript of the last minutes.</string>
     <string name="lecture_hint_review_local">Rereads the transcript and your notes in 10–20 minutes; the model is unloaded at the end. It must accept images (e.g. gemma4:12b).</string>
     <string name="lecture_problem_transcription">The audio cannot be transcribed on this computer: check whisper.cpp in the settings (%1$s)</string>
-    <string name="lecture_settings_whisper_server_hint">Empty: %1$s</string>
     <string name="lecture_usage_tokens">%1$d requests · input %2$s (%3$s cached) · output %4$s</string>
     <string name="lecture_usage_local">Requests answered on this computer: %1$d</string>
     <string name="lecture_privacy_local">Everything stays on this computer: the audio, the pages and your notes. Ask the lecturer before recording.</string>

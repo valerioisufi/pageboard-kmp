@@ -309,3 +309,31 @@ if(EXISTS "${DRAWVIEW_PDFIUM_DIR}/include/fpdfview.h")
     endif()
     target_include_directories(pdfium_bridge PUBLIC bridge)
 endif()
+
+# ==============================================================================
+# whisper.cpp bridge (desktop JVM): the speech recognition of the lecture assistant
+# ==============================================================================
+# DRAWVIEW_WHISPER_DIR: the source of a whisper.cpp release (build/whisper/src/whisper.cpp-<version>,
+# prepared by the Gradle task extractWhisperSource, see native/whisper/whisper.properties).
+set(DRAWVIEW_WHISPER_DIR "" CACHE PATH "Source of whisper.cpp")
+file(TO_CMAKE_PATH "${DRAWVIEW_WHISPER_DIR}" DRAWVIEW_WHISPER_DIR) # Windows paths from Gradle
+if(DRAWVIEW_BUILD_JNI AND NOT ANDROID AND EXISTS "${DRAWVIEW_WHISPER_DIR}/include/whisper.h")
+    # Static libraries inside the bridge, for any machine of the platform (not only the one
+    # building it); Metal on macOS, its shaders embedded in the library
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+    set(WHISPER_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(WHISPER_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(WHISPER_BUILD_SERVER OFF CACHE BOOL "" FORCE)
+    set(WHISPER_ALL_WARNINGS OFF CACHE BOOL "" FORCE)
+    set(GGML_NATIVE OFF CACHE BOOL "" FORCE)
+    set(GGML_OPENMP OFF CACHE BOOL "" FORCE)
+    if(APPLE)
+        set(GGML_METAL ON CACHE BOOL "" FORCE)
+        set(GGML_METAL_EMBED_LIBRARY ON CACHE BOOL "" FORCE)
+    endif()
+    add_subdirectory("${DRAWVIEW_WHISPER_DIR}" whisper EXCLUDE_FROM_ALL)
+
+    add_library(whisper_bridge SHARED bridge/whisper_bridge_jni.cpp)
+    target_link_libraries(whisper_bridge PRIVATE whisper)
+    drawview_configure_shared_library(whisper_bridge)
+endif()

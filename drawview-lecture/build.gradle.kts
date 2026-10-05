@@ -71,6 +71,12 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.ktor.client.okhttp)
         }
+        jvmMain {
+            // The JNI bridge of whisper.cpp (native/scripts/build_desktop.sh)
+            resources.srcDir(
+                files(rootProject.layout.buildDirectory.dir("nativeLibs/jvm/drawview-lecture")).builtBy(":buildDesktopNativeLibs")
+            )
+        }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
         }

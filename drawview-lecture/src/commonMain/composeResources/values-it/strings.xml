@@ -108,7 +108,6 @@
     <string name="lecture_settings_lecture_section">Lezione</string>
     <string name="lecture_settings_whisper_model">Modello di whisper (file ggml .bin)</string>
     <string name="lecture_settings_whisper_model_hint">Vuoto: il ggml-*.bin più grande di %1$s. Es. ggml-large-v3-turbo-q5_0.bin da huggingface.co/ggerganov/whisper.cpp.</string>
-    <string name="lecture_settings_whisper_server">Programma whisper-server</string>
     <string name="lecture_settings_whisper_language">Lingua parlata</string>
     <string name="lecture_settings_gemini_model">Modello Gemini</string>
     <string name="lecture_settings_ollama_model">Modello Ollama</string>
@@ -124,7 +123,6 @@
     <string name="lecture_hint_catch_up_local">Legge la trascrizione degli ultimi minuti.</string>
     <string name="lecture_hint_review_local">Rilegge la trascrizione e i tuoi appunti in 10–20 minuti; alla fine il modello viene scaricato. Deve accettare immagini (es. gemma4:12b).</string>
     <string name="lecture_problem_transcription">L\'audio non può essere trascritto su questo computer: controlla whisper.cpp nelle impostazioni (%1$s)</string>
-    <string name="lecture_settings_whisper_server_hint">Vuoto: %1$s</string>
     <string name="lecture_usage_tokens">%1$d richieste · ingresso %2$s (%3$s in cache) · uscita %4$s</string>
     <string name="lecture_usage_local">Richieste a questo computer: %1$d</string>
     <string name="lecture_privacy_local">Tutto resta su questo computer: l\'audio, le pagine e i tuoi appunti. Chiedi al docente prima di registrare.</string>

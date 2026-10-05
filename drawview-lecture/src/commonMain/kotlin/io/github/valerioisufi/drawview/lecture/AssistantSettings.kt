@@ -60,8 +60,6 @@ data class TaskModel(
  * @param notesLanguage language of the notes (empty: the language of the lecture).
  * @param tasks provider and models of every kind of request (see [task]).
  * @param localUrl address of the Ollama server (the local models).
- * @param whisperServer path of the `whisper-server` program of whisper.cpp (empty: found in the
- *   usual places).
  * @param whisperModel path of the ggml model of whisper.cpp (e.g. ggml-large-v3-turbo.bin).
  * @param whisperLanguage language spoken, ISO code ("it", "en") or "auto".
  */
@@ -73,7 +71,6 @@ data class AssistantSettings(
     val thinkingLevel: String = "low",
     val tasks: Map<LectureTask, TaskModel> = emptyMap(),
     val localUrl: String = DEFAULT_LOCAL_URL,
-    val whisperServer: String = "",
     val whisperModel: String = "",
     val whisperLanguage: String = "auto"
 ) {
@@ -163,7 +160,6 @@ class AssistantSettingsStore(
                 model.copy(gemini = model.gemini.trim().ifEmpty { defaults.gemini }, local = model.local.trim().ifEmpty { defaults.local })
             },
             localUrl = newSettings.localUrl.trim().trimEnd('/').ifEmpty { AssistantSettings.DEFAULT_LOCAL_URL },
-            whisperServer = newSettings.whisperServer.trim(),
             whisperModel = newSettings.whisperModel.trim(),
             whisperLanguage = newSettings.whisperLanguage.trim().lowercase().ifEmpty { "auto" }
         ).consistent()

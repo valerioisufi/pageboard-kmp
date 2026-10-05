@@ -17,6 +17,7 @@ The PencilNotes application (`pencilnotes/`) includes every DrawView component p
 | **pdfium-binaries** | Benoit Blanchon | [MIT License](#mit-license-bblanchonpdfium-binaries) | Precompiled native binaries for PDFium |
 | **The FreeType Project** | David Turner, Robert Wilhelm, Werner Lemberg | [FreeType Project License](#the-freetype-project-license-ftl) | Font rasterization engine statically linked in PDFium |
 | **MicroTeX** | NanoMichael | [MIT License](#mit-license-microtex) | Dynamic LaTeX mathematical formula rendering |
+| **whisper.cpp** (with **ggml**) | The ggml authors | [MIT License](#mit-license-bblanchonpdfium-binaries-microtex--whispercpp) | Speech recognition of the lecture assistant (Desktop JVM) |
 | **Nunito Font** | Vernon Adams, Cyreal, Jacques Le Bailly | [SIL Open Font License 1.1](#sil-open-font-license-11) | UI typography |
 | **Cherry Bomb One Font** | The Cherry Bomb Project Authors (satsuyako) | [SIL Open Font License 1.1](#sil-open-font-license-11) | *PencilNotes*: title typography |
 | **Computer Modern Fonts**| Donald E. Knuth | [Knuth License](#knuth-license) | Math typography for LaTeX formula rendering |
@@ -274,7 +275,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ---
 
-### MIT License (bblanchon/pdfium-binaries & MicroTeX)
+### MIT License (bblanchon/pdfium-binaries, MicroTeX & whisper.cpp)
+
+whisper.cpp and ggml: Copyright (c) 2023-2026 The ggml authors.
 
 ```text
 Permission is hereby granted, free of charge, to any person obtaining a copy

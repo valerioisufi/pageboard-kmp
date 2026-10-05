@@ -93,15 +93,6 @@ internal fun AssistantSettingsDialog(store: AssistantSettingsStore, onDismiss: (
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
-                        value = draft.whisperServer,
-                        onValueChange = { draft = draft.copy(whisperServer = it) },
-                        label = { Text(stringResource(Res.string.lecture_settings_whisper_server)) },
-                        placeholder = { Text(WhisperTranscriber.serverPath(draft)) },
-                        supportingText = { Text(stringResource(Res.string.lecture_settings_whisper_server_hint, WhisperTranscriber.serverPath(draft.copy(whisperServer = "")))) },
-                        singleLine = true,
-                        modifier = Modifier.weight(2f)
-                    )
-                    OutlinedTextField(
                         value = draft.whisperLanguage,
                         onValueChange = { draft = draft.copy(whisperLanguage = it) },
                         label = { Text(stringResource(Res.string.lecture_settings_whisper_language)) },

@@ -89,7 +89,7 @@ On the desktop, the microphone button of the editor opens the lecture assistant:
 
 | Request | Online | On this computer |
 |---|---|---|
-| Transcription | Gemini, within the requests of the suggestions (the audio is sent to Google) | [whisper.cpp](https://github.com/ggml-org/whisper.cpp): `whisper-server` is started by the app; the audio never leaves the computer and Gemini receives the transcript |
+| Transcription | Gemini, within the requests of the suggestions (the audio is sent to Google) | [whisper.cpp](https://github.com/ggml-org/whisper.cpp), built into the desktop app (Metal on macOS); the audio never leaves the computer and Gemini receives the transcript |
 | Suggestions during the lecture | Gemini | a model of [Ollama](https://ollama.com) (e.g. `gemma4:e4b`, it must keep up with the lecture); it needs the local transcription |
 | I missed something | Gemini | Ollama, on the transcript of the last minutes |
 | Final review | Gemini (the complete recording when the audio may be sent) | Ollama (e.g. `gemma4:12b`), on the transcript and the notes |
