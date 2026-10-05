@@ -154,4 +154,8 @@
     <string name="lecture_local_recommended">consigliato</string>
     <string name="lecture_local_recommended_not_installed">consigliato, da scaricare</string>
     <string name="lecture_local_no_images">Questo modello non legge le immagini: scegline uno che le legga (es. gemma4), per leggere i tuoi appunti.</string>
+    <string name="lecture_player_play">Riproduci</string>
+    <string name="lecture_player_pause">Pausa</string>
+    <string name="lecture_player_back">Indietro di 10 secondi</string>
+    <string name="lecture_player_forward">Avanti di 10 secondi</string>
 </resources>

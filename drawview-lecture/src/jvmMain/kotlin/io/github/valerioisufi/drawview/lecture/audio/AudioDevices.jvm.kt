@@ -2,14 +2,14 @@ package io.github.valerioisufi.drawview.lecture.audio
 
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
-import javax.sound.sampled.Clip
 import javax.sound.sampled.DataLine
 import javax.sound.sampled.LineUnavailableException
+import javax.sound.sampled.SourceDataLine
 import javax.sound.sampled.TargetDataLine
 
 actual fun createAudioCapture(): AudioCapture? = JavaSoundAudioCapture()
 
-actual fun createAudioPlayer(): AudioPlayer? = JavaSoundAudioPlayer()
+actual fun createAudioOutput(): AudioOutput? = JavaSoundAudioOutput()
 
 /**
  * Microphone of the desktop (Java Sound): 16 kHz mono when the device supports it, otherwise the
@@ -99,32 +99,51 @@ class JavaSoundAudioCapture : AudioCapture {
     }
 }
 
-/** Plays the excerpts of the recordings with a Java Sound [Clip]. */
-class JavaSoundAudioPlayer : AudioPlayer {
-    private var clip: Clip? = null
+/** The speakers of the desktop, through a Java Sound [SourceDataLine]. */
+class JavaSoundAudioOutput : AudioOutput {
+    @Volatile
+    private var line: SourceDataLine? = null
+    private var written = 0L
 
-    @Synchronized
-    override fun play(samples: ShortArray) {
-        stop()
-        if (samples.isEmpty()) return
-        try {
-            val format = AudioFormat(LECTURE_SAMPLE_RATE.toFloat(), 16, 1, true, false)
-            val bytes = samples.toLittleEndianBytes()
-            val newClip = AudioSystem.getClip()
-            newClip.open(format, bytes, 0, bytes.size)
-            newClip.start()
-            clip = newClip
-        } catch (e: Exception) {
-            println("DrawView: cannot play the recording: ${e.message}")
-        }
+    override fun open(): Boolean = try {
+        val format = AudioFormat(LECTURE_SAMPLE_RATE.toFloat(), 16, 1, true, false)
+        val newLine = AudioSystem.getSourceDataLine(format)
+        newLine.open(format, BUFFER_BYTES)
+        newLine.start()
+        written = 0L
+        line = newLine
+        true
+    } catch (e: Exception) {
+        println("DrawView: cannot play the recording: ${e.message}")
+        false
     }
 
-    @Synchronized
-    override fun stop() {
-        clip?.let {
-            it.stop()
-            it.close()
+    override fun write(samples: ShortArray, count: Int) {
+        val current = line ?: return
+        val bytes = ByteArray(count * 2)
+        for (i in 0 until count) {
+            val v = samples[i].toInt()
+            bytes[i * 2] = v.toByte()
+            bytes[i * 2 + 1] = (v shr 8).toByte()
         }
-        clip = null
+        // Returns early when the line is stopped by close()
+        current.write(bytes, 0, bytes.size)
+        written += count
+    }
+
+    override val pending: Int
+        get() = line?.let { (written - it.longFramePosition).coerceIn(0L, Int.MAX_VALUE.toLong()).toInt() } ?: 0
+
+    override fun close() {
+        val current = line ?: return
+        line = null
+        current.stop()
+        current.flush()
+        current.close()
+    }
+
+    private companion object {
+        /** A quarter of a second: a pause or a seek is heard right away. */
+        const val BUFFER_BYTES = LECTURE_SAMPLE_RATE / 4 * 2
     }
 }

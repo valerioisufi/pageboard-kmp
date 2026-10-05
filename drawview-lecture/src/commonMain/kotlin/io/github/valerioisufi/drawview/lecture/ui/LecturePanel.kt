@@ -9,6 +9,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -166,11 +167,14 @@ internal fun LecturePanel(assistant: LectureAssistant, documentId: Int, controll
                         lecture = lecture,
                         recorder = recorder,
                         onStart = {
-                            if (!assistant.settingsStore.hasApiKey) showSettings = true
+                            // A key is needed only when something is sent to Gemini
+                            val settings = assistant.settingsStore.settings
+                            if (settings.sentToGoogle.isNotEmpty() && !assistant.settingsStore.hasApiKey) showSettings = true
                             else assistant.start(documentId, controller)
                         },
                         onOpenSettings = { showSettings = true }
                     )
+                    if (lecture != null) PlayerBar(lecture)
                     HorizontalDivider()
                     if (lecture != null) {
                         ProfessorPageBanner(lecture, controller)
@@ -692,6 +696,12 @@ private fun TranscriptTab(lecture: Lecture) {
     LaunchedEffect(count) {
         if (count > 0) listState.animateScrollToItem(count - 1)
     }
+    val player = lecture.player
+    val playing = playingSegment(player, lecture.transcript.map { it.startMs })
+    // The segment being played stays in sight
+    LaunchedEffect(playing) {
+        if (playing != null && player?.isPlaying == true) listState.animateScrollToItem(playing)
+    }
     if (count == 0) {
         MutedText(stringResource(Res.string.lecture_transcript_empty), Modifier.padding(16.dp))
         return
@@ -703,14 +713,22 @@ private fun TranscriptTab(lecture: Lecture) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-            items(lecture.transcript.toList()) { segment ->
-                Column {
-                    Text(
-                        text = formatLectureTime(segment.startMs),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(segment.text, style = MaterialTheme.typography.bodyMedium)
+            itemsIndexed(lecture.transcript.toList()) { index, segment ->
+                val isPlaying = index == playing
+                Surface(
+                    color = if (isPlaying) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                    shape = MaterialTheme.shapes.small
+                ) {
+                    Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)) {
+                        // The time plays the recording from there
+                        Text(
+                            text = (if (player != null) "▶ " else "") + formatLectureTime(segment.startMs),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = if (player != null) Modifier.clickable { player.play(segment.startMs) } else Modifier
+                        )
+                        Text(segment.text, style = MaterialTheme.typography.bodyMedium)
+                    }
                 }
             }
         }

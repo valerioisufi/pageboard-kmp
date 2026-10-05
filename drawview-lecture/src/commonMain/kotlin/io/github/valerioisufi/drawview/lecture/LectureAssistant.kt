@@ -7,9 +7,9 @@ import androidx.compose.runtime.setValue
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.util.currentTimeMillis
 import io.github.valerioisufi.drawview.lecture.audio.AudioCapture
-import io.github.valerioisufi.drawview.lecture.audio.AudioPlayer
+import io.github.valerioisufi.drawview.lecture.audio.AudioOutput
 import io.github.valerioisufi.drawview.lecture.audio.createAudioCapture
-import io.github.valerioisufi.drawview.lecture.audio.createAudioPlayer
+import io.github.valerioisufi.drawview.lecture.audio.createAudioOutput
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
@@ -44,7 +44,7 @@ class LectureAssistant(
     private val client: GeminiClient = GeminiClient(),
     private val localClient: OllamaClient = OllamaClient(),
     private val captureFactory: () -> AudioCapture? = ::createAudioCapture,
-    private val player: AudioPlayer? = createAudioPlayer(),
+    private val audioOutput: (() -> AudioOutput?)? = ::createAudioOutput.takeIf { createAudioOutput() != null },
     val library: LectureLibrary = LectureLibrary(),
     private val stateContext: CoroutineContext = Dispatchers.Main,
     private val transcriberFactory: (AssistantSettings) -> Transcriber? = { WhisperTranscriber.of(it) }
@@ -200,7 +200,7 @@ class LectureAssistant(
         if (shownLectures[documentId]?.directory == summary.directory) return
         scope.launch {
             val record = library.load(summary.directory) ?: return@launch
-            val lecture = Lecture(documentId, summary.directory, record, settingsStore, backends, player, stateContext) { contextOf(documentId)?.text.orEmpty() }
+            val lecture = Lecture(documentId, summary.directory, record, settingsStore, backends, audioOutput, stateContext) { contextOf(documentId)?.text.orEmpty() }
             withContext(stateContext) { shownLectures[documentId] = lecture }
         }
     }
@@ -221,7 +221,7 @@ class LectureAssistant(
             record = null,
             settingsStore = settingsStore,
             backends = backends,
-            player = player,
+            audioOutput = audioOutput,
             stateContext = stateContext,
             courseContext = { contextOf(documentId)?.text.orEmpty() }
         ).apply { documentTitle = controller.document.title }

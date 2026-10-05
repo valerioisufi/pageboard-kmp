@@ -16,16 +16,23 @@ interface AudioCapture {
 
 class AudioCaptureException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
-/** Plays short excerpts of a recording (16-bit mono PCM at [LECTURE_SAMPLE_RATE] Hz). */
-interface AudioPlayer {
-    /** Plays [samples], stopping the excerpt being played. */
-    fun play(samples: ShortArray)
+/** A stream of audio towards the speakers (16-bit mono PCM at [LECTURE_SAMPLE_RATE] Hz). */
+interface AudioOutput {
+    /** Opens the output: `false` when it cannot be opened. */
+    fun open(): Boolean
 
-    fun stop()
+    /** Writes the first [count] samples of [samples], waiting while the buffer of the output is full. */
+    fun write(samples: ShortArray, count: Int = samples.size)
+
+    /** Samples written and not played yet. */
+    val pending: Int
+
+    /** Stops right away (what is not played yet is discarded) and closes the output. */
+    fun close()
 }
 
 /** The microphone of the platform, or `null` when the recording is not supported (yet). */
 expect fun createAudioCapture(): AudioCapture?
 
-/** The audio output of the platform, or `null` when the playback is not supported (yet). */
-expect fun createAudioPlayer(): AudioPlayer?
+/** An audio output of the platform, or `null` when the playback is not supported (yet). */
+expect fun createAudioOutput(): AudioOutput?

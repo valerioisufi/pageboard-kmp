@@ -154,4 +154,8 @@
     <string name="lecture_local_recommended">recommended</string>
     <string name="lecture_local_recommended_not_installed">recommended, to download</string>
     <string name="lecture_local_no_images">This model does not read images: choose one that does (e.g. gemma4), to read your notes.</string>
+    <string name="lecture_player_play">Play</string>
+    <string name="lecture_player_pause">Pause</string>
+    <string name="lecture_player_back">10 seconds back</string>
+    <string name="lecture_player_forward">10 seconds forward</string>
 </resources>

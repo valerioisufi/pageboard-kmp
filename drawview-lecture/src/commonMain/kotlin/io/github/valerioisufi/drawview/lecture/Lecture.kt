@@ -9,9 +9,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.github.valerioisufi.drawview.core.platform.PlatformFiles
 import io.github.valerioisufi.drawview.core.util.currentTimeMillis
-import io.github.valerioisufi.drawview.lecture.audio.AudioPlayer
+import io.github.valerioisufi.drawview.lecture.audio.AudioOutput
 import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
+import io.github.valerioisufi.drawview.lecture.audio.RecordingPlayer
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiException
 import io.github.valerioisufi.drawview.lecture.local.OllamaException
 import io.github.valerioisufi.drawview.lecture.model.ModelAnswer
@@ -79,7 +80,7 @@ class Lecture internal constructor(
     record: LectureRecord?,
     private val settingsStore: AssistantSettingsStore,
     internal val backends: ModelBackends,
-    private val player: AudioPlayer?,
+    audioOutput: (() -> AudioOutput?)?,
     internal val stateContext: CoroutineContext = Dispatchers.Main,
     internal val courseContext: () -> String = { "" }
 ) {
@@ -156,13 +157,17 @@ class Lecture internal constructor(
     var usage by mutableStateOf(record?.usage ?: TokenUsage())
         internal set
 
-    val canPlayAudio: Boolean get() = player != null
 
     /** The final review can be written (again): the recording is over and no review is running. */
     val canGenerateReview: Boolean get() = status == LectureStatus.FINISHED && reviewStatus != ReviewStatus.RUNNING
 
     internal val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     internal val recording = RecordingFile(directory)
+
+    /** Plays the recording, where the platform can (`null` elsewhere). */
+    val player: RecordingPlayer? = audioOutput?.let { RecordingPlayer(recording, it, stateContext) }
+
+    val canPlayAudio: Boolean get() = player != null
     private val persistMutex = Mutex()
 
     // Material of the review (the analysis coroutine of the recorder, then the review)
@@ -197,21 +202,13 @@ class Lecture internal constructor(
         scope.launch { persist() }
     }
 
-    /** Plays the recording around the moment [suggestion] was said. */
+    /** Plays the recording from a little before the moment [suggestion] was said. */
     fun play(suggestion: NoteSuggestion) {
-        val output = player ?: return
-        scope.launch {
-            val samples = try {
-                recording.readSegment((suggestion.atMs - PLAYBACK_LEAD_MS).coerceAtLeast(0L), PLAYBACK_DURATION_MS)
-            } catch (_: Throwable) {
-                null
-            }
-            if (samples != null) output.play(samples)
-        }
+        player?.play((suggestion.atMs - PLAYBACK_LEAD_MS).coerceAtLeast(0L))
     }
 
     fun stopPlayback() {
-        player?.stop()
+        player?.pause()
     }
 
     /**
@@ -531,7 +528,6 @@ class Lecture internal constructor(
         const val MIN_WORDS_TO_COMPARE = 6
         const val REPEATED_WORDS = 0.8
         const val PLAYBACK_LEAD_MS = 3_000L
-        const val PLAYBACK_DURATION_MS = 20_000L
 
         val recordJson = Json {
             prettyPrint = true

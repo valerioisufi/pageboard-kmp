@@ -207,3 +207,31 @@ class SilenceTest {
     }
 }
 
+
+class TimeStretcherTest {
+    private val rate = LECTURE_SAMPLE_RATE
+
+    private fun sine(seconds: Double, hz: Double) = ShortArray((seconds * rate).toInt()) { (8000 * sin(2 * PI * hz * it / rate)).roundToInt().toShort() }
+
+    /** Crossings of zero upwards per second: the pitch of a sine. */
+    private fun frequency(samples: ShortArray): Double {
+        var crossings = 0
+        for (i in 1 until samples.size) if (samples[i - 1] < 0 && samples[i] >= 0) crossings++
+        return crossings.toDouble() * rate / samples.size
+    }
+
+    @Test
+    fun fasterButAtTheSamePitch() {
+        for (speed in listOf(1.25f, 1.5f, 2f)) {
+            val stretcher = TimeStretcher(speed)
+            val input = sine(4.0, 220.0)
+            // In blocks of any size, as the player reads them
+            val output = input.toList().chunked(3_333).flatMap { stretcher.process(it.toShortArray()).toList() }.toShortArray()
+            val expected = input.size / speed
+            assertTrue(abs(output.size - expected) < rate * 0.1, "speed $speed: ${output.size} samples for $expected")
+            // Away from the fade-in of the first frame
+            val steady = output.copyOfRange(rate / 10, output.size)
+            assertTrue(abs(frequency(steady) - 220.0) < 5.0, "speed $speed: ${frequency(steady)} Hz")
+        }
+    }
+}

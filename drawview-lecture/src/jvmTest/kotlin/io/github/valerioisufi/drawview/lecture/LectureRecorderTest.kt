@@ -297,7 +297,7 @@ class LectureRecorderTest {
             GeminiBackend(GeminiClient(HttpClient(engine))) { settingsStore.apiKey },
             OllamaBackend(OllamaClient(HttpClient(engine))) { settingsStore.settings.localUrl }
         ),
-        player = null,
+        audioOutput = null,
         stateContext = stateContext,
         courseContext = { courseContext }
     ).apply { if (record == null) documentTitle = "Analisi 1" }
