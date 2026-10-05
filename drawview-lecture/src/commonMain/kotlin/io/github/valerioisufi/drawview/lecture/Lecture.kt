@@ -82,10 +82,11 @@ class Lecture internal constructor(
     internal val backends: ModelBackends,
     audioOutput: (() -> AudioOutput?)?,
     internal val stateContext: CoroutineContext = Dispatchers.Main,
-    internal val courseContext: () -> String = { "" }
+    internal val courseContext: () -> String = { "" },
+    startedAt: Long? = null
 ) {
     val id: String = directory.trimEnd('/').substringAfterLast('/')
-    val startedAt: Long = record?.startedAt ?: currentTimeMillis()
+    val startedAt: Long = record?.startedAt ?: startedAt ?: currentTimeMillis()
 
     var documentTitle by mutableStateOf(record?.documentTitle.orEmpty())
         internal set
@@ -112,6 +113,14 @@ class Lecture internal constructor(
         internal set
 
     var isAnalyzing by mutableStateOf(false)
+        internal set
+
+    /** The step of an import ([LectureStatus.IMPORTING]). */
+    var importStep by mutableStateOf<ImportStep?>(null)
+        internal set
+
+    /** Progress of the step of an import (0..1), -1 when unknown. */
+    var importProgress by mutableFloatStateOf(-1f)
         internal set
 
     /** Whether the notebook of the lecture is open (the analysis sees the pages). */
@@ -327,6 +336,17 @@ class Lecture internal constructor(
             PlatformFiles.delete("$directory/pages/$file")
         }
         while (seenPages.size > MAX_SEEN_PAGES) seenPages.remove(seenPages.keys.first())
+    }
+
+    /**
+     * The pages of the notebook of a lecture recorded elsewhere: what the student was looking at
+     * is not known, so none is marked as on screen.
+     */
+    internal fun setNotebookPages(contents: List<PageContent>, pageDbIds: List<Int>) {
+        lastPageCount = contents.size
+        lastPageDbIds = pageDbIds
+        seenPages.clear()
+        for (content in contents) seenPages[pageKey(content.index, content.dbId)] = SeenPage(content)
     }
 
     /** Updates the pages seen with [contents] (e.g. their handwriting transcribed), in place. */

@@ -199,6 +199,21 @@ object LectureAnalysis {
         }
     }
 
+    @Serializable
+    private class TranscriptAnswer(val transcript: String = "")
+
+    /** The transcript of [LecturePrompts.transcriptionOnlyPrompt]. */
+    fun parseTranscript(text: String): String = parse(text, TranscriptAnswer.serializer()).transcript.trim()
+
+    /** JSON schema of [LecturePrompts.transcriptionOnlyPrompt]. */
+    val transcriptSchema: JsonObject = buildJsonObject {
+        put("type", "object")
+        putJsonObject("properties") {
+            putJsonObject("transcript") { put("type", "string") }
+        }
+        putJsonArray("required") { add("transcript") }
+    }
+
     /** JSON schema of the course context ([LecturePrompts.courseContextPrompt]). */
     val courseContextSchema: JsonObject = buildJsonObject {
         put("type", "object")

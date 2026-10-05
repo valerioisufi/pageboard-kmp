@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.lecture.audio.AudioCapture
 import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
 import io.github.valerioisufi.drawview.lecture.audio.Wav
+import io.github.valerioisufi.drawview.lecture.audio.toLittleEndianBytes
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
 import io.github.valerioisufi.drawview.lecture.handwriting.InkBlock
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
@@ -491,6 +492,48 @@ class LectureRecorderTest {
         assertTrue(reviewRequests.single().contains("### Page 5\\nSlide 4 of PDF 1:\\nTeorema ponte"), reviewRequests.single())
     }
 
+    @Test
+    fun aRecordingMadeElsewhereIsTranscribedAndReviewed() = runBlocking<Unit> {
+        val requests = Collections.synchronizedList(mutableListOf<String>())
+        val engine = MockEngine { request ->
+            val body = request.body.toByteArray().decodeToString()
+            if (request.url.encodedPath != "/api/chat") return@MockEngine respond("", HttpStatusCode.InternalServerError)
+            requests.add(body)
+            val answer = if (body.contains("The lecture is over")) """{"notesMarkdown":"# Limiti","missing":[]}""" else ""
+            respond(ollamaAnswer(answer), HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/x-ndjson"))
+        }
+        val local = TaskModel(provider = ModelProvider.LOCAL)
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath).apply {
+            update(LectureTask.entries.fold(settings) { s, task -> s.withTask(task, local) })
+        }
+        // 2 minutes of speech with a pause, recorded by a phone at 44.1 kHz stereo
+        val random = Random(9)
+        val phone = PcmResamplerInput.stereo44k(
+            ShortArray(65 * LECTURE_SAMPLE_RATE) { random.nextInt(-6000, 6000).toShort() } +
+                ShortArray(LECTURE_SAMPLE_RATE) +
+                ShortArray(60 * LECTURE_SAMPLE_RATE) { random.nextInt(-6000, 6000).toShort() }
+        )
+        val input = File(directory, "lezione.wav").apply { writeBytes(phone) }
+        val transcriber = FakeTranscriber()
+        val lecture = newLecture(settingsStore, engine, courseContext = "Analisi 1")
+        val pages = listOf(PageContent(0, dbId = 10, slide = SlideText(1, 0, "Limiti")), PageContent(1, dbId = 11, slide = SlideText(1, 1, "Derivate")))
+        LectureImporter(lecture, settingsStore, transcriber).run(input.absolutePath, pages, listOf(10, 11))
+
+        assertEquals(LectureStatus.FINISHED, lecture.status)
+        assertTrue(lecture.elapsedMs in 125_000L..127_000L, "${lecture.elapsedMs}")
+        // Every chunk transcribed, the repeated part dropped
+        assertTrue(lecture.transcript.size >= 2, lecture.transcript.toString())
+        assertEquals(2_000L, lecture.transcript.first().startMs)
+        assertTrue(transcriber.prompts.all { it.startsWith("Analisi 1") })
+        assertTrue(transcriber.closed)
+        assertEquals("# Limiti", lecture.finalReview)
+        // The review knows the notebook, with no page on screen
+        val review = requests.single { it.contains("The lecture is over") }
+        assertTrue(review.contains("### Page 2\\nSlide 2 of PDF 1:\\nDerivate"), review)
+        assertFalse(review.contains("(visible)"))
+        assertTrue(File(directory, "lecture/audio.wav").exists())
+    }
+
     /** A notebook with a block of handwriting written before the lecture on its page 2. */
     private class InkNotebook : NotebookSource {
         val block = InkBlock(1, 11, "k1", setOf("old"), Rect(10f, 10f, 50f, 30f))
@@ -667,5 +710,22 @@ class LectureRecorderTest {
         assertTrue(ollamaRequests.any { it.contains("\"messages\":[]") && it.contains("gemma4:e4b") })
         assertTrue(transcriber.closed)
         assertTrue(geminiRequests.isEmpty(), geminiRequests.toString())
+    }
+}
+
+/** WAV files as other applications write them. */
+private object PcmResamplerInput {
+    /** [mono] at 16 kHz as a 44.1 kHz stereo WAV file (nearest sample, the same on both channels). */
+    fun stereo44k(mono: ShortArray): ByteArray {
+        val frames = (mono.size.toLong() * 44_100 / LECTURE_SAMPLE_RATE).toInt()
+        val data = ShortArray(frames * 2) { i -> mono[((i / 2).toLong() * LECTURE_SAMPLE_RATE / 44_100).toInt()] }
+        val header = Wav.header(data.size * 2L, sampleRate = 44_100).also {
+            // Two channels: channels, byte rate and block align
+            it[22] = 2
+            val byteRate = 44_100 * 4
+            for (b in 0 until 4) it[28 + b] = (byteRate shr (8 * b)).toByte()
+            it[32] = 4
+        }
+        return header + data.toLittleEndianBytes()
     }
 }

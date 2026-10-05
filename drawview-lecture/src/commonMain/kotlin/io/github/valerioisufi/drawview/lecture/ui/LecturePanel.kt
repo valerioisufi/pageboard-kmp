@@ -97,7 +97,11 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.lecture.AssistantSettings
+import io.github.valerioisufi.drawview.lecture.ImportStep
 import io.github.valerioisufi.drawview.lecture.LectureAssistant
+import io.github.valerioisufi.drawview.lecture.audio.importableExtensions
+import io.github.valerioisufi.drawview.lecture.platform.chooseFileToOpen
+import io.github.valerioisufi.drawview.lecture.platform.chooseFileToSave
 import io.github.valerioisufi.drawview.lecture.LectureProblem
 import io.github.valerioisufi.drawview.lecture.ControllerNotebookSource
 import io.github.valerioisufi.drawview.lecture.Lecture
@@ -162,10 +166,17 @@ internal fun LecturePanel(assistant: LectureAssistant, documentId: Int, controll
                     val lecture = assistant.shownLecture(documentId)
                     val recorder = assistant.recorderOf(documentId)
                     LectureSelector(assistant, documentId, lecture)
+                    val importTitle = stringResource(Res.string.lecture_import_title)
                     RecordingSection(
                         assistant = assistant,
                         lecture = lecture,
                         recorder = recorder,
+                        onImport = {
+                            assistant.clearImportAndExportMessages()
+                            chooseFileToOpen(importTitle, importableExtensions())?.let { file ->
+                                assistant.importRecording(documentId, controller, file)
+                            }
+                        },
                         onStart = {
                             // A key is needed only when something is sent to Gemini
                             val settings = assistant.settingsStore.settings
@@ -223,7 +234,8 @@ private fun LectureSelector(assistant: LectureAssistant, documentId: Int, lectur
     var expanded by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf<LectureSummary?>(null) }
     val shown = lectures.firstOrNull { it.directory == lecture.directory }
-    val isActive = assistant.activeRecorder?.lecture === lecture
+    val isActive = assistant.activeRecorder?.lecture === lecture || assistant.importing === lecture
+    val exportTitle = stringResource(Res.string.lecture_export_title)
 
     Box(modifier = Modifier.padding(horizontal = 8.dp)) {
         TextButton(onClick = { expanded = true }) {
@@ -248,6 +260,18 @@ private fun LectureSelector(assistant: LectureAssistant, documentId: Int, lectur
                     }
                 )
             }
+            if (shown != null && !isActive && assistant.canImportAndExport && lecture.status == LectureStatus.FINISHED) {
+                HorizontalDivider()
+                DropdownMenuItem(
+                    text = { Text(stringResource(Res.string.lecture_export_audio)) },
+                    onClick = {
+                        expanded = false
+                        assistant.clearImportAndExportMessages()
+                        val name = "${lecture.documentTitle.ifBlank { "lecture" }} ${formatLectureDate(lecture.startedAt).replace('/', '-').replace(':', '.')}"
+                        chooseFileToSave(exportTitle, "$name.${assistant.exportExtension}")?.let { assistant.exportAudio(lecture, it) }
+                    }
+                )
+            }
             if (shown != null && !isActive) {
                 HorizontalDivider()
                 DropdownMenuItem(
@@ -259,6 +283,16 @@ private fun LectureSelector(assistant: LectureAssistant, documentId: Int, lectur
                 )
             }
         }
+    }
+
+    assistant.exportResult?.let { result ->
+        Text(
+            text = if (result.failure == null) stringResource(Res.string.lecture_export_done, result.fileName)
+            else stringResource(Res.string.lecture_export_failed, result.failure),
+            style = MaterialTheme.typography.bodySmall,
+            color = if (result.failure == null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
     }
 
     confirmDelete?.let { summary ->
@@ -290,11 +324,14 @@ private fun RecordingSection(
     assistant: LectureAssistant,
     lecture: Lecture?,
     recorder: LectureRecorder?,
+    onImport: () -> Unit,
     onStart: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
-    // One lecture at a time: another document may be recording
-    val recordingElsewhere = assistant.activeRecorder?.takeIf { it !== recorder }?.lecture
+    // One lecture at a time: another document may be recording or importing
+    val recordingElsewhere = (assistant.activeRecorder?.takeIf { it !== recorder }?.lecture ?: assistant.importing)
+        ?.takeIf { it !== lecture }
+    val canStart = !assistant.isBusy
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -307,9 +344,31 @@ private fun RecordingSection(
             lecture == null -> {
                 Text(stringResource(Res.string.lecture_idle_description), style = MaterialTheme.typography.bodyMedium)
                 MutedText(privacyNote(assistant.settingsStore.settings))
-                Button(onClick = onStart, enabled = recordingElsewhere == null, modifier = Modifier.fillMaxWidth()) {
+                Button(onClick = onStart, enabled = canStart, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(Res.string.lecture_action_record))
                 }
+                if (assistant.canImportAndExport) {
+                    OutlinedButton(onClick = onImport, enabled = canStart, modifier = Modifier.fillMaxWidth()) {
+                        Text(stringResource(Res.string.lecture_action_import))
+                    }
+                }
+            }
+
+            lecture.status == LectureStatus.IMPORTING -> {
+                Text(
+                    text = stringResource(
+                        when (lecture.importStep) {
+                            ImportStep.TRANSCRIBING -> Res.string.lecture_import_transcribing
+                            ImportStep.REVIEWING -> Res.string.lecture_status_finalizing
+                            else -> Res.string.lecture_import_converting
+                        }
+                    ),
+                    style = MaterialTheme.typography.titleSmall
+                )
+                val progress = lecture.importProgress
+                if (progress < 0f) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                else LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
+                if (lecture.elapsedMs > 0) MutedText(formatLectureTime(lecture.elapsedMs))
             }
 
             lecture.status == LectureStatus.RECORDING && recorder != null -> {
@@ -372,8 +431,15 @@ private fun RecordingSection(
                     text = stringResource(Res.string.lecture_status_finished, formatLectureTime(lecture.elapsedMs)),
                     style = MaterialTheme.typography.titleSmall
                 )
-                OutlinedButton(onClick = onStart, enabled = recordingElsewhere == null, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(Res.string.lecture_action_new_recording))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = onStart, enabled = canStart, modifier = Modifier.weight(1f)) {
+                        Text(stringResource(Res.string.lecture_action_new_recording), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                    if (assistant.canImportAndExport) {
+                        OutlinedButton(onClick = onImport, enabled = canStart, modifier = Modifier.weight(1f)) {
+                            Text(stringResource(Res.string.lecture_action_import_short), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
                 }
             }
         }
@@ -384,6 +450,9 @@ private fun RecordingSection(
 
         assistant.startError?.let {
             ProblemBanner(stringResource(Res.string.lecture_problem_start, it))
+        }
+        assistant.importError?.let {
+            ProblemBanner(stringResource(Res.string.lecture_import_failed, it))
         }
         if (lecture?.noAudioWarning == true && lecture.status == LectureStatus.RECORDING) {
             ProblemBanner(stringResource(Res.string.lecture_no_audio_warning))

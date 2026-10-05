@@ -190,6 +190,13 @@ if(DRAWVIEW_BUILD_JNI AND APPLE AND NOT ANDROID)
     target_compile_options(trackpad_bridge PRIVATE -fobjc-arc)
     target_link_libraries(trackpad_bridge PRIVATE "-framework AppKit")
     drawview_configure_shared_library(trackpad_bridge)
+
+    # Audio files of other applications (import) and AAC (export) for the lecture assistant
+    add_library(audio_codec_bridge SHARED
+        bridge/audio_codec_mac.c
+    )
+    target_link_libraries(audio_codec_bridge PRIVATE "-framework AudioToolbox" "-framework CoreFoundation")
+    drawview_configure_shared_library(audio_codec_bridge)
 endif()
 
 # ==============================================================================

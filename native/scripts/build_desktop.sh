@@ -81,6 +81,7 @@ cmake -S "$NATIVE_DIR" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release -DDRAWVIEW_BUI
 TARGETS=(ink_bridge tex pdfium_bridge whisper_bridge)
 if [[ "$PLATFORM" == darwin-* ]]; then
     TARGETS+=(trackpad_bridge) # scroll phases and pinch of the trackpad
+    TARGETS+=(audio_codec_bridge) # audio files of other applications, AAC
 fi
 cmake --build "$BUILD_DIR" ${BUILD_ARGS[@]+"${BUILD_ARGS[@]}"} --target "${TARGETS[@]}" \
     -j "$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)"
@@ -105,4 +106,7 @@ cp "$NATIVE_DIR/ink/LICENSE" "$OUT_DIR/drawview-core/native/$PLATFORM/INK_LICENS
 install_lib tex drawview-latex
 install_lib pdfium_bridge drawview-pdf
 install_lib whisper_bridge drawview-lecture
+if [[ "$PLATFORM" == darwin-* ]]; then
+    install_lib audio_codec_bridge drawview-lecture
+fi
 cp "$WHISPER_DIR/LICENSE" "$OUT_DIR/drawview-lecture/native/$PLATFORM/WHISPER_CPP_LICENSE.txt"

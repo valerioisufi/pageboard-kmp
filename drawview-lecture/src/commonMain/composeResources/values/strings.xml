@@ -158,4 +158,14 @@
     <string name="lecture_player_pause">Pause</string>
     <string name="lecture_player_back">10 seconds back</string>
     <string name="lecture_player_forward">10 seconds forward</string>
+    <string name="lecture_action_import">Import a recording</string>
+    <string name="lecture_action_import_short">Import</string>
+    <string name="lecture_import_title">Choose the recording of a lecture</string>
+    <string name="lecture_import_converting">Converting the audio…</string>
+    <string name="lecture_import_transcribing">Transcribing the recording…</string>
+    <string name="lecture_import_failed">The recording cannot be imported: %1$s</string>
+    <string name="lecture_export_audio">Export the audio…</string>
+    <string name="lecture_export_title">Save the audio of the lecture</string>
+    <string name="lecture_export_done">Audio saved: %1$s</string>
+    <string name="lecture_export_failed">The audio cannot be saved: %1$s</string>
 </resources>

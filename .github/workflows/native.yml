@@ -103,7 +103,7 @@ jobs:
               "drawview-lecture:${pre}whisper_bridge"
             )
             if [[ "$platform" == darwin-* ]]; then
-              entries+=("drawview-core:${pre}trackpad_bridge")
+              entries+=("drawview-core:${pre}trackpad_bridge" "drawview-lecture:${pre}audio_codec_bridge")
             fi
             for entry in "${entries[@]}"; do
               module="${entry%%:*}"; file="native/$platform/${entry#*:}.$ext"

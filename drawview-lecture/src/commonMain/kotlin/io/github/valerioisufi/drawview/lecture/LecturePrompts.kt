@@ -288,6 +288,33 @@ object LecturePrompts {
     )
 
     /**
+     * The transcription alone of a part of a lecture recorded elsewhere (by Gemini, when the audio
+     * may leave the computer): the first [contextMs] are context, transcribed already.
+     */
+    fun transcriptionOnlyPrompt(settings: AssistantSettings, courseContext: String, wav: ByteArray, contextMs: Long): ModelPrompt {
+        val parts = mutableListOf<PromptPart>()
+        courseText(courseContext, null)?.let { parts.add(PromptPart.Text(it)) }
+        parts.add(
+            PromptPart.Text(
+                if (contextMs > 0) "The first ${contextMs / 1000} s of the audio are context, transcribed already: transcribe only what follows."
+                else "Transcribe the audio."
+            )
+        )
+        parts.add(PromptPart.Audio(wav))
+        val language = spokenLanguage(settings)?.let { "It is spoken in $it." } ?: ""
+        return ModelPrompt(
+            system = """
+                You transcribe the recording of a university lecture. $language
+                Write a faithful transcript of what is said, not summarized, in the language spoken, with punctuation; the technical terms as the course writes them; unintelligible parts as [inaudible]. Empty when nobody speaks.
+            """.trimIndent(),
+            parts = parts,
+            schema = LectureAnalysis.transcriptSchema,
+            maxOutputTokens = 8192,
+            thinkingLevel = "low"
+        )
+    }
+
+    /**
      * The prompt of the speech recognition: the slides the student is looking at (their first
      * lines) and the course context, within [maxChars].
      */

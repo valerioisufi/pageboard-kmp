@@ -11,7 +11,11 @@ import io.github.valerioisufi.drawview.lecture.audio.AudioOutput
 import io.github.valerioisufi.drawview.lecture.audio.createAudioCapture
 import io.github.valerioisufi.drawview.lecture.audio.createAudioOutput
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
+import io.github.valerioisufi.drawview.lecture.audio.canEncodeM4a
+import io.github.valerioisufi.drawview.lecture.audio.exportRecording
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
+import io.github.valerioisufi.drawview.lecture.platform.ChosenFile
+import io.github.valerioisufi.drawview.lecture.platform.canChooseFiles
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
 import io.github.valerioisufi.drawview.lecture.model.ModelBackends
@@ -20,6 +24,8 @@ import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
 import io.github.valerioisufi.drawview.lecture.transcription.WhisperTranscriber
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -66,6 +72,18 @@ class LectureAssistant(
     /** The suggestion the student is placing in the notebook, if any. */
     var placingNote: NoteSuggestion? by mutableStateOf(null)
         internal set
+
+    /** The lecture being imported, if any. */
+    var importing: Lecture? by mutableStateOf(null)
+        private set
+
+    /** Why the last import failed (the file is not audio), if it did. */
+    var importError: String? by mutableStateOf(null)
+        private set
+
+    /** The last export of an audio. */
+    var exportResult: ExportResult? by mutableStateOf(null)
+        private set
 
     /** Why the last recording could not start, if it could not. */
     var startError: String? by mutableStateOf(null)
@@ -141,21 +159,25 @@ class LectureAssistant(
         val notebook = editorNotebooks[documentId] ?: return
         if (isWritingContext(documentId)) return
         writingContexts[documentId] = true
-        scope.launch {
-            val text = try {
-                if (onlyIfMissing && library.loadContext(documentId) != null) null else composeContext(documentId, notebook)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Throwable) {
-                println("DrawView: cannot write the course context: ${e.message}")
-                null
-            }
-            val context = text?.takeIf { it.isNotBlank() }?.let { CourseContext(it, edited = false, generatedAt = currentTimeMillis()) }
-            if (context != null) library.saveContext(documentId, context)
-            withContext(stateContext) {
-                writingContexts.remove(documentId)
-                if (context != null) contexts[documentId] = context
-            }
+        scope.launch { writeContextNow(documentId, notebook, onlyIfMissing) }
+    }
+
+    /** Writes the course context of [documentId] from [notebook] (see [writeContext]), waiting for it. */
+    private suspend fun writeContextNow(documentId: Int, notebook: NotebookSource, onlyIfMissing: Boolean) {
+        withContext(stateContext) { writingContexts[documentId] = true }
+        val text = try {
+            if (onlyIfMissing && library.loadContext(documentId) != null) null else composeContext(documentId, notebook)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            println("DrawView: cannot write the course context: ${e.message}")
+            null
+        }
+        val context = text?.takeIf { it.isNotBlank() }?.let { CourseContext(it, edited = false, generatedAt = currentTimeMillis()) }
+        if (context != null) library.saveContext(documentId, context)
+        withContext(stateContext) {
+            writingContexts.remove(documentId)
+            if (context != null) contexts[documentId] = context
         }
     }
 
@@ -192,7 +214,7 @@ class LectureAssistant(
 
     /** Shows the lecture [summary] in the panel of [documentId]. */
     fun show(documentId: Int, summary: LectureSummary) {
-        val active = recorder?.lecture
+        val active = importing?.takeIf { it.directory == summary.directory } ?: recorder?.lecture
         if (active != null && active.directory == summary.directory) {
             shownLectures[documentId] = active
             return
@@ -200,7 +222,10 @@ class LectureAssistant(
         if (shownLectures[documentId]?.directory == summary.directory) return
         scope.launch {
             val record = library.load(summary.directory) ?: return@launch
-            val lecture = Lecture(documentId, summary.directory, record, settingsStore, backends, audioOutput, stateContext) { contextOf(documentId)?.text.orEmpty() }
+            val lecture = Lecture(
+                documentId, summary.directory, record, settingsStore, backends, audioOutput, stateContext,
+                courseContext = { contextOf(documentId)?.text.orEmpty() }
+            )
             withContext(stateContext) { shownLectures[documentId] = lecture }
         }
     }
@@ -212,7 +237,7 @@ class LectureAssistant(
      *   ([startError]).
      */
     fun start(documentId: Int, controller: DrawViewController): Boolean {
-        if (activeRecorder != null) return false
+        if (isBusy) return false
         val capture = captureFactory() ?: return false
         val startedAt = currentTimeMillis()
         val lecture = Lecture(
@@ -245,9 +270,99 @@ class LectureAssistant(
         }
     }
 
+    /** Whether a recording or an import is in progress (one at a time). */
+    val isBusy: Boolean get() = activeRecorder != null || importing != null
+
+    /** Whether recordings can be imported and exported here (the desktop). */
+    val canImportAndExport: Boolean get() = canChooseFiles
+
+    /**
+     * Imports [file], a recording made elsewhere (a phone, a recorder), as a lecture of
+     * [documentId]: converted, transcribed and reviewed ([LectureImporter]), in the background.
+     *
+     * @return `false` when a recording or an import is in progress.
+     */
+    fun importRecording(documentId: Int, controller: DrawViewController, file: ChosenFile): Boolean {
+        if (isBusy) return false
+        val startedAt = file.lastModified ?: currentTimeMillis()
+        val lecture = Lecture(
+            documentId = documentId,
+            directory = library.newLectureDirectory(documentId, startedAt),
+            record = null,
+            settingsStore = settingsStore,
+            backends = backends,
+            audioOutput = audioOutput,
+            stateContext = stateContext,
+            courseContext = { contextOf(documentId)?.text.orEmpty() },
+            startedAt = startedAt
+        ).apply {
+            documentTitle = controller.document.title
+            status = LectureStatus.IMPORTING
+        }
+        val notebook = editorNotebooks[documentId] ?: ControllerNotebookSource(controller).also { editorNotebooks[documentId] = it }
+        importing = lecture
+        importError = null
+        shownLectures[documentId] = lecture
+        isPanelOpen = true
+        scope.launch {
+            try {
+                // The course context first: it helps the transcription
+                if (contexts[documentId] == null) writeContextNow(documentId, notebook, onlyIfMissing = true)
+                val pages = try {
+                    notebook.allPages()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Throwable) {
+                    emptyList()
+                }
+                val dbIds = withContext(stateContext) { controller.document.pages.map { it.dbId } }
+                val settings = settingsStore.settings
+                val transcriber = if (settings.sendsAudio) null else transcriberFactory(settings)
+                LectureImporter(lecture, settingsStore, transcriber).run(file.path, pages, dbIds)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                // Not an audio file: no lecture
+                library.delete(lecture.directory)
+                withContext(stateContext) {
+                    importError = e.message ?: e::class.simpleName
+                    if (shownLectures[documentId] === lecture) shownLectures.remove(documentId)
+                }
+            } finally {
+                withContext(NonCancellable + stateContext) { importing = null }
+                refresh(documentId)
+            }
+        }
+        return true
+    }
+
+    /** The audio of [lecture] saved in [target]: as m4a where the platform encodes it, otherwise as WAV. */
+    fun exportAudio(lecture: Lecture, target: String) {
+        exportResult = null
+        scope.launch {
+            val result = try {
+                val saved = withContext(Dispatchers.IO) { exportRecording(lecture.recording, target) }
+                ExportResult(saved.substringAfterLast('/'), failure = null)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                ExportResult(target.substringAfterLast('/'), failure = e.message ?: e::class.simpleName.orEmpty())
+            }
+            withContext(stateContext) { exportResult = result }
+        }
+    }
+
+    /** The extension of the exported audio: m4a where the platform encodes it. */
+    val exportExtension: String get() = if (canEncodeM4a()) "m4a" else "wav"
+
+    fun clearImportAndExportMessages() {
+        importError = null
+        exportResult = null
+    }
+
     /** Deletes the lecture [summary] (audio included); not the one being recorded. */
     fun delete(documentId: Int, summary: LectureSummary) {
-        if (activeRecorder?.lecture?.directory == summary.directory) return
+        if (activeRecorder?.lecture?.directory == summary.directory || importing?.directory == summary.directory) return
         if (shownLectures[documentId]?.directory == summary.directory) {
             shownLectures[documentId]?.stopPlayback()
             shownLectures.remove(documentId)
@@ -279,11 +394,14 @@ object LectureRecordings {
         assistants.add(assistant)
     }
 
-    /** A lecture is being recorded or reviewed. */
-    val isRecording: Boolean get() = assistants.any { it.activeRecorder != null }
+    /** A lecture is being recorded, reviewed or imported. */
+    val isRecording: Boolean get() = assistants.any { it.isBusy }
 
     /** Saves the recordings in progress (the final reviews are left to be written later). */
     suspend fun finishAll() {
         assistants.forEach { it.finishRecording() }
     }
 }
+
+/** An audio exported: the name of the file, and why it failed, if it did. */
+class ExportResult(val fileName: String, val failure: String?)
