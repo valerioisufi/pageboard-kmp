@@ -351,8 +351,13 @@ object LecturePrompts {
             page.handwriting.isNotEmpty() -> {
                 appendLine("Written by hand by the student (transcribed):")
                 page.handwriting.forEach { appendLine(it) }
+                if (!page.inkTranscribed) {
+                    appendLine(if (hasImage) "Other handwritten notes: see the image." else "Other handwritten notes, not transcribed yet.")
+                }
             }
-            page.hasInk -> appendLine(if (hasImage) "Handwritten notes of the student: see the image." else "Handwritten notes of the student (not shown).")
+            page.hasInk -> appendLine(
+                if (hasImage) "Handwritten notes of the student: see the image." else "Handwritten notes of the student, not transcribed yet."
+            )
         }
         if (page.imageCount > 0) appendLine("Pictures inserted by the student: ${page.imageCount}.")
     }.trim()

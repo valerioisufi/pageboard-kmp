@@ -61,6 +61,16 @@ object LectureAnalysis {
         )
     }
 
+    @Serializable
+    private class HandwritingAnswer(val blocks: List<HandwritingText> = emptyList())
+
+    @Serializable
+    private class HandwritingText(val image: Int = 0, val text: String = "")
+
+    /** The transcribed handwriting, by number of image (1-based). */
+    fun parseHandwriting(text: String): Map<Int, String> =
+        parse(text, HandwritingAnswer.serializer()).blocks.associate { it.image to normalizeMarkdown(it.text) }
+
     /**
      * Bullet points as "- ": the canvas reads a single `*` as italic, and the models (the small
      * local ones in particular) often write "*   item"; line breaks written in HTML (`<br>`) as

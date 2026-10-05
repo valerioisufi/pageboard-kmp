@@ -8,6 +8,7 @@ import io.github.valerioisufi.drawview.lecture.audio.isSilent
 import io.github.valerioisufi.drawview.lecture.audio.rms
 import io.github.valerioisufi.drawview.lecture.audio.samplesToMs
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiException
+import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
 import io.github.valerioisufi.drawview.lecture.local.OllamaException
 import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
 import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
@@ -45,7 +46,8 @@ import kotlin.math.min
  *
  * To limit the cost, the chunks without speech are not analyzed, the outline is rewritten every
  * few minutes only, and the notebook is sent as text ([PageContent]) with the images of the
- * visible pages only.
+ * visible pages only: after every update a few blocks of handwriting are transcribed
+ * ([HandwritingReader]), once for all the lectures of the notebook.
  */
 class LectureRecorder internal constructor(
     val lecture: Lecture,
@@ -70,6 +72,9 @@ class LectureRecorder internal constructor(
 
     // Owned by the analysis coroutine
     private var knownStrokeIds: Set<String>? = null
+    private var initialStrokeIds: Set<String> = emptySet()
+    private var lastNotebook: NotebookSnapshot? = null
+    private val handwriting = HandwritingReader(lecture.directory.trimEnd('/').substringBeforeLast('/') + "/handwriting.json", lecture.backends)
     private val recentChunks = ArrayDeque<AudioChunk>()
     private var lastOutlineMs = Long.MIN_VALUE
 
@@ -180,6 +185,7 @@ class LectureRecorder internal constructor(
         lecture.scope.launch {
             audioJob?.join()
             analysisJob?.join()
+            readRemainingHandwriting()
             lecture.setState { isAnalyzing = false }
             releaseLocalModels()
             lecture.runFinalReview(settingsStore.settings.reviewProvider)
@@ -266,6 +272,9 @@ class LectureRecorder internal constructor(
                 rememberRecent(chunks)
             }
             if (catchUp) recapLastMinutes()
+            // For the next updates: the handwriting the student is done with
+            lastNotebook?.let { readHandwriting(it) }
+            lastNotebook = null
         } finally {
             withContext(NonCancellable) {
                 lecture.setState {
@@ -430,18 +439,76 @@ class LectureRecorder internal constructor(
         }
     }
 
-    /** What the student is looking at, or `null` when the document is closed. */
+    /**
+     * What the student is looking at (with the handwriting transcribed so far), or `null` when the
+     * document is closed.
+     */
     private suspend fun captureNotebook(imagePages: Int): NotebookSnapshot? {
         val source = notebook ?: return null
         return try {
             // The strokes of the document when the lecture starts are not "new writing"
-            val known = knownStrokeIds ?: source.strokeIds().also { knownStrokeIds = it }
-            source.capture(known, TEXT_PAGES, imagePages)
+            val known = knownStrokeIds ?: source.strokeIds().also {
+                knownStrokeIds = it
+                initialStrokeIds = it
+            }
+            handwriting.fill(source.capture(known, TEXT_PAGES, imagePages)).also { lastNotebook = it }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
             println("DrawView: cannot capture the notebook: ${e.message}")
             null
+        }
+    }
+
+    /**
+     * Transcribes a few blocks of handwriting of [snapshot] the student is done with (the visible
+     * pages first), with the model of the live suggestions. Not essential: an error is ignored.
+     */
+    private suspend fun readHandwriting(snapshot: NotebookSnapshot) {
+        val source = notebook ?: return
+        val task = settingsStore.settings.task(LectureTask.LIVE_NOTES)
+        if (task.provider == ModelProvider.GEMINI && !settingsStore.hasApiKey) return
+        val max = if (task.provider == ModelProvider.LOCAL) HandwritingReader.MAX_PER_UPDATE_LOCAL else HandwritingReader.MAX_PER_UPDATE_ONLINE
+        val order = snapshot.pages.map { it.index }
+        val blocks = snapshot.inkBlocks.sortedBy { order.indexOf(it.pageIndex) }
+        try {
+            val tokens = handwriting.read(blocks, snapshot.pages, source, task, max, stableOnly = true, initialStrokeIds = initialStrokeIds) ?: return
+            val pages = handwriting.fill(snapshot).pages
+            lecture.setState {
+                usage += tokens
+                updateSeenPages(pages)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            println("DrawView: cannot read the handwriting: ${e.message}")
+        }
+    }
+
+    /** The lecture is over: the handwriting of the pages seen not transcribed yet, for the final review. */
+    private suspend fun readRemainingHandwriting() {
+        val source = notebook ?: return
+        val task = settingsStore.settings.task(LectureTask.LIVE_NOTES)
+        if (task.provider == ModelProvider.GEMINI && !settingsStore.hasApiKey) return
+        try {
+            val (pages, dbIds) = lecture.setStateResult { seenPageContents() to lastPageDbIds }
+            // The pages where they are now (they may have been moved)
+            val current = pages.map { page -> page.copy(index = dbIds.indexOf(page.dbId).takeIf { page.dbId > 0 && it >= 0 } ?: page.index) }
+            val blocks = source.inkBlocks(current.filter { it.hasInk }.map { it.index }.reversed())
+            if (blocks.none { !handwriting.isRead(it) }) return
+            lecture.setState { isAnalyzing = true }
+            val tokens = handwriting.read(blocks, current, source, task, HandwritingReader.MAX_AT_THE_END, stableOnly = false)
+            val filled = current.map { page -> handwriting.fill(page, blocks.filter { it.pageIndex == page.index }) }
+            // Saved with the index they had when seen
+            val seen = pages.zip(filled).map { (before, page) -> page.copy(index = before.index) }
+            lecture.setState {
+                tokens?.let { usage += it }
+                updateSeenPages(seen)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            println("DrawView: cannot read the handwriting: ${e.message}")
         }
     }
 

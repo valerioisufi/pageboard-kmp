@@ -327,6 +327,18 @@ class Lecture internal constructor(
         while (seenPages.size > MAX_SEEN_PAGES) seenPages.remove(seenPages.keys.first())
     }
 
+    /** Updates the pages seen with [contents] (e.g. their handwriting transcribed), in place. */
+    internal fun updateSeenPages(contents: List<PageContent>) {
+        for (content in contents) {
+            val key = pageKey(content.index, content.dbId)
+            val seen = seenPages[key] ?: continue
+            seenPages[key] = seen.copy(content = content)
+        }
+    }
+
+    /** The pages seen during the lecture, as last seen. */
+    internal fun seenPageContents(): List<PageContent> = seenPages.values.map { it.content }
+
     /** The key of a page: its database id, or its index when it is not saved yet. */
     private fun pageKey(index: Int, dbId: Int) = if (dbId > 0) "p$dbId" else "i$index"
 

@@ -1,9 +1,11 @@
 package io.github.valerioisufi.drawview.lecture
 
+import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.lecture.audio.AudioCapture
 import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
 import io.github.valerioisufi.drawview.lecture.audio.Wav
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
+import io.github.valerioisufi.drawview.lecture.handwriting.InkBlock
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
 import io.github.valerioisufi.drawview.lecture.model.ModelBackends
@@ -484,6 +486,71 @@ class LectureRecorderTest {
         withTimeout(20_000) { while (reloaded.reviewStatus != ReviewStatus.DONE) delay(20) }
         assertEquals("# Limiti", reloaded.finalReview)
         assertTrue(reviewRequests.single().contains("### Page 5\\nSlide 4 of PDF 1:\\nTeorema ponte"), reviewRequests.single())
+    }
+
+    /** A notebook with a block of handwriting written before the lecture on its page 2. */
+    private class InkNotebook : NotebookSource {
+        val block = InkBlock(1, 11, "k1", setOf("old"), Rect(10f, 10f, 50f, 30f))
+        override val documentTitle = "Analisi 1"
+        override suspend fun strokeIds() = setOf("old")
+        override suspend fun capture(knownStrokeIds: Set<String>, textPages: Int, imagePages: Int) = NotebookSnapshot(
+            documentTitle = documentTitle,
+            pageCount = 3,
+            visiblePageIndexes = listOf(1),
+            pages = listOf(PageContent(1, dbId = 11, slide = SlideText(1, 0, "Limiti"), hasInk = true)),
+            inkBlocks = listOf(block),
+            strokeIds = setOf("old"),
+            pageDbIds = listOf(10, 11, 12)
+        )
+
+        override suspend fun inkBlocks(pageIndexes: List<Int>) = if (1 in pageIndexes) listOf(block) else emptyList()
+        override suspend fun renderInk(block: InkBlock) = byteArrayOf(7)
+    }
+
+    @Test
+    fun theHandwritingIsReadOnceAndSentAsText() = runBlocking<Unit> {
+        val requests = Collections.synchronizedList(mutableListOf<String>())
+        val engine = MockEngine { request ->
+            val path = request.url.encodedPath
+            val body = request.body.toByteArray().decodeToString()
+            when {
+                path.endsWith(":generateContent") -> {
+                    requests.add(body)
+                    val answer = when {
+                        body.contains("You transcribe the handwritten notes") -> """{"blocks":[{"image":1,"text":"lim f(x) = L"}]}"""
+                        body.contains("The lecture is over") -> """{"notesMarkdown":"# Limiti","missing":[]}"""
+                        else -> plainChunkAnswer
+                    }
+                    respond(geminiAnswer(answer), HttpStatusCode.OK, jsonHeaders)
+                }
+                path == "/upload/v1beta/files" -> respond("{}", HttpStatusCode.OK, headersOf("X-Goog-Upload-URL", "https://upload.test/1"))
+                path == "/1" -> respond("""{"file":{"name":"files/rec","uri":"https://x/files/rec","mimeType":"audio/wav","state":"ACTIVE"}}""", HttpStatusCode.OK, jsonHeaders)
+                else -> respond("", HttpStatusCode.NotFound)
+            }
+        }
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath).apply {
+            update(settings.copy(apiKey = "test-key"))
+        }
+        val microphone = FakeMicrophone()
+        val lecture = newLecture(settingsStore, engine)
+        val recorder = LectureRecorder(lecture, settingsStore, microphone, InkNotebook())
+        recorder.start()
+        microphone.speak(61.0, loud = true, random = Random(8))
+        microphone.speak(1.0, loud = false, random = Random(8))
+        withTimeout(20_000) { while (requests.none { it.contains("You transcribe the handwritten notes") }) delay(20) }
+        microphone.speak(4.0, loud = true, random = Random(8))
+        recorder.stop()
+        awaitFinished(lecture)
+
+        val live = requests.filter { it.contains("## New audio") }
+        assertEquals(2, live.size)
+        // Not read yet, then its text
+        assertTrue(live[0].contains("Handwritten notes of the student, not transcribed yet."), live[0])
+        assertTrue(live[1].contains("Written by hand by the student (transcribed):\\nlim f(x) = L"), live[1])
+        assertEquals(1, requests.count { it.contains("You transcribe the handwritten notes") })
+        assertTrue(requests.single { it.contains("The lecture is over") }.contains("lim f(x) = L"))
+        // Kept for the next lectures of the notebook
+        assertTrue(File(directory, "handwriting.json").readText().contains("lim f(x) = L"))
     }
 
     /** An answer of Ollama, streamed as its chat API does. */
