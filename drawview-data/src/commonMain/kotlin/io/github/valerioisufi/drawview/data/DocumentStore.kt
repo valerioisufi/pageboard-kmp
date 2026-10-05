@@ -7,12 +7,12 @@ import io.github.valerioisufi.drawview.core.model.PageBackground
 import kotlinx.coroutines.flow.Flow
 
 /**
- * A document as shown by the document list.
+ * A document as shown by the document list ([id]: [DrawDocument.id], the same on every device).
  */
 data class DocumentSummary(
-    val id: Int,
+    val id: String,
     val name: String,
-    val folderId: Int? = null,
+    val folderId: String? = null,
     val createdAt: Long,
     val modifiedAt: Long,
     val lastOpenedAt: Long,
@@ -25,9 +25,9 @@ data class DocumentSummary(
  * A folder of the document library (`parentId == null` for the folders of the root).
  */
 data class FolderSummary(
-    val id: Int,
+    val id: String,
     val name: String,
-    val parentId: Int? = null,
+    val parentId: String? = null,
     val createdAt: Long,
     val modifiedAt: Long
 )
@@ -57,46 +57,46 @@ interface DocumentStore {
         widthMm: Float = 210f,
         heightMm: Float = 297f,
         background: PageBackground = PageBackground.Solid(),
-        folderId: Int? = null
+        folderId: String? = null
     ): DrawDocument
 
     /** Loads the whole content of a document, or `null` when it does not exist. */
-    suspend fun loadDocument(documentId: Int): DrawDocument?
+    suspend fun loadDocument(documentId: String): DrawDocument?
 
     /** Renames a document; `false` when the name is already used by another document. */
-    suspend fun renameDocument(documentId: Int, newName: String): Boolean
+    suspend fun renameDocument(documentId: String, newName: String): Boolean
 
     /** Deletes a document together with its resources (imported images and PDFs). */
-    suspend fun deleteDocument(documentId: Int): Boolean
+    suspend fun deleteDocument(documentId: String): Boolean
 
     /**
      * Moves a document into [folderId] (`null`: the root); `false` when the folder already holds
      * a document with the same name.
      */
-    suspend fun moveDocument(documentId: Int, folderId: Int?): Boolean
+    suspend fun moveDocument(documentId: String, folderId: String?): Boolean
 
-    suspend fun updateLastOpened(documentId: Int)
+    suspend fun updateLastOpened(documentId: String)
 
     /** Creates a folder in [parentId]; `false` when the parent already holds a folder with the same name. */
-    suspend fun createFolder(name: String, parentId: Int?): Boolean
+    suspend fun createFolder(name: String, parentId: String?): Boolean
 
     /** Renames a folder; `false` when the parent already holds a folder with the same name. */
-    suspend fun renameFolder(folderId: Int, newName: String): Boolean
+    suspend fun renameFolder(folderId: String, newName: String): Boolean
 
     /** Deletes a folder with its whole content (sub-folders and documents). */
-    suspend fun deleteFolder(folderId: Int): Boolean
+    suspend fun deleteFolder(folderId: String): Boolean
 
     /**
      * Moves a folder into [parentId] (`null`: the root); `false` when the target is the folder
      * itself or one of its sub-folders, or already holds a folder with the same name.
      */
-    suspend fun moveFolder(folderId: Int, parentId: Int?): Boolean
+    suspend fun moveFolder(folderId: String, parentId: String?): Boolean
 
     /** Writes the pending changes (stores that write lazily). */
     suspend fun flush() {}
 
     /** Called when the editing session of a document ends (after [flush]). */
-    fun closeDocument(documentId: Int) {}
+    fun closeDocument(documentId: String) {}
 }
 
 /**

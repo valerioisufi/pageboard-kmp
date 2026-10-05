@@ -156,15 +156,15 @@ fun ConfirmActionDialog(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoveFileDialog(
-    getSubFolders: (Int?) -> List<FolderSummary>,
-    isFolderSelected: (folderId: Int) -> Boolean,
-    isValidMove: (targetFolderId: Int?) -> Boolean,
+    getSubFolders: (String?) -> List<FolderSummary>,
+    isFolderSelected: (folderId: String) -> Boolean,
+    isValidMove: (targetFolderId: String?) -> Boolean,
     onDismissRequest: () -> Unit,
-    onConfirm: (targetFolderId: Int?) -> Unit
+    onConfirm: (targetFolderId: String?) -> Unit
 ) {
     val rootName = stringResource(Res.string.explorer_root_folder)
     // Navigation state inside the dialog: the folders from the root (null) to the current one
-    var breadcrumbs by remember { mutableStateOf(listOf<Pair<String?, Int?>>(null to null)) }
+    var breadcrumbs by remember { mutableStateOf(listOf<Pair<String?, String?>>(null to null)) }
     val currentFolderId = breadcrumbs.last().second
     val subFolders = getSubFolders(currentFolderId)
 

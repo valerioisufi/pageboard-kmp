@@ -132,7 +132,7 @@ class FileExplorerViewModelTest {
 
     @Test
     fun sortsTheDatesFromTheMostRecent() {
-        fun item(name: String, type: FileType, time: Long) = FileItem(type, time.toInt(), name, time, time, time)
+        fun item(name: String, type: FileType, time: Long) = FileItem(type, name, name, time, time, time)
         val items = listOf(
             item("old", FileType.FILE, 1),
             item("folder", FileType.FOLDER, 2),

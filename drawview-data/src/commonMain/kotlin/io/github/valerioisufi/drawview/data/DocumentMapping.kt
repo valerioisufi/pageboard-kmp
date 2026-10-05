@@ -15,6 +15,7 @@ import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.data.db.BrushSettingsData
 
 /**
@@ -27,11 +28,9 @@ internal fun restoreStroke(
     size: Float,
     color: Int,
     zIndex: Int,
-    dbId: Int = 0,
-    id: String? = null
+    id: String = newElementId()
 ): DrawStroke {
-    // Rows written by the first KMP builds stored the brush family in both columns
-    val family = StrokeTool.fromName(familyName) ?: StrokeTool.fromName(toolTypeName) ?: StrokeTool.PRESSURE_PEN
+    val family = StrokeTool.fromName(familyName) ?: StrokeTool.PRESSURE_PEN
     val toolType = InputToolType.fromName(toolTypeName)
     val brush = BrushConfig(
         tool = family,
@@ -50,11 +49,7 @@ internal fun restoreStroke(
         inputToolType = toolType
     )
     val bounds = mesh.computeBounds()
-    return if (id != null) {
-        DrawStroke(id = id, mesh = mesh, brushConfig = brush, bounds = bounds, zIndex = zIndex, dbId = dbId)
-    } else {
-        DrawStroke(mesh = mesh, brushConfig = brush, bounds = bounds, zIndex = zIndex, dbId = dbId)
-    }
+    return DrawStroke(id = id, mesh = mesh, brushConfig = brush, bounds = bounds, zIndex = zIndex)
 }
 
 /**
@@ -82,8 +77,9 @@ internal fun restoreTextMarkup(
     kind: String,
     color: Int,
     zIndex: Int,
-    dbId: Int = 0
+    id: String = newElementId()
 ) = DrawTextMarkup(
+    id = id,
     resourceId = resourceId,
     pdfPageIndex = pdfPageIndex,
     pdfWidthPt = pdfWidthPt,
@@ -94,8 +90,7 @@ internal fun restoreTextMarkup(
     rects = rects.chunked(4).filter { it.size == 4 }.map { Rect(it[0], it[1], it[2], it[3]) },
     kind = TextMarkupKind.fromName(kind) ?: TextMarkupKind.HIGHLIGHT,
     color = color,
-    zIndex = zIndex,
-    dbId = dbId
+    zIndex = zIndex
 )
 
 /**

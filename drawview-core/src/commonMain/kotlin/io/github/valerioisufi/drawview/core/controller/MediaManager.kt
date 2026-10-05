@@ -106,7 +106,7 @@ class MediaManager(private val controller: DrawViewController) {
             document.resources.add(DrawResource(resourceId, DrawResource.ResourceType.PDF, path))
 
             val actions = mutableListOf<AddPageAction>()
-            val newPages = mutableListOf<Pair<DrawPage, DrawPdf>>()
+            val newPages = mutableListOf<Triple<Int, DrawPage, DrawPdf>>()
             sizes.forEachIndexed { pdfIndex, (widthMm, heightMm) ->
                 val index = document.pages.size
                 val page = DrawPage(
@@ -119,18 +119,18 @@ class MediaManager(private val controller: DrawViewController) {
                 page.pdfs.add(pdf)
                 document.pages.add(page)
                 actions.add(AddPageAction(page, index))
-                newPages.add(page to pdf)
+                newPages.add(Triple(index, page, pdf))
             }
             document.reindexPages()
             controller.historyManager.addHistoryAction(BatchAction(actions))
             controller.persist {
-                for ((page, pdf) in newPages) {
-                    insertPage(document, page)
+                for ((index, page, pdf) in newPages) {
+                    insertPage(document, page, index)
                     savePdf(page, pdf)
                 }
             }
             controller.markLayoutNeedsUpdate()
-            controller.pageManager.jumpToPage(newPages.first().first.index)
+            controller.pageManager.jumpToPage(newPages.first().second.index)
         }
     }
 }

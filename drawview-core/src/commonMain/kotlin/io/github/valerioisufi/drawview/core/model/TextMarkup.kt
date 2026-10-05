@@ -29,10 +29,10 @@ enum class TextMarkupKind {
  * of page [pdfPageIndex] of the PDF [resourceId] ([text] is their text). Its [rects], one per
  * line, are in points of that PDF page, which is [pdfWidthPt] x [pdfHeightPt]: they follow the
  * PDF where the page draws it (fitted in the page, see [fitPdfPage]), even when the format of
- * the page changes.
+ * the page changes. [id] identifies the mark on every device (see [newElementId]).
  */
 class DrawTextMarkup(
-    val id: String = generateRandomId(),
+    val id: String = newElementId(),
     val resourceId: String,
     val pdfPageIndex: Int,
     val pdfWidthPt: Float,
@@ -43,8 +43,7 @@ class DrawTextMarkup(
     val rects: List<Rect>,
     kind: TextMarkupKind,
     color: Int,
-    var zIndex: Int = 0,
-    var dbId: Int = 0
+    var zIndex: Int = 0
 ) {
     @Volatile
     var kind: TextMarkupKind = kind

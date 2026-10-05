@@ -194,7 +194,7 @@ fun PageGridOverlay(
         ) {
             items(
                 count = document.pages.size,
-                key = { index -> document.pages[index].uid }
+                key = { index -> document.pages[index].id }
             ) { index ->
                 val page = document.pages[index]
                 var menuExpanded by remember { mutableStateOf(false) }
@@ -332,11 +332,11 @@ fun PageGridOverlay(
  */
 @Composable
 private fun rememberPageThumbnail(controller: DrawViewController, page: DrawPage, widthPx: Int): ImageBitmap? {
-    var thumbnail by remember(page.uid) { mutableStateOf<ImageBitmap?>(null) }
+    var thumbnail by remember(page.id) { mutableStateOf<ImageBitmap?>(null) }
     val contentVersion = page.contentVersion
     val format = page.widthMm to page.heightMm
     val background = page.background
-    LaunchedEffect(page.uid, contentVersion, widthPx, format, background) {
+    LaunchedEffect(page.id, contentVersion, widthPx, format, background) {
         thumbnail = withContext(Dispatchers.Default) {
             try {
                 controller.tileManager.renderThumbnail(controller.document, page, widthPx)

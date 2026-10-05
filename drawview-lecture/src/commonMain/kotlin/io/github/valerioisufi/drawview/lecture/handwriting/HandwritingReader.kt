@@ -38,7 +38,7 @@ internal class HandwritingReader(private val path: String, private val backends:
     private var previousKeys: Set<String> = emptySet()
 
     @Serializable
-    class Entry(val pageDbId: Int = 0, val text: String)
+    class Entry(val pageId: String = "", val text: String)
 
     /** [snapshot] with the handwriting transcribed so far in its pages. */
     fun fill(snapshot: NotebookSnapshot): NotebookSnapshot =
@@ -89,7 +89,7 @@ internal class HandwritingReader(private val path: String, private val backends:
             val read = LectureAnalysis.parseHandwriting(answer.text)
             images.forEachIndexed { i, (block, _) ->
                 // A block the model did not answer stays to be read
-                read[i + 1]?.let { text -> texts[block.key] = Entry(block.pageDbId, text.trim()) }
+                read[i + 1]?.let { text -> texts[block.key] = Entry(block.pageId, text.trim()) }
             }
             usage = (usage ?: TokenUsage()) + (answer.usage ?: TokenUsage(localRequests = 1))
         }

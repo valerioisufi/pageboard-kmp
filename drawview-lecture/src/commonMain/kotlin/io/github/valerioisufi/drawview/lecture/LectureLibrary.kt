@@ -14,7 +14,7 @@ import kotlinx.datetime.toLocalDateTime
 /** A lecture of a document, as listed by the [LectureLibrary]. */
 class LectureSummary(
     val directory: String,
-    val documentId: Int,
+    val documentId: String,
     val documentTitle: String,
     val startedAt: Long,
     val durationMs: Long,
@@ -33,10 +33,10 @@ class LectureSummary(
  */
 class LectureLibrary(private val root: String = lectureDataDirectory()) {
 
-    fun documentDirectory(documentId: Int): String = "${root.trimEnd('/')}/doc-$documentId"
+    fun documentDirectory(documentId: String): String = "${root.trimEnd('/')}/doc-$documentId"
 
     /** Folder of a new lecture of [documentId] started at [startedAt]. */
-    fun newLectureDirectory(documentId: Int, startedAt: Long): String {
+    fun newLectureDirectory(documentId: String, startedAt: Long): String {
         val base = "${documentDirectory(documentId)}/${timestampName(startedAt)}"
         var directory = base
         var suffix = 2
@@ -45,7 +45,7 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
     }
 
     /** The course context of [documentId], if any. */
-    fun loadContext(documentId: Int): CourseContext? {
+    fun loadContext(documentId: String): CourseContext? {
         val bytes = PlatformFiles.readBytes("${documentDirectory(documentId)}/context.json") ?: return null
         return try {
             Lecture.recordJson.decodeFromString(CourseContext.serializer(), bytes.decodeToString())
@@ -54,13 +54,13 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
         }
     }
 
-    fun saveContext(documentId: Int, context: CourseContext): Boolean = PlatformFiles.writeBytes(
+    fun saveContext(documentId: String, context: CourseContext): Boolean = PlatformFiles.writeBytes(
         "${documentDirectory(documentId)}/context.json",
         Lecture.recordJson.encodeToString(CourseContext.serializer(), context).encodeToByteArray()
     )
 
     /** The lectures of [documentId], the most recent first. */
-    fun list(documentId: Int): List<LectureSummary> {
+    fun list(documentId: String): List<LectureSummary> {
         val documentPath = Path(documentDirectory(documentId))
         if (!SystemFileSystem.exists(documentPath)) return emptyList()
         return SystemFileSystem.list(documentPath).mapNotNull { path ->

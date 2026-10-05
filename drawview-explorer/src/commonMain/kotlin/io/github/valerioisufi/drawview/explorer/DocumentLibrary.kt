@@ -39,7 +39,7 @@ fun DocumentLibrary(
     actions: @Composable RowScope.() -> Unit = { AboutLicensesButton() },
     fullScreenEditor: Boolean = false,
     editorExtension: EditorExtension? = null,
-    libraryOverlay: @Composable BoxScope.(openDocument: (Int) -> Unit) -> Unit = {}
+    libraryOverlay: @Composable BoxScope.(openDocument: (String) -> Unit) -> Unit = {}
 ) {
     val fileExplorerViewModel = viewModel { FileExplorerViewModel(store) }
     val editorViewModel = viewModel { DocumentEditorViewModel(store) }

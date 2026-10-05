@@ -1,20 +1,24 @@
 package io.github.valerioisufi.drawview.data.db
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import io.github.valerioisufi.drawview.core.model.PageBackground
 
+/*
+ * Every row is identified by the identifier of the model (a UUID, see `newElementId`), the same
+ * on every device.
+ */
+
 /**
  * Table for Folders
  */
 @Entity(tableName = "folders")
 data class FolderEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey val id: String,
     val name: String,
-    val parentId: Int? = null,
+    val parentId: String? = null,
     val createdAt: Long = currentTimeMillis(),
     val modifiedAt: Long = currentTimeMillis()
 )
@@ -35,9 +39,9 @@ data class FolderEntity(
     indices = [Index("folderId")]
 )
 data class DocumentEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey val id: String,
     val name: String,
-    val folderId: Int? = null,
+    val folderId: String? = null,
     val createdAt: Long = currentTimeMillis(),
     val modifiedAt: Long = currentTimeMillis(),
     val lastOpenedAt: Long? = null,
@@ -63,8 +67,8 @@ data class DocumentEntity(
     indices = [Index(value = ["documentId", "pageNumber"])]
 )
 data class PageEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val documentId: Int,
+    @PrimaryKey val id: String,
+    val documentId: String,
     val pageNumber: Int,
     val width: Float,
     val height: Float,
@@ -89,8 +93,8 @@ data class PageEntity(
     indices = [Index("pageId")]
 )
 data class StrokeEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val pageId: Int,
+    @PrimaryKey val id: String,
+    val pageId: String,
     val zIndex: Int,
     val color: Int,
     val size: Float,
@@ -115,8 +119,8 @@ data class StrokeEntity(
     }
 
     override fun hashCode(): Int {
-        var result = id
-        result = 31 * result + pageId
+        var result = id.hashCode()
+        result = 31 * result + pageId.hashCode()
         result = 31 * result + zIndex
         result = 31 * result + color
         result = 31 * result + size.hashCode()
@@ -140,8 +144,8 @@ data class StrokeEntity(
     indices = [Index("pageId")]
 )
 data class TextEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val pageId: Int,
+    @PrimaryKey val id: String,
+    val pageId: String,
     val zIndex: Int,
     val text: String,
     val isLatex: Boolean,
@@ -152,10 +156,9 @@ data class TextEntity(
     val rotation: Float, // degrees
     val color: Int,
     val fontSize: Float,
-    /** 0 = start, 1 = center, 2 = end (added in schema version 2). */
-    @ColumnInfo(defaultValue = "0") val alignment: Int = 0,
-    /** Added in schema version 2. */
-    @ColumnInfo(defaultValue = "1") val isMarkdownEnabled: Boolean = true
+    /** 0 = start, 1 = center, 2 = end. */
+    val alignment: Int = 0,
+    val isMarkdownEnabled: Boolean = true
 )
 
 @Entity(
@@ -171,8 +174,8 @@ data class TextEntity(
     indices = [Index("pageId")]
 )
 data class ImageEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val pageId: Int,
+    @PrimaryKey val id: String,
+    val pageId: String,
     val zIndex: Int,
     val resourceId: String,
     val x: Float, // mm
@@ -195,15 +198,15 @@ data class ImageEntity(
     indices = [Index("pageId")]
 )
 data class PdfEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val pageId: Int,
+    @PrimaryKey val id: String,
+    val pageId: String,
     val zIndex: Int,
     val resourceId: String,
     val pdfPageIndex: Int
 )
 
 /**
- * A highlight, underline or strikeout of the text of a PDF page (added in schema version 3).
+ * A highlight, underline or strikeout of the text of a PDF page.
  */
 @Entity(
     tableName = "text_markups",
@@ -218,8 +221,8 @@ data class PdfEntity(
     indices = [Index("pageId")]
 )
 data class TextMarkupEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val pageId: Int,
+    @PrimaryKey val id: String,
+    val pageId: String,
     val zIndex: Int,
     val resourceId: String,
     val pdfPageIndex: Int,
@@ -250,8 +253,8 @@ data class TextMarkupEntity(
     indices = [Index("documentId")]
 )
 data class ResourceEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val documentId: Int,
+    @PrimaryKey val id: String,
+    val documentId: String,
     val type: String, // "image", "pdf", "color"
     val uri: String // File path or color value
 )
@@ -259,6 +262,8 @@ data class ResourceEntity(
 /**
  * Single table for global user preferences.
  * ID is forced to 1 to ensure a single-row configuration.
+ *
+ * Empty lists of presets: the default presets of the tools (see `ToolManager.defaultPresets`).
  */
 @Entity(tableName = "user_preferences")
 data class UserPreferencesEntity(
@@ -267,34 +272,16 @@ data class UserPreferencesEntity(
     // --- Global Preferences ---
     val isStylusOnlyMode: Boolean = false,
     val lastSelectedTool: String = "INK_PEN",
-    val lastLassoMode: String = "FREEHAND",
 
     // --- Text Preferences ---
     val defaultTextFontSize: Float = 16f,
     val defaultTextColor: Int = 0xFF000000.toInt(),
-    val defaultTextIsLatex: Boolean = false,
 
     // --- Tool Configurations ---
-    val penPresets: List<BrushSettingsData> = listOf(
-        BrushSettingsData(0.5f, 0xFF000000.toInt(), "PRESSURE_PEN"),
-        BrushSettingsData(1.0f, 0xFF0000FF.toInt(), "PRESSURE_PEN"),
-        BrushSettingsData(2.0f, 0xFFFF0000.toInt(), "PRESSURE_PEN")
-    ),
-
-    val highlighterPresets: List<BrushSettingsData> = listOf(
-        BrushSettingsData(4.0f, 0x40FFFF00.toInt(), "HIGHLIGHTER"),
-        BrushSettingsData(4.0f, 0x4000FF00.toInt(), "HIGHLIGHTER")
-    ),
-
-    val eraserPresets: List<BrushSettingsData> = listOf(
-        BrushSettingsData(8.0f, 0xC8FF8DA1.toInt(), "LASER")
-    ),
-
-    val lazoPresets: List<BrushSettingsData> = listOf(
-        BrushSettingsData(0.5f, 0xFF8799B2.toInt(), "DASHED")
-    ),
-
-    /** Presets of the text markup tool, the kind of the marks as family (added in schema version 3). */
-    @ColumnInfo(defaultValue = "[]")
+    val penPresets: List<BrushSettingsData> = emptyList(),
+    val highlighterPresets: List<BrushSettingsData> = emptyList(),
+    val eraserPresets: List<BrushSettingsData> = emptyList(),
+    val lazoPresets: List<BrushSettingsData> = emptyList(),
+    /** Presets of the text markup tool, the kind of the marks as family. */
     val markupPresets: List<BrushSettingsData> = emptyList()
 )

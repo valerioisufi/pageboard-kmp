@@ -85,7 +85,7 @@ import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 fun FileList(
     directoryFiles: List<FileItem>,
     fileExplorerViewModel: FileExplorerViewModel,
-    onOpenDocument: (Int) -> Unit,
+    onOpenDocument: (String) -> Unit,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState()
 ) {
@@ -200,7 +200,7 @@ private fun SortHeader(fileExplorerViewModel: FileExplorerViewModel) {
 fun FileListItem(
     dataFile: FileItem,
     fileExplorerViewModel: FileExplorerViewModel,
-    onOpenDocument: (Int) -> Unit,
+    onOpenDocument: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val selectionMode = fileExplorerViewModel.selectionMode

@@ -33,11 +33,11 @@ internal class LectureImporter(
      *
      * @throws IllegalArgumentException when [input] cannot be read as audio.
      */
-    suspend fun run(input: String, pages: List<PageContent>, pageDbIds: List<Int>) {
+    suspend fun run(input: String, pages: List<PageContent>, pageIds: List<String>) {
         lecture.setState {
             importStep = ImportStep.CONVERTING
             importProgress = -1f
-            setNotebookPages(pages, pageDbIds)
+            setNotebookPages(pages, pageIds)
         }
         val samples = withContext(Dispatchers.IO) {
             SystemFileSystem.createDirectories(Path(lecture.directory))

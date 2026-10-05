@@ -135,12 +135,12 @@ class TileCache(
     /**
      * Evicts all tiles associated with a specific page from cache.
      */
-    fun removeForPage(pageUid: Long) {
+    fun removeForPage(pageKey: Long) {
         syncLock(lock) {
             val iterator = map.entries.iterator()
             while (iterator.hasNext()) {
                 val entry = iterator.next()
-                if (entry.key.pageUid == pageUid) {
+                if (entry.key.pageKey == pageKey) {
                     currentMemoryBytes -= entry.value.sizeInBytes
                     iterator.remove()
                 }
@@ -151,10 +151,10 @@ class TileCache(
     /**
      * Marks all tiles of a specific page matching [predicate] as [TileState.STALE].
      */
-    fun invalidatePage(pageUid: Long, predicate: (TileKey) -> Boolean = { true }) {
+    fun invalidatePage(pageKey: Long, predicate: (TileKey) -> Boolean = { true }) {
         syncLock(lock) {
             for ((key, tile) in map) {
-                if (key.pageUid == pageUid && predicate(key)) {
+                if (key.pageKey == pageKey && predicate(key)) {
                     tile.state = TileState.STALE
                 }
             }
@@ -162,14 +162,14 @@ class TileCache(
     }
 
     /**
-     * Evicts every tile whose page is not in [livePageUids] (deleted pages).
+     * Evicts every tile whose page is not in [livePageKeys] (deleted pages).
      */
-    fun retainPages(livePageUids: Set<Long>) {
+    fun retainPages(livePageKeys: Set<Long>) {
         syncLock(lock) {
             val iterator = map.entries.iterator()
             while (iterator.hasNext()) {
                 val entry = iterator.next()
-                if (entry.key.pageUid !in livePageUids) {
+                if (entry.key.pageKey !in livePageKeys) {
                     currentMemoryBytes -= entry.value.sizeInBytes
                     iterator.remove()
                 }

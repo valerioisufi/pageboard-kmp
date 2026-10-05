@@ -76,7 +76,7 @@ class KeyValueDocumentStoreTest {
         val second = DrawPage(index = 1, widthMm = 297f, heightMm = 210f, background = PageBackground.Dotted())
         second.hasCustomBackground = true
         document.pages.add(second)
-        store.insertPage(document, second)
+        store.insertPage(document, second, 1)
         store.touchDocument(document, 1234L)
         store.flush()
 
@@ -109,6 +109,14 @@ class KeyValueDocumentStoreTest {
         assertEquals(markup.rects, loadedMarkup.rects)
         assertEquals(TextMarkupKind.STRIKEOUT, loadedMarkup.kind)
 
+        // The identifiers on every device are stored
+        assertEquals(document.id, loaded.id)
+        assertEquals(document.id, summary.id)
+        assertEquals(listOf(page.id, second.id), loaded.pages.map { it.id })
+        assertEquals(strokes.map { it.id }, firstPage.strokes.map { it.id })
+        assertEquals(text.id, loadedText.id)
+        assertEquals(markup.id, loadedMarkup.id)
+
         assertEquals(297f, loaded.pages[1].widthMm)
         assertTrue(loaded.pages[1].hasCustomBackground)
         assertEquals(PageBackground.Dotted(), loaded.pages[1].background)
@@ -121,14 +129,14 @@ class KeyValueDocumentStoreTest {
         val a = store.createDocument("A")
         val b = store.createDocument("B")
 
-        assertFalse(store.renameDocument(a.dbId, "B"), "names are unique")
-        assertTrue(store.renameDocument(a.dbId, "C"))
+        assertFalse(store.renameDocument(a.id, "B"), "names are unique")
+        assertTrue(store.renameDocument(a.id, "C"))
         assertEquals(setOf("B", "C"), store.documents.first().map { it.name }.toSet())
 
-        assertTrue(store.deleteDocument(b.dbId))
-        assertNull(store.loadDocument(b.dbId))
+        assertTrue(store.deleteDocument(b.id))
+        assertNull(store.loadDocument(b.id))
         assertEquals(listOf("C"), store.documents.first().map { it.name })
-        assertTrue(storage.keys.none { it.endsWith("document.${b.dbId}") })
+        assertTrue(storage.keys.none { it.endsWith("document.${b.id}") })
     }
 
     @Test

@@ -97,11 +97,11 @@ class LectureAssistant(
 
     val isRecording: Boolean get() = recorder?.isRecording == true
 
-    private val lectureLists = mutableStateMapOf<Int, List<LectureSummary>>()
-    private val shownLectures = mutableStateMapOf<Int, Lecture>()
-    private val contexts = mutableStateMapOf<Int, CourseContext>()
-    private val writingContexts = mutableStateMapOf<Int, Boolean>()
-    private val editorNotebooks = mutableMapOf<Int, NotebookSource>()
+    private val lectureLists = mutableStateMapOf<String, List<LectureSummary>>()
+    private val shownLectures = mutableStateMapOf<String, Lecture>()
+    private val contexts = mutableStateMapOf<String, CourseContext>()
+    private val writingContexts = mutableStateMapOf<String, Boolean>()
+    private val editorNotebooks = mutableMapOf<String, NotebookSource>()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     init {
@@ -109,26 +109,26 @@ class LectureAssistant(
     }
 
     /** The lectures of [documentId] (loaded by [refresh]), the most recent first. */
-    fun lecturesOf(documentId: Int): List<LectureSummary> = lectureLists[documentId].orEmpty()
+    fun lecturesOf(documentId: String): List<LectureSummary> = lectureLists[documentId].orEmpty()
 
     /** The lecture shown in the panel of [documentId]: the one being recorded, or the last one. */
-    fun shownLecture(documentId: Int): Lecture? = shownLectures[documentId]
+    fun shownLecture(documentId: String): Lecture? = shownLectures[documentId]
 
     /** The recorder of [documentId], if it is the one being recorded or reviewed. */
-    fun recorderOf(documentId: Int): LectureRecorder? = activeRecorder?.takeIf { it.lecture.documentId == documentId }
+    fun recorderOf(documentId: String): LectureRecorder? = activeRecorder?.takeIf { it.lecture.documentId == documentId }
 
     /**
      * The editor of [documentId] is shown: the recording of the document (if any) sees its pages
      * again, and its lectures are loaded.
      */
-    fun onEditorShown(documentId: Int, notebook: NotebookSource) {
+    fun onEditorShown(documentId: String, notebook: NotebookSource) {
         editorNotebooks[documentId] = notebook
         recorderOf(documentId)?.attachNotebook(notebook)
         refresh(documentId)
     }
 
     /** The editor of [documentId] is closed: the recording goes on, without its pages. */
-    fun onEditorHidden(documentId: Int, notebook: NotebookSource) {
+    fun onEditorHidden(documentId: String, notebook: NotebookSource) {
         if (editorNotebooks[documentId] === notebook) editorNotebooks.remove(documentId)
         recorderOf(documentId)?.detachNotebook(notebook)
         placingNote = null
@@ -136,16 +136,16 @@ class LectureAssistant(
     }
 
     /** The course context of [documentId] (loaded by [refresh]), if any. */
-    fun contextOf(documentId: Int): CourseContext? = contexts[documentId]
+    fun contextOf(documentId: String): CourseContext? = contexts[documentId]
 
     /** The course context of [documentId] is being written. */
-    fun isWritingContext(documentId: Int): Boolean = writingContexts[documentId] == true
+    fun isWritingContext(documentId: String): Boolean = writingContexts[documentId] == true
 
     /** Whether the context of [documentId] can be written: its notebook is open. */
-    fun canWriteContext(documentId: Int): Boolean = documentId in editorNotebooks
+    fun canWriteContext(documentId: String): Boolean = documentId in editorNotebooks
 
     /** The student changed the course context of [documentId]: it is not replaced automatically. */
-    fun editContext(documentId: Int, text: String) {
+    fun editContext(documentId: String, text: String) {
         val context = CourseContext(text.trim(), edited = true, generatedAt = contexts[documentId]?.generatedAt ?: 0L)
         contexts[documentId] = context
         scope.launch { library.saveContext(documentId, context) }
@@ -155,7 +155,7 @@ class LectureAssistant(
      * Writes the course context of [documentId] from its notebook (open), with the model of the
      * live suggestions; [onlyIfMissing]: not when the notebook has one already.
      */
-    fun writeContext(documentId: Int, onlyIfMissing: Boolean = false) {
+    fun writeContext(documentId: String, onlyIfMissing: Boolean = false) {
         val notebook = editorNotebooks[documentId] ?: return
         if (isWritingContext(documentId)) return
         writingContexts[documentId] = true
@@ -163,7 +163,7 @@ class LectureAssistant(
     }
 
     /** Writes the course context of [documentId] from [notebook] (see [writeContext]), waiting for it. */
-    private suspend fun writeContextNow(documentId: Int, notebook: NotebookSource, onlyIfMissing: Boolean) {
+    private suspend fun writeContextNow(documentId: String, notebook: NotebookSource, onlyIfMissing: Boolean) {
         withContext(stateContext) { writingContexts[documentId] = true }
         val text = try {
             if (onlyIfMissing && library.loadContext(documentId) != null) null else composeContext(documentId, notebook)
@@ -182,7 +182,7 @@ class LectureAssistant(
     }
 
     /** The course context written by the model of the live suggestions, from the whole notebook. */
-    private suspend fun composeContext(documentId: Int, notebook: NotebookSource): String? {
+    private suspend fun composeContext(documentId: String, notebook: NotebookSource): String? {
         val task = settingsStore.settings.task(LectureTask.LIVE_NOTES)
         if (task.provider == ModelProvider.GEMINI && !settingsStore.hasApiKey) return null
         val pages = notebook.allPages()
@@ -200,7 +200,7 @@ class LectureAssistant(
     }
 
     /** Lists the lectures of [documentId] again, showing the last one when none is shown. */
-    fun refresh(documentId: Int) {
+    fun refresh(documentId: String) {
         scope.launch {
             val lectures = library.list(documentId)
             val context = library.loadContext(documentId)
@@ -213,7 +213,7 @@ class LectureAssistant(
     }
 
     /** Shows the lecture [summary] in the panel of [documentId]. */
-    fun show(documentId: Int, summary: LectureSummary) {
+    fun show(documentId: String, summary: LectureSummary) {
         val active = importing?.takeIf { it.directory == summary.directory } ?: recorder?.lecture
         if (active != null && active.directory == summary.directory) {
             shownLectures[documentId] = active
@@ -236,7 +236,7 @@ class LectureAssistant(
      * @return `false` when another lecture is being recorded, or the microphone cannot be opened
      *   ([startError]).
      */
-    fun start(documentId: Int, controller: DrawViewController): Boolean {
+    fun start(documentId: String, controller: DrawViewController): Boolean {
         if (isBusy) return false
         val capture = captureFactory() ?: return false
         val startedAt = currentTimeMillis()
@@ -282,7 +282,7 @@ class LectureAssistant(
      *
      * @return `false` when a recording or an import is in progress.
      */
-    fun importRecording(documentId: Int, controller: DrawViewController, file: ChosenFile): Boolean {
+    fun importRecording(documentId: String, controller: DrawViewController, file: ChosenFile): Boolean {
         if (isBusy) return false
         val startedAt = file.lastModified ?: currentTimeMillis()
         val lecture = Lecture(
@@ -315,10 +315,10 @@ class LectureAssistant(
                 } catch (_: Throwable) {
                     emptyList()
                 }
-                val dbIds = withContext(stateContext) { controller.document.pages.map { it.dbId } }
+                val pageIds = withContext(stateContext) { controller.document.pages.map { it.id } }
                 val settings = settingsStore.settings
                 val transcriber = if (settings.sendsAudio) null else transcriberFactory(settings)
-                LectureImporter(lecture, settingsStore, transcriber).run(file.path, pages, dbIds)
+                LectureImporter(lecture, settingsStore, transcriber).run(file.path, pages, pageIds)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
@@ -361,7 +361,7 @@ class LectureAssistant(
     }
 
     /** Deletes the lecture [summary] (audio included); not the one being recorded. */
-    fun delete(documentId: Int, summary: LectureSummary) {
+    fun delete(documentId: String, summary: LectureSummary) {
         if (activeRecorder?.lecture?.directory == summary.directory || importing?.directory == summary.directory) return
         if (shownLectures[documentId]?.directory == summary.directory) {
             shownLectures[documentId]?.stopPlayback()

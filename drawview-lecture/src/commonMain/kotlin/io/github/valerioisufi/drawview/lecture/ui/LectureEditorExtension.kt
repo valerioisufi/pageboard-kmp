@@ -81,7 +81,7 @@ fun rememberLectureAssistant(): LectureAssistant = remember { LectureAssistant()
  * @param onOpenDocument opens the editor of a document.
  */
 @Composable
-fun LectureRecordingIndicator(assistant: LectureAssistant, onOpenDocument: (Int) -> Unit, modifier: Modifier = Modifier) {
+fun LectureRecordingIndicator(assistant: LectureAssistant, onOpenDocument: (String) -> Unit, modifier: Modifier = Modifier) {
     val recorder = assistant.activeRecorder ?: return
     val lecture = recorder.lecture
     val actionColors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.inversePrimary)
@@ -147,7 +147,7 @@ fun LectureExitDialog(onExit: () -> Unit, onDismiss: () -> Unit) {
 }
 
 @Composable
-private fun LectureToolbarButton(assistant: LectureAssistant, documentId: Int) {
+private fun LectureToolbarButton(assistant: LectureAssistant, documentId: String) {
     if (!assistant.isRecordingSupported) return
     val lecture = assistant.shownLecture(documentId)
     val recording = assistant.recorderOf(documentId)?.lecture?.takeIf { it.status == LectureStatus.RECORDING }

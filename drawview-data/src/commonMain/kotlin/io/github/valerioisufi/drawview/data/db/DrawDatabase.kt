@@ -1,6 +1,5 @@
 package io.github.valerioisufi.drawview.data.db
 
-import androidx.room.AutoMigration
 import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
@@ -20,13 +19,8 @@ import androidx.room.TypeConverters
         ResourceEntity::class,
         UserPreferencesEntity::class
     ],
-    version = 3,
-    autoMigrations = [
-        // v2: text alignment and Markdown flag
-        AutoMigration(from = 1, to = 2),
-        // v3: marks of the text of the PDFs and presets of the text markup tool
-        AutoMigration(from = 2, to = 3)
-    ]
+    // No migrations before the first release: an older database is recreated (see createDrawDatabase)
+    version = 4
 )
 @TypeConverters(
     PageBackgroundConverter::class,

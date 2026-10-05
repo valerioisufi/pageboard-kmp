@@ -86,7 +86,7 @@ class HandwritingReaderTest {
         })
     }.toString()
 
-    private fun block(key: String, strokes: Set<String>, top: Float) = InkBlock(0, 7, key, strokes, Rect(10f, top, 80f, top + 10f))
+    private fun block(key: String, strokes: Set<String>, top: Float) = InkBlock(0, "7", key, strokes, Rect(10f, top, 80f, top + 10f))
 
     @Test
     fun everyBlockIsReadOnceWhenTheStudentIsDoneWithIt() = runBlocking<Unit> {
@@ -103,7 +103,7 @@ class HandwritingReaderTest {
         val path = File(directory, "handwriting.json").absolutePath
         val reader = HandwritingReader(path, backends)
         val source = InkSource()
-        val page = PageContent(0, dbId = 7, slide = SlideText(1, 0, "Limiti di funzioni"), hasInk = true)
+        val page = PageContent(0, pageId = "7", slide = SlideText(1, 0, "Limiti di funzioni"), hasInk = true)
         val old = block("old", setOf("s1"), top = 10f)
         val new = block("new", setOf("s2"), top = 40f)
 

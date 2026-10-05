@@ -59,7 +59,7 @@ class PageManager(private val controller: DrawViewController) {
         document.pages.add(index, page)
         document.reindexPages()
         controller.historyManager.addHistoryAction(AddPageAction(page, index))
-        controller.persist { insertPage(document, page) }
+        controller.persist { insertPage(document, page, index) }
         controller.markLayoutNeedsUpdate()
         return page
     }

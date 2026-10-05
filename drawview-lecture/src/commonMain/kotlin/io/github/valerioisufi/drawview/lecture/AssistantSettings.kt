@@ -9,9 +9,6 @@ import io.github.valerioisufi.drawview.lecture.platform.lectureDataDirectory
 import io.github.valerioisufi.drawview.lecture.platform.restrictToOwner
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 
 /** Who answers a request: the Gemini API (online) or a model on this computer. */
 @Serializable
@@ -78,9 +75,6 @@ data class AssistantSettings(
     fun task(task: LectureTask): TaskModel = tasks[task] ?: defaultTask(task)
 
     fun withTask(task: LectureTask, model: TaskModel): AssistantSettings = copy(tasks = tasks + (task to model))
-
-    /** Gemini model of the live analysis (used by the first versions of the settings). */
-    val model: String get() = task(LectureTask.LIVE_NOTES).gemini
 
     /** Provider of the final review. */
     val reviewProvider: ModelProvider get() = task(LectureTask.FINAL_REVIEW).provider
@@ -173,8 +167,7 @@ class AssistantSettingsStore(
     private fun load(): AssistantSettings {
         val bytes = PlatformFiles.readBytes(path) ?: return AssistantSettings()
         return try {
-            val text = bytes.decodeToString()
-            migrate(json.decodeFromString(AssistantSettings.serializer(), text), json.parseToJsonElement(text).jsonObject)
+            json.decodeFromString(AssistantSettings.serializer(), bytes.decodeToString())
         } catch (_: Exception) {
             AssistantSettings()
         }
@@ -186,25 +179,6 @@ class AssistantSettingsStore(
         val json = Json {
             ignoreUnknownKeys = true
             prettyPrint = true
-        }
-
-        /**
-         * The first settings had one Gemini model ("model"), the provider and the local model of
-         * the final review ("reviewProvider", "localModel"): they become the [LectureTask]s.
-         */
-        fun migrate(settings: AssistantSettings, saved: JsonObject): AssistantSettings {
-            if ("tasks" in saved) return settings
-            val model = saved["model"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() } ?: return settings
-            val reviewProvider = saved["reviewProvider"]?.jsonPrimitive?.content
-                ?.let { name -> ModelProvider.entries.firstOrNull { it.name == name } } ?: ModelProvider.GEMINI
-            val localModel = saved["localModel"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() } ?: AssistantSettings.DEFAULT_LOCAL_MODEL
-            return settings.copy(
-                tasks = LectureTask.entries.associateWith { task ->
-                    val defaults = AssistantSettings.defaultTask(task)
-                    if (task == LectureTask.FINAL_REVIEW) TaskModel(reviewProvider, model, localModel)
-                    else defaults.copy(gemini = model)
-                }
-            )
         }
     }
 }

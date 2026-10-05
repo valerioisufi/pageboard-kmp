@@ -26,13 +26,13 @@ class LecturePromptsTest {
         visiblePageIndexes = listOf(4),
         pages = listOf(
             // The visible page: a slide with typed and handwritten notes
-            PageContent(4, dbId = 15, slide = SlideText(1, 2, "Teorema ponte\nSia f: A -> R"), typedTexts = listOf("Vale anche per x -> inf"), hasInk = true),
+            PageContent(4, pageId = "15", slide = SlideText(1, 2, "Teorema ponte\nSia f: A -> R"), typedTexts = listOf("Vale anche per x -> inf"), hasInk = true),
             // A slide without notes
-            PageContent(3, dbId = 14, slide = SlideText(1, 1, "Limiti di funzioni")),
+            PageContent(3, pageId = "14", slide = SlideText(1, 1, "Limiti di funzioni")),
             // Empty page
-            PageContent(5, dbId = 16),
+            PageContent(5, pageId = "16"),
             // A scanned slide (no text) with a picture of the student
-            PageContent(6, dbId = 17, slide = SlideText(2, 0, ""), imageCount = 1)
+            PageContent(6, pageId = "17", slide = SlideText(2, 0, ""), imageCount = 1)
         ),
         pageImages = listOf(PageImage(4, byteArrayOf(1, 2, 3))),
         newWriting = listOf(PageImage(4, byteArrayOf(6), isCrop = true)),
@@ -317,18 +317,6 @@ class LectureAnalysisTest {
 }
 
 class AssistantSettingsTest {
-    @Test
-    fun theFirstSettingsBecomeTasks() {
-        val saved = """{"apiKey":"k","model":"gemini-old","reviewProvider":"LOCAL","localModel":"gemma4:27b"}"""
-        val json = AssistantSettingsStore.json
-        val settings = AssistantSettingsStore.migrate(json.decodeFromString(AssistantSettings.serializer(), saved), json.parseToJsonElement(saved).jsonObject)
-        assertEquals(TaskModel(ModelProvider.LOCAL, "gemini-old", "gemma4:27b"), settings.task(LectureTask.FINAL_REVIEW))
-        assertEquals("gemini-old", settings.task(LectureTask.LIVE_NOTES).gemini)
-        assertEquals(ModelProvider.GEMINI, settings.task(LectureTask.LIVE_NOTES).provider)
-        assertEquals(ModelProvider.LOCAL, settings.reviewProvider)
-        assertTrue(settings.sendsAudio)
-    }
-
     @Test
     fun theSettingsSavedWithThePricesAreRead() {
         val saved = """{"apiKey":"k","tasks":{},"priceInput":0.75,"priceCachedInput":0.075,"priceOutput":3.75,"whisperLanguage":"it"}"""

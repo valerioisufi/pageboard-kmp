@@ -132,7 +132,7 @@ class TileManager(
      * @param viewportBounds Visible screen bounds in pixels.
      * @param document The document data model.
      * @param pageRects The World Space bounds of each page (indexed like [DrawDocument.pages]).
-     * @param skipPageUid Page not drawn (e.g. the page being dragged while reordering).
+     * @param skipPageKey Page not drawn (e.g. the page being dragged while reordering).
      */
     fun drawTiles(
         canvas: Canvas,
@@ -140,7 +140,7 @@ class TileManager(
         viewportBounds: Rect,
         document: DrawDocument,
         pageRects: List<Rect>,
-        skipPageUid: Long? = null
+        skipPageKey: Long? = null
     ) {
         if (pageRects.isEmpty()) return
         tileCache.beginFrame()
@@ -166,12 +166,12 @@ class TileManager(
 
         for (i in 0 until pageCount) {
             val page = pages[i]
-            if (page.uid == skipPageUid) {
-                pageTiles.remove(page.uid)
+            if (page.renderKey == skipPageKey) {
+                pageTiles.remove(page.renderKey)
                 continue
             }
             val pageWorldRect = pageRects[i]
-            ensurePageGeometry(page.uid, pageWorldRect)
+            ensurePageGeometry(page.renderKey, pageWorldRect)
 
             // Culling: check if page intersects prefetch viewport
             val nearPage = pageWorldRect.left < prefetchRight &&
@@ -179,10 +179,10 @@ class TileManager(
                     pageWorldRect.top < prefetchBottom &&
                     prefetchTop < pageWorldRect.bottom
             if (!nearPage) {
-                pageTiles.remove(page.uid)
+                pageTiles.remove(page.renderKey)
                 continue
             }
-            val onScreen = pageTiles.getOrPut(page.uid) { PageTiles() }
+            val onScreen = pageTiles.getOrPut(page.renderKey) { PageTiles() }
             onScreen.beginFrame()
 
             val isPageVisible = pageWorldRect.left < worldViewport.right &&
@@ -211,7 +211,7 @@ class TileManager(
                 )
 
                 visibleRange.forEach { col, row ->
-                    val key = TileKey(page.uid, targetLod, col, row)
+                    val key = TileKey(page.renderKey, targetLod, col, row)
                     val cell = pageFraction(TilePyramid.getTilePageRect(key), pageWorldRect)
                     val tile = tileCache.get(key)
 
@@ -273,7 +273,7 @@ class TileManager(
             )
 
             prefetchRange.forEach { col, row ->
-                val key = TileKey(page.uid, targetLod, col, row)
+                val key = TileKey(page.renderKey, targetLod, col, row)
                 val cached = tileCache.get(key)
                 if (cached == null || cached.state == TileState.STALE) {
                     enqueueTile(key, document, page, pageWorldRect)
@@ -343,7 +343,7 @@ class TileManager(
         canvas.save()
         canvas.clipRect(destScreenRect)
         range.forEach { col, row ->
-            val key = TileKey(page.uid, lod, col, row)
+            val key = TileKey(page.renderKey, lod, col, row)
             val tile = tileCache.get(key) ?: tileCache.findNearestAncestor(key) ?: return@forEach
             drawTileBitmap(canvas, tile.bitmap, tile.key, pageWorldRect, worldToDest)
         }
@@ -384,7 +384,7 @@ class TileManager(
      */
     fun updateLayout(pages: List<DrawPage>, pageRects: List<Rect>) {
         for (i in 0 until min(pages.size, pageRects.size)) {
-            ensurePageGeometry(pages[i].uid, pageRects[i])
+            ensurePageGeometry(pages[i].renderKey, pageRects[i])
         }
     }
 
@@ -392,18 +392,18 @@ class TileManager(
      * Drops the tiles of the page when its World Space size changed (e.g. the window was resized
      * after the first frames): they were rasterized at another scale.
      */
-    private fun ensurePageGeometry(pageUid: Long, pageWorldRect: Rect) {
+    private fun ensurePageGeometry(pageKey: Long, pageWorldRect: Rect) {
         val size = pageWorldRect.size
         val changed = syncLock(lock) {
-            val previous = pageWorldSizes.put(pageUid, size)
+            val previous = pageWorldSizes.put(pageKey, size)
             if (previous != null && previous != size) {
-                pageGenerations[pageUid] = (pageGenerations[pageUid] ?: 0) + 1
-                recentBakes.remove(pageUid)
+                pageGenerations[pageKey] = (pageGenerations[pageKey] ?: 0) + 1
+                recentBakes.remove(pageKey)
                 // The queued tiles would be rasterized for the old layout, delaying the new ones
                 val jobs = activeTileJobs.entries.iterator()
                 while (jobs.hasNext()) {
                     val (key, job) = jobs.next()
-                    if (key.pageUid == pageUid) {
+                    if (key.pageKey == pageKey) {
                         job.cancel()
                         jobs.remove()
                     }
@@ -414,16 +414,16 @@ class TileManager(
             }
         }
         if (changed) {
-            tileCache.removeForPage(pageUid)
-            pageTiles[pageUid]?.keepAsPreviousLayout()
+            tileCache.removeForPage(pageKey)
+            pageTiles[pageKey]?.keepAsPreviousLayout()
         }
     }
 
-    private fun generationOf(pageUid: Long): Int = syncLock(lock) { pageGenerations[pageUid] ?: 0 }
+    private fun generationOf(pageKey: Long): Int = syncLock(lock) { pageGenerations[pageKey] ?: 0 }
 
-    private fun bumpGeneration(pageUid: Long) {
+    private fun bumpGeneration(pageKey: Long) {
         syncLock(lock) {
-            pageGenerations[pageUid] = (pageGenerations[pageUid] ?: 0) + 1
+            pageGenerations[pageKey] = (pageGenerations[pageKey] ?: 0) + 1
         }
     }
 
@@ -464,7 +464,7 @@ class TileManager(
         var generation = 0
         var sequence = 0L
         val content = syncLock(lock) {
-            generation = pageGenerations[key.pageUid] ?: 0
+            generation = pageGenerations[key.pageKey] ?: 0
             sequence = bakeSequence
             page.snapshotContent()
         }
@@ -481,7 +481,7 @@ class TileManager(
         // Publish on the same lock used by the synchronous bake: no stroke committed while
         // the tile was rasterized can be lost.
         syncLock(lock) {
-            val candidates = recentBakes[key.pageUid]?.filter { it.sequence > sequence }.orEmpty()
+            val candidates = recentBakes[key.pageKey]?.filter { it.sequence > sequence }.orEmpty()
             // An element added to the page between the sequence read and the snapshot is
             // already part of the rendered content.
             val renderedStrokes = if (candidates.isEmpty()) emptySet() else content.strokes.toHashSet()
@@ -497,9 +497,9 @@ class TileManager(
                     element.markup?.let { drawMarkup(tileCanvas, it, content.widthMm, content.heightMm, mmToTile) }
                 }
             }
-            val upToDate = (pageGenerations[key.pageUid] ?: 0) == generation
+            val upToDate = (pageGenerations[key.pageKey] ?: 0) == generation
             // A tile rasterized for an outdated page geometry is discarded
-            val sameGeometry = pageWorldSizes[key.pageUid]?.let { it == pageWorldRect.size } ?: true
+            val sameGeometry = pageWorldSizes[key.pageKey]?.let { it == pageWorldRect.size } ?: true
             if (sameGeometry) {
                 tileCache.put(Tile(key, bitmap, if (upToDate) TileState.READY else TileState.STALE))
             }
@@ -534,7 +534,7 @@ class TileManager(
                 val pageWorldRect = pageRects.getOrNull(pageIndex) ?: continue
                 val pageRectMm = page.rect()
 
-                val bakes = recentBakes.getOrPut(page.uid) { mutableListOf() }
+                val bakes = recentBakes.getOrPut(page.renderKey) { mutableListOf() }
                 for (stroke in pageStrokes) {
                     bakeSequence++
                     bakes.add(BakedElement(bakeSequence, stroke = stroke))
@@ -559,7 +559,7 @@ class TileManager(
                             overscanMargin = 0
                         )
                         tileRange.forEach { col, row ->
-                            val key = TileKey(page.uid, lod, col, row)
+                            val key = TileKey(page.renderKey, lod, col, row)
                             val tile = tileCache.get(key) ?: return@forEach
                             if (tile.state != TileState.READY && tile.state != TileState.STALE) return@forEach
                             TilePyramid.getMmToTileMatrix(key, pageRectMm, pageWorldRect, scratchMmToTile)
@@ -587,7 +587,7 @@ class TileManager(
     fun bakeMarkupsDirectlySync(page: DrawPage, pageWorldRect: Rect, markups: List<DrawTextMarkup>, commit: () -> Unit) {
         syncLock(lock) {
             commit()
-            val bakes = recentBakes.getOrPut(page.uid) { mutableListOf() }
+            val bakes = recentBakes.getOrPut(page.renderKey) { mutableListOf() }
             for (markup in markups) {
                 bakeSequence++
                 bakes.add(BakedElement(bakeSequence, markup = markup))
@@ -610,7 +610,7 @@ class TileManager(
                         lod = lod,
                         overscanMargin = 0
                     ).forEach { col, row ->
-                        val key = TileKey(page.uid, lod, col, row)
+                        val key = TileKey(page.renderKey, lod, col, row)
                         val tile = tileCache.get(key) ?: return@forEach
                         if (tile.state != TileState.READY && tile.state != TileState.STALE) return@forEach
                         TilePyramid.getMmToTileMatrix(key, pageRectMm, pageWorldRect, scratchMmToTile)
@@ -646,11 +646,11 @@ class TileManager(
      * being drawn (no flash) while a fresh version is rasterized in background.
      */
     fun invalidatePageRegion(page: DrawPage, dirtyMmRect: Rect, pageWorldRect: Rect?) {
-        bumpGeneration(page.uid)
+        bumpGeneration(page.renderKey)
         val scaleX = if (pageWorldRect != null && page.widthMm > 0f) pageWorldRect.width / page.widthMm else null
         val scaleY = if (pageWorldRect != null && page.heightMm > 0f) pageWorldRect.height / page.heightMm else null
         if (scaleX == null || scaleY == null) {
-            tileCache.invalidatePage(page.uid)
+            tileCache.invalidatePage(page.renderKey)
         } else {
             val margin = 8f
             val localBox = Rect(
@@ -659,7 +659,7 @@ class TileManager(
                 dirtyMmRect.right * scaleX + margin,
                 dirtyMmRect.bottom * scaleY + margin
             )
-            tileCache.invalidatePage(page.uid) { key ->
+            tileCache.invalidatePage(page.renderKey) { key ->
                 TilePyramid.getTilePageRect(key).overlaps(localBox)
             }
         }
@@ -667,25 +667,25 @@ class TileManager(
     }
 
     /**
-     * Invalidates every tile of the page identified by [pageUid].
+     * Invalidates every tile of the page identified by [pageKey].
      */
-    fun invalidatePage(pageUid: Long) {
-        bumpGeneration(pageUid)
-        tileCache.invalidatePage(pageUid)
+    fun invalidatePage(pageKey: Long) {
+        bumpGeneration(pageKey)
+        tileCache.invalidatePage(pageKey)
         onInvalidate()
     }
 
     /**
-     * Evicts the tiles of the page identified by [pageUid] (e.g. after its deletion).
+     * Evicts the tiles of the page identified by [pageKey] (e.g. after its deletion).
      */
-    fun removeForPage(pageUid: Long) {
-        bumpGeneration(pageUid)
-        tileCache.removeForPage(pageUid)
+    fun removeForPage(pageKey: Long) {
+        bumpGeneration(pageKey)
+        tileCache.removeForPage(pageKey)
         syncLock(lock) {
-            recentBakes.remove(pageUid)
-            pageWorldSizes.remove(pageUid)
+            recentBakes.remove(pageKey)
+            pageWorldSizes.remove(pageKey)
         }
-        pageTiles.remove(pageUid)
+        pageTiles.remove(pageKey)
         onInvalidate()
     }
 
@@ -693,7 +693,7 @@ class TileManager(
      * Drops the tiles of pages that are no longer part of [document].
      */
     fun retainDocumentPages(document: DrawDocument) {
-        val live = readSnapshot { document.pages.map { it.uid }.toSet() }
+        val live = readSnapshot { document.pages.map { it.renderKey }.toSet() }
         tileCache.retainPages(live)
         syncLock(lock) {
             recentBakes.keys.retainAll(live)
@@ -706,8 +706,8 @@ class TileManager(
         syncLock(lock) {
             activeTileJobs.values.forEach { it.cancel() }
             activeTileJobs.clear()
-            for (uid in pageGenerations.keys.toList()) {
-                pageGenerations[uid] = (pageGenerations[uid] ?: 0) + 1
+            for (renderKey in pageGenerations.keys.toList()) {
+                pageGenerations[renderKey] = (pageGenerations[renderKey] ?: 0) + 1
             }
             recentBakes.clear()
         }

@@ -14,8 +14,8 @@ import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.data.buildDrawPreferences
-import io.github.valerioisufi.drawview.data.db.BrushSettingsData
 import io.github.valerioisufi.drawview.data.db.DocumentEntity
 import io.github.valerioisufi.drawview.data.db.DrawDatabase
 import io.github.valerioisufi.drawview.data.db.ImageEntity
@@ -43,11 +43,12 @@ import kotlinx.serialization.json.Json
  * Single source of truth of the documents: maps the Room entities to the in-memory model of
  * `:drawview-core` and implements the [DrawPersistence] port used by the editor.
  *
- * All the content coordinates are stored in page millimeters.
+ * Every row has the identifier of its element in the model. All the content coordinates are
+ * stored in page millimeters.
  */
 class DrawDocumentRepository(
     val database: DrawDatabase
-) : IDrawDocumentRepository, DrawPersistence {
+) : DrawPersistence {
 
     private val documentDao = database.documentDao()
     private val pageDao = database.pageDao()
@@ -60,9 +61,6 @@ class DrawDocumentRepository(
     private val preferencesDao = database.preferencesDao()
     private val json = Json
 
-    override val userPreferencesFlow: Flow<UserPreferencesEntity?>
-        get() = preferencesDao.getPreferencesFlow()
-
     /** User preferences mapped to the editor model (defaults when nothing is stored yet). */
     val drawPreferencesFlow: Flow<DrawPreferences>
         get() = preferencesDao.getPreferencesFlow().map { (it ?: UserPreferencesEntity()).toDrawPreferences() }
@@ -71,7 +69,7 @@ class DrawDocumentRepository(
     // Loading
     // ==========================================================
 
-    override suspend fun loadDocument(documentId: Int): DrawDocument? {
+    suspend fun loadDocument(documentId: String): DrawDocument? {
         val docWithPages = withContext(Dispatchers.IO) {
             pageDao.purgeDeletedPages(documentId)
             documentDao.getFullDocumentWithPages(documentId)
@@ -82,14 +80,13 @@ class DrawDocumentRepository(
         return withContext(Dispatchers.Default) {
             val docEntity = docWithPages.document
             val doc = DrawDocument(
-                id = docEntity.id.toString(),
+                id = docEntity.id,
                 title = docEntity.name,
                 defaultWidthMm = docEntity.defaultWidth,
                 defaultHeightMm = docEntity.defaultHeight,
                 defaultBackground = docEntity.defaultBackground,
                 createdAt = docEntity.createdAt,
                 modifiedAt = docEntity.modifiedAt,
-                dbId = docEntity.id,
                 addInitialPage = false
             )
             doc.lastOpenedAt = docEntity.lastOpenedAt
@@ -97,7 +94,7 @@ class DrawDocumentRepository(
             for (resource in resources) {
                 val type = DrawResource.ResourceType.entries.firstOrNull { it.name.equals(resource.type, ignoreCase = true) }
                     ?: DrawResource.ResourceType.COLOR
-                doc.resources.add(DrawResource(resource.id.toString(), type, resource.uri))
+                doc.resources.add(DrawResource(resource.id, type, resource.uri))
             }
 
             val sortedPages = docWithPages.pages.filter { !it.page.isDeleted }.sortedBy { it.page.pageNumber }
@@ -108,20 +105,19 @@ class DrawDocumentRepository(
                     widthMm = pageEntity.width,
                     heightMm = pageEntity.height,
                     background = pageEntity.background ?: docEntity.defaultBackground,
-                    dbId = pageEntity.id
+                    id = pageEntity.id
                 )
                 page.hasCustomBackground = pageEntity.background != null
 
                 for (strokeEntity in pageWithContent.strokes.sortedBy { it.zIndex }) {
-                    mapStroke(strokeEntity)?.let { page.strokes.add(it) }
+                    page.strokes.add(mapStroke(strokeEntity))
                 }
                 for (textEntity in pageWithContent.texts.sortedBy { it.zIndex }) {
                     page.texts.add(mapText(textEntity))
                 }
                 for (imageEntity in pageWithContent.images.sortedBy { it.zIndex }) {
                     page.images.add(
-                        DrawImage(imageEntity.zIndex).apply {
-                            dbId = imageEntity.id
+                        DrawImage(imageEntity.zIndex, imageEntity.id).apply {
                             resourceId = imageEntity.resourceId
                             x = imageEntity.x
                             y = imageEntity.y
@@ -133,8 +129,7 @@ class DrawDocumentRepository(
                 }
                 for (pdfEntity in pageWithContent.pdfs.sortedBy { it.zIndex }) {
                     page.pdfs.add(
-                        DrawPdf(pdfEntity.zIndex, pdfEntity.pdfPageIndex).apply {
-                            dbId = pdfEntity.id
+                        DrawPdf(pdfEntity.zIndex, pdfEntity.pdfPageIndex, pdfEntity.id).apply {
                             resourceId = pdfEntity.resourceId
                         }
                     )
@@ -153,22 +148,21 @@ class DrawDocumentRepository(
                     heightMm = docEntity.defaultHeight,
                     background = docEntity.defaultBackground
                 )
-                withContext(Dispatchers.IO) { insertPage(doc, page) }
+                insertPage(doc, page, 0)
                 doc.pages.add(page)
             }
             doc
         }
     }
 
-    private fun mapStroke(entity: StrokeEntity): DrawStroke? = restoreStroke(
+    private fun mapStroke(entity: StrokeEntity): DrawStroke = restoreStroke(
         points = StrokeInputCodec.decode(entity.inputs),
         familyName = entity.brushFamily,
         toolTypeName = entity.toolType,
         size = entity.size,
         color = entity.color,
         zIndex = entity.zIndex,
-        dbId = entity.id,
-        id = entity.id.toString()
+        id = entity.id
     )
 
     private fun mapTextMarkup(entity: TextMarkupEntity): DrawTextMarkup? {
@@ -189,12 +183,11 @@ class DrawDocumentRepository(
             kind = entity.kind,
             color = entity.color,
             zIndex = entity.zIndex,
-            dbId = entity.id
+            id = entity.id
         )
     }
 
-    private fun mapText(entity: TextEntity) = DrawText(entity.zIndex).apply {
-        dbId = entity.id
+    private fun mapText(entity: TextEntity) = DrawText(entity.zIndex, entity.id).apply {
         text = entity.text
         isLatex = entity.isLatex
         isMarkdownEnabled = entity.isMarkdownEnabled
@@ -212,163 +205,43 @@ class DrawDocumentRepository(
     // Documents
     // ==========================================================
 
-    override suspend fun createNewDefaultDocument(defaultDocumentName: String): DrawDocument =
-        createDocument(defaultDocumentName, 210f, 297f, PageBackground.Solid())
-
     /**
-     * Creates a document with one page of the given format.
+     * Creates a document with one page of the given format in [folderId].
      */
     suspend fun createDocument(
         name: String,
         widthMm: Float,
         heightMm: Float,
         background: PageBackground,
-        folderId: Int? = null
-    ): DrawDocument = withContext(Dispatchers.IO) {
+        folderId: String? = null
+    ): DrawDocument {
         val now = currentTimeMillis()
-        val docEntity = DocumentEntity(
-            name = name,
-            folderId = folderId,
-            createdAt = now,
-            modifiedAt = now,
-            lastOpenedAt = now,
-            defaultWidth = widthMm,
-            defaultHeight = heightMm,
-            defaultBackground = background
-        )
-        val docId = documentDao.insert(docEntity).toInt()
-
-        val pageId = pageDao.insert(
-            PageEntity(
-                documentId = docId,
-                pageNumber = 0,
-                width = widthMm,
-                height = heightMm,
-                background = null
-            )
-        ).toInt()
-
-        DrawDocument(
-            id = docId.toString(),
+        val document = DrawDocument(
             title = name,
             defaultWidthMm = widthMm,
             defaultHeightMm = heightMm,
             defaultBackground = background,
             createdAt = now,
-            modifiedAt = now,
-            dbId = docId,
-            addInitialPage = false
-        ).apply {
-            pages.add(DrawPage(index = 0, widthMm = widthMm, heightMm = heightMm, background = background, dbId = pageId))
-        }
-    }
-
-    override suspend fun touchDocument(documentId: Int, timestamp: Long) = withContext(Dispatchers.IO) {
-        documentDao.touchDocument(documentId, timestamp)
-    }
-
-    override suspend fun updateLastOpened(documentId: Int, timestamp: Long) = withContext(Dispatchers.IO) {
-        documentDao.updateLastOpened(documentId, timestamp)
-    }
-
-    // ==========================================================
-    // Pages
-    // ==========================================================
-
-    override suspend fun insertPageAt(documentId: Int, page: DrawPage): Int = withContext(Dispatchers.IO) {
-        pageDao.shiftPagesUp(documentId, page.index)
-        val id = pageDao.insert(
-            PageEntity(
-                documentId = documentId,
-                pageNumber = page.index,
-                width = page.widthMm,
-                height = page.heightMm,
-                background = if (page.hasCustomBackground) page.background else null
-            )
-        ).toInt()
-        page.dbId = id
-        id
-    }
-
-    override suspend fun deletePageAtIndex(documentId: Int, pageDbId: Int, deletedIndex: Int) = withContext(Dispatchers.IO) {
-        pageDao.deleteById(pageDbId)
-        pageDao.shiftPagesDown(documentId, deletedIndex)
-    }
-
-    override suspend fun updatePagesOrder(documentId: Int, pages: List<DrawPage>) = withContext(Dispatchers.IO) {
-        for ((idx, page) in pages.withIndex()) {
-            if (page.dbId != 0) pageDao.updatePageNumber(page.dbId, idx)
-        }
-    }
-
-    override suspend fun softDeletePageAtIndex(documentId: Int, pageDbId: Int, deletedIndex: Int) = withContext(Dispatchers.IO) {
-        pageDao.softDeletePage(pageDbId)
-        pageDao.shiftPagesDown(documentId, deletedIndex)
-    }
-
-    override suspend fun restorePageAtIndex(documentId: Int, pageDbId: Int, restoreIndex: Int) = withContext(Dispatchers.IO) {
-        pageDao.shiftPagesUp(documentId, restoreIndex)
-        pageDao.restorePage(pageDbId, restoreIndex)
-    }
-
-    override suspend fun updatePageFormatAndBackground(documentId: Int, page: DrawPage) = withContext(Dispatchers.IO) {
-        val entity = if (page.dbId != 0) pageDao.getPageById(page.dbId)
-        else pageDao.getPagesForDocument(documentId).find { it.pageNumber == page.index && !it.isDeleted }
-        if (entity != null) {
-            pageDao.update(
-                entity.copy(
-                    width = page.widthMm,
-                    height = page.heightMm,
-                    background = if (page.hasCustomBackground) page.background else null
+            modifiedAt = now
+        )
+        document.lastOpenedAt = now
+        withContext(Dispatchers.IO) {
+            documentDao.insert(
+                DocumentEntity(
+                    id = document.id,
+                    name = name,
+                    folderId = folderId,
+                    createdAt = now,
+                    modifiedAt = now,
+                    lastOpenedAt = now,
+                    defaultWidth = widthMm,
+                    defaultHeight = heightMm,
+                    defaultBackground = background
                 )
             )
         }
-    }
-
-    override suspend fun updateDocumentDefaults(documentId: Int, background: PageBackground, width: Float, height: Float) = withContext(Dispatchers.IO) {
-        documentDao.updateDocumentDefaults(documentId, background, width, height)
-    }
-
-    // ==========================================================
-    // Strokes
-    // ==========================================================
-
-    private fun DrawStroke.toEntity(pageId: Int, id: Int = 0) = StrokeEntity(
-        id = id,
-        pageId = pageId,
-        zIndex = zIndex,
-        color = brushConfig.color.toArgb(),
-        size = brushConfig.size,
-        toolType = mesh.inputToolType.name,
-        brushFamily = brushConfig.tool.name,
-        inputs = StrokeInputCodec.encode(mesh.points)
-    )
-
-    override suspend fun saveNewStroke(pageId: Int, stroke: DrawStroke): Int = withContext(Dispatchers.IO) {
-        val id = strokeDao.insert(stroke.toEntity(pageId)).toInt()
-        stroke.dbId = id
-        id
-    }
-
-    override suspend fun updateStroke(pageId: Int, stroke: DrawStroke) = withContext(Dispatchers.IO) {
-        val id = stroke.dbId.takeIf { it != 0 } ?: stroke.id.toIntOrNull() ?: return@withContext
-        strokeDao.insert(stroke.toEntity(pageId, id))
-        Unit
-    }
-
-    override suspend fun deleteStroke(strokeId: Int) = withContext(Dispatchers.IO) {
-        strokeDao.deleteById(strokeId)
-    }
-
-    override suspend fun saveNewStrokes(pageId: Int, strokes: List<DrawStroke>) = withContext(Dispatchers.IO) {
-        for (stroke in strokes) {
-            stroke.dbId = strokeDao.insert(stroke.toEntity(pageId)).toInt()
-        }
-    }
-
-    override suspend fun deleteStrokesByIds(strokeIds: List<Int>) = withContext(Dispatchers.IO) {
-        if (strokeIds.isEmpty()) return@withContext
-        strokeDao.deleteByIds(strokeIds)
+        insertPage(document, document.pages.single(), 0)
+        return document
     }
 
     // ==========================================================
@@ -380,55 +253,38 @@ class DrawDocumentRepository(
         preferencesDao.insertOrUpdate(transform(current))
     }
 
-    override suspend fun updateStylusMode(isStylusOnly: Boolean) = updatePreferences { it.copy(isStylusOnlyMode = isStylusOnly) }
-
-    override suspend fun updatePenPresets(presets: List<BrushSettingsData>) = updatePreferences { it.copy(penPresets = presets) }
-
-    override suspend fun updateHighlighterPresets(presets: List<BrushSettingsData>) = updatePreferences { it.copy(highlighterPresets = presets) }
-
-    override suspend fun updateEraserPresets(presets: List<BrushSettingsData>) = updatePreferences { it.copy(eraserPresets = presets) }
-
-    override suspend fun updateLazoPresets(presets: List<BrushSettingsData>) = updatePreferences { it.copy(lazoPresets = presets) }
-
-    override suspend fun updateMarkupPresets(presets: List<BrushSettingsData>) = updatePreferences { it.copy(markupPresets = presets) }
-
-    override suspend fun updateTextDefaults(fontSize: Float, color: Int, isLatex: Boolean) = updatePreferences {
-        it.copy(defaultTextFontSize = fontSize, defaultTextColor = color, defaultTextIsLatex = isLatex)
-    }
-
-    override suspend fun updateLastSelectedTool(toolName: String) = updatePreferences { it.copy(lastSelectedTool = toolName) }
-
     // ==========================================================
     // DrawPersistence (editor port)
     // ==========================================================
 
-    override suspend fun saveNewStrokes(page: DrawPage, strokes: List<DrawStroke>) {
-        if (page.dbId == 0 || strokes.isEmpty()) return
-        saveNewStrokes(page.dbId, strokes)
-    }
+    private fun DrawStroke.toEntity(pageId: String) = StrokeEntity(
+        id = id,
+        pageId = pageId,
+        zIndex = zIndex,
+        color = brushConfig.color.toArgb(),
+        size = brushConfig.size,
+        toolType = mesh.inputToolType.name,
+        brushFamily = brushConfig.tool.name,
+        inputs = StrokeInputCodec.encode(mesh.points)
+    )
+
+    override suspend fun saveNewStrokes(page: DrawPage, strokes: List<DrawStroke>) = updateStrokes(page, strokes)
 
     override suspend fun updateStrokes(page: DrawPage, strokes: List<DrawStroke>) {
-        if (page.dbId == 0) return
-        withContext(Dispatchers.IO) {
-            for (stroke in strokes) {
-                if (stroke.dbId == 0) stroke.dbId = strokeDao.insert(stroke.toEntity(page.dbId)).toInt()
-                else strokeDao.insert(stroke.toEntity(page.dbId, stroke.dbId))
-            }
-        }
+        if (strokes.isEmpty()) return
+        withContext(Dispatchers.IO) { strokeDao.upsertAll(strokes.map { it.toEntity(page.id) }) }
     }
 
     override suspend fun deleteStrokes(strokes: List<DrawStroke>) {
-        val ids = strokes.mapNotNull { s -> s.dbId.takeIf { it != 0 } }
-        deleteStrokesByIds(ids)
-        strokes.forEach { it.dbId = 0 }
+        if (strokes.isEmpty()) return
+        withContext(Dispatchers.IO) { strokeDao.deleteByIds(strokes.map { it.id }) }
     }
 
-    override suspend fun saveText(page: DrawPage, text: DrawText) {
-        if (page.dbId == 0) return
-        withContext(Dispatchers.IO) {
-            val entity = TextEntity(
-                id = text.dbId,
-                pageId = page.dbId,
+    override suspend fun saveText(page: DrawPage, text: DrawText) = withContext(Dispatchers.IO) {
+        textDao.upsert(
+            TextEntity(
+                id = text.id,
+                pageId = page.id,
                 zIndex = text.zIndex,
                 text = text.text,
                 isLatex = text.isLatex,
@@ -442,23 +298,16 @@ class DrawDocumentRepository(
                 alignment = text.alignment,
                 isMarkdownEnabled = text.isMarkdownEnabled
             )
-            if (text.dbId == 0) text.dbId = textDao.insert(entity).toInt()
-            else textDao.insert(entity)
-        }
+        )
     }
 
-    override suspend fun deleteText(text: DrawText) {
-        if (text.dbId == 0) return
-        withContext(Dispatchers.IO) { textDao.deleteById(text.dbId) }
-        text.dbId = 0
-    }
+    override suspend fun deleteText(text: DrawText) = withContext(Dispatchers.IO) { textDao.deleteById(text.id) }
 
-    override suspend fun saveImage(page: DrawPage, image: DrawImage) {
-        if (page.dbId == 0) return
-        withContext(Dispatchers.IO) {
-            val entity = ImageEntity(
-                id = image.dbId,
-                pageId = page.dbId,
+    override suspend fun saveImage(page: DrawPage, image: DrawImage) = withContext(Dispatchers.IO) {
+        imageDao.upsert(
+            ImageEntity(
+                id = image.id,
+                pageId = page.id,
                 zIndex = image.zIndex,
                 resourceId = image.resourceId,
                 x = image.x,
@@ -467,37 +316,28 @@ class DrawDocumentRepository(
                 height = image.height,
                 rotation = image.rotation
             )
-            if (image.dbId == 0) image.dbId = imageDao.insert(entity).toInt()
-            else imageDao.insert(entity)
-        }
+        )
     }
 
-    override suspend fun deleteImage(image: DrawImage) {
-        if (image.dbId == 0) return
-        withContext(Dispatchers.IO) { imageDao.deleteById(image.dbId) }
-        image.dbId = 0
-    }
+    override suspend fun deleteImage(image: DrawImage) = withContext(Dispatchers.IO) { imageDao.deleteById(image.id) }
 
-    override suspend fun savePdf(page: DrawPage, pdf: DrawPdf) {
-        if (page.dbId == 0) return
-        withContext(Dispatchers.IO) {
-            val entity = PdfEntity(
-                id = pdf.dbId,
-                pageId = page.dbId,
+    override suspend fun savePdf(page: DrawPage, pdf: DrawPdf) = withContext(Dispatchers.IO) {
+        pdfDao.upsert(
+            PdfEntity(
+                id = pdf.id,
+                pageId = page.id,
                 zIndex = pdf.zIndex,
                 resourceId = pdf.resourceId,
                 pdfPageIndex = pdf.pdfPageIndex
             )
-            pdf.dbId = pdfDao.insert(entity).toInt()
-        }
+        )
     }
 
-    override suspend fun saveTextMarkup(page: DrawPage, markup: DrawTextMarkup) {
-        if (page.dbId == 0) return
-        withContext(Dispatchers.IO) {
-            val entity = TextMarkupEntity(
-                id = markup.dbId,
-                pageId = page.dbId,
+    override suspend fun saveTextMarkup(page: DrawPage, markup: DrawTextMarkup) = withContext(Dispatchers.IO) {
+        textMarkupDao.upsert(
+            TextMarkupEntity(
+                id = markup.id,
+                pageId = page.id,
                 zIndex = markup.zIndex,
                 resourceId = markup.resourceId,
                 pdfPageIndex = markup.pdfPageIndex,
@@ -510,74 +350,70 @@ class DrawDocumentRepository(
                 kind = markup.kind.name,
                 color = markup.color
             )
-            if (markup.dbId == 0) markup.dbId = textMarkupDao.insert(entity).toInt()
-            else textMarkupDao.insert(entity)
+        )
+    }
+
+    override suspend fun deleteTextMarkup(markup: DrawTextMarkup) = withContext(Dispatchers.IO) {
+        textMarkupDao.deleteById(markup.id)
+    }
+
+    override suspend fun addResource(document: DrawDocument, type: DrawResource.ResourceType, path: String): String =
+        withContext(Dispatchers.IO) {
+            val id = newElementId()
+            resourceDao.insert(ResourceEntity(id = id, documentId = document.id, type = type.name, uri = path))
+            id
         }
+
+    override suspend fun insertPage(document: DrawDocument, page: DrawPage, index: Int) = withContext(Dispatchers.IO) {
+        pageDao.shiftPagesUp(document.id, index)
+        pageDao.upsert(
+            PageEntity(
+                id = page.id,
+                documentId = document.id,
+                pageNumber = index,
+                width = page.widthMm,
+                height = page.heightMm,
+                background = if (page.hasCustomBackground) page.background else null
+            )
+        )
     }
 
-    override suspend fun deleteTextMarkup(markup: DrawTextMarkup) {
-        if (markup.dbId == 0) return
-        withContext(Dispatchers.IO) { textMarkupDao.deleteById(markup.dbId) }
-        markup.dbId = 0
+    override suspend fun softDeletePage(document: DrawDocument, page: DrawPage, index: Int) = withContext(Dispatchers.IO) {
+        pageDao.softDeletePage(page.id)
+        pageDao.shiftPagesDown(document.id, index)
     }
 
-    override suspend fun addResource(document: DrawDocument, type: DrawResource.ResourceType, path: String): String {
-        if (document.dbId == 0) return path
-        return withContext(Dispatchers.IO) {
-            resourceDao.insert(ResourceEntity(documentId = document.dbId, type = type.name, uri = path)).toString()
-        }
+    override suspend fun updatePagesOrder(document: DrawDocument, pages: List<DrawPage>) = withContext(Dispatchers.IO) {
+        for ((index, page) in pages.withIndex()) pageDao.updatePageNumber(page.id, index)
     }
 
-    override suspend fun insertPage(document: DrawDocument, page: DrawPage) {
-        if (document.dbId == 0) return
-        insertPageAt(document.dbId, page)
+    override suspend fun updatePageFormat(document: DrawDocument, page: DrawPage) = withContext(Dispatchers.IO) {
+        pageDao.updateFormat(page.id, page.widthMm, page.heightMm, if (page.hasCustomBackground) page.background else null)
     }
 
-    override suspend fun softDeletePage(document: DrawDocument, page: DrawPage, index: Int) {
-        if (document.dbId == 0 || page.dbId == 0) return
-        softDeletePageAtIndex(document.dbId, page.dbId, index)
+    override suspend fun updateDocumentDefaults(document: DrawDocument) = withContext(Dispatchers.IO) {
+        documentDao.updateDocumentDefaults(document.id, document.defaultBackground, document.defaultWidthMm, document.defaultHeightMm)
     }
 
-    override suspend fun restorePage(document: DrawDocument, page: DrawPage, index: Int) {
-        if (document.dbId == 0 || page.dbId == 0) return
-        restorePageAtIndex(document.dbId, page.dbId, index)
-    }
-
-    override suspend fun updatePagesOrder(document: DrawDocument, pages: List<DrawPage>) {
-        if (document.dbId == 0) return
-        updatePagesOrder(document.dbId, pages)
-    }
-
-    override suspend fun updatePageFormat(document: DrawDocument, page: DrawPage) {
-        if (document.dbId == 0) return
-        updatePageFormatAndBackground(document.dbId, page)
-    }
-
-    override suspend fun updateDocumentDefaults(document: DrawDocument) {
-        if (document.dbId == 0) return
-        updateDocumentDefaults(document.dbId, document.defaultBackground, document.defaultWidthMm, document.defaultHeightMm)
-    }
-
-    override suspend fun touchDocument(document: DrawDocument, timestamp: Long) {
-        if (document.dbId == 0) return
-        touchDocument(document.dbId, timestamp)
+    override suspend fun touchDocument(document: DrawDocument, timestamp: Long) = withContext(Dispatchers.IO) {
+        documentDao.touchDocument(document.id, timestamp)
     }
 
     override suspend fun savePresets(tool: Tool, presets: List<ToolPreset>) {
         val data = presets.toBrushSettings(tool)
         when (tool) {
-            Tool.INK_PEN -> updatePenPresets(data)
-            Tool.INK_HIGHLIGHTER -> updateHighlighterPresets(data)
-            Tool.TEXT_MARKUP -> updateMarkupPresets(data)
-            Tool.ERASER -> updateEraserPresets(data)
-            Tool.LAZO -> updateLazoPresets(data)
+            Tool.INK_PEN -> updatePreferences { it.copy(penPresets = data) }
+            Tool.INK_HIGHLIGHTER -> updatePreferences { it.copy(highlighterPresets = data) }
+            Tool.TEXT_MARKUP -> updatePreferences { it.copy(markupPresets = data) }
+            Tool.ERASER -> updatePreferences { it.copy(eraserPresets = data) }
+            Tool.LAZO -> updatePreferences { it.copy(lazoPresets = data) }
             else -> {}
         }
     }
 
-    override suspend fun saveStylusOnlyMode(enabled: Boolean) = updateStylusMode(enabled)
+    override suspend fun saveStylusOnlyMode(enabled: Boolean) = updatePreferences { it.copy(isStylusOnlyMode = enabled) }
 
-    override suspend fun saveLastSelectedTool(tool: Tool) = updateLastSelectedTool(tool.name)
+    override suspend fun saveLastSelectedTool(tool: Tool) = updatePreferences { it.copy(lastSelectedTool = tool.name) }
 
     override suspend fun saveTextDefaults(fontSize: Float, color: Int) = updatePreferences {
         it.copy(defaultTextFontSize = fontSize, defaultTextColor = color)

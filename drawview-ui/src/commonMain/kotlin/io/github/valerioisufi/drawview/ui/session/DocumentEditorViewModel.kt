@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
  * The editing session of an open document.
  */
 class EditorSession internal constructor(
-    val documentId: Int,
+    val documentId: String,
     internal val store: DocumentStore
 ) {
     /** `null` while the document is being loaded. */
@@ -55,7 +55,7 @@ class DocumentEditorViewModel(val store: DocumentStore) : ViewModel() {
         private set
 
     /** Opens the document [documentId] (closing the current one). */
-    fun openDocument(documentId: Int) {
+    fun openDocument(documentId: String) {
         if (session?.documentId == documentId) return
         closeSession()
         val newSession = EditorSession(documentId, store)
@@ -78,11 +78,11 @@ class DocumentEditorViewModel(val store: DocumentStore) : ViewModel() {
     }
 
     /** Creates a new document (one A4 page, as in the original app) in [folderId] and opens it. */
-    fun createAndOpenDocument(name: String, folderId: Int? = null) {
+    fun createAndOpenDocument(name: String, folderId: String? = null) {
         viewModelScope.launch {
             val document = store.createDocument(name, folderId = folderId)
             closeSession()
-            val newSession = EditorSession(document.dbId, store)
+            val newSession = EditorSession(document.id, store)
             session = newSession
             DrawViewSessions.register(newSession)
             attach(newSession, document, store.preferences.first())

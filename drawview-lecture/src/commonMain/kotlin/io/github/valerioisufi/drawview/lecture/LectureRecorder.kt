@@ -497,9 +497,9 @@ class LectureRecorder internal constructor(
         val task = settingsStore.settings.task(LectureTask.LIVE_NOTES)
         if (task.provider == ModelProvider.GEMINI && !settingsStore.hasApiKey) return
         try {
-            val (pages, dbIds) = lecture.setStateResult { seenPageContents() to lastPageDbIds }
+            val (pages, pageIds) = lecture.setStateResult { seenPageContents() to lastPageIds }
             // The pages where they are now (they may have been moved)
-            val current = pages.map { page -> page.copy(index = dbIds.indexOf(page.dbId).takeIf { page.dbId > 0 && it >= 0 } ?: page.index) }
+            val current = pages.map { page -> page.copy(index = pageIds.indexOf(page.pageId).takeIf { it >= 0 } ?: page.index) }
             val blocks = source.inkBlocks(current.filter { it.hasInk }.map { it.index }.reversed())
             if (blocks.none { !handwriting.isRead(it) }) return
             lecture.setState { isAnalyzing = true }

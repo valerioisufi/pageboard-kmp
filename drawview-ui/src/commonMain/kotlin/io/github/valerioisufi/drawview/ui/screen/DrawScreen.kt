@@ -248,7 +248,7 @@ fun DrawScreen(
                         }
 
                         DocumentInfoSelector(
-                            document = if (isLoading) null else controller.documentData,
+                            document = if (isLoading) null else controller.document,
                             modifier = Modifier
                         )
 

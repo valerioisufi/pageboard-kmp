@@ -93,12 +93,12 @@ class LectureRecorderTest {
             pageCount = 3,
             visiblePageIndexes = listOf(1),
             pages = listOf(
-                PageContent(1, dbId = 11, slide = SlideText(1, 0, "Limiti"), hasInk = true),
-                PageContent(2, dbId = 12, slide = SlideText(1, 1, "Derivate"))
+                PageContent(1, pageId = "11", slide = SlideText(1, 0, "Limiti"), hasInk = true),
+                PageContent(2, pageId = "12", slide = SlideText(1, 1, "Derivate"))
             ),
             pageImages = listOf(PageImage(1, byteArrayOf(1, 2, 3))),
             strokeIds = setOf("old", "new"),
-            pageDbIds = listOf(10, 11, 12)
+            pageIds = listOf("10", "11", "12")
         )
     }
 
@@ -178,7 +178,7 @@ class LectureRecorderTest {
         val note = lecture.suggestions.single()
         assertEquals("Definizione di limite", note.title)
         assertEquals(1, note.pageIndex)
-        assertEquals(11, note.pageDbId)
+        assertEquals("11", note.pageId)
         assertEquals(10_000L, note.atMs)
         assertEquals(2, lecture.professorPageIndex)
 
@@ -216,15 +216,15 @@ class LectureRecorderTest {
             LectureRecord.serializer(),
             File(directory, "lecture/lecture.json").readText()
         )
-        assertEquals(7, record.documentId)
+        assertEquals("7", record.documentId)
         assertEquals(LectureStatus.FINISHED, record.status)
         assertEquals(SuggestionStatus.INSERTED, record.suggestions.first().status)
         assertNotNull(record.finalReview)
         // The pages seen kept for a later review: their text, the image of the visible one
         assertEquals(
             listOf(
-                SeenPage(PageContent(2, dbId = 12, slide = SlideText(1, 1, "Derivate"))),
-                SeenPage(PageContent(1, dbId = 11, slide = SlideText(1, 0, "Limiti"), hasInk = true), "p11.jpg", visible = true)
+                SeenPage(PageContent(2, pageId = "12", slide = SlideText(1, 1, "Derivate"))),
+                SeenPage(PageContent(1, pageId = "11", slide = SlideText(1, 0, "Limiti"), hasInk = true), "p11.jpg", visible = true)
             ),
             record.pages
         )
@@ -290,7 +290,7 @@ class LectureRecorderTest {
         name: String = "lecture",
         courseContext: String = ""
     ) = Lecture(
-        documentId = record?.documentId ?: 7,
+        documentId = record?.documentId ?: "7",
         directory = File(directory, name).absolutePath,
         record = record,
         settingsStore = settingsStore,
@@ -482,7 +482,7 @@ class LectureRecorderTest {
         val record = assertNotNull(library.load(File(directory, "lecture").absolutePath))
         assertEquals(LectureStatus.FINISHED, record.status)
         // The pages seen are in the record: the review needs no open notebook
-        val seen = SeenPage(PageContent(4, dbId = 21, slide = SlideText(1, 3, "Teorema ponte")))
+        val seen = SeenPage(PageContent(4, pageId = "21", slide = SlideText(1, 3, "Teorema ponte")))
         val reloaded = newLecture(settingsStore, engine, record.copy(pages = listOf(seen)))
         assertEquals("Analisi 1", reloaded.documentTitle)
         assertTrue(reloaded.canGenerateReview)
@@ -516,8 +516,8 @@ class LectureRecorderTest {
         val input = File(directory, "lezione.wav").apply { writeBytes(phone) }
         val transcriber = FakeTranscriber()
         val lecture = newLecture(settingsStore, engine, courseContext = "Analisi 1")
-        val pages = listOf(PageContent(0, dbId = 10, slide = SlideText(1, 0, "Limiti")), PageContent(1, dbId = 11, slide = SlideText(1, 1, "Derivate")))
-        LectureImporter(lecture, settingsStore, transcriber).run(input.absolutePath, pages, listOf(10, 11))
+        val pages = listOf(PageContent(0, pageId = "10", slide = SlideText(1, 0, "Limiti")), PageContent(1, pageId = "11", slide = SlideText(1, 1, "Derivate")))
+        LectureImporter(lecture, settingsStore, transcriber).run(input.absolutePath, pages, listOf("10", "11"))
 
         assertEquals(LectureStatus.FINISHED, lecture.status)
         assertTrue(lecture.elapsedMs in 125_000L..127_000L, "${lecture.elapsedMs}")
@@ -536,17 +536,17 @@ class LectureRecorderTest {
 
     /** A notebook with a block of handwriting written before the lecture on its page 2. */
     private class InkNotebook : NotebookSource {
-        val block = InkBlock(1, 11, "k1", setOf("old"), Rect(10f, 10f, 50f, 30f))
+        val block = InkBlock(1, "11", "k1", setOf("old"), Rect(10f, 10f, 50f, 30f))
         override val documentTitle = "Analisi 1"
         override suspend fun strokeIds() = setOf("old")
         override suspend fun capture(knownStrokeIds: Set<String>, textPages: Int, imagePages: Int) = NotebookSnapshot(
             documentTitle = documentTitle,
             pageCount = 3,
             visiblePageIndexes = listOf(1),
-            pages = listOf(PageContent(1, dbId = 11, slide = SlideText(1, 0, "Limiti"), hasInk = true)),
+            pages = listOf(PageContent(1, pageId = "11", slide = SlideText(1, 0, "Limiti"), hasInk = true)),
             inkBlocks = listOf(block),
             strokeIds = setOf("old"),
-            pageDbIds = listOf(10, 11, 12)
+            pageIds = listOf("10", "11", "12")
         )
 
         override suspend fun inkBlocks(pageIndexes: List<Int>) = if (1 in pageIndexes) listOf(block) else emptyList()

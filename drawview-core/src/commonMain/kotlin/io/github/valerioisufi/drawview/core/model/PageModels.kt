@@ -18,7 +18,8 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
-import kotlin.random.Random
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 import kotlinx.atomicfu.atomic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -69,14 +70,15 @@ sealed class PageBackground {
  *
  * The [mesh] and the [bounds] are expressed in page millimeters, so that the content is
  * independent from the window size, the zoom level and the screen density.
+ *
+ * [id] identifies the stroke on every device (see [newElementId]).
  */
 class DrawStroke(
-    val id: String = generateRandomId(),
+    val id: String = newElementId(),
     mesh: StrokeMesh,
     brushConfig: BrushConfig,
     bounds: Rect,
-    var zIndex: Int = 0,
-    var dbId: Int = 0
+    var zIndex: Int = 0
 ) {
     @Volatile
     var mesh: StrokeMesh = mesh
@@ -140,10 +142,10 @@ interface RotatableItem {
 
 /**
  * A text block (plain text, Markdown or a LaTeX formula) placed on a page.
+ *
+ * [id] identifies the block on every device (see [newElementId]).
  */
-class DrawText(var zIndex: Int = 0) : RotatableItem {
-    val id: String = generateRandomId()
-    var dbId: Int = 0
+class DrawText(var zIndex: Int = 0, val id: String = newElementId()) : RotatableItem {
 
     @Volatile var text: String = ""
     @Volatile var isLatex: Boolean = false
@@ -194,10 +196,11 @@ class DrawText(var zIndex: Int = 0) : RotatableItem {
 /**
  * A raster image placed on a page. The pixels live in the document [DrawResource] referenced
  * by [resourceId].
+ *
+ * [id] identifies the image on every device (see [newElementId]).
  */
-class DrawImage(var zIndex: Int = 0) : RotatableItem {
+class DrawImage(var zIndex: Int = 0, val id: String = newElementId()) : RotatableItem {
     var resourceId: String = ""
-    var dbId: Int = 0
 
     @Volatile override var x: Float = 0f
     @Volatile override var y: Float = 0f
@@ -215,14 +218,16 @@ class DrawImage(var zIndex: Int = 0) : RotatableItem {
 /**
  * A page of an imported PDF document rendered as the page background (its text can be marked,
  * see [DrawTextMarkup]).
+ *
+ * [id] identifies it on every device (see [newElementId]).
  */
-class DrawPdf(var zIndex: Int = 0, var pdfPageIndex: Int = 0) {
+class DrawPdf(var zIndex: Int = 0, var pdfPageIndex: Int = 0, val id: String = newElementId()) {
     var resourceId: String = ""
-    var dbId: Int = 0
 }
 
 /**
- * A file owned by a document (imported images and PDFs).
+ * A file owned by a document (imported images and PDFs). [id] identifies the resource on every
+ * device (see [newElementId]), [path] is the file on this device.
  */
 class DrawResource(
     val id: String,
@@ -237,16 +242,18 @@ class DrawResource(
  *
  * All the content coordinates are expressed in page millimeters, with the origin at the
  * top-left corner of the page.
+ *
+ * [id] identifies the page on every device (see [newElementId]).
  */
 class DrawPage(
     var index: Int = 0,
     widthMm: Float = 210f,
     heightMm: Float = 297f,
     background: PageBackground = PageBackground.Solid(),
-    var dbId: Int = 0
+    val id: String = newElementId()
 ) {
-    /** Stable identity of the page (survives reordering), used to key the render caches. */
-    val uid: Long = nextPageUid()
+    /** Key of the page in the render caches of this process (a number, cheaper than [id]). */
+    val renderKey: Long = nextPageRenderKey()
 
     var widthMm: Float by mutableFloatStateOf(widthMm)
     var heightMm: Float by mutableFloatStateOf(heightMm)
@@ -314,16 +321,17 @@ class PageContentSnapshot(
 
 /**
  * Represents a multi-page vector document.
+ *
+ * [id] identifies the document on every device (see [newElementId]).
  */
 class DrawDocument(
-    val id: String = generateRandomId(),
+    val id: String = newElementId(),
     title: String = "Untitled",
     defaultWidthMm: Float = 210f,
     defaultHeightMm: Float = 297f,
     defaultBackground: PageBackground = PageBackground.Solid(),
     var createdAt: Long = 0L,
     modifiedAt: Long = 0L,
-    var dbId: Int = 0,
     addInitialPage: Boolean = true
 ) {
     var title: String by mutableStateOf(title)
@@ -381,8 +389,8 @@ class DrawDocument(
         resources.firstOrNull { it.id == resourceId }
     }
 
-    fun pageByUid(uid: Long): DrawPage? = readSnapshot {
-        pages.firstOrNull { it.uid == uid }
+    fun pageByRenderKey(renderKey: Long): DrawPage? = readSnapshot {
+        pages.firstOrNull { it.renderKey == renderKey }
     }
 }
 
@@ -399,10 +407,14 @@ inline fun <T> readSnapshot(block: () -> T): T {
     }
 }
 
-private val pageUidCounter = atomic(0L)
+private val pageRenderKeys = atomic(0L)
 
-private fun nextPageUid(): Long = pageUidCounter.incrementAndGet()
+private fun nextPageRenderKey(): Long = pageRenderKeys.incrementAndGet()
 
-internal fun generateRandomId(): String {
-    return "item_" + Random.nextLong(100000000, 999999999).toString(16)
-}
+/**
+ * A new identifier of a document, a page, an element or a resource: a random UUID, unique on
+ * every device, so that the content created by several devices can be merged (see
+ * `docs/collaboration.md`).
+ */
+@OptIn(ExperimentalUuidApi::class)
+fun newElementId(): String = Uuid.random().toString()

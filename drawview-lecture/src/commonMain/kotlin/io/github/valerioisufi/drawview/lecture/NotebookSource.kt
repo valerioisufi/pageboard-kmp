@@ -48,7 +48,8 @@ data class SlideText(val pdfNumber: Int, val pdfPageIndex: Int, val text: String
  * What the assistant knows of a page of the notebook: the same description for every provider,
  * in text (the images of the visible pages are added to it, see [NotebookSnapshot.pageImages]).
  *
- * @param dbId database id of the page (0: not saved yet), stable when the pages are reordered.
+ * @param pageId identifier of the page ([io.github.valerioisufi.drawview.core.model.DrawPage.id]),
+ *   stable when the pages are reordered (empty when not known).
  * @param slide the PDF page of its background, if any.
  * @param typedTexts typed text blocks of the student.
  * @param handwriting what the student wrote by hand, transcribed (see `HandwritingReader`), from
@@ -60,7 +61,7 @@ data class SlideText(val pdfNumber: Int, val pdfPageIndex: Int, val text: String
 @Serializable
 data class PageContent(
     val index: Int,
-    val dbId: Int = 0,
+    val pageId: String = "",
     val slide: SlideText? = null,
     val typedTexts: List<String> = emptyList(),
     val handwriting: List<String> = emptyList(),
@@ -79,7 +80,7 @@ data class PageContent(
  * @param newWriting close-ups of the strokes added since the previous update.
  * @param inkBlocks the handwriting of [pages], in blocks.
  * @param strokeIds strokes of the document seen by this capture.
- * @param pageDbIds database id of every page of the document, by index (0: not saved yet).
+ * @param pageIds identifier of every page of the document, by index.
  */
 class NotebookSnapshot(
     val documentTitle: String,
@@ -90,10 +91,10 @@ class NotebookSnapshot(
     val newWriting: List<PageImage> = emptyList(),
     val inkBlocks: List<InkBlock> = emptyList(),
     val strokeIds: Set<String> = emptySet(),
-    val pageDbIds: List<Int> = emptyList()
+    val pageIds: List<String> = emptyList()
 ) {
     fun withPages(pages: List<PageContent>) =
-        NotebookSnapshot(documentTitle, pageCount, visiblePageIndexes, pages, pageImages, newWriting, inkBlocks, strokeIds, pageDbIds)
+        NotebookSnapshot(documentTitle, pageCount, visiblePageIndexes, pages, pageImages, newWriting, inkBlocks, strokeIds, pageIds)
 }
 
 /** Source of the notebook content sent to the model. */
@@ -153,7 +154,7 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
             val contents = pages.map { it.snapshotContent() }
             val pdfNumbers = pdfNumbers(contents)
 
-            val pageContents = (visibleIndexes + around).map { index -> pageContent(index, pages[index].dbId, contents[index], pdfNumbers) }
+            val pageContents = (visibleIndexes + around).map { index -> pageContent(index, pages[index].id, contents[index], pdfNumbers) }
 
             val pageImages = visibleIndexes.take(imagePages).mapNotNull { index ->
                 val bitmap = try {
@@ -182,9 +183,9 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
                 pages = pageContents,
                 pageImages = pageImages,
                 newWriting = newWriting,
-                inkBlocks = pageContents.flatMap { page -> inkBlocks(page.index, page.dbId, contents[page.index]) },
+                inkBlocks = pageContents.flatMap { page -> inkBlocks(page.index, page.pageId, contents[page.index]) },
                 strokeIds = strokeIds,
-                pageDbIds = pages.map { it.dbId }
+                pageIds = pages.map { it.id }
             )
         }
     }
@@ -194,7 +195,7 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
         return withContext(Dispatchers.Default) {
             val contents = pages.map { it.snapshotContent() }
             val pdfNumbers = pdfNumbers(contents)
-            contents.mapIndexed { index, content -> pageContent(index, pages[index].dbId, content, pdfNumbers) }
+            contents.mapIndexed { index, content -> pageContent(index, pages[index].id, content, pdfNumbers) }
         }
     }
 
@@ -202,9 +203,9 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
     private fun pdfNumbers(contents: List<PageContentSnapshot>): Map<String, Int> =
         contents.flatMap { content -> content.pdfs.map { it.resourceId } }.distinct().withIndex().associate { (i, id) -> id to i + 1 }
 
-    private fun pageContent(index: Int, dbId: Int, content: PageContentSnapshot, pdfNumbers: Map<String, Int>) = PageContent(
+    private fun pageContent(index: Int, pageId: String, content: PageContentSnapshot, pdfNumbers: Map<String, Int>) = PageContent(
         index = index,
-        dbId = dbId,
+        pageId = pageId,
         slide = content.pdfs.firstOrNull()?.let { pdf ->
             SlideText(pdfNumbers.getValue(pdf.resourceId), pdf.pdfPageIndex, slideText(pdf.resourceId, pdf.pdfPageIndex))
         },
@@ -216,7 +217,7 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
     override suspend fun inkBlocks(pageIndexes: List<Int>): List<InkBlock> {
         val pages = withContext(Dispatchers.Main) { controller.document.pages.toList() }
         return withContext(Dispatchers.Default) {
-            pageIndexes.filter { it in pages.indices }.flatMap { index -> inkBlocks(index, pages[index].dbId, pages[index].snapshotContent()) }
+            pageIndexes.filter { it in pages.indices }.flatMap { index -> inkBlocks(index, pages[index].id, pages[index].snapshotContent()) }
         }
     }
 
@@ -224,7 +225,7 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
         val document = controller.document
         val pages = withContext(Dispatchers.Main) { document.pages.toList() }
         return withContext(Dispatchers.Default) {
-            val page = pages.firstOrNull { block.pageDbId > 0 && it.dbId == block.pageDbId } ?: pages.getOrNull(block.pageIndex) ?: return@withContext null
+            val page = pages.firstOrNull { it.id == block.pageId } ?: pages.getOrNull(block.pageIndex) ?: return@withContext null
             val content = page.snapshotContent()
             val strokes = content.strokes.filter { it.id in block.strokeIds }
             if (strokes.isEmpty()) return@withContext null
@@ -235,13 +236,13 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
     }
 
     /** The handwriting of a page in blocks of strokes close to each other. */
-    private fun inkBlocks(pageIndex: Int, pageDbId: Int, content: PageContentSnapshot): List<InkBlock> {
+    private fun inkBlocks(pageIndex: Int, pageId: String, content: PageContentSnapshot): List<InkBlock> {
         val strokes = content.strokes.filter { it.isHandwriting }
         if (strokes.isEmpty()) return emptyList()
         return groupStrokes(strokes.map { it.bounds }).map { group ->
             val blockStrokes = group.map { strokes[it] }
             val ids = blockStrokes.mapTo(mutableSetOf()) { it.id }
-            InkBlock(pageIndex, pageDbId, blockKey(ids), ids, unionOf(blockStrokes.map { it.bounds }))
+            InkBlock(pageIndex, pageId, blockKey(ids), ids, unionOf(blockStrokes.map { it.bounds }))
         }
     }
 

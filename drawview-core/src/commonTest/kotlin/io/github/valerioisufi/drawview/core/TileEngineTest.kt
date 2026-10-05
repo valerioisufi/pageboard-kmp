@@ -32,7 +32,7 @@ class TileEngineTest {
 
     @Test
     fun testTileKeyHierarchy() {
-        val child = TileKey(pageUid = 0L, lod = 1, col = 3, row = 2)
+        val child = TileKey(pageKey = 0L, lod = 1, col = 3, row = 2)
         val parent = child.getParentKey()
 
         assertEquals(0, parent.lod)
@@ -86,7 +86,7 @@ class TileEngineTest {
         val page = doc.pages[0]
         page.background = PageBackground.Grid(spacingMm = 5f)
 
-        val key = TileKey(pageUid = page.uid, lod = 0, col = 0, row = 0)
+        val key = TileKey(pageKey = page.renderKey, lod = 0, col = 0, row = 0)
         val pageRect = Rect(0f, 0f, 210f, 297f)
 
         // Render should execute cleanly without throwing
@@ -108,7 +108,7 @@ class TileEngineTest {
         val doc = DrawDocument("test_doc", "Test Document")
         val page = doc.pages[0]
 
-        val key = TileKey(pageUid = page.uid, lod = 0, col = 0, row = 0)
+        val key = TileKey(pageKey = page.renderKey, lod = 0, col = 0, row = 0)
         val tile = Tile(key, manager.tileCache.obtainBitmap(), TileState.READY)
         manager.tileCache.put(tile)
 
@@ -155,7 +155,7 @@ class TileEngineTest {
         val viewport = Rect(5000f, 5000f, 5100f, 5100f)
 
         manager.drawTiles(canvas, camera, viewport, doc, listOf(Rect(0f, 0f, 500f, 700f)))
-        val key = TileKey(pageUid = page.uid, lod = 0, col = 0, row = 0)
+        val key = TileKey(pageKey = page.renderKey, lod = 0, col = 0, row = 0)
         val oldTile = Tile(key, manager.tileCache.obtainBitmap(), TileState.READY)
         manager.tileCache.put(oldTile)
 
@@ -178,7 +178,7 @@ class TileEngineTest {
         val camera = io.github.valerioisufi.drawview.core.geometry.Matrix2D()
         val viewport = Rect(0f, 0f, 200f, 200f)
 
-        val key = TileKey(pageUid = page.uid, lod = 0, col = 0, row = 0)
+        val key = TileKey(pageKey = page.renderKey, lod = 0, col = 0, row = 0)
         val bitmap = manager.tileCache.obtainBitmap()
         androidx.compose.ui.graphics.Canvas(bitmap).drawRect(
             Rect(0f, 0f, 512f, 512f),

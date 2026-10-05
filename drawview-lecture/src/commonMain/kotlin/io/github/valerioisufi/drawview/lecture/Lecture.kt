@@ -75,7 +75,7 @@ sealed interface LectureProblem {
  * @param courseContext the course context of the notebook ([CourseContext]), read at every request.
  */
 class Lecture internal constructor(
-    val documentId: Int,
+    val documentId: String,
     val directory: String,
     record: LectureRecord?,
     private val settingsStore: AssistantSettingsStore,
@@ -183,19 +183,13 @@ class Lecture internal constructor(
     private val seenPages = LinkedHashMap<String, SeenPage>()
     private val imageCache = mutableMapOf<String, ByteArray>()
     internal var lastPageCount = Int.MAX_VALUE
-    internal var lastPageDbIds: List<Int> = emptyList()
+    internal var lastPageIds: List<String> = emptyList()
 
     init {
         if (record != null) {
             // Saved while recording: the recording was interrupted (see LectureLibrary)
             status = LectureStatus.FINISHED
-            record.pages.forEach { seenPages[pageKey(it.content.index, it.content.dbId)] = it }
-            // The first versions kept the images only
-            for (page in record.reviewPages) {
-                seenPages.getOrPut(pageKey(page.pageIndex, page.pageDbId)) {
-                    SeenPage(PageContent(page.pageIndex, page.pageDbId, hasInk = true), page.file, visible = true)
-                }
-            }
+            record.pages.forEach { seenPages[pageKey(it.content.index, it.content.pageId)] = it }
         }
     }
 
@@ -274,7 +268,7 @@ class Lecture internal constructor(
                     title = title,
                     content = content,
                     pageIndex = pageIndex,
-                    pageDbId = pageIndex?.let { lastPageDbIds.getOrNull(it) } ?: 0,
+                    pageId = pageIndex?.let { lastPageIds.getOrNull(it) }.orEmpty(),
                     importance = note.importance.coerceIn(1, 3),
                     atMs = (startMs + (note.atSeconds * 1000).toLong()).coerceIn(startMs, maxOf(startMs, endMs)),
                     fromFinalReview = fromFinalReview
@@ -305,16 +299,16 @@ class Lecture internal constructor(
     }
 
     /**
-     * Keeps what a capture of the notebook tells about the document: its pages (by database id,
+     * Keeps what a capture of the notebook tells about the document: its pages (by identifier,
      * the most recent last) and the images of the visible ones, for the final review.
      */
     internal fun rememberNotebook(snapshot: NotebookSnapshot) {
         lastPageCount = snapshot.pageCount
-        lastPageDbIds = snapshot.pageDbIds
+        lastPageIds = snapshot.pageIds
         val images = snapshot.pageImages.associateBy { it.pageIndex }
         // The farthest first: the visible pages end up the most recent
         for (content in snapshot.pages.asReversed()) {
-            val key = pageKey(content.index, content.dbId)
+            val key = pageKey(content.index, content.pageId)
             var file = seenPages[key]?.image
             images[content.index]?.let { image ->
                 val name = "$key.jpg"
@@ -342,17 +336,17 @@ class Lecture internal constructor(
      * The pages of the notebook of a lecture recorded elsewhere: what the student was looking at
      * is not known, so none is marked as on screen.
      */
-    internal fun setNotebookPages(contents: List<PageContent>, pageDbIds: List<Int>) {
+    internal fun setNotebookPages(contents: List<PageContent>, pageIds: List<String>) {
         lastPageCount = contents.size
-        lastPageDbIds = pageDbIds
+        lastPageIds = pageIds
         seenPages.clear()
-        for (content in contents) seenPages[pageKey(content.index, content.dbId)] = SeenPage(content)
+        for (content in contents) seenPages[pageKey(content.index, content.pageId)] = SeenPage(content)
     }
 
     /** Updates the pages seen with [contents] (e.g. their handwriting transcribed), in place. */
     internal fun updateSeenPages(contents: List<PageContent>) {
         for (content in contents) {
-            val key = pageKey(content.index, content.dbId)
+            val key = pageKey(content.index, content.pageId)
             val seen = seenPages[key] ?: continue
             seenPages[key] = seen.copy(content = content)
         }
@@ -363,8 +357,8 @@ class Lecture internal constructor(
     /** The pages seen during the lecture, as last seen. */
     internal fun seenPageContents(): List<PageContent> = seenPages.values.map { it.content }
 
-    /** The key of a page: its database id, or its index when it is not saved yet. */
-    private fun pageKey(index: Int, dbId: Int) = if (dbId > 0) "p$dbId" else "i$index"
+    /** The key of a page: its identifier, or its index when it is not known. */
+    private fun pageKey(index: Int, pageId: String) = if (pageId.isNotEmpty()) "p$pageId" else "i$index"
 
     /** The last images of the pages seen, the most recent first (read from the folder after a reload). */
     private fun seenImages(max: Int): List<PageImage> = seenPages.values.reversed()

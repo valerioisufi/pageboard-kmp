@@ -61,7 +61,7 @@ class TileScreenTest {
         assertTrue(visible.count * TilePyramid.TILE_SIZE * TilePyramid.TILE_SIZE * 4 > 32 * 1024 * 1024)
         assertTrue(stableFrames >= 5, "tiles are still rasterized after $frames frames ($last tiles)")
         visible.forEach { col, row ->
-            val tile = manager.tileCache.get(TileKey(doc.pages[0].uid, lod, col, row))
+            val tile = manager.tileCache.get(TileKey(doc.pages[0].renderKey, lod, col, row))
             assertEquals(TileState.READY, tile?.state, "tile $col,$row")
         }
         manager.cleanup()
@@ -75,7 +75,7 @@ class TileScreenTest {
         for (col in 0..1) for (row in 0..1) {
             val bitmap = manager.tileCache.obtainBitmap()
             Canvas(bitmap).drawRect(Rect(0f, 0f, 512f, 512f), Paint().apply { color = Color.Black })
-            manager.tileCache.put(Tile(TileKey(page.uid, 0, col, row), bitmap, TileState.READY))
+            manager.tileCache.put(Tile(TileKey(page.renderKey, 0, col, row), bitmap, TileState.READY))
         }
 
         for (scale in listOf(0.73f, 0.917f, 1.1f, 1.37f)) {

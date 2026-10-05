@@ -472,9 +472,7 @@ class AddPageAction(
         val targetIndex = index.coerceIn(0, doc.pages.size)
         doc.pages.add(targetIndex, page)
         doc.reindexPages()
-        context.persist {
-            if (page.dbId != 0) restorePage(doc, page, targetIndex) else insertPage(doc, page)
-        }
+        context.persist { insertPage(doc, page, targetIndex) }
         context.markLayoutNeedsUpdate()
     }
 }
@@ -492,7 +490,7 @@ class DeletePageAction(
         val targetIndex = index.coerceIn(0, doc.pages.size)
         doc.pages.add(targetIndex, page)
         doc.reindexPages()
-        context.persist { restorePage(doc, page, targetIndex) }
+        context.persist { insertPage(doc, page, targetIndex) }
         context.markLayoutNeedsUpdate()
     }
 

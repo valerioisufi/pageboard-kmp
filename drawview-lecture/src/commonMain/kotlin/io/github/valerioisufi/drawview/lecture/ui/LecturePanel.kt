@@ -135,7 +135,7 @@ private val PanelWidth = 380.dp
  * suggested notes, transcript, outline and final review.
  */
 @Composable
-internal fun LecturePanel(assistant: LectureAssistant, documentId: Int, controller: DrawViewController) {
+internal fun LecturePanel(assistant: LectureAssistant, documentId: String, controller: DrawViewController) {
     // The recording of the document sees its pages while the editor is open (and goes on without)
     DisposableEffect(assistant, documentId, controller) {
         val notebook = ControllerNotebookSource(controller)
@@ -228,7 +228,7 @@ private fun PanelHeader(onSettings: () -> Unit, onClose: () -> Unit) {
  * the shown one (with its audio).
  */
 @Composable
-private fun LectureSelector(assistant: LectureAssistant, documentId: Int, lecture: Lecture?) {
+private fun LectureSelector(assistant: LectureAssistant, documentId: String, lecture: Lecture?) {
     val lectures = assistant.lecturesOf(documentId)
     if (lectures.isEmpty() || lecture == null) return
     var expanded by remember { mutableStateOf(false) }
@@ -835,7 +835,7 @@ private fun OutlineTab(assistant: LectureAssistant, lecture: Lecture) {
 
 /** The course context of the notebook: shown, edited by the student, written again by the assistant. */
 @Composable
-private fun CourseContextCard(assistant: LectureAssistant, documentId: Int) {
+private fun CourseContextCard(assistant: LectureAssistant, documentId: String) {
     val context = assistant.contextOf(documentId)
     val writing = assistant.isWritingContext(documentId)
     var editing by remember(documentId) { mutableStateOf(false) }

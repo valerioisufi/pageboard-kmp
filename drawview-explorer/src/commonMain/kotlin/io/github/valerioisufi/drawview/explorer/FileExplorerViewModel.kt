@@ -29,7 +29,7 @@ class FileExplorerViewModel(private val store: DocumentStore) : ViewModel() {
     /** A document or a folder of the library. */
     data class FileItem(
         val type: FileType,
-        val id: Int,
+        val id: String,
         val name: String,
         val createdAt: Long,
         val modifiedAt: Long,
@@ -54,9 +54,9 @@ class FileExplorerViewModel(private val store: DocumentStore) : ViewModel() {
         private set
 
     /** Identifiers of the folders from the root to the current one. */
-    private val directoryIdSequence = mutableStateListOf<Int>()
+    private val directoryIdSequence = mutableStateListOf<String>()
 
-    private val currentFolderId: Int? get() = directoryIdSequence.lastOrNull()
+    private val currentFolderId: String? get() = directoryIdSequence.lastOrNull()
 
     /** The current folder, `null` in the root. */
     val currentFolder: FolderSummary? by derivedStateOf {
@@ -133,7 +133,7 @@ class FileExplorerViewModel(private val store: DocumentStore) : ViewModel() {
     }
 
     /** The sub-folders of [parentId] (`null`: the root), by name. */
-    fun getSubFolders(parentId: Int?): List<FolderSummary> =
+    fun getSubFolders(parentId: String?): List<FolderSummary> =
         folders.filter { it.parentId == parentId }.sortedBy { it.name }
 
     /**
@@ -168,7 +168,7 @@ class FileExplorerViewModel(private val store: DocumentStore) : ViewModel() {
                 FileType.FILE -> {
                     // The new note is not opened: its content is released right away
                     val document = store.createDocument(name, folderId = folderId)
-                    store.closeDocument(document.dbId)
+                    store.closeDocument(document.id)
                     true
                 }
             }
@@ -189,7 +189,7 @@ class FileExplorerViewModel(private val store: DocumentStore) : ViewModel() {
         viewModelScope.launch { delete(file) }
     }
 
-    fun moveFile(file: FileItem, targetFolderId: Int?) {
+    fun moveFile(file: FileItem, targetFolderId: String?) {
         viewModelScope.launch { move(file, targetFolderId) }
     }
 
@@ -197,7 +197,7 @@ class FileExplorerViewModel(private val store: DocumentStore) : ViewModel() {
      * Whether [files] can be moved into [targetFolderId]: not into the current folder (nothing
      * would change) nor into one of the moved folders.
      */
-    fun isValidMove(targetFolderId: Int?, files: List<FileItem> = selectedItems): Boolean {
+    fun isValidMove(targetFolderId: String?, files: List<FileItem> = selectedItems): Boolean {
         if (targetFolderId == currentFolderId) return false
         return files.none { it.type == FileType.FOLDER && it.id == targetFolderId }
     }
@@ -207,7 +207,7 @@ class FileExplorerViewModel(private val store: DocumentStore) : ViewModel() {
         FileType.FILE -> store.deleteDocument(file.id)
     }
 
-    private suspend fun move(file: FileItem, targetFolderId: Int?): Boolean = when (file.type) {
+    private suspend fun move(file: FileItem, targetFolderId: String?): Boolean = when (file.type) {
         FileType.FOLDER -> store.moveFolder(file.id, targetFolderId)
         FileType.FILE -> store.moveDocument(file.id, targetFolderId)
     }
@@ -249,7 +249,7 @@ class FileExplorerViewModel(private val store: DocumentStore) : ViewModel() {
         }
     }
 
-    fun moveSelected(targetFolderId: Int?) {
+    fun moveSelected(targetFolderId: String?) {
         val itemsToMove = selectedItems.toList()
         clearSelection()
         viewModelScope.launch {

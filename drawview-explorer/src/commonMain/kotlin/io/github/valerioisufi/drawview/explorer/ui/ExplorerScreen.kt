@@ -92,7 +92,7 @@ import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 @Composable
 fun ExplorerScreen(
     fileExplorerViewModel: FileExplorerViewModel,
-    onOpenDocument: (Int) -> Unit,
+    onOpenDocument: (String) -> Unit,
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     actions: @Composable RowScope.() -> Unit = { AboutLicensesButton() }

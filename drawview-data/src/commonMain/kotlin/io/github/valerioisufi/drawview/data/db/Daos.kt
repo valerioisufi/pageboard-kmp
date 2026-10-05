@@ -1,16 +1,20 @@
 package io.github.valerioisufi.drawview.data.db
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Embedded
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Relation
 import androidx.room.Transaction
-import androidx.room.Update
+import androidx.room.Upsert
 import io.github.valerioisufi.drawview.core.model.PageBackground
 import kotlinx.coroutines.flow.Flow
+
+/*
+ * The rows are written with @Upsert (insert, or update the row with the same identifier): an
+ * INSERT OR REPLACE would delete the row first, and the deletion of a page or of a document
+ * cascades to its content.
+ */
 
 /**
  * Data transfer object representing a page and its associated graphical content.
@@ -68,32 +72,29 @@ data class DocumentWithPages(
  */
 @Dao
 interface FolderDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(folder: FolderEntity): Long
+    @Insert
+    suspend fun insert(folder: FolderEntity)
 
     @Query("SELECT * FROM folders WHERE name = :name AND (parentId = :parentId OR (parentId IS NULL AND :parentId IS NULL))")
-    suspend fun getFolderByNameAndParent(name: String, parentId: Int?): FolderEntity?
-
-    @Query("SELECT * FROM folders WHERE parentId IS NULL")
-    suspend fun getRootFolders(): List<FolderEntity>
+    suspend fun getFolderByNameAndParent(name: String, parentId: String?): FolderEntity?
 
     @Query("SELECT * FROM folders WHERE parentId = :parentId")
-    suspend fun getSubFolders(parentId: Int): List<FolderEntity>
+    suspend fun getSubFolders(parentId: String): List<FolderEntity>
 
     @Query("SELECT * FROM folders WHERE id = :id")
-    suspend fun getFolderById(id: Int): FolderEntity?
+    suspend fun getFolderById(id: String): FolderEntity?
 
     @Query("SELECT * FROM folders ORDER BY name")
     fun getAllFoldersFlow(): Flow<List<FolderEntity>>
 
     @Query("UPDATE folders SET name = :newName, modifiedAt = :timestamp WHERE id = :id")
-    suspend fun renameFolder(id: Int, newName: String, timestamp: Long = currentTimeMillis())
+    suspend fun renameFolder(id: String, newName: String, timestamp: Long = currentTimeMillis())
 
     @Query("DELETE FROM folders WHERE id = :id")
-    suspend fun deleteById(id: Int)
+    suspend fun deleteById(id: String)
 
     @Query("UPDATE folders SET parentId = :newParentId, modifiedAt = :timestamp WHERE id = :id")
-    suspend fun moveFolder(id: Int, newParentId: Int?, timestamp: Long = currentTimeMillis())
+    suspend fun moveFolder(id: String, newParentId: String?, timestamp: Long = currentTimeMillis())
 }
 
 /**
@@ -101,54 +102,42 @@ interface FolderDao {
  */
 @Dao
 interface DocumentDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(document: DocumentEntity): Long
+    @Insert
+    suspend fun insert(document: DocumentEntity)
 
     @Query("SELECT * FROM documents WHERE id = :documentId")
-    suspend fun getDocumentById(documentId: Int): DocumentEntity?
+    suspend fun getDocumentById(documentId: String): DocumentEntity?
 
     @Transaction
     @Query("SELECT * FROM documents WHERE id = :documentId")
-    suspend fun getFullDocumentWithPages(documentId: Int): DocumentWithPages?
+    suspend fun getFullDocumentWithPages(documentId: String): DocumentWithPages?
 
     @Query("UPDATE documents SET lastOpenedAt = :timestamp WHERE id = :documentId")
-    suspend fun updateLastOpened(documentId: Int, timestamp: Long = currentTimeMillis())
+    suspend fun updateLastOpened(documentId: String, timestamp: Long = currentTimeMillis())
 
-    @Delete
-    suspend fun delete(document: DocumentEntity)
+    @Query("DELETE FROM documents WHERE id = :documentId")
+    suspend fun deleteById(documentId: String)
 
-    @Query("SELECT * FROM documents WHERE name = :name AND folderId IS NULL")
-    suspend fun getRootDocumentByName(name: String): DocumentEntity?
+    @Query("SELECT * FROM documents WHERE name = :name AND (folderId = :folderId OR (folderId IS NULL AND :folderId IS NULL))")
+    suspend fun getDocumentByNameAndFolder(name: String, folderId: String?): DocumentEntity?
 
-    @Query("SELECT * FROM documents WHERE name = :name AND folderId = :folderId")
-    suspend fun getDocumentByNameAndFolder(name: String, folderId: Int): DocumentEntity?
-
-    @Query("SELECT * FROM documents WHERE folderId IS NULL ORDER BY modifiedAt DESC")
-    suspend fun getRootDocuments(): List<DocumentEntity>
-
-    @Query("SELECT * FROM documents WHERE folderId = :folderId ORDER BY modifiedAt DESC")
-    suspend fun getDocumentsInFolder(folderId: Int): List<DocumentEntity>
+    @Query("SELECT * FROM documents WHERE folderId = :folderId")
+    suspend fun getDocumentsInFolder(folderId: String): List<DocumentEntity>
 
     @Query("UPDATE documents SET name = :newName, modifiedAt = :timestamp WHERE id = :id")
-    suspend fun renameDocument(id: Int, newName: String, timestamp: Long = currentTimeMillis())
+    suspend fun renameDocument(id: String, newName: String, timestamp: Long = currentTimeMillis())
 
     @Query("UPDATE documents SET folderId = :newFolderId, modifiedAt = :timestamp WHERE id = :id")
-    suspend fun moveDocument(id: Int, newFolderId: Int?, timestamp: Long = currentTimeMillis())
-
-    @Query("SELECT * FROM documents ORDER BY lastOpenedAt DESC LIMIT :limit")
-    suspend fun getRecentDocuments(limit: Int): List<DocumentEntity>
-
-    @Query("SELECT * FROM documents ORDER BY modifiedAt DESC LIMIT :limit")
-    fun getRecentDocumentsFlow(limit: Int): Flow<List<DocumentEntity>>
+    suspend fun moveDocument(id: String, newFolderId: String?, timestamp: Long = currentTimeMillis())
 
     @Query("SELECT * FROM documents ORDER BY modifiedAt DESC")
     fun getAllDocumentsFlow(): Flow<List<DocumentEntity>>
 
     @Query("UPDATE documents SET modifiedAt = :timestamp WHERE id = :documentId")
-    suspend fun touchDocument(documentId: Int, timestamp: Long = currentTimeMillis())
+    suspend fun touchDocument(documentId: String, timestamp: Long = currentTimeMillis())
 
     @Query("UPDATE documents SET defaultBackground = :background, defaultWidth = :width, defaultHeight = :height WHERE id = :documentId")
-    suspend fun updateDocumentDefaults(documentId: Int, background: PageBackground, width: Float, height: Float)
+    suspend fun updateDocumentDefaults(documentId: String, background: PageBackground, width: Float, height: Float)
 }
 
 /**
@@ -156,46 +145,33 @@ interface DocumentDao {
  */
 @Dao
 interface PageDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(page: PageEntity): Long
+    @Upsert
+    suspend fun upsert(page: PageEntity)
 
     @Query("SELECT * FROM pages WHERE documentId = :documentId ORDER BY pageNumber ASC")
-    suspend fun getPagesForDocument(documentId: Int): List<PageEntity>
+    suspend fun getPagesForDocument(documentId: String): List<PageEntity>
 
-    @Transaction
-    @Query("SELECT * FROM pages WHERE id = :pageId")
-    suspend fun getPageWithContent(pageId: Int): PageWithContent?
+    @Query("UPDATE pages SET pageNumber = pageNumber + 1 WHERE documentId = :documentId AND pageNumber >= :startIndex")
+    suspend fun shiftPagesUp(documentId: String, startIndex: Int)
 
-    @Query("DELETE FROM pages WHERE id = :pageId")
-    suspend fun deleteById(pageId: Int)
+    @Query("UPDATE pages SET pageNumber = pageNumber - 1 WHERE documentId = :documentId AND pageNumber > :deletedIndex")
+    suspend fun shiftPagesDown(documentId: String, deletedIndex: Int)
 
-    @Query("UPDATE pages SET pageNumber = pageNumber + 1 WHERE documentId = :docId AND pageNumber >= :startIndex")
-    suspend fun shiftPagesUp(docId: Int, startIndex: Int)
-
-    @Query("UPDATE pages SET pageNumber = pageNumber - 1 WHERE documentId = :docId AND pageNumber > :deletedIndex")
-    suspend fun shiftPagesDown(docId: Int, deletedIndex: Int)
-
-    @Query("UPDATE pages SET pageNumber = :newIndex WHERE id = :pageDbId")
-    suspend fun updatePageNumber(pageDbId: Int, newIndex: Int)
+    @Query("UPDATE pages SET pageNumber = :newIndex WHERE id = :pageId")
+    suspend fun updatePageNumber(pageId: String, newIndex: Int)
 
     @Query("UPDATE pages SET isDeleted = 1 WHERE id = :pageId")
-    suspend fun softDeletePage(pageId: Int)
+    suspend fun softDeletePage(pageId: String)
 
-    @Query("UPDATE pages SET isDeleted = 0, pageNumber = :newIndex WHERE id = :pageId")
-    suspend fun restorePage(pageId: Int, newIndex: Int)
-
-    @Query("SELECT * FROM pages WHERE id = :pageId")
-    suspend fun getPageById(pageId: Int): PageEntity?
+    @Query("UPDATE pages SET width = :width, height = :height, background = :background WHERE id = :pageId")
+    suspend fun updateFormat(pageId: String, width: Float, height: Float, background: PageBackground?)
 
     /**
      * Permanently removes the soft-deleted pages of a document (the undo history does not
      * survive the editing session, so they cannot be restored anymore).
      */
     @Query("DELETE FROM pages WHERE documentId = :documentId AND isDeleted = 1")
-    suspend fun purgeDeletedPages(documentId: Int)
-
-    @Update
-    suspend fun update(page: PageEntity)
+    suspend fun purgeDeletedPages(documentId: String)
 }
 
 /**
@@ -203,23 +179,11 @@ interface PageDao {
  */
 @Dao
 interface StrokeDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(stroke: StrokeEntity): Long
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(strokes: List<StrokeEntity>)
-
-    @Query("SELECT * FROM strokes WHERE pageId = :pageId ORDER BY zIndex ASC")
-    suspend fun getStrokesForPage(pageId: Int): List<StrokeEntity>
-
-    @Query("DELETE FROM strokes WHERE id = :strokeId")
-    suspend fun deleteById(strokeId: Int)
+    @Upsert
+    suspend fun upsertAll(strokes: List<StrokeEntity>)
 
     @Query("DELETE FROM strokes WHERE id IN (:strokeIds)")
-    suspend fun deleteByIds(strokeIds: List<Int>)
-
-    @Query("DELETE FROM strokes WHERE pageId = :pageId")
-    suspend fun deleteAllFromPage(pageId: Int)
+    suspend fun deleteByIds(strokeIds: List<String>)
 }
 
 /**
@@ -227,17 +191,11 @@ interface StrokeDao {
  */
 @Dao
 interface TextDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(text: TextEntity): Long
-
-    @Query("SELECT * FROM texts WHERE pageId = :pageId ORDER BY zIndex ASC")
-    suspend fun getTextsForPage(pageId: Int): List<TextEntity>
-
-    @Update
-    suspend fun update(text: TextEntity)
+    @Upsert
+    suspend fun upsert(text: TextEntity)
 
     @Query("DELETE FROM texts WHERE id = :textId")
-    suspend fun deleteById(textId: Int)
+    suspend fun deleteById(textId: String)
 }
 
 /**
@@ -245,17 +203,11 @@ interface TextDao {
  */
 @Dao
 interface ImageDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(image: ImageEntity): Long
-
-    @Query("SELECT * FROM images WHERE pageId = :pageId ORDER BY zIndex ASC")
-    suspend fun getImagesForPage(pageId: Int): List<ImageEntity>
+    @Upsert
+    suspend fun upsert(image: ImageEntity)
 
     @Query("DELETE FROM images WHERE id = :imageId")
-    suspend fun deleteById(imageId: Int)
-
-    @Update
-    suspend fun update(image: ImageEntity)
+    suspend fun deleteById(imageId: String)
 }
 
 /**
@@ -263,11 +215,8 @@ interface ImageDao {
  */
 @Dao
 interface PdfDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(pdf: PdfEntity): Long
-
-    @Query("SELECT * FROM pdfs WHERE pageId = :pageId ORDER BY zIndex ASC")
-    suspend fun getPdfsForPage(pageId: Int): List<PdfEntity>
+    @Upsert
+    suspend fun upsert(pdf: PdfEntity)
 }
 
 /**
@@ -275,14 +224,11 @@ interface PdfDao {
  */
 @Dao
 interface TextMarkupDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(markup: TextMarkupEntity): Long
-
-    @Query("SELECT * FROM text_markups WHERE pageId = :pageId ORDER BY zIndex ASC")
-    suspend fun getMarkupsForPage(pageId: Int): List<TextMarkupEntity>
+    @Upsert
+    suspend fun upsert(markup: TextMarkupEntity)
 
     @Query("DELETE FROM text_markups WHERE id = :markupId")
-    suspend fun deleteById(markupId: Int)
+    suspend fun deleteById(markupId: String)
 }
 
 /**
@@ -290,12 +236,9 @@ interface TextMarkupDao {
  */
 @Dao
 interface ResourceDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(resource: ResourceEntity): Long
+    @Insert
+    suspend fun insert(resource: ResourceEntity)
 
     @Query("SELECT * FROM resources WHERE documentId = :documentId")
-    suspend fun getResourcesForDocument(documentId: Int): List<ResourceEntity>
-
-    @Query("DELETE FROM resources WHERE id = :resourceId")
-    suspend fun deleteById(resourceId: Int)
+    suspend fun getResourcesForDocument(documentId: String): List<ResourceEntity>
 }

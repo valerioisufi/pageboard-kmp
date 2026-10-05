@@ -22,7 +22,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun RecentFiles(
     fileExplorerViewModel: FileExplorerViewModel,
-    onOpenDocument: (Int) -> Unit,
+    onOpenDocument: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(

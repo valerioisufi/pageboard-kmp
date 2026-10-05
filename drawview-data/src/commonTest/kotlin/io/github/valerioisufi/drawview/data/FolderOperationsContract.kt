@@ -19,12 +19,12 @@ internal suspend fun checkFolderOperations(store: DocumentStore) {
 
     val inRoot = store.createDocument("Notes")
     val inAlgebra = store.createDocument("Groups", folderId = algebra.id)
-    assertEquals(algebra.id, store.documents.first().single { it.id == inAlgebra.dbId }.folderId)
+    assertEquals(algebra.id, store.documents.first().single { it.id == inAlgebra.id }.folderId)
 
     assertFalse(store.moveFolder(math.id, math.id), "a folder cannot be moved into itself")
     assertFalse(store.moveFolder(math.id, algebra.id), "a folder cannot be moved into a sub-folder")
-    assertTrue(store.moveDocument(inRoot.dbId, math.id))
-    assertEquals(math.id, store.documents.first().single { it.id == inRoot.dbId }.folderId)
+    assertTrue(store.moveDocument(inRoot.id, math.id))
+    assertEquals(math.id, store.documents.first().single { it.id == inRoot.id }.folderId)
     assertTrue(store.moveFolder(algebra.id, null))
     assertNull(store.folders.first().single { it.id == algebra.id }.parentId)
     assertTrue(store.renameFolder(algebra.id, "Linear algebra"))
@@ -35,5 +35,5 @@ internal suspend fun checkFolderOperations(store: DocumentStore) {
     assertTrue(store.deleteFolder(math.id))
     assertTrue(store.folders.first().isEmpty())
     assertTrue(store.documents.first().isEmpty())
-    assertNull(store.loadDocument(inAlgebra.dbId))
+    assertNull(store.loadDocument(inAlgebra.id))
 }

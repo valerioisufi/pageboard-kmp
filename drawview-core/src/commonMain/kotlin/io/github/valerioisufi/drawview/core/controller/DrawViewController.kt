@@ -7,12 +7,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
 import io.github.valerioisufi.drawview.core.camera.CalcPage
 import io.github.valerioisufi.drawview.core.camera.CameraPhysicsEngine
-import io.github.valerioisufi.drawview.core.geometry.Dimension
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
-import io.github.valerioisufi.drawview.core.geometry.mm
 import io.github.valerioisufi.drawview.core.history.AddStrokesAction
 import io.github.valerioisufi.drawview.core.history.BatchAction
 import io.github.valerioisufi.drawview.core.history.DrawAction
@@ -28,9 +25,7 @@ import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawThemeColors
 import io.github.valerioisufi.drawview.core.model.LassoMode
-import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.StrokeMesh
-import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.render.tile.TileManager
 import io.github.valerioisufi.drawview.core.util.currentTimeMillis
@@ -142,8 +137,6 @@ class DrawViewController(
         private set
     var defaultTextColor by mutableIntStateOf(0xFF000000.toInt())
         private set
-
-    val documentData: DrawDocument get() = document
 
     val selectedTool: Tool get() = toolManager.selectedTool
 
@@ -273,7 +266,7 @@ class DrawViewController(
 
     override fun invalidatePageContent(page: DrawPage, mmRect: Rect?) {
         val pageWorldRect = calcPage.pagesRectOnWindow.getOrNull(document.pages.indexOf(page))
-        if (mmRect == null) tileManager.invalidatePage(page.uid)
+        if (mmRect == null) tileManager.invalidatePage(page.renderKey)
         else tileManager.invalidatePageRegion(page, mmRect, pageWorldRect)
         requestRedraw()
     }
@@ -417,12 +410,6 @@ class DrawViewController(
         return render.mapPoint(worldPoint.x, worldPoint.y)
     }
 
-    /** Kept for compatibility: the "document" space of the canvas is the world space. */
-    fun screenToDocument(screenPoint: Offset): Offset = screenToWorld(screenPoint)
-
-    /** Kept for compatibility: the "document" space of the canvas is the world space. */
-    fun documentToScreen(docPoint: Offset): Offset = worldToScreen(docPoint)
-
     /** Matrix mapping the millimeters of page [pageIndex] to world space. */
     fun pageMmToWorld(pageIndex: Int): Matrix2D? {
         val page = document.pages.getOrNull(pageIndex) ?: return null
@@ -485,9 +472,6 @@ class DrawViewController(
         }
     }
 
-    /** Kept for compatibility. */
-    fun findPageIndexAt(docPoint: Offset): Int = findPageIndexAtWorld(docPoint, nearest = true).coerceAtLeast(0)
-
     // ==========================================================
     // Ink
     // ==========================================================
@@ -497,13 +481,6 @@ class DrawViewController(
      */
     fun brushForActiveTool(pageIndex: Int): BrushConfig? =
         toolManager.brushFor(toolManager.selectedTool, pixelsPerMm(pageIndex))
-
-    /**
-     * Kept for compatibility with headless callers.
-     */
-    val activeBrush: BrushConfig
-        get() = brushForActiveTool(firstVisiblePageIndex() ?: 0)
-            ?: BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 0.5f, color = Color.Black, epsilon = 0.02f)
 
     /**
      * Commits a completed ink stroke drawn on [originPageIndex] (mesh in the millimeters of that
@@ -563,20 +540,6 @@ class DrawViewController(
         requestRedraw()
     }
 
-    /**
-     * Kept for compatibility with headless callers: adds a stroke whose mesh is expressed in the
-     * millimeters of the page containing the center of [bounds].
-     */
-    fun addCompletedStroke(mesh: StrokeMesh, bounds: Rect) {
-        val page = document.pages.firstOrNull() ?: return
-        val stroke = DrawStroke(mesh = mesh, brushConfig = activeBrush, bounds = bounds, zIndex = page.strokes.size)
-        page.strokes.add(stroke)
-        page.markContentChanged()
-        historyManager.addHistoryAction(AddStrokesAction(page, listOf(stroke)))
-        persist { saveNewStrokes(page, listOf(stroke)) }
-        invalidatePageContent(page, bounds)
-    }
-
     // ==========================================================
     // History
     // ==========================================================
@@ -612,23 +575,6 @@ class DrawViewController(
         }
         if (actions.isNotEmpty()) historyManager.addHistoryAction(BatchAction(actions))
     }
-
-    // ==========================================================
-    // Pages (kept for compatibility, delegate to the PageManager)
-    // ==========================================================
-
-    fun addNewPage(
-        dimension: Dimension = Dimension(document.defaultWidthMm.mm, document.defaultHeightMm.mm),
-        background: PageBackground = document.defaultBackground
-    ): DrawPage {
-        val page = pageManager.addNewPageAtBottom()
-        if (dimension.width.mm != page.widthMm || dimension.height.mm != page.heightMm || background != page.background) {
-            pageManager.changeSinglePageTemplate(page.index, dimension, background)
-        }
-        return page
-    }
-
-    fun removePage(pageIndex: Int) = pageManager.deletePage(pageIndex)
 
     // ==========================================================
     // Camera

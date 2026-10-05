@@ -13,7 +13,7 @@ import kotlin.math.min
  */
 class InkBlock(
     val pageIndex: Int,
-    val pageDbId: Int,
+    val pageId: String,
     val key: String,
     val strokeIds: Set<String>,
     val bounds: Rect

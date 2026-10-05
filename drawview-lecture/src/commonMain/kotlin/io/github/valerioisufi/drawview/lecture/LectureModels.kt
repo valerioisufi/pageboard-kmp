@@ -23,8 +23,8 @@ enum class SuggestionStatus { NEW, INSERTED, ALREADY_NOTED, DISMISSED }
  *
  * @param content notebook-ready Markdown (formulas between `$...$`).
  * @param pageIndex page of the document where the content belongs (0-based), if known.
- * @param pageDbId database id of that page: the page is found again when the pages have been
- *   reordered (see [resolvedPageIndex]).
+ * @param pageId identifier of that page ([io.github.valerioisufi.drawview.core.model.DrawPage.id]):
+ *   the page is found again when the pages have been reordered (see [resolvedPageIndex]).
  * @param importance 1 (detail) to 3 (stressed by the lecturer, exam).
  * @param atMs time of the lecture when it was said.
  * @param fromFinalReview found by the review of the whole lecture.
@@ -36,17 +36,17 @@ data class NoteSuggestion(
     val title: String,
     val content: String,
     val pageIndex: Int? = null,
-    val pageDbId: Int = 0,
+    val pageId: String = "",
     val importance: Int = 2,
     val atMs: Long = 0,
     val fromFinalReview: Boolean = false,
     val status: SuggestionStatus = SuggestionStatus.NEW
 )
 
-/** The page of [document] where the suggestion belongs: by database id, or by index. */
+/** The page of [document] where the suggestion belongs: by identifier, or by index. */
 fun NoteSuggestion.resolvedPageIndex(document: DrawDocument): Int? {
-    if (pageDbId > 0) {
-        val index = readSnapshot { document.pages.indexOfFirst { it.dbId == pageDbId } }
+    if (pageId.isNotEmpty()) {
+        val index = readSnapshot { document.pages.indexOfFirst { it.id == pageId } }
         if (index >= 0) return index
     }
     return pageIndex?.takeIf { it in 0 until document.pages.size }
@@ -94,13 +94,6 @@ enum class LectureStatus { RECORDING, FINALIZING, FINISHED, IMPORTING }
 enum class ImportStep { CONVERTING, TRANSCRIBING, REVIEWING }
 
 /**
- * An image of the notes of the student kept for the final review by the first versions (read only
- * to load their lectures: see [SeenPage]).
- */
-@Serializable
-data class ReviewPage(val pageIndex: Int, val pageDbId: Int = 0, val file: String, val isCrop: Boolean = true)
-
-/**
  * A page of the notebook seen during the lecture, as last seen, kept for the final review (also
  * when the notebook is closed, or after a restart).
  *
@@ -116,7 +109,7 @@ data class SeenPage(val content: PageContent, val image: String? = null, val vis
 @Serializable
 data class LectureRecord(
     val id: String,
-    val documentId: Int,
+    val documentId: String,
     val documentTitle: String = "",
     val startedAt: Long,
     val durationMs: Long = 0,
@@ -131,9 +124,7 @@ data class LectureRecord(
     val finalReviewProvider: ReviewProvider? = null,
     val usage: TokenUsage = TokenUsage(),
     /** The pages of the notebook seen during the lecture, the most recent last. */
-    val pages: List<SeenPage> = emptyList(),
-    /** The images of the first versions, read as [pages]. */
-    val reviewPages: List<ReviewPage> = emptyList()
+    val pages: List<SeenPage> = emptyList()
 )
 
 /**

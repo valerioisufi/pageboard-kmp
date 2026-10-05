@@ -14,6 +14,7 @@ import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.core.model.readSnapshot
 import io.github.valerioisufi.drawview.core.platform.PlatformFiles
 import io.github.valerioisufi.drawview.core.util.SyncLock
@@ -91,8 +92,8 @@ class KeyValueDocumentStore(
     private val lock = SyncLock()
 
     private var index: StoredIndex = readIndex()
-    private val openDocuments = mutableMapOf<Int, DrawDocument>()
-    private val dirtyDocuments = mutableSetOf<Int>()
+    private val openDocuments = mutableMapOf<String, DrawDocument>()
+    private val dirtyDocuments = mutableSetOf<String>()
     private var saveJob: Job? = null
 
     private val _documents = MutableStateFlow(sortedSummaries(index))
@@ -120,13 +121,21 @@ class KeyValueDocumentStore(
         widthMm: Float,
         heightMm: Float,
         background: PageBackground,
-        folderId: Int?
+        folderId: String?
     ): DrawDocument {
         val now = currentTimeMillis()
         val document = syncLock(lock) {
-            val id = index.nextDocumentId
+            val document = DrawDocument(
+                title = name,
+                defaultWidthMm = widthMm,
+                defaultHeightMm = heightMm,
+                defaultBackground = background,
+                createdAt = now,
+                modifiedAt = now
+            )
+            document.lastOpenedAt = now
             val summary = StoredSummary(
-                id = id,
+                id = document.id,
                 name = name,
                 folderId = folderId,
                 createdAt = now,
@@ -136,21 +145,8 @@ class KeyValueDocumentStore(
                 defaultHeight = heightMm,
                 defaultBackground = background
             )
-            index = index.copy(nextDocumentId = id + 1, documents = index.documents + summary)
-            val document = DrawDocument(
-                id = id.toString(),
-                title = name,
-                defaultWidthMm = widthMm,
-                defaultHeightMm = heightMm,
-                defaultBackground = background,
-                createdAt = now,
-                modifiedAt = now,
-                dbId = id,
-                addInitialPage = false
-            )
-            document.lastOpenedAt = now
-            document.pages.add(DrawPage(index = 0, widthMm = widthMm, heightMm = heightMm, background = background, dbId = nextElementIdLocked()))
-            openDocuments[id] = document
+            index = index.copy(documents = index.documents + summary)
+            openDocuments[document.id] = document
             writeDocumentLocked(document)
             writeIndexLocked()
             document
@@ -159,19 +155,18 @@ class KeyValueDocumentStore(
         return document
     }
 
-    override suspend fun loadDocument(documentId: Int): DrawDocument? {
+    override suspend fun loadDocument(documentId: String): DrawDocument? {
         val document = syncLock(lock) {
             val summary = index.documents.firstOrNull { it.id == documentId } ?: return null
             val stored = storage.get(documentKey(documentId))?.let { decodeOrNull<StoredDocument>(it) }
             val document = DrawDocument(
-                id = documentId.toString(),
+                id = documentId,
                 title = summary.name,
                 defaultWidthMm = summary.defaultWidth,
                 defaultHeightMm = summary.defaultHeight,
                 defaultBackground = summary.defaultBackground,
                 createdAt = summary.createdAt,
                 modifiedAt = summary.modifiedAt,
-                dbId = documentId,
                 addInitialPage = false
             )
             document.lastOpenedAt = summary.lastOpenedAt
@@ -192,8 +187,7 @@ class KeyValueDocumentStore(
                         index = 0,
                         widthMm = summary.defaultWidth,
                         heightMm = summary.defaultHeight,
-                        background = summary.defaultBackground,
-                        dbId = nextElementIdLocked()
+                        background = summary.defaultBackground
                     )
                 )
             }
@@ -203,7 +197,7 @@ class KeyValueDocumentStore(
         return document
     }
 
-    override suspend fun renameDocument(documentId: Int, newName: String): Boolean {
+    override suspend fun renameDocument(documentId: String, newName: String): Boolean {
         val renamed = syncLock(lock) {
             val summary = index.documents.firstOrNull { it.id == documentId } ?: return false
             if (index.documents.any { it.id != documentId && it.folderId == summary.folderId && it.name == newName }) {
@@ -218,7 +212,7 @@ class KeyValueDocumentStore(
         return renamed
     }
 
-    override suspend fun deleteDocument(documentId: Int): Boolean {
+    override suspend fun deleteDocument(documentId: String): Boolean {
         syncLock(lock) {
             if (index.documents.none { it.id == documentId }) return false
             deleteDocumentLocked(documentId)
@@ -228,7 +222,7 @@ class KeyValueDocumentStore(
         return true
     }
 
-    override suspend fun moveDocument(documentId: Int, folderId: Int?): Boolean {
+    override suspend fun moveDocument(documentId: String, folderId: String?): Boolean {
         syncLock(lock) {
             val summary = index.documents.firstOrNull { it.id == documentId } ?: return false
             if (folderId != null && index.folders.none { it.id == folderId }) return false
@@ -240,7 +234,7 @@ class KeyValueDocumentStore(
         return true
     }
 
-    override suspend fun updateLastOpened(documentId: Int) {
+    override suspend fun updateLastOpened(documentId: String) {
         syncLock(lock) {
             val now = currentTimeMillis()
             updateSummaryLocked(documentId) { it.copy(lastOpenedAt = now) }
@@ -250,20 +244,20 @@ class KeyValueDocumentStore(
         publishSummaries()
     }
 
-    override suspend fun createFolder(name: String, parentId: Int?): Boolean {
+    override suspend fun createFolder(name: String, parentId: String?): Boolean {
         syncLock(lock) {
             if (parentId != null && index.folders.none { it.id == parentId }) return false
             if (index.folders.any { it.parentId == parentId && it.name == name }) return false
             val now = currentTimeMillis()
-            val folder = StoredFolder(index.nextFolderId, name, parentId, createdAt = now, modifiedAt = now)
-            index = index.copy(nextFolderId = folder.id + 1, folders = index.folders + folder)
+            val folder = StoredFolder(newElementId(), name, parentId, createdAt = now, modifiedAt = now)
+            index = index.copy(folders = index.folders + folder)
             writeIndexLocked()
         }
         publishSummaries()
         return true
     }
 
-    override suspend fun renameFolder(folderId: Int, newName: String): Boolean {
+    override suspend fun renameFolder(folderId: String, newName: String): Boolean {
         syncLock(lock) {
             val folder = index.folders.firstOrNull { it.id == folderId } ?: return false
             if (index.folders.any { it.parentId == folder.parentId && it.name == newName }) return false
@@ -274,7 +268,7 @@ class KeyValueDocumentStore(
         return true
     }
 
-    override suspend fun deleteFolder(folderId: Int): Boolean {
+    override suspend fun deleteFolder(folderId: String): Boolean {
         syncLock(lock) {
             if (index.folders.none { it.id == folderId }) return false
             // The folder and every sub-folder, at any depth
@@ -291,7 +285,7 @@ class KeyValueDocumentStore(
         return true
     }
 
-    override suspend fun moveFolder(folderId: Int, parentId: Int?): Boolean {
+    override suspend fun moveFolder(folderId: String, parentId: String?): Boolean {
         syncLock(lock) {
             val folder = index.folders.firstOrNull { it.id == folderId } ?: return false
             if (parentId != null && index.folders.none { it.id == parentId }) return false
@@ -311,7 +305,7 @@ class KeyValueDocumentStore(
 
     override suspend fun flush() = flushNow()
 
-    override fun closeDocument(documentId: Int) {
+    override fun closeDocument(documentId: String) {
         syncLock(lock) {
             openDocuments[documentId]?.let { writeDocumentLocked(it) }
             dirtyDocuments.remove(documentId)
@@ -362,7 +356,7 @@ class KeyValueDocumentStore(
     @OptIn(ExperimentalEncodingApi::class)
     override suspend fun addResource(document: DrawDocument, type: DrawResource.ResourceType, path: String): String {
         val id = syncLock(lock) {
-            val id = nextElementIdLocked().toString()
+            val id = newElementId()
             PlatformFiles.readBytes(path)?.let { bytes ->
                 if (!storage.set(resourceKey(path), Base64.encode(bytes))) {
                     lastWriteSucceeded = false
@@ -376,14 +370,9 @@ class KeyValueDocumentStore(
         return id
     }
 
-    override suspend fun insertPage(document: DrawDocument, page: DrawPage) {
-        if (page.dbId == 0) page.dbId = syncLock(lock) { nextElementIdLocked() }
-        markDocumentModified(document)
-    }
+    override suspend fun insertPage(document: DrawDocument, page: DrawPage, index: Int) = markDocumentModified(document)
 
     override suspend fun softDeletePage(document: DrawDocument, page: DrawPage, index: Int) = markDocumentModified(document)
-
-    override suspend fun restorePage(document: DrawDocument, page: DrawPage, index: Int) = markDocumentModified(document)
 
     override suspend fun updatePagesOrder(document: DrawDocument, pages: List<DrawPage>) = markDocumentModified(document)
 
@@ -391,7 +380,7 @@ class KeyValueDocumentStore(
 
     override suspend fun updateDocumentDefaults(document: DrawDocument) {
         syncLock(lock) {
-            updateSummaryLocked(document.dbId) {
+            updateSummaryLocked(document.id) {
                 it.copy(
                     defaultWidth = document.defaultWidthMm,
                     defaultHeight = document.defaultHeightMm,
@@ -404,7 +393,7 @@ class KeyValueDocumentStore(
     }
 
     override suspend fun touchDocument(document: DrawDocument, timestamp: Long) {
-        syncLock(lock) { updateSummaryLocked(document.dbId) { it.copy(modifiedAt = timestamp) } }
+        syncLock(lock) { updateSummaryLocked(document.id) { it.copy(modifiedAt = timestamp) } }
         markDocumentModified(document)
         publishSummaries()
     }
@@ -447,9 +436,10 @@ class KeyValueDocumentStore(
 
     private fun markDocumentModified(document: DrawDocument) {
         syncLock(lock) {
-            if (document.dbId == 0) return
-            openDocuments.getOrPut(document.dbId) { document }
-            dirtyDocuments.add(document.dbId)
+            // Documents of other stores (e.g. kept in memory) are not written
+            if (index.documents.none { it.id == document.id }) return
+            openDocuments.getOrPut(document.id) { document }
+            dirtyDocuments.add(document.id)
         }
         scheduleSave()
     }
@@ -476,16 +466,16 @@ class KeyValueDocumentStore(
         _preferences.value = updated.toDrawPreferences()
     }
 
-    private inline fun updateSummaryLocked(documentId: Int, transform: (StoredSummary) -> StoredSummary) {
+    private inline fun updateSummaryLocked(documentId: String, transform: (StoredSummary) -> StoredSummary) {
         index = index.copy(documents = index.documents.map { if (it.id == documentId) transform(it) else it })
     }
 
-    private inline fun updateFolderLocked(folderId: Int, transform: (StoredFolder) -> StoredFolder) {
+    private inline fun updateFolderLocked(folderId: String, transform: (StoredFolder) -> StoredFolder) {
         index = index.copy(folders = index.folders.map { if (it.id == folderId) transform(it) else it })
     }
 
     /** Removes a document, its stored content and its resources (the caller writes the index). */
-    private fun deleteDocumentLocked(documentId: Int) {
+    private fun deleteDocumentLocked(documentId: String) {
         val stored = storage.get(documentKey(documentId))?.let { decodeOrNull<StoredDocument>(it) }
         stored?.resources?.forEach { resource ->
             storage.remove(resourceKey(resource.uri))
@@ -498,12 +488,6 @@ class KeyValueDocumentStore(
         openDocuments.remove(documentId)
         dirtyDocuments.remove(documentId)
         index = index.copy(documents = index.documents.filter { it.id != documentId })
-    }
-
-    private fun nextElementIdLocked(): Int {
-        val id = index.nextElementId
-        index = index.copy(nextElementId = id + 1)
-        return id
     }
 
     private fun publishSummaries() {
@@ -520,10 +504,10 @@ class KeyValueDocumentStore(
 
     private fun writeDocumentLocked(document: DrawDocument) {
         val stored = readSnapshot { document.toStored() }
-        val written = storage.set(documentKey(document.dbId), json.encodeToString(StoredDocument.serializer(), stored))
+        val written = storage.set(documentKey(document.id), json.encodeToString(StoredDocument.serializer(), stored))
         if (!written) {
             lastWriteSucceeded = false
-            println("DrawView: the storage quota does not allow saving the document ${document.dbId}")
+            println("DrawView: the storage quota does not allow saving the document ${document.id}")
         } else {
             lastWriteSucceeded = true
         }
@@ -564,7 +548,7 @@ class KeyValueDocumentStore(
         private const val INDEX_KEY = PREFIX + "index"
         private const val PREFERENCES_KEY = PREFIX + "preferences"
 
-        private fun documentKey(id: Int) = PREFIX + "document." + id
+        private fun documentKey(id: String) = PREFIX + "document." + id
         private fun resourceKey(path: String) = PREFIX + "file." + path
     }
 }
@@ -575,18 +559,15 @@ class KeyValueDocumentStore(
 
 @Serializable
 internal data class StoredIndex(
-    val nextDocumentId: Int = 1,
-    val nextElementId: Int = 1,
     val documents: List<StoredSummary> = emptyList(),
-    val nextFolderId: Int = 1,
     val folders: List<StoredFolder> = emptyList()
 )
 
 @Serializable
 internal data class StoredFolder(
-    val id: Int,
+    val id: String,
     val name: String,
-    val parentId: Int? = null,
+    val parentId: String? = null,
     val createdAt: Long,
     val modifiedAt: Long
 ) {
@@ -595,9 +576,9 @@ internal data class StoredFolder(
 
 @Serializable
 internal data class StoredSummary(
-    val id: Int,
+    val id: String,
     val name: String,
-    val folderId: Int? = null,
+    val folderId: String? = null,
     val createdAt: Long,
     val modifiedAt: Long,
     val lastOpenedAt: Long,
@@ -629,7 +610,7 @@ internal data class StoredResource(val id: String, val type: String, val uri: St
 
 @Serializable
 internal data class StoredPage(
-    val id: Int = 0,
+    val id: String,
     val width: Float,
     val height: Float,
     /** `null` when the page follows the default background of the document. */
@@ -643,6 +624,7 @@ internal data class StoredPage(
 
 @Serializable
 internal data class StoredStroke(
+    val id: String,
     val zIndex: Int,
     val color: Int,
     val size: Float,
@@ -654,6 +636,7 @@ internal data class StoredStroke(
 
 @Serializable
 internal data class StoredText(
+    val id: String,
     val zIndex: Int,
     val text: String,
     val isLatex: Boolean = false,
@@ -670,6 +653,7 @@ internal data class StoredText(
 
 @Serializable
 internal data class StoredImage(
+    val id: String,
     val zIndex: Int,
     val resourceId: String,
     val x: Float,
@@ -680,10 +664,11 @@ internal data class StoredImage(
 )
 
 @Serializable
-internal data class StoredPdf(val zIndex: Int, val resourceId: String, val pdfPageIndex: Int)
+internal data class StoredPdf(val id: String, val zIndex: Int, val resourceId: String, val pdfPageIndex: Int)
 
 @Serializable
 internal data class StoredTextMarkup(
+    val id: String,
     val zIndex: Int,
     val resourceId: String,
     val pdfPageIndex: Int,
@@ -727,12 +712,13 @@ internal data class StoredPreferences(
 private fun DrawDocument.toStored(): StoredDocument = StoredDocument(
     pages = pages.map { page ->
         StoredPage(
-            id = page.dbId,
+            id = page.id,
             width = page.widthMm,
             height = page.heightMm,
             background = if (page.hasCustomBackground) page.background else null,
             strokes = page.strokes.map { stroke ->
                 StoredStroke(
+                    id = stroke.id,
                     zIndex = stroke.zIndex,
                     color = stroke.brushConfig.color.toArgb(),
                     size = stroke.brushConfig.size,
@@ -743,6 +729,7 @@ private fun DrawDocument.toStored(): StoredDocument = StoredDocument(
             },
             texts = page.texts.map { text ->
                 StoredText(
+                    id = text.id,
                     zIndex = text.zIndex,
                     text = text.text,
                     isLatex = text.isLatex,
@@ -759,6 +746,7 @@ private fun DrawDocument.toStored(): StoredDocument = StoredDocument(
             },
             images = page.images.map { image ->
                 StoredImage(
+                    id = image.id,
                     zIndex = image.zIndex,
                     resourceId = image.resourceId,
                     x = image.x,
@@ -768,9 +756,10 @@ private fun DrawDocument.toStored(): StoredDocument = StoredDocument(
                     rotation = image.rotation
                 )
             },
-            pdfs = page.pdfs.map { StoredPdf(it.zIndex, it.resourceId, it.pdfPageIndex) },
+            pdfs = page.pdfs.map { StoredPdf(it.id, it.zIndex, it.resourceId, it.pdfPageIndex) },
             markups = page.markups.map { markup ->
                 StoredTextMarkup(
+                    id = markup.id,
                     zIndex = markup.zIndex,
                     resourceId = markup.resourceId,
                     pdfPageIndex = markup.pdfPageIndex,
@@ -796,7 +785,7 @@ private fun StoredPage.toPage(pageIndex: Int, defaultBackground: PageBackground)
         widthMm = width,
         heightMm = height,
         background = background ?: defaultBackground,
-        dbId = id
+        id = id
     )
     page.hasCustomBackground = background != null
     for (stroke in strokes.sortedBy { it.zIndex }) {
@@ -812,13 +801,14 @@ private fun StoredPage.toPage(pageIndex: Int, defaultBackground: PageBackground)
                 toolTypeName = stroke.toolType,
                 size = stroke.size,
                 color = stroke.color,
-                zIndex = stroke.zIndex
+                zIndex = stroke.zIndex,
+                id = stroke.id
             )
         )
     }
     for (text in texts.sortedBy { it.zIndex }) {
         page.texts.add(
-            DrawText(text.zIndex).apply {
+            DrawText(text.zIndex, text.id).apply {
                 this.text = text.text
                 isLatex = text.isLatex
                 isMarkdownEnabled = text.isMarkdownEnabled
@@ -835,7 +825,7 @@ private fun StoredPage.toPage(pageIndex: Int, defaultBackground: PageBackground)
     }
     for (image in images.sortedBy { it.zIndex }) {
         page.images.add(
-            DrawImage(image.zIndex).apply {
+            DrawImage(image.zIndex, image.id).apply {
                 resourceId = image.resourceId
                 x = image.x
                 y = image.y
@@ -846,7 +836,7 @@ private fun StoredPage.toPage(pageIndex: Int, defaultBackground: PageBackground)
         )
     }
     for (pdf in pdfs.sortedBy { it.zIndex }) {
-        page.pdfs.add(DrawPdf(pdf.zIndex, pdf.pdfPageIndex).apply { resourceId = pdf.resourceId })
+        page.pdfs.add(DrawPdf(pdf.zIndex, pdf.pdfPageIndex, pdf.id).apply { resourceId = pdf.resourceId })
     }
     for (markup in markups.sortedBy { it.zIndex }) {
         page.markups.add(
@@ -861,7 +851,8 @@ private fun StoredPage.toPage(pageIndex: Int, defaultBackground: PageBackground)
                 rects = markup.rects,
                 kind = markup.kind,
                 color = markup.color,
-                zIndex = markup.zIndex
+                zIndex = markup.zIndex,
+                id = markup.id
             )
         )
     }

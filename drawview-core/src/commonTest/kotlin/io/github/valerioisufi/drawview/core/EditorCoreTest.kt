@@ -33,6 +33,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
+import kotlinx.coroutines.yield
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class EditorCoreTest {
@@ -164,12 +165,12 @@ class EditorCoreTest {
         val calls = mutableListOf<String>()
         val persistence = object : DrawPersistence {
             override suspend fun saveNewStrokes(page: DrawPage, strokes: List<DrawStroke>) {
-                strokes.forEach { it.dbId = 42 }
-                calls.add("save")
+                yield()
+                calls.add("save:${strokes.first().id}")
             }
 
             override suspend fun deleteStrokes(strokes: List<DrawStroke>) {
-                calls.add("delete:${strokes.first().dbId}")
+                calls.add("delete:${strokes.first().id}")
             }
         }
         val queue = PersistenceQueue(backgroundScope, persistence)
@@ -177,7 +178,7 @@ class EditorCoreTest {
         queue.enqueue { saveNewStrokes(DrawPage(), listOf(s)) }
         queue.enqueue { deleteStrokes(listOf(s)) }
         queue.flush()
-        assertEquals(listOf("save", "delete:42"), calls)
+        assertEquals(listOf("save:${s.id}", "delete:${s.id}"), calls)
     }
 
     // --- Controller ---

@@ -36,30 +36,30 @@ class RoomDocumentStore(val database: DrawDatabase) : DocumentStore {
         widthMm: Float,
         heightMm: Float,
         background: PageBackground,
-        folderId: Int?
+        folderId: String?
     ): DrawDocument = repository.createDocument(name, widthMm, heightMm, background, folderId)
 
-    override suspend fun loadDocument(documentId: Int): DrawDocument? = repository.loadDocument(documentId)
+    override suspend fun loadDocument(documentId: String): DrawDocument? = repository.loadDocument(documentId)
 
-    override suspend fun renameDocument(documentId: Int, newName: String): Boolean =
+    override suspend fun renameDocument(documentId: String, newName: String): Boolean =
         fileRepository.renameDocument(documentId, newName)
 
-    override suspend fun deleteDocument(documentId: Int): Boolean = fileRepository.deleteDocument(documentId)
+    override suspend fun deleteDocument(documentId: String): Boolean = fileRepository.deleteDocument(documentId)
 
-    override suspend fun moveDocument(documentId: Int, folderId: Int?): Boolean =
+    override suspend fun moveDocument(documentId: String, folderId: String?): Boolean =
         fileRepository.moveDocument(documentId, folderId)
 
-    override suspend fun updateLastOpened(documentId: Int) =
-        repository.updateLastOpened(documentId, currentTimeMillis())
+    override suspend fun updateLastOpened(documentId: String) =
+        fileRepository.updateLastOpened(documentId, currentTimeMillis())
 
-    override suspend fun createFolder(name: String, parentId: Int?): Boolean = fileRepository.createFolder(name, parentId)
+    override suspend fun createFolder(name: String, parentId: String?): Boolean = fileRepository.createFolder(name, parentId)
 
-    override suspend fun renameFolder(folderId: Int, newName: String): Boolean =
+    override suspend fun renameFolder(folderId: String, newName: String): Boolean =
         fileRepository.renameFolder(folderId, newName)
 
-    override suspend fun deleteFolder(folderId: Int): Boolean = fileRepository.deleteFolder(folderId)
+    override suspend fun deleteFolder(folderId: String): Boolean = fileRepository.deleteFolder(folderId)
 
-    override suspend fun moveFolder(folderId: Int, parentId: Int?): Boolean = fileRepository.moveFolder(folderId, parentId)
+    override suspend fun moveFolder(folderId: String, parentId: String?): Boolean = fileRepository.moveFolder(folderId, parentId)
 }
 
 internal fun DocumentEntity.toSummary() = DocumentSummary(

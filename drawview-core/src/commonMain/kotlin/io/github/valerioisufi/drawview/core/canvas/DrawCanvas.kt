@@ -20,17 +20,13 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
-import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawText
-import io.github.valerioisufi.drawview.core.model.StrokeMesh
 
 /**
  * Full-featured vector drawing canvas: multi-resolution tiles for the committed content, live
@@ -127,7 +123,7 @@ fun DrawCanvas(
                 viewportBounds = viewport,
                 document = document,
                 pageRects = controller.calcPage.pagesRectOnWindow,
-                skipPageUid = draggedPage?.uid
+                skipPageKey = draggedPage?.renderKey
             )
         }
 
@@ -225,75 +221,4 @@ private fun DrawScope.drawPaperSheet(rect: Rect, paper: Color, elevated: Boolean
         )
     }
     drawRect(color = paper, topLeft = rect.topLeft, size = rect.size)
-}
-
-/**
- * Headless vector drawing canvas (kept for compatibility with the first phase API): strokes are
- * drawn in screen space without pages nor camera.
- */
-@Composable
-fun DrawCanvas(
-    modifier: Modifier = Modifier,
-    brushConfig: BrushConfig = BrushConfig(),
-    strokes: List<StrokeMesh> = emptyList(),
-    onStrokeCompleted: (StrokeMesh) -> Unit = {},
-    engine: InkStrokeEngine = remember { InkStrokeEngine() }
-) {
-    var liveMesh by remember { mutableStateOf<StrokeMesh?>(null) }
-    val painter = remember { StrokeMeshPainter() }
-
-    DisposableEffect(engine) {
-        onDispose {
-            engine.release()
-        }
-    }
-
-    Canvas(
-        modifier = modifier
-            .fillMaxSize()
-            .pointerInput(brushConfig, engine) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent(PointerEventPass.Main)
-                        val change = event.changes.firstOrNull() ?: continue
-
-                        when (event.type) {
-                            PointerEventType.Press -> {
-                                engine.startStroke(brushConfig, strokeUnitLengthCm = 0f)
-                                liveMesh = engine.addPoint(
-                                    x = change.position.x,
-                                    y = change.position.y,
-                                    pressure = change.pressure,
-                                    timeMs = change.uptimeMillis
-                                )
-                            }
-                            PointerEventType.Move -> {
-                                if (change.pressed) {
-                                    liveMesh = engine.addPoint(
-                                        x = change.position.x,
-                                        y = change.position.y,
-                                        pressure = change.pressure,
-                                        timeMs = change.uptimeMillis
-                                    )
-                                }
-                            }
-                            PointerEventType.Release -> {
-                                val completed = engine.finishStroke()
-                                liveMesh = null
-                                if (completed != null && !completed.isEmpty) {
-                                    onStrokeCompleted(completed)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-    ) {
-        drawIntoCanvas { canvas ->
-            for (stroke in strokes) {
-                painter.draw(canvas, stroke)
-            }
-            liveMesh?.let { live -> painter.draw(canvas, live) }
-        }
-    }
 }
