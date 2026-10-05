@@ -179,7 +179,7 @@ class Lecture internal constructor(
             // The first versions kept the images only
             for (page in record.reviewPages) {
                 seenPages.getOrPut(pageKey(page.pageIndex, page.pageDbId)) {
-                    SeenPage(PageContent(page.pageIndex, page.pageDbId, hasInk = true), page.file)
+                    SeenPage(PageContent(page.pageIndex, page.pageDbId, hasInk = true), page.file, visible = true)
                 }
             }
         }
@@ -317,8 +317,9 @@ class Lecture internal constructor(
                     file = name
                 }
             }
+            val visible = seenPages[key]?.visible == true || content.index in snapshot.visiblePageIndexes
             seenPages.remove(key)
-            seenPages[key] = SeenPage(content, file)
+            seenPages[key] = SeenPage(content, file, visible)
         }
         // The images of the pages seen longest ago are dropped
         val withImage = seenPages.filterValues { it.image != null }.keys.toList()
@@ -339,6 +340,8 @@ class Lecture internal constructor(
             seenPages[key] = seen.copy(content = content)
         }
     }
+
+    private fun visibleSeenPages(): Set<Int> = seenPages.values.filter { it.visible }.mapTo(mutableSetOf()) { it.content.index }
 
     /** The pages seen during the lecture, as last seen. */
     internal fun seenPageContents(): List<PageContent> = seenPages.values.map { it.content }
@@ -407,7 +410,8 @@ class Lecture internal constructor(
                         transcript = transcriptCopy,
                         pages = seenPages.values.map { it.content },
                         pageImages = seenImages(MAX_REVIEW_IMAGES),
-                        audioFile = audioFile
+                        audioFile = audioFile,
+                        visiblePages = visibleSeenPages()
                     )
                 }
                 ModelProvider.LOCAL -> LecturePrompts.finalReviewPrompt(
@@ -416,7 +420,8 @@ class Lecture internal constructor(
                     memory = memory(elapsedMs),
                     transcript = transcriptCopy,
                     pages = seenPages.values.map { it.content },
-                    pageImages = seenImages(MAX_LOCAL_REVIEW_IMAGES)
+                    pageImages = seenImages(MAX_LOCAL_REVIEW_IMAGES),
+                    visiblePages = visibleSeenPages()
                 )
             }
             val answer = generateWithRetries(backends.of(provider), prompt, model) { tokens ->

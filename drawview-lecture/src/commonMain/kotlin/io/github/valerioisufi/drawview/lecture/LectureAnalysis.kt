@@ -79,13 +79,16 @@ object LectureAnalysis {
 
     /**
      * Bullet points as "- ": the canvas reads a single `*` as italic, and the models (the small
-     * local ones in particular) often write "*   item"; line breaks written in HTML (`<br>`) as
-     * new lines.
+     * local ones in particular) often write "*   item"; line breaks written in HTML (`<br>`) or
+     * escaped twice in the JSON (a "\\n" left in the text, not followed by a letter as the LaTeX
+     * commands are) as new lines.
      */
-    internal fun normalizeMarkdown(markdown: String): String = markdown.replace(LINE_BREAK, "\n").replace(BULLET, "$1- ")
+    internal fun normalizeMarkdown(markdown: String): String =
+        markdown.replace(LINE_BREAK, "\n").replace(LITERAL_NEW_LINE, "\n").replace(BULLET, "$1- ")
 
     private val BULLET = Regex("""(?m)^([ \t]*)[*+][ \t]+""")
     private val LINE_BREAK = Regex("""[ \t]*<br\s*/?>[ \t]*""", RegexOption.IGNORE_CASE)
+    private val LITERAL_NEW_LINE = Regex("""\\n(?![A-Za-z])""")
 
     /**
      * The LaTeX commands written with a single backslash in the JSON strings, as the models (the

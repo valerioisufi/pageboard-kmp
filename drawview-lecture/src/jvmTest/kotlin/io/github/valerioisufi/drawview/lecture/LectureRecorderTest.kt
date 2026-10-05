@@ -195,6 +195,7 @@ class LectureRecorderTest {
         assertTrue(requests[2].contains("https://x/files/rec"))
         // The review reads the pages seen
         assertTrue(requests[2].contains("### Page 3\\nSlide 2 of PDF 1:\\nDerivate"), requests[2])
+        assertTrue(requests[2].contains("### Page 2 (visible)"))
         assertEquals(2, lecture.transcript.size)
         // The second chunk repeated the same note: not duplicated
         assertEquals(listOf("Definizione di limite", "Esercizio d'esame"), lecture.suggestions.map { it.title })
@@ -222,7 +223,7 @@ class LectureRecorderTest {
         assertEquals(
             listOf(
                 SeenPage(PageContent(2, dbId = 12, slide = SlideText(1, 1, "Derivate"))),
-                SeenPage(PageContent(1, dbId = 11, slide = SlideText(1, 0, "Limiti"), hasInk = true), "p11.jpg")
+                SeenPage(PageContent(1, dbId = 11, slide = SlideText(1, 0, "Limiti"), hasInk = true), "p11.jpg", visible = true)
             ),
             record.pages
         )

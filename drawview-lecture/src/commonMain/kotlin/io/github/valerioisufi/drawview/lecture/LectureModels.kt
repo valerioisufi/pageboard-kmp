@@ -101,9 +101,10 @@ data class ReviewPage(val pageIndex: Int, val pageDbId: Int = 0, val file: Strin
  * when the notebook is closed, or after a restart).
  *
  * @param image file in `pages/` of the lecture with its last image (the visible pages only).
+ * @param visible the page was on screen (the others were around it).
  */
 @Serializable
-data class SeenPage(val content: PageContent, val image: String? = null)
+data class SeenPage(val content: PageContent, val image: String? = null, val visible: Boolean = false)
 
 /**
  * A recorded lecture, saved as `lecture.json` next to its audio.

@@ -111,7 +111,8 @@ class LecturePromptsTest {
 
     @Test
     fun theCourseContextIsWrittenFromTheNotebookAndHelpsTheTranscription() {
-        val prompt = LecturePrompts.courseContextPrompt("Analisi 1", notebook.pages)
+        val prompt = LecturePrompts.courseContextPrompt(AssistantSettings(whisperLanguage = "it"), "Analisi 1", notebook.pages)
+        assertTrue(prompt.system.contains("short context in Italian"))
         val text = prompt.parts.filterIsInstance<PromptPart.Text>().single().text
         assertTrue(text.startsWith("## Notebook: Analisi 1"))
         assertTrue(text.contains("Teorema ponte") && text.contains("Limiti di funzioni"))
@@ -124,6 +125,13 @@ class LecturePromptsTest {
         )
         assertEquals(20, LecturePrompts.transcriptionPrompt(memory.courseContext, emptyList(), maxChars = 20).length)
         assertEquals("", LecturePrompts.transcriptionPrompt("", emptyList()))
+    }
+
+    @Test
+    fun theNotesAreInTheLanguageSpokenNotInTheOneOfTheSlides() {
+        assertTrue(LecturePrompts.chunkSystemInstruction(AssistantSettings(whisperLanguage = "it")).contains("write currentTopic, outline and notes in Italian, the language of the lecture"))
+        assertTrue(LecturePrompts.chunkSystemInstruction(AssistantSettings()).contains("not necessarily the language of the slides"))
+        assertTrue(LecturePrompts.chunkSystemInstruction(AssistantSettings(notesLanguage = "English", whisperLanguage = "it")).contains("in English."))
     }
 
     @Test
@@ -175,7 +183,7 @@ class LecturePromptsTest {
         val texts = prompt.parts.filterIsInstance<PromptPart.Text>().joinToString("\n") { it.text }
         assertTrue(texts.contains("[0:00] Buongiorno\n[1:00] Oggi i limiti"))
         assertTrue(texts.contains("the recording is not available"))
-        assertTrue(texts.contains("## Notebook pages seen during the lecture"))
+        assertTrue(texts.contains("## Notebook during the lecture"))
         assertTrue(texts.contains("Slide 3 of PDF 1:\nTeorema ponte"))
         // Neither audio nor files (a local model receives text and images), images in page order
         assertTrue(prompt.parts.none { it is PromptPart.Audio || it is PromptPart.File })
@@ -277,6 +285,8 @@ class LectureAnalysisTest {
         val review = LectureAnalysis.parseFinalReview("""{"notesMarkdown":"*   uno\n*   due","missing":[]}""")
         assertEquals("- uno\n- due", review.notesMarkdown)
         assertEquals("- **A**: uno\n- **B**: due\ntre", LectureAnalysis.normalizeMarkdown("- **A**: uno<br>- **B**: due <BR/> tre"))
+        // A new line escaped twice, not a LaTeX command
+        assertEquals("messaggio.\n- **Corollario** ${'$'}a \\neq b${'$'}", LectureAnalysis.normalizeMarkdown("messaggio.\\n- **Corollario** ${'$'}a \\neq b${'$'}"))
     }
 
     @Test

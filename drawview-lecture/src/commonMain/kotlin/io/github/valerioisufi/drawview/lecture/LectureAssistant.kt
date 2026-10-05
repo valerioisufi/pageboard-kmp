@@ -169,7 +169,7 @@ class LectureAssistant(
         val reader = HandwritingReader(library.documentDirectory(documentId) + "/handwriting.json", backends)
         val blocks = notebook.inkBlocks(pages.filter { it.hasInk }.map { it.index })
         val filled = pages.map { page -> reader.fill(page, blocks.filter { it.pageIndex == page.index }) }
-        val prompt = LecturePrompts.courseContextPrompt(notebook.documentTitle, filled)
+        val prompt = LecturePrompts.courseContextPrompt(settingsStore.settings, notebook.documentTitle, filled)
         val answer = when (task.provider) {
             ModelProvider.GEMINI -> backends.gemini.generate(prompt, task.gemini)
             ModelProvider.LOCAL -> backends.local.generate(prompt, task.local, OllamaBackend.LIVE_KEEP_LOADED_SECONDS) {}

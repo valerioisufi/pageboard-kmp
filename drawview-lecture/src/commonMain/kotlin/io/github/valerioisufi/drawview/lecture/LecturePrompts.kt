@@ -59,8 +59,17 @@ class LectureMemory(
  */
 object LecturePrompts {
 
+    /**
+     * The language spoken, by its name ("Italian"), when the settings say it: the slides are often
+     * in another language (English), which the models would follow otherwise.
+     */
+    internal fun spokenLanguage(settings: AssistantSettings): String? = LANGUAGE_NAMES[settings.whisperLanguage.trim().lowercase()]
+
     private fun languageRule(settings: AssistantSettings, fields: String, withTranscript: Boolean): String {
-        val language = settings.notesLanguage.trim().ifEmpty { "the language of the lecture" }
+        val language = settings.notesLanguage.trim().ifEmpty {
+            spokenLanguage(settings)?.let { "$it, the language of the lecture" }
+                ?: "the language spoken in the lecture (not necessarily the language of the slides)"
+        }
         return if (withTranscript) "Language: write the transcript in the language spoken; write $fields in $language."
         else "Language: write $fields in $language."
     }
@@ -116,6 +125,7 @@ object LecturePrompts {
 
         Write:
         - notesMarkdown: complete, well organized notes of the whole lecture in Markdown, to study from: headings following the structure of the lecture, concise bullet points, definitions, formulas in LaTeX between ${'$'}...${'$'}, examples, and what the lecturer stressed or announced (in a "**Important**" line, translated). Integrate slides and notes of the student without copying the slides verbatim: refer to them (e.g. "p. 12") when useful. Never invent content that was not said or shown.
+        - Write about what the lecturer discussed: the slides and the notes of the student help you complete and organize it, but the nearby pages that were never on screen were probably not discussed, and are not part of the notes unless the lecturer talked about them.
         - $MARKDOWN_RULE
         - $PAGE_NUMBER_RULE
         - missing: the important content of the lecture that is still missing from the notebook (slides, notes of the student and suggested notes marked as inserted or already noted), in the same format as the live notes, with the notebook page where it belongs and atSeconds measured from the start of the lecture. Empty when nothing is missing.
@@ -195,7 +205,8 @@ object LecturePrompts {
      * The review of the whole lecture: the complete recording ([audioFile], Gemini) when it could be
      * uploaded, the transcript in any case.
      *
-     * @param pages the pages of the notebook seen during the lecture.
+     * @param pages the pages of the notebook seen during the lecture, and those around them.
+     * @param visiblePages the pages that were on screen (by index).
      * @param pageImages images of some of them, as last seen.
      */
     fun finalReviewPrompt(
@@ -205,7 +216,8 @@ object LecturePrompts {
         transcript: List<TranscriptSegment>,
         pages: List<PageContent>,
         pageImages: List<PageImage>,
-        audioFile: GeminiFile? = null
+        audioFile: GeminiFile? = null,
+        visiblePages: Set<Int> = emptySet()
     ): ModelPrompt {
         val parts = mutableListOf<PromptPart>()
         courseText(memory.courseContext, documentTitle)?.let { parts.add(PromptPart.Text(it)) }
@@ -213,8 +225,8 @@ object LecturePrompts {
             val withImage = pageImages.mapTo(mutableSetOf()) { it.pageIndex }
             parts.add(
                 PromptPart.Text(
-                    "## Notebook pages seen during the lecture (as last seen)\n" +
-                        pagesText(pages.sortedBy { it.index }, visible = emptySet(), withImage = withImage, maxChars = MAX_REVIEW_NOTEBOOK_CHARS)
+                    "## Notebook during the lecture (as last seen; \"visible\": the page was on screen, the others were nearby)\n" +
+                        pagesText(pages.sortedBy { it.index }, visible = visiblePages, withImage = withImage, maxChars = MAX_REVIEW_NOTEBOOK_CHARS)
                 )
             )
             for (image in pageImages.sortedBy { it.pageIndex }) {
@@ -256,9 +268,9 @@ object LecturePrompts {
     }
 
     /** The course context of a notebook, written from its pages (slides, typed and handwritten notes). */
-    fun courseContextPrompt(documentTitle: String, pages: List<PageContent>): ModelPrompt = ModelPrompt(
+    fun courseContextPrompt(settings: AssistantSettings, documentTitle: String, pages: List<PageContent>): ModelPrompt = ModelPrompt(
         system = """
-            You prepare a lecture assistant for a university course. From the notebook of the course (its title, the text of its slides, the notes of the student), write a short context in the language of the slides:
+            You prepare a lecture assistant for a university course. From the notebook of the course (its title, the text of its slides, the notes of the student), write a short context in ${spokenLanguage(settings) ?: "the language of the notes of the student, or of the slides"}, keeping the technical terms as they are written on the slides:
             - first line: the course and the subject of the notebook;
             - second line: the main topics, separated by semicolons;
             - third line: the technical terms, acronyms and names that the lecturer will likely say, separated by commas, the most specific first.
@@ -405,6 +417,13 @@ object LecturePrompts {
 
     /** Text of the pages around the visible ones in a live request. */
     private const val MAX_NOTEBOOK_TEXT_CHARS = 8_000
+
+    /** English names of the languages of the speech recognition, by ISO code. */
+    private val LANGUAGE_NAMES = mapOf(
+        "it" to "Italian", "en" to "English", "es" to "Spanish", "fr" to "French", "de" to "German", "pt" to "Portuguese",
+        "nl" to "Dutch", "pl" to "Polish", "ro" to "Romanian", "el" to "Greek", "ru" to "Russian", "uk" to "Ukrainian",
+        "zh" to "Chinese", "ja" to "Japanese", "ar" to "Arabic"
+    )
 
     /** Text of the notebook from which the course context is written. */
     private const val MAX_CONTEXT_NOTEBOOK_CHARS = 20_000
