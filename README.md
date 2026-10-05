@@ -94,9 +94,9 @@ On the desktop, the microphone button of the editor opens the lecture assistant:
 | I missed something | Gemini | Ollama, on the transcript of the last minutes |
 | Final review | Gemini (the complete recording when the audio may be sent) | Ollama (e.g. `gemma4:12b`), on the transcript and the notes |
 
-The local models must accept images (the notes of the student); they are unloaded from the memory at the end of the lecture or of the review. The whisper model is a ggml file (e.g. `ggml-large-v3-turbo-q5_0.bin` of [whisper.cpp](https://huggingface.co/ggerganov/whisper.cpp)), set in the settings or put in `whisper/` of the data directory.
+The settings need no path or command: they say whether [Ollama](https://ollama.com) is running (with a link to install it), list its models (those that read images, as they must to read the notes of the student) and download the recommended ones, and download the speech recognition model of whisper.cpp (`large-v3-turbo-q5_0`, 574 MB, by default) into `whisper/` of the data directory; the language spoken is chosen from a menu. The local models are unloaded from the memory at the end of the lecture or of the review. The address of Ollama, a model file of one's own and the reasoning of Gemini are under "Advanced".
 
-The other settings: the Gemini API key (or the `GEMINI_API_KEY` environment variable), the reasoning, the update interval, the language of the notes. The key is saved in `lectures/assistant-settings.json` (readable by the user only). On macOS the microphone must be allowed to PencilNotes, or to the terminal running `./gradlew :pencilnotes-desktop:run`. The panel says what is sent to Google with the chosen providers (nothing when everything is local): ask the lecturer before recording.
+The other settings: the Gemini API key (or the `GEMINI_API_KEY` environment variable), the update interval, the language of the notes. The key is saved in `lectures/assistant-settings.json` (readable by the user only). On macOS the microphone must be allowed to PencilNotes, or to the terminal running `./gradlew :pencilnotes-desktop:run`. The panel says what is sent to Google with the chosen providers (nothing when everything is local): ask the lecturer before recording.
 
 Running:
 

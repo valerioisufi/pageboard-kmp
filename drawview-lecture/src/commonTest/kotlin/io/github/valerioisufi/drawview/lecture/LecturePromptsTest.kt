@@ -327,6 +327,15 @@ class AssistantSettingsTest {
     }
 
     @Test
+    fun theLanguageSpokenIsACode() {
+        val store = AssistantSettingsStore("/nonexistent-dir/settings.json")
+        store.update(AssistantSettings(whisperLanguage = " IT "))
+        assertEquals("it", store.settings.whisperLanguage)
+        store.update(AssistantSettings(whisperLanguage = "italiano"))
+        assertEquals("auto", store.settings.whisperLanguage)
+    }
+
+    @Test
     fun whatIsSentToGoogle() {
         val local = TaskModel(provider = ModelProvider.LOCAL)
         assertEquals(setOf(SharedData.AUDIO, SharedData.NOTEBOOK), AssistantSettings().sentToGoogle)

@@ -54,6 +54,9 @@ class LectureAssistant(
         local = OllamaBackend(localClient) { settingsStore.settings.localUrl }
     )
 
+    /** The models on this computer (Ollama, whisper.cpp), for the settings. */
+    val localModels = LocalModels(settingsStore, localClient, stateContext = stateContext)
+
     /** The last recording (being recorded, being reviewed, or finished). */
     var recorder: LectureRecorder? by mutableStateOf(null)
         private set

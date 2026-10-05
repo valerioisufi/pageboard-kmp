@@ -161,7 +161,8 @@ class AssistantSettingsStore(
             },
             localUrl = newSettings.localUrl.trim().trimEnd('/').ifEmpty { AssistantSettings.DEFAULT_LOCAL_URL },
             whisperModel = newSettings.whisperModel.trim(),
-            whisperLanguage = newSettings.whisperLanguage.trim().lowercase().ifEmpty { "auto" }
+            // An ISO code ("it") or "auto": a name typed by hand is not understood by whisper
+            whisperLanguage = newSettings.whisperLanguage.trim().lowercase().takeIf { it == "auto" || ISO_LANGUAGE.matches(it) } ?: "auto"
         ).consistent()
         settings = sanitized
         if (PlatformFiles.writeBytes(path, json.encodeToString(AssistantSettings.serializer(), sanitized).encodeToByteArray())) {
@@ -180,6 +181,8 @@ class AssistantSettingsStore(
     }
 
     internal companion object {
+        private val ISO_LANGUAGE = Regex("[a-z]{2,3}")
+
         val json = Json {
             ignoreUnknownKeys = true
             prettyPrint = true

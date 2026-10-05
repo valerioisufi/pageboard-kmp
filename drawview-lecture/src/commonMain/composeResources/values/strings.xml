@@ -106,8 +106,6 @@
     <string name="lecture_settings_local_section">On this computer</string>
     <string name="lecture_settings_gemini_section">Gemini (online)</string>
     <string name="lecture_settings_lecture_section">Lecture</string>
-    <string name="lecture_settings_whisper_model">whisper model (ggml .bin file)</string>
-    <string name="lecture_settings_whisper_model_hint">Empty: the largest ggml-*.bin of %1$s. E.g. ggml-large-v3-turbo-q5_0.bin from huggingface.co/ggerganov/whisper.cpp.</string>
     <string name="lecture_settings_whisper_language">Language spoken</string>
     <string name="lecture_settings_gemini_model">Gemini model</string>
     <string name="lecture_settings_ollama_model">Ollama model</string>
@@ -136,4 +134,24 @@
     <string name="lecture_context_writing">Writing the context from the slides and your notes…</string>
     <string name="lecture_context_empty">At the start of the first lecture, the assistant writes the course, its topics and its terms from the slides and your notes.</string>
     <string name="lecture_context_hint">The transcription and the models use it to recognize the terms of the course.</string>
+    <string name="lecture_settings_advanced">Advanced</string>
+    <string name="lecture_settings_whisper_file">Speech recognition model file</string>
+    <string name="lecture_settings_whisper_file_hint">A ggml file of whisper.cpp of your own, instead of the model chosen above.</string>
+    <string name="lecture_whisper_model">Speech recognition model</string>
+    <string name="lecture_whisper_ready">Downloaded</string>
+    <string name="lecture_whisper_unavailable">The transcription on this computer is available in the desktop app only, for now.</string>
+    <string name="lecture_language_auto">Automatic</string>
+    <string name="lecture_local_ollama_checking">Looking for Ollama…</string>
+    <string name="lecture_local_ollama_running">Ollama is running (%1$s).</string>
+    <string name="lecture_local_ollama_missing">The local models run in Ollama, which is not running on this computer: install it (it is free), open it, then check again.</string>
+    <string name="lecture_local_ollama_install">Get Ollama</string>
+    <string name="lecture_local_check_again">Check again</string>
+    <string name="lecture_local_download">Download %1$s</string>
+    <string name="lecture_local_downloading">Downloading… %1$d%%</string>
+    <string name="lecture_local_downloading_unknown">Downloading…</string>
+    <string name="lecture_local_download_failed">The download failed: %1$s</string>
+    <string name="lecture_local_reads_images">reads images</string>
+    <string name="lecture_local_recommended">recommended</string>
+    <string name="lecture_local_recommended_not_installed">recommended, to download</string>
+    <string name="lecture_local_no_images">This model does not read images: choose one that does (e.g. gemma4), to read your notes.</string>
 </resources>

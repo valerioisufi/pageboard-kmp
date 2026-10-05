@@ -539,7 +539,7 @@ class LectureRecorderTest {
         recorder.start()
         microphone.speak(61.0, loud = true, random = Random(8))
         microphone.speak(1.0, loud = false, random = Random(8))
-        withTimeout(20_000) { while (requests.none { it.contains("You transcribe the handwritten notes") }) delay(20) }
+        withTimeout(20_000) { while (synchronized(requests) { requests.none { it.contains("You transcribe the handwritten notes") } }) delay(20) }
         microphone.speak(4.0, loud = true, random = Random(8))
         recorder.stop()
         awaitFinished(lecture)

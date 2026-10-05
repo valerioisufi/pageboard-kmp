@@ -182,7 +182,7 @@ internal fun LecturePanel(assistant: LectureAssistant, documentId: Int, controll
     }
 
     if (showSettings) {
-        AssistantSettingsDialog(store = assistant.settingsStore, onDismiss = { showSettings = false })
+        AssistantSettingsDialog(store = assistant.settingsStore, localModels = assistant.localModels, onDismiss = { showSettings = false })
     }
 }
 

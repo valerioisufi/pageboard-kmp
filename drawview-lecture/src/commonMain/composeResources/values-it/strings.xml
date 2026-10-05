@@ -106,8 +106,6 @@
     <string name="lecture_settings_local_section">Su questo computer</string>
     <string name="lecture_settings_gemini_section">Gemini (online)</string>
     <string name="lecture_settings_lecture_section">Lezione</string>
-    <string name="lecture_settings_whisper_model">Modello di whisper (file ggml .bin)</string>
-    <string name="lecture_settings_whisper_model_hint">Vuoto: il ggml-*.bin più grande di %1$s. Es. ggml-large-v3-turbo-q5_0.bin da huggingface.co/ggerganov/whisper.cpp.</string>
     <string name="lecture_settings_whisper_language">Lingua parlata</string>
     <string name="lecture_settings_gemini_model">Modello Gemini</string>
     <string name="lecture_settings_ollama_model">Modello Ollama</string>
@@ -136,4 +134,24 @@
     <string name="lecture_context_writing">Scrittura del contesto dalle slide e dai tuoi appunti…</string>
     <string name="lecture_context_empty">All\'inizio della prima lezione l\'assistente scrive il corso, i suoi argomenti e i suoi termini dalle slide e dai tuoi appunti.</string>
     <string name="lecture_context_hint">La trascrizione e i modelli lo usano per riconoscere i termini del corso.</string>
+    <string name="lecture_settings_advanced">Avanzate</string>
+    <string name="lecture_settings_whisper_file">File del modello di riconoscimento vocale</string>
+    <string name="lecture_settings_whisper_file_hint">Un tuo file ggml di whisper.cpp, al posto del modello scelto sopra.</string>
+    <string name="lecture_whisper_model">Modello di riconoscimento vocale</string>
+    <string name="lecture_whisper_ready">Scaricato</string>
+    <string name="lecture_whisper_unavailable">Per ora la trascrizione su questo computer è disponibile solo nell\'app desktop.</string>
+    <string name="lecture_language_auto">Automatica</string>
+    <string name="lecture_local_ollama_checking">Ricerca di Ollama…</string>
+    <string name="lecture_local_ollama_running">Ollama è in funzione (%1$s).</string>
+    <string name="lecture_local_ollama_missing">I modelli locali funzionano con Ollama, che non è in funzione su questo computer: installalo (è gratuito), aprilo e poi ricontrolla.</string>
+    <string name="lecture_local_ollama_install">Scarica Ollama</string>
+    <string name="lecture_local_check_again">Ricontrolla</string>
+    <string name="lecture_local_download">Scarica %1$s</string>
+    <string name="lecture_local_downloading">Download in corso… %1$d%%</string>
+    <string name="lecture_local_downloading_unknown">Download in corso…</string>
+    <string name="lecture_local_download_failed">Il download non è riuscito: %1$s</string>
+    <string name="lecture_local_reads_images">legge le immagini</string>
+    <string name="lecture_local_recommended">consigliato</string>
+    <string name="lecture_local_recommended_not_installed">consigliato, da scaricare</string>
+    <string name="lecture_local_no_images">Questo modello non legge le immagini: scegline uno che le legga (es. gemma4), per leggere i tuoi appunti.</string>
 </resources>
