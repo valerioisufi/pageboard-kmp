@@ -48,6 +48,17 @@ class LectureLibraryTest {
     }
 
     @Test
+    fun theCourseContextIsKeptNextToTheLectures() {
+        assertEquals(null, library.loadContext(5))
+        val context = CourseContext("Sicurezza informatica\nMAC; funzioni hash\nHMAC, SHA-256", edited = true, generatedAt = 7)
+        assertTrue(library.saveContext(5, context))
+        assertEquals(context, library.loadContext(5))
+        // Not a lecture
+        save(library.newLectureDirectory(5, 1_000), LectureRecord(id = "a", documentId = 5, startedAt = 1_000))
+        assertEquals(1, library.list(5).size)
+    }
+
+    @Test
     fun twoLecturesStartedInTheSameSecondGetTwoFolders() {
         val first = library.newLectureDirectory(5, 1_000)
         File(first).mkdirs()

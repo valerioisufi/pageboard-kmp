@@ -70,8 +70,6 @@
     <string name="lecture_settings_chunk_hint">Vale dalla prossima registrazione.</string>
     <string name="lecture_settings_language">Lingua degli appunti</string>
     <string name="lecture_settings_language_hint">Vuoto: la lingua della lezione.</string>
-    <string name="lecture_settings_context">Corso, argomento e terminologia</string>
-    <string name="lecture_settings_context_hint">Nomi, sigle e termini tecnici migliorano la trascrizione.</string>
     <string name="lecture_settings_thinking">Ragionamento</string>
     <string name="lecture_settings_thinking_low">Veloce</string>
     <string name="lecture_settings_thinking_medium">Bilanciato</string>
@@ -134,4 +132,10 @@
     <string name="lecture_privacy_audio">l\'audio</string>
     <string name="lecture_privacy_transcript">la trascrizione</string>
     <string name="lecture_privacy_notebook">le pagine e le slide che stai guardando</string>
+    <string name="lecture_context_title">Contesto del corso</string>
+    <string name="lecture_context_edit">Modifica</string>
+    <string name="lecture_context_write">Riscrivi</string>
+    <string name="lecture_context_writing">Scrittura del contesto dalle slide e dai tuoi appunti…</string>
+    <string name="lecture_context_empty">All\'inizio della prima lezione l\'assistente scrive il corso, i suoi argomenti e i suoi termini dalle slide e dai tuoi appunti.</string>
+    <string name="lecture_context_hint">La trascrizione e i modelli lo usano per riconoscere i termini del corso.</string>
 </resources>

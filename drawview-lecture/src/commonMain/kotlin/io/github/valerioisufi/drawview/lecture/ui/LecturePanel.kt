@@ -56,6 +56,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SecondaryScrollableTabRow
@@ -480,7 +481,7 @@ private fun LectureTabs(assistant: LectureAssistant, lecture: Lecture, controlle
         when (tab) {
             0 -> NotesTab(assistant, lecture, controller, inserter)
             1 -> TranscriptTab(lecture)
-            2 -> OutlineTab(lecture)
+            2 -> OutlineTab(assistant, lecture)
             else -> ReviewTab(lecture, controller, inserter, assistant.settingsStore.settings)
         }
     }
@@ -717,26 +718,91 @@ private fun TranscriptTab(lecture: Lecture) {
 }
 
 @Composable
-private fun OutlineTab(lecture: Lecture) {
-    if (lecture.outline.isBlank()) {
-        MutedText(stringResource(Res.string.lecture_outline_empty), Modifier.padding(16.dp))
-        return
-    }
-    SelectionContainer {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
-        ) {
-            if (lecture.currentTopic.isNotBlank()) {
-                Text(
-                    text = stringResource(Res.string.lecture_current_topic, lecture.currentTopic),
-                    style = MaterialTheme.typography.titleSmall
-                )
-                Spacer(Modifier.height(8.dp))
+private fun OutlineTab(assistant: LectureAssistant, lecture: Lecture) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        CourseContextCard(assistant, lecture.documentId)
+        if (lecture.outline.isBlank()) {
+            MutedText(stringResource(Res.string.lecture_outline_empty))
+        } else {
+            SelectionContainer {
+                Column {
+                    if (lecture.currentTopic.isNotBlank()) {
+                        Text(
+                            text = stringResource(Res.string.lecture_current_topic, lecture.currentTopic),
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
+                    MarkdownText(lecture.outline)
+                }
             }
-            MarkdownText(lecture.outline)
+        }
+    }
+}
+
+/** The course context of the notebook: shown, edited by the student, written again by the assistant. */
+@Composable
+private fun CourseContextCard(assistant: LectureAssistant, documentId: Int) {
+    val context = assistant.contextOf(documentId)
+    val writing = assistant.isWritingContext(documentId)
+    var editing by remember(documentId) { mutableStateOf(false) }
+    var draft by remember(documentId) { mutableStateOf("") }
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        shape = MaterialTheme.shapes.medium,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(Res.string.lecture_context_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.weight(1f)
+                )
+                if (!editing && !writing) {
+                    TextButton(onClick = {
+                        draft = context?.text.orEmpty()
+                        editing = true
+                    }) { Text(stringResource(Res.string.lecture_context_edit)) }
+                    if (assistant.canWriteContext(documentId)) {
+                        TextButton(onClick = { assistant.writeContext(documentId) }) { Text(stringResource(Res.string.lecture_context_write)) }
+                    }
+                }
+            }
+            when {
+                writing -> Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                    Spacer(Modifier.width(8.dp))
+                    MutedText(stringResource(Res.string.lecture_context_writing))
+                }
+                editing -> {
+                    OutlinedTextField(
+                        value = draft,
+                        onValueChange = { draft = it },
+                        minLines = 3,
+                        maxLines = 8,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Row(modifier = Modifier.align(Alignment.End)) {
+                        TextButton(onClick = { editing = false }) { Text(stringResource(Res.string.lecture_action_cancel)) }
+                        TextButton(onClick = {
+                            assistant.editContext(documentId, draft)
+                            editing = false
+                        }) { Text(stringResource(Res.string.lecture_action_save)) }
+                    }
+                }
+                context == null || context.text.isBlank() -> MutedText(stringResource(Res.string.lecture_context_empty))
+                else -> {
+                    SelectionContainer { Text(context.text, style = MaterialTheme.typography.bodySmall) }
+                    MutedText(stringResource(Res.string.lecture_context_hint))
+                }
+            }
         }
     }
 }

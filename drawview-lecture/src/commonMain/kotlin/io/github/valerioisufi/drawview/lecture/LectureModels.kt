@@ -131,6 +131,16 @@ data class LectureRecord(
     val reviewPages: List<ReviewPage> = emptyList()
 )
 
+/**
+ * The course of a notebook in a few lines (subject, topics, terms that the lecturer will say),
+ * written by the assistant from the notebook and editable by the student: it helps the
+ * transcription and the models. Saved as `context.json` of the lectures of the notebook.
+ *
+ * @param edited written or changed by the student: not replaced by a new one automatically.
+ */
+@Serializable
+data class CourseContext(val text: String, val edited: Boolean = false, val generatedAt: Long = 0)
+
 /** Formats [ms] as `m:ss` (or `h:mm:ss`). */
 fun formatLectureTime(ms: Long): String {
     val totalSeconds = (ms / 1000).coerceAtLeast(0)

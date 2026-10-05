@@ -285,7 +285,8 @@ class LectureRecorderTest {
         settingsStore: AssistantSettingsStore,
         engine: MockEngine,
         record: LectureRecord? = null,
-        name: String = "lecture"
+        name: String = "lecture",
+        courseContext: String = ""
     ) = Lecture(
         documentId = record?.documentId ?: 7,
         directory = File(directory, name).absolutePath,
@@ -296,7 +297,8 @@ class LectureRecorderTest {
             OllamaBackend(OllamaClient(HttpClient(engine))) { settingsStore.settings.localUrl }
         ),
         player = null,
-        stateContext = stateContext
+        stateContext = stateContext,
+        courseContext = { courseContext }
     ).apply { if (record == null) documentTitle = "Analisi 1" }
 
     private fun recorder(settingsStore: AssistantSettingsStore, engine: MockEngine, microphone: FakeMicrophone) =
@@ -574,8 +576,11 @@ class LectureRecorderTest {
 
     private class FakeTranscriber : Transcriber {
         var closed = false
-        override suspend fun transcribe(wav: ByteArray, language: String, prompt: String) =
-            listOf(TranscriptSegment(2_000, 5_000, "Il teorema ponte"), TranscriptSegment(5_000, 9_000, "vale per ogni successione"))
+        val prompts = Collections.synchronizedList(mutableListOf<String>())
+        override suspend fun transcribe(wav: ByteArray, language: String, prompt: String): List<TranscriptSegment> {
+            prompts.add(prompt)
+            return listOf(TranscriptSegment(2_000, 5_000, "Il teorema ponte"), TranscriptSegment(5_000, 9_000, "vale per ogni successione"))
+        }
 
         override suspend fun close() {
             closed = true
@@ -621,7 +626,7 @@ class LectureRecorderTest {
         }
         val microphone = FakeMicrophone()
         val transcriber = FakeTranscriber()
-        val lecture = newLecture(settingsStore, engine)
+        val lecture = newLecture(settingsStore, engine, courseContext = "Analisi 1\nLimiti\nteorema ponte")
         val recorder = LectureRecorder(lecture, settingsStore, microphone, FakeNotebook(), transcriber)
         recorder.start()
         val random = Random(8)
@@ -639,6 +644,9 @@ class LectureRecorderTest {
         assertTrue(live.contains("\"keep_alive\":600"))
         assertFalse(live.contains("audio/wav"))
         assertEquals(2_000L, lecture.suggestions.single().atMs)
+        // The course context helps the transcription, and the models
+        assertEquals("Analisi 1. Limiti. teorema ponte", transcriber.prompts.first())
+        assertTrue(live.contains("Course, topics and terminology:\\nAnalisi 1\\nLimiti\\nteorema ponte"), live)
         assertEquals(1, lecture.usage.localRequests)
         assertEquals(0, lecture.usage.requests)
 

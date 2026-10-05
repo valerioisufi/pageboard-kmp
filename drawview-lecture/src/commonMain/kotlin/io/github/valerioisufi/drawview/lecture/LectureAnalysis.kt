@@ -62,6 +62,12 @@ object LectureAnalysis {
     }
 
     @Serializable
+    private class ContextAnswer(val text: String = "")
+
+    /** The course context written by the model. */
+    fun parseCourseContext(text: String): String = parse(text, ContextAnswer.serializer()).text.trim()
+
+    @Serializable
     private class HandwritingAnswer(val blocks: List<HandwritingText> = emptyList())
 
     @Serializable
@@ -188,6 +194,15 @@ object LectureAnalysis {
             add("content")
             add("importance")
         }
+    }
+
+    /** JSON schema of the course context ([LecturePrompts.courseContextPrompt]). */
+    val courseContextSchema: JsonObject = buildJsonObject {
+        put("type", "object")
+        putJsonObject("properties") {
+            putJsonObject("text") { put("type", "string") }
+        }
+        putJsonArray("required") { add("text") }
     }
 
     /**

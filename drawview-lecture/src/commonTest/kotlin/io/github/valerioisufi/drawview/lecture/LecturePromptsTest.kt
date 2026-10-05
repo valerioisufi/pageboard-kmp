@@ -18,7 +18,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class LecturePromptsTest {
-    private val settings = AssistantSettings(courseContext = "Analisi 1, prof. Rossi: limiti, derivate")
+    private val settings = AssistantSettings()
 
     private val notebook = NotebookSnapshot(
         documentTitle = "Analisi 1",
@@ -46,7 +46,8 @@ class LecturePromptsTest {
         previousTranscript = "abbiamo visto",
         suggestions = listOf(
             NoteSuggestion("n1", NoteKind.DEFINITION, "Limite", "Definizione epsilon-delta", pageIndex = 4, atMs = 60_000, status = SuggestionStatus.ALREADY_NOTED)
-        )
+        ),
+        courseContext = "Analisi 1, prof. Rossi\nLimiti; derivate\nteorema ponte, epsilon-delta"
     )
 
     private fun prompt(catchUp: Boolean = false, includeOutline: Boolean = true): ModelPrompt = LecturePrompts.chunkPrompt(
@@ -106,6 +107,23 @@ class LecturePromptsTest {
             local.filterIsInstance<PromptPart.Text>().map { it.text },
             gemini.mapNotNull { it.text }
         )
+    }
+
+    @Test
+    fun theCourseContextIsWrittenFromTheNotebookAndHelpsTheTranscription() {
+        val prompt = LecturePrompts.courseContextPrompt("Analisi 1", notebook.pages)
+        val text = prompt.parts.filterIsInstance<PromptPart.Text>().single().text
+        assertTrue(text.startsWith("## Notebook: Analisi 1"))
+        assertTrue(text.contains("Teorema ponte") && text.contains("Limiti di funzioni"))
+        assertTrue(prompt.parts.none { it is PromptPart.Image })
+        assertEquals("Analisi 1\nLimiti", LectureAnalysis.parseCourseContext("""{"text":" Analisi 1\nLimiti "}"""))
+
+        assertEquals(
+            "Teorema ponte Sia f: A -> R. Analisi 1, prof. Rossi. Limiti; derivate. teorema ponte, epsilon-delta",
+            LecturePrompts.transcriptionPrompt(memory.courseContext, listOf("Teorema ponte\nSia f: A -> R\nPer ogni x"))
+        )
+        assertEquals(20, LecturePrompts.transcriptionPrompt(memory.courseContext, emptyList(), maxChars = 20).length)
+        assertEquals("", LecturePrompts.transcriptionPrompt("", emptyList()))
     }
 
     @Test

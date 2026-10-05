@@ -74,6 +74,9 @@ class LectureRecorder internal constructor(
     private var knownStrokeIds: Set<String>? = null
     private var initialStrokeIds: Set<String> = emptySet()
     private var lastNotebook: NotebookSnapshot? = null
+
+    /** Text of the slides the student was looking at, for the prompt of the transcription. */
+    private var visibleSlides: List<String> = emptyList()
     private val handwriting = HandwritingReader(lecture.directory.trimEnd('/').substringBeforeLast('/') + "/handwriting.json", lecture.backends)
     private val recentChunks = ArrayDeque<AudioChunk>()
     private var lastOutlineMs = Long.MIN_VALUE
@@ -362,7 +365,7 @@ class LectureRecorder internal constructor(
         }
         val audio = audioOf(chunks, contextMs = null) ?: return null
         val segments = try {
-            transcriber.transcribe(audio.wav, settings.whisperLanguage, settings.courseContext)
+            transcriber.transcribe(audio.wav, settings.whisperLanguage, LecturePrompts.transcriptionPrompt(lecture.courseContext(), visibleSlides))
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
@@ -451,7 +454,10 @@ class LectureRecorder internal constructor(
                 knownStrokeIds = it
                 initialStrokeIds = it
             }
-            handwriting.fill(source.capture(known, TEXT_PAGES, imagePages)).also { lastNotebook = it }
+            handwriting.fill(source.capture(known, TEXT_PAGES, imagePages)).also { snapshot ->
+                lastNotebook = snapshot
+                visibleSlides = snapshot.pages.filter { it.index in snapshot.visiblePageIndexes }.mapNotNull { it.slide?.text?.takeIf(String::isNotBlank) }
+            }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {

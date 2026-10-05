@@ -34,13 +34,18 @@ class RequestTranscript(
     override val endMs: Long
 ) : RequestSpeech
 
-/** What the assistant remembers of the lecture, sent with every request. */
+/**
+ * What the assistant remembers of the lecture, sent with every request.
+ *
+ * @param courseContext the course of the notebook ([CourseContext]).
+ */
 class LectureMemory(
     val elapsedMs: Long,
     val outline: String,
     val currentTopic: String,
     val previousTranscript: String,
-    val suggestions: List<NoteSuggestion>
+    val suggestions: List<NoteSuggestion>,
+    val courseContext: String = ""
 )
 
 /**
@@ -131,7 +136,7 @@ object LecturePrompts {
         val withAudio = speech is RequestAudio
         val source = if (withAudio) "audio" else "transcript"
         val parts = mutableListOf<PromptPart>()
-        courseText(settings, notebook?.documentTitle)?.let { parts.add(PromptPart.Text(it)) }
+        courseText(memory.courseContext, notebook?.documentTitle)?.let { parts.add(PromptPart.Text(it)) }
         parts.add(PromptPart.Text(memoryText(memory)))
         if (notebook != null) {
             parts.addAll(notebookParts(notebook))
@@ -203,7 +208,7 @@ object LecturePrompts {
         audioFile: GeminiFile? = null
     ): ModelPrompt {
         val parts = mutableListOf<PromptPart>()
-        courseText(settings, documentTitle)?.let { parts.add(PromptPart.Text(it)) }
+        courseText(memory.courseContext, documentTitle)?.let { parts.add(PromptPart.Text(it)) }
         if (pages.isNotEmpty()) {
             val withImage = pageImages.mapTo(mutableSetOf()) { it.pageIndex }
             parts.add(
@@ -240,14 +245,44 @@ object LecturePrompts {
         )
     }
 
-    private fun courseText(settings: AssistantSettings, documentTitle: String?): String? {
-        val context = settings.courseContext.trim()
+    private fun courseText(courseContext: String, documentTitle: String?): String? {
+        val context = courseContext.trim()
         if (context.isEmpty() && documentTitle.isNullOrBlank()) return null
         return buildString {
             appendLine("## Course")
             if (!documentTitle.isNullOrBlank()) appendLine("Notebook: $documentTitle")
-            if (context.isNotEmpty()) appendLine("Notes of the student about the course and its terminology:\n$context")
+            if (context.isNotEmpty()) appendLine("Course, topics and terminology:\n$context")
         }.trim()
+    }
+
+    /** The course context of a notebook, written from its pages (slides, typed and handwritten notes). */
+    fun courseContextPrompt(documentTitle: String, pages: List<PageContent>): ModelPrompt = ModelPrompt(
+        system = """
+            You prepare a lecture assistant for a university course. From the notebook of the course (its title, the text of its slides, the notes of the student), write a short context in the language of the slides:
+            - first line: the course and the subject of the notebook;
+            - second line: the main topics, separated by semicolons;
+            - third line: the technical terms, acronyms and names that the lecturer will likely say, separated by commas, the most specific first.
+            At most 120 words of plain text, no Markdown. It helps the speech recognition and the assistant: write only what appears in the notebook.
+        """.trimIndent(),
+        parts = listOf(
+            PromptPart.Text(
+                "## Notebook: $documentTitle\n" +
+                    pagesText(pages.sortedBy { it.index }, visible = emptySet(), withImage = emptySet(), maxChars = MAX_CONTEXT_NOTEBOOK_CHARS)
+            )
+        ),
+        schema = LectureAnalysis.courseContextSchema,
+        maxOutputTokens = 1024,
+        thinkingLevel = "low"
+    )
+
+    /**
+     * The prompt of the speech recognition: the slides the student is looking at (their first
+     * lines) and the course context, within [maxChars].
+     */
+    fun transcriptionPrompt(courseContext: String, visibleSlides: List<String>, maxChars: Int = 600): String {
+        val slides = visibleSlides.joinToString(". ") { it.lines().take(2).joinToString(" ") }.take(maxChars / 3)
+        val context = courseContext.lines().map { it.trim() }.filter { it.isNotEmpty() }.joinToString(". ")
+        return listOf(slides, context).filter { it.isNotBlank() }.joinToString(". ").take(maxChars)
     }
 
     private fun memoryText(memory: LectureMemory): String = buildString {
@@ -370,6 +405,9 @@ object LecturePrompts {
 
     /** Text of the pages around the visible ones in a live request. */
     private const val MAX_NOTEBOOK_TEXT_CHARS = 8_000
+
+    /** Text of the notebook from which the course context is written. */
+    private const val MAX_CONTEXT_NOTEBOOK_CHARS = 20_000
 
     /** Text of the pages seen during the lecture in the final review. */
     private const val MAX_REVIEW_NOTEBOOK_CHARS = 30_000

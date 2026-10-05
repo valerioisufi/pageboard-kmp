@@ -44,6 +44,21 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
         return directory
     }
 
+    /** The course context of [documentId], if any. */
+    fun loadContext(documentId: Int): CourseContext? {
+        val bytes = PlatformFiles.readBytes("${documentDirectory(documentId)}/context.json") ?: return null
+        return try {
+            Lecture.recordJson.decodeFromString(CourseContext.serializer(), bytes.decodeToString())
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    fun saveContext(documentId: Int, context: CourseContext): Boolean = PlatformFiles.writeBytes(
+        "${documentDirectory(documentId)}/context.json",
+        Lecture.recordJson.encodeToString(CourseContext.serializer(), context).encodeToByteArray()
+    )
+
     /** The lectures of [documentId], the most recent first. */
     fun list(documentId: Int): List<LectureSummary> {
         val documentPath = Path(documentDirectory(documentId))

@@ -58,7 +58,6 @@ data class TaskModel(
  * @param apiKey key of the Gemini API (empty: the `GEMINI_API_KEY` environment variable).
  * @param chunkSeconds new audio analyzed at every update.
  * @param notesLanguage language of the notes (empty: the language of the lecture).
- * @param courseContext course, topic and terminology, written by the student.
  * @param tasks provider and models of every kind of request (see [task]).
  * @param localUrl address of the Ollama server (the local models).
  * @param whisperServer path of the `whisper-server` program of whisper.cpp (empty: found in the
@@ -71,7 +70,6 @@ data class AssistantSettings(
     val apiKey: String = "",
     val chunkSeconds: Int = 60,
     val notesLanguage: String = "",
-    val courseContext: String = "",
     val thinkingLevel: String = "low",
     val tasks: Map<LectureTask, TaskModel> = emptyMap(),
     val localUrl: String = DEFAULT_LOCAL_URL,

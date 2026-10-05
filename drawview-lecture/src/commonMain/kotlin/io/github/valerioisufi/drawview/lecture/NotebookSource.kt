@@ -13,6 +13,8 @@ import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.PageContentSnapshot
 import io.github.valerioisufi.drawview.core.model.readSnapshot
 import io.github.valerioisufi.drawview.core.render.tile.TileRenderer
+import io.github.valerioisufi.drawview.core.util.SyncLock
+import io.github.valerioisufi.drawview.core.util.syncLock
 import io.github.valerioisufi.drawview.lecture.handwriting.InkBlock
 import io.github.valerioisufi.drawview.lecture.handwriting.blockKey
 import io.github.valerioisufi.drawview.lecture.handwriting.groupStrokes
@@ -107,6 +109,9 @@ interface NotebookSource {
      */
     suspend fun capture(knownStrokeIds: Set<String>, textPages: Int, imagePages: Int): NotebookSnapshot
 
+    /** Every page of the notebook in text, without images (e.g. to write the course context). */
+    suspend fun allPages(): List<PageContent> = emptyList()
+
     /** The handwriting of the pages [pageIndexes], in blocks. */
     suspend fun inkBlocks(pageIndexes: List<Int>): List<InkBlock> = emptyList()
 
@@ -122,6 +127,7 @@ interface NotebookSource {
 class ControllerNotebookSource(private val controller: DrawViewController) : NotebookSource {
     /** Text of the PDF pages, by resource and page (read once). */
     private val slideTexts = mutableMapOf<Pair<String, Int>, String>()
+    private val slideTextsLock = SyncLock()
 
     override val documentTitle: String get() = controller.document.title
 
@@ -145,23 +151,9 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
                 .sortedBy { if (it < first) first - it else it - last }
             val renderer = controller.tileManager.tileRenderer
             val contents = pages.map { it.snapshotContent() }
-            // The PDF documents numbered by their first page
-            val pdfNumbers = contents.flatMap { content -> content.pdfs.map { it.resourceId } }.distinct()
-                .withIndex().associate { (i, id) -> id to i + 1 }
+            val pdfNumbers = pdfNumbers(contents)
 
-            val pageContents = (visibleIndexes + around).map { index ->
-                val content = contents[index]
-                PageContent(
-                    index = index,
-                    dbId = pages[index].dbId,
-                    slide = content.pdfs.firstOrNull()?.let { pdf ->
-                        SlideText(pdfNumbers.getValue(pdf.resourceId), pdf.pdfPageIndex, slideText(pdf.resourceId, pdf.pdfPageIndex))
-                    },
-                    typedTexts = content.texts.map { it.text.trim() }.filter { it.isNotEmpty() },
-                    hasInk = content.strokes.any { it.isHandwriting },
-                    imageCount = content.images.size
-                )
-            }
+            val pageContents = (visibleIndexes + around).map { index -> pageContent(index, pages[index].dbId, contents[index], pdfNumbers) }
 
             val pageImages = visibleIndexes.take(imagePages).mapNotNull { index ->
                 val bitmap = try {
@@ -197,6 +189,30 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
         }
     }
 
+    override suspend fun allPages(): List<PageContent> {
+        val pages = withContext(Dispatchers.Main) { controller.document.pages.toList() }
+        return withContext(Dispatchers.Default) {
+            val contents = pages.map { it.snapshotContent() }
+            val pdfNumbers = pdfNumbers(contents)
+            contents.mapIndexed { index, content -> pageContent(index, pages[index].dbId, content, pdfNumbers) }
+        }
+    }
+
+    /** The PDF documents of the notebook numbered by their first page. */
+    private fun pdfNumbers(contents: List<PageContentSnapshot>): Map<String, Int> =
+        contents.flatMap { content -> content.pdfs.map { it.resourceId } }.distinct().withIndex().associate { (i, id) -> id to i + 1 }
+
+    private fun pageContent(index: Int, dbId: Int, content: PageContentSnapshot, pdfNumbers: Map<String, Int>) = PageContent(
+        index = index,
+        dbId = dbId,
+        slide = content.pdfs.firstOrNull()?.let { pdf ->
+            SlideText(pdfNumbers.getValue(pdf.resourceId), pdf.pdfPageIndex, slideText(pdf.resourceId, pdf.pdfPageIndex))
+        },
+        typedTexts = content.texts.map { it.text.trim() }.filter { it.isNotEmpty() },
+        hasInk = content.strokes.any { it.isHandwriting },
+        imageCount = content.images.size
+    )
+
     override suspend fun inkBlocks(pageIndexes: List<Int>): List<InkBlock> {
         val pages = withContext(Dispatchers.Main) { controller.document.pages.toList() }
         return withContext(Dispatchers.Default) {
@@ -230,10 +246,12 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
     }
 
     /** The text of a PDF page, without the empty lines, at most [MAX_SLIDE_TEXT_CHARS]. */
-    private fun slideText(resourceId: String, pdfPageIndex: Int): String = slideTexts.getOrPut(resourceId to pdfPageIndex) {
+    private fun slideText(resourceId: String, pdfPageIndex: Int): String {
+        syncLock(slideTextsLock) { slideTexts[resourceId to pdfPageIndex] }?.let { return it }
         val resource = controller.document.findResource(resourceId)?.takeIf { it.type == DrawResource.ResourceType.PDF }
-        val text = resource?.let { controller.tileManager.tileRenderer.pdfAdapter?.getPageText(it.path, pdfPageIndex) }.orEmpty()
-        cleanSlideText(text)
+        val text = cleanSlideText(resource?.let { controller.tileManager.tileRenderer.pdfAdapter?.getPageText(it.path, pdfPageIndex) }.orEmpty())
+        syncLock(slideTextsLock) { slideTexts[resourceId to pdfPageIndex] = text }
+        return text
     }
 
     /** Renders [region] of the page (with its background), at most [CROP_MAX_SIDE_PX] pixels. */

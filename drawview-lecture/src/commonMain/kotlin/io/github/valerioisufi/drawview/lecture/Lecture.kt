@@ -70,6 +70,8 @@ sealed interface LectureProblem {
  * audio may leave the device) or by a local model (Ollama) with the transcript.
  *
  * Every observable property is Compose state, updated on [stateContext].
+ *
+ * @param courseContext the course context of the notebook ([CourseContext]), read at every request.
  */
 class Lecture internal constructor(
     val documentId: Int,
@@ -78,7 +80,8 @@ class Lecture internal constructor(
     private val settingsStore: AssistantSettingsStore,
     internal val backends: ModelBackends,
     private val player: AudioPlayer?,
-    internal val stateContext: CoroutineContext = Dispatchers.Main
+    internal val stateContext: CoroutineContext = Dispatchers.Main,
+    internal val courseContext: () -> String = { "" }
 ) {
     val id: String = directory.trimEnd('/').substringAfterLast('/')
     val startedAt: Long = record?.startedAt ?: currentTimeMillis()
@@ -238,7 +241,8 @@ class Lecture internal constructor(
             outline = outline,
             currentTopic = currentTopic,
             previousTranscript = transcript.takeLast(3).joinToString(" ") { it.text }.takeLast(PREVIOUS_TRANSCRIPT_CHARS),
-            suggestions = suggestions.toList()
+            suggestions = suggestions.toList(),
+            courseContext = courseContext()
         )
     }
 

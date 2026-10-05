@@ -45,8 +45,7 @@ import kotlin.math.roundToInt
 
 /**
  * Settings of the lecture assistant: the provider of every kind of request, the local models
- * (Ollama, whisper.cpp), Gemini (key, reasoning), the lecture (updates, pages, slides,
- * language, course).
+ * (Ollama, whisper.cpp), Gemini (key, reasoning), the lecture (updates, language of the notes).
  */
 @Composable
 internal fun AssistantSettingsDialog(store: AssistantSettingsStore, onDismiss: () -> Unit) {
@@ -186,16 +185,6 @@ internal fun AssistantSettingsDialog(store: AssistantSettingsStore, onDismiss: (
                     label = { Text(stringResource(Res.string.lecture_settings_language)) },
                     supportingText = { Text(stringResource(Res.string.lecture_settings_language_hint)) },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = draft.courseContext,
-                    onValueChange = { draft = draft.copy(courseContext = it) },
-                    label = { Text(stringResource(Res.string.lecture_settings_context)) },
-                    supportingText = { Text(stringResource(Res.string.lecture_settings_context_hint)) },
-                    minLines = 3,
-                    maxLines = 8,
                     modifier = Modifier.fillMaxWidth()
                 )
             }

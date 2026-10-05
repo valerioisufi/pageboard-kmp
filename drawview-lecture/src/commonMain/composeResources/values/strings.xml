@@ -70,8 +70,6 @@
     <string name="lecture_settings_chunk_hint">Applies to the next recording.</string>
     <string name="lecture_settings_language">Language of the notes</string>
     <string name="lecture_settings_language_hint">Empty: the language of the lecture.</string>
-    <string name="lecture_settings_context">Course, topic and terminology</string>
-    <string name="lecture_settings_context_hint">Names, acronyms and technical terms improve the transcription.</string>
     <string name="lecture_settings_thinking">Reasoning</string>
     <string name="lecture_settings_thinking_low">Fast</string>
     <string name="lecture_settings_thinking_medium">Balanced</string>
@@ -134,4 +132,10 @@
     <string name="lecture_privacy_audio">the audio</string>
     <string name="lecture_privacy_transcript">the transcript</string>
     <string name="lecture_privacy_notebook">the pages and the slides you are looking at</string>
+    <string name="lecture_context_title">Course context</string>
+    <string name="lecture_context_edit">Edit</string>
+    <string name="lecture_context_write">Write again</string>
+    <string name="lecture_context_writing">Writing the context from the slides and your notes…</string>
+    <string name="lecture_context_empty">At the start of the first lecture, the assistant writes the course, its topics and its terms from the slides and your notes.</string>
+    <string name="lecture_context_hint">The transcription and the models use it to recognize the terms of the course.</string>
 </resources>
