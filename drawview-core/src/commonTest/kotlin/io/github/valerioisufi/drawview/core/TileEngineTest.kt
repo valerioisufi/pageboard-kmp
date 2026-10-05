@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.core
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.toPixelMap
 import io.github.valerioisufi.drawview.core.model.*
 import io.github.valerioisufi.drawview.core.render.tile.*
 import kotlin.test.*
@@ -165,6 +166,33 @@ class TileEngineTest {
         // The window got wider: the page is laid out at another scale
         manager.drawTiles(canvas, camera, viewport, doc, listOf(Rect(0f, 0f, 520f, 728f)))
         assertNull(manager.tileCache.get(key))
+
+        manager.cleanup()
+    }
+
+    @Test
+    fun testTilesOnScreenDrawnStretchedUntilTheNewLayoutIsReady() {
+        val manager = TileManager()
+        val doc = DrawDocument("test_doc", "Test Document")
+        val page = doc.pages[0]
+        val camera = io.github.valerioisufi.drawview.core.geometry.Matrix2D()
+        val viewport = Rect(0f, 0f, 200f, 200f)
+
+        val key = TileKey(pageUid = page.uid, lod = 0, col = 0, row = 0)
+        val bitmap = manager.tileCache.obtainBitmap()
+        androidx.compose.ui.graphics.Canvas(bitmap).drawRect(
+            Rect(0f, 0f, 512f, 512f),
+            androidx.compose.ui.graphics.Paint().apply { color = Color.Red }
+        )
+        manager.tileCache.put(Tile(key, bitmap, TileState.READY))
+        manager.drawTiles(androidx.compose.ui.graphics.Canvas(ImageBitmap(200, 200)), camera, viewport, doc, listOf(Rect(0f, 0f, 500f, 700f)))
+
+        // The window got wider: the tile is rasterized again, the old one is drawn meanwhile
+        manager.updateLayout(doc.pages, listOf(Rect(0f, 0f, 520f, 728f)))
+        assertNull(manager.tileCache.get(key))
+        val screen = ImageBitmap(200, 200)
+        manager.drawTiles(androidx.compose.ui.graphics.Canvas(screen), camera, viewport, doc, listOf(Rect(0f, 0f, 520f, 728f)))
+        assertEquals(Color.Red, screen.toPixelMap()[100, 100])
 
         manager.cleanup()
     }

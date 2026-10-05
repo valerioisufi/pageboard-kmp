@@ -24,6 +24,9 @@ class Tile(
     val bitmap: ImageBitmap,
     @Volatile var state: TileState = TileState.RENDERING
 ) {
+    /** Last frame of the [TileCache] in which the tile was used (guarded by the cache lock). */
+    internal var lastUsedFrame: Long = -1L
+
     val sizeInBytes: Int
         get() = bitmap.width * bitmap.height * 4
 }

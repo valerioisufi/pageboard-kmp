@@ -7,7 +7,11 @@ import io.github.valerioisufi.drawview.core.util.syncLock
 /**
  * Thread-safe LRU cache for multi-resolution rasterized tiles.
  *
- * @param maxMemoryBytes Maximum cache budget in bytes (default: 64 MB).
+ * The tiles used in the current or in the previous frame (see [beginFrame]) are never evicted, even
+ * beyond the budget: a viewport needing more tiles than the budget (a large screen zoomed just past
+ * a change of LOD) would otherwise evict its own tiles and rasterize them again at every frame.
+ *
+ * @param maxMemoryBytes Maximum cache budget in bytes (default: 64 MB) for the tiles not in use.
  */
 class TileCache(
     private val maxMemoryBytes: Int = 64 * 1024 * 1024
@@ -15,6 +19,14 @@ class TileCache(
     private val lock = SyncLock()
     private val map = LinkedHashMap<TileKey, Tile>(32, 0.75f)
     private var currentMemoryBytes: Int = 0
+    private var frame = 0L
+
+    /**
+     * Starts a new frame: the tiles used from now on are kept until the end of the next frame.
+     */
+    fun beginFrame() {
+        syncLock(lock) { frame++ }
+    }
 
     fun get(key: TileKey): Tile? {
         return syncLock(lock) {
@@ -22,6 +34,7 @@ class TileCache(
             // Move to end (most recently used)
             map.remove(key)
             map[key] = tile
+            tile.lastUsedFrame = frame
             tile
         }
     }
@@ -43,6 +56,8 @@ class TileCache(
             }
             map[tile.key] = tile
             currentMemoryBytes += tile.sizeInBytes
+            // Rasterized because a recent frame needed it
+            tile.lastUsedFrame = frame
 
             trimToSize()
         }
@@ -52,6 +67,7 @@ class TileCache(
         val iterator = map.entries.iterator()
         while (iterator.hasNext() && currentMemoryBytes > maxMemoryBytes) {
             val entry = iterator.next()
+            if (frame > 0L && entry.value.lastUsedFrame >= frame - 1) continue
             currentMemoryBytes -= entry.value.sizeInBytes
             iterator.remove()
         }

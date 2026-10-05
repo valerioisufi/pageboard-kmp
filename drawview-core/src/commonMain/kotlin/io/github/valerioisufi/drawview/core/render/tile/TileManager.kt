@@ -16,6 +16,7 @@ import io.github.valerioisufi.drawview.core.model.readSnapshot
 import io.github.valerioisufi.drawview.core.util.SyncLock
 import io.github.valerioisufi.drawview.core.util.syncLock
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -35,6 +36,9 @@ import kotlin.math.min
  * from a snapshot older than the current generation is published as [TileState.STALE] (so it
  * is rendered again), and the strokes committed while a tile was being rasterized are baked into
  * the result before it is published, so that freshly drawn strokes never disappear.
+ *
+ * When a page is laid out at another scale (the window was resized), its tiles are dropped, but the
+ * ones on screen keep being drawn, stretched, until the tiles of the new layout are ready.
  *
  * @param onInvalidate Callback triggered when a new tile is rasterized to request a canvas redraw.
  */
@@ -63,11 +67,54 @@ class TileManager(
 
     private val filterPaint = Paint().apply {
         filterQuality = FilterQuality.Medium
-        isAntiAlias = true
+        // Antialiased edges of adjacent tiles would let the background show through the seam
+        isAntiAlias = false
     }
     private val bakePainter = StrokeMeshPainter()
     private val scratchTileToScreen = Matrix2D()
+    private val scratchPageToScreen = Matrix2D()
     private val scratchMmToTile = Matrix2D()
+
+    /** Tiles drawn on screen in the last frame, by page (UI thread only). */
+    private val pageTiles = mutableMapOf<Long, PageTiles>()
+
+    /**
+     * A tile drawn on screen.
+     *
+     * @property pageSize World Space size of the page the tile was rasterized for.
+     * @property coverage Part of the page the tile covered on screen, in fractions of the page size.
+     */
+    private class DrawnTile(val tile: Tile, val pageSize: Size, val coverage: Rect) {
+        /** Whether the tile, of a previous layout, was drawn in the last frame. */
+        var drawn = false
+    }
+
+    /** The tiles of a page on screen. */
+    private class PageTiles {
+        /** Tiles of the previous layouts of the page, oldest first. */
+        var previousLayouts: List<DrawnTile> = emptyList()
+
+        /** Tiles of the current layout drawn in the last frame. */
+        val drawn = mutableListOf<DrawnTile>()
+
+        /** The page was laid out at another scale: what is on screen becomes a previous layout. */
+        fun keepAsPreviousLayout() {
+            previousLayouts = previousLayouts.filter { it.drawn } + drawn
+            // Kept by another change of layout before the next frame
+            previousLayouts.forEach { it.drawn = true }
+            drawn.clear()
+        }
+
+        fun beginFrame() {
+            previousLayouts.forEach { it.drawn = false }
+            drawn.clear()
+        }
+
+        fun endFrame() {
+            // The tiles of the current layout cover the screen
+            if (previousLayouts.none { it.drawn }) previousLayouts = emptyList()
+        }
+    }
 
     /**
      * Draws visible and pre-fetched tiles on [canvas].
@@ -88,6 +135,7 @@ class TileManager(
         skipPageUid: Long? = null
     ) {
         if (pageRects.isEmpty()) return
+        tileCache.beginFrame()
 
         // 1. Calculate World Space viewport
         val screenToWorld = Matrix2D()
@@ -110,7 +158,10 @@ class TileManager(
 
         for (i in 0 until pageCount) {
             val page = pages[i]
-            if (page.uid == skipPageUid) continue
+            if (page.uid == skipPageUid) {
+                pageTiles.remove(page.uid)
+                continue
+            }
             val pageWorldRect = pageRects[i]
             ensurePageGeometry(page.uid, pageWorldRect)
 
@@ -119,7 +170,12 @@ class TileManager(
                     prefetchLeft < pageWorldRect.right &&
                     pageWorldRect.top < prefetchBottom &&
                     prefetchTop < pageWorldRect.bottom
-            if (!nearPage) continue
+            if (!nearPage) {
+                pageTiles.remove(page.uid)
+                continue
+            }
+            val onScreen = pageTiles.getOrPut(page.uid) { PageTiles() }
+            onScreen.beginFrame()
 
             val isPageVisible = pageWorldRect.left < worldViewport.right &&
                     worldViewport.left < pageWorldRect.right &&
@@ -148,10 +204,12 @@ class TileManager(
 
                 visibleRange.forEach { col, row ->
                     val key = TileKey(page.uid, targetLod, col, row)
+                    val cell = pageFraction(TilePyramid.getTilePageRect(key), pageWorldRect)
                     val tile = tileCache.get(key)
 
                     if (tile != null && (tile.state == TileState.READY || tile.state == TileState.STALE)) {
                         drawTileBitmap(canvas, tile.bitmap, key, pageWorldRect, cameraMatrix)
+                        onScreen.drawn += DrawnTile(tile, pageWorldRect.size, cell)
                         if (tile.state == TileState.STALE) {
                             enqueueTile(key, document, page, pageWorldRect)
                         }
@@ -167,23 +225,22 @@ class TileManager(
                             Rect(tileWorldLeft, tileWorldTop, tileWorldRight, tileWorldBottom)
                         )
 
+                        canvas.save()
+                        canvas.clipRect(tileScreenBounds)
                         val ancestor = tileCache.findNearestAncestor(key)
                         if (ancestor != null) {
-                            canvas.save()
-                            canvas.clipRect(tileScreenBounds)
                             drawTileBitmap(canvas, ancestor.bitmap, ancestor.key, pageWorldRect, cameraMatrix)
-                            canvas.restore()
+                            onScreen.drawn += DrawnTile(ancestor, pageWorldRect.size, cell)
                         } else {
-                            val descendants = tileCache.findReadyDescendants(key)
-                            if (descendants.isNotEmpty()) {
-                                canvas.save()
-                                canvas.clipRect(tileScreenBounds)
-                                for (descendant in descendants) {
-                                    drawTileBitmap(canvas, descendant.bitmap, descendant.key, pageWorldRect, cameraMatrix)
-                                }
-                                canvas.restore()
+                            // What was on screen before the window was resized, under the sharper tiles
+                            drawPreviousLayouts(canvas, onScreen, cell, pageWorldRect, cameraMatrix)
+                            for (descendant in tileCache.findReadyDescendants(key)) {
+                                drawTileBitmap(canvas, descendant.bitmap, descendant.key, pageWorldRect, cameraMatrix)
+                                val coverage = pageFraction(TilePyramid.getTilePageRect(descendant.key), pageWorldRect)
+                                onScreen.drawn += DrawnTile(descendant, pageWorldRect.size, coverage)
                             }
                         }
+                        canvas.restore()
 
                         enqueueTile(key, document, page, pageWorldRect)
                     }
@@ -214,7 +271,54 @@ class TileManager(
                     enqueueTile(key, document, page, pageWorldRect)
                 }
             }
+            onScreen.endFrame()
         }
+    }
+
+    /**
+     * Draws the tiles of the previous layouts of the page (before the window was resized) covering
+     * [cell] (fractions of the page size), stretched to the current page size.
+     */
+    private fun drawPreviousLayouts(
+        canvas: Canvas,
+        onScreen: PageTiles,
+        cell: Rect,
+        pageWorldRect: Rect,
+        cameraMatrix: Matrix2D
+    ) {
+        for (previous in onScreen.previousLayouts) {
+            val left = max(cell.left, previous.coverage.left)
+            val top = max(cell.top, previous.coverage.top)
+            val right = min(cell.right, previous.coverage.right)
+            val bottom = min(cell.bottom, previous.coverage.bottom)
+            if (left >= right || top >= bottom) continue
+            val clip = cameraMatrix.mapRect(
+                Rect(
+                    pageWorldRect.left + left * pageWorldRect.width,
+                    pageWorldRect.top + top * pageWorldRect.height,
+                    pageWorldRect.left + right * pageWorldRect.width,
+                    pageWorldRect.top + bottom * pageWorldRect.height
+                )
+            )
+            canvas.save()
+            canvas.clipRect(clip)
+            drawTileBitmap(canvas, previous.tile.bitmap, previous.tile.key, pageWorldRect, cameraMatrix, previous.pageSize)
+            canvas.restore()
+            previous.drawn = true
+        }
+    }
+
+    /** [pageLocalRect] (page-local World Space) in fractions of the size of the page, within the page. */
+    private fun pageFraction(pageLocalRect: Rect, pageWorldRect: Rect): Rect {
+        val width = pageWorldRect.width
+        val height = pageWorldRect.height
+        if (width <= 0f || height <= 0f) return Rect.Zero
+        return Rect(
+            (pageLocalRect.left / width).coerceIn(0f, 1f),
+            (pageLocalRect.top / height).coerceIn(0f, 1f),
+            (pageLocalRect.right / width).coerceIn(0f, 1f),
+            (pageLocalRect.bottom / height).coerceIn(0f, 1f)
+        )
     }
 
     /**
@@ -238,18 +342,42 @@ class TileManager(
         canvas.restore()
     }
 
+    /**
+     * Draws the tile [key] rasterized for a page of size [renderedPageSize], stretched when the page
+     * is now laid out at another size.
+     */
     private fun drawTileBitmap(
         canvas: Canvas,
         bitmap: ImageBitmap,
         key: TileKey,
         pageWorldRect: Rect,
-        cameraMatrix: Matrix2D
+        cameraMatrix: Matrix2D,
+        renderedPageSize: Size = pageWorldRect.size
     ) {
-        val tileToScreen = TilePyramid.getTileToScreenMatrix(key, pageWorldRect, cameraMatrix, scratchTileToScreen)
+        val tileToScreen = if (renderedPageSize == pageWorldRect.size) {
+            TilePyramid.getTileToScreenMatrix(key, pageWorldRect, cameraMatrix, scratchTileToScreen)
+        } else {
+            scratchPageToScreen.reset()
+                .postScale(pageWorldRect.width / renderedPageSize.width, pageWorldRect.height / renderedPageSize.height)
+                .postTranslate(pageWorldRect.left, pageWorldRect.top)
+                .postConcat(cameraMatrix)
+            TilePyramid.getTileToScreenMatrix(key, Rect.Zero, scratchPageToScreen, scratchTileToScreen)
+        }
         canvas.save()
         canvas.concat(tileToScreen.toComposeMatrix())
         canvas.drawImage(bitmap, Offset.Zero, filterPaint)
         canvas.restore()
+    }
+
+    /**
+     * Updates the World Space size of the pages after a change of layout (window resized, widest
+     * page changed): the tiles of the pages laid out at another scale are dropped, the ones on
+     * screen are drawn stretched until the new ones are ready.
+     */
+    fun updateLayout(pages: List<DrawPage>, pageRects: List<Rect>) {
+        for (i in 0 until min(pages.size, pageRects.size)) {
+            ensurePageGeometry(pages[i].uid, pageRects[i])
+        }
     }
 
     /**
@@ -263,12 +391,24 @@ class TileManager(
             if (previous != null && previous != size) {
                 pageGenerations[pageUid] = (pageGenerations[pageUid] ?: 0) + 1
                 recentBakes.remove(pageUid)
+                // The queued tiles would be rasterized for the old layout, delaying the new ones
+                val jobs = activeTileJobs.entries.iterator()
+                while (jobs.hasNext()) {
+                    val (key, job) = jobs.next()
+                    if (key.pageUid == pageUid) {
+                        job.cancel()
+                        jobs.remove()
+                    }
+                }
                 true
             } else {
                 false
             }
         }
-        if (changed) tileCache.removeForPage(pageUid)
+        if (changed) {
+            tileCache.removeForPage(pageUid)
+            pageTiles[pageUid]?.keepAsPreviousLayout()
+        }
     }
 
     private fun generationOf(pageUid: Long): Int = syncLock(lock) { pageGenerations[pageUid] ?: 0 }
@@ -288,66 +428,70 @@ class TileManager(
         page: DrawPage,
         pageWorldRect: Rect
     ) {
-        syncLock(lock) {
+        val job = syncLock(lock) {
             if (activeTileJobs.containsKey(key)) return
-            // Placeholder entry: the real job is registered right after launch
-            activeTileJobs[key] = Job()
+            // Started once registered: a job ending at once still finds itself registered
+            scope.launch(tileWorkerDispatcher, start = CoroutineStart.LAZY) {
+                try {
+                    rasterizeTile(key, document, page, pageWorldRect)
+                } finally {
+                    // A cancelled job still running must not unregister the one replacing it
+                    val self = coroutineContext[Job]
+                    syncLock(lock) {
+                        if (activeTileJobs[key] === self) activeTileJobs.remove(key)
+                    }
+                }
+                onInvalidate()
+            }.also { activeTileJobs[key] = it }
         }
+        job.start()
+    }
 
-        val job = scope.launch(tileWorkerDispatcher) {
-            try {
-                // Read generation, bake sequence and content atomically with respect to
-                // bakeStrokesDirectlySync (which mutates the page under the same lock).
-                var generation = 0
-                var sequence = 0L
-                val content = syncLock(lock) {
-                    generation = pageGenerations[key.pageUid] ?: 0
-                    sequence = bakeSequence
-                    page.snapshotContent()
-                }
-                val bitmap = tileCache.obtainBitmap()
+    /**
+     * Rasterizes the tile [key] and publishes it in the cache.
+     */
+    private fun rasterizeTile(key: TileKey, document: DrawDocument, page: DrawPage, pageWorldRect: Rect) {
+        // Read generation, bake sequence and content atomically with respect to
+        // bakeStrokesDirectlySync (which mutates the page under the same lock).
+        var generation = 0
+        var sequence = 0L
+        val content = syncLock(lock) {
+            generation = pageGenerations[key.pageUid] ?: 0
+            sequence = bakeSequence
+            page.snapshotContent()
+        }
+        val bitmap = tileCache.obtainBitmap()
 
-                tileRenderer.renderTile(
-                    tileKey = key,
-                    targetBitmap = bitmap,
-                    document = document,
-                    content = content,
-                    pageWorldRect = pageWorldRect
-                )
+        tileRenderer.renderTile(
+            tileKey = key,
+            targetBitmap = bitmap,
+            document = document,
+            content = content,
+            pageWorldRect = pageWorldRect
+        )
 
-                // Publish on the same lock used by the synchronous bake: no stroke committed while
-                // the tile was rasterized can be lost.
-                syncLock(lock) {
-                    val candidates = recentBakes[key.pageUid]?.filter { it.first > sequence }.orEmpty()
-                    // A stroke added to the page between the sequence read and the snapshot is
-                    // already part of the rendered content.
-                    val rendered = if (candidates.isEmpty()) emptySet() else content.strokes.toHashSet()
-                    val pending = candidates.filter { it.second !in rendered }
-                    if (pending.isNotEmpty()) {
-                        val mmToTile = TilePyramid.getMmToTileMatrix(key, content.rect(), pageWorldRect)
-                        val tileCanvas = Canvas(bitmap)
-                        val painter = StrokeMeshPainter()
-                        for ((_, stroke) in pending) {
-                            if (!stroke.isDragging) painter.draw(tileCanvas, stroke.mesh, mmToTile)
-                        }
-                    }
-                    val upToDate = (pageGenerations[key.pageUid] ?: 0) == generation
-                    // A tile rasterized for an outdated page geometry is discarded
-                    val sameGeometry = pageWorldSizes[key.pageUid]?.let { it == pageWorldRect.size } ?: true
-                    if (sameGeometry) {
-                        tileCache.put(Tile(key, bitmap, if (upToDate) TileState.READY else TileState.STALE))
-                    }
-                }
-            } finally {
-                syncLock(lock) {
-                    activeTileJobs.remove(key)
+        // Publish on the same lock used by the synchronous bake: no stroke committed while
+        // the tile was rasterized can be lost.
+        syncLock(lock) {
+            val candidates = recentBakes[key.pageUid]?.filter { it.first > sequence }.orEmpty()
+            // A stroke added to the page between the sequence read and the snapshot is
+            // already part of the rendered content.
+            val rendered = if (candidates.isEmpty()) emptySet() else content.strokes.toHashSet()
+            val pending = candidates.filter { it.second !in rendered }
+            if (pending.isNotEmpty()) {
+                val mmToTile = TilePyramid.getMmToTileMatrix(key, content.rect(), pageWorldRect)
+                val tileCanvas = Canvas(bitmap)
+                val painter = StrokeMeshPainter()
+                for ((_, stroke) in pending) {
+                    if (!stroke.isDragging) painter.draw(tileCanvas, stroke.mesh, mmToTile)
                 }
             }
-            onInvalidate()
-        }
-
-        syncLock(lock) {
-            if (activeTileJobs.containsKey(key)) activeTileJobs[key] = job
+            val upToDate = (pageGenerations[key.pageUid] ?: 0) == generation
+            // A tile rasterized for an outdated page geometry is discarded
+            val sameGeometry = pageWorldSizes[key.pageUid]?.let { it == pageWorldRect.size } ?: true
+            if (sameGeometry) {
+                tileCache.put(Tile(key, bitmap, if (upToDate) TileState.READY else TileState.STALE))
+            }
         }
     }
 
@@ -465,6 +609,7 @@ class TileManager(
             recentBakes.remove(pageUid)
             pageWorldSizes.remove(pageUid)
         }
+        pageTiles.remove(pageUid)
         onInvalidate()
     }
 
@@ -478,6 +623,7 @@ class TileManager(
             recentBakes.keys.retainAll(live)
             pageWorldSizes.keys.retainAll(live)
         }
+        pageTiles.keys.retainAll(live)
     }
 
     fun invalidateAll() {
@@ -506,6 +652,7 @@ class TileManager(
             activeTileJobs.clear()
             recentBakes.clear()
         }
+        pageTiles.clear()
         tileCache.clear()
         tileRenderer.pdfAdapter?.close()
     }

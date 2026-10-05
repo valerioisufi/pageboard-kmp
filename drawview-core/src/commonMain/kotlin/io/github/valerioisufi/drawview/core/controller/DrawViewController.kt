@@ -41,7 +41,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 import kotlin.math.hypot
 
 /**
@@ -170,7 +169,6 @@ class DrawViewController(
 
     private val cachedRenderMatrix = Matrix2D()
     private val cachedInverseMatrix = Matrix2D()
-    private var layoutWorldPerMm = 0f
 
     init {
         updatePageLayout()
@@ -382,14 +380,8 @@ class DrawViewController(
                 pages = document.pages,
                 windowRect = Rect(0f, 0f, viewportWidth, viewportHeight)
             )
-            val first = document.pages.firstOrNull()
-            val firstRect = calcPage.pagesRectOnWindow.firstOrNull()
-            val worldPerMm = if (first != null && firstRect != null && first.widthMm > 0f) firstRect.width / first.widthMm else 0f
-            if (layoutWorldPerMm != 0f && abs(worldPerMm - layoutWorldPerMm) > 1e-4f) {
-                // World units changed (window resized or widest page changed): tiles are stale
-                tileManager.invalidateAll()
-            }
-            layoutWorldPerMm = worldPerMm
+            // The pages laid out at another scale (window resized, widest page changed) are rasterized again
+            tileManager.updateLayout(document.pages, calcPage.pagesRectOnWindow)
         }
     }
 
