@@ -52,7 +52,12 @@ internal actual fun Modifier.trackpadInput(
         awaitPointerEventScope {
             while (true) {
                 val event = awaitPointerEvent(PointerEventPass.Initial)
-                pointer.value = if (event.type == PointerEventType.Exit) null else event.changes.firstOrNull()?.position
+                val position = event.changes.firstOrNull()?.position
+                // Moving over what is drawn on the canvas (the text being edited) keeps the
+                // pointer on it: only leaving its bounds does not
+                val left = position == null || position.x < 0f || position.y < 0f ||
+                        position.x > size.width || position.y > size.height
+                pointer.value = if (event.type == PointerEventType.Exit && left) null else position
             }
         }
     }
