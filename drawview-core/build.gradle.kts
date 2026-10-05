@@ -13,12 +13,10 @@ kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     applyDefaultHierarchyTemplate {
         common {
-            // Targets whose Compose canvas is backed by Skia (skiko): desktop, iOS and web.
+            // Targets whose Compose canvas is backed by Skia (skiko): desktop and iOS.
             group("skiko") {
                 withJvm()
                 withIos()
-                withJs()
-                withWasmJs()
             }
         }
     }
@@ -44,15 +42,6 @@ kotlin {
     }
 
     jvm()
-
-    js {
-        browser()
-    }
-
-    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
-    }
 
     android {
         namespace = "io.github.valerioisufi.drawview.core"

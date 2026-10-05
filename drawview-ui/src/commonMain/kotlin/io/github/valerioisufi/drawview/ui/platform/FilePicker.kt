@@ -14,7 +14,7 @@ enum class PickerType { IMAGE, PDF }
 
 /**
  * Remembers a launcher of the file picker of the platform (`GetContent` on Android, the file
- * dialog on the desktop, the photo / document pickers on iOS, a file input in the browser).
+ * dialog on the desktop, the photo / document pickers on iOS).
  * [onPicked] receives the selected file and is not called when the user cancels.
  */
 @Composable

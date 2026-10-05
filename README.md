@@ -1,6 +1,6 @@
 # DrawView-KMP
 
-DrawView-KMP is a set of [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html) and [Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/) modules for drawing, handwriting and note-taking applications on **Android**, **iOS**, **Desktop (JVM)** and **Web (Wasm / JS)**: a stylus-oriented canvas editor (Google Ink strokes, text with Markdown and LaTeX, images, PDF pages), the storage of the documents and a document library with folders.
+DrawView-KMP is a set of [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html) and [Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/) modules for drawing, handwriting and note-taking applications on **Android**, **iOS** and **Desktop (JVM)**: a stylus-oriented canvas editor (Google Ink strokes, text with Markdown and LaTeX, images, PDF pages), the storage of the documents and a document library with folders.
 
 The repository also contains a [sample application](./sample) showing how to build an application with the modules, and **[PencilNotes](./pencilnotes)**, a note-taking application built on them.
 
@@ -9,7 +9,7 @@ The repository also contains a [sample application](./sample) showing how to bui
 ## Modules
 
 * [`/drawview-core`](./drawview-core) handles drawing logic, strokes, brushes, and rendering abstractions.
-* [`/drawview-data`](./drawview-data) handles persistence (Room / SQLite, localStorage on the web): documents, folders and preferences.
+* [`/drawview-data`](./drawview-data) handles persistence (Room / SQLite): documents, folders and preferences.
 * [`/drawview-ui`](./drawview-ui) contains the editor user interface (`DrawScreen`, `EditorSessionScreen`) and its components.
 * [`/drawview-explorer`](./drawview-explorer) provides the document library: folders and notes (create, rename, move, delete, multiple selection), sorting, recent documents, and `DocumentLibrary`, a complete note-taking application (library + editor) themed by the caller.
 * [`/drawview-pdf`](./drawview-pdf) provides PDF document rendering with PDFium (Desktop JVM, Android and iOS), and the text of the pages with the position of every character.
@@ -57,15 +57,12 @@ No native binary is versioned: Gradle builds or downloads them on demand.
 
 ## Sample Application
 
-[`/sample`](./sample) is the DrawView sample application: [`shared`](./sample/shared) (`:sample-shared`, the `App` composable) and the entry points [`androidApp`](./sample/androidApp) (`:sample-android`), [`desktopApp`](./sample/desktopApp) (`:sample-desktop`), [`webApp`](./sample/webApp) (`:sample-web`) and [`iosApp`](./sample/iosApp) (Xcode).
+[`/sample`](./sample) is the DrawView sample application: [`shared`](./sample/shared) (`:sample-shared`, the `App` composable) and the entry points [`androidApp`](./sample/androidApp) (`:sample-android`), [`desktopApp`](./sample/desktopApp) (`:sample-desktop`) and [`iosApp`](./sample/iosApp) (Xcode).
 
 * **Android app**: `./gradlew :sample-android:assembleDebug`
 * **Desktop app**:
   * Hot reload: `./gradlew :sample-desktop:hotRun --auto`
   * Standard run: `./gradlew :sample-desktop:run`
-* **Web app**:
-  * Wasm target: `./gradlew :sample-web:wasmJsBrowserDevelopmentRun`
-  * JS target: `./gradlew :sample-web:jsBrowserDevelopmentRun`
 * **iOS app**: Open the [`/sample/iosApp`](./sample/iosApp) directory in Xcode and run it on a simulator or device.
 
 ---
@@ -118,7 +115,7 @@ Running:
 
 ## Running Tests
 
-* **Modules**: `./gradlew :drawview-<module>:jvmTest` (also `iosSimulatorArm64Test`, `wasmJsTest`, `jsTest`), e.g. `:drawview-data:jvmTest`, `:drawview-explorer:jvmTest`, `:drawview-lecture:jvmTest`
+* **Modules**: `./gradlew :drawview-<module>:jvmTest` (also `iosSimulatorArm64Test`), e.g. `:drawview-data:jvmTest`, `:drawview-explorer:jvmTest`, `:drawview-lecture:jvmTest`
 * **Sample**:
   * Android: `./gradlew :sample-shared:testAndroidHostTest`
   * Desktop: `./gradlew :sample-shared:jvmTest`

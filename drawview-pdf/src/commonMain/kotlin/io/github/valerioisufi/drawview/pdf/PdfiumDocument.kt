@@ -5,10 +5,10 @@ import io.github.valerioisufi.drawview.core.model.PdfTextLayout
 
 /**
  * Native PDFium entry points (native/bridge/pdfium_bridge.h): JNI on the desktop JVM and on
- * Android, cinterop on iOS. Not available in the browser.
+ * Android, cinterop on iOS.
  */
 internal expect object PdfiumBindings {
-    /** Loads the native libraries: `false` when PDFium is not available on this platform. */
+    /** Loads the native libraries: `false` when PDFium cannot be loaded. */
     fun load(): Boolean
 
     /** Opens a document from a file path: returns its handle, or 0 on failure. */

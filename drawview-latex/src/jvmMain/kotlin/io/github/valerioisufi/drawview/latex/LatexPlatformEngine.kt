@@ -30,9 +30,6 @@ actual object LatexPlatformEngine {
         }
     }
 
-    /** Whether a native engine exists on this platform. */
-    actual fun isSupported(): Boolean = true
-
     actual fun isNativeReady(): Boolean {
         return try {
             LatexNativeLoader.isAvailable && LaTeX.instance().isInitialized

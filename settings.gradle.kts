@@ -44,11 +44,9 @@ include(":drawview-lecture")
 include(":sample-shared")
 include(":sample-android")
 include(":sample-desktop")
-include(":sample-web")
 project(":sample-shared").projectDir = file("sample/shared")
 project(":sample-android").projectDir = file("sample/androidApp")
 project(":sample-desktop").projectDir = file("sample/desktopApp")
-project(":sample-web").projectDir = file("sample/webApp")
 
 // PencilNotes: the note-taking application built on DrawView
 include(":pencilnotes-shared")

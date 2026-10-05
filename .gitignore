@@ -16,8 +16,6 @@ captures
 !*.xcodeproj/project.xcworkspace/
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
-node_modules/
-kotlin-js-store/
 native/build/
 **/build_test/
 hs_err_pid*.log

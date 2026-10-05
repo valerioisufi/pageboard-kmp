@@ -36,8 +36,7 @@ data class FolderSummary(
  * Storage of the documents, of their folders and of the user preferences used by the
  * applications.
  *
- * Backed by Room (SQLite) on Android, desktop and iOS, and by the browser `localStorage` on the
- * web, where Room is not available.
+ * Backed by Room (SQLite): see [RoomDocumentStore].
  */
 interface DocumentStore {
     /** Every document, most recently modified first (updated on every change). */
@@ -99,11 +98,6 @@ interface DocumentStore {
     /** Called when the editing session of a document ends (after [flush]). */
     fun closeDocument(documentId: Int) {}
 }
-
-/**
- * Creates the default [DocumentStore] of the platform.
- */
-expect fun createPlatformDocumentStore(): DocumentStore
 
 /**
  * Process-wide document store: the database must not be opened more than once.

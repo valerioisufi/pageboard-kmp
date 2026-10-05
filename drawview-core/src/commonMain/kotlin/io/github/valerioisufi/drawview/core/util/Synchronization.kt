@@ -6,10 +6,10 @@ import kotlinx.atomicfu.locks.synchronized
 /**
  * Multiplatform lock object for thread-safe memory caches and registries.
  *
- * Backed by `java.lang.Object` monitors on the JVM/Android, by a real mutex on Kotlin/Native
- * (tile rasterization runs on background threads on iOS too) and by a no-op on single-threaded
- * JS/Wasm. The atomicfu lock is wrapped (instead of aliased) so that the shared source sets of
- * the other modules do not depend on its platform-specific declarations.
+ * Backed by `java.lang.Object` monitors on the JVM/Android and by a real mutex on Kotlin/Native
+ * (tile rasterization runs on background threads on iOS too). The atomicfu lock is wrapped
+ * (instead of aliased) so that the shared source sets of the other modules do not depend on its
+ * platform-specific declarations.
  */
 class SyncLock {
     @PublishedApi

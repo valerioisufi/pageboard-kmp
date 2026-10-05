@@ -82,4 +82,7 @@ internal fun FolderEntity.toSummary() = FolderSummary(
     modifiedAt = modifiedAt
 )
 
-actual fun createPlatformDocumentStore(): DocumentStore = RoomDocumentStore(DrawViewDatabase.instance)
+/**
+ * Creates the default [DocumentStore] of the platform.
+ */
+fun createPlatformDocumentStore(): DocumentStore = RoomDocumentStore(DrawViewDatabase.instance)

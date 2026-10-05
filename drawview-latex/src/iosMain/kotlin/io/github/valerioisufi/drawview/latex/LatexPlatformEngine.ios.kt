@@ -147,9 +147,6 @@ actual object LatexPlatformEngine {
         initialized
     }
 
-    /** Whether a native engine exists on this platform. */
-    actual fun isSupported(): Boolean = true
-
     actual fun isNativeReady(): Boolean = syncLock(engineLock) { initialized }
 
     actual fun renderFormula(latex: String, fontSizePx: Float, colorArgb: Int, paddingPx: Float): LatexResult? =

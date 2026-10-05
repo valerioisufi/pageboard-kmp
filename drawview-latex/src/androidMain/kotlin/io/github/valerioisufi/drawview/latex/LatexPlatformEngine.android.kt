@@ -29,9 +29,6 @@ actual object LatexPlatformEngine {
         }
     }
 
-    /** Whether a native engine exists on this platform. */
-    actual fun isSupported(): Boolean = true
-
     actual fun isNativeReady(): Boolean = LaTeX.isLibraryAvailable && LaTeX.instance().isInitialized
 
     actual fun renderFormula(latex: String, fontSizePx: Float, colorArgb: Int, paddingPx: Float): LatexResult? {

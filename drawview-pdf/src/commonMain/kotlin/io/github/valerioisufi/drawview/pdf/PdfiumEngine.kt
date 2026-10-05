@@ -17,7 +17,6 @@ import kotlin.math.roundToInt
 
 /**
  * PDF backend: PDFium on the desktop JVM, Android and iOS (see [PdfiumBindings]).
- * Not available in the browser.
  */
 object PdfPlatform {
     fun openDocument(filePath: String, password: String? = null): PdfDocument {

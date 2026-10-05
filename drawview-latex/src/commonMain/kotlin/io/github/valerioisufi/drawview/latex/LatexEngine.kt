@@ -16,8 +16,6 @@ import kotlinx.coroutines.sync.withLock
 expect object LatexPlatformEngine {
     /** Initializes the native engine with the directory of the unpacked TeX resources. */
     fun init(resourcesDirectory: String): Boolean
-    /** Whether a native engine exists on this platform (`false` in the browser). */
-    fun isSupported(): Boolean
     fun isNativeReady(): Boolean
     fun renderFormula(latex: String, fontSizePx: Float, colorArgb: Int, paddingPx: Float): LatexResult?
     fun generateErrorBitmap(latex: String, fontSizePx: Float): ImageBitmap
@@ -47,8 +45,6 @@ object LatexEngine {
      * @return `true` when the engine is ready.
      */
     suspend fun initialize(): Boolean = initMutex.withLock {
-        // No native engine (browser): do not download the TeX resources
-        if (!LatexPlatformEngine.isSupported()) return@withLock false
         if (LatexPlatformEngine.isNativeReady()) {
             _isReady.value = true
             return@withLock true
@@ -72,12 +68,6 @@ object LatexEngine {
         _isReady.value = ready
         return ready
     }
-
-    /**
-     * Whether the platform has a native TeX engine (`false` in the browser, where formulas are
-     * shown as source text).
-     */
-    fun isSupported(): Boolean = LatexPlatformEngine.isSupported()
 
     /**
      * Checks if the native TeX C++ library is loaded and ready.

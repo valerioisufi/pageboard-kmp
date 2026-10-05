@@ -37,7 +37,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 /**
- * Minimal string key-value storage (e.g. the browser `localStorage`).
+ * Minimal string key-value storage.
  */
 interface KeyValueStorage {
     fun get(key: String): String?
@@ -49,7 +49,7 @@ interface KeyValueStorage {
 }
 
 /**
- * [KeyValueStorage] kept in memory (tests and platforms without a persistent storage).
+ * [KeyValueStorage] kept in memory (tests).
  */
 class InMemoryKeyValueStorage : KeyValueStorage {
     private val values = mutableMapOf<String, String>()
@@ -70,8 +70,8 @@ class InMemoryKeyValueStorage : KeyValueStorage {
 
 /**
  * [DocumentStore] that keeps every document as a JSON value of a [KeyValueStorage] (the folders
- * and the document summaries are kept in a single index value). Used in the browser, where Room
- * is not available.
+ * and the document summaries are kept in a single index value). Lightweight alternative to
+ * [RoomDocumentStore], used in memory by the tests (with [InMemoryKeyValueStorage]).
  *
  * While a document is open, its in-memory model is the source of truth: every persistence
  * operation marks the document as modified and its whole content is written shortly after
@@ -322,16 +322,12 @@ class KeyValueDocumentStore(
 
     /**
      * Writes the modified documents immediately.
-     *
-     * @param allOpenDocuments writes every open document, also the ones whose changes have not
-     * been notified yet (e.g. right before the browser page is unloaded).
      */
-    fun flushNow(allOpenDocuments: Boolean = false) {
+    fun flushNow() {
         syncLock(lock) {
             saveJob?.cancel()
             saveJob = null
-            val ids = if (allOpenDocuments) openDocuments.keys.toList() else dirtyDocuments.toList()
-            for (id in ids) {
+            for (id in dirtyDocuments) {
                 openDocuments[id]?.let { writeDocumentLocked(it) }
             }
             dirtyDocuments.clear()
