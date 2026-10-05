@@ -1,9 +1,13 @@
 package io.github.valerioisufi.drawview.data
 
 import androidx.compose.ui.graphics.toArgb
+import io.github.valerioisufi.drawview.core.change.StrokeData
+import io.github.valerioisufi.drawview.core.change.TextMarkupData
+import io.github.valerioisufi.drawview.core.change.toData
 import io.github.valerioisufi.drawview.core.controller.DrawPersistence
 import io.github.valerioisufi.drawview.core.controller.DrawPreferences
 import io.github.valerioisufi.drawview.core.controller.ToolPreset
+import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPage
@@ -12,7 +16,10 @@ import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
+import io.github.valerioisufi.drawview.core.model.InputToolType
 import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.core.model.StrokeTool
+import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.core.model.readSnapshot
@@ -333,9 +340,7 @@ class KeyValueDocumentStore(
     // DrawPersistence: every change rewrites the owning document
     // ==========================================================
 
-    override suspend fun saveNewStrokes(page: DrawPage, strokes: List<DrawStroke>) = markPageModified(page)
-
-    override suspend fun updateStrokes(page: DrawPage, strokes: List<DrawStroke>) = markPageModified(page)
+    override suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) = markPageModified(page)
 
     override suspend fun deleteStrokes(strokes: List<DrawStroke>) = markAllOpenModified()
 
@@ -349,25 +354,23 @@ class KeyValueDocumentStore(
 
     override suspend fun savePdf(page: DrawPage, pdf: DrawPdf) = markPageModified(page)
 
+    override suspend fun deletePdf(pdf: DrawPdf) = markAllOpenModified()
+
     override suspend fun saveTextMarkup(page: DrawPage, markup: DrawTextMarkup) = markPageModified(page)
 
     override suspend fun deleteTextMarkup(markup: DrawTextMarkup) = markAllOpenModified()
 
     @OptIn(ExperimentalEncodingApi::class)
-    override suspend fun addResource(document: DrawDocument, type: DrawResource.ResourceType, path: String): String {
-        val id = syncLock(lock) {
-            val id = newElementId()
-            PlatformFiles.readBytes(path)?.let { bytes ->
-                if (!storage.set(resourceKey(path), Base64.encode(bytes))) {
+    override suspend fun saveResource(document: DrawDocument, resource: DrawResource) {
+        syncLock(lock) {
+            PlatformFiles.readBytes(resource.path)?.let { bytes ->
+                if (!storage.set(resourceKey(resource.path), Base64.encode(bytes))) {
                     lastWriteSucceeded = false
-                    println("DrawView: the storage quota does not allow saving the resource $path")
+                    println("DrawView: the storage quota does not allow saving the resource ${resource.path}")
                 }
             }
-            writeIndexLocked()
-            id
         }
         markDocumentModified(document)
-        return id
     }
 
     override suspend fun insertPage(document: DrawDocument, page: DrawPage, index: Int) = markDocumentModified(document)
@@ -625,6 +628,7 @@ internal data class StoredPage(
 @Serializable
 internal data class StoredStroke(
     val id: String,
+    val transform: AffineTransform = AffineTransform.IDENTITY,
     val zIndex: Int,
     val color: Int,
     val size: Float,
@@ -719,12 +723,13 @@ private fun DrawDocument.toStored(): StoredDocument = StoredDocument(
             strokes = page.strokes.map { stroke ->
                 StoredStroke(
                     id = stroke.id,
+                    transform = stroke.transform,
                     zIndex = stroke.zIndex,
-                    color = stroke.brushConfig.color.toArgb(),
-                    size = stroke.brushConfig.size,
-                    toolType = stroke.mesh.inputToolType.name,
-                    family = stroke.brushConfig.tool.name,
-                    inputs = Base64.encode(StrokeInputCodec.encode(stroke.mesh.points))
+                    color = stroke.baseBrush.color.toArgb(),
+                    size = stroke.baseBrush.size,
+                    toolType = stroke.baseMesh.inputToolType.name,
+                    family = stroke.baseBrush.tool.name,
+                    inputs = Base64.encode(StrokeInputCodec.encode(stroke.baseMesh.points))
                 )
             },
             texts = page.texts.map { text ->
@@ -768,7 +773,7 @@ private fun DrawDocument.toStored(): StoredDocument = StoredDocument(
                     startIndex = markup.startIndex,
                     endIndex = markup.endIndex,
                     text = markup.text,
-                    rects = markup.flatRects(),
+                    rects = markup.toData().rects,
                     kind = markup.kind.name,
                     color = markup.color
                 )
@@ -795,15 +800,16 @@ private fun StoredPage.toPage(pageIndex: Int, defaultBackground: PageBackground)
             continue
         }
         page.strokes.add(
-            restoreStroke(
+            StrokeData(
+                id = stroke.id,
                 points = points,
-                familyName = stroke.family,
-                toolTypeName = stroke.toolType,
+                tool = StrokeTool.fromName(stroke.family) ?: StrokeTool.PRESSURE_PEN,
                 size = stroke.size,
                 color = stroke.color,
-                zIndex = stroke.zIndex,
-                id = stroke.id
-            )
+                inputToolType = InputToolType.fromName(stroke.toolType),
+                transform = stroke.transform,
+                zIndex = stroke.zIndex
+            ).toElement()
         )
     }
     for (text in texts.sortedBy { it.zIndex }) {
@@ -840,7 +846,8 @@ private fun StoredPage.toPage(pageIndex: Int, defaultBackground: PageBackground)
     }
     for (markup in markups.sortedBy { it.zIndex }) {
         page.markups.add(
-            restoreTextMarkup(
+            TextMarkupData(
+                id = markup.id,
                 resourceId = markup.resourceId,
                 pdfPageIndex = markup.pdfPageIndex,
                 pdfWidthPt = markup.pdfWidth,
@@ -849,11 +856,10 @@ private fun StoredPage.toPage(pageIndex: Int, defaultBackground: PageBackground)
                 endIndex = markup.endIndex,
                 text = markup.text,
                 rects = markup.rects,
-                kind = markup.kind,
+                kind = TextMarkupKind.fromName(markup.kind) ?: TextMarkupKind.HIGHLIGHT,
                 color = markup.color,
-                zIndex = markup.zIndex,
-                id = markup.id
-            )
+                zIndex = markup.zIndex
+            ).toElement()
         )
     }
     return page

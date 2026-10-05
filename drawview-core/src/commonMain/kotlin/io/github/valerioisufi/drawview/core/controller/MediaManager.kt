@@ -1,13 +1,15 @@
 package io.github.valerioisufi.drawview.core.controller
 
 import androidx.compose.ui.geometry.Offset
-import io.github.valerioisufi.drawview.core.history.AddImageAction
-import io.github.valerioisufi.drawview.core.history.AddPageAction
-import io.github.valerioisufi.drawview.core.history.BatchAction
+import io.github.valerioisufi.drawview.core.change.AddElements
+import io.github.valerioisufi.drawview.core.change.AddPage
+import io.github.valerioisufi.drawview.core.change.AddResource
+import io.github.valerioisufi.drawview.core.change.CompositeChange
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawPdf
 import io.github.valerioisufi.drawview.core.model.DrawResource
+import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.core.platform.PlatformFiles
 import io.github.valerioisufi.drawview.core.platform.decodeImageBitmap
 import io.github.valerioisufi.drawview.core.platform.newResourcePath
@@ -46,8 +48,7 @@ class MediaManager(private val controller: DrawViewController) {
                 ?: 0
             val page = document.pages.getOrNull(pageIndex) ?: return@launch
 
-            val resourceId = controller.persistence.addResource(document, DrawResource.ResourceType.IMAGE, path)
-            document.resources.add(DrawResource(resourceId, DrawResource.ResourceType.IMAGE, path))
+            val resourceId = newElementId()
 
             val widthMm = 100f.coerceAtMost(page.widthMm * 0.8f)
             val heightMm = if (bitmap.width > 0) widthMm * bitmap.height / bitmap.width else widthMm
@@ -62,11 +63,14 @@ class MediaManager(private val controller: DrawViewController) {
                 height = heightMm
                 this.bitmap = bitmap
             }
-            page.images.add(image)
-            page.markContentChanged()
-            controller.historyManager.addHistoryAction(AddImageAction(page, image))
-            controller.persist { saveImage(page, image) }
-            controller.invalidatePageContent(page, image.getRotatedBounds())
+            controller.session.submit(
+                CompositeChange(
+                    listOf(
+                        AddResource.of(resourceId, DrawResource.ResourceType.IMAGE, path),
+                        AddElements.of(page, listOf(image))
+                    )
+                )
+            )
             controller.selectionManager.selectImage(pageIndex, image)
         }
     }
@@ -102,35 +106,20 @@ class MediaManager(private val controller: DrawViewController) {
 
             val document = controller.document
             controller.selectionManager.clearSelection()
-            val resourceId = controller.persistence.addResource(document, DrawResource.ResourceType.PDF, path)
-            document.resources.add(DrawResource(resourceId, DrawResource.ResourceType.PDF, path))
-
-            val actions = mutableListOf<AddPageAction>()
-            val newPages = mutableListOf<Triple<Int, DrawPage, DrawPdf>>()
-            sizes.forEachIndexed { pdfIndex, (widthMm, heightMm) ->
-                val index = document.pages.size
-                val page = DrawPage(
-                    index = index,
-                    widthMm = widthMm,
-                    heightMm = heightMm,
-                    background = document.defaultBackground
-                )
-                val pdf = DrawPdf(zIndex = 0, pdfPageIndex = pdfIndex).apply { this.resourceId = resourceId }
-                page.pdfs.add(pdf)
-                document.pages.add(page)
-                actions.add(AddPageAction(page, index))
-                newPages.add(Triple(index, page, pdf))
-            }
-            document.reindexPages()
-            controller.historyManager.addHistoryAction(BatchAction(actions))
-            controller.persist {
-                for ((index, page, pdf) in newPages) {
-                    insertPage(document, page, index)
-                    savePdf(page, pdf)
+            val resourceId = newElementId()
+            val firstIndex = document.pages.size
+            val pages = sizes.mapIndexed { pdfIndex, (widthMm, heightMm) ->
+                DrawPage(widthMm = widthMm, heightMm = heightMm, background = document.defaultBackground).apply {
+                    add(DrawPdf(zIndex = 0, pdfPageIndex = pdfIndex).apply { this.resourceId = resourceId })
                 }
             }
-            controller.markLayoutNeedsUpdate()
-            controller.pageManager.jumpToPage(newPages.first().second.index)
+            controller.session.submit(
+                CompositeChange(
+                    listOf(AddResource.of(resourceId, DrawResource.ResourceType.PDF, path)) +
+                        pages.mapIndexed { i, page -> AddPage.of(page, firstIndex + i) }
+                )
+            )
+            controller.pageManager.jumpToPage(firstIndex)
         }
     }
 }

@@ -2,30 +2,22 @@ package io.github.valerioisufi.drawview.core.controller
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import io.github.valerioisufi.drawview.core.change.RemoveElements
 import io.github.valerioisufi.drawview.core.geometry.HitTesting
-import io.github.valerioisufi.drawview.core.history.BatchAction
-import io.github.valerioisufi.drawview.core.history.EraseStrokesAction
-import io.github.valerioisufi.drawview.core.history.EraseTextMarkupsAction
-import io.github.valerioisufi.drawview.core.model.DrawPage
-import io.github.valerioisufi.drawview.core.model.DrawStroke
-import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
+import io.github.valerioisufi.drawview.core.model.DrawElement
 import io.github.valerioisufi.drawview.core.model.Tool
 import kotlin.math.max
 import kotlin.math.min
 
 /**
  * "Live eraser": removes the strokes whose mesh intersects the capsule swept by the eraser tip
- * (and the marks of the text of the PDFs it touches), and records a single history action per
- * gesture.
+ * (and the marks of the text of the PDFs it touches) as soon as it touches them; what a gesture
+ * erases is undone at once.
  */
 class EraserManager(private val controller: DrawViewController) {
 
-    private class ErasedStroke(val stroke: DrawStroke, val position: Int)
-
-    private val erasedInGesture = LinkedHashMap<DrawPage, MutableList<ErasedStroke>>()
-
-    /** Marks of the text of the PDFs erased during the gesture, with their position in their page. */
-    private val erasedMarkupsInGesture = LinkedHashMap<DrawPage, MutableList<Pair<DrawTextMarkup, Int>>>()
+    /** A gesture is erasing: its changes are a group of the history until [commitGesture]. */
+    private var inGesture = false
 
     /**
      * Erases along the segment [fromScreen] - [toScreen] (screen pixels).
@@ -54,7 +46,7 @@ class EraserManager(private val controller: DrawViewController) {
                 max(a.x, b.x) + radiusMm, max(a.y, b.y) + radiusMm
             )
 
-            val toRemove = mutableListOf<DrawStroke>()
+            val toRemove = mutableListOf<DrawElement>()
             for (stroke in page.strokes) {
                 if (stroke.isDragging) continue
                 val sb = stroke.bounds
@@ -67,54 +59,25 @@ class EraserManager(private val controller: DrawViewController) {
                 val pointsToMm = markup.pointsToPageMm(page)
                 markup.rects.any { HitTesting.rectIntersectsCapsule(pointsToMm.mapRect(it), a.x, a.y, b.x, b.y, radiusMm) }
             }
-            if (toRemove.isEmpty() && markupsToRemove.isEmpty()) continue
+            toRemove.addAll(markupsToRemove)
+            if (toRemove.isEmpty()) continue
 
-            var dirty: Rect? = null
-            if (toRemove.isNotEmpty()) {
-                val records = erasedInGesture.getOrPut(page) { mutableListOf() }
-                for (stroke in toRemove) {
-                    val position = page.strokes.indexOf(stroke)
-                    if (position < 0) continue
-                    page.strokes.removeAt(position)
-                    records.add(ErasedStroke(stroke, position))
-                    dirty = dirty?.let { union(it, stroke.bounds) } ?: stroke.bounds
-                    erased++
-                }
-                controller.persist { deleteStrokes(toRemove) }
+            if (!inGesture) {
+                inGesture = true
+                controller.historyManager.beginGroup()
             }
-            if (markupsToRemove.isNotEmpty()) {
-                val records = erasedMarkupsInGesture.getOrPut(page) { mutableListOf() }
-                for (markup in markupsToRemove) {
-                    val position = page.markups.indexOf(markup)
-                    if (position < 0) continue
-                    page.markups.removeAt(position)
-                    records.add(markup to position)
-                    val bounds = markup.boundsMm(page)
-                    dirty = dirty?.let { union(it, bounds) } ?: bounds
-                    erased++
-                }
-                controller.persist { markupsToRemove.forEach { deleteTextMarkup(it) } }
-            }
-            page.markContentChanged()
-            dirty?.let { controller.invalidatePageContent(page, it) }
+            controller.session.submit(RemoveElements.of(page, toRemove))
+            erased += toRemove.size
         }
         return erased
     }
 
     /**
-     * Commits the strokes (and the marks) erased during the current gesture as one undoable action.
+     * Ends the gesture: what it erased becomes one entry of the history.
      */
     fun commitGesture() {
-        if (erasedInGesture.isEmpty() && erasedMarkupsInGesture.isEmpty()) return
-        val actions = erasedInGesture.map { (page, records) ->
-            EraseStrokesAction(page, records.map { it.stroke }, records.map { it.position })
-        } + erasedMarkupsInGesture.map { (page, records) ->
-            EraseTextMarkupsAction(page, records.map { it.first }, records.map { it.second })
-        }
-        erasedInGesture.clear()
-        erasedMarkupsInGesture.clear()
-        controller.historyManager.addHistoryAction(if (actions.size == 1) actions[0] else BatchAction(actions))
+        if (!inGesture) return
+        inGesture = false
+        controller.historyManager.endGroup()
     }
-
-    private fun union(a: Rect, b: Rect) = Rect(min(a.left, b.left), min(a.top, b.top), max(a.right, b.right), max(a.bottom, b.bottom))
 }

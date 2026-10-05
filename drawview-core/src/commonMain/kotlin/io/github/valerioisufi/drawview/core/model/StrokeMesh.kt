@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.core.model
 
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import kotlin.random.Random
 
 /**
@@ -65,6 +66,44 @@ class StrokeMesh(
             }
         }
         return if (minX <= maxX && minY <= maxY) Rect(minX, minY, maxX, maxY) else Rect.Zero
+    }
+
+    /** This mesh with the recorded inputs [points]. */
+    fun withPoints(points: List<StrokePoint>): StrokeMesh = StrokeMesh(
+        positions = positions,
+        indices = indices,
+        color = color,
+        tool = tool,
+        size = size,
+        points = points,
+        additionalPartitions = partitions.drop(1),
+        inputToolType = inputToolType
+    )
+
+    /**
+     * This mesh mapped by [transform]: the vertices are mapped directly (what is drawn is exactly
+     * the transformed mesh) and so are the recorded inputs, the size scaled accordingly.
+     */
+    fun transformed(transform: Matrix2D): StrokeMesh {
+        val scale = transform.scaleFactor
+        val mapped = partitions.map { partition ->
+            val positions = partition.positions.copyOf()
+            transform.mapPoints(positions)
+            MeshPartition(positions, partition.indices)
+        }
+        return StrokeMesh(
+            positions = mapped.first().positions,
+            indices = mapped.first().indices,
+            color = color,
+            tool = tool,
+            size = size * scale,
+            points = points.map { p ->
+                val point = transform.mapPoint(p.x, p.y)
+                StrokePoint(point.x, point.y, p.pressure, p.timestampMs)
+            },
+            additionalPartitions = mapped.drop(1),
+            inputToolType = inputToolType
+        )
     }
 
     override fun equals(other: Any?): Boolean {

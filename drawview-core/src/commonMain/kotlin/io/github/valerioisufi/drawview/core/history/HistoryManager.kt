@@ -1,72 +1,91 @@
 package io.github.valerioisufi.drawview.core.history
 
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import io.github.valerioisufi.drawview.core.change.ChangeObserver
+import io.github.valerioisufi.drawview.core.change.ChangeOrigin
+import io.github.valerioisufi.drawview.core.change.CommittedChange
+import io.github.valerioisufi.drawview.core.change.CompositeChange
+import io.github.valerioisufi.drawview.core.change.DocumentChange
+import io.github.valerioisufi.drawview.core.change.DocumentSession
 
 /**
- * Manages Undo and Redo stacks for vector drawing actions.
- * Backed by Compose SnapshotStateList so UI reacts automatically.
+ * Undo / redo of the changes made on this device: records the change undoing every local change
+ * of [session] and submits it on undo (the changes of the other devices are not undone).
  *
- * @param coroutineScope Scope used to execute suspend undo/redo actions.
- * @param maxHistorySize Maximum depth of the undo stack.
- * @param onDocumentModified Callback invoked whenever document history alters.
+ * The changes submitted inside a group ([group], or [beginGroup] / [endGroup], e.g. the strokes
+ * erased by one gesture) are undone together.
+ *
+ * Backed by Compose snapshot state so that [canUndo] and [canRedo] are observable.
  */
 class HistoryManager(
-    private val coroutineScope: CoroutineScope,
-    private val maxHistorySize: Int = 50,
-    private val onDocumentModified: () -> Unit = {}
-) {
-    val undoStack: SnapshotStateList<DrawAction> = mutableStateListOf()
-    val redoStack: SnapshotStateList<DrawAction> = mutableStateListOf()
+    private val session: DocumentSession,
+    private val maxHistorySize: Int = 50
+) : ChangeObserver {
+    private val undoStack = mutableStateListOf<DocumentChange>()
+    private val redoStack = mutableStateListOf<DocumentChange>()
+
+    private var groupDepth = 0
+    private val groupInverses = mutableListOf<DocumentChange>()
 
     val canUndo: Boolean get() = undoStack.isNotEmpty()
     val canRedo: Boolean get() = redoStack.isNotEmpty()
 
-    /**
-     * Registers a new user action. Clears redo timeline.
-     */
-    fun addHistoryAction(action: DrawAction) {
-        undoStack.add(action)
-        redoStack.clear()
-
-        if (undoStack.size > maxHistorySize) {
-            undoStack.removeAt(0)
-        }
-
-        onDocumentModified()
+    init {
+        session.addObserver(this)
     }
 
-    /**
-     * Executes Undo.
-     */
-    fun undo(context: DrawingActionContext) {
-        if (undoStack.isEmpty()) return
-        val action = undoStack.removeAt(undoStack.size - 1)
-        coroutineScope.launch {
-            action.undo(context)
-            redoStack.add(action)
-            onDocumentModified()
+    override fun onChange(committed: CommittedChange) {
+        if (committed.origin != ChangeOrigin.LOCAL) return
+        if (groupDepth > 0) {
+            groupInverses.add(committed.inverse)
+        } else {
+            push(committed.inverse)
         }
     }
 
-    /**
-     * Executes Redo.
-     */
-    fun redo(context: DrawingActionContext) {
-        if (redoStack.isEmpty()) return
-        val action = redoStack.removeAt(redoStack.size - 1)
-        coroutineScope.launch {
-            action.redo(context)
-            undoStack.add(action)
-            onDocumentModified()
+    /** Starts a group of changes undone together (groups can be nested). */
+    fun beginGroup() {
+        groupDepth++
+    }
+
+    /** Ends the group started by [beginGroup]: its changes become one entry of the history. */
+    fun endGroup() {
+        if (groupDepth == 0) return
+        groupDepth--
+        if (groupDepth > 0 || groupInverses.isEmpty()) return
+        val inverses = groupInverses.toList()
+        groupInverses.clear()
+        push(if (inverses.size == 1) inverses[0] else CompositeChange(inverses.asReversed()))
+    }
+
+    /** Runs [block] in a group: the changes it submits are undone together. */
+    inline fun <T> group(block: () -> T): T {
+        beginGroup()
+        try {
+            return block()
+        } finally {
+            endGroup()
         }
+    }
+
+    fun undo() {
+        val inverse = undoStack.removeLastOrNull() ?: return
+        session.submit(inverse, ChangeOrigin.UNDO)?.let { redoStack.add(it) }
+    }
+
+    fun redo() {
+        val change = redoStack.removeLastOrNull() ?: return
+        session.submit(change, ChangeOrigin.REDO)?.let { undoStack.add(it) }
     }
 
     fun clear() {
         undoStack.clear()
         redoStack.clear()
-        onDocumentModified()
+    }
+
+    private fun push(inverse: DocumentChange) {
+        undoStack.add(inverse)
+        redoStack.clear()
+        if (undoStack.size > maxHistorySize) undoStack.removeAt(0)
     }
 }

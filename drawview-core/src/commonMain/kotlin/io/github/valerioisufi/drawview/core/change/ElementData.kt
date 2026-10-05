@@ -1,0 +1,280 @@
+package io.github.valerioisufi.drawview.core.change
+
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
+import io.github.valerioisufi.drawview.core.geometry.AffineTransform
+import io.github.valerioisufi.drawview.core.model.BrushConfig
+import io.github.valerioisufi.drawview.core.model.DrawDocument
+import io.github.valerioisufi.drawview.core.model.DrawElement
+import io.github.valerioisufi.drawview.core.model.DrawImage
+import io.github.valerioisufi.drawview.core.model.DrawPage
+import io.github.valerioisufi.drawview.core.model.DrawPdf
+import io.github.valerioisufi.drawview.core.model.DrawResource
+import io.github.valerioisufi.drawview.core.model.DrawStroke
+import io.github.valerioisufi.drawview.core.model.DrawText
+import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
+import io.github.valerioisufi.drawview.core.model.InputToolType
+import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.core.model.StrokeMesh
+import io.github.valerioisufi.drawview.core.model.StrokePoint
+import io.github.valerioisufi.drawview.core.model.StrokeTool
+import io.github.valerioisufi.drawview.core.model.TextMarkupKind
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+/*
+ * The content of a document as plain values: what the changes carry (and what is stored and
+ * exchanged), while the model objects (DrawStroke, DrawText, ...) are the live, mutable state of
+ * an open document.
+ */
+
+/**
+ * An element of a page as plain values (see [DrawElement]).
+ */
+@Serializable
+sealed interface ElementData {
+    val id: String
+    val zIndex: Int
+
+    /** A new model element with this content. */
+    fun toElement(): DrawElement
+}
+
+/**
+ * A stroke: its inputs and brush as it was drawn, and its placement on the page.
+ */
+@Serializable
+@SerialName("stroke")
+data class StrokeData(
+    override val id: String,
+    val points: List<StrokePoint>,
+    val tool: StrokeTool,
+    val size: Float,
+    val color: Int,
+    val inputToolType: InputToolType = InputToolType.UNKNOWN,
+    val transform: AffineTransform = AffineTransform.IDENTITY,
+    override val zIndex: Int = 0
+) : ElementData {
+    /** The stroke, modeled again from its inputs by the stroke engine. */
+    override fun toElement(): DrawStroke {
+        val brush = BrushConfig(
+            tool = tool,
+            size = size,
+            color = Color(color),
+            // Fine modelling tolerance for the strokes modeled again, as in the original app
+            epsilon = (size * 0.01f).coerceIn(0.005f, 0.05f)
+        )
+        // The inputs are kept as they are (the modeller may adjust what it records)
+        val mesh = InkStrokeEngine.buildMesh(points, brush, inputToolType)?.withPoints(points) ?: StrokeMesh(
+            positions = floatArrayOf(),
+            indices = shortArrayOf(),
+            color = brush.color,
+            tool = brush.tool,
+            size = brush.size,
+            points = points,
+            inputToolType = inputToolType
+        )
+        return DrawStroke(id = id, mesh = mesh, brushConfig = brush, transform = transform, zIndex = zIndex)
+    }
+}
+
+@Serializable
+@SerialName("text")
+data class TextData(
+    override val id: String,
+    val text: String,
+    val isLatex: Boolean = false,
+    val isMarkdownEnabled: Boolean = true,
+    /** 0 = start, 1 = center, 2 = end. */
+    val alignment: Int = 0,
+    val x: Float,
+    val y: Float,
+    val width: Float,
+    val height: Float,
+    val rotation: Float = 0f,
+    val color: Int,
+    val fontSize: Float,
+    override val zIndex: Int = 0
+) : ElementData {
+    override fun toElement(): DrawText = DrawText(zIndex, id).also { applyTo(it) }
+
+    /** Writes this content into [text] (its identifier excepted). */
+    fun applyTo(text: DrawText) {
+        text.zIndex = zIndex
+        text.text = this.text
+        text.isLatex = isLatex
+        text.isMarkdownEnabled = isMarkdownEnabled
+        text.alignment = alignment
+        text.x = x
+        text.y = y
+        text.width = width
+        text.height = height
+        text.rotation = rotation
+        text.color = color
+        text.fontSize = fontSize
+        text.markDirty()
+    }
+}
+
+@Serializable
+@SerialName("image")
+data class ImageData(
+    override val id: String,
+    val resourceId: String,
+    val x: Float,
+    val y: Float,
+    val width: Float,
+    val height: Float,
+    val rotation: Float = 0f,
+    override val zIndex: Int = 0
+) : ElementData {
+    override fun toElement(): DrawImage = DrawImage(zIndex, id).also {
+        it.resourceId = resourceId
+        it.x = x
+        it.y = y
+        it.width = width
+        it.height = height
+        it.rotation = rotation
+    }
+}
+
+@Serializable
+@SerialName("pdf")
+data class PdfData(
+    override val id: String,
+    val resourceId: String,
+    val pdfPageIndex: Int,
+    override val zIndex: Int = 0
+) : ElementData {
+    override fun toElement(): DrawPdf = DrawPdf(zIndex, pdfPageIndex, id).also { it.resourceId = resourceId }
+}
+
+/**
+ * A mark of the text of a PDF ([rects]: left, top, right, bottom of each line, in points of the
+ * PDF page).
+ */
+@Serializable
+@SerialName("textMarkup")
+data class TextMarkupData(
+    override val id: String,
+    val resourceId: String,
+    val pdfPageIndex: Int,
+    val pdfWidthPt: Float,
+    val pdfHeightPt: Float,
+    val startIndex: Int,
+    val endIndex: Int,
+    val text: String,
+    val rects: List<Float>,
+    val kind: TextMarkupKind,
+    val color: Int,
+    override val zIndex: Int = 0
+) : ElementData {
+    override fun toElement(): DrawTextMarkup = DrawTextMarkup(
+        id = id,
+        resourceId = resourceId,
+        pdfPageIndex = pdfPageIndex,
+        pdfWidthPt = pdfWidthPt,
+        pdfHeightPt = pdfHeightPt,
+        startIndex = startIndex,
+        endIndex = endIndex,
+        text = text,
+        rects = rects.chunked(4).filter { it.size == 4 }.map { Rect(it[0], it[1], it[2], it[3]) },
+        kind = kind,
+        color = color,
+        zIndex = zIndex
+    )
+}
+
+/**
+ * A page with its content ([background]: `null` when the page follows the default background
+ * of the document).
+ */
+@Serializable
+data class PageData(
+    val id: String,
+    val widthMm: Float,
+    val heightMm: Float,
+    val background: PageBackground? = null,
+    val elements: List<ElementData> = emptyList()
+) {
+    /** A new page of [document] with this content (the elements of every kind in this order). */
+    fun toPage(document: DrawDocument): DrawPage {
+        val page = DrawPage(widthMm = widthMm, heightMm = heightMm, background = background ?: document.defaultBackground, id = id)
+        page.hasCustomBackground = background != null
+        for (data in elements) page.add(data.toElement())
+        return page
+    }
+}
+
+/** A file of a document (its content travels apart, see `docs/collaboration.md`). */
+@Serializable
+data class ResourceData(val id: String, val type: DrawResource.ResourceType)
+
+// ==========================================================
+// From the model
+// ==========================================================
+
+fun DrawStroke.toData() = StrokeData(
+    id = id,
+    points = baseMesh.points,
+    tool = baseBrush.tool,
+    size = baseBrush.size,
+    color = baseBrush.color.toArgb(),
+    inputToolType = baseMesh.inputToolType,
+    transform = transform,
+    zIndex = zIndex
+)
+
+fun DrawText.toData() = TextData(
+    id = id,
+    text = text,
+    isLatex = isLatex,
+    isMarkdownEnabled = isMarkdownEnabled,
+    alignment = alignment,
+    x = x,
+    y = y,
+    width = width,
+    height = height,
+    rotation = rotation,
+    color = color,
+    fontSize = fontSize,
+    zIndex = zIndex
+)
+
+fun DrawImage.toData() = ImageData(id, resourceId, x, y, width, height, rotation, zIndex)
+
+fun DrawPdf.toData() = PdfData(id, resourceId, pdfPageIndex, zIndex)
+
+fun DrawTextMarkup.toData() = TextMarkupData(
+    id = id,
+    resourceId = resourceId,
+    pdfPageIndex = pdfPageIndex,
+    pdfWidthPt = pdfWidthPt,
+    pdfHeightPt = pdfHeightPt,
+    startIndex = startIndex,
+    endIndex = endIndex,
+    text = text,
+    rects = rects.flatMap { listOf(it.left, it.top, it.right, it.bottom) },
+    kind = kind,
+    color = color,
+    zIndex = zIndex
+)
+
+fun DrawElement.toData(): ElementData = when (this) {
+    is DrawStroke -> toData()
+    is DrawText -> toData()
+    is DrawImage -> toData()
+    is DrawPdf -> toData()
+    is DrawTextMarkup -> toData()
+}
+
+/** The page with its content, the elements of every kind in their stacking order. */
+fun DrawPage.toData(): PageData = PageData(
+    id = id,
+    widthMm = widthMm,
+    heightMm = heightMm,
+    background = if (hasCustomBackground) background else null,
+    elements = elements().map { it.toData() }
+)

@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 4,
-    "identityHash": "9d648e80e29ccc5ba69fcc6d0549484b",
+    "version": 5,
+    "identityHash": "429c886288d9fd44ccf947012fe9ece5",
     "entities": [
       {
         "tableName": "folders",
@@ -213,7 +213,7 @@
       },
       {
         "tableName": "strokes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `pageId` TEXT NOT NULL, `zIndex` INTEGER NOT NULL, `color` INTEGER NOT NULL, `size` REAL NOT NULL, `toolType` TEXT NOT NULL, `brushFamily` TEXT NOT NULL, `inputs` BLOB NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`pageId`) REFERENCES `pages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `pageId` TEXT NOT NULL, `zIndex` INTEGER NOT NULL, `color` INTEGER NOT NULL, `size` REAL NOT NULL, `toolType` TEXT NOT NULL, `brushFamily` TEXT NOT NULL, `inputs` BLOB NOT NULL, `transform` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`pageId`) REFERENCES `pages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -261,6 +261,12 @@
             "fieldPath": "inputs",
             "columnName": "inputs",
             "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "transform",
+            "columnName": "transform",
+            "affinity": "TEXT",
             "notNull": true
           }
         ],
@@ -820,7 +826,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9d648e80e29ccc5ba69fcc6d0549484b')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '429c886288d9fd44ccf947012fe9ece5')"
     ]
   }
 }

@@ -20,11 +20,12 @@ import androidx.room.TypeConverters
         UserPreferencesEntity::class
     ],
     // No migrations before the first release: an older database is recreated (see createDrawDatabase)
-    version = 4
+    version = 5
 )
 @TypeConverters(
     PageBackgroundConverter::class,
-    BrushPresetListConverter::class
+    BrushPresetListConverter::class,
+    AffineTransformConverter::class
 )
 @ConstructedBy(DrawDatabaseConstructor::class)
 abstract class DrawDatabase : RoomDatabase() {

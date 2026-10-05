@@ -35,7 +35,7 @@ Variations).
 | Find and change the elements | `DrawDocument` (index id → element), `DrawPage` (ordered lists) | Information Expert |
 | Single entry point of the changes: order, timestamps, origin | `DocumentSession.submit(change, origin)` | Controller of the use case "modify the document", High Cohesion (out of `DrawViewController`) |
 | Undo / redo | `HistoryManager` with (change, inverse) pairs of the local changes | High Cohesion; undo per author |
-| Persistence | `ChangePersister`, translating the changes into the existing `DrawPersistence` calls | Indirection, Protected Variations |
+| Persistence | `ChangePersister`, translating the effects of the changes into `DrawPersistence` calls | Indirection, Protected Variations |
 | Tiles and selection | `RenderInvalidator`, `SelectionManager.onElementsRemoved`, subscribed to the session | Low Coupling (observer) |
 | Clock and conflicts | `HybridClock`, last-writer-wins metadata of the elements | Pure Fabrication |
 | Operation log and version vector | `ChangeLog` port in the core, Room implementation in `drawview-data` | Protected Variations |
@@ -101,8 +101,8 @@ The documents received from other users are created in a "Shared" folder of the 
 |---|---|---|
 | 0. Preparation | Several `EditorExtension`s; in-memory `DocumentStore` of the tests; network spike (mDNS, sockets, cryptography) on the three platforms | done |
 | 1. Identity | UUIDs for documents, folders, pages, elements and resources, used as primary keys | done |
-| 2. Changes as data | `DocumentChange`, `DocumentSession`, one manager at a time, with undo parity tests | |
-| 3. Convergence | HLC, last-writer-wins metadata, tombstones, fractional page order, absolute transforms, `ChangeLog` | |
+| 2. Changes as data | `DocumentChange`, `DocumentSession`, one manager at a time, with undo parity tests; absolute transforms of the strokes (from phase 3) | done |
+| 3. Convergence | HLC, last-writer-wins metadata, tombstones, fractional page order, `ChangeLog` | |
 | 4. Sync engine | Protocol, encryption, attachments, in-memory transport, convergence tests on random delivery orders | |
 | 5. LAN | Discovery, TCP, permissions (iOS local network and Bonjour, Android multicast lock), invitation | |
 | 6. UI and presence | Sharing, participants, cursors, live strokes, "Shared" folder and badge | |
@@ -146,6 +146,35 @@ The application is not released yet, so the stored documents are not migrated:
   `activeBrush`, `addCompletedStroke`, `addNewPage`, …), the headless `DrawCanvas`, the first
   formats of the lecture assistant (`ReviewPage`, the migration of its settings), the unused
   preference columns and the copies of the default presets.
+
+### Phase 2 results
+
+* `core.change`: the changes (`AddElements`, `RemoveElements`, `PlaceElements`, `UpdateTexts`,
+  `RestyleMarkups`, `AddPage`, `RemovePage`, `SetPageOrder`, `SetPageFormat`,
+  `SetDocumentDefaults`, `AddResource`, `CompositeChange`) are `@Serializable` values referring
+  to pages and elements by identifier; each applies itself and returns the change undoing it.
+  The content travels as `ElementData` / `PageData`; a change created from the editor also keeps
+  the model objects it holds (not serialized), so that undo / redo put back the same objects
+  (meshes, bitmaps, render caches) and only a remote change models the strokes again.
+* `DocumentSession` is the single entry point: it applies a change and notifies its observers
+  with the `ChangeEffects` (elements saved or deleted, pages inserted, removed, reordered or
+  formatted, files added, areas to draw again). The `HistoryManager` records the inverses of the
+  local changes (groups: one entry for an eraser gesture, for the pages inserted by the lecture
+  assistant), the `ChangePersister` writes the effects through `DrawPersistence`, the controller
+  draws them again and, for a change of another device, drops the stale selections.
+* The managers create the changes (GRASP Creator) and no longer touch the model, except the live
+  previews of a gesture (pages reordered while dragged, width of a selected text), which are put
+  back before the change is submitted. `DrawAction` and its subclasses are gone.
+* A stroke keeps the geometry it was drawn with and an absolute placement (`DrawStroke.transform`,
+  stored with it): a lasso move is a `PlaceElements` of a few numbers per element, undone exactly.
+* `DrawPersistence`: `saveStrokes` (instead of save / update), `deletePdf`, `saveResource` (the
+  identifier of a file is created by the model, no longer by the store); Room schema 5.
+* Improvements on the way: moving elements to another page is undone in their place, the change
+  of the template of the document is undoable, a stroke modeled again keeps its inputs exactly
+  (the modeller adjusted their timestamps: two copies of a document would have differed).
+* Tests: every change against its undo / redo, 20 random sessions of 60 changes undone and redone
+  exactly, serialization round trip, a deserialized change applied to another copy of the
+  document, the order of the writes, and the managers through the controller.
 
 ### Risks
 

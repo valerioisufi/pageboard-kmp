@@ -3,6 +3,9 @@ package io.github.valerioisufi.drawview.core
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import io.github.valerioisufi.drawview.core.change.ChangeOrigin
+import io.github.valerioisufi.drawview.core.change.DocumentSession
+import io.github.valerioisufi.drawview.core.change.RemoveElements
 import io.github.valerioisufi.drawview.core.controller.DrawPersistence
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.PersistenceQueue
@@ -10,8 +13,6 @@ import io.github.valerioisufi.drawview.core.controller.PlacementRequest
 import io.github.valerioisufi.drawview.core.engine.KotlinStrokeEngineDelegate
 import io.github.valerioisufi.drawview.core.geometry.HitTesting
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
-import io.github.valerioisufi.drawview.core.history.DrawingActionContext
-import io.github.valerioisufi.drawview.core.history.EraseStrokesAction
 import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawPage
@@ -22,9 +23,6 @@ import io.github.valerioisufi.drawview.core.model.StrokeMesh
 import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.Tool
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -33,6 +31,9 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -47,7 +48,7 @@ class EditorCoreTest {
         points = listOf(StrokePoint(left, top), StrokePoint(left + size, top + size))
     )
 
-    private fun stroke(mesh: StrokeMesh) = DrawStroke(mesh = mesh, brushConfig = BrushConfig(size = 1f), bounds = mesh.computeBounds())
+    private fun stroke(mesh: StrokeMesh) = DrawStroke(mesh = mesh, brushConfig = BrushConfig(size = 1f))
 
     // --- Engine ---
 
@@ -136,25 +137,17 @@ class EditorCoreTest {
     @Test
     fun eraseUndoRestoresTheOriginalStackingOrder() = runTest {
         val doc = DrawDocument()
+        val session = DocumentSession(doc)
         val page = doc.pages[0]
         val strokes = List(4) { stroke(squareMesh(it * 20f, 0f, 5f)) }
         page.strokes.addAll(strokes)
 
-        // Erase B then D, recording the positions at removal time
-        val removed = listOf(strokes[1], strokes[3])
-        val positions = mutableListOf<Int>()
-        for (s in removed) {
-            val p = page.strokes.indexOf(s)
-            positions.add(p)
-            page.strokes.removeAt(p)
-        }
-        val action = EraseStrokesAction(page, removed, positions)
-        val context = object : DrawingActionContext {
-            override val document = doc
-        }
-        action.undo(context)
+        // Erase B then D: undo puts the same strokes back where they were
+        val undo = assertNotNull(session.submit(RemoveElements.of(page, listOf(strokes[1], strokes[3]))))
+        assertEquals(listOf(strokes[0], strokes[2]), page.strokes.toList())
+        val redo = assertNotNull(session.submit(undo, ChangeOrigin.UNDO))
         assertEquals(strokes, page.strokes.toList())
-        action.redo(context)
+        session.submit(redo, ChangeOrigin.REDO)
         assertEquals(listOf(strokes[0], strokes[2]), page.strokes.toList())
     }
 
@@ -164,7 +157,7 @@ class EditorCoreTest {
     fun persistenceOperationsRunInSubmissionOrder() = runTest(UnconfinedTestDispatcher()) {
         val calls = mutableListOf<String>()
         val persistence = object : DrawPersistence {
-            override suspend fun saveNewStrokes(page: DrawPage, strokes: List<DrawStroke>) {
+            override suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) {
                 yield()
                 calls.add("save:${strokes.first().id}")
             }
@@ -175,7 +168,7 @@ class EditorCoreTest {
         }
         val queue = PersistenceQueue(backgroundScope, persistence)
         val s = stroke(squareMesh(0f, 0f, 1f))
-        queue.enqueue { saveNewStrokes(DrawPage(), listOf(s)) }
+        queue.enqueue { saveStrokes(DrawPage(), listOf(s)) }
         queue.enqueue { deleteStrokes(listOf(s)) }
         queue.flush()
         assertEquals(listOf("save:${s.id}", "delete:${s.id}"), calls)

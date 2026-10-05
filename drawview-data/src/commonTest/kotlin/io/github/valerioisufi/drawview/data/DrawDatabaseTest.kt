@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import io.github.valerioisufi.drawview.core.controller.ToolManager
 import io.github.valerioisufi.drawview.core.controller.ToolPreset
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
+import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPage
@@ -123,7 +124,8 @@ class DrawDatabaseTest {
             size = 3.5f,
             toolType = StrokeTool.PRESSURE_PEN.name,
             brushFamily = StrokeTool.PRESSURE_PEN.name,
-            inputs = StrokeInputCodec.encode(points)
+            inputs = StrokeInputCodec.encode(points),
+            transform = AffineTransform.IDENTITY
         )
 
         database.strokeDao().upsertAll(listOf(strokeEntity))
@@ -159,10 +161,12 @@ class DrawDatabaseTest {
         val points = (0..10).map { StrokePoint(10f + it * 3f, 20f + it, 0.5f, 1000L + it * 16L) }
         val brush = BrushConfig(tool = StrokeTool.HIGHLIGHTER, size = 4f, color = Color(0x40FFFF00), epsilon = 0.02f)
         val mesh = assertNotNull(InkStrokeEngine.buildMesh(points, brush, InputToolType.STYLUS))
-        val stroke = DrawStroke(mesh = mesh, brushConfig = brush, bounds = mesh.computeBounds())
-        repository.saveNewStrokes(page, listOf(stroke))
+        // Placed by a transformation (moved and scaled with the lasso)
+        val transform = AffineTransform(a = 2f, d = 2f, tx = 5f, ty = -3f)
+        val stroke = DrawStroke(mesh = mesh, brushConfig = brush, transform = transform)
+        repository.saveStrokes(page, listOf(stroke))
 
-        // Text with the columns added in schema v2
+        // Text
         val text = DrawText().apply {
             this.text = "**Hello** $\\frac{a}{b}$"
             x = 12f; y = 30f; width = 80f; height = 14f
@@ -174,7 +178,8 @@ class DrawDatabaseTest {
         repository.saveText(page, text)
 
         // Image referencing a document resource
-        val resourceId = repository.addResource(doc, DrawResource.ResourceType.IMAGE, "/tmp/image.png")
+        val resourceId = newElementId()
+        repository.saveResource(doc, DrawResource(resourceId, DrawResource.ResourceType.IMAGE, "/tmp/image.png"))
         val image = DrawImage().apply {
             this.resourceId = resourceId
             x = 5f; y = 6f; width = 50f; height = 40f; rotation = 15f
@@ -196,6 +201,11 @@ class DrawDatabaseTest {
 
         val loadedStroke = loaded.pages[0].strokes.single()
         assertEquals(StrokeTool.HIGHLIGHTER, loadedStroke.brushConfig.tool)
+        // The stroke as it was drawn and its placement
+        assertEquals(transform, loadedStroke.transform)
+        assertEquals(stroke.mesh.points, loadedStroke.mesh.points)
+        assertEquals(8f, loadedStroke.brushConfig.size)
+        assertEquals(4f, loadedStroke.baseBrush.size)
         assertEquals(InputToolType.STYLUS, loadedStroke.mesh.inputToolType)
         assertEquals(0x40FFFF00, loadedStroke.brushConfig.color.value.toLong().let { (it ushr 32).toInt() })
 
@@ -227,7 +237,7 @@ class DrawDatabaseTest {
         // A deleted stroke is inserted again (redo) with the same identifier
         repository.deleteStrokes(listOf(loadedStroke))
         assertTrue(assertNotNull(repository.loadDocument(doc.id)).pages.single { it.id == page.id }.strokes.isEmpty())
-        repository.saveNewStrokes(page, listOf(loadedStroke))
+        repository.saveStrokes(page, listOf(loadedStroke))
         assertEquals(stroke.id, assertNotNull(repository.loadDocument(doc.id)).pages.single { it.id == page.id }.strokes.single().id)
     }
 

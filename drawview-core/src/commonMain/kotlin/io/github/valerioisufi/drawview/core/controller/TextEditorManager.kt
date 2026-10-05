@@ -5,10 +5,14 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import io.github.valerioisufi.drawview.core.history.AddTextAction
-import io.github.valerioisufi.drawview.core.history.DeleteElementsAction
-import io.github.valerioisufi.drawview.core.history.EditTextAction
+import io.github.valerioisufi.drawview.core.change.AddElements
+import io.github.valerioisufi.drawview.core.change.ChangeEffects
+import io.github.valerioisufi.drawview.core.change.RemoveElements
+import io.github.valerioisufi.drawview.core.change.TextData
+import io.github.valerioisufi.drawview.core.change.UpdateTexts
+import io.github.valerioisufi.drawview.core.change.toData
 import io.github.valerioisufi.drawview.core.model.DrawText
+import io.github.valerioisufi.drawview.core.model.newElementId
 
 /**
  * State of the on-canvas text editing session.
@@ -103,53 +107,37 @@ class TextEditorManager(private val controller: DrawViewController) {
         }
 
         if (text.isBlank()) {
-            if (existing != null && page.texts.contains(existing)) {
-                page.texts.remove(existing)
-                existing.isDragging = false
-                page.markContentChanged()
-                controller.historyManager.addHistoryAction(DeleteElementsAction(page, emptyList(), listOf(existing), emptyList()))
-                controller.persist { deleteText(existing) }
-                controller.invalidatePageContent(page, existing.getRotatedBounds())
-            }
+            existing?.isDragging = false
+            if (existing != null) controller.session.submit(RemoveElements.of(page, listOf(existing)))
             resetSession()
             return
         }
 
-        val target = existing ?: DrawText(zIndex = page.texts.size)
-        val before = existing?.let { DrawText().apply { copyFrom(it) } }
-        val oldBounds = existing?.getRotatedBounds()
-
-        target.x = activeTextMmX
-        target.y = activeTextMmY
-        target.text = text
-        target.isLatex = isLatex
-        target.isMarkdownEnabled = isMarkdownLivePreviewEnabled
-        target.color = color
-        target.fontSize = fontSize
-        target.alignment = alignment
-        target.width = activeBoxWidthMm.coerceAtLeast(20f)
-        target.height = measuredHeightMm.coerceAtLeast(4f)
-        target.isDragging = false
-        target.markDirty()
-
-        if (existing == null) {
-            page.texts.add(target)
-            controller.historyManager.addHistoryAction(AddTextAction(page, target))
+        val data = TextData(
+            id = existing?.id ?: newElementId(),
+            text = text,
+            isLatex = isLatex,
+            isMarkdownEnabled = isMarkdownLivePreviewEnabled,
+            alignment = alignment,
+            x = activeTextMmX,
+            y = activeTextMmY,
+            width = activeBoxWidthMm.coerceAtLeast(20f),
+            height = measuredHeightMm.coerceAtLeast(4f),
+            rotation = existing?.rotation ?: 0f,
+            color = color,
+            fontSize = fontSize,
+            zIndex = existing?.zIndex ?: page.texts.size
+        )
+        if (existing != null) {
+            existing.isDragging = false
+            // Shown again even when nothing changed
+            existing.markDirty()
+            controller.invalidatePageContent(page, existing.getRotatedBounds())
+            if (data != existing.toData()) controller.session.submit(UpdateTexts(page.id, listOf(data)))
         } else {
-            val after = DrawText().apply { copyFrom(target) }
-            controller.historyManager.addHistoryAction(EditTextAction(page, target, before!!, after))
+            controller.session.submit(AddElements.of(page, listOf(data.toElement())))
         }
-        page.markContentChanged()
-        controller.persist { saveText(page, target) }
         controller.updateTextDefaults(fontSize, color)
-
-        val dirty = oldBounds?.let {
-            val b = target.getRotatedBounds()
-            androidx.compose.ui.geometry.Rect(
-                minOf(it.left, b.left), minOf(it.top, b.top), maxOf(it.right, b.right), maxOf(it.bottom, b.bottom)
-            )
-        } ?: target.getRotatedBounds()
-        controller.invalidatePageContent(page, dirty)
         resetSession()
     }
 
@@ -178,6 +166,12 @@ class TextEditorManager(private val controller: DrawViewController) {
             controller.invalidatePageContent(page, item.getRotatedBounds())
         }
         resetSession()
+    }
+
+    /** Closes the editor of a text that a change made on another device removed. */
+    internal fun onChange(effects: ChangeEffects) {
+        val item = activeTextItem ?: return
+        if (item in effects.deletedElements) cancelTextEditing()
     }
 
     private fun resetSession() {

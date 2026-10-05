@@ -9,14 +9,15 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.core.camera.CalcPage
 import io.github.valerioisufi.drawview.core.camera.CameraPhysicsEngine
+import io.github.valerioisufi.drawview.core.change.AddElements
+import io.github.valerioisufi.drawview.core.change.ChangeOrigin
+import io.github.valerioisufi.drawview.core.change.CommittedChange
+import io.github.valerioisufi.drawview.core.change.CompositeChange
+import io.github.valerioisufi.drawview.core.change.DocumentChange
+import io.github.valerioisufi.drawview.core.change.DocumentSession
+import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
-import io.github.valerioisufi.drawview.core.history.AddStrokesAction
-import io.github.valerioisufi.drawview.core.history.BatchAction
-import io.github.valerioisufi.drawview.core.history.DrawAction
-import io.github.valerioisufi.drawview.core.history.DrawingActionContext
-import io.github.valerioisufi.drawview.core.history.EraseStrokesAction
 import io.github.valerioisufi.drawview.core.history.HistoryManager
-import io.github.valerioisufi.drawview.core.history.PageRef
 import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawImage
@@ -28,7 +29,6 @@ import io.github.valerioisufi.drawview.core.model.LassoMode
 import io.github.valerioisufi.drawview.core.model.StrokeMesh
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.render.tile.TileManager
-import io.github.valerioisufi.drawview.core.util.currentTimeMillis
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
@@ -51,12 +51,12 @@ import kotlin.math.hypot
  * - **screen**: world transformed by the camera ([getRenderMatrix]).
  */
 class DrawViewController(
-    override val document: DrawDocument = DrawDocument(),
+    val document: DrawDocument = DrawDocument(),
     val coroutineScope: CoroutineScope,
     density: Float = 1f,
     persistence: DrawPersistence = NoOpDrawPersistence,
     persistenceScope: CoroutineScope = coroutineScope
-) : DrawingActionContext {
+) {
 
     /** Persistence used by this session (Room in the apps, no-op for in-memory documents). */
     val persistence: DrawPersistence = persistence
@@ -67,6 +67,12 @@ class DrawViewController(
      * editor is being closed.
      */
     private val persistenceQueue = PersistenceQueue(persistenceScope, persistence)
+
+    /**
+     * Every change of the document goes through the session (the managers create the changes):
+     * the controller, the history and the persistence observe it.
+     */
+    val session = DocumentSession(document)
 
     var density: Float = density
         set(value) {
@@ -85,10 +91,7 @@ class DrawViewController(
         getContentRect = { calcPage.contentRect }
     )
 
-    val historyManager = HistoryManager(
-        coroutineScope = coroutineScope,
-        onDocumentModified = { onDocumentModified() }
-    )
+    val historyManager = HistoryManager(session)
 
     val tileManager = TileManager(onInvalidate = { requestRedraw() })
 
@@ -164,7 +167,12 @@ class DrawViewController(
     private val cachedRenderMatrix = Matrix2D()
     private val cachedInverseMatrix = Matrix2D()
 
+    /** Set while a change whose elements are already drawn in the tiles is submitted. */
+    private var changeAlreadyDrawn = false
+
     init {
+        session.addObserver(ChangePersister(::persist))
+        session.addObserver(::onChangeCommitted)
         updatePageLayout()
     }
 
@@ -253,30 +261,26 @@ class DrawViewController(
         }
     }
 
-    override fun onPageModified(pageIndex: Int) {
-        document.pages.getOrNull(pageIndex)?.let { invalidatePageContent(it, null) }
-    }
-
-    override fun persist(operation: suspend DrawPersistence.() -> Unit) {
+    fun persist(operation: suspend DrawPersistence.() -> Unit) {
         persistenceQueue.enqueue(operation)
     }
 
     /** Suspends until every pending persistence operation has been executed. */
     suspend fun flushPersistence() = persistenceQueue.flush()
 
-    override fun invalidatePageContent(page: DrawPage, mmRect: Rect?) {
+    fun invalidatePageContent(page: DrawPage, mmRect: Rect?) {
         val pageWorldRect = calcPage.pagesRectOnWindow.getOrNull(document.pages.indexOf(page))
         if (mmRect == null) tileManager.invalidatePage(page.renderKey)
         else tileManager.invalidatePageRegion(page, mmRect, pageWorldRect)
         requestRedraw()
     }
 
-    override fun clearSelection() {
+    fun clearSelection() {
         selectionManager.clearSelection()
         textMarkupManager.clearSelection()
     }
 
-    override fun markLayoutNeedsUpdate() {
+    fun markLayoutNeedsUpdate() {
         calcPage.needToBeUpdated = true
         updatePageLayout()
         tileManager.retainDocumentPages(document)
@@ -284,10 +288,33 @@ class DrawViewController(
         requestRedraw()
     }
 
-    private fun onDocumentModified() {
-        val now = currentTimeMillis()
-        document.modifiedAt = now
-        persist { touchDocument(document, now) }
+    /**
+     * Submits [change], made on this device, whose elements the caller has already drawn into
+     * the tiles (the atomic hand-off of a live layer): its areas are not drawn again.
+     */
+    internal fun submitAlreadyDrawn(change: DocumentChange) {
+        changeAlreadyDrawn = true
+        try {
+            session.submit(change)
+        } finally {
+            changeAlreadyDrawn = false
+        }
+    }
+
+    /** Draws again what a change of the document touched, and leaves the states it made stale. */
+    private fun onChangeCommitted(committed: CommittedChange) {
+        val effects = committed.effects
+        if (committed.origin == ChangeOrigin.REMOTE) {
+            textEditorManager.onChange(effects)
+            selectionManager.onChange(effects)
+            textMarkupManager.onChange(effects)
+        }
+        if (effects.layoutChanged) {
+            markLayoutNeedsUpdate()
+        }
+        if (!changeAlreadyDrawn) {
+            for ((page, rect) in effects.dirtyRegions) invalidatePageContent(page, rect)
+        }
         requestRedraw()
     }
 
@@ -503,21 +530,20 @@ class DrawViewController(
 
         for (index in targetIndexes) {
             val page = document.pages.getOrNull(index) ?: continue
-            val stroke = DrawStroke(
-                mesh = mesh,
-                brushConfig = brush,
-                bounds = bounds,
-                zIndex = page.strokes.size
-            )
-            if (index != originPageIndex && originToWorld != null) {
+            // The copy on another page is the same stroke, placed in the millimeters of that page
+            val transform = if (index != originPageIndex && originToWorld != null) {
                 val worldToTarget = Matrix2D()
                 if (pageMmToWorld(index)?.invert(worldToTarget) != true) continue
-                selectionManager.transformStroke(stroke, Matrix2D(originToWorld).postConcat(worldToTarget))
+                AffineTransform.of(Matrix2D(originToWorld).postConcat(worldToTarget))
+            } else {
+                AffineTransform.IDENTITY
             }
+            val stroke = DrawStroke(mesh = mesh, brushConfig = brush, transform = transform, zIndex = page.strokes.size)
             strokesByPage.getOrPut(index) { mutableListOf() }.add(stroke)
         }
         if (strokesByPage.isEmpty()) return
 
+        val changes = strokesByPage.map { (index, strokes) -> AddElements.of(document.pages[index], strokes) }
         // Atomic hand-off from the live layer to the tiles (no missing or doubled frame)
         tileManager.bakeStrokesDirectlySync(
             strokesByPage = strokesByPage,
@@ -525,19 +551,8 @@ class DrawViewController(
             pageRects = calcPage.pagesRectOnWindow,
             cameraScale = cameraPhysics.getCurrentScale()
         ) {
-            for ((index, strokes) in strokesByPage) {
-                val page = document.pages[index]
-                page.strokes.addAll(strokes)
-                page.markContentChanged()
-            }
+            submitAlreadyDrawn(changes.singleOrNull() ?: CompositeChange(changes))
         }
-
-        historyManager.addHistoryAction(
-            AddStrokesAction(strokesByPage.map { (index, strokes) -> PageRef.ByPage(document.pages[index]) to strokes })
-        )
-        val toSave = strokesByPage.map { (index, strokes) -> document.pages[index] to strokes }
-        persist { toSave.forEach { (page, strokes) -> saveNewStrokes(page, strokes) } }
-        requestRedraw()
     }
 
     // ==========================================================
@@ -546,34 +561,12 @@ class DrawViewController(
 
     fun undo() {
         clearSelection()
-        historyManager.undo(this)
+        historyManager.undo()
     }
 
     fun redo() {
         clearSelection()
-        historyManager.redo(this)
-    }
-
-    fun addHistoryAction(action: DrawAction) = historyManager.addHistoryAction(action)
-
-    /**
-     * Removes every stroke of the document (undoable).
-     */
-    fun clearAllStrokes() {
-        selectionManager.clearSelection()
-        val actions = mutableListOf<DrawAction>()
-        for (page in document.pages) {
-            if (page.strokes.isEmpty()) continue
-            val strokes = page.strokes.toList()
-            // Removing the strokes from the front: re-inserting them at 0 in reverse order
-            // restores the original order.
-            actions.add(EraseStrokesAction(page, strokes, List(strokes.size) { 0 }))
-            page.strokes.clear()
-            page.markContentChanged()
-            persist { deleteStrokes(strokes) }
-            invalidatePageContent(page, null)
-        }
-        if (actions.isNotEmpty()) historyManager.addHistoryAction(BatchAction(actions))
+        historyManager.redo()
     }
 
     // ==========================================================

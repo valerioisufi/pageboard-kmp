@@ -217,6 +217,9 @@ interface ImageDao {
 interface PdfDao {
     @Upsert
     suspend fun upsert(pdf: PdfEntity)
+
+    @Query("DELETE FROM pdfs WHERE id = :pdfId")
+    suspend fun deleteById(pdfId: String)
 }
 
 /**
@@ -236,8 +239,8 @@ interface TextMarkupDao {
  */
 @Dao
 interface ResourceDao {
-    @Insert
-    suspend fun insert(resource: ResourceEntity)
+    @Upsert
+    suspend fun upsert(resource: ResourceEntity)
 
     @Query("SELECT * FROM resources WHERE documentId = :documentId")
     suspend fun getResourcesForDocument(documentId: String): List<ResourceEntity>

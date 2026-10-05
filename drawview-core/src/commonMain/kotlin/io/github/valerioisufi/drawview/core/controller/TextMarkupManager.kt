@@ -5,10 +5,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import io.github.valerioisufi.drawview.core.change.AddElements
+import io.github.valerioisufi.drawview.core.change.ChangeEffects
+import io.github.valerioisufi.drawview.core.change.MarkupStyle
+import io.github.valerioisufi.drawview.core.change.RemoveElements
+import io.github.valerioisufi.drawview.core.change.RestyleMarkups
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
-import io.github.valerioisufi.drawview.core.history.AddTextMarkupsAction
-import io.github.valerioisufi.drawview.core.history.ChangeTextMarkupStyleAction
-import io.github.valerioisufi.drawview.core.history.EraseTextMarkupsAction
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawPdf
 import io.github.valerioisufi.drawview.core.model.DrawResource
@@ -232,6 +234,14 @@ class TextMarkupManager(private val controller: DrawViewController) {
         selectedMarkup = null
     }
 
+    /** Drops the selections that changes made on another device made stale. */
+    internal fun onChange(effects: ChangeEffects) {
+        val markup = selectedMarkup?.markup
+        if (markup != null && (markup in effects.deletedElements || markup in effects.savedElements)) selectedMarkup = null
+        val page = textSelection?.page
+        if (page != null && effects.removedPages.any { it.first === page }) textSelection = null
+    }
+
     /**
      * End of the text selection whose handle is at [screen] (at most [radiusPx] away), or `null`.
      */
@@ -298,30 +308,16 @@ class TextMarkupManager(private val controller: DrawViewController) {
         val selected = selectedMarkup ?: return
         val markup = selected.markup
         if (markup.kind == kind && markup.color == color) return
-        val action = ChangeTextMarkupStyleAction(selected.page, markup, markup.kind, markup.color, kind, color)
-        markup.kind = kind
-        markup.color = color
-        selected.page.markContentChanged()
+        controller.session.submit(RestyleMarkups(selected.page.id, listOf(MarkupStyle(markup.id, kind, color))))
         // The action bar shows the new style
         selectedMarkup = SelectedMarkup(selected.page, markup)
-        controller.historyManager.addHistoryAction(action)
-        controller.persist { saveTextMarkup(selected.page, markup) }
-        controller.invalidatePageContent(selected.page, markup.boundsMm(selected.page))
     }
 
     /** Deletes the selected mark (undoable). */
     fun deleteSelectedMarkup() {
         val selected = selectedMarkup ?: return
         selectedMarkup = null
-        val page = selected.page
-        val markup = selected.markup
-        val position = page.markups.indexOf(markup)
-        if (position < 0) return
-        page.markups.removeAt(position)
-        page.markContentChanged()
-        controller.historyManager.addHistoryAction(EraseTextMarkupsAction(page, listOf(markup), listOf(position)))
-        controller.persist { deleteTextMarkup(markup) }
-        controller.invalidatePageContent(page, markup.boundsMm(page))
+        controller.session.submit(RemoveElements.of(selected.page, listOf(selected.markup)))
     }
 
     // ==========================================================
@@ -398,21 +394,14 @@ class TextMarkupManager(private val controller: DrawViewController) {
             color = color,
             zIndex = page.markups.size
         )
-        val commit = {
-            page.markups.add(markup)
-            page.markContentChanged()
-        }
+        val change = AddElements.of(page, listOf(markup))
         // Atomic hand-off from the live layer to the tiles (no missing frame)
         val pageWorldRect = controller.calcPage.pagesRectOnWindow.getOrNull(pageIndex)
         if (pageWorldRect != null) {
-            controller.tileManager.bakeMarkupsDirectlySync(page, pageWorldRect, listOf(markup), commit)
+            controller.tileManager.bakeMarkupsDirectlySync(page, pageWorldRect, listOf(markup)) { controller.submitAlreadyDrawn(change) }
         } else {
-            commit()
-            controller.invalidatePageContent(page, markup.boundsMm(page))
+            controller.session.submit(change)
         }
-        controller.historyManager.addHistoryAction(AddTextMarkupsAction(page, listOf(markup)))
-        controller.persist { saveTextMarkup(page, markup) }
-        controller.requestRedraw()
         return markup
     }
 

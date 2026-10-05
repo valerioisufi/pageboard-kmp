@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import io.github.valerioisufi.drawview.core.controller.ToolPreset
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
+import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawStroke
@@ -32,7 +33,7 @@ class KeyValueDocumentStoreTest {
         }
         val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 0.5f, color = Color(0xFF0000FF))
         val mesh = assertNotNull(InkStrokeEngine.buildMesh(points, brush, InputToolType.STYLUS))
-        return DrawStroke(mesh = mesh, brushConfig = brush, bounds = mesh.computeBounds())
+        return DrawStroke(mesh = mesh, brushConfig = brush, transform = AffineTransform(tx = offset))
     }
 
     @Test
@@ -46,7 +47,7 @@ class KeyValueDocumentStoreTest {
 
         val strokes = listOf(stroke(0f), stroke(30f))
         page.strokes.addAll(strokes)
-        store.saveNewStrokes(page, strokes)
+        store.saveStrokes(page, strokes)
         val text = DrawText(zIndex = 0).apply {
             this.text = "**Hello** \$x^2\$"
             x = 5f
@@ -94,6 +95,8 @@ class KeyValueDocumentStoreTest {
         assertEquals(strokes[0].mesh.points, firstPage.strokes[0].mesh.points)
         assertTrue(firstPage.strokes[0].mesh.positions.isNotEmpty(), "the mesh is rebuilt on load")
         assertEquals(Color(0xFF0000FF), firstPage.strokes[1].brushConfig.color)
+        assertEquals(strokes[1].transform, firstPage.strokes[1].transform)
+        assertEquals(strokes[1].mesh.points, firstPage.strokes[1].mesh.points)
         assertEquals(PageBackground.Grid(), firstPage.background)
         assertFalse(firstPage.hasCustomBackground)
 

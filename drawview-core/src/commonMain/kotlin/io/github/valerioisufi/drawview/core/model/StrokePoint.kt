@@ -1,11 +1,14 @@
 package io.github.valerioisufi.drawview.core.model
 
+import kotlinx.serialization.Serializable
+
 /**
  * A single raw input sample of a stroke, in stroke units (page millimeters).
  *
  * @property pressure normalized stylus pressure in `[0, 1]`, or a negative value when unknown.
  * @property timestampMs timestamp of the sample (any monotonic origin, only deltas matter).
  */
+@Serializable
 data class StrokePoint(
     val x: Float,
     val y: Float,

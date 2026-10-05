@@ -1,6 +1,9 @@
 package io.github.valerioisufi.drawview.data.repository
 
 import androidx.compose.ui.graphics.toArgb
+import io.github.valerioisufi.drawview.core.change.StrokeData
+import io.github.valerioisufi.drawview.core.change.TextMarkupData
+import io.github.valerioisufi.drawview.core.change.toData
 import io.github.valerioisufi.drawview.core.controller.DrawPersistence
 import io.github.valerioisufi.drawview.core.controller.DrawPreferences
 import io.github.valerioisufi.drawview.core.controller.ToolPreset
@@ -12,9 +15,11 @@ import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
+import io.github.valerioisufi.drawview.core.model.InputToolType
 import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.core.model.StrokeTool
+import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
-import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.data.buildDrawPreferences
 import io.github.valerioisufi.drawview.data.db.DocumentEntity
 import io.github.valerioisufi.drawview.data.db.DrawDatabase
@@ -28,9 +33,6 @@ import io.github.valerioisufi.drawview.data.db.TextEntity
 import io.github.valerioisufi.drawview.data.db.TextMarkupEntity
 import io.github.valerioisufi.drawview.data.db.UserPreferencesEntity
 import io.github.valerioisufi.drawview.data.db.currentTimeMillis
-import io.github.valerioisufi.drawview.data.flatRects
-import io.github.valerioisufi.drawview.data.restoreStroke
-import io.github.valerioisufi.drawview.data.restoreTextMarkup
 import io.github.valerioisufi.drawview.data.toBrushSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -155,15 +157,16 @@ class DrawDocumentRepository(
         }
     }
 
-    private fun mapStroke(entity: StrokeEntity): DrawStroke = restoreStroke(
+    private fun mapStroke(entity: StrokeEntity): DrawStroke = StrokeData(
+        id = entity.id,
         points = StrokeInputCodec.decode(entity.inputs),
-        familyName = entity.brushFamily,
-        toolTypeName = entity.toolType,
+        tool = StrokeTool.fromName(entity.brushFamily) ?: StrokeTool.PRESSURE_PEN,
         size = entity.size,
         color = entity.color,
-        zIndex = entity.zIndex,
-        id = entity.id
-    )
+        inputToolType = InputToolType.fromName(entity.toolType),
+        transform = entity.transform,
+        zIndex = entity.zIndex
+    ).toElement()
 
     private fun mapTextMarkup(entity: TextMarkupEntity): DrawTextMarkup? {
         val rects = try {
@@ -171,7 +174,8 @@ class DrawDocumentRepository(
         } catch (_: Exception) {
             return null
         }
-        return restoreTextMarkup(
+        return TextMarkupData(
+            id = entity.id,
             resourceId = entity.resourceId,
             pdfPageIndex = entity.pdfPageIndex,
             pdfWidthPt = entity.pdfWidth,
@@ -180,11 +184,10 @@ class DrawDocumentRepository(
             endIndex = entity.endIndex,
             text = entity.text,
             rects = rects,
-            kind = entity.kind,
+            kind = TextMarkupKind.fromName(entity.kind) ?: TextMarkupKind.HIGHLIGHT,
             color = entity.color,
-            zIndex = entity.zIndex,
-            id = entity.id
-        )
+            zIndex = entity.zIndex
+        ).toElement()
     }
 
     private fun mapText(entity: TextEntity) = DrawText(entity.zIndex, entity.id).apply {
@@ -257,20 +260,20 @@ class DrawDocumentRepository(
     // DrawPersistence (editor port)
     // ==========================================================
 
+    // The stroke as it was drawn, and its placement
     private fun DrawStroke.toEntity(pageId: String) = StrokeEntity(
         id = id,
         pageId = pageId,
         zIndex = zIndex,
-        color = brushConfig.color.toArgb(),
-        size = brushConfig.size,
-        toolType = mesh.inputToolType.name,
-        brushFamily = brushConfig.tool.name,
-        inputs = StrokeInputCodec.encode(mesh.points)
+        color = baseBrush.color.toArgb(),
+        size = baseBrush.size,
+        toolType = baseMesh.inputToolType.name,
+        brushFamily = baseBrush.tool.name,
+        inputs = StrokeInputCodec.encode(baseMesh.points),
+        transform = transform
     )
 
-    override suspend fun saveNewStrokes(page: DrawPage, strokes: List<DrawStroke>) = updateStrokes(page, strokes)
-
-    override suspend fun updateStrokes(page: DrawPage, strokes: List<DrawStroke>) {
+    override suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) {
         if (strokes.isEmpty()) return
         withContext(Dispatchers.IO) { strokeDao.upsertAll(strokes.map { it.toEntity(page.id) }) }
     }
@@ -333,6 +336,8 @@ class DrawDocumentRepository(
         )
     }
 
+    override suspend fun deletePdf(pdf: DrawPdf) = withContext(Dispatchers.IO) { pdfDao.deleteById(pdf.id) }
+
     override suspend fun saveTextMarkup(page: DrawPage, markup: DrawTextMarkup) = withContext(Dispatchers.IO) {
         textMarkupDao.upsert(
             TextMarkupEntity(
@@ -346,7 +351,7 @@ class DrawDocumentRepository(
                 startIndex = markup.startIndex,
                 endIndex = markup.endIndex,
                 text = markup.text,
-                rects = json.encodeToString(markup.flatRects()),
+                rects = json.encodeToString(markup.toData().rects),
                 kind = markup.kind.name,
                 color = markup.color
             )
@@ -357,12 +362,9 @@ class DrawDocumentRepository(
         textMarkupDao.deleteById(markup.id)
     }
 
-    override suspend fun addResource(document: DrawDocument, type: DrawResource.ResourceType, path: String): String =
-        withContext(Dispatchers.IO) {
-            val id = newElementId()
-            resourceDao.insert(ResourceEntity(id = id, documentId = document.id, type = type.name, uri = path))
-            id
-        }
+    override suspend fun saveResource(document: DrawDocument, resource: DrawResource) = withContext(Dispatchers.IO) {
+        resourceDao.upsert(ResourceEntity(id = resource.id, documentId = document.id, type = resource.type.name, uri = resource.path))
+    }
 
     override suspend fun insertPage(document: DrawDocument, page: DrawPage, index: Int) = withContext(Dispatchers.IO) {
         pageDao.shiftPagesUp(document.id, index)

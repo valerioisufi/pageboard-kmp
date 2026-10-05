@@ -1,17 +1,15 @@
 package io.github.valerioisufi.drawview.core
 
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.core.camera.CalcPage
 import io.github.valerioisufi.drawview.core.camera.CameraPhysicsEngine
+import io.github.valerioisufi.drawview.core.change.AddElements
+import io.github.valerioisufi.drawview.core.change.ChangeOrigin
+import io.github.valerioisufi.drawview.core.change.DocumentSession
+import io.github.valerioisufi.drawview.core.change.RemoveElements
 import io.github.valerioisufi.drawview.core.geometry.*
 import io.github.valerioisufi.drawview.core.history.*
 import io.github.valerioisufi.drawview.core.model.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.runTest
-import kotlin.math.abs
 import kotlin.test.*
 
 class GeometryAndPhysicsTest {
@@ -160,18 +158,11 @@ class GeometryAndPhysicsTest {
 
     // --- 5. HISTORY MANAGER (UNDO/REDO) TESTS ---
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testHistoryManagerUndoRedo() = runTest {
-        val testDispatcher = StandardTestDispatcher(testScheduler)
-        val testScope = TestScope(testDispatcher)
-
+    fun testHistoryManagerUndoRedo() {
         val doc = DrawDocument()
-        val history = HistoryManager(coroutineScope = testScope, maxHistorySize = 10)
-
-        val context = object : DrawingActionContext {
-            override val document: DrawDocument = doc
-        }
+        val session = DocumentSession(doc)
+        val history = HistoryManager(session, maxHistorySize = 10)
 
         val dummyMesh = StrokeMesh(
             positions = floatArrayOf(0f, 0f, 10f, 10f),
@@ -180,34 +171,30 @@ class GeometryAndPhysicsTest {
             tool = StrokeTool.PRESSURE_PEN,
             size = 5f
         )
-        val stroke = DrawStroke(
-            mesh = dummyMesh,
-            brushConfig = BrushConfig(),
-            bounds = Rect(0f, 0f, 10f, 10f)
-        )
+        val stroke = DrawStroke(mesh = dummyMesh, brushConfig = BrushConfig())
 
         // Add stroke
-        doc.pages[0].strokes.add(stroke)
-        history.addHistoryAction(AddStrokesAction(0, stroke))
+        session.submit(AddElements.of(doc.pages[0], listOf(stroke)))
 
         assertTrue(history.canUndo)
         assertFalse(history.canRedo)
         assertEquals(1, doc.pages[0].strokes.size)
 
         // Undo
-        history.undo(context)
-        testScheduler.advanceUntilIdle()
-
+        history.undo()
         assertEquals(0, doc.pages[0].strokes.size)
         assertFalse(history.canUndo)
         assertTrue(history.canRedo)
 
-        // Redo
-        history.redo(context)
-        testScheduler.advanceUntilIdle()
-
-        assertEquals(1, doc.pages[0].strokes.size)
+        // Redo: the same stroke
+        history.redo()
+        assertEquals(listOf(stroke), doc.pages[0].strokes.toList())
         assertTrue(history.canUndo)
         assertFalse(history.canRedo)
+
+        // Removed by another device: undoing its addition changes nothing
+        session.submit(RemoveElements.of(doc.pages[0], listOf(stroke)), ChangeOrigin.REMOTE)
+        history.undo()
+        assertTrue(doc.pages[0].strokes.isEmpty())
     }
 }

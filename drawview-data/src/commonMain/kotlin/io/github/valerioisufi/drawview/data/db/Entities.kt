@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.model.PageBackground
 
 /*
@@ -77,8 +78,8 @@ data class PageEntity(
 )
 
 /**
- * EXCLUSIVE table for Strokes.
- * Uses native binary encoding (BLOB) for extreme performance.
+ * EXCLUSIVE table for Strokes: the inputs and the brush the stroke was drawn with (native binary
+ * encoding, BLOB) and its placement on the page ([transform]).
  */
 @Entity(
     tableName = "strokes",
@@ -100,7 +101,8 @@ data class StrokeEntity(
     val size: Float,
     val toolType: String,
     val brushFamily: String,
-    val inputs: ByteArray
+    val inputs: ByteArray,
+    val transform: AffineTransform
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -114,6 +116,7 @@ data class StrokeEntity(
         if (toolType != other.toolType) return false
         if (brushFamily != other.brushFamily) return false
         if (!inputs.contentEquals(other.inputs)) return false
+        if (transform != other.transform) return false
 
         return true
     }
@@ -127,6 +130,7 @@ data class StrokeEntity(
         result = 31 * result + toolType.hashCode()
         result = 31 * result + brushFamily.hashCode()
         result = 31 * result + inputs.contentHashCode()
+        result = 31 * result + transform.hashCode()
         return result
     }
 }

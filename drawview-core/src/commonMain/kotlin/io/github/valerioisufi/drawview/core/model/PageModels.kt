@@ -11,6 +11,7 @@ import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.ImageBitmap
+import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.geometry.Dimension
 import io.github.valerioisufi.drawview.core.geometry.mm
 import kotlin.concurrent.Volatile
@@ -66,32 +67,72 @@ sealed class PageBackground {
 }
 
 /**
+ * An element of a page: a stroke, a text block, an image, a PDF page or a mark of its text.
+ *
+ * [id] identifies the element on every device (see [newElementId]); [zIndex] is its stacking
+ * order among the elements of its kind on its page.
+ */
+sealed interface DrawElement {
+    val id: String
+    var zIndex: Int
+}
+
+/**
  * A vector ink stroke placed on a page.
  *
- * The [mesh] and the [bounds] are expressed in page millimeters, so that the content is
- * independent from the window size, the zoom level and the screen density.
- *
- * [id] identifies the stroke on every device (see [newElementId]).
+ * The stroke keeps the geometry it was drawn with ([baseMesh], [baseBrush]) and its placement
+ * on the page ([transform], absolute): [mesh], [brushConfig] and [bounds] are the transformed
+ * geometry, in page millimeters, so that the content is independent from the window size, the
+ * zoom level and the screen density.
  */
 class DrawStroke(
-    val id: String = newElementId(),
+    override val id: String = newElementId(),
     mesh: StrokeMesh,
     brushConfig: BrushConfig,
-    bounds: Rect,
-    var zIndex: Int = 0
-) {
+    transform: AffineTransform = AffineTransform.IDENTITY,
+    override var zIndex: Int = 0
+) : DrawElement {
+    /** Geometry of the stroke as it was drawn. */
+    val baseMesh: StrokeMesh = mesh
+
+    /** Brush of the stroke as it was drawn. */
+    val baseBrush: BrushConfig = brushConfig
+
+    /** Placement of [baseMesh] on the page. */
+    @Volatile
+    var transform: AffineTransform = transform
+        private set
+
     @Volatile
     var mesh: StrokeMesh = mesh
+        private set
 
     @Volatile
     var brushConfig: BrushConfig = brushConfig
+        private set
 
     @Volatile
-    var bounds: Rect = bounds
+    var bounds: Rect = mesh.computeBounds()
+        private set
 
     /** Hidden from the static (tile) layers while the stroke is selected or moved. */
     @Volatile
     var isDragging: Boolean = false
+
+    init {
+        if (!transform.isIdentity) place(transform)
+    }
+
+    /** Places the stroke on its page with [transform] (absolute, applied to the [baseMesh]). */
+    fun place(transform: AffineTransform) {
+        val matrix = transform.toMatrix()
+        val scale = matrix.scaleFactor
+        val placed = if (transform.isIdentity) baseMesh else baseMesh.transformed(matrix)
+        this.transform = transform
+        mesh = placed
+        brushConfig = if (transform.isIdentity) baseBrush else baseBrush.copy(size = baseBrush.size * scale, epsilon = baseBrush.epsilon * scale)
+        bounds = placed.computeBounds()
+    }
 }
 
 /**
@@ -145,7 +186,7 @@ interface RotatableItem {
  *
  * [id] identifies the block on every device (see [newElementId]).
  */
-class DrawText(var zIndex: Int = 0, val id: String = newElementId()) : RotatableItem {
+class DrawText(override var zIndex: Int = 0, override val id: String = newElementId()) : RotatableItem, DrawElement {
 
     @Volatile var text: String = ""
     @Volatile var isLatex: Boolean = false
@@ -199,7 +240,7 @@ class DrawText(var zIndex: Int = 0, val id: String = newElementId()) : Rotatable
  *
  * [id] identifies the image on every device (see [newElementId]).
  */
-class DrawImage(var zIndex: Int = 0, val id: String = newElementId()) : RotatableItem {
+class DrawImage(override var zIndex: Int = 0, override val id: String = newElementId()) : RotatableItem, DrawElement {
     var resourceId: String = ""
 
     @Volatile override var x: Float = 0f
@@ -221,7 +262,7 @@ class DrawImage(var zIndex: Int = 0, val id: String = newElementId()) : Rotatabl
  *
  * [id] identifies it on every device (see [newElementId]).
  */
-class DrawPdf(var zIndex: Int = 0, var pdfPageIndex: Int = 0, val id: String = newElementId()) {
+class DrawPdf(override var zIndex: Int = 0, var pdfPageIndex: Int = 0, override val id: String = newElementId()) : DrawElement {
     var resourceId: String = ""
 }
 
@@ -283,6 +324,56 @@ class DrawPage(
 
     fun markContentChanged() {
         contentVersion++
+    }
+
+    // ==========================================================
+    // Elements (the changes of the document go through these)
+    // ==========================================================
+
+    /** Every element of the page: PDF pages, images, strokes, texts and marks, each kind in order. */
+    fun elements(): List<DrawElement> = readSnapshot { pdfs + images + strokes + texts + markups }
+
+    /** The element [id] of this page, or `null`. */
+    fun find(id: String): DrawElement? = readSnapshot {
+        strokes.firstOrNull { it.id == id } ?: texts.firstOrNull { it.id == id } ?: images.firstOrNull { it.id == id }
+            ?: markups.firstOrNull { it.id == id } ?: pdfs.firstOrNull { it.id == id }
+    }
+
+    /** Adds [element] at [position] of the elements of its kind (at the end when out of range). */
+    fun add(element: DrawElement, position: Int = -1) {
+        fun <T : DrawElement> SnapshotStateList<T>.insert(item: T) =
+            if (position in 0..size) add(position, item) else add(item)
+        when (element) {
+            is DrawStroke -> strokes.insert(element)
+            is DrawText -> texts.insert(element)
+            is DrawImage -> images.insert(element)
+            is DrawPdf -> pdfs.insert(element)
+            is DrawTextMarkup -> markups.insert(element)
+        }
+    }
+
+    /** Removes [element]; returns its position among the elements of its kind, or -1. */
+    fun remove(element: DrawElement): Int {
+        fun <T : DrawElement> SnapshotStateList<T>.delete(item: T): Int = indexOf(item).also { if (it >= 0) removeAt(it) }
+        return when (element) {
+            is DrawStroke -> strokes.delete(element)
+            is DrawText -> texts.delete(element)
+            is DrawImage -> images.delete(element)
+            is DrawPdf -> pdfs.delete(element)
+            is DrawTextMarkup -> markups.delete(element)
+        }
+    }
+
+    /**
+     * Area of [element] in page millimeters (what must be drawn again when it changes), or `null`
+     * for the whole page.
+     */
+    fun boundsOf(element: DrawElement): Rect? = when (element) {
+        is DrawStroke -> element.bounds
+        is DrawText -> element.getRotatedBounds()
+        is DrawImage -> element.getRotatedBounds()
+        is DrawPdf -> null
+        is DrawTextMarkup -> element.boundsMm(this)
     }
 
     /**
@@ -383,6 +474,10 @@ class DrawDocument(
     /** Re-assigns the [DrawPage.index] of every page after a structural change. */
     fun reindexPages() {
         pages.forEachIndexed { i, p -> p.index = i }
+    }
+
+    fun pageById(id: String): DrawPage? = readSnapshot {
+        pages.firstOrNull { it.id == id }
     }
 
     fun findResource(resourceId: String): DrawResource? = readSnapshot {

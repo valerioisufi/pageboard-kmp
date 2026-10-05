@@ -18,11 +18,11 @@ import kotlinx.coroutines.launch
  * [NoOpDrawPersistence] keeps documents in memory only.
  *
  * The documents, pages and elements are identified by their `id` (the same on every device): the
- * save operations insert the element or update the stored one with the same identifier.
+ * save operations insert the element or update the stored one with the same identifier. The
+ * changes of an open document reach it through a [ChangePersister].
  */
 interface DrawPersistence {
-    suspend fun saveNewStrokes(page: DrawPage, strokes: List<DrawStroke>) {}
-    suspend fun updateStrokes(page: DrawPage, strokes: List<DrawStroke>) {}
+    suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) {}
     suspend fun deleteStrokes(strokes: List<DrawStroke>) {}
 
     suspend fun saveText(page: DrawPage, text: DrawText) {}
@@ -32,13 +32,13 @@ interface DrawPersistence {
     suspend fun deleteImage(image: DrawImage) {}
 
     suspend fun savePdf(page: DrawPage, pdf: DrawPdf) {}
+    suspend fun deletePdf(pdf: DrawPdf) {}
 
     suspend fun saveTextMarkup(page: DrawPage, markup: DrawTextMarkup) {}
     suspend fun deleteTextMarkup(markup: DrawTextMarkup) {}
 
-    /** Registers a file owned by [document] and returns the identifier of the resource. */
-    suspend fun addResource(document: DrawDocument, type: DrawResource.ResourceType, path: String): String =
-        path
+    /** Registers [resource], a file owned by [document]. */
+    suspend fun saveResource(document: DrawDocument, resource: DrawResource) {}
 
     /**
      * Inserts [page] at [index], or puts it back there after [softDeletePage], shifting the

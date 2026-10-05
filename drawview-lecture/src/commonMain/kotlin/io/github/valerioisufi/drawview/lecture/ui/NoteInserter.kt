@@ -9,9 +9,9 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.sp
+import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.PlacementRequest
-import io.github.valerioisufi.drawview.core.history.AddTextAction
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.latex.LatexEngine
@@ -112,16 +112,19 @@ internal class NoteInserter(private val measurer: TextMeasurer) {
 
         var previousIndex = afterPageIndex?.takeIf { it in document.pages.indices }
         var firstIndex = -1
-        for (content in pages) {
-            val page = previousIndex?.let { controller.pageManager.addNewPageAfter(it) }
-                ?: controller.pageManager.addNewPageAtBottom()
-            if (previousIndex != null) previousIndex = page.index
-            if (firstIndex < 0) firstIndex = page.index
-            val text = newText(content, widthMm, measureHeightMm(content, REVIEW_FONT_PT, widthMm), REVIEW_FONT_PT).apply {
-                x = MARGIN_MM
-                y = MARGIN_MM
+        // Undone at once
+        controller.historyManager.group {
+            for (content in pages) {
+                val page = previousIndex?.let { controller.pageManager.addNewPageAfter(it) }
+                    ?: controller.pageManager.addNewPageAtBottom()
+                if (previousIndex != null) previousIndex = page.index
+                if (firstIndex < 0) firstIndex = page.index
+                val text = newText(content, widthMm, measureHeightMm(content, REVIEW_FONT_PT, widthMm), REVIEW_FONT_PT).apply {
+                    x = MARGIN_MM
+                    y = MARGIN_MM
+                }
+                addText(controller, page, text)
             }
-            addText(controller, page, text)
         }
         if (firstIndex >= 0) showPageTop(controller, firstIndex)
         return true
@@ -149,12 +152,7 @@ internal class NoteInserter(private val measurer: TextMeasurer) {
 
     private fun addText(controller: DrawViewController, page: DrawPage, item: DrawText) {
         item.zIndex = page.texts.size
-        item.markDirty()
-        page.texts.add(item)
-        page.markContentChanged()
-        controller.historyManager.addHistoryAction(AddTextAction(page, item))
-        controller.persist { saveText(page, item) }
-        controller.invalidatePageContent(page, null)
+        controller.session.submit(AddElements.of(page, listOf(item)))
     }
 
     /**

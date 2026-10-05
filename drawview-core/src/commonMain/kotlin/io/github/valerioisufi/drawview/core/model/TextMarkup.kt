@@ -32,7 +32,7 @@ enum class TextMarkupKind {
  * the page changes. [id] identifies the mark on every device (see [newElementId]).
  */
 class DrawTextMarkup(
-    val id: String = newElementId(),
+    override val id: String = newElementId(),
     val resourceId: String,
     val pdfPageIndex: Int,
     val pdfWidthPt: Float,
@@ -43,8 +43,8 @@ class DrawTextMarkup(
     val rects: List<Rect>,
     kind: TextMarkupKind,
     color: Int,
-    var zIndex: Int = 0
-) {
+    override var zIndex: Int = 0
+) : DrawElement {
     @Volatile
     var kind: TextMarkupKind = kind
 

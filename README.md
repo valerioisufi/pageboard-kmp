@@ -8,7 +8,7 @@ The repository also contains a [sample application](./sample) showing how to bui
 
 ## Modules
 
-* [`/drawview-core`](./drawview-core) handles drawing logic, strokes, brushes, and rendering abstractions.
+* [`/drawview-core`](./drawview-core) handles drawing logic, strokes, brushes, and rendering abstractions. Every change of a document is a serializable `DocumentChange` submitted to the `DocumentSession` of the document (see [docs/collaboration.md](./docs/collaboration.md)).
 * [`/drawview-data`](./drawview-data) handles persistence (Room / SQLite): documents, folders and preferences.
 * [`/drawview-ui`](./drawview-ui) contains the editor user interface (`DrawScreen`, `EditorSessionScreen`) and its components.
 * [`/drawview-explorer`](./drawview-explorer) provides the document library: folders and notes (create, rename, move, delete, multiple selection), sorting, recent documents, and `DocumentLibrary`, a complete note-taking application (library + editor) themed by the caller.

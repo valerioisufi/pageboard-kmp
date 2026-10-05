@@ -6,21 +6,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import io.github.valerioisufi.drawview.core.change.AddElements
+import io.github.valerioisufi.drawview.core.change.BoxPlacement
+import io.github.valerioisufi.drawview.core.change.ChangeEffects
+import io.github.valerioisufi.drawview.core.change.PlaceElements
+import io.github.valerioisufi.drawview.core.change.Placement
+import io.github.valerioisufi.drawview.core.change.RemoveElements
+import io.github.valerioisufi.drawview.core.change.StrokePlacement
+import io.github.valerioisufi.drawview.core.change.UpdateTexts
+import io.github.valerioisufi.drawview.core.change.placementOf
+import io.github.valerioisufi.drawview.core.change.toData
 import io.github.valerioisufi.drawview.core.geometry.HitTesting
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
-import io.github.valerioisufi.drawview.core.history.ChangeTextFormattingAction
-import io.github.valerioisufi.drawview.core.history.DeleteElementsAction
-import io.github.valerioisufi.drawview.core.history.ItemState
-import io.github.valerioisufi.drawview.core.history.StrokeState
-import io.github.valerioisufi.drawview.core.history.TransformSelectionAction
+import io.github.valerioisufi.drawview.core.model.DrawElement
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.LassoMode
-import io.github.valerioisufi.drawview.core.model.MeshPartition
-import io.github.valerioisufi.drawview.core.model.StrokeMesh
-import io.github.valerioisufi.drawview.core.model.StrokePoint
 import kotlin.math.max
 import kotlin.math.min
 
@@ -58,15 +61,14 @@ class SelectionGroup(
         return m.mapRect(boundingBox)
     }
 
-    internal var oldStrokeStates: List<StrokeState>? = null
-    internal var oldTextStates: List<ItemState>? = null
-    internal var oldImageStates: List<ItemState>? = null
+    /** Placement of the elements when the live transformation started. */
+    internal var originalPlacements: Map<String, Placement>? = null
 
     fun captureOriginalStates() {
-        oldStrokeStates = strokes.map { StrokeState.of(it) }
-        oldTextStates = texts.map { ItemState.of(it) }
-        oldImageStates = images.map { ItemState.of(it) }
+        originalPlacements = elements().mapNotNull { placementOf(it) }.associateBy { it.id }
     }
+
+    fun elements(): List<DrawElement> = strokes + texts + images
 
     fun setDragging(dragging: Boolean) {
         strokes.forEach { it.isDragging = dragging }
@@ -192,6 +194,13 @@ class SelectionManager(private val controller: DrawViewController) {
         setSelection(selection, page)
     }
 
+    /** Drops a selection that changes made on another device made stale. */
+    internal fun onChange(effects: ChangeEffects) {
+        val selection = currentSelection ?: return
+        val touched = selection.elements().any { it in effects.deletedElements || it in effects.savedElements }
+        if (touched) clearSelection()
+    }
+
     private fun setSelection(selection: SelectionGroup, page: DrawPage) {
         controller.textMarkupManager.clearSelection()
         selection.setDragging(true)
@@ -282,23 +291,18 @@ class SelectionManager(private val controller: DrawViewController) {
 
     /**
      * Applies the live transformation to the selected elements, moving them to the page under
-     * the selection center when needed, and records the operation in the history.
+     * the selection center when needed (one change of the document).
      */
     fun applyTransformation() {
         val selection = currentSelection ?: return
         val doc = controller.document
         val oldPage = doc.pages.getOrNull(selection.pageIndex) ?: return
-        val oldStrokes = selection.oldStrokeStates
-        val oldTexts = selection.oldTextStates
-        val oldImages = selection.oldImageStates
+        val original = selection.originalPlacements ?: return
+        selection.originalPlacements = null
 
         val transform = Matrix2D(selection.transform)
-        val textResized = selection.isSingleText && oldTexts != null &&
-                !oldTexts[0].values.contentEquals(ItemState.of(selection.texts[0]).values)
-        if (transform.isIdentity && !textResized) {
-            selection.oldStrokeStates = null
-            return
-        }
+        val textResized = selection.isSingleText && original[selection.texts[0].id] != placementOf(selection.texts[0])
+        if (transform.isIdentity && !textResized) return
 
         // Target page: the one under the transformed selection center
         val center = transform.mapPoint(selection.boundingBox.center.x, selection.boundingBox.center.y)
@@ -314,39 +318,37 @@ class SelectionManager(private val controller: DrawViewController) {
             if (!newMmToWorld.invert(worldToNewMm)) return
             finalTransform.postConcat(oldMmToWorld).postConcat(worldToNewMm)
         }
-        val dirtyOld = selection.getEnclosingBoundingBoxMm()
 
-        // --- Apply to the elements ---
+        // --- The new placements ---
         val scale = finalTransform.scaleFactor
         val angle = finalTransform.rotationDegrees
+        val placements = mutableListOf<Placement>()
         for (stroke in selection.strokes) {
-            transformStroke(stroke, finalTransform)
+            placements.add(StrokePlacement(stroke.id, stroke.transform.then(finalTransform)))
         }
         for (text in selection.texts) {
             val c = finalTransform.mapPoint(text.centerX, text.centerY)
-            text.width *= scale; text.height *= scale; text.fontSize *= scale
-            text.rotation = (text.rotation + angle) % 360f
-            text.x = c.x - text.width / 2f; text.y = c.y - text.height / 2f
-            text.markDirty()
+            val width = text.width * scale
+            val height = text.height * scale
+            placements.add(
+                BoxPlacement(text.id, c.x - width / 2f, c.y - height / 2f, width, height, (text.rotation + angle) % 360f, text.fontSize * scale)
+            )
         }
         for (image in selection.images) {
             val c = finalTransform.mapPoint(image.centerX, image.centerY)
-            image.width *= scale; image.height *= scale
-            image.rotation = (image.rotation + angle) % 360f
-            image.x = c.x - image.width / 2f; image.y = c.y - image.height / 2f
+            val width = image.width * scale
+            val height = image.height * scale
+            placements.add(BoxPlacement(image.id, c.x - width / 2f, c.y - height / 2f, width, height, (image.rotation + angle) % 360f))
         }
-
-        if (newPage !== oldPage) {
-            oldPage.strokes.removeAll(selection.strokes)
-            oldPage.texts.removeAll(selection.texts)
-            oldPage.images.removeAll(selection.images)
-            newPage.strokes.addAll(selection.strokes)
-            newPage.texts.addAll(selection.texts)
-            newPage.images.addAll(selection.images)
-            selection.pageIndex = targetIndex
+        // A text resized live goes back to where the change starts from (its undo)
+        if (textResized) {
+            val text = selection.texts[0]
+            (original[text.id] as? BoxPlacement)?.let {
+                text.x = it.x; text.y = it.y; text.width = it.width; text.height = it.height
+            }
         }
-        oldPage.markContentChanged()
-        newPage.markContentChanged()
+        controller.session.submit(PlaceElements(oldPage.id, placements, newPage.id))
+        selection.pageIndex = doc.pages.indexOf(newPage)
 
         // --- New frame ---
         when {
@@ -372,80 +374,7 @@ class SelectionManager(private val controller: DrawViewController) {
             }
         }
         selection.transform.reset()
-
-        if (oldStrokes != null && oldTexts != null && oldImages != null) {
-            controller.historyManager.addHistoryAction(
-                TransformSelectionAction(
-                    oldPage = oldPage,
-                    newPage = newPage,
-                    strokes = selection.strokes.toList(),
-                    texts = selection.texts.toList(),
-                    images = selection.images.toList(),
-                    oldStrokeStates = oldStrokes,
-                    newStrokeStates = selection.strokes.map { StrokeState.of(it) },
-                    oldTextStates = oldTexts,
-                    newTextStates = selection.texts.map { ItemState.of(it) },
-                    oldImageStates = oldImages,
-                    newImageStates = selection.images.map { ItemState.of(it) }
-                )
-            )
-        }
-        selection.oldStrokeStates = null
-
-        val strokes = selection.strokes.toList()
-        val texts = selection.texts.toList()
-        val images = selection.images.toList()
-        val pageChanged = newPage !== oldPage
-        controller.persist {
-            if (pageChanged) {
-                deleteStrokes(strokes)
-                saveNewStrokes(newPage, strokes)
-            } else {
-                updateStrokes(newPage, strokes)
-            }
-            texts.forEach { saveText(newPage, it) }
-            images.forEach { saveImage(newPage, it) }
-        }
-
-        controller.invalidatePageContent(oldPage, dirtyOld)
-        if (pageChanged) controller.invalidatePageContent(newPage, selection.getEnclosingBoundingBoxMm())
         notifyChanged()
-    }
-
-    /**
-     * Applies an affine [transform] to the geometry of [stroke]: the mesh vertices are mapped
-     * directly (what the user sees is exactly what is committed) and so are the recorded inputs,
-     * with the brush size scaled accordingly.
-     */
-    internal fun transformStroke(stroke: DrawStroke, transform: Matrix2D) {
-        val scale = transform.scaleFactor
-        val mesh = stroke.mesh
-        val partitions = mesh.partitions.map { partition ->
-            val positions = partition.positions.copyOf()
-            transform.mapPoints(positions)
-            MeshPartition(positions, partition.indices)
-        }
-        val points = mesh.points.map { p ->
-            val mapped = transform.mapPoint(p.x, p.y)
-            StrokePoint(mapped.x, mapped.y, p.pressure, p.timestampMs)
-        }
-        val brush = stroke.brushConfig.copy(
-            size = stroke.brushConfig.size * scale,
-            epsilon = stroke.brushConfig.epsilon * scale
-        )
-        val newMesh = StrokeMesh(
-            positions = partitions.first().positions,
-            indices = partitions.first().indices,
-            color = mesh.color,
-            tool = mesh.tool,
-            size = mesh.size * scale,
-            points = points,
-            additionalPartitions = partitions.drop(1),
-            inputToolType = mesh.inputToolType
-        )
-        stroke.mesh = newMesh
-        stroke.brushConfig = brush
-        stroke.bounds = newMesh.computeBounds()
     }
 
     // ==========================================================
@@ -456,21 +385,8 @@ class SelectionManager(private val controller: DrawViewController) {
         val selection = currentSelection ?: return
         val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
         currentSelection = null
-        val strokes = selection.strokes.toList()
-        val texts = selection.texts.toList()
-        val images = selection.images.toList()
-        page.strokes.removeAll(strokes)
-        page.texts.removeAll(texts)
-        page.images.removeAll(images)
         selection.setDragging(false)
-        page.markContentChanged()
-        controller.historyManager.addHistoryAction(DeleteElementsAction(page, strokes, texts, images))
-        controller.persist {
-            deleteStrokes(strokes)
-            texts.forEach { deleteText(it) }
-            images.forEach { deleteImage(it) }
-        }
-        controller.invalidatePageContent(page, selection.getEnclosingBoundingBoxMm())
+        controller.session.submit(RemoveElements.of(page, selection.elements()))
         notifyChanged()
     }
 
@@ -524,11 +440,11 @@ class SelectionManager(private val controller: DrawViewController) {
 
         val pastedStrokes = copied.strokes.map { original ->
             DrawStroke(
-                mesh = original.mesh,
-                brushConfig = original.brushConfig,
-                bounds = original.bounds,
+                mesh = original.baseMesh,
+                brushConfig = original.baseBrush,
+                transform = original.transform.then(offset),
                 zIndex = targetPage.strokes.size
-            ).also { transformStroke(it, offset) }
+            )
         }
         val pastedTexts = copied.texts.map { original ->
             DrawText(zIndex = targetPage.texts.size).apply {
@@ -549,26 +465,7 @@ class SelectionManager(private val controller: DrawViewController) {
             }
         }
 
-        targetPage.strokes.addAll(pastedStrokes)
-        targetPage.texts.addAll(pastedTexts)
-        targetPage.images.addAll(pastedImages)
-        targetPage.markContentChanged()
-
-        controller.historyManager.addHistoryAction(
-            io.github.valerioisufi.drawview.core.history.BatchAction(
-                listOfNotNull(
-                    pastedStrokes.takeIf { it.isNotEmpty() }?.let {
-                        io.github.valerioisufi.drawview.core.history.AddStrokesAction(targetPage, it)
-                    },
-                ) + pastedTexts.map { io.github.valerioisufi.drawview.core.history.AddTextAction(targetPage, it) } +
-                        pastedImages.map { io.github.valerioisufi.drawview.core.history.AddImageAction(targetPage, it) }
-            )
-        )
-        controller.persist {
-            saveNewStrokes(targetPage, pastedStrokes)
-            pastedTexts.forEach { saveText(targetPage, it) }
-            pastedImages.forEach { saveImage(targetPage, it) }
-        }
+        controller.session.submit(AddElements.of(targetPage, pastedStrokes + pastedTexts + pastedImages))
 
         val selection = SelectionGroup(
             strokes = pastedStrokes.toMutableList(),
@@ -588,14 +485,7 @@ class SelectionManager(private val controller: DrawViewController) {
         val selection = currentSelection ?: return
         if (selection.texts.isEmpty()) return
         val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
-        val texts = selection.texts.toList()
-        val oldColors = texts.map { it.color }
-        val sizes = texts.map { it.fontSize }
-        texts.forEach { it.color = color; it.markDirty() }
-        controller.historyManager.addHistoryAction(
-            ChangeTextFormattingAction(page, texts, oldColors, texts.map { color }, sizes, sizes)
-        )
-        controller.persist { texts.forEach { saveText(page, it) } }
+        controller.session.submit(UpdateTexts(page.id, selection.texts.map { it.toData().copy(color = color) }))
         notifyChanged()
     }
 
@@ -604,24 +494,15 @@ class SelectionManager(private val controller: DrawViewController) {
         if (selection.texts.isEmpty()) return
         val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
         val clamped = fontSize.coerceIn(8f, 72f)
-        val texts = selection.texts.toList()
-        val colors = texts.map { it.color }
-        val oldSizes = texts.map { it.fontSize }
-        texts.forEach {
-            val ratio = clamped / it.fontSize.coerceAtLeast(0.1f)
-            it.fontSize = clamped
-            // The text box grows with the font (the wrapping width is preserved)
-            it.height *= ratio
-            it.markDirty()
+        // The text box grows with the font (the wrapping width is preserved)
+        val texts = selection.texts.map {
+            it.toData().copy(fontSize = clamped, height = it.height * clamped / it.fontSize.coerceAtLeast(0.1f))
         }
+        controller.session.submit(UpdateTexts(page.id, texts))
         if (selection.isSingleText) {
-            val t = texts[0]
+            val t = selection.texts[0]
             selection.boundingBox = Rect(t.x, t.y, t.x + t.width, t.y + t.height)
         }
-        controller.historyManager.addHistoryAction(
-            ChangeTextFormattingAction(page, texts, colors, colors, oldSizes, texts.map { clamped })
-        )
-        controller.persist { texts.forEach { saveText(page, it) } }
         notifyChanged()
     }
 }

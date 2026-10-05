@@ -123,11 +123,7 @@ class TileEngineTest {
             size = 2f,
             points = emptyList()
         )
-        val stroke = DrawStroke(
-            mesh = mesh,
-            brushConfig = BrushConfig(),
-            bounds = Rect(50f, 50f, 70f, 60f)
-        )
+        val stroke = DrawStroke(mesh = mesh, brushConfig = BrushConfig())
 
         manager.bakeStrokesDirectlySync(
             strokesByPage = mapOf(0 to listOf(stroke)),

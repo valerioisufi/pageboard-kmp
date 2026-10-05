@@ -6,11 +6,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import io.github.valerioisufi.drawview.core.change.AddPage
+import io.github.valerioisufi.drawview.core.change.CompositeChange
+import io.github.valerioisufi.drawview.core.change.RemovePage
+import io.github.valerioisufi.drawview.core.change.SetDocumentDefaults
+import io.github.valerioisufi.drawview.core.change.SetPageFormat
+import io.github.valerioisufi.drawview.core.change.SetPageOrder
 import io.github.valerioisufi.drawview.core.geometry.Dimension
-import io.github.valerioisufi.drawview.core.history.AddPageAction
-import io.github.valerioisufi.drawview.core.history.ChangePageTemplateAction
-import io.github.valerioisufi.drawview.core.history.DeletePageAction
-import io.github.valerioisufi.drawview.core.history.ReorderPagesAction
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.PageBackground
 
@@ -56,11 +58,7 @@ class PageManager(private val controller: DrawViewController) {
     private fun insertPage(index: Int): DrawPage {
         controller.selectionManager.clearSelection()
         val page = newPage(index)
-        document.pages.add(index, page)
-        document.reindexPages()
-        controller.historyManager.addHistoryAction(AddPageAction(page, index))
-        controller.persist { insertPage(document, page, index) }
-        controller.markLayoutNeedsUpdate()
+        controller.session.submit(AddPage.of(page, index))
         return page
     }
 
@@ -73,11 +71,7 @@ class PageManager(private val controller: DrawViewController) {
         if (controller.textEditorManager.activeTextPageIndex == pageIndex) {
             controller.textEditorManager.cancelTextEditing()
         }
-        val page = document.pages.removeAt(pageIndex)
-        document.reindexPages()
-        controller.historyManager.addHistoryAction(DeletePageAction(page, pageIndex))
-        controller.persist { softDeletePage(document, page, pageIndex) }
-        controller.markLayoutNeedsUpdate()
+        controller.session.submit(RemovePage(document.pages[pageIndex].id))
     }
 
     /**
@@ -86,14 +80,9 @@ class PageManager(private val controller: DrawViewController) {
     fun movePage(fromIndex: Int, toIndex: Int) {
         if (fromIndex !in document.pages.indices || toIndex !in document.pages.indices || fromIndex == toIndex) return
         controller.selectionManager.clearSelection()
-        val oldOrder = document.pages.toList()
-        val page = document.pages.removeAt(fromIndex)
-        document.pages.add(toIndex, page)
-        document.reindexPages()
-        val newOrder = document.pages.toList()
-        controller.historyManager.addHistoryAction(ReorderPagesAction(oldOrder, newOrder))
-        controller.persist { updatePagesOrder(document, newOrder) }
-        controller.markLayoutNeedsUpdate()
+        val order = document.pages.map { it.id }.toMutableList()
+        order.add(toIndex, order.removeAt(fromIndex))
+        controller.session.submit(SetPageOrder(order))
     }
 
     // ==========================================================
@@ -173,10 +162,13 @@ class PageManager(private val controller: DrawViewController) {
         isReorderingPages = false
         val oldOrder = originalPageOrder
         originalPageOrder = null
-        val newOrder = document.pages.toList()
-        if (oldOrder != null && oldOrder != newOrder) {
-            controller.historyManager.addHistoryAction(ReorderPagesAction(oldOrder, newOrder))
-            controller.persist { updatePagesOrder(document, newOrder) }
+        val newOrder = document.pages.map { it.id }
+        if (oldOrder != null) {
+            // The pages were moved live: back to where the change starts from (its undo)
+            document.pages.clear()
+            document.pages.addAll(oldOrder)
+            document.reindexPages()
+            controller.session.submit(SetPageOrder(newOrder))
         }
         controller.markLayoutNeedsUpdate()
     }
@@ -213,23 +205,8 @@ class PageManager(private val controller: DrawViewController) {
      */
     fun changeSinglePageTemplate(pageIndex: Int, dimension: Dimension, background: PageBackground) {
         val page = document.pages.getOrNull(pageIndex) ?: return
-        val custom = background != document.defaultBackground
-        val action = ChangePageTemplateAction(
-            page = page,
-            oldWidthMm = page.widthMm, oldHeightMm = page.heightMm,
-            oldBackground = page.background, oldHasCustomBackground = page.hasCustomBackground,
-            newWidthMm = dimension.width.mm, newHeightMm = dimension.height.mm,
-            newBackground = background, newHasCustomBackground = custom
-        )
-        page.widthMm = dimension.width.mm
-        page.heightMm = dimension.height.mm
-        page.background = background
-        page.hasCustomBackground = custom
-        page.markContentChanged()
-        controller.historyManager.addHistoryAction(action)
-        controller.persist { updatePageFormat(document, page) }
-        controller.markLayoutNeedsUpdate()
-        controller.invalidatePageContent(page, null)
+        val custom = background.takeIf { it != document.defaultBackground }
+        controller.session.submit(SetPageFormat(page.id, dimension.width.mm, dimension.height.mm, custom))
     }
 
     /**
@@ -239,28 +216,12 @@ class PageManager(private val controller: DrawViewController) {
      * to the pages that follow the document default.
      */
     fun applyDocumentTemplateChange(dimension: Dimension, background: PageBackground, overrideAll: Boolean) {
-        document.defaultWidthMm = dimension.width.mm
-        document.defaultHeightMm = dimension.height.mm
-        document.defaultBackground = background
-        val changed = mutableListOf<DrawPage>()
-        for (page in document.pages) {
-            if (overrideAll) {
-                page.widthMm = dimension.width.mm
-                page.heightMm = dimension.height.mm
-                page.background = background
-                page.hasCustomBackground = false
-                changed.add(page)
-            } else if (!page.hasCustomBackground) {
-                page.background = background
-                changed.add(page)
-            }
+        val defaults = SetDocumentDefaults(dimension.width.mm, dimension.height.mm, background)
+        val pages = if (overrideAll) {
+            document.pages.map { SetPageFormat(it.id, dimension.width.mm, dimension.height.mm, null) }
+        } else {
+            emptyList()
         }
-        controller.persist {
-            updateDocumentDefaults(document)
-            changed.forEach { updatePageFormat(document, it) }
-        }
-        changed.forEach { it.markContentChanged() }
-        controller.markLayoutNeedsUpdate()
-        controller.tileManager.invalidateAll()
+        controller.session.submit(CompositeChange(listOf(defaults) + pages))
     }
 }
