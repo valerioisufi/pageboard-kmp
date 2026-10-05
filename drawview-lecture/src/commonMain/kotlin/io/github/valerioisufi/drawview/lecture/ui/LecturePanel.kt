@@ -329,7 +329,8 @@ private fun RecordingSection(
                 }
                 MutedText(
                     when {
-                        lecture.isAnalyzing -> stringResource(Res.string.lecture_status_analyzing)
+                        lecture.isAnalyzing ->
+                            stringResource(Res.string.lecture_status_analyzing, assistant.settingsStore.settings.task(LectureTask.LIVE_NOTES).model)
                         lecture.pendingUpdates > 0 -> stringResource(Res.string.lecture_status_pending, lecture.pendingUpdates)
                         lecture.transcript.isEmpty() ->
                             stringResource(Res.string.lecture_status_listening, assistant.settingsStore.settings.chunkSeconds)

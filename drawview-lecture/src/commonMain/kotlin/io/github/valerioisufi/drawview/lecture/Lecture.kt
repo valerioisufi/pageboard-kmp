@@ -240,13 +240,20 @@ class Lecture internal constructor(
         )
     }
 
-    /** Adds the notes of an answer, skipping the ones already suggested. Runs on [stateContext]. */
+    /**
+     * Adds the notes of an answer, skipping the ones already suggested (same title, or mostly the
+     * same words: the small models repeat a note with another title). Runs on [stateContext].
+     */
     internal fun addNotes(notes: List<AnalysisNote>, startMs: Long, endMs: Long, defaultPage: Int?, fromFinalReview: Boolean) {
         val known = suggestions.mapTo(mutableSetOf()) { normalize(it.title) }
+        val knownWords = suggestions.mapTo(mutableListOf()) { contentWords(it.content) }
         for (note in notes) {
             val title = note.title.trim()
             val content = note.content.trim()
             if (content.isEmpty() || !known.add(normalize(title.ifEmpty { content }))) continue
+            val words = contentWords(content)
+            if (knownWords.any { repeats(words, it) }) continue
+            knownWords.add(words)
             val pageIndex = note.page?.let { it - 1 }?.takeIf { it in 0 until lastPageCount } ?: defaultPage
             suggestions.add(
                 NoteSuggestion(
@@ -265,6 +272,25 @@ class Lecture internal constructor(
     }
 
     private fun normalize(text: String) = text.lowercase().filter { it.isLetterOrDigit() }
+
+    /** The words that tell the content of a note (not the short ones, as articles and prepositions). */
+    private fun contentWords(text: String): Set<String> = buildSet {
+        val word = StringBuilder()
+        for (c in text.lowercase() + " ") {
+            if (c.isLetterOrDigit()) {
+                word.append(c)
+            } else {
+                if (word.length >= 4) add(word.toString())
+                word.clear()
+            }
+        }
+    }
+
+    /** Most of the words of the shorter note are in the other one. */
+    private fun repeats(words: Set<String>, known: Set<String>): Boolean {
+        val shorter = minOf(words.size, known.size)
+        return shorter >= MIN_WORDS_TO_COMPARE && words.count { it in known } >= shorter * REPEATED_WORDS
+    }
 
     /** Keeps what a capture of the notebook tells about the document (pages, slides, notes). */
     internal fun rememberNotebook(snapshot: NotebookSnapshot) {
@@ -490,6 +516,8 @@ class Lecture internal constructor(
         const val MAX_LOCAL_REVIEW_IMAGES = 8
         const val MIN_REVIEW_SECONDS = 20
         const val PREVIOUS_TRANSCRIPT_CHARS = 600
+        const val MIN_WORDS_TO_COMPARE = 6
+        const val REPEATED_WORDS = 0.8
         const val PLAYBACK_LEAD_MS = 3_000L
         const val PLAYBACK_DURATION_MS = 20_000L
 

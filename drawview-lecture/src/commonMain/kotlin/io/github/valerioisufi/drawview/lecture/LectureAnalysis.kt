@@ -63,11 +63,67 @@ object LectureAnalysis {
 
     /**
      * Bullet points as "- ": the canvas reads a single `*` as italic, and the models (the small
-     * local ones in particular) often write "*   item".
+     * local ones in particular) often write "*   item"; line breaks written in HTML (`<br>`) as
+     * new lines.
      */
-    internal fun normalizeMarkdown(markdown: String): String = markdown.replace(BULLET, "$1- ")
+    internal fun normalizeMarkdown(markdown: String): String = markdown.replace(LINE_BREAK, "\n").replace(BULLET, "$1- ")
 
     private val BULLET = Regex("""(?m)^([ \t]*)[*+][ \t]+""")
+    private val LINE_BREAK = Regex("""[ \t]*<br\s*/?>[ \t]*""", RegexOption.IGNORE_CASE)
+
+    /**
+     * The LaTeX commands written with a single backslash in the JSON strings, as the models (the
+     * small local ones in particular) often do: `\frac` and `\neq` are valid escapes (a form
+     * feed, a new line) that would lose the command, `\alpha` is not valid at all.
+     *
+     * The backslash is doubled when it does not start a valid escape, when `\b`, `\f`, `\r` or
+     * `\t` is followed by a letter (a backspace, form feed, carriage return or tab before a letter
+     * is never meant), and when `\n` starts a LaTeX command (a new line before a word is common).
+     */
+    internal fun repairLatexEscapes(json: String): String {
+        val out = StringBuilder(json.length + 16)
+        var inString = false
+        var i = 0
+        while (i < json.length) {
+            val c = json[i]
+            if (c == '"') inString = !inString
+            if (!inString || c != '\\') {
+                out.append(c)
+                i++
+                continue
+            }
+            val next = json.getOrNull(i + 1)
+            var end = i + 1
+            while (end < json.length && json[end].isLetter()) end++
+            val word = json.substring(i + 1, end)
+            val isLatex = when (next) {
+                null -> false
+                '"', '\\', '/' -> false
+                'u' -> json.length < i + 6 || !json.substring(i + 2, i + 6).all { it in HEX_DIGITS }
+                'b', 'f', 'r', 't' -> word.length > 1
+                'n' -> word in LATEX_N_COMMANDS
+                else -> true
+            }
+            if (isLatex) {
+                out.append("\\\\")
+                i++
+            } else {
+                // A valid escape, copied as it is (also the escaped quote, which does not end the string)
+                out.append(c)
+                if (next != null) out.append(next)
+                i += 2
+            }
+        }
+        return out.toString()
+    }
+
+    private const val HEX_DIGITS = "0123456789abcdefABCDEF"
+
+    /** The LaTeX commands starting with "n" (not `\ne` and `\ni`: a new line before "e" or "i" is common in Italian). */
+    private val LATEX_N_COMMANDS = setOf(
+        "neq", "nabla", "neg", "nu", "not", "notin", "nmid", "nleq", "ngeq", "nless", "ngtr", "nexists",
+        "nsubseteq", "nsupseteq", "nparallel", "newline", "nolimits", "nonumber", "natural", "nearrow", "nwarrow"
+    )
 
     /** Decodes a JSON answer, tolerating a Markdown code fence around it. */
     private fun <T> parse(text: String, serializer: KSerializer<T>): T {
@@ -77,7 +133,7 @@ object LectureAnalysis {
         } else {
             trimmed
         }
-        return json.decodeFromString(serializer, body)
+        return json.decodeFromString(serializer, repairLatexEscapes(body))
     }
 
     private val noteSchema: JsonObject = buildJsonObject {
@@ -86,6 +142,12 @@ object LectureAnalysis {
             putJsonObject("kind") {
                 put("type", "string")
                 putJsonArray("enum") { NoteKind.entries.forEach { add(it.name) } }
+                put(
+                    "description",
+                    "THEOREM with its conditions, EXAMPLE = steps of a worked example, EXPLANATION = an intuition " +
+                        "or a clarification of a slide, EXAM_HINT = stressed by the lecturer or for the exam, " +
+                        "ANNOUNCEMENT = deadlines and organization of the course only, REFERENCE = books, papers, websites."
+                )
             }
             putJsonObject("title") {
                 put("type", "string")

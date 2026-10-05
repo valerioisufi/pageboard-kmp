@@ -13,6 +13,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import kotlinx.coroutines.runBlocking
 import java.io.File
+import java.io.IOException
 import java.nio.file.Files
 import kotlin.test.AfterTest
 import kotlin.test.Test
@@ -75,6 +76,40 @@ class WhisperTranscriberTest {
         assertEquals(1, commands.size)
         transcriber.close()
         assertTrue(process.stopped)
+    }
+
+    @Test
+    fun wordsSplitBetweenSegmentsAreJoinedAndAFailedRequestIsRepeated() = runBlocking<Unit> {
+        var requests = 0
+        var inference = ""
+        var connection: String? = null
+        val engine = MockEngine { request ->
+            when {
+                request.method == HttpMethod.Get -> respond("<html/>", HttpStatusCode.OK)
+                // The connection closed by the server after a few requests
+                ++requests == 1 -> throw IOException("Broken pipe")
+                else -> {
+                    inference = request.body.toByteArray().decodeToString()
+                    connection = request.headers[HttpHeaders.Connection]
+                    respond(
+                        """{"segments":[{"start":0.0,"end":2.0,"text":" definito il conc"},{"start":2.0,"end":3.5,"text":"etto di integrità,"},""" +
+                            """{"start":3.5,"end":5.0,"text":" se vi ric"},{"start":5.0,"end":5.5,"text":"ordate."}]}""",
+                        HttpStatusCode.OK,
+                        headersOf(HttpHeaders.ContentType, "application/json")
+                    )
+                }
+            }
+        }
+        // A server already running on the port
+        val transcriber = WhisperTranscriber(server.path, model.path, HttpClient(engine), port = 1234) { null }
+        val segments = transcriber.transcribe(byteArrayOf(1), "it", "Sicurezza: MAC e funzioni hash")
+        assertEquals(
+            listOf(TranscriptSegment(0, 3500, "definito il concetto di integrità,"), TranscriptSegment(3500, 5500, "se vi ricordate.")),
+            segments
+        )
+        assertEquals(2, requests)
+        assertTrue(inference.contains("Sicurezza: MAC e funzioni hash"), inference)
+        assertEquals("close", connection)
     }
 
     @Test

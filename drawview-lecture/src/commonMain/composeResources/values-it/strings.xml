@@ -15,7 +15,7 @@
     <string name="lecture_status_recording">In registrazione · %1$s</string>
     <string name="lecture_status_finalizing">Revisione dell\'intera lezione…</string>
     <string name="lecture_status_finished">Lezione terminata · %1$s</string>
-    <string name="lecture_status_analyzing">Gemini sta analizzando l\'ultimo minuto…</string>
+    <string name="lecture_status_analyzing">Analisi dell\'ultimo minuto con %1$s…</string>
     <string name="lecture_status_pending">%1$d aggiornamenti in attesa</string>
     <string name="lecture_status_listening">In ascolto: i primi suggerimenti arrivano dopo circa %1$d s.</string>
     <string name="lecture_problem_no_api_key">Imposta la chiave API di Gemini nelle impostazioni.</string>

@@ -11,6 +11,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
@@ -43,29 +44,43 @@ class WhisperTranscriber(
     private var process: LocalProcess? = null
     private val baseUrl = "http://127.0.0.1:$port"
 
-    override suspend fun transcribe(wav: ByteArray, language: String): List<TranscriptSegment> = mutex.withLock {
+    override suspend fun transcribe(wav: ByteArray, language: String, prompt: String): List<TranscriptSegment> = mutex.withLock {
         ensureStarted()
         val response = try {
-            httpClient.submitFormWithBinaryData(
-                url = "$baseUrl/inference",
-                formData = formData {
-                    append("file", wav, Headers.build {
-                        append(HttpHeaders.ContentType, "audio/wav")
-                        append(HttpHeaders.ContentDisposition, "filename=\"chunk.wav\"")
-                    })
-                    append("response_format", "verbose_json")
-                    append("temperature", "0")
-                    append("language", language.ifBlank { "auto" })
-                }
-            )
+            inference(wav, language, prompt)
         } catch (e: CancellationException) {
             throw e
-        } catch (e: Exception) {
-            throw TranscriptionException("whisper-server does not answer (${e.message})", e)
+        } catch (_: Exception) {
+            // Once more, on a new connection (e.g. the server restarted)
+            try {
+                inference(wav, language, prompt)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                throw TranscriptionException("whisper-server does not answer (${e.message})", e)
+            }
         }
         val body = response.bodyAsText()
         if (!response.status.isSuccess()) throw TranscriptionException("whisper-server: HTTP ${response.status.value} $body")
         parseVerboseJson(body)
+    }
+
+    private suspend fun inference(wav: ByteArray, language: String, prompt: String) = httpClient.submitFormWithBinaryData(
+        url = "$baseUrl/inference",
+        formData = formData {
+            append("file", wav, Headers.build {
+                append(HttpHeaders.ContentType, "audio/wav")
+                append(HttpHeaders.ContentDisposition, "filename=\"chunk.wav\"")
+            })
+            append("response_format", "verbose_json")
+            append("temperature", "0")
+            append("language", language.ifBlank { "auto" })
+            if (prompt.isNotBlank()) append("prompt", prompt.trim().take(MAX_PROMPT_CHARS))
+        }
+    ) {
+        // The server closes a connection after a few requests (5 for cpp-httplib), and the next
+        // request on it fails ("Broken pipe"): a new connection for every chunk
+        header(HttpHeaders.Connection, "close")
     }
 
     private suspend fun ensureStarted() {
@@ -123,6 +138,9 @@ class WhisperTranscriber(
         private const val START_TIMEOUT_MS = 90_000L
         private const val POLL_MS = 500L
 
+        /** The prompt of whisper is short (224 tokens, the last ones kept). */
+        private const val MAX_PROMPT_CHARS = 600
+
         private val json = Json { ignoreUnknownKeys = true }
 
         /** Where `whisper-server` is installed (Homebrew on Apple silicon and Intel, then Linux). */
@@ -155,10 +173,21 @@ class WhisperTranscriber(
             if (answer.segments.isEmpty()) {
                 return answer.text.trim().takeIf { it.isNotEmpty() }?.let { listOf(TranscriptSegment(0, 0, it)) }.orEmpty()
             }
-            return answer.segments
-                .map { TranscriptSegment((it.start * 1000).toLong(), (it.end * 1000).toLong(), it.text.trim()) }
+            val segments = mutableListOf<TranscriptSegment>()
+            for (segment in answer.segments) {
+                val text = segment.text.trim()
                 // Whisper marks the silence and the noises: not speech
-                .filter { it.text.isNotEmpty() && !NON_SPEECH.matches(it.text) }
+                if (text.isEmpty() || NON_SPEECH.matches(text)) continue
+                val last = segments.lastOrNull()
+                // Whisper also ends a segment in the middle of a word ("il conc" + "etto di"): the
+                // next one does not start with a space, and is the rest of the same segment
+                if (last != null && !segment.text.first().isWhitespace()) {
+                    segments[segments.lastIndex] = last.copy(endMs = (segment.end * 1000).toLong(), text = last.text + text)
+                } else {
+                    segments.add(TranscriptSegment((segment.start * 1000).toLong(), (segment.end * 1000).toLong(), text))
+                }
+            }
+            return segments
         }
 
         private val NON_SPEECH = Regex("""^[\[(].*[\])]$""")

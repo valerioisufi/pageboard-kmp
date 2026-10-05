@@ -186,6 +186,8 @@ class SilenceTest {
         assertFalse(isSilent(seconds(60.0) { random.nextInt(-6000, 6000) }))
         // A quiet lecturer far from the microphone, over a little room noise
         assertFalse(isSilent(seconds(60.0) { if ((it / rate) % 3 == 0) random.nextInt(-80, 80) else random.nextInt(-700, 700) }))
+        // A lecture heard from far away (as recorded by a laptop): about -40 dBFS over a floor of -65 dBFS
+        assertFalse(isSilent(seconds(60.0) { if ((it / (rate / 2)) % 4 == 0) random.nextInt(-15, 15) else random.nextInt(-450, 450) }))
         // Ten seconds of speech in a minute
         assertFalse(isSilent(seconds(10.0) { random.nextInt(-5000, 5000) } + seconds(50.0) { 0 }))
     }

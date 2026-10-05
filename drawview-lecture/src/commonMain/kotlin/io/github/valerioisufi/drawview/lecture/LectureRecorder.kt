@@ -353,7 +353,7 @@ class LectureRecorder internal constructor(
         }
         val audio = audioOf(chunks, contextMs = null) ?: return null
         val segments = try {
-            transcriber.transcribe(audio.wav, settings.whisperLanguage)
+            transcriber.transcribe(audio.wav, settings.whisperLanguage, settings.courseContext)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {

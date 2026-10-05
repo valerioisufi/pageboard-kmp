@@ -100,8 +100,11 @@ fun isSilent(samples: ShortArray, from: Int = 0, sampleRate: Int = LECTURE_SAMPL
     return peak < SILENT_PEAK_RMS || (peak < STEADY_SOUND_PEAK_RMS && peak < floor * 2.5f)
 }
 
-/** Below this level (about -40 dBFS) even the loudest moments of a chunk are silence. */
-private const val SILENT_PEAK_RMS = 300f
+/**
+ * Below this level (about -52 dBFS) even the loudest moments of a chunk are silence. A lecturer far
+ * from the microphone of a laptop reaches only -40 dBFS, over a floor of -65 dBFS.
+ */
+private const val SILENT_PEAK_RMS = 80f
 
 /** A sound that never exceeds this level (about -30 dBFS) nor rises above its floor is a hum. */
 private const val STEADY_SOUND_PEAK_RMS = 1000f

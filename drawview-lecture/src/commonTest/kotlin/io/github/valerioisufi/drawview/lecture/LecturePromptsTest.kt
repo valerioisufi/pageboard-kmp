@@ -253,6 +253,20 @@ class LectureAnalysisTest {
         )
         val review = LectureAnalysis.parseFinalReview("""{"notesMarkdown":"*   uno\n*   due","missing":[]}""")
         assertEquals("- uno\n- due", review.notesMarkdown)
+        assertEquals("- **A**: uno\n- **B**: due\ntre", LectureAnalysis.normalizeMarkdown("- **A**: uno<br>- **B**: due <BR/> tre"))
+    }
+
+    @Test
+    fun latexWrittenWithSingleBackslashesIsKept() {
+        // As the local models write it: "\frac" and "\neq" are escapes of JSON, "\alpha" is not valid
+        val analysis = LectureAnalysis.parseChunk(
+            """{"notes":[{"kind":"FORMULA","title":"F","importance":2,
+               "content":"${'$'}\frac{a}{b} \neq \alpha \times \rightarrow \beta \underline{x}${'$'}\nNuova riga\ne poi \"citato\" \u00e8\\\\"}]}"""
+        )
+        assertEquals(
+            "\$\\frac{a}{b} \\neq \\alpha \\times \\rightarrow \\beta \\underline{x}\$\nNuova riga\ne poi \"citato\" è\\\\",
+            analysis.notes.single().content
+        )
     }
 
     @Test

@@ -21,6 +21,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonArray
@@ -238,6 +239,35 @@ class LectureRecorderTest {
             while (lecture.status != LectureStatus.FINISHED) delay(20)
         }
         assertTrue(File(directory, "lecture/audio.wav").length() > Wav.HEADER_SIZE)
+    }
+
+    @Test
+    fun repeatedNotesAreSuggestedOnce() = runBlocking<Unit> {
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath)
+        val lecture = newLecture(settingsStore, MockEngine { respond("", HttpStatusCode.NotFound) })
+        val first = AnalysisNote(
+            kind = "DEFINITION",
+            title = "Funzione hash crittografica",
+            content = "Deve generare un output pseudocasuale: non deve contenere informazioni sul messaggio originale."
+        )
+        withContext(stateContext) {
+            lecture.addNotes(listOf(first), 0, 60_000, defaultPage = null, fromFinalReview = false)
+            lecture.addNotes(
+                listOf(
+                    // The same content with another title, as the small models write it again
+                    first.copy(title = "Proprietà delle funzioni hash", content = "- " + first.content + " (continua)"),
+                    // Too short to tell
+                    AnalysisNote(kind = "EXAM_HINT", title = "Esame", content = "Funzione hash all'esame"),
+                    AnalysisNote(
+                        kind = "DEFINITION",
+                        title = "Collision resistance",
+                        content = "Non deve essere possibile trovare due messaggi diversi con lo stesso valore hash."
+                    )
+                ),
+                60_000, 120_000, defaultPage = null, fromFinalReview = false
+            )
+        }
+        assertEquals(listOf("Funzione hash crittografica", "Esame", "Collision resistance"), lecture.suggestions.map { it.title })
     }
 
     private fun newLecture(
@@ -463,7 +493,7 @@ class LectureRecorderTest {
 
     private class FakeTranscriber : Transcriber {
         var closed = false
-        override suspend fun transcribe(wav: ByteArray, language: String) =
+        override suspend fun transcribe(wav: ByteArray, language: String, prompt: String) =
             listOf(TranscriptSegment(2_000, 5_000, "Il teorema ponte"), TranscriptSegment(5_000, 9_000, "vale per ogni successione"))
 
         override suspend fun close() {

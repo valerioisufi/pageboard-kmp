@@ -64,7 +64,11 @@ object LecturePrompts {
 
     /** The Markdown rendered by the text blocks of the notebook. */
     private const val MARKDOWN_RULE =
-        "Markdown of the notebook: \"-\" for bullet points, **bold**, *italic*, \"#\" headings, LaTeX formulas between \$...\$ (inline) or \$\$...\$\$ (display); no tables, images or links."
+        "Markdown of the notebook: \"-\" for bullet points, **bold**, *italic*, \"#\" headings, LaTeX formulas between \$...\$ (inline) or \$\$...\$\$ (display); no tables, HTML, images or links."
+
+    /** The images are numbered by the local models too ("attached image 1"): not the pages. */
+    private const val PAGE_NUMBER_RULE =
+        "Pages are always the notebook page numbers written in the labels (\"Notebook page 12\"), never the position of an image in the request."
 
     /**
      * @param withAudio the request carries the audio, which the model transcribes; otherwise its
@@ -90,7 +94,7 @@ object LecturePrompts {
             - No note is better than a redundant note: an empty list is the right answer when nothing is missing. Prefer few, high-value notes.
             - Never invent or complete content that was not said. $unclear
             - The notes are inserted as they are in the notebook: concise and ready to use (short sentences or bullet points, formulas in LaTeX between ${'$'}...${'$'}, no preamble such as "The lecturer said").
-            - The page of a note is the notebook page where it belongs (usually the slide being discussed).
+            - The page of a note is the notebook page where it belongs (usually the slide being discussed). $PAGE_NUMBER_RULE
             - $MARKDOWN_RULE
 
             Fields:
@@ -109,6 +113,7 @@ object LecturePrompts {
         Write:
         - notesMarkdown: complete, well organized notes of the whole lecture in Markdown, to study from: headings following the structure of the lecture, concise bullet points, definitions, formulas in LaTeX between ${'$'}...${'$'}, examples, and what the lecturer stressed or announced (in a "**Important**" line, translated). Integrate slides and notes of the student without copying the slides verbatim: refer to them (e.g. "p. 12") when useful. Never invent content that was not said or shown.
         - $MARKDOWN_RULE
+        - $PAGE_NUMBER_RULE
         - missing: the important content of the lecture that is still missing from the notebook (slides, notes of the student and suggested notes marked as inserted or already noted), in the same format as the live notes, with the notebook page where it belongs and atSeconds measured from the start of the lecture. Empty when nothing is missing.
 
         ${languageRule(settings, "notesMarkdown and missing", withTranscript = false)}

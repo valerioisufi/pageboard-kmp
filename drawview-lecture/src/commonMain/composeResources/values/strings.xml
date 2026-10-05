@@ -15,7 +15,7 @@
     <string name="lecture_status_recording">Recording · %1$s</string>
     <string name="lecture_status_finalizing">Reviewing the whole lecture…</string>
     <string name="lecture_status_finished">Lecture finished · %1$s</string>
-    <string name="lecture_status_analyzing">Gemini is analyzing the last minute…</string>
+    <string name="lecture_status_analyzing">Analyzing the last minute with %1$s…</string>
     <string name="lecture_status_pending">%1$d updates waiting</string>
     <string name="lecture_status_listening">Listening: the first suggestions arrive after about %1$d s.</string>
     <string name="lecture_problem_no_api_key">Set the Gemini API key in the settings.</string>
