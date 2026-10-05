@@ -26,5 +26,7 @@ internal actual object PdfiumBindings {
         rotate: Int
     ): ImageBitmap? = null
 
+    actual fun pageText(document: Long, pageIndex: Int): String? = null
+
     actual fun closeDocument(document: Long) {}
 }

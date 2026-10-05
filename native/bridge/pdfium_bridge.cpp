@@ -1,4 +1,5 @@
 #include "fpdfview.h"
+#include "fpdf_text.h"
 #include "pdfium_bridge.h"
 #include <cstring>
 #include <mutex>
@@ -95,6 +96,27 @@ int32_t pdfium_render_page_bitmap(
     FPDFBitmap_Destroy(bitmap);
     FPDF_ClosePage(page);
     return 1;
+}
+
+int32_t pdfium_get_page_text(int64_t doc_handle, int32_t page_index, uint16_t* out_text, int32_t capacity) {
+    if (!doc_handle) return -1;
+    std::lock_guard<std::mutex> lock(g_pdfium_mutex);
+    FPDF_DOCUMENT doc = reinterpret_cast<FPDF_DOCUMENT>(doc_handle);
+    FPDF_PAGE page = FPDF_LoadPage(doc, page_index);
+    if (!page) return -1;
+    FPDF_TEXTPAGE text_page = FPDFText_LoadPage(page);
+    if (!text_page) {
+        FPDF_ClosePage(page);
+        return -1;
+    }
+    int count = FPDFText_CountChars(text_page);
+    if (count > 0 && out_text && capacity > count) {
+        // Writes count characters and the terminator
+        FPDFText_GetText(text_page, 0, count, reinterpret_cast<unsigned short*>(out_text));
+    }
+    FPDFText_ClosePage(text_page);
+    FPDF_ClosePage(page);
+    return count < 0 ? -1 : count;
 }
 
 void pdfium_close_document(int64_t doc_handle) {

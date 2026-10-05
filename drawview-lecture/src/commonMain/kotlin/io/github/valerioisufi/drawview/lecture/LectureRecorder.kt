@@ -40,11 +40,12 @@ import kotlin.math.min
  * ([Lecture.generateFinalReview]).
  *
  * The recording goes on when the document is closed: the notebook is then detached
- * ([detachNotebook]) and the analysis works on the audio and on the slides already seen, until
- * the document is opened again ([attachNotebook]).
+ * ([detachNotebook]) and the analysis works on the audio only, until the document is opened again
+ * ([attachNotebook]).
  *
  * To limit the cost, the chunks without speech are not analyzed, the outline is rewritten every
- * few minutes only, and the notebook is sent as the areas written by the student.
+ * few minutes only, and the notebook is sent as text ([PageContent]) with the images of the
+ * visible pages only.
  */
 class LectureRecorder internal constructor(
     val lecture: Lecture,
@@ -71,7 +72,6 @@ class LectureRecorder internal constructor(
     private var knownStrokeIds: Set<String>? = null
     private val recentChunks = ArrayDeque<AudioChunk>()
     private var lastOutlineMs = Long.MIN_VALUE
-    private var lastSlides: List<UploadedSlides> = emptyList()
 
     private class QueuedChunk(val chunk: AudioChunk?, val catchUp: Boolean)
 
@@ -292,10 +292,10 @@ class LectureRecorder internal constructor(
             transcribe(chunks, settings) ?: return
         }
         var includeOutline = false
-        val result = request(settings.task(LectureTask.LIVE_NOTES), settings) { notebook, slides ->
+        val result = request(settings.task(LectureTask.LIVE_NOTES), settings) { notebook ->
             val memory = lecture.memory(speech.endMs)
             includeOutline = memory.outline.isBlank() || speech.endMs - lastOutlineMs >= OUTLINE_INTERVAL_MS
-            LecturePrompts.chunkPrompt(settings, memory, notebook, slides, speech, includeOutline = includeOutline)
+            LecturePrompts.chunkPrompt(settings, memory, notebook, speech, includeOutline = includeOutline)
         } ?: return
         val analysis = result.analysis
         if (includeOutline && analysis.outline.isNotBlank()) lastOutlineMs = speech.endMs
@@ -328,9 +328,9 @@ class LectureRecorder internal constructor(
             if (segments.isEmpty()) return
             RequestTranscript(emptyList(), segments, segments.first().startMs, 0L, segments.last().endMs)
         }
-        val result = request(task, settings) { notebook, slides ->
+        val result = request(task, settings) { notebook ->
             LecturePrompts.chunkPrompt(
-                settings, lecture.memory(speech.endMs), notebook, slides, speech,
+                settings, lecture.memory(speech.endMs), notebook, speech,
                 catchUp = true, includeOutline = false, includeTranscript = false
             )
         } ?: return
@@ -372,13 +372,13 @@ class LectureRecorder internal constructor(
     private class Answer(val analysis: ChunkAnalysis, val notebook: NotebookSnapshot?, val usage: TokenUsage)
 
     /**
-     * Sends the prompt built by [build] (given the notebook and the slides of the provider) to the
+     * Sends the prompt built by [build] (given the notebook, `null` when it is closed) to the
      * provider of [task], repeating it after the temporary errors.
      */
     private suspend fun request(
         task: TaskModel,
         settings: AssistantSettings,
-        build: suspend (NotebookSnapshot?, List<UploadedSlides>) -> ModelPrompt
+        build: suspend (NotebookSnapshot?) -> ModelPrompt
     ): Answer? {
         var attempt = 0
         while (true) {
@@ -388,16 +388,9 @@ class LectureRecorder internal constructor(
                 return null
             }
             try {
-                val snapshot = captureNotebook(settings)
-                val slides = when {
-                    // The local models receive no PDF: the visible slides as images
-                    task.provider == ModelProvider.LOCAL || !settings.sendSlides -> emptyList()
-                    snapshot != null -> lecture.uploadSlides(apiKey, snapshot.slides).also { lastSlides = it }
-                    // Notebook closed: the slides seen so far
-                    else -> lastSlides
-                }
-                val notebook = snapshot?.let { withUnreadableSlides(it, slides, visibleOnly = task.provider == ModelProvider.LOCAL) }
-                val prompt = build(notebook, slides)
+                // The local models read fewer images (a smaller context, a slower answer)
+                val notebook = captureNotebook(imagePages = if (task.provider == ModelProvider.LOCAL) 1 else 2)
+                val prompt = build(notebook)
                 val answer = when (task.provider) {
                     ModelProvider.GEMINI -> backends.gemini.generate(prompt, task.gemini)
                     ModelProvider.LOCAL -> backends.local.generate(prompt, task.local, OllamaBackend.LIVE_KEEP_LOADED_SECONDS) {}
@@ -438,32 +431,18 @@ class LectureRecorder internal constructor(
     }
 
     /** What the student is looking at, or `null` when the document is closed. */
-    private suspend fun captureNotebook(settings: AssistantSettings): NotebookSnapshot? {
+    private suspend fun captureNotebook(imagePages: Int): NotebookSnapshot? {
         val source = notebook ?: return null
         return try {
             // The strokes of the document when the lecture starts are not "new writing"
             val known = knownStrokeIds ?: source.strokeIds().also { knownStrokeIds = it }
-            source.capture(known, settings.neighborPages)
+            source.capture(known, TEXT_PAGES, imagePages)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
             println("DrawView: cannot capture the notebook: ${e.message}")
             null
         }
-    }
-
-    /**
-     * Slides whose PDF is not sent: the model sees the whole page instead ([visibleOnly]: the
-     * visible pages only, for the smaller context of the local models).
-     */
-    private suspend fun withUnreadableSlides(snapshot: NotebookSnapshot, slides: List<UploadedSlides>, visibleOnly: Boolean): NotebookSnapshot {
-        val sent = slides.mapTo(mutableSetOf()) { it.document.resourceId }
-        val unreadable = snapshot.pages
-            .filter { it.slide != null && it.slide.resourceId !in sent && (!visibleOnly || it.visible) }
-            .map { it.index }
-        if (unreadable.isEmpty()) return snapshot
-        val source = notebook ?: return snapshot
-        return snapshot.withPageImages(source.renderPages(unreadable).associateBy { it.pageIndex })
     }
 
     /**
@@ -506,6 +485,9 @@ class LectureRecorder internal constructor(
 
     internal companion object {
         const val OVERLAP_SECONDS = 5
+
+        /** Pages described around the visible ones (their text costs little). */
+        const val TEXT_PAGES = 10
 
         /** New audio merged in a request when the analysis is behind (a chunk can exceed it). */
         const val MAX_MERGED_MS = 3 * 60_000L

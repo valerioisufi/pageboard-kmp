@@ -136,6 +136,11 @@ internal class CachingPdfTileAdapter(private val maxOpenDocuments: Int = 4) : Pd
         (0 until doc.pageCount).map { doc.getPageSize(it).let { s -> s.widthMm to s.heightMm } }
     }
 
+    override fun getPageText(resourcePath: String, pdfPageIndex: Int): String? = syncLock(lock) {
+        val doc = documentLocked(resourcePath) ?: return@syncLock null
+        if (pdfPageIndex !in 0 until doc.pageCount) null else doc.getPageText(pdfPageIndex)
+    }
+
     override fun close() {
         syncLock(lock) {
             documents.values.forEach { it.close() }

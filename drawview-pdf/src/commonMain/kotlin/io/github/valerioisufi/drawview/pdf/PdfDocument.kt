@@ -42,6 +42,12 @@ interface PdfDocument : AutoCloseable {
     ): ImageBitmap?
 
     /**
+     * Text of the specified page (the text layer of the PDF: empty for a scanned page), or `null`
+     * when the page cannot be read.
+     */
+    fun getPageText(pageIndex: Int): String?
+
+    /**
      * Closes the document and releases native resources.
      */
     override fun close()

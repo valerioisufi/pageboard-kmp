@@ -52,6 +52,13 @@ int32_t pdfium_render_page_bitmap(
 );
 
 /**
+ * Text of a page (UTF-16, without the terminator) into [out_text], when [capacity] is more than
+ * its length. Returns the length of the text in UTF-16 units (call it first with a null buffer to
+ * size it), or -1 when the page cannot be read.
+ */
+int32_t pdfium_get_page_text(int64_t doc_handle, int32_t page_index, uint16_t* out_text, int32_t capacity);
+
+/**
  * Closes the document handle.
  */
 void pdfium_close_document(int64_t doc_handle);

@@ -57,8 +57,6 @@ data class TaskModel(
  *
  * @param apiKey key of the Gemini API (empty: the `GEMINI_API_KEY` environment variable).
  * @param chunkSeconds new audio analyzed at every update.
- * @param neighborPages pages sent around the visible ones (before and after).
- * @param sendSlides sends the PDF documents of the pages around the visible ones (uploaded once).
  * @param notesLanguage language of the notes (empty: the language of the lecture).
  * @param courseContext course, topic and terminology, written by the student.
  * @param tasks provider and models of every kind of request (see [task]).
@@ -72,8 +70,6 @@ data class TaskModel(
 data class AssistantSettings(
     val apiKey: String = "",
     val chunkSeconds: Int = 60,
-    val neighborPages: Int = 1,
-    val sendSlides: Boolean = true,
     val notesLanguage: String = "",
     val courseContext: String = "",
     val thinkingLevel: String = "low",
@@ -162,7 +158,6 @@ class AssistantSettingsStore(
         val sanitized = newSettings.copy(
             apiKey = newSettings.apiKey.trim(),
             chunkSeconds = newSettings.chunkSeconds.coerceIn(AssistantSettings.CHUNK_SECONDS_RANGE),
-            neighborPages = newSettings.neighborPages.coerceIn(0, 3),
             thinkingLevel = newSettings.thinkingLevel.takeIf { it in AssistantSettings.THINKING_LEVELS } ?: "low",
             tasks = LectureTask.entries.associateWith { task ->
                 val model = newSettings.task(task)

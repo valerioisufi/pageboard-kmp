@@ -61,8 +61,8 @@ sealed interface LectureProblem {
 /**
  * A lecture of a document: what was recorded and generated (transcript, suggested notes and what
  * the student did with them, outline, final review), saved in its folder:
- * `lecture.json`, the audio ([RecordingFile]) and `pages/`, the images of the notes of the
- * student kept for the final review.
+ * `lecture.json` (with the pages of the notebook seen, [SeenPage]), the audio ([RecordingFile])
+ * and `pages/`, the last images of the visible pages, kept for the final review.
  *
  * A lecture outlives the editor of its document: it is recorded by a [LectureRecorder] (also
  * while the document is closed), loaded again by the [LectureLibrary], and can be listened to and
@@ -162,12 +162,9 @@ class Lecture internal constructor(
     internal val recording = RecordingFile(directory)
     private val persistMutex = Mutex()
 
-    // Material of the requests (the analysis coroutine of the recorder, then the review)
-    internal val uploadedSlides = mutableMapOf<String, UploadedSlides>()
-    private val failedSlides = mutableSetOf<String>()
-    internal val slideDocuments = LinkedHashMap<String, SlideDocument>()
-    private val reviewPages = LinkedHashMap<String, ReviewPage>()
-    private val reviewImageCache = mutableMapOf<String, ByteArray>()
+    // Material of the review (the analysis coroutine of the recorder, then the review)
+    private val seenPages = LinkedHashMap<String, SeenPage>()
+    private val imageCache = mutableMapOf<String, ByteArray>()
     internal var lastPageCount = Int.MAX_VALUE
     internal var lastPageDbIds: List<Int> = emptyList()
 
@@ -175,8 +172,13 @@ class Lecture internal constructor(
         if (record != null) {
             // Saved while recording: the recording was interrupted (see LectureLibrary)
             status = LectureStatus.FINISHED
-            record.reviewPages.forEach { reviewPages[it.file] = it }
-            record.slides.forEach { slideDocuments[it.resourceId] = it }
+            record.pages.forEach { seenPages[pageKey(it.content.index, it.content.dbId)] = it }
+            // The first versions kept the images only
+            for (page in record.reviewPages) {
+                seenPages.getOrPut(pageKey(page.pageIndex, page.pageDbId)) {
+                    SeenPage(PageContent(page.pageIndex, page.pageDbId, hasInk = true), page.file)
+                }
+            }
         }
     }
 
@@ -292,64 +294,51 @@ class Lecture internal constructor(
         return shorter >= MIN_WORDS_TO_COMPARE && words.count { it in known } >= shorter * REPEATED_WORDS
     }
 
-    /** Keeps what a capture of the notebook tells about the document (pages, slides, notes). */
+    /**
+     * Keeps what a capture of the notebook tells about the document: its pages (by database id,
+     * the most recent last) and the images of the visible ones, for the final review.
+     */
     internal fun rememberNotebook(snapshot: NotebookSnapshot) {
         lastPageCount = snapshot.pageCount
         lastPageDbIds = snapshot.pageDbIds
-        snapshot.slides.forEach { slideDocuments[it.resourceId] = it }
-        for (image in snapshot.pageImages) {
-            val dbId = snapshot.pageDbIds.getOrNull(image.pageIndex) ?: 0
-            val file = if (dbId > 0) "p$dbId.jpg" else "i${image.pageIndex}.jpg"
-            if (reviewImageCache[file]?.contentEquals(image.jpeg) == true) continue
-            if (!PlatformFiles.writeBytes("$directory/pages/$file", image.jpeg)) continue
-            reviewImageCache[file] = image.jpeg
-            reviewPages.remove(file)
-            reviewPages[file] = ReviewPage(image.pageIndex, dbId, file, image.isCrop)
-            while (reviewPages.size > MAX_REVIEW_PAGE_IMAGES) {
-                val oldest = reviewPages.keys.first()
-                reviewPages.remove(oldest)
-                reviewImageCache.remove(oldest)
-                PlatformFiles.delete("$directory/pages/$oldest")
-            }
-        }
-    }
-
-    /** The images of the notes kept for the review (read from the folder after a reload). */
-    private fun reviewImages(): List<PageImage> = reviewPages.values.mapNotNull { page ->
-        val bytes = reviewImageCache[page.file] ?: PlatformFiles.readBytes("$directory/pages/${page.file}") ?: return@mapNotNull null
-        PageImage(page.pageIndex, bytes, page.isCrop)
-    }
-
-    /** Uploads (once per lecture) the PDF documents of [documents]. */
-    internal suspend fun uploadSlides(apiKey: String, documents: List<SlideDocument>): List<UploadedSlides> {
-        val result = mutableListOf<UploadedSlides>()
-        for (document in documents) {
-            val existing = uploadedSlides[document.resourceId]
-            if (existing != null) {
-                result.add(UploadedSlides(document, existing.file))
-                continue
-            }
-            if (document.resourceId in failedSlides) continue
-            try {
-                val bytes = PlatformFiles.readBytes(document.path)
-                if (bytes == null || bytes.size > MAX_SLIDES_BYTES) {
-                    failedSlides.add(document.resourceId)
-                    continue
+        val images = snapshot.pageImages.associateBy { it.pageIndex }
+        // The farthest first: the visible pages end up the most recent
+        for (content in snapshot.pages.asReversed()) {
+            val key = pageKey(content.index, content.dbId)
+            var file = seenPages[key]?.image
+            images[content.index]?.let { image ->
+                val name = "$key.jpg"
+                if (imageCache[name]?.contentEquals(image.jpeg) == true || PlatformFiles.writeBytes("$directory/pages/$name", image.jpeg)) {
+                    imageCache[name] = image.jpeg
+                    file = name
                 }
-                val file = backends.gemini.client.uploadFile(apiKey, bytes, "application/pdf", document.path.substringAfterLast('/'))
-                val uploaded = UploadedSlides(document, file)
-                uploadedSlides[document.resourceId] = uploaded
-                result.add(uploaded)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Throwable) {
-                // The page images are sent anyway
-                println("DrawView: cannot upload the slides ${document.path}: ${e.message}")
-                if (e !is GeminiException || !e.isRetryable) failedSlides.add(document.resourceId)
             }
+            seenPages.remove(key)
+            seenPages[key] = SeenPage(content, file)
         }
-        return result
+        // The images of the pages seen longest ago are dropped
+        val withImage = seenPages.filterValues { it.image != null }.keys.toList()
+        for (key in withImage.dropLast(MAX_PAGE_IMAGES)) {
+            val file = seenPages.getValue(key).image ?: continue
+            seenPages[key] = seenPages.getValue(key).copy(image = null)
+            imageCache.remove(file)
+            PlatformFiles.delete("$directory/pages/$file")
+        }
+        while (seenPages.size > MAX_SEEN_PAGES) seenPages.remove(seenPages.keys.first())
     }
+
+    /** The key of a page: its database id, or its index when it is not saved yet. */
+    private fun pageKey(index: Int, dbId: Int) = if (dbId > 0) "p$dbId" else "i$index"
+
+    /** The last images of the pages seen, the most recent first (read from the folder after a reload). */
+    private fun seenImages(max: Int): List<PageImage> = seenPages.values.reversed()
+        .filter { it.image != null }
+        .take(max)
+        .mapNotNull { page ->
+            val file = page.image ?: return@mapNotNull null
+            val bytes = imageCache[file] ?: PlatformFiles.readBytes("$directory/pages/$file") ?: return@mapNotNull null
+            PageImage(page.content.index, bytes)
+        }
 
     // ==========================================================
     // Final review
@@ -400,8 +389,8 @@ class Lecture internal constructor(
                         documentTitle = documentTitle,
                         memory = memory(elapsedMs),
                         transcript = transcriptCopy,
-                        pageImages = reviewImages(),
-                        slides = if (settings.sendSlides) uploadSlides(apiKey, slideDocuments.values.toList()) else emptyList(),
+                        pages = seenPages.values.map { it.content },
+                        pageImages = seenImages(MAX_REVIEW_IMAGES),
                         audioFile = audioFile
                     )
                 }
@@ -410,7 +399,8 @@ class Lecture internal constructor(
                     documentTitle = documentTitle,
                     memory = memory(elapsedMs),
                     transcript = transcriptCopy,
-                    pageImages = reviewImages().takeLast(MAX_LOCAL_REVIEW_IMAGES)
+                    pages = seenPages.values.map { it.content },
+                    pageImages = seenImages(MAX_LOCAL_REVIEW_IMAGES)
                 )
             }
             val answer = generateWithRetries(backends.of(provider), prompt, model) { tokens ->
@@ -474,8 +464,7 @@ class Lecture internal constructor(
         finalReviewBy = reviewModel,
         finalReviewProvider = reviewProvider,
         usage = usage,
-        reviewPages = reviewPages.values.toList(),
-        slides = slideDocuments.values.toList()
+        pages = seenPages.values.toList()
     )
 
     /** Writes `lecture.json` (atomically). */
@@ -511,8 +500,10 @@ class Lecture internal constructor(
         }
 
         const val MAX_ATTEMPTS_WHEN_STOPPED = 2
-        const val MAX_SLIDES_BYTES = 45 * 1024 * 1024
-        const val MAX_REVIEW_PAGE_IMAGES = 16
+        /** Pages kept for the review (their text), and those with their last image. */
+        const val MAX_SEEN_PAGES = 120
+        const val MAX_PAGE_IMAGES = 16
+        const val MAX_REVIEW_IMAGES = 16
         const val MAX_LOCAL_REVIEW_IMAGES = 8
         const val MIN_REVIEW_SECONDS = 20
         const val PREVIOUS_TRANSCRIPT_CHARS = 600

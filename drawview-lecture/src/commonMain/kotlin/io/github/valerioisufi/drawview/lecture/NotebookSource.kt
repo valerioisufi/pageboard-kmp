@@ -14,6 +14,7 @@ import io.github.valerioisufi.drawview.lecture.platform.encodeJpeg
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
+import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
@@ -21,47 +22,50 @@ import kotlin.math.min
 /**
  * An image of a page of the notebook sent to the model.
  *
- * @param isCrop the image shows only the area written by the student, not the whole page.
+ * @param isCrop the image shows only a part of the page (e.g. what the student just wrote).
  */
 class PageImage(val pageIndex: Int, val jpeg: ByteArray, val isCrop: Boolean = false)
 
 /**
- * A PDF document imported in the notebook (typically the slides of the lecture).
+ * The PDF page shown as the background of a notebook page, with its text.
  *
- * @param pages notebook page index of each PDF page shown in the notebook, by PDF page index.
+ * @param pdfNumber number of the PDF document among those of the notebook (1-based, in the order
+ *   of their first page).
+ * @param text the text layer of the page (empty for a scanned page).
  */
 @Serializable
-data class SlideDocument(
-    val resourceId: String,
-    val path: String,
-    val pages: List<Pair<Int, Int>>
-)
-
-/** A PDF page shown as the background of a notebook page. */
-class SlidePage(val resourceId: String, val pdfPageIndex: Int)
+data class SlideText(val pdfNumber: Int, val pdfPageIndex: Int, val text: String)
 
 /**
- * A page of the notebook around the visible ones.
+ * What the assistant knows of a page of the notebook: the same description for every provider,
+ * in text (the images of the visible pages are added to it, see [NotebookSnapshot.pageImages]).
  *
+ * @param dbId database id of the page (0: not saved yet), stable when the pages are reordered.
  * @param slide the PDF page of its background, if any.
- * @param image the area written by the student (`null` when the page holds nothing of theirs), or
- *   the whole page when the model cannot get the slide otherwise.
- * @param typedTexts typed text blocks of the page.
+ * @param typedTexts typed text blocks of the student.
+ * @param handwriting what the student wrote by hand, transcribed (see `HandwritingReader`).
+ * @param hasInk the page holds strokes of the student.
+ * @param imageCount pictures inserted by the student.
  */
-data class NotebookPage(
+@Serializable
+data class PageContent(
     val index: Int,
-    val visible: Boolean,
-    val slide: SlidePage?,
-    val image: PageImage?,
-    val typedTexts: List<String>
-)
+    val dbId: Int = 0,
+    val slide: SlideText? = null,
+    val typedTexts: List<String> = emptyList(),
+    val handwriting: List<String> = emptyList(),
+    val hasInk: Boolean = false,
+    val imageCount: Int = 0
+) {
+    val isBlank: Boolean get() = slide == null && typedTexts.isEmpty() && !hasInk && imageCount == 0
+}
 
 /**
  * What the student is looking at and writing, captured at every update.
  *
- * @param pages the visible pages, then the pages around them.
+ * @param pages the visible pages, then the pages around them by distance.
+ * @param pageImages the visible pages as they look (slide, notes, pictures).
  * @param newWriting close-ups of the strokes added since the previous update.
- * @param slides PDF documents of the pages around the visible ones.
  * @param strokeIds strokes of the document seen by this capture.
  * @param pageDbIds database id of every page of the document, by index (0: not saved yet).
  */
@@ -69,21 +73,12 @@ class NotebookSnapshot(
     val documentTitle: String,
     val pageCount: Int,
     val visiblePageIndexes: List<Int>,
-    val pages: List<NotebookPage>,
-    val newWriting: List<PageImage>,
-    val slides: List<SlideDocument>,
-    val strokeIds: Set<String>,
+    val pages: List<PageContent>,
+    val pageImages: List<PageImage> = emptyList(),
+    val newWriting: List<PageImage> = emptyList(),
+    val strokeIds: Set<String> = emptySet(),
     val pageDbIds: List<Int> = emptyList()
-) {
-    val pageImages: List<PageImage> get() = pages.mapNotNull { it.image }
-
-    /** This capture with whole-page images of [replacements] (by page index). */
-    fun withPageImages(replacements: Map<Int, PageImage>): NotebookSnapshot = NotebookSnapshot(
-        documentTitle, pageCount, visiblePageIndexes,
-        pages.map { page -> replacements[page.index]?.let { page.copy(image = it) } ?: page },
-        newWriting, slides, strokeIds, pageDbIds
-    )
-}
+)
 
 /** Source of the notebook content sent to the model. */
 interface NotebookSource {
@@ -92,21 +87,21 @@ interface NotebookSource {
     /** Strokes of the document (those present when the lecture starts are not "new writing"). */
     suspend fun strokeIds(): Set<String>
 
-    suspend fun capture(knownStrokeIds: Set<String>, neighborPages: Int): NotebookSnapshot
-
-    /** Whole-page images of [pageIndexes] (slides that cannot be sent as PDF). */
-    suspend fun renderPages(pageIndexes: List<Int>): List<PageImage>
+    /**
+     * @param textPages pages described around the visible ones (before and after).
+     * @param imagePages visible pages sent as images.
+     */
+    suspend fun capture(knownStrokeIds: Set<String>, textPages: Int, imagePages: Int): NotebookSnapshot
 }
 
 /**
- * [NotebookSource] of an open editor: renders the pages with the tile renderer of [controller]
- * (paper, PDF, images, texts and ink, as on screen).
- *
- * Every image costs the same tokens whatever its size: only what the model cannot get otherwise
- * is rendered, i.e. the area written by the student on each page (a slide without notes is in the
- * PDF, an empty page needs no image).
+ * [NotebookSource] of an open editor: the text of the slides comes from the PDF adapter of
+ * [controller] (PDFium), the images from its tile renderer (paper, PDF, images, texts and ink, as
+ * on screen).
  */
 class ControllerNotebookSource(private val controller: DrawViewController) : NotebookSource {
+    /** Text of the PDF pages, by resource and page (read once). */
+    private val slideTexts = mutableMapOf<Pair<String, Int>, String>()
 
     override val documentTitle: String get() = controller.document.title
 
@@ -115,7 +110,7 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
             .flatMapTo(mutableSetOf()) { page -> page.snapshotContent().strokes.map { it.id } }
     }
 
-    override suspend fun capture(knownStrokeIds: Set<String>, neighborPages: Int): NotebookSnapshot {
+    override suspend fun capture(knownStrokeIds: Set<String>, textPages: Int, imagePages: Int): NotebookSnapshot {
         val document = controller.document
         // Camera and layout: read on the UI thread
         val (visible, pages) = withContext(Dispatchers.Main) {
@@ -125,21 +120,36 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
             val visibleIndexes = visible.filter { it in pages.indices }.ifEmpty { if (pages.isEmpty()) emptyList() else listOf(0) }
             val first = visibleIndexes.minOrNull() ?: 0
             val last = visibleIndexes.maxOrNull() ?: 0
-            val around = ((first - neighborPages)..(last + neighborPages)).filter { it in pages.indices && it !in visibleIndexes }
+            val around = ((first - textPages)..(last + textPages))
+                .filter { it in pages.indices && it !in visibleIndexes }
+                .sortedBy { if (it < first) first - it else it - last }
             val renderer = controller.tileManager.tileRenderer
             val contents = pages.map { it.snapshotContent() }
+            // The PDF documents numbered by their first page
+            val pdfNumbers = contents.flatMap { content -> content.pdfs.map { it.resourceId } }.distinct()
+                .withIndex().associate { (i, id) -> id to i + 1 }
 
-            val notebookPages = (visibleIndexes + around).map { index ->
+            val pageContents = (visibleIndexes + around).map { index ->
                 val content = contents[index]
-                val slide = content.pdfs.firstOrNull()?.let { SlidePage(it.resourceId, it.pdfPageIndex) }
-                val written = studentContentBounds(content)
-                NotebookPage(
+                PageContent(
                     index = index,
-                    visible = index in visibleIndexes,
-                    slide = slide,
-                    image = written?.let { renderRegion(renderer, document, content, index, it, isCrop = true) },
-                    typedTexts = content.texts.map { it.text.trim() }.filter { it.isNotEmpty() }
+                    dbId = pages[index].dbId,
+                    slide = content.pdfs.firstOrNull()?.let { pdf ->
+                        SlideText(pdfNumbers.getValue(pdf.resourceId), pdf.pdfPageIndex, slideText(pdf.resourceId, pdf.pdfPageIndex))
+                    },
+                    typedTexts = content.texts.map { it.text.trim() }.filter { it.isNotEmpty() },
+                    hasInk = content.strokes.isNotEmpty(),
+                    imageCount = content.images.size
                 )
+            }
+
+            val pageImages = visibleIndexes.take(imagePages).mapNotNull { index ->
+                val bitmap = try {
+                    renderer.renderThumbnail(document, pages[index], PAGE_WIDTH_PX)
+                } catch (_: Throwable) {
+                    null
+                }
+                bitmap?.let { encodeJpeg(it) }?.let { PageImage(index, it) }
             }
 
             // Close-ups of the new strokes, page by page
@@ -150,43 +160,27 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
                 val newStrokes = content.strokes.filter { it.id !in knownStrokeIds }
                 if (newStrokes.isEmpty() || newWriting.size >= MAX_NEW_WRITING_IMAGES) continue
                 val bounds = newStrokes.map { it.bounds }.reduce(::union)
-                renderRegion(renderer, document, content, index, bounds, isCrop = true)?.let { newWriting.add(it) }
+                renderRegion(renderer, document, content, index, bounds)?.let { newWriting.add(it) }
             }
 
             NotebookSnapshot(
                 documentTitle = document.title,
                 pageCount = pages.size,
                 visiblePageIndexes = visibleIndexes,
-                pages = notebookPages,
+                pages = pageContents,
+                pageImages = pageImages,
                 newWriting = newWriting,
-                slides = slidesAround(contents.map { c -> c.pdfs.map { pdf -> pdf.resourceId to pdf.pdfPageIndex } }, first, last),
                 strokeIds = strokeIds,
                 pageDbIds = pages.map { it.dbId }
             )
         }
     }
 
-    override suspend fun renderPages(pageIndexes: List<Int>): List<PageImage> {
-        val document = controller.document
-        val pages = withContext(Dispatchers.Main) { document.pages.toList() }
-        return withContext(Dispatchers.Default) {
-            pageIndexes.filter { it in pages.indices }.mapNotNull { index ->
-                val bitmap = try {
-                    controller.tileManager.tileRenderer.renderThumbnail(document, pages[index], PAGE_WIDTH_PX)
-                } catch (_: Throwable) {
-                    null
-                }
-                bitmap?.let { encodeJpeg(it) }?.let { PageImage(index, it) }
-            }
-        }
-    }
-
-    /** Area of the strokes, texts and images of the student (page millimeters), or `null`. */
-    private fun studentContentBounds(content: PageContentSnapshot): Rect? {
-        val rects = content.strokes.map { it.bounds } +
-            content.texts.filter { it.text.isNotBlank() }.map { it.getRotatedBounds() } +
-            content.images.map { it.getRotatedBounds() }
-        return rects.reduceOrNull(::union)
+    /** The text of a PDF page, without the empty lines, at most [MAX_SLIDE_TEXT_CHARS]. */
+    private fun slideText(resourceId: String, pdfPageIndex: Int): String = slideTexts.getOrPut(resourceId to pdfPageIndex) {
+        val resource = controller.document.findResource(resourceId)?.takeIf { it.type == DrawResource.ResourceType.PDF }
+        val text = resource?.let { controller.tileManager.tileRenderer.pdfAdapter?.getPageText(it.path, pdfPageIndex) }.orEmpty()
+        cleanSlideText(text)
     }
 
     /** Renders [region] of the page (with its background), at most [CROP_MAX_SIDE_PX] pixels. */
@@ -195,8 +189,7 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
         document: DrawDocument,
         content: PageContentSnapshot,
         pageIndex: Int,
-        region: Rect,
-        isCrop: Boolean
+        region: Rect
     ): PageImage? {
         val area = Rect(
             (region.left - CROP_MARGIN_MM).coerceAtLeast(0f),
@@ -212,24 +205,10 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
             val bitmap = ImageBitmap(w, h)
             val matrix = Matrix2D().postTranslate(-area.left, -area.top).postScale(scale, scale)
             renderer.renderPageContent(Canvas(bitmap), document, content, matrix, Rect(0f, 0f, w.toFloat(), h.toFloat()))
-            encodeJpeg(bitmap)?.let { PageImage(pageIndex, it, isCrop) }
+            encodeJpeg(bitmap)?.let { PageImage(pageIndex, it, isCrop = true) }
         } catch (_: Throwable) {
             // A page that cannot be rendered is not sent
             null
-        }
-    }
-
-    /** The PDF documents shown on the pages around [first]..[last], with their page mapping. */
-    private fun slidesAround(pdfsByPage: List<List<Pair<String, Int>>>, first: Int, last: Int): List<SlideDocument> {
-        val window = (first - SLIDES_WINDOW_PAGES)..(last + SLIDES_WINDOW_PAGES)
-        val resourceIds = window.filter { it in pdfsByPage.indices }.flatMap { pdfsByPage[it].map { pdf -> pdf.first } }.distinct()
-        return resourceIds.mapNotNull { resourceId ->
-            val resource = controller.document.findResource(resourceId)
-                ?.takeIf { it.type == DrawResource.ResourceType.PDF } ?: return@mapNotNull null
-            val mapping = pdfsByPage.withIndex().flatMap { (pageIndex, pdfs) ->
-                pdfs.filter { it.first == resourceId }.map { it.second to pageIndex }
-            }.sortedBy { it.first }
-            SlideDocument(resourceId, resource.path, mapping)
         }
     }
 
@@ -239,10 +218,19 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
         const val CROP_MARGIN_MM = 6f
         const val CROP_PX_PER_MM = 8f
         const val CROP_MAX_SIDE_PX = 1024f
-
-        /** Pages around the visible ones whose PDF documents are sent. */
-        const val SLIDES_WINDOW_PAGES = 10
     }
 }
+
+/** The text layer of a slide: lines trimmed, no empty lines, at most [MAX_SLIDE_TEXT_CHARS]. */
+internal fun cleanSlideText(text: String): String =
+    text.replace("\r\n", "\n").replace('\r', '\n')
+        .lines().map { it.trim() }.filter { it.isNotEmpty() }
+        .joinToString("\n")
+        .take(MAX_SLIDE_TEXT_CHARS)
+
+internal const val MAX_SLIDE_TEXT_CHARS = 1200
+
+/** Distance of a page from the visible ones (0 for a visible page). */
+internal fun distanceFrom(visible: List<Int>, index: Int): Int = visible.minOfOrNull { abs(it - index) } ?: 0
 
 private fun union(a: Rect, b: Rect) = Rect(min(a.left, b.left), min(a.top, b.top), max(a.right, b.right), max(a.bottom, b.bottom))

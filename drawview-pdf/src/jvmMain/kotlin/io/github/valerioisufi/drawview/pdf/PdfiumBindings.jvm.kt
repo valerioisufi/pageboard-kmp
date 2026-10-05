@@ -58,5 +58,7 @@ internal actual object PdfiumBindings {
         return skiaBmp.asComposeImageBitmap()
     }
 
+    actual fun pageText(document: Long, pageIndex: Int): String? = PdfiumNative.nGetPageText(document, pageIndex)
+
     actual fun closeDocument(document: Long) = PdfiumNative.nCloseDocument(document)
 }

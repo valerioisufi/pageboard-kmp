@@ -90,10 +90,20 @@ data class TokenUsage(
 enum class LectureStatus { RECORDING, FINALIZING, FINISHED }
 
 /**
- * An image of the notes of the student kept for the final review (`pages/<file>` of the lecture).
+ * An image of the notes of the student kept for the final review by the first versions (read only
+ * to load their lectures: see [SeenPage]).
  */
 @Serializable
 data class ReviewPage(val pageIndex: Int, val pageDbId: Int = 0, val file: String, val isCrop: Boolean = true)
+
+/**
+ * A page of the notebook seen during the lecture, as last seen, kept for the final review (also
+ * when the notebook is closed, or after a restart).
+ *
+ * @param image file in `pages/` of the lecture with its last image (the visible pages only).
+ */
+@Serializable
+data class SeenPage(val content: PageContent, val image: String? = null)
 
 /**
  * A recorded lecture, saved as `lecture.json` next to its audio.
@@ -115,9 +125,10 @@ data class LectureRecord(
     val finalReviewBy: String? = null,
     val finalReviewProvider: ReviewProvider? = null,
     val usage: TokenUsage = TokenUsage(),
-    val reviewPages: List<ReviewPage> = emptyList(),
-    /** PDF documents seen during the lecture (uploaded again for a later review). */
-    val slides: List<SlideDocument> = emptyList()
+    /** The pages of the notebook seen during the lecture, the most recent last. */
+    val pages: List<SeenPage> = emptyList(),
+    /** The images of the first versions, read as [pages]. */
+    val reviewPages: List<ReviewPage> = emptyList()
 )
 
 /** Formats [ms] as `m:ss` (or `h:mm:ss`). */

@@ -41,5 +41,7 @@ internal actual object PdfiumBindings {
         return bitmap.asImageBitmap()
     }
 
+    actual fun pageText(document: Long, pageIndex: Int): String? = PdfiumNative.nGetPageText(document, pageIndex)
+
     actual fun closeDocument(document: Long) = PdfiumNative.nCloseDocument(document)
 }

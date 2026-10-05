@@ -68,9 +68,6 @@
     <string name="lecture_settings_hide_key">Hide the key</string>
     <string name="lecture_settings_chunk">Update every %1$d s</string>
     <string name="lecture_settings_chunk_hint">Applies to the next recording.</string>
-    <string name="lecture_settings_neighbors">Pages sent around the visible ones: %1$d</string>
-    <string name="lecture_settings_slides">Send the PDF slides of the notebook</string>
-    <string name="lecture_settings_slides_hint">Uploaded once per lecture: Gemini knows what is already on the slides, including the next ones.</string>
     <string name="lecture_settings_language">Language of the notes</string>
     <string name="lecture_settings_language_hint">Empty: the language of the lecture.</string>
     <string name="lecture_settings_context">Course, topic and terminology</string>

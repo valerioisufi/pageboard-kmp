@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.asComposeImageBitmap
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_close_document
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_count
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_size
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_text
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_open_document
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_render_page_bitmap
 import kotlinx.cinterop.DoubleVar
@@ -74,6 +75,16 @@ internal actual object PdfiumBindings {
         bitmap.installPixels(info, bytes, widthPx * 4)
         bitmap.setImmutable()
         return bitmap.asComposeImageBitmap()
+    }
+
+    actual fun pageText(document: Long, pageIndex: Int): String? {
+        val length = pdfium_get_page_text(document, pageIndex, null, 0)
+        if (length < 0) return null
+        if (length == 0) return ""
+        val units = UShortArray(length + 1)
+        val written = units.usePinned { pinned -> pdfium_get_page_text(document, pageIndex, pinned.addressOf(0), length + 1) }
+        if (written != length) return null
+        return CharArray(length) { units[it].toInt().toChar() }.concatToString()
     }
 
     actual fun closeDocument(document: Long) = pdfium_close_document(document)

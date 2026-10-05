@@ -2,6 +2,7 @@
 // on top of the plain C API of pdfium_bridge.h (also used by iOS through cinterop).
 #include "pdfium_bridge.h"
 #include <jni.h>
+#include <vector>
 
 extern "C" {
 
@@ -53,6 +54,15 @@ JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative
     );
     env->ReleaseIntArrayElements(out_pixels, ptr, 0);
     return res ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jstring JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nGetPageText(
+    JNIEnv* env, jclass, jlong handle, jint page_index) {
+    int32_t length = pdfium_get_page_text(handle, page_index, nullptr, 0);
+    if (length < 0) return nullptr;
+    std::vector<uint16_t> text(length + 1);
+    if (length > 0 && pdfium_get_page_text(handle, page_index, text.data(), length + 1) != length) return nullptr;
+    return env->NewString(reinterpret_cast<const jchar*>(text.data()), length);
 }
 
 JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nCloseDocument(

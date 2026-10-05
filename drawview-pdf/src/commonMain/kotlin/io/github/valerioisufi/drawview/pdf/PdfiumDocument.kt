@@ -31,6 +31,9 @@ internal expect object PdfiumBindings {
         rotate: Int
     ): ImageBitmap?
 
+    /** Text of a page, or `null` when the page cannot be read. */
+    fun pageText(document: Long, pageIndex: Int): String?
+
     fun closeDocument(document: Long)
 }
 
@@ -60,6 +63,9 @@ internal class PdfiumDocument(private var handle: Long) : PdfDocument {
         if (handle == 0L || widthPx <= 0 || heightPx <= 0) return null
         return PdfiumBindings.renderPageSlice(handle, pageIndex, startX, startY, sizeX, sizeY, widthPx, heightPx, rotate)
     }
+
+    override fun getPageText(pageIndex: Int): String? =
+        if (handle != 0L) PdfiumBindings.pageText(handle, pageIndex) else null
 
     override fun close() {
         if (handle != 0L) {

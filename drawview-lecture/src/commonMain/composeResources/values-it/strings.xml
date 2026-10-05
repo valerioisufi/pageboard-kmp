@@ -68,9 +68,6 @@
     <string name="lecture_settings_hide_key">Nascondi la chiave</string>
     <string name="lecture_settings_chunk">Aggiorna ogni %1$d s</string>
     <string name="lecture_settings_chunk_hint">Vale dalla prossima registrazione.</string>
-    <string name="lecture_settings_neighbors">Pagine inviate attorno a quelle visibili: %1$d</string>
-    <string name="lecture_settings_slides">Invia le slide PDF del quaderno</string>
-    <string name="lecture_settings_slides_hint">Caricate una volta per lezione: Gemini sa cosa c\'è già sulle slide, anche su quelle successive.</string>
     <string name="lecture_settings_language">Lingua degli appunti</string>
     <string name="lecture_settings_language_hint">Vuoto: la lingua della lezione.</string>
     <string name="lecture_settings_context">Corso, argomento e terminologia</string>

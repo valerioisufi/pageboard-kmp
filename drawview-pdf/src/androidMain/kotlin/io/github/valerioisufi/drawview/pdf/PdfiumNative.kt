@@ -46,6 +46,10 @@ internal object PdfiumNative {
         outPixels: IntArray
     ): Boolean
 
+    /** Text of a page, or `null` when the page cannot be read. */
+    @JvmStatic
+    external fun nGetPageText(docHandle: Long, pageIndex: Int): String?
+
     @JvmStatic
     external fun nCloseDocument(docHandle: Long)
 }

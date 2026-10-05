@@ -4,6 +4,7 @@ import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiFile
 import io.github.valerioisufi.drawview.lecture.gemini.GenerateContentRequest
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
+import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
 import io.github.valerioisufi.drawview.lecture.model.PromptPart
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -24,25 +25,18 @@ class LecturePromptsTest {
         pageCount = 10,
         visiblePageIndexes = listOf(4),
         pages = listOf(
-            // Slide with notes: the written area
-            NotebookPage(4, visible = true, slide = SlidePage("res1", 2), image = PageImage(4, byteArrayOf(1, 2, 3), isCrop = true), typedTexts = listOf("Teorema ponte")),
-            // Slide without notes: in the PDF, no image
-            NotebookPage(3, visible = false, slide = SlidePage("res1", 1), image = null, typedTexts = emptyList()),
+            // The visible page: a slide with typed and handwritten notes
+            PageContent(4, dbId = 15, slide = SlideText(1, 2, "Teorema ponte\nSia f: A -> R"), typedTexts = listOf("Vale anche per x -> inf"), hasInk = true),
+            // A slide without notes
+            PageContent(3, dbId = 14, slide = SlideText(1, 1, "Limiti di funzioni")),
             // Empty page
-            NotebookPage(5, visible = false, slide = null, image = null, typedTexts = emptyList()),
-            // Slide of a PDF not sent: the whole page
-            NotebookPage(6, visible = false, slide = SlidePage("res2", 0), image = PageImage(6, byteArrayOf(4, 5)), typedTexts = emptyList())
+            PageContent(5, dbId = 16),
+            // A scanned slide (no text) with a picture of the student
+            PageContent(6, dbId = 17, slide = SlideText(2, 0, ""), imageCount = 1)
         ),
+        pageImages = listOf(PageImage(4, byteArrayOf(1, 2, 3))),
         newWriting = listOf(PageImage(4, byteArrayOf(6), isCrop = true)),
-        slides = emptyList(),
         strokeIds = setOf("a")
-    )
-
-    private val slides = listOf(
-        UploadedSlides(
-            SlideDocument("res1", "/tmp/slides.pdf", listOf(0 to 2, 1 to 3, 2 to 4)),
-            GeminiFile(name = "files/abc", uri = "https://example.test/files/abc", mimeType = "application/pdf", state = "ACTIVE")
-        )
     )
 
     private val memory = LectureMemory(
@@ -55,22 +49,20 @@ class LecturePromptsTest {
         )
     )
 
+    private fun prompt(catchUp: Boolean = false, includeOutline: Boolean = true): ModelPrompt = LecturePrompts.chunkPrompt(
+        settings = settings,
+        memory = memory,
+        notebook = notebook,
+        speech = RequestAudio(byteArrayOf(9, 9, 9), startMs = 55_000, contextMs = 5_000, endMs = 125_000),
+        catchUp = catchUp,
+        includeOutline = includeOutline
+    )
+
     private fun request(
         catchUp: Boolean = false,
         includeOutline: Boolean = true,
         mediaResolution: String? = GeminiBackend.MEDIA_RESOLUTION
-    ): GenerateContentRequest = GeminiBackend.toRequest(
-        LecturePrompts.chunkPrompt(
-            settings = settings,
-            memory = memory,
-            notebook = notebook,
-            slides = slides,
-            speech = RequestAudio(byteArrayOf(9, 9, 9), startMs = 55_000, contextMs = 5_000, endMs = 125_000),
-            catchUp = catchUp,
-            includeOutline = includeOutline
-        ),
-        mediaResolution
-    )
+    ): GenerateContentRequest = GeminiBackend.toRequest(prompt(catchUp, includeOutline), mediaResolution)
 
     @Test
     fun partsGoFromTheStableToTheVariableContent() {
@@ -78,9 +70,9 @@ class LecturePromptsTest {
         val texts = parts.mapNotNull { it.text }
         assertTrue(texts.first().startsWith("## Course"))
         assertTrue(texts.first().contains("prof. Rossi"))
-        // Slides right after the course, audio last
-        assertEquals("https://example.test/files/abc", parts.first { it.fileData != null }.fileData?.fileUri)
-        assertTrue(parts.indexOfFirst { it.fileData != null } < parts.indexOfFirst { it.text?.startsWith("## Lecture so far") == true })
+        assertTrue(texts.indexOfFirst { it.startsWith("## Lecture so far") } < texts.indexOfFirst { it.startsWith("## Notebook") })
+        // No file: the slides are text
+        assertTrue(parts.none { it.fileData != null })
         assertEquals("audio/wav", parts.last().inlineData?.mimeType)
         assertEquals("CQkJ", parts.last().inlineData?.data)
     }
@@ -89,15 +81,14 @@ class LecturePromptsTest {
     fun notebookAndMemoryAreDescribedWithOneBasedPages() {
         val texts = request().contents.single().parts.mapNotNull { it.text }.joinToString("\n")
         assertTrue(texts.contains("The student is looking at page 5"))
-        assertTrue(texts.contains("- Page 5 (visible): slide 3 of PDF 1, with notes of the student (image: the written area)."))
-        assertTrue(texts.contains("- Page 4 (nearby): slide 2 of PDF 1, nothing written by the student."))
-        assertTrue(texts.contains("- Page 6 (nearby): blank paper, nothing written by the student."))
-        assertTrue(texts.contains("- Page 7 (nearby): a slide (see the image) (image: the whole page)."))
-        assertTrue(texts.contains("Notebook page 5, area written by the student:"))
-        assertTrue(texts.contains("Notebook page 7:"))
-        assertTrue(texts.contains("Close-up of what the student wrote on page 5"))
-        assertTrue(texts.contains("Typed text on page 5:\n- Teorema ponte"))
-        assertTrue(texts.contains("PDF pages 1–3 are notebook pages 3–5"))
+        assertTrue(texts.contains("### Page 5 (visible)\nSlide 3 of PDF 1:\nTeorema ponte\nSia f: A -> R\nTyped by the student:\n- Vale anche per x -> inf\nHandwritten notes of the student: see the image."), texts)
+        assertTrue(texts.contains("### Page 4\nSlide 2 of PDF 1:\nLimiti di funzioni"))
+        assertTrue(texts.contains("### Page 6\nBlank paper."))
+        assertTrue(texts.contains("### Page 7\nSlide 1 of PDF 2, without text.\nPictures inserted by the student: 1."))
+        // In the order of the notebook
+        assertTrue(texts.indexOf("### Page 4") < texts.indexOf("### Page 5") && texts.indexOf("### Page 5") < texts.indexOf("### Page 6"))
+        assertTrue(texts.contains("Notebook page 5, as the student sees it:"))
+        assertTrue(texts.contains("Close-up of what the student wrote on notebook page 5"))
         assertTrue(texts.contains("[p. 5, 1:00, already noted] Limite"))
         assertTrue(texts.contains("Lecture time 1:00–2:05. The first 5 s"))
         assertFalse(texts.contains("I missed something"))
@@ -105,10 +96,30 @@ class LecturePromptsTest {
     }
 
     @Test
-    fun onlyTheWrittenAreasAndTheUnreadableSlidesAreImages() {
-        val images = request().contents.single().parts.mapNotNull { it.inlineData }.filter { it.mimeType == "image/jpeg" }
-        // Page 5 (written area), page 7 (slide not in the PDFs), close-up of the new writing
-        assertEquals(3, images.size)
+    fun theSameNotebookForEveryProvider() {
+        val gemini = request().contents.single().parts
+        val local = prompt().parts
+        // The visible page and the close-up of the new writing
+        assertEquals(2, gemini.mapNotNull { it.inlineData }.count { it.mimeType == "image/jpeg" })
+        assertEquals(2, local.count { it is PromptPart.Image })
+        assertEquals(
+            local.filterIsInstance<PromptPart.Text>().map { it.text },
+            gemini.mapNotNull { it.text }
+        )
+    }
+
+    @Test
+    fun theTextOfTheFarthestPagesIsCutFirst() {
+        val long = "x".repeat(900)
+        val pages = listOf(
+            PageContent(4, slide = SlideText(1, 4, long)),
+            PageContent(5, slide = SlideText(1, 5, long)),
+            PageContent(3, slide = SlideText(1, 3, long))
+        )
+        val text = LecturePrompts.pagesText(pages, visible = setOf(4), withImage = emptySet(), maxChars = 1500)
+        assertTrue(text.contains("### Page 5 (visible)\nSlide 5 of PDF 1:\n$long"))
+        assertTrue(text.contains("### Page 6\nSlide 6 of PDF 1:\nxxx"))
+        assertTrue(text.contains("### Page 4\nSlide 4 of PDF 1 (text left out)."))
     }
 
     @Test
@@ -139,16 +150,19 @@ class LecturePromptsTest {
             documentTitle = "Analisi 1",
             memory = memory,
             transcript = listOf(TranscriptSegment(0, 60_000, "Buongiorno"), TranscriptSegment(60_000, 120_000, "Oggi i limiti")),
-            pageImages = listOf(PageImage(7, byteArrayOf(2)), PageImage(4, byteArrayOf(1), isCrop = true))
+            pages = notebook.pages,
+            pageImages = listOf(PageImage(7, byteArrayOf(2)), PageImage(4, byteArrayOf(1)))
         )
         assertTrue(prompt.system.contains("notesMarkdown"))
         val texts = prompt.parts.filterIsInstance<PromptPart.Text>().joinToString("\n") { it.text }
         assertTrue(texts.contains("[0:00] Buongiorno\n[1:00] Oggi i limiti"))
         assertTrue(texts.contains("the recording is not available"))
+        assertTrue(texts.contains("## Notebook pages seen during the lecture"))
+        assertTrue(texts.contains("Slide 3 of PDF 1:\nTeorema ponte"))
         // Neither audio nor files (a local model receives text and images), images in page order
         assertTrue(prompt.parts.none { it is PromptPart.Audio || it is PromptPart.File })
         assertEquals(listOf(1.toByte(), 2.toByte()), prompt.parts.filterIsInstance<PromptPart.Image>().map { it.jpeg.single() })
-        assertTrue(texts.indexOf("Notebook page 5, area written by the student") < texts.indexOf("Notebook page 8"))
+        assertTrue(texts.indexOf("Notebook page 5:") < texts.indexOf("Notebook page 8:"))
     }
 
     @Test
@@ -157,7 +171,6 @@ class LecturePromptsTest {
             settings = settings,
             memory = memory,
             notebook = notebook,
-            slides = emptyList(),
             speech = RequestTranscript(
                 context = emptyList(),
                 segments = listOf(TranscriptSegment(60_000, 64_000, "Il teorema ponte"), TranscriptSegment(64_000, 70_000, "vale per ogni successione")),
@@ -202,25 +215,17 @@ class LecturePromptsTest {
                 documentTitle = "Analisi 1",
                 memory = memory,
                 transcript = listOf(TranscriptSegment(0, 60_000, "Buongiorno")),
+                pages = notebook.pages,
                 pageImages = listOf(PageImage(4, byteArrayOf(1))),
-                slides = slides,
                 audioFile = audio
             )
         )
         val parts = request.contents.single().parts
         assertEquals("https://example.test/files/rec", parts.last().fileData?.fileUri)
+        assertEquals(1, parts.count { it.fileData != null })
         assertTrue(parts.mapNotNull { it.text }.any { it.contains("[0:00] Buongiorno") })
         val schema = request.generationConfig?.responseJsonSchema as JsonObject
         assertEquals(listOf("notesMarkdown", "missing"), (schema["required"] as JsonArray).map { it.jsonPrimitive.content })
-    }
-
-    @Test
-    fun mappingCompressesConsecutivePages() {
-        assertEquals("not shown in the notebook", LecturePrompts.describeMapping(emptyList()))
-        assertEquals(
-            "PDF pages 1–2 are notebook pages 1–2; PDF page 3 is notebook page 7",
-            LecturePrompts.describeMapping(listOf(0 to 0, 1 to 1, 2 to 6))
-        )
     }
 }
 

@@ -43,16 +43,14 @@ class LectureMemory(
     val suggestions: List<NoteSuggestion>
 )
 
-/** A PDF document of the notebook uploaded with the Files API. */
-class UploadedSlides(val document: SlideDocument, val file: GeminiFile)
-
 /**
  * The requests of the assistant, as [ModelPrompt]s answered by Gemini or by a local model. The
- * parts are ordered from the most stable (instructions, course, slides) to the most variable
- * (memory, notebook, audio): the stable prefix is reused by the implicit caching of Gemini.
+ * parts are ordered from the most stable (instructions, course) to the most variable (memory,
+ * notebook, audio): the stable prefix is reused by the implicit caching of Gemini.
  *
- * The local models receive neither audio nor files: their prompts carry the transcript instead
- * of the audio, and the slides as images of the pages (see [NotebookSnapshot]).
+ * The notebook is described in the same way for every provider ([PageContent]: text of the
+ * slides, typed text, handwriting), with the images of the visible pages; only the number of
+ * images changes. The local models receive no audio: their prompts carry the transcript.
  */
 object LecturePrompts {
 
@@ -86,9 +84,10 @@ object LecturePrompts {
         return """
             You are a note-taking assistant listening to a university lecture live, next to a student who takes handwritten notes in a notebook app (the lecture slides, when available, are imported as pages of the same notebook).
             Every minute or so you receive the newest part of the lecture ($source) together with what the student is looking at and writing. Your goal: make sure the student does not miss anything important, without distracting them.
+            The notebook is described page by page in text (the text of the slides, what the student typed, their handwriting when transcribed), with images of the visible pages and close-ups of what the student just wrote.
 
             How to work:
-            - Compare what the lecturer says in the new $source with (1) the slides and (2) what the student has already written or typed. Look carefully at the handwriting in the page images and in the close-ups of the new writing.
+            - Compare what the lecturer says in the new $source with (1) the slides and (2) what the student has already written or typed. Look carefully at the handwriting in the images too.
             - Suggest a note ONLY for important content said in the new $source that is missing from both the slides and the notes of the student, and that is not among the notes already suggested. Typical cases: definitions, formulas, theorems and their conditions, steps of worked examples, explanations that clarify a slide, anything the lecturer stresses ("this is important", "this will be in the exam"), announcements and deadlines, references (books, papers, websites), answers to the questions of the students.
             - If the student already wrote it, even abbreviated or in their own words, it is not missing. If it is on a slide, it is not missing, unless the lecturer adds something that is not there (a condition, an intuition, an example).
             - No note is better than a redundant note: an empty list is the right answer when nothing is missing. Prefer few, high-value notes.
@@ -108,7 +107,7 @@ object LecturePrompts {
     }
 
     fun finalReviewSystemInstruction(settings: AssistantSettings): String = """
-        You are a note-taking assistant. The lecture is over: you receive its recording or its transcript, the slides when available, the notes of the student and the notes suggested during the lecture.
+        You are a note-taking assistant. The lecture is over: you receive its recording or its transcript, the pages of the notebook seen during the lecture (text of the slides, notes of the student, some images) and the notes suggested during the lecture.
 
         Write:
         - notesMarkdown: complete, well organized notes of the whole lecture in Markdown, to study from: headings following the structure of the lecture, concise bullet points, definitions, formulas in LaTeX between ${'$'}...${'$'}, examples, and what the lecturer stressed or announced (in a "**Important**" line, translated). Integrate slides and notes of the student without copying the slides verbatim: refer to them (e.g. "p. 12") when useful. Never invent content that was not said or shown.
@@ -119,16 +118,11 @@ object LecturePrompts {
         ${languageRule(settings, "notesMarkdown and missing", withTranscript = false)}
     """.trimIndent()
 
-    /**
-     * A chunk of the lecture ([catchUp]: the student asked what they missed).
-     *
-     * @param slides the PDF documents uploaded to Gemini (none for a local model).
-     */
+    /** A chunk of the lecture ([catchUp]: the student asked what they missed). */
     fun chunkPrompt(
         settings: AssistantSettings,
         memory: LectureMemory,
         notebook: NotebookSnapshot?,
-        slides: List<UploadedSlides>,
         speech: RequestSpeech,
         catchUp: Boolean = false,
         includeOutline: Boolean = true,
@@ -138,10 +132,9 @@ object LecturePrompts {
         val source = if (withAudio) "audio" else "transcript"
         val parts = mutableListOf<PromptPart>()
         courseText(settings, notebook?.documentTitle)?.let { parts.add(PromptPart.Text(it)) }
-        parts.addAll(slideParts(slides))
         parts.add(PromptPart.Text(memoryText(memory)))
         if (notebook != null) {
-            parts.addAll(notebookParts(notebook, slides))
+            parts.addAll(notebookParts(notebook))
         } else {
             parts.add(PromptPart.Text("## Notebook\nThe notebook is closed: the student is not looking at its pages now (they may be taking notes elsewhere)."))
         }
@@ -197,22 +190,28 @@ object LecturePrompts {
      * The review of the whole lecture: the complete recording ([audioFile], Gemini) when it could be
      * uploaded, the transcript in any case.
      *
-     * @param slides the PDF documents uploaded to Gemini (none for a local model).
+     * @param pages the pages of the notebook seen during the lecture.
+     * @param pageImages images of some of them, as last seen.
      */
     fun finalReviewPrompt(
         settings: AssistantSettings,
         documentTitle: String,
         memory: LectureMemory,
         transcript: List<TranscriptSegment>,
+        pages: List<PageContent>,
         pageImages: List<PageImage>,
-        slides: List<UploadedSlides> = emptyList(),
         audioFile: GeminiFile? = null
     ): ModelPrompt {
         val parts = mutableListOf<PromptPart>()
         courseText(settings, documentTitle)?.let { parts.add(PromptPart.Text(it)) }
-        parts.addAll(slideParts(slides))
-        if (pageImages.isNotEmpty()) {
-            parts.add(PromptPart.Text("## Notes of the student seen during the lecture (as last seen)"))
+        if (pages.isNotEmpty()) {
+            val withImage = pageImages.mapTo(mutableSetOf()) { it.pageIndex }
+            parts.add(
+                PromptPart.Text(
+                    "## Notebook pages seen during the lecture (as last seen)\n" +
+                        pagesText(pages.sortedBy { it.index }, visible = emptySet(), withImage = withImage, maxChars = MAX_REVIEW_NOTEBOOK_CHARS)
+                )
+            )
             for (image in pageImages.sortedBy { it.pageIndex }) {
                 parts.add(PromptPart.Text(imageLabel(image) + ":"))
                 parts.add(PromptPart.Image(image.jpeg))
@@ -251,34 +250,6 @@ object LecturePrompts {
         }.trim()
     }
 
-    private fun slideParts(slides: List<UploadedSlides>): List<PromptPart> {
-        if (slides.isEmpty()) return emptyList()
-        val parts = mutableListOf<PromptPart>(PromptPart.Text("## Slides (PDF documents imported in the notebook)"))
-        slides.forEachIndexed { i, uploaded ->
-            parts.add(PromptPart.Text("PDF ${i + 1}: ${describeMapping(uploaded.document.pages)}."))
-            parts.add(PromptPart.File(uploaded.file.uri, uploaded.file.mimeType.ifEmpty { "application/pdf" }))
-        }
-        return parts
-    }
-
-    /** "PDF pages 1–30 are notebook pages 3–32", compressing the consecutive ranges. */
-    internal fun describeMapping(pages: List<Pair<Int, Int>>): String {
-        if (pages.isEmpty()) return "not shown in the notebook"
-        val ranges = mutableListOf<Pair<Pair<Int, Int>, Pair<Int, Int>>>()
-        for (pair in pages.sortedBy { it.first }) {
-            val last = ranges.lastOrNull()
-            if (last != null && pair.first == last.second.first + 1 && pair.second == last.second.second + 1) {
-                ranges[ranges.lastIndex] = last.first to pair
-            } else {
-                ranges.add(pair to pair)
-            }
-        }
-        return ranges.joinToString("; ") { (from, to) ->
-            if (from == to) "PDF page ${from.first + 1} is notebook page ${from.second + 1}"
-            else "PDF pages ${from.first + 1}–${to.first + 1} are notebook pages ${from.second + 1}–${to.second + 1}"
-        }
-    }
-
     private fun memoryText(memory: LectureMemory): String = buildString {
         appendLine("## Lecture so far")
         append("Elapsed time: ${formatLectureTime(memory.elapsedMs)}.")
@@ -310,68 +281,94 @@ object LecturePrompts {
     }
 
     /**
-     * The pages around the visible ones described in words (slide, notes of the student, empty),
-     * with an image only where the student wrote or where the slide cannot be read in the PDFs.
+     * The pages around the visible ones in text, the same for every provider, then the images: the
+     * visible pages as they look and the close-ups of what the student just wrote.
      */
-    private fun notebookParts(notebook: NotebookSnapshot, slides: List<UploadedSlides>): List<PromptPart> {
-        val pdfNumbers = slides.withIndex().associate { (i, uploaded) -> uploaded.document.resourceId to i + 1 }
+    private fun notebookParts(notebook: NotebookSnapshot): List<PromptPart> {
         val parts = mutableListOf<PromptPart>()
-        val visible = notebook.visiblePageIndexes.map { it + 1 }
+        val withImage = notebook.pageImages.mapTo(mutableSetOf()) { it.pageIndex }
         parts.add(
             PromptPart.Text(
                 buildString {
                     appendLine("## Notebook (${notebook.pageCount} pages)")
-                    appendLine("The student is looking at page ${visible.joinToString(", ")}. Pages around:")
-                    for (page in notebook.pages) {
-                        append("- Page ${page.index + 1} (${if (page.visible) "visible" else "nearby"}): ")
-                        val slide = page.slide
-                        val pdf = slide?.let { pdfNumbers[it.resourceId] }
-                        val image = page.image
-                        append(
-                            when {
-                                slide != null && pdf != null -> "slide ${slide.pdfPageIndex + 1} of PDF $pdf"
-                                slide != null && image != null && !image.isCrop -> "a slide (see the image)"
-                                slide != null -> "a slide (not shown)"
-                                else -> "blank paper"
-                            }
-                        )
-                        append(
-                            when {
-                                image == null -> ", nothing written by the student"
-                                image.isCrop -> ", with notes of the student (image: the written area)"
-                                else -> " (image: the whole page)"
-                            }
-                        )
-                        appendLine(".")
-                    }
+                    appendLine("The student is looking at page ${notebook.visiblePageIndexes.joinToString(", ") { "${it + 1}" }}. Pages around:")
+                    append(pagesText(notebook.pages, notebook.visiblePageIndexes.toSet(), withImage, MAX_NOTEBOOK_TEXT_CHARS))
                 }.trim()
             )
         )
-        for (page in notebook.pages) {
-            val image = page.image ?: continue
-            parts.add(PromptPart.Text(imageLabel(image) + ":"))
+        for (image in notebook.pageImages) {
+            parts.add(PromptPart.Text("${imageLabel(image)}, as the student sees it:"))
             parts.add(PromptPart.Image(image.jpeg))
         }
         for (image in notebook.newWriting) {
-            parts.add(PromptPart.Text("Close-up of what the student wrote on page ${image.pageIndex + 1} since the previous update:"))
+            parts.add(PromptPart.Text("Close-up of what the student wrote on notebook page ${image.pageIndex + 1} since the previous update:"))
             parts.add(PromptPart.Image(image.jpeg))
-        }
-        val typed = notebook.pages.filter { it.typedTexts.isNotEmpty() }
-        if (typed.isNotEmpty()) {
-            parts.add(
-                PromptPart.Text(
-                    typed.joinToString("\n") { page ->
-                        "Typed text on page ${page.index + 1}:\n" + page.typedTexts.joinToString("\n") { "- " + it.replace('\n', ' ') }
-                    }
-                )
-            )
         }
         return parts
     }
+
+    /**
+     * [pages] in text, in the order of the notebook, within [maxChars]: the pages are given by
+     * priority (the visible ones first, then by distance) and the texts of the last ones are cut
+     * first.
+     *
+     * @param withImage pages whose image is in the request.
+     */
+    internal fun pagesText(pages: List<PageContent>, visible: Set<Int>, withImage: Set<Int>, maxChars: Int): String {
+        var budget = maxChars
+        return pages.map { page ->
+            val text = pageText(page, page.index in visible, page.index in withImage, budget)
+            budget -= text.length
+            page.index to text
+        }.sortedBy { it.first }.joinToString("\n") { it.second }
+    }
+
+    private fun pageText(page: PageContent, isVisible: Boolean, hasImage: Boolean, budget: Int): String = buildString {
+        append("### Page ${page.index + 1}")
+        if (isVisible) append(" (visible)")
+        appendLine()
+        if (page.isBlank) {
+            append("Blank paper.")
+            return@buildString
+        }
+        page.slide?.let { slide ->
+            val name = "Slide ${slide.pdfPageIndex + 1} of PDF ${slide.pdfNumber}"
+            val room = (budget - MIN_PAGE_CHARS).coerceAtLeast(0)
+            when {
+                slide.text.isBlank() -> appendLine("$name, without text" + if (hasImage) " (see the image)." else ".")
+                room == 0 -> appendLine("$name (text left out).")
+                else -> {
+                    appendLine("$name:")
+                    appendLine(if (slide.text.length > room) slide.text.take(room) + "…" else slide.text)
+                }
+            }
+        }
+        if (page.typedTexts.isNotEmpty()) {
+            appendLine("Typed by the student:")
+            page.typedTexts.forEach { appendLine("- " + it.replace('\n', ' ')) }
+        }
+        when {
+            page.handwriting.isNotEmpty() -> {
+                appendLine("Written by hand by the student (transcribed):")
+                page.handwriting.forEach { appendLine(it) }
+            }
+            page.hasInk -> appendLine(if (hasImage) "Handwritten notes of the student: see the image." else "Handwritten notes of the student (not shown).")
+        }
+        if (page.imageCount > 0) appendLine("Pictures inserted by the student: ${page.imageCount}.")
+    }.trim()
 
     private fun imageLabel(image: PageImage): String =
         if (image.isCrop) "Notebook page ${image.pageIndex + 1}, area written by the student"
         else "Notebook page ${image.pageIndex + 1}"
 
     private const val MAX_SUGGESTIONS_IN_MEMORY = 60
+
+    /** Text of the pages around the visible ones in a live request. */
+    private const val MAX_NOTEBOOK_TEXT_CHARS = 8_000
+
+    /** Text of the pages seen during the lecture in the final review. */
+    private const val MAX_REVIEW_NOTEBOOK_CHARS = 30_000
+
+    /** Room kept for the typed and handwritten notes of a page when the text of its slide is cut. */
+    private const val MIN_PAGE_CHARS = 200
 }

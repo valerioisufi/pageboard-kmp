@@ -34,6 +34,12 @@ interface PdfTileAdapter {
     fun getPageSizesMm(resourcePath: String): List<Pair<Float, Float>>
 
     /**
+     * Returns the text of page [pdfPageIndex] of the PDF stored at [resourcePath] (empty for a
+     * scanned page), or `null` when it cannot be read.
+     */
+    fun getPageText(resourcePath: String, pdfPageIndex: Int): String? = null
+
+    /**
      * Releases the cached documents.
      */
     fun close() {}

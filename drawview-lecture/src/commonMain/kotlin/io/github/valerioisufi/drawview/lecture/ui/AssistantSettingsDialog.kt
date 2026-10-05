@@ -21,7 +21,6 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -179,24 +178,6 @@ internal fun AssistantSettingsDialog(store: AssistantSettingsStore, onDismiss: (
                         steps = (range.last - range.first) / 15 - 1
                     )
                     Hint(stringResource(Res.string.lecture_settings_chunk_hint))
-                }
-
-                Column {
-                    Text(stringResource(Res.string.lecture_settings_neighbors, draft.neighborPages), style = MaterialTheme.typography.bodyMedium)
-                    Slider(
-                        value = draft.neighborPages.toFloat(),
-                        onValueChange = { draft = draft.copy(neighborPages = it.roundToInt()) },
-                        valueRange = 0f..3f,
-                        steps = 2
-                    )
-                }
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(stringResource(Res.string.lecture_settings_slides), style = MaterialTheme.typography.bodyMedium)
-                        Hint(stringResource(Res.string.lecture_settings_slides_hint))
-                    }
-                    Switch(checked = draft.sendSlides, onCheckedChange = { draft = draft.copy(sendSlides = it) })
                 }
 
                 OutlinedTextField(

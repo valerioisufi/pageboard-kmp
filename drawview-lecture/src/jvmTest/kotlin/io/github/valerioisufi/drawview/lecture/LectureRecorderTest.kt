@@ -85,18 +85,18 @@ class LectureRecorderTest {
     private class FakeNotebook : NotebookSource {
         override val documentTitle = "Analisi 1"
         override suspend fun strokeIds() = setOf("old")
-        override suspend fun capture(knownStrokeIds: Set<String>, neighborPages: Int) = NotebookSnapshot(
+        override suspend fun capture(knownStrokeIds: Set<String>, textPages: Int, imagePages: Int) = NotebookSnapshot(
             documentTitle = documentTitle,
             pageCount = 3,
             visiblePageIndexes = listOf(1),
-            pages = listOf(NotebookPage(1, visible = true, slide = null, image = PageImage(1, byteArrayOf(1, 2, 3), isCrop = true), typedTexts = emptyList())),
-            newWriting = emptyList(),
-            slides = emptyList(),
+            pages = listOf(
+                PageContent(1, dbId = 11, slide = SlideText(1, 0, "Limiti"), hasInk = true),
+                PageContent(2, dbId = 12, slide = SlideText(1, 1, "Derivate"))
+            ),
+            pageImages = listOf(PageImage(1, byteArrayOf(1, 2, 3))),
             strokeIds = setOf("old", "new"),
             pageDbIds = listOf(10, 11, 12)
         )
-
-        override suspend fun renderPages(pageIndexes: List<Int>) = pageIndexes.map { PageImage(it, byteArrayOf(9)) }
     }
 
     private val jsonHeaders = headersOf(HttpHeaders.ContentType, "application/json")
@@ -168,7 +168,8 @@ class LectureRecorderTest {
             while (lecture.transcript.isEmpty() || lecture.suggestions.isEmpty()) delay(20)
         }
         assertEquals(1, requests.size)
-        assertTrue(requests[0].contains("- Page 2 (visible): blank paper, with notes of the student (image: the written area)."))
+        assertTrue(requests[0].contains("### Page 2 (visible)\\nSlide 1 of PDF 1:\\nLimiti\\nHandwritten notes of the student: see the image."), requests[0])
+        assertTrue(requests[0].contains("### Page 3\\nSlide 2 of PDF 1:\\nDerivate"))
         assertTrue(requests[0].contains("Update the outline in this answer."))
         assertTrue(requests[0].contains("\"mimeType\":\"audio/wav\""))
         val note = lecture.suggestions.single()
@@ -190,6 +191,8 @@ class LectureRecorderTest {
         // The outline was rewritten a few seconds before
         assertTrue(requests[1].contains("The outline is not updated in this answer."))
         assertTrue(requests[2].contains("https://x/files/rec"))
+        // The review reads the pages seen
+        assertTrue(requests[2].contains("### Page 3\\nSlide 2 of PDF 1:\\nDerivate"), requests[2])
         assertEquals(2, lecture.transcript.size)
         // The second chunk repeated the same note: not duplicated
         assertEquals(listOf("Definizione di limite", "Esercizio d'esame"), lecture.suggestions.map { it.title })
@@ -213,8 +216,14 @@ class LectureRecorderTest {
         assertEquals(LectureStatus.FINISHED, record.status)
         assertEquals(SuggestionStatus.INSERTED, record.suggestions.first().status)
         assertNotNull(record.finalReview)
-        // The notes of the student kept for a later review
-        assertEquals(listOf(ReviewPage(1, 11, "p11.jpg", isCrop = true)), record.reviewPages)
+        // The pages seen kept for a later review: their text, the image of the visible one
+        assertEquals(
+            listOf(
+                SeenPage(PageContent(2, dbId = 12, slide = SlideText(1, 1, "Derivate"))),
+                SeenPage(PageContent(1, dbId = 11, slide = SlideText(1, 0, "Limiti"), hasInk = true), "p11.jpg")
+            ),
+            record.pages
+        )
         assertTrue(File(directory, "lecture/pages/p11.jpg").readBytes().contentEquals(byteArrayOf(1, 2, 3)))
     }
 
@@ -432,9 +441,11 @@ class LectureRecorderTest {
     @Test
     fun exitingSavesTheLectureAndItsReviewIsWrittenLater() = runBlocking<Unit> {
         val reviewAnswer = """{"notesMarkdown":"# Limiti","missing":[]}"""
+        val reviewRequests = Collections.synchronizedList(mutableListOf<String>())
         val engine = MockEngine { request ->
             val path = request.url.encodedPath
             val body = request.body.toByteArray().decodeToString()
+            if (body.contains("The lecture is over")) reviewRequests.add(body)
             when {
                 path.endsWith(":generateContent") ->
                     respond(geminiAnswer(if (body.contains("The lecture is over")) reviewAnswer else plainChunkAnswer), HttpStatusCode.OK, jsonHeaders)
@@ -464,12 +475,15 @@ class LectureRecorderTest {
         val library = LectureLibrary(directory.absolutePath)
         val record = assertNotNull(library.load(File(directory, "lecture").absolutePath))
         assertEquals(LectureStatus.FINISHED, record.status)
-        val reloaded = newLecture(settingsStore, engine, record)
+        // The pages seen are in the record: the review needs no open notebook
+        val seen = SeenPage(PageContent(4, dbId = 21, slide = SlideText(1, 3, "Teorema ponte")))
+        val reloaded = newLecture(settingsStore, engine, record.copy(pages = listOf(seen)))
         assertEquals("Analisi 1", reloaded.documentTitle)
         assertTrue(reloaded.canGenerateReview)
         reloaded.generateFinalReview(ReviewProvider.GEMINI)
         withTimeout(20_000) { while (reloaded.reviewStatus != ReviewStatus.DONE) delay(20) }
         assertEquals("# Limiti", reloaded.finalReview)
+        assertTrue(reviewRequests.single().contains("### Page 5\\nSlide 4 of PDF 1:\\nTeorema ponte"), reviewRequests.single())
     }
 
     /** An answer of Ollama, streamed as its chat API does. */
