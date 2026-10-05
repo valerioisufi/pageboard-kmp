@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.valerioisufi.drawview.core.change.DocumentSession
 import io.github.valerioisufi.drawview.core.controller.DrawPreferences
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.model.DrawDocument
@@ -73,7 +74,7 @@ class DocumentEditorViewModel(val store: DocumentStore) : ViewModel() {
                 return@launch
             }
             store.updateLastOpened(documentId)
-            attach(newSession, document, store.preferences.first())
+            attach(newSession, document, store.preferences.first(), DocumentSession(document, store.replicaId(), store.versionVector(documentId)))
         }
     }
 
@@ -85,17 +86,18 @@ class DocumentEditorViewModel(val store: DocumentStore) : ViewModel() {
             val newSession = EditorSession(document.id, store)
             session = newSession
             DrawViewSessions.register(newSession)
-            attach(newSession, document, store.preferences.first())
+            attach(newSession, document, store.preferences.first(), DocumentSession(document, store.replicaId()))
         }
     }
 
-    private fun attach(session: EditorSession, document: DrawDocument, preferences: DrawPreferences) {
+    private fun attach(session: EditorSession, document: DrawDocument, preferences: DrawPreferences, changes: DocumentSession) {
         if (this.session !== session) return
         session.controller = DrawViewController(
             document = document,
             coroutineScope = viewModelScope,
             persistence = store.persistence,
-            persistenceScope = session.persistenceScope
+            persistenceScope = session.persistenceScope,
+            session = changes
         ).apply {
             applyPreferences(preferences)
             // PDF pages rendering (PDFium on Android, iOS and the desktop)

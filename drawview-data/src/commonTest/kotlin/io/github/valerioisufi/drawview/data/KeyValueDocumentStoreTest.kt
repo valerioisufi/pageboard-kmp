@@ -12,6 +12,7 @@ import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.InputToolType
 import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.core.model.Stamp
 import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
@@ -48,7 +49,7 @@ class KeyValueDocumentStoreTest {
         val strokes = listOf(stroke(0f), stroke(30f))
         page.strokes.addAll(strokes)
         store.saveStrokes(page, strokes)
-        val text = DrawText(zIndex = 0).apply {
+        val text = DrawText().apply {
             this.text = "**Hello** \$x^2\$"
             x = 5f
             y = 6f
@@ -77,7 +78,7 @@ class KeyValueDocumentStoreTest {
         val second = DrawPage(index = 1, widthMm = 297f, heightMm = 210f, background = PageBackground.Dotted())
         second.hasCustomBackground = true
         document.pages.add(second)
-        store.insertPage(document, second, 1)
+        store.savePage(document, second)
         store.touchDocument(document, 1234L)
         store.flush()
 
@@ -123,6 +124,37 @@ class KeyValueDocumentStoreTest {
         assertEquals(297f, loaded.pages[1].widthMm)
         assertTrue(loaded.pages[1].hasCustomBackground)
         assertEquals(PageBackground.Dotted(), loaded.pages[1].background)
+    }
+
+    @Test
+    fun removedPagesAndElementsSurviveAReload() = runTest {
+        val storage = InMemoryKeyValueStorage()
+        val store = KeyValueDocumentStore(storage, scope = backgroundScope)
+        val document = store.createDocument("Notes", 210f, 297f, PageBackground.Solid())
+        val page = document.pages.single()
+        val (kept, removed) = listOf(stroke(0f), stroke(30f))
+        page.add(kept)
+        removed.removed = Stamp(2L, 0, "device")
+        removed.placed = Stamp(3L, 0, "device")
+        page.removedElements.add(removed)
+        store.saveStrokes(page, listOf(kept, removed))
+        val second = DrawPage(index = 1)
+        second.removed = Stamp(4L, 0, "device")
+        second.add(stroke(60f))
+        document.removedPages[second.id] = second
+        store.savePage(document, second)
+        store.flush()
+
+        val loaded = assertNotNull(KeyValueDocumentStore(storage, scope = backgroundScope).loadDocument(document.id))
+        val loadedPage = loaded.pages.single()
+        assertEquals(listOf(kept.id), loadedPage.strokes.map { it.id })
+        val hidden = loadedPage.removedElements.single()
+        assertEquals(removed.id, hidden.id)
+        assertEquals(removed.removed, hidden.removed)
+        assertEquals(removed.placed, hidden.placed)
+        val hiddenPage = assertNotNull(loaded.removedPages[second.id])
+        assertEquals(second.removed, hiddenPage.removed)
+        assertEquals(1, hiddenPage.strokes.size)
     }
 
     @Test

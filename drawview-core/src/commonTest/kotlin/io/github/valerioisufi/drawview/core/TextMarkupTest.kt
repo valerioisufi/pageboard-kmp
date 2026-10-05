@@ -13,17 +13,17 @@ import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.model.pdfPointsToPageMm
 import io.github.valerioisufi.drawview.core.render.tile.PdfTileAdapter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TextMarkupTest {
@@ -111,7 +111,7 @@ class TextMarkupTest {
     private fun controllerWithPdf(scope: CoroutineScope, layout: PdfTextLayout? = layout()): DrawViewController {
         val document = DrawDocument()
         document.resources.add(DrawResource("pdf-1", DrawResource.ResourceType.PDF, "/notes/slides.pdf"))
-        document.pages[0].pdfs.add(DrawPdf(zIndex = 0, pdfPageIndex = 0).apply { resourceId = "pdf-1" })
+        document.pages[0].pdfs.add(DrawPdf(pdfPageIndex = 0).apply { resourceId = "pdf-1" })
         val controller = DrawViewController(document = document, coroutineScope = scope)
         controller.tileManager.tileRenderer.pdfAdapter = FakePdfAdapter(layout)
         controller.setViewport(800f, 1200f)

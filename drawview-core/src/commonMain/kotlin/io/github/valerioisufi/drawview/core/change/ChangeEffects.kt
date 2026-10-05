@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.core.change
 
 import androidx.compose.ui.geometry.Rect
+import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawElement
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawResource
@@ -12,29 +13,32 @@ import kotlin.math.min
  * observers of a [DocumentSession] (persistence, rendering, selection), which therefore do not
  * depend on the kinds of change.
  */
-class ChangeEffects internal constructor() {
+class ChangeEffects internal constructor(private val document: DrawDocument) {
     private val _savedElements = LinkedHashMap<DrawElement, DrawPage>()
     private val _deletedElements = LinkedHashSet<DrawElement>()
-    private val _insertedPages = mutableListOf<Pair<DrawPage, Int>>()
-    private val _removedPages = mutableListOf<Pair<DrawPage, Int>>()
-    private val _formattedPages = LinkedHashSet<DrawPage>()
+    private val _insertedPages = LinkedHashSet<DrawPage>()
+    private val _savedPages = LinkedHashSet<DrawPage>()
+    private val _removedPages = LinkedHashSet<DrawPage>()
     private val _resources = mutableListOf<DrawResource>()
     private val _dirtyRegions = LinkedHashMap<DrawPage, Rect?>()
 
-    /** Elements inserted or changed, with the page holding them. */
+    /**
+     * Elements inserted, changed or removed (removed elements are kept, hidden: see
+     * [DrawPage.removedElements]), with the page holding them.
+     */
     val savedElements: Map<DrawElement, DrawPage> get() = _savedElements
 
-    /** Elements removed from their page. */
+    /** Elements removed from their page (hidden), among the [savedElements]. */
     val deletedElements: Set<DrawElement> get() = _deletedElements
 
-    /** Pages inserted (or put back), with their position. */
-    val insertedPages: List<Pair<DrawPage, Int>> get() = _insertedPages
+    /** Pages inserted (or put back), with their content. */
+    val insertedPages: Set<DrawPage> get() = _insertedPages
 
-    /** Pages removed, with the position they had. */
-    val removedPages: List<Pair<DrawPage, Int>> get() = _removedPages
+    /** Pages changed: moved, formatted, removed again... (their content excepted). */
+    val savedPages: Set<DrawPage> get() = _savedPages
 
-    /** Pages whose format or background changed. */
-    val formattedPages: Set<DrawPage> get() = _formattedPages
+    /** Pages removed (kept, hidden: see [DrawDocument.removedPages]). */
+    val removedPages: Set<DrawPage> get() = _removedPages
 
     /** Files added to the document. */
     val resources: List<DrawResource> get() = _resources
@@ -42,51 +46,53 @@ class ChangeEffects internal constructor() {
     /** Areas to draw again, in the millimeters of their page (`null`: the whole page). */
     val dirtyRegions: Map<DrawPage, Rect?> get() = _dirtyRegions
 
-    var pageOrderChanged: Boolean = false
-        private set
-
     var documentDefaultsChanged: Boolean = false
         private set
 
-    /** The pages must be laid out again (pages added, removed, reordered or resized). */
+    /** The pages must be laid out again (pages added, removed, moved or resized). */
     var layoutChanged: Boolean = false
         private set
 
     val isEmpty: Boolean
         get() = _savedElements.isEmpty() && _deletedElements.isEmpty() && _insertedPages.isEmpty() &&
-            _removedPages.isEmpty() && _formattedPages.isEmpty() && _resources.isEmpty() &&
-            !pageOrderChanged && !documentDefaultsChanged
+            _savedPages.isEmpty() && _removedPages.isEmpty() && _resources.isEmpty() && !documentDefaultsChanged
 
+    /** [element] of [page] added or changed, shown or hidden. */
     internal fun saved(page: DrawPage, element: DrawElement) {
-        _deletedElements.remove(element)
         _savedElements[element] = page
+        if (element.removed != null) return
+        _deletedElements.remove(element)
         dirty(page, page.boundsOf(element))
     }
 
+    /** [element] hidden: it was at [bounds] of [page]. */
     internal fun deleted(page: DrawPage, element: DrawElement, bounds: Rect?) {
-        _savedElements.remove(element)
+        _savedElements[element] = page
         _deletedElements.add(element)
         dirty(page, bounds)
     }
 
-    internal fun pageInserted(page: DrawPage, index: Int) {
-        _insertedPages.add(page to index)
+    internal fun pageInserted(page: DrawPage) {
+        _removedPages.remove(page)
+        _insertedPages.add(page)
         layoutChanged = true
     }
 
-    internal fun pageRemoved(page: DrawPage, index: Int) {
-        _removedPages.add(page to index)
+    internal fun pageRemoved(page: DrawPage) {
+        _insertedPages.remove(page)
+        _savedPages.remove(page)
+        _removedPages.add(page)
         layoutChanged = true
     }
 
-    internal fun pagesReordered() {
-        pageOrderChanged = true
-        layoutChanged = true
+    /** [page] changed (moved, formatted, put back...): saved, laid out again when shown. */
+    internal fun pageSaved(page: DrawPage) {
+        _savedPages.add(page)
+        if (document.isShown(page)) layoutChanged = true
     }
 
     internal fun pageFormatted(page: DrawPage) {
-        _formattedPages.add(page)
-        layoutChanged = true
+        pageSaved(page)
         dirty(page, null)
     }
 
@@ -98,9 +104,10 @@ class ChangeEffects internal constructor() {
         _resources.add(resource)
     }
 
-    /** Marks [rect] of [page] (the whole page when `null`) to be drawn again. */
+    /** Marks [rect] of [page] (the whole page when `null`) to be drawn again (when it is shown). */
     internal fun dirty(page: DrawPage, rect: Rect?) {
         page.markContentChanged()
+        if (!document.isShown(page)) return
         if (_dirtyRegions.containsKey(page)) {
             val previous = _dirtyRegions[page] ?: return
             _dirtyRegions[page] = rect?.let { union(previous, it) }

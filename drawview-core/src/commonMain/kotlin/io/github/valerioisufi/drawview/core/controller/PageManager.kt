@@ -11,7 +11,7 @@ import io.github.valerioisufi.drawview.core.change.CompositeChange
 import io.github.valerioisufi.drawview.core.change.RemovePage
 import io.github.valerioisufi.drawview.core.change.SetDocumentDefaults
 import io.github.valerioisufi.drawview.core.change.SetPageFormat
-import io.github.valerioisufi.drawview.core.change.SetPageOrder
+import io.github.valerioisufi.drawview.core.change.MovePages
 import io.github.valerioisufi.drawview.core.geometry.Dimension
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.PageBackground
@@ -42,7 +42,8 @@ class PageManager(private val controller: DrawViewController) {
         index = index,
         widthMm = document.defaultWidthMm,
         heightMm = document.defaultHeightMm,
-        background = document.defaultBackground
+        background = document.defaultBackground,
+        orderKey = document.orderKeyAt(index)
     )
 
     fun addNewPageAtBottom(): DrawPage = insertPage(document.pages.size)
@@ -58,7 +59,7 @@ class PageManager(private val controller: DrawViewController) {
     private fun insertPage(index: Int): DrawPage {
         controller.selectionManager.clearSelection()
         val page = newPage(index)
-        controller.session.submit(AddPage.of(page, index))
+        controller.session.submit(AddPage.of(page))
         return page
     }
 
@@ -82,7 +83,7 @@ class PageManager(private val controller: DrawViewController) {
         controller.selectionManager.clearSelection()
         val order = document.pages.map { it.id }.toMutableList()
         order.add(toIndex, order.removeAt(fromIndex))
-        controller.session.submit(SetPageOrder(order))
+        MovePages.toOrder(document, order)?.let { controller.session.submit(it) }
     }
 
     // ==========================================================
@@ -168,7 +169,7 @@ class PageManager(private val controller: DrawViewController) {
             document.pages.clear()
             document.pages.addAll(oldOrder)
             document.reindexPages()
-            controller.session.submit(SetPageOrder(newOrder))
+            MovePages.toOrder(document, newOrder)?.let { controller.session.submit(it) }
         }
         controller.markLayoutNeedsUpdate()
     }

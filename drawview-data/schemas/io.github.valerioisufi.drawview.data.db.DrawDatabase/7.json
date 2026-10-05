@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 5,
-    "identityHash": "429c886288d9fd44ccf947012fe9ece5",
+    "version": 7,
+    "identityHash": "4919dfb594d3870a0f4ea4d56114e4ec",
     "entities": [
       {
         "tableName": "folders",
@@ -47,7 +47,7 @@
       },
       {
         "tableName": "documents",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `folderId` TEXT, `createdAt` INTEGER NOT NULL, `modifiedAt` INTEGER NOT NULL, `lastOpenedAt` INTEGER, `defaultBackground` TEXT NOT NULL, `defaultWidth` REAL NOT NULL, `defaultHeight` REAL NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`folderId`) REFERENCES `folders`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `folderId` TEXT, `createdAt` INTEGER NOT NULL, `modifiedAt` INTEGER NOT NULL, `lastOpenedAt` INTEGER, `defaultBackground` TEXT NOT NULL, `defaultWidth` REAL NOT NULL, `defaultHeight` REAL NOT NULL, `defaultsVersion` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`folderId`) REFERENCES `folders`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -100,6 +100,12 @@
             "columnName": "defaultHeight",
             "affinity": "REAL",
             "notNull": true
+          },
+          {
+            "fieldPath": "defaultsVersion",
+            "columnName": "defaultsVersion",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -135,7 +141,7 @@
       },
       {
         "tableName": "pages",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `documentId` TEXT NOT NULL, `pageNumber` INTEGER NOT NULL, `width` REAL NOT NULL, `height` REAL NOT NULL, `isDeleted` INTEGER NOT NULL, `background` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`documentId`) REFERENCES `documents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `documentId` TEXT NOT NULL, `orderKey` TEXT NOT NULL, `width` REAL NOT NULL, `height` REAL NOT NULL, `background` TEXT, `added` TEXT NOT NULL, `removed` TEXT, `orderVersion` TEXT NOT NULL, `formatVersion` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`documentId`) REFERENCES `documents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -150,9 +156,9 @@
             "notNull": true
           },
           {
-            "fieldPath": "pageNumber",
-            "columnName": "pageNumber",
-            "affinity": "INTEGER",
+            "fieldPath": "orderKey",
+            "columnName": "orderKey",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -168,15 +174,32 @@
             "notNull": true
           },
           {
-            "fieldPath": "isDeleted",
-            "columnName": "isDeleted",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
             "fieldPath": "background",
             "columnName": "background",
             "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "added",
+            "columnName": "added",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "removed",
+            "columnName": "removed",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "orderVersion",
+            "columnName": "orderVersion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "formatVersion",
+            "columnName": "formatVersion",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -187,14 +210,14 @@
         },
         "indices": [
           {
-            "name": "index_pages_documentId_pageNumber",
+            "name": "index_pages_documentId_orderKey",
             "unique": false,
             "columnNames": [
               "documentId",
-              "pageNumber"
+              "orderKey"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_pages_documentId_pageNumber` ON `${TABLE_NAME}` (`documentId`, `pageNumber`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_pages_documentId_orderKey` ON `${TABLE_NAME}` (`documentId`, `orderKey`)"
           }
         ],
         "foreignKeys": [
@@ -213,7 +236,7 @@
       },
       {
         "tableName": "strokes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `pageId` TEXT NOT NULL, `zIndex` INTEGER NOT NULL, `color` INTEGER NOT NULL, `size` REAL NOT NULL, `toolType` TEXT NOT NULL, `brushFamily` TEXT NOT NULL, `inputs` BLOB NOT NULL, `transform` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`pageId`) REFERENCES `pages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `pageId` TEXT NOT NULL, `orderKey` TEXT NOT NULL, `color` INTEGER NOT NULL, `size` REAL NOT NULL, `toolType` TEXT NOT NULL, `brushFamily` TEXT NOT NULL, `inputs` BLOB NOT NULL, `transform` TEXT NOT NULL, `added` TEXT NOT NULL, `removed` TEXT, `placed` TEXT NOT NULL, `updated` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`pageId`) REFERENCES `pages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -228,9 +251,9 @@
             "notNull": true
           },
           {
-            "fieldPath": "zIndex",
-            "columnName": "zIndex",
-            "affinity": "INTEGER",
+            "fieldPath": "orderKey",
+            "columnName": "orderKey",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -268,6 +291,29 @@
             "columnName": "transform",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "added",
+            "columnName": "added",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "removed",
+            "columnName": "removed",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "placed",
+            "columnName": "placed",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updated",
+            "columnName": "updated",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -303,7 +349,7 @@
       },
       {
         "tableName": "texts",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `pageId` TEXT NOT NULL, `zIndex` INTEGER NOT NULL, `text` TEXT NOT NULL, `isLatex` INTEGER NOT NULL, `x` REAL NOT NULL, `y` REAL NOT NULL, `width` REAL NOT NULL, `height` REAL NOT NULL, `rotation` REAL NOT NULL, `color` INTEGER NOT NULL, `fontSize` REAL NOT NULL, `alignment` INTEGER NOT NULL, `isMarkdownEnabled` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`pageId`) REFERENCES `pages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `pageId` TEXT NOT NULL, `orderKey` TEXT NOT NULL, `text` TEXT NOT NULL, `isLatex` INTEGER NOT NULL, `x` REAL NOT NULL, `y` REAL NOT NULL, `width` REAL NOT NULL, `height` REAL NOT NULL, `rotation` REAL NOT NULL, `color` INTEGER NOT NULL, `fontSize` REAL NOT NULL, `alignment` INTEGER NOT NULL, `isMarkdownEnabled` INTEGER NOT NULL, `added` TEXT NOT NULL, `removed` TEXT, `placed` TEXT NOT NULL, `updated` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`pageId`) REFERENCES `pages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -318,9 +364,9 @@
             "notNull": true
           },
           {
-            "fieldPath": "zIndex",
-            "columnName": "zIndex",
-            "affinity": "INTEGER",
+            "fieldPath": "orderKey",
+            "columnName": "orderKey",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -388,6 +434,29 @@
             "columnName": "isMarkdownEnabled",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "added",
+            "columnName": "added",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "removed",
+            "columnName": "removed",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "placed",
+            "columnName": "placed",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updated",
+            "columnName": "updated",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -423,7 +492,7 @@
       },
       {
         "tableName": "images",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `pageId` TEXT NOT NULL, `zIndex` INTEGER NOT NULL, `resourceId` TEXT NOT NULL, `x` REAL NOT NULL, `y` REAL NOT NULL, `width` REAL NOT NULL, `height` REAL NOT NULL, `rotation` REAL NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`pageId`) REFERENCES `pages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `pageId` TEXT NOT NULL, `orderKey` TEXT NOT NULL, `resourceId` TEXT NOT NULL, `x` REAL NOT NULL, `y` REAL NOT NULL, `width` REAL NOT NULL, `height` REAL NOT NULL, `rotation` REAL NOT NULL, `added` TEXT NOT NULL, `removed` TEXT, `placed` TEXT NOT NULL, `updated` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`pageId`) REFERENCES `pages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -438,9 +507,9 @@
             "notNull": true
           },
           {
-            "fieldPath": "zIndex",
-            "columnName": "zIndex",
-            "affinity": "INTEGER",
+            "fieldPath": "orderKey",
+            "columnName": "orderKey",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -478,6 +547,29 @@
             "columnName": "rotation",
             "affinity": "REAL",
             "notNull": true
+          },
+          {
+            "fieldPath": "added",
+            "columnName": "added",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "removed",
+            "columnName": "removed",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "placed",
+            "columnName": "placed",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updated",
+            "columnName": "updated",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -513,7 +605,7 @@
       },
       {
         "tableName": "pdfs",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `pageId` TEXT NOT NULL, `zIndex` INTEGER NOT NULL, `resourceId` TEXT NOT NULL, `pdfPageIndex` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`pageId`) REFERENCES `pages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `pageId` TEXT NOT NULL, `orderKey` TEXT NOT NULL, `resourceId` TEXT NOT NULL, `pdfPageIndex` INTEGER NOT NULL, `added` TEXT NOT NULL, `removed` TEXT, `placed` TEXT NOT NULL, `updated` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`pageId`) REFERENCES `pages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -528,9 +620,9 @@
             "notNull": true
           },
           {
-            "fieldPath": "zIndex",
-            "columnName": "zIndex",
-            "affinity": "INTEGER",
+            "fieldPath": "orderKey",
+            "columnName": "orderKey",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -543,6 +635,29 @@
             "fieldPath": "pdfPageIndex",
             "columnName": "pdfPageIndex",
             "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "added",
+            "columnName": "added",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "removed",
+            "columnName": "removed",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "placed",
+            "columnName": "placed",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updated",
+            "columnName": "updated",
+            "affinity": "TEXT",
             "notNull": true
           }
         ],
@@ -579,7 +694,7 @@
       },
       {
         "tableName": "text_markups",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `pageId` TEXT NOT NULL, `zIndex` INTEGER NOT NULL, `resourceId` TEXT NOT NULL, `pdfPageIndex` INTEGER NOT NULL, `pdfWidth` REAL NOT NULL, `pdfHeight` REAL NOT NULL, `startIndex` INTEGER NOT NULL, `endIndex` INTEGER NOT NULL, `text` TEXT NOT NULL, `rects` TEXT NOT NULL, `kind` TEXT NOT NULL, `color` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`pageId`) REFERENCES `pages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `pageId` TEXT NOT NULL, `orderKey` TEXT NOT NULL, `resourceId` TEXT NOT NULL, `pdfPageIndex` INTEGER NOT NULL, `pdfWidth` REAL NOT NULL, `pdfHeight` REAL NOT NULL, `startIndex` INTEGER NOT NULL, `endIndex` INTEGER NOT NULL, `text` TEXT NOT NULL, `rects` TEXT NOT NULL, `kind` TEXT NOT NULL, `color` INTEGER NOT NULL, `added` TEXT NOT NULL, `removed` TEXT, `placed` TEXT NOT NULL, `updated` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`pageId`) REFERENCES `pages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -594,9 +709,9 @@
             "notNull": true
           },
           {
-            "fieldPath": "zIndex",
-            "columnName": "zIndex",
-            "affinity": "INTEGER",
+            "fieldPath": "orderKey",
+            "columnName": "orderKey",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -657,6 +772,29 @@
             "fieldPath": "color",
             "columnName": "color",
             "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "added",
+            "columnName": "added",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "removed",
+            "columnName": "removed",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "placed",
+            "columnName": "placed",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updated",
+            "columnName": "updated",
+            "affinity": "TEXT",
             "notNull": true
           }
         ],
@@ -752,6 +890,99 @@
         ]
       },
       {
+        "tableName": "operations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`documentId` TEXT NOT NULL, `replica` TEXT NOT NULL, `sequence` INTEGER NOT NULL, `stamp` TEXT NOT NULL, `change` TEXT NOT NULL, PRIMARY KEY(`documentId`, `replica`, `sequence`), FOREIGN KEY(`documentId`) REFERENCES `documents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "documentId",
+            "columnName": "documentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "replica",
+            "columnName": "replica",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sequence",
+            "columnName": "sequence",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stamp",
+            "columnName": "stamp",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "change",
+            "columnName": "change",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "documentId",
+            "replica",
+            "sequence"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_operations_documentId_stamp",
+            "unique": false,
+            "columnNames": [
+              "documentId",
+              "stamp"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_operations_documentId_stamp` ON `${TABLE_NAME}` (`documentId`, `stamp`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "documents",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "documentId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "replica",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `replicaId` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "replicaId",
+            "columnName": "replicaId",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
         "tableName": "user_preferences",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `isStylusOnlyMode` INTEGER NOT NULL, `lastSelectedTool` TEXT NOT NULL, `defaultTextFontSize` REAL NOT NULL, `defaultTextColor` INTEGER NOT NULL, `penPresets` TEXT NOT NULL, `highlighterPresets` TEXT NOT NULL, `eraserPresets` TEXT NOT NULL, `lazoPresets` TEXT NOT NULL, `markupPresets` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
@@ -826,7 +1057,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '429c886288d9fd44ccf947012fe9ece5')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4919dfb594d3870a0f4ea4d56114e4ec')"
     ]
   }
 }

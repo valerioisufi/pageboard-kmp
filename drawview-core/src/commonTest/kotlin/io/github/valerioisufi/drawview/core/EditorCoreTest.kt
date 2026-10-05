@@ -4,7 +4,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import io.github.valerioisufi.drawview.core.change.ChangeOrigin
+import io.github.valerioisufi.drawview.core.change.DocumentChange
 import io.github.valerioisufi.drawview.core.change.DocumentSession
+import io.github.valerioisufi.drawview.core.change.Operation
+import io.github.valerioisufi.drawview.core.change.OperationId
 import io.github.valerioisufi.drawview.core.change.RemoveElements
 import io.github.valerioisufi.drawview.core.controller.DrawPersistence
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
@@ -19,10 +22,12 @@ import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.InputToolType
+import io.github.valerioisufi.drawview.core.model.Stamp
 import io.github.valerioisufi.drawview.core.model.StrokeMesh
 import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.core.util.currentTimeMillis
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -140,7 +145,7 @@ class EditorCoreTest {
         val session = DocumentSession(doc)
         val page = doc.pages[0]
         val strokes = List(4) { stroke(squareMesh(it * 20f, 0f, 5f)) }
-        page.strokes.addAll(strokes)
+        strokes.forEach { page.add(it) }
 
         // Erase B then D: undo puts the same strokes back where they were
         val undo = assertNotNull(session.submit(RemoveElements.of(page, listOf(strokes[1], strokes[3]))))
@@ -162,16 +167,16 @@ class EditorCoreTest {
                 calls.add("save:${strokes.first().id}")
             }
 
-            override suspend fun deleteStrokes(strokes: List<DrawStroke>) {
-                calls.add("delete:${strokes.first().id}")
+            override suspend fun touchDocument(document: DrawDocument, timestamp: Long) {
+                calls.add("touch")
             }
         }
         val queue = PersistenceQueue(backgroundScope, persistence)
         val s = stroke(squareMesh(0f, 0f, 1f))
         queue.enqueue { saveStrokes(DrawPage(), listOf(s)) }
-        queue.enqueue { deleteStrokes(listOf(s)) }
+        queue.enqueue { touchDocument(DrawDocument(), 0L) }
         queue.flush()
-        assertEquals(listOf("save:${s.id}", "delete:${s.id}"), calls)
+        assertEquals(listOf("save:${s.id}", "touch"), calls)
     }
 
     // --- Controller ---
@@ -217,7 +222,8 @@ class EditorCoreTest {
         val page = controller.document.pages[0]
         val hit = stroke(squareMesh(50f, 50f, 5f))
         val miss = stroke(squareMesh(150f, 200f, 5f))
-        page.strokes.addAll(listOf(hit, miss))
+        page.add(hit)
+        page.add(miss)
 
         val mmToScreen = assertNotNull(controller.pageMmToScreen(0))
         val from = mmToScreen.mapPoint(40f, 52f)
@@ -282,7 +288,8 @@ class EditorCoreTest {
         val page = controller.document.pages[0]
         val target = stroke(squareMesh(20f, 20f, 10f))
         val other = stroke(squareMesh(150f, 150f, 10f))
-        page.strokes.addAll(listOf(target, other))
+        page.add(target)
+        page.add(other)
 
         controller.selectionManager.selectWithLasso(0, floatArrayOf(10f, 10f, 40f, 10f, 40f, 40f, 10f, 40f))
         val selection = assertNotNull(controller.selectionManager.currentSelection)
@@ -337,3 +344,7 @@ class EditorCoreTest {
         })
     }
 }
+
+/** [change] as an operation of another device, made after everything this one has seen. */
+internal fun remoteOperation(change: DocumentChange, sequence: Long = 1) =
+    Operation(OperationId("other-device", sequence), Stamp(currentTimeMillis() + 60_000, 0, "other-device"), change)

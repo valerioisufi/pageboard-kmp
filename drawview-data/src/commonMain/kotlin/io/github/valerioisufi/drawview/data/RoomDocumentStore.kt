@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.data
 
+import io.github.valerioisufi.drawview.core.change.Operation
 import io.github.valerioisufi.drawview.core.controller.DrawPersistence
 import io.github.valerioisufi.drawview.core.controller.DrawPreferences
 import io.github.valerioisufi.drawview.core.model.DrawDocument
@@ -51,6 +52,13 @@ class RoomDocumentStore(val database: DrawDatabase) : DocumentStore {
 
     override suspend fun updateLastOpened(documentId: String) =
         fileRepository.updateLastOpened(documentId, currentTimeMillis())
+
+    override suspend fun replicaId(): String = repository.replicaId()
+
+    override suspend fun versionVector(documentId: String): Map<String, Long> = repository.versionVector(documentId)
+
+    override suspend fun operationsAfter(documentId: String, known: Map<String, Long>): List<Operation> =
+        repository.operationsAfter(documentId, known)
 
     override suspend fun createFolder(name: String, parentId: String?): Boolean = fileRepository.createFolder(name, parentId)
 

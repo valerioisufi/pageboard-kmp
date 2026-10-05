@@ -3,11 +3,13 @@ package io.github.valerioisufi.drawview.data.db
 import androidx.room.Dao
 import androidx.room.Embedded
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Relation
 import androidx.room.Transaction
 import androidx.room.Upsert
 import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.core.model.Stamp
 import kotlinx.coroutines.flow.Flow
 
 /*
@@ -136,8 +138,8 @@ interface DocumentDao {
     @Query("UPDATE documents SET modifiedAt = :timestamp WHERE id = :documentId")
     suspend fun touchDocument(documentId: String, timestamp: Long = currentTimeMillis())
 
-    @Query("UPDATE documents SET defaultBackground = :background, defaultWidth = :width, defaultHeight = :height WHERE id = :documentId")
-    suspend fun updateDocumentDefaults(documentId: String, background: PageBackground, width: Float, height: Float)
+    @Query("UPDATE documents SET defaultBackground = :background, defaultWidth = :width, defaultHeight = :height, defaultsVersion = :version WHERE id = :documentId")
+    suspend fun updateDocumentDefaults(documentId: String, background: PageBackground, width: Float, height: Float, version: Stamp)
 }
 
 /**
@@ -148,30 +150,8 @@ interface PageDao {
     @Upsert
     suspend fun upsert(page: PageEntity)
 
-    @Query("SELECT * FROM pages WHERE documentId = :documentId ORDER BY pageNumber ASC")
+    @Query("SELECT * FROM pages WHERE documentId = :documentId ORDER BY orderKey, id")
     suspend fun getPagesForDocument(documentId: String): List<PageEntity>
-
-    @Query("UPDATE pages SET pageNumber = pageNumber + 1 WHERE documentId = :documentId AND pageNumber >= :startIndex")
-    suspend fun shiftPagesUp(documentId: String, startIndex: Int)
-
-    @Query("UPDATE pages SET pageNumber = pageNumber - 1 WHERE documentId = :documentId AND pageNumber > :deletedIndex")
-    suspend fun shiftPagesDown(documentId: String, deletedIndex: Int)
-
-    @Query("UPDATE pages SET pageNumber = :newIndex WHERE id = :pageId")
-    suspend fun updatePageNumber(pageId: String, newIndex: Int)
-
-    @Query("UPDATE pages SET isDeleted = 1 WHERE id = :pageId")
-    suspend fun softDeletePage(pageId: String)
-
-    @Query("UPDATE pages SET width = :width, height = :height, background = :background WHERE id = :pageId")
-    suspend fun updateFormat(pageId: String, width: Float, height: Float, background: PageBackground?)
-
-    /**
-     * Permanently removes the soft-deleted pages of a document (the undo history does not
-     * survive the editing session, so they cannot be restored anymore).
-     */
-    @Query("DELETE FROM pages WHERE documentId = :documentId AND isDeleted = 1")
-    suspend fun purgeDeletedPages(documentId: String)
 }
 
 /**
@@ -181,9 +161,6 @@ interface PageDao {
 interface StrokeDao {
     @Upsert
     suspend fun upsertAll(strokes: List<StrokeEntity>)
-
-    @Query("DELETE FROM strokes WHERE id IN (:strokeIds)")
-    suspend fun deleteByIds(strokeIds: List<String>)
 }
 
 /**
@@ -193,9 +170,6 @@ interface StrokeDao {
 interface TextDao {
     @Upsert
     suspend fun upsert(text: TextEntity)
-
-    @Query("DELETE FROM texts WHERE id = :textId")
-    suspend fun deleteById(textId: String)
 }
 
 /**
@@ -205,9 +179,6 @@ interface TextDao {
 interface ImageDao {
     @Upsert
     suspend fun upsert(image: ImageEntity)
-
-    @Query("DELETE FROM images WHERE id = :imageId")
-    suspend fun deleteById(imageId: String)
 }
 
 /**
@@ -217,9 +188,6 @@ interface ImageDao {
 interface PdfDao {
     @Upsert
     suspend fun upsert(pdf: PdfEntity)
-
-    @Query("DELETE FROM pdfs WHERE id = :pdfId")
-    suspend fun deleteById(pdfId: String)
 }
 
 /**
@@ -229,9 +197,6 @@ interface PdfDao {
 interface TextMarkupDao {
     @Upsert
     suspend fun upsert(markup: TextMarkupEntity)
-
-    @Query("DELETE FROM text_markups WHERE id = :markupId")
-    suspend fun deleteById(markupId: String)
 }
 
 /**
@@ -244,4 +209,35 @@ interface ResourceDao {
 
     @Query("SELECT * FROM resources WHERE documentId = :documentId")
     suspend fun getResourcesForDocument(documentId: String): List<ResourceEntity>
+}
+
+/** The last operation of a replica (see [OperationDao.lastSequences]). */
+data class ReplicaSequence(val replica: String, val sequence: Long)
+
+/**
+ * Data Access Object for the log of the operations of the documents.
+ */
+@Dao
+interface OperationDao {
+    /** Logs [operation] (once: an operation already logged is ignored). */
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(operation: OperationEntity)
+
+    @Query("SELECT replica, MAX(sequence) AS sequence FROM operations WHERE documentId = :documentId GROUP BY replica")
+    suspend fun lastSequences(documentId: String): List<ReplicaSequence>
+
+    @Query("SELECT * FROM operations WHERE documentId = :documentId ORDER BY stamp")
+    suspend fun getForDocument(documentId: String): List<OperationEntity>
+}
+
+/**
+ * Data Access Object for the identity of this device.
+ */
+@Dao
+interface ReplicaDao {
+    @Query("SELECT replicaId FROM replica WHERE id = 1")
+    suspend fun get(): String?
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(replica: ReplicaEntity)
 }

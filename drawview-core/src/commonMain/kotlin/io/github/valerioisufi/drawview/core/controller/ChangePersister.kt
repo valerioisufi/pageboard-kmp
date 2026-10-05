@@ -19,32 +19,34 @@ class ChangePersister(
 ) : ChangeObserver {
 
     override fun onChange(committed: CommittedChange) {
-        val effects = committed.effects
-        if (effects.isEmpty) return
         val document = committed.document
+        val operation = committed.operation
+        val effects = committed.effects
+        if (effects.isEmpty) {
+            // An operation of another device that changed nothing here: logged all the same
+            persist { appendOperation(document, operation) }
+            return
+        }
         val resources = effects.resources.toList()
-        val insertedPages = effects.insertedPages.map { (page, index) -> Triple(page, index, page.elements()) }
+        val insertedPages = effects.insertedPages.map { it to it.elements() }
+        val savedPages = effects.savedPages.toList()
         val saved = effects.savedElements.entries.groupBy({ it.value }, { it.key })
-        val deleted = effects.deletedElements.toList()
         val removedPages = effects.removedPages.toList()
-        val order = if (effects.pageOrderChanged) document.pages.toList() else null
-        val formatted = effects.formattedPages.toList()
         val defaultsChanged = effects.documentDefaultsChanged
         val modifiedAt = document.modifiedAt
 
         // In this order: a page is stored before its elements, the files before what shows them
         persist {
             resources.forEach { saveResource(document, it) }
-            for ((page, index, elements) in insertedPages) {
-                insertPage(document, page, index)
+            for ((page, elements) in insertedPages) {
+                savePage(document, page)
                 saveElements(page, elements)
             }
+            savedPages.forEach { savePage(document, it) }
             for ((page, elements) in saved) saveElements(page, elements)
-            deleteElements(deleted)
-            for ((page, index) in removedPages) softDeletePage(document, page, index)
-            order?.let { updatePagesOrder(document, it) }
-            formatted.forEach { updatePageFormat(document, it) }
+            removedPages.forEach { savePage(document, it) }
             if (defaultsChanged) updateDocumentDefaults(document)
+            appendOperation(document, operation)
             touchDocument(document, modifiedAt)
         }
     }
@@ -59,20 +61,6 @@ class ChangePersister(
                 is DrawImage -> saveImage(page, element)
                 is DrawPdf -> savePdf(page, element)
                 is DrawTextMarkup -> saveTextMarkup(page, element)
-            }
-        }
-    }
-
-    private suspend fun DrawPersistence.deleteElements(elements: List<DrawElement>) {
-        val strokes = elements.filterIsInstance<DrawStroke>()
-        if (strokes.isNotEmpty()) deleteStrokes(strokes)
-        for (element in elements) {
-            when (element) {
-                is DrawStroke -> {}
-                is DrawText -> deleteText(element)
-                is DrawImage -> deleteImage(element)
-                is DrawPdf -> deletePdf(element)
-                is DrawTextMarkup -> deleteTextMarkup(element)
             }
         }
     }

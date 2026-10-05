@@ -15,6 +15,7 @@ import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
+import io.github.valerioisufi.drawview.core.model.ElementOrder
 import io.github.valerioisufi.drawview.core.model.InputToolType
 import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.StrokeMesh
@@ -32,13 +33,16 @@ import kotlinx.serialization.Serializable
 
 /**
  * An element of a page as plain values (see [DrawElement]).
+ *
+ * [order] is its stacking order on its page; `null` for a new element, which gets the order of
+ * the change adding it (see [AddElements]).
  */
 @Serializable
 sealed interface ElementData {
     val id: String
-    val zIndex: Int
+    val order: ElementOrder?
 
-    /** A new model element with this content. */
+    /** A new model element with this content (and [order], or none yet). */
     fun toElement(): DrawElement
 }
 
@@ -55,7 +59,7 @@ data class StrokeData(
     val color: Int,
     val inputToolType: InputToolType = InputToolType.UNKNOWN,
     val transform: AffineTransform = AffineTransform.IDENTITY,
-    override val zIndex: Int = 0
+    override val order: ElementOrder? = null
 ) : ElementData {
     /** The stroke, modeled again from its inputs by the stroke engine. */
     override fun toElement(): DrawStroke {
@@ -76,7 +80,7 @@ data class StrokeData(
             points = points,
             inputToolType = inputToolType
         )
-        return DrawStroke(id = id, mesh = mesh, brushConfig = brush, transform = transform, zIndex = zIndex)
+        return DrawStroke(id = id, mesh = mesh, brushConfig = brush, transform = transform).withOrder(order)
     }
 }
 
@@ -96,13 +100,12 @@ data class TextData(
     val rotation: Float = 0f,
     val color: Int,
     val fontSize: Float,
-    override val zIndex: Int = 0
+    override val order: ElementOrder? = null
 ) : ElementData {
-    override fun toElement(): DrawText = DrawText(zIndex, id).also { applyTo(it) }
+    override fun toElement(): DrawText = DrawText(id).also { applyTo(it) }.withOrder(order)
 
-    /** Writes this content into [text] (its identifier excepted). */
+    /** Writes this content into [text] (its identifier and its order excepted). */
     fun applyTo(text: DrawText) {
-        text.zIndex = zIndex
         text.text = this.text
         text.isLatex = isLatex
         text.isMarkdownEnabled = isMarkdownEnabled
@@ -128,9 +131,9 @@ data class ImageData(
     val width: Float,
     val height: Float,
     val rotation: Float = 0f,
-    override val zIndex: Int = 0
+    override val order: ElementOrder? = null
 ) : ElementData {
-    override fun toElement(): DrawImage = DrawImage(zIndex, id).also {
+    override fun toElement(): DrawImage = DrawImage(id).withOrder(order).also {
         it.resourceId = resourceId
         it.x = x
         it.y = y
@@ -146,9 +149,9 @@ data class PdfData(
     override val id: String,
     val resourceId: String,
     val pdfPageIndex: Int,
-    override val zIndex: Int = 0
+    override val order: ElementOrder? = null
 ) : ElementData {
-    override fun toElement(): DrawPdf = DrawPdf(zIndex, pdfPageIndex, id).also { it.resourceId = resourceId }
+    override fun toElement(): DrawPdf = DrawPdf(pdfPageIndex, id).withOrder(order).also { it.resourceId = resourceId }
 }
 
 /**
@@ -169,7 +172,7 @@ data class TextMarkupData(
     val rects: List<Float>,
     val kind: TextMarkupKind,
     val color: Int,
-    override val zIndex: Int = 0
+    override val order: ElementOrder? = null
 ) : ElementData {
     override fun toElement(): DrawTextMarkup = DrawTextMarkup(
         id = id,
@@ -182,18 +185,23 @@ data class TextMarkupData(
         text = text,
         rects = rects.chunked(4).filter { it.size == 4 }.map { Rect(it[0], it[1], it[2], it[3]) },
         kind = kind,
-        color = color,
-        zIndex = zIndex
-    )
+        color = color
+    ).withOrder(order)
 }
+
+private fun <T : DrawElement> T.withOrder(order: ElementOrder?): T = apply { this.order = order ?: ElementOrder.UNASSIGNED }
+
+/** The order of [this] as data: `null` when it has none yet. */
+private val DrawElement.dataOrder: ElementOrder? get() = order.takeIf { it != ElementOrder.UNASSIGNED }
 
 /**
  * A page with its content ([background]: `null` when the page follows the default background
- * of the document).
+ * of the document; [orderKey]: its position among the pages, see [DrawPage.orderKey]).
  */
 @Serializable
 data class PageData(
     val id: String,
+    val orderKey: String,
     val widthMm: Float,
     val heightMm: Float,
     val background: PageBackground? = null,
@@ -201,7 +209,13 @@ data class PageData(
 ) {
     /** A new page of [document] with this content (the elements of every kind in this order). */
     fun toPage(document: DrawDocument): DrawPage {
-        val page = DrawPage(widthMm = widthMm, heightMm = heightMm, background = background ?: document.defaultBackground, id = id)
+        val page = DrawPage(
+            widthMm = widthMm,
+            heightMm = heightMm,
+            background = background ?: document.defaultBackground,
+            id = id,
+            orderKey = orderKey
+        )
         page.hasCustomBackground = background != null
         for (data in elements) page.add(data.toElement())
         return page
@@ -224,7 +238,7 @@ fun DrawStroke.toData() = StrokeData(
     color = baseBrush.color.toArgb(),
     inputToolType = baseMesh.inputToolType,
     transform = transform,
-    zIndex = zIndex
+    order = dataOrder
 )
 
 fun DrawText.toData() = TextData(
@@ -240,12 +254,12 @@ fun DrawText.toData() = TextData(
     rotation = rotation,
     color = color,
     fontSize = fontSize,
-    zIndex = zIndex
+    order = dataOrder
 )
 
-fun DrawImage.toData() = ImageData(id, resourceId, x, y, width, height, rotation, zIndex)
+fun DrawImage.toData() = ImageData(id, resourceId, x, y, width, height, rotation, dataOrder)
 
-fun DrawPdf.toData() = PdfData(id, resourceId, pdfPageIndex, zIndex)
+fun DrawPdf.toData() = PdfData(id, resourceId, pdfPageIndex, dataOrder)
 
 fun DrawTextMarkup.toData() = TextMarkupData(
     id = id,
@@ -259,7 +273,7 @@ fun DrawTextMarkup.toData() = TextMarkupData(
     rects = rects.flatMap { listOf(it.left, it.top, it.right, it.bottom) },
     kind = kind,
     color = color,
-    zIndex = zIndex
+    order = dataOrder
 )
 
 fun DrawElement.toData(): ElementData = when (this) {
@@ -273,8 +287,42 @@ fun DrawElement.toData(): ElementData = when (this) {
 /** The page with its content, the elements of every kind in their stacking order. */
 fun DrawPage.toData(): PageData = PageData(
     id = id,
+    orderKey = orderKey,
     widthMm = widthMm,
     heightMm = heightMm,
     background = if (hasCustomBackground) background else null,
     elements = elements().map { it.toData() }
 )
+
+/**
+ * The placement of the element of [this] (see [Placement]), or `null` for an element not placed
+ * freely.
+ */
+fun ElementData.placement(): Placement? = when (this) {
+    is StrokeData -> StrokePlacement(id, transform, order)
+    is TextData -> BoxPlacement(id, x, y, width, height, rotation, fontSize, order)
+    is ImageData -> BoxPlacement(id, x, y, width, height, rotation, order = order)
+    is PdfData, is TextMarkupData -> null
+}
+
+/**
+ * Writes the content of [data] (the same element) into [element]: the text and its format, the
+ * style of a mark (what never changes, e.g. the inputs of a stroke, is not written).
+ */
+internal fun writeContent(element: DrawElement, data: ElementData) {
+    when {
+        element is DrawText && data is TextData -> {
+            element.text = data.text
+            element.isLatex = data.isLatex
+            element.isMarkdownEnabled = data.isMarkdownEnabled
+            element.alignment = data.alignment
+            element.color = data.color
+            element.markDirty()
+        }
+        element is DrawTextMarkup && data is TextMarkupData -> {
+            element.kind = data.kind
+            element.color = data.color
+        }
+        else -> Unit
+    }
+}

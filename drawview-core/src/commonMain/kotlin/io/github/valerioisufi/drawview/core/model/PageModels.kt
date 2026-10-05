@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.geometry.Dimension
 import io.github.valerioisufi.drawview.core.geometry.mm
+import io.github.valerioisufi.drawview.core.util.FractionalIndex
 import kotlin.concurrent.Volatile
 import kotlin.math.PI
 import kotlin.math.abs
@@ -69,12 +70,25 @@ sealed class PageBackground {
 /**
  * An element of a page: a stroke, a text block, an image, a PDF page or a mark of its text.
  *
- * [id] identifies the element on every device (see [newElementId]); [zIndex] is its stacking
- * order among the elements of its kind on its page.
+ * [id] identifies the element on every device (see [newElementId]); [order] is its stacking
+ * order among the elements of its kind on its page. Each piece of an element is changed by the
+ * most recent change of it on every device (last-writer-wins), whatever the order the changes
+ * arrive in:
+ * - its presence: [added] and [removed] are the stamps of the last addition and of the last
+ *   removal (removed when [removed] is set: kept hidden on its page, see
+ *   [DrawPage.removedElements]);
+ * - its placement (page, order, position, size, rotation): [placed] is the stamp of its last
+ *   change;
+ * - its content (a text and its format, the style of a mark): [updated] is the stamp of its last
+ *   change.
  */
 sealed interface DrawElement {
     val id: String
-    var zIndex: Int
+    var order: ElementOrder
+    var added: Stamp
+    var removed: Stamp?
+    var placed: Stamp
+    var updated: Stamp
 }
 
 /**
@@ -89,9 +103,14 @@ class DrawStroke(
     override val id: String = newElementId(),
     mesh: StrokeMesh,
     brushConfig: BrushConfig,
-    transform: AffineTransform = AffineTransform.IDENTITY,
-    override var zIndex: Int = 0
+    transform: AffineTransform = AffineTransform.IDENTITY
 ) : DrawElement {
+    override var order: ElementOrder = ElementOrder.UNASSIGNED
+    override var added: Stamp = Stamp.ZERO
+    override var removed: Stamp? = null
+    override var placed: Stamp = Stamp.ZERO
+    override var updated: Stamp = Stamp.ZERO
+
     /** Geometry of the stroke as it was drawn. */
     val baseMesh: StrokeMesh = mesh
 
@@ -186,7 +205,12 @@ interface RotatableItem {
  *
  * [id] identifies the block on every device (see [newElementId]).
  */
-class DrawText(override var zIndex: Int = 0, override val id: String = newElementId()) : RotatableItem, DrawElement {
+class DrawText(override val id: String = newElementId()) : RotatableItem, DrawElement {
+    override var order: ElementOrder = ElementOrder.UNASSIGNED
+    override var added: Stamp = Stamp.ZERO
+    override var removed: Stamp? = null
+    override var placed: Stamp = Stamp.ZERO
+    override var updated: Stamp = Stamp.ZERO
 
     @Volatile var text: String = ""
     @Volatile var isLatex: Boolean = false
@@ -240,7 +264,12 @@ class DrawText(override var zIndex: Int = 0, override val id: String = newElemen
  *
  * [id] identifies the image on every device (see [newElementId]).
  */
-class DrawImage(override var zIndex: Int = 0, override val id: String = newElementId()) : RotatableItem, DrawElement {
+class DrawImage(override val id: String = newElementId()) : RotatableItem, DrawElement {
+    override var order: ElementOrder = ElementOrder.UNASSIGNED
+    override var added: Stamp = Stamp.ZERO
+    override var removed: Stamp? = null
+    override var placed: Stamp = Stamp.ZERO
+    override var updated: Stamp = Stamp.ZERO
     var resourceId: String = ""
 
     @Volatile override var x: Float = 0f
@@ -262,7 +291,12 @@ class DrawImage(override var zIndex: Int = 0, override val id: String = newEleme
  *
  * [id] identifies it on every device (see [newElementId]).
  */
-class DrawPdf(override var zIndex: Int = 0, var pdfPageIndex: Int = 0, override val id: String = newElementId()) : DrawElement {
+class DrawPdf(var pdfPageIndex: Int = 0, override val id: String = newElementId()) : DrawElement {
+    override var order: ElementOrder = ElementOrder.UNASSIGNED
+    override var added: Stamp = Stamp.ZERO
+    override var removed: Stamp? = null
+    override var placed: Stamp = Stamp.ZERO
+    override var updated: Stamp = Stamp.ZERO
     var resourceId: String = ""
 }
 
@@ -284,17 +318,34 @@ class DrawResource(
  * All the content coordinates are expressed in page millimeters, with the origin at the
  * top-left corner of the page.
  *
- * [id] identifies the page on every device (see [newElementId]).
+ * [id] identifies the page on every device (see [newElementId]); the pages of a document are
+ * ordered by [orderKey] (see [FractionalIndex]), then by [id]. [added] and [removed] are the
+ * stamps of the last changes of its presence (removed when [removed] is set, see
+ * [DrawDocument.removedPages]), [orderVersion] and [formatVersion] of its position and of its
+ * format: the most recent change wins on every device.
  */
 class DrawPage(
     var index: Int = 0,
     widthMm: Float = 210f,
     heightMm: Float = 297f,
     background: PageBackground = PageBackground.Solid(),
-    val id: String = newElementId()
+    val id: String = newElementId(),
+    var orderKey: String = ""
 ) {
     /** Key of the page in the render caches of this process (a number, cheaper than [id]). */
     val renderKey: Long = nextPageRenderKey()
+
+    var added: Stamp = Stamp.ZERO
+    var removed: Stamp? = null
+    var orderVersion: Stamp = Stamp.ZERO
+    var formatVersion: Stamp = Stamp.ZERO
+
+    /**
+     * The elements removed from the page: hidden, they keep receiving the changes (the changes of
+     * another device made before it saw the removal), so that an element put back is the same on
+     * every device.
+     */
+    val removedElements: MutableList<DrawElement> = mutableListOf()
 
     var widthMm: Float by mutableFloatStateOf(widthMm)
     var heightMm: Float by mutableFloatStateOf(heightMm)
@@ -333,16 +384,29 @@ class DrawPage(
     /** Every element of the page: PDF pages, images, strokes, texts and marks, each kind in order. */
     fun elements(): List<DrawElement> = readSnapshot { pdfs + images + strokes + texts + markups }
 
+    /** The removed element [id] of this page (see [removedElements]), or `null`. */
+    fun findRemoved(id: String): DrawElement? = removedElements.firstOrNull { it.id == id }
+
     /** The element [id] of this page, or `null`. */
     fun find(id: String): DrawElement? = readSnapshot {
         strokes.firstOrNull { it.id == id } ?: texts.firstOrNull { it.id == id } ?: images.firstOrNull { it.id == id }
             ?: markups.firstOrNull { it.id == id } ?: pdfs.firstOrNull { it.id == id }
     }
 
-    /** Adds [element] at [position] of the elements of its kind (at the end when out of range). */
-    fun add(element: DrawElement, position: Int = -1) {
-        fun <T : DrawElement> SnapshotStateList<T>.insert(item: T) =
-            if (position in 0..size) add(position, item) else add(item)
+    /**
+     * Adds [element] among the elements of its kind, in its stacking order (after the elements
+     * of the same order). An element without order (a page being built, outside of the changes)
+     * gets the next order of the elements built so, below the ones of the changes.
+     */
+    fun add(element: DrawElement) {
+        fun <T : DrawElement> SnapshotStateList<T>.insert(item: T) {
+            if (item.order == ElementOrder.UNASSIGNED) {
+                item.order = ElementOrder(Stamp.ZERO, count { it.order.stamp == Stamp.ZERO })
+            }
+            var position = size
+            while (position > 0 && this[position - 1].order > item.order) position--
+            add(position, item)
+        }
         when (element) {
             is DrawStroke -> strokes.insert(element)
             is DrawText -> texts.insert(element)
@@ -440,22 +504,25 @@ class DrawDocument(
     var defaultHeightMm: Float by mutableStateOf(defaultHeightMm)
     var defaultBackground: PageBackground by mutableStateOf(defaultBackground)
 
+    /** The pages, ordered by [DrawPage.orderKey] (then by [DrawPage.id]). */
     val pages: SnapshotStateList<DrawPage> = mutableStateListOf()
     val resources: SnapshotStateList<DrawResource> = mutableStateListOf()
 
+    /** Stamp of the last change of the default format and background. */
+    var defaultsVersion: Stamp = Stamp.ZERO
+
+    /**
+     * The pages removed: hidden, they keep receiving the changes like the other pages (the
+     * changes of another device made before it saw the removal), so that a page put back is the
+     * same on every device.
+     */
+    val removedPages: MutableMap<String, DrawPage> = mutableMapOf()
+
     init {
-        if (addInitialPage) {
-            pages.add(
-                DrawPage(
-                    index = 0,
-                    widthMm = defaultWidthMm,
-                    heightMm = defaultHeightMm,
-                    background = defaultBackground
-                )
-            )
-        }
+        if (addInitialPage) addPage()
     }
 
+    /** Appends a new page of the given format (outside of the changes: building a document). */
     fun addPage(
         width: Float = defaultWidthMm,
         height: Float = defaultHeightMm,
@@ -465,10 +532,45 @@ class DrawDocument(
             index = pages.size,
             widthMm = width,
             heightMm = height,
-            background = bg
+            background = bg,
+            orderKey = FractionalIndex.between(pages.lastOrNull()?.orderKey, null)
         )
         pages.add(newPage)
         return newPage
+    }
+
+    /** Inserts [page] at the position of its [DrawPage.orderKey]. */
+    fun insertPage(page: DrawPage) {
+        var position = pages.size
+        while (position > 0 && pageOrder.compare(pages[position - 1], page) > 0) position--
+        pages.add(position, page)
+        reindexPages()
+    }
+
+    /** Moves [page] to the position of its [DrawPage.orderKey]. */
+    fun repositionPage(page: DrawPage) {
+        if (!pages.remove(page)) return
+        insertPage(page)
+    }
+
+    /** A key between the pages at [index] - 1 and [index] (inserting a page at [index]). */
+    fun orderKeyAt(index: Int): String {
+        val before = pages.getOrNull(index - 1)?.orderKey
+        // Pages of equal keys (inserted at the same place on two devices): after all of them
+        val after = pages.drop(index.coerceAtLeast(0)).firstOrNull { before == null || it.orderKey > before }?.orderKey
+        return FractionalIndex.between(before, after)
+    }
+
+    /** The most recent stamp of the document (what its clock must stay after). */
+    fun latestStamp(): Stamp = readSnapshot {
+        val stamps = sequenceOf(defaultsVersion) +
+            allPages().asSequence().flatMap { page ->
+                sequenceOf(page.added, page.removed ?: Stamp.ZERO, page.orderVersion, page.formatVersion) +
+                    (page.elements() + page.removedElements).asSequence().flatMap {
+                        sequenceOf(it.added, it.removed ?: Stamp.ZERO, it.placed, it.updated, it.order.stamp)
+                    }
+            }
+        stamps.maxOrNull() ?: Stamp.ZERO
     }
 
     /** Re-assigns the [DrawPage.index] of every page after a structural change. */
@@ -480,12 +582,44 @@ class DrawDocument(
         pages.firstOrNull { it.id == id }
     }
 
+    /** Every page, shown or removed (see [removedPages]). */
+    fun allPages(): List<DrawPage> = readSnapshot { pages.toList() } + removedPages.values
+
+    /** The page [id], shown or removed (see [removedPages]), or `null`. */
+    fun anyPage(id: String): DrawPage? = pageById(id) ?: removedPages[id]
+
+    /** Whether [page] is shown (not removed). */
+    fun isShown(page: DrawPage): Boolean = page.id !in removedPages
+
+    /**
+     * The element [id] (not removed) and the page holding it, shown or removed, looked for in
+     * [hint] first (an element can be moved to another page by another device), or `null`.
+     */
+    fun findElement(id: String, hint: DrawPage? = null): Pair<DrawPage, DrawElement>? {
+        hint?.find(id)?.let { return hint to it }
+        for (page in allPages()) {
+            if (page === hint) continue
+            page.find(id)?.let { return page to it }
+        }
+        return null
+    }
+
+    /** The removed element [id] and the page holding it (see [DrawPage.removedElements]), or `null`. */
+    fun findRemovedElement(id: String): Pair<DrawPage, DrawElement>? {
+        for (page in allPages()) page.findRemoved(id)?.let { return page to it }
+        return null
+    }
+
     fun findResource(resourceId: String): DrawResource? = readSnapshot {
         resources.firstOrNull { it.id == resourceId }
     }
 
     fun pageByRenderKey(renderKey: Long): DrawPage? = readSnapshot {
         pages.firstOrNull { it.renderKey == renderKey }
+    }
+
+    private companion object {
+        val pageOrder: Comparator<DrawPage> = compareBy<DrawPage>({ it.orderKey }, { it.id })
     }
 }
 

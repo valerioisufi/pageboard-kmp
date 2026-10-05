@@ -319,26 +319,29 @@ class SelectionManager(private val controller: DrawViewController) {
             finalTransform.postConcat(oldMmToWorld).postConcat(worldToNewMm)
         }
 
-        // --- The new placements ---
+        // --- The new placements (on another page, on top of its elements) ---
         val scale = finalTransform.scaleFactor
         val angle = finalTransform.rotationDegrees
+        fun orderOf(element: DrawElement) = element.order.takeIf { newPage === oldPage }
         val placements = mutableListOf<Placement>()
         for (stroke in selection.strokes) {
-            placements.add(StrokePlacement(stroke.id, stroke.transform.then(finalTransform)))
+            placements.add(StrokePlacement(stroke.id, stroke.transform.then(finalTransform), orderOf(stroke)))
         }
         for (text in selection.texts) {
             val c = finalTransform.mapPoint(text.centerX, text.centerY)
             val width = text.width * scale
             val height = text.height * scale
             placements.add(
-                BoxPlacement(text.id, c.x - width / 2f, c.y - height / 2f, width, height, (text.rotation + angle) % 360f, text.fontSize * scale)
+                BoxPlacement(
+                    text.id, c.x - width / 2f, c.y - height / 2f, width, height, (text.rotation + angle) % 360f, text.fontSize * scale, orderOf(text)
+                )
             )
         }
         for (image in selection.images) {
             val c = finalTransform.mapPoint(image.centerX, image.centerY)
             val width = image.width * scale
             val height = image.height * scale
-            placements.add(BoxPlacement(image.id, c.x - width / 2f, c.y - height / 2f, width, height, (image.rotation + angle) % 360f))
+            placements.add(BoxPlacement(image.id, c.x - width / 2f, c.y - height / 2f, width, height, (image.rotation + angle) % 360f, order = orderOf(image)))
         }
         // A text resized live goes back to where the change starts from (its undo)
         if (textResized) {
@@ -442,19 +445,18 @@ class SelectionManager(private val controller: DrawViewController) {
             DrawStroke(
                 mesh = original.baseMesh,
                 brushConfig = original.baseBrush,
-                transform = original.transform.then(offset),
-                zIndex = targetPage.strokes.size
+                transform = original.transform.then(offset)
             )
         }
         val pastedTexts = copied.texts.map { original ->
-            DrawText(zIndex = targetPage.texts.size).apply {
+            DrawText().apply {
                 copyFrom(original)
                 x = original.x + offsetX
                 y = original.y + offsetY
             }
         }
         val pastedImages = copied.images.map { original ->
-            DrawImage(zIndex = targetPage.images.size).apply {
+            DrawImage().apply {
                 resourceId = original.resourceId
                 x = original.x + offsetX
                 y = original.y + offsetY

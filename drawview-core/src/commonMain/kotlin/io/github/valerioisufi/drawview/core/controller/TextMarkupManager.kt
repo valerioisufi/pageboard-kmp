@@ -239,7 +239,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
         val markup = selectedMarkup?.markup
         if (markup != null && (markup in effects.deletedElements || markup in effects.savedElements)) selectedMarkup = null
         val page = textSelection?.page
-        if (page != null && effects.removedPages.any { it.first === page }) textSelection = null
+        if (page != null && page in effects.removedPages) textSelection = null
     }
 
     /**
@@ -391,8 +391,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
             text = range.text,
             rects = rects,
             kind = kind,
-            color = color,
-            zIndex = page.markups.size
+            color = color
         )
         val change = AddElements.of(page, listOf(markup))
         // Atomic hand-off from the live layer to the tiles (no missing frame)

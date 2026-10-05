@@ -1,7 +1,6 @@
 package io.github.valerioisufi.drawview.core
 
 import androidx.compose.ui.graphics.Color
-import io.github.valerioisufi.drawview.core.change.ChangeOrigin
 import io.github.valerioisufi.drawview.core.change.CommittedChange
 import io.github.valerioisufi.drawview.core.change.RemoveElements
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
@@ -15,9 +14,6 @@ import io.github.valerioisufi.drawview.core.model.StrokeMesh
 import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.Tool
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -26,6 +22,9 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
 
 /**
  * The editor makes every change of the document through its session.
@@ -165,7 +164,7 @@ class EditorChangesTest {
         controller.selectionManager.selectWithLasso(0, floatArrayOf(10f, 10f, 40f, 10f, 40f, 40f, 10f, 40f))
         assertNotNull(controller.selectionManager.currentSelection)
 
-        controller.session.submit(RemoveElements.of(page, listOf(selected)), ChangeOrigin.REMOTE)
+        assertTrue(controller.session.receive(remoteOperation(RemoveElements.of(page, listOf(selected)))))
         assertNull(controller.selectionManager.currentSelection)
         assertFalse(controller.canUndo, "the changes of another device are not in the history")
     }

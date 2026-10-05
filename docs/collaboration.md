@@ -37,8 +37,8 @@ Variations).
 | Undo / redo | `HistoryManager` with (change, inverse) pairs of the local changes | High Cohesion; undo per author |
 | Persistence | `ChangePersister`, translating the effects of the changes into `DrawPersistence` calls | Indirection, Protected Variations |
 | Tiles and selection | `RenderInvalidator`, `SelectionManager.onElementsRemoved`, subscribed to the session | Low Coupling (observer) |
-| Clock and conflicts | `HybridClock`, last-writer-wins metadata of the elements | Pure Fabrication |
-| Operation log and version vector | `ChangeLog` port in the core, Room implementation in `drawview-data` | Protected Variations |
+| Clock and conflicts | `HybridClock`, `Stamp`s of the pieces of the pages and elements (last-writer-wins) | Pure Fabrication |
+| Operation log and version vector | `DocumentSession` (numbers the operations, applies those of the others once each), `DrawPersistence.appendOperation`, `DocumentStore.versionVector` / `operationsAfter` (Room and key-value implementations in `drawview-data`) | Protected Variations |
 | Synchronize a document | `SyncEngine` | Controller, Pure Fabrication |
 | Transport | `SyncTransport` / `SyncChannel`: `InMemoryTransport`, `LanTransport`, later `RelayTransport` | Polymorphism, Protected Variations |
 | Encryption | `SecureChannel`, decorator of `SyncChannel` | Indirection |
@@ -53,22 +53,29 @@ The origin of a change decides what the observers do:
 | `LOCAL` | yes | yes | yes |
 | `UNDO` / `REDO` | yes | yes | handled by the history |
 | `REMOTE` | yes | no | no |
-| `LOAD` | no | no | no |
 
 ### Convergence
 
-* Every element has a hybrid logical clock (HLC) timestamp per group of fields: presence,
-  placement (page + transform), style, content. The most recent timestamp wins, the replica id
-  breaks the ties.
-* A deletion is a tombstone; its undo inserts the same id again with a new timestamp.
-* A stroke keeps its original geometry and an absolute affine transform (last-writer-wins):
-  moving 500 strokes is a small message, and concurrent moves converge (deltas would not).
-* Strokes are ordered by (creation HLC, id), pages by a fractional key; deleted pages are
-  soft-deleted.
-* Text: last-writer-wins on the whole box; a remote change of the box being edited is applied
-  when the edit ends.
-* A change of an element not received yet waits in a buffer; the peers send the operations in
-  HLC order, which respects causality.
+* Every operation has a hybrid logical clock stamp (`Stamp`: time, counter, replica). Each piece
+  of the document keeps the stamp of its last change and is changed only by a more recent one
+  (last-writer-wins), so that the devices applying the same operations in any causal order end
+  up with the same document:
+  * an element: its presence (`added`, `removed`), its placement (`placed`: page, stacking
+    order, transform or box) and its content (`updated`: text and format, style of a mark);
+  * a page: its presence, its position (`orderVersion`) and its format (`formatVersion`);
+  * the document: its defaults (`defaultsVersion`).
+* Nothing is destroyed: a removed page or element stays, hidden (`DrawDocument.removedPages`,
+  `DrawPage.removedElements`), and keeps receiving the changes of the others; put back (undo),
+  it is the same on every device. Its rows stay in the database with the stamp of the removal.
+* A stroke keeps its original geometry and an absolute affine transform: moving 500 strokes is
+  a small message, and concurrent moves converge (deltas would not).
+* The elements of a page are stacked by `ElementOrder` (the stamp of the change placing them on
+  top, its position in the change); the pages are ordered by a fractional key (`FractionalIndex`,
+  then by id); a reorder moves the fewest pages.
+* Text: last-writer-wins on its content and on its placement; a remote change of the box being
+  edited is applied when the edit ends.
+* The operations of a replica are applied in their order (`DocumentSession.receive` refuses the
+  others); the protocol sends them in causal order (stamp order).
 
 ### Protocol
 
@@ -86,8 +93,8 @@ The origin of a change decides what the observers do:
 ### Modules
 
 ```
-drawview-core      DocumentChange, DocumentSession, HybridClock, ChangeLog port
-drawview-data      persistent identifiers, ChangeLog on Room, BlobStore
+drawview-core      DocumentChange, DocumentSession, HybridClock, Operation
+drawview-data      persistent identifiers, operations log on Room, BlobStore
 drawview-sync      SyncEngine, protocol, encryption, InMemoryTransport, SyncEditorExtension
 drawview-sync-lan  LanDiscovery (NsdManager / Bonjour / JmDNS) + TCP sockets
 drawview-sync-relay (later)
@@ -102,7 +109,7 @@ The documents received from other users are created in a "Shared" folder of the 
 | 0. Preparation | Several `EditorExtension`s; in-memory `DocumentStore` of the tests; network spike (mDNS, sockets, cryptography) on the three platforms | done |
 | 1. Identity | UUIDs for documents, folders, pages, elements and resources, used as primary keys | done |
 | 2. Changes as data | `DocumentChange`, `DocumentSession`, one manager at a time, with undo parity tests; absolute transforms of the strokes (from phase 3) | done |
-| 3. Convergence | HLC, last-writer-wins metadata, tombstones, fractional page order, `ChangeLog` | |
+| 3. Convergence | HLC, last-writer-wins stamps, hidden removed pages and elements, fractional page order, operations log | done |
 | 4. Sync engine | Protocol, encryption, attachments, in-memory transport, convergence tests on random delivery orders | |
 | 5. LAN | Discovery, TCP, permissions (iOS local network and Bonjour, Android multicast lock), invitation | |
 | 6. UI and presence | Sharing, participants, cursors, live strokes, "Shared" folder and badge | |
@@ -176,12 +183,37 @@ The application is not released yet, so the stored documents are not migrated:
   exactly, serialization round trip, a deserialized change applied to another copy of the
   document, the order of the writes, and the managers through the controller.
 
+### Phase 3 results
+
+* `HybridClock` and `Stamp` (ordered as text too: the stamps are stored as `TEXT`);
+  `Operation(id = (replica, sequence), stamp, change)`. `DocumentSession.submit` numbers and
+  stamps the changes of this device, `receive` applies the next operation of another replica
+  (also when it changes nothing: it is logged all the same) and keeps the version vector.
+* Every change applies itself with the stamp of its operation, piece by piece (see
+  Convergence). A change of another device applies to the pieces it is the most recent for: the
+  elements are found on any page (another device may have moved them), shown or hidden.
+* The editor gives the stacking order of what it moves on the same page; what goes on top gets
+  the order of the change (`Placement.order`, `ElementData.order`).
+* `MovePages` gives the pages their new fractional keys (it replaces `SetPageOrder`): two
+  devices moving different pages at the same time keep both moves.
+* `DrawPersistence` only saves (rows with their stamps and their removal) and appends the
+  operations; Room schema 7 (operations log, replica of the device), the key-value store keeps
+  the same information as JSON. `DocumentStore.replicaId` / `versionVector` / `operationsAfter`
+  serve the synchronization of phase 4.
+* `ConvergenceTest`: three devices making random changes (undo and redo too) and exchanging their
+  operations in random causal orders end up with the same document, removed pages and elements
+  and stamps included (30 seeds of 150 steps in the build; verified on 600 seeds of 300 steps).
+  It found the cases the design above answers: elements moved to a page removed meanwhile, the
+  order derived from local state, a removed element put back with stale values, partial writes
+  of a register (a move and a text edit share no field now).
+
 ### Risks
 
 * Regressions of the editor in phase 2: one manager at a time, with tests comparing the state
   before and after undo / redo.
 * mDNS on iOS, Ktor sockets on iOS, a cryptography library for Kotlin Multiplatform: verified by
   the spike of phase 0.
-* Growth of the log: compaction with snapshots + version vector, later.
+* Growth of the log and of the hidden content: compaction with snapshots + version vector (the
+  hidden pieces older than what every peer has seen can go), later.
 * Networks isolating their clients (guest Wi-Fi, many university networks): only a relay works
   there.

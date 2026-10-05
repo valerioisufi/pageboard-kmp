@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.core.controller
 
+import io.github.valerioisufi.drawview.core.change.Operation
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPage
@@ -18,39 +19,32 @@ import kotlinx.coroutines.launch
  * [NoOpDrawPersistence] keeps documents in memory only.
  *
  * The documents, pages and elements are identified by their `id` (the same on every device): the
- * save operations insert the element or update the stored one with the same identifier. The
- * changes of an open document reach it through a [ChangePersister].
+ * save operations insert the element or update the stored one with the same identifier. Nothing
+ * is deleted: the removed pages and elements are stored as such (see [DrawPage.removed],
+ * [io.github.valerioisufi.drawview.core.model.DrawElement.removed]). The changes of an open
+ * document reach it through a [ChangePersister].
  */
 interface DrawPersistence {
     suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) {}
-    suspend fun deleteStrokes(strokes: List<DrawStroke>) {}
-
     suspend fun saveText(page: DrawPage, text: DrawText) {}
-    suspend fun deleteText(text: DrawText) {}
-
     suspend fun saveImage(page: DrawPage, image: DrawImage) {}
-    suspend fun deleteImage(image: DrawImage) {}
-
     suspend fun savePdf(page: DrawPage, pdf: DrawPdf) {}
-    suspend fun deletePdf(pdf: DrawPdf) {}
-
     suspend fun saveTextMarkup(page: DrawPage, markup: DrawTextMarkup) {}
-    suspend fun deleteTextMarkup(markup: DrawTextMarkup) {}
 
     /** Registers [resource], a file owned by [document]. */
     suspend fun saveResource(document: DrawDocument, resource: DrawResource) {}
 
     /**
-     * Inserts [page] at [index], or puts it back there after [softDeletePage], shifting the
-     * following pages.
+     * Inserts or updates [page]: its format, background, position, presence and versions (not its
+     * content).
      */
-    suspend fun insertPage(document: DrawDocument, page: DrawPage, index: Int) {}
-    suspend fun softDeletePage(document: DrawDocument, page: DrawPage, index: Int) {}
-    suspend fun updatePagesOrder(document: DrawDocument, pages: List<DrawPage>) {}
-    suspend fun updatePageFormat(document: DrawDocument, page: DrawPage) {}
+    suspend fun savePage(document: DrawDocument, page: DrawPage) {}
 
     suspend fun updateDocumentDefaults(document: DrawDocument) {}
     suspend fun touchDocument(document: DrawDocument, timestamp: Long) {}
+
+    /** Appends [operation] to the log of the operations of [document] (see `DocumentStore`). */
+    suspend fun appendOperation(document: DrawDocument, operation: Operation) {}
 
     // --- Global user preferences ---
     suspend fun savePresets(tool: Tool, presets: List<ToolPreset>) {}
@@ -66,8 +60,7 @@ object NoOpDrawPersistence : DrawPersistence
 
 /**
  * Serializes the persistence operations of an editing session: operations are executed in
- * submission order, so that e.g. a stroke is always inserted before it can be deleted by the
- * eraser.
+ * submission order, so that e.g. a page is always inserted before its elements.
  */
 class PersistenceQueue(
     scope: CoroutineScope,

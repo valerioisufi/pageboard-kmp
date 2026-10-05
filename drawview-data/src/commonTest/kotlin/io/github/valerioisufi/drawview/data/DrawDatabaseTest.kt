@@ -13,13 +13,16 @@ import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
+import io.github.valerioisufi.drawview.core.model.ElementOrder
 import io.github.valerioisufi.drawview.core.model.InputToolType
 import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.core.model.Stamp
 import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.model.newElementId
+import io.github.valerioisufi.drawview.core.util.FractionalIndex
 import io.github.valerioisufi.drawview.data.db.*
 import io.github.valerioisufi.drawview.data.repository.DrawDocumentRepository
 import io.github.valerioisufi.drawview.data.repository.FileRepository
@@ -119,13 +122,17 @@ class DrawDatabaseTest {
         val strokeEntity = StrokeEntity(
             id = newElementId(),
             pageId = pagesFromDb.single().id,
-            zIndex = 0,
+            orderKey = ElementOrder.UNASSIGNED,
             color = 0xFFFF0000.toInt(),
             size = 3.5f,
             toolType = StrokeTool.PRESSURE_PEN.name,
             brushFamily = StrokeTool.PRESSURE_PEN.name,
             inputs = StrokeInputCodec.encode(points),
-            transform = AffineTransform.IDENTITY
+            transform = AffineTransform.IDENTITY,
+            added = Stamp.ZERO,
+            removed = null,
+            placed = Stamp.ZERO,
+            updated = Stamp.ZERO
         )
 
         database.strokeDao().upsertAll(listOf(strokeEntity))
@@ -190,7 +197,8 @@ class DrawDatabaseTest {
         val second = DrawPage(index = 1, widthMm = 148f, heightMm = 210f, background = PageBackground.Grid()).apply {
             hasCustomBackground = true
         }
-        repository.insertPage(doc, second, 1)
+        second.orderKey = doc.orderKeyAt(1)
+        repository.savePage(doc, second)
 
         val loaded = assertNotNull(repository.loadDocument(doc.id))
         assertEquals(2, loaded.pages.size)
@@ -227,16 +235,25 @@ class DrawDatabaseTest {
         assertEquals(image.id, loadedImage.id)
         assertEquals(resourceId, loadedImage.resourceId)
 
-        // Soft delete and restore
-        // Soft delete, then the page is put back (undo) with its content
-        repository.softDeletePage(loaded, loaded.pages[1], 1)
-        assertEquals(1, assertNotNull(repository.loadDocument(doc.id)).pages.size)
-        repository.insertPage(loaded, loaded.pages[1], 0)
+        // A removed page is kept, hidden, with its content; then put back (undo)
+        val removedPage = loaded.pages[1]
+        removedPage.removed = Stamp(1L, 0, "device")
+        repository.savePage(loaded, removedPage)
+        val withoutPage = assertNotNull(repository.loadDocument(doc.id))
+        assertEquals(1, withoutPage.pages.size)
+        assertEquals(removedPage.removed, withoutPage.removedPages[removedPage.id]?.removed)
+        removedPage.removed = null
+        removedPage.orderKey = FractionalIndex.between(null, loaded.pages[0].orderKey)
+        repository.savePage(loaded, removedPage)
         assertEquals(listOf(second.id, page.id), assertNotNull(repository.loadDocument(doc.id)).pages.map { it.id })
 
-        // A deleted stroke is inserted again (redo) with the same identifier
-        repository.deleteStrokes(listOf(loadedStroke))
-        assertTrue(assertNotNull(repository.loadDocument(doc.id)).pages.single { it.id == page.id }.strokes.isEmpty())
+        // A removed stroke is kept, hidden, and shown again (redo) with the same identifier
+        loadedStroke.removed = Stamp(2L, 0, "device")
+        repository.saveStrokes(page, listOf(loadedStroke))
+        val withoutStroke = assertNotNull(repository.loadDocument(doc.id)).pages.single { it.id == page.id }
+        assertTrue(withoutStroke.strokes.isEmpty())
+        assertEquals(listOf(stroke.id), withoutStroke.removedElements.map { it.id })
+        loadedStroke.removed = null
         repository.saveStrokes(page, listOf(loadedStroke))
         assertEquals(stroke.id, assertNotNull(repository.loadDocument(doc.id)).pages.single { it.id == page.id }.strokes.single().id)
     }
@@ -255,8 +272,7 @@ class DrawDatabaseTest {
             text = "hash\nfunctions",
             rects = listOf(Rect(72f, 100f, 198.5f, 124f), Rect(72f, 130f, 144f, 154f)),
             kind = TextMarkupKind.HIGHLIGHT,
-            color = 0xFFFFF176.toInt(),
-            zIndex = 0
+            color = 0xFFFFF176.toInt()
         )
         repository.saveTextMarkup(page, markup)
 
@@ -278,9 +294,11 @@ class DrawDatabaseTest {
         assertEquals(TextMarkupKind.UNDERLINE, loaded.kind)
         assertEquals(0xFFE53935.toInt(), loaded.color)
 
-        // A deleted mark is inserted again (undo) with the same identifier
-        repository.deleteTextMarkup(loaded)
+        // A removed mark is kept, hidden, and shown again (undo) with the same identifier
+        loaded.removed = Stamp(1L, 0, "device")
+        repository.saveTextMarkup(page, loaded)
         assertTrue(assertNotNull(repository.loadDocument(doc.id)).pages[0].markups.isEmpty())
+        loaded.removed = null
         repository.saveTextMarkup(page, loaded)
         assertEquals(markup.id, assertNotNull(repository.loadDocument(doc.id)).pages[0].markups.single().id)
     }

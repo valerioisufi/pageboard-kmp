@@ -1,13 +1,12 @@
 package io.github.valerioisufi.drawview.data
 
-import androidx.compose.ui.graphics.toArgb
-import io.github.valerioisufi.drawview.core.change.StrokeData
-import io.github.valerioisufi.drawview.core.change.TextMarkupData
+import io.github.valerioisufi.drawview.core.change.Operation
+import io.github.valerioisufi.drawview.core.change.ElementData
+import io.github.valerioisufi.drawview.core.change.PageData
 import io.github.valerioisufi.drawview.core.change.toData
 import io.github.valerioisufi.drawview.core.controller.DrawPersistence
 import io.github.valerioisufi.drawview.core.controller.DrawPreferences
 import io.github.valerioisufi.drawview.core.controller.ToolPreset
-import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPage
@@ -16,10 +15,8 @@ import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
-import io.github.valerioisufi.drawview.core.model.InputToolType
 import io.github.valerioisufi.drawview.core.model.PageBackground
-import io.github.valerioisufi.drawview.core.model.StrokeTool
-import io.github.valerioisufi.drawview.core.model.TextMarkupKind
+import io.github.valerioisufi.drawview.core.model.Stamp
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.core.model.readSnapshot
@@ -27,7 +24,6 @@ import io.github.valerioisufi.drawview.core.platform.PlatformFiles
 import io.github.valerioisufi.drawview.core.util.SyncLock
 import io.github.valerioisufi.drawview.core.util.syncLock
 import io.github.valerioisufi.drawview.data.db.BrushSettingsData
-import io.github.valerioisufi.drawview.data.db.StrokeInputCodec
 import io.github.valerioisufi.drawview.data.db.currentTimeMillis
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
@@ -41,6 +37,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
@@ -184,9 +181,10 @@ class KeyValueDocumentStore(
                 restoreResourceFile(resource.uri)
                 document.resources.add(DrawResource(resource.id, type, resource.uri))
             }
-            stored?.pages?.forEachIndexed { pageIndex, storedPage ->
-                document.pages.add(storedPage.toPage(pageIndex, summary.defaultBackground))
-            }
+            document.defaultsVersion = stored?.defaultsVersion ?: Stamp.ZERO
+            stored?.pages?.forEach { storedPage -> document.pages.add(storedPage.toPage(document)) }
+            stored?.removedPages?.forEach { storedPage -> storedPage.toPage(document).let { document.removedPages[it.id] = it } }
+            document.reindexPages()
             if (document.pages.isEmpty()) {
                 // A document must always have a page
                 document.pages.add(
@@ -194,7 +192,8 @@ class KeyValueDocumentStore(
                         index = 0,
                         widthMm = summary.defaultWidth,
                         heightMm = summary.defaultHeight,
-                        background = summary.defaultBackground
+                        background = summary.defaultBackground,
+                        orderKey = document.orderKeyAt(0)
                     )
                 )
             }
@@ -342,23 +341,13 @@ class KeyValueDocumentStore(
 
     override suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) = markPageModified(page)
 
-    override suspend fun deleteStrokes(strokes: List<DrawStroke>) = markAllOpenModified()
-
     override suspend fun saveText(page: DrawPage, text: DrawText) = markPageModified(page)
-
-    override suspend fun deleteText(text: DrawText) = markAllOpenModified()
 
     override suspend fun saveImage(page: DrawPage, image: DrawImage) = markPageModified(page)
 
-    override suspend fun deleteImage(image: DrawImage) = markAllOpenModified()
-
     override suspend fun savePdf(page: DrawPage, pdf: DrawPdf) = markPageModified(page)
 
-    override suspend fun deletePdf(pdf: DrawPdf) = markAllOpenModified()
-
     override suspend fun saveTextMarkup(page: DrawPage, markup: DrawTextMarkup) = markPageModified(page)
-
-    override suspend fun deleteTextMarkup(markup: DrawTextMarkup) = markAllOpenModified()
 
     @OptIn(ExperimentalEncodingApi::class)
     override suspend fun saveResource(document: DrawDocument, resource: DrawResource) {
@@ -373,13 +362,46 @@ class KeyValueDocumentStore(
         markDocumentModified(document)
     }
 
-    override suspend fun insertPage(document: DrawDocument, page: DrawPage, index: Int) = markDocumentModified(document)
+    override suspend fun savePage(document: DrawDocument, page: DrawPage) = markDocumentModified(document)
 
-    override suspend fun softDeletePage(document: DrawDocument, page: DrawPage, index: Int) = markDocumentModified(document)
+    override suspend fun appendOperation(document: DrawDocument, operation: Operation) {
+        syncLock(lock) {
+            val operations = operationsLocked(document.id)
+            if (operations.none { it.id == operation.id }) {
+                operations.add(operation)
+                storage.set(operationsKey(document.id), json.encodeToString(ListSerializer(Operation.serializer()), operations))
+            }
+        }
+    }
 
-    override suspend fun updatePagesOrder(document: DrawDocument, pages: List<DrawPage>) = markDocumentModified(document)
+    // ==========================================================
+    // Replication
+    // ==========================================================
 
-    override suspend fun updatePageFormat(document: DrawDocument, page: DrawPage) = markDocumentModified(document)
+    override suspend fun replicaId(): String = syncLock(lock) {
+        index.replicaId.ifEmpty {
+            index = index.copy(replicaId = newElementId())
+            writeIndexLocked()
+            index.replicaId
+        }
+    }
+
+    override suspend fun versionVector(documentId: String): Map<String, Long> = syncLock(lock) {
+        operationsLocked(documentId).groupBy { it.id.replica }.mapValues { (_, operations) -> operations.maxOf { it.id.sequence } }
+    }
+
+    override suspend fun operationsAfter(documentId: String, known: Map<String, Long>): List<Operation> = syncLock(lock) {
+        operationsLocked(documentId).filter { it.id.sequence > (known[it.id.replica] ?: 0L) }.sortedBy { it.stamp }
+    }
+
+    private val operations = mutableMapOf<String, MutableList<Operation>>()
+
+    private fun operationsLocked(documentId: String): MutableList<Operation> = operations.getOrPut(documentId) {
+        storage.get(operationsKey(documentId))
+            ?.let { decodeOrNull<List<Operation>>(it) }
+            .orEmpty()
+            .toMutableList()
+    }
 
     override suspend fun updateDocumentDefaults(document: DrawDocument) {
         syncLock(lock) {
@@ -488,6 +510,8 @@ class KeyValueDocumentStore(
             }
         }
         storage.remove(documentKey(documentId))
+        storage.remove(operationsKey(documentId))
+        operations.remove(documentId)
         openDocuments.remove(documentId)
         dirtyDocuments.remove(documentId)
         index = index.copy(documents = index.documents.filter { it.id != documentId })
@@ -552,6 +576,7 @@ class KeyValueDocumentStore(
         private const val PREFERENCES_KEY = PREFIX + "preferences"
 
         private fun documentKey(id: String) = PREFIX + "document." + id
+        private fun operationsKey(id: String) = PREFIX + "operations." + id
         private fun resourceKey(path: String) = PREFIX + "file." + path
     }
 }
@@ -562,6 +587,8 @@ class KeyValueDocumentStore(
 
 @Serializable
 internal data class StoredIndex(
+    /** This device in the changes of the documents (see `DocumentSession.replica`). */
+    val replicaId: String = "",
     val documents: List<StoredSummary> = emptyList(),
     val folders: List<StoredFolder> = emptyList()
 )
@@ -605,87 +632,31 @@ internal data class StoredSummary(
 @Serializable
 internal data class StoredDocument(
     val pages: List<StoredPage> = emptyList(),
-    val resources: List<StoredResource> = emptyList()
+    val resources: List<StoredResource> = emptyList(),
+    val defaultsVersion: Stamp = Stamp.ZERO,
+    val removedPages: List<StoredPage> = emptyList()
 )
 
 @Serializable
 internal data class StoredResource(val id: String, val type: String, val uri: String)
 
+/**
+ * A page as its data (see [PageData]), its removed elements (hidden, see
+ * [DrawPage.removedElements]) and the stamps of its last changes and of its elements'.
+ */
 @Serializable
 internal data class StoredPage(
-    val id: String,
-    val width: Float,
-    val height: Float,
-    /** `null` when the page follows the default background of the document. */
-    val background: PageBackground? = null,
-    val strokes: List<StoredStroke> = emptyList(),
-    val texts: List<StoredText> = emptyList(),
-    val images: List<StoredImage> = emptyList(),
-    val pdfs: List<StoredPdf> = emptyList(),
-    val markups: List<StoredTextMarkup> = emptyList()
+    val data: PageData,
+    val added: Stamp = Stamp.ZERO,
+    val removed: Stamp? = null,
+    val orderVersion: Stamp = Stamp.ZERO,
+    val formatVersion: Stamp = Stamp.ZERO,
+    val removedElements: List<ElementData> = emptyList(),
+    val elements: Map<String, StoredVersions> = emptyMap()
 )
 
 @Serializable
-internal data class StoredStroke(
-    val id: String,
-    val transform: AffineTransform = AffineTransform.IDENTITY,
-    val zIndex: Int,
-    val color: Int,
-    val size: Float,
-    val toolType: String,
-    val family: String,
-    /** Base64 of the [StrokeInputCodec] encoding of the input points. */
-    val inputs: String
-)
-
-@Serializable
-internal data class StoredText(
-    val id: String,
-    val zIndex: Int,
-    val text: String,
-    val isLatex: Boolean = false,
-    val isMarkdownEnabled: Boolean = true,
-    val alignment: Int = 0,
-    val x: Float,
-    val y: Float,
-    val width: Float,
-    val height: Float,
-    val rotation: Float = 0f,
-    val color: Int,
-    val fontSize: Float
-)
-
-@Serializable
-internal data class StoredImage(
-    val id: String,
-    val zIndex: Int,
-    val resourceId: String,
-    val x: Float,
-    val y: Float,
-    val width: Float,
-    val height: Float,
-    val rotation: Float = 0f
-)
-
-@Serializable
-internal data class StoredPdf(val id: String, val zIndex: Int, val resourceId: String, val pdfPageIndex: Int)
-
-@Serializable
-internal data class StoredTextMarkup(
-    val id: String,
-    val zIndex: Int,
-    val resourceId: String,
-    val pdfPageIndex: Int,
-    val pdfWidth: Float,
-    val pdfHeight: Float,
-    val startIndex: Int,
-    val endIndex: Int,
-    val text: String,
-    /** Left, top, right, bottom of each line, in points of the PDF page. */
-    val rects: List<Float>,
-    val kind: String,
-    val color: Int
-)
+internal data class StoredVersions(val added: Stamp, val removed: Stamp? = null, val placed: Stamp, val updated: Stamp)
 
 @Serializable
 internal data class StoredPreferences(
@@ -712,155 +683,36 @@ internal data class StoredPreferences(
     )
 }
 
-@OptIn(ExperimentalEncodingApi::class)
 private fun DrawDocument.toStored(): StoredDocument = StoredDocument(
-    pages = pages.map { page ->
-        StoredPage(
-            id = page.id,
-            width = page.widthMm,
-            height = page.heightMm,
-            background = if (page.hasCustomBackground) page.background else null,
-            strokes = page.strokes.map { stroke ->
-                StoredStroke(
-                    id = stroke.id,
-                    transform = stroke.transform,
-                    zIndex = stroke.zIndex,
-                    color = stroke.baseBrush.color.toArgb(),
-                    size = stroke.baseBrush.size,
-                    toolType = stroke.baseMesh.inputToolType.name,
-                    family = stroke.baseBrush.tool.name,
-                    inputs = Base64.encode(StrokeInputCodec.encode(stroke.baseMesh.points))
-                )
-            },
-            texts = page.texts.map { text ->
-                StoredText(
-                    id = text.id,
-                    zIndex = text.zIndex,
-                    text = text.text,
-                    isLatex = text.isLatex,
-                    isMarkdownEnabled = text.isMarkdownEnabled,
-                    alignment = text.alignment,
-                    x = text.x,
-                    y = text.y,
-                    width = text.width,
-                    height = text.height,
-                    rotation = text.rotation,
-                    color = text.color,
-                    fontSize = text.fontSize
-                )
-            },
-            images = page.images.map { image ->
-                StoredImage(
-                    id = image.id,
-                    zIndex = image.zIndex,
-                    resourceId = image.resourceId,
-                    x = image.x,
-                    y = image.y,
-                    width = image.width,
-                    height = image.height,
-                    rotation = image.rotation
-                )
-            },
-            pdfs = page.pdfs.map { StoredPdf(it.id, it.zIndex, it.resourceId, it.pdfPageIndex) },
-            markups = page.markups.map { markup ->
-                StoredTextMarkup(
-                    id = markup.id,
-                    zIndex = markup.zIndex,
-                    resourceId = markup.resourceId,
-                    pdfPageIndex = markup.pdfPageIndex,
-                    pdfWidth = markup.pdfWidthPt,
-                    pdfHeight = markup.pdfHeightPt,
-                    startIndex = markup.startIndex,
-                    endIndex = markup.endIndex,
-                    text = markup.text,
-                    rects = markup.toData().rects,
-                    kind = markup.kind.name,
-                    color = markup.color
-                )
-            }
-        )
-    },
-    resources = resources.map { StoredResource(it.id, it.type.name, it.path) }
+    pages = pages.map { it.toStored() },
+    resources = resources.map { StoredResource(it.id, it.type.name, it.path) },
+    defaultsVersion = defaultsVersion,
+    removedPages = removedPages.values.map { it.toStored() }
 )
 
-@OptIn(ExperimentalEncodingApi::class)
-private fun StoredPage.toPage(pageIndex: Int, defaultBackground: PageBackground): DrawPage {
-    val page = DrawPage(
-        index = pageIndex,
-        widthMm = width,
-        heightMm = height,
-        background = background ?: defaultBackground,
-        id = id
-    )
-    page.hasCustomBackground = background != null
-    for (stroke in strokes.sortedBy { it.zIndex }) {
-        val points = try {
-            StrokeInputCodec.decode(Base64.decode(stroke.inputs))
-        } catch (_: Throwable) {
-            continue
-        }
-        page.strokes.add(
-            StrokeData(
-                id = stroke.id,
-                points = points,
-                tool = StrokeTool.fromName(stroke.family) ?: StrokeTool.PRESSURE_PEN,
-                size = stroke.size,
-                color = stroke.color,
-                inputToolType = InputToolType.fromName(stroke.toolType),
-                transform = stroke.transform,
-                zIndex = stroke.zIndex
-            ).toElement()
-        )
-    }
-    for (text in texts.sortedBy { it.zIndex }) {
-        page.texts.add(
-            DrawText(text.zIndex, text.id).apply {
-                this.text = text.text
-                isLatex = text.isLatex
-                isMarkdownEnabled = text.isMarkdownEnabled
-                alignment = text.alignment
-                x = text.x
-                y = text.y
-                width = text.width
-                height = text.height
-                rotation = text.rotation
-                color = text.color
-                fontSize = text.fontSize
-            }
-        )
-    }
-    for (image in images.sortedBy { it.zIndex }) {
-        page.images.add(
-            DrawImage(image.zIndex, image.id).apply {
-                resourceId = image.resourceId
-                x = image.x
-                y = image.y
-                width = image.width
-                height = image.height
-                rotation = image.rotation
-            }
-        )
-    }
-    for (pdf in pdfs.sortedBy { it.zIndex }) {
-        page.pdfs.add(DrawPdf(pdf.zIndex, pdf.pdfPageIndex, pdf.id).apply { resourceId = pdf.resourceId })
-    }
-    for (markup in markups.sortedBy { it.zIndex }) {
-        page.markups.add(
-            TextMarkupData(
-                id = markup.id,
-                resourceId = markup.resourceId,
-                pdfPageIndex = markup.pdfPageIndex,
-                pdfWidthPt = markup.pdfWidth,
-                pdfHeightPt = markup.pdfHeight,
-                startIndex = markup.startIndex,
-                endIndex = markup.endIndex,
-                text = markup.text,
-                rects = markup.rects,
-                kind = TextMarkupKind.fromName(markup.kind) ?: TextMarkupKind.HIGHLIGHT,
-                color = markup.color,
-                zIndex = markup.zIndex
-            ).toElement()
-        )
+private fun DrawPage.toStored() = StoredPage(
+    data = toData(),
+    added = added,
+    removed = removed,
+    orderVersion = orderVersion,
+    formatVersion = formatVersion,
+    removedElements = removedElements.map { it.toData() },
+    elements = (elements() + removedElements).associate { it.id to StoredVersions(it.added, it.removed, it.placed, it.updated) }
+)
+
+private fun StoredPage.toPage(document: DrawDocument): DrawPage {
+    val page = data.toPage(document)
+    page.added = added
+    page.removed = removed
+    page.orderVersion = orderVersion
+    page.formatVersion = formatVersion
+    removedElements.forEach { page.removedElements.add(it.toElement()) }
+    for (element in page.elements() + page.removedElements) {
+        val versions = elements[element.id] ?: continue
+        element.added = versions.added
+        element.removed = versions.removed
+        element.placed = versions.placed
+        element.updated = versions.updated
     }
     return page
 }

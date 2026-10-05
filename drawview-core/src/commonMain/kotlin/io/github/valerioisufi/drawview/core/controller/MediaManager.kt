@@ -13,6 +13,7 @@ import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.core.platform.PlatformFiles
 import io.github.valerioisufi.drawview.core.platform.decodeImageBitmap
 import io.github.valerioisufi.drawview.core.platform.newResourcePath
+import io.github.valerioisufi.drawview.core.util.FractionalIndex
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -55,7 +56,7 @@ class MediaManager(private val controller: DrawViewController) {
             val centerMm = controller.screenToPageMm(pageIndex, screenCenter)
                 ?: Offset(page.widthMm / 2f, page.heightMm / 2f)
 
-            val image = DrawImage(zIndex = page.images.size).apply {
+            val image = DrawImage().apply {
                 this.resourceId = resourceId
                 x = (centerMm.x - widthMm / 2f).coerceIn(0f, (page.widthMm - widthMm).coerceAtLeast(0f))
                 y = (centerMm.y - heightMm / 2f).coerceIn(0f, (page.heightMm - heightMm).coerceAtLeast(0f))
@@ -108,16 +109,15 @@ class MediaManager(private val controller: DrawViewController) {
             controller.selectionManager.clearSelection()
             val resourceId = newElementId()
             val firstIndex = document.pages.size
+            // At the end of the document
+            val keys = FractionalIndex.after(document.pages.lastOrNull()?.orderKey, sizes.size)
             val pages = sizes.mapIndexed { pdfIndex, (widthMm, heightMm) ->
-                DrawPage(widthMm = widthMm, heightMm = heightMm, background = document.defaultBackground).apply {
-                    add(DrawPdf(zIndex = 0, pdfPageIndex = pdfIndex).apply { this.resourceId = resourceId })
+                DrawPage(widthMm = widthMm, heightMm = heightMm, background = document.defaultBackground, orderKey = keys[pdfIndex]).apply {
+                    add(DrawPdf(pdfPageIndex = pdfIndex).apply { this.resourceId = resourceId })
                 }
             }
             controller.session.submit(
-                CompositeChange(
-                    listOf(AddResource.of(resourceId, DrawResource.ResourceType.PDF, path)) +
-                        pages.mapIndexed { i, page -> AddPage.of(page, firstIndex + i) }
-                )
+                CompositeChange(listOf(AddResource.of(resourceId, DrawResource.ResourceType.PDF, path)) + pages.map { AddPage.of(it) })
             )
             controller.pageManager.jumpToPage(firstIndex)
         }

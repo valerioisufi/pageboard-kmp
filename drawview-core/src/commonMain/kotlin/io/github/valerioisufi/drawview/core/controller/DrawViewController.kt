@@ -55,7 +55,12 @@ class DrawViewController(
     val coroutineScope: CoroutineScope,
     density: Float = 1f,
     persistence: DrawPersistence = NoOpDrawPersistence,
-    persistenceScope: CoroutineScope = coroutineScope
+    persistenceScope: CoroutineScope = coroutineScope,
+    /**
+     * Every change of the document goes through the session (the managers create the changes):
+     * the controller, the history and the persistence observe it.
+     */
+    val session: DocumentSession = DocumentSession(document)
 ) {
 
     /** Persistence used by this session (Room in the apps, no-op for in-memory documents). */
@@ -67,12 +72,6 @@ class DrawViewController(
      * editor is being closed.
      */
     private val persistenceQueue = PersistenceQueue(persistenceScope, persistence)
-
-    /**
-     * Every change of the document goes through the session (the managers create the changes):
-     * the controller, the history and the persistence observe it.
-     */
-    val session = DocumentSession(document)
 
     var density: Float = density
         set(value) {
@@ -171,6 +170,7 @@ class DrawViewController(
     private var changeAlreadyDrawn = false
 
     init {
+        require(session.document === document) { "The session of another document" }
         session.addObserver(ChangePersister(::persist))
         session.addObserver(::onChangeCommitted)
         updatePageLayout()
@@ -308,6 +308,10 @@ class DrawViewController(
             textEditorManager.onChange(effects)
             selectionManager.onChange(effects)
             textMarkupManager.onChange(effects)
+            // The last pages removed on two devices at once: a document always has a page
+            if (document.pages.isEmpty()) {
+                coroutineScope.launch { if (document.pages.isEmpty()) pageManager.addNewPageAtBottom() }
+            }
         }
         if (effects.layoutChanged) {
             markLayoutNeedsUpdate()
@@ -538,7 +542,7 @@ class DrawViewController(
             } else {
                 AffineTransform.IDENTITY
             }
-            val stroke = DrawStroke(mesh = mesh, brushConfig = brush, transform = transform, zIndex = page.strokes.size)
+            val stroke = DrawStroke(mesh = mesh, brushConfig = brush, transform = transform)
             strokesByPage.getOrPut(index) { mutableListOf() }.add(stroke)
         }
         if (strokesByPage.isEmpty()) return

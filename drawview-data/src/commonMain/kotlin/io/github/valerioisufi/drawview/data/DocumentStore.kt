@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.data
 
+import io.github.valerioisufi.drawview.core.change.Operation
 import io.github.valerioisufi.drawview.core.controller.DrawPersistence
 import io.github.valerioisufi.drawview.core.controller.DrawPreferences
 import io.github.valerioisufi.drawview.core.model.DrawDocument
@@ -91,6 +92,15 @@ interface DocumentStore {
      * itself or one of its sub-folders, or already holds a folder with the same name.
      */
     suspend fun moveFolder(folderId: String, parentId: String?): Boolean
+
+    /** This device in the changes of the documents (see `DocumentSession.replica`). */
+    suspend fun replicaId(): String
+
+    /** The last operation of every replica in the log of the document [documentId]. */
+    suspend fun versionVector(documentId: String): Map<String, Long>
+
+    /** The operations of the document [documentId] after [known] (a version vector), in stamp order. */
+    suspend fun operationsAfter(documentId: String, known: Map<String, Long>): List<Operation>
 
     /** Writes the pending changes (stores that write lazily). */
     suspend fun flush() {}

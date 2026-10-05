@@ -36,10 +36,11 @@ class HistoryManager(
 
     override fun onChange(committed: CommittedChange) {
         if (committed.origin != ChangeOrigin.LOCAL) return
+        val inverse = committed.inverse ?: return
         if (groupDepth > 0) {
-            groupInverses.add(committed.inverse)
+            groupInverses.add(inverse)
         } else {
-            push(committed.inverse)
+            push(inverse)
         }
     }
 

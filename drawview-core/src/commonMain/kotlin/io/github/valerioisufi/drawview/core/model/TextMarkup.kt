@@ -42,9 +42,14 @@ class DrawTextMarkup(
     val text: String,
     val rects: List<Rect>,
     kind: TextMarkupKind,
-    color: Int,
-    override var zIndex: Int = 0
+    color: Int
 ) : DrawElement {
+    override var order: ElementOrder = ElementOrder.UNASSIGNED
+    override var added: Stamp = Stamp.ZERO
+    override var removed: Stamp? = null
+    override var placed: Stamp = Stamp.ZERO
+    override var updated: Stamp = Stamp.ZERO
+
     @Volatile
     var kind: TextMarkupKind = kind
 

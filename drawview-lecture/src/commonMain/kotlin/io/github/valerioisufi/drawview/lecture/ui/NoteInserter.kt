@@ -151,7 +151,6 @@ internal class NoteInserter(private val measurer: TextMeasurer) {
     }
 
     private fun addText(controller: DrawViewController, page: DrawPage, item: DrawText) {
-        item.zIndex = page.texts.size
         controller.session.submit(AddElements.of(page, listOf(item)))
     }
 

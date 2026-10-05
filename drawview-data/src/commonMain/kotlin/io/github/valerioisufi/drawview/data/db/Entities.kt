@@ -5,11 +5,16 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import io.github.valerioisufi.drawview.core.geometry.AffineTransform
+import io.github.valerioisufi.drawview.core.model.ElementOrder
 import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.core.model.Stamp
 
 /*
  * Every row is identified by the identifier of the model (a UUID, see `newElementId`), the same
- * on every device.
+ * on every device. The pages, the elements and the defaults of a document keep the stamps of
+ * their last changes (see `Stamp`): the changes made on several devices are merged with them.
+ * Nothing is deleted from a document: a removed page or element keeps its row, with the stamp of
+ * its removal (`removed`).
  */
 
 /**
@@ -49,11 +54,12 @@ data class DocumentEntity(
 
     val defaultBackground: PageBackground = PageBackground.Solid(),
     val defaultWidth: Float = 210f,
-    val defaultHeight: Float = 297f
+    val defaultHeight: Float = 297f,
+    val defaultsVersion: Stamp = Stamp.ZERO
 )
 
 /**
- * Table for Pages
+ * Table for Pages, ordered by [orderKey] (then by [id]).
  */
 @Entity(
     tableName = "pages",
@@ -65,16 +71,19 @@ data class DocumentEntity(
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index(value = ["documentId", "pageNumber"])]
+    indices = [Index(value = ["documentId", "orderKey"])]
 )
 data class PageEntity(
     @PrimaryKey val id: String,
     val documentId: String,
-    val pageNumber: Int,
+    val orderKey: String,
     val width: Float,
     val height: Float,
-    val isDeleted: Boolean = false,
-    val background: PageBackground? = null
+    val background: PageBackground? = null,
+    val added: Stamp = Stamp.ZERO,
+    val removed: Stamp? = null,
+    val orderVersion: Stamp = Stamp.ZERO,
+    val formatVersion: Stamp = Stamp.ZERO
 )
 
 /**
@@ -96,41 +105,36 @@ data class PageEntity(
 data class StrokeEntity(
     @PrimaryKey val id: String,
     val pageId: String,
-    val zIndex: Int,
+    val orderKey: ElementOrder,
     val color: Int,
     val size: Float,
     val toolType: String,
     val brushFamily: String,
     val inputs: ByteArray,
-    val transform: AffineTransform
+    val transform: AffineTransform,
+    val added: Stamp,
+    val removed: Stamp?,
+    val placed: Stamp,
+    val updated: Stamp
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is StrokeEntity) return false
-
-        if (id != other.id) return false
-        if (pageId != other.pageId) return false
-        if (zIndex != other.zIndex) return false
-        if (color != other.color) return false
-        if (size != other.size) return false
-        if (toolType != other.toolType) return false
-        if (brushFamily != other.brushFamily) return false
-        if (!inputs.contentEquals(other.inputs)) return false
-        if (transform != other.transform) return false
-
-        return true
+        return id == other.id && pageId == other.pageId && orderKey == other.orderKey && color == other.color &&
+            size == other.size && toolType == other.toolType && brushFamily == other.brushFamily &&
+            inputs.contentEquals(other.inputs) && transform == other.transform && added == other.added &&
+            removed == other.removed && placed == other.placed && updated == other.updated
     }
 
     override fun hashCode(): Int {
         var result = id.hashCode()
         result = 31 * result + pageId.hashCode()
-        result = 31 * result + zIndex
-        result = 31 * result + color
-        result = 31 * result + size.hashCode()
-        result = 31 * result + toolType.hashCode()
-        result = 31 * result + brushFamily.hashCode()
+        result = 31 * result + orderKey.hashCode()
         result = 31 * result + inputs.contentHashCode()
         result = 31 * result + transform.hashCode()
+        result = 31 * result + (removed?.hashCode() ?: 0)
+        result = 31 * result + placed.hashCode()
+        result = 31 * result + updated.hashCode()
         return result
     }
 }
@@ -150,7 +154,7 @@ data class StrokeEntity(
 data class TextEntity(
     @PrimaryKey val id: String,
     val pageId: String,
-    val zIndex: Int,
+    val orderKey: ElementOrder,
     val text: String,
     val isLatex: Boolean,
     val x: Float, // mm
@@ -162,7 +166,11 @@ data class TextEntity(
     val fontSize: Float,
     /** 0 = start, 1 = center, 2 = end. */
     val alignment: Int = 0,
-    val isMarkdownEnabled: Boolean = true
+    val isMarkdownEnabled: Boolean = true,
+    val added: Stamp,
+    val removed: Stamp?,
+    val placed: Stamp,
+    val updated: Stamp
 )
 
 @Entity(
@@ -180,13 +188,17 @@ data class TextEntity(
 data class ImageEntity(
     @PrimaryKey val id: String,
     val pageId: String,
-    val zIndex: Int,
+    val orderKey: ElementOrder,
     val resourceId: String,
     val x: Float, // mm
     val y: Float, // mm
     val width: Float, // mm
     val height: Float, // mm
-    val rotation: Float // degrees
+    val rotation: Float, // degrees
+    val added: Stamp,
+    val removed: Stamp?,
+    val placed: Stamp,
+    val updated: Stamp
 )
 
 @Entity(
@@ -204,9 +216,13 @@ data class ImageEntity(
 data class PdfEntity(
     @PrimaryKey val id: String,
     val pageId: String,
-    val zIndex: Int,
+    val orderKey: ElementOrder,
     val resourceId: String,
-    val pdfPageIndex: Int
+    val pdfPageIndex: Int,
+    val added: Stamp,
+    val removed: Stamp?,
+    val placed: Stamp,
+    val updated: Stamp
 )
 
 /**
@@ -227,7 +243,7 @@ data class PdfEntity(
 data class TextMarkupEntity(
     @PrimaryKey val id: String,
     val pageId: String,
-    val zIndex: Int,
+    val orderKey: ElementOrder,
     val resourceId: String,
     val pdfPageIndex: Int,
     val pdfWidth: Float, // pt
@@ -241,7 +257,11 @@ data class TextMarkupEntity(
     val rects: String,
     /** HIGHLIGHT, UNDERLINE or STRIKEOUT. */
     val kind: String,
-    val color: Int
+    val color: Int,
+    val added: Stamp,
+    val removed: Stamp?,
+    val placed: Stamp,
+    val updated: Stamp
 )
 
 @Entity(
@@ -261,6 +281,39 @@ data class ResourceEntity(
     val documentId: String,
     val type: String, // "image", "pdf", "color"
     val uri: String // File path or color value
+)
+
+/**
+ * The log of the operations of a document (see `Operation`): the change, as JSON.
+ */
+@Entity(
+    tableName = "operations",
+    primaryKeys = ["documentId", "replica", "sequence"],
+    foreignKeys = [
+        ForeignKey(
+            entity = DocumentEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["documentId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index(value = ["documentId", "stamp"])]
+)
+data class OperationEntity(
+    val documentId: String,
+    val replica: String,
+    val sequence: Long,
+    val stamp: Stamp,
+    val change: String
+)
+
+/**
+ * This device in the changes of the documents (a single row).
+ */
+@Entity(tableName = "replica")
+data class ReplicaEntity(
+    @PrimaryKey val id: Int = 1,
+    val replicaId: String
 )
 
 /**

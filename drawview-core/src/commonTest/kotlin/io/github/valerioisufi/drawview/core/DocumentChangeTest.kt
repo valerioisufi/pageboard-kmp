@@ -11,13 +11,15 @@ import io.github.valerioisufi.drawview.core.change.CompositeChange
 import io.github.valerioisufi.drawview.core.change.DocumentChange
 import io.github.valerioisufi.drawview.core.change.DocumentSession
 import io.github.valerioisufi.drawview.core.change.MarkupStyle
+import io.github.valerioisufi.drawview.core.change.MovePages
+import io.github.valerioisufi.drawview.core.change.Operation
+import io.github.valerioisufi.drawview.core.change.PageMove
 import io.github.valerioisufi.drawview.core.change.PlaceElements
 import io.github.valerioisufi.drawview.core.change.RemoveElements
 import io.github.valerioisufi.drawview.core.change.RemovePage
 import io.github.valerioisufi.drawview.core.change.RestyleMarkups
 import io.github.valerioisufi.drawview.core.change.SetDocumentDefaults
 import io.github.valerioisufi.drawview.core.change.SetPageFormat
-import io.github.valerioisufi.drawview.core.change.SetPageOrder
 import io.github.valerioisufi.drawview.core.change.StrokePlacement
 import io.github.valerioisufi.drawview.core.change.UpdateTexts
 import io.github.valerioisufi.drawview.core.change.toData
@@ -41,9 +43,6 @@ import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.newElementId
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.json.Json
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -51,6 +50,9 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
 
 class DocumentChangeTest {
 
@@ -198,7 +200,8 @@ class DocumentChangeTest {
     fun pagesAreAddedRemovedReorderedAndFormatted() {
         val document = documentWithContent()
         val added = DrawPage().apply { add(stroke(1f, 1f)) }
-        assertUndoable(document, AddPage.of(added, 1)) {
+        added.orderKey = document.orderKeyAt(1)
+        assertUndoable(document, AddPage.of(added)) {
             assertEquals(added, document.pages[1])
             assertEquals(listOf(0, 1, 2, 3), document.pages.map { it.index })
         }
@@ -207,7 +210,9 @@ class DocumentChangeTest {
         assertUndoable(document, RemovePage(removed.id)) { assertTrue(removed !in document.pages) }
         assertSame(removed, document.pages[1])
 
-        assertUndoable(document, SetPageOrder(document.pages.map { it.id }.reversed()))
+        assertUndoable(document, assertNotNull(MovePages.toOrder(document, document.pages.map { it.id }.reversed()))) {
+            assertEquals(3, document.pages[0].index + document.pages.size)
+        }
         assertUndoable(document, SetPageFormat(document.pages[0].id, 148f, 210f, PageBackground.Grid()))
         assertUndoable(document, SetDocumentDefaults(297f, 210f, PageBackground.Dotted())) {
             assertEquals(PageBackground.Dotted(), document.pages[1].background)
@@ -215,9 +220,11 @@ class DocumentChangeTest {
     }
 
     @Test
-    fun theLastPageIsNeverRemoved() {
+    fun theLastPageCanBeRemovedByAnotherDevice() {
+        // Two devices removing the two pages at once agree: the document is empty
         val document = DrawDocument()
-        assertNull(DocumentSession(document).submit(RemovePage(document.pages[0].id)))
+        assertNotNull(DocumentSession(document).submit(RemovePage(document.pages[0].id)))
+        assertTrue(document.pages.isEmpty())
     }
 
     @Test
@@ -241,9 +248,11 @@ class DocumentChangeTest {
         val session = DocumentSession(document)
         assertNull(session.submit(RemoveElements(document.pages[0].id, listOf("unknown"))))
         assertNull(session.submit(PlaceElements("unknown-page", emptyList())))
-        // Elements already there are not added twice
+        // Elements already there are not added twice (present since the last addition)
         val page = document.pages[0]
-        assertNull(session.submit(AddElements.of(page, listOf(page.strokes[0]))))
+        val strokes = page.strokes.toList()
+        session.submit(AddElements.of(page, listOf(page.strokes[0])))
+        assertEquals(strokes, page.strokes.toList())
     }
 
     // --- A long random session is undone and redone exactly ---
@@ -291,9 +300,9 @@ class DocumentChangeTest {
                 if (placements.isEmpty()) null else PlaceElements(page.id, placements, target.id)
             }
             3 -> page.texts.firstOrNull()?.let { UpdateTexts(page.id, listOf(it.toData().copy(text = "u${random.nextInt()}"))) }
-            4 -> AddPage.of(DrawPage().apply { add(stroke(5f, 5f)) }, random.nextInt(document.pages.size + 1))
-            5 -> RemovePage(page.id)
-            6 -> SetPageOrder(document.pages.map { it.id }.shuffled(random))
+            4 -> AddPage.of(DrawPage(orderKey = document.orderKeyAt(random.nextInt(document.pages.size + 1))).apply { add(stroke(5f, 5f)) })
+            5 -> if (document.pages.size > 1) RemovePage(page.id) else null
+            6 -> MovePages.toOrder(document, document.pages.map { it.id }.shuffled(random))
             7 -> SetPageFormat(page.id, 100f + random.nextInt(100), 100f + random.nextInt(100), if (random.nextBoolean()) PageBackground.Ruled() else null)
             else -> page.markups.firstOrNull()?.let {
                 RestyleMarkups(page.id, listOf(MarkupStyle(it.id, TextMarkupKind.entries.random(random), random.nextInt())))
@@ -313,9 +322,9 @@ class DocumentChangeTest {
             PlaceElements(first.id, listOf(StrokePlacement(first.strokes[0].id, AffineTransform(tx = 3f))), second.id),
             UpdateTexts(first.id, listOf(first.texts[0].toData().copy(text = "x"))),
             RestyleMarkups(second.id, listOf(MarkupStyle(second.markups[0].id, TextMarkupKind.UNDERLINE, 1))),
-            AddPage.of(DrawPage().apply { add(stroke(5f, 5f)) }, 1),
+            AddPage.of(DrawPage(orderKey = "a").apply { add(stroke(5f, 5f)) }),
             RemovePage(second.id),
-            SetPageOrder(document.pages.map { it.id }),
+            MovePages(listOf(PageMove(first.id, "z"))),
             SetPageFormat(first.id, 148f, 210f, PageBackground.Grid()),
             SetDocumentDefaults(210f, 297f, PageBackground.Ruled()),
             CompositeChange(listOf(AddResource.of("r", DrawResource.ResourceType.PDF, "/tmp/r.pdf"), RemovePage(first.id)))
@@ -326,17 +335,19 @@ class DocumentChangeTest {
     }
 
     @Test
-    fun aDeserializedChangeIsAppliedToAnotherCopyOfTheDocument() {
+    fun aDeserializedOperationIsAppliedToAnotherCopyOfTheDocument() {
         val document = documentWithContent()
         val copy = DrawDocument(id = document.id, addInitialPage = false)
         for (page in document.pages) copy.pages.add(page.toData().toPage(copy))
         copy.reindexPages()
 
+        val session = DocumentSession(document, "device")
+        val operations = mutableListOf<Operation>()
+        session.addObserver { operations.add(it.operation) }
         val text = text("from another device")
-        val change = AddElements.of(document.pages[0], listOf(text))
-        DocumentSession(document).submit(change)
-        val received = Json.decodeFromString(DocumentChange.serializer(), Json.encodeToString(DocumentChange.serializer(), change))
-        DocumentSession(copy).submit(received, ChangeOrigin.REMOTE)
+        session.submit(AddElements.of(document.pages[0], listOf(text)))
+        val sent = Json.encodeToString(Operation.serializer(), operations.single())
+        assertTrue(DocumentSession(copy, "copy").receive(Json.decodeFromString(Operation.serializer(), sent)))
 
         assertSameContent(document.snapshot(), copy.snapshot(), "the copy")
         assertTrue(copy.pages[0].texts.none { it === text }, "the other copy has its own objects")
@@ -350,16 +361,12 @@ class DocumentChangeTest {
         val session = DocumentSession(document)
         val calls = mutableListOf<String>()
         val persistence = object : DrawPersistence {
-            override suspend fun insertPage(document: DrawDocument, page: DrawPage, index: Int) {
-                calls.add("page ${page.id} at $index")
+            override suspend fun savePage(document: DrawDocument, page: DrawPage) {
+                calls.add(if (page.removed != null) "page ${page.id} removed=true" else "page ${page.id} ${page.orderKey}")
             }
 
             override suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) {
-                calls.add("strokes ${strokes.map { it.id }} on ${page.id}")
-            }
-
-            override suspend fun deleteStrokes(strokes: List<DrawStroke>) {
-                calls.add("delete ${strokes.map { it.id }}")
+                calls.add("strokes ${strokes.map { "${it.id} removed=${it.removed != null}" }} on ${page.id}")
             }
 
             override suspend fun touchDocument(document: DrawDocument, timestamp: Long) {
@@ -371,18 +378,24 @@ class DocumentChangeTest {
 
         val stroke = stroke(1f, 1f)
         val page = DrawPage(id = newElementId()).apply { add(stroke) }
-        val undo = assertNotNull(session.submit(AddPage.of(page, 1)))
-        session.submit(RemoveElements.of(page, listOf(stroke)))
-        session.submit(undo, ChangeOrigin.UNDO)
-        operations.forEach { persistence.it() }
+        page.orderKey = document.orderKeyAt(1)
+        val undo = assertNotNull(session.submit(AddPage.of(page)))
+        suspend fun write() {
+            operations.forEach { persistence.it() }
+            operations.clear()
+        }
+        write()
+        assertEquals(listOf("page ${page.id} ${page.orderKey}", "strokes [${stroke.id} removed=false] on ${page.id}", "touch"), calls)
 
-        assertEquals(
-            listOf(
-                "page ${page.id} at 1", "strokes [${stroke.id}] on ${page.id}", "touch",
-                "delete [${stroke.id}]", "touch",
-                "touch"
-            ),
-            calls
-        )
+        // Nothing is deleted: the removed stroke and the removed page are stored as such
+        calls.clear()
+        session.submit(RemoveElements.of(page, listOf(stroke)))
+        write()
+        assertEquals(listOf("strokes [${stroke.id} removed=true] on ${page.id}", "touch"), calls)
+
+        calls.clear()
+        session.submit(undo, ChangeOrigin.UNDO)
+        write()
+        assertEquals(listOf("page ${page.id} removed=true", "touch"), calls)
     }
 }

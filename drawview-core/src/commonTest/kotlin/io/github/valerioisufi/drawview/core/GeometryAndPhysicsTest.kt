@@ -4,7 +4,6 @@ import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.core.camera.CalcPage
 import io.github.valerioisufi.drawview.core.camera.CameraPhysicsEngine
 import io.github.valerioisufi.drawview.core.change.AddElements
-import io.github.valerioisufi.drawview.core.change.ChangeOrigin
 import io.github.valerioisufi.drawview.core.change.DocumentSession
 import io.github.valerioisufi.drawview.core.change.RemoveElements
 import io.github.valerioisufi.drawview.core.geometry.*
@@ -193,7 +192,7 @@ class GeometryAndPhysicsTest {
         assertFalse(history.canRedo)
 
         // Removed by another device: undoing its addition changes nothing
-        session.submit(RemoveElements.of(doc.pages[0], listOf(stroke)), ChangeOrigin.REMOTE)
+        session.receive(remoteOperation(RemoveElements.of(doc.pages[0], listOf(stroke))))
         history.undo()
         assertTrue(doc.pages[0].strokes.isEmpty())
     }

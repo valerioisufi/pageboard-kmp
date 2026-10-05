@@ -125,15 +125,14 @@ class TextEditorManager(private val controller: DrawViewController) {
             height = measuredHeightMm.coerceAtLeast(4f),
             rotation = existing?.rotation ?: 0f,
             color = color,
-            fontSize = fontSize,
-            zIndex = existing?.zIndex ?: page.texts.size
+            fontSize = fontSize
         )
         if (existing != null) {
             existing.isDragging = false
             // Shown again even when nothing changed
             existing.markDirty()
             controller.invalidatePageContent(page, existing.getRotatedBounds())
-            if (data != existing.toData()) controller.session.submit(UpdateTexts(page.id, listOf(data)))
+            if (data != existing.toData().copy(order = null)) controller.session.submit(UpdateTexts(page.id, listOf(data)))
         } else {
             controller.session.submit(AddElements.of(page, listOf(data.toElement())))
         }
