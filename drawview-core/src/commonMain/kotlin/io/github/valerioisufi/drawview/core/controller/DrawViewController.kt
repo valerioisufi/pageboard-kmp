@@ -315,6 +315,12 @@ class DrawViewController(
         currentActivity.value = activity
     }
 
+    /**
+     * The other devices working on the document, drawn over it: where they are and the strokes
+     * they are drawing (kept by the synchronization, see `drawview-sync-ui`).
+     */
+    var collaborators: List<Collaborator> by mutableStateOf(emptyList())
+
     fun clearSelection() {
         selectionManager.clearSelection()
         textMarkupManager.clearSelection()

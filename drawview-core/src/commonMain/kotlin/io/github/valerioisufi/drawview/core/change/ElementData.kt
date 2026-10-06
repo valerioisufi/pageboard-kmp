@@ -5,7 +5,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
 import io.github.valerioisufi.drawview.core.geometry.AffineTransform
-import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawElement
 import io.github.valerioisufi.drawview.core.model.DrawImage
@@ -22,6 +21,7 @@ import io.github.valerioisufi.drawview.core.model.StrokeMesh
 import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
+import io.github.valerioisufi.drawview.core.model.remodelingBrush
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -63,13 +63,7 @@ data class StrokeData(
 ) : ElementData {
     /** The stroke, modeled again from its inputs by the stroke engine. */
     override fun toElement(): DrawStroke {
-        val brush = BrushConfig(
-            tool = tool,
-            size = size,
-            color = Color(color),
-            // Fine modelling tolerance for the strokes modeled again, as in the original app
-            epsilon = (size * 0.01f).coerceIn(0.005f, 0.05f)
-        )
+        val brush = remodelingBrush(tool, size, Color(color))
         // The inputs are kept as they are (the modeller may adjust what it records)
         val mesh = InkStrokeEngine.buildMesh(points, brush, inputToolType)?.withPoints(points) ?: StrokeMesh(
             positions = floatArrayOf(),

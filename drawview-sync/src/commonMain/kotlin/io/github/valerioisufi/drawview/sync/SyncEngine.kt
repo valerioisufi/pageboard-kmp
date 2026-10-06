@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.min
 
 /** A device working on the document [documentId] with this one. */
@@ -37,7 +38,9 @@ data class Peer(val documentId: String, val replica: String, val name: String)
  * [receivedFolder] gives.
  *
  * [scope] runs the connections (a supervisor scope: a connection failing does not stop the
- * others).
+ * others). A connection with nothing to send says it is still there every [keepAliveMs]; one the
+ * other device has said nothing on for three times as long is lost (a device gone without closing
+ * it: out of the network, asleep...) and closed, so that it can be made again. `0`: never.
  */
 class SyncEngine(
     private val documents: OpenDocuments,
@@ -45,6 +48,7 @@ class SyncEngine(
     private val scope: CoroutineScope,
     private val deviceName: String,
     private val files: ResourceFiles = PlatformResourceFiles,
+    private val keepAliveMs: Long = 4_000,
     private val receivedFolder: suspend () -> String? = { null }
 ) {
     private val mutex = Mutex()
@@ -66,15 +70,39 @@ class SyncEngine(
      */
     val presences: StateFlow<List<Presence>> = presenceState.asStateFlow()
 
-    /** Tells the devices working on the document of [presence] where this one is. */
+    /** What was sent of the stroke being drawn on every document (see [updatePresence]). */
+    private class SentInk(var stroke: Long = 0, var inputs: Int = 0, var wholeAt: Long = 0)
+
+    private val sentInk = mutableMapOf<String, SentInk>()
+
+    /**
+     * Tells the devices working on the document of [presence] where this one is. Of the stroke
+     * being drawn only the inputs not sent yet travel, and all of them now and then (for the
+     * devices arrived meanwhile).
+     */
     suspend fun updatePresence(presence: Presence) {
         val replica = documents.replicaId()
-        val targets = mutex.withLock {
-            presenceSequence = maxOf(presenceSequence + 1, currentTimeMillis())
-            links.filter { it.documentId == presence.documentId && it.peerHello != null }
+        val (message, targets) = mutex.withLock {
+            val now = currentTimeMillis()
+            presenceSequence = maxOf(presenceSequence + 1, now)
+            val sent = sentInk.getOrPut(presence.documentId) { SentInk() }
+            val inputs = presence.inkInputs
+            val from = if (presence.stroke != 0L && presence.stroke == sent.stroke && inputs >= sent.inputs && now - sent.wholeAt < WHOLE_INK_MS) {
+                sent.inputs
+            } else {
+                sent.wholeAt = now
+                0
+            }
+            sent.stroke = presence.stroke
+            sent.inputs = inputs
+            val part = presence.copy(
+                ink = presence.ink.subList(from * Presence.INK_VALUES, presence.ink.size).toList(),
+                replica = replica,
+                name = deviceName,
+                sequence = presenceSequence
+            )
+            PresenceMessage(part, from) to links.filter { it.documentId == presence.documentId && it.peerHello != null }
         }
-        if (targets.isEmpty()) return
-        val message = PresenceMessage(presence.copy(replica = replica, name = deviceName, sequence = presenceSequence))
         targets.forEach { it.outbox.trySend(message) }
     }
 
@@ -234,7 +262,8 @@ class SyncEngine(
                 ?: Hello(documents.replicaId(), deviceName, emptyMap(), hasDocument = false)
             link.outbox.send(hello)
             while (true) {
-                val frame = link.channel.receive() ?: break
+                // Closed, or silent for too long: lost
+                val frame = (if (keepAliveMs > 0) withTimeoutOrNull(keepAliveMs * 3) { link.channel.receive() } else link.channel.receive()) ?: break
                 val message = SyncCodec.decode(frame) ?: continue
                 handle(link, message)
             }
@@ -264,7 +293,13 @@ class SyncEngine(
         try {
             var held: SyncMessage? = null
             while (true) {
-                val message = held ?: link.outbox.receiveCatching().getOrNull() ?: break
+                val message: SyncMessage = held ?: if (keepAliveMs > 0) {
+                    // Nothing to send for a while: still there
+                    val received = withTimeoutOrNull(keepAliveMs) { link.outbox.receiveCatching() }
+                    if (received == null) Ping else received.getOrNull() ?: break
+                } else {
+                    link.outbox.receiveCatching().getOrNull() ?: break
+                }
                 held = null
                 val frame = if (message is Operations) {
                     // With the operations waiting after them
@@ -300,22 +335,35 @@ class SyncEngine(
             is ResourceRequest -> onResourceRequest(link, message.ids)
             is ResourceChunk -> onResourceChunk(link, message)
             is ResourceMissing -> link.requested.remove(message.id)
-            is PresenceMessage -> onPresence(link, message.presence)
+            is PresenceMessage -> onPresence(link, message)
+            Ping -> Unit
         }
     }
 
-    /** The presence of another device: kept, and relayed to the other devices on the document. */
-    private suspend fun onPresence(link: Link, presence: Presence) {
+    /**
+     * The presence of another device: kept with the whole stroke it is drawing, and relayed to the
+     * other devices on the document.
+     */
+    private suspend fun onPresence(link: Link, message: PresenceMessage) {
+        val presence = message.presence
         if (presence.documentId != link.documentId) return
         val key = presence.documentId to presence.replica
         val targets = mutex.withLock {
             val last = lastPresences[key]?.first
             if (last != null && last.sequence >= presence.sequence) return
-            lastPresences[key] = presence.copy(receivedAt = currentTimeMillis()) to link
+            val from = message.inkFrom * Presence.INK_VALUES
+            val ink = when {
+                from == 0 -> presence.ink
+                last != null && last.stroke == presence.stroke && last.ink.size >= from -> last.ink.subList(0, from) + presence.ink
+                // Inputs missing: the stroke as it was, until all of it comes again
+                last != null && last.stroke == presence.stroke -> last.ink
+                else -> emptyList()
+            }
+            lastPresences[key] = presence.copy(ink = ink, receivedAt = currentTimeMillis()) to link
             presenceState.value = lastPresences.values.map { it.first }
             links.filter { it.documentId == presence.documentId && it !== link && it.peerHello != null }
         }
-        targets.forEach { it.outbox.trySend(PresenceMessage(presence)) }
+        targets.forEach { it.outbox.trySend(message) }
     }
 
     private suspend fun onHello(link: Link, hello: Hello) {
@@ -325,6 +373,8 @@ class SyncEngine(
         val peer = Peer(link.documentId, hello.replica, hello.name)
         link.peer = peer
         connected.update { it + peer }
+        // The next presence with the whole stroke being drawn, for the device arrived
+        mutex.withLock { sentInk[link.documentId]?.wholeAt = 0 }
         // Without the document: it comes with the snapshot
         val sync = link.sync ?: return
         catchUp(link, sync, hello)
@@ -442,6 +492,9 @@ class SyncEngine(
         const val MAX_BATCH = 200
 
         const val CHUNK_SIZE = 256 * 1024
+
+        /** How often the whole stroke being drawn is sent again (see [updatePresence]). */
+        const val WHOLE_INK_MS = 500L
         const val MAX_RESOURCE_SIZE = 512L * 1024 * 1024
     }
 }

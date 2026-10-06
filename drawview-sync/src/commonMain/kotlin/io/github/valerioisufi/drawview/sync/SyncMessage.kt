@@ -24,7 +24,7 @@ internal data class OpenFrame(val protocol: Int, val tag: String)
  * has ([Hello]); then each sends the other what it misses ([Snapshot] for a device without the
  * document, [Operations]), then the operations as they are made; the files of the resources are
  * asked for and sent apart ([ResourceRequest], [ResourceChunk]); where each device is goes
- * along ([PresenceMessage]).
+ * along ([PresenceMessage]); a connection silent for a while says it is still there ([Ping]).
  */
 @Serializable
 internal sealed interface SyncMessage
@@ -76,10 +76,18 @@ internal class ResourceChunk(
 @SerialName("resourceMissing")
 internal data class ResourceMissing(val id: String) : SyncMessage
 
-/** Where a device is on the document (never stored, see [Presence]). */
+/**
+ * Where a device is on the document (never stored, see [Presence]): its [presence] has the
+ * inputs of its stroke from [inkFrom] (the ones before were sent already).
+ */
 @Serializable
 @SerialName("presence")
-internal data class PresenceMessage(val presence: Presence) : SyncMessage
+internal data class PresenceMessage(val presence: Presence, val inkFrom: Int = 0) : SyncMessage
+
+/** A connection with nothing to send says it is still there (see [SyncEngine]). */
+@Serializable
+@SerialName("ping")
+internal data object Ping : SyncMessage
 
 /** The binary form of the frames (CBOR). */
 @OptIn(ExperimentalSerializationApi::class)

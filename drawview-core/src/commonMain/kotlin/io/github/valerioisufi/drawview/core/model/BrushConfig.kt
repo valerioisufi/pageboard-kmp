@@ -18,6 +18,13 @@ data class BrushConfig(
 )
 
 /**
+ * The brush a stroke drawn with [tool], [size] and [color] is modeled again with (loaded, or
+ * received from another device): a fine modelling tolerance, as in the original app.
+ */
+fun remodelingBrush(tool: StrokeTool, size: Float, color: Color): BrushConfig =
+    BrushConfig(tool = tool, size = size, color = color, epsilon = (size * 0.01f).coerceIn(0.005f, 0.05f))
+
+/**
  * A user preset of a drawing tool (pen, highlighter, eraser, lasso).
  */
 data class BrushPreset(

@@ -4,7 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -108,6 +107,10 @@ internal class CanvasGestureHandler(
     private var longPressCandidate = false
     private var inkPageIndex = -1
     private var inkBrush: BrushConfig? = null
+
+    /** The strokes drawn so far (the one in progress: the last one), see [reportActivity]. */
+    private var strokeCount = 0L
+    private var inkInputType = InputToolType.UNKNOWN
     private var lastTapTime = 0L
     private var lastTapPosition = Offset.Zero
     private var hasSeenStylus = false
@@ -384,8 +387,10 @@ internal class CanvasGestureHandler(
             inkBrush = brush
             mode = if (tool == Tool.LAZO) Mode.LASSO else Mode.INK
             engine.startStroke(brush)
+            if (mode == Mode.INK) strokeCount++
             addInkInput(change, position, change.uptimeMillis, change.pressure)
             live.setLiveMesh(engine.currentMesh(), pageIndex)
+            reportActivity(position, inking = mode == Mode.INK)
             longPressCandidate = !isStylus
             return
         }
@@ -896,9 +901,10 @@ internal class CanvasGestureHandler(
                 pageId = page.id,
                 x = mm.x,
                 y = mm.y,
+                stroke = if (brush != null) strokeCount else 0,
                 ink = if (brush != null) engine.inputs.toList() else emptyList(),
-                color = brush?.color?.toArgb() ?: 0,
-                size = brush?.size ?: 0f
+                brush = brush,
+                inputType = inkInputType
             )
         )
     }
@@ -911,6 +917,7 @@ internal class CanvasGestureHandler(
             PointerType.Mouse -> InputToolType.MOUSE
             else -> InputToolType.UNKNOWN
         }
+        if (engine.inputs.isEmpty()) inkInputType = toolType
         engine.addInput(mm.x, mm.y, pressure, timeMs, toolType)
     }
 

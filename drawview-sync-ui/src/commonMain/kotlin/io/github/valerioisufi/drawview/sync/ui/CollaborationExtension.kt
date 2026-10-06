@@ -3,7 +3,6 @@ package io.github.valerioisufi.drawview.sync.ui
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
@@ -24,33 +23,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.controller.EditorActivity
-import io.github.valerioisufi.drawview.core.util.currentTimeMillis
 import io.github.valerioisufi.drawview.sync.Invitation
-import io.github.valerioisufi.drawview.sync.Presence
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_cancel
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_close
@@ -66,7 +49,6 @@ import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_share_ti
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_stop_sharing
 import io.github.valerioisufi.drawview.ui.components.ToolButton
 import io.github.valerioisufi.drawview.ui.session.EditorExtension
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.abs
@@ -77,7 +59,7 @@ import kotlin.math.abs
  */
 fun Collaboration.editorExtension(): EditorExtension = EditorExtension(
     toolbarActions = { session, controller -> ShareAction(this@editorExtension, session.documentId, controller) },
-    canvasOverlay = { session, controller -> PresenceLayer(this@editorExtension, session.documentId, controller) }
+    canvasOverlay = { session, controller -> CollaboratorsLayer(this@editorExtension, session.documentId, controller) }
 )
 
 @Composable
@@ -180,110 +162,6 @@ private fun ShareDialog(collaboration: Collaboration, documentId: String, title:
                 }
             }
         }
-    )
-}
-
-// ==========================================================
-// Presence
-// ==========================================================
-
-/** How often this device tells where it is (at most), and at least. */
-private const val PRESENCE_INTERVAL_MS = 100L
-private const val PRESENCE_HEARTBEAT_MS = 4_000L
-
-/** A device that has not told where it is for so long is gone. */
-private const val PRESENCE_TIMEOUT_MS = 12_000L
-
-/** The most inputs of a stroke being drawn sent (the last ones). */
-private const val MAX_INK_POINTS = 600
-
-/**
- * Tells the others where this device is on the document, and draws where the others are: their
- * pointer with their name, the stroke they are drawing.
- */
-@Composable
-private fun BoxScope.PresenceLayer(collaboration: Collaboration, documentId: String, controller: DrawViewController) {
-    LaunchedEffect(collaboration, documentId, controller) {
-        var last: EditorActivity? = null
-        var lastSent = 0L
-        while (true) {
-            val activity = controller.activity.value
-            val now = currentTimeMillis()
-            if (activity != last || now - lastSent >= PRESENCE_HEARTBEAT_MS) {
-                collaboration.engine.updatePresence(activity.toPresence(documentId))
-                last = activity
-                lastSent = now
-            }
-            delay(PRESENCE_INTERVAL_MS)
-        }
-    }
-
-    val presences by collaboration.presences.collectAsState()
-    val now by produceState(currentTimeMillis()) {
-        while (true) {
-            delay(1_000)
-            value = currentTimeMillis()
-        }
-    }
-    val shown = presences.filter { it.documentId == documentId && it.pageId != null && now - it.receivedAt < PRESENCE_TIMEOUT_MS }
-    if (shown.isEmpty()) return
-
-    // Drawn again when the canvas is
-    val version = controller.version
-    val measurer = rememberTextMeasurer()
-    val labelStyle = TextStyle(color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Medium)
-    Canvas(modifier = Modifier.matchParentSize()) {
-        check(version >= 0)
-        for (presence in shown) {
-            val pageIndex = controller.document.pages.indexOfFirst { it.id == presence.pageId }
-            val mmToScreen = controller.pageMmToScreen(pageIndex) ?: continue
-            val color = colorOf(presence.replica)
-
-            // The stroke being drawn
-            if (presence.ink.size >= 4) {
-                val path = Path()
-                for (i in 0 until presence.ink.size / 2) {
-                    val point = mmToScreen.mapPoint(presence.ink[i * 2], presence.ink[i * 2 + 1])
-                    if (i == 0) path.moveTo(point.x, point.y) else path.lineTo(point.x, point.y)
-                }
-                val width = (presence.inkSize * controller.pixelsPerMm(pageIndex)).coerceAtLeast(1.dp.toPx())
-                drawPath(
-                    path = path,
-                    color = Color(presence.inkColor).copy(alpha = 0.6f),
-                    style = Stroke(width = width, cap = StrokeCap.Round, join = StrokeJoin.Round)
-                )
-            }
-
-            // The pointer and the name
-            val point = mmToScreen.mapPoint(presence.x, presence.y)
-            drawCircle(color = Color.White, radius = 7.dp.toPx(), center = point)
-            drawCircle(color = color, radius = 5.dp.toPx(), center = point)
-            val label = measurer.measure(presence.name, labelStyle)
-            val padding = 4.dp.toPx()
-            val topLeft = point + Offset(9.dp.toPx(), 7.dp.toPx())
-            drawRoundRect(
-                color = color,
-                topLeft = topLeft,
-                size = Size(label.size.width + padding * 2, label.size.height + padding),
-                cornerRadius = CornerRadius(6.dp.toPx())
-            )
-            drawText(label, topLeft = topLeft + Offset(padding, padding / 2))
-        }
-    }
-}
-
-/** The presence of this device for [activity] (`null`: on no page). */
-private fun EditorActivity?.toPresence(documentId: String): Presence {
-    if (this == null) return Presence(documentId)
-    val inputs = ink.takeLast(MAX_INK_POINTS)
-    return Presence(
-        documentId = documentId,
-        pageId = pageId,
-        x = x,
-        y = y,
-        ink = inputs.flatMap { listOf(it.x, it.y) },
-        inkColor = color,
-        inkSize = size
     )
 }
 

@@ -41,14 +41,17 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 
@@ -111,14 +114,18 @@ class SyncEngineTest {
         override fun write(bytes: ByteArray, extension: String): String = "mem://${files.size}.$extension".also { files[it] = bytes }
     }
 
-    /** A device: its store, its shared documents and its engine, reachable on [network] at [name]. */
-    private class Device(val name: String, scope: CoroutineScope, test: TestScope, val network: InMemoryNetwork) {
+    /**
+     * A device: its store, its shared documents and its engine, reachable on [network] at [name]
+     * (its connections say they are there every [keepAliveMs], `0`: never, so that
+     * [advanceUntilIdle] ends).
+     */
+    private class Device(val name: String, scope: CoroutineScope, test: TestScope, val network: InMemoryNetwork, keepAliveMs: Long = 0) {
         val storage = InMemoryKeyValueStorage()
         val store = KeyValueDocumentStore(storage, scope = scope)
         val documents = OpenDocuments(store, StandardTestDispatcher(test.testScheduler), scope)
         val shared = StoreSharedDocuments(store)
         val files = MemoryFiles()
-        val engine = SyncEngine(documents, shared, scope, name, files) { store.folders.first().firstOrNull()?.id }
+        val engine = SyncEngine(documents, shared, scope, name, files, keepAliveMs) { store.folders.first().firstOrNull()?.id }
         val transport = network.transport(name)
         private val connections = mutableListOf<Job>()
 
@@ -316,19 +323,95 @@ class SyncEngineTest {
         cy.join(invitation, "ada")
         advanceUntilIdle()
 
-        bob.engine.updatePresence(Presence(document.id, pageId = "page", x = 1f, y = 2f, ink = listOf(1f, 2f, 3f, 4f)))
+        fun inputs(count: Int) = (0 until count).flatMap { listOf(it.toFloat(), 2f * it, 0.5f, 8f * it) }
+        bob.engine.updatePresence(Presence(document.id, pageId = "page", x = 1f, y = 2f, stroke = 7, ink = inputs(3)))
         advanceUntilIdle()
         // Relayed by Ada to Cy
         val seen = cy.engine.presences.value.single()
         assertEquals("bob", seen.name)
-        assertEquals(listOf(1f, 2f, 3f, 4f), seen.ink)
+        assertEquals(inputs(3), seen.ink)
         assertEquals("bob", ada.engine.presences.value.single().name)
         assertTrue(bob.engine.presences.value.isEmpty(), "its own presence is not among the others")
+
+        // The stroke goes on: only the new inputs travel, the others have it whole
+        bob.engine.updatePresence(Presence(document.id, pageId = "page", x = 3f, y = 4f, stroke = 7, ink = inputs(5)))
+        advanceUntilIdle()
+        assertEquals(inputs(5), cy.engine.presences.value.single().ink)
+        bob.engine.updatePresence(Presence(document.id, pageId = "page", x = 3f, y = 4f))
+        advanceUntilIdle()
+        assertTrue(cy.engine.presences.value.single().ink.isEmpty(), "the stroke ended")
 
         // Gone with its connection
         bob.disconnect()
         advanceUntilIdle()
         assertTrue(ada.engine.presences.value.isEmpty())
+    }
+
+    /** A connection that can be cut silently, like by a device gone out of the network. */
+    private class Cable {
+        val cut = MutableStateFlow(false)
+    }
+
+    /** One end of a connection through [cable]: once it is cut nothing is sent nor received. */
+    private class CableEnd(private val inner: SyncChannel, private val cable: Cable) : SyncChannel {
+        private val closed = CompletableDeferred<Unit>()
+
+        override suspend fun send(frame: ByteArray) {
+            if (!cable.cut.value) inner.send(frame)
+        }
+
+        override suspend fun receive(): ByteArray? {
+            if (!cable.cut.value) {
+                val frame = inner.receive()
+                if (!cable.cut.value) return frame
+            }
+            closed.await()
+            return null
+        }
+
+        override fun close() {
+            closed.complete(Unit)
+            // Cut: the other end never knows
+            if (!cable.cut.value) inner.close()
+        }
+    }
+
+    /** Connects [joining] to [sharing] for [invitation] through [cable]. */
+    private fun connect(sharing: Device, joining: Device, invitation: Invitation, cable: Cable) {
+        val (one, other) = InMemoryChannel.pair()
+        sharing.engine.accept(CableEnd(one, cable))
+        joining.engine.join(CableEnd(other, cable), invitation)
+    }
+
+    @Test
+    fun aConnectionCutSilentlyIsLostThenMadeAgain() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network, keepAliveMs = 1_000)
+        val bob = Device("bob", work, this, network, keepAliveMs = 1_000)
+        val document = ada.store.createDocument("Notes")
+        val invitation = ada.engine.share(document.id, "Notes")
+        val cable = Cable()
+        connect(ada, bob, invitation, cable)
+        advanceTimeBy(500)
+        assertSame(document.id, listOf(ada, bob))
+
+        // Out of the network: still connected at first, both go on changing the document
+        cable.cut.value = true
+        ada.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        bob.change(document.id) { AddElements.of(it.document.pages[0], listOf(stroke(1f, 1f))) }
+        advanceTimeBy(500)
+        assertEquals(listOf("bob"), ada.engine.peers.value.map { it.name })
+        // Silent for too long: lost on both sides
+        advanceTimeBy(5_000)
+        assertTrue(ada.engine.peers.value.isEmpty())
+        assertTrue(bob.engine.peers.value.isEmpty())
+
+        // Connected again: what each one missed arrives
+        connect(ada, bob, invitation, Cable())
+        advanceTimeBy(500)
+        assertSame(document.id, listOf(ada, bob))
+        assertEquals(2, ada.snapshot(document.id).pages.size)
+        assertEquals(listOf("ada"), bob.engine.peers.value.map { it.name })
     }
 
     @Test

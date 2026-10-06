@@ -33,33 +33,55 @@ class LanTransport(private val scope: CoroutineScope, private val port: Int = 0)
     private val selector = SelectorManager(Dispatchers.IO)
     private val accepted = Channel<SyncChannel>(Channel.UNLIMITED)
     private var server: ServerSocket? = null
+    private var lastPort = port
 
     override val incoming: Flow<SyncChannel> = accepted.receiveAsFlow()
 
     /** The port this device listens on (0 until [start]). */
     val boundPort: Int get() = server?.port ?: 0
 
-    /** Listens for the connections of the other devices; returns the port. */
+    /**
+     * Whether this device listens for connections: no more once the system closed the listener
+     * (e.g. an application suspended in the background), then [start] listens again.
+     */
+    val isListening: Boolean get() = server != null
+
+    /**
+     * Listens for the connections of the other devices (on the port of the last time when it is
+     * free); returns the port.
+     */
     suspend fun start(): Int {
         server?.let { return it.port }
-        val socket = try {
-            aSocket(selector).tcp().bind("0.0.0.0", port)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            throw SyncException("Cannot listen on port $port", e)
-        }
+        val socket = bind(lastPort) ?: bind(port) ?: bind(0) ?: throw SyncException("Cannot listen for the other devices")
         server = socket
+        lastPort = socket.port
         scope.launch {
             try {
                 while (true) accepted.send(TcpChannel(socket.accept()))
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
-                // Closed
+                // Closed (by this device or by the system)
+            } finally {
+                if (server === socket) server = null
+                socket.close()
             }
         }
         return socket.port
+    }
+
+    /** Stops listening (the connections made stay). */
+    fun stopListening() {
+        server?.close()
+        server = null
+    }
+
+    private suspend fun bind(port: Int): ServerSocket? = try {
+        aSocket(selector).tcp().bind("0.0.0.0", port)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (_: Exception) {
+        null
     }
 
     override suspend fun connect(address: String): SyncChannel {
@@ -75,8 +97,7 @@ class LanTransport(private val scope: CoroutineScope, private val port: Int = 0)
     }
 
     override fun close() {
-        server?.close()
-        server = null
+        stopListening()
         accepted.close()
         selector.close()
     }

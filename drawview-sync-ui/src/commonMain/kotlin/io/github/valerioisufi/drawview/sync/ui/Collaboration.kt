@@ -2,7 +2,9 @@ package io.github.valerioisufi.drawview.sync.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.valerioisufi.drawview.data.DocumentStore
 import io.github.valerioisufi.drawview.data.DrawViewStore
@@ -104,6 +106,14 @@ class Collaboration(
         return invitation
     }
 
+    /**
+     * Makes again at once the connections lost (e.g. when the application comes back to the
+     * foreground: the system may have closed them meanwhile).
+     */
+    suspend fun refresh() {
+        mutex.withLock { lan }?.refresh(announceAgain = true)
+    }
+
     suspend fun stop() {
         mutex.withLock {
             lan?.stop()
@@ -138,6 +148,12 @@ fun rememberCollaboration(
     collaboration.requestAccess = requestAccess
     LaunchedEffect(collaboration) {
         if (store.sharingSecrets().isNotEmpty()) collaboration.start()
+    }
+    // Back to the foreground: the connections closed meanwhile are made again at once
+    val scope = rememberCoroutineScope()
+    LifecycleResumeEffect(collaboration) {
+        scope.launch { collaboration.refresh() }
+        onPauseOrDispose {}
     }
     return collaboration
 }

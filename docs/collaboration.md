@@ -96,8 +96,12 @@ The origin of a change decides what the observers do:
 * Operations are identified by (replica, sequence number): the duplicates are dropped, an
   operation arriving before the ones it follows waits for them.
 * The files of the resources are asked for by identifier and sent in chunks of 256 KiB.
-* CBOR frames; ephemeral messages (cursor, viewport, points of the stroke being drawn) come with
-  phase 6, never logged.
+* A connection with nothing to send sends a `Ping` every 4 s; one silent for 12 s is lost (a
+  device gone without closing it: out of the network, asleep, suspended) and closed, so that it
+  is made again.
+* Presence (pointer, stroke being drawn) is never logged: of the stroke only the inputs not sent
+  yet travel, the whole stroke every 500 ms (for the devices arrived meanwhile).
+* CBOR frames.
 
 ### Modules
 
@@ -299,6 +303,27 @@ The application is not released yet, so the stored documents are not migrated:
   of Android 17, two simulators (the second one was not available to this session).
 * Later: a QR code of the invitation (the link is copied or opened), choosing the name shown to
   the others, the relay (another `SyncTransport`).
+
+### After phase 6: connections lost, presence drawn
+
+* Connections lost silently (a device out of the network, asleep, suspended in the background)
+  stayed "connected" for ever, so they were never made again: the `Ping`s close them (see
+  Protocol). `LanSync` makes again every 5 s (and when the application comes back to the
+  foreground) the connections missing with the devices sharing a document, from either device
+  (the one with the smaller identifier first), with a timeout; it connects again to the devices
+  of the invitations joined by address, listens again when the system closed the listener and
+  announces again.
+* The others are drawn by the canvas itself (`DrawViewController.collaborators`), with the
+  camera: their strokes are modeled as their inputs come by the same ink engine as the strokes of
+  this device (the brush of the strokes modeled again: the stroke of the document takes their
+  place without a jump, they fade in 300 ms), their pointers glide to where they are (presence up
+  to 30 times a second).
+* Verified on the iPad simulator against this machine (`RemotePeerTest`, which draws as by hand):
+  the stroke grows under the pointer of the other device and becomes the stroke of the document;
+  a device frozen (`SIGSTOP`: its connection open but silent) is gone from the participants in
+  less than 16 s. Tests: a connection cut silently is lost on both devices and made again with
+  what each one missed, a device gone and back (another port) and a listener closed by the system
+  over TCP, the strokes being drawn relayed a few inputs at a time.
 
 ### Risks
 

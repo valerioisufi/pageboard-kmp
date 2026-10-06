@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.sync.lan
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
 import io.github.valerioisufi.drawview.core.model.BrushConfig
@@ -23,6 +24,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import kotlin.math.abs
 import kotlin.math.sin
 import kotlin.test.Test
 import kotlin.test.assertNotNull
@@ -63,18 +65,32 @@ class RemotePeerTest {
                 val strokes = open.edit { session -> session.document.pages.sumOf { it.strokes.size } }
                 println("PEER received \"${open.document.title}\" with $strokes strokes")
 
-                // A wave across the first page
-                val points = (0..60).map { i -> StrokePoint(20f + i * 2.8f, 150f + 20f * sin(i / 6f), 0.6f, i * 8L) }
-                val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1f, color = Color(0xFF1E88E5))
-                val mesh = assertNotNull(InkStrokeEngine.buildMesh(points, brush, InputToolType.STYLUS))
-                val pageId = open.edit { session ->
-                    val page = session.document.pages[0]
-                    session.submit(AddElements.of(page, listOf(DrawStroke(mesh = mesh, brushConfig = brush))))
-                    page.id
+                val waveY = System.getenv("DRAWVIEW_PEER_WAVE_Y")?.toFloatOrNull() ?: 150f
+                // A wave drawn as by hand: the pointer and the stroke go along, then the stroke is added
+                val points = (0..150).map { i ->
+                    StrokePoint(20f + i * 1.1f, waveY + 20f * sin(i / 12f), 0.3f + 0.5f * abs(sin(i / 25f)), i * 16L)
                 }
-                repeat(40) { i ->
-                    engine.updatePresence(Presence(invitation.documentId, pageId = pageId, x = 40f + i * 3f, y = 200f))
-                    delay(250)
+                val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1f, color = Color(0xFF1E88E5))
+                val pageId = open.edit { session -> session.document.pages[0].id }
+                println("PEER drawing")
+                for (n in 1..points.size) {
+                    val last = points[n - 1]
+                    val ink = points.take(n).flatMap { listOf(it.x, it.y, it.pressure, it.timestampMs + 1f) }
+                    engine.updatePresence(
+                        Presence(
+                            invitation.documentId, pageId, last.x, last.y,
+                            stroke = 1, ink = ink, inkTool = brush.tool.name, inkColor = brush.color.toArgb(), inkSize = brush.size, inkInput = "STYLUS"
+                        )
+                    )
+                    delay(32)
+                }
+                val mesh = assertNotNull(InkStrokeEngine.buildMesh(points, brush, InputToolType.STYLUS))
+                open.edit { session -> session.submit(AddElements.of(session.document.pages[0], listOf(DrawStroke(mesh = mesh, brushConfig = brush)))) }
+                println("PEER drawn")
+                // Then the pointer wanders about
+                repeat(120) { i ->
+                    engine.updatePresence(Presence(invitation.documentId, pageId, 100f + 40f * sin(i / 15f), 220f + 30f * sin(i / 9f)))
+                    delay(33)
                 }
                 println("PEER peers: ${engine.peers.value.map { it.name }}")
                 documents.close(open)
