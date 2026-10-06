@@ -25,6 +25,7 @@ data class DocumentSnapshot(
     val defaultHeightMm: Float,
     val defaultBackground: PageBackground,
     val defaultsVersion: Stamp = Stamp.ZERO,
+    val titleVersion: Stamp = Stamp.ZERO,
     /** The pages shown, in their order. */
     val pages: List<PageSnapshot> = emptyList(),
     val removedPages: List<PageSnapshot> = emptyList(),
@@ -44,7 +45,8 @@ data class DocumentSnapshot(
             addInitialPage = false
         )
         document.defaultsVersion = defaultsVersion
-        for (resource in resources) document.resources.add(DrawResource(resource.id, resource.type, ""))
+        document.titleVersion = titleVersion
+        for (resource in resources) document.resources.add(DrawResource(resource.id, resource.type, "", resource.hash))
         pages.forEach { document.pages.add(it.toPage(document)) }
         removedPages.forEach { snapshot -> snapshot.toPage(document).let { document.removedPages[it.id] = it } }
         document.reindexPages()
@@ -103,9 +105,10 @@ fun DrawDocument.snapshot(): DocumentSnapshot = DocumentSnapshot(
     defaultHeightMm = defaultHeightMm,
     defaultBackground = defaultBackground,
     defaultsVersion = defaultsVersion,
+    titleVersion = titleVersion,
     pages = pages.map { it.snapshot() },
     removedPages = removedPages.values.sortedBy { it.id }.map { it.snapshot() },
-    resources = resources.map { ResourceData(it.id, it.type) }
+    resources = resources.map { ResourceData(it.id, it.type, it.hash) }
 )
 
 /** The state of this page (see [PageSnapshot]). */

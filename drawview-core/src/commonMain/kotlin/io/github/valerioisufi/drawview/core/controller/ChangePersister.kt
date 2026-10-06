@@ -35,6 +35,7 @@ class ChangePersister(
         // The versions of the content of the pages (no other change of theirs)
         val versionedPages = effects.versionedPages.filter { it !in effects.savedPages && it !in effects.insertedPages && it !in effects.removedPages }
         val defaultsChanged = effects.documentDefaultsChanged
+        val renamed = effects.documentRenamed
         val modifiedAt = document.modifiedAt
 
         // In this order: a page is stored before its elements, the files before what shows them
@@ -49,6 +50,7 @@ class ChangePersister(
             removedPages.forEach { savePage(document, it) }
             versionedPages.forEach { savePage(document, it) }
             if (defaultsChanged) updateDocumentDefaults(document)
+            if (renamed) updateDocumentTitle(document)
             appendOperation(document, operation)
             touchDocument(document, modifiedAt)
         }

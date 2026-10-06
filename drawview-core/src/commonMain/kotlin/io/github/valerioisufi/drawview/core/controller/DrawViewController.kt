@@ -135,8 +135,13 @@ class DrawViewController(
 
     var themeColors by mutableStateOf(DrawThemeColors())
 
-    var isDrawingMode by mutableStateOf(true)
-        private set
+    private var drawingModeChosen by mutableStateOf(true)
+
+    /** Drawing (the tools change the document) or reading; never drawing on a document only read here. */
+    val isDrawingMode: Boolean get() = drawingModeChosen && !session.isReadOnly
+
+    /** The document may only be read here (see [DocumentSession.isReadOnly]). */
+    val isReadOnly: Boolean get() = session.isReadOnly
 
     var isStylusOnlyMode by mutableStateOf(false)
         private set
@@ -204,7 +209,8 @@ class DrawViewController(
     }
 
     fun toggleDrawingMode() {
-        isDrawingMode = !isDrawingMode
+        if (session.isReadOnly) return
+        drawingModeChosen = !drawingModeChosen
         textMarkupManager.clearSelection()
         if (!isDrawingMode) {
             selectionManager.clearSelection()

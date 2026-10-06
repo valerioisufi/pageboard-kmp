@@ -14,7 +14,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -128,14 +131,39 @@ internal class LectureAttachments(
         }
     }
 
-    override suspend fun receive(documentId: String, key: String, version: String, size: Long): AttachmentReceiver? {
+    /** The audio received so far of the lectures, by folder (0..1), while it arrives. */
+    private val audioProgressState = MutableStateFlow<Map<String, Float>>(emptyMap())
+    val audioProgress: StateFlow<Map<String, Float>> = audioProgressState
+
+    override suspend fun received(documentId: String, key: String, version: String): Long {
+        val item = Item.parse(key) as? Item.Audio ?: return 0
+        return withContext(Dispatchers.IO) { partialAudio(directoryOf(documentId, item.lectureId), version) }
+    }
+
+    /** The bytes of the audio at [version] received by a transfer interrupted (kept in `audio.part`). */
+    private fun partialAudio(directory: String, version: String): Long {
+        if (PlatformFiles.readBytes("$directory/$PART_VERSION")?.decodeToString() != version) return 0
+        return SystemFileSystem.metadataOrNull(Path("$directory/$PART"))?.size ?: 0
+    }
+
+    override suspend fun receive(documentId: String, key: String, version: String, size: Long, from: Long): AttachmentReceiver? {
         val item = Item.parse(key) ?: return null
         if (!wants(documentId, key, version)) return null
         return when (item) {
             is Item.Audio -> {
                 if (size > MAX_AUDIO_BYTES) return null
                 val directory = directoryOf(documentId, item.lectureId)
-                FileReceiver(Path("$directory/audio.wav.part")) { part -> keepAudio(documentId, item.lectureId, part) }
+                val resumed = from > 0 && withContext(Dispatchers.IO) { partialAudio(directory, version) } == from
+                if (!resumed) {
+                    // From the start: the part of another version goes
+                    withContext(Dispatchers.IO) {
+                        SystemFileSystem.delete(Path("$directory/$PART"), mustExist = false)
+                        PlatformFiles.writeBytes("$directory/$PART_VERSION", version.encodeToByteArray())
+                    }
+                }
+                FileReceiver(Path("$directory/$PART"), append = resumed, size = size, start = if (resumed) from else 0L, onProgress = { received ->
+                    audioProgressState.update { it + (directory to (received.toFloat() / size).coerceIn(0f, 1f)) }
+                }) { part -> keepAudio(documentId, item.lectureId, part) }
             }
             else -> {
                 if (size > MAX_ITEM_BYTES) return null
@@ -194,9 +222,11 @@ internal class LectureAttachments(
 
     private suspend fun keepAudio(documentId: String, lectureId: String, part: Path) {
         val directory = directoryOf(documentId, lectureId)
+        audioProgressState.update { it - directory }
         val kept = withContext(Dispatchers.IO) {
             try {
                 SystemFileSystem.atomicMove(part, RecordingFile(directory).wavPath)
+                SystemFileSystem.delete(Path("$directory/$PART_VERSION"), mustExist = false)
                 true
             } catch (e: Exception) {
                 println("DrawView: cannot keep the audio received for $directory: ${e.message}")
@@ -465,15 +495,26 @@ internal class LectureAttachments(
     }
 
     /** Written to [part], kept by [onComplete] once whole. */
-    private class FileReceiver(private val part: Path, private val onComplete: suspend (Path) -> Unit) : AttachmentReceiver {
+    /** Written to [part] (after the [start] bytes there when [append]), kept by [onComplete] once whole. */
+    private class FileReceiver(
+        private val part: Path,
+        private val append: Boolean,
+        private val size: Long,
+        start: Long,
+        private val onProgress: (Long) -> Unit,
+        private val onComplete: suspend (Path) -> Unit
+    ) : AttachmentReceiver {
         private var sink: RawSink? = null
+        private var received = start
 
         override suspend fun write(bytes: ByteArray) = withContext(Dispatchers.IO) {
             val current = sink ?: run {
                 part.parent?.let { SystemFileSystem.createDirectories(it) }
-                SystemFileSystem.sink(part).also { sink = it }
+                SystemFileSystem.sink(part, append = append).also { sink = it }
             }
             current.write(Buffer().apply { write(bytes) }, bytes.size.toLong())
+            received += bytes.size
+            onProgress(received)
         }
 
         override suspend fun complete() {
@@ -485,15 +526,20 @@ internal class LectureAttachments(
             onComplete(part)
         }
 
+        // Kept: the transfer goes on from there (see received)
         override suspend fun cancel() = withContext(Dispatchers.IO) {
+            sink?.flush()
             sink?.close()
             sink = null
-            SystemFileSystem.delete(part, mustExist = false)
         }
     }
 
     private companion object {
         const val MAX_ITEM_BYTES = 64L * 1024 * 1024
+
+        /** The audio being received, and its version. */
+        const val PART = "audio.part"
+        const val PART_VERSION = "audio.part.version"
         const val MAX_AUDIO_BYTES = 4L * 1024 * 1024 * 1024
         const val SKIP_BYTES = 64L * 1024
         val deletedSerializer = MapSerializer(String.serializer(), Long.serializer())

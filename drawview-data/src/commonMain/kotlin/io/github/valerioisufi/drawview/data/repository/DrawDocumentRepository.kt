@@ -22,6 +22,7 @@ import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.ElementOrder
 import io.github.valerioisufi.drawview.core.model.InputToolType
 import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.core.model.PurgedContent
 import io.github.valerioisufi.drawview.core.model.Stamp
 import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
@@ -31,6 +32,7 @@ import io.github.valerioisufi.drawview.data.buildDrawPreferences
 import io.github.valerioisufi.drawview.data.db.DocumentEntity
 import io.github.valerioisufi.drawview.data.db.DrawDatabase
 import io.github.valerioisufi.drawview.data.db.ImageEntity
+import io.github.valerioisufi.drawview.data.db.OperationBaseEntity
 import io.github.valerioisufi.drawview.data.db.OperationEntity
 import io.github.valerioisufi.drawview.data.db.PageEntity
 import io.github.valerioisufi.drawview.data.db.PdfEntity
@@ -70,6 +72,7 @@ class DrawDocumentRepository(
     private val textMarkupDao = database.textMarkupDao()
     private val resourceDao = database.resourceDao()
     private val operationDao = database.operationDao()
+    private val purgeDao = database.purgeDao()
     private val replicaDao = database.replicaDao()
     private val preferencesDao = database.preferencesDao()
     private val json = Json
@@ -101,11 +104,12 @@ class DrawDocumentRepository(
             )
             doc.lastOpenedAt = docEntity.lastOpenedAt
             doc.defaultsVersion = docEntity.defaultsVersion
+            doc.titleVersion = docEntity.titleVersion
 
             for (resource in resources) {
                 val type = DrawResource.ResourceType.entries.firstOrNull { it.name.equals(resource.type, ignoreCase = true) }
                     ?: DrawResource.ResourceType.COLOR
-                doc.resources.add(DrawResource(resource.id, type, resource.uri))
+                doc.resources.add(DrawResource(resource.id, type, resource.uri, resource.contentHash))
             }
 
             val sortedPages = docWithPages.pages.sortedWith(compareBy({ it.page.orderKey }, { it.page.id }))
@@ -255,7 +259,7 @@ class DrawDocumentRepository(
      * Stores [document] with its whole content (removed pages and elements included) in
      * [folderId] (see [io.github.valerioisufi.drawview.data.DocumentStore.insertDocument]).
      */
-    suspend fun insertDocument(document: DrawDocument, folderId: String?) {
+    suspend fun insertDocument(document: DrawDocument, folderId: String?, versionVector: Map<String, Long> = emptyMap()) {
         val now = currentTimeMillis()
         withContext(Dispatchers.IO) {
             documentDao.insert(
@@ -269,9 +273,14 @@ class DrawDocumentRepository(
                     defaultWidth = document.defaultWidthMm,
                     defaultHeight = document.defaultHeightMm,
                     defaultBackground = document.defaultBackground,
-                    defaultsVersion = document.defaultsVersion
+                    defaultsVersion = document.defaultsVersion,
+                    titleVersion = document.titleVersion
                 )
             )
+        }
+        // The operations it was received with (their changes are in it)
+        withContext(Dispatchers.IO) {
+            for ((replica, sequence) in versionVector) operationDao.upsertBase(OperationBaseEntity(document.id, replica, sequence))
         }
         document.resources.forEach { saveResource(document, it) }
         for (page in document.allPages()) {
@@ -304,7 +313,39 @@ class DrawDocumentRepository(
 
     /** The last operation of every replica in the log of [documentId]. */
     suspend fun versionVector(documentId: String): Map<String, Long> = withContext(Dispatchers.IO) {
-        operationDao.lastSequences(documentId).associate { it.replica to it.sequence }
+        // With the operations no longer in the log
+        val vector = operationDao.bases(documentId).associate { it.replica to it.sequence }.toMutableMap()
+        for (last in operationDao.lastSequences(documentId)) vector[last.replica] = maxOf(vector[last.replica] ?: 0L, last.sequence)
+        vector
+    }
+
+    suspend fun compactedOperations(documentId: String): Map<String, Long> = withContext(Dispatchers.IO) {
+        operationDao.bases(documentId).associate { it.replica to it.sequence }
+    }
+
+    /**
+     * Removes from the log of [documentId] its operations up to [upTo] (a version vector),
+     * remembering them: the stamps of the last ones, by replica.
+     */
+    suspend fun compactOperations(documentId: String, upTo: Map<String, Long>): Map<String, Stamp> = withContext(Dispatchers.IO) {
+        val bases = operationDao.baseEntities(documentId).associateBy { it.replica }
+        for ((replica, sequence) in upTo) {
+            if (sequence <= (bases[replica]?.sequence ?: 0L)) continue
+            val stamp = operationDao.stampOf(documentId, replica, sequence) ?: continue
+            operationDao.deleteUpTo(documentId, replica, sequence)
+            operationDao.upsertBase(OperationBaseEntity(documentId, replica, sequence, stamp))
+        }
+        operationDao.baseEntities(documentId).associate { it.replica to it.stamp }
+    }
+
+    override suspend fun deleteForGood(document: DrawDocument, content: PurgedContent) = withContext(Dispatchers.IO) {
+        purgeDao.deletePages(content.pages.map { it.id })
+        val elements = content.elements.map { it.second }
+        purgeDao.deleteStrokes(elements.filterIsInstance<DrawStroke>().map { it.id })
+        purgeDao.deleteTexts(elements.filterIsInstance<DrawText>().map { it.id })
+        purgeDao.deleteImages(elements.filterIsInstance<DrawImage>().map { it.id })
+        purgeDao.deletePdfs(elements.filterIsInstance<DrawPdf>().map { it.id })
+        purgeDao.deleteTextMarkups(elements.filterIsInstance<DrawTextMarkup>().map { it.id })
     }
 
     /** The operations of [documentId] after [known] (a version vector), in stamp order. */
@@ -439,8 +480,11 @@ class DrawDocumentRepository(
     }
 
     override suspend fun saveResource(document: DrawDocument, resource: DrawResource) = withContext(Dispatchers.IO) {
-        resourceDao.upsert(ResourceEntity(id = resource.id, documentId = document.id, type = resource.type.name, uri = resource.path))
+        resourceDao.upsert(ResourceEntity(id = resource.id, documentId = document.id, type = resource.type.name, uri = resource.path, contentHash = resource.hash))
     }
+
+    override suspend fun fileWithContent(hash: String): String? =
+        if (hash.isEmpty()) null else withContext(Dispatchers.IO) { resourceDao.findUriByHash(hash) }
 
     override suspend fun savePage(document: DrawDocument, page: DrawPage) = withContext(Dispatchers.IO) {
         pageDao.upsert(
@@ -465,6 +509,10 @@ class DrawDocumentRepository(
         documentDao.updateDocumentDefaults(
             document.id, document.defaultBackground, document.defaultWidthMm, document.defaultHeightMm, document.defaultsVersion
         )
+    }
+
+    override suspend fun updateDocumentTitle(document: DrawDocument) = withContext(Dispatchers.IO) {
+        documentDao.updateDocumentTitle(document.id, document.title, document.titleVersion)
     }
 
     override suspend fun touchDocument(document: DrawDocument, timestamp: Long) = withContext(Dispatchers.IO) {

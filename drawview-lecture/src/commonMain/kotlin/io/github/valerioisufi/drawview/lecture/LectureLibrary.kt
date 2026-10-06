@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.lecture
 
 import io.github.valerioisufi.drawview.core.platform.PlatformFiles
-import io.github.valerioisufi.drawview.core.platform.localDeviceName
+import io.github.valerioisufi.drawview.core.platform.DeviceProfile
 import io.github.valerioisufi.drawview.core.util.currentTimeMillis
 import io.github.valerioisufi.drawview.lecture.audio.LECTURE_BYTES_PER_SECOND
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
@@ -54,8 +54,8 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
             ?: randomName(DEVICE_ID_BYTES).also { PlatformFiles.writeBytes(path, it.encodeToByteArray()) }
     }
 
-    /** The name of this device, shown with the lectures it records on the other ones. */
-    val deviceName: String by lazy { localDeviceName() }
+    /** The name of this device (the one the user chose), shown with the lectures it records on the other ones. */
+    val deviceName: String get() = DeviceProfile.name.value
 
     /**
      * Held while a `lecture.json` is read, merged and written (the lecture being recorded, and

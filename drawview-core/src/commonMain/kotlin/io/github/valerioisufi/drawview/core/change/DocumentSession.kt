@@ -1,5 +1,8 @@
 package io.github.valerioisufi.drawview.core.change
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.core.util.currentTimeMillis
@@ -74,6 +77,12 @@ class DocumentSession(
         clock.observe(document.latestStamp())
     }
 
+    /**
+     * The document may only be read here (e.g. shared with this device as a reader): the changes
+     * made here are refused, the ones of the other devices are received.
+     */
+    var isReadOnly by mutableStateOf(false)
+
     /** The last operation applied of every replica. */
     val versionVector: Map<String, Long> get() = applied.toMap()
 
@@ -96,6 +105,7 @@ class DocumentSession(
      */
     fun submit(change: DocumentChange, origin: ChangeOrigin = ChangeOrigin.LOCAL): DocumentChange? {
         require(origin != ChangeOrigin.REMOTE) { "The changes of another device are received" }
+        if (isReadOnly) return null
         val stamp = clock.next()
         val effects = ChangeEffects(document)
         val inverse = change.applyTo(ChangeContext(document, effects, stamp)) ?: return null

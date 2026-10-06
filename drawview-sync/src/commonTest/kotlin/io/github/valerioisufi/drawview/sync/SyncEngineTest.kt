@@ -69,7 +69,7 @@ class SyncEngineTest {
 
     @Test
     fun anInvitationIsALink() {
-        val invitation = Invitation("doc-1", "Appunti di Fisica & co. 100%", DocumentKey.generate(), "192.168.1.20:4567")
+        val invitation = Invitation("doc-1", "Appunti di Fisica & co. 100%", DocumentKey.generate(), "0123456789abcdef", "192.168.1.20:4567")
         assertEquals(invitation, Invitation.parse(invitation.toLink()))
         assertEquals(invitation.copy(address = null), Invitation.parse(invitation.copy(address = null).toLink()))
         assertNull(Invitation.parse("https://example.com/?d=x&k=y"))
@@ -105,12 +105,16 @@ class SyncEngineTest {
             AddElements.of(document.pages[0], listOf(stroke(3f, 4f)))
         )
         val messages = listOf(
-            Hello("ada", "Ada", mapOf("ada" to 3L), hasDocument = true),
-            Snapshot(document.snapshot()),
+            Hello("ada", "Ada", mapOf("ada" to 3L), hasDocument = true, device = "key", proof = byteArrayOf(1, 2), membershipVersion = 3, epoch = 2),
+            Snapshot(document.snapshot(), mapOf("bob" to 4L)),
             Operations(listOf(operation)),
-            ResourceRequest(listOf("photo"))
+            ResourceRequest(listOf(ResourceAsk("photo", 1024))),
+            AttachmentRequest(listOf(AttachmentAsk("audio", "a1", 5)))
         )
-        for (message in messages) assertEquals(message, SyncCodec.decodeOrThrow(SyncCodec.encode(message)))
+        for (message in messages) {
+            val bytes = SyncCodec.encode(message)
+            assertContentEquals(bytes, SyncCodec.encode(SyncCodec.decodeOrThrow(bytes)))
+        }
     }
 
     // --- Devices ---
@@ -131,10 +135,11 @@ class SyncEngineTest {
         val storage = InMemoryKeyValueStorage()
         val store = KeyValueDocumentStore(storage, scope = scope)
         val documents = OpenDocuments(store, StandardTestDispatcher(test.testScheduler), scope)
-        val shared = StoreSharedDocuments(store)
+        val shared = StoreSharedDocuments(store, documents)
         val files = MemoryFiles()
         val attachments = MemoryAttachments()
-        val engine = SyncEngine(documents, shared, scope, name, files, keepAliveMs, attachments) { store.folders.first().firstOrNull()?.id }
+        val identity = DeviceIdentity.generate()
+        val engine = SyncEngine(documents, shared, scope, { name }, files, keepAliveMs, attachments, identity) { store.folders.first().firstOrNull()?.id }
         val transport = network.transport(name)
         private val connections = mutableListOf<Job>()
 
@@ -142,9 +147,26 @@ class SyncEngineTest {
             scope.launch { transport.incoming.collect { engine.accept(it) } }
         }
 
-        /** Joins [invitation] through the device at [address]. */
+        /**
+         * Shares the document [documentId] (this device its owner, reachable at its name): an
+         * invitation for the devices joining as [role], approved first when [approval].
+         */
+        suspend fun share(documentId: String, title: String, role: Role = Role.EDITOR, approval: Boolean = false): Invitation =
+            assertNotNull(engine.invite(documentId, title, role, approval, address = name))
+
+        /**
+         * Works on the document of [invitation] through the device at [address]: the first time
+         * with the invitation, through the owner (at the address of the invitation), which admits
+         * this device; then as a member, with the key of the document.
+         */
         suspend fun join(invitation: Invitation, address: String) {
-            connections += engine.join(transport.connect(address), invitation)
+            val key = engine.connectionKeys().firstOrNull { it.first == invitation.documentId && it.second != invitation.key }?.second
+            if (key == null) {
+                engine.join(invitation)
+                connections += engine.connect(transport.connect(invitation.address ?: address), invitation.documentId, invitation.key)
+            } else {
+                connections += engine.connect(transport.connect(address), invitation.documentId, key)
+            }
         }
 
         suspend fun disconnect() {
@@ -213,8 +235,19 @@ class SyncEngineTest {
             }
         }
 
-        override suspend fun receive(documentId: String, key: String, version: String, size: Long) = object : AttachmentReceiver {
-            val received = mutableListOf<ByteArray>()
+        /** The parts of the blobs received by transfers interrupted, and where they were asked from. */
+        val partial = mutableMapOf<Pair<String, String>, ByteArray>()
+        val askedFrom = mutableListOf<Long>()
+
+        override suspend fun received(documentId: String, key: String, version: String): Long =
+            if (isBlob(key)) partial[documentId to key]?.size?.toLong() ?: 0L else 0L
+
+        override suspend fun receive(documentId: String, key: String, version: String, size: Long, from: Long) = object : AttachmentReceiver {
+            val received = mutableListOf<ByteArray>().apply {
+                askedFrom.add(from)
+                if (from > 0) partial.remove(documentId to key)?.let { add(it) }
+            }
+
             override suspend fun write(bytes: ByteArray) {
                 received.add(bytes)
             }
@@ -231,7 +264,10 @@ class SyncEngineTest {
                 if (merged != mine) put(documentId, key, merged)
             }
 
-            override suspend fun cancel() {}
+            override suspend fun cancel() {
+                // A blob goes on later
+                if (isBlob(key)) partial[documentId to key] = received.fold(ByteArray(0)) { all, part -> all + part }
+            }
         }
     }
 
@@ -307,7 +343,7 @@ class SyncEngineTest {
 
         val document = ada.store.createDocument("Physics")
         ada.change(document.id) { AddElements.of(it.document.pages[0], listOf(stroke(10f, 10f), text("waves"))) }
-        val invitation = ada.engine.share(document.id, "Physics")
+        val invitation = ada.share(document.id, "Physics")
 
         bob.join(invitation, "ada")
         advanceUntilIdle()
@@ -320,7 +356,7 @@ class SyncEngineTest {
         // Shared on both sides (the key of Bob kept with the document received)
         assertTrue(received.isShared)
         assertTrue(ada.store.documents.first().single().isShared)
-        assertEquals(invitation.key, bob.shared.keyOf(document.id))
+        assertEquals(assertNotNull(ada.shared.stateOf(document.id)?.key), bob.shared.stateOf(document.id)?.key)
         assertEquals(bob.store.folders.first().single().id, received.folderId)
 
         // Live: the changes of each one reach the other
@@ -357,7 +393,7 @@ class SyncEngineTest {
         val bob = Device("bob", work, this, network)
         val document = ada.store.createDocument("Physics")
         ada.change(document.id) { AddElements.of(it.document.pages[0], listOf(text("waves"))) }
-        val invitation = ada.engine.share(document.id, "Physics")
+        val invitation = ada.share(document.id, "Physics")
         bob.join(invitation, "ada")
         advanceUntilIdle()
 
@@ -384,7 +420,7 @@ class SyncEngineTest {
         val network = InMemoryNetwork()
         val ada = Device("ada", work, this, network)
         val document = ada.store.createDocument("Notes")
-        val invitation = ada.engine.share(document.id, "Notes")
+        val invitation = ada.share(document.id, "Notes")
         network.transport("older").connect("ada").send(SyncCodec.encodeOpen(OpenFrame(PROTOCOL_VERSION + 1, invitation.key.tag)))
         advanceUntilIdle()
         assertTrue(ada.engine.otherVersionMet.value)
@@ -396,11 +432,17 @@ class SyncEngineTest {
         val network = InMemoryNetwork()
         val ada = Device("ada", work, this, network)
         val document = ada.store.createDocument("Notes")
-        val invitation = ada.engine.share(document.id, "Notes")
+        val invitation = ada.share(document.id, "Notes")
         val channel = network.transport("newer").connect("ada")
         channel.send(SyncCodec.encodeOpen(OpenFrame(PROTOCOL_VERSION, invitation.key.tag)))
         val newer = SecureChannel.of(channel, invitation.key)
-        newer.send(SyncCodec.encode(Hello("newer-replica", "Newer", emptyMap(), hasDocument = true)))
+        newer.send(SyncCodec.encode(Challenge(ByteArray(16))))
+        advanceUntilIdle()
+        // Who it is, proven, admitted by the owner
+        val challenge = SyncCodec.decodeOrThrow(assertNotNull(newer.receive())) as Challenge
+        val identity = DeviceIdentity.generate()
+        val proof = identity.sign(helloProof(challenge.nonce, invitation.key.tag, "newer-replica", identity.publicKey))
+        newer.send(SyncCodec.encode(Hello("newer-replica", "Newer", emptyMap(), hasDocument = true, device = identity.publicKey, proof = proof)))
         advanceUntilIdle()
         assertEquals(listOf("Newer"), ada.engine.peers.value.map { it.name })
         assertFalse(ada.engine.otherVersionMet.value)
@@ -418,7 +460,7 @@ class SyncEngineTest {
         val network = InMemoryNetwork()
         val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
         val document = ada.store.createDocument("Notes")
-        val invitation = ada.engine.share(document.id, "Notes")
+        val invitation = ada.share(document.id, "Notes")
         // Made apart: merged both ways when the devices meet
         ada.attachments.put(document.id, "lecture/1", setOf("outline"))
         bob.attachments.put(document.id, "lecture/1", setOf("review"))
@@ -449,7 +491,7 @@ class SyncEngineTest {
         val network = InMemoryNetwork()
         val (ada, bob) = listOf("ada", "bob").map { Device(it, work, this, network) }
         val document = ada.store.createDocument("Notes")
-        val invitation = ada.engine.share(document.id, "Notes")
+        val invitation = ada.share(document.id, "Notes")
         // The file is offered with the list naming it, which Bob has not yet
         ada.attachments.items[document.id to "file/page.jpg"] = Random(5).nextBytes(1000)
         ada.attachments.put(document.id, "lecture/1", setOf("file/page.jpg"))
@@ -473,7 +515,7 @@ class SyncEngineTest {
         val devices = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
         val (ada, bob, cy) = devices
         val document = ada.store.createDocument("Notes")
-        val invitation = ada.engine.share(document.id, "Notes")
+        val invitation = ada.share(document.id, "Notes")
         bob.join(invitation, "ada")
         cy.join(invitation, "ada")
         advanceUntilIdle()
@@ -502,7 +544,7 @@ class SyncEngineTest {
         val network = InMemoryNetwork()
         val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
         val document = ada.store.createDocument("Notes")
-        val invitation = ada.engine.share(document.id, "Notes")
+        val invitation = ada.share(document.id, "Notes")
         bob.join(invitation, "ada")
         cy.join(invitation, "ada")
         advanceUntilIdle()
@@ -554,8 +596,12 @@ class SyncEngineTest {
         val network = InMemoryNetwork()
         val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
         val document = ada.store.createDocument("Notes")
-        val invitation = ada.engine.share(document.id, "Notes")
+        val invitation = ada.share(document.id, "Notes")
         bob.join(invitation, "ada")
+        // Cy admitted first (by the owner)
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+        cy.disconnect()
         advanceUntilIdle()
         // Bob connects again, Ada connects to Bob too (both connected to the other at once)
         bob.join(invitation, "ada")
@@ -579,8 +625,8 @@ class SyncEngineTest {
         assertEquals("bob", cy.engine.presences.value.single().name)
     }
 
-    /** A connection that can be cut silently, like by a device gone out of the network. */
-    private class Cable {
+    /** A connection that can be cut silently, like by a device gone out of the network ([framesLeft]: after so many frames). */
+    private class Cable(var framesLeft: Int = Int.MAX_VALUE) {
         val cut = MutableStateFlow(false)
     }
 
@@ -589,6 +635,7 @@ class SyncEngineTest {
         private val closed = CompletableDeferred<Unit>()
 
         override suspend fun send(frame: ByteArray) {
+            if (cable.framesLeft-- <= 0) cable.cut.value = true
             if (!cable.cut.value) inner.send(frame)
         }
 
@@ -608,11 +655,13 @@ class SyncEngineTest {
         }
     }
 
-    /** Connects [joining] to [sharing] for [invitation] through [cable]. */
-    private fun connect(sharing: Device, joining: Device, invitation: Invitation, cable: Cable) {
+    /** Connects [joining] to [sharing] for [invitation] (the key of the document once admitted) through [cable]. */
+    private suspend fun connect(sharing: Device, joining: Device, invitation: Invitation, cable: Cable) {
         val (one, other) = InMemoryChannel.pair()
         sharing.engine.accept(CableEnd(one, cable))
-        joining.engine.join(CableEnd(other, cable), invitation)
+        val key = joining.engine.connectionKeys().firstOrNull { it.first == invitation.documentId && it.second != invitation.key }?.second
+        if (key == null) joining.engine.join(invitation)
+        joining.engine.connect(CableEnd(other, cable), invitation.documentId, key ?: invitation.key)
     }
 
     @Test
@@ -621,7 +670,7 @@ class SyncEngineTest {
         val ada = Device("ada", work, this, network, keepAliveMs = 1_000)
         val bob = Device("bob", work, this, network, keepAliveMs = 1_000)
         val document = ada.store.createDocument("Notes")
-        val invitation = ada.engine.share(document.id, "Notes")
+        val invitation = ada.share(document.id, "Notes")
         val cable = Cable()
         connect(ada, bob, invitation, cable)
         advanceTimeBy(500)
@@ -661,12 +710,231 @@ class SyncEngineTest {
             )
         }
 
-        bob.join(ada.engine.share(document.id, "Slides"), "ada")
+        bob.join(ada.share(document.id, "Slides"), "ada")
         advanceUntilIdle()
         val open = assertNotNull(bob.documents.open(document.id))
         val path = open.edit { it.document.findResource("photo")?.path }
         bob.documents.close(open)
         assertTrue(path!!.endsWith(".jpg"), path)
         assertContentEquals(bytes, bob.files.files[path])
+    }
+
+    // --- Members ---
+
+    @Test
+    fun theOwnerApprovesOrRefusesTheDevicesJoining() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Notes")
+        val invitation = ada.share(document.id, "Notes", approval = true)
+        bob.join(invitation, "ada")
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+        // Waiting for Ada
+        assertEquals(setOf("bob", "cy"), ada.engine.joinRequests.value.map { it.name }.toSet())
+        assertEquals(JoinStatus.WAITING_APPROVAL, bob.engine.joining.value[document.id])
+        assertTrue(bob.store.documents.first().isEmpty())
+
+        ada.engine.answer(ada.engine.joinRequests.value.single { it.name == "bob" }, approve = true)
+        ada.engine.answer(ada.engine.joinRequests.value.single { it.name == "cy" }, approve = false)
+        advanceUntilIdle()
+        assertSame(document.id, listOf(ada, bob))
+        assertEquals(JoinStatus.ADMITTED, bob.engine.joining.value[document.id])
+        assertEquals(JoinStatus.REFUSED, cy.engine.joining.value[document.id])
+        assertTrue(cy.store.documents.first().isEmpty())
+        assertNull(cy.shared.stateOf(document.id))
+        val members = assertNotNull(ada.engine.memberships.value[document.id]).members
+        assertEquals(listOf(Role.OWNER, Role.EDITOR), members.map { it.role })
+        assertEquals(members, bob.engine.memberships.value[document.id]?.members)
+    }
+
+    @Test
+    fun theChangesOfAReaderAreRefusedByEveryDevice() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob) = listOf("ada", "bob").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Notes")
+        bob.join(ada.share(document.id, "Notes", role = Role.READER), "ada")
+        advanceUntilIdle()
+        assertTrue(bob.store.isReadOnly(document.id))
+        // Refused here
+        bob.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        assertEquals(1, bob.snapshot(document.id).pages.size)
+        // The changes of Ada reach Bob
+        ada.change(document.id) { AddElements.of(it.document.pages[0], listOf(stroke(1f, 1f))) }
+        advanceUntilIdle()
+        assertEquals(1, bob.snapshot(document.id).pages[0].data.elements.size)
+
+        // Made editor: its changes are accepted
+        ada.engine.setRole(document.id, bob.engine.device, Role.EDITOR)
+        advanceUntilIdle()
+        assertFalse(bob.store.isReadOnly(document.id))
+        bob.change(document.id) { AddElements.of(it.document.pages[0], listOf(stroke(5f, 5f))) }
+        advanceUntilIdle()
+        assertEquals(2, ada.snapshot(document.id).pages[0].data.elements.size)
+
+        // Reader again: the changes it makes all the same (by another application) are refused by the others
+        ada.engine.setRole(document.id, bob.engine.device, Role.READER)
+        advanceUntilIdle()
+        val open = assertNotNull(bob.documents.open(document.id))
+        open.edit { session ->
+            session.isReadOnly = false
+            session.submit(AddPage.of(DrawPage(orderKey = session.document.orderKeyAt(1))))
+        }
+        bob.documents.close(open)
+        advanceUntilIdle()
+        assertEquals(1, ada.snapshot(document.id).pages.size)
+    }
+
+    @Test
+    fun aDeviceRemovedCannotFollowTheDocumentAnymore() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Notes")
+        val invitation = ada.share(document.id, "Notes")
+        bob.join(invitation, "ada")
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+        val oldKey = assertNotNull(cy.shared.stateOf(document.id)?.key)
+
+        ada.engine.removeMember(document.id, cy.engine.device)
+        advanceUntilIdle()
+        // A new key for the others; Cy keeps its copy only
+        val newKey = assertNotNull(ada.shared.stateOf(document.id)?.key)
+        assertTrue(newKey != oldKey)
+        assertEquals(newKey, bob.shared.stateOf(document.id)?.key)
+        assertNull(cy.shared.stateOf(document.id))
+        assertTrue(cy.engine.peers.value.isEmpty())
+        assertEquals(listOf("bob"), ada.engine.peers.value.map { it.name })
+
+        // With the old key Cy is refused, and its changes stay with it
+        cy.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        cy.engine.connect(cy.transport.connect("bob"), document.id, oldKey)
+        advanceUntilIdle()
+        assertTrue(bob.engine.peers.value.none { it.name == "cy" })
+        assertEquals(1, bob.snapshot(document.id).pages.size)
+        // The others go on together, with the new key
+        bob.disconnect()
+        bob.join(invitation, "ada")
+        ada.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        advanceUntilIdle()
+        assertSame(document.id, listOf(ada, bob))
+    }
+
+    @Test
+    fun theOwnerEndsTheSharingAndADeviceLeavesIt() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Notes")
+        val invitation = ada.share(document.id, "Notes")
+        bob.join(invitation, "ada")
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+
+        // Cy leaves: the owner removes it
+        cy.engine.unshare(document.id)
+        advanceUntilIdle()
+        assertNull(cy.shared.stateOf(document.id))
+        assertEquals(listOf("ada", "bob"), assertNotNull(ada.engine.memberships.value[document.id]).members.map { it.name })
+
+        // Ada ends the sharing: Bob keeps its copy
+        ada.engine.unshare(document.id)
+        advanceUntilIdle()
+        assertNull(ada.shared.stateOf(document.id))
+        assertNull(bob.shared.stateOf(document.id))
+        assertFalse(bob.store.documents.first().single().isShared)
+        assertEquals(1, bob.snapshot(document.id).pages.size)
+    }
+
+    @Test
+    fun aDocumentRenamedIsRenamedOnTheOtherDevices() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob) = listOf("ada", "bob").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Notes")
+        bob.join(ada.share(document.id, "Notes"), "ada")
+        advanceUntilIdle()
+        assertTrue(bob.documents.rename(document.id, "Physics"))
+        advanceUntilIdle()
+        assertEquals("Physics", ada.store.documents.first().single().name)
+        assertEquals("Physics", ada.snapshot(document.id).title)
+    }
+
+    @Test
+    fun aFileTheDeviceHasAlreadyIsNotReceivedAgain() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob) = listOf("ada", "bob").map { Device(it, work, this, network) }
+        val bytes = Random(2).nextBytes(300_000)
+        val hash = io.github.valerioisufi.drawview.core.util.Sha256.of(bytes)
+        // Bob has the same image in a document of its own
+        val own = bob.store.createDocument("Mine")
+        bob.files.files["/bob/photo.jpg"] = bytes
+        bob.change(own.id) { AddResource.of("own-photo", DrawResource.ResourceType.IMAGE, "/bob/photo.jpg", hash) }
+        val document = ada.store.createDocument("Slides")
+        ada.files.files["/ada/photo.jpg"] = bytes
+        ada.change(document.id) { AddResource.of("photo", DrawResource.ResourceType.IMAGE, "/ada/photo.jpg", hash) }
+
+        bob.join(ada.share(document.id, "Slides"), "ada")
+        advanceUntilIdle()
+        val open = assertNotNull(bob.documents.open(document.id))
+        assertEquals("/bob/photo.jpg", open.edit { it.document.findResource("photo")?.path })
+        bob.documents.close(open)
+        assertEquals(1, bob.files.files.size, "not written again")
+    }
+
+    @Test
+    fun anItemInterruptedGoesOnFromWhereItStopped() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network, keepAliveMs = 1_000)
+        val bob = Device("bob", work, this, network, keepAliveMs = 1_000)
+        val document = ada.store.createDocument("Notes")
+        val invitation = ada.share(document.id, "Notes")
+        connect(ada, bob, invitation, Cable())
+        advanceTimeBy(500)
+        bob.disconnect()
+        advanceTimeBy(5_000)
+        val audio = Random(4).nextBytes(10_000_000)
+        ada.attachments.items[document.id to "blob/audio"] = audio
+        // Cut after a part of it
+        connect(ada, bob, invitation, Cable(framesLeft = 30))
+        advanceTimeBy(10_000)
+        val kept = bob.attachments.received(document.id, "blob/audio", "size ${audio.size}")
+        assertTrue(kept in 1 until audio.size.toLong(), "a part of it kept ($kept)")
+
+        connect(ada, bob, invitation, Cable())
+        advanceTimeBy(5_000)
+        assertEquals(kept, bob.attachments.askedFrom.last(), "asked from where it stopped")
+        assertContentEquals(audio, bob.attachments.items[document.id to "blob/audio"])
+    }
+
+    @Test
+    fun theOperationsEveryMemberHasLeaveTheLog() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Notes")
+        val invitation = ada.share(document.id, "Notes")
+        bob.join(invitation, "ada")
+        advanceUntilIdle()
+        repeat(5) { i -> ada.change(document.id) { AddElements.of(it.document.pages[0], listOf(stroke(i * 5f, 1f))) } }
+        repeat(3) { i -> bob.change(document.id) { AddElements.of(it.document.pages[0], listOf(stroke(i * 5f, 50f))) } }
+        advanceUntilIdle()
+        bob.change(document.id) { session -> RemoveElements.of(session.document.pages[0], session.document.pages[0].strokes.take(2)) }
+        advanceUntilIdle()
+        assertEquals(2, ada.snapshot(document.id).pages[0].removedElements.size)
+        // Told again what each one has (it travels with the connections)
+        bob.disconnect()
+        bob.join(invitation, "ada")
+        advanceUntilIdle()
+        assertTrue(ada.store.compactedOperations(document.id).isNotEmpty(), "the log of Ada compacted")
+        assertTrue(ada.store.operationsAfter(document.id, emptyMap()).size < 9)
+        // Nothing can bring back what was removed: gone for good
+        assertTrue(ada.snapshot(document.id).pages[0].removedElements.isEmpty())
+        assertEquals(6, ada.snapshot(document.id).pages[0].data.elements.size)
+
+        // A device joining later gets the document all the same
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+        assertSame(document.id, listOf(ada, bob, cy))
+        cy.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        advanceUntilIdle()
+        assertSame(document.id, listOf(ada, bob, cy))
     }
 }

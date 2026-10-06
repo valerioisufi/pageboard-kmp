@@ -2,7 +2,6 @@ package io.github.valerioisufi.drawview.sync.lan
 
 import io.github.valerioisufi.drawview.sync.DocumentKey
 import io.github.valerioisufi.drawview.sync.Invitation
-import io.github.valerioisufi.drawview.sync.SharedDocuments
 import io.github.valerioisufi.drawview.sync.SyncEngine
 import io.github.valerioisufi.drawview.sync.SyncException
 import kotlinx.coroutines.CoroutineScope
@@ -20,8 +19,9 @@ import kotlin.time.TimeSource
 /**
  * Keeps the shared documents of this device the same as on the devices of the local network
  * (GRASP Controller of working with the others on the same network): it announces the documents
- * this device shares (by their tags, see [DocumentKey.tag]), finds the devices sharing the same
- * ones and connects to them.
+ * this device shares and the invitations it gives (by their tags, see [DocumentKey.tag] and
+ * [SyncEngine.announcedTags]), finds the devices sharing the same ones (or the owner of the
+ * invitation this device joins with) and connects to them.
  *
  * Every [retryMs] it makes again the connections lost (a device gone and back, a network
  * changed...), listens again if the system closed the listener, and connects to the devices of
@@ -36,11 +36,10 @@ import kotlin.time.TimeSource
  */
 class LanSync(
     private val engine: SyncEngine,
-    private val shared: SharedDocuments,
     private val discovery: LanDiscovery,
     private val scope: CoroutineScope,
     private val deviceId: String,
-    private val deviceName: String,
+    private val deviceName: () -> String,
     private val transport: LanTransport = LanTransport(scope),
     private val retryMs: Long = 5_000,
     private val connectTimeoutMs: Long = 5_000
@@ -80,6 +79,8 @@ class LanSync(
                     refresh()
                 }
             }
+            // A document shared, a key or an invitation changed: announced at once
+            launch { engine.sharingChanged.collect { announce() } }
         }
         announce()
     }
@@ -103,19 +104,25 @@ class LanSync(
     /** Announces the documents shared now (after one is shared or joined). */
     suspend fun announce() {
         if (job == null) return
-        val tags = shared.all().values.map { it.tag.take(TAG_LENGTH) }.sorted()
-        val attributes = mutableMapOf("v" to PROTOCOL.toString(), "n" to deviceName.take(MAX_NAME_LENGTH))
+        val tags = engine.announcedTags().map { it.take(TAG_LENGTH) }.sorted()
+        val attributes = mutableMapOf("v" to PROTOCOL.toString(), "n" to deviceName().take(MAX_NAME_LENGTH))
         // The TXT entries are short: the tags in as many as needed
         tags.chunked(TAGS_PER_ENTRY).forEachIndexed { i, chunk -> attributes["t$i"] = chunk.joinToString(",") }
-        discovery.advertise(deviceId, transport.boundPort, attributes)
+        // Stopped meanwhile (e.g. a sharing changed while the application goes away): nothing to announce
+        val port = try {
+            transport.boundPort.takeIf { job != null && transport.isListening } ?: return
+        } catch (_: Exception) {
+            return
+        }
+        discovery.advertise(deviceId, port, attributes)
     }
 
     /**
-     * Joins the document of [invitation]: through the device at its address if it has one, and
-     * through the devices sharing it on the network.
+     * Joins the document of [invitation]: through its owner, at its address if it has one or found
+     * on the network.
      */
     suspend fun join(invitation: Invitation) {
-        shared.add(invitation.documentId, invitation.key)
+        engine.join(invitation)
         invitation.address?.let { address -> mutex.withLock { addresses[invitation.documentId] = address } }
         announce()
         connect(missingOnly = true)
@@ -139,7 +146,7 @@ class LanSync(
      * this device is the one to connect first.
      */
     private suspend fun connect(missingOnly: Boolean) {
-        val keys = shared.all()
+        val keys = engine.connectionKeys()
         val peers = engine.peers.value
         val (found, invited) = mutex.withLock {
             // Forgotten a while after they are gone (and not connected)
@@ -154,15 +161,16 @@ class LanSync(
             // One connection between two devices: the other one makes it first
             if (!missingOnly && deviceId > service.name) continue
             val tags = service.attributes.filterKeys { it.startsWith("t") }.values.flatMap { it.split(',') }.toSet()
-            for ((documentId, key) in keys) {
-                if (key.tag.take(TAG_LENGTH) !in tags) continue
+            // The current key of a document first: an older one for a device still on it
+            for (documentId in keys.map { it.first }.distinct()) {
+                val key = keys.firstOrNull { it.first == documentId && it.second.tag.take(TAG_LENGTH) in tags }?.second ?: continue
                 if (peers.any { it.replica == service.name && it.documentId == documentId }) continue
                 open(service.name, service.address, documentId, key)
             }
         }
         // The devices of the invitations, while nobody shares the document with this one
         for ((documentId, address) in invited) {
-            val key = keys[documentId] ?: continue
+            val key = keys.firstOrNull { it.first == documentId }?.second ?: continue
             if (peers.none { it.documentId == documentId }) open(address, address, documentId, key)
         }
     }
@@ -187,7 +195,7 @@ class LanSync(
                 }
             } ?: return@launch
             // As long as the connection lasts
-            engine.join(channel, Invitation(documentId, "", key)).join()
+            engine.connect(channel, documentId, key).join()
         }
     }
 

@@ -5,6 +5,7 @@ import io.github.valerioisufi.drawview.core.controller.DrawPersistence
 import io.github.valerioisufi.drawview.core.controller.DrawPreferences
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.core.model.Stamp
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -67,13 +68,17 @@ interface DocumentStore {
      * Stores [document] with its whole content (removed pages and elements included) in
      * [folderId]: a document received from another device (see `DocumentSnapshot`).
      */
-    suspend fun insertDocument(document: DrawDocument, folderId: String? = null)
+    suspend fun insertDocument(document: DrawDocument, folderId: String? = null, versionVector: Map<String, Long> = emptyMap())
 
     /** Loads the whole content of a document, or `null` when it does not exist. */
     suspend fun loadDocument(documentId: String): DrawDocument?
 
-    /** Renames a document; `false` when the name is already used by another document. */
-    suspend fun renameDocument(documentId: String, newName: String): Boolean
+    /**
+     * Whether the document [documentId] can be named [name]: no other document of its folder has
+     * that name. A document is renamed by a change of it (see [OpenDocuments.rename]), so that the
+     * devices it is shared with rename it too.
+     */
+    suspend fun isDocumentNameAvailable(documentId: String, name: String): Boolean
 
     /** Deletes a document together with its resources (imported images and PDFs). */
     suspend fun deleteDocument(documentId: String): Boolean
@@ -111,13 +116,29 @@ interface DocumentStore {
     suspend fun operationsAfter(documentId: String, known: Map<String, Long>): List<Operation>
 
     /**
+     * Removes from the log of [documentId] its operations up to [upTo] (a version vector: the ones
+     * every device working on it has), still counted in its [versionVector]: the stamps of the last
+     * operations removed, by replica.
+     */
+    suspend fun compactOperations(documentId: String, upTo: Map<String, Long>): Map<String, Stamp>
+
+    /** The last operation of every replica no longer in the log of [documentId] (see [compactOperations]). */
+    suspend fun compactedOperations(documentId: String): Map<String, Long>
+
+    /**
      * The secrets of the documents shared with other devices (written as text by `drawview-sync`),
      * by document: whoever has the secret of a document can read and change it.
      */
     suspend fun sharingSecrets(): Map<String, String>
 
-    /** Shares the document [documentId] with [secret], or stops sharing it (`null`). */
-    suspend fun setSharingSecret(documentId: String, secret: String?)
+    /**
+     * Shares the document [documentId] with [secret], or stops sharing it (`null`); [readOnly]:
+     * this device may only read it (see `DocumentSession.isReadOnly`).
+     */
+    suspend fun setSharingSecret(documentId: String, secret: String?, readOnly: Boolean = false)
+
+    /** Whether this device may only read the document [documentId] (see [setSharingSecret]). */
+    suspend fun isReadOnly(documentId: String): Boolean
 
     /** Writes the pending changes (stores that write lazily). */
     suspend fun flush() {}

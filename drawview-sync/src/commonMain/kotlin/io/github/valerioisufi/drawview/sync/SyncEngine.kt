@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.sync
 
+import dev.whyoleg.cryptography.random.CryptographyRandom
 import io.github.valerioisufi.drawview.core.attachment.AttachmentChange
 import io.github.valerioisufi.drawview.core.attachment.AttachmentReceiver
 import io.github.valerioisufi.drawview.core.attachment.DocumentAttachments
@@ -13,13 +14,15 @@ import io.github.valerioisufi.drawview.core.change.snapshot
 import io.github.valerioisufi.drawview.core.util.currentTimeMillis
 import io.github.valerioisufi.drawview.data.OpenDocument
 import io.github.valerioisufi.drawview.data.OpenDocuments
-import kotlin.math.min
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -29,18 +32,40 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.math.min
 
-/** A device working on the document [documentId] with this one. */
-data class Peer(val documentId: String, val replica: String, val name: String)
+/** A device working on the document [documentId] with this one ([device]: its identity, see [DeviceIdentity]). */
+data class Peer(val documentId: String, val replica: String, val name: String, val device: String = "")
+
+/**
+ * A device asking to join the document [documentId] with an invitation needing the approval of
+ * the owner (see [SyncEngine.answer]), as long as it stays connected.
+ */
+class JoinRequest internal constructor(val documentId: String, val device: String, val name: String, val role: Role) {
+    internal val decision = CompletableDeferred<Boolean>()
+}
+
+/** Where this device is in joining a document with an invitation. */
+enum class JoinStatus { LOOKING_FOR_OWNER, WAITING_APPROVAL, ADMITTED, REFUSED }
 
 /**
  * Keeps the shared documents of this device the same as on the other devices (GRASP Controller
- * of working on a document with others): over every connection ([accept], [join]) the two
- * devices send each other the operations the other misses, then the operations as they are made
- * (the ones of the other devices too: a device relays them), and the files of the resources.
+ * of working on a document with others): over every connection ([accept], [connect]) the two
+ * devices prove who they are ([identity]), check that the other one is a member of the document
+ * ([DocumentSharing]), then send each other the operations the other misses, then the operations
+ * as they are made (the ones of the other devices too: a device relays them), and the files of
+ * the resources. The operations of a device that may not change the document ([Role.READER], a
+ * device removed) are refused by every device.
+ *
+ * The owner of a document admits the devices joining with its invitations ([invite]), at once or
+ * once approved ([joinRequests]), gives them their roles, removes them (the document gets a new
+ * key: a device removed cannot follow it anymore) and ends the sharing; every device follows the
+ * membership the owner signs.
  *
  * The data the extensions of the editor keep beside the documents ([attachments], e.g. the
- * lectures) travel too, in items whose versions the devices compare.
+ * lectures) travel too, in items whose versions the devices compare; a transfer interrupted goes
+ * on from where it stopped. The operations every member has are removed from the log
+ * (see [OpenDocument.compact]).
  *
  * The documents are changed through their [OpenDocuments] session, open in an editor or not;
  * the connections come from any [SyncTransport] and are encrypted with the key of their document
@@ -54,21 +79,43 @@ data class Peer(val documentId: String, val replica: String, val name: String)
  */
 class SyncEngine(
     private val documents: OpenDocuments,
-    private val shared: SharedDocuments,
+    shared: SharedDocuments,
     private val scope: CoroutineScope,
-    private val deviceName: String,
+    private val deviceName: () -> String,
     private val files: ResourceFiles = PlatformResourceFiles,
     private val keepAliveMs: Long = 4_000,
     private val attachments: DocumentAttachments? = null,
+    identity: DeviceIdentity = DeviceIdentity.generate(),
     private val receivedFolder: suspend () -> String? = { null }
 ) {
+    private val sharing = DocumentSharing(shared, identity)
+    private val identity get() = sharing.identity
     private val mutex = Mutex()
     private val syncs = mutableMapOf<String, DocumentSync>()
     private val links = mutableSetOf<Link>()
     private val connected = MutableStateFlow<List<Peer>>(emptyList())
 
-    /** The devices connected, with the document each one works on. */
+    /** The devices connected (members of the document of the connection), with the document each one works on. */
     val peers: StateFlow<List<Peer>> = connected.asStateFlow()
+
+    /** This device among the members of the documents ([DeviceIdentity.publicKey]). */
+    val device: String get() = identity.publicKey
+
+    /** The memberships of the shared documents (who works on each one, as the owner decided). */
+    val memberships: StateFlow<Map<String, Membership>> get() = sharing.memberships
+
+    /** Documents whose keys or invitations changed: what to announce on the network (see [reachable]). */
+    val sharingChanged: SharedFlow<String> get() = sharing.changed
+
+    private val requests = MutableStateFlow<List<JoinRequest>>(emptyList())
+
+    /** The devices waiting for the approval of this device, the owner, to join a document. */
+    val joinRequests: StateFlow<List<JoinRequest>> = requests.asStateFlow()
+
+    private val joinStates = MutableStateFlow<Map<String, JoinStatus>>(emptyMap())
+
+    /** The documents this device is joining with an invitation, and where it is. */
+    val joining: StateFlow<Map<String, JoinStatus>> = joinStates.asStateFlow()
 
     private val otherVersion = MutableStateFlow(false)
 
@@ -78,9 +125,16 @@ class SyncEngine(
      */
     val otherVersionMet: StateFlow<Boolean> = otherVersion.asStateFlow()
 
+    /** The downloads of the files of the resources, by document and resource (they go on over another connection). */
+    private val downloads = mutableMapOf<Pair<String, String>, Download>()
+    private val downloadsMutex = Mutex()
+
     init {
-        // The items beside the documents changed here: to the devices on their document
-        attachments?.let { scope.launch { it.changes.collect(::onAttachmentChanged) } }
+        attachments?.let { attachments ->
+            // The items beside the documents changed here: to the devices on their document
+            scope.launch { attachments.changes.collect(::onAttachmentChanged) }
+            scope.launch { attachments.wantedAgain.collect { documentId -> linksOf(documentId).forEach { askForOffered(it) } } }
+        }
     }
 
     /** The last presence of every device on every document, and the connection it came from. */
@@ -137,27 +191,118 @@ class SyncEngine(
                 text = presence.text.takeUnless { textKept },
                 selection = presence.selection?.let { if (selectionKept) it.copy(ids = emptyList()) else it },
                 replica = replica,
-                name = deviceName,
+                name = deviceName(),
                 sequence = presenceSequence
             )
-            PresenceMessage(part, from, textKept, selectionKept) to links.filter { it.documentId == presence.documentId && it.peerHello != null }
+            PresenceMessage(part, from, textKept, selectionKept) to links.filter { it.documentId == presence.documentId && it.authorized }
         }
         targets.forEach { it.outbox.trySend(message) }
     }
 
+    // ==========================================================
+    // Sharing
+    // ==========================================================
+
     /**
-     * Shares the document [documentId] (titled [title]): the invitation to give to the devices
-     * that may join it, reaching this one at [address].
+     * Shares the document [documentId] (titled [title]), this device becoming its owner (unless it
+     * is shared already): an invitation for the devices joining as [role], approved first by this
+     * device when [approval], reaching this one at [address].
+     *
+     * @return `null` when this device is not the owner of the document (only the owner invites).
      */
-    suspend fun share(documentId: String, title: String, address: String? = null): Invitation {
-        val key = shared.keyOf(documentId) ?: DocumentKey.generate().also { shared.add(documentId, it) }
-        return Invitation(documentId, title, key, address)
+    suspend fun invite(
+        documentId: String,
+        title: String,
+        role: Role = Role.EDITOR,
+        approval: Boolean = false,
+        address: String? = null
+    ): Invitation? {
+        val state = sharing.stateOf(documentId)
+        if (state?.members == null) sharing.share(documentId, replica(), deviceName())
+        val grant = sharing.invite(documentId, role, approval) ?: return null
+        return Invitation(documentId, title, DocumentKey.decode(grant.key)!!, DeviceIdentity.fingerprint(device), address)
     }
 
-    /** Stops sharing the document [documentId]: its connections are closed. */
+    /** The invitations of the document [documentId] (this device is its owner). */
+    suspend fun invitationsOf(documentId: String): List<InvitationGrant> = sharing.stateOf(documentId)?.invitations.orEmpty()
+
+    /** The invitation [grant] as a link to give. */
+    fun invitationOf(documentId: String, title: String, grant: InvitationGrant, address: String? = null): Invitation =
+        Invitation(documentId, title, DocumentKey.decode(grant.key)!!, DeviceIdentity.fingerprint(device), address)
+
+    /** Revokes the invitation [grantId] of [documentId]: nobody joins with it anymore (the devices joined stay). */
+    suspend fun revokeInvitation(documentId: String, grantId: String) {
+        sharing.revoke(documentId, grantId)
+        linksOf(documentId).filter { (it.match as? TagMatch.Grant)?.grant?.id == grantId && !it.authorized }.forEach { it.channel.close() }
+    }
+
+    /** Approves (or refuses) the device of [request] joining its document. */
+    fun answer(request: JoinRequest, approve: Boolean) {
+        requests.update { it - request }
+        request.decision.complete(approve)
+    }
+
+    /** Gives the member [target] of [documentId] the role [role] (this device is the owner). */
+    suspend fun setRole(documentId: String, target: String, role: Role) {
+        val member = sharing.membershipOf(documentId)?.memberOf(target) ?: return
+        val state = sharing.setRole(documentId, target, role, lastSequenceOf(documentId, member.replica)) ?: return
+        onMembershipChanged(documentId, state, from = null)
+    }
+
+    /**
+     * Removes the member [target] from [documentId] (this device is the owner): the document gets a
+     * new key, given to the other members; the device removed cannot follow it anymore.
+     */
+    suspend fun removeMember(documentId: String, target: String) {
+        val member = sharing.membershipOf(documentId)?.memberOf(target) ?: return
+        val state = sharing.remove(documentId, target, lastSequenceOf(documentId, member.replica)) ?: return
+        onMembershipChanged(documentId, state, from = null)
+    }
+
+    /**
+     * Stops sharing the document [documentId]: the owner ends the sharing for every device (each one
+     * keeps its copy), another device leaves it (the owner removes it). Its connections are closed.
+     */
     suspend fun unshare(documentId: String) {
-        shared.remove(documentId)
-        mutex.withLock { links.filter { it.documentId == documentId } }.forEach { it.channel.close() }
+        val state = sharing.stateOf(documentId)
+        if (state?.owner == device && state.members != null) {
+            sharing.end(documentId)?.let { onMembershipChanged(documentId, it, from = null) }
+        } else {
+            linksOf(documentId).filter { it.authorized }.forEach { it.outbox.trySend(Leave) }
+        }
+        sharing.forget(documentId)
+        joinStates.update { it - documentId }
+        // The last messages first
+        linksOf(documentId).forEach { closeSoon(it) }
+    }
+
+    /** The last operation of [replica] on [documentId] this device has. */
+    private suspend fun lastSequenceOf(documentId: String, replica: String): Long {
+        val open = documents.open(documentId) ?: return 0L
+        return try {
+            open.edit { it.lastApplied(replica) }
+        } finally {
+            documents.close(open)
+        }
+    }
+
+    /**
+     * What this device connects with (see [connect]): the keys of the documents, the current one
+     * first, and the invitations it joins with; [announced]: what it announces, also the invitations
+     * it gives (as the owner).
+     */
+    internal suspend fun reachable(announced: Boolean): List<TagMatch> = sharing.reachable(announced)
+
+    /** The tags this device answers to on the network (see [DocumentKey.tag]). */
+    suspend fun announcedTags(): Set<String> = reachable(announced = true).mapTo(mutableSetOf()) { it.key.tag }
+
+    /** The documents and keys to connect with, and the documents joined (see [connect]). */
+    suspend fun connectionKeys(): List<Pair<String, DocumentKey>> = reachable(announced = false).map { it.documentId to it.key }
+
+    /** Joins the document of [invitation]: the owner admits this device when it reaches it (see [connect]). */
+    suspend fun join(invitation: Invitation) {
+        sharing.startJoining(invitation)
+        joinStates.update { it + (invitation.documentId to JoinStatus.LOOKING_FOR_OWNER) }
     }
 
     /** Serves a channel another device opened to this one (see [SyncTransport.incoming]). */
@@ -168,11 +313,11 @@ class SyncEngine(
                 otherVersion.value = true
                 return@launch
             }
-            val (documentId, key) = shared.all().entries.firstOrNull { it.value.tag == open.tag } ?: return@launch
-            val secure = SecureChannel.of(channel, key)
-            // Without the document yet (joined through an invitation): it comes with the first messages
-            val sync = acquire(documentId)
-            run(Link(secure, documentId, key, opened = false), sync)
+            val match = sharing.match(open.tag) ?: return@launch
+            // A device joins through the owner only
+            if (match is TagMatch.Joining) return@launch
+            val secure = SecureChannel.of(channel, match.key)
+            run(Link(secure, match, opened = false), acquire(match.documentId))
         } catch (_: SyncException) {
             // Refused or lost before it started
         } finally {
@@ -181,18 +326,15 @@ class SyncEngine(
     }
 
     /**
-     * Joins the document of [invitation] through [channel] (opened to a device sharing it): the
-     * document is received if this device does not have it, then kept the same as long as the
-     * channel stays open.
+     * Works on the document [documentId] through [channel] (opened to a device that has it) with
+     * the key [key]: a key of the document, or the one of the invitation this device joins with.
      */
-    fun join(channel: SyncChannel, invitation: Invitation): Job = scope.launch {
+    fun connect(channel: SyncChannel, documentId: String, key: DocumentKey): Job = scope.launch {
         try {
-            shared.add(invitation.documentId, invitation.key)
-            channel.send(SyncCodec.encodeOpen(OpenFrame(PROTOCOL_VERSION, invitation.key.tag)))
-            val secure = SecureChannel.of(channel, invitation.key)
-            // Without the document yet: it comes with the first messages
-            val sync = acquire(invitation.documentId)
-            run(Link(secure, invitation.documentId, invitation.key, opened = true), sync)
+            val match = sharing.match(key.tag)?.takeIf { it.documentId == documentId } ?: return@launch
+            channel.send(SyncCodec.encodeOpen(OpenFrame(PROTOCOL_VERSION, key.tag)))
+            val secure = SecureChannel.of(channel, key)
+            run(Link(secure, match, opened = true), acquire(documentId))
         } catch (_: SyncException) {
             // Refused or lost before it started
         } finally {
@@ -235,9 +377,9 @@ class SyncEngine(
     }
 
     /** The document of [snapshot], received: stored (unless it arrived meanwhile), then synchronized. */
-    private suspend fun adopt(snapshot: DocumentSnapshot): DocumentSync = mutex.withLock {
+    private suspend fun adopt(snapshot: DocumentSnapshot, base: Map<String, Long>): DocumentSync = mutex.withLock {
         syncs[snapshot.id]?.let { return it.also { it.users++ } }
-        val open = documents.open(snapshot.id) ?: documents.insert(snapshot.toDocument(), receivedFolder())
+        val open = documents.open(snapshot.id) ?: documents.insert(snapshot.toDocument(), receivedFolder(), base)
         start(open)
     }
 
@@ -258,15 +400,31 @@ class SyncEngine(
         documents.close(sync.open)
     }
 
+    private suspend fun linksOf(documentId: String): List<Link> = mutex.withLock { links.filter { it.documentId == documentId } }
+
     // ==========================================================
     // Connections
     // ==========================================================
 
-    /** A connection about the document [documentId] (of key [key]), [opened] by this device or by the other one. */
-    private inner class Link(val channel: SyncChannel, val documentId: String, val key: DocumentKey, val opened: Boolean) {
+    /** A connection about the document of [match] (a key of it, or an invitation), [opened] by this device or by the other one. */
+    private inner class Link(val channel: SyncChannel, val match: TagMatch, val opened: Boolean) {
+        val documentId: String get() = match.documentId
+        val tag: String get() = match.key.tag
         var sync: DocumentSync? = null
         var peer: Peer? = null
         var peerHello: Hello? = null
+
+        /** The challenge of this device (see [Challenge]). */
+        val nonce: ByteArray = CryptographyRandom.nextBytes(NONCE_SIZE)
+
+        /** The other device is a member, its identity proven: the document is exchanged. */
+        var authorized = false
+
+        /** The device of this connection waits for the owner to approve it (see [joinRequests]). */
+        var request: JoinRequest? = null
+
+        /** The other device has a more recent membership: it comes before the other device is checked. */
+        var waitingMembership = false
 
         /** When the last frame came (it says the connection is alive). */
         var receivedAt = currentTimeMillis()
@@ -285,17 +443,20 @@ class SyncEngine(
         /** Operations received before the ones they follow. */
         val pending = mutableListOf<Operation>()
 
+        /** Operations of devices not in the membership known here (on the receiving coroutine): applied once it comes. */
+        val deferred = mutableListOf<Operation>()
+
         // On the receiving coroutine:
         val requested = mutableSetOf<String>()
-        val downloads = mutableMapOf<String, Download>()
         val receiving = mutableMapOf<String, Receiving>()
 
-        /** The items of the other device not the same here, by key with their versions, and the ones asked for. */
+        /** The items of the other device not the same here, by key with their versions, and the ones asked for (under [attachmentLock]). */
         val offered = mutableMapOf<String, String>()
         val asked = mutableSetOf<String>()
+        val attachmentLock = Mutex()
 
         /** The items beside the document asked for, sent one at a time ([sendAttachment]). */
-        val attachmentRequests = Channel<String>(Channel.UNLIMITED)
+        val attachmentRequests = Channel<AttachmentAsk>(Channel.UNLIMITED)
 
         /** The parts of the items queued and not sent yet: a few at a time (a long audio is not read at once). */
         val attachmentParts = Semaphore(ATTACHMENT_PARTS_AHEAD)
@@ -306,6 +467,7 @@ class SyncEngine(
         }
     }
 
+    /** A download of the file of a resource: [received] of its bytes (it goes on over another connection). */
     private class Download(val bytes: ByteArray) {
         var received = 0
     }
@@ -319,11 +481,10 @@ class SyncEngine(
         link.sync = initial
         mutex.withLock { links.add(link) }
         val sender = scope.launch { send(link) }
-        val transfers = attachments?.let { scope.launch { for (key in link.attachmentRequests) sendAttachment(link, key) } }
+        val transfers = attachments?.let { scope.launch { for (ask in link.attachmentRequests) sendAttachment(link, ask) } }
         try {
-            val hello = initial?.open?.edit { Hello(it.replica, deviceName, it.versionVector, hasDocument = true) }
-                ?: Hello(documents.replicaId(), deviceName, emptyMap(), hasDocument = false)
-            link.outbox.send(hello)
+            if (link.match is TagMatch.Joining) joinStates.update { it + (link.documentId to JoinStatus.LOOKING_FOR_OWNER) }
+            link.outbox.send(Challenge(link.nonce))
             while (true) {
                 // Closed, or silent for too long: lost
                 val frame = (if (keepAliveMs > 0) withTimeoutOrNull(keepAliveMs * 3) { link.channel.receive() } else link.channel.receive()) ?: break
@@ -348,6 +509,12 @@ class SyncEngine(
     }
 
     private suspend fun detach(link: Link) {
+        // Gone before the owner approved it
+        link.request?.let { request ->
+            requests.update { it - request }
+            request.decision.complete(false)
+        }
+        // Kept by the extension to go on later
         link.receiving.values.forEach { it.receiver.cancel() }
         link.receiving.clear()
         mutex.withLock {
@@ -402,56 +569,99 @@ class SyncEngine(
     }
 
     private suspend fun handle(link: Link, message: SyncMessage) {
+        // Before the other device is checked: the handshake only
+        if (!link.authorized && message !is Challenge && message !is Hello && message !is MembershipMessage &&
+            message !is Admission && message !is JoinRefused && message !is Ping
+        ) return
         when (message) {
+            is Challenge -> sendHello(link, message.nonce)
             is Hello -> onHello(link, message)
-            is Snapshot -> onSnapshot(link, message.snapshot)
+            is MembershipMessage -> onMembership(link, message.membership)
+            is MembershipQuery -> onMembershipQuery(link, message.version)
+            is Admission -> onAdmission(link, message)
+            JoinRefused -> onRefused(link)
+            is KeyUpdate -> onKeyUpdate(link, message)
+            Leave -> onLeave(link)
+            is KnownVersions -> onKnownVersions(link, message.versions)
+            is Snapshot -> onSnapshot(link, message.snapshot, message.base)
             is Operations -> onOperations(link, message.operations)
-            is ResourceRequest -> onResourceRequest(link, message.ids)
+            is ResourceRequest -> onResourceRequest(link, message.asks)
             is ResourceChunk -> onResourceChunk(link, message)
             is ResourceMissing -> link.requested.remove(message.id)
             is PresenceMessage -> onPresence(link, message)
             is AttachmentVersions -> onAttachmentVersions(link, message.versions)
-            is AttachmentRequest -> message.keys.forEach { link.attachmentRequests.trySend(it) }
+            is AttachmentRequest -> message.asks.forEach { link.attachmentRequests.trySend(it) }
             is AttachmentPart -> onAttachmentPart(link, message)
             Ping -> Unit
         }
     }
 
-    /**
-     * The presence of another device: kept with the whole stroke it is drawing, and relayed to the
-     * other devices on the document.
-     */
-    private suspend fun onPresence(link: Link, message: PresenceMessage) {
-        val presence = message.presence
-        // Its own, back through the others (connected with each other too)
-        if (presence.documentId != link.documentId || presence.replica == replica()) return
-        val key = presence.documentId to presence.replica
-        val targets = mutex.withLock {
-            val last = lastPresences[key]?.first
-            if (last != null && last.sequence >= presence.sequence) return
-            val from = message.inkFrom * Presence.INK_VALUES
-            val ink = when {
-                from == 0 -> presence.ink
-                last != null && last.stroke == presence.stroke && last.ink.size >= from -> last.ink.subList(0, from) + presence.ink
-                // Inputs missing: the stroke as it was, until all of it comes again
-                last != null && last.stroke == presence.stroke -> last.ink
-                else -> emptyList()
-            }
-            // The same text and selection as before (missing: until all of them come again)
-            val text = if (message.textKept) last?.text else presence.text
-            val selection = presence.selection?.let { if (message.selectionKept) it.copy(ids = last?.selection?.ids.orEmpty()) else it }
-            lastPresences[key] = presence.copy(ink = ink, text = text, selection = selection, receivedAt = currentTimeMillis()) to link
-            presenceState.value = lastPresences.values.map { it.first }
-            links.filter { it.documentId == presence.documentId && it !== link && it.peerHello != null }
-        }
-        targets.forEach { it.outbox.trySend(message) }
+    // ==========================================================
+    // Who the other device is
+    // ==========================================================
+
+    /** Says who this device is, signing the challenge [peerNonce] of the other one. */
+    private suspend fun sendHello(link: Link, peerNonce: ByteArray) {
+        val replica = replica()
+        val state = sharing.stateOf(link.documentId)
+        val vector = link.sync?.open?.edit { it.versionVector }
+        val proof = identity.sign(helloProof(peerNonce, link.tag, replica, device))
+        link.outbox.send(
+            Hello(
+                replica = replica,
+                name = deviceName(),
+                versionVector = vector.orEmpty(),
+                hasDocument = vector != null,
+                device = device,
+                proof = proof,
+                membershipVersion = state?.members?.version ?: 0,
+                epoch = state?.epoch ?: 0
+            )
+        )
     }
 
     private suspend fun onHello(link: Link, hello: Hello) {
+        if (link.peerHello != null) return
+        // Who it says it is, proven: it signed the challenge of this connection
+        if (!DeviceIdentity.verify(hello.device, helloProof(link.nonce, link.tag, hello.replica, hello.device), hello.proof)) {
+            link.channel.close()
+            return
+        }
+        link.peerHello = hello
+        when (val match = link.match) {
+            is TagMatch.Grant -> onJoinRequest(link, match.grant, hello)
+            // The owner of the invitation, admitting this device or not
+            is TagMatch.Joining -> if (DeviceIdentity.fingerprint(hello.device) != match.invitation.owner) link.channel.close() else waitingApproval(link)
+            is TagMatch.Member -> {
+                val membership = sharing.membershipOf(link.documentId)
+                val mine = membership?.version ?: 0
+                sharing.stateOf(link.documentId)?.membership?.takeIf { mine > hello.membershipVersion }?.let { link.outbox.send(MembershipMessage(it)) }
+                if (hello.membershipVersion > mine) link.waitingMembership = true else authorize(link)
+            }
+        }
+    }
+
+    /** The other device of [link] works on the document if it is a member of it (the connection is closed otherwise). */
+    private suspend fun authorize(link: Link) {
+        val hello = link.peerHello ?: return
+        if (link.authorized) return
+        val state = sharing.stateOf(link.documentId)
+        val membership = state?.members
+        if (state == null || membership == null || membership.ended || membership.memberOf(hello.device) == null) {
+            link.channel.close()
+            return
+        }
+        link.authorized = true
+        // Still on an older key: the current one
+        if (hello.epoch < state.epoch) state.key?.let { link.outbox.send(KeyUpdate(state.epoch, it.encode())) }
+        if (hello.hasDocument) sharing.recordVersions(link.documentId, mapOf(hello.device to hello.versionVector))
+        workWith(link, hello)
+    }
+
+    /** The other device of [link], a member, works on the document with this one. */
+    private suspend fun workWith(link: Link, hello: Hello) {
         val twin = mutex.withLock {
-            if (link.peerHello != null) return
-            link.peerHello = hello
-            links.firstOrNull { it !== link && it.documentId == link.documentId && it.peerHello?.replica == hello.replica }
+            links.firstOrNull { it !== link && it.documentId == link.documentId && it.authorized && it.peerHello?.replica == hello.replica }
         }
         // Two connections with the same device (both connected to the other at once): one is enough.
         // Not when the other one is silent: maybe lost (the device started again), it closes itself.
@@ -462,7 +672,7 @@ class SyncEngine(
             if (surplus === link) return
         }
         link.sent.putAll(hello.versionVector)
-        val peer = Peer(link.documentId, hello.replica, hello.name)
+        val peer = Peer(link.documentId, hello.replica, hello.name, hello.device)
         link.peer = peer
         connected.update { it + peer }
         // The next presence whole, for the device arrived
@@ -487,12 +697,154 @@ class SyncEngine(
         }
     }
 
-    private suspend fun onSnapshot(link: Link, snapshot: DocumentSnapshot) {
+    /** A more recent membership, from the owner through any device: followed. */
+    private suspend fun onMembership(link: Link, signed: SignedMembership) {
+        // Not before a device joining is admitted
+        if (!link.authorized && !link.waitingMembership) return
+        sharing.adopt(link.documentId, signed)?.let { sharing.stateOf(link.documentId)?.let { state -> onMembershipChanged(link.documentId, state, from = link) } }
+        if (link.waitingMembership) {
+            link.waitingMembership = false
+            authorize(link)
+        }
+        // The operations of the devices admitted meanwhile
+        val deferred = link.deferred.toList()
+        link.deferred.clear()
+        if (deferred.isNotEmpty()) onOperations(link, deferred)
+    }
+
+    /** The other device has an older membership than this one: the more recent one. */
+    private suspend fun onMembershipQuery(link: Link, version: Long) {
+        val state = sharing.stateOf(link.documentId) ?: return
+        if ((state.members?.version ?: 0) > version) state.membership?.let { link.outbox.send(MembershipMessage(it)) }
+    }
+
+    /**
+     * The membership of [documentId] changed ([state]): to the other devices, the devices no longer
+     * members disconnected, the new key to the members; this device follows it (it may read only,
+     * be removed, see the sharing end).
+     */
+    private suspend fun onMembershipChanged(documentId: String, state: SharingState, from: Link?) {
+        val membership = state.members ?: return
+        val signed = state.membership ?: return
+        val targets = linksOf(documentId).filter { it.authorized && it !== from }
+        targets.forEach { it.outbox.send(MembershipMessage(signed)) }
+        // Who no longer works on it
+        for (link in linksOf(documentId)) {
+            val device = link.peerHello?.device ?: continue
+            if (link.authorized && (membership.memberOf(device) == null || membership.ended)) closeSoon(link)
+        }
+        if (membership.ended || membership.memberOf(device) == null) {
+            // This device was removed, or the sharing ended: it keeps its copy
+            sharing.forget(documentId)
+            linksOf(documentId).forEach { closeSoon(it) }
+            return
+        }
+        // The new key to the members still on the older one (this device the owner, or relaying it)
+        state.key?.let { key -> targets.forEach { it.outbox.send(KeyUpdate(state.epoch, key.encode())) } }
+    }
+
+    /** Closes [link] once its last messages are sent. */
+    private fun closeSoon(link: Link) {
+        scope.launch {
+            delay(CLOSE_DELAY_MS)
+            link.channel.close()
+        }
+    }
+
+    private suspend fun onKeyUpdate(link: Link, update: KeyUpdate) {
+        if (!sharing.adoptKey(link.documentId, update.epoch, update.key)) return
+        // To the members connected to this device only
+        linksOf(link.documentId).filter { it !== link && it.authorized }.forEach { it.outbox.send(update) }
+    }
+
+    /** A member leaves: the owner removes it. */
+    private suspend fun onLeave(link: Link) {
+        val hello = link.peerHello ?: return
+        if (sharing.stateOf(link.documentId)?.owner == device) removeMember(link.documentId, hello.device)
+    }
+
+    // ==========================================================
+    // Joining
+    // ==========================================================
+
+    /** A device joins with the invitation [grant] of this device, the owner: admitted, once approved if needed. */
+    private suspend fun onJoinRequest(link: Link, grant: InvitationGrant, hello: Hello) {
+        val state = sharing.stateOf(link.documentId) ?: return link.channel.close()
+        if (state.members?.memberOf(hello.device) != null) {
+            admit(link, state, hello)
+            return
+        }
+        if (!grant.approval) {
+            sharing.admit(link.documentId, hello.device, hello.replica, hello.name, grant.role)?.let {
+                onMembershipChanged(link.documentId, it, from = link)
+                admit(link, it, hello)
+            }
+            return
+        }
+        // Waits for the owner as long as the device stays connected, without stopping the connection
+        val request = JoinRequest(link.documentId, hello.device, hello.name, grant.role)
+        link.request = request
+        requests.update { it + request }
+        scope.launch {
+            val approved = request.decision.await()
+            requests.update { it - request }
+            if (!approved) {
+                link.outbox.send(JoinRefused)
+                closeSoon(link)
+                return@launch
+            }
+            sharing.admit(link.documentId, hello.device, hello.replica, hello.name, grant.role)?.let {
+                onMembershipChanged(link.documentId, it, from = link)
+                admit(link, it, hello)
+            }
+        }
+    }
+
+    /** Gives the device of [link] the key and the membership of the document, then works with it. */
+    private suspend fun admit(link: Link, admitted: SharingState, hello: Hello) {
+        // The most recent membership (another device may be admitted at the same time)
+        val state = sharing.stateOf(link.documentId) ?: admitted
+        val key = state.key ?: return
+        val signed = state.membership ?: return
+        link.outbox.send(Admission(state.epoch, key.encode(), signed))
+        link.authorized = true
+        workWith(link, hello)
+    }
+
+    /** The owner admitted this device: the document follows. */
+    private suspend fun onAdmission(link: Link, admission: Admission) {
+        if (link.match !is TagMatch.Joining || link.authorized) return
+        val owner = link.peerHello?.device ?: return
+        sharing.admitted(link.documentId, owner, admission.epoch, admission.key, admission.membership) ?: return link.channel.close()
+        joinStates.update { it + (link.documentId to JoinStatus.ADMITTED) }
+        link.authorized = true
+        workWith(link, link.peerHello ?: return)
+    }
+
+    private suspend fun onRefused(link: Link) {
+        if (link.match !is TagMatch.Joining) return
+        sharing.forget(link.documentId)
+        joinStates.update { it + (link.documentId to JoinStatus.REFUSED) }
+        link.channel.close()
+    }
+
+    /** The joining of the document of [link] waits for the owner to admit this device (or to approve it first). */
+    private fun waitingApproval(link: Link) {
+        if (link.match is TagMatch.Joining && !link.authorized && link.peerHello != null) {
+            joinStates.update { it + (link.documentId to JoinStatus.WAITING_APPROVAL) }
+        }
+    }
+
+    // ==========================================================
+    // Operations
+    // ==========================================================
+
+    private suspend fun onSnapshot(link: Link, snapshot: DocumentSnapshot, base: Map<String, Long>) {
         if (link.sync != null || snapshot.id != link.documentId) return
-        val sync = adopt(snapshot)
+        val sync = adopt(snapshot, base)
         link.sync = sync
-        // Shared from now on (the key could not be kept with a document not received yet)
-        shared.add(link.documentId, link.key)
+        // Kept with the document now that it is here
+        sharing.saveAgain(link.documentId)
         link.peerHello?.let { catchUp(link, sync, it) }
     }
 
@@ -503,28 +855,47 @@ class SyncEngine(
     private suspend fun catchUp(link: Link, sync: DocumentSync, hello: Hello) {
         // From now on the operations applied here wait for the link
         sync.open.edit { sync.links.add(link) }
-        if (!hello.hasDocument) link.outbox.send(Snapshot(sync.open.edit { it.document.snapshot() }))
-        val missed = sync.open.operationsAfter(if (hello.hasDocument) hello.versionVector else emptyMap())
-        missed.chunked(MAX_BATCH).forEach { link.outbox.send(Operations(it)) }
+        val known = if (hello.hasDocument) {
+            hello.versionVector
+        } else {
+            // With the operations no longer in the log (in the snapshot): the others follow
+            val base = sync.open.compactedOperations()
+            link.outbox.send(Snapshot(sync.open.edit { it.document.snapshot() }, base))
+            base
+        }
+        sync.open.operationsAfter(known).chunked(MAX_BATCH).forEach { link.outbox.send(Operations(it)) }
         sync.open.edit {
             link.caughtUp = true
             for (operation in link.waiting) link.outbox.trySend(Operations(listOf(operation)))
             link.waiting.clear()
         }
         requestResources(link, sync)
+        // What the members have, for the compaction of the log
+        val state = sharing.stateOf(link.documentId)
+        link.outbox.send(KnownVersions(state?.versions.orEmpty() + (device to sync.open.edit { it.versionVector })))
         // Then the items beside the document
         attachments?.let { link.outbox.send(AttachmentVersions(it.versions(link.documentId))) }
     }
 
     private suspend fun onOperations(link: Link, operations: List<Operation>) {
         val sync = link.sync ?: return
+        // The operations of the devices that may change the document only
+        val membership = sharing.membershipOf(link.documentId) ?: return
+        // Of a device this one does not know yet (admitted meanwhile): kept until the membership comes
+        val (known, unknown) = operations.partition { membership.knows(it.id.replica) }
+        if (unknown.isNotEmpty()) {
+            link.deferred.addAll(unknown)
+            link.outbox.send(MembershipQuery(membership.version))
+        }
+        val accepted = known.filter { membership.mayWrite(it.id.replica, it.id.sequence) }
+        if (accepted.isEmpty()) return
         // Prepared first, at the same time (e.g. the strokes modeled again: slow), so that the
         // document waits less
         coroutineScope {
-            for (operation in operations) launch { operation.change.prepare() }
+            for (operation in accepted) launch { operation.change.prepare() }
         }
         sync.open.edit { session ->
-            link.pending.addAll(operations)
+            link.pending.addAll(accepted)
             sync.receivingFrom = link
             try {
                 applyPending(session, link.pending)
@@ -558,31 +929,66 @@ class SyncEngine(
         }
     }
 
+    /** What the members have: the operations all of them have leave the log. */
+    private suspend fun onKnownVersions(link: Link, versions: Map<String, Map<String, Long>>) {
+        sharing.recordVersions(link.documentId, versions)
+        val sync = link.sync ?: return
+        compact(link.documentId, sync)
+    }
+
+    /** Removes from the log of [documentId] the operations every member has (known from what they said). */
+    private suspend fun compact(documentId: String, sync: DocumentSync) {
+        val state = sharing.stateOf(documentId) ?: return
+        val membership = state.members ?: return
+        val mine = sync.open.edit { it.versionVector }
+        val vectors = membership.members.map { member -> if (member.device == device) mine else state.versions[member.device] ?: return }
+        val replicas = vectors.flatMap { it.keys }.toSet()
+        val base = replicas.associateWith { replica -> vectors.minOf { it[replica] ?: 0L } }.filterValues { it > 0 }
+        val done = sync.open.compactedOperations()
+        if (base.all { (replica, sequence) -> sequence <= (done[replica] ?: 0L) }) return
+        // Every member has all that every other one made (as they said): nothing made without seeing
+        // the removals is on its way, what they removed goes for good
+        val quiescent = membership.members.zip(vectors).all { (member, vector) -> (base[member.replica] ?: 0L) >= (vector[member.replica] ?: 0L) }
+        sync.open.compact(base, purge = quiescent)
+    }
+
     // ==========================================================
     // Files of the resources
     // ==========================================================
 
-    /** Asks the other device for the files of the resources this one misses. */
+    /**
+     * Asks the other device for the files of the resources this one misses: the ones it has already
+     * (the same content, in another document) are not asked for; a download interrupted goes on.
+     */
     private suspend fun requestResources(link: Link, sync: DocumentSync) {
-        val missing = sync.open.edit { session -> session.document.resources.filter { it.path.isEmpty() }.map { it.id } }
-            .filter { link.requested.add(it) }
-        if (missing.isNotEmpty()) link.outbox.send(ResourceRequest(missing))
+        val missing = sync.open.edit { session -> session.document.resources.filter { it.path.isEmpty() }.map { it.id to it.hash } }
+        val asks = mutableListOf<ResourceAsk>()
+        for ((id, hash) in missing) {
+            documents.fileWithContent(hash)?.takeIf { files.exists(it) }?.let { path ->
+                sync.open.resourceReceived(id, path)
+                continue
+            }
+            if (!link.requested.add(id)) continue
+            val from = downloadsMutex.withLock { downloads[link.documentId to id]?.received ?: 0 }
+            asks.add(ResourceAsk(id, from.toLong()))
+        }
+        if (asks.isNotEmpty()) link.outbox.send(ResourceRequest(asks))
     }
 
-    private suspend fun onResourceRequest(link: Link, ids: List<String>) {
+    private suspend fun onResourceRequest(link: Link, asks: List<ResourceAsk>) {
         val sync = link.sync ?: return
-        for (id in ids) {
-            val path = sync.open.edit { it.document.findResource(id)?.path }
+        for (ask in asks) {
+            val path = sync.open.edit { it.document.findResource(ask.id)?.path }
             val bytes = path?.let { files.read(it) }
             if (path == null || bytes == null) {
-                link.outbox.send(ResourceMissing(id))
+                link.outbox.send(ResourceMissing(ask.id))
                 continue
             }
             val extension = path.substringAfterLast('/').substringAfterLast('.', "")
-            var offset = 0
+            var offset = ask.from.coerceIn(0, bytes.size.toLong()).toInt()
             do {
                 val end = min(offset + CHUNK_SIZE, bytes.size)
-                link.outbox.send(ResourceChunk(id, extension, offset.toLong(), bytes.size.toLong(), bytes.copyOfRange(offset, end)))
+                link.outbox.send(ResourceChunk(ask.id, extension, offset.toLong(), bytes.size.toLong(), bytes.copyOfRange(offset, end)))
                 offset = end
             } while (offset < bytes.size)
         }
@@ -591,13 +997,22 @@ class SyncEngine(
     private suspend fun onResourceChunk(link: Link, chunk: ResourceChunk) {
         val sync = link.sync ?: return
         if (chunk.id !in link.requested || chunk.total !in 0..MAX_RESOURCE_SIZE) return
-        val download = link.downloads.getOrPut(chunk.id) { Download(ByteArray(chunk.total.toInt())) }
-        if (chunk.offset < 0 || chunk.offset + chunk.bytes.size > download.bytes.size) return
-        chunk.bytes.copyInto(download.bytes, chunk.offset.toInt())
-        download.received += chunk.bytes.size
-        if (download.received < download.bytes.size) return
-        link.downloads.remove(chunk.id)
-        val path = files.write(download.bytes, chunk.extension) ?: return
+        val key = link.documentId to chunk.id
+        val complete = downloadsMutex.withLock {
+            var download = downloads[key]
+            if (download == null || download.bytes.size.toLong() != chunk.total || chunk.offset == 0L && download.received != 0) {
+                download = Download(ByteArray(chunk.total.toInt())).also { downloads[key] = it }
+            }
+            // The next bytes only
+            if (chunk.offset != download.received.toLong() || chunk.offset + chunk.bytes.size > download.bytes.size) return
+            chunk.bytes.copyInto(download.bytes, chunk.offset.toInt())
+            download.received += chunk.bytes.size
+            if (download.received < download.bytes.size) return
+            downloads.remove(key)
+            download.bytes
+        }
+        link.requested.remove(chunk.id)
+        val path = files.write(complete, chunk.extension) ?: return
         sync.open.resourceReceived(chunk.id, path)
     }
 
@@ -608,37 +1023,42 @@ class SyncEngine(
     /** The items the other device has: the ones wanted here and different are asked for. */
     private suspend fun onAttachmentVersions(link: Link, versions: Map<String, String>) {
         if (attachments == null || link.sync == null) return
-        for ((key, version) in versions) {
-            // Asked for at another version: maybe not there anymore
-            if (link.offered.put(key, version).let { it != null && it != version }) link.asked.remove(key)
+        link.attachmentLock.withLock {
+            for ((key, version) in versions) {
+                // Asked for at another version: maybe not there anymore
+                if (link.offered.put(key, version).let { it != null && it != version }) link.asked.remove(key)
+            }
         }
         askForOffered(link)
     }
 
     /**
      * Asks for the items offered by the other device that are different and wanted here (what is
-     * wanted may depend on the items received: asked again after each one).
+     * wanted may depend on the items received: asked again after each one), from where an
+     * interrupted transfer stopped.
      */
     private suspend fun askForOffered(link: Link) {
         val attachments = attachments ?: return
-        if (link.offered.isEmpty()) return
-        val mine = attachments.versions(link.documentId)
-        link.offered.entries.removeAll { (key, version) -> mine[key] == version }
-        val wanted = link.offered.filter { (key, version) -> key !in link.asked && attachments.wants(link.documentId, key, version) }.keys
-        if (wanted.isEmpty()) return
-        link.asked += wanted
-        link.outbox.send(AttachmentRequest(wanted.toList()))
+        val asks = link.attachmentLock.withLock {
+            if (link.offered.isEmpty()) return
+            val mine = attachments.versions(link.documentId)
+            link.offered.entries.removeAll { (key, version) -> mine[key] == version }
+            val wanted = link.offered.filter { (key, version) -> key !in link.asked && attachments.wants(link.documentId, key, version) }
+            link.asked += wanted.keys
+            wanted.map { (key, version) -> AttachmentAsk(key, version, attachments.received(link.documentId, key, version)) }
+        }
+        if (asks.isNotEmpty()) link.outbox.send(AttachmentRequest(asks))
     }
 
-    /** Sends the item [key] asked for, in parts. */
-    private suspend fun sendAttachment(link: Link, key: String) {
-        val source = attachments?.open(link.documentId, key) ?: return
+    /** Sends the item asked for by [ask], in parts (from where the other device has it, at the same version). */
+    private suspend fun sendAttachment(link: Link, ask: AttachmentAsk) {
+        val source = attachments?.open(link.documentId, ask.key) ?: return
         try {
-            var offset = 0L
+            var offset = if (source.version == ask.version) ask.from.coerceIn(0, source.size) else 0L
             do {
                 val bytes = source.read(offset, min(CHUNK_SIZE.toLong(), source.size - offset).toInt()) ?: return
                 link.attachmentParts.acquire()
-                link.outbox.send(AttachmentPart(key, source.version, offset, source.size, bytes))
+                link.outbox.send(AttachmentPart(ask.key, source.version, offset, source.size, bytes))
                 offset += bytes.size
             } while (offset < source.size && bytes.isNotEmpty())
         } finally {
@@ -649,22 +1069,27 @@ class SyncEngine(
     private suspend fun onAttachmentPart(link: Link, part: AttachmentPart) {
         val attachments = attachments ?: return
         if (link.sync == null || part.size !in 0..MAX_ATTACHMENT_SIZE) return
-        if (part.offset == 0L) {
+        var receiving = link.receiving[part.key]
+        if (part.offset == 0L || receiving == null) {
+            // From the start, or from where an interrupted transfer stopped
+            if (part.offset != 0L && part.offset != attachments.received(link.documentId, part.key, part.version)) return
             link.receiving.remove(part.key)?.receiver?.cancel()
-            val receiver = attachments.receive(link.documentId, part.key, part.version, part.size)
+            val receiver = attachments.receive(link.documentId, part.key, part.version, part.size, part.offset)
             if (receiver == null) {
                 // Not kept here: not asked for again until it changes
-                link.asked.remove(part.key)
-                link.offered.remove(part.key)
+                link.attachmentLock.withLock {
+                    link.asked.remove(part.key)
+                    link.offered.remove(part.key)
+                }
                 return
             }
-            link.receiving[part.key] = Receiving(receiver, part.version, part.size)
+            receiving = Receiving(receiver, part.version, part.size).also { it.received = part.offset }
+            link.receiving[part.key] = receiving
         }
-        val receiving = link.receiving[part.key] ?: return
         if (part.version != receiving.version || part.offset != receiving.received) {
             // Not the next part: the item is asked for again
             link.receiving.remove(part.key)
-            link.asked.remove(part.key)
+            link.attachmentLock.withLock { link.asked.remove(part.key) }
             receiving.receiver.cancel()
             return
         }
@@ -673,8 +1098,10 @@ class SyncEngine(
         if (receiving.received < receiving.size) return
         link.receiving.remove(part.key)
         receiving.receiver.complete()
-        link.asked.remove(part.key)
-        if (link.offered[part.key] == part.version) link.offered.remove(part.key)
+        link.attachmentLock.withLock {
+            link.asked.remove(part.key)
+            if (link.offered[part.key] == part.version) link.offered.remove(part.key)
+        }
         // Kept otherwise (e.g. merged with the one here): it goes back
         val kept = attachments.version(link.documentId, part.key)
         if (kept != null && kept != part.version) link.outbox.send(AttachmentVersions(mapOf(part.key to kept)))
@@ -683,8 +1110,48 @@ class SyncEngine(
 
     /** An item beside the document [AttachmentChange.documentId] changed here: the others are told. */
     private suspend fun onAttachmentChanged(change: AttachmentChange) {
-        val targets = mutex.withLock { links.filter { it.documentId == change.documentId && it.peerHello != null && it.sync != null } }
+        val targets = mutex.withLock { links.filter { it.documentId == change.documentId && it.authorized && it.sync != null } }
         for (link in targets) link.outbox.send(AttachmentVersions(mapOf(change.key to change.version)))
+    }
+
+    // ==========================================================
+    // Presence
+    // ==========================================================
+
+    /**
+     * The presence of another device: kept with the whole stroke it is drawing, and relayed to the
+     * other devices on the document.
+     */
+    private suspend fun onPresence(link: Link, message: PresenceMessage) {
+        val presence = message.presence
+        // Its own, back through the others (connected with each other too)
+        if (presence.documentId != link.documentId || presence.replica == replica()) return
+        val key = presence.documentId to presence.replica
+        val targets = mutex.withLock {
+            val last = lastPresences[key]?.first
+            if (last != null && last.sequence >= presence.sequence) return
+            val from = message.inkFrom * Presence.INK_VALUES
+            val ink = when {
+                from == 0 -> presence.ink
+                last != null && last.stroke == presence.stroke && last.ink.size >= from -> last.ink.subList(0, from) + presence.ink
+                // Inputs missing: the stroke as it was, until all of it comes again
+                last != null && last.stroke == presence.stroke -> last.ink
+                else -> emptyList()
+            }
+            // The same text and selection as before (missing: until all of them come again)
+            val text = if (message.textKept) last?.text else presence.text
+            val selection = presence.selection?.let { if (message.selectionKept) it.copy(ids = last?.selection?.ids.orEmpty()) else it }
+            lastPresences[key] = presence.copy(ink = ink, text = text, selection = selection, receivedAt = currentTimeMillis()) to link
+            presenceState.value = lastPresences.values.map { it.first }
+            links.filter { it.documentId == presence.documentId && it !== link && it.authorized }
+        }
+        // A device renamed meanwhile
+        link.peer?.takeIf { it.replica == presence.replica && it.name != presence.name }?.let { old ->
+            val renamed = old.copy(name = presence.name)
+            link.peer = renamed
+            connected.update { peers -> peers.map { if (it === old) renamed else it } }
+        }
+        targets.forEach { it.outbox.trySend(message) }
     }
 
     private companion object {
@@ -692,6 +1159,10 @@ class SyncEngine(
         const val MAX_BATCH = 200
 
         const val CHUNK_SIZE = 256 * 1024
+
+        /** How long a connection lives after its last messages (e.g. telling a device it was removed). */
+        const val CLOSE_DELAY_MS = 500L
+        const val NONCE_SIZE = 16
 
         /** How often the whole presence is sent again (see [updatePresence]). */
         const val WHOLE_PRESENCE_MS = 500L

@@ -56,7 +56,8 @@ data class DocumentEntity(
     val defaultBackground: PageBackground = PageBackground.Solid(),
     val defaultWidth: Float = 210f,
     val defaultHeight: Float = 297f,
-    val defaultsVersion: Stamp = Stamp.ZERO
+    val defaultsVersion: Stamp = Stamp.ZERO,
+    val titleVersion: Stamp = Stamp.ZERO
 )
 
 /**
@@ -278,13 +279,15 @@ data class TextMarkupEntity(
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index("documentId")]
+    indices = [Index("documentId"), Index("contentHash")]
 )
 data class ResourceEntity(
     @PrimaryKey val id: String,
     val documentId: String,
     val type: String, // "image", "pdf", "color"
-    val uri: String // File path or color value
+    val uri: String, // File path or color value
+    /** The SHA-256 of the content of the file: the same content is kept in one file. */
+    val contentHash: String = ""
 )
 
 /**
@@ -303,7 +306,33 @@ data class ResourceEntity(
 )
 data class SharedDocumentEntity(
     @PrimaryKey val documentId: String,
-    val secret: String
+    val secret: String,
+    /** This device may only read it (see `DocumentSession.isReadOnly`). */
+    val readOnly: Boolean = false
+)
+
+/**
+ * The operations of a document no longer in its log (see `DocumentStore.compactOperations`): the
+ * last one of every replica.
+ */
+@Entity(
+    tableName = "operation_bases",
+    primaryKeys = ["documentId", "replica"],
+    foreignKeys = [
+        ForeignKey(
+            entity = DocumentEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["documentId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
+data class OperationBaseEntity(
+    val documentId: String,
+    val replica: String,
+    val sequence: Long,
+    /** The stamp of that operation. */
+    val stamp: Stamp = Stamp.ZERO
 )
 
 /**

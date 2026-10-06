@@ -12,3 +12,12 @@ internal expect fun createLanDiscovery(): LanDiscovery
  */
 @Composable
 internal expect fun rememberLocalNetworkAccess(): suspend () -> Boolean
+
+/**
+ * Keeps the application working with the other devices once in the background while [active]
+ * (connected to some, on [documents] documents): a foreground service on Android, the time the
+ * system gives to finish on iOS; nothing to do on the desktop.
+ */
+internal expect object BackgroundSync {
+    fun update(active: Boolean, documents: Int)
+}

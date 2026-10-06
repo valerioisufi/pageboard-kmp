@@ -46,7 +46,7 @@ fun DocumentLibrary(
     editorExtension: EditorExtension? = null,
     libraryOverlay: @Composable BoxScope.(openDocument: (String) -> Unit) -> Unit = {}
 ) {
-    val fileExplorerViewModel = viewModel { FileExplorerViewModel(store) }
+    val fileExplorerViewModel = viewModel { FileExplorerViewModel(store, documents) }
     val editorViewModel = viewModel { DocumentEditorViewModel(store, documents) }
 
     // The native TeX engine unpacks its fonts at the first start: off the main thread

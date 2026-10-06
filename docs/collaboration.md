@@ -97,14 +97,19 @@ The origin of a change decides what the observers do:
   other frame is encrypted with AES-256-GCM and the key of the document (a random nonce per
   frame, the version of the protocol authenticated with it); the key travels with the
   invitation (a `drawview://join` link, for a QR code or a message).
-* `Hello` (replica, name, version vector, whether the device has the document), then each side
-  sends what the other misses: the `Snapshot` of the document to a device without it, then the
+* `Challenge` (a random nonce) then `Hello` (replica, name, version vector, whether the device
+  has the document, its identity and the signature of the nonce of the other side, the version of
+  its membership and the epoch of its key): each device proves who it is (`DeviceIdentity`, an
+  ECDSA P-256 key kept by the system); the side with the older membership gets the newer one
+  (`MembershipMessage`), and only the members go on. Then each side sends what the other misses: the `Snapshot` of the document to a device without it, then the
   operations after its version vector in stamp order (a causal order), in batches; then the
   operations as they are applied, those of the other devices too (a device relays them, never
   back to the device they came from).
 * Operations are identified by (replica, sequence number): the duplicates are dropped, an
   operation arriving before the ones it follows waits for them.
-* The files of the resources are asked for by identifier and sent in chunks of 256 KiB.
+* The files of the resources are asked for by identifier and sent in chunks of 256 KiB; a file
+  the device has already (the same SHA-256, in any document) is not asked for, and a download
+  interrupted goes on from where it stopped (`ResourceAsk.from`).
 * The data the extensions keep beside a document (`DocumentAttachments`, e.g. the lectures)
   travel as items with a key and a version: after the missed operations, and at every change,
   each side sends the versions of its items (`AttachmentVersions`); the other one asks for those
@@ -466,6 +471,46 @@ The application is not released yet, so the stored documents are not migrated:
   keeping something else than what it received sends its version back.
 * Verified by `LectureSharingTest` (tablet and computer exchanging as the synchronization does)
   and `LectureRecordsTest`.
+
+### After phase 6: owners, roles, invitations
+
+* The device sharing a document is its owner: it signs the membership (`Membership`: the members
+  with their identity, replica, name and role, the devices removed, the epoch of the key, whether
+  the sharing ended), and every device follows the most recent one signed by it
+  (`DocumentSharing`, the Information Expert of who may do what). The memberships travel at every
+  connection and as they change.
+* Invitations (`InvitationGrant`): a secret of their own (not the key of the document), the role
+  of the devices joining with them (editor or reader) and whether the owner approves each of them
+  first (`SyncEngine.joinRequests`, a dialog wherever the application is). The link names the
+  owner (a fingerprint of its identity): the device joining talks to it only, and gets the key of
+  the document and the membership once admitted (`Admission`). The owner revokes an invitation by
+  forgetting it. The link is also a QR code in the sharing dialog (`qrose`).
+* Readers: the document is read only on their device (`DocumentSession.isReadOnly`: the editor
+  shows a lock instead of the drawing mode), and every device refuses their operations
+  (`Membership.mayWrite`; a device made reader keeps the operations it made before). Not against a
+  modified application: the operations are not signed.
+* Removing a member gives the document a new key (`KeyUpdate`, to the members, also through each
+  other); the device removed is told when connected, cannot connect with the old key anymore
+  (the devices still accept it from the members on it, to give them the new one) and keeps its
+  copy. The owner ending the sharing, every device keeps its copy; a member leaving it is removed
+  by the owner.
+* The operations of a device not in the membership known yet (admitted meanwhile) wait for the
+  newer membership (`MembershipQuery`) instead of being dropped.
+* The name shown to the others is chosen in the sharing dialog (`DeviceProfile`; the device name
+  by default).
+* A document renamed is renamed on every device (`RenameDocument`, the most recent title wins).
+
+### After phase 6: compaction, background
+
+* The members say what they have (`KnownVersions`): the operations every member has leave the
+  log (`DocumentStore.compactOperations`, remembered as the base of the version vector); a device
+  joining gets the snapshot with that base, then the rest of the log. When every member has all
+  the operations of the others as they said them, nothing made without seeing a removal is on its
+  way: the pages and the elements removed until then are deleted for good
+  (`DrawDocument.purgeHidden`).
+* While connected to other devices, the application goes on in the background: a foreground
+  service (data synchronization, with its notification) on Android, the time the system gives on
+  iOS (`BackgroundSync`).
 
 ### Risks
 

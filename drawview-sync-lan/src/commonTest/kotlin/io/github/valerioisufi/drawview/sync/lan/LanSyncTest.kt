@@ -104,7 +104,7 @@ class LanSyncTest {
         val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = scope)
         val documents = OpenDocuments(store, Dispatchers.Default.limitedParallelism(1), scope)
         val shared = InMemorySharedDocuments()
-        val engine = SyncEngine(documents, shared, scope, name, NoFiles())
+        val engine = SyncEngine(documents, shared, scope, { name }, NoFiles())
         lateinit var transport: LanTransport
         lateinit var lan: LanSync
 
@@ -114,7 +114,7 @@ class LanSyncTest {
          */
         suspend fun goOnline(port: Int = 0, found: Boolean = true) {
             transport = LanTransport(scope, port)
-            lan = LanSync(engine, shared, FakeDiscovery(network, found), scope, store.replicaId(), name, transport, retryMs = 200)
+            lan = LanSync(engine, FakeDiscovery(network, found), scope, store.replicaId(), { name }, transport, retryMs = 200)
             lan.start()
         }
 
@@ -139,7 +139,7 @@ class LanSyncTest {
         listOf(ada, bob, cy).forEach { it.goOnline() }
 
         val document = ada.store.createDocument("Lab")
-        val invitation = ada.engine.share(document.id, "Lab")
+        val invitation = assertNotNull(ada.engine.invite(document.id, "Lab"))
         ada.lan.announce()
         // Without an address: found on the network
         bob.lan.join(invitation)
@@ -160,7 +160,7 @@ class LanSyncTest {
         val (ada, bob) = listOf("ada", "bob").map { Device(it, scope, network) }
         listOf(ada, bob).forEach { it.goOnline() }
         val document = ada.store.createDocument("Lab")
-        val invitation = ada.engine.share(document.id, "Lab")
+        val invitation = assertNotNull(ada.engine.invite(document.id, "Lab"))
         ada.lan.announce()
         bob.lan.join(invitation)
         bob.awaitSame(document.id, ada)
@@ -183,7 +183,7 @@ class LanSyncTest {
         ada.goOnline()
         bob.goOnline(port)
         val document = ada.store.createDocument("Lab")
-        val invitation = ada.engine.share(document.id, "Lab")
+        val invitation = assertNotNull(ada.engine.invite(document.id, "Lab"))
         ada.lan.announce()
         bob.lan.join(invitation)
         bob.awaitSame(document.id, ada)

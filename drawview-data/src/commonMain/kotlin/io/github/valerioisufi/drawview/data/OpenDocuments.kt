@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.data
 
 import io.github.valerioisufi.drawview.core.change.DocumentSession
 import io.github.valerioisufi.drawview.core.change.Operation
+import io.github.valerioisufi.drawview.core.change.RenameDocument
 import io.github.valerioisufi.drawview.core.controller.ChangePersister
 import io.github.valerioisufi.drawview.core.controller.PersistenceQueue
 import io.github.valerioisufi.drawview.core.model.DrawDocument
@@ -41,20 +42,45 @@ class OpenDocuments(
         open[documentId]?.let { return it.also { it.users++ } }
         val document = store.loadDocument(documentId) ?: return null
         val session = DocumentSession(document, store.replicaId(), store.versionVector(documentId))
+        session.isReadOnly = store.isReadOnly(documentId)
         OpenDocument(session, dispatcher, PersistenceQueue(scope, store.persistence), store).also { open[documentId] = it }
+    }
+
+    /**
+     * Renames the document [documentId] by a change of it (the devices it is shared with rename it
+     * too); `false` when another document of its folder has the name [name].
+     */
+    suspend fun rename(documentId: String, name: String): Boolean {
+        if (!store.isDocumentNameAvailable(documentId, name)) return false
+        val document = open(documentId) ?: return false
+        try {
+            document.edit { it.submit(RenameDocument(name)) }
+        } finally {
+            close(document)
+        }
+        return true
     }
 
     /** This device in the changes of the documents (see [DocumentSession.replica]). */
     suspend fun replicaId(): String = store.replicaId()
 
     /**
-     * Stores [document] (received from another device) in [folderId] and opens it (see
-     * [DocumentStore.insertDocument]).
+     * Stores [document] (received from another device, with the changes of the operations
+     * [versionVector]) in [folderId] and opens it (see [DocumentStore.insertDocument]).
      */
-    suspend fun insert(document: DrawDocument, folderId: String?): OpenDocument {
-        store.insertDocument(document, folderId)
+    suspend fun insert(document: DrawDocument, folderId: String?, versionVector: Map<String, Long> = emptyMap()): OpenDocument {
+        store.insertDocument(document, folderId, versionVector)
         return checkNotNull(open(document.id))
     }
+
+    /** This device may only read the document [documentId] (or change it again): its open session too. */
+    suspend fun setReadOnly(documentId: String, readOnly: Boolean) {
+        val document = mutex.withLock { open[documentId] } ?: return
+        document.edit { it.isReadOnly = readOnly }
+    }
+
+    /** A file kept with the content of hash [hash] (of any document), `null` when there is none. */
+    suspend fun fileWithContent(hash: String): String? = if (hash.isEmpty()) null else store.persistence.fileWithContent(hash)
 
     /**
      * Stops using [document]: written and closed when nobody uses it anymore (before it can be
@@ -101,6 +127,24 @@ class OpenDocument internal constructor(
     suspend fun operationsAfter(known: Map<String, Long>): List<Operation> {
         flush()
         return store.operationsAfter(document.id, known)
+    }
+
+    /** The last operation of every replica no longer in the log (see [DocumentStore.compactOperations]). */
+    suspend fun compactedOperations(): Map<String, Long> = store.compactedOperations(document.id)
+
+    /**
+     * Removes from the log the operations up to [upTo] (the ones every device working on the
+     * document has: no device will ask for them); with [purge] (nothing made without seeing them is
+     * on its way either), the pages and elements they removed are removed for good.
+     */
+    suspend fun compact(upTo: Map<String, Long>, purge: Boolean) {
+        flush()
+        val stamps = store.compactOperations(document.id, upTo)
+        if (!purge) return
+        val purged = edit { session -> session.document.purgeHidden { removed -> stamps[removed.replica]?.let { removed <= it } == true } }
+        if (purged.isEmpty) return
+        queue.enqueue { deleteForGood(document, purged) }
+        flush()
     }
 
     /** The file of the resource [resourceId] (received from another device) is [path]. */

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync_background_channel">Working with other devices</string>
+    <string name="sync_background_notification">Shared documents kept up to date (%1$d)</string>
+</resources>

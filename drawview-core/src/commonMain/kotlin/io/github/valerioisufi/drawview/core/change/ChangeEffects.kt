@@ -60,6 +60,10 @@ class ChangeEffects internal constructor(private val document: DrawDocument) {
     var documentDefaultsChanged: Boolean = false
         private set
 
+    /** The title of the document changed. */
+    var documentRenamed: Boolean = false
+        private set
+
     /** The pages must be laid out again (pages added, removed, moved or resized). */
     var layoutChanged: Boolean = false
         private set
@@ -67,7 +71,7 @@ class ChangeEffects internal constructor(private val document: DrawDocument) {
     val isEmpty: Boolean
         get() = _savedElements.isEmpty() && _deletedElements.isEmpty() && _insertedPages.isEmpty() &&
             _savedPages.isEmpty() && _removedPages.isEmpty() && _versionedPages.isEmpty() && _lostVersions.isEmpty() &&
-            _resources.isEmpty() && !documentDefaultsChanged
+            _resources.isEmpty() && !documentDefaultsChanged && !documentRenamed
 
     /** [element] of [page] added or changed, shown or hidden. */
     internal fun saved(page: DrawPage, element: DrawElement) {
@@ -120,6 +124,10 @@ class ChangeEffects internal constructor(private val document: DrawDocument) {
 
     internal fun documentDefaultsChanged() {
         documentDefaultsChanged = true
+    }
+
+    internal fun documentRenamed() {
+        documentRenamed = true
     }
 
     internal fun resourceAdded(resource: DrawResource) {

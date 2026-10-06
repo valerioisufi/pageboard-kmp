@@ -2,7 +2,7 @@ package io.github.valerioisufi.drawview.lecture.platform
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.ImageBitmap
-import io.github.valerioisufi.drawview.core.platform.PlatformFiles
+import io.github.valerioisufi.drawview.core.platform.dataDirectory
 
 /**
  * Whether the lectures recorded here are followed by the models (Gemini, local models): the
@@ -30,5 +30,4 @@ expect fun encodeJpeg(bitmap: ImageBitmap, quality: Int = 82): ByteArray?
  * Directory of the lecture recordings and of the assistant settings: `lectures`, next to the
  * resources directory of the DrawView data.
  */
-fun lectureDataDirectory(): String =
-    PlatformFiles.resourcesDirectory().trimEnd('/').substringBeforeLast('/') + "/lectures"
+fun lectureDataDirectory(): String = dataDirectory() + "/lectures"

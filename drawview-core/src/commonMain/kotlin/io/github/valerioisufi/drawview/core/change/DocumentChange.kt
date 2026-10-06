@@ -667,6 +667,21 @@ data class SetDocumentDefaults(
     }
 }
 
+/** Renames the document: the most recent title wins on every device. */
+@Serializable
+@SerialName("renameDocument")
+data class RenameDocument(val title: String) : DocumentChange {
+    override fun applyTo(context: ChangeContext): DocumentChange? {
+        val document = context.document
+        if (document.titleVersion >= context.stamp) return null
+        val previous = RenameDocument(document.title)
+        document.title = title
+        document.titleVersion = context.stamp
+        context.effects.documentRenamed()
+        return previous
+    }
+}
+
 /**
  * Adds a file to the document. The files are never removed by undo (their content is kept with
  * the document): the change undoing it is [NoChange].
@@ -681,16 +696,16 @@ data class AddResource(val resource: ResourceData) : DocumentChange {
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         if (document.findResource(resource.id) != null) return null
-        val added = DrawResource(resource.id, resource.type, path)
+        val added = DrawResource(resource.id, resource.type, path, resource.hash)
         document.resources.add(added)
         context.effects.resourceAdded(added)
         return NoChange
     }
 
     companion object {
-        /** Adds the file [path] of this device as the resource [id]. */
-        fun of(id: String, type: DrawResource.ResourceType, path: String) =
-            AddResource(ResourceData(id, type)).also { it.path = path }
+        /** Adds the file [path] of this device (its content of hash [hash]) as the resource [id]. */
+        fun of(id: String, type: DrawResource.ResourceType, path: String, hash: String = "") =
+            AddResource(ResourceData(id, type, hash)).also { it.path = path }
     }
 }
 

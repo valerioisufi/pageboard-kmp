@@ -9,6 +9,7 @@ import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
+import io.github.valerioisufi.drawview.core.model.PurgedContent
 import io.github.valerioisufi.drawview.core.model.Tool
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -34,6 +35,9 @@ interface DrawPersistence {
     /** Registers [resource], a file owned by [document]. */
     suspend fun saveResource(document: DrawDocument, resource: DrawResource) {}
 
+    /** A file of a resource with the content of hash [hash] (of any document), `null` when there is none. */
+    suspend fun fileWithContent(hash: String): String? = null
+
     /**
      * Inserts or updates [page]: its format, background, position, presence and versions (not its
      * content).
@@ -41,6 +45,12 @@ interface DrawPersistence {
     suspend fun savePage(document: DrawDocument, page: DrawPage) {}
 
     suspend fun updateDocumentDefaults(document: DrawDocument) {}
+
+    /** Writes the title of [document] and its stamp (see `RenameDocument`). */
+    suspend fun updateDocumentTitle(document: DrawDocument) {}
+
+    /** Deletes the pages and the elements of [document] removed for good (see [DrawDocument.purgeHidden]). */
+    suspend fun deleteForGood(document: DrawDocument, content: PurgedContent) {}
     suspend fun touchDocument(document: DrawDocument, timestamp: Long) {}
 
     /** Appends [operation] to the log of the operations of [document] (see `DocumentStore`). */

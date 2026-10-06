@@ -126,8 +126,8 @@ interface DocumentDao {
     @Query("SELECT * FROM documents WHERE folderId = :folderId")
     suspend fun getDocumentsInFolder(folderId: String): List<DocumentEntity>
 
-    @Query("UPDATE documents SET name = :newName, modifiedAt = :timestamp WHERE id = :id")
-    suspend fun renameDocument(id: String, newName: String, timestamp: Long = currentTimeMillis())
+    @Query("UPDATE documents SET name = :name, titleVersion = :version, modifiedAt = :timestamp WHERE id = :id")
+    suspend fun updateDocumentTitle(id: String, name: String, version: Stamp, timestamp: Long = currentTimeMillis())
 
     @Query("UPDATE documents SET folderId = :newFolderId, modifiedAt = :timestamp WHERE id = :id")
     suspend fun moveDocument(id: String, newFolderId: String?, timestamp: Long = currentTimeMillis())
@@ -209,6 +209,12 @@ interface ResourceDao {
 
     @Query("SELECT * FROM resources WHERE documentId = :documentId")
     suspend fun getResourcesForDocument(documentId: String): List<ResourceEntity>
+
+    @Query("SELECT uri FROM resources WHERE contentHash = :hash AND uri != '' LIMIT 1")
+    suspend fun findUriByHash(hash: String): String?
+
+    @Query("SELECT COUNT(*) FROM resources WHERE uri = :uri")
+    suspend fun countByUri(uri: String): Int
 }
 
 /**
@@ -224,6 +230,9 @@ interface SharedDocumentDao {
 
     @Query("SELECT * FROM shared_documents")
     suspend fun getAll(): List<SharedDocumentEntity>
+
+    @Query("SELECT readOnly FROM shared_documents WHERE documentId = :documentId")
+    suspend fun isReadOnly(documentId: String): Boolean?
 
     @Query("SELECT documentId FROM shared_documents")
     fun getIdsFlow(): Flow<List<String>>
@@ -247,6 +256,45 @@ interface OperationDao {
     /** The operations of the replica [replica] after its operation [after], in their order. */
     @Query("SELECT * FROM operations WHERE documentId = :documentId AND replica = :replica AND sequence > :after ORDER BY sequence")
     suspend fun getAfter(documentId: String, replica: String, after: Long): List<OperationEntity>
+
+    @Query("DELETE FROM operations WHERE documentId = :documentId AND replica = :replica AND sequence <= :upTo")
+    suspend fun deleteUpTo(documentId: String, replica: String, upTo: Long)
+
+    @Query("SELECT replica, sequence FROM operation_bases WHERE documentId = :documentId")
+    suspend fun bases(documentId: String): List<ReplicaSequence>
+
+    @Query("SELECT * FROM operation_bases WHERE documentId = :documentId")
+    suspend fun baseEntities(documentId: String): List<OperationBaseEntity>
+
+    @Query("SELECT stamp FROM operations WHERE documentId = :documentId AND replica = :replica AND sequence = :sequence")
+    suspend fun stampOf(documentId: String, replica: String, sequence: Long): Stamp?
+
+    @Upsert
+    suspend fun upsertBase(base: OperationBaseEntity)
+}
+
+/**
+ * Deletes for good the pages and the elements removed (see `DrawDocument.purgeHidden`).
+ */
+@Dao
+interface PurgeDao {
+    @Query("DELETE FROM pages WHERE id IN (:ids)")
+    suspend fun deletePages(ids: List<String>)
+
+    @Query("DELETE FROM strokes WHERE id IN (:ids)")
+    suspend fun deleteStrokes(ids: List<String>)
+
+    @Query("DELETE FROM texts WHERE id IN (:ids)")
+    suspend fun deleteTexts(ids: List<String>)
+
+    @Query("DELETE FROM images WHERE id IN (:ids)")
+    suspend fun deleteImages(ids: List<String>)
+
+    @Query("DELETE FROM pdfs WHERE id IN (:ids)")
+    suspend fun deletePdfs(ids: List<String>)
+
+    @Query("DELETE FROM text_markups WHERE id IN (:ids)")
+    suspend fun deleteTextMarkups(ids: List<String>)
 }
 
 /**

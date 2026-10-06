@@ -1,20 +1,24 @@
 package io.github.valerioisufi.drawview.sync
 
 /**
- * What a device needs to join a shared document: its identifier, its title, its key and where a
- * device sharing it can be reached ([address], in the terms of a [SyncTransport]; `null`: to be
- * found on the network).
+ * What a device needs to join a shared document: its identifier, its title, the secret of the
+ * invitation ([key]: not the key of the document, which the owner gives to the devices it
+ * admits), the owner ([owner]: a fingerprint of its identity, see [DeviceIdentity.fingerprint],
+ * so that the device joining knows it talks to it) and where it can be reached ([address], in the
+ * terms of a [SyncTransport]; `null`: to be found on the network).
  */
 data class Invitation(
     val documentId: String,
     val title: String,
     val key: DocumentKey,
+    val owner: String,
     val address: String? = null
 ) {
     /** The invitation as a link (for a QR code or a message), read back by [parse]. */
     fun toLink(): String = buildString {
         append(SCHEME).append("?d=").append(encode(documentId))
         append("&k=").append(key.encode())
+        append("&o=").append(encode(owner))
         append("&t=").append(encode(title))
         address?.let { append("&a=").append(encode(it)) }
     }
@@ -33,6 +37,7 @@ data class Invitation(
                 documentId = fields["d"]?.takeIf { it.isNotEmpty() } ?: return null,
                 title = fields["t"].orEmpty(),
                 key = fields["k"]?.let { DocumentKey.decode(it) } ?: return null,
+                owner = fields["o"]?.takeIf { it.isNotEmpty() } ?: return null,
                 address = fields["a"]
             )
         }

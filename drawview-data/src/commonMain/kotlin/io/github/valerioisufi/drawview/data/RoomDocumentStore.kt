@@ -5,6 +5,7 @@ import io.github.valerioisufi.drawview.core.controller.DrawPersistence
 import io.github.valerioisufi.drawview.core.controller.DrawPreferences
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.core.model.Stamp
 import io.github.valerioisufi.drawview.data.db.DocumentEntity
 import io.github.valerioisufi.drawview.data.db.DrawDatabase
 import io.github.valerioisufi.drawview.data.db.DrawViewDatabase
@@ -50,12 +51,13 @@ class RoomDocumentStore(val database: DrawDatabase) : DocumentStore {
         folderId: String?
     ): DrawDocument = repository.createDocument(name, widthMm, heightMm, background, folderId)
 
-    override suspend fun insertDocument(document: DrawDocument, folderId: String?) = repository.insertDocument(document, folderId)
+    override suspend fun insertDocument(document: DrawDocument, folderId: String?, versionVector: Map<String, Long>) =
+        repository.insertDocument(document, folderId, versionVector)
 
     override suspend fun loadDocument(documentId: String): DrawDocument? = repository.loadDocument(documentId)
 
-    override suspend fun renameDocument(documentId: String, newName: String): Boolean =
-        fileRepository.renameDocument(documentId, newName)
+    override suspend fun isDocumentNameAvailable(documentId: String, name: String): Boolean =
+        fileRepository.isDocumentNameAvailable(documentId, name)
 
     override suspend fun deleteDocument(documentId: String): Boolean = fileRepository.deleteDocument(documentId)
 
@@ -72,13 +74,20 @@ class RoomDocumentStore(val database: DrawDatabase) : DocumentStore {
     override suspend fun operationsAfter(documentId: String, known: Map<String, Long>): List<Operation> =
         repository.operationsAfter(documentId, known)
 
+    override suspend fun compactOperations(documentId: String, upTo: Map<String, Long>): Map<String, Stamp> =
+        repository.compactOperations(documentId, upTo)
+
+    override suspend fun compactedOperations(documentId: String): Map<String, Long> = repository.compactedOperations(documentId)
+
     override suspend fun sharingSecrets(): Map<String, String> = withContext(Dispatchers.IO) {
         sharedDocuments.getAll().associate { it.documentId to it.secret }
     }
 
-    override suspend fun setSharingSecret(documentId: String, secret: String?) = withContext(Dispatchers.IO) {
-        if (secret == null) sharedDocuments.delete(documentId) else sharedDocuments.upsert(SharedDocumentEntity(documentId, secret))
+    override suspend fun setSharingSecret(documentId: String, secret: String?, readOnly: Boolean) = withContext(Dispatchers.IO) {
+        if (secret == null) sharedDocuments.delete(documentId) else sharedDocuments.upsert(SharedDocumentEntity(documentId, secret, readOnly))
     }
+
+    override suspend fun isReadOnly(documentId: String): Boolean = withContext(Dispatchers.IO) { sharedDocuments.isReadOnly(documentId) == true }
 
     override suspend fun createFolder(name: String, parentId: String?): Boolean = fileRepository.createFolder(name, parentId)
 

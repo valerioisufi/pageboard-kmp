@@ -340,7 +340,9 @@ class DrawPdf(var pdfPageIndex: Int = 0, override val id: String = newElementId(
 class DrawResource(
     val id: String,
     val type: ResourceType,
-    var path: String
+    var path: String,
+    /** The SHA-256 of the content of the file (see `Sha256`): the same content is kept once. */
+    val hash: String = ""
 ) {
     enum class ResourceType { PDF, IMAGE, COLOR }
 }
@@ -558,12 +560,33 @@ class DrawDocument(
     /** Stamp of the last change of the default format and background. */
     var defaultsVersion: Stamp = Stamp.ZERO
 
+    /** Stamp of the last change of the [title] (see `RenameDocument`). */
+    var titleVersion: Stamp = Stamp.ZERO
+
     /**
      * The pages removed: hidden, they keep receiving the changes like the other pages (the
      * changes of another device made before it saw the removal), so that a page put back is the
      * same on every device.
      */
     val removedPages: MutableMap<String, DrawPage> = mutableMapOf()
+
+    /**
+     * Removes for good the pages and the elements hidden by a removal that [stable] says can be
+     * forgotten (every device has it, and nothing made without seeing it is still on its way, see
+     * `SyncEngine`): nothing can show them again.
+     */
+    fun purgeHidden(stable: (Stamp) -> Boolean): PurgedContent {
+        val pages = removedPages.values.filter { page -> page.removed?.let(stable) == true }
+        pages.forEach { removedPages.remove(it.id) }
+        val elements = mutableListOf<Pair<DrawPage, DrawElement>>()
+        for (page in this.pages + removedPages.values) {
+            val gone = page.removedElements.filter { element -> element.removed?.let(stable) == true }
+            if (gone.isEmpty()) continue
+            page.removedElements.removeAll(gone)
+            gone.forEach { elements.add(page to it) }
+        }
+        return PurgedContent(pages, elements)
+    }
 
     init {
         if (addInitialPage) addPage()
@@ -696,3 +719,8 @@ private fun nextPageRenderKey(): Long = pageRenderKeys.incrementAndGet()
  */
 @OptIn(ExperimentalUuidApi::class)
 fun newElementId(): String = Uuid.random().toString()
+
+/** The pages and the elements removed for good (see [DrawDocument.purgeHidden]), with the page of each element. */
+class PurgedContent(val pages: List<DrawPage>, val elements: List<Pair<DrawPage, DrawElement>>) {
+    val isEmpty: Boolean get() = pages.isEmpty() && elements.isEmpty()
+}

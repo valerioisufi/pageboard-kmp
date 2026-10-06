@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.core.attachment
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 /**
  * Data an extension of the editor keeps beside the documents (e.g. the lectures recorded on
@@ -29,11 +30,23 @@ interface DocumentAttachments {
     /** The item [key] of [documentId] as it is now, to be read in parts; `null` when it is not here. */
     suspend fun open(documentId: String, key: String): AttachmentSource?
 
-    /** Receives the item [key] at [version], [size] bytes in parts (`null`: not kept). */
-    suspend fun receive(documentId: String, key: String, version: String, size: Long): AttachmentReceiver?
+    /**
+     * The bytes of the item [key] at [version] received already by a transfer interrupted (the
+     * connection lost): it is asked for from there.
+     */
+    suspend fun received(documentId: String, key: String, version: String): Long = 0
+
+    /**
+     * Receives the item [key] at [version], [size] bytes in parts, from its byte [from] (the ones
+     * before were received already, see [received]); `null`: not kept.
+     */
+    suspend fun receive(documentId: String, key: String, version: String, size: Long, from: Long = 0): AttachmentReceiver?
 
     /** The items changed here (by the user, or by what was received). */
     val changes: Flow<AttachmentChange>
+
+    /** Documents some items of which not wanted before may be wanted now (e.g. asked for by the user): offered again. */
+    val wantedAgain: Flow<String> get() = emptyFlow()
 }
 
 /** An item being sent: its content at [version] (it does not change while it is read). */
@@ -58,7 +71,7 @@ interface AttachmentReceiver {
     /** The whole item received: kept (or merged). */
     suspend fun complete()
 
-    /** Not received whole (e.g. the connection is lost): dropped. */
+    /** Not received whole (e.g. the connection is lost): dropped, or kept to go on later (see [DocumentAttachments.received]). */
     suspend fun cancel()
 }
 

@@ -124,4 +124,5 @@
     <string name="about_dialog_freetype_notice">Portions of this software are copyright © The FreeType Project (www.freetype.org). All rights reserved.</string>
     <string name="draw_menu_about_licenses">Info e Licenze</string>
     <string name="about_dialog_close">Chiudi</string>
+    <string name="draw_read_only">Sola lettura</string>
 </resources>

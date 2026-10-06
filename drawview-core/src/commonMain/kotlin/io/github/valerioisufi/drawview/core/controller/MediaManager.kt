@@ -14,14 +14,23 @@ import io.github.valerioisufi.drawview.core.platform.PlatformFiles
 import io.github.valerioisufi.drawview.core.platform.decodeImageBitmap
 import io.github.valerioisufi.drawview.core.platform.newResourcePath
 import io.github.valerioisufi.drawview.core.util.FractionalIndex
+import io.github.valerioisufi.drawview.core.util.Sha256
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Imports images and PDF documents into the document resources and pages.
+ * Imports images and PDF documents into the document resources and pages. A file already
+ * imported (in any document) is kept once: its content is found by its hash.
  */
 class MediaManager(private val controller: DrawViewController) {
+
+    /** The file of [bytes] (of hash [hash]): the one already kept, or a new one. */
+    private suspend fun storedFile(bytes: ByteArray, hash: String, prefix: String, extension: String): String? {
+        controller.persistence.fileWithContent(hash)?.takeIf { PlatformFiles.exists(it) }?.let { return it }
+        val path = newResourcePath(prefix, extension)
+        return path.takeIf { PlatformFiles.writeBytes(it, bytes) }
+    }
 
     /**
      * Imports an encoded image, placing it on the page under [targetScreen] (or at the center of
@@ -31,10 +40,10 @@ class MediaManager(private val controller: DrawViewController) {
      */
     fun importImage(bytes: ByteArray, extension: String = "png", targetScreen: Offset? = null) {
         controller.coroutineScope.launch {
+            val hash = withContext(Dispatchers.Default) { Sha256.of(bytes) }
             val prepared = withContext(Dispatchers.Default) {
                 val bitmap = decodeImageBitmap(bytes) ?: return@withContext null
-                val path = newResourcePath("img", extension.ifBlank { "png" }.lowercase())
-                if (!PlatformFiles.writeBytes(path, bytes)) return@withContext null
+                val path = storedFile(bytes, hash, "img", extension.ifBlank { "png" }.lowercase()) ?: return@withContext null
                 path to bitmap
             } ?: run {
                 controller.emitMessage(DrawViewController.Message.IMPORT_IMAGE_FAILED)
@@ -67,7 +76,7 @@ class MediaManager(private val controller: DrawViewController) {
             controller.session.submit(
                 CompositeChange(
                     listOf(
-                        AddResource.of(resourceId, DrawResource.ResourceType.IMAGE, path),
+                        AddResource.of(resourceId, DrawResource.ResourceType.IMAGE, path, hash),
                         AddElements.of(page, listOf(image))
                     )
                 )
@@ -86,16 +95,17 @@ class MediaManager(private val controller: DrawViewController) {
             return
         }
         controller.coroutineScope.launch {
+            val hash = withContext(Dispatchers.Default) { Sha256.of(bytes) }
             val prepared = withContext(Dispatchers.Default) {
-                val path = newResourcePath("pdf", "pdf")
-                if (!PlatformFiles.writeBytes(path, bytes)) return@withContext null
+                val path = storedFile(bytes, hash, "pdf", "pdf") ?: return@withContext null
                 val sizes = try {
                     adapter.getPageSizesMm(path)
                 } catch (_: Throwable) {
                     emptyList()
                 }
                 if (sizes.isEmpty()) {
-                    PlatformFiles.delete(path)
+                    // Not a PDF: the file is not kept (unless another resource has it)
+                    if (controller.persistence.fileWithContent(hash) != path) PlatformFiles.delete(path)
                     return@withContext null
                 }
                 path to sizes
@@ -117,7 +127,7 @@ class MediaManager(private val controller: DrawViewController) {
                 }
             }
             controller.session.submit(
-                CompositeChange(listOf(AddResource.of(resourceId, DrawResource.ResourceType.PDF, path)) + pages.map { AddPage.of(it) })
+                CompositeChange(listOf(AddResource.of(resourceId, DrawResource.ResourceType.PDF, path, hash)) + pages.map { AddPage.of(it) })
             )
             controller.pageManager.jumpToPage(firstIndex)
         }

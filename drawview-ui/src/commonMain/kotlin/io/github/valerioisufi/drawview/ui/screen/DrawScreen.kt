@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Draw
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.MoreHoriz
@@ -255,17 +256,27 @@ fun DrawScreen(
                         Row {
                             toolbarActions()
 
-                            ToolButton(
-                                onClick = {
-                                    expandedToolSettings = null
-                                    controller.toggleDrawingMode()
-                                },
-                                selected = controller.isDrawingMode
-                            ) {
+                            if (controller.isReadOnly) {
+                                // Shared with this device to be read only
                                 Icon(
-                                    imageVector = Icons.Outlined.Draw,
-                                    contentDescription = stringResource(Res.string.draw_toolbar_action_draw)
+                                    imageVector = Icons.Outlined.Lock,
+                                    contentDescription = stringResource(Res.string.draw_read_only),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.align(Alignment.CenterVertically).padding(horizontal = 12.dp)
                                 )
+                            } else {
+                                ToolButton(
+                                    onClick = {
+                                        expandedToolSettings = null
+                                        controller.toggleDrawingMode()
+                                    },
+                                    selected = controller.isDrawingMode
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Draw,
+                                        contentDescription = stringResource(Res.string.draw_toolbar_action_draw)
+                                    )
+                                }
                             }
 
                             var moreOptionsExpanded by remember { mutableStateOf(false) }

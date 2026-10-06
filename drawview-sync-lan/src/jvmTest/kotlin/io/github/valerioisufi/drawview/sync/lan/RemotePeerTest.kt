@@ -60,8 +60,9 @@ class RemotePeerTest {
                     override fun read(path: String): ByteArray? = null
                     override fun write(bytes: ByteArray, extension: String): String? = null
                 }
-                val engine = SyncEngine(documents, InMemorySharedDocuments(), scope, "JVM peer", noFiles)
-                engine.join(LanTransport(scope).connect(address), invitation)
+                val engine = SyncEngine(documents, InMemorySharedDocuments(), scope, { "JVM peer" }, noFiles)
+                engine.join(invitation)
+                engine.connect(LanTransport(scope).connect(address), invitation.documentId, invitation.key)
 
                 val open = withTimeout(20_000) {
                     var found = documents.open(invitation.documentId)

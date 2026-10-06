@@ -158,9 +158,10 @@ class KeyValueDocumentStore(
         return document
     }
 
-    override suspend fun insertDocument(document: DrawDocument, folderId: String?) {
+    override suspend fun insertDocument(document: DrawDocument, folderId: String?, versionVector: Map<String, Long>) {
         val now = currentTimeMillis()
         syncLock(lock) {
+            if (versionVector.isNotEmpty()) index = index.copy(operationBases = index.operationBases + (document.id to versionVector))
             val summary = StoredSummary(
                 id = document.id,
                 name = document.title,
@@ -202,9 +203,10 @@ class KeyValueDocumentStore(
                 val type = DrawResource.ResourceType.entries.firstOrNull { it.name == resource.type }
                     ?: DrawResource.ResourceType.IMAGE
                 restoreResourceFile(resource.uri)
-                document.resources.add(DrawResource(resource.id, type, resource.uri))
+                document.resources.add(DrawResource(resource.id, type, resource.uri, resource.hash))
             }
             document.defaultsVersion = stored?.defaultsVersion ?: Stamp.ZERO
+            document.titleVersion = stored?.titleVersion ?: Stamp.ZERO
             stored?.pages?.forEach { storedPage -> document.pages.add(storedPage.toPage(document)) }
             stored?.removedPages?.forEach { storedPage -> storedPage.toPage(document).let { document.removedPages[it.id] = it } }
             document.reindexPages()
@@ -214,19 +216,18 @@ class KeyValueDocumentStore(
         return document
     }
 
-    override suspend fun renameDocument(documentId: String, newName: String): Boolean {
-        val renamed = syncLock(lock) {
-            val summary = index.documents.firstOrNull { it.id == documentId } ?: return false
-            if (index.documents.any { it.id != documentId && it.folderId == summary.folderId && it.name == newName }) {
-                return false
-            }
-            updateSummaryLocked(documentId) { it.copy(name = newName) }
-            openDocuments[documentId]?.title = newName
+    override suspend fun isDocumentNameAvailable(documentId: String, name: String): Boolean = syncLock(lock) {
+        val summary = index.documents.firstOrNull { it.id == documentId } ?: return false
+        index.documents.none { it.id != documentId && it.folderId == summary.folderId && it.name == name }
+    }
+
+    override suspend fun updateDocumentTitle(document: DrawDocument) {
+        syncLock(lock) {
+            updateSummaryLocked(document.id) { it.copy(name = document.title) }
             writeIndexLocked()
-            true
         }
+        markDocumentModified(document)
         publishSummaries()
-        return renamed
     }
 
     override suspend fun deleteDocument(documentId: String): Boolean {
@@ -399,18 +400,51 @@ class KeyValueDocumentStore(
 
     override suspend fun sharingSecrets(): Map<String, String> = syncLock(lock) { index.sharingSecrets }
 
-    override suspend fun setSharingSecret(documentId: String, secret: String?) {
+    override suspend fun setSharingSecret(documentId: String, secret: String?, readOnly: Boolean) {
         syncLock(lock) {
             val secrets = if (secret == null) index.sharingSecrets - documentId else index.sharingSecrets + (documentId to secret)
-            index = index.copy(sharingSecrets = secrets)
+            val readOnlyDocuments = if (secret != null && readOnly) index.readOnly + documentId else index.readOnly - documentId
+            index = index.copy(sharingSecrets = secrets, readOnly = readOnlyDocuments)
             writeIndexLocked()
         }
         publishSummaries()
     }
 
-    override suspend fun versionVector(documentId: String): Map<String, Long> = syncLock(lock) {
-        operationsLocked(documentId).groupBy { it.id.replica }.mapValues { (_, operations) -> operations.maxOf { it.id.sequence } }
+    override suspend fun isReadOnly(documentId: String): Boolean = syncLock(lock) { documentId in index.readOnly }
+
+    override suspend fun fileWithContent(hash: String): String? = if (hash.isEmpty()) null else syncLock(lock) {
+        index.documents.firstNotNullOfOrNull { summary ->
+            val resources = openDocuments[summary.id]?.resources?.map { it.hash to it.path }
+                ?: storage.get(documentKey(summary.id))?.let { decodeOrNull<StoredDocument>(it) }?.resources?.map { it.hash to it.uri }
+            resources?.firstOrNull { (resourceHash, path) -> resourceHash == hash && path.isNotEmpty() }?.second
+        }
     }
+
+    override suspend fun compactedOperations(documentId: String): Map<String, Long> = syncLock(lock) { index.operationBases[documentId].orEmpty() }
+
+    override suspend fun compactOperations(documentId: String, upTo: Map<String, Long>): Map<String, Stamp> = syncLock(lock) {
+        val operations = operationsLocked(documentId)
+        val stamps = index.operationBaseStamps[documentId].orEmpty().toMutableMap()
+        val bases = index.operationBases[documentId].orEmpty().toMutableMap()
+        for ((replica, sequence) in upTo) {
+            if (sequence <= (bases[replica] ?: 0L)) continue
+            val last = operations.firstOrNull { it.id.replica == replica && it.id.sequence == sequence } ?: continue
+            operations.removeAll { it.id.replica == replica && it.id.sequence <= sequence }
+            bases[replica] = sequence
+            stamps[replica] = last.stamp
+        }
+        storage.set(operationsKey(documentId), json.encodeToString(ListSerializer(Operation.serializer()), operations))
+        index = index.copy(operationBases = index.operationBases + (documentId to bases), operationBaseStamps = index.operationBaseStamps + (documentId to stamps))
+        writeIndexLocked()
+        stamps
+    }
+
+    override suspend fun versionVector(documentId: String): Map<String, Long> = syncLock(lock) {
+        val vector = index.operationBases[documentId].orEmpty().toMutableMap()
+        operationsLocked(documentId).forEach { vector[it.id.replica] = maxOf(vector[it.id.replica] ?: 0L, it.id.sequence) }
+        vector
+    }
+
 
     override suspend fun operationsAfter(documentId: String, known: Map<String, Long>): List<Operation> = syncLock(lock) {
         operationsLocked(documentId).filter { it.id.sequence > (known[it.id.replica] ?: 0L) }.sortedBy { it.stamp }
@@ -538,7 +572,10 @@ class KeyValueDocumentStore(
         dirtyDocuments.remove(documentId)
         index = index.copy(
             documents = index.documents.filter { it.id != documentId },
-            sharingSecrets = index.sharingSecrets - documentId
+            sharingSecrets = index.sharingSecrets - documentId,
+            readOnly = index.readOnly - documentId,
+            operationBases = index.operationBases - documentId,
+            operationBaseStamps = index.operationBaseStamps - documentId
         )
     }
 
@@ -617,7 +654,12 @@ internal data class StoredIndex(
     val documents: List<StoredSummary> = emptyList(),
     val folders: List<StoredFolder> = emptyList(),
     /** The secrets of the documents shared, by document (see [DocumentStore.sharingSecrets]). */
-    val sharingSecrets: Map<String, String> = emptyMap()
+    val sharingSecrets: Map<String, String> = emptyMap(),
+    /** The documents shared to be read only here. */
+    val readOnly: Set<String> = emptySet(),
+    /** The operations no longer in the logs, by document (see [DocumentStore.compactOperations]), and their stamps. */
+    val operationBases: Map<String, Map<String, Long>> = emptyMap(),
+    val operationBaseStamps: Map<String, Map<String, Stamp>> = emptyMap()
 )
 
 @Serializable
@@ -662,11 +704,12 @@ internal data class StoredDocument(
     val pages: List<PageSnapshot> = emptyList(),
     val resources: List<StoredResource> = emptyList(),
     val defaultsVersion: Stamp = Stamp.ZERO,
-    val removedPages: List<PageSnapshot> = emptyList()
+    val removedPages: List<PageSnapshot> = emptyList(),
+    val titleVersion: Stamp = Stamp.ZERO
 )
 
 @Serializable
-internal data class StoredResource(val id: String, val type: String, val uri: String)
+internal data class StoredResource(val id: String, val type: String, val uri: String, val hash: String = "")
 
 @Serializable
 internal data class StoredPreferences(
@@ -695,8 +738,9 @@ internal data class StoredPreferences(
 
 private fun DrawDocument.toStored(): StoredDocument = StoredDocument(
     pages = pages.map { it.snapshot() },
-    resources = resources.map { StoredResource(it.id, it.type.name, it.path) },
+    resources = resources.map { StoredResource(it.id, it.type.name, it.path, it.hash) },
     defaultsVersion = defaultsVersion,
-    removedPages = removedPages.values.map { it.snapshot() }
+    removedPages = removedPages.values.map { it.snapshot() },
+    titleVersion = titleVersion
 )
 

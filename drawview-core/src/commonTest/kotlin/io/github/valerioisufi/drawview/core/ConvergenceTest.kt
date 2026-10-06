@@ -16,6 +16,7 @@ import io.github.valerioisufi.drawview.core.change.PageData
 import io.github.valerioisufi.drawview.core.change.PlaceElements
 import io.github.valerioisufi.drawview.core.change.RemoveElements
 import io.github.valerioisufi.drawview.core.change.RemovePage
+import io.github.valerioisufi.drawview.core.change.RenameDocument
 import io.github.valerioisufi.drawview.core.change.RestyleMarkups
 import io.github.valerioisufi.drawview.core.change.SetDocumentDefaults
 import io.github.valerioisufi.drawview.core.change.SetPageFormat
@@ -193,7 +194,10 @@ class ConvergenceTest {
      * pages shown in their order, then the removed ones (hidden), by identifier.
      */
     private fun snapshot(document: DrawDocument): List<String> =
-        listOf("defaults ${document.defaultWidthMm} ${document.defaultBackground} ${document.defaultsVersion}") +
+        listOf(
+            "defaults ${document.defaultWidthMm} ${document.defaultBackground} ${document.defaultsVersion}",
+            "title ${document.title} ${document.titleVersion}"
+        ) +
             (document.pages + document.removedPages.values.sortedBy { it.id }).flatMap { page ->
                 val data = page.toData()
                 listOf(
@@ -212,7 +216,7 @@ class ConvergenceTest {
         val page = document.pages[random.nextInt(document.pages.size)]
         val elements = page.elements()
         fun someElements(): List<DrawElement> = elements.shuffled(random).take(random.nextInt(1, 4))
-        return when (random.nextInt(11)) {
+        return when (random.nextInt(12)) {
             0, 1 -> AddElements.of(page, List(random.nextInt(1, 3)) { stroke(random.nextFloat() * 100f, random.nextFloat() * 100f) } + text("t${random.nextInt(100)}"))
             2 -> if (elements.isEmpty()) null else RemoveElements.of(page, someElements())
             3 -> {
@@ -233,6 +237,7 @@ class ConvergenceTest {
             7 -> MovePages.toOrder(document, document.pages.map { it.id }.shuffled(random))
             8 -> SetPageFormat(page.id, 100f + random.nextInt(100), 100f + random.nextInt(100), if (random.nextBoolean()) PageBackground.Ruled() else null)
             9 -> SetDocumentDefaults(150f + random.nextInt(100), 200f, if (random.nextBoolean()) PageBackground.Grid() else PageBackground.Solid())
+            10 -> RenameDocument("Notes ${random.nextInt(100)}")
             else -> page.markups.firstOrNull()?.let {
                 RestyleMarkups(page.id, listOf(MarkupStyle(it.id, TextMarkupKind.entries.random(random), random.nextInt(10))))
             }

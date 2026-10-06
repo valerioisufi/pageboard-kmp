@@ -54,7 +54,7 @@ class OfflineWorkBenchmark {
             )
         )
         val documents = OpenDocuments(store, Dispatchers.Default.limitedParallelism(1), scope)
-        val engine = SyncEngine(documents, StoreSharedDocuments(store), scope, name, NoFiles)
+        val engine = SyncEngine(documents, StoreSharedDocuments(store), scope, { name }, NoFiles)
         val transport = network.transport(name)
 
         init {
@@ -77,8 +77,9 @@ class OfflineWorkBenchmark {
                 val ada = Device("ada", scope, network)
                 val bob = Device("bob", scope, network)
                 val document = ada.store.createDocument("Notes")
-                val invitation = ada.engine.share(document.id, "Notes")
-                bob.engine.join(bob.transport.connect("ada"), invitation)
+                val invitation = ada.engine.invite(document.id, "Notes")!!
+                bob.engine.join(invitation)
+                bob.engine.connect(bob.transport.connect("ada"), document.id, invitation.key)
                 awaitSame(document.id, ada, bob)
                 bob.engine.stop()
                 delay(200)
@@ -113,7 +114,7 @@ class OfflineWorkBenchmark {
                 // Together again
                 var applied = Duration.ZERO
                 val together = measureTime {
-                    bob.engine.join(bob.transport.connect("ada"), invitation)
+                    bob.engine.connect(bob.transport.connect("ada"), document.id, bob.engine.connectionKeys().first().second)
                     applied = measureTime { awaitApplied(document.id, ada, bob) }
                     awaitSame(document.id, ada, bob)
                 }

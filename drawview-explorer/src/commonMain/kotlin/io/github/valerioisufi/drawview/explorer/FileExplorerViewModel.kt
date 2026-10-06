@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.valerioisufi.drawview.data.DocumentStore
+import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.data.DocumentSummary
 import io.github.valerioisufi.drawview.data.FolderSummary
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
@@ -20,9 +21,14 @@ import org.jetbrains.compose.resources.StringResource
 
 /**
  * State of the document library: navigation between the folders, sorting, selection and the
- * operations on documents and folders. The content follows the changes of the [store].
+ * operations on documents and folders. The content follows the changes of the [store]; the
+ * documents are renamed by a change of them ([openDocuments]: the devices they are shared with rename
+ * them too).
  */
-class FileExplorerViewModel(private val store: DocumentStore) : ViewModel() {
+class FileExplorerViewModel(
+    private val store: DocumentStore,
+    private val openDocuments: OpenDocuments = OpenDocuments(store)
+) : ViewModel() {
 
     enum class FileType { FILE, FOLDER }
 
@@ -181,7 +187,7 @@ class FileExplorerViewModel(private val store: DocumentStore) : ViewModel() {
         viewModelScope.launch {
             when (file.type) {
                 FileType.FOLDER -> store.renameFolder(file.id, newName)
-                FileType.FILE -> store.renameDocument(file.id, newName)
+                FileType.FILE -> openDocuments.rename(file.id, newName)
             }
         }
     }

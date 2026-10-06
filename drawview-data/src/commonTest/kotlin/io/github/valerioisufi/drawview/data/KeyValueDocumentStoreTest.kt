@@ -18,6 +18,7 @@ import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -164,9 +165,13 @@ class KeyValueDocumentStoreTest {
         val a = store.createDocument("A")
         val b = store.createDocument("B")
 
-        assertFalse(store.renameDocument(a.id, "B"), "names are unique")
-        assertTrue(store.renameDocument(a.id, "C"))
+        val documents = OpenDocuments(store, StandardTestDispatcher(testScheduler), backgroundScope)
+        assertFalse(documents.rename(a.id, "B"), "names are unique")
+        assertTrue(documents.rename(a.id, "C"))
         assertEquals(setOf("B", "C"), store.documents.first().map { it.name }.toSet())
+        // By a change: the stamp of the title is kept with it
+        assertEquals("C", assertNotNull(store.loadDocument(a.id)).title)
+        assertTrue(assertNotNull(store.loadDocument(a.id)).titleVersion > Stamp.ZERO)
 
         assertTrue(store.deleteDocument(b.id))
         assertNull(store.loadDocument(b.id))

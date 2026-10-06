@@ -10,11 +10,16 @@ interface ResourceFiles {
 
     /** Writes [bytes] in a new file (named with [extension]); returns its path, or `null`. */
     fun write(bytes: ByteArray, extension: String): String?
+
+    /** Whether the file [path] is there. */
+    fun exists(path: String): Boolean = read(path) != null
 }
 
 /** The files of the resources of the device (see [PlatformFiles.resourcesDirectory]). */
 object PlatformResourceFiles : ResourceFiles {
     override fun read(path: String): ByteArray? = if (path.isEmpty()) null else PlatformFiles.readBytes(path)
+
+    override fun exists(path: String): Boolean = path.isNotEmpty() && PlatformFiles.exists(path)
 
     override fun write(bytes: ByteArray, extension: String): String? {
         val path = newResourcePath("shared", extension.ifEmpty { "bin" })

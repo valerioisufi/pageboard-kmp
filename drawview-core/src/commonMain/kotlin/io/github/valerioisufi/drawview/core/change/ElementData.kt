@@ -230,7 +230,7 @@ data class PageData(
 
 /** A file of a document (its content travels apart, see `docs/collaboration.md`). */
 @Serializable
-data class ResourceData(val id: String, val type: DrawResource.ResourceType)
+data class ResourceData(val id: String, val type: DrawResource.ResourceType, val hash: String = "")
 
 // ==========================================================
 // From the model

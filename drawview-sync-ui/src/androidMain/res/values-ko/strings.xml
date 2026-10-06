@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync_background_channel">다른 기기와 작업 중</string>
+    <string name="sync_background_notification">공유 문서를 최신 상태로 유지 중(%1$d)</string>
+</resources>

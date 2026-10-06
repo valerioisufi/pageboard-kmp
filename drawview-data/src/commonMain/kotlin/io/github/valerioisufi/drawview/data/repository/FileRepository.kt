@@ -66,12 +66,9 @@ class FileRepository(
     }
 
     // --- DOCUMENT OPERATIONS ---
-    suspend fun renameDocument(documentId: String, newName: String): Boolean = withContext(Dispatchers.IO) {
+    suspend fun isDocumentNameAvailable(documentId: String, name: String): Boolean = withContext(Dispatchers.IO) {
         val document = documentDao.getDocumentById(documentId) ?: return@withContext false
-        if (documentDao.getDocumentByNameAndFolder(newName, document.folderId) != null) return@withContext false
-
-        documentDao.renameDocument(documentId, newName)
-        true
+        documentDao.getDocumentByNameAndFolder(name, document.folderId)?.let { it.id == documentId } ?: true
     }
 
     suspend fun moveDocument(documentId: String, newFolderId: String?): Boolean = withContext(Dispatchers.IO) {
@@ -90,7 +87,8 @@ class FileRepository(
         documentDao.getDocumentById(documentId) ?: return@withContext false
         val files = resourceDao.getResourcesForDocument(documentId).map { it.uri }
         documentDao.deleteById(documentId)
-        for (path in files) {
+        // Not the files kept for other documents too (the same content is kept once)
+        for (path in files.distinct().filter { resourceDao.countByUri(it) == 0 }) {
             try {
                 PlatformFiles.delete(path)
             } catch (_: Throwable) {

@@ -7,13 +7,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.valerioisufi.drawview.core.attachment.DocumentAttachments
-import io.github.valerioisufi.drawview.core.platform.localDeviceName
+import io.github.valerioisufi.drawview.core.platform.DeviceProfile
 import io.github.valerioisufi.drawview.data.DocumentStore
 import io.github.valerioisufi.drawview.data.DrawViewStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
+import io.github.valerioisufi.drawview.sync.DeviceIdentity
 import io.github.valerioisufi.drawview.sync.Invitation
+import io.github.valerioisufi.drawview.sync.InvitationGrant
+import io.github.valerioisufi.drawview.sync.JoinRequest
+import io.github.valerioisufi.drawview.sync.JoinStatus
+import io.github.valerioisufi.drawview.sync.Member
+import io.github.valerioisufi.drawview.sync.Membership
 import io.github.valerioisufi.drawview.sync.Peer
 import io.github.valerioisufi.drawview.sync.Presence
+import io.github.valerioisufi.drawview.sync.Role
 import io.github.valerioisufi.drawview.sync.StoreSharedDocuments
 import io.github.valerioisufi.drawview.sync.SyncEngine
 import io.github.valerioisufi.drawview.sync.lan.LanDiscovery
@@ -24,10 +31,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -38,6 +48,11 @@ import org.jetbrains.compose.resources.stringResource
  * sharing and joining the documents of an application): the documents shared are kept the same
  * on every device as long as the devices are on the same network; the documents received go to
  * the folder [sharedFolderName] of the library.
+ *
+ * The device sharing a document is its owner: it gives the invitations (with the role of the
+ * devices joining with them, and whether it approves them first), changes the roles of the
+ * members, removes them and ends the sharing. The devices show themselves with the name the user
+ * chose ([DeviceProfile]) and prove who they are ([DeviceIdentity], kept by the system).
  *
  * The data the extensions keep beside the documents ([attachments], e.g. the lectures) travel
  * with them.
@@ -50,12 +65,12 @@ class Collaboration(
     private val store: DocumentStore,
     documents: OpenDocuments,
     private val discovery: LanDiscovery,
-    private val deviceName: String,
     private val sharedFolderName: String,
     private val scope: CoroutineScope,
-    attachments: DocumentAttachments? = null
+    attachments: DocumentAttachments? = null,
+    identity: DeviceIdentity = DeviceIdentity.ofThisDevice()
 ) {
-    private val shared = StoreSharedDocuments(store)
+    private val shared = StoreSharedDocuments(store, documents)
     private val mutex = Mutex()
     private var lan: LanSync? = null
     private val online = MutableStateFlow(false)
@@ -63,10 +78,28 @@ class Collaboration(
     /** Asks for the permission to use the local network (set by [rememberCollaboration]). */
     internal var requestAccess: suspend () -> Boolean = { true }
 
-    val engine = SyncEngine(documents, shared, scope, deviceName, attachments = attachments, receivedFolder = ::sharedFolder)
+    val engine = SyncEngine(
+        documents, shared, scope, { DeviceProfile.name.value },
+        attachments = attachments, identity = identity, receivedFolder = ::sharedFolder
+    )
 
     /** The devices connected, with the document each one works on. */
     val peers: StateFlow<List<Peer>> get() = engine.peers
+
+    /** Who works on each shared document, and with what role (as its owner decided). */
+    val memberships: StateFlow<Map<String, Membership>> get() = engine.memberships
+
+    /** This device among the members (see [Member.device]). */
+    val device: String get() = engine.device
+
+    /** The devices waiting for this device, the owner, to approve them. */
+    val joinRequests: StateFlow<List<JoinRequest>> get() = engine.joinRequests
+
+    /** The titles of the documents, by identifier. */
+    val documentTitles: Flow<Map<String, String>> = store.documents.map { list -> list.associate { it.id to it.name } }
+
+    /** The documents being joined with an invitation, and where each one is. */
+    val joining: StateFlow<Map<String, JoinStatus>> get() = engine.joining
 
     /** Where the other devices are on the documents. */
     val presences: StateFlow<List<Presence>> get() = engine.presences
@@ -77,31 +110,62 @@ class Collaboration(
     /** Whether this device works with the devices of the network (allowed to and started). */
     val isOnline: StateFlow<Boolean> = online.asStateFlow()
 
+    init {
+        // Connected to some devices: going on in the background too
+        scope.launch {
+            engine.peers.map { peers -> peers.map { it.documentId }.distinct().size }.distinctUntilChanged().collect { documents ->
+                BackgroundSync.update(active = documents > 0, documents = documents)
+            }
+        }
+    }
+
     /** Starts looking for the devices of the network, once allowed to; returns whether started. */
     suspend fun start(): Boolean {
         if (online.value) return true
         if (!requestAccess()) return false
         mutex.withLock {
             if (lan == null) {
-                lan = LanSync(engine, shared, discovery, scope, store.replicaId(), deviceName).also { it.start() }
+                lan = LanSync(engine, discovery, scope, store.replicaId(), { DeviceProfile.name.value }).also { it.start() }
                 online.value = true
             }
         }
         return true
     }
 
-    /** Shares the document [documentId] (titled [title]): its invitation. */
-    suspend fun share(documentId: String, title: String): Invitation {
-        val invitation = engine.share(documentId, title)
+    /**
+     * Shares the document [documentId] (titled [title]), this device becoming its owner if it is
+     * not shared yet: a new invitation for the devices joining as [role], approved first when
+     * [approval]; `null` when this device is not the owner.
+     */
+    suspend fun share(documentId: String, title: String, role: Role = Role.EDITOR, approval: Boolean = false): Invitation? {
+        val invitation = engine.invite(documentId, title, role, approval)
         if (start()) lan?.announce()
         return invitation
     }
 
-    /** The invitation of the document [documentId] if it is shared, otherwise `null`. */
-    suspend fun invitationOf(documentId: String, title: String): Invitation? =
-        shared.keyOf(documentId)?.let { Invitation(documentId, title, it) }
+    /** The invitations of the document [documentId] given by this device, its owner, as links. */
+    suspend fun invitationsOf(documentId: String, title: String): List<Pair<InvitationGrant, Invitation>> =
+        engine.invitationsOf(documentId).map { it to engine.invitationOf(documentId, title, it) }
 
-    /** Stops sharing the document [documentId] (from this device). */
+    /** Revokes an invitation: nobody joins with it anymore. */
+    suspend fun revokeInvitation(documentId: String, grant: InvitationGrant) {
+        engine.revokeInvitation(documentId, grant.id)
+        lan?.announce()
+    }
+
+    /** Approves (or refuses) a device joining. */
+    fun answer(request: JoinRequest, approve: Boolean) = engine.answer(request, approve)
+
+    /** Gives a member another role (this device is the owner). */
+    suspend fun setRole(documentId: String, member: String, role: Role) = engine.setRole(documentId, member, role)
+
+    /** Removes a member: the document gets a new key it does not have (this device is the owner). */
+    suspend fun removeMember(documentId: String, member: String) = engine.removeMember(documentId, member)
+
+    /**
+     * Stops sharing the document [documentId]: for every device when this one is its owner (each
+     * one keeps its copy), otherwise this device leaves it.
+     */
     suspend fun stopSharing(documentId: String) {
         engine.unshare(documentId)
         lan?.announce()
@@ -110,9 +174,14 @@ class Collaboration(
     /** Joins the document of the invitation [link]: the invitation, or `null` when it is not one. */
     suspend fun join(link: String): Invitation? {
         val invitation = Invitation.parse(link) ?: return null
-        shared.add(invitation.documentId, invitation.key)
-        if (start()) lan?.join(invitation)
+        if (start()) lan?.join(invitation) else engine.join(invitation)
         return invitation
+    }
+
+    /** Shows this device as [name] to the others (blank: the name of the device). */
+    suspend fun rename(name: String?) {
+        DeviceProfile.rename(name)
+        lan?.announce()
     }
 
     /**
@@ -176,7 +245,7 @@ private class CollaborationHolder(
     attachments: DocumentAttachments?
 ) : ViewModel() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    val collaboration = Collaboration(store, documents, createLanDiscovery(), localDeviceName(), folderName, scope, attachments)
+    val collaboration = Collaboration(store, documents, createLanDiscovery(), folderName, scope, attachments)
 
     override fun onCleared() {
         scope.launch { collaboration.stop() }.invokeOnCompletion { scope.cancel() }

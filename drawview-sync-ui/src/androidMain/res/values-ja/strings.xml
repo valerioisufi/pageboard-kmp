@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync_background_channel">他のデバイスと作業中</string>
+    <string name="sync_background_notification">共有ドキュメントを最新に保っています（%1$d）</string>
+</resources>

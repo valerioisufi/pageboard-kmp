@@ -27,6 +27,7 @@ kotlin {
             api(project(":drawview-data"))
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.cbor)
+            implementation(libs.kotlinx.serialization.json)
             implementation(libs.cryptography.core)
             implementation(libs.cryptography.provider.optimal)
         }

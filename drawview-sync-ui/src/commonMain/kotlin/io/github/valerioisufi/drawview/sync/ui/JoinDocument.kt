@@ -21,15 +21,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.sync.Invitation
-import io.github.valerioisufi.drawview.sync.ui.generated.resources.Res
-import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_cancel
-import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_close
-import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_join
-import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_join_action
-import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_join_hint
-import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_join_invalid
-import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_join_waiting
-import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_no_network
+import io.github.valerioisufi.drawview.sync.JoinRequest
+import io.github.valerioisufi.drawview.sync.JoinStatus
+import io.github.valerioisufi.drawview.sync.Role
+import io.github.valerioisufi.drawview.sync.ui.generated.resources.*
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
@@ -45,12 +40,30 @@ fun JoinSharedDocumentButton(collaboration: Collaboration) {
 
 /**
  * The dialogs of the collaboration shown wherever the application is: joining the invitations
- * opened from outside (see [InvitationLinks]).
+ * opened from outside (see [InvitationLinks]), approving the devices joining the documents this
+ * device owns.
  */
 @Composable
 fun CollaborationDialogs(collaboration: Collaboration) {
     val link by InvitationLinks.link.collectAsState()
     link?.let { JoinDialog(collaboration, it, onDismiss = InvitationLinks::consume) }
+    val requests by collaboration.joinRequests.collectAsState()
+    requests.firstOrNull()?.let { request -> JoinRequestDialog(collaboration, request) }
+}
+
+/** A device asks to join a document of this device: let in or refused. */
+@Composable
+private fun JoinRequestDialog(collaboration: Collaboration, request: JoinRequest) {
+    val documents by collaboration.documentTitles.collectAsState(emptyMap())
+    val role = stringResource(if (request.role == Role.READER) Res.string.sync_role_reader else Res.string.sync_role_editor)
+    AlertDialog(
+        onDismissRequest = {},
+        icon = { Icon(Icons.Outlined.GroupAdd, contentDescription = null) },
+        title = { Text(stringResource(Res.string.sync_request_title)) },
+        text = { Text(stringResource(Res.string.sync_request_message, request.name, documents[request.documentId].orEmpty(), role)) },
+        confirmButton = { TextButton(onClick = { collaboration.answer(request, approve = true) }) { Text(stringResource(Res.string.sync_approve)) } },
+        dismissButton = { TextButton(onClick = { collaboration.answer(request, approve = false) }) { Text(stringResource(Res.string.sync_refuse)) } }
+    )
 }
 
 /** Joins the document of the invitation [link] (typed or pasted when empty). */
@@ -75,9 +88,20 @@ private fun JoinDialog(collaboration: Collaboration, link: String, onDismiss: ()
         title = { Text(stringResource(Res.string.sync_join)) },
         text = {
             val done = joined
+            val joining by collaboration.joining.collectAsState()
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (done != null) {
-                    Text(stringResource(Res.string.sync_join_waiting, done.title))
+                    Text(
+                        stringResource(
+                            when (joining[done.documentId]) {
+                                JoinStatus.WAITING_APPROVAL -> Res.string.sync_join_waiting_approval
+                                JoinStatus.ADMITTED -> Res.string.sync_join_admitted
+                                JoinStatus.REFUSED -> Res.string.sync_join_refused
+                                else -> Res.string.sync_join_waiting
+                            },
+                            done.title
+                        )
+                    )
                     if (!online) Text(stringResource(Res.string.sync_no_network))
                 } else {
                     OutlinedTextField(
