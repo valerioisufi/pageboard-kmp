@@ -1,14 +1,17 @@
 package io.github.valerioisufi.drawview.core
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import io.github.valerioisufi.drawview.core.change.CommittedChange
 import io.github.valerioisufi.drawview.core.change.RemoveElements
+import io.github.valerioisufi.drawview.core.controller.Collaborator
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.geometry.Dimension
 import io.github.valerioisufi.drawview.core.geometry.mm
 import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawStroke
+import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.StrokeMesh
 import io.github.valerioisufi.drawview.core.model.StrokePoint
@@ -23,6 +26,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 
@@ -134,6 +138,36 @@ class EditorChangesTest {
         controller.undo()
         assertTrue(page.texts.isEmpty())
         assertFalse(controller.canUndo)
+    }
+
+    @Test
+    fun aTextAnotherDeviceIsWritingIsLeftToIt() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controllerWith(1, backgroundScope)
+        val page = controller.document.pages[0]
+        val editor = controller.textEditorManager
+        editor.startEditing(null, 0, 10f, 20f, 60f)
+        editor.finishTextEditing("Notes", isLatex = false, color = 0xFF000000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
+        val text = page.texts.single()
+        val refused = mutableListOf<String>()
+        backgroundScope.launch { controller.editsRefused.collect { refused.add(it.name) } }
+
+        // Selected here, then written on another device: left to it
+        controller.selectionManager.selectText(0, text)
+        controller.collaborators = listOf(
+            Collaborator("bob", "Bob", Color.Blue, pageId = null, position = Offset.Zero, text = DrawText(text.id), textPageId = page.id)
+        )
+        assertNull(controller.selectionManager.currentSelection)
+        // Neither opened nor selected meanwhile: the user is told who is writing it
+        editor.startEditing(text, 0, text.x, text.y, text.width)
+        assertFalse(editor.isEditing)
+        controller.selectionManager.selectWithLasso(0, floatArrayOf(0f, 0f, 200f, 0f, 200f, 200f, 0f, 200f))
+        assertNull(controller.selectionManager.currentSelection)
+        assertEquals(listOf("Bob", "Bob"), refused)
+
+        // Written: free again
+        controller.collaborators = emptyList()
+        editor.startEditing(text, 0, text.x, text.y, text.width)
+        assertTrue(editor.isEditing)
     }
 
     @Test

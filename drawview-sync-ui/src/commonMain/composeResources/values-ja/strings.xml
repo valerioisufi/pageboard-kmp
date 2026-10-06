@@ -18,4 +18,5 @@
     <string name="sync_join_waiting">ネットワーク上で「%1$s」を探しています：共有フォルダに表示されます。</string>
     <string name="sync_shared_folder">共有</string>
     <string name="sync_no_network">ローカルネットワークを使用する許可がないと、デバイス同士が見つかりません。</string>
+    <string name="sync_writing_elsewhere">%1$s がこのテキストを書いています</string>
 </resources>

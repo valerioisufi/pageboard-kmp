@@ -18,4 +18,5 @@
     <string name="sync_join_waiting">Buscando «%1$s» en la red: aparecerá en la carpeta Compartidos.</string>
     <string name="sync_shared_folder">Compartidos</string>
     <string name="sync_no_network">Sin el permiso para usar la red local los dispositivos no pueden encontrarse.</string>
+    <string name="sync_writing_elsewhere">%1$s está escribiendo este texto</string>
 </resources>

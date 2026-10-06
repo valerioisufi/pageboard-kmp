@@ -408,6 +408,22 @@ The application is not released yet, so the stored documents are not migrated:
   devices (`EditorActivity.strokeCancelled`, `Presence.inkCancelled`): it stayed until the
   next stroke.
 
+### After phase 6: a text written by one at a time
+
+* A text another device is writing can be neither edited nor selected (`DrawViewController
+  .writerOf`): the user is told who is writing it (`editsRefused`, shown by the collaboration at
+  the top of the canvas); a text selected when another device starts writing it is let go (its
+  editor saves the box where it was when it opened: moved meanwhile, it would go back).
+* Not a lock that every device agrees on (there is no server to keep it): it follows the presence,
+  so it is free again when the writer closes the editor or is gone (at once, or within 12 s when
+  its connection is lost silently). Two devices opening the text at the same moment both edit it:
+  the content lost is kept as a copy then.
+* The other elements stay free: of two moves of the same element the most recent one wins, and
+  the moves of the others are seen as they are made.
+* Verified on two simulators: the text being written on the iPhone is framed with its name on the
+  iPad, which neither opens it nor selects it with the lasso and tells who is writing it; once the
+  iPhone closes its editor, the iPad opens it (and the other way round).
+
 ### Risks
 
 * Regressions of the editor in phase 2: one manager at a time, with tests comparing the state

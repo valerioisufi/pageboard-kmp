@@ -121,7 +121,8 @@ class SelectionManager(private val controller: DrawViewController) {
     }
 
     /**
-     * Selects the elements of [page] intersecting the closed [lasso] polygon (page millimeters).
+     * Selects the elements of [page] intersecting the closed [lasso] polygon (page millimeters),
+     * except the texts other devices are writing (see [DrawViewController.writerOf]).
      */
     fun selectWithLasso(pageIndex: Int, lasso: FloatArray) {
         clearSelection()
@@ -150,6 +151,10 @@ class SelectionManager(private val controller: DrawViewController) {
             }
             for (text in page.texts) {
                 if (isItemInsideLasso(text.centerX, text.centerY, text.getRotatedBounds(), lasso, lassoBox)) {
+                    controller.writerOf(text)?.let { writer ->
+                        controller.refuseEdit(writer)
+                        continue
+                    }
                     selection.texts.add(text)
                     include(text.getRotatedBounds())
                 }
@@ -203,6 +208,10 @@ class SelectionManager(private val controller: DrawViewController) {
      * Selects a single text block (e.g. a text added by the application, so that it can be moved).
      */
     fun selectText(pageIndex: Int, text: DrawText) {
+        controller.writerOf(text)?.let { writer ->
+            controller.refuseEdit(writer)
+            return
+        }
         clearSelection()
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
         val selection = SelectionGroup(

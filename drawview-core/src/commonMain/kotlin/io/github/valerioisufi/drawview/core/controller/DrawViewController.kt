@@ -22,6 +22,7 @@ import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.history.HistoryManager
 import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawDocument
+import io.github.valerioisufi.drawview.core.model.DrawElement
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawResource
@@ -353,7 +354,25 @@ class DrawViewController(
         set(value) {
             showByCollaborators(shownCollaborators.hiddenElementIds(), value.hiddenElementIds())
             shownCollaborators = value
+            // A text selected here that another device starts writing: left to it
+            if (selectionManager.currentSelection?.texts?.any { writerOf(it) != null } == true) selectionManager.clearSelection()
         }
+
+    /**
+     * The other device writing the text [element] (see [collaborators]), if any: meanwhile the
+     * text can be neither edited nor selected here (the user is told, see [editsRefused]).
+     */
+    fun writerOf(element: DrawElement): Collaborator? = shownCollaborators.firstOrNull { it.text?.id == element.id }
+
+    private val refusedEdits = MutableSharedFlow<Collaborator>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+    /** The other devices writing the texts the user tried to edit or to select here. */
+    val editsRefused: SharedFlow<Collaborator> = refusedEdits.asSharedFlow()
+
+    /** Tells that the text [writer] is writing was not opened or selected here. */
+    internal fun refuseEdit(writer: Collaborator) {
+        refusedEdits.tryEmit(writer)
+    }
 
     /** The elements the collaborators draw themselves: the texts written, the elements moved. */
     private fun List<Collaborator>.hiddenElementIds(): Set<String> = buildSet {

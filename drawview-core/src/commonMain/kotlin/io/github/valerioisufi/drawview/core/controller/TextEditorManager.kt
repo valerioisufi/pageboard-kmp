@@ -53,9 +53,13 @@ class TextEditorManager(private val controller: DrawViewController) {
 
     /**
      * Starts editing [item] (or a new text when `null`) on the page [pageIndex], at the given
-     * page coordinates.
+     * page coordinates; not a text another device is writing (see [DrawViewController.writerOf]).
      */
     fun startEditing(item: DrawText?, pageIndex: Int, xMm: Float, yMm: Float, boxWidthMm: Float) {
+        item?.let { controller.writerOf(it) }?.let { writer ->
+            controller.refuseEdit(writer)
+            return
+        }
         if (isEditing) cancelTextEditing()
         controller.selectionManager.clearSelection()
         controller.textMarkupManager.clearSelection()
