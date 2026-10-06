@@ -409,15 +409,17 @@ class DrawPage(
     // ==========================================================
 
     /** Every element of the page: PDF pages, images, strokes, texts and marks, each kind in order. */
-    fun elements(): List<DrawElement> = readSnapshot { pdfs + images + strokes + texts + markups }
+    fun elements(): List<DrawElement> = readSnapshot { pdfs.toList() + images.toList() + strokes.toList() + texts.toList() + markups.toList() }
 
     /** The removed element [id] of this page (see [removedElements]), or `null`. */
     fun findRemoved(id: String): DrawElement? = removedElements.firstOrNull { it.id == id }
 
     /** The element [id] of this page, or `null`. */
     fun find(id: String): DrawElement? = readSnapshot {
-        strokes.firstOrNull { it.id == id } ?: texts.firstOrNull { it.id == id } ?: images.firstOrNull { it.id == id }
-            ?: markups.firstOrNull { it.id == id } ?: pdfs.firstOrNull { it.id == id }
+        // Each list read once (its elements read one at a time through the snapshot cost much more)
+        strokes.toList().firstOrNull { it.id == id } ?: texts.toList().firstOrNull { it.id == id }
+            ?: images.toList().firstOrNull { it.id == id } ?: markups.toList().firstOrNull { it.id == id }
+            ?: pdfs.toList().firstOrNull { it.id == id }
     }
 
     /**

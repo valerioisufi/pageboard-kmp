@@ -306,8 +306,11 @@ class DrawDocumentRepository(
 
     /** The operations of [documentId] after [known] (a version vector), in stamp order. */
     suspend fun operationsAfter(documentId: String, known: Map<String, Long>): List<Operation> = withContext(Dispatchers.IO) {
-        operationDao.getForDocument(documentId)
+        // Only the ones missing read (the whole log of a document worked on for long is large)
+        operationDao.lastSequences(documentId)
             .filter { it.sequence > (known[it.replica] ?: 0L) }
+            .flatMap { operationDao.getAfter(documentId, it.replica, known[it.replica] ?: 0L) }
+            .sortedBy { it.stamp }
             .map { Operation(OperationId(it.replica, it.sequence), it.stamp, json.decodeFromString(DocumentChange.serializer(), it.change)) }
     }
 

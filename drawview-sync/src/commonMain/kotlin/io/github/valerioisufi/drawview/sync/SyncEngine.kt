@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.sync
 
+import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.ChangeObserver
 import io.github.valerioisufi.drawview.core.change.DocumentSession
 import io.github.valerioisufi.drawview.core.change.DocumentSnapshot
@@ -13,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -459,6 +461,11 @@ class SyncEngine(
 
     private suspend fun onOperations(link: Link, operations: List<Operation>) {
         val sync = link.sync ?: return
+        // Their elements built first, at the same time (the strokes are modeled again: slow), so
+        // that the document waits less
+        coroutineScope {
+            for (operation in operations) (operation.change as? AddElements)?.let { launch { it.prepare() } }
+        }
         sync.open.edit { session ->
             link.pending.addAll(operations)
             sync.receivingFrom = link

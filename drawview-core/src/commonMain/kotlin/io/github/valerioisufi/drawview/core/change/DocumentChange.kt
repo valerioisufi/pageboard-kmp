@@ -62,6 +62,14 @@ data class AddElements(val pageId: String, val elements: List<ElementData>) : Do
     @Transient
     private var local: Map<String, DrawElement> = emptyMap()
 
+    /**
+     * Builds its elements now instead of when it is applied (the strokes are modeled again from
+     * their inputs: slow), e.g. on another thread for a change received.
+     */
+    fun prepare() {
+        if (local.isEmpty()) local = elements.associate { it.id to it.toElement() }
+    }
+
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         val stamp = context.stamp

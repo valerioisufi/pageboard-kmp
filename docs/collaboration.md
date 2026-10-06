@@ -371,6 +371,33 @@ The application is not released yet, so the stored documents are not migrated:
   less than half a second. Tests: a device started again on its port whose announcement and
   discovery get lost is connected again; two connections between the same devices become one.
 
+### After phase 6: working apart for long
+
+* Devices working apart on a document for long (out of the network, the application closed)
+  exchange what each one missed when they meet again, in both directions, and end up with the
+  same document; nothing is lost (at worst kept hidden). On a conflict the most recent change
+  wins, piece by piece (see Convergence), so:
+  * a page removed on a device hides what the others added to it meanwhile (kept with it: put
+    back, it comes back with it);
+  * an element erased on a device stays erased, even when another one moved or changed it;
+  * a text changed on two devices keeps the most recent content as a whole;
+  * the pages moved on two devices are each where its most recent move put it;
+  * "most recent" is by the clocks of the devices (a clock far ahead wins).
+* What it costs: every stroke received is modeled again from its inputs (most of the time), the
+  missed operations travel in batches of 200 and are applied as they come (the editor stays
+  usable, the strokes appear little by little). Measured with `OfflineWorkBenchmark` (run by
+  hand: two devices, 2000 strokes each, Room in files): about 18 s on this Mac before, from 17 %
+  to 25 % less after (the machine was busy):
+  * the elements are looked for in each list read once (no more each element read through the
+    snapshot: half of the time of applying);
+  * the strokes received are modeled before being applied, at the same time on every core;
+  * only the missed operations are read from the log (it was read whole at every connection: a
+    document worked on for months would not have fit in the memory of a phone; 2 ms now when
+    nothing was missed).
+* A stroke given up for a gesture (a second finger, a long press) is gone at once on the other
+  devices (`EditorActivity.strokeCancelled`, `Presence.inkCancelled`): it stayed until the
+  next stroke.
+
 ### Risks
 
 * Regressions of the editor in phase 2: one manager at a time, with tests comparing the state

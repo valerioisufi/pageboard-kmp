@@ -244,8 +244,9 @@ interface OperationDao {
     @Query("SELECT replica, MAX(sequence) AS sequence FROM operations WHERE documentId = :documentId GROUP BY replica")
     suspend fun lastSequences(documentId: String): List<ReplicaSequence>
 
-    @Query("SELECT * FROM operations WHERE documentId = :documentId ORDER BY stamp")
-    suspend fun getForDocument(documentId: String): List<OperationEntity>
+    /** The operations of the replica [replica] after its operation [after], in their order. */
+    @Query("SELECT * FROM operations WHERE documentId = :documentId AND replica = :replica AND sequence > :after ORDER BY sequence")
+    suspend fun getAfter(documentId: String, replica: String, after: Long): List<OperationEntity>
 }
 
 /**
