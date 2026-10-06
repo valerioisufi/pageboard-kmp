@@ -34,6 +34,11 @@ class HistoryManager(
         session.addObserver(this)
     }
 
+    /** Stops recording the changes of the session. */
+    fun dispose() {
+        session.removeObserver(this)
+    }
+
     override fun onChange(committed: CommittedChange) {
         if (committed.origin != ChangeOrigin.LOCAL) return
         val inverse = committed.inverse ?: return

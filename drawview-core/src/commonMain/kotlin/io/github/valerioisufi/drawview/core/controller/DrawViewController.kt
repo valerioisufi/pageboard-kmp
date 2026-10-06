@@ -10,6 +10,7 @@ import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.core.camera.CalcPage
 import io.github.valerioisufi.drawview.core.camera.CameraPhysicsEngine
 import io.github.valerioisufi.drawview.core.change.AddElements
+import io.github.valerioisufi.drawview.core.change.ChangeObserver
 import io.github.valerioisufi.drawview.core.change.ChangeOrigin
 import io.github.valerioisufi.drawview.core.change.CommittedChange
 import io.github.valerioisufi.drawview.core.change.CompositeChange
@@ -22,6 +23,7 @@ import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPage
+import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawThemeColors
@@ -29,14 +31,17 @@ import io.github.valerioisufi.drawview.core.model.LassoMode
 import io.github.valerioisufi.drawview.core.model.StrokeMesh
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.render.tile.TileManager
+import kotlin.math.hypot
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlin.math.hypot
 
 /**
  * Central state holder of an editing session: document, camera, page layout, tools, history,
@@ -58,10 +63,14 @@ class DrawViewController(
     persistenceScope: CoroutineScope = coroutineScope,
     /**
      * Every change of the document goes through the session (the managers create the changes):
-     * the controller, the history and the persistence observe it.
+     * the controller, the history and the persistence observe it. A session given here is shared
+     * with others (e.g. the synchronization, see `OpenDocuments`), whose owner stores its changes;
+     * without one the controller creates it and stores its changes through [persistence].
      */
-    val session: DocumentSession = DocumentSession(document)
+    sharedSession: DocumentSession? = null
 ) {
+    val session: DocumentSession = sharedSession ?: DocumentSession(document)
+    private val storesChanges = sharedSession == null
 
     /** Persistence used by this session (Room in the apps, no-op for in-memory documents). */
     val persistence: DrawPersistence = persistence
@@ -168,11 +177,12 @@ class DrawViewController(
 
     /** Set while a change whose elements are already drawn in the tiles is submitted. */
     private var changeAlreadyDrawn = false
+    private val changeObserver = ChangeObserver(::onChangeCommitted)
 
     init {
         require(session.document === document) { "The session of another document" }
-        session.addObserver(ChangePersister(::persist))
-        session.addObserver(::onChangeCommitted)
+        if (storesChanges) session.addObserver(ChangePersister(::persist))
+        session.addObserver(changeObserver)
         updatePageLayout()
         // A document always shows a page: added by a change, so that the other devices get it too
         if (document.pages.isEmpty()) pageManager.addNewPageAtBottom()
@@ -275,6 +285,34 @@ class DrawViewController(
         if (mmRect == null) tileManager.invalidatePage(page.renderKey)
         else tileManager.invalidatePageRegion(page, mmRect, pageWorldRect)
         requestRedraw()
+    }
+
+    /**
+     * The file of [resource] arrived (from another device): the images and the PDF pages showing
+     * it are drawn again.
+     */
+    fun onResourceAvailable(resource: DrawResource) {
+        for (page in document.pages) {
+            if (page.images.any { it.resourceId == resource.id } || page.pdfs.any { it.resourceId == resource.id }) {
+                invalidatePageContent(page, null)
+            }
+        }
+    }
+
+    // ==========================================================
+    // Activity (for the others working on the document)
+    // ==========================================================
+
+    private val currentActivity = MutableStateFlow<EditorActivity?>(null)
+
+    /**
+     * What the user is doing on the document now (where the pointer is, the stroke being drawn),
+     * for the others working on it; `null` when nothing.
+     */
+    val activity: StateFlow<EditorActivity?> = currentActivity.asStateFlow()
+
+    internal fun reportActivity(activity: EditorActivity?) {
+        currentActivity.value = activity
     }
 
     fun clearSelection() {
@@ -619,6 +657,9 @@ class DrawViewController(
      * Releases the background resources of the session.
      */
     fun dispose() {
+        // The session may go on without the editor (e.g. synchronized with other devices)
+        session.removeObserver(changeObserver)
+        historyManager.dispose()
         tileManager.cleanup()
     }
 }

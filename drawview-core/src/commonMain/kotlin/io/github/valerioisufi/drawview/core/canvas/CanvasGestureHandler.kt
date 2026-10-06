@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -21,6 +22,7 @@ import androidx.compose.ui.input.pointer.isShiftPressed
 import androidx.compose.ui.input.pointer.isTertiaryPressed
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.core.controller.EditorActivity
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
 import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.InputToolType
@@ -535,6 +537,7 @@ internal class CanvasGestureHandler(
 
             else -> {}
         }
+        if (mode != Mode.PAN && mode != Mode.PINCH && mode != Mode.IGNORED) reportActivity(position, inking = mode == Mode.INK)
         lastPosition = position
     }
 
@@ -585,6 +588,7 @@ internal class CanvasGestureHandler(
                 val brush = inkBrush
                 live.setLiveMesh(null, -1)
                 if (mesh != null && brush != null) controller.commitInkStroke(mesh, inkPageIndex, brush)
+                reportActivity(position, inking = false)
             }
 
             Mode.LASSO -> {
@@ -873,6 +877,31 @@ internal class CanvasGestureHandler(
     // ==========================================================
     // Helpers
     // ==========================================================
+
+    /**
+     * Tells the controller where the pointer is ([screen]) and, when [inking], the stroke being
+     * drawn (see [DrawViewController.activity]).
+     */
+    private fun reportActivity(screen: Offset, inking: Boolean) {
+        val pageIndex = if (inking) inkPageIndex else controller.findPageIndexAtScreen(screen)
+        val page = pageIndex?.let { controller.document.pages.getOrNull(it) }
+        val mm = pageIndex?.let { controller.screenToPageMm(it, screen) }
+        if (page == null || mm == null) {
+            controller.reportActivity(null)
+            return
+        }
+        val brush = inkBrush.takeIf { inking }
+        controller.reportActivity(
+            EditorActivity(
+                pageId = page.id,
+                x = mm.x,
+                y = mm.y,
+                ink = if (brush != null) engine.inputs.toList() else emptyList(),
+                color = brush?.color?.toArgb() ?: 0,
+                size = brush?.size ?: 0f
+            )
+        )
+    }
 
     private fun addInkInput(change: PointerInputChange, screen: Offset, timeMs: Long, pressure: Float) {
         val mm = controller.screenToPageMm(inkPageIndex, screen) ?: return

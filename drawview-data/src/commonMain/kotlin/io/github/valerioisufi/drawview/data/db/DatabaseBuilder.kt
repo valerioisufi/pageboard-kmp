@@ -13,10 +13,10 @@ fun createDrawDatabase(
     builder: RoomDatabase.Builder<DrawDatabase> = getDatabaseBuilder()
 ): DrawDatabase {
     return builder
-        // Before the first release the schema changes freely: a database of another version is
-        // recreated. Write the migrations from the first release on.
+        // Before the first release the schema changes freely: a database of another version (older
+        // or newer) is recreated. Write the migrations from the first release on.
+        // (Not fallbackToDestructiveMigrationOnDowngrade too: it requires the migrations again.)
         .fallbackToDestructiveMigration(dropAllTables = true)
-        .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()

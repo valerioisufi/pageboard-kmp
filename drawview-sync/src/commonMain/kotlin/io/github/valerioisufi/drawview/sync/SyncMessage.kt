@@ -23,7 +23,8 @@ internal data class OpenFrame(val protocol: Int, val tag: String)
  * The messages the devices exchange about a document. Each side first says who it is and what it
  * has ([Hello]); then each sends the other what it misses ([Snapshot] for a device without the
  * document, [Operations]), then the operations as they are made; the files of the resources are
- * asked for and sent apart ([ResourceRequest], [ResourceChunk]).
+ * asked for and sent apart ([ResourceRequest], [ResourceChunk]); where each device is goes
+ * along ([PresenceMessage]).
  */
 @Serializable
 internal sealed interface SyncMessage
@@ -74,6 +75,11 @@ internal class ResourceChunk(
 @Serializable
 @SerialName("resourceMissing")
 internal data class ResourceMissing(val id: String) : SyncMessage
+
+/** Where a device is on the document (never stored, see [Presence]). */
+@Serializable
+@SerialName("presence")
+internal data class PresenceMessage(val presence: Presence) : SyncMessage
 
 /** The binary form of the frames (CBOR). */
 @OptIn(ExperimentalSerializationApi::class)

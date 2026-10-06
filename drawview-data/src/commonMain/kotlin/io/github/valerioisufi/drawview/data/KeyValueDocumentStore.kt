@@ -397,6 +397,17 @@ class KeyValueDocumentStore(
         }
     }
 
+    override suspend fun sharingSecrets(): Map<String, String> = syncLock(lock) { index.sharingSecrets }
+
+    override suspend fun setSharingSecret(documentId: String, secret: String?) {
+        syncLock(lock) {
+            val secrets = if (secret == null) index.sharingSecrets - documentId else index.sharingSecrets + (documentId to secret)
+            index = index.copy(sharingSecrets = secrets)
+            writeIndexLocked()
+        }
+        publishSummaries()
+    }
+
     override suspend fun versionVector(documentId: String): Map<String, Long> = syncLock(lock) {
         operationsLocked(documentId).groupBy { it.id.replica }.mapValues { (_, operations) -> operations.maxOf { it.id.sequence } }
     }
@@ -525,7 +536,10 @@ class KeyValueDocumentStore(
         operations.remove(documentId)
         openDocuments.remove(documentId)
         dirtyDocuments.remove(documentId)
-        index = index.copy(documents = index.documents.filter { it.id != documentId })
+        index = index.copy(
+            documents = index.documents.filter { it.id != documentId },
+            sharingSecrets = index.sharingSecrets - documentId
+        )
     }
 
     private fun publishSummaries() {
@@ -576,7 +590,7 @@ class KeyValueDocumentStore(
     }
 
     private fun sortedSummaries(index: StoredIndex): List<DocumentSummary> =
-        index.documents.sortedByDescending { it.modifiedAt }.map { it.toSummary() }
+        index.documents.sortedByDescending { it.modifiedAt }.map { it.toSummary(isShared = it.id in index.sharingSecrets) }
 
     private fun folderSummaries(index: StoredIndex): List<FolderSummary> =
         index.folders.sortedBy { it.name }.map { it.toSummary() }
@@ -601,7 +615,9 @@ internal data class StoredIndex(
     /** This device in the changes of the documents (see `DocumentSession.replica`). */
     val replicaId: String = "",
     val documents: List<StoredSummary> = emptyList(),
-    val folders: List<StoredFolder> = emptyList()
+    val folders: List<StoredFolder> = emptyList(),
+    /** The secrets of the documents shared, by document (see [DocumentStore.sharingSecrets]). */
+    val sharingSecrets: Map<String, String> = emptyMap()
 )
 
 @Serializable
@@ -627,7 +643,7 @@ internal data class StoredSummary(
     val defaultHeight: Float = 297f,
     val defaultBackground: PageBackground = PageBackground.Solid()
 ) {
-    fun toSummary() = DocumentSummary(
+    fun toSummary(isShared: Boolean) = DocumentSummary(
         id = id,
         name = name,
         folderId = folderId,
@@ -636,7 +652,8 @@ internal data class StoredSummary(
         lastOpenedAt = lastOpenedAt,
         defaultWidthMm = defaultWidth,
         defaultHeightMm = defaultHeight,
-        defaultBackground = defaultBackground
+        defaultBackground = defaultBackground,
+        isShared = isShared
     )
 }
 

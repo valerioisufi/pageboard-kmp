@@ -116,7 +116,7 @@ class SyncEngineTest {
         val storage = InMemoryKeyValueStorage()
         val store = KeyValueDocumentStore(storage, scope = scope)
         val documents = OpenDocuments(store, StandardTestDispatcher(test.testScheduler), scope)
-        val shared = InMemorySharedDocuments()
+        val shared = StoreSharedDocuments(store)
         val files = MemoryFiles()
         val engine = SyncEngine(documents, shared, scope, name, files) { store.folders.first().firstOrNull()?.id }
         val transport = network.transport(name)
@@ -235,6 +235,10 @@ class SyncEngineTest {
         // In the folder of the documents received
         val received = bob.store.documents.first().single()
         assertEquals("Physics", received.name)
+        // Shared on both sides (the key of Bob kept with the document received)
+        assertTrue(received.isShared)
+        assertTrue(ada.store.documents.first().single().isShared)
+        assertEquals(invitation.key, bob.shared.keyOf(document.id))
         assertEquals(bob.store.folders.first().single().id, received.folderId)
 
         // Live: the changes of each one reach the other
@@ -300,6 +304,31 @@ class SyncEngineTest {
         for (device in devices) if (device !== ada) device.join(invitation, "ada")
         advanceUntilIdle()
         assertSame(document.id, devices)
+    }
+
+    @Test
+    fun theDevicesSeeWhereTheOthersAre() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Notes")
+        val invitation = ada.engine.share(document.id, "Notes")
+        bob.join(invitation, "ada")
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+
+        bob.engine.updatePresence(Presence(document.id, pageId = "page", x = 1f, y = 2f, ink = listOf(1f, 2f, 3f, 4f)))
+        advanceUntilIdle()
+        // Relayed by Ada to Cy
+        val seen = cy.engine.presences.value.single()
+        assertEquals("bob", seen.name)
+        assertEquals(listOf(1f, 2f, 3f, 4f), seen.ink)
+        assertEquals("bob", ada.engine.presences.value.single().name)
+        assertTrue(bob.engine.presences.value.isEmpty(), "its own presence is not among the others")
+
+        // Gone with its connection
+        bob.disconnect()
+        advanceUntilIdle()
+        assertTrue(ada.engine.presences.value.isEmpty())
     }
 
     @Test

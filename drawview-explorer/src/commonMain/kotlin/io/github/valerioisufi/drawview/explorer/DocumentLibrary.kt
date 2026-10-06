@@ -6,10 +6,12 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.valerioisufi.drawview.data.DocumentStore
 import io.github.valerioisufi.drawview.data.DrawViewStore
+import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.explorer.platform.SystemBarsHidden
 import io.github.valerioisufi.drawview.explorer.ui.AboutLicensesButton
 import io.github.valerioisufi.drawview.explorer.ui.ExplorerScreen
@@ -25,6 +27,8 @@ import kotlinx.coroutines.withContext
  * editor of the open document ([EditorSessionScreen]). The theme is the one of the caller.
  *
  * @param title title shown in the root folder of the library (typically the application name).
+ * @param documents the documents of [store] being changed, shared with the synchronization with
+ *   the other devices (see `drawview-sync`).
  * @param actions actions of the title bar of the root folder: the About & Licenses dialog by default.
  * @param fullScreenEditor hides the system bars while a document is open (Android).
  * @param editorExtension content contributed to the editor (top bar actions, side panel).
@@ -36,13 +40,14 @@ fun DocumentLibrary(
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     store: DocumentStore = DrawViewStore.default,
+    documents: OpenDocuments = if (store === DrawViewStore.default) DrawViewStore.documents else remember(store) { OpenDocuments(store) },
     actions: @Composable RowScope.() -> Unit = { AboutLicensesButton() },
     fullScreenEditor: Boolean = false,
     editorExtension: EditorExtension? = null,
     libraryOverlay: @Composable BoxScope.(openDocument: (String) -> Unit) -> Unit = {}
 ) {
     val fileExplorerViewModel = viewModel { FileExplorerViewModel(store) }
-    val editorViewModel = viewModel { DocumentEditorViewModel(store) }
+    val editorViewModel = viewModel { DocumentEditorViewModel(store, documents) }
 
     // The native TeX engine unpacks its fonts at the first start: off the main thread
     LaunchedEffect(Unit) {

@@ -12,9 +12,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
+import io.github.valerioisufi.drawview.explorer.ui.AboutLicensesButton
 import io.github.valerioisufi.drawview.lecture.ui.LectureRecordingIndicator
 import io.github.valerioisufi.drawview.lecture.ui.editorExtension
 import io.github.valerioisufi.drawview.lecture.ui.rememberLectureAssistant
+import io.github.valerioisufi.drawview.sync.ui.CollaborationDialogs
+import io.github.valerioisufi.drawview.sync.ui.InvitationLinks
+import io.github.valerioisufi.drawview.sync.ui.JoinSharedDocumentButton
+import io.github.valerioisufi.drawview.sync.ui.editorExtension
+import io.github.valerioisufi.drawview.sync.ui.rememberCollaboration
 import io.github.valerioisufi.drawview.ui.components.AboutAppInfo
 import io.github.valerioisufi.drawview.ui.components.LocalAboutAppInfo
 import io.github.valerioisufi.drawview.ui.components.ThirdPartyLicense
@@ -40,8 +46,13 @@ fun PencilNotesApp() {
         )
         // Lecture recording followed by Gemini or a local model (desktop): it goes on in the background
         val lectureAssistant = rememberLectureAssistant()
-        val lectureExtension = remember(lectureAssistant) { lectureAssistant.editorExtension() }
+        // The documents shared with the devices of the local network
+        val collaboration = rememberCollaboration()
+        val editorExtension = remember(lectureAssistant, collaboration) {
+            lectureAssistant.editorExtension() + collaboration.editorExtension()
+        }
         CompositionLocalProvider(LocalAboutAppInfo provides aboutAppInfo) {
+            CollaborationDialogs(collaboration)
             DocumentLibrary(
                 title = {
                     Text(
@@ -53,8 +64,12 @@ fun PencilNotesApp() {
                         fontFamily = cherryBombOneFontFamily()
                     )
                 },
+                actions = {
+                    JoinSharedDocumentButton(collaboration)
+                    AboutLicensesButton()
+                },
                 fullScreenEditor = true,
-                editorExtension = lectureExtension,
+                editorExtension = editorExtension,
                 libraryOverlay = { openDocument ->
                     LectureRecordingIndicator(
                         assistant = lectureAssistant,
@@ -69,6 +84,9 @@ fun PencilNotesApp() {
         }
     }
 }
+
+/** Opens the invitation [link] to a shared document (a `drawview://join` link opened on the device). */
+fun openInvitation(link: String) = InvitationLinks.open(link)
 
 /** The font of the PencilNotes title, listed by the About & Licenses dialog. */
 private val CherryBombOneLicense = ThirdPartyLicense(

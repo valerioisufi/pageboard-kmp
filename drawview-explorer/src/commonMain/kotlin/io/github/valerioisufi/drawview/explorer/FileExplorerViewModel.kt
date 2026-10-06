@@ -26,14 +26,15 @@ class FileExplorerViewModel(private val store: DocumentStore) : ViewModel() {
 
     enum class FileType { FILE, FOLDER }
 
-    /** A document or a folder of the library. */
+    /** A document or a folder of the library ([isShared]: a document shared with other devices). */
     data class FileItem(
         val type: FileType,
         val id: String,
         val name: String,
         val createdAt: Long,
         val modifiedAt: Long,
-        val lastOpenedAt: Long? = null
+        val lastOpenedAt: Long? = null,
+        val isShared: Boolean = false
     ) {
         /** Identity of the item, stable across renames and moves. */
         val key: String get() = "${type.name}:$id"
@@ -296,5 +297,6 @@ private fun DocumentSummary.toFileItem() = FileExplorerViewModel.FileItem(
     name = name,
     createdAt = createdAt,
     modifiedAt = modifiedAt,
-    lastOpenedAt = lastOpenedAt
+    lastOpenedAt = lastOpenedAt,
+    isShared = isShared
 )

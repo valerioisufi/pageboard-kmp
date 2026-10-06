@@ -37,4 +37,5 @@
     <string name="explorer_error_name_invalid_chars">Name cannot contain slashes</string>
     <string name="explorer_error_name_exists">This name already exists</string>
     <string name="explorer_error_create_failed">Error during creation</string>
+    <string name="explorer_shared">Shared with other devices</string>
 </resources>

@@ -14,5 +14,9 @@ struct ContentView: View {
     var body: some View {
         ComposeView()
             .ignoresSafeArea()
+            // Invitations to the shared documents (drawview://join links)
+            .onOpenURL { url in
+                PencilNotesAppKt.openInvitation(link: url.absoluteString)
+            }
     }
 }

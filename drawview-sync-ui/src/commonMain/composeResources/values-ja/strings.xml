@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync_share">共有</string>
+    <string name="sync_share_title">ドキュメントを共有</string>
+    <string name="sync_share_explanation">招待を開いた同じネットワーク上のデバイスが、あなたと同時にこのドキュメントで作業できます。</string>
+    <string name="sync_share_link">招待</string>
+    <string name="sync_copy_link">リンクをコピー</string>
+    <string name="sync_link_copied">リンクをコピーしました</string>
+    <string name="sync_participants">ドキュメント上</string>
+    <string name="sync_nobody">まだ誰もいません</string>
+    <string name="sync_stop_sharing">共有を停止</string>
+    <string name="sync_close">閉じる</string>
+    <string name="sync_cancel">キャンセル</string>
+    <string name="sync_join">共有ドキュメントに参加</string>
+    <string name="sync_join_hint">招待のリンク</string>
+    <string name="sync_join_action">参加</string>
+    <string name="sync_join_invalid">招待のリンクではありません</string>
+    <string name="sync_join_waiting">ネットワーク上で「%1$s」を探しています：共有フォルダに表示されます。</string>
+    <string name="sync_shared_folder">共有</string>
+    <string name="sync_no_network">ローカルネットワークを使用する許可がないと、デバイス同士が見つかりません。</string>
+</resources>

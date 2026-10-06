@@ -211,6 +211,24 @@ interface ResourceDao {
     suspend fun getResourcesForDocument(documentId: String): List<ResourceEntity>
 }
 
+/**
+ * Data Access Object for the documents shared with other devices.
+ */
+@Dao
+interface SharedDocumentDao {
+    @Upsert
+    suspend fun upsert(shared: SharedDocumentEntity)
+
+    @Query("DELETE FROM shared_documents WHERE documentId = :documentId")
+    suspend fun delete(documentId: String)
+
+    @Query("SELECT * FROM shared_documents")
+    suspend fun getAll(): List<SharedDocumentEntity>
+
+    @Query("SELECT documentId FROM shared_documents")
+    fun getIdsFlow(): Flow<List<String>>
+}
+
 /** The last operation of a replica (see [OperationDao.lastSequences]). */
 data class ReplicaSequence(val replica: String, val sequence: Long)
 

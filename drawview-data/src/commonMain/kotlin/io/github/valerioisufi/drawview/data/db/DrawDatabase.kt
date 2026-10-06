@@ -18,11 +18,12 @@ import androidx.room.TypeConverters
         TextMarkupEntity::class,
         ResourceEntity::class,
         OperationEntity::class,
+        SharedDocumentEntity::class,
         ReplicaEntity::class,
         UserPreferencesEntity::class
     ],
     // No migrations before the first release: an older database is recreated (see createDrawDatabase)
-    version = 7
+    version = 8
 )
 @TypeConverters(
     PageBackgroundConverter::class,
@@ -42,6 +43,7 @@ abstract class DrawDatabase : RoomDatabase() {
     abstract fun textMarkupDao(): TextMarkupDao
     abstract fun resourceDao(): ResourceDao
     abstract fun operationDao(): OperationDao
+    abstract fun sharedDocumentDao(): SharedDocumentDao
     abstract fun replicaDao(): ReplicaDao
     abstract fun preferencesDao(): PreferencesDao
 }

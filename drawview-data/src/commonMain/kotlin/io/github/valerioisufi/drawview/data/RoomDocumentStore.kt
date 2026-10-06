@@ -12,8 +12,13 @@ import io.github.valerioisufi.drawview.data.db.FolderEntity
 import io.github.valerioisufi.drawview.data.db.currentTimeMillis
 import io.github.valerioisufi.drawview.data.repository.DrawDocumentRepository
 import io.github.valerioisufi.drawview.data.repository.FileRepository
+import io.github.valerioisufi.drawview.data.db.SharedDocumentEntity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 /**
  * [DocumentStore] backed by the Room database (Android, desktop and iOS).
@@ -22,8 +27,13 @@ class RoomDocumentStore(val database: DrawDatabase) : DocumentStore {
     val repository = DrawDocumentRepository(database)
     val fileRepository = FileRepository(database)
 
+    private val sharedDocuments = database.sharedDocumentDao()
+
     override val documents: Flow<List<DocumentSummary>> =
-        fileRepository.getAllDocumentsFlow().map { list -> list.map { it.toSummary() } }
+        combine(fileRepository.getAllDocumentsFlow(), sharedDocuments.getIdsFlow()) { list, shared ->
+            val sharedIds = shared.toSet()
+            list.map { it.toSummary(isShared = it.id in sharedIds) }
+        }
 
     override val folders: Flow<List<FolderSummary>> =
         fileRepository.getAllFoldersFlow().map { list -> list.map { it.toSummary() } }
@@ -62,6 +72,14 @@ class RoomDocumentStore(val database: DrawDatabase) : DocumentStore {
     override suspend fun operationsAfter(documentId: String, known: Map<String, Long>): List<Operation> =
         repository.operationsAfter(documentId, known)
 
+    override suspend fun sharingSecrets(): Map<String, String> = withContext(Dispatchers.IO) {
+        sharedDocuments.getAll().associate { it.documentId to it.secret }
+    }
+
+    override suspend fun setSharingSecret(documentId: String, secret: String?) = withContext(Dispatchers.IO) {
+        if (secret == null) sharedDocuments.delete(documentId) else sharedDocuments.upsert(SharedDocumentEntity(documentId, secret))
+    }
+
     override suspend fun createFolder(name: String, parentId: String?): Boolean = fileRepository.createFolder(name, parentId)
 
     override suspend fun renameFolder(folderId: String, newName: String): Boolean =
@@ -72,7 +90,7 @@ class RoomDocumentStore(val database: DrawDatabase) : DocumentStore {
     override suspend fun moveFolder(folderId: String, parentId: String?): Boolean = fileRepository.moveFolder(folderId, parentId)
 }
 
-internal fun DocumentEntity.toSummary() = DocumentSummary(
+internal fun DocumentEntity.toSummary(isShared: Boolean = false) = DocumentSummary(
     id = id,
     name = name,
     folderId = folderId,
@@ -81,7 +99,8 @@ internal fun DocumentEntity.toSummary() = DocumentSummary(
     lastOpenedAt = lastOpenedAt ?: modifiedAt,
     defaultWidthMm = defaultWidth,
     defaultHeightMm = defaultHeight,
-    defaultBackground = defaultBackground
+    defaultBackground = defaultBackground,
+    isShared = isShared
 )
 
 internal fun FolderEntity.toSummary() = FolderSummary(

@@ -6,23 +6,27 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DriveFileRenameOutline
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.North
 import androidx.compose.material.icons.filled.South
@@ -50,6 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_shared
 import io.github.valerioisufi.drawview.ui.generated.resources.date_months_short
 import io.github.valerioisufi.drawview.ui.util.formatDateTime
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel
@@ -245,6 +250,7 @@ fun FileListItem(
         } else {
             FileIcon(
                 type = dataFile.type,
+                isShared = dataFile.isShared,
                 modifier = Modifier
                     .padding(start = 16.dp)
                     .size(32.dp)
@@ -265,13 +271,29 @@ fun FileListItem(
     }
 }
 
+/** The icon of a document or a folder; a shared document has the badge of the people. */
 @Composable
-private fun FileIcon(type: FileType, modifier: Modifier = Modifier) {
-    Image(
-        modifier = modifier,
-        painter = painterResource(if (type == FileType.FILE) Res.drawable.icon_document else DrawViewRes.drawable.img_folder),
-        contentDescription = null
-    )
+private fun FileIcon(type: FileType, isShared: Boolean, modifier: Modifier = Modifier) {
+    Box(modifier = modifier) {
+        Image(
+            modifier = Modifier.fillMaxSize(),
+            painter = painterResource(if (type == FileType.FILE) Res.drawable.icon_document else DrawViewRes.drawable.img_folder),
+            contentDescription = null
+        )
+        if (isShared) {
+            Icon(
+                imageVector = Icons.Filled.Group,
+                contentDescription = stringResource(Res.string.explorer_shared),
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .offset(x = 4.dp, y = 4.dp)
+                    .size(18.dp)
+                    .background(MaterialTheme.colorScheme.primary, CircleShape)
+                    .padding(2.dp)
+            )
+        }
+    }
 }
 
 /** Name and date of the last change of an item. */
@@ -332,7 +354,7 @@ private fun FileDetailsSheet(
                         .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    FileIcon(type = dataFile.type, modifier = Modifier.size(32.dp))
+                    FileIcon(type = dataFile.type, isShared = dataFile.isShared, modifier = Modifier.size(32.dp))
                     FileDescription(
                         dataFile = dataFile,
                         modifier = Modifier

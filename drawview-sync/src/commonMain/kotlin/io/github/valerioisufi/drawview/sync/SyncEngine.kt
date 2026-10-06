@@ -5,6 +5,7 @@ import io.github.valerioisufi.drawview.core.change.DocumentSession
 import io.github.valerioisufi.drawview.core.change.DocumentSnapshot
 import io.github.valerioisufi.drawview.core.change.Operation
 import io.github.valerioisufi.drawview.core.change.snapshot
+import io.github.valerioisufi.drawview.core.util.currentTimeMillis
 import io.github.valerioisufi.drawview.data.OpenDocument
 import io.github.valerioisufi.drawview.data.OpenDocuments
 import kotlinx.coroutines.CoroutineScope
@@ -54,6 +55,29 @@ class SyncEngine(
     /** The devices connected, with the document each one works on. */
     val peers: StateFlow<List<Peer>> = connected.asStateFlow()
 
+    /** The last presence of every device on every document, and the connection it came from. */
+    private val lastPresences = mutableMapOf<Pair<String, String>, Pair<Presence, Link>>()
+    private val presenceState = MutableStateFlow<List<Presence>>(emptyList())
+    private var presenceSequence = 0L
+
+    /**
+     * Where the other devices are on the documents (see [Presence]); a device that stops sending
+     * its presence for a while is gone (see [Presence.receivedAt]).
+     */
+    val presences: StateFlow<List<Presence>> = presenceState.asStateFlow()
+
+    /** Tells the devices working on the document of [presence] where this one is. */
+    suspend fun updatePresence(presence: Presence) {
+        val replica = documents.replicaId()
+        val targets = mutex.withLock {
+            presenceSequence = maxOf(presenceSequence + 1, currentTimeMillis())
+            links.filter { it.documentId == presence.documentId && it.peerHello != null }
+        }
+        if (targets.isEmpty()) return
+        val message = PresenceMessage(presence.copy(replica = replica, name = deviceName, sequence = presenceSequence))
+        targets.forEach { it.outbox.trySend(message) }
+    }
+
     /**
      * Shares the document [documentId] (titled [title]): the invitation to give to the devices
      * that may join it, reaching this one at [address].
@@ -78,7 +102,7 @@ class SyncEngine(
             val secure = SecureChannel.of(channel, key)
             // Without the document yet (joined through an invitation): it comes with the first messages
             val sync = acquire(documentId)
-            run(Link(secure, documentId), sync)
+            run(Link(secure, documentId, key), sync)
         } catch (_: SyncException) {
             // Refused or lost before it started
         } finally {
@@ -98,7 +122,7 @@ class SyncEngine(
             val secure = SecureChannel.of(channel, invitation.key)
             // Without the document yet: it comes with the first messages
             val sync = acquire(invitation.documentId)
-            run(Link(secure, invitation.documentId), sync)
+            run(Link(secure, invitation.documentId, invitation.key), sync)
         } catch (_: SyncException) {
             // Refused or lost before it started
         } finally {
@@ -167,8 +191,8 @@ class SyncEngine(
     // Connections
     // ==========================================================
 
-    /** A connection about the document [documentId]. */
-    private inner class Link(val channel: SyncChannel, val documentId: String) {
+    /** A connection about the document [documentId] (of key [key]). */
+    private inner class Link(val channel: SyncChannel, val documentId: String, val key: DocumentKey) {
         var sync: DocumentSync? = null
         var peer: Peer? = null
         var peerHello: Hello? = null
@@ -224,7 +248,11 @@ class SyncEngine(
     }
 
     private suspend fun detach(link: Link) {
-        mutex.withLock { links.remove(link) }
+        mutex.withLock {
+            links.remove(link)
+            // The presences it brought are gone with it
+            if (lastPresences.values.removeAll { it.second === link }) presenceState.value = lastPresences.values.map { it.first }
+        }
         link.peer?.let { peer -> connected.update { it - peer } }
         val sync = link.sync ?: return
         sync.open.edit { sync.links.remove(link) }
@@ -272,7 +300,22 @@ class SyncEngine(
             is ResourceRequest -> onResourceRequest(link, message.ids)
             is ResourceChunk -> onResourceChunk(link, message)
             is ResourceMissing -> link.requested.remove(message.id)
+            is PresenceMessage -> onPresence(link, message.presence)
         }
+    }
+
+    /** The presence of another device: kept, and relayed to the other devices on the document. */
+    private suspend fun onPresence(link: Link, presence: Presence) {
+        if (presence.documentId != link.documentId) return
+        val key = presence.documentId to presence.replica
+        val targets = mutex.withLock {
+            val last = lastPresences[key]?.first
+            if (last != null && last.sequence >= presence.sequence) return
+            lastPresences[key] = presence.copy(receivedAt = currentTimeMillis()) to link
+            presenceState.value = lastPresences.values.map { it.first }
+            links.filter { it.documentId == presence.documentId && it !== link && it.peerHello != null }
+        }
+        targets.forEach { it.outbox.trySend(PresenceMessage(presence)) }
     }
 
     private suspend fun onHello(link: Link, hello: Hello) {
@@ -291,6 +334,8 @@ class SyncEngine(
         if (link.sync != null || snapshot.id != link.documentId) return
         val sync = adopt(snapshot)
         link.sync = sync
+        // Shared from now on (the key could not be kept with a document not received yet)
+        shared.add(link.documentId, link.key)
         link.peerHello?.let { catchUp(link, sync, it) }
     }
 

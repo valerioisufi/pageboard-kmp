@@ -8,6 +8,8 @@ import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawResource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.sync.Mutex
@@ -25,8 +27,8 @@ import kotlinx.coroutines.withContext
  */
 class OpenDocuments(
     private val store: DocumentStore,
-    val dispatcher: CoroutineDispatcher,
-    private val scope: CoroutineScope
+    val dispatcher: CoroutineDispatcher = Dispatchers.Main,
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 ) {
     private val mutex = Mutex()
     private val open = mutableMapOf<String, OpenDocument>()

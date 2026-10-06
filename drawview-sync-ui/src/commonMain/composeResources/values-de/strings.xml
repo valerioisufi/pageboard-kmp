@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync_share">Teilen</string>
+    <string name="sync_share_title">Dokument teilen</string>
+    <string name="sync_share_explanation">Die Geräte im selben Netzwerk, die die Einladung öffnen, arbeiten gleichzeitig mit dir an diesem Dokument.</string>
+    <string name="sync_share_link">Einladung</string>
+    <string name="sync_copy_link">Link kopieren</string>
+    <string name="sync_link_copied">Link kopiert</string>
+    <string name="sync_participants">Im Dokument</string>
+    <string name="sync_nobody">Noch niemand sonst</string>
+    <string name="sync_stop_sharing">Teilen beenden</string>
+    <string name="sync_close">Schließen</string>
+    <string name="sync_cancel">Abbrechen</string>
+    <string name="sync_join">An einem geteilten Dokument teilnehmen</string>
+    <string name="sync_join_hint">Link der Einladung</string>
+    <string name="sync_join_action">Teilnehmen</string>
+    <string name="sync_join_invalid">Das ist kein Einladungslink</string>
+    <string name="sync_join_waiting">Suche nach „%1$s“ im Netzwerk: Es erscheint im Ordner Geteilt.</string>
+    <string name="sync_shared_folder">Geteilt</string>
+    <string name="sync_no_network">Ohne die Berechtigung für das lokale Netzwerk können sich die Geräte nicht finden.</string>
+</resources>

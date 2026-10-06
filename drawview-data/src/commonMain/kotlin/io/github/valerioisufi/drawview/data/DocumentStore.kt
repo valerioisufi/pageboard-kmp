@@ -8,7 +8,8 @@ import io.github.valerioisufi.drawview.core.model.PageBackground
 import kotlinx.coroutines.flow.Flow
 
 /**
- * A document as shown by the document list ([id]: [DrawDocument.id], the same on every device).
+ * A document as shown by the document list ([id]: [DrawDocument.id], the same on every device;
+ * [isShared]: shared with other devices, see [DocumentStore.sharingSecrets]).
  */
 data class DocumentSummary(
     val id: String,
@@ -19,7 +20,8 @@ data class DocumentSummary(
     val lastOpenedAt: Long,
     val defaultWidthMm: Float = 210f,
     val defaultHeightMm: Float = 297f,
-    val defaultBackground: PageBackground = PageBackground.Solid()
+    val defaultBackground: PageBackground = PageBackground.Solid(),
+    val isShared: Boolean = false
 )
 
 /**
@@ -108,6 +110,15 @@ interface DocumentStore {
     /** The operations of the document [documentId] after [known] (a version vector), in stamp order. */
     suspend fun operationsAfter(documentId: String, known: Map<String, Long>): List<Operation>
 
+    /**
+     * The secrets of the documents shared with other devices (written as text by `drawview-sync`),
+     * by document: whoever has the secret of a document can read and change it.
+     */
+    suspend fun sharingSecrets(): Map<String, String>
+
+    /** Shares the document [documentId] with [secret], or stops sharing it (`null`). */
+    suspend fun setSharingSecret(documentId: String, secret: String?)
+
     /** Writes the pending changes (stores that write lazily). */
     suspend fun flush() {}
 
@@ -120,4 +131,10 @@ interface DocumentStore {
  */
 object DrawViewStore {
     val default: DocumentStore by lazy { createPlatformDocumentStore() }
+
+    /**
+     * The documents of [default] being changed (see [OpenDocuments]), on the main thread: shared
+     * by the editor and the synchronization with the other devices.
+     */
+    val documents: OpenDocuments by lazy { OpenDocuments(default) }
 }

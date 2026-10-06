@@ -284,6 +284,25 @@ data class ResourceEntity(
 )
 
 /**
+ * A document shared with other devices, with its secret (see `DocumentStore.sharingSecrets`).
+ */
+@Entity(
+    tableName = "shared_documents",
+    foreignKeys = [
+        ForeignKey(
+            entity = DocumentEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["documentId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
+data class SharedDocumentEntity(
+    @PrimaryKey val documentId: String,
+    val secret: String
+)
+
+/**
  * The log of the operations of a document (see `Operation`): the change, as JSON.
  */
 @Entity(

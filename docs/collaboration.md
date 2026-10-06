@@ -47,7 +47,8 @@ Variations).
 | Files of the resources | asked for and sent in chunks by the `SyncEngine`, written through `ResourceFiles` | Pure Fabrication, Protected Variations |
 | LAN discovery | `LanDiscovery`: `JmdnsLanDiscovery`, `NsdLanDiscovery`, `BonjourLanDiscovery` | Protected Variations, Polymorphism |
 | Work with the devices of the network | `LanSync` (announces the shared documents, connects to the devices sharing them) | Controller |
-| Sharing, participants, cursors | `SyncEditorExtension` | Low Coupling (like `drawview-lecture`) |
+| Share and join from an application | `Collaboration` (`drawview-sync-ui`) | Controller |
+| Sharing, participants, cursors, strokes being drawn | `Collaboration.editorExtension()`, an `EditorExtension` | Low Coupling (like `drawview-lecture`) |
 
 The origin of a change decides what the observers do:
 
@@ -103,8 +104,9 @@ The origin of a change decides what the observers do:
 ```
 drawview-core      DocumentChange, DocumentSession, HybridClock, Operation, DocumentSnapshot
 drawview-data      persistent identifiers, operations log on Room, OpenDocuments
-drawview-sync      SyncEngine, protocol, encryption, InMemoryTransport, SyncEditorExtension
+drawview-sync      SyncEngine, protocol, encryption, presence, InMemoryTransport
 drawview-sync-lan  LanTransport (TCP), LanDiscovery (JmDNS / NsdManager / Bonjour), LanSync
+drawview-sync-ui   Collaboration, editor extension, join dialog (Compose)
 drawview-sync-relay (later)
 ```
 
@@ -120,7 +122,7 @@ The documents received from other users are created in a "Shared" folder of the 
 | 3. Convergence | HLC, last-writer-wins stamps, hidden removed pages and elements, fractional page order, operations log | done |
 | 4. Sync engine | Protocol, encryption, attachments, in-memory transport, convergence tests on random delivery orders | done |
 | 5. LAN | Discovery, TCP, permissions (iOS local network and Bonjour, Android local network), invitation | done |
-| 6. UI and presence | Sharing, participants, cursors, live strokes, "Shared" folder and badge | |
+| 6. UI and presence | Sharing, participants, cursors, live strokes, "Shared" folder and badge | done |
 
 ### Phase 0 results
 
@@ -262,6 +264,41 @@ The application is not released yet, so the stored documents are not migrated:
   the JVM received no multicast at all (not even its own announcement), most likely the local
   network permission of macOS; to verify with the desktop application, like `NsdManager` and
   Bonjour on real devices.
+
+### Phase 6 results
+
+* The editor works on the `OpenDocuments` session of its document (`DrawViewStore.documents` for
+  the default store, `DocumentLibrary(documents = …)` otherwise): the changes of the other
+  devices reach the open editor, a document not open is changed without it. The controller stores
+  the changes only of the sessions it creates, and leaves the shared session when it is closed.
+* Keys: `DocumentStore.sharingSecrets` / `setSharingSecret` (Room table `shared_documents`,
+  schema 8), `DocumentSummary.isShared`; `StoreSharedDocuments` keeps in memory the key of a
+  document joined until it arrives.
+* Presence: `DrawViewController.activity` (where the pointer is, the inputs of the stroke being
+  drawn) is sent at most every 100 ms and at least every 4 s (`Presence`, never logged, relayed,
+  ordered by a sequence per device); a device is gone with its connection or after 12 s of silence.
+* `drawview-sync-ui`: `rememberCollaboration()` (one per process, started at once when documents
+  are shared already), `Collaboration.editorExtension()` (the action Share with the number of the
+  others on the document; the dialog with the invitation, its copy, who is on the document and
+  Stop sharing; the pointers with the names and the strokes being drawn of the others),
+  `JoinSharedDocumentButton`, `CollaborationDialogs` and `InvitationLinks` (the `drawview://join`
+  links opened on the device), strings in the 7 languages of the applications. The documents
+  received go to the folder "Shared" ("Condivisi"), created the first time; the library shows the
+  badge of the people on the shared documents.
+* The local network permission of Android 17 is asked when a document is shared or joined (or at
+  the start when some are shared already).
+* PencilNotes: the collaboration in the editor (with the lecture assistant), the action Join in
+  the library, the `drawview://join` links (Android intent filter, iOS URL type and `onOpenURL`).
+* Fixed on the way: an older database made the application crash at the start
+  (`fallbackToDestructiveMigrationOnDowngrade` required the migrations again).
+* Verified on the iPad simulator against this machine (`RemotePeerTest`, `RemoteHostTest`, run by
+  hand): a document shared on the iPad is received by the JVM, whose stroke appears live on the
+  iPad with its pointer, its name and the number of participants (gone when it leaves); a
+  `drawview://join` link opens the join dialog, the document arrives in the Shared folder with the
+  badge. Still to verify on real devices: Bonjour and `NsdManager` between devices, the permission
+  of Android 17, two simulators (the second one was not available to this session).
+* Later: a QR code of the invitation (the link is copied or opened), choosing the name shown to
+  the others, the relay (another `SyncTransport`).
 
 ### Risks
 

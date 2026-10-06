@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync_share">Condividi</string>
+    <string name="sync_share_title">Condividi il documento</string>
+    <string name="sync_share_explanation">I dispositivi della stessa rete che aprono l’invito lavorano su questo documento con te, nello stesso momento.</string>
+    <string name="sync_share_link">Invito</string>
+    <string name="sync_copy_link">Copia il link</string>
+    <string name="sync_link_copied">Link copiato</string>
+    <string name="sync_participants">Sul documento</string>
+    <string name="sync_nobody">Ancora nessun altro</string>
+    <string name="sync_stop_sharing">Interrompi la condivisione</string>
+    <string name="sync_close">Chiudi</string>
+    <string name="sync_cancel">Annulla</string>
+    <string name="sync_join">Partecipa a un documento condiviso</string>
+    <string name="sync_join_hint">Link dell’invito</string>
+    <string name="sync_join_action">Partecipa</string>
+    <string name="sync_join_invalid">Questo non è il link di un invito</string>
+    <string name="sync_join_waiting">Ricerca di “%1$s” nella rete: comparirà nella cartella Condivisi.</string>
+    <string name="sync_shared_folder">Condivisi</string>
+    <string name="sync_no_network">Senza il permesso di usare la rete locale i dispositivi non possono trovarsi.</string>
+</resources>

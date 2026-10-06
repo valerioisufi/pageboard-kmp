@@ -5,13 +5,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.valerioisufi.drawview.core.change.DocumentSession
-import io.github.valerioisufi.drawview.core.controller.DrawPreferences
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.util.SyncLock
 import io.github.valerioisufi.drawview.core.util.syncLock
 import io.github.valerioisufi.drawview.data.DocumentStore
+import io.github.valerioisufi.drawview.data.OpenDocument
+import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -27,10 +26,15 @@ import kotlinx.coroutines.launch
  */
 class EditorSession internal constructor(
     val documentId: String,
-    internal val store: DocumentStore
+    internal val store: DocumentStore,
+    internal val documents: OpenDocuments
 ) {
     /** `null` while the document is being loaded. */
     var controller: DrawViewController? by mutableStateOf(null)
+        internal set
+
+    /** The document being changed (`null` while it is being loaded), shared with the synchronization. */
+    var document: OpenDocument? = null
         internal set
 
     /**
@@ -42,15 +46,20 @@ class EditorSession internal constructor(
     /** Writes every pending change of the session. */
     suspend fun flush() {
         controller?.flushPersistence()
+        document?.flush()
         store.flush()
     }
 }
 
 /**
- * The open document (if any) of an application: loads it, creates its editor and writes its
+ * The open document (if any) of an application: opens it through [documents] (where the
+ * synchronization with the other devices changes it too), creates its editor and writes its
  * changes when it is closed. Survives the configuration changes of Android (e.g. rotations).
  */
-class DocumentEditorViewModel(val store: DocumentStore) : ViewModel() {
+class DocumentEditorViewModel(
+    val store: DocumentStore,
+    val documents: OpenDocuments = OpenDocuments(store)
+) : ViewModel() {
 
     var session: EditorSession? by mutableStateOf(null)
         private set
@@ -59,23 +68,10 @@ class DocumentEditorViewModel(val store: DocumentStore) : ViewModel() {
     fun openDocument(documentId: String) {
         if (session?.documentId == documentId) return
         closeSession()
-        val newSession = EditorSession(documentId, store)
+        val newSession = EditorSession(documentId, store, documents)
         session = newSession
         DrawViewSessions.register(newSession)
-        viewModelScope.launch {
-            val document = try {
-                store.loadDocument(documentId)
-            } catch (e: Throwable) {
-                println("DrawView: cannot load the document $documentId: ${e.message}")
-                null
-            }
-            if (document == null) {
-                if (session === newSession) closeSession()
-                return@launch
-            }
-            store.updateLastOpened(documentId)
-            attach(newSession, document, store.preferences.first(), DocumentSession(document, store.replicaId(), store.versionVector(documentId)))
-        }
+        viewModelScope.launch { load(newSession) }
     }
 
     /** Creates a new document (one A4 page, as in the original app) in [folderId] and opens it. */
@@ -83,25 +79,49 @@ class DocumentEditorViewModel(val store: DocumentStore) : ViewModel() {
         viewModelScope.launch {
             val document = store.createDocument(name, folderId = folderId)
             closeSession()
-            val newSession = EditorSession(document.id, store)
+            val newSession = EditorSession(document.id, store, documents)
             session = newSession
             DrawViewSessions.register(newSession)
-            attach(newSession, document, store.preferences.first(), DocumentSession(document, store.replicaId()))
+            load(newSession)
         }
     }
 
-    private fun attach(session: EditorSession, document: DrawDocument, preferences: DrawPreferences, changes: DocumentSession) {
+    /** Opens the document of [session] and creates its editor (unless closed meanwhile). */
+    private suspend fun load(session: EditorSession) {
+        val open = try {
+            documents.open(session.documentId)
+        } catch (e: Throwable) {
+            println("DrawView: cannot load the document ${session.documentId}: ${e.message}")
+            null
+        }
+        if (open == null) {
+            if (this.session === session) closeSession()
+            return
+        }
+        // Closed meanwhile: the editing session ends without it
+        session.document = open
+        if (this.session !== session) {
+            DrawViewSessions.close(session)
+            return
+        }
+        store.updateLastOpened(session.documentId)
+        val preferences = store.preferences.first()
         if (this.session !== session) return
-        session.controller = DrawViewController(
-            document = document,
+        val controller = DrawViewController(
+            document = open.document,
             coroutineScope = viewModelScope,
             persistence = store.persistence,
             persistenceScope = session.persistenceScope,
-            session = changes
+            sharedSession = open.session
         ).apply {
             applyPreferences(preferences)
             // PDF pages rendering (PDFium on Android, iOS and the desktop)
             tileManager.tileRenderer.pdfAdapter = PdfiumEngine.createTileAdapter()
+        }
+        session.controller = controller
+        // The files arriving from the other devices are drawn
+        viewModelScope.launch {
+            open.resourcesReceived.collect { if (session.controller === controller) controller.onResourceAvailable(it) }
         }
     }
 
@@ -135,11 +155,12 @@ object DrawViewSessions {
         val job = scope.launch(start = CoroutineStart.LAZY) {
             try {
                 session.flush()
-                session.store.closeDocument(session.documentId)
+                session.controller?.dispose()
+                session.document?.let { session.documents.close(it) }
+                session.document = null
             } catch (e: Throwable) {
                 println("DrawView: cannot save the document ${session.documentId}: ${e.message}")
             } finally {
-                session.controller?.dispose()
                 session.persistenceScope.cancel()
             }
         }
