@@ -32,6 +32,8 @@ class ChangePersister(
         val savedPages = effects.savedPages.toList()
         val saved = effects.savedElements.entries.groupBy({ it.value }, { it.key })
         val removedPages = effects.removedPages.toList()
+        // The versions of the content of the pages (no other change of theirs)
+        val versionedPages = effects.versionedPages.filter { it !in effects.savedPages && it !in effects.insertedPages && it !in effects.removedPages }
         val defaultsChanged = effects.documentDefaultsChanged
         val modifiedAt = document.modifiedAt
 
@@ -45,6 +47,7 @@ class ChangePersister(
             savedPages.forEach { savePage(document, it) }
             for ((page, elements) in saved) saveElements(page, elements)
             removedPages.forEach { savePage(document, it) }
+            versionedPages.forEach { savePage(document, it) }
             if (defaultsChanged) updateDocumentDefaults(document)
             appendOperation(document, operation)
             touchDocument(document, modifiedAt)

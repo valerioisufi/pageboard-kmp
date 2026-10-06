@@ -5,9 +5,13 @@ import androidx.compose.ui.graphics.Color
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.AddPage
 import io.github.valerioisufi.drawview.core.change.DocumentSession
+import io.github.valerioisufi.drawview.core.change.Operation
+import io.github.valerioisufi.drawview.core.change.OperationId
 import io.github.valerioisufi.drawview.core.change.RemoveElements
 import io.github.valerioisufi.drawview.core.change.RemovePage
+import io.github.valerioisufi.drawview.core.change.UpdateTexts
 import io.github.valerioisufi.drawview.core.change.snapshot
+import io.github.valerioisufi.drawview.core.change.toData
 import io.github.valerioisufi.drawview.core.controller.ToolManager
 import io.github.valerioisufi.drawview.core.controller.ToolPreset
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
@@ -28,6 +32,7 @@ import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.core.model.Versions
 import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.core.util.FractionalIndex
 import io.github.valerioisufi.drawview.data.db.*
@@ -281,12 +286,22 @@ class DrawDatabaseTest {
         val second = DrawPage(orderKey = document.orderKeyAt(1))
         session.submit(AddPage.of(second))
         session.submit(RemovePage(second.id))
+        // A text changed, on a page removed by a device that had not seen it: the page stays
+        val third = DrawPage(orderKey = document.orderKeyAt(1))
+        session.submit(AddPage.of(third))
+        val text = DrawText().apply { this.text = "written"; x = 10f; y = 10f; width = 40f; height = 8f }
+        session.submit(AddElements.of(third, listOf(text)))
+        session.submit(UpdateTexts(third.id, listOf(text.toData().copy(text = "changed"))))
+        val removal = Stamp(session.clock.next().time + 1, 0, "another-device")
+        session.receive(Operation(OperationId("another-device", 1), removal, RemovePage(third.id, Versions.NONE)))
 
         repository.insertDocument(document, folderId = null)
         val loaded = assertNotNull(repository.loadDocument(document.id))
         assertEquals(document.snapshot(), loaded.snapshot())
         assertEquals(listOf(strokes[1].id), loaded.pages[0].removedElements.map { it.id })
         assertEquals(setOf(second.id), loaded.removedPages.keys)
+        assertEquals(listOf(document.pages[0].id, third.id), loaded.pages.map { it.id })
+        assertEquals(removal, loaded.pages[1].removed)
     }
 
     @Test

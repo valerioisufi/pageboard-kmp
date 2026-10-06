@@ -21,6 +21,7 @@ import io.github.valerioisufi.drawview.core.change.RestyleMarkups
 import io.github.valerioisufi.drawview.core.change.SetDocumentDefaults
 import io.github.valerioisufi.drawview.core.change.SetPageFormat
 import io.github.valerioisufi.drawview.core.change.StrokePlacement
+import io.github.valerioisufi.drawview.core.change.TextData
 import io.github.valerioisufi.drawview.core.change.UpdateTexts
 import io.github.valerioisufi.drawview.core.change.toData
 import io.github.valerioisufi.drawview.core.controller.ChangePersister
@@ -42,6 +43,7 @@ import io.github.valerioisufi.drawview.core.model.StrokeMesh
 import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
+import io.github.valerioisufi.drawview.core.model.Versions
 import io.github.valerioisufi.drawview.core.model.newElementId
 import kotlin.random.Random
 import kotlin.test.Test
@@ -85,12 +87,16 @@ class DocumentChangeTest {
         kind = TextMarkupKind.HIGHLIGHT, color = 0xFFFFF176.toInt()
     )
 
-    /** The whole content of [this] as values, one line per page and per element. */
+    /**
+     * The whole content of [this] as values, one line per page and per element (not the versions
+     * of the texts, like the stamps).
+     */
     private fun DrawDocument.snapshot(): List<String> =
         listOf("defaults $defaultWidthMm x $defaultHeightMm $defaultBackground", "resources ${resources.map { it.id }}") +
             pages.flatMap { page ->
                 val data = page.toData()
-                listOf("page ${page.index} ${data.copy(elements = emptyList())}") + data.elements.map { "  $it" }
+                listOf("page ${page.index} ${data.copy(elements = emptyList())}") +
+                    data.elements.map { "  ${(it as? TextData)?.copy(versions = Versions.NONE) ?: it}" }
             }
 
     /** Fails on the first line that differs. */

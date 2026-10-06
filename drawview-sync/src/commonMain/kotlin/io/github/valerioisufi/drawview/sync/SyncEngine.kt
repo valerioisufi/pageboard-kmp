@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.sync
 
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.ChangeObserver
+import io.github.valerioisufi.drawview.core.change.ChangeOrigin
 import io.github.valerioisufi.drawview.core.change.DocumentSession
 import io.github.valerioisufi.drawview.core.change.DocumentSnapshot
 import io.github.valerioisufi.drawview.core.change.Operation
@@ -198,7 +199,8 @@ class SyncEngine(
         var receivingFrom: Link? = null
 
         val observer = ChangeObserver { committed ->
-            for (link in links) if (link !== receivingFrom) link.offer(committed.operation)
+            // The ones this device makes meanwhile (e.g. merging them, see ChangeOrigin.MERGE) go to it too
+            for (link in links) if (link !== receivingFrom || committed.origin != ChangeOrigin.REMOTE) link.offer(committed.operation)
         }
     }
 

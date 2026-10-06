@@ -44,6 +44,7 @@ import kotlinx.serialization.json.Json
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -150,18 +151,7 @@ class ConvergenceTest {
         }
 
         // Every device ends up receiving every operation
-        var delivered: Boolean
-        do {
-            delivered = false
-            for (device in devices) {
-                for ((operation, dependencies) in devices.filter { it !== device }.flatMap { it.made }) {
-                    if (device.canReceive(operation, dependencies)) {
-                        assertTrue(device.session.receive(operation))
-                        delivered = true
-                    }
-                }
-            }
-        } while (delivered)
+        exchange(devices)
 
         val expected = snapshot(devices[0].document)
         for (device in devices.drop(1)) {
@@ -182,6 +172,22 @@ class ConvergenceTest {
         }
     }
 
+    /** Gives each one of [devices] the operations the others made (and the ones they make meanwhile). */
+    private fun exchange(devices: List<Device>) {
+        var delivered: Boolean
+        do {
+            delivered = false
+            for (device in devices) {
+                for ((operation, dependencies) in devices.filter { it !== device }.flatMap { it.made }) {
+                    if (device.canReceive(operation, dependencies)) {
+                        assertTrue(device.session.receive(operation))
+                        delivered = true
+                    }
+                }
+            }
+        } while (delivered)
+    }
+
     /**
      * The content of [document] with the stamps of its pages and elements, one line each: the
      * pages shown in their order, then the removed ones (hidden), by identifier.
@@ -190,7 +196,10 @@ class ConvergenceTest {
         listOf("defaults ${document.defaultWidthMm} ${document.defaultBackground} ${document.defaultsVersion}") +
             (document.pages + document.removedPages.values.sortedBy { it.id }).flatMap { page ->
                 val data = page.toData()
-                listOf("page ${data.copy(elements = emptyList())} ${page.added} ${page.removed} ${page.orderVersion} ${page.formatVersion}") +
+                listOf(
+                    "page ${data.copy(elements = emptyList())} ${page.added} ${page.removed} ${page.orderVersion} ${page.formatVersion} " +
+                        "${page.contentVersions} ${page.removalSaw}"
+                ) +
                     page.elements().map { "  ${element(it)}" } +
                     page.removedElements.sortedBy { it.id }.map { "  hidden ${element(it)}" }
             }
@@ -228,6 +237,95 @@ class ConvergenceTest {
                 RestyleMarkups(page.id, listOf(MarkupStyle(it.id, TextMarkupKind.entries.random(random), random.nextInt(10))))
             }
         }
+    }
+
+    // --- Made apart ---
+
+    /** Writes [content] in the text of the first page. */
+    private fun Device.write(content: String) {
+        val page = document.pages[0]
+        session.submit(UpdateTexts(page.id, listOf(page.texts.first().toData().copy(text = content))))
+    }
+
+    @Test
+    fun aTextChangedApartKeepsTheContentLostAsACopy() {
+        val devices = initialPages().let { pages -> listOf("ada", "bob").map { Device(it, pages) } }
+        val (ada, bob) = devices
+        ada.write("Ada's")
+        bob.write("Bob's")
+        exchange(devices)
+
+        assertEquals(snapshot(ada.document), snapshot(bob.document))
+        // The most recent content (Bob's), the other one in a copy under it
+        val (text, copy) = ada.document.pages[0].texts.toList()
+        assertEquals("Bob's", text.text)
+        assertEquals("Ada's", copy.text)
+        assertEquals(text.y + text.height + 4f, copy.y)
+    }
+
+    @Test
+    fun aTextChangedAfterSeeingTheOtherChangeHasNoCopy() {
+        val devices = initialPages().let { pages -> listOf("ada", "bob").map { Device(it, pages) } }
+        val (ada, bob) = devices
+        ada.write("first")
+        exchange(devices)
+        bob.write("second")
+        exchange(devices)
+        assertEquals(listOf("second"), ada.document.pages[0].texts.map { it.text })
+        assertEquals(snapshot(ada.document), snapshot(bob.document))
+    }
+
+    @Test
+    fun aPageRemovedWhileAnotherDeviceAddsToItStays() {
+        val devices = initialPages().let { pages -> listOf("ada", "bob").map { Device(it, pages) } }
+        val (ada, bob) = devices
+        val pageId = ada.document.pages[2].id
+        ada.session.submit(RemovePage(pageId))
+        bob.session.submit(AddElements.of(bob.document.pages[2], listOf(stroke(60f, 60f))))
+        exchange(devices)
+
+        // On both, with what Bob added
+        for (device in devices) assertEquals(1, device.document.pageById(pageId)?.strokes?.size, device.name)
+        assertEquals(snapshot(ada.document), snapshot(bob.document))
+        // Removed again, now that it was seen: gone
+        ada.session.submit(RemovePage(pageId))
+        exchange(devices)
+        for (device in devices) assertNull(device.document.pageById(pageId), device.name)
+        assertEquals(snapshot(ada.document), snapshot(bob.document))
+    }
+
+    @Test
+    fun aPageRemovedWhileAnotherDeviceErasesFromItIsRemoved() {
+        val devices = initialPages().let { pages -> listOf("ada", "bob").map { Device(it, pages) } }
+        val (ada, bob) = devices
+        val pageId = ada.document.pages[2].id
+        ada.session.submit(RemovePage(pageId))
+        bob.session.submit(RemoveElements.of(bob.document.pages[2], bob.document.pages[2].texts.toList()))
+        exchange(devices)
+        for (device in devices) assertNull(device.document.pageById(pageId), device.name)
+        assertEquals(snapshot(ada.document), snapshot(bob.document))
+    }
+
+    @Test
+    fun theCopiesOfAContentLostKeepNoRemovedPage() {
+        val devices = initialPages().let { pages -> listOf("ada", "bob", "cy").map { Device(it, pages) } }
+        val (ada, bob, cy) = devices
+        fun Device.writeOnThirdPage(content: String) {
+            val page = document.pages[2]
+            session.submit(UpdateTexts(page.id, listOf(page.texts.first().toData().copy(text = content))))
+        }
+        bob.writeOnThirdPage("Bob's")
+        cy.writeOnThirdPage("Cy's")
+        // Ada sees both (keeping the one lost as a copy), then removes the page
+        exchange(listOf(ada, bob))
+        exchange(listOf(ada, cy))
+        val pageId = ada.document.pages[2].id
+        ada.session.submit(RemovePage(pageId))
+        // Bob and Cy make the same copy later: the page stays removed
+        exchange(devices)
+        for (device in devices) assertNull(device.document.pageById(pageId), device.name)
+        assertEquals(snapshot(ada.document), snapshot(bob.document))
+        assertEquals(snapshot(ada.document), snapshot(cy.document))
     }
 
     // --- The pieces ---

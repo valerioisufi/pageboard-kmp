@@ -123,6 +123,8 @@ class DrawDocumentRepository(
                 page.removed = pageEntity.removed
                 page.orderVersion = pageEntity.orderVersion
                 page.formatVersion = pageEntity.formatVersion
+                page.contentVersions = pageEntity.contentVersions
+                page.removalSaw = pageEntity.removalSaw
 
                 val elements = pageWithContent.strokes.map { e -> mapStroke(e).stored(e.orderKey, e.added, e.removed, e.placed, e.updated) } +
                     pageWithContent.texts.map { e -> mapText(e).stored(e.orderKey, e.added, e.removed, e.placed, e.updated) } +
@@ -133,7 +135,7 @@ class DrawDocumentRepository(
                 for (element in elements.sortedBy { it.order }) {
                     if (element.removed != null) page.removedElements.add(element) else page.add(element)
                 }
-                if (page.removed != null) doc.removedPages[page.id] = page else doc.pages.add(page)
+                if (page.isHidden) doc.removedPages[page.id] = page else doc.pages.add(page)
             }
             doc.reindexPages()
             doc
@@ -192,6 +194,7 @@ class DrawDocumentRepository(
         rotation = entity.rotation
         color = entity.color
         fontSize = entity.fontSize
+        contentVersions = entity.contentVersions
     }
 
     private fun mapImage(entity: ImageEntity) = DrawImage(entity.id).apply {
@@ -369,7 +372,8 @@ class DrawDocumentRepository(
                 added = text.added,
                 removed = text.removed,
                 placed = text.placed,
-                updated = text.updated
+                updated = text.updated,
+                contentVersions = text.contentVersions
             )
         )
     }
@@ -450,7 +454,9 @@ class DrawDocumentRepository(
                 added = page.added,
                 removed = page.removed,
                 orderVersion = page.orderVersion,
-                formatVersion = page.formatVersion
+                formatVersion = page.formatVersion,
+                contentVersions = page.contentVersions,
+                removalSaw = page.removalSaw
             )
         )
     }

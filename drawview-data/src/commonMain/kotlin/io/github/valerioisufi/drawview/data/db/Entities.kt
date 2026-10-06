@@ -8,6 +8,7 @@ import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.model.ElementOrder
 import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.Stamp
+import io.github.valerioisufi.drawview.core.model.Versions
 
 /*
  * Every row is identified by the identifier of the model (a UUID, see `newElementId`), the same
@@ -83,7 +84,9 @@ data class PageEntity(
     val added: Stamp = Stamp.ZERO,
     val removed: Stamp? = null,
     val orderVersion: Stamp = Stamp.ZERO,
-    val formatVersion: Stamp = Stamp.ZERO
+    val formatVersion: Stamp = Stamp.ZERO,
+    val contentVersions: Versions = Versions.NONE,
+    val removalSaw: Versions? = null
 )
 
 /**
@@ -170,7 +173,8 @@ data class TextEntity(
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,
-    val updated: Stamp
+    val updated: Stamp,
+    val contentVersions: Versions = Versions.NONE
 )
 
 @Entity(

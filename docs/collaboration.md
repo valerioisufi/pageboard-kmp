@@ -76,8 +76,17 @@ The origin of a change decides what the observers do:
 * The elements of a page are stacked by `ElementOrder` (the stamp of the change placing them on
   top, its position in the change); the pages are ordered by a fractional key (`FractionalIndex`,
   then by id); a reorder moves the fewest pages.
-* Text: last-writer-wins on its content and on its placement; a remote change of the box being
-  edited is applied when the edit ends.
+* Text: last-writer-wins on its placement. Its content keeps the changes it includes
+  (`Versions`: for every replica, the stamp of its last one; a change of a text carries the
+  versions of the content it was made from, the editor the ones of when the editing started): of
+  two contents made apart (neither includes the other) the most recent wins and the other one is
+  kept as a copy under the text, made by every device that sees both, the same one (its
+  identifier from the text and the stamp of the content lost: `AddElements(lostVersions)`,
+  `ChangeOrigin.MERGE`, not in the history). The same content made apart is no conflict.
+* A page removal hides only the content it saw (`RemovePage.saw`, the `DrawPage.contentVersions`
+  of the device removing it): what another device added, changed or moved onto the page meanwhile
+  keeps it shown (not what it erased, not the copies of contents lost), with the removal kept in
+  its state (`DrawPage.isHidden`), whatever the order the devices see the changes in.
 * The operations of a replica are applied in their order (`DocumentSession.receive` refuses the
   others); the protocol sends them in causal order (stamp order).
 
@@ -377,10 +386,11 @@ The application is not released yet, so the stored documents are not migrated:
   exchange what each one missed when they meet again, in both directions, and end up with the
   same document; nothing is lost (at worst kept hidden). On a conflict the most recent change
   wins, piece by piece (see Convergence), so:
-  * a page removed on a device hides what the others added to it meanwhile (kept with it: put
-    back, it comes back with it);
+  * a page removed on a device stays when the others added to it, changed or moved something
+    onto it meanwhile (removed again once seen, it goes);
   * an element erased on a device stays erased, even when another one moved or changed it;
-  * a text changed on two devices keeps the most recent content as a whole;
+  * a text changed on two devices keeps the most recent content, the other one in a copy under
+    it (to compare and choose);
   * the pages moved on two devices are each where its most recent move put it;
   * "most recent" is by the clocks of the devices (a clock far ahead wins).
 * What it costs: every stroke received is modeled again from its inputs (most of the time), the

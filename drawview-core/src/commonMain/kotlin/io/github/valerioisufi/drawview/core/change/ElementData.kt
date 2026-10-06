@@ -21,6 +21,7 @@ import io.github.valerioisufi.drawview.core.model.StrokeMesh
 import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
+import io.github.valerioisufi.drawview.core.model.Versions
 import io.github.valerioisufi.drawview.core.model.remodelingBrush
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -78,6 +79,10 @@ data class StrokeData(
     }
 }
 
+/**
+ * A text block. [versions]: the changes of the content this content includes (for a change, the
+ * ones of the content it was made from; see `UpdateTexts`).
+ */
 @Serializable
 @SerialName("text")
 data class TextData(
@@ -94,12 +99,19 @@ data class TextData(
     val rotation: Float = 0f,
     val color: Int,
     val fontSize: Float,
-    override val order: ElementOrder? = null
+    override val order: ElementOrder? = null,
+    val versions: Versions = Versions.NONE
 ) : ElementData {
     override fun toElement(): DrawText = DrawText(id).also { applyTo(it) }.withOrder(order)
 
+    /** Whether its content (the text and its format) is the one of [other]. */
+    fun hasContentOf(other: TextData): Boolean =
+        text == other.text && isLatex == other.isLatex && isMarkdownEnabled == other.isMarkdownEnabled &&
+            alignment == other.alignment && color == other.color
+
     /** Writes this content into [text] (its identifier and its order excepted). */
     fun applyTo(text: DrawText) {
+        text.contentVersions = versions
         text.text = this.text
         text.isLatex = isLatex
         text.isMarkdownEnabled = isMarkdownEnabled
@@ -248,7 +260,8 @@ fun DrawText.toData() = TextData(
     rotation = rotation,
     color = color,
     fontSize = fontSize,
-    order = dataOrder
+    order = dataOrder,
+    versions = contentVersions
 )
 
 fun DrawImage.toData() = ImageData(id, resourceId, x, y, width, height, rotation, dataOrder)

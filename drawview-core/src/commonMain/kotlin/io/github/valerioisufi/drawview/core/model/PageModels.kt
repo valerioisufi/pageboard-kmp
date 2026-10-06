@@ -221,6 +221,12 @@ class DrawText(override val id: String = newElementId()) : RotatableItem, DrawEl
     override var placed: Stamp = Stamp.ZERO
     override var updated: Stamp = Stamp.ZERO
 
+    /**
+     * The changes of the content its content includes: two contents made apart are told apart
+     * (the one lost becomes a copy, see `UpdateTexts`).
+     */
+    var contentVersions: Versions = Versions.NONE
+
     @Volatile var text: String = ""
     @Volatile var isLatex: Boolean = false
     @Volatile var isMarkdownEnabled: Boolean = true
@@ -366,6 +372,18 @@ class DrawPage(
     var removed: Stamp? = null
     var orderVersion: Stamp = Stamp.ZERO
     var formatVersion: Stamp = Stamp.ZERO
+
+    /** The changes of its content (elements added, changed or moved onto it; not removed). */
+    var contentVersions: Versions = Versions.NONE
+
+    /**
+     * What of its content the removal [removed] had seen (`null`: all of it): the page stays when
+     * something was added to it meanwhile on another device (see [isHidden]).
+     */
+    var removalSaw: Versions? = null
+
+    /** Whether it is removed: by a removal that saw all of its content. */
+    val isHidden: Boolean get() = removed != null && removalSaw?.covers(contentVersions) != false
 
     /**
      * The elements removed from the page: hidden, they keep receiving the changes (the changes of
@@ -595,8 +613,10 @@ class DrawDocument(
         val stamps = sequenceOf(defaultsVersion) +
             allPages().asSequence().flatMap { page ->
                 sequenceOf(page.added, page.removed ?: Stamp.ZERO, page.orderVersion, page.formatVersion) +
-                    (page.elements() + page.removedElements).asSequence().flatMap {
-                        sequenceOf(it.added, it.removed ?: Stamp.ZERO, it.placed, it.updated, it.order.stamp)
+                    // The changes that changed nothing are among the versions only
+                    page.contentVersions.stamps.values + (page.elements() + page.removedElements).asSequence().flatMap {
+                        sequenceOf(it.added, it.removed ?: Stamp.ZERO, it.placed, it.updated, it.order.stamp) +
+                            ((it as? DrawText)?.contentVersions?.stamps?.values ?: emptyList())
                     }
             }
         stamps.maxOrNull() ?: Stamp.ZERO

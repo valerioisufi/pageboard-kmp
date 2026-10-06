@@ -16,7 +16,14 @@ enum class ChangeOrigin {
     REDO,
 
     /** Made on another device. */
-    REMOTE
+    REMOTE,
+
+    /**
+     * Made by this device to merge its changes with the ones of the others (e.g. the copy of the
+     * content of a text lost to another one, see [ChangeEffects.lostVersions]): not recorded in
+     * the history.
+     */
+    MERGE
 }
 
 /**
@@ -95,6 +102,7 @@ class DocumentSession(
         val sequence = (applied[replica] ?: 0L) + 1
         applied[replica] = sequence
         notify(CommittedChange(document, Operation(OperationId(replica, sequence), stamp, change), inverse, origin, effects))
+        keepLostVersions(effects)
         return inverse
     }
 
@@ -111,10 +119,21 @@ class DocumentSession(
         if (id.sequence != (applied[id.replica] ?: 0L) + 1) return false
         clock.observe(operation.stamp)
         val effects = ChangeEffects(document)
-        val inverse = operation.change.applyTo(ChangeContext(document, effects, operation.stamp))
+        val inverse = operation.change.applyTo(ChangeContext(document, effects, operation.stamp, received = true))
         applied[id.replica] = id.sequence
         notify(CommittedChange(document, operation, inverse, ChangeOrigin.REMOTE, effects))
+        keepLostVersions(effects)
         return true
+    }
+
+    /**
+     * Adds the copies of the contents of texts lost to others made apart (see
+     * [ChangeEffects.lostVersions]): the same copies on every device that sees the two contents.
+     */
+    private fun keepLostVersions(effects: ChangeEffects) {
+        for ((page, copies) in effects.lostVersions.groupBy({ it.first }, { it.second })) {
+            submit(AddElements(page.id, copies, lostVersions = true), ChangeOrigin.MERGE)
+        }
     }
 
     private fun notify(committed: CommittedChange) {

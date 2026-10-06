@@ -12,6 +12,7 @@ import io.github.valerioisufi.drawview.core.change.TextData
 import io.github.valerioisufi.drawview.core.change.UpdateTexts
 import io.github.valerioisufi.drawview.core.change.toData
 import io.github.valerioisufi.drawview.core.model.DrawText
+import io.github.valerioisufi.drawview.core.model.Versions
 import io.github.valerioisufi.drawview.core.model.newElementId
 
 /**
@@ -45,6 +46,12 @@ class TextEditorManager(private val controller: DrawViewController) {
     private var newTextId = newElementId()
 
     /**
+     * The text being edited as it was when the editing started: the content the change is made
+     * from (one changed meanwhile on another device is kept as a copy, see `UpdateTexts`).
+     */
+    private var editedFrom: TextData? = null
+
+    /**
      * Starts editing [item] (or a new text when `null`) on the page [pageIndex], at the given
      * page coordinates.
      */
@@ -61,6 +68,7 @@ class TextEditorManager(private val controller: DrawViewController) {
         isMathMode = item?.isLatex ?: false
         isMarkdownLivePreviewEnabled = item?.isMarkdownEnabled ?: true
         newTextId = newElementId()
+        editedFrom = item?.toData()?.copy(order = null)
         sessionId++
 
         if (item != null) {
@@ -129,14 +137,16 @@ class TextEditorManager(private val controller: DrawViewController) {
             height = measuredHeightMm.coerceAtLeast(4f),
             rotation = existing?.rotation ?: 0f,
             color = color,
-            fontSize = fontSize
+            fontSize = fontSize,
+            versions = editedFrom?.versions ?: Versions.NONE
         )
         if (existing != null) {
             existing.isDragging = false
             // Shown again even when nothing changed
             existing.markDirty()
             controller.invalidatePageContent(page, existing.getRotatedBounds())
-            if (data != existing.toData().copy(order = null)) controller.session.submit(UpdateTexts(page.id, listOf(data)))
+            // Changed by the user (not only on another device meanwhile)
+            if (data != editedFrom) controller.session.submit(UpdateTexts(page.id, listOf(data)))
         } else {
             controller.session.submit(AddElements.of(page, listOf(data.toElement())))
         }

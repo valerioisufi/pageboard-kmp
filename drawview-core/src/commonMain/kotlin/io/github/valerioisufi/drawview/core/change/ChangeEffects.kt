@@ -19,6 +19,8 @@ class ChangeEffects internal constructor(private val document: DrawDocument) {
     private val _insertedPages = LinkedHashSet<DrawPage>()
     private val _savedPages = LinkedHashSet<DrawPage>()
     private val _removedPages = LinkedHashSet<DrawPage>()
+    private val _versionedPages = LinkedHashSet<DrawPage>()
+    private val _lostVersions = mutableListOf<Pair<DrawPage, TextData>>()
     private val _resources = mutableListOf<DrawResource>()
     private val _dirtyRegions = LinkedHashMap<DrawPage, Rect?>()
 
@@ -40,6 +42,15 @@ class ChangeEffects internal constructor(private val document: DrawDocument) {
     /** Pages removed (kept, hidden: see [DrawDocument.removedPages]). */
     val removedPages: Set<DrawPage> get() = _removedPages
 
+    /** Pages whose content changed (see [DrawPage.contentVersions]): their versions to store. */
+    val versionedPages: Set<DrawPage> get() = _versionedPages
+
+    /**
+     * Contents of texts made apart from the content they lost to (see `UpdateTexts`), as the
+     * copies keeping them, with the page to add them to (see [DocumentSession]).
+     */
+    val lostVersions: List<Pair<DrawPage, TextData>> get() = _lostVersions
+
     /** Files added to the document. */
     val resources: List<DrawResource> get() = _resources
 
@@ -55,7 +66,8 @@ class ChangeEffects internal constructor(private val document: DrawDocument) {
 
     val isEmpty: Boolean
         get() = _savedElements.isEmpty() && _deletedElements.isEmpty() && _insertedPages.isEmpty() &&
-            _savedPages.isEmpty() && _removedPages.isEmpty() && _resources.isEmpty() && !documentDefaultsChanged
+            _savedPages.isEmpty() && _removedPages.isEmpty() && _versionedPages.isEmpty() && _lostVersions.isEmpty() &&
+            _resources.isEmpty() && !documentDefaultsChanged
 
     /** [element] of [page] added or changed, shown or hidden. */
     internal fun saved(page: DrawPage, element: DrawElement) {
@@ -89,6 +101,16 @@ class ChangeEffects internal constructor(private val document: DrawDocument) {
     internal fun pageSaved(page: DrawPage) {
         _savedPages.add(page)
         if (document.isShown(page)) layoutChanged = true
+    }
+
+    /** The content of [page] changed: its versions to store (no layout). */
+    internal fun pageVersioned(page: DrawPage) {
+        _versionedPages.add(page)
+    }
+
+    /** A content of a text lost to another one made apart: [copy] keeps it on [page]. */
+    internal fun versionLost(page: DrawPage, copy: TextData) {
+        _lostVersions.add(page to copy)
     }
 
     internal fun pageFormatted(page: DrawPage) {

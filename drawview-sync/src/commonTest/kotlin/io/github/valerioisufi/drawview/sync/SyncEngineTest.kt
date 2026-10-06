@@ -279,6 +279,35 @@ class SyncEngineTest {
     }
 
     @Test
+    fun aTextChangedApartOnTwoDevicesKeepsBothContents() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val bob = Device("bob", work, this, network)
+        val document = ada.store.createDocument("Physics")
+        ada.change(document.id) { AddElements.of(it.document.pages[0], listOf(text("waves"))) }
+        val invitation = ada.engine.share(document.id, "Physics")
+        bob.join(invitation, "ada")
+        advanceUntilIdle()
+
+        // Apart, both change the text; together again: the most recent content and a copy of the other one
+        bob.disconnect()
+        advanceUntilIdle()
+        fun write(content: String): (DocumentSession) -> DocumentChange = { session ->
+            val page = session.document.pages[0]
+            UpdateTexts(page.id, listOf(page.texts[0].toData().copy(text = content)))
+        }
+        ada.change(document.id, write("Ada's"))
+        bob.change(document.id, write("Bob's"))
+        bob.join(invitation, "ada")
+        advanceUntilIdle()
+        // The copies made on each side reached the other one (from the connection being received)
+        assertSame(document.id, listOf(ada, bob))
+        val (text, copy) = ada.snapshot(document.id).pages[0].data.elements.filterIsInstance<TextData>()
+        assertEquals(setOf("Ada's", "Bob's"), setOf(text.text, copy.text))
+        assertTrue(copy.y > text.y, "the copy under the text")
+    }
+
+    @Test
     fun devicesChangingADocumentThroughEachOtherConverge() {
         repeat(5) { seed -> relay(Random(seed)) }
     }

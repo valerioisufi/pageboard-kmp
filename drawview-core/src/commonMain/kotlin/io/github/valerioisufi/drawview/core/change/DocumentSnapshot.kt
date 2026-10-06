@@ -6,6 +6,7 @@ import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.Stamp
+import io.github.valerioisufi.drawview.core.model.Versions
 import kotlinx.serialization.Serializable
 
 /**
@@ -53,7 +54,8 @@ data class DocumentSnapshot(
 
 /**
  * A page as its data (see [PageData]), its removed elements (hidden, see
- * [DrawPage.removedElements]) and the stamps of its last changes and of its elements'.
+ * [DrawPage.removedElements]) and the stamps of its last changes and of its elements'; the
+ * versions of its content and what of it its removal saw (see [DrawPage.isHidden]).
  */
 @Serializable
 data class PageSnapshot(
@@ -63,7 +65,9 @@ data class PageSnapshot(
     val orderVersion: Stamp = Stamp.ZERO,
     val formatVersion: Stamp = Stamp.ZERO,
     val removedElements: List<ElementData> = emptyList(),
-    val versions: Map<String, ElementVersions> = emptyMap()
+    val versions: Map<String, ElementVersions> = emptyMap(),
+    val contentVersions: Versions = Versions.NONE,
+    val removalSaw: Versions? = null
 ) {
     /** A new page of [document] with this state. */
     fun toPage(document: DrawDocument): DrawPage {
@@ -72,6 +76,8 @@ data class PageSnapshot(
         page.removed = removed
         page.orderVersion = orderVersion
         page.formatVersion = formatVersion
+        page.contentVersions = contentVersions
+        page.removalSaw = removalSaw
         removedElements.forEach { page.removedElements.add(it.toElement()) }
         for (element in page.elements() + page.removedElements) versions[element.id]?.applyTo(element)
         return page
@@ -111,5 +117,7 @@ fun DrawPage.snapshot(): PageSnapshot = PageSnapshot(
     formatVersion = formatVersion,
     // In a canonical order: the same state has the same snapshot
     removedElements = removedElements.sortedBy { it.id }.map { it.toData() },
-    versions = (elements() + removedElements).associate { it.id to ElementVersions(it.added, it.removed, it.placed, it.updated) }
+    versions = (elements() + removedElements).associate { it.id to ElementVersions(it.added, it.removed, it.placed, it.updated) },
+    contentVersions = contentVersions,
+    removalSaw = removalSaw
 )

@@ -13,6 +13,7 @@ import io.github.valerioisufi.drawview.core.model.ElementOrder
 import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.Stamp
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
+import io.github.valerioisufi.drawview.core.model.Versions
 import io.github.valerioisufi.drawview.core.util.FractionalIndex
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -47,18 +48,27 @@ sealed interface DocumentChange {
 }
 
 /**
- * The document a change is applied to, the stamp of its operation and the effects it records.
+ * The document a change is applied to, the stamp of its operation and the effects it records;
+ * [received]: the change was made on another device.
  */
-class ChangeContext internal constructor(val document: DrawDocument, val effects: ChangeEffects, val stamp: Stamp)
+class ChangeContext internal constructor(
+    val document: DrawDocument,
+    val effects: ChangeEffects,
+    val stamp: Stamp,
+    val received: Boolean = false
+)
 
 /**
  * Adds [elements] to the page [pageId] (an element without order gets the order of this change: on
  * top). An element already there (e.g. removed before, and put back by undo) is added again with
  * the placement and the content of this change, unless more recent ones.
+ *
+ * [lostVersions]: the copies of contents of texts lost to others (see [UpdateTexts]), made by the
+ * devices as they merge their changes; they keep no removed page (see [DrawPage.isHidden]).
  */
 @Serializable
 @SerialName("addElements")
-data class AddElements(val pageId: String, val elements: List<ElementData>) : DocumentChange {
+data class AddElements(val pageId: String, val elements: List<ElementData>, val lostVersions: Boolean = false) : DocumentChange {
     @Transient
     private var local: Map<String, DrawElement> = emptyMap()
 
@@ -89,6 +99,7 @@ data class AddElements(val pageId: String, val elements: List<ElementData>) : Do
                 element.removed = null
                 element.placed = stamp
                 element.updated = stamp
+                if (element is DrawText && data is TextData) element.contentVersions = data.versions + stamp
                 page.add(element)
                 context.effects.saved(page, element)
                 shown.add(data.id)
@@ -96,14 +107,18 @@ data class AddElements(val pageId: String, val elements: List<ElementData>) : Do
             }
 
             val (from, element) = found
-            if (element.added >= stamp && element.placed >= stamp && element.updated >= stamp) continue
             val removed = element.removed
             val before = element.toData()
+            var touched = false
             // Its presence: since the last addition, unless removed after it
-            if (element.added < stamp) element.added = stamp
+            if (element.added < stamp) {
+                element.added = stamp
+                touched = true
+            }
             if (removed != null && removed < stamp) {
                 from.show(element)
                 shown.add(data.id)
+                touched = true
             }
             // Its placement and its content: the ones of this change, unless more recent ones
             var holder = from
@@ -113,11 +128,17 @@ data class AddElements(val pageId: String, val elements: List<ElementData>) : Do
                 holder = page
                 valuesChanged = true
             }
-            if (element.updated < stamp) {
-                writeContent(element, data)
-                element.updated = stamp
-                valuesChanged = true
+            val contentChanged = when {
+                element is DrawText && data is TextData -> context.writeText(holder, element, data)
+                element.updated < stamp -> {
+                    writeContent(element, data)
+                    element.updated = stamp
+                    true
+                }
+                else -> false
             }
+            if (contentChanged) valuesChanged = true
+            if (!touched && !valuesChanged) continue
             if (removed == null && valuesChanged) previous.getOrPut(from) { mutableListOf() }.add(before)
             context.effects.saved(holder, element)
             changed = true
@@ -126,11 +147,13 @@ data class AddElements(val pageId: String, val elements: List<ElementData>) : Do
             if (shown.isNotEmpty()) add(RemoveElements(pageId, shown))
             previous.forEach { (page, values) -> add(AddElements(page.id, values)) }
         }
-        return when {
+        val inverse = when {
             inverses.isEmpty() -> if (changed) NoChange else null
             inverses.size == 1 -> inverses[0]
             else -> CompositeChange(inverses)
         }
+        if (!lostVersions) context.contentChanged(page, inverse)
+        return inverse
     }
 
     companion object {
@@ -203,6 +226,68 @@ private fun DrawPage.show(element: DrawElement) {
     removedElements.remove(element)
     element.removed = null
     add(element)
+}
+
+/**
+ * Notes that the change of this context changed the content of [page] (when it is an operation:
+ * [inverse] not `null`, or received): a removal of the page that had not seen it hides it no more
+ * (see [DrawPage.isHidden]).
+ */
+private fun ChangeContext.contentChanged(page: DrawPage, inverse: DocumentChange?) {
+    if (inverse == null && !received) return
+    val versions = page.contentVersions + stamp
+    if (versions == page.contentVersions) return
+    page.contentVersions = versions
+    effects.pageVersioned(page)
+    showAsRemoved(page)
+}
+
+/** Shows or hides [page] as its removal (if any) tells (see [DrawPage.isHidden]). */
+private fun ChangeContext.showAsRemoved(page: DrawPage) {
+    val shown = document.isShown(page)
+    if (page.isHidden && shown) {
+        document.pages.remove(page)
+        document.reindexPages()
+        document.removedPages[page.id] = page
+        effects.pageRemoved(page)
+    } else if (!page.isHidden && !shown) {
+        document.removedPages.remove(page.id)
+        document.insertPage(page)
+        effects.pageInserted(page)
+    }
+}
+
+/** How far under a text the copy of a content it lost goes (millimeters, see [writeText]). */
+private const val LOST_VERSION_GAP_MM = 4f
+
+/**
+ * Writes the content of [data] (the text and its format) into [text] of [page], as the change of
+ * this context made it from the content [TextData.versions]. Of two contents made apart (neither
+ * includes the other: two devices changed the text without seeing each other's change) the most
+ * recent wins and the other one is kept as a copy under the text (see
+ * [ChangeEffects.lostVersions]), whatever the order the devices see them in.
+ *
+ * @return whether the content of [text] changed.
+ */
+private fun ChangeContext.writeText(page: DrawPage, text: DrawText, data: TextData): Boolean {
+    val incoming = data.versions + stamp
+    val current = text.contentVersions
+    // Included already
+    if (current.covers(incoming)) return false
+    val newer = stamp > text.updated
+    if (!(newer && incoming.covers(current))) {
+        val kept = text.toData()
+        if (!data.hasContentOf(kept)) {
+            // Made apart: the one lost is kept, as the same copy on every device
+            val (lost, lostAt) = if (newer) kept to text.updated else data.copy(versions = incoming) to stamp
+            effects.versionLost(page, lost.copy(id = "${text.id}~$lostAt", y = lost.y + lost.height + LOST_VERSION_GAP_MM, order = null))
+        }
+    }
+    if (!newer) return false
+    writeContent(text, data)
+    text.contentVersions = incoming
+    text.updated = stamp
+    return true
 }
 
 /**
@@ -313,7 +398,10 @@ data class PlaceElements(
             if ((current is StrokePlacement) != (placement is StrokePlacement)) return@mapNotNull null
             Target(from, element, placement, current, i)
         }
-        if (targets.isEmpty()) return null
+        if (targets.isEmpty()) {
+            context.contentChanged(to, null)
+            return null
+        }
 
         for ((from, element, placement, _, i) in targets) {
             context.place(from, element, placement, to, placement.order ?: ElementOrder(context.stamp, i))
@@ -321,7 +409,7 @@ data class PlaceElements(
         }
         // Back to the page each one came from
         val inverses = targets.groupBy { it.from }.map { (from, moved) -> PlaceElements(toPageId, moved.map { it.current }, from.id) }
-        return inverses.singleOrNull() ?: CompositeChange(inverses)
+        return (inverses.singleOrNull() ?: CompositeChange(inverses)).also { context.contentChanged(to, it) }
     }
 
     private data class Target(
@@ -347,21 +435,24 @@ data class UpdateTexts(val pageId: String, val texts: List<TextData>) : Document
         for ((i, data) in texts.withIndex()) {
             val (from, element) = document.findAnyElement(data.id, page) ?: continue
             val text = element as? DrawText ?: continue
-            if (text.placed >= context.stamp && text.updated >= context.stamp) continue
-            previous.getOrPut(from) { mutableListOf() }.add(text.toData())
+            val before = text.toData()
             var holder = from
+            var changed = false
             if (text.placed < context.stamp) {
                 context.place(from, text, data.placement(), page, data.order ?: ElementOrder(context.stamp, i))
                 holder = page
+                changed = true
             }
-            if (text.updated < context.stamp) {
-                writeContent(text, data)
-                text.updated = context.stamp
-            }
+            // Its content: the most recent one, the other one kept as a copy when made apart
+            if (context.writeText(holder, text, data)) changed = true
+            if (!changed) continue
+            previous.getOrPut(from) { mutableListOf() }.add(before)
             context.effects.saved(holder, text)
         }
         val inverses = previous.map { (page, old) -> UpdateTexts(page.id, old) }
-        return if (inverses.size <= 1) inverses.singleOrNull() else CompositeChange(inverses)
+        val inverse = if (inverses.size <= 1) inverses.singleOrNull() else CompositeChange(inverses)
+        context.contentChanged(page, inverse)
+        return inverse
     }
 }
 
@@ -388,8 +479,9 @@ data class RestyleMarkups(val pageId: String, val styles: List<MarkupStyle>) : D
             markup.updated = context.stamp
             context.effects.saved(page, markup)
         }
-        if (previous.isEmpty()) return null
-        return RestyleMarkups(pageId, previous)
+        val inverse = if (previous.isEmpty()) null else RestyleMarkups(pageId, previous)
+        hint?.let { context.contentChanged(it, inverse) }
+        return inverse
     }
 }
 
@@ -416,10 +508,10 @@ data class AddPage(val page: PageData) : DocumentChange {
                 context.effects.pageSaved(existing)
                 return NoChange
             }
-            document.removedPages.remove(page.id)
+            // Its removal is over (shown already when it had not seen all of its content)
             existing.removed = null
-            document.insertPage(existing)
-            context.effects.pageInserted(existing)
+            existing.removalSaw = null
+            if (document.isShown(existing)) context.effects.pageSaved(existing) else context.showAsRemoved(existing)
             return RemovePage(page.id)
         }
 
@@ -433,6 +525,7 @@ data class AddPage(val page: PageData) : DocumentChange {
             element.added = context.stamp
             element.placed = context.stamp
             element.updated = context.stamp
+            if (element is DrawText) element.contentVersions += context.stamp
         }
         document.insertPage(newPage)
         context.effects.pageInserted(newPage)
@@ -448,28 +541,29 @@ data class AddPage(val page: PageData) : DocumentChange {
 /**
  * Removes the page [pageId] with its content (unless added again by a more recent change): it is
  * kept, hidden, and can be put back. The editor never removes the last page of a document.
+ *
+ * Only the content it [saw] is removed: when another device added to the page meanwhile, the page
+ * stays (see [DrawPage.isHidden]). Made on this device, it saw the content of the page as it is
+ * when applied (written into [saw] then); `null` in a change received: all of it.
  */
 @Serializable
 @SerialName("removePage")
-data class RemovePage(val pageId: String) : DocumentChange {
+data class RemovePage(val pageId: String, var saw: Versions? = null) : DocumentChange {
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
-        val page = document.pageById(pageId)
-        if (page == null) {
-            // Removed on another device too: removed since the last of the two
-            val hidden = document.removedPages[pageId] ?: return null
-            if (hidden.removed!! >= context.stamp) return null
-            hidden.removed = context.stamp
-            context.effects.pageSaved(hidden)
-            return NoChange
-        }
+        val page = document.anyPage(pageId) ?: return null
+        // Put back after it, or removed again after it (on another device too)
         if (page.added >= context.stamp) return null
-        document.pages.remove(page)
-        document.reindexPages()
+        val removed = page.removed
+        if (removed != null && removed >= context.stamp) return null
+        if (saw == null && !context.received) saw = page.contentVersions
+        val shown = document.isShown(page)
         page.removed = context.stamp
-        document.removedPages[pageId] = page
-        context.effects.pageRemoved(page)
-        return AddPage.of(page)
+        page.removalSaw = saw
+        context.showAsRemoved(page)
+        if (shown && !document.isShown(page)) return AddPage.of(page)
+        context.effects.pageSaved(page)
+        return NoChange
     }
 }
 
