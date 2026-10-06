@@ -469,6 +469,23 @@ The application is not released yet, so the stored documents are not migrated:
 * The lecture being recorded or shown takes what is received under the lock of the records
   (`LectureLibrary.records`, held when it is saved): nothing is lost between the two; a device
   keeping something else than what it received sends its version back.
+* What each device shares, its choice (`LectureSharingSettings`, per notebook): the audio of its
+  new lectures or not (and of each lecture, `LectureRecord.audioShared`, any device deciding, the
+  most recent decision wins), the audio of the others received at once or on request (phones
+  short of space); the audio arriving shows its progress, an audio interrupted goes on from where
+  it stopped (`audio.part`).
+* A lecture being recorded elsewhere is saved every 30 s at least: without news for 2 minutes the
+  panel says it may have stopped.
+* The device transcribing or reviewing a lecture holds it (`GenerationLock`, refreshed every 30 s,
+  let go after 3 minutes without news): the others do not do it meanwhile; of two devices starting
+  at the same moment, the one whose lock wins goes on, the other stops.
+* Each device counts its own tokens (`LectureRecord.usageByDevice`): the panel shows them all.
+* A lecture deleted elsewhere while recorded here is deleted once over; the lectures of a
+  document deleted go with it.
+* A lecture, its audio, its review arriving from another device are told: in the editor, and with
+  a notification of the system on Android and iOS. A device with the models offers to transcribe
+  and review the lectures received without a transcript, with the tokens it would send to Gemini
+  (`AssistantSettings.receivedLectures`: ask, always, never).
 * Verified by `LectureSharingTest` (tablet and computer exchanging as the synchronization does)
   and `LectureRecordsTest`.
 

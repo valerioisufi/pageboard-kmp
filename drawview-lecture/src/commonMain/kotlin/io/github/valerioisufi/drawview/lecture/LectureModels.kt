@@ -138,7 +138,35 @@ enum class LecturePart {
 
     /** The final review and the model that wrote it. */
     REVIEW,
-    USAGE
+
+    /** Whether its audio goes to the other devices ([LectureRecord.audioShared]). */
+    SHARING,
+
+    /** The device writing its transcript or its review now ([LectureRecord.generation]). */
+    GENERATION
+}
+
+/**
+ * The tokens a device used for a lecture ([name]: the device), changed by it only: [stamp] tells
+ * the most recent.
+ */
+@Serializable
+data class DeviceUsage(val name: String, val usage: TokenUsage, val stamp: Stamp = Stamp.NONE)
+
+/**
+ * The device writing the transcript or the review of a lecture ([name]: its name), since [since],
+ * still there at [refreshedAt]: the others do not write them meanwhile (see
+ * [LectureAssistant.generate]).
+ */
+@Serializable
+data class GenerationLock(val device: String, val name: String, val since: Long, val refreshedAt: Long) {
+    /** Whether it still holds, at [now] (a device gone stops refreshing it). */
+    fun holds(now: Long): Boolean = now - refreshedAt < STALE_MS
+
+    companion object {
+        const val REFRESH_MS = 30_000L
+        const val STALE_MS = 3 * 60_000L
+    }
 }
 
 /**
@@ -160,12 +188,17 @@ data class LectureRecord(
     /** Model that wrote the final review. */
     val finalReviewBy: String? = null,
     val finalReviewProvider: ReviewProvider? = null,
-    val usage: TokenUsage = TokenUsage(),
+    /** The tokens used for it, by device (each one counts its own). */
+    val usageByDevice: Map<String, DeviceUsage> = emptyMap(),
     /** The pages of the notebook seen during the lecture, the most recent last. */
     val pages: List<SeenPage> = emptyList(),
     /** The device that recorded it ([LectureLibrary.deviceId]), and its name. */
     val recordedBy: String = "",
     val recordedOn: String = "",
+    /** Whether its audio goes to the other devices (otherwise it stays where it is). */
+    val audioShared: Boolean = true,
+    /** The device writing its transcript or review now, if any. */
+    val generation: GenerationLock? = null,
     /** When its parts were last changed, and where (the suggestions have their own, see [LectureRecords.merge]). */
     val stamps: Map<LecturePart, Stamp> = emptyMap()
 ) {

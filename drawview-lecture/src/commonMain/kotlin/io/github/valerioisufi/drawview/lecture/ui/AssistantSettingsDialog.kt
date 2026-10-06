@@ -34,6 +34,9 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.RadioButton
+import io.github.valerioisufi.drawview.lecture.ReceivedLectures
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -146,6 +149,28 @@ internal fun AssistantSettingsDialog(store: AssistantSettingsStore, localModels:
                         steps = (range.last - range.first) / 15 - 1
                     )
                     Hint(stringResource(Res.string.lecture_settings_chunk_hint))
+                }
+                // The lectures recorded where the models are not
+                Column {
+                    Text(stringResource(Res.string.lecture_settings_received), style = MaterialTheme.typography.bodyMedium)
+                    for (choice in ReceivedLectures.entries) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth().clickable { draft = draft.copy(receivedLectures = choice) }
+                        ) {
+                            RadioButton(selected = draft.receivedLectures == choice, onClick = { draft = draft.copy(receivedLectures = choice) })
+                            Text(
+                                stringResource(
+                                    when (choice) {
+                                        ReceivedLectures.ASK -> Res.string.lecture_settings_received_ask
+                                        ReceivedLectures.ALWAYS -> Res.string.lecture_settings_received_always
+                                        ReceivedLectures.NEVER -> Res.string.lecture_settings_received_never
+                                    }
+                                ),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
                 }
                 OutlinedTextField(
                     value = draft.notesLanguage,

@@ -14,6 +14,17 @@ import kotlinx.serialization.json.Json
 @Serializable
 enum class ModelProvider { GEMINI, LOCAL }
 
+/** What to do with a lecture received without a transcript (recorded where the models are not). */
+@Serializable
+enum class ReceivedLectures {
+    /** Asks, saying what it would cost. */
+    ASK,
+
+    /** Transcribes and reviews it at once. */
+    ALWAYS,
+    NEVER
+}
+
 /** What a lecture can send to Google. */
 enum class SharedData { AUDIO, TRANSCRIPT, NOTEBOOK }
 
@@ -69,7 +80,9 @@ data class AssistantSettings(
     val tasks: Map<LectureTask, TaskModel> = emptyMap(),
     val localUrl: String = DEFAULT_LOCAL_URL,
     val whisperModel: String = "",
-    val whisperLanguage: String = "auto"
+    val whisperLanguage: String = "auto",
+    /** What to do with the lectures received from devices without the models (see [ReceivedLectures]). */
+    val receivedLectures: ReceivedLectures = ReceivedLectures.ASK
 ) {
     /** Provider and models of [task] (the defaults when not configured). */
     fun task(task: LectureTask): TaskModel = tasks[task] ?: defaultTask(task)

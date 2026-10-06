@@ -22,6 +22,7 @@ import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -93,7 +94,7 @@ class Lecture internal constructor(
     startedAt: Long? = null,
     val generates: Boolean = true,
     internal val device: String = "",
-    deviceName: String = "",
+    private val deviceName: String = "",
     private val recordsLock: Mutex = Mutex(),
     internal val onChanged: (lectureId: String?) -> Unit = {}
 ) {
@@ -182,12 +183,42 @@ class Lecture internal constructor(
     var reviewProgressTokens by mutableIntStateOf(0)
         private set
 
-    var usage by mutableStateOf(record?.usage ?: TokenUsage())
+    /** The tokens this device used for the lecture. */
+    var usage by mutableStateOf(record?.usageByDevice?.get(device)?.usage ?: TokenUsage())
         internal set
+
+    /** The tokens the other devices used for it, by device. */
+    var otherUsage by mutableStateOf(record?.usageByDevice?.minus(device).orEmpty())
+        private set
+
+    /** The tokens every device used for it. */
+    val totalUsage: TokenUsage get() = otherUsage.values.fold(usage) { total, other -> total + other.usage }
 
     /** The audio is here (a lecture recorded on another device gets it once finished there). */
     var hasAudio by mutableStateOf(record != null && RecordingFile(directory).pcmBytes() > 0)
         private set
+
+    /** Whether its audio goes to the other devices working on the notebook. */
+    var audioShared by mutableStateOf(record?.audioShared ?: true)
+        internal set
+
+    /** The device writing its transcript or review now (this one or another), if any. */
+    var generation by mutableStateOf(record?.generation)
+        internal set
+
+    /** When the device recording it was last heard of (its last change of the recording). */
+    var recordingHeardAt by mutableLongStateOf(record?.stampOf(LecturePart.RECORDING)?.at ?: 0L)
+        private set
+
+    /** It was deleted on another device while recorded here: deleted here too once over. */
+    var deletedElsewhere by mutableStateOf(false)
+        internal set
+
+    /** The transcription or review running here, stopped when another device took it over (see [generation]). */
+    internal var generating: Job? = null
+
+    /** Another device writes its transcript or review now ([generation], still held). */
+    fun generatingElsewhere(now: Long): GenerationLock? = generation?.takeIf { it.device != device && it.holds(now) }
 
 
     /** The final review can be written (again): the recording is over and no review is running. */
@@ -529,10 +560,12 @@ class Lecture internal constructor(
         finalReview = finalReview,
         finalReviewBy = reviewModel,
         finalReviewProvider = reviewProvider,
-        usage = usage,
+        usageByDevice = if (usage == TokenUsage() && device !in saved?.usageByDevice.orEmpty()) otherUsage else otherUsage + (device to DeviceUsage(deviceName, usage, saved?.usageByDevice?.get(device)?.stamp ?: Stamp.NONE)),
         pages = seenPages.values.toList(),
         recordedBy = recordedBy,
         recordedOn = recordedOn,
+        audioShared = audioShared,
+        generation = generation,
         stamps = saved?.stamps.orEmpty()
     )
 
@@ -596,7 +629,15 @@ class Lecture internal constructor(
             reviewProvider = merged.finalReviewProvider
             if (reviewStatus != ReviewStatus.RUNNING) reviewStatus = if (merged.finalReview != null) ReviewStatus.DONE else ReviewStatus.NONE
         }
-        usage = merged.usage
+        otherUsage = merged.usageByDevice - device
+        merged.usageByDevice[device]?.let { usage = it.usage }
+        audioShared = merged.audioShared
+        recordingHeardAt = merged.stampOf(LecturePart.RECORDING).at
+        if (merged.generation != generation) {
+            generation = merged.generation
+            // Another device took the transcription or the review over (at the same moment): left to it
+            if (merged.generation?.device != device) generating?.cancel()
+        }
     }
 
     /** Its audio was received from the device that recorded it. */

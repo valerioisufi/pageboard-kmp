@@ -86,7 +86,13 @@ internal class LectureAttachments(
         when (item) {
             is Item.Record -> true
             // Recorded once: the device without it wants it
-            is Item.Audio -> !library.isActiveHere(directory) && RecordingFile(directory).pcmBytes() == 0L
+            // Shared by the device that recorded it, and wanted here now (see LectureSharingSettings)
+            is Item.Audio -> {
+                val record = files.readRecord(directory) ?: return@withContext false
+                val sharing = files.sharingOf(documentId)
+                record.audioShared && !library.isActiveHere(directory) && RecordingFile(directory).pcmBytes() == 0L &&
+                    (sharing.downloadAudio == AudioDownload.AUTOMATIC || lectureId in sharing.requestedAudio)
+            }
             // The one its lecture names (any, before the lecture arrives)
             is Item.Page -> files.readRecord(directory)?.pages?.any { it.image == item.name && "h${it.imageHash}" == version } ?: true
             else -> true
@@ -191,11 +197,13 @@ internal class LectureAttachments(
     private suspend fun keepRecord(documentId: String, lectureId: String, bytes: ByteArray) {
         val theirs = LectureRecords.decode(bytes)?.takeIf { it.documentId == documentId } ?: return
         val directory = directoryOf(documentId, lectureId)
+        var before: LectureRecord? = null
         val kept = files.records.withLock {
             if (lectureId in files.deletedLectures(documentId)) return
+            before = withContext(Dispatchers.IO) { files.readRecord(directory) }
             val live = library.loadedLecture(directory)
             live?.merge(theirs) ?: withContext(Dispatchers.IO) {
-                val mine = files.readRecord(directory)
+                val mine = before
                 val merged = if (mine == null) theirs.copy(id = lectureId) else LectureRecords.merge(mine, theirs)
                 if (merged != mine && !writeLectureRecord(directory, merged)) return@withContext null
                 merged
@@ -204,7 +212,21 @@ internal class LectureAttachments(
         withContext(Dispatchers.IO) { if (kept.recordedBy != files.deviceId) dropUnnamedPages(directory, kept) }
         updateIndex(documentId) { index -> indexLecture(documentId, lectureId, index) }
         library.onReceived(documentId)
+        // What arrived from another device: a lecture, its review
+        val previous = before
+        val arrival = when {
+            previous == null && kept.recordedBy != files.deviceId -> LectureArrival.Kind.LECTURE
+            previous != null && previous.finalReview == null && kept.finalReview != null -> LectureArrival.Kind.REVIEW
+            else -> null
+        }
+        arrival?.let { library.onArrival(LectureArrival(documentId, directory, it, from = arrivedFrom(kept, it), startedAt = kept.startedAt)) }
     }
+
+    /** The name of the device a lecture, or its review, comes from. */
+    private fun arrivedFrom(record: LectureRecord, kind: LectureArrival.Kind): String = when (kind) {
+        LectureArrival.Kind.REVIEW -> record.stampOf(LecturePart.REVIEW).by.let { by -> record.usageByDevice[by]?.name ?: record.generation?.name }
+        else -> null
+    } ?: record.recordedOn
 
     /** The images of the pages of a lecture recorded elsewhere that it no longer names. */
     private fun dropUnnamedPages(directory: String, record: LectureRecord) {
@@ -237,6 +259,17 @@ internal class LectureAttachments(
         updateIndex(documentId) { index -> indexLecture(documentId, lectureId, index) }
         library.loadedLecture(directory)?.audioReceived()
         library.onReceived(documentId)
+        withContext(Dispatchers.IO) { files.readRecord(directory) }?.let { record ->
+            library.onArrival(LectureArrival(documentId, directory, LectureArrival.Kind.AUDIO, record.recordedOn, record.startedAt))
+        }
+    }
+
+    private val wantedAgainFlow = MutableSharedFlow<String>(extraBufferCapacity = 64)
+    override val wantedAgain: SharedFlow<String> = wantedAgainFlow
+
+    /** The audio of a lecture of [documentId] was asked for: the devices having it are asked for it. */
+    fun audioRequested(documentId: String) {
+        wantedAgainFlow.tryEmit(documentId)
     }
 
     /** The most recent course context is kept. */
@@ -276,7 +309,10 @@ internal class LectureAttachments(
         val deleted = files.records.withLock { withContext(Dispatchers.IO) { files.markDeleted(documentId, theirs) } }
         for (lectureId in deleted.keys) {
             val directory = directoryOf(documentId, lectureId)
-            if (!library.isActiveHere(directory) && SystemFileSystem.exists(Path(directory))) {
+            if (library.isActiveHere(directory)) {
+                // Being recorded here: deleted once over
+                library.loadedLecture(directory)?.let { it.setState { deletedElsewhere = true } }
+            } else if (SystemFileSystem.exists(Path(directory))) {
                 library.onDeleted(documentId, directory)
                 withContext(Dispatchers.IO) { files.deleteFiles(directory) }
             }
@@ -360,7 +396,7 @@ internal class LectureAttachments(
         index[prefix] = LectureRecords.version(record)
         // The audio once recorded (the raw one is being recorded)
         val audio = RecordingFile(directory)
-        if (record.status == LectureStatus.FINISHED && !SystemFileSystem.exists(audio.pcmPath)) {
+        if (record.status == LectureStatus.FINISHED && record.audioShared && !SystemFileSystem.exists(audio.pcmPath)) {
             SystemFileSystem.metadataOrNull(audio.wavPath)?.size?.let { index[Item.Audio(lectureId).key] = audioVersion(it) }
         }
         for (page in record.pages) {
@@ -568,4 +604,12 @@ internal interface LectureAssistantLibrary {
 
     /** The lecture in [directory] was deleted on another device. */
     suspend fun onDeleted(documentId: String, directory: String)
+
+    /** Something arrived from another device (to tell the user). */
+    suspend fun onArrival(arrival: LectureArrival)
+}
+
+/** A lecture, its audio or its review arrived from another device ([from]: its name). */
+data class LectureArrival(val documentId: String, val directory: String, val kind: Kind, val from: String, val startedAt: Long) {
+    enum class Kind { LECTURE, AUDIO, REVIEW }
 }

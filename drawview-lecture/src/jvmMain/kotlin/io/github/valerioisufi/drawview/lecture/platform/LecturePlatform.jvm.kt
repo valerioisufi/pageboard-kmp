@@ -22,3 +22,6 @@ actual fun restrictToOwner(path: String) {
     file.setReadable(true, true)
     file.setWritable(true, true)
 }
+
+// The panel and the banner of the editor tell it
+internal actual fun showNotification(channel: String, title: String, text: String) {}

@@ -1,6 +1,10 @@
 package io.github.valerioisufi.drawview.lecture.platform
 
 import android.Manifest
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
@@ -11,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalContext
+import io.github.valerioisufi.drawview.core.platform.DrawViewAndroid
 import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.CompletableDeferred
 
@@ -56,3 +61,26 @@ actual fun encodeJpeg(bitmap: ImageBitmap, quality: Int): ByteArray? = try {
 } catch (_: Throwable) {
     null
 }
+
+internal actual fun showNotification(channel: String, title: String, text: String) {
+    val context = DrawViewAndroid.context
+    // Without the permission (Android 13+), nothing is shown
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+        context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+    ) return
+    val manager = context.getSystemService(NotificationManager::class.java)
+    manager.createNotificationChannel(NotificationChannel(ARRIVALS_CHANNEL, channel, NotificationManager.IMPORTANCE_DEFAULT))
+    val open = context.packageManager.getLaunchIntentForPackage(context.packageName)?.let {
+        PendingIntent.getActivity(context, 1, it, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+    val notification = Notification.Builder(context, ARRIVALS_CHANNEL)
+        .setSmallIcon(android.R.drawable.stat_notify_sync_noanim)
+        .setContentTitle(title)
+        .setContentText(text)
+        .setAutoCancel(true)
+        .setContentIntent(open)
+        .build()
+    manager.notify((title + text).hashCode(), notification)
+}
+
+private const val ARRIVALS_CHANNEL = "lecture-arrivals"

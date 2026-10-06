@@ -27,6 +27,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import io.github.valerioisufi.drawview.lecture.generated.resources.*
+import io.github.valerioisufi.drawview.lecture.ModelProvider
+import io.github.valerioisufi.drawview.lecture.LectureArrival
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -70,8 +73,72 @@ import org.jetbrains.compose.resources.stringResource
 fun LectureAssistant.editorExtension(): EditorExtension = EditorExtension(
     toolbarActions = { session, _ -> LectureToolbarButton(this@editorExtension, session.documentId) },
     sidePanel = { session, controller -> LecturePanel(this@editorExtension, session.documentId, controller) },
-    canvasOverlay = { _, controller -> PlacementHint(this@editorExtension, controller) }
+    canvasOverlay = { session, controller ->
+        PlacementHint(this@editorExtension, controller)
+        ArrivalsBanner(this@editorExtension, session.documentId)
+    }
 )
+
+/**
+ * What arrived from the other devices for [documentId] (a lecture, its audio, its review), at the
+ * top of the canvas: shown in the panel, or dismissed.
+ */
+@Composable
+private fun BoxScope.ArrivalsBanner(assistant: LectureAssistant, documentId: String) {
+    val arrival = assistant.arrivals.lastOrNull { it.documentId == documentId } ?: return
+    Row(
+        modifier = Modifier
+            .align(Alignment.TopCenter)
+            .padding(top = 16.dp)
+            .background(MaterialTheme.colorScheme.inverseSurface, RoundedCornerShape(50))
+            .padding(start = 16.dp, end = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = stringResource(
+                when (arrival.kind) {
+                    LectureArrival.Kind.LECTURE -> Res.string.lecture_arrival_lecture
+                    LectureArrival.Kind.AUDIO -> Res.string.lecture_arrival_audio
+                    LectureArrival.Kind.REVIEW -> Res.string.lecture_arrival_review
+                },
+                arrival.from
+            ),
+            color = MaterialTheme.colorScheme.inverseOnSurface,
+            style = MaterialTheme.typography.bodyMedium
+        )
+        TextButton(onClick = {
+            assistant.dismissArrival(arrival)
+            assistant.showArrival(arrival)
+        }) {
+            Text(stringResource(Res.string.lecture_arrival_show), color = MaterialTheme.colorScheme.inversePrimary)
+        }
+        TextButton(onClick = { assistant.dismissArrival(arrival) }) {
+            Text(stringResource(Res.string.lecture_action_close), color = MaterialTheme.colorScheme.inverseOnSurface)
+        }
+    }
+}
+
+/**
+ * The dialogs of the lecture assistant shown wherever the application is: the lectures received
+ * without a transcript, to be transcribed and reviewed here (with what it costs).
+ */
+@Composable
+fun LectureDialogs(assistant: LectureAssistant) {
+    val offer = assistant.generationOffers.firstOrNull() ?: return
+    AlertDialog(
+        onDismissRequest = { assistant.declineGeneration(offer) },
+        title = { Text(stringResource(Res.string.lecture_offer_title)) },
+        text = {
+            Text(
+                stringResource(Res.string.lecture_offer_message, offer.arrival.from, formatLectureTime(offer.durationMs)) + "\n\n" +
+                    if (offer.provider == ModelProvider.LOCAL) stringResource(Res.string.lecture_offer_free)
+                    else stringResource(Res.string.lecture_offer_tokens, offer.estimatedTokens)
+            )
+        },
+        confirmButton = { TextButton(onClick = { assistant.acceptGeneration(offer) }) { Text(stringResource(Res.string.lecture_offer_accept)) } },
+        dismissButton = { TextButton(onClick = { assistant.declineGeneration(offer) }) { Text(stringResource(Res.string.lecture_action_cancel)) } }
+    )
+}
 
 /**
  * A [LectureAssistant] kept for the lifetime of the application (also when its window or activity

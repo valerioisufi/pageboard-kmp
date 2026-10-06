@@ -67,6 +67,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.material3.Checkbox
+import kotlinx.coroutines.delay
+import io.github.valerioisufi.drawview.core.util.currentTimeMillis
+import io.github.valerioisufi.drawview.lecture.AudioDownload
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -285,6 +289,7 @@ private fun LectureSelector(assistant: LectureAssistant, documentId: String, lec
                     }
                 )
             }
+            SharingItems(assistant, documentId, lecture)
             // Not while it is recorded on another device
             if (shown != null && !isActive && !shown.activeElsewhere) {
                 HorizontalDivider()
@@ -374,14 +379,25 @@ private fun RecordingSection(
 
             // Being recorded, or transcribed, on another device
             lecture.status != LectureStatus.FINISHED && recorder?.lecture !== lecture && assistant.importing !== lecture -> {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                    Spacer(Modifier.width(12.dp))
+                val now = rememberNow()
+                val silentMinutes = (now - lecture.recordingHeardAt) / 60_000
+                if (lecture.recordingHeardAt > 0 && now - lecture.recordingHeardAt > LectureRecorder.SILENT_ELSEWHERE_MS) {
+                    // No news for long: the device may have stopped (it saves the lecture as finished when back)
                     Text(
-                        text = if (lecture.status == LectureStatus.IMPORTING) stringResource(Res.string.lecture_status_processing_elsewhere)
-                        else stringResource(Res.string.lecture_status_recording_on, lecture.recordedOn, formatLectureTime(lecture.elapsedMs)),
-                        style = MaterialTheme.typography.titleSmall
+                        stringResource(Res.string.lecture_status_silent_elsewhere, lecture.recordedOn, silentMinutes.toInt()),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.error
                     )
+                } else {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            text = if (lecture.status == LectureStatus.IMPORTING) stringResource(Res.string.lecture_status_processing_elsewhere)
+                            else stringResource(Res.string.lecture_status_recording_on, lecture.recordedOn, formatLectureTime(lecture.elapsedMs)),
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                    }
                 }
             }
 
@@ -465,12 +481,7 @@ private fun RecordingSection(
                     text = stringResource(Res.string.lecture_status_finished, formatLectureTime(lecture.elapsedMs)),
                     style = MaterialTheme.typography.titleSmall
                 )
-                if (lecture.recordedElsewhere) {
-                    MutedText(
-                        if (lecture.hasAudio) stringResource(Res.string.lecture_recorded_on, lecture.recordedOn)
-                        else stringResource(Res.string.lecture_audio_arriving, lecture.recordedOn)
-                    )
-                }
+                if (lecture.recordedElsewhere) AudioElsewhere(assistant, lecture)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(onClick = onStart, enabled = canStart, modifier = Modifier.weight(1f)) {
                         Text(stringResource(Res.string.lecture_action_new_recording), maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -493,6 +504,9 @@ private fun RecordingSection(
         }
         if (assistant.microphoneDenied) {
             ProblemBanner(stringResource(Res.string.lecture_microphone_denied))
+        }
+        if (lecture?.deletedElsewhere == true) {
+            ProblemBanner(stringResource(Res.string.lecture_deleted_elsewhere))
         }
         assistant.importError?.let {
             ProblemBanner(stringResource(Res.string.lecture_import_failed, it))
@@ -954,7 +968,11 @@ private fun ReviewTab(
     ) {
         val review = lecture.finalReview
         // Without the transcript, the audio is transcribed first
-        val canRegenerate = lecture.canGenerateReview && (lecture.transcript.isNotEmpty() || lecture.hasAudio)
+        val now = rememberNow()
+        val elsewhere = lecture.generatingElsewhere(now)
+        // Without the transcript, the audio is transcribed first; not while another device writes them
+        val canRegenerate = lecture.canGenerateReview && (lecture.transcript.isNotEmpty() || lecture.hasAudio) && elsewhere == null
+        elsewhere?.let { MutedText(stringResource(Res.string.lecture_generating_elsewhere, it.name)) }
         when {
             lecture.reviewStatus == ReviewStatus.RUNNING || lecture.status == LectureStatus.FINALIZING -> {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -997,7 +1015,16 @@ private fun ReviewTab(
             else -> MutedText(stringResource(Res.string.lecture_review_none, settings.task(LectureTask.FINAL_REVIEW).model))
         }
 
-        UsageSummary(lecture.usage)
+        UsageSummary(lecture.totalUsage)
+        // Who used them, when several devices did
+        if (lecture.otherUsage.isNotEmpty()) {
+            val mine = lecture.usage
+            val lines = (listOf(stringResource(Res.string.lecture_usage_this_device) to mine) + lecture.otherUsage.values.map { it.name to it.usage })
+                .filter { (_, usage) -> usage.requests > 0 || usage.localRequests > 0 }
+            for ((name, usage) in lines) {
+                MutedText(stringResource(Res.string.lecture_usage_device, name, usage.requests + usage.localRequests, compactNumber(usage.promptTokens + usage.outputTokens)))
+            }
+        }
     }
 }
 
@@ -1242,4 +1269,67 @@ internal fun compactNumber(value: Long): String {
         value >= 1_000 -> oneDecimal(value / 1_000.0) + "k"
         else -> value.toString()
     }
+}
+
+/** Now, again every few seconds (for what depends on the time passing). */
+@Composable
+private fun rememberNow(): Long {
+    var now by remember { mutableStateOf(currentTimeMillis()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(15_000)
+            now = currentTimeMillis()
+        }
+    }
+    return now
+}
+
+/**
+ * The audio of a lecture recorded on another device: here, arriving (how much of it), asked for,
+ * or kept there (not shared).
+ */
+@Composable
+private fun AudioElsewhere(assistant: LectureAssistant, lecture: Lecture) {
+    val arriving by assistant.audioArriving.collectAsState()
+    val progress = arriving[lecture.directory]
+    val sharing = assistant.sharingOf(lecture.documentId)
+    when {
+        lecture.hasAudio -> MutedText(stringResource(Res.string.lecture_recorded_on, lecture.recordedOn))
+        !lecture.audioShared -> MutedText(stringResource(Res.string.lecture_audio_not_shared, lecture.recordedOn))
+        progress != null -> {
+            MutedText(stringResource(Res.string.lecture_audio_progress, lecture.recordedOn, (progress * 100).toInt()))
+            LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
+        }
+        sharing.downloadAudio == AudioDownload.ON_REQUEST && lecture.id !in sharing.requestedAudio -> {
+            MutedText(stringResource(Res.string.lecture_recorded_on, lecture.recordedOn))
+            OutlinedButton(onClick = { assistant.requestAudio(lecture) }) { Text(stringResource(Res.string.lecture_audio_download)) }
+        }
+        else -> MutedText(stringResource(Res.string.lecture_audio_arriving, lecture.recordedOn))
+    }
+}
+
+/** How the lectures of the notebook are shared: the audio of this one, of the new ones, of the others' (received at once or on request). */
+@Composable
+private fun SharingItems(assistant: LectureAssistant, documentId: String, lecture: Lecture) {
+    val sharing = assistant.sharingOf(documentId)
+    HorizontalDivider()
+    DropdownMenuItem(
+        text = { Text(stringResource(Res.string.lecture_share_audio_this)) },
+        trailingIcon = { Checkbox(checked = lecture.audioShared, onCheckedChange = null) },
+        onClick = { assistant.shareAudio(lecture, !lecture.audioShared) }
+    )
+    DropdownMenuItem(
+        text = { Text(stringResource(Res.string.lecture_share_audio_new)) },
+        trailingIcon = { Checkbox(checked = sharing.shareAudio, onCheckedChange = null) },
+        onClick = { assistant.changeSharing(documentId) { it.copy(shareAudio = !it.shareAudio) } }
+    )
+    DropdownMenuItem(
+        text = { Text(stringResource(Res.string.lecture_download_audio_automatically)) },
+        trailingIcon = { Checkbox(checked = sharing.downloadAudio == AudioDownload.AUTOMATIC, onCheckedChange = null) },
+        onClick = {
+            assistant.changeSharing(documentId) {
+                it.copy(downloadAudio = if (it.downloadAudio == AudioDownload.AUTOMATIC) AudioDownload.ON_REQUEST else AudioDownload.AUTOMATIC)
+            }
+        }
+    )
 }

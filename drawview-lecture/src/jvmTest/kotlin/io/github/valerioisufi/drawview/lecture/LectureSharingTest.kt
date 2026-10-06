@@ -97,6 +97,11 @@ class LectureSharingTest {
         assertEquals(recorded.id, File(summary.directory).name)
         assertContentEquals(File(recorded.directory, "audio.wav").readBytes(), File(summary.directory, "audio.wav").readBytes())
         assertContentEquals(byteArrayOf(1, 2, 3), File(summary.directory, "pages/p11.jpg").readBytes())
+        // Told: the lecture, its audio; offered to be transcribed and reviewed here, with its cost
+        assertEquals(listOf(LectureArrival.Kind.LECTURE, LectureArrival.Kind.AUDIO), await { computer.arrivals.toList().takeIf { it.size == 2 } }.map { it.kind })
+        val offer = await { computer.generationOffers.firstOrNull() }
+        assertEquals(12L * 32 * 2, offer.estimatedTokens)
+        withContext(stateContext) { computer.declineGeneration(offer) }
 
         // Transcribed and reviewed on the computer, with the pages seen on the tablet
         computer.refresh("doc")
@@ -113,6 +118,12 @@ class LectureSharingTest {
         assertEquals("# Teorema ponte", recorded.finalReview)
         assertEquals(lecture.transcript.toList(), recorded.transcript.toList())
         assertEquals(listOf("Teorema ponte", "All'esame"), recorded.suggestions.map { it.title })
+        assertEquals(LectureArrival.Kind.REVIEW, await { tablet.arrivals.lastOrNull() }.kind)
+        // Each device counts its tokens; none writes the lecture now
+        assertEquals(1, lecture.usage.requests)
+        assertEquals(1, recorded.otherUsage.values.single().usage.requests)
+        assertEquals(1, recorded.totalUsage.requests)
+        assertNull(recorded.generation)
 
         // A note inserted on the tablet, the other one dismissed on the computer
         withContext(stateContext) {
@@ -139,6 +150,75 @@ class LectureSharingTest {
         assertFalse(File(recorded.directory).exists())
         assertNull(withContext(stateContext) { tablet.shownLecture("doc") })
         assertTrue(tablet.library.list("doc").isEmpty())
+    }
+
+    @Test
+    fun theAudioIsSharedAsTheDevicesChoose() = runBlocking<Unit> {
+        val tablet = assistant("tablet", canGenerate = false)
+        val computer = assistant("computer", canGenerate = true)
+        // Not shared: it stays on the tablet
+        withContext(stateContext) { tablet.changeSharing("doc") { it.copy(shareAudio = false) } }
+        val kept = record(tablet, seconds = 3.0)
+        meet(tablet.attachments, computer.attachments)
+        val summary = computer.library.list("doc").single()
+        assertFalse(File(summary.directory, "audio.wav").exists())
+
+        // Shared, received on request only
+        withContext(stateContext) {
+            tablet.changeSharing("doc") { it.copy(shareAudio = true) }
+            computer.changeSharing("doc") { it.copy(downloadAudio = AudioDownload.ON_REQUEST) }
+        }
+        val asked = record(tablet, seconds = 3.0)
+        meet(tablet.attachments, computer.attachments)
+        val directory = computer.library.lectureDirectory("doc", asked.id)
+        assertFalse(File(directory, "audio.wav").exists())
+        val askedSummary = computer.library.list("doc").single { it.directory == directory }
+        withContext(stateContext) { computer.show("doc", askedSummary) }
+        val lecture = await { computer.shownLecture("doc")?.takeIf { it.id == asked.id } }
+        withContext(stateContext) { computer.requestAudio(lecture) }
+        await { computer.sharingOf("doc").requestedAudio.isNotEmpty() && File(computer.library.documentDirectory("doc"), "sharing.json").exists() }
+        meet(tablet.attachments, computer.attachments)
+        assertContentEquals(File(asked.directory, "audio.wav").readBytes(), File(directory, "audio.wav").readBytes())
+        // The first one, shared afterwards from the tablet
+        assertFalse(File(computer.library.lectureDirectory("doc", kept.id), "audio.wav").exists())
+    }
+
+    @Test
+    fun aLectureDeletedElsewhereWhileRecordedIsDeletedOnceOver() = runBlocking<Unit> {
+        val tablet = assistant("tablet", canGenerate = false)
+        val computer = assistant("computer", canGenerate = true)
+        assertTrue(withContext(stateContext) { tablet.start("doc", "Analisi 1", FakeNotebook()) })
+        val recorded = tablet.recorder!!.lecture
+        microphone.speak(3.0, loud = true, random = Random(2))
+        await { File(recorded.directory, "lecture.json").exists() }
+        meet(tablet.attachments, computer.attachments)
+        // Deleted on the computer (not knowing it is being recorded)
+        assertTrue(computer.library.delete(computer.library.lectureDirectory("doc", recorded.id)))
+        meet(tablet.attachments, computer.attachments)
+        assertTrue(recorded.deletedElsewhere)
+        assertTrue(File(recorded.directory).exists(), "kept while recorded")
+        withContext(stateContext) { tablet.recorder!!.stop() }
+        assertTrue(await { !File(recorded.directory).exists() })
+    }
+
+    @Test
+    fun theLecturesOfADocumentDeletedGoWithIt() = runBlocking<Unit> {
+        val tablet = assistant("tablet", canGenerate = false)
+        record(tablet, seconds = 2.0)
+        val folder = File(tablet.library.documentDirectory("doc"))
+        assertTrue(folder.exists())
+        tablet.forgetDocuments(setOf("doc"))
+        assertTrue(await { !folder.exists() })
+    }
+
+    /** Records a lecture of [seconds] on [device] (without the models): the lecture, finished. */
+    private suspend fun record(device: LectureAssistant, seconds: Double): Lecture {
+        assertTrue(withContext(stateContext) { device.start("doc", "Analisi 1", FakeNotebook()) })
+        val lecture = device.recorder!!.lecture
+        microphone.speak(seconds, loud = true, random = Random(seconds.toInt()))
+        withContext(stateContext) { device.recorder!!.stop() }
+        await { lecture.status == LectureStatus.FINISHED && File(lecture.directory, "audio.wav").exists() }
+        return lecture
     }
 
     /**

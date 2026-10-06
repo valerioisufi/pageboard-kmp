@@ -31,6 +31,13 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import io.github.valerioisufi.drawview.lecture.platform.showNotification
+import io.github.valerioisufi.drawview.lecture.generated.resources.*
+import org.jetbrains.compose.resources.getString
+import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
+import androidx.compose.runtime.mutableStateListOf
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
@@ -122,8 +129,21 @@ class LectureAssistant(
     private val editorNotebooks = mutableMapOf<String, NotebookSource>()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
+    private val lectureAttachments: LectureAttachments by lazy { LectureAttachments(sharing, scope) }
+
     /** The lectures of the notebooks as items beside them, for the synchronization with the other devices. */
-    val attachments: DocumentAttachments by lazy { LectureAttachments(sharing, scope) }
+    val attachments: DocumentAttachments get() = lectureAttachments
+
+    private val sharingSettings = mutableStateMapOf<String, LectureSharingSettings>()
+
+    /** What arrived from the other devices and was not looked at yet (see [dismissArrival]). */
+    val arrivals = mutableStateListOf<LectureArrival>()
+
+    /**
+     * The lectures received without a transcript, waiting for the user to have them transcribed and
+     * reviewed here (see [AssistantSettings.receivedLectures]).
+     */
+    val generationOffers = mutableStateListOf<GenerationOffer>()
 
     private val sharing = object : LectureAssistantLibrary {
         override val files get() = library
@@ -149,6 +169,118 @@ class LectureAssistant(
                 shownLectures.remove(documentId)
             }
         }
+
+        override suspend fun onArrival(arrival: LectureArrival) {
+            withContext(stateContext) {
+                arrivals.removeAll { it.directory == arrival.directory && it.kind == arrival.kind }
+                arrivals.add(arrival)
+            }
+            notifyArrival(arrival)
+            if (arrival.kind != LectureArrival.Kind.REVIEW) offerGeneration(arrival)
+        }
+    }
+
+    /** Tells the user (with a notification of the system) what arrived. */
+    private suspend fun notifyArrival(arrival: LectureArrival) {
+        val title = library.list(arrival.documentId).firstOrNull()?.documentTitle.orEmpty()
+        val text = when (arrival.kind) {
+            LectureArrival.Kind.LECTURE -> getString(Res.string.lecture_arrival_lecture, arrival.from)
+            LectureArrival.Kind.AUDIO -> getString(Res.string.lecture_arrival_audio, arrival.from)
+            LectureArrival.Kind.REVIEW -> getString(Res.string.lecture_arrival_review, arrival.from)
+        }
+        showNotification(getString(Res.string.lecture_arrivals_channel), title.ifBlank { getString(Res.string.lecture_title) }, text)
+    }
+
+    /** How this device shares the lectures of [documentId] (loaded by [refresh]). */
+    fun sharingOf(documentId: String): LectureSharingSettings = sharingSettings[documentId] ?: LectureSharingSettings()
+
+    /** Changes how this device shares the lectures of [documentId] by [transform]. */
+    fun changeSharing(documentId: String, transform: (LectureSharingSettings) -> LectureSharingSettings) {
+        val settings = transform(sharingOf(documentId))
+        sharingSettings[documentId] = settings
+        scope.launch {
+            library.saveSharing(documentId, settings)
+            // Maybe wanted now (e.g. received at once from now on)
+            lectureAttachments.audioRequested(documentId)
+        }
+    }
+
+    /** Whether the audio of [lecture] goes to the other devices (any device decides it, the most recent decision wins). */
+    fun shareAudio(lecture: Lecture, shared: Boolean) {
+        lecture.audioShared = shared
+        lecture.scope.launch { lecture.persist() }
+    }
+
+    /** Receives the audio of [lecture] (recorded on another device) now, even if received only on request. */
+    fun requestAudio(lecture: Lecture) {
+        changeSharing(lecture.documentId) { it.copy(requestedAudio = it.requestedAudio + lecture.id) }
+    }
+
+    /** How much of the audio of [lecture] arrived (0..1), while it arrives. */
+    fun audioProgress(lecture: Lecture): Float? = lectureAttachments.audioProgress.value[lecture.directory]
+
+    /** The audio arriving, by lecture folder (to follow its progress). */
+    val audioArriving get() = lectureAttachments.audioProgress
+
+    fun dismissArrival(arrival: LectureArrival) {
+        arrivals.remove(arrival)
+    }
+
+    /** Shows the lecture of [arrival] in the panel. */
+    fun showArrival(arrival: LectureArrival) {
+        isPanelOpen = true
+        scope.launch {
+            val summary = library.list(arrival.documentId).firstOrNull { it.directory == arrival.directory } ?: return@launch
+            withContext(stateContext) {
+                if (shownLectures[arrival.documentId]?.directory != summary.directory) shownLectures.remove(arrival.documentId)
+                show(arrival.documentId, summary)
+            }
+        }
+    }
+
+    /**
+     * A lecture received from another device (with its audio, without a transcript): transcribed
+     * and reviewed here at once, or offered to the user with what it would cost (see
+     * [AssistantSettings.receivedLectures]).
+     */
+    private suspend fun offerGeneration(arrival: LectureArrival) {
+        if (!canGenerate) return
+        val choice = settingsStore.settings.receivedLectures
+        if (choice == ReceivedLectures.NEVER) return
+        val record = withContext(Dispatchers.Default) { library.readRecord(arrival.directory) } ?: return
+        val audioHere = RecordingFile(arrival.directory).pcmBytes() > 0
+        if (record.status != LectureStatus.FINISHED || record.transcript.isNotEmpty() || record.finalReview != null || !audioHere) return
+        if (record.generation?.takeIf { it.device != library.deviceId }?.holds(currentTimeMillis()) == true) return
+        val offer = GenerationOffer(arrival, record.durationMs, settingsStore.settings.reviewProvider)
+        if (choice == ReceivedLectures.ALWAYS) {
+            generateReceived(offer)
+        } else {
+            withContext(stateContext) {
+                if (generationOffers.none { it.arrival.directory == arrival.directory }) generationOffers.add(offer)
+            }
+        }
+    }
+
+    /** Transcribes and reviews the lecture of [offer] here (the user accepted it, or always does). */
+    fun acceptGeneration(offer: GenerationOffer) {
+        generationOffers.remove(offer)
+        scope.launch { generateReceived(offer) }
+    }
+
+    fun declineGeneration(offer: GenerationOffer) {
+        generationOffers.remove(offer)
+    }
+
+    private suspend fun generateReceived(offer: GenerationOffer) {
+        val documentId = offer.arrival.documentId
+        val summary = library.list(documentId).firstOrNull { it.directory == offer.arrival.directory } ?: return
+        val lecture = withContext(stateContext) {
+            shownLectures[documentId]?.takeIf { it.directory == summary.directory }
+        } ?: library.records.withLock {
+            val record = library.load(summary.directory) ?: return
+            newLecture(documentId, summary.directory, record).also { lecture -> withContext(stateContext) { shownLectures[documentId] = lecture } }
+        }
+        withContext(stateContext) { generate(lecture, offer.provider) }
     }
 
     init {
@@ -261,7 +393,9 @@ class LectureAssistant(
     private suspend fun refreshNow(documentId: String) {
         val lectures = library.list(documentId)
         val context = library.loadContext(documentId)
+        val sharing = library.sharingOf(documentId)
         withContext(stateContext) {
+            sharingSettings[documentId] = sharing
             if (context != null && contexts[documentId] == null) contexts[documentId] = context
             lectureLists[documentId] = lectures
             if (shownLectures[documentId] == null) lectures.firstOrNull()?.let { show(documentId, it) }
@@ -336,11 +470,14 @@ class LectureAssistant(
         val capture = captureFactory() ?: return false
         val startedAt = currentTimeMillis()
         val lecture = newLecture(documentId, library.newLectureDirectory(documentId, startedAt), record = null, startedAt = startedAt)
-            .apply { documentTitle = title }
+            .apply {
+                documentTitle = title
+                audioShared = sharingOf(documentId).shareAudio
+            }
         val settings = settingsStore.settings
         val transcriber = if (!canGenerate || settings.sendsAudio) null else transcriberFactory(settings)
         val newRecorder = LectureRecorder(
-            lecture, settingsStore, capture, notebook, transcriber, analyzes = canGenerate, onFinished = { refresh(documentId) }
+            lecture, settingsStore, capture, notebook, transcriber, analyzes = canGenerate, onFinished = { finished(it.lecture) }
         )
         return try {
             newRecorder.start()
@@ -355,6 +492,32 @@ class LectureAssistant(
         } catch (e: Throwable) {
             startError = e.message ?: e::class.simpleName
             false
+        }
+    }
+
+    /** The recording of [lecture] is over: deleted if another device deleted it meanwhile. */
+    private fun finished(lecture: Lecture) {
+        scope.launch {
+            val deleted = lecture.id in library.deletedLectures(lecture.documentId)
+            if (deleted) {
+                withContext(stateContext) {
+                    if (shownLectures[lecture.documentId] === lecture) shownLectures.remove(lecture.documentId)
+                }
+                library.deleteFiles(lecture.directory)
+            }
+            refreshNow(lecture.documentId)
+        }
+    }
+
+    /**
+     * The documents [documentIds] were deleted: their lectures go too (not the one being recorded,
+     * deleted once over).
+     */
+    fun forgetDocuments(documentIds: Set<String>) {
+        if (documentIds.isEmpty()) return
+        val active = activeRecorder?.lecture?.documentId
+        scope.launch {
+            for (documentId in documentIds - setOfNotNull(active)) library.deleteFiles(library.documentDirectory(documentId))
         }
     }
 
@@ -423,24 +586,56 @@ class LectureAssistant(
      */
     fun generate(lecture: Lecture, provider: ModelProvider): Boolean {
         if (!canGenerate || !lecture.canGenerateReview) return false
-        if (lecture.transcript.isNotEmpty() || !lecture.hasAudio) {
-            lecture.generateFinalReview(provider)
-            return true
+        // Written by another device now: left to it
+        if (lecture.generatingElsewhere(currentTimeMillis()) != null) return false
+        val transcribes = lecture.transcript.isEmpty() && lecture.hasAudio
+        if (transcribes) {
+            if (isBusy) return false
+            importing = lecture
+            importError = null
         }
-        if (isBusy) return false
-        importing = lecture
-        importError = null
-        scope.launch {
-            try {
-                val settings = settingsStore.settings
-                val transcriber = if (settings.sendsAudio) null else transcriberFactory(settings)
-                LectureImporter(lecture, settingsStore, transcriber).transcribeAndReview(provider)
-            } finally {
-                withContext(NonCancellable + stateContext) { importing = null }
+        lecture.generating = scope.launch {
+            // The other devices leave it to this one (see GenerationLock)
+            holdingGeneration(lecture) {
+                if (transcribes) {
+                    val settings = settingsStore.settings
+                    val transcriber = if (settings.sendsAudio) null else transcriberFactory(settings)
+                    LectureImporter(lecture, settingsStore, transcriber).transcribeAndReview(provider)
+                } else {
+                    lecture.runFinalReview(provider)
+                    lecture.persist()
+                }
+            }
+        }.also { job ->
+            job.invokeOnCompletion {
+                if (transcribes) scope.launch { withContext(stateContext) { importing = null } }
                 refresh(lecture.documentId)
             }
         }
         return true
+    }
+
+    /** Runs [block] holding the generation of [lecture] (refreshed meanwhile, released at the end). */
+    private suspend fun holdingGeneration(lecture: Lecture, block: suspend () -> Unit) = coroutineScope {
+        val now = currentTimeMillis()
+        lecture.setState { generation = GenerationLock(library.deviceId, library.deviceName, now, now) }
+        lecture.persist()
+        val refresher = launch {
+            while (true) {
+                delay(GenerationLock.REFRESH_MS)
+                lecture.setState { generation = generation?.takeIf { it.device == library.deviceId }?.copy(refreshedAt = currentTimeMillis()) }
+                lecture.persist()
+            }
+        }
+        try {
+            block()
+        } finally {
+            refresher.cancel()
+            withContext(NonCancellable) {
+                lecture.setState { if (generation?.device == library.deviceId) generation = null }
+                lecture.persist()
+            }
+        }
     }
 
     /** The audio of [lecture] saved in [target]: as m4a where the platform encodes it, otherwise as WAV. */
@@ -516,3 +711,19 @@ object LectureRecordings {
 
 /** An audio exported: the name of the file, and why it failed, if it did. */
 class ExportResult(val fileName: String, val failure: String?)
+
+/**
+ * A lecture received from another device ([arrival]), [durationMs] long, without a transcript:
+ * offered to be transcribed and reviewed here by [provider] (see [LectureAssistant.generationOffers]).
+ */
+class GenerationOffer(val arrival: LectureArrival, val durationMs: Long, val provider: ModelProvider) {
+    /**
+     * The tokens of the requests to Gemini, about (the audio counts 32 tokens a second, read twice:
+     * transcribed, then reviewed), `0` for the local models.
+     */
+    val estimatedTokens: Long get() = if (provider == ModelProvider.LOCAL) 0 else durationMs / 1000 * AUDIO_TOKENS_PER_SECOND * 2
+
+    private companion object {
+        const val AUDIO_TOKENS_PER_SECOND = 32L
+    }
+}

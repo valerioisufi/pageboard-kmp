@@ -31,3 +31,10 @@ expect fun encodeJpeg(bitmap: ImageBitmap, quality: Int = 82): ByteArray?
  * resources directory of the DrawView data.
  */
 fun lectureDataDirectory(): String = dataDirectory() + "/lectures"
+
+/**
+ * Tells the user something that arrived (a lecture from another device...) with a notification
+ * of the system ([channel]: the kind of notifications, where the system names them): Android and
+ * iOS; on the desktop the panel tells it.
+ */
+internal expect fun showNotification(channel: String, title: String, text: String)

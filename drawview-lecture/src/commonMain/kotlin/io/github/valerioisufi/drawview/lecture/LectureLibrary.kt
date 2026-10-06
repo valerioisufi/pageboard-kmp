@@ -11,6 +11,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlin.random.Random
@@ -169,6 +170,19 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
         false
     }
 
+    /** How this device shares the lectures of [documentId] (see [LectureSharingSettings]). */
+    fun sharingOf(documentId: String): LectureSharingSettings =
+        PlatformFiles.readBytes("${documentDirectory(documentId)}/sharing.json")?.let {
+            try {
+                Lecture.recordJson.decodeFromString(LectureSharingSettings.serializer(), it.decodeToString())
+            } catch (_: Exception) {
+                null
+            }
+        } ?: LectureSharingSettings()
+
+    fun saveSharing(documentId: String, settings: LectureSharingSettings): Boolean =
+        writeAtomically("${documentDirectory(documentId)}/sharing.json", Lecture.recordJson.encodeToString(LectureSharingSettings.serializer(), settings).encodeToByteArray())
+
     /** The lectures of [documentId] deleted (here or on another device), with when. */
     internal fun deletedLectures(documentId: String): Map<String, Long> {
         val bytes = PlatformFiles.readBytes("${documentDirectory(documentId)}/deleted.json") ?: return emptyMap()
@@ -218,6 +232,23 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
         val deletedSerializer = MapSerializer(String.serializer(), Long.serializer())
     }
 }
+
+/**
+ * How this device shares the lectures of a notebook with the devices working on it (kept here, not
+ * shared): whether the audio of its new lectures goes to them ([shareAudio]), whether it receives
+ * the audio of theirs at once or only when asked for ([downloadAudio]), and the lectures whose
+ * audio was asked for ([requestedAudio]).
+ */
+@Serializable
+data class LectureSharingSettings(
+    val shareAudio: Boolean = true,
+    val downloadAudio: AudioDownload = AudioDownload.AUTOMATIC,
+    val requestedAudio: Set<String> = emptySet()
+)
+
+/** When the audio of the lectures recorded on other devices is received. */
+@Serializable
+enum class AudioDownload { AUTOMATIC, ON_REQUEST }
 
 /** Something of the lectures of [documentId] changed here: the lecture [lectureId], or what they share (`null`). */
 internal data class LibraryChange(val documentId: String, val lectureId: String?)

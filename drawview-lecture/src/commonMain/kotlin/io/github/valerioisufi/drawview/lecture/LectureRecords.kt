@@ -26,6 +26,13 @@ internal object LectureRecords {
             if (their > my || (their == my && newerOnTie(part.of(theirs), part.of(mine)))) merged = part.copy(merged, theirs)
             maxOf(my, their).takeIf { it != Stamp.NONE }?.let { stamps[part] = it }
         }
+        // Each device counts its own tokens: the most recent count of each one
+        val devices = mine.usageByDevice.keys + theirs.usageByDevice.keys
+        merged = merged.copy(usageByDevice = devices.associateWith { device ->
+            val my = mine.usageByDevice[device]
+            val their = theirs.usageByDevice[device]
+            if (my == null || (their != null && their.stamp > my.stamp)) their!! else my
+        })
         val theirSuggestions = theirs.suggestions.associateBy { it.id }
         val myIds = mine.suggestions.mapTo(mutableSetOf()) { it.id }
         val suggestions = mine.suggestions.map { suggestion -> theirSuggestions[suggestion.id]?.let { newer(suggestion, it) } ?: suggestion } +
@@ -43,7 +50,12 @@ internal object LectureRecords {
         for (part in LecturePart.entries) {
             if (part.of(record) != part.of(base)) stamps[part] = record.stampOf(part).next(device, now)
         }
-        return record.copy(stamps = stamps)
+        // The tokens of this device
+        val usage = record.usageByDevice[device]?.let { mine ->
+            val previous = base.usageByDevice[device]
+            if (previous != null && previous.usage == mine.usage && previous.name == mine.name) previous else mine.copy(stamp = (previous?.stamp ?: mine.stamp).next(device, now))
+        }
+        return record.copy(stamps = stamps, usageByDevice = if (usage == null) record.usageByDevice else record.usageByDevice + (device to usage))
     }
 
     /** What tells [record] apart: the same on two devices with the same lecture (the order of the suggestions aside). */
@@ -56,7 +68,9 @@ internal object LectureRecords {
     private fun canonical(record: LectureRecord): String {
         val canonical = record.copy(
             suggestions = record.suggestions.sortedBy { it.id },
-            usage = record.usage.copy(promptByModality = record.usage.promptByModality.entries.sortedBy { it.key }.associate { it.toPair() }),
+            usageByDevice = record.usageByDevice.entries.sortedBy { it.key }.associate { (device, usage) ->
+                device to usage.copy(usage = usage.usage.copy(promptByModality = usage.usage.promptByModality.entries.sortedBy { it.key }.associate { it.toPair() }))
+            },
             stamps = record.stamps.entries.sortedBy { it.key }.associate { it.toPair() }
         )
         return json.encodeToString(LectureRecord.serializer(), canonical)
@@ -83,7 +97,8 @@ internal object LectureRecords {
         LecturePart.OUTLINE -> record.outline to record.currentTopic
         LecturePart.TRANSCRIPT -> record.transcript
         LecturePart.REVIEW -> Triple(record.finalReview, record.finalReviewBy, record.finalReviewProvider)
-        LecturePart.USAGE -> record.usage
+        LecturePart.SHARING -> record.audioShared
+        LecturePart.GENERATION -> record.generation
     }
 
     /** [target] with this part of [from]. */
@@ -92,7 +107,8 @@ internal object LectureRecords {
         LecturePart.OUTLINE -> target.copy(outline = from.outline, currentTopic = from.currentTopic)
         LecturePart.TRANSCRIPT -> target.copy(transcript = from.transcript)
         LecturePart.REVIEW -> target.copy(finalReview = from.finalReview, finalReviewBy = from.finalReviewBy, finalReviewProvider = from.finalReviewProvider)
-        LecturePart.USAGE -> target.copy(usage = from.usage)
+        LecturePart.SHARING -> target.copy(audioShared = from.audioShared)
+        LecturePart.GENERATION -> target.copy(generation = from.generation)
     }
 
     private val json = Json {

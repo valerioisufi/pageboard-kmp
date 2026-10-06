@@ -6,13 +6,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.github.valerioisufi.drawview.data.DrawViewStore
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
 import io.github.valerioisufi.drawview.explorer.ui.AboutLicensesButton
+import io.github.valerioisufi.drawview.lecture.ui.LectureDialogs
 import io.github.valerioisufi.drawview.lecture.ui.LectureRecordingIndicator
 import io.github.valerioisufi.drawview.lecture.ui.editorExtension
 import io.github.valerioisufi.drawview.lecture.ui.rememberLectureAssistant
@@ -51,8 +54,18 @@ fun PencilNotesApp() {
         val editorExtension = remember(lectureAssistant, collaboration) {
             lectureAssistant.editorExtension() + collaboration.editorExtension()
         }
+        // The lectures of the documents deleted go with them
+        LaunchedEffect(lectureAssistant) {
+            var known: Set<String>? = null
+            DrawViewStore.default.documents.collect { documents ->
+                val ids = documents.mapTo(mutableSetOf()) { it.id }
+                known?.let { lectureAssistant.forgetDocuments(it - ids) }
+                known = ids
+            }
+        }
         CompositionLocalProvider(LocalAboutAppInfo provides aboutAppInfo) {
             CollaborationDialogs(collaboration)
+            LectureDialogs(lectureAssistant)
             DocumentLibrary(
                 title = {
                     Text(

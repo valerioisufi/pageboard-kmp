@@ -141,6 +141,7 @@ class LectureRecorder internal constructor(
             var totalSamples = 0L
             var heardSomething = false
             var lastStateUpdate = 0L
+            var lastSaved = 0L
             for (block in audioBlocks) {
                 lecture.recording.append(block)
                 totalSamples += block.size
@@ -166,6 +167,11 @@ class LectureRecorder internal constructor(
                         level = blockLevel
                         noAudioWarning = !heardSomething && recordedMs > SILENCE_WARNING_MS
                     }
+                }
+                // Now and then: the other devices know it is still being recorded
+                if (recordedMs - lastSaved >= HEARTBEAT_MS) {
+                    lastSaved = recordedMs
+                    lecture.scope.launch { lecture.persist() }
                 }
             }
             // Stopped: the last words
@@ -594,6 +600,12 @@ class LectureRecorder internal constructor(
 
         /** How often the notebook of a recording not analyzed is captured, and its visible pages as images. */
         const val NOTEBOOK_CAPTURE_MS = 30_000L
+
+        /** How often the lecture being recorded is saved (and sent to the other devices) at least. */
+        const val HEARTBEAT_MS = 30_000L
+
+        /** Without news of a lecture being recorded on another device for so long, it may have stopped. */
+        const val SILENT_ELSEWHERE_MS = 2 * 60_000L
         const val IMAGE_PAGES = 2
 
         /** Pages described around the visible ones (their text costs little). */
