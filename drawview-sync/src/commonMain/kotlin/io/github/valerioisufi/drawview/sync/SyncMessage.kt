@@ -90,6 +90,30 @@ internal data class PresenceMessage(
     val selectionKept: Boolean = false
 ) : SyncMessage
 
+/**
+ * The items beside the document this device has ([io.github.valerioisufi.drawview.core.attachment.DocumentAttachments]),
+ * with their versions: all of them once the operations are exchanged, then each one as it changes.
+ */
+@Serializable
+@SerialName("attachments")
+internal data class AttachmentVersions(val versions: Map<String, String>) : SyncMessage
+
+/** Asks for the items [keys] beside the document. */
+@Serializable
+@SerialName("attachmentRequest")
+internal data class AttachmentRequest(val keys: List<String>) : SyncMessage
+
+/** A part of the item [key] beside the document at [version] ([size] bytes): its bytes from [offset]. */
+@Serializable
+@SerialName("attachmentPart")
+internal class AttachmentPart(
+    val key: String,
+    val version: String,
+    val offset: Long,
+    val size: Long,
+    val bytes: ByteArray
+) : SyncMessage
+
 /** A connection with nothing to send says it is still there (see [SyncEngine]). */
 @Serializable
 @SerialName("ping")

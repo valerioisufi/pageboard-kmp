@@ -105,6 +105,14 @@ The origin of a change decides what the observers do:
 * Operations are identified by (replica, sequence number): the duplicates are dropped, an
   operation arriving before the ones it follows waits for them.
 * The files of the resources are asked for by identifier and sent in chunks of 256 KiB.
+* The data the extensions keep beside a document (`DocumentAttachments`, e.g. the lectures)
+  travel as items with a key and a version: after the missed operations, and at every change,
+  each side sends the versions of its items (`AttachmentVersions`); the other one asks for those
+  of another version it wants (`AttachmentRequest`), sent in chunks of 256 KiB (`AttachmentPart`,
+  at most 4 chunks ahead, so that the operations are not held up). The module of the items
+  decides what to keep of what it receives (merged with its own, the most recent...): when it
+  differs from what was received, its version changes and the item goes back, until the versions
+  are the same; the devices in between relay the items as the operations.
 * A connection with nothing to send sends a `Ping` every 4 s; one silent for 12 s is lost (a
   device gone without closing it: out of the network, asleep, suspended) and closed, so that it
   is made again.
@@ -126,7 +134,8 @@ The origin of a change decides what the observers do:
 ### Modules
 
 ```
-drawview-core      DocumentChange, DocumentSession, HybridClock, Operation, DocumentSnapshot
+drawview-core      DocumentChange, DocumentSession, HybridClock, Operation, DocumentSnapshot,
+                   DocumentAttachments
 drawview-data      persistent identifiers, operations log on Room, OpenDocuments
 drawview-sync      SyncEngine, protocol, encryption, presence, InMemoryTransport
 drawview-sync-lan  LanTransport (TCP), LanDiscovery (JmDNS / NsdManager / Bonjour), LanSync

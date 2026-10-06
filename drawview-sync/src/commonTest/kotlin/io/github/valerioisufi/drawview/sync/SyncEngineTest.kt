@@ -1,6 +1,8 @@
 package io.github.valerioisufi.drawview.sync
 
-import androidx.compose.ui.graphics.Color
+import io.github.valerioisufi.drawview.core.attachment.AttachmentChange
+import io.github.valerioisufi.drawview.core.attachment.AttachmentReceiver
+import io.github.valerioisufi.drawview.core.attachment.DocumentAttachments
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.AddPage
 import io.github.valerioisufi.drawview.core.change.AddResource
@@ -44,11 +46,13 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
+import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -128,7 +132,8 @@ class SyncEngineTest {
         val documents = OpenDocuments(store, StandardTestDispatcher(test.testScheduler), scope)
         val shared = StoreSharedDocuments(store)
         val files = MemoryFiles()
-        val engine = SyncEngine(documents, shared, scope, name, files, keepAliveMs) { store.folders.first().firstOrNull()?.id }
+        val attachments = MemoryAttachments()
+        val engine = SyncEngine(documents, shared, scope, name, files, keepAliveMs, attachments) { store.folders.first().firstOrNull()?.id }
         val transport = network.transport(name)
         private val connections = mutableListOf<Job>()
 
@@ -161,6 +166,60 @@ class SyncEngineTest {
         suspend fun versionVector(documentId: String): Map<String, Long> {
             val open = assertNotNull(documents.open(documentId))
             return open.edit { it.versionVector }.also { documents.close(open) }
+        }
+    }
+
+    /**
+     * Items beside the documents, in memory: the ones under `blob/` are kept as received (when
+     * missing), the others are sets of lines, merged (their version: their content).
+     */
+    private class MemoryAttachments : DocumentAttachments {
+        val items = mutableMapOf<Pair<String, String>, ByteArray>()
+        override val changes = MutableSharedFlow<AttachmentChange>(extraBufferCapacity = 64)
+
+        fun text(documentId: String, key: String): String? = items[documentId to key]?.decodeToString()
+
+        /** Changes the item [key] here (e.g. a lecture written). */
+        fun put(documentId: String, key: String, lines: Set<String>) {
+            val content = lines.sorted().joinToString("\n")
+            items[documentId to key] = content.encodeToByteArray()
+            changes.tryEmit(AttachmentChange(documentId, key, content))
+        }
+
+        private fun versionOf(bytes: ByteArray, key: String) = if (key.startsWith("blob/")) "size ${bytes.size}" else bytes.decodeToString()
+
+        override suspend fun versions(documentId: String) =
+            items.filterKeys { it.first == documentId }.map { (id, bytes) -> id.second to versionOf(bytes, id.second) }.toMap()
+
+        override suspend fun version(documentId: String, key: String) = items[documentId to key]?.let { versionOf(it, key) }
+
+        override suspend fun wants(documentId: String, key: String, version: String) =
+            !key.startsWith("blob/") || (documentId to key) !in items
+
+        override suspend fun size(documentId: String, key: String) = items[documentId to key]?.size?.toLong()
+
+        override suspend fun read(documentId: String, key: String, offset: Long, length: Int) =
+            items[documentId to key]?.let { it.copyOfRange(offset.toInt(), minOf(it.size, offset.toInt() + length)) }
+
+        override suspend fun receive(documentId: String, key: String, version: String, size: Long) = object : AttachmentReceiver {
+            val received = mutableListOf<ByteArray>()
+            override suspend fun write(bytes: ByteArray) {
+                received.add(bytes)
+            }
+
+            override suspend fun complete() {
+                val bytes = received.fold(ByteArray(0)) { all, part -> all + part }
+                if (key.startsWith("blob/")) {
+                    items[documentId to key] = bytes
+                    changes.emit(AttachmentChange(documentId, key, versionOf(bytes, key)))
+                    return
+                }
+                val mine = text(documentId, key)?.lines().orEmpty().filter { it.isNotEmpty() }.toSet()
+                val merged = mine + bytes.decodeToString().lines().filter { it.isNotEmpty() }
+                if (merged != mine) put(documentId, key, merged)
+            }
+
+            override suspend fun cancel() {}
         }
     }
 
@@ -340,6 +399,37 @@ class SyncEngineTest {
         advanceUntilIdle()
         assertTrue(ada.engine.peers.value.isEmpty(), "its connection closed")
         assertTrue(ada.engine.otherVersionMet.value)
+    }
+
+    @Test
+    fun theItemsBesideADocumentTravelAndAreMerged() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Notes")
+        val invitation = ada.engine.share(document.id, "Notes")
+        // Made apart: merged both ways when the devices meet
+        ada.attachments.put(document.id, "lecture/1", setOf("outline"))
+        bob.attachments.put(document.id, "lecture/1", setOf("review"))
+        bob.attachments.put(document.id, "lecture/2", setOf("suggestion"))
+        val audio = Random(3).nextBytes(700_000)
+        ada.attachments.items[document.id to "blob/audio"] = audio
+        bob.join(invitation, "ada")
+        advanceUntilIdle()
+        for (device in listOf(ada, bob)) {
+            assertEquals("outline\nreview", device.attachments.text(document.id, "lecture/1"), device.name)
+            assertEquals("suggestion", device.attachments.text(document.id, "lecture/2"), device.name)
+        }
+        // A large one in parts
+        assertContentEquals(audio, bob.attachments.items[document.id to "blob/audio"])
+
+        // Through Bob to Cy, then as they change
+        cy.join(invitation, "bob")
+        advanceUntilIdle()
+        assertEquals("outline\nreview", cy.attachments.text(document.id, "lecture/1"))
+        assertContentEquals(audio, cy.attachments.items[document.id to "blob/audio"])
+        ada.attachments.put(document.id, "lecture/1", setOf("outline", "review", "note inserted"))
+        advanceUntilIdle()
+        assertEquals("note inserted\noutline\nreview", cy.attachments.text(document.id, "lecture/1"))
     }
 
     @Test

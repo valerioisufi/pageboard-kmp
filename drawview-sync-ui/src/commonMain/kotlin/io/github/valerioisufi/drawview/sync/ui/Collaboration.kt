@@ -6,6 +6,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.valerioisufi.drawview.core.attachment.DocumentAttachments
 import io.github.valerioisufi.drawview.data.DocumentStore
 import io.github.valerioisufi.drawview.data.DrawViewStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
@@ -37,6 +38,9 @@ import org.jetbrains.compose.resources.stringResource
  * on every device as long as the devices are on the same network; the documents received go to
  * the folder [sharedFolderName] of the library.
  *
+ * The data the extensions keep beside the documents ([attachments], e.g. the lectures) travel
+ * with them.
+ *
  * The devices are looked for only once allowed to use the local network ([requestAccess]: the
  * permission of Android 17; asked when a document is shared or joined, or at the start when some
  * are shared already).
@@ -47,7 +51,8 @@ class Collaboration(
     private val discovery: LanDiscovery,
     private val deviceName: String,
     private val sharedFolderName: String,
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
+    attachments: DocumentAttachments? = null
 ) {
     private val shared = StoreSharedDocuments(store)
     private val mutex = Mutex()
@@ -57,7 +62,7 @@ class Collaboration(
     /** Asks for the permission to use the local network (set by [rememberCollaboration]). */
     internal var requestAccess: suspend () -> Boolean = { true }
 
-    val engine = SyncEngine(documents, shared, scope, deviceName, receivedFolder = ::sharedFolder)
+    val engine = SyncEngine(documents, shared, scope, deviceName, attachments = attachments, receivedFolder = ::sharedFolder)
 
     /** The devices connected, with the document each one works on. */
     val peers: StateFlow<List<Peer>> get() = engine.peers
@@ -142,10 +147,11 @@ class Collaboration(
 @Composable
 fun rememberCollaboration(
     store: DocumentStore = DrawViewStore.default,
-    documents: OpenDocuments = DrawViewStore.documents
+    documents: OpenDocuments = DrawViewStore.documents,
+    attachments: DocumentAttachments? = null
 ): Collaboration {
     val folderName = stringResource(Res.string.sync_shared_folder)
-    val holder = viewModel { CollaborationHolder(store, documents, folderName) }
+    val holder = viewModel { CollaborationHolder(store, documents, folderName, attachments) }
     val requestAccess = rememberLocalNetworkAccess()
     val collaboration = holder.collaboration
     collaboration.requestAccess = requestAccess
@@ -162,9 +168,14 @@ fun rememberCollaboration(
 }
 
 /** Keeps the collaboration across the configuration changes of Android. */
-private class CollaborationHolder(store: DocumentStore, documents: OpenDocuments, folderName: String) : ViewModel() {
+private class CollaborationHolder(
+    store: DocumentStore,
+    documents: OpenDocuments,
+    folderName: String,
+    attachments: DocumentAttachments?
+) : ViewModel() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    val collaboration = Collaboration(store, documents, createLanDiscovery(), localDeviceName(), folderName, scope)
+    val collaboration = Collaboration(store, documents, createLanDiscovery(), localDeviceName(), folderName, scope, attachments)
 
     override fun onCleared() {
         scope.launch { collaboration.stop() }.invokeOnCompletion { scope.cancel() }

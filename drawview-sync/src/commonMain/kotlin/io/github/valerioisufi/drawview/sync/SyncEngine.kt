@@ -1,5 +1,8 @@
 package io.github.valerioisufi.drawview.sync
 
+import io.github.valerioisufi.drawview.core.attachment.AttachmentChange
+import io.github.valerioisufi.drawview.core.attachment.AttachmentReceiver
+import io.github.valerioisufi.drawview.core.attachment.DocumentAttachments
 import io.github.valerioisufi.drawview.core.change.ChangeObserver
 import io.github.valerioisufi.drawview.core.change.ChangeOrigin
 import io.github.valerioisufi.drawview.core.change.DocumentSession
@@ -10,6 +13,7 @@ import io.github.valerioisufi.drawview.core.change.snapshot
 import io.github.valerioisufi.drawview.core.util.currentTimeMillis
 import io.github.valerioisufi.drawview.data.OpenDocument
 import io.github.valerioisufi.drawview.data.OpenDocuments
+import kotlin.math.min
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
@@ -21,10 +25,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlin.math.min
 
 /** A device working on the document [documentId] with this one. */
 data class Peer(val documentId: String, val replica: String, val name: String)
@@ -34,6 +38,9 @@ data class Peer(val documentId: String, val replica: String, val name: String)
  * of working on a document with others): over every connection ([accept], [join]) the two
  * devices send each other the operations the other misses, then the operations as they are made
  * (the ones of the other devices too: a device relays them), and the files of the resources.
+ *
+ * The data the extensions of the editor keep beside the documents ([attachments], e.g. the
+ * lectures) travel too, in items whose versions the devices compare.
  *
  * The documents are changed through their [OpenDocuments] session, open in an editor or not;
  * the connections come from any [SyncTransport] and are encrypted with the key of their document
@@ -52,6 +59,7 @@ class SyncEngine(
     private val deviceName: String,
     private val files: ResourceFiles = PlatformResourceFiles,
     private val keepAliveMs: Long = 4_000,
+    private val attachments: DocumentAttachments? = null,
     private val receivedFolder: suspend () -> String? = { null }
 ) {
     private val mutex = Mutex()
@@ -69,6 +77,11 @@ class SyncEngine(
      * it sends cannot be read, so its connections are closed (the devices need the same version).
      */
     val otherVersionMet: StateFlow<Boolean> = otherVersion.asStateFlow()
+
+    init {
+        // The items beside the documents changed here: to the devices on their document
+        attachments?.let { scope.launch { it.changes.collect(::onAttachmentChanged) } }
+    }
 
     /** The last presence of every device on every document, and the connection it came from. */
     private val lastPresences = mutableMapOf<Pair<String, String>, Pair<Presence, Link>>()
@@ -275,6 +288,13 @@ class SyncEngine(
         // On the receiving coroutine:
         val requested = mutableSetOf<String>()
         val downloads = mutableMapOf<String, Download>()
+        val receiving = mutableMapOf<String, Receiving>()
+
+        /** The items beside the document asked for, sent one at a time ([sendAttachment]). */
+        val attachmentRequests = Channel<String>(Channel.UNLIMITED)
+
+        /** The parts of the items queued and not sent yet: a few at a time (a long audio is not read at once). */
+        val attachmentParts = Semaphore(ATTACHMENT_PARTS_AHEAD)
 
         /** [operation] was applied to the document (on its thread). */
         fun offer(operation: Operation) {
@@ -286,10 +306,16 @@ class SyncEngine(
         var received = 0
     }
 
+    /** An item beside the document being received: [received] of its [size] bytes, at [version]. */
+    private class Receiving(val receiver: AttachmentReceiver, val version: String, val size: Long) {
+        var received = 0L
+    }
+
     private suspend fun run(link: Link, initial: DocumentSync?) {
         link.sync = initial
         mutex.withLock { links.add(link) }
         val sender = scope.launch { send(link) }
+        val transfers = attachments?.let { scope.launch { for (key in link.attachmentRequests) sendAttachment(link, key) } }
         try {
             val hello = initial?.open?.edit { Hello(it.replica, deviceName, it.versionVector, hasDocument = true) }
                 ?: Hello(documents.replicaId(), deviceName, emptyMap(), hasDocument = false)
@@ -311,12 +337,15 @@ class SyncEngine(
             // The connection is lost: what was missed is exchanged at the next one
         } finally {
             sender.cancel()
+            transfers?.cancel()
             link.channel.close()
             withContext(NonCancellable) { detach(link) }
         }
     }
 
     private suspend fun detach(link: Link) {
+        link.receiving.values.forEach { it.receiver.cancel() }
+        link.receiving.clear()
         mutex.withLock {
             links.remove(link)
             // The presences it brought are gone with it
@@ -361,6 +390,7 @@ class SyncEngine(
                     message
                 }
                 link.channel.send(SyncCodec.encode(frame))
+                if (frame is AttachmentPart) link.attachmentParts.release()
             }
         } catch (_: SyncException) {
             link.channel.close()
@@ -376,6 +406,9 @@ class SyncEngine(
             is ResourceChunk -> onResourceChunk(link, message)
             is ResourceMissing -> link.requested.remove(message.id)
             is PresenceMessage -> onPresence(link, message)
+            is AttachmentVersions -> onAttachmentVersions(link, message.versions)
+            is AttachmentRequest -> message.keys.forEach { link.attachmentRequests.trySend(it) }
+            is AttachmentPart -> onAttachmentPart(link, message)
             Ping -> Unit
         }
     }
@@ -475,6 +508,8 @@ class SyncEngine(
             link.waiting.clear()
         }
         requestResources(link, sync)
+        // Then the items beside the document
+        attachments?.let { link.outbox.send(AttachmentVersions(it.versions(link.documentId))) }
     }
 
     private suspend fun onOperations(link: Link, operations: List<Operation>) {
@@ -562,6 +597,61 @@ class SyncEngine(
         sync.open.resourceReceived(chunk.id, path)
     }
 
+    // ==========================================================
+    // Items beside the documents
+    // ==========================================================
+
+    /** The items the other device has: the ones wanted here and different are asked for. */
+    private suspend fun onAttachmentVersions(link: Link, versions: Map<String, String>) {
+        val attachments = attachments ?: return
+        if (link.sync == null) return
+        val mine = attachments.versions(link.documentId)
+        val wanted = versions.filter { (key, version) -> mine[key] != version && attachments.wants(link.documentId, key, version) }.keys
+        if (wanted.isNotEmpty()) link.outbox.send(AttachmentRequest(wanted.toList()))
+    }
+
+    /** Sends the item [key] asked for, in parts. */
+    private suspend fun sendAttachment(link: Link, key: String) {
+        val attachments = attachments ?: return
+        val version = attachments.version(link.documentId, key) ?: return
+        val size = attachments.size(link.documentId, key) ?: return
+        var offset = 0L
+        do {
+            val bytes = attachments.read(link.documentId, key, offset, min(CHUNK_SIZE.toLong(), size - offset).toInt()) ?: return
+            link.attachmentParts.acquire()
+            link.outbox.send(AttachmentPart(key, version, offset, size, bytes))
+            offset += bytes.size
+        } while (offset < size && bytes.isNotEmpty())
+    }
+
+    private suspend fun onAttachmentPart(link: Link, part: AttachmentPart) {
+        val attachments = attachments ?: return
+        if (link.sync == null || part.size !in 0..MAX_ATTACHMENT_SIZE) return
+        if (part.offset == 0L) {
+            link.receiving.remove(part.key)?.receiver?.cancel()
+            val receiver = attachments.receive(link.documentId, part.key, part.version, part.size) ?: return
+            link.receiving[part.key] = Receiving(receiver, part.version, part.size)
+        }
+        val receiving = link.receiving[part.key] ?: return
+        if (part.version != receiving.version || part.offset != receiving.received) {
+            // Not the next part: the item is asked for again at its next change
+            link.receiving.remove(part.key)
+            receiving.receiver.cancel()
+            return
+        }
+        receiving.receiver.write(part.bytes)
+        receiving.received += part.bytes.size
+        if (receiving.received < receiving.size) return
+        link.receiving.remove(part.key)
+        receiving.receiver.complete()
+    }
+
+    /** An item beside the document [AttachmentChange.documentId] changed here: the others are told. */
+    private suspend fun onAttachmentChanged(change: AttachmentChange) {
+        val targets = mutex.withLock { links.filter { it.documentId == change.documentId && it.peerHello != null && it.sync != null } }
+        for (link in targets) link.outbox.send(AttachmentVersions(mapOf(change.key to change.version)))
+    }
+
     private companion object {
         /** The most operations in a message. */
         const val MAX_BATCH = 200
@@ -571,5 +661,7 @@ class SyncEngine(
         /** How often the whole presence is sent again (see [updatePresence]). */
         const val WHOLE_PRESENCE_MS = 500L
         const val MAX_RESOURCE_SIZE = 512L * 1024 * 1024
+        const val MAX_ATTACHMENT_SIZE = 4L * 1024 * 1024 * 1024
+        const val ATTACHMENT_PARTS_AHEAD = 4
     }
 }
