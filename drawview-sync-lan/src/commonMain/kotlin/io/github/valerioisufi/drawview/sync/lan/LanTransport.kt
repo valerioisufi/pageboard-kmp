@@ -18,6 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -57,7 +58,7 @@ class LanTransport(private val scope: CoroutineScope, private val port: Int = DE
      */
     suspend fun start(): Int {
         server?.let { return it.port }
-        val socket = bind(lastPort) ?: bind(port) ?: bind(0) ?: throw SyncException("Cannot listen for the other devices")
+        val socket = bindSoon(lastPort) ?: bind(port) ?: bind(0) ?: throw SyncException("Cannot listen for the other devices")
         server = socket
         lastPort = socket.port
         scope.launch {
@@ -79,6 +80,16 @@ class LanTransport(private val scope: CoroutineScope, private val port: Int = DE
     fun stopListening() {
         server?.close()
         server = null
+    }
+
+    /** Listens on [port], waiting a moment for it (the listener of the last time may be closing). */
+    private suspend fun bindSoon(port: Int): ServerSocket? {
+        repeat(BIND_ATTEMPTS - 1) {
+            bind(port)?.let { return it }
+            if (port == 0) return null
+            delay(BIND_RETRY_MS)
+        }
+        return bind(port)
     }
 
     private suspend fun bind(port: Int): ServerSocket? = try {
@@ -111,6 +122,9 @@ class LanTransport(private val scope: CoroutineScope, private val port: Int = DE
     companion object {
         /** The port listened on when it is free (out of the ports the systems give to the connections). */
         const val DEFAULT_PORT = 28_461
+
+        private const val BIND_ATTEMPTS = 5
+        private const val BIND_RETRY_MS = 100L
     }
 }
 
