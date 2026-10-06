@@ -16,6 +16,7 @@ import io.github.valerioisufi.drawview.core.change.CommittedChange
 import io.github.valerioisufi.drawview.core.change.CompositeChange
 import io.github.valerioisufi.drawview.core.change.DocumentChange
 import io.github.valerioisufi.drawview.core.change.DocumentSession
+import io.github.valerioisufi.drawview.core.change.TextData
 import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.history.HistoryManager
@@ -304,22 +305,80 @@ class DrawViewController(
     // ==========================================================
 
     private val currentActivity = MutableStateFlow<EditorActivity?>(null)
+    private var pointerActivity: EditorActivity? = null
+    private var textDraft: TextData? = null
+    private var textDraftPageId: String? = null
+    private var selectionActivity: SelectionActivity? = null
 
     /**
-     * What the user is doing on the document now (where the pointer is, the stroke being drawn),
-     * for the others working on it; `null` when nothing.
+     * What the user is doing on the document now (the pointer, the stroke being drawn, the text
+     * being written, the elements selected), for the others working on it; `null` when nothing.
      */
     val activity: StateFlow<EditorActivity?> = currentActivity.asStateFlow()
 
+    /** Where the pointer is and the stroke being drawn (from the gestures). */
     internal fun reportActivity(activity: EditorActivity?) {
-        currentActivity.value = activity
+        pointerActivity = activity
+        publishActivity()
     }
 
+    /** The text being written on the page [pageId] as it is now (`null`: none). */
+    internal fun reportTextDraft(pageId: String?, text: TextData?) {
+        textDraftPageId = pageId
+        textDraft = text
+        publishActivity()
+    }
+
+    /** The elements selected (`null`: none). */
+    internal fun reportSelection(selection: SelectionActivity?) {
+        selectionActivity = selection
+        publishActivity()
+    }
+
+    private fun publishActivity() {
+        val activity = (pointerActivity ?: EditorActivity()).copy(text = textDraft, textPageId = textDraftPageId, selection = selectionActivity)
+        currentActivity.value = activity.takeUnless { it.isIdle }
+    }
+
+    private var shownCollaborators by mutableStateOf(emptyList<Collaborator>())
+
     /**
-     * The other devices working on the document, drawn over it: where they are and the strokes
-     * they are drawing (kept by the synchronization, see `drawview-sync-ui`).
+     * The other devices working on the document, drawn over it: where they are, the strokes they
+     * are drawing, the texts they are writing and the elements they select (kept by the
+     * synchronization, see `drawview-sync-ui`). The texts they write and the elements they move
+     * are hidden from the content meanwhile (see [DrawText.isShownByCollaborator]).
      */
-    var collaborators: List<Collaborator> by mutableStateOf(emptyList())
+    var collaborators: List<Collaborator>
+        get() = shownCollaborators
+        set(value) {
+            showByCollaborators(shownCollaborators.hiddenElementIds(), value.hiddenElementIds())
+            shownCollaborators = value
+        }
+
+    /** The elements the collaborators draw themselves: the texts written, the elements moved. */
+    private fun List<Collaborator>.hiddenElementIds(): Set<String> = buildSet {
+        for (collaborator in this@hiddenElementIds) {
+            collaborator.text?.let { add(it.id) }
+            if (collaborator.selectionTransform != null) collaborator.selection.forEach { add(it.id) }
+        }
+    }
+
+    private fun showByCollaborators(before: Set<String>, after: Set<String>) {
+        if (before == after) return
+        for (id in before - after) setShownByCollaborator(id, false)
+        for (id in after - before) setShownByCollaborator(id, true)
+    }
+
+    private fun setShownByCollaborator(id: String, shown: Boolean) {
+        val (page, element) = document.findElement(id) ?: return
+        when (element) {
+            is DrawStroke -> element.isShownByCollaborator = shown
+            is DrawText -> element.isShownByCollaborator = shown
+            is DrawImage -> element.isShownByCollaborator = shown
+            else -> return
+        }
+        invalidatePageContent(page, page.boundsOf(element))
+    }
 
     fun clearSelection() {
         selectionManager.clearSelection()

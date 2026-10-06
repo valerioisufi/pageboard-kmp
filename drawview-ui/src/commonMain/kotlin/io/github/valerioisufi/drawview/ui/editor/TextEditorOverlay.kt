@@ -220,6 +220,16 @@ private fun TextEditorSession(controller: DrawViewController) {
         onDispose { editor.finishEditingRequest = null }
     }
 
+    // The others working on the document see the text as it is written
+    val draftHeightMm = actualTextHeightPx / liveScale
+    LaunchedEffect(
+        textValue.text, currentColorInt, currentFontSizePt, currentAlignment, isMarkdownEnabled,
+        editor.activeBoxWidthMm, editor.activeTextMmX, editor.activeTextMmY, draftHeightMm
+    ) {
+        val isFormula = editor.isMathMode || textValue.text.trim().startsWith("$$")
+        editor.reportDraft(textValue.text, isFormula, currentColorInt, currentFontSizePt, draftHeightMm, currentAlignment)
+    }
+
     // No pointer input of its own: outside the box and the toolbar the canvas keeps its gestures
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val containerHeightPx = constraints.maxHeight.toFloat()

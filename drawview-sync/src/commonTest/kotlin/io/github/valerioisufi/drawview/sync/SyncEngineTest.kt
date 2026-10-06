@@ -19,6 +19,7 @@ import io.github.valerioisufi.drawview.core.change.TextData
 import io.github.valerioisufi.drawview.core.change.UpdateTexts
 import io.github.valerioisufi.drawview.core.change.snapshot
 import io.github.valerioisufi.drawview.core.change.toData
+import io.github.valerioisufi.drawview.core.controller.SelectionActivity
 import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawDocument
@@ -41,6 +42,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -214,7 +216,8 @@ class SyncEngineTest {
      * Runs [block] with a scope for the work of the devices on the scheduler of the test, whose
      * tasks [advanceUntilIdle] runs (it leaves the ones of `backgroundScope` alone).
      */
-    private fun syncTest(block: suspend TestScope.(CoroutineScope) -> Unit) = runTest {
+    // Minutes: the encryption of many frames is slow on a simulator busy with other builds
+    private fun syncTest(block: suspend TestScope.(CoroutineScope) -> Unit) = runTest(timeout = 5.minutes) {
         val work = CoroutineScope(SupervisorJob() + StandardTestDispatcher(testScheduler))
         try {
             block(work)
@@ -340,6 +343,18 @@ class SyncEngineTest {
         bob.engine.updatePresence(Presence(document.id, pageId = "page", x = 3f, y = 4f))
         advanceUntilIdle()
         assertTrue(cy.engine.presences.value.single().ink.isEmpty(), "the stroke ended")
+
+        // A text being written and elements selected (sent again only when they change)
+        val draft = TextData(id = "text", text = "Ciao", x = 10f, y = 20f, width = 40f, height = 8f, color = 0, fontSize = 16f)
+        val selection = SelectionActivity("page", listOf("a", "b"))
+        bob.engine.updatePresence(Presence(document.id, text = draft, textPageId = "page", selection = selection))
+        advanceUntilIdle()
+        bob.engine.updatePresence(Presence(document.id, pageId = "page", text = draft, textPageId = "page", selection = selection.copy(transform = AffineTransform(tx = 5f))))
+        advanceUntilIdle()
+        val working = cy.engine.presences.value.single()
+        assertEquals(draft, working.text)
+        assertEquals(listOf("a", "b"), working.selection?.ids)
+        assertEquals(AffineTransform(tx = 5f), working.selection?.transform)
 
         // Gone with its connection
         bob.disconnect()

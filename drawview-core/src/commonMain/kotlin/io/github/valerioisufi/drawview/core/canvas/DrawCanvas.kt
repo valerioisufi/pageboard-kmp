@@ -12,12 +12,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -25,14 +23,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import io.github.valerioisufi.drawview.core.controller.Collaborator
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
@@ -58,6 +49,7 @@ fun DrawCanvas(
     val gestures = remember(controller, engine) { CanvasGestureHandler(controller, engine, live) }
     val livePainter = remember { StrokeMeshPainter() }
     val labels = rememberTextMeasurer()
+    val collaboratorsOverlay = remember { CollaboratorsOverlay() }
 
     DisposableEffect(engine) {
         onDispose { engine.release() }
@@ -154,22 +146,10 @@ fun DrawCanvas(
         // 4b. Text of the PDFs: passage being marked, selected text, selected mark
         TextMarkupOverlay.draw(this, controller, Color(theme.primaryColor))
 
-        // 5. Strokes the others are drawing, then the one in progress here
-        val collaborators = controller.collaborators
-        for (collaborator in collaborators) {
-            val mesh = collaborator.ink ?: continue
-            val mmToScreen = controller.pageMmToScreen(document.pages.indexOfFirst { it.id == collaborator.inkPageId }) ?: continue
-            drawIntoCanvas { canvas ->
-                if (collaborator.inkAlpha < 1f) {
-                    // Fading away once drawn
-                    canvas.saveLayer(viewport, Paint().apply { alpha = collaborator.inkAlpha })
-                    livePainter.draw(canvas, mesh, mmToScreen)
-                    canvas.restore()
-                } else {
-                    livePainter.draw(canvas, mesh, mmToScreen)
-                }
-            }
-        }
+        // 5. What the others are doing (texts written, elements moved, strokes drawn), then the
+        //    stroke in progress here
+        collaboratorsOverlay.drawWork(this, controller, labels)
+        collaboratorsOverlay.drawInk(this, controller, viewport)
         live.liveMesh?.let { mesh ->
             val mmToScreen = controller.pageMmToScreen(live.livePageIndex)
             if (mmToScreen != null) {
@@ -186,10 +166,7 @@ fun DrawCanvas(
         }
 
         // 6b. Pointers of the others, with their names
-        for (collaborator in collaborators) {
-            val mmToScreen = controller.pageMmToScreen(document.pages.indexOfFirst { it.id == collaborator.pageId }) ?: continue
-            drawCollaboratorPointer(collaborator, mmToScreen.mapPoint(collaborator.position.x, collaborator.position.y), labels)
-        }
+        collaboratorsOverlay.drawPointers(this, controller, labels)
 
         // 7. Floating page while reordering
         if (draggedPage != null && floatingPage != null) {
@@ -215,22 +192,6 @@ fun DrawCanvas(
             }
         }
     }
-}
-
-/** The pointer of another device at [point] (screen), with its name beside it. */
-private fun DrawScope.drawCollaboratorPointer(collaborator: Collaborator, point: Offset, labels: TextMeasurer) {
-    drawCircle(Color.White, radius = 7.dp.toPx(), center = point)
-    drawCircle(collaborator.color, radius = 5.dp.toPx(), center = point)
-    val label = labels.measure(collaborator.name, TextStyle(color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Medium))
-    val padding = 4.dp.toPx()
-    val topLeft = point + Offset(9.dp.toPx(), 7.dp.toPx())
-    drawRoundRect(
-        color = collaborator.color,
-        topLeft = topLeft,
-        size = Size(label.size.width + padding * 2, label.size.height + padding),
-        cornerRadius = CornerRadius(6.dp.toPx())
-    )
-    drawText(label, topLeft = topLeft + Offset(padding, padding / 2))
 }
 
 /** The text of a pending placement at [topLeft] (page millimeters), in a dashed frame. */

@@ -99,8 +99,10 @@ The origin of a change decides what the observers do:
 * A connection with nothing to send sends a `Ping` every 4 s; one silent for 12 s is lost (a
   device gone without closing it: out of the network, asleep, suspended) and closed, so that it
   is made again.
-* Presence (pointer, stroke being drawn) is never logged: of the stroke only the inputs not sent
-  yet travel, the whole stroke every 500 ms (for the devices arrived meanwhile).
+* Presence (pointer, stroke being drawn, text being written, elements selected and how they are
+  being moved) is never logged: of the stroke only the inputs not sent yet travel, the text and
+  the selection only when they change; the whole presence every 500 ms (for the devices arrived
+  meanwhile).
 * CBOR frames.
 
 ### Modules
@@ -324,6 +326,22 @@ The application is not released yet, so the stored documents are not migrated:
   less than 16 s. Tests: a connection cut silently is lost on both devices and made again with
   what each one missed, a device gone and back (another port) and a listener closed by the system
   over TCP, the strokes being drawn relayed a few inputs at a time.
+
+### After phase 6: texts written, elements moved
+
+* What the others do is shown beyond their strokes: the text they are writing, as it is typed
+  (the text editor reports its draft: content, box, style), and the elements they select, framed
+  with their names, drawn where they are moving them. The elements edited or moved elsewhere are
+  hidden from the content meanwhile (`isShownByCollaborator`), so they are never drawn twice; the
+  text added or the move saved then takes their place.
+* `EditorActivity` gained the text draft (`reportTextDraft`) and the selection
+  (`SelectionActivity`: page, identifiers, transformation of the move); `Presence` carries them.
+  The pointer of a device writing is hidden by its text.
+* Verified on the iPad simulator against this machine (`RemotePeerTest`, which now also writes a
+  text a letter at a time and moves the wave, then prints what the iPad does): the text of the
+  other device grows letter by letter in its frame and becomes the text of the document, the
+  wave framed glides where it is moved; the texts written and the elements selected and moved on
+  the iPad reach the other device.
 
 ### Risks
 

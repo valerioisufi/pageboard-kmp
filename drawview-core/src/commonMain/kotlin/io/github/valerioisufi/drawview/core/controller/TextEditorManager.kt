@@ -41,6 +41,9 @@ class TextEditorManager(private val controller: DrawViewController) {
 
     val isEditing: Boolean get() = activeTextPageIndex >= 0
 
+    /** The identifier of the text being written when it is a new one (the same for the others, see [reportDraft]). */
+    private var newTextId = newElementId()
+
     /**
      * Starts editing [item] (or a new text when `null`) on the page [pageIndex], at the given
      * page coordinates.
@@ -57,6 +60,7 @@ class TextEditorManager(private val controller: DrawViewController) {
         activeBoxWidthMm = boxWidthMm.coerceAtLeast(20f)
         isMathMode = item?.isLatex ?: false
         isMarkdownLivePreviewEnabled = item?.isMarkdownEnabled ?: true
+        newTextId = newElementId()
         sessionId++
 
         if (item != null) {
@@ -114,7 +118,7 @@ class TextEditorManager(private val controller: DrawViewController) {
         }
 
         val data = TextData(
-            id = existing?.id ?: newElementId(),
+            id = existing?.id ?: newTextId,
             text = text,
             isLatex = isLatex,
             isMarkdownEnabled = isMarkdownLivePreviewEnabled,
@@ -138,6 +142,32 @@ class TextEditorManager(private val controller: DrawViewController) {
         }
         controller.updateTextDefaults(fontSize, color)
         resetSession()
+    }
+
+    /**
+     * The text being written as it is now (reported by the editor UI, which owns it), for the
+     * others working on the document.
+     *
+     * @param heightMm height of the laid out text in page millimeters.
+     */
+    fun reportDraft(text: String, isLatex: Boolean, color: Int, fontSize: Float, heightMm: Float, alignment: Int = 0) {
+        val page = controller.document.pages.getOrNull(activeTextPageIndex) ?: return
+        val existing = activeTextItem
+        val draft = TextData(
+            id = existing?.id ?: newTextId,
+            text = text,
+            isLatex = isLatex,
+            isMarkdownEnabled = isMarkdownLivePreviewEnabled,
+            alignment = alignment,
+            x = activeTextMmX,
+            y = activeTextMmY,
+            width = activeBoxWidthMm.coerceAtLeast(20f),
+            height = heightMm.coerceAtLeast(4f),
+            rotation = existing?.rotation ?: 0f,
+            color = color,
+            fontSize = fontSize
+        )
+        controller.reportTextDraft(page.id, draft)
     }
 
     /**
@@ -176,6 +206,7 @@ class TextEditorManager(private val controller: DrawViewController) {
     private fun resetSession() {
         activeTextItem = null
         activeTextPageIndex = -1
+        controller.reportTextDraft(null, null)
         controller.requestRedraw()
     }
 }

@@ -16,6 +16,7 @@ import io.github.valerioisufi.drawview.core.change.StrokePlacement
 import io.github.valerioisufi.drawview.core.change.UpdateTexts
 import io.github.valerioisufi.drawview.core.change.placementOf
 import io.github.valerioisufi.drawview.core.change.toData
+import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.geometry.HitTesting
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.DrawElement
@@ -82,8 +83,14 @@ class SelectionGroup(
  */
 class SelectionManager(private val controller: DrawViewController) {
 
-    var currentSelection: SelectionGroup? by mutableStateOf(null)
-        private set
+    private var selectionState by mutableStateOf<SelectionGroup?>(null)
+
+    var currentSelection: SelectionGroup?
+        get() = selectionState
+        private set(value) {
+            selectionState = value
+            reportSelection()
+        }
 
     /** Incremented on every live change of the selection (drives the overlay redraw). */
     var selectionVersion: Int by mutableIntStateOf(0)
@@ -98,7 +105,19 @@ class SelectionManager(private val controller: DrawViewController) {
 
     internal fun notifyChanged() {
         selectionVersion++
+        reportSelection()
         controller.requestRedraw()
+    }
+
+    /** Tells the others working on the document what is selected, and how it is being moved. */
+    private fun reportSelection() {
+        val selection = selectionState
+        val page = selection?.let { controller.document.pages.getOrNull(it.pageIndex) }
+        if (selection == null || page == null || selection.isEmpty()) {
+            controller.reportSelection(null)
+            return
+        }
+        controller.reportSelection(SelectionActivity(page.id, selection.elements().map { it.id }, AffineTransform.of(selection.transform)))
     }
 
     /**

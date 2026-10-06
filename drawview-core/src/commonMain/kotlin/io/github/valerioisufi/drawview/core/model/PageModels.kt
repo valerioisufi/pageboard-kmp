@@ -138,6 +138,15 @@ class DrawStroke(
     @Volatile
     var isDragging: Boolean = false
 
+    /**
+     * Hidden from the static layers while another device edits or moves it: drawn over them
+     * instead (see `DrawViewController.collaborators`).
+     */
+    @Volatile var isShownByCollaborator: Boolean = false
+
+    /** Hidden from the static (tile) layers: selected, moved or edited here or on another device. */
+    val isHidden: Boolean get() = isDragging || isShownByCollaborator
+
     init {
         if (!transform.isIdentity) place(transform)
     }
@@ -234,6 +243,15 @@ class DrawText(override val id: String = newElementId()) : RotatableItem, DrawEl
     /** Hidden from the static (tile) layers while selected or edited. */
     @Volatile var isDragging: Boolean = false
 
+    /**
+     * Hidden from the static layers while another device edits or moves it: drawn over them
+     * instead (see `DrawViewController.collaborators`).
+     */
+    @Volatile var isShownByCollaborator: Boolean = false
+
+    /** Hidden from the static (tile) layers: selected, moved or edited here or on another device. */
+    val isHidden: Boolean get() = isDragging || isShownByCollaborator
+
     /** Incremented on every change, used to invalidate the render caches. */
     @Volatile var version: Int = 0
         private set
@@ -280,6 +298,15 @@ class DrawImage(override val id: String = newElementId()) : RotatableItem, DrawE
 
     /** Hidden from the static (tile) layers while selected or moved. */
     @Volatile var isDragging: Boolean = false
+
+    /**
+     * Hidden from the static layers while another device edits or moves it: drawn over them
+     * instead (see `DrawViewController.collaborators`).
+     */
+    @Volatile var isShownByCollaborator: Boolean = false
+
+    /** Hidden from the static (tile) layers: selected, moved or edited here or on another device. */
+    val isHidden: Boolean get() = isDragging || isShownByCollaborator
 
     /** Decoded pixels (lazily loaded from the resource file). */
     @Volatile var bitmap: ImageBitmap? = null

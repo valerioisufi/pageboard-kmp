@@ -4,6 +4,7 @@ import io.github.valerioisufi.drawview.core.change.ChangeObserver
 import io.github.valerioisufi.drawview.core.change.DocumentSession
 import io.github.valerioisufi.drawview.core.change.DocumentSnapshot
 import io.github.valerioisufi.drawview.core.change.Operation
+import io.github.valerioisufi.drawview.core.change.TextData
 import io.github.valerioisufi.drawview.core.change.snapshot
 import io.github.valerioisufi.drawview.core.util.currentTimeMillis
 import io.github.valerioisufi.drawview.data.OpenDocument
@@ -70,38 +71,48 @@ class SyncEngine(
      */
     val presences: StateFlow<List<Presence>> = presenceState.asStateFlow()
 
-    /** What was sent of the stroke being drawn on every document (see [updatePresence]). */
-    private class SentInk(var stroke: Long = 0, var inputs: Int = 0, var wholeAt: Long = 0)
+    /** What was sent of the presence on every document (see [updatePresence]). */
+    private class SentPresence(
+        var stroke: Long = 0,
+        var inputs: Int = 0,
+        var text: TextData? = null,
+        var selectionIds: List<String>? = null,
+        var wholeAt: Long = 0
+    )
 
-    private val sentInk = mutableMapOf<String, SentInk>()
+    private val sentPresences = mutableMapOf<String, SentPresence>()
 
     /**
      * Tells the devices working on the document of [presence] where this one is. Of the stroke
-     * being drawn only the inputs not sent yet travel, and all of them now and then (for the
-     * devices arrived meanwhile).
+     * being drawn only the inputs not sent yet travel, the text written and the elements selected
+     * only when they change; all of it now and then (for the devices arrived meanwhile).
      */
     suspend fun updatePresence(presence: Presence) {
         val replica = documents.replicaId()
         val (message, targets) = mutex.withLock {
             val now = currentTimeMillis()
             presenceSequence = maxOf(presenceSequence + 1, now)
-            val sent = sentInk.getOrPut(presence.documentId) { SentInk() }
+            val sent = sentPresences.getOrPut(presence.documentId) { SentPresence() }
+            val whole = now - sent.wholeAt >= WHOLE_PRESENCE_MS
+            if (whole) sent.wholeAt = now
             val inputs = presence.inkInputs
-            val from = if (presence.stroke != 0L && presence.stroke == sent.stroke && inputs >= sent.inputs && now - sent.wholeAt < WHOLE_INK_MS) {
-                sent.inputs
-            } else {
-                sent.wholeAt = now
-                0
-            }
+            val from = if (!whole && presence.stroke != 0L && presence.stroke == sent.stroke && inputs >= sent.inputs) sent.inputs else 0
+            val textKept = !whole && presence.text != null && presence.text == sent.text
+            val selectionIds = presence.selection?.ids
+            val selectionKept = !whole && selectionIds != null && selectionIds == sent.selectionIds
             sent.stroke = presence.stroke
             sent.inputs = inputs
+            sent.text = presence.text
+            sent.selectionIds = selectionIds
             val part = presence.copy(
                 ink = presence.ink.subList(from * Presence.INK_VALUES, presence.ink.size).toList(),
+                text = presence.text.takeUnless { textKept },
+                selection = presence.selection?.let { if (selectionKept) it.copy(ids = emptyList()) else it },
                 replica = replica,
                 name = deviceName,
                 sequence = presenceSequence
             )
-            PresenceMessage(part, from) to links.filter { it.documentId == presence.documentId && it.peerHello != null }
+            PresenceMessage(part, from, textKept, selectionKept) to links.filter { it.documentId == presence.documentId && it.peerHello != null }
         }
         targets.forEach { it.outbox.trySend(message) }
     }
@@ -359,7 +370,10 @@ class SyncEngine(
                 last != null && last.stroke == presence.stroke -> last.ink
                 else -> emptyList()
             }
-            lastPresences[key] = presence.copy(ink = ink, receivedAt = currentTimeMillis()) to link
+            // The same text and selection as before (missing: until all of them come again)
+            val text = if (message.textKept) last?.text else presence.text
+            val selection = presence.selection?.let { if (message.selectionKept) it.copy(ids = last?.selection?.ids.orEmpty()) else it }
+            lastPresences[key] = presence.copy(ink = ink, text = text, selection = selection, receivedAt = currentTimeMillis()) to link
             presenceState.value = lastPresences.values.map { it.first }
             links.filter { it.documentId == presence.documentId && it !== link && it.peerHello != null }
         }
@@ -373,8 +387,8 @@ class SyncEngine(
         val peer = Peer(link.documentId, hello.replica, hello.name)
         link.peer = peer
         connected.update { it + peer }
-        // The next presence with the whole stroke being drawn, for the device arrived
-        mutex.withLock { sentInk[link.documentId]?.wholeAt = 0 }
+        // The next presence whole, for the device arrived
+        mutex.withLock { sentPresences[link.documentId]?.wholeAt = 0 }
         // Without the document: it comes with the snapshot
         val sync = link.sync ?: return
         catchUp(link, sync, hello)
@@ -493,8 +507,8 @@ class SyncEngine(
 
         const val CHUNK_SIZE = 256 * 1024
 
-        /** How often the whole stroke being drawn is sent again (see [updatePresence]). */
-        const val WHOLE_INK_MS = 500L
+        /** How often the whole presence is sent again (see [updatePresence]). */
+        const val WHOLE_PRESENCE_MS = 500L
         const val MAX_RESOURCE_SIZE = 512L * 1024 * 1024
     }
 }

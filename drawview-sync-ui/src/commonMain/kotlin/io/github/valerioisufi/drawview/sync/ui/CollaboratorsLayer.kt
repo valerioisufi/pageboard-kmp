@@ -6,22 +6,29 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import io.github.valerioisufi.drawview.core.change.ChangeObserver
+import io.github.valerioisufi.drawview.core.change.ChangeOrigin
+import io.github.valerioisufi.drawview.core.change.TextData
 import io.github.valerioisufi.drawview.core.controller.Collaborator
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.EditorActivity
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
+import io.github.valerioisufi.drawview.core.geometry.AffineTransform
+import io.github.valerioisufi.drawview.core.model.DrawElement
+import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.InputToolType
 import io.github.valerioisufi.drawview.core.model.StrokeMesh
 import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.remodelingBrush
 import io.github.valerioisufi.drawview.core.util.currentTimeMillis
 import io.github.valerioisufi.drawview.sync.Presence
+import kotlin.math.abs
+import kotlin.math.exp
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlin.math.exp
 
 /** How often this device tells where it is: at most (while it changes), and at least. */
 private const val PRESENCE_INTERVAL_MS = 33L
@@ -88,11 +95,12 @@ internal fun CollaboratorsLayer(collaboration: Collaboration, documentId: String
     }
 }
 
-/** The presence of this device for [activity] (`null`: on no page). */
+/** The presence of this device for [activity] (`null`: nothing). */
 private fun EditorActivity?.toPresence(documentId: String): Presence {
     if (this == null) return Presence(documentId)
     val brush = brush
-    if (stroke == 0L || brush == null || ink.isEmpty()) return Presence(documentId, pageId, x, y)
+    val work = Presence(documentId, pageId, x, y, text = text, textPageId = textPageId, selection = selection)
+    if (stroke == 0L || brush == null || ink.isEmpty()) return work
     // The times from the first input (from 1: 0 is no time)
     val start = ink.first().timestampMs - 1
     val values = ArrayList<Float>(ink.size * Presence.INK_VALUES)
@@ -102,11 +110,7 @@ private fun EditorActivity?.toPresence(documentId: String): Presence {
         values.add(input.pressure)
         values.add((input.timestampMs - start).toFloat())
     }
-    return Presence(
-        documentId = documentId,
-        pageId = pageId,
-        x = x,
-        y = y,
+    return work.copy(
         stroke = stroke,
         ink = values,
         inkTool = brush.tool.name,
@@ -138,12 +142,44 @@ private class CollaboratorsDrawing(private val controller: DrawViewController, p
         /** When the stroke drawn started fading (frame time; -1: at the next frame, 0: not fading). */
         var fadeStart = 0L
         var inkAlpha = 1f
+
+        // The text being written
+        var textData: TextData? = null
+        var text: DrawText? = null
+        var textPageId: String? = null
+
+        // The elements selected, and how they are being moved (shown: gliding to the target)
+        var selectionIds: List<String> = emptyList()
+        var selection: List<DrawElement> = emptyList()
+        var selectionPageId: String? = null
+        var moveTarget: AffineTransform? = null
+        var moveShown: AffineTransform? = null
     }
 
     private val peers = mutableMapOf<String, Peer>()
     private var lastFrame = 0L
 
     val moving = MutableStateFlow(false)
+
+    /**
+     * A move of another device received: its elements are where it put them, no more drawn moved
+     * (its next presence says so too).
+     */
+    private val moves = ChangeObserver { committed ->
+        if (committed.origin != ChangeOrigin.REMOTE) return@ChangeObserver
+        val changed = committed.effects.savedElements.keys
+        for (peer in peers.values) {
+            if (peer.moveTarget != null && peer.selection.any { it in changed }) {
+                peer.moveTarget = null
+                peer.moveShown = null
+                moving.value = true
+            }
+        }
+    }
+
+    init {
+        controller.session.addObserver(moves)
+    }
 
     fun update(presences: List<Presence>) {
         val now = currentTimeMillis()
@@ -161,8 +197,47 @@ private class CollaboratorsDrawing(private val controller: DrawViewController, p
             }
             peer.target = target
             updateInk(peer, presence)
+            updateText(peer, presence)
+            updateSelection(peer, presence)
         }
         moving.value = true
+    }
+
+    private fun updateText(peer: Peer, presence: Presence) {
+        val data = presence.text
+        peer.textPageId = presence.textPageId
+        if (data == null) {
+            peer.textData = null
+            peer.text = null
+        } else if (data != peer.textData) {
+            // A new text each time, for the canvas to draw it again
+            peer.text = DrawText(data.id).also { data.applyTo(it) }
+            peer.textData = data
+        }
+    }
+
+    private fun updateSelection(peer: Peer, presence: Presence) {
+        val selection = presence.selection
+        if (selection == null || selection.ids.isEmpty()) {
+            peer.selectionIds = emptyList()
+            peer.selection = emptyList()
+            peer.moveTarget = null
+            peer.moveShown = null
+            return
+        }
+        // Found again while some are missing (not received yet)
+        if (selection.ids != peer.selectionIds || peer.selection.size < selection.ids.size) {
+            peer.selectionIds = selection.ids
+            peer.selection = selection.ids.mapNotNull { controller.document.findElement(it)?.second }
+        }
+        peer.selectionPageId = selection.pageId
+        if (selection.isMoving) {
+            if (peer.moveShown == null) peer.moveShown = selection.transform
+            peer.moveTarget = selection.transform
+        } else {
+            peer.moveTarget = null
+            peer.moveShown = null
+        }
     }
 
     private fun updateInk(peer: Peer, presence: Presence) {
@@ -208,6 +283,12 @@ private class CollaboratorsDrawing(private val controller: DrawViewController, p
                 peer.shown += distance * follow
                 animating = true
             }
+            val moveTarget = peer.moveTarget
+            val moveShown = peer.moveShown
+            if (moveTarget != null && moveShown != null && moveShown != moveTarget) {
+                val glided = moveShown.toward(moveTarget, follow)
+                peer.moveShown = if (glided.closeTo(moveTarget)) moveTarget else glided.also { animating = true }
+            }
             if (peer.fadeStart == -1L) peer.fadeStart = nanos
             if (peer.fadeStart > 0L) {
                 peer.inkAlpha = 1f - (nanos - peer.fadeStart) / 1_000_000f / INK_FADE_MS
@@ -221,15 +302,45 @@ private class CollaboratorsDrawing(private val controller: DrawViewController, p
             }
         }
         controller.collaborators = peers.values.map {
-            Collaborator(it.replica, it.name, colorOf(it.replica), it.pageId, it.shown, it.ink, it.inkPageId, it.inkAlpha)
+            Collaborator(
+                id = it.replica,
+                name = it.name,
+                color = colorOf(it.replica),
+                pageId = it.pageId,
+                position = it.shown,
+                ink = it.ink,
+                inkPageId = it.inkPageId,
+                inkAlpha = it.inkAlpha,
+                text = it.text,
+                textPageId = it.textPageId,
+                selection = it.selection,
+                selectionPageId = it.selectionPageId,
+                selectionTransform = it.moveShown
+            )
         }
         moving.value = animating
         if (!animating) lastFrame = 0L
     }
 
     fun release() {
+        controller.session.removeObserver(moves)
         peers.values.forEach { it.engine?.release() }
         peers.clear()
         controller.collaborators = emptyList()
     }
 }
+
+/** This transformation moved toward [target] by the fraction [amount]. */
+private fun AffineTransform.toward(target: AffineTransform, amount: Float) = AffineTransform(
+    a + (target.a - a) * amount,
+    b + (target.b - b) * amount,
+    c + (target.c - c) * amount,
+    d + (target.d - d) * amount,
+    tx + (target.tx - tx) * amount,
+    ty + (target.ty - ty) * amount
+)
+
+private fun AffineTransform.closeTo(other: AffineTransform): Boolean =
+    abs(a - other.a) < 0.001f && abs(b - other.b) < 0.001f && abs(c - other.c) < 0.001f && abs(d - other.d) < 0.001f &&
+        abs(tx - other.tx) < 0.05f && abs(ty - other.ty) < 0.05f
+

@@ -78,11 +78,17 @@ internal data class ResourceMissing(val id: String) : SyncMessage
 
 /**
  * Where a device is on the document (never stored, see [Presence]): its [presence] has the
- * inputs of its stroke from [inkFrom] (the ones before were sent already).
+ * inputs of its stroke from [inkFrom] (the ones before were sent already), not the text it is
+ * writing when [textKept] nor the elements it selected when [selectionKept] (the same as before).
  */
 @Serializable
 @SerialName("presence")
-internal data class PresenceMessage(val presence: Presence, val inkFrom: Int = 0) : SyncMessage
+internal data class PresenceMessage(
+    val presence: Presence,
+    val inkFrom: Int = 0,
+    val textKept: Boolean = false,
+    val selectionKept: Boolean = false
+) : SyncMessage
 
 /** A connection with nothing to send says it is still there (see [SyncEngine]). */
 @Serializable

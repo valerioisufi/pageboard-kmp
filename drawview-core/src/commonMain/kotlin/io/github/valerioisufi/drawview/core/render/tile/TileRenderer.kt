@@ -163,7 +163,7 @@ class TileRenderer(
                 isAntiAlias = true
             }
             for (image in content.images) {
-                if (image.isDragging) continue
+                if (image.isHidden) continue
                 if (!image.getRotatedBounds().overlaps(visibleMmBounds)) continue
                 val bitmap = ensureImageLoaded(document, image) ?: continue
                 drawImage(canvas, image, bitmap, mmToCanvas, imagePaint)
@@ -174,7 +174,7 @@ class TileRenderer(
         val text = textAdapter
         if (text != null && content.texts.isNotEmpty()) {
             for (item in content.texts) {
-                if (item.isDragging) continue
+                if (item.isHidden) continue
                 if (!item.getRotatedBounds().overlaps(visibleMmBounds)) continue
                 try {
                     text.drawText(canvas, item, mmToCanvas)
@@ -187,7 +187,7 @@ class TileRenderer(
         if (content.strokes.isNotEmpty()) {
             val painter = StrokeMeshPainter()
             for (stroke in content.strokes) {
-                if (stroke.isDragging) continue
+                if (stroke.isHidden) continue
                 val bounds = stroke.bounds
                 if (bounds.left < visibleMmBounds.right &&
                     bounds.right > visibleMmBounds.left &&

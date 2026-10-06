@@ -2,31 +2,62 @@ package io.github.valerioisufi.drawview.core.controller
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import io.github.valerioisufi.drawview.core.change.TextData
+import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.model.BrushConfig
+import io.github.valerioisufi.drawview.core.model.DrawElement
+import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.InputToolType
 import io.github.valerioisufi.drawview.core.model.StrokeMesh
 import io.github.valerioisufi.drawview.core.model.StrokePoint
+import kotlinx.serialization.Serializable
 
 /**
- * What the user is doing on a page of the document: the pointer at ([x], [y]) in the millimeters
- * of the page [pageId], drawing the stroke [stroke] (`0`: not drawing) of the inputs [ink] (in the
- * same millimeters) with [brush], by [inputType].
+ * What the user is doing on the document, for the others working on it:
+ * - the pointer at ([x], [y]) in the millimeters of the page [pageId] (`null`: on no page),
+ *   drawing the stroke [stroke] (`0`: not drawing) of the inputs [ink] (in the same millimeters)
+ *   with [brush], by [inputType];
+ * - the text being written ([text], on the page [textPageId]: its content as it is now);
+ * - the elements selected ([selection]), and how they are being moved.
  */
 data class EditorActivity(
-    val pageId: String,
-    val x: Float,
-    val y: Float,
+    val pageId: String? = null,
+    val x: Float = 0f,
+    val y: Float = 0f,
     val stroke: Long = 0,
     val ink: List<StrokePoint> = emptyList(),
     val brush: BrushConfig? = null,
-    val inputType: InputToolType = InputToolType.UNKNOWN
-)
+    val inputType: InputToolType = InputToolType.UNKNOWN,
+    val text: TextData? = null,
+    val textPageId: String? = null,
+    val selection: SelectionActivity? = null
+) {
+    /** Whether there is nothing to show. */
+    val isIdle: Boolean get() = pageId == null && text == null && selection == null
+}
+
+/**
+ * The elements [ids] of the page [pageId] selected, moved by [transform] (page millimeters;
+ * [AffineTransform.IDENTITY] while they are not being moved).
+ */
+@Serializable
+data class SelectionActivity(
+    val pageId: String,
+    val ids: List<String>,
+    val transform: AffineTransform = AffineTransform.IDENTITY
+) {
+    val isMoving: Boolean get() = transform != AffineTransform.IDENTITY
+}
 
 /**
  * Another device working on the document, as drawn over it (see
- * [DrawViewController.collaborators]): its pointer at [position] on the page [pageId] (page
- * millimeters; `null`: on no page) with its [name] and [color], and the stroke it is drawing
- * ([ink], on the page [inkPageId]), fading away once drawn ([inkAlpha]).
+ * [DrawViewController.collaborators]), with its [name] and [color]:
+ * - its pointer at [position] on the page [pageId] (page millimeters; `null`: on no page);
+ * - the stroke it is drawing ([ink], on the page [inkPageId]), fading away once drawn
+ *   ([inkAlpha]);
+ * - the text it is writing ([text], on the page [textPageId]);
+ * - the elements it selected ([selection], on the page [selectionPageId]), moved by
+ *   [selectionTransform] while it moves them (`null`: not moving).
  */
 data class Collaborator(
     val id: String,
@@ -36,5 +67,10 @@ data class Collaborator(
     val position: Offset,
     val ink: StrokeMesh? = null,
     val inkPageId: String? = null,
-    val inkAlpha: Float = 1f
+    val inkAlpha: Float = 1f,
+    val text: DrawText? = null,
+    val textPageId: String? = null,
+    val selection: List<DrawElement> = emptyList(),
+    val selectionPageId: String? = null,
+    val selectionTransform: AffineTransform? = null
 )

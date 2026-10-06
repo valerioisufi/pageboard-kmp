@@ -3,12 +3,18 @@ package io.github.valerioisufi.drawview.sync.lan
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.core.change.AddElements
+import io.github.valerioisufi.drawview.core.change.PlaceElements
+import io.github.valerioisufi.drawview.core.change.StrokePlacement
+import io.github.valerioisufi.drawview.core.change.TextData
+import io.github.valerioisufi.drawview.core.controller.SelectionActivity
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
+import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.InputToolType
 import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
+import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
@@ -17,23 +23,26 @@ import io.github.valerioisufi.drawview.sync.Invitation
 import io.github.valerioisufi.drawview.sync.Presence
 import io.github.valerioisufi.drawview.sync.ResourceFiles
 import io.github.valerioisufi.drawview.sync.SyncEngine
+import kotlin.math.abs
+import kotlin.math.sin
+import kotlin.test.Test
+import kotlin.test.assertNotNull
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import kotlin.math.abs
-import kotlin.math.sin
-import kotlin.test.Test
-import kotlin.test.assertNotNull
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * This machine as another device working on a document shared by an application (e.g. on a
  * simulator): run with `DRAWVIEW_PEER_LINK` set to the invitation, with the address of the device
- * (`&a=host%3Aport`). It receives the document, draws a wave on its first page and shows where it
- * is for a while.
+ * (`&a=host%3Aport`). It receives the document, draws a wave on its first page, writes a text,
+ * moves the wave, then prints what the other device does for `DRAWVIEW_PEER_WATCH_MS`.
  */
 class RemotePeerTest {
 
@@ -85,14 +94,55 @@ class RemotePeerTest {
                     delay(32)
                 }
                 val mesh = assertNotNull(InkStrokeEngine.buildMesh(points, brush, InputToolType.STYLUS))
-                open.edit { session -> session.submit(AddElements.of(session.document.pages[0], listOf(DrawStroke(mesh = mesh, brushConfig = brush)))) }
+                val wave = DrawStroke(mesh = mesh, brushConfig = brush)
+                open.edit { session -> session.submit(AddElements.of(session.document.pages[0], listOf(wave))) }
                 println("PEER drawn")
-                // Then the pointer wanders about
-                repeat(120) { i ->
-                    engine.updatePresence(Presence(invitation.documentId, pageId, 100f + 40f * sin(i / 15f), 220f + 30f * sin(i / 9f)))
+
+                // A text written a letter at a time, then added
+                val written = "Ciao! Sto scrivendo anch'io su questa pagina."
+                val textId = newElementId()
+                fun draft(length: Int) = TextData(
+                    id = textId, text = written.take(length), x = 25f, y = waveY + 30f, width = 150f, height = 8f,
+                    color = 0xFF6D4C41.toInt(), fontSize = 16f
+                )
+                println("PEER writing")
+                for (n in 1..written.length) {
+                    engine.updatePresence(Presence(invitation.documentId, text = draft(n), textPageId = pageId))
+                    delay(110)
+                }
+                delay(800)
+                open.edit { session -> session.submit(AddElements.of(session.document.pages[0], listOf(draft(written.length).toElement()))) }
+                engine.updatePresence(Presence(invitation.documentId, pageId, 25f, waveY + 34f))
+                println("PEER written")
+                delay(1_000)
+
+                // The wave selected, moved up a little at a time, then placed
+                println("PEER moving")
+                for (i in 0..60) {
+                    val transform = AffineTransform(tx = i * 0.5f, ty = -i * 0.6f)
+                    engine.updatePresence(Presence(invitation.documentId, pageId, 120f + i * 0.5f, waveY - i * 0.6f, selection = SelectionActivity(pageId, listOf(wave.id), transform)))
                     delay(33)
                 }
+                val moved = AffineTransform(tx = 30f, ty = -36f)
+                open.edit { session -> session.submit(PlaceElements(pageId, listOf(StrokePlacement(wave.id, wave.transform.then(moved.toMatrix()))))) }
+                engine.updatePresence(Presence(invitation.documentId, pageId, 150f, waveY - 36f, selection = SelectionActivity(pageId, listOf(wave.id))))
+                println("PEER moved")
+                delay(1_500)
+                engine.updatePresence(Presence(invitation.documentId, pageId, 150f, waveY - 36f))
+                delay(500)
                 println("PEER peers: ${engine.peers.value.map { it.name }}")
+
+                // What the other device does, for a while
+                val watchMs = System.getenv("DRAWVIEW_PEER_WATCH_MS")?.toLongOrNull() ?: 0
+                if (watchMs > 0) {
+                    println("PEER watching")
+                    withTimeoutOrNull(watchMs) {
+                        engine.presences
+                            .map { all -> all.map { "${it.name}: text=${it.text?.text?.let { t -> "\"$t\"" }} selection=${it.selection}" } }
+                            .distinctUntilChanged()
+                            .collect { println("PEER sees $it") }
+                    }
+                }
                 documents.close(open)
                 engine.stop()
             } finally {
