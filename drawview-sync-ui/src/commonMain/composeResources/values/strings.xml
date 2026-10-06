@@ -18,5 +18,6 @@
     <string name="sync_join_waiting">Looking for “%1$s” on the network: it will appear in the Shared folder.</string>
     <string name="sync_shared_folder">Shared</string>
     <string name="sync_no_network">Without the permission to use the local network the devices cannot find each other.</string>
+    <string name="sync_other_version">A device has another version of the application: update it on every device to work together.</string>
     <string name="sync_writing_elsewhere">%1$s is writing this text</string>
 </resources>

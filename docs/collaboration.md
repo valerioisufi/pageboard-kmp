@@ -115,7 +115,13 @@ The origin of a change decides what the observers do:
   being moved) is never logged: of the stroke only the inputs not sent yet travel, the text and
   the selection only when they change; the whole presence every 500 ms (for the devices arrived
   meanwhile).
-* CBOR frames.
+* CBOR frames. The format of the messages (every change of the document included) is recorded
+  for the version of the protocol (`ProtocolFormatTest`, `PROTOCOL_FORMATS`): a change of it fails
+  the test, to be recorded; once the applications are released `PROTOCOL_VERSION` is raised with
+  it (not before).
+* A device of another version is refused at the first frame; a message a device cannot read (e.g.
+  a change it does not know) closes the connection, instead of leaving the operations after it
+  waiting for ever: the user is told (`SyncEngine.otherVersionMet`, in the sharing dialog).
 
 ### Modules
 

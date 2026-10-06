@@ -46,6 +46,7 @@ import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_copy_lin
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_link_copied
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_no_network
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_nobody
+import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_other_version
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_participants
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_share
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_share_explanation
@@ -143,6 +144,7 @@ private fun ShareDialog(collaboration: Collaboration, documentId: String, title:
     LaunchedEffect(documentId) { invitation = collaboration.invitationOf(documentId, title) }
     val online by collaboration.isOnline.collectAsState()
     val peers by collaboration.peers.collectAsState()
+    val otherVersion by collaboration.otherVersionMet.collectAsState()
     // The clipboard of every platform (the Clipboard API has no common plain text entry)
     @Suppress("DEPRECATION")
     val clipboard = LocalClipboardManager.current
@@ -184,6 +186,9 @@ private fun ShareDialog(collaboration: Collaboration, documentId: String, title:
                     }
                     if (!online) {
                         Text(stringResource(Res.string.sync_no_network), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    }
+                    if (otherVersion) {
+                        Text(stringResource(Res.string.sync_other_version), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }

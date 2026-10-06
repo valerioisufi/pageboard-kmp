@@ -39,6 +39,7 @@ import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -305,6 +306,40 @@ class SyncEngineTest {
         val (text, copy) = ada.snapshot(document.id).pages[0].data.elements.filterIsInstance<TextData>()
         assertEquals(setOf("Ada's", "Bob's"), setOf(text.text, copy.text))
         assertTrue(copy.y > text.y, "the copy under the text")
+    }
+
+    @Test
+    fun aDeviceOfAnotherProtocolIsRefusedAndToldOf() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val document = ada.store.createDocument("Notes")
+        val invitation = ada.engine.share(document.id, "Notes")
+        network.transport("older").connect("ada").send(SyncCodec.encodeOpen(OpenFrame(PROTOCOL_VERSION + 1, invitation.key.tag)))
+        advanceUntilIdle()
+        assertTrue(ada.engine.otherVersionMet.value)
+        assertTrue(ada.engine.peers.value.isEmpty())
+    }
+
+    @Test
+    fun aMessageThisVersionCannotReadClosesTheConnection() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val document = ada.store.createDocument("Notes")
+        val invitation = ada.engine.share(document.id, "Notes")
+        val channel = network.transport("newer").connect("ada")
+        channel.send(SyncCodec.encodeOpen(OpenFrame(PROTOCOL_VERSION, invitation.key.tag)))
+        val newer = SecureChannel.of(channel, invitation.key)
+        newer.send(SyncCodec.encode(Hello("newer-replica", "Newer", emptyMap(), hasDocument = true)))
+        advanceUntilIdle()
+        assertEquals(listOf("Newer"), ada.engine.peers.value.map { it.name })
+        assertFalse(ada.engine.otherVersionMet.value)
+
+        // E.g. a change this version does not know: closed, not left waiting for ever for the
+        // operations after it, and told of
+        newer.send(byteArrayOf(1, 2, 3))
+        advanceUntilIdle()
+        assertTrue(ada.engine.peers.value.isEmpty(), "its connection closed")
+        assertTrue(ada.engine.otherVersionMet.value)
     }
 
     @Test

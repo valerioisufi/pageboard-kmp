@@ -1,6 +1,5 @@
 package io.github.valerioisufi.drawview.sync
 
-import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.ChangeObserver
 import io.github.valerioisufi.drawview.core.change.ChangeOrigin
 import io.github.valerioisufi.drawview.core.change.DocumentSession
@@ -62,6 +61,14 @@ class SyncEngine(
 
     /** The devices connected, with the document each one works on. */
     val peers: StateFlow<List<Peer>> = connected.asStateFlow()
+
+    private val otherVersion = MutableStateFlow(false)
+
+    /**
+     * Whether a device with another version of the application tried to work with this one: what
+     * it sends cannot be read, so its connections are closed (the devices need the same version).
+     */
+    val otherVersionMet: StateFlow<Boolean> = otherVersion.asStateFlow()
 
     /** The last presence of every device on every document, and the connection it came from. */
     private val lastPresences = mutableMapOf<Pair<String, String>, Pair<Presence, Link>>()
@@ -144,7 +151,10 @@ class SyncEngine(
     fun accept(channel: SyncChannel): Job = scope.launch {
         try {
             val open = channel.receive()?.let(SyncCodec::decodeOpen) ?: return@launch
-            if (open.protocol != PROTOCOL_VERSION) return@launch
+            if (open.protocol != PROTOCOL_VERSION) {
+                otherVersion.value = true
+                return@launch
+            }
             val (documentId, key) = shared.all().entries.firstOrNull { it.value.tag == open.tag } ?: return@launch
             val secure = SecureChannel.of(channel, key)
             // Without the document yet (joined through an invitation): it comes with the first messages
@@ -288,7 +298,13 @@ class SyncEngine(
                 // Closed, or silent for too long: lost
                 val frame = (if (keepAliveMs > 0) withTimeoutOrNull(keepAliveMs * 3) { link.channel.receive() } else link.channel.receive()) ?: break
                 link.receivedAt = currentTimeMillis()
-                val message = SyncCodec.decode(frame) ?: continue
+                val message = SyncCodec.decode(frame)
+                if (message == null) {
+                    // Of another version of the application: skipping it would leave the
+                    // operations after it waiting for ever
+                    otherVersion.value = true
+                    break
+                }
                 handle(link, message)
             }
         } catch (_: SyncException) {
@@ -463,10 +479,10 @@ class SyncEngine(
 
     private suspend fun onOperations(link: Link, operations: List<Operation>) {
         val sync = link.sync ?: return
-        // Their elements built first, at the same time (the strokes are modeled again: slow), so
-        // that the document waits less
+        // Prepared first, at the same time (e.g. the strokes modeled again: slow), so that the
+        // document waits less
         coroutineScope {
-            for (operation in operations) (operation.change as? AddElements)?.let { launch { it.prepare() } }
+            for (operation in operations) launch { operation.change.prepare() }
         }
         sync.open.edit { session ->
             link.pending.addAll(operations)

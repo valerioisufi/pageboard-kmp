@@ -65,6 +65,9 @@ class Collaboration(
     /** Where the other devices are on the documents. */
     val presences: StateFlow<List<Presence>> get() = engine.presences
 
+    /** Whether a device with another version of the application was met (see [SyncEngine.otherVersionMet]). */
+    val otherVersionMet: StateFlow<Boolean> get() = engine.otherVersionMet
+
     /** Whether this device works with the devices of the network (allowed to and started). */
     val isOnline: StateFlow<Boolean> = online.asStateFlow()
 

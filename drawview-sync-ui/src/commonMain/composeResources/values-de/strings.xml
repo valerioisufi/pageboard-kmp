@@ -18,5 +18,6 @@
     <string name="sync_join_waiting">Suche nach „%1$s“ im Netzwerk: Es erscheint im Ordner Geteilt.</string>
     <string name="sync_shared_folder">Geteilt</string>
     <string name="sync_no_network">Ohne die Berechtigung für das lokale Netzwerk können sich die Geräte nicht finden.</string>
+    <string name="sync_other_version">Ein Gerät hat eine andere Version der App: Aktualisiere sie auf allen Geräten, um zusammenzuarbeiten.</string>
     <string name="sync_writing_elsewhere">%1$s schreibt gerade diesen Text</string>
 </resources>

@@ -45,6 +45,13 @@ sealed interface DocumentChange {
      *   gone, or changed by a more recent change).
      */
     fun applyTo(context: ChangeContext): DocumentChange?
+
+    /**
+     * Does now the slow work of applying it that needs no document (e.g. modeling the strokes it
+     * adds again from their inputs), e.g. on another thread for a change received: it is applied
+     * sooner then.
+     */
+    fun prepare() {}
 }
 
 /**
@@ -72,11 +79,8 @@ data class AddElements(val pageId: String, val elements: List<ElementData>, val 
     @Transient
     private var local: Map<String, DrawElement> = emptyMap()
 
-    /**
-     * Builds its elements now instead of when it is applied (the strokes are modeled again from
-     * their inputs: slow), e.g. on another thread for a change received.
-     */
-    fun prepare() {
+    /** Builds its elements now (the strokes are modeled again from their inputs). */
+    override fun prepare() {
         if (local.isEmpty()) local = elements.associate { it.id to it.toElement() }
     }
 
@@ -703,6 +707,8 @@ data object NoChange : DocumentChange {
 @Serializable
 @SerialName("composite")
 data class CompositeChange(val changes: List<DocumentChange>) : DocumentChange {
+    override fun prepare() = changes.forEach { it.prepare() }
+
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val inverses = changes.mapNotNull { it.applyTo(context) }
         if (inverses.isEmpty()) return null

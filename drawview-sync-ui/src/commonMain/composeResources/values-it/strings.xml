@@ -18,5 +18,6 @@
     <string name="sync_join_waiting">Ricerca di “%1$s” nella rete: comparirà nella cartella Condivisi.</string>
     <string name="sync_shared_folder">Condivisi</string>
     <string name="sync_no_network">Senza il permesso di usare la rete locale i dispositivi non possono trovarsi.</string>
+    <string name="sync_other_version">Un dispositivo ha un’altra versione dell’applicazione: aggiornala su tutti i dispositivi per lavorare insieme.</string>
     <string name="sync_writing_elsewhere">%1$s sta scrivendo questo testo</string>
 </resources>
