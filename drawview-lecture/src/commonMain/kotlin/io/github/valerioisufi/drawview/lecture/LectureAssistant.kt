@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import io.github.valerioisufi.drawview.core.attachment.DocumentAttachments
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.util.currentTimeMillis
 import io.github.valerioisufi.drawview.lecture.audio.AudioCapture
@@ -30,6 +31,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
@@ -45,6 +47,10 @@ import kotlin.coroutines.CoroutineContext
  *
  * The editors show it through [io.github.valerioisufi.drawview.lecture.ui.editorExtension], the
  * document library through [io.github.valerioisufi.drawview.lecture.ui.LectureRecordingIndicator].
+ *
+ * The devices working on a notebook share its lectures ([attachments], for the synchronization):
+ * a lecture recorded on a device without the models is transcribed and reviewed where they are
+ * ([generate]).
  *
  * @param canGenerate whether the models follow the lectures here (the live notes, the review, the
  *   course context): elsewhere the lectures are recorded only (see [generationSupported]).
@@ -116,6 +122,35 @@ class LectureAssistant(
     private val editorNotebooks = mutableMapOf<String, NotebookSource>()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
+    /** The lectures of the notebooks as items beside them, for the synchronization with the other devices. */
+    val attachments: DocumentAttachments by lazy { LectureAttachments(sharing, scope) }
+
+    private val sharing = object : LectureAssistantLibrary {
+        override val files get() = library
+
+        override suspend fun loadedLecture(directory: String): Lecture? = withContext(stateContext) {
+            listOfNotNull(recorder?.lecture, importing).plus(shownLectures.values).firstOrNull { it.directory == directory }
+        }
+
+        override suspend fun isActiveHere(directory: String): Boolean = withContext(stateContext) {
+            activeRecorder?.lecture?.directory == directory || importing?.directory == directory
+        }
+
+        override suspend fun onReceived(documentId: String) = refreshNow(documentId)
+
+        override suspend fun onContextReceived(documentId: String, context: CourseContext) = withContext(stateContext) {
+            contexts[documentId] = context
+        }
+
+        override suspend fun onDeleted(documentId: String, directory: String) = withContext(stateContext) {
+            val shown = shownLectures[documentId]
+            if (shown?.directory == directory) {
+                shown.stopPlayback()
+                shownLectures.remove(documentId)
+            }
+        }
+    }
+
     init {
         LectureRecordings.register(this)
     }
@@ -158,7 +193,8 @@ class LectureAssistant(
 
     /** The student changed the course context of [documentId]: it is not replaced automatically. */
     fun editContext(documentId: String, text: String) {
-        val context = CourseContext(text.trim(), edited = true, generatedAt = contexts[documentId]?.generatedAt ?: 0L)
+        val previous = contexts[documentId]
+        val context = CourseContext(text.trim(), edited = true, generatedAt = previous?.generatedAt ?: 0L, stamp = nextContextStamp(previous))
         contexts[documentId] = context
         scope.launch { library.saveContext(documentId, context) }
     }
@@ -186,13 +222,18 @@ class LectureAssistant(
             println("DrawView: cannot write the course context: ${e.message}")
             null
         }
-        val context = text?.takeIf { it.isNotBlank() }?.let { CourseContext(it, edited = false, generatedAt = currentTimeMillis()) }
+        val context = text?.takeIf { it.isNotBlank() }?.let {
+            CourseContext(it, edited = false, generatedAt = currentTimeMillis(), stamp = nextContextStamp(library.loadContext(documentId)))
+        }
         if (context != null) library.saveContext(documentId, context)
         withContext(stateContext) {
             writingContexts.remove(documentId)
             if (context != null) contexts[documentId] = context
         }
     }
+
+    /** The stamp of a course context written here after [previous]. */
+    private fun nextContextStamp(previous: CourseContext?) = (previous?.stamp ?: Stamp.NONE).next(library.deviceId, currentTimeMillis())
 
     /** The course context written by the model of the live suggestions, from the whole notebook. */
     private suspend fun composeContext(documentId: String, notebook: NotebookSource): String? {
@@ -201,7 +242,7 @@ class LectureAssistant(
         val pages = notebook.allPages()
         if (pages.isEmpty()) return null
         // With the handwriting already transcribed
-        val reader = HandwritingReader(library.documentDirectory(documentId) + "/handwriting.json", backends)
+        val reader = HandwritingReader(library.documentDirectory(documentId) + "/handwriting.json", backends) { library.changed(documentId, null) }
         val blocks = notebook.inkBlocks(pages.filter { it.hasInk }.map { it.index })
         val filled = pages.map { page -> reader.fill(page, blocks.filter { it.pageIndex == page.index }) }
         val prompt = LecturePrompts.courseContextPrompt(settingsStore.settings, notebook.documentTitle, filled)
@@ -214,14 +255,16 @@ class LectureAssistant(
 
     /** Lists the lectures of [documentId] again, showing the last one when none is shown. */
     fun refresh(documentId: String) {
-        scope.launch {
-            val lectures = library.list(documentId)
-            val context = library.loadContext(documentId)
-            withContext(stateContext) {
-                if (context != null && contexts[documentId] == null) contexts[documentId] = context
-                lectureLists[documentId] = lectures
-                if (shownLectures[documentId] == null) lectures.firstOrNull()?.let { show(documentId, it) }
-            }
+        scope.launch { refreshNow(documentId) }
+    }
+
+    private suspend fun refreshNow(documentId: String) {
+        val lectures = library.list(documentId)
+        val context = library.loadContext(documentId)
+        withContext(stateContext) {
+            if (context != null && contexts[documentId] == null) contexts[documentId] = context
+            lectureLists[documentId] = lectures
+            if (shownLectures[documentId] == null) lectures.firstOrNull()?.let { show(documentId, it) }
         }
     }
 
@@ -234,15 +277,32 @@ class LectureAssistant(
         }
         if (shownLectures[documentId]?.directory == summary.directory) return
         scope.launch {
-            val record = library.load(summary.directory) ?: return@launch
-            val lecture = Lecture(
-                documentId, summary.directory, record, settingsStore, backends, audioOutput, stateContext,
-                courseContext = { contextOf(documentId)?.text.orEmpty() },
-                generates = canGenerate
-            )
-            withContext(stateContext) { shownLectures[documentId] = lecture }
+            // Shown before what another device sends is merged into it (see LectureAttachments)
+            library.records.withLock {
+                val record = library.load(summary.directory) ?: return@launch
+                val lecture = newLecture(documentId, summary.directory, record)
+                withContext(stateContext) { shownLectures[documentId] = lecture }
+            }
         }
     }
+
+    /** A lecture of [documentId] in [directory]: [record] when saved already. */
+    private fun newLecture(documentId: String, directory: String, record: LectureRecord?, startedAt: Long? = null) = Lecture(
+        documentId = documentId,
+        directory = directory,
+        record = record,
+        settingsStore = settingsStore,
+        backends = backends,
+        audioOutput = audioOutput,
+        stateContext = stateContext,
+        courseContext = { contextOf(documentId)?.text.orEmpty() },
+        startedAt = startedAt,
+        generates = canGenerate,
+        device = library.deviceId,
+        deviceName = library.deviceName,
+        recordsLock = library.records,
+        onChanged = { library.changed(documentId, it) }
+    )
 
     /**
      * Starts recording a lecture of the document edited by [controller], once allowed to use the
@@ -266,21 +326,17 @@ class LectureAssistant(
      *   ([startError]).
      */
     fun start(documentId: String, controller: DrawViewController): Boolean {
+        val notebook = editorNotebooks[documentId] ?: ControllerNotebookSource(controller).also { editorNotebooks[documentId] = it }
+        return start(documentId, controller.document.title, notebook)
+    }
+
+    /** Starts recording a lecture of the document [documentId] titled [title], seen through [notebook]. */
+    internal fun start(documentId: String, title: String, notebook: NotebookSource): Boolean {
         if (isBusy) return false
         val capture = captureFactory() ?: return false
         val startedAt = currentTimeMillis()
-        val lecture = Lecture(
-            documentId = documentId,
-            directory = library.newLectureDirectory(documentId, startedAt),
-            record = null,
-            settingsStore = settingsStore,
-            backends = backends,
-            audioOutput = audioOutput,
-            stateContext = stateContext,
-            courseContext = { contextOf(documentId)?.text.orEmpty() },
-            generates = canGenerate
-        ).apply { documentTitle = controller.document.title }
-        val notebook = editorNotebooks[documentId] ?: ControllerNotebookSource(controller).also { editorNotebooks[documentId] = it }
+        val lecture = newLecture(documentId, library.newLectureDirectory(documentId, startedAt), record = null, startedAt = startedAt)
+            .apply { documentTitle = title }
         val settings = settingsStore.settings
         val transcriber = if (!canGenerate || settings.sendsAudio) null else transcriberFactory(settings)
         val newRecorder = LectureRecorder(
@@ -317,18 +373,7 @@ class LectureAssistant(
     fun importRecording(documentId: String, controller: DrawViewController, file: ChosenFile): Boolean {
         if (isBusy) return false
         val startedAt = file.lastModified ?: currentTimeMillis()
-        val lecture = Lecture(
-            documentId = documentId,
-            directory = library.newLectureDirectory(documentId, startedAt),
-            record = null,
-            settingsStore = settingsStore,
-            backends = backends,
-            audioOutput = audioOutput,
-            stateContext = stateContext,
-            courseContext = { contextOf(documentId)?.text.orEmpty() },
-            startedAt = startedAt,
-            generates = canGenerate
-        ).apply {
+        val lecture = newLecture(documentId, library.newLectureDirectory(documentId, startedAt), record = null, startedAt = startedAt).apply {
             documentTitle = controller.document.title
             status = LectureStatus.IMPORTING
         }
@@ -369,6 +414,35 @@ class LectureAssistant(
         return true
     }
 
+    /**
+     * Writes what the models write for [lecture] (finished), with [provider]: its review, and
+     * before it its transcript when it has none (recorded on a device without the models: the
+     * device that recorded it gets them too).
+     *
+     * @return `false` when a recording or an import is in progress, or the models are not here.
+     */
+    fun generate(lecture: Lecture, provider: ModelProvider): Boolean {
+        if (!canGenerate || !lecture.canGenerateReview) return false
+        if (lecture.transcript.isNotEmpty() || !lecture.hasAudio) {
+            lecture.generateFinalReview(provider)
+            return true
+        }
+        if (isBusy) return false
+        importing = lecture
+        importError = null
+        scope.launch {
+            try {
+                val settings = settingsStore.settings
+                val transcriber = if (settings.sendsAudio) null else transcriberFactory(settings)
+                LectureImporter(lecture, settingsStore, transcriber).transcribeAndReview(provider)
+            } finally {
+                withContext(NonCancellable + stateContext) { importing = null }
+                refresh(lecture.documentId)
+            }
+        }
+        return true
+    }
+
     /** The audio of [lecture] saved in [target]: as m4a where the platform encodes it, otherwise as WAV. */
     fun exportAudio(lecture: Lecture, target: String) {
         exportResult = null
@@ -393,16 +467,20 @@ class LectureAssistant(
         exportResult = null
     }
 
-    /** Deletes the lecture [summary] (audio included); not the one being recorded. */
+    /**
+     * Deletes the lecture [summary] (audio included), here and on the devices working on the
+     * notebook; not the one being recorded (here or elsewhere).
+     */
     fun delete(documentId: String, summary: LectureSummary) {
-        if (activeRecorder?.lecture?.directory == summary.directory || importing?.directory == summary.directory) return
+        if (activeRecorder?.lecture?.directory == summary.directory || importing?.directory == summary.directory || summary.activeElsewhere) return
         if (shownLectures[documentId]?.directory == summary.directory) {
             shownLectures[documentId]?.stopPlayback()
             shownLectures.remove(documentId)
         }
         scope.launch {
-            library.delete(summary.directory)
-            refresh(documentId)
+            // Not merged meanwhile with the one of another device
+            library.records.withLock { library.delete(summary.directory) }
+            refreshNow(documentId)
         }
     }
 

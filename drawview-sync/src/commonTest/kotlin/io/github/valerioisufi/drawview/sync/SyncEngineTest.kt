@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.sync
 
 import io.github.valerioisufi.drawview.core.attachment.AttachmentChange
 import io.github.valerioisufi.drawview.core.attachment.AttachmentReceiver
+import io.github.valerioisufi.drawview.core.attachment.AttachmentSource
 import io.github.valerioisufi.drawview.core.attachment.DocumentAttachments
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.AddPage
@@ -171,7 +172,8 @@ class SyncEngineTest {
 
     /**
      * Items beside the documents, in memory: the ones under `blob/` are kept as received (when
-     * missing), the others are sets of lines, merged (their version: their content).
+     * missing), the ones under `file/` too, when an item here lists them; the others are sets of
+     * lines, merged (their version: their content).
      */
     private class MemoryAttachments : DocumentAttachments {
         val items = mutableMapOf<Pair<String, String>, ByteArray>()
@@ -186,20 +188,30 @@ class SyncEngineTest {
             changes.tryEmit(AttachmentChange(documentId, key, content))
         }
 
-        private fun versionOf(bytes: ByteArray, key: String) = if (key.startsWith("blob/")) "size ${bytes.size}" else bytes.decodeToString()
+        private fun isBlob(key: String) = key.startsWith("blob/") || key.startsWith("file/")
+
+        private fun versionOf(bytes: ByteArray, key: String) = if (isBlob(key)) "size ${bytes.size}" else bytes.decodeToString()
 
         override suspend fun versions(documentId: String) =
             items.filterKeys { it.first == documentId }.map { (id, bytes) -> id.second to versionOf(bytes, id.second) }.toMap()
 
         override suspend fun version(documentId: String, key: String) = items[documentId to key]?.let { versionOf(it, key) }
 
-        override suspend fun wants(documentId: String, key: String, version: String) =
-            !key.startsWith("blob/") || (documentId to key) !in items
+        override suspend fun wants(documentId: String, key: String, version: String) = when {
+            !isBlob(key) -> true
+            (documentId to key) in items -> false
+            key.startsWith("file/") -> items.any { (id, bytes) -> id.first == documentId && !isBlob(id.second) && key in bytes.decodeToString().lines() }
+            else -> true
+        }
 
-        override suspend fun size(documentId: String, key: String) = items[documentId to key]?.size?.toLong()
-
-        override suspend fun read(documentId: String, key: String, offset: Long, length: Int) =
-            items[documentId to key]?.let { it.copyOfRange(offset.toInt(), minOf(it.size, offset.toInt() + length)) }
+        override suspend fun open(documentId: String, key: String): AttachmentSource? {
+            val bytes = items[documentId to key] ?: return null
+            return object : AttachmentSource {
+                override val version = versionOf(bytes, key)
+                override val size = bytes.size.toLong()
+                override suspend fun read(offset: Long, length: Int) = bytes.copyOfRange(offset.toInt(), minOf(bytes.size, offset.toInt() + length))
+            }
+        }
 
         override suspend fun receive(documentId: String, key: String, version: String, size: Long) = object : AttachmentReceiver {
             val received = mutableListOf<ByteArray>()
@@ -209,7 +221,7 @@ class SyncEngineTest {
 
             override suspend fun complete() {
                 val bytes = received.fold(ByteArray(0)) { all, part -> all + part }
-                if (key.startsWith("blob/")) {
+                if (isBlob(key)) {
                     items[documentId to key] = bytes
                     changes.emit(AttachmentChange(documentId, key, versionOf(bytes, key)))
                     return
@@ -430,6 +442,21 @@ class SyncEngineTest {
         ada.attachments.put(document.id, "lecture/1", setOf("outline", "review", "note inserted"))
         advanceUntilIdle()
         assertEquals("note inserted\noutline\nreview", cy.attachments.text(document.id, "lecture/1"))
+    }
+
+    @Test
+    fun anItemWantedOnceAnotherOneIsReceivedIsAskedFor() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob) = listOf("ada", "bob").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Notes")
+        val invitation = ada.engine.share(document.id, "Notes")
+        // The file is offered with the list naming it, which Bob has not yet
+        ada.attachments.items[document.id to "file/page.jpg"] = Random(5).nextBytes(1000)
+        ada.attachments.put(document.id, "lecture/1", setOf("file/page.jpg"))
+        bob.join(invitation, "ada")
+        advanceUntilIdle()
+        assertEquals("file/page.jpg", bob.attachments.text(document.id, "lecture/1"))
+        assertContentEquals(ada.attachments.items[document.id to "file/page.jpg"], bob.attachments.items[document.id to "file/page.jpg"])
     }
 
     @Test

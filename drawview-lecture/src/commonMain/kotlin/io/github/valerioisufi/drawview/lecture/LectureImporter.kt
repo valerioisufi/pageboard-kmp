@@ -11,6 +11,7 @@ import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
@@ -22,6 +23,9 @@ import kotlinx.io.files.SystemFileSystem
  * computer by [transcriber], or by Gemini when the audio may be sent and [transcriber] is `null`),
  * then reviewed as a recorded lecture. No live suggestion: the review writes the notes and what is
  * missing from the notebook ([pages]).
+ *
+ * A lecture recorded on a device without the models is transcribed and reviewed the same way
+ * ([transcribeAndReview]).
  */
 internal class LectureImporter(
     private val lecture: Lecture,
@@ -54,10 +58,18 @@ internal class LectureImporter(
         }
         lecture.setState { elapsedMs = samplesToMs(samples) }
         lecture.persist()
+        transcribeAndReview(settingsStore.settings.reviewProvider)
+    }
 
+    /** Transcribes the audio of the lecture, then writes its review with [provider]. */
+    suspend fun transcribeAndReview(provider: ModelProvider) {
+        val durationMs = lecture.setStateResult {
+            status = LectureStatus.IMPORTING
+            elapsedMs
+        }
         val settings = settingsStore.settings
         try {
-            transcribe(settings, samplesToMs(samples))
+            transcribe(settings, durationMs)
         } finally {
             transcriber?.close()
         }
@@ -67,12 +79,17 @@ internal class LectureImporter(
             importProgress = -1f
         }
         lecture.persist()
-        lecture.runFinalReview(settings.reviewProvider)
-        lecture.setState {
-            status = LectureStatus.FINISHED
-            importStep = null
+        try {
+            lecture.runFinalReview(provider)
+        } finally {
+            withContext(NonCancellable) {
+                lecture.setState {
+                    status = LectureStatus.FINISHED
+                    importStep = null
+                }
+                lecture.persist()
+            }
         }
-        lecture.persist()
     }
 
     /** The transcript, chunk after chunk, as fast as the transcription goes. */

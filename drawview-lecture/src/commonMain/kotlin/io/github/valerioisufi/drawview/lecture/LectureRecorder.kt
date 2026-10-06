@@ -86,7 +86,9 @@ class LectureRecorder internal constructor(
 
     /** Text of the slides the student was looking at, for the prompt of the transcription. */
     private var visibleSlides: List<String> = emptyList()
-    private val handwriting = HandwritingReader(lecture.directory.trimEnd('/').substringBeforeLast('/') + "/handwriting.json", lecture.backends)
+    private val handwriting = HandwritingReader(lecture.directory.trimEnd('/').substringBeforeLast('/') + "/handwriting.json", lecture.backends) {
+        lecture.onChanged(null)
+    }
     private val recentChunks = ArrayDeque<AudioChunk>()
     private var lastOutlineMs = Long.MIN_VALUE
 

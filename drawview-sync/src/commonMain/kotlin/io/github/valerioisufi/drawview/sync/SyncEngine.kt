@@ -290,6 +290,10 @@ class SyncEngine(
         val downloads = mutableMapOf<String, Download>()
         val receiving = mutableMapOf<String, Receiving>()
 
+        /** The items of the other device not the same here, by key with their versions, and the ones asked for. */
+        val offered = mutableMapOf<String, String>()
+        val asked = mutableSetOf<String>()
+
         /** The items beside the document asked for, sent one at a time ([sendAttachment]). */
         val attachmentRequests = Channel<String>(Channel.UNLIMITED)
 
@@ -603,25 +607,43 @@ class SyncEngine(
 
     /** The items the other device has: the ones wanted here and different are asked for. */
     private suspend fun onAttachmentVersions(link: Link, versions: Map<String, String>) {
+        if (attachments == null || link.sync == null) return
+        for ((key, version) in versions) {
+            // Asked for at another version: maybe not there anymore
+            if (link.offered.put(key, version).let { it != null && it != version }) link.asked.remove(key)
+        }
+        askForOffered(link)
+    }
+
+    /**
+     * Asks for the items offered by the other device that are different and wanted here (what is
+     * wanted may depend on the items received: asked again after each one).
+     */
+    private suspend fun askForOffered(link: Link) {
         val attachments = attachments ?: return
-        if (link.sync == null) return
+        if (link.offered.isEmpty()) return
         val mine = attachments.versions(link.documentId)
-        val wanted = versions.filter { (key, version) -> mine[key] != version && attachments.wants(link.documentId, key, version) }.keys
-        if (wanted.isNotEmpty()) link.outbox.send(AttachmentRequest(wanted.toList()))
+        link.offered.entries.removeAll { (key, version) -> mine[key] == version }
+        val wanted = link.offered.filter { (key, version) -> key !in link.asked && attachments.wants(link.documentId, key, version) }.keys
+        if (wanted.isEmpty()) return
+        link.asked += wanted
+        link.outbox.send(AttachmentRequest(wanted.toList()))
     }
 
     /** Sends the item [key] asked for, in parts. */
     private suspend fun sendAttachment(link: Link, key: String) {
-        val attachments = attachments ?: return
-        val version = attachments.version(link.documentId, key) ?: return
-        val size = attachments.size(link.documentId, key) ?: return
-        var offset = 0L
-        do {
-            val bytes = attachments.read(link.documentId, key, offset, min(CHUNK_SIZE.toLong(), size - offset).toInt()) ?: return
-            link.attachmentParts.acquire()
-            link.outbox.send(AttachmentPart(key, version, offset, size, bytes))
-            offset += bytes.size
-        } while (offset < size && bytes.isNotEmpty())
+        val source = attachments?.open(link.documentId, key) ?: return
+        try {
+            var offset = 0L
+            do {
+                val bytes = source.read(offset, min(CHUNK_SIZE.toLong(), source.size - offset).toInt()) ?: return
+                link.attachmentParts.acquire()
+                link.outbox.send(AttachmentPart(key, source.version, offset, source.size, bytes))
+                offset += bytes.size
+            } while (offset < source.size && bytes.isNotEmpty())
+        } finally {
+            withContext(NonCancellable) { source.close() }
+        }
     }
 
     private suspend fun onAttachmentPart(link: Link, part: AttachmentPart) {
@@ -629,13 +651,20 @@ class SyncEngine(
         if (link.sync == null || part.size !in 0..MAX_ATTACHMENT_SIZE) return
         if (part.offset == 0L) {
             link.receiving.remove(part.key)?.receiver?.cancel()
-            val receiver = attachments.receive(link.documentId, part.key, part.version, part.size) ?: return
+            val receiver = attachments.receive(link.documentId, part.key, part.version, part.size)
+            if (receiver == null) {
+                // Not kept here: not asked for again until it changes
+                link.asked.remove(part.key)
+                link.offered.remove(part.key)
+                return
+            }
             link.receiving[part.key] = Receiving(receiver, part.version, part.size)
         }
         val receiving = link.receiving[part.key] ?: return
         if (part.version != receiving.version || part.offset != receiving.received) {
-            // Not the next part: the item is asked for again at its next change
+            // Not the next part: the item is asked for again
             link.receiving.remove(part.key)
+            link.asked.remove(part.key)
             receiving.receiver.cancel()
             return
         }
@@ -644,6 +673,12 @@ class SyncEngine(
         if (receiving.received < receiving.size) return
         link.receiving.remove(part.key)
         receiving.receiver.complete()
+        link.asked.remove(part.key)
+        if (link.offered[part.key] == part.version) link.offered.remove(part.key)
+        // Kept otherwise (e.g. merged with the one here): it goes back
+        val kept = attachments.version(link.documentId, part.key)
+        if (kept != null && kept != part.version) link.outbox.send(AttachmentVersions(mapOf(part.key to kept)))
+        askForOffered(link)
     }
 
     /** An item beside the document [AttachmentChange.documentId] changed here: the others are told. */

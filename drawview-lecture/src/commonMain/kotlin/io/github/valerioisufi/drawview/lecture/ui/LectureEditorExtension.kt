@@ -37,13 +37,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.lecture.LectureAssistant
 import io.github.valerioisufi.drawview.lecture.LectureRecordings
 import io.github.valerioisufi.drawview.lecture.LectureStatus
 import io.github.valerioisufi.drawview.lecture.SuggestionStatus
 import io.github.valerioisufi.drawview.lecture.formatLectureTime
-import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.lecture.generated.resources.Res
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_action_cancel
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_action_stop
@@ -56,6 +57,7 @@ import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_place
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_place_hint
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_title
 import io.github.valerioisufi.drawview.lecture.platform.rememberMicrophoneAccess
+import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.ui.components.ToolButton
 import io.github.valerioisufi.drawview.ui.session.EditorExtension
 import org.jetbrains.compose.resources.stringResource
@@ -71,12 +73,19 @@ fun LectureAssistant.editorExtension(): EditorExtension = EditorExtension(
     canvasOverlay = { _, controller -> PlacementHint(this@editorExtension, controller) }
 )
 
-/** A [LectureAssistant] kept for the lifetime of the composition (the application). */
+/**
+ * A [LectureAssistant] kept for the lifetime of the application (also when its window or activity
+ * is created again: the recording goes on).
+ */
 @Composable
 fun rememberLectureAssistant(): LectureAssistant {
-    val assistant = remember { LectureAssistant() }
+    val assistant = viewModel { LectureAssistantHolder() }.assistant
     assistant.requestMicrophone = rememberMicrophoneAccess()
     return assistant
+}
+
+private class LectureAssistantHolder : ViewModel() {
+    val assistant = LectureAssistant()
 }
 
 /**

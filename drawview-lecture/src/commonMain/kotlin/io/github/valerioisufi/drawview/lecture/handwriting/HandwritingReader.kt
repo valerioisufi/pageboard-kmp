@@ -8,10 +8,13 @@ import io.github.valerioisufi.drawview.lecture.NotebookSource
 import io.github.valerioisufi.drawview.lecture.PageContent
 import io.github.valerioisufi.drawview.lecture.TaskModel
 import io.github.valerioisufi.drawview.lecture.TokenUsage
+import io.github.valerioisufi.drawview.lecture.writeAtomically
 import io.github.valerioisufi.drawview.lecture.model.ModelBackends
 import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
 import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
 import io.github.valerioisufi.drawview.lecture.model.PromptPart
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
@@ -29,16 +32,23 @@ import kotlinx.serialization.json.putJsonObject
  * (`handwriting.json` of the document, shared by its lectures). Adding or erasing a stroke changes
  * the key of its block, which is transcribed again.
  *
+ * The devices working on the notebook share what they read ([merge]): the file gathers it when
+ * saved ([onSaved]).
+ *
  * Used by one coroutine at a time (the analysis of a lecture, then its end).
  */
-internal class HandwritingReader(private val path: String, private val backends: ModelBackends) {
+internal class HandwritingReader(
+    private val path: String,
+    private val backends: ModelBackends,
+    private val onSaved: () -> Unit = {}
+) {
     private val texts: MutableMap<String, Entry> by lazy { load() }
 
     /** Keys of the blocks of the previous capture: unchanged since then, the student is done with them. */
     private var previousKeys: Set<String> = emptySet()
 
     @Serializable
-    class Entry(val pageId: String = "", val text: String)
+    data class Entry(val pageId: String = "", val text: String)
 
     /** [snapshot] with the handwriting transcribed so far in its pages. */
     fun fill(snapshot: NotebookSnapshot): NotebookSnapshot =
@@ -118,19 +128,17 @@ internal class HandwritingReader(private val path: String, private val backends:
         )
     }
 
-    private fun load(): MutableMap<String, Entry> {
-        val bytes = PlatformFiles.readBytes(path) ?: return LinkedHashMap()
-        return try {
-            LinkedHashMap(json.decodeFromString(storeSerializer, bytes.decodeToString()))
-        } catch (_: Exception) {
-            LinkedHashMap()
-        }
-    }
+    private fun load(): MutableMap<String, Entry> = LinkedHashMap(readFile(path))
 
-    private fun save() {
-        // The oldest entries go first (insertion order)
-        while (texts.size > MAX_ENTRIES) texts.remove(texts.keys.first())
-        PlatformFiles.writeBytes(path, json.encodeToString(storeSerializer, texts).encodeToByteArray())
+    private suspend fun save() {
+        fileLock.withLock {
+            // With what the other devices read meanwhile
+            for ((key, entry) in readFile(path)) if (key !in texts) texts[key] = entry
+            // The oldest entries go first (insertion order)
+            while (texts.size > MAX_ENTRIES) texts.remove(texts.keys.first())
+            writeAtomically(path, encode(texts).encodeToByteArray())
+        }
+        onSaved()
     }
 
     companion object {
@@ -148,6 +156,33 @@ internal class HandwritingReader(private val path: String, private val backends:
 
         private val json = Json { ignoreUnknownKeys = true }
         private val storeSerializer = MapSerializer(String.serializer(), Entry.serializer())
+
+        /** Held while a file of the handwriting is read and written (here, or with what another device read). */
+        val fileLock = Mutex()
+
+        /** The handwriting read in the file [path]. */
+        fun readFile(path: String): Map<String, Entry> = PlatformFiles.readBytes(path)?.let { decode(it) }.orEmpty()
+
+        fun decode(bytes: ByteArray): Map<String, Entry>? = try {
+            json.decodeFromString(storeSerializer, bytes.decodeToString())
+        } catch (_: Exception) {
+            null
+        }
+
+        fun encode(texts: Map<String, Entry>): String = json.encodeToString(storeSerializer, texts)
+
+        /** The handwriting read here and on another device: all of it (of a block read on both, the same one on both). */
+        fun merge(mine: Map<String, Entry>, theirs: Map<String, Entry>): Map<String, Entry> {
+            val merged = LinkedHashMap(mine)
+            for ((key, entry) in theirs) {
+                val known = merged[key]
+                if (known == null || (known != entry && entry.text > known.text)) merged[key] = entry
+            }
+            return merged
+        }
+
+        /** The same bytes for the same handwriting (whatever the order it was read in). */
+        fun canonical(texts: Map<String, Entry>): String = encode(texts.entries.sortedBy { it.key }.associate { it.toPair() })
 
         private val SYSTEM = """
             You transcribe the handwritten notes of a university student, taken during a lecture. Every image shows one block of handwriting.

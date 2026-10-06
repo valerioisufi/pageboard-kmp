@@ -439,6 +439,34 @@ The application is not released yet, so the stored documents are not migrated:
   iPad, which neither opens it nor selects it with the lasso and tells who is writing it; once the
   iPhone closes its editor, the iPad opens it (and the other way round).
 
+### After phase 6: the lectures of a notebook
+
+* The lectures of a shared notebook reach the devices working on it (`LectureAttachments`, the
+  items beside the document of the protocol): the lecture (`lecture.json`), its audio once
+  finished, the images of the pages seen it names; the course context, the handwriting read and
+  the lectures deleted.
+* A lecture is merged part by part (`LectureRecords`): the recording (title, duration, status,
+  pages seen), the outline, the transcript, the review, the tokens; each keeps its most recent
+  change (`Stamp`: clock and device, after the change it follows even with a clock behind). The
+  suggestions are gathered from both, each with its most recent status (inserted, already noted,
+  dismissed). The version of a lecture is a hash of it (the order of its suggestions aside): two
+  devices with the same lecture have the same one. The course context keeps the most recent one,
+  the handwriting all of it; a lecture deleted is deleted everywhere (`deleted.json`), but not
+  while it is being recorded.
+* A lecture being recorded is seen on the others as it is saved (every update, or every 30 s
+  without the models): "being recorded on iPad"; its audio is offered once finished (a tablet
+  recording 1 h sends about 115 MB, in chunks of 256 KiB, the operations going first). The
+  images of the pages are wanted at the version the lecture names, which may arrive after them:
+  the items not wanted are asked for again after each one received (`SyncEngine.askForOffered`).
+* A lecture recorded where the models are not (the tablets) is transcribed and reviewed on the
+  desktop (`LectureAssistant.generate`, as an imported recording), and the transcript, the review
+  and the notes go back to the tablet, which shows them at once in the panel.
+* The lecture being recorded or shown takes what is received under the lock of the records
+  (`LectureLibrary.records`, held when it is saved): nothing is lost between the two; a device
+  keeping something else than what it received sends its version back.
+* Verified by `LectureSharingTest` (tablet and computer exchanging as the synchronization does)
+  and `LectureRecordsTest`.
+
 ### Risks
 
 * Regressions of the editor in phase 2: one manager at a time, with tests comparing the state

@@ -253,10 +253,19 @@ private fun LectureSelector(assistant: LectureAssistant, documentId: String, lec
             for (summary in lectures) {
                 DropdownMenuItem(
                     text = {
-                        Text(
-                            formatLectureDate(summary.startedAt) + " · " + formatLectureTime(summary.durationMs) +
-                                (if (summary.hasReview) " · ✓" else "")
-                        )
+                        Column {
+                            Text(
+                                formatLectureDate(summary.startedAt) + " · " + formatLectureTime(summary.durationMs) +
+                                    (if (summary.hasReview) " · ✓" else "")
+                            )
+                            summary.recordedElsewhere?.let {
+                                Text(
+                                    stringResource(Res.string.lecture_recorded_on, it),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     },
                     onClick = {
                         expanded = false
@@ -264,7 +273,7 @@ private fun LectureSelector(assistant: LectureAssistant, documentId: String, lec
                     }
                 )
             }
-            if (shown != null && !isActive && assistant.canImportAndExport && lecture.status == LectureStatus.FINISHED) {
+            if (shown != null && !isActive && assistant.canImportAndExport && lecture.status == LectureStatus.FINISHED && lecture.hasAudio) {
                 HorizontalDivider()
                 DropdownMenuItem(
                     text = { Text(stringResource(Res.string.lecture_export_audio)) },
@@ -276,7 +285,8 @@ private fun LectureSelector(assistant: LectureAssistant, documentId: String, lec
                     }
                 )
             }
-            if (shown != null && !isActive) {
+            // Not while it is recorded on another device
+            if (shown != null && !isActive && !shown.activeElsewhere) {
                 HorizontalDivider()
                 DropdownMenuItem(
                     text = { Text(stringResource(Res.string.lecture_delete), color = MaterialTheme.colorScheme.error) },
@@ -362,6 +372,19 @@ private fun RecordingSection(
                 }
             }
 
+            // Being recorded, or transcribed, on another device
+            lecture.status != LectureStatus.FINISHED && recorder?.lecture !== lecture && assistant.importing !== lecture -> {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        text = if (lecture.status == LectureStatus.IMPORTING) stringResource(Res.string.lecture_status_processing_elsewhere)
+                        else stringResource(Res.string.lecture_status_recording_on, lecture.recordedOn, formatLectureTime(lecture.elapsedMs)),
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                }
+            }
+
             lecture.status == LectureStatus.IMPORTING -> {
                 Text(
                     text = stringResource(
@@ -442,6 +465,12 @@ private fun RecordingSection(
                     text = stringResource(Res.string.lecture_status_finished, formatLectureTime(lecture.elapsedMs)),
                     style = MaterialTheme.typography.titleSmall
                 )
+                if (lecture.recordedElsewhere) {
+                    MutedText(
+                        if (lecture.hasAudio) stringResource(Res.string.lecture_recorded_on, lecture.recordedOn)
+                        else stringResource(Res.string.lecture_audio_arriving, lecture.recordedOn)
+                    )
+                }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(onClick = onStart, enabled = canStart, modifier = Modifier.weight(1f)) {
                         Text(stringResource(Res.string.lecture_action_new_recording), maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -569,7 +598,7 @@ private fun LectureTabs(assistant: LectureAssistant, lecture: Lecture, controlle
             0 -> NotesTab(assistant, lecture, controller, inserter)
             1 -> TranscriptTab(lecture)
             2 -> OutlineTab(assistant, lecture)
-            else -> ReviewTab(lecture, controller, inserter, assistant.settingsStore.settings)
+            else -> ReviewTab(assistant, lecture, controller, inserter, assistant.settingsStore.settings)
         }
     }
 }
@@ -910,6 +939,7 @@ private fun CourseContextCard(assistant: LectureAssistant, documentId: String) {
 
 @Composable
 private fun ReviewTab(
+    assistant: LectureAssistant,
     lecture: Lecture,
     controller: DrawViewController,
     inserter: NoteInserter,
@@ -923,7 +953,8 @@ private fun ReviewTab(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         val review = lecture.finalReview
-        val canRegenerate = lecture.canGenerateReview
+        // Without the transcript, the audio is transcribed first
+        val canRegenerate = lecture.canGenerateReview && (lecture.transcript.isNotEmpty() || lecture.hasAudio)
         when {
             lecture.reviewStatus == ReviewStatus.RUNNING || lecture.status == LectureStatus.FINALIZING -> {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -940,7 +971,7 @@ private fun ReviewTab(
             }
             lecture.reviewStatus == ReviewStatus.FAILED -> {
                 MutedText(stringResource(Res.string.lecture_review_failed))
-                if (canRegenerate) RegenerateReviewButton(lecture, settings)
+                if (canRegenerate) RegenerateReviewButton(assistant, lecture, settings)
             }
             review != null -> {
                 InsertPagesButton(controller) { afterPageIndex -> inserter.insertPages(controller, review, afterPageIndex) }
@@ -949,16 +980,19 @@ private fun ReviewTab(
                         lecture.reviewModel?.let { stringResource(Res.string.lecture_review_by, it) }.orEmpty(),
                         Modifier.weight(1f)
                     )
-                    if (canRegenerate) RegenerateReviewButton(lecture, settings)
+                    if (canRegenerate) RegenerateReviewButton(assistant, lecture, settings)
                 }
                 SelectionContainer { MarkdownText(review) }
             }
             // Written by a device with the models
             !lecture.generates -> MutedText(stringResource(Res.string.lecture_review_elsewhere))
             lecture.status == LectureStatus.FINISHED -> {
-                // Interrupted before its review (e.g. the application was closed)
-                MutedText(stringResource(Res.string.lecture_review_pending))
-                if (canRegenerate) RegenerateReviewButton(lecture, settings, label = Res.string.lecture_review_generate)
+                // Recorded where the models are not, or interrupted before its review (e.g. the application was closed)
+                MutedText(
+                    if (lecture.recordedElsewhere && lecture.transcript.isEmpty()) stringResource(Res.string.lecture_review_received, lecture.recordedOn)
+                    else stringResource(Res.string.lecture_review_pending)
+                )
+                if (canRegenerate) RegenerateReviewButton(assistant, lecture, settings, label = Res.string.lecture_review_generate)
             }
             else -> MutedText(stringResource(Res.string.lecture_review_none, settings.task(LectureTask.FINAL_REVIEW).model))
         }
@@ -970,6 +1004,7 @@ private fun ReviewTab(
 /** Writes the final review again, online or by the local model. */
 @Composable
 private fun RegenerateReviewButton(
+    assistant: LectureAssistant,
     lecture: Lecture,
     settings: AssistantSettings,
     label: StringResource = Res.string.lecture_review_regenerate
@@ -985,14 +1020,14 @@ private fun RegenerateReviewButton(
                 text = { Text(stringResource(Res.string.lecture_review_with_gemini, settings.task(LectureTask.FINAL_REVIEW).gemini)) },
                 onClick = {
                     expanded = false
-                    lecture.generateFinalReview(ReviewProvider.GEMINI)
+                    assistant.generate(lecture, ReviewProvider.GEMINI)
                 }
             )
             DropdownMenuItem(
                 text = { Text(stringResource(Res.string.lecture_review_with_local, settings.task(LectureTask.FINAL_REVIEW).local)) },
                 onClick = {
                     expanded = false
-                    lecture.generateFinalReview(ReviewProvider.LOCAL)
+                    assistant.generate(lecture, ReviewProvider.LOCAL)
                 }
             )
         }

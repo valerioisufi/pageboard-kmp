@@ -28,6 +28,7 @@ enum class SuggestionStatus { NEW, INSERTED, ALREADY_NOTED, DISMISSED }
  * @param importance 1 (detail) to 3 (stressed by the lecturer, exam).
  * @param atMs time of the lecture when it was said.
  * @param fromFinalReview found by the review of the whole lecture.
+ * @param statusStamp when [status] was last changed, and where (the most recent wins, see [Stamp]).
  */
 @Serializable
 data class NoteSuggestion(
@@ -40,7 +41,8 @@ data class NoteSuggestion(
     val importance: Int = 2,
     val atMs: Long = 0,
     val fromFinalReview: Boolean = false,
-    val status: SuggestionStatus = SuggestionStatus.NEW
+    val status: SuggestionStatus = SuggestionStatus.NEW,
+    val statusStamp: Stamp? = null
 )
 
 /** The page of [document] where the suggestion belongs: by identifier, or by index. */
@@ -98,10 +100,46 @@ enum class ImportStep { CONVERTING, TRANSCRIBING, REVIEWING }
  * when the notebook is closed, or after a restart).
  *
  * @param image file in `pages/` of the lecture with its last image (the visible pages only).
+ * @param imageHash the hash of that image ([contentHash]): the other devices want that one.
  * @param visible the page was on screen (the others were around it).
  */
 @Serializable
-data class SeenPage(val content: PageContent, val image: String? = null, val visible: Boolean = false)
+data class SeenPage(val content: PageContent, val image: String? = null, val visible: Boolean = false, val imageHash: String? = null)
+
+/**
+ * When something of a lecture was changed, and on which device (its identifier,
+ * [LectureLibrary.deviceId]): of two changes made apart, the most recent one wins (by the clocks of
+ * the devices; [by] tells apart the changes of the same millisecond).
+ */
+@Serializable
+data class Stamp(val at: Long, val by: String) : Comparable<Stamp> {
+    override fun compareTo(other: Stamp): Int = compareValuesBy(this, other, Stamp::at, Stamp::by)
+
+    /** A change made after this one on [device] at [now] (just after this one, when the clock of [device] is behind). */
+    fun next(device: String, now: Long) = Stamp(maxOf(now, at + 1), device)
+
+    companion object {
+        val NONE = Stamp(0, "")
+    }
+}
+
+/**
+ * The parts of a lecture changed as a whole, each by one device at a time: of the same part
+ * changed on two devices, the most recent change is kept ([LectureRecord.stamps]).
+ */
+@Serializable
+enum class LecturePart {
+    /** The title, the duration, the status and the pages seen: changed by the device recording it (or importing it). */
+    RECORDING,
+
+    /** The outline and the current topic. */
+    OUTLINE,
+    TRANSCRIPT,
+
+    /** The final review and the model that wrote it. */
+    REVIEW,
+    USAGE
+}
 
 /**
  * A recorded lecture, saved as `lecture.json` next to its audio.
@@ -124,8 +162,15 @@ data class LectureRecord(
     val finalReviewProvider: ReviewProvider? = null,
     val usage: TokenUsage = TokenUsage(),
     /** The pages of the notebook seen during the lecture, the most recent last. */
-    val pages: List<SeenPage> = emptyList()
-)
+    val pages: List<SeenPage> = emptyList(),
+    /** The device that recorded it ([LectureLibrary.deviceId]), and its name. */
+    val recordedBy: String = "",
+    val recordedOn: String = "",
+    /** When its parts were last changed, and where (the suggestions have their own, see [LectureRecords.merge]). */
+    val stamps: Map<LecturePart, Stamp> = emptyMap()
+) {
+    fun stampOf(part: LecturePart): Stamp = stamps[part] ?: Stamp.NONE
+}
 
 /**
  * The course of a notebook in a few lines (subject, topics, terms that the lecturer will say),
@@ -133,9 +178,10 @@ data class LectureRecord(
  * transcription and the models. Saved as `context.json` of the lectures of the notebook.
  *
  * @param edited written or changed by the student: not replaced by a new one automatically.
+ * @param stamp when it was written, and where: of two contexts written apart, the most recent is kept.
  */
 @Serializable
-data class CourseContext(val text: String, val edited: Boolean = false, val generatedAt: Long = 0)
+data class CourseContext(val text: String, val edited: Boolean = false, val generatedAt: Long = 0, val stamp: Stamp = Stamp.NONE)
 
 /** Formats [ms] as `m:ss` (or `h:mm:ss`). */
 fun formatLectureTime(ms: Long): String {

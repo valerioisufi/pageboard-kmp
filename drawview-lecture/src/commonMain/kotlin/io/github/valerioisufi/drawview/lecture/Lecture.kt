@@ -28,8 +28,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.io.files.Path
-import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.json.Json
 import kotlin.coroutines.CoroutineContext
 import kotlin.random.Random
@@ -70,11 +68,18 @@ sealed interface LectureProblem {
  * reviewed at any time. The final review is written by Gemini (with the complete recording when the
  * audio may leave the device) or by a local model (Ollama) with the transcript.
  *
+ * The devices working on the notebook have the lecture too ([LectureAttachments]): what they
+ * change is merged into it ([merge]), as is what changes here into theirs.
+ *
  * Every observable property is Compose state, updated on [stateContext].
  *
  * @param courseContext the course context of the notebook ([CourseContext]), read at every request.
  * @param generates whether this device writes what the models write (see
  *   [LectureAssistant.canGenerate]).
+ * @param device this device ([LectureLibrary.deviceId]), [deviceName] its name.
+ * @param recordsLock held while `lecture.json` is written ([LectureLibrary.records]).
+ * @param onChanged called when something changed here: `lecture.json` written (with its id), or
+ *   what the lectures of the notebook share (`null`, e.g. the handwriting read).
  */
 class Lecture internal constructor(
     val documentId: String,
@@ -86,10 +91,21 @@ class Lecture internal constructor(
     internal val stateContext: CoroutineContext = Dispatchers.Main,
     internal val courseContext: () -> String = { "" },
     startedAt: Long? = null,
-    val generates: Boolean = true
+    val generates: Boolean = true,
+    internal val device: String = "",
+    deviceName: String = "",
+    private val recordsLock: Mutex = Mutex(),
+    internal val onChanged: (lectureId: String?) -> Unit = {}
 ) {
     val id: String = directory.trimEnd('/').substringAfterLast('/')
     val startedAt: Long = record?.startedAt ?: startedAt ?: currentTimeMillis()
+
+    /** The device that recorded it, and its name. */
+    private val recordedBy: String = record?.recordedBy?.takeIf { it.isNotEmpty() } ?: device
+    val recordedOn: String = record?.recordedOn?.takeIf { it.isNotEmpty() } ?: deviceName
+
+    /** Recorded on another device (it may still be recording it, its audio may not be here yet). */
+    val recordedElsewhere: Boolean get() = recordedBy.isNotEmpty() && recordedBy != device
 
     var documentTitle by mutableStateOf(record?.documentTitle.orEmpty())
         internal set
@@ -169,6 +185,10 @@ class Lecture internal constructor(
     var usage by mutableStateOf(record?.usage ?: TokenUsage())
         internal set
 
+    /** The audio is here (a lecture recorded on another device gets it once finished there). */
+    var hasAudio by mutableStateOf(record != null && RecordingFile(directory).pcmBytes() > 0)
+        private set
+
 
     /** The final review can be written (again): the recording is over and no review is running. */
     val canGenerateReview: Boolean get() = generates && status == LectureStatus.FINISHED && reviewStatus != ReviewStatus.RUNNING
@@ -180,7 +200,9 @@ class Lecture internal constructor(
     val player: RecordingPlayer? = audioOutput?.let { RecordingPlayer(recording, it, stateContext) }
 
     val canPlayAudio: Boolean get() = player != null
-    private val persistMutex = Mutex()
+
+    /** The lecture as last saved or merged (the stamps of its parts: what changed since then is stamped when saved). */
+    private var saved: LectureRecord? = record
 
     // Material of the review (the analysis coroutine of the recorder, then the review)
     private val seenPages = LinkedHashMap<String, SeenPage>()
@@ -190,8 +212,13 @@ class Lecture internal constructor(
 
     init {
         if (record != null) {
-            // Saved while recording: the recording was interrupted (see LectureLibrary)
-            status = LectureStatus.FINISHED
+            // Saved while recording here: the recording was interrupted (see LectureLibrary). Not
+            // when another device is recording it
+            status = if (record.status != LectureStatus.FINISHED && record.stampOf(LecturePart.RECORDING).by.let { it.isNotEmpty() && it != device }) {
+                record.status
+            } else {
+                LectureStatus.FINISHED
+            }
             record.pages.forEach { seenPages[pageKey(it.content.index, it.content.pageId)] = it }
         }
     }
@@ -204,7 +231,8 @@ class Lecture internal constructor(
     fun updateSuggestion(id: String, status: SuggestionStatus) {
         val index = suggestions.indexOfFirst { it.id == id }
         if (index < 0) return
-        suggestions[index] = suggestions[index].copy(status = status)
+        val suggestion = suggestions[index]
+        suggestions[index] = suggestion.copy(status = status, statusStamp = (suggestion.statusStamp ?: Stamp.NONE).next(device, currentTimeMillis()))
         scope.launch { persist() }
     }
 
@@ -313,22 +341,25 @@ class Lecture internal constructor(
         for (content in snapshot.pages.asReversed()) {
             val key = pageKey(content.index, content.pageId)
             var file = seenPages[key]?.image
+            var hash = seenPages[key]?.imageHash
             images[content.index]?.let { image ->
                 val name = "$key.jpg"
-                if (imageCache[name]?.contentEquals(image.jpeg) == true || PlatformFiles.writeBytes("$directory/pages/$name", image.jpeg)) {
+                // Written whole: the other devices may be reading it
+                if (imageCache[name]?.contentEquals(image.jpeg) == true || writeAtomically("$directory/pages/$name", image.jpeg)) {
+                    if (imageCache[name]?.contentEquals(image.jpeg) != true) hash = contentHash(image.jpeg)
                     imageCache[name] = image.jpeg
                     file = name
                 }
             }
             val visible = seenPages[key]?.visible == true || content.index in snapshot.visiblePageIndexes
             seenPages.remove(key)
-            seenPages[key] = SeenPage(content, file, visible)
+            seenPages[key] = SeenPage(content, file, visible, hash)
         }
         // The images of the pages seen longest ago are dropped
         val withImage = seenPages.filterValues { it.image != null }.keys.toList()
         for (key in withImage.dropLast(MAX_PAGE_IMAGES)) {
             val file = seenPages.getValue(key).image ?: continue
-            seenPages[key] = seenPages.getValue(key).copy(image = null)
+            seenPages[key] = seenPages.getValue(key).copy(image = null, imageHash = null)
             imageCache.remove(file)
             PlatformFiles.delete("$directory/pages/$file")
         }
@@ -499,28 +530,79 @@ class Lecture internal constructor(
         finalReviewBy = reviewModel,
         finalReviewProvider = reviewProvider,
         usage = usage,
-        pages = seenPages.values.toList()
+        pages = seenPages.values.toList(),
+        recordedBy = recordedBy,
+        recordedOn = recordedOn,
+        stamps = saved?.stamps.orEmpty()
     )
 
-    /** Writes `lecture.json` (atomically). */
+    /** Writes `lecture.json` (atomically), what changed since it was last written stamped as changed here. */
     internal suspend fun persist() {
-        val record = withContext(stateContext) { toRecord() }
-        persistMutex.withLock { withContext(Dispatchers.Default) { write(record) } }
+        recordsLock.withLock {
+            val record = withContext(stateContext) { LectureRecords.stamped(toRecord(), saved, device, currentTimeMillis()) }
+            withContext(Dispatchers.Default) { writeLectureRecord(directory, record) }
+            saved = record
+        }
+        onChanged(id)
     }
 
     /** Writes `lecture.json` from the calling thread (e.g. while the application exits). */
-    internal fun persistNow() = write(toRecord())
+    internal fun persistNow() {
+        val record = LectureRecords.stamped(toRecord(), saved, device, currentTimeMillis())
+        writeLectureRecord(directory, record)
+        saved = record
+        onChanged(id)
+    }
 
-    private fun write(record: LectureRecord) {
-        try {
-            val target = "$directory/lecture.json"
-            val temporary = "$target.tmp"
-            if (PlatformFiles.writeBytes(temporary, recordJson.encodeToString(LectureRecord.serializer(), record).encodeToByteArray())) {
-                SystemFileSystem.atomicMove(Path(temporary), Path(target))
-            }
-        } catch (e: Throwable) {
-            println("DrawView: cannot save the lecture $directory: ${e.message}")
+    /**
+     * Merges [theirs] (this lecture as another device has it) into this one, and saves it: the
+     * lecture kept. Called holding [recordsLock].
+     */
+    internal suspend fun merge(theirs: LectureRecord): LectureRecord {
+        val now = currentTimeMillis()
+        val merged = withContext(stateContext) {
+            val mine = LectureRecords.stamped(toRecord(), saved, device, now)
+            LectureRecords.merge(mine, theirs).also { showMerged(it, mine) }
         }
+        withContext(Dispatchers.Default) { writeLectureRecord(directory, merged) }
+        saved = merged
+        return merged
+    }
+
+    /** Shows what [merged] changed of [mine] (this lecture as it was). Runs on [stateContext]. */
+    private fun showMerged(merged: LectureRecord, mine: LectureRecord) {
+        documentTitle = merged.documentTitle
+        if (merged.status != mine.status || merged.durationMs != mine.durationMs) {
+            status = merged.status
+            elapsedMs = merged.durationMs
+        }
+        if (merged.pages != mine.pages) {
+            seenPages.clear()
+            merged.pages.forEach { seenPages[pageKey(it.content.index, it.content.pageId)] = it }
+        }
+        outline = merged.outline
+        currentTopic = merged.currentTopic
+        if (merged.transcript != mine.transcript) {
+            transcript.clear()
+            transcript.addAll(merged.transcript)
+        }
+        if (merged.suggestions != mine.suggestions) {
+            suggestions.clear()
+            suggestions.addAll(merged.suggestions)
+        }
+        if (merged.finalReview != mine.finalReview || merged.finalReviewBy != mine.finalReviewBy) {
+            finalReview = merged.finalReview
+            reviewModel = merged.finalReviewBy
+            reviewProvider = merged.finalReviewProvider
+            if (reviewStatus != ReviewStatus.RUNNING) reviewStatus = if (merged.finalReview != null) ReviewStatus.DONE else ReviewStatus.NONE
+        }
+        usage = merged.usage
+    }
+
+    /** Its audio was received from the device that recorded it. */
+    internal suspend fun audioReceived() = setState {
+        hasAudio = true
+        player?.refresh()
     }
 
     internal companion object {

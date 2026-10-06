@@ -2,7 +2,6 @@ package io.github.valerioisufi.drawview.sync.ui
 
 import android.content.pm.PackageManager
 import android.os.Build
-import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -14,10 +13,6 @@ import io.github.valerioisufi.drawview.sync.lan.NsdLanDiscovery
 import kotlinx.coroutines.CompletableDeferred
 
 internal actual fun createLanDiscovery(): LanDiscovery = NsdLanDiscovery(DrawViewAndroid.context)
-
-internal actual fun localDeviceName(): String =
-    Settings.Global.getString(DrawViewAndroid.context.contentResolver, Settings.Global.DEVICE_NAME)?.takeIf { it.isNotBlank() }
-        ?: Build.MODEL
 
 /** The permission of the local network, from Android 17. */
 private const val ACCESS_LOCAL_NETWORK = "android.permission.ACCESS_LOCAL_NETWORK"

@@ -66,6 +66,33 @@ class LectureLibraryTest {
     }
 
     @Test
+    fun aLectureBeingRecordedOnAnotherDeviceStaysAsItIs() {
+        val directory = library.newLectureDirectory("5", 1_000)
+        save(
+            directory,
+            LectureRecord(
+                id = "a", documentId = "5", startedAt = 1_000, status = LectureStatus.RECORDING, recordedBy = "tablet", recordedOn = "iPad",
+                stamps = mapOf(LecturePart.RECORDING to Stamp(5, "tablet"))
+            )
+        )
+        val summary = library.list("5").single()
+        assertTrue(summary.activeElsewhere)
+        assertEquals("iPad", summary.recordedElsewhere)
+        assertEquals(LectureStatus.RECORDING, library.load(directory)?.status)
+    }
+
+    @Test
+    fun theLecturesDeletedAreRememberedForTheOtherDevices() {
+        val directory = library.newLectureDirectory("5", 1_000)
+        save(directory, LectureRecord(id = "a", documentId = "5", startedAt = 1_000))
+        assertTrue(library.delete(directory))
+        assertEquals(setOf(File(directory).name), library.deletedLectures("5").keys)
+        // Received again from a device that did not know: not listed
+        save(directory, LectureRecord(id = "a", documentId = "5", startedAt = 1_000))
+        assertTrue(library.list("5").isEmpty())
+    }
+
+    @Test
     fun anInterruptedRecordingIsRecovered() {
         val directory = library.newLectureDirectory("5", 1_000)
         save(directory, LectureRecord(id = "a", documentId = "5", startedAt = 1_000, durationMs = 1_000, status = LectureStatus.RECORDING))
