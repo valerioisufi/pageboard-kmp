@@ -1,7 +1,21 @@
 package io.github.valerioisufi.drawview.lecture.platform
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.drawview.core.platform.PlatformFiles
+
+/**
+ * Whether the lectures recorded here are followed by the models (Gemini, local models): the
+ * desktop, for now. Elsewhere they are recorded only (see [io.github.valerioisufi.drawview.lecture.LectureAssistant.canGenerate]).
+ */
+internal expect fun generationSupported(): Boolean
+
+/** Whether the microphone is the one of a computer (its access granted to the application launching it). */
+internal expect val isComputer: Boolean
+
+/** Asks for the permission to use the microphone where needed: whether it is allowed. */
+@Composable
+internal expect fun rememberMicrophoneAccess(): suspend () -> Boolean
 
 /** The API key of the `GEMINI_API_KEY` environment variable (desktop), used when none is configured. */
 expect fun environmentApiKey(): String?

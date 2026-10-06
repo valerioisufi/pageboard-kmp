@@ -1,6 +1,16 @@
 package io.github.valerioisufi.drawview.lecture.platform
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import java.io.File
+
+internal actual fun generationSupported(): Boolean = true
+
+internal actual val isComputer: Boolean = true
+
+// The access to the microphone is the one of the application launching the JVM
+@Composable
+internal actual fun rememberMicrophoneAccess(): suspend () -> Boolean = remember { suspend { true } }
 
 actual fun environmentApiKey(): String? = System.getenv("GEMINI_API_KEY")?.trim()?.takeIf { it.isNotEmpty() }
 

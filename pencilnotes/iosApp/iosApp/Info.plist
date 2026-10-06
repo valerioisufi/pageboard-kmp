@@ -21,6 +21,12 @@
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>PencilNotes finds the devices around you to work on the shared documents together.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>PencilNotes records the lectures you follow, to listen to them again beside your notes.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>en</string>

@@ -102,6 +102,7 @@ import io.github.valerioisufi.drawview.lecture.LectureAssistant
 import io.github.valerioisufi.drawview.lecture.audio.importableExtensions
 import io.github.valerioisufi.drawview.lecture.platform.chooseFileToOpen
 import io.github.valerioisufi.drawview.lecture.platform.chooseFileToSave
+import io.github.valerioisufi.drawview.lecture.platform.isComputer
 import io.github.valerioisufi.drawview.lecture.LectureProblem
 import io.github.valerioisufi.drawview.lecture.ControllerNotebookSource
 import io.github.valerioisufi.drawview.lecture.Lecture
@@ -160,7 +161,8 @@ internal fun LecturePanel(assistant: LectureAssistant, documentId: String, contr
             ) {
                 Column {
                     PanelHeader(
-                        onSettings = { showSettings = true },
+                        // The settings of the models, where they are
+                        onSettings = { showSettings = true }.takeIf { assistant.canGenerate },
                         onClose = { assistant.isPanelOpen = false }
                     )
                     val lecture = assistant.shownLecture(documentId)
@@ -180,8 +182,8 @@ internal fun LecturePanel(assistant: LectureAssistant, documentId: String, contr
                         onStart = {
                             // A key is needed only when something is sent to Gemini
                             val settings = assistant.settingsStore.settings
-                            if (settings.sentToGoogle.isNotEmpty() && !assistant.settingsStore.hasApiKey) showSettings = true
-                            else assistant.start(documentId, controller)
+                            if (assistant.canGenerate && settings.sentToGoogle.isNotEmpty() && !assistant.settingsStore.hasApiKey) showSettings = true
+                            else assistant.record(documentId, controller)
                         },
                         onOpenSettings = { showSettings = true }
                     )
@@ -202,7 +204,7 @@ internal fun LecturePanel(assistant: LectureAssistant, documentId: String, contr
 }
 
 @Composable
-private fun PanelHeader(onSettings: () -> Unit, onClose: () -> Unit) {
+private fun PanelHeader(onSettings: (() -> Unit)?, onClose: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -214,8 +216,10 @@ private fun PanelHeader(onSettings: () -> Unit, onClose: () -> Unit) {
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.weight(1f)
         )
-        IconButton(onClick = onSettings) {
-            Icon(Icons.Outlined.Settings, contentDescription = stringResource(Res.string.lecture_action_settings))
+        if (onSettings != null) {
+            IconButton(onClick = onSettings) {
+                Icon(Icons.Outlined.Settings, contentDescription = stringResource(Res.string.lecture_action_settings))
+            }
         }
         IconButton(onClick = onClose) {
             Icon(Icons.Outlined.Close, contentDescription = stringResource(Res.string.lecture_action_close))
@@ -342,8 +346,12 @@ private fun RecordingSection(
             !assistant.isRecordingSupported -> MutedText(stringResource(Res.string.lecture_unsupported))
 
             lecture == null -> {
-                Text(stringResource(Res.string.lecture_idle_description), style = MaterialTheme.typography.bodyMedium)
-                MutedText(privacyNote(assistant.settingsStore.settings))
+                if (assistant.canGenerate) {
+                    Text(stringResource(Res.string.lecture_idle_description), style = MaterialTheme.typography.bodyMedium)
+                    MutedText(privacyNote(assistant.settingsStore.settings))
+                } else {
+                    Text(stringResource(Res.string.lecture_record_only_description), style = MaterialTheme.typography.bodyMedium)
+                }
                 Button(onClick = onStart, enabled = canStart, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(Res.string.lecture_action_record))
                 }
@@ -393,6 +401,7 @@ private fun RecordingSection(
                 }
                 MutedText(
                     when {
+                        !assistant.canGenerate -> stringResource(Res.string.lecture_status_recording_only)
                         lecture.isAnalyzing ->
                             stringResource(Res.string.lecture_status_analyzing, assistant.settingsStore.settings.task(LectureTask.LIVE_NOTES).model)
                         lecture.pendingUpdates > 0 -> stringResource(Res.string.lecture_status_pending, lecture.pendingUpdates)
@@ -402,9 +411,11 @@ private fun RecordingSection(
                             ?.let { stringResource(Res.string.lecture_current_topic, it) } ?: ""
                     }
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = { recorder.catchUp() }, modifier = Modifier.weight(1f)) {
-                        Text(stringResource(Res.string.lecture_action_catch_up), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End), modifier = Modifier.fillMaxWidth()) {
+                    if (assistant.canGenerate) {
+                        OutlinedButton(onClick = { recorder.catchUp() }, modifier = Modifier.weight(1f)) {
+                            Text(stringResource(Res.string.lecture_action_catch_up), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
                     }
                     Button(
                         onClick = { recorder.stop() },
@@ -451,11 +462,14 @@ private fun RecordingSection(
         assistant.startError?.let {
             ProblemBanner(stringResource(Res.string.lecture_problem_start, it))
         }
+        if (assistant.microphoneDenied) {
+            ProblemBanner(stringResource(Res.string.lecture_microphone_denied))
+        }
         assistant.importError?.let {
             ProblemBanner(stringResource(Res.string.lecture_import_failed, it))
         }
         if (lecture?.noAudioWarning == true && lecture.status == LectureStatus.RECORDING) {
-            ProblemBanner(stringResource(Res.string.lecture_no_audio_warning))
+            ProblemBanner(stringResource(if (isComputer) Res.string.lecture_no_audio_warning else Res.string.lecture_no_audio_warning_device))
         }
         lecture?.problem?.let { problem ->
             val message = when (problem) {
@@ -939,10 +953,12 @@ private fun ReviewTab(
                 }
                 SelectionContainer { MarkdownText(review) }
             }
+            // Written by a device with the models
+            !lecture.generates -> MutedText(stringResource(Res.string.lecture_review_elsewhere))
             lecture.status == LectureStatus.FINISHED -> {
                 // Interrupted before its review (e.g. the application was closed)
                 MutedText(stringResource(Res.string.lecture_review_pending))
-                RegenerateReviewButton(lecture, settings, label = Res.string.lecture_review_generate)
+                if (canRegenerate) RegenerateReviewButton(lecture, settings, label = Res.string.lecture_review_generate)
             }
             else -> MutedText(stringResource(Res.string.lecture_review_none, settings.task(LectureTask.FINAL_REVIEW).model))
         }

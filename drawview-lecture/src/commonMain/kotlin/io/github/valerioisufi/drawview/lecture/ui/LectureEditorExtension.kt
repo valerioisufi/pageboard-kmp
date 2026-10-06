@@ -55,6 +55,7 @@ import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_indic
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_place_go_to_page
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_place_hint
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_title
+import io.github.valerioisufi.drawview.lecture.platform.rememberMicrophoneAccess
 import io.github.valerioisufi.drawview.ui.components.ToolButton
 import io.github.valerioisufi.drawview.ui.session.EditorExtension
 import org.jetbrains.compose.resources.stringResource
@@ -72,7 +73,11 @@ fun LectureAssistant.editorExtension(): EditorExtension = EditorExtension(
 
 /** A [LectureAssistant] kept for the lifetime of the composition (the application). */
 @Composable
-fun rememberLectureAssistant(): LectureAssistant = remember { LectureAssistant() }
+fun rememberLectureAssistant(): LectureAssistant {
+    val assistant = remember { LectureAssistant() }
+    assistant.requestMicrophone = rememberMicrophoneAccess()
+    return assistant
+}
 
 /**
  * The lecture being recorded (or reviewed) while its document is closed, e.g. over the document

@@ -39,6 +39,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -252,6 +253,33 @@ class LectureRecorderTest {
             while (lecture.status != LectureStatus.FINISHED) delay(20)
         }
         assertTrue(File(directory, "lecture/audio.wav").length() > Wav.HEADER_SIZE)
+    }
+
+    @Test
+    fun withoutTheModelsTheLectureIsRecordedWithThePagesSeen() = runBlocking<Unit> {
+        var requests = 0
+        val engine = MockEngine {
+            requests++
+            respond("", HttpStatusCode.InternalServerError)
+        }
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath)
+        val microphone = FakeMicrophone()
+        val lecture = newLecture(settingsStore, engine)
+        val recorder = LectureRecorder(lecture, settingsStore, microphone, FakeNotebook(), analyzes = false)
+        recorder.start()
+        microphone.speak(62.0, loud = true, random = Random(1))
+        recorder.catchUp()
+        recorder.stop()
+        awaitFinished(lecture)
+
+        assertEquals(0, requests, "no model is asked")
+        assertTrue(File(directory, "lecture/audio.wav").length() > Wav.HEADER_SIZE)
+        assertNull(lecture.finalReview)
+        assertTrue(lecture.suggestions.isEmpty())
+        // The pages seen, with the image of the visible one (for the review written elsewhere)
+        val record = assertNotNull(LectureLibrary(directory.absolutePath).load(File(directory, "lecture").absolutePath))
+        assertEquals(listOf("11", "12"), record.pages.map { it.content.pageId }.sorted())
+        assertTrue(record.pages.any { it.image != null })
     }
 
     @Test

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The notification of a lecture recording in the background -->
+    <string name="lecture_recording_channel">Lecture recording</string>
+    <string name="lecture_recording_notification">Recording the lecture</string>
+</resources>

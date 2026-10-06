@@ -73,6 +73,8 @@ sealed interface LectureProblem {
  * Every observable property is Compose state, updated on [stateContext].
  *
  * @param courseContext the course context of the notebook ([CourseContext]), read at every request.
+ * @param generates whether this device writes what the models write (see
+ *   [LectureAssistant.canGenerate]).
  */
 class Lecture internal constructor(
     val documentId: String,
@@ -83,7 +85,8 @@ class Lecture internal constructor(
     audioOutput: (() -> AudioOutput?)?,
     internal val stateContext: CoroutineContext = Dispatchers.Main,
     internal val courseContext: () -> String = { "" },
-    startedAt: Long? = null
+    startedAt: Long? = null,
+    val generates: Boolean = true
 ) {
     val id: String = directory.trimEnd('/').substringAfterLast('/')
     val startedAt: Long = record?.startedAt ?: startedAt ?: currentTimeMillis()
@@ -168,7 +171,7 @@ class Lecture internal constructor(
 
 
     /** The final review can be written (again): the recording is over and no review is running. */
-    val canGenerateReview: Boolean get() = status == LectureStatus.FINISHED && reviewStatus != ReviewStatus.RUNNING
+    val canGenerateReview: Boolean get() = generates && status == LectureStatus.FINISHED && reviewStatus != ReviewStatus.RUNNING
 
     internal val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     internal val recording = RecordingFile(directory)

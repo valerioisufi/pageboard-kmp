@@ -17,6 +17,7 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -44,6 +45,10 @@ import kotlin.math.min
  * ([detachNotebook]) and the analysis works on the audio only, until the document is opened again
  * ([attachNotebook]).
  *
+ * Where the lectures are not followed by models (![analyzes]: the phones and the tablets, for now)
+ * only the audio and the pages seen are recorded (the notebook is captured now and then): the
+ * notes and the review are written later, e.g. by a device with the models the lecture reaches.
+ *
  * To limit the cost, the chunks without speech are not analyzed, the outline is rewritten every
  * few minutes only, and the notebook is sent as text ([PageContent]) with the images of the
  * visible pages only: after every update a few blocks of handwriting are transcribed
@@ -55,6 +60,7 @@ class LectureRecorder internal constructor(
     private val capture: AudioCapture,
     notebook: NotebookSource?,
     private val transcriber: Transcriber? = null,
+    private val analyzes: Boolean = true,
     private val onFinished: (LectureRecorder) -> Unit = {}
 ) {
     private val backends get() = lecture.backends
@@ -69,6 +75,9 @@ class LectureRecorder internal constructor(
     private val recordingFileFinished = atomic(false)
     private var audioJob: Job? = null
     private var analysisJob: Job? = null
+
+    /** The captures of the notebook of a recording not analyzed (see [analyzes]). */
+    private var notebookJob: Job? = null
 
     // Owned by the analysis coroutine
     private var knownStrokeIds: Set<String>? = null
@@ -106,9 +115,16 @@ class LectureRecorder internal constructor(
     internal fun start() {
         lecture.recording.open()
         lecture.isNotebookAttached = notebook != null
-        val chunker = SpeechChunker(targetSeconds = settingsStore.settings.chunkSeconds, overlapSeconds = OVERLAP_SECONDS)
+        val chunker = if (analyzes) SpeechChunker(targetSeconds = settingsStore.settings.chunkSeconds, overlapSeconds = OVERLAP_SECONDS) else null
 
-        analysisJob = lecture.scope.launch {
+        if (!analyzes) notebookJob = lecture.scope.launch {
+            // The pages seen, for the review written elsewhere
+            while (true) {
+                rememberPagesSeen()
+                delay(NOTEBOOK_CAPTURE_MS)
+            }
+        }
+        if (analyzes) analysisJob = lecture.scope.launch {
             for (first in updates) {
                 val group = mutableListOf(first)
                 // Behind schedule: the waiting chunks are analyzed together
@@ -129,8 +145,8 @@ class LectureRecorder internal constructor(
                 if (!heardSomething && block.any { it != 0.toShort() }) heardSomething = true
                 val blockLevel = (rms(block) / LEVEL_FULL_SCALE).coerceIn(0f, 1f)
 
-                val chunks = chunker.push(block).map { QueuedChunk(it, catchUp = false) }.toMutableList()
-                if (cutRequested.getAndSet(false)) {
+                val chunks = chunker?.push(block).orEmpty().map { QueuedChunk(it, catchUp = false) }.toMutableList()
+                if (chunker != null && cutRequested.getAndSet(false)) {
                     val catchUp = catchUpRequested.getAndSet(false)
                     val cut = chunker.cutNow(minSeconds = 0.5f)
                     if (cut != null || catchUp) chunks.add(QueuedChunk(cut, catchUp))
@@ -151,7 +167,7 @@ class LectureRecorder internal constructor(
                 }
             }
             // Stopped: the last words
-            chunker.cutNow(minSeconds = 2f)?.let {
+            chunker?.cutNow(minSeconds = 2f)?.let {
                 lecture.setState { pendingUpdates += 1 }
                 updates.trySend(QueuedChunk(it, catchUp = false))
             }
@@ -168,6 +184,7 @@ class LectureRecorder internal constructor(
         } catch (e: Throwable) {
             audioJob?.cancel()
             analysisJob?.cancel()
+            notebookJob?.cancel()
             throw e
         }
         lecture.scope.launch { lecture.persist() }
@@ -175,7 +192,7 @@ class LectureRecorder internal constructor(
 
     /** Analyzes the audio received so far right away, recapping the last minutes. */
     fun catchUp() {
-        if (!isRecording) return
+        if (!isRecording || !analyzes) return
         catchUpRequested.value = true
         cutRequested.value = true
     }
@@ -187,11 +204,16 @@ class LectureRecorder internal constructor(
         stopMicrophone()
         lecture.scope.launch {
             audioJob?.join()
-            analysisJob?.join()
-            readRemainingHandwriting()
-            lecture.setState { isAnalyzing = false }
-            releaseLocalModels()
-            lecture.runFinalReview(settingsStore.settings.reviewProvider)
+            if (analyzes) {
+                analysisJob?.join()
+                readRemainingHandwriting()
+                lecture.setState { isAnalyzing = false }
+                releaseLocalModels()
+                lecture.runFinalReview(settingsStore.settings.reviewProvider)
+            } else {
+                notebookJob?.cancelAndJoin()
+                rememberPagesSeen()
+            }
             lecture.setState { status = LectureStatus.FINISHED }
             lecture.persist()
             onFinished(this@LectureRecorder)
@@ -206,6 +228,7 @@ class LectureRecorder internal constructor(
     suspend fun finishNow() {
         if (lecture.status == LectureStatus.FINISHED) return
         analysisJob?.cancel()
+        notebookJob?.cancel()
         stopMicrophone()
         // The audio coroutine may be waiting for the UI thread: its tail is done here
         audioJob?.cancel()
@@ -446,6 +469,14 @@ class LectureRecorder internal constructor(
      * What the student is looking at (with the handwriting transcribed so far), or `null` when the
      * document is closed.
      */
+    /** Remembers the pages the student is looking at, when the notebook is open (not analyzed). */
+    private suspend fun rememberPagesSeen() {
+        val snapshot = captureNotebook(imagePages = IMAGE_PAGES) ?: return
+        knownStrokeIds = knownStrokeIds.orEmpty() + snapshot.strokeIds
+        lecture.rememberNotebook(snapshot)
+        lecture.persist()
+    }
+
     private suspend fun captureNotebook(imagePages: Int): NotebookSnapshot? {
         val source = notebook ?: return null
         return try {
@@ -558,6 +589,10 @@ class LectureRecorder internal constructor(
 
     internal companion object {
         const val OVERLAP_SECONDS = 5
+
+        /** How often the notebook of a recording not analyzed is captured, and its visible pages as images. */
+        const val NOTEBOOK_CAPTURE_MS = 30_000L
+        const val IMAGE_PAGES = 2
 
         /** Pages described around the visible ones (their text costs little). */
         const val TEXT_PAGES = 10

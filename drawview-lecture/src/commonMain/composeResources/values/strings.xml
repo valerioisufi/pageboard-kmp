@@ -168,4 +168,9 @@
     <string name="lecture_export_title">Save the audio of the lecture</string>
     <string name="lecture_export_done">Audio saved: %1$s</string>
     <string name="lecture_export_failed">The audio cannot be saved: %1$s</string>
+    <string name="lecture_record_only_description">Here the lecture is recorded with the pages you look at: the suggested notes and the review are written by a device with the models (the desktop app) the document is shared with.</string>
+    <string name="lecture_status_recording_only">Recording the audio and the pages you look at.</string>
+    <string name="lecture_review_elsewhere">The review is written by a device with the models (the desktop app) the document is shared with.</string>
+    <string name="lecture_microphone_denied">Allow the microphone in the settings of the device to record the lecture.</string>
+    <string name="lecture_no_audio_warning_device">The microphone records only silence: check that it is allowed to PencilNotes in the settings of the device, and not covered.</string>
 </resources>

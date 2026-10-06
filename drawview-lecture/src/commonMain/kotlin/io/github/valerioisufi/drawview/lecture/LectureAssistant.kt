@@ -16,6 +16,7 @@ import io.github.valerioisufi.drawview.lecture.audio.exportRecording
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
 import io.github.valerioisufi.drawview.lecture.platform.ChosenFile
 import io.github.valerioisufi.drawview.lecture.platform.canChooseFiles
+import io.github.valerioisufi.drawview.lecture.platform.generationSupported
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
 import io.github.valerioisufi.drawview.lecture.model.ModelBackends
@@ -44,6 +45,9 @@ import kotlin.coroutines.CoroutineContext
  *
  * The editors show it through [io.github.valerioisufi.drawview.lecture.ui.editorExtension], the
  * document library through [io.github.valerioisufi.drawview.lecture.ui.LectureRecordingIndicator].
+ *
+ * @param canGenerate whether the models follow the lectures here (the live notes, the review, the
+ *   course context): elsewhere the lectures are recorded only (see [generationSupported]).
  */
 class LectureAssistant(
     val settingsStore: AssistantSettingsStore = AssistantSettingsStore(),
@@ -53,7 +57,8 @@ class LectureAssistant(
     private val audioOutput: (() -> AudioOutput?)? = ::createAudioOutput.takeIf { createAudioOutput() != null },
     val library: LectureLibrary = LectureLibrary(),
     private val stateContext: CoroutineContext = Dispatchers.Main,
-    private val transcriberFactory: (AssistantSettings) -> Transcriber? = { WhisperTranscriber.of(it) }
+    private val transcriberFactory: (AssistantSettings) -> Transcriber? = { WhisperTranscriber.of(it) },
+    val canGenerate: Boolean = generationSupported()
 ) {
     private val backends = ModelBackends(
         gemini = GeminiBackend(client) { settingsStore.apiKey },
@@ -88,6 +93,13 @@ class LectureAssistant(
     /** Why the last recording could not start, if it could not. */
     var startError: String? by mutableStateOf(null)
         private set
+
+    /** The last recording could not start: the microphone is not allowed. */
+    var microphoneDenied: Boolean by mutableStateOf(false)
+        private set
+
+    /** Asks for the permission to use the microphone (set by [io.github.valerioisufi.drawview.lecture.ui.rememberLectureAssistant]). */
+    internal var requestMicrophone: suspend () -> Boolean = { true }
 
     /** Whether the platform can record (the desktop, for now). */
     val isRecordingSupported: Boolean by lazy { captureFactory() != null }
@@ -141,8 +153,8 @@ class LectureAssistant(
     /** The course context of [documentId] is being written. */
     fun isWritingContext(documentId: String): Boolean = writingContexts[documentId] == true
 
-    /** Whether the context of [documentId] can be written: its notebook is open. */
-    fun canWriteContext(documentId: String): Boolean = documentId in editorNotebooks
+    /** Whether the context of [documentId] can be written: its notebook is open (and the models are here). */
+    fun canWriteContext(documentId: String): Boolean = canGenerate && documentId in editorNotebooks
 
     /** The student changed the course context of [documentId]: it is not replaced automatically. */
     fun editContext(documentId: String, text: String) {
@@ -156,6 +168,7 @@ class LectureAssistant(
      * live suggestions; [onlyIfMissing]: not when the notebook has one already.
      */
     fun writeContext(documentId: String, onlyIfMissing: Boolean = false) {
+        if (!canGenerate) return
         val notebook = editorNotebooks[documentId] ?: return
         if (isWritingContext(documentId)) return
         writingContexts[documentId] = true
@@ -224,14 +237,30 @@ class LectureAssistant(
             val record = library.load(summary.directory) ?: return@launch
             val lecture = Lecture(
                 documentId, summary.directory, record, settingsStore, backends, audioOutput, stateContext,
-                courseContext = { contextOf(documentId)?.text.orEmpty() }
+                courseContext = { contextOf(documentId)?.text.orEmpty() },
+                generates = canGenerate
             )
             withContext(stateContext) { shownLectures[documentId] = lecture }
         }
     }
 
     /**
-     * Starts recording a lecture of the document edited by [controller].
+     * Starts recording a lecture of the document edited by [controller], once allowed to use the
+     * microphone ([microphoneDenied] otherwise).
+     */
+    fun record(documentId: String, controller: DrawViewController) {
+        if (isBusy) return
+        scope.launch {
+            withContext(stateContext) {
+                val allowed = requestMicrophone()
+                microphoneDenied = !allowed
+                if (allowed) start(documentId, controller)
+            }
+        }
+    }
+
+    /**
+     * Starts recording a lecture of the document edited by [controller] (the microphone allowed).
      *
      * @return `false` when another lecture is being recorded, or the microphone cannot be opened
      *   ([startError]).
@@ -248,12 +277,15 @@ class LectureAssistant(
             backends = backends,
             audioOutput = audioOutput,
             stateContext = stateContext,
-            courseContext = { contextOf(documentId)?.text.orEmpty() }
+            courseContext = { contextOf(documentId)?.text.orEmpty() },
+            generates = canGenerate
         ).apply { documentTitle = controller.document.title }
         val notebook = editorNotebooks[documentId] ?: ControllerNotebookSource(controller).also { editorNotebooks[documentId] = it }
         val settings = settingsStore.settings
-        val transcriber = if (settings.sendsAudio) null else transcriberFactory(settings)
-        val newRecorder = LectureRecorder(lecture, settingsStore, capture, notebook, transcriber, onFinished = { refresh(documentId) })
+        val transcriber = if (!canGenerate || settings.sendsAudio) null else transcriberFactory(settings)
+        val newRecorder = LectureRecorder(
+            lecture, settingsStore, capture, notebook, transcriber, analyzes = canGenerate, onFinished = { refresh(documentId) }
+        )
         return try {
             newRecorder.start()
             startError = null
@@ -294,7 +326,8 @@ class LectureAssistant(
             audioOutput = audioOutput,
             stateContext = stateContext,
             courseContext = { contextOf(documentId)?.text.orEmpty() },
-            startedAt = startedAt
+            startedAt = startedAt,
+            generates = canGenerate
         ).apply {
             documentTitle = controller.document.title
             status = LectureStatus.IMPORTING
