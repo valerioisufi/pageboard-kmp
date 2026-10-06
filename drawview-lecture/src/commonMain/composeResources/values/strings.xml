@@ -93,7 +93,7 @@
     <string name="lecture_recording_elsewhere">A lecture of «%1$s» is being recorded: one lecture at a time.</string>
     <string name="lecture_delete">Delete this lecture</string>
     <string name="lecture_delete_title">Delete the lecture?</string>
-    <string name="lecture_delete_message">The recording, the transcript, the suggestions and the review of the lecture of %1$s are deleted. The notes inserted in the notebook stay.</string>
+    <string name="lecture_delete_message">The recording, the transcript, the suggestions and the review of the lecture of %1$s are deleted, also on the devices the notebook is shared with. The notes inserted in the notebook stay.</string>
     <string name="lecture_action_delete">Delete</string>
     <string name="lecture_review_generate">Generate the review</string>
     <string name="lecture_review_pending">The lecture was interrupted before its review (e.g. the app was closed).</string>

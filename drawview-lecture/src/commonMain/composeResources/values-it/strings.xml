@@ -93,7 +93,7 @@
     <string name="lecture_recording_elsewhere">È in corso la registrazione di «%1$s»: una lezione alla volta.</string>
     <string name="lecture_delete">Elimina questa lezione</string>
     <string name="lecture_delete_title">Eliminare la lezione?</string>
-    <string name="lecture_delete_message">Vengono eliminati la registrazione, la trascrizione, i suggerimenti e la revisione della lezione del %1$s. Gli appunti inseriti nel quaderno restano.</string>
+    <string name="lecture_delete_message">Vengono eliminati la registrazione, la trascrizione, i suggerimenti e la revisione della lezione del %1$s, anche sui dispositivi con cui condividi il quaderno. Gli appunti inseriti nel quaderno restano.</string>
     <string name="lecture_action_delete">Elimina</string>
     <string name="lecture_review_generate">Genera la revisione</string>
     <string name="lecture_review_pending">La lezione è stata interrotta prima della revisione (per esempio l\'app è stata chiusa).</string>
