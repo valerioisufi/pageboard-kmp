@@ -71,6 +71,11 @@ class SyncEngine(
      */
     val presences: StateFlow<List<Presence>> = presenceState.asStateFlow()
 
+    /** The replica of this device (asked once). */
+    private var ownReplica: String? = null
+
+    private suspend fun replica(): String = ownReplica ?: documents.replicaId().also { ownReplica = it }
+
     /** What was sent of the presence on every document (see [updatePresence]). */
     private class SentPresence(
         var stroke: Long = 0,
@@ -88,7 +93,7 @@ class SyncEngine(
      * only when they change; all of it now and then (for the devices arrived meanwhile).
      */
     suspend fun updatePresence(presence: Presence) {
-        val replica = documents.replicaId()
+        val replica = replica()
         val (message, targets) = mutex.withLock {
             val now = currentTimeMillis()
             presenceSequence = maxOf(presenceSequence + 1, now)
@@ -141,7 +146,7 @@ class SyncEngine(
             val secure = SecureChannel.of(channel, key)
             // Without the document yet (joined through an invitation): it comes with the first messages
             val sync = acquire(documentId)
-            run(Link(secure, documentId, key), sync)
+            run(Link(secure, documentId, key, opened = false), sync)
         } catch (_: SyncException) {
             // Refused or lost before it started
         } finally {
@@ -161,7 +166,7 @@ class SyncEngine(
             val secure = SecureChannel.of(channel, invitation.key)
             // Without the document yet: it comes with the first messages
             val sync = acquire(invitation.documentId)
-            run(Link(secure, invitation.documentId, invitation.key), sync)
+            run(Link(secure, invitation.documentId, invitation.key, opened = true), sync)
         } catch (_: SyncException) {
             // Refused or lost before it started
         } finally {
@@ -230,11 +235,14 @@ class SyncEngine(
     // Connections
     // ==========================================================
 
-    /** A connection about the document [documentId] (of key [key]). */
-    private inner class Link(val channel: SyncChannel, val documentId: String, val key: DocumentKey) {
+    /** A connection about the document [documentId] (of key [key]), [opened] by this device or by the other one. */
+    private inner class Link(val channel: SyncChannel, val documentId: String, val key: DocumentKey, val opened: Boolean) {
         var sync: DocumentSync? = null
         var peer: Peer? = null
         var peerHello: Hello? = null
+
+        /** When the last frame came (it says the connection is alive). */
+        var receivedAt = currentTimeMillis()
 
         /** The messages to send, in order. */
         val outbox = Channel<SyncMessage>(Channel.UNLIMITED)
@@ -275,6 +283,7 @@ class SyncEngine(
             while (true) {
                 // Closed, or silent for too long: lost
                 val frame = (if (keepAliveMs > 0) withTimeoutOrNull(keepAliveMs * 3) { link.channel.receive() } else link.channel.receive()) ?: break
+                link.receivedAt = currentTimeMillis()
                 val message = SyncCodec.decode(frame) ?: continue
                 handle(link, message)
             }
@@ -357,7 +366,8 @@ class SyncEngine(
      */
     private suspend fun onPresence(link: Link, message: PresenceMessage) {
         val presence = message.presence
-        if (presence.documentId != link.documentId) return
+        // Its own, back through the others (connected with each other too)
+        if (presence.documentId != link.documentId || presence.replica == replica()) return
         val key = presence.documentId to presence.replica
         val targets = mutex.withLock {
             val last = lastPresences[key]?.first
@@ -381,8 +391,19 @@ class SyncEngine(
     }
 
     private suspend fun onHello(link: Link, hello: Hello) {
-        if (link.peerHello != null) return
-        link.peerHello = hello
+        val twin = mutex.withLock {
+            if (link.peerHello != null) return
+            link.peerHello = hello
+            links.firstOrNull { it !== link && it.documentId == link.documentId && it.peerHello?.replica == hello.replica }
+        }
+        // Two connections with the same device (both connected to the other at once): one is enough.
+        // Not when the other one is silent: maybe lost (the device started again), it closes itself.
+        val alive = keepAliveMs == 0L || twin != null && currentTimeMillis() - twin.receivedAt < keepAliveMs * 3 / 2
+        if (twin != null && alive) {
+            val surplus = surplusOf(link, twin, hello.replica)
+            surplus?.channel?.close()
+            if (surplus === link) return
+        }
         link.sent.putAll(hello.versionVector)
         val peer = Peer(link.documentId, hello.replica, hello.name)
         link.peer = peer
@@ -392,6 +413,21 @@ class SyncEngine(
         // Without the document: it comes with the snapshot
         val sync = link.sync ?: return
         catchUp(link, sync, hello)
+    }
+
+    /**
+     * Which one of the connections [link] (the newer) and [twin] with the device [replica] to
+     * close, the same one on both devices: the one opened by the device with the greater replica,
+     * or the newer one when the same device opened both (closed by it alone).
+     */
+    private suspend fun surplusOf(link: Link, twin: Link, replica: String): Link? {
+        val mine = replica()
+        fun openerOf(it: Link) = if (it.opened) mine else replica
+        return when {
+            openerOf(link) != openerOf(twin) -> if (openerOf(link) == minOf(mine, replica)) twin else link
+            link.opened -> link
+            else -> null
+        }
     }
 
     private suspend fun onSnapshot(link: Link, snapshot: DocumentSnapshot) {

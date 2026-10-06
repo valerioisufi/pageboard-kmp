@@ -20,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.runTest
@@ -47,9 +48,9 @@ class LanSyncTest {
 
     @Test
     fun framesTravelOverTcp() = lanTest { scope ->
-        val server = LanTransport(scope)
+        val server = LanTransport(scope, 0)
         val port = server.start()
-        val client = LanTransport(scope)
+        val client = LanTransport(scope, 0)
         val outgoing = client.connect("127.0.0.1:$port")
         val incoming = server.incoming.first()
 
@@ -75,15 +76,18 @@ class LanSyncTest {
         val announced = MutableStateFlow<Map<String, LanService>>(emptyMap())
     }
 
-    private class FakeDiscovery(private val network: FakeNetwork) : LanDiscovery {
+    /** The discovery of a device on [network]; [reaches] false: its announcements and the others' get lost. */
+    private class FakeDiscovery(private val network: FakeNetwork, private val reaches: Boolean = true) : LanDiscovery {
         private var name: String? = null
 
         override suspend fun advertise(name: String, port: Int, attributes: Map<String, String>) {
+            if (!reaches) return
             this.name = name
             network.announced.update { it + (name to LanService(name, "127.0.0.1", port, attributes)) }
         }
 
-        override val services: Flow<List<LanService>> = network.announced.map { it.values.toList() }
+        override val services: Flow<List<LanService>> =
+            if (reaches) network.announced.map { it.values.toList() } else flowOf(emptyList())
 
         override fun close() {
             name?.let { gone -> network.announced.update { it - gone } }
@@ -104,9 +108,13 @@ class LanSyncTest {
         lateinit var transport: LanTransport
         lateinit var lan: LanSync
 
-        suspend fun goOnline() {
-            transport = LanTransport(scope)
-            lan = LanSync(engine, shared, FakeDiscovery(network), scope, store.replicaId(), name, transport, retryMs = 200)
+        /**
+         * Goes on the network, listening on [port] (0: a free one, not the default one that an
+         * application of this machine may hold); [found]: whether it finds the others and they find it.
+         */
+        suspend fun goOnline(port: Int = 0, found: Boolean = true) {
+            transport = LanTransport(scope, port)
+            lan = LanSync(engine, shared, FakeDiscovery(network, found), scope, store.replicaId(), name, transport, retryMs = 200)
             lan.start()
         }
 
@@ -164,6 +172,29 @@ class LanSyncTest {
         bob.goOnline()
         bob.awaitSame(document.id, ada)
         assertEquals(3, assertNotNull(ada.snapshot(document.id)).pages.size)
+        listOf(ada, bob).forEach { it.goOffline() }
+    }
+
+    @Test
+    fun aDeviceStartedAgainIsConnectedAgainWithoutBeingFoundAgain() = lanTest { scope ->
+        val network = FakeNetwork()
+        val (ada, bob) = listOf("ada", "bob").map { Device(it, scope, network) }
+        val port = LanTransport(scope, 0).let { free -> free.start().also { free.close() } }
+        ada.goOnline()
+        bob.goOnline(port)
+        val document = ada.store.createDocument("Lab")
+        val invitation = ada.engine.share(document.id, "Lab")
+        ada.lan.announce()
+        bob.lan.join(invitation)
+        bob.awaitSame(document.id, ada)
+
+        // Bob starts again on the same port (held by the connections just closed), but this time
+        // its announcement and the ones of the others get lost: Ada connects to where it was
+        bob.goOffline()
+        ada.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        bob.goOnline(port, found = false)
+        assertEquals(port, bob.transport.boundPort)
+        bob.awaitSame(document.id, ada)
         listOf(ada, bob).forEach { it.goOffline() }
     }
 

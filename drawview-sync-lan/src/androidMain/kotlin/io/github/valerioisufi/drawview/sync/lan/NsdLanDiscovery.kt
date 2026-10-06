@@ -6,10 +6,12 @@ import android.net.nsd.NsdServiceInfo
 import android.os.Build
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 import java.net.Inet4Address
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
@@ -43,26 +45,67 @@ class NsdLanDiscovery(context: Context) : LanDiscovery {
 
     override val services: Flow<List<LanService>> = callbackFlow {
         val found = ConcurrentHashMap<String, LanService>()
-        // The services to resolve, one at a time (Android before 14 resolves one at a time)
-        val toResolve = Channel<NsdServiceInfo>(Channel.UNLIMITED)
-        val callbacks = mutableListOf<NsdManager.ServiceInfoCallback>()
+        fun publish() = trySend(found.values.toList())
+        // Android 14: the services followed (their address and attributes as they change)
+        val followed = ConcurrentHashMap<String, NsdManager.ServiceInfoCallback>()
+        // Before: resolved one at a time (in parallel they fail), again a little later when it fails
+        val present = ConcurrentHashMap.newKeySet<String>()
+        val toResolve = Channel<Pair<NsdServiceInfo, Int>>(Channel.UNLIMITED)
         launch {
-            for (info in toResolve) {
-                val resolved = resolve(info, callbacks) ?: continue
-                found[resolved.name] = resolved
-                trySend(found.values.toList())
+            for ((info, attempt) in toResolve) {
+                if (info.serviceName !in present) continue
+                val resolved = withTimeoutOrNull(RESOLVE_TIMEOUT_MS) { resolve(info) }
+                if (info.serviceName !in present) continue
+                if (resolved != null) {
+                    found[resolved.name] = resolved
+                    publish()
+                } else {
+                    launch {
+                        delay(RETRY_MS * minOf(attempt + 1, MAX_RETRY_STEPS))
+                        toResolve.trySend(info to attempt + 1)
+                    }
+                }
             }
         }
+
+        fun follow(info: NsdServiceInfo) {
+            val name = info.serviceName
+            if (Build.VERSION.SDK_INT < 34) {
+                present.add(name)
+                toResolve.trySend(info to 0)
+                return
+            }
+            if (followed.containsKey(name)) return
+            val callback = object : NsdManager.ServiceInfoCallback {
+                override fun onServiceUpdated(resolved: NsdServiceInfo) {
+                    found[name] = resolved.toLanService() ?: return
+                    publish()
+                }
+
+                override fun onServiceLost() {
+                    if (found.remove(name) != null) publish()
+                }
+
+                override fun onServiceInfoCallbackRegistrationFailed(errorCode: Int) {
+                    // Followed again when found again
+                    followed.remove(name, this)
+                }
+
+                override fun onServiceInfoCallbackUnregistered() {}
+            }
+            followed[name] = callback
+            runCatching { nsd.registerServiceInfoCallback(info, executor, callback) }.onFailure { followed.remove(name, callback) }
+        }
+
+        fun forget(name: String) {
+            present.remove(name)
+            followed.remove(name)?.let { runCatching { nsd.unregisterServiceInfoCallback(it) } }
+            if (found.remove(name) != null) publish()
+        }
+
         val listener = object : NsdManager.DiscoveryListener {
-            override fun onServiceFound(info: NsdServiceInfo) {
-                toResolve.trySend(info)
-            }
-
-            override fun onServiceLost(info: NsdServiceInfo) {
-                found.remove(info.serviceName)
-                trySend(found.values.toList())
-            }
-
+            override fun onServiceFound(info: NsdServiceInfo) = follow(info)
+            override fun onServiceLost(info: NsdServiceInfo) = forget(info.serviceName)
             override fun onDiscoveryStarted(serviceType: String) {}
             override fun onDiscoveryStopped(serviceType: String) {}
             override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) {}
@@ -71,42 +114,24 @@ class NsdLanDiscovery(context: Context) : LanDiscovery {
         nsd.discoverServices(LanDiscovery.SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, listener)
         awaitClose {
             runCatching { nsd.stopServiceDiscovery(listener) }
-            if (Build.VERSION.SDK_INT >= 34) callbacks.forEach { runCatching { nsd.unregisterServiceInfoCallback(it) } }
+            if (Build.VERSION.SDK_INT >= 34) followed.values.forEach { runCatching { nsd.unregisterServiceInfoCallback(it) } }
             toResolve.close()
         }
     }
 
-    /** The address and the attributes of [info], or `null` when it cannot be resolved. */
-    private suspend fun resolve(info: NsdServiceInfo, callbacks: MutableList<NsdManager.ServiceInfoCallback>): LanService? =
-        suspendCancellableCoroutine { continuation ->
-            if (Build.VERSION.SDK_INT >= 34) {
-                val callback = object : NsdManager.ServiceInfoCallback {
-                    override fun onServiceUpdated(resolved: NsdServiceInfo) {
-                        if (continuation.isActive) continuation.resume(resolved.toLanService())
-                    }
-
-                    override fun onServiceInfoCallbackRegistrationFailed(errorCode: Int) {
-                        if (continuation.isActive) continuation.resume(null)
-                    }
-
-                    override fun onServiceLost() {}
-                    override fun onServiceInfoCallbackUnregistered() {}
-                }
-                callbacks.add(callback)
-                nsd.registerServiceInfoCallback(info, executor, callback)
-            } else {
-                @Suppress("DEPRECATION")
-                nsd.resolveService(info, object : NsdManager.ResolveListener {
-                    override fun onServiceResolved(resolved: NsdServiceInfo) {
-                        if (continuation.isActive) continuation.resume(resolved.toLanService())
-                    }
-
-                    override fun onResolveFailed(info: NsdServiceInfo, errorCode: Int) {
-                        if (continuation.isActive) continuation.resume(null)
-                    }
-                })
+    /** The address and the attributes of [info] (before Android 14), or `null` when it cannot be resolved. */
+    @Suppress("DEPRECATION")
+    private suspend fun resolve(info: NsdServiceInfo): LanService? = suspendCancellableCoroutine { continuation ->
+        nsd.resolveService(info, object : NsdManager.ResolveListener {
+            override fun onServiceResolved(resolved: NsdServiceInfo) {
+                if (continuation.isActive) continuation.resume(resolved.toLanService())
             }
-        }
+
+            override fun onResolveFailed(info: NsdServiceInfo, errorCode: Int) {
+                if (continuation.isActive) continuation.resume(null)
+            }
+        })
+    }
 
     override fun close() {
         registration?.let { runCatching { nsd.unregisterService(it) } }
@@ -115,6 +140,9 @@ class NsdLanDiscovery(context: Context) : LanDiscovery {
 
     private companion object {
         val executor = Executors.newSingleThreadExecutor()
+        const val RESOLVE_TIMEOUT_MS = 10_000L
+        const val RETRY_MS = 2_000L
+        const val MAX_RETRY_STEPS = 5
 
         @Suppress("DEPRECATION")
         fun NsdServiceInfo.toLanService(): LanService? {

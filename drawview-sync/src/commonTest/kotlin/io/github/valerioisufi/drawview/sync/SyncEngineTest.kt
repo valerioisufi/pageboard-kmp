@@ -362,6 +362,36 @@ class SyncEngineTest {
         assertTrue(ada.engine.presences.value.isEmpty())
     }
 
+    @Test
+    fun twoConnectionsBetweenTheSameDevicesBecomeOne() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Notes")
+        val invitation = ada.engine.share(document.id, "Notes")
+        bob.join(invitation, "ada")
+        advanceUntilIdle()
+        // Bob connects again, Ada connects to Bob too (both connected to the other at once)
+        bob.join(invitation, "ada")
+        ada.join(invitation, "bob")
+        cy.join(invitation, "bob")
+        advanceUntilIdle()
+        assertEquals(listOf("bob"), ada.engine.peers.value.map { it.name })
+        assertEquals(listOf("ada", "cy"), bob.engine.peers.value.map { it.name }.sorted())
+
+        // Still the same document through the connection kept
+        ada.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(0))) }
+        cy.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(0))) }
+        advanceUntilIdle()
+        assertSame(document.id, listOf(ada, bob, cy))
+
+        // Never back to the device it comes from
+        bob.engine.updatePresence(Presence(document.id, pageId = "page", x = 1f, y = 2f))
+        advanceUntilIdle()
+        assertTrue(bob.engine.presences.value.isEmpty(), "its own presence is not among the others")
+        assertEquals("bob", ada.engine.presences.value.single().name)
+        assertEquals("bob", cy.engine.presences.value.single().name)
+    }
+
     /** A connection that can be cut silently, like by a device gone out of the network. */
     private class Cable {
         val cut = MutableStateFlow(false)

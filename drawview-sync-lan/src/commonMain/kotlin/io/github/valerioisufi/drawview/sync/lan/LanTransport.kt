@@ -26,10 +26,15 @@ import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
- * [SyncTransport] over TCP on the local network: [start] listens on [port] (0: a free port), the
- * addresses are `host:port`. A frame is its length (4 bytes, big-endian) and its bytes.
+ * [SyncTransport] over TCP on the local network: [start] listens on [port] (another free port when
+ * it is taken), the addresses are `host:port`. A frame is its length (4 bytes, big-endian) and its
+ * bytes.
+ *
+ * The same port every time (by default [DEFAULT_PORT]) keeps the address of the device the same
+ * when the application starts again: the devices that knew it connect to it again even when they
+ * miss its announcement on the network (see [LanSync]).
  */
-class LanTransport(private val scope: CoroutineScope, private val port: Int = 0) : SyncTransport {
+class LanTransport(private val scope: CoroutineScope, private val port: Int = DEFAULT_PORT) : SyncTransport {
     private val selector = SelectorManager(Dispatchers.IO)
     private val accepted = Channel<SyncChannel>(Channel.UNLIMITED)
     private var server: ServerSocket? = null
@@ -77,7 +82,8 @@ class LanTransport(private val scope: CoroutineScope, private val port: Int = 0)
     }
 
     private suspend fun bind(port: Int): ServerSocket? = try {
-        aSocket(selector).tcp().bind("0.0.0.0", port)
+        // Free again at once: the connections of the last time may still hold it for a while
+        if (port != 0 && isListenedOnIpv4(port)) null else aSocket(selector).tcp().bind("0.0.0.0", port) { reuseAddress = true }
     } catch (e: CancellationException) {
         throw e
     } catch (_: Exception) {
@@ -101,7 +107,18 @@ class LanTransport(private val scope: CoroutineScope, private val port: Int = 0)
         accepted.close()
         selector.close()
     }
+
+    companion object {
+        /** The port listened on when it is free (out of the ports the systems give to the connections). */
+        const val DEFAULT_PORT = 28_461
+    }
 }
+
+/**
+ * Whether another application listens on [port] over IPv4, where listening would take only the
+ * IPv6 connections (the dual-stack sockets of the JVM on macOS).
+ */
+internal expect fun isListenedOnIpv4(port: Int): Boolean
 
 /** A TCP connection carrying frames (see [LanTransport]). */
 internal class TcpChannel(private val socket: Socket) : SyncChannel {

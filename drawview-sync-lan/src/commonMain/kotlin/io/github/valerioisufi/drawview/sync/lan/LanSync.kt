@@ -8,10 +8,14 @@ import io.github.valerioisufi.drawview.sync.SyncException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
 
 /**
  * Keeps the shared documents of this device the same as on the devices of the local network
@@ -23,8 +27,12 @@ import kotlinx.coroutines.withTimeoutOrNull
  * changed...), listens again if the system closed the listener, and connects to the devices of
  * the invitations joined by their address. Between two devices the one with the smaller
  * [deviceId] (a name unique on the network: the replica of the device, see `SyncEngine.peers`)
- * connects as soon as it finds the other one, the other one only when the connection is still
- * missing at the next retry.
+ * connects as soon as it finds the other one, the other one when the connection is still missing
+ * a moment later.
+ *
+ * The devices found are remembered for a while after they are gone from the network (their
+ * announcements get lost on some networks): one starting again on the same address (see
+ * [LanTransport.DEFAULT_PORT]) is connected again even when it is not found again.
  */
 class LanSync(
     private val engine: SyncEngine,
@@ -41,7 +49,11 @@ class LanSync(
 
     /** The connections opened by this device (being made or made): to a device, about a document. */
     private val connections = mutableMapOf<Pair<String, String>, Job>()
-    private var services: List<LanService> = emptyList()
+
+    /** The devices found, by name, with when they were last found or connected. */
+    private val known = mutableMapOf<String, Known>()
+
+    private class Known(val service: LanService, var seen: TimeMark, var found: Boolean)
 
     /** The addresses of the invitations joined, by document. */
     private val addresses = mutableMapOf<String, String>()
@@ -54,9 +66,12 @@ class LanSync(
         job = scope.launch {
             launch { transport.incoming.collect { engine.accept(it) } }
             launch {
-                discovery.services.collect { found ->
-                    mutex.withLock { services = found.filter { it.name != deviceId } }
+                discovery.services.collectLatest { found ->
+                    remember(found)
                     connect(missingOnly = false)
+                    // The other device connects first: this one if it has not done it yet
+                    delay(SECOND_CONNECTION_MS)
+                    connect(missingOnly = true)
                 }
             }
             launch {
@@ -126,7 +141,14 @@ class LanSync(
     private suspend fun connect(missingOnly: Boolean) {
         val keys = shared.all()
         val peers = engine.peers.value
-        val (found, invited) = mutex.withLock { services to addresses.toMap() }
+        val (found, invited) = mutex.withLock {
+            // Forgotten a while after they are gone (and not connected)
+            val connected = peers.mapTo(HashSet()) { it.replica }
+            val now = TimeSource.Monotonic.markNow()
+            for (device in known.values) if (device.service.name in connected) device.seen = now
+            known.values.removeAll { !it.found && it.seen.elapsedNow() > FORGET_AFTER }
+            known.values.map { it.service } to addresses.toMap()
+        }
         for (service in found) {
             if (service.attributes["v"] != PROTOCOL.toString()) continue
             // One connection between two devices: the other one makes it first
@@ -143,6 +165,13 @@ class LanSync(
             val key = keys[documentId] ?: continue
             if (peers.none { it.documentId == documentId }) open(address, address, documentId, key)
         }
+    }
+
+    /** Remembers the devices [found] on the network (the ones not found any more for a while). */
+    private suspend fun remember(found: List<LanService>) = mutex.withLock {
+        val now = TimeSource.Monotonic.markNow()
+        for (device in known.values) device.found = false
+        for (service in found) if (service.name != deviceId) known[service.name] = Known(service, now, found = true)
     }
 
     /** Connects to the device [peer] at [address] about the document [documentId], unless connecting already. */
@@ -164,6 +193,8 @@ class LanSync(
 
     private companion object {
         const val PROTOCOL = 1
+        const val SECOND_CONNECTION_MS = 1_000L
+        val FORGET_AFTER = 10.minutes
         const val TAG_LENGTH = 12
         const val TAGS_PER_ENTRY = 19
         const val MAX_NAME_LENGTH = 60

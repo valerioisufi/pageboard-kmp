@@ -99,6 +99,9 @@ The origin of a change decides what the observers do:
 * A connection with nothing to send sends a `Ping` every 4 s; one silent for 12 s is lost (a
   device gone without closing it: out of the network, asleep, suspended) and closed, so that it
   is made again.
+* Two connections between the same devices (both connected to the other at once) become one: the
+  one opened by the device with the smaller replica is kept (the newer one is closed when the
+  same device opened both), unless the other one is silent (maybe lost: it closes itself).
 * Presence (pointer, stroke being drawn, text being written, elements selected and how they are
   being moved) is never logged: of the stroke only the inputs not sent yet travel, the text and
   the selection only when they change; the whole presence every 500 ms (for the devices arrived
@@ -342,6 +345,31 @@ The application is not released yet, so the stored documents are not migrated:
   other device grows letter by letter in its frame and becomes the text of the document, the
   wave framed glides where it is moved; the texts written and the elements selected and moved on
   the iPad reach the other device.
+
+### After phase 6: connecting again at once
+
+* Closing and opening the application again sometimes connected it again only after a while, or
+  not at all, while the other device was there: Bonjour gave up on a device whose address it did
+  not resolve at the first try, and the connection went to its name (looked up again, maybe to
+  an IPv6 address first); `NsdManager` (Android 14) kept the first address of a device and
+  waited for ever for a device it could not resolve; the device opening the application again
+  listened on another port, so the others knew its address only from its new announcement,
+  which multicast DNS on Wi-Fi may lose.
+* A device listens on the same port every time (`LanTransport.DEFAULT_PORT`, another one when it
+  is taken; the port is taken again at once, while the connections just closed still hold it).
+  `LanSync` remembers the devices found for 10 minutes after they are gone and connects again to
+  them: a device starting again is connected again even when its announcement is lost. The device
+  meant to connect second connects after 1 s (no more at the next retry).
+* Bonjour and `NsdManager` resolve the devices again when they fail, follow their changes (port,
+  documents shared) and give their IPv4 address.
+* On the desktop the port is left to another application listening on it over IPv4 (e.g. one in
+  the iOS simulator): the dual-stack sockets of the JVM would get only the IPv6 connections.
+* A device never takes its own presence for another one's (back through two connections with the
+  same device).
+* Verified on two simulators (iPad, iPhone) finding each other with Bonjour: opened again, the
+  application is connected again in 2-3 s (its start included); back from the background, in
+  less than half a second. Tests: a device started again on its port whose announcement and
+  discovery get lost is connected again; two connections between the same devices become one.
 
 ### Risks
 
