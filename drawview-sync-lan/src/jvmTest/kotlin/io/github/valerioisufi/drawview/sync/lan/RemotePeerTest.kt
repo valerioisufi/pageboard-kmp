@@ -138,7 +138,7 @@ class RemotePeerTest {
                     println("PEER watching")
                     withTimeoutOrNull(watchMs) {
                         engine.presences
-                            .map { all -> all.map { "${it.name}: text=${it.text?.text?.let { t -> "\"$t\"" }} selection=${it.selection}" } }
+                            .map { all -> all.map { "${it.name}: ink=${it.inkInputs} cancelled=${it.inkCancelled} text=${it.text?.text?.let { t -> "\"$t\"" }} selection=${it.selection}" } }
                             .distinctUntilChanged()
                             .collect { println("PEER sees $it") }
                     }

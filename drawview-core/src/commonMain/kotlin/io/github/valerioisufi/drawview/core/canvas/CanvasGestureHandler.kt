@@ -413,6 +413,11 @@ internal class CanvasGestureHandler(
             Mode.INK, Mode.LASSO -> {
                 engine.cancelStroke()
                 live.setLiveMesh(null, -1)
+                // Given up for the gesture: gone at once on the other devices too
+                if (mode == Mode.INK) {
+                    val position = pressed.firstOrNull { it.id == activePointer }?.position ?: downPosition
+                    reportActivity(position, inking = false, strokeCancelled = true)
+                }
             }
             Mode.ERASE -> {
                 controller.eraserManager.commitGesture()
@@ -682,6 +687,7 @@ internal class CanvasGestureHandler(
             Mode.INK, Mode.LASSO -> {
                 engine.cancelStroke()
                 live.setLiveMesh(null, -1)
+                if (mode == Mode.INK) reportActivity(downPosition, inking = false, strokeCancelled = true)
             }
             Mode.ERASE -> controller.eraserManager.commitGesture()
             Mode.PAN -> controller.cameraPhysics.onRelease(0f, 0f)
@@ -885,14 +891,14 @@ internal class CanvasGestureHandler(
 
     /**
      * Tells the controller where the pointer is ([screen]) and, when [inking], the stroke being
-     * drawn (see [DrawViewController.activity]).
+     * drawn, or that it was given up ([strokeCancelled], see [DrawViewController.activity]).
      */
-    private fun reportActivity(screen: Offset, inking: Boolean) {
+    private fun reportActivity(screen: Offset, inking: Boolean, strokeCancelled: Boolean = false) {
         val pageIndex = if (inking) inkPageIndex else controller.findPageIndexAtScreen(screen)
         val page = pageIndex?.let { controller.document.pages.getOrNull(it) }
         val mm = pageIndex?.let { controller.screenToPageMm(it, screen) }
         if (page == null || mm == null) {
-            controller.reportActivity(null)
+            controller.reportActivity(if (strokeCancelled) EditorActivity(strokeCancelled = true) else null)
             return
         }
         val brush = inkBrush.takeIf { inking }
@@ -904,7 +910,8 @@ internal class CanvasGestureHandler(
                 stroke = if (brush != null) strokeCount else 0,
                 ink = if (brush != null) engine.inputs.toList() else emptyList(),
                 brush = brush,
-                inputType = inkInputType
+                inputType = inkInputType,
+                strokeCancelled = strokeCancelled
             )
         )
     }

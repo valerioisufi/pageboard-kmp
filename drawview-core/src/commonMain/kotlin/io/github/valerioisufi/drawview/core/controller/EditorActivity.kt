@@ -16,7 +16,8 @@ import kotlinx.serialization.Serializable
  * What the user is doing on the document, for the others working on it:
  * - the pointer at ([x], [y]) in the millimeters of the page [pageId] (`null`: on no page),
  *   drawing the stroke [stroke] (`0`: not drawing) of the inputs [ink] (in the same millimeters)
- *   with [brush], by [inputType];
+ *   with [brush], by [inputType]; [strokeCancelled]: the last stroke was given up (e.g. for a
+ *   gesture), not added to the document;
  * - the text being written ([text], on the page [textPageId]: its content as it is now);
  * - the elements selected ([selection]), and how they are being moved.
  */
@@ -28,12 +29,13 @@ data class EditorActivity(
     val ink: List<StrokePoint> = emptyList(),
     val brush: BrushConfig? = null,
     val inputType: InputToolType = InputToolType.UNKNOWN,
+    val strokeCancelled: Boolean = false,
     val text: TextData? = null,
     val textPageId: String? = null,
     val selection: SelectionActivity? = null
 ) {
     /** Whether there is nothing to show. */
-    val isIdle: Boolean get() = pageId == null && text == null && selection == null
+    val isIdle: Boolean get() = pageId == null && !strokeCancelled && text == null && selection == null
 }
 
 /**

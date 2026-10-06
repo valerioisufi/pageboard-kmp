@@ -99,7 +99,7 @@ internal fun CollaboratorsLayer(collaboration: Collaboration, documentId: String
 private fun EditorActivity?.toPresence(documentId: String): Presence {
     if (this == null) return Presence(documentId)
     val brush = brush
-    val work = Presence(documentId, pageId, x, y, text = text, textPageId = textPageId, selection = selection)
+    val work = Presence(documentId, pageId, x, y, inkCancelled = strokeCancelled, text = text, textPageId = textPageId, selection = selection)
     if (stroke == 0L || brush == null || ink.isEmpty()) return work
     // The times from the first input (from 1: 0 is no time)
     val start = ink.first().timestampMs - 1
@@ -244,10 +244,17 @@ private class CollaboratorsDrawing(private val controller: DrawViewController, p
         val inputs = presence.inkInputs
         if (presence.stroke == 0L || inputs == 0) {
             if (peer.stroke != 0L) {
-                // Drawn: it fades while the stroke of the document takes its place
                 peer.stroke = 0
                 peer.engine?.cancelStroke()
-                peer.fadeStart = -1
+                if (presence.inkCancelled) {
+                    // Given up: gone at once
+                    peer.ink = null
+                    peer.fadeStart = 0
+                    peer.inkAlpha = 1f
+                } else {
+                    // Drawn: it fades while the stroke of the document takes its place
+                    peer.fadeStart = -1
+                }
             }
             return
         }

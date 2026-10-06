@@ -343,6 +343,12 @@ class SyncEngineTest {
         bob.engine.updatePresence(Presence(document.id, pageId = "page", x = 3f, y = 4f))
         advanceUntilIdle()
         assertTrue(cy.engine.presences.value.single().ink.isEmpty(), "the stroke ended")
+        // Another one given up (e.g. for a gesture)
+        bob.engine.updatePresence(Presence(document.id, pageId = "page", x = 3f, y = 4f, stroke = 8, ink = inputs(2)))
+        advanceUntilIdle()
+        bob.engine.updatePresence(Presence(document.id, pageId = "page", x = 3f, y = 4f, inkCancelled = true))
+        advanceUntilIdle()
+        assertTrue(cy.engine.presences.value.single().let { it.inkCancelled && it.ink.isEmpty() }, "the stroke given up")
 
         // A text being written and elements selected (sent again only when they change)
         val draft = TextData(id = "text", text = "Ciao", x = 10f, y = 20f, width = 40f, height = 8f, color = 0, fontSize = 16f)

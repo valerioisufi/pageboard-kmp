@@ -10,7 +10,8 @@ import kotlinx.serialization.Transient
  * [name]), the point ([x], [y]) in the millimeters of the page [pageId] (`null`: on no page), the
  * stroke it is drawing ([stroke], `0`: none) with its inputs ([ink]: x, y, pressure and time of
  * each one, see [INK_VALUES]) and its brush ([inkTool], [inkColor], [inkSize], [inkInput]: the
- * names of a `StrokeTool` and an `InputToolType`), the text it is writing ([text], on the page
+ * names of a `StrokeTool` and an `InputToolType`; [inkCancelled]: the stroke it was drawing was
+ * given up, not added to the document), the text it is writing ([text], on the page
  * [textPageId]), the elements it selected and how it is moving them ([selection]).
  *
  * Never stored: a device sends it when it changes and again every few seconds ([sequence] orders
@@ -30,6 +31,7 @@ data class Presence(
     val inkColor: Int = 0,
     val inkSize: Float = 0f,
     val inkInput: String = "",
+    val inkCancelled: Boolean = false,
     val text: TextData? = null,
     val textPageId: String? = null,
     val selection: SelectionActivity? = null,
