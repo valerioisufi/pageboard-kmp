@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.lecture
 
 import androidx.compose.ui.geometry.Rect
+import io.github.valerioisufi.drawview.lecture.audio.CaptureEvent
 import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
 import io.github.valerioisufi.drawview.lecture.audio.Wav
@@ -176,6 +177,30 @@ class LectureRecorderTest {
             while (lecture.status != LectureStatus.FINISHED) delay(20)
         }
         assertTrue(RecordingFile(File(directory, "lecture").path).samples() > 0)
+    }
+
+    @Test
+    fun aCallInterruptsTheMicrophoneAndTheRecordingGoesOn() = runBlocking<Unit> {
+        val engine = MockEngine { respond("", HttpStatusCode.InternalServerError) }
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath)
+        val microphone = FakeMicrophone()
+        val lecture = newLecture(settingsStore, engine)
+        val recorder = LectureRecorder(lecture, settingsStore, microphone, FakeNotebook(), analyzes = false)
+        recorder.start()
+        microphone.speak(2.0, loud = true, random = Random(1))
+
+        // A call: told, saved for the other devices; then the microphone is given back
+        microphone.event(CaptureEvent.INTERRUPTED)
+        withTimeout(5_000) { while (!lecture.microphoneInterrupted) delay(10) }
+        microphone.event(CaptureEvent.DEVICE_CHANGED)
+        microphone.event(CaptureEvent.RESUMED)
+        withTimeout(5_000) { while (lecture.microphoneInterrupted) delay(10) }
+        microphone.speak(2.0, loud = true, random = Random(2))
+        recorder.stop()
+        awaitFinished(lecture)
+
+        assertFalse(lecture.microphoneInterrupted)
+        assertEquals(4_000L, RecordingFile(File(directory, "lecture").path).durationMs())
     }
 
     @Test

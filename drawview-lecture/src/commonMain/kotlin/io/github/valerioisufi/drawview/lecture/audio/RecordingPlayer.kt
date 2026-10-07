@@ -93,7 +93,10 @@ class RecordingPlayer internal constructor(
 
     private suspend fun run(startMs: Long, speed: Float) {
         val output = outputFactory()
-        if (output == null || !withContext(Dispatchers.IO) { output.open() }) {
+        // Stopped by the system (headphones unplugged, a call): paused, as the other players do
+        val running = currentCoroutineContext()[Job]
+        val onStopped = { scope.launch(stateContext) { if (job === running) pause() } }
+        if (output == null || !withContext(Dispatchers.IO) { output.open { onStopped() } }) {
             withContext(stateContext) { isPlaying = false }
             return
         }

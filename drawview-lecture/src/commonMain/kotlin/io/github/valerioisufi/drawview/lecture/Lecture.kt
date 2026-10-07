@@ -128,6 +128,10 @@ class Lecture internal constructor(
     var noAudioWarning by mutableStateOf(false)
         internal set
 
+    /** The system holds the microphone (a call, Siri): the recording goes on when it gives it back. */
+    var microphoneInterrupted by mutableStateOf(false)
+        internal set
+
     /** Chunks waiting to be analyzed (or being analyzed). */
     var pendingUpdates by mutableIntStateOf(0)
         internal set

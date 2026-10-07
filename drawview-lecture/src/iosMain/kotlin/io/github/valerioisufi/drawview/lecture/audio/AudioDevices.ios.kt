@@ -21,7 +21,21 @@ import platform.AVFAudio.AVAudioSessionCategoryOptionDefaultToSpeaker
 import platform.AVFAudio.AVAudioSessionCategoryPlayAndRecord
 import platform.AVFAudio.AVAudioSessionModeDefault
 import platform.AVFAudio.setActive
+import platform.AVFAudio.AVAudioEngineConfigurationChangeNotification
+import platform.AVFAudio.AVAudioSessionInterruptionNotification
+import platform.AVFAudio.AVAudioSessionInterruptionTypeBegan
+import platform.AVFAudio.AVAudioSessionInterruptionTypeKey
+import platform.AVFAudio.AVAudioSessionMediaServicesWereResetNotification
+import platform.AVFAudio.AVAudioSessionRouteChangeNotification
+import platform.AVFAudio.AVAudioSessionRouteChangeReasonKey
+import platform.AVFAudio.AVAudioSessionRouteChangeReasonOldDeviceUnavailable
 import platform.Foundation.NSError
+import platform.Foundation.NSNotification
+import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSNumber
+import platform.Foundation.NSOperationQueue
+import platform.UIKit.UIApplicationDidBecomeActiveNotification
+import platform.darwin.NSObjectProtocol
 import platform.posix.usleep
 
 actual fun createAudioCapture(): AudioCapture? = AvAudioCapture()
@@ -49,23 +63,44 @@ private fun activateSession(): String? = memScoped {
 /**
  * The microphone of iOS (AVAudioEngine): its first channel, in its format, converted to 16 kHz
  * mono by [PcmResampler].
+ *
+ * The system stops it for a call or Siri (the interruptions of the audio session) and when the
+ * microphone changes (headphones plugged or unplugged: the configuration of the engine changes):
+ * it is started again once the interruption ends, or when the application becomes active again.
  */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 class AvAudioCapture : AudioCapture {
     private var engine: AVAudioEngine? = null
     private val running = atomic(false)
+    private var interrupted = false
+    private var onSamples: (ShortArray) -> Unit = {}
+    private var onEvent: (CaptureEvent) -> Unit = {}
+    private val observers = SystemObservers()
 
-    override fun start(onSamples: (ShortArray) -> Unit) {
+    override fun start(onSamples: (ShortArray) -> Unit, onEvent: (CaptureEvent) -> Unit) {
         check(!running.value) { "The capture is already running" }
         activateSession()?.let { throw AudioCaptureException(it) }
+        this.onSamples = onSamples
+        this.onEvent = onEvent
+        startEngine()?.let { throw AudioCaptureException(it) }
+        running.value = true
+        interrupted = false
+        observers.onInterruption { began -> if (began) interrupt() else resume() }
+        observers.on(AVAudioEngineConfigurationChangeNotification) { restart() }
+        observers.on(AVAudioSessionMediaServicesWereResetNotification) { restart() }
+        // An interruption ended without saying so (e.g. another application kept the microphone)
+        observers.on(UIApplicationDidBecomeActiveNotification) { resume() }
+    }
+
+    /** Starts a new engine with the microphone there is now: an error, `null` when it started. */
+    private fun startEngine(): String? {
         val newEngine = AVAudioEngine()
         val input = newEngine.inputNode
         val format = input.outputFormatForBus(0u)
         val rate = format.sampleRate.toInt()
         // No microphone (or no access to it)
-        if (rate <= 0 || format.channelCount == 0u) throw AudioCaptureException("No microphone available")
+        if (rate <= 0 || format.channelCount == 0u) return "No microphone available"
         val resampler = PcmResampler(rate, 1)
-        running.value = true
         // ~100 ms blocks
         input.installTapOnBus(0u, bufferSize = (rate / 10).toUInt(), format = format) { buffer, _ ->
             if (!running.value || buffer == null) return@installTapOnBus
@@ -81,20 +116,78 @@ class AvAudioCapture : AudioCapture {
             if (newEngine.startAndReturnError(error.ptr)) null else error.value?.localizedDescription ?: "the microphone cannot be started"
         }
         if (error != null) {
-            running.value = false
             input.removeTapOnBus(0u)
-            throw AudioCaptureException(error)
+            return error
         }
         engine = newEngine
+        return null
     }
 
-    override fun stop() {
-        running.value = false
+    private fun stopEngine() {
         engine?.let {
             it.inputNode.removeTapOnBus(0u)
             it.stop()
         }
         engine = null
+    }
+
+    private fun interrupt() {
+        if (!running.value || interrupted) return
+        interrupted = true
+        stopEngine()
+        onEvent(CaptureEvent.INTERRUPTED)
+    }
+
+    private fun resume() {
+        if (!running.value || !interrupted) return
+        if (activateSession() != null || startEngine() != null) return
+        interrupted = false
+        onEvent(CaptureEvent.RESUMED)
+    }
+
+    /** The microphone changed: a new engine with it. */
+    private fun restart() {
+        if (!running.value || interrupted) return
+        stopEngine()
+        if (startEngine() == null) {
+            onEvent(CaptureEvent.DEVICE_CHANGED)
+        } else {
+            interrupted = true
+            onEvent(CaptureEvent.INTERRUPTED)
+        }
+    }
+
+    override fun stop() {
+        running.value = false
+        observers.clear()
+        stopEngine()
+    }
+}
+
+/** The notifications of the system an audio device follows (on the main queue), removed by [clear]. */
+@OptIn(ExperimentalForeignApi::class)
+private class SystemObservers {
+    private val observers = mutableListOf<NSObjectProtocol>()
+
+    fun on(name: String?, action: (NSNotification?) -> Unit) {
+        observers += NSNotificationCenter.defaultCenter.addObserverForName(name, `object` = null, queue = NSOperationQueue.mainQueue, usingBlock = action)
+    }
+
+    /** The interruptions of the audio session: [action] with whether one began (`false`: ended). */
+    fun onInterruption(action: (began: Boolean) -> Unit) = on(AVAudioSessionInterruptionNotification) { note ->
+        val type = (note?.userInfo?.get(AVAudioSessionInterruptionTypeKey) as? NSNumber)?.unsignedLongValue
+        action(type == AVAudioSessionInterruptionTypeBegan)
+    }
+
+    /** The route changed because the device used is gone (headphones unplugged). */
+    fun onDeviceGone(action: () -> Unit) = on(AVAudioSessionRouteChangeNotification) { note ->
+        val reason = (note?.userInfo?.get(AVAudioSessionRouteChangeReasonKey) as? NSNumber)?.unsignedLongValue
+        if (reason == AVAudioSessionRouteChangeReasonOldDeviceUnavailable) action()
+    }
+
+    fun clear() {
+        observers.forEach { NSNotificationCenter.defaultCenter.removeObserver(it) }
+        observers.clear()
     }
 }
 
@@ -109,7 +202,9 @@ class AvAudioOutput : AudioOutput {
     private val queued = atomic(0)
     private val format = AVAudioFormat(commonFormat = AVAudioPCMFormatFloat32, sampleRate = LECTURE_SAMPLE_RATE.toDouble(), channels = 1u, interleaved = false)
 
-    override fun open(): Boolean {
+    private val observers = SystemObservers()
+
+    override fun open(onStopped: () -> Unit): Boolean {
         activateSession()?.let {
             println("DrawView: cannot play the recording: $it")
             return false
@@ -128,6 +223,9 @@ class AvAudioOutput : AudioOutput {
         queued.value = 0
         engine = newEngine
         player = newPlayer
+        // A call, Siri, the headphones unplugged: paused (by the player)
+        observers.onInterruption { began -> if (began) onStopped() }
+        observers.onDeviceGone(onStopped)
         return true
     }
 
@@ -146,6 +244,7 @@ class AvAudioOutput : AudioOutput {
     override val pending: Int get() = queued.value.coerceAtLeast(0)
 
     override fun close() {
+        observers.clear()
         val current = player ?: return
         player = null
         current.stop()

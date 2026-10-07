@@ -519,6 +519,9 @@ private fun RecordingSection(
         assistant.importError?.let {
             ProblemBanner(stringResource(Res.string.lecture_import_failed, it))
         }
+        if (lecture?.microphoneInterrupted == true && lecture.status == LectureStatus.RECORDING) {
+            ProblemBanner(stringResource(Res.string.lecture_microphone_interrupted))
+        }
         if (lecture?.noAudioWarning == true && lecture.status == LectureStatus.RECORDING) {
             ProblemBanner(stringResource(if (isComputer) Res.string.lecture_no_audio_warning else Res.string.lecture_no_audio_warning_device))
         }

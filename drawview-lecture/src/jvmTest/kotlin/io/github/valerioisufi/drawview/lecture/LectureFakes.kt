@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.lecture
 
 import io.github.valerioisufi.drawview.lecture.audio.AudioCapture
+import io.github.valerioisufi.drawview.lecture.audio.CaptureEvent
 import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
 import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
 import io.ktor.http.HttpHeaders
@@ -16,12 +17,21 @@ import kotlin.random.Random
 
 internal class FakeMicrophone : AudioCapture {
     var onSamples: ((ShortArray) -> Unit)? = null
-    override fun start(onSamples: (ShortArray) -> Unit) {
+    var onEvent: ((CaptureEvent) -> Unit)? = null
+
+    override fun start(onSamples: (ShortArray) -> Unit, onEvent: (CaptureEvent) -> Unit) {
         this.onSamples = onSamples
+        this.onEvent = onEvent
     }
 
     override fun stop() {
         onSamples = null
+        onEvent = null
+    }
+
+    /** The system takes the microphone (a call), or gives it back. */
+    fun event(event: CaptureEvent) {
+        onEvent?.invoke(event)
     }
 
     fun speak(seconds: Double, loud: Boolean, random: Random, quietLevel: Int = 0) {

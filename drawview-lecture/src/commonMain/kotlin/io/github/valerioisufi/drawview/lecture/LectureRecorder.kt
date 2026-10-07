@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.lecture
 
 import io.github.valerioisufi.drawview.lecture.audio.AudioCapture
 import io.github.valerioisufi.drawview.lecture.audio.AudioChunk
+import io.github.valerioisufi.drawview.lecture.audio.CaptureEvent
 import io.github.valerioisufi.drawview.lecture.audio.SpeechChunker
 import io.github.valerioisufi.drawview.lecture.audio.Wav
 import io.github.valerioisufi.drawview.lecture.audio.isSilent
@@ -78,6 +79,9 @@ class LectureRecorder internal constructor(
 
     /** The captures of the notebook of a recording not analyzed (see [analyzes]). */
     private var notebookJob: Job? = null
+
+    /** Saves the lecture now and then while the system holds the microphone (no audio comes to do it). */
+    private var interruptionJob: Job? = null
 
     // Owned by the analysis coroutine
     private var knownStrokeIds: Set<String>? = null
@@ -188,7 +192,7 @@ class LectureRecorder internal constructor(
         }
 
         try {
-            capture.start { samples -> audioBlocks.trySend(samples) }
+            capture.start(onSamples = { samples -> audioBlocks.trySend(samples) }, onEvent = ::onCaptureEvent)
         } catch (e: Throwable) {
             audioJob?.cancel()
             analysisJob?.cancel()
@@ -266,7 +270,26 @@ class LectureRecorder internal constructor(
             .forEach { backends.local.unload(it) }
     }
 
+    /** The system took the microphone (a call, Siri) or gave it back: the capture goes on by itself. */
+    private fun onCaptureEvent(event: CaptureEvent) {
+        if (event == CaptureEvent.DEVICE_CHANGED) return
+        val interrupted = event == CaptureEvent.INTERRUPTED
+        lecture.scope.launch {
+            lecture.setState { microphoneInterrupted = interrupted }
+            interruptionJob?.cancel()
+            interruptionJob = if (!interrupted) null else lecture.scope.launch {
+                // The other devices know it is still being recorded
+                while (true) {
+                    lecture.persist()
+                    delay(HEARTBEAT_MS)
+                }
+            }
+        }
+    }
+
     private fun stopMicrophone() {
+        interruptionJob?.cancel()
+        lecture.microphoneInterrupted = false
         try {
             capture.stop()
         } catch (e: Throwable) {

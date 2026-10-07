@@ -24,7 +24,7 @@ class JavaSoundAudioCapture : AudioCapture {
     private var line: TargetDataLine? = null
     private var thread: Thread? = null
 
-    override fun start(onSamples: (ShortArray) -> Unit) {
+    override fun start(onSamples: (ShortArray) -> Unit, onEvent: (CaptureEvent) -> Unit) {
         check(!running) { "The capture is already running" }
         val (opened, format) = openLine()
         opened.start()
@@ -105,7 +105,7 @@ class JavaSoundAudioOutput : AudioOutput {
     private var line: SourceDataLine? = null
     private var written = 0L
 
-    override fun open(): Boolean = try {
+    override fun open(onStopped: () -> Unit): Boolean = try {
         val format = AudioFormat(LECTURE_SAMPLE_RATE.toFloat(), 16, 1, true, false)
         val newLine = AudioSystem.getSourceDataLine(format)
         newLine.open(format, BUFFER_BYTES)

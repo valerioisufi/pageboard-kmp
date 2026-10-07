@@ -35,7 +35,7 @@ class RecordingPlayerTest {
     private class FakeOutput : AudioOutput {
         val received = Collections.synchronizedList(mutableListOf<Short>())
         var closed = false
-        override fun open() = true
+        override fun open(onStopped: () -> Unit) = true
         override fun write(samples: ShortArray, count: Int) {
             for (i in 0 until count) received.add(samples[i])
         }
@@ -90,7 +90,7 @@ class RecordingPlayerTest {
         // An output as slow as real time
         val output = object : AudioOutput {
             var closed = false
-            override fun open() = true
+            override fun open(onStopped: () -> Unit) = true
             override fun write(samples: ShortArray, count: Int) = Thread.sleep(count * 1000L / LECTURE_SAMPLE_RATE)
             override val pending = 0
             override fun close() {

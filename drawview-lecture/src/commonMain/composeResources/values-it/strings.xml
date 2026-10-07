@@ -172,6 +172,7 @@
     <string name="lecture_status_recording_only">Registro l\'audio e le pagine che guardi.</string>
     <string name="lecture_review_elsewhere">La revisione la scrive un dispositivo con i modelli (l\'app desktop) con cui condividi il documento.</string>
     <string name="lecture_microphone_denied">Consenti il microfono nelle impostazioni del dispositivo per registrare la lezione.</string>
+    <string name="lecture_microphone_interrupted">Il sistema sta usando il microfono (una chiamata, Siri): la registrazione riprende appena lo restituisce.</string>
     <string name="lecture_no_audio_warning_device">Il microfono registra solo silenzio: controlla che sia consentito a PencilNotes nelle impostazioni del dispositivo e che non sia coperto.</string>
     <string name="lecture_recorded_on">Registrata su %1$s</string>
     <string name="lecture_status_recording_on">In registrazione su %1$s · %2$s</string>

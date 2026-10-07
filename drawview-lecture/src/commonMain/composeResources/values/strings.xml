@@ -172,6 +172,7 @@
     <string name="lecture_status_recording_only">Recording the audio and the pages you look at.</string>
     <string name="lecture_review_elsewhere">The review is written by a device with the models (the desktop app) the document is shared with.</string>
     <string name="lecture_microphone_denied">Allow the microphone in the settings of the device to record the lecture.</string>
+    <string name="lecture_microphone_interrupted">The system is using the microphone (a call, Siri): the recording goes on as soon as it gives it back.</string>
     <string name="lecture_no_audio_warning_device">The microphone records only silence: check that it is allowed to PencilNotes in the settings of the device, and not covered.</string>
     <string name="lecture_recorded_on">Recorded on %1$s</string>
     <string name="lecture_status_recording_on">Being recorded on %1$s · %2$s</string>
