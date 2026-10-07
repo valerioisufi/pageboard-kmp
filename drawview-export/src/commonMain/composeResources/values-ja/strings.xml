@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="export_action">書き出す</string>
+    <string name="export_title">「%1$s」を書き出す</string>
+    <string name="export_format">形式</string>
+    <string name="export_format_pdf">PDF 書類</string>
+    <string name="export_format_png">画面のページの画像 (PNG)</string>
+    <string name="export_pages">ページ</string>
+    <string name="export_pages_all">すべてのページ</string>
+    <string name="export_pages_on_screen">画面のページ</string>
+    <string name="export_background">背景の罫線・方眼・ドット</string>
+    <string name="export_confirm">書き出す</string>
+    <string name="export_cancel">キャンセル</string>
+    <string name="export_close">閉じる</string>
+    <string name="export_in_progress">書き出し中…</string>
+    <string name="export_done">書類を書き出しました。</string>
+    <string name="export_skipped">ファイルがないため省いた要素: %1$d</string>
+    <string name="export_failed">書類を書き出せませんでした。</string>
+    <string name="export_save_title">書類を書き出す</string>
+</resources>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="export_action">Export</string>
+    <string name="export_title">Export “%1$s”</string>
+    <string name="export_format">Format</string>
+    <string name="export_format_pdf">PDF document</string>
+    <string name="export_format_png">Image of the page on screen (PNG)</string>
+    <string name="export_pages">Pages</string>
+    <string name="export_pages_all">All the pages</string>
+    <string name="export_pages_on_screen">The page on screen</string>
+    <string name="export_background">Lines, grid and dots of the background</string>
+    <string name="export_confirm">Export</string>
+    <string name="export_cancel">Cancel</string>
+    <string name="export_close">Close</string>
+    <string name="export_in_progress">Exporting…</string>
+    <string name="export_done">The document has been exported.</string>
+    <string name="export_skipped">Elements left out because their file is missing: %1$d</string>
+    <string name="export_failed">The document could not be exported.</string>
+    <string name="export_save_title">Export the document</string>
+</resources>

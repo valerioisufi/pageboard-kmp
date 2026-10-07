@@ -15,6 +15,7 @@ The repository also contains a [sample application](./sample) showing how to bui
 * [`/drawview-pdf`](./drawview-pdf) provides PDF document rendering with PDFium (Desktop JVM, Android and iOS), and the text of the pages with the position of every character.
 * [`/drawview-latex`](./drawview-latex) handles dynamic mathematical formula rendering via MicroTeX.
 * [`/drawview-lecture`](./drawview-lecture) provides the lecture assistant: it records the lecture and, with the Gemini API, suggests what is missing from the notes (an `EditorExtension` of the editor; the lectures are recorded on the desktop, iOS and Android, followed by the models on the desktop).
+* [`/drawview-export`](./drawview-export) exports the documents (see [docs/export.md](./docs/export.md)): a PDF of the pages, written with PDFium (the pages of the imported PDFs copied with their vectors and text, the marks of their text as annotations, the strokes as vector outlines, the texts as images with their text searchable), or the image of a page (PNG); "Export" on a document of the library and in the editor (`DocumentExportUi`).
 * [`/native`](./native) contains the native C++ engines and JNI bridges for Google Ink, MicroTeX, and PDFium.
 
 A minimal application is a theme around `DocumentLibrary`:
@@ -77,6 +78,14 @@ information, icons and full-screen editor.
 * [`/pencilnotes/shared`](./pencilnotes/shared) (`:pencilnotes-shared`): the `PencilNotesApp` composable, theme and resources.
 * [`/pencilnotes/androidApp`](./pencilnotes/androidApp) (`:pencilnotes-android`), [`/pencilnotes/desktopApp`](./pencilnotes/desktopApp) (`:pencilnotes-desktop`) and [`/pencilnotes/iosApp`](./pencilnotes/iosApp) (Xcode): the entry points (Android, desktop and iOS).
 
+### Export
+
+A document is exported from the library (select it, then the export button of the bar) or from the editor (the export button of its top bar):
+
+* **PDF**: every page a page of the same size. The pages of the imported PDFs keep their vectors, fonts and text (searchable and selectable), with their own annotations; the highlights, underlines and strikeouts are annotations of the PDF (other readers list them and print them); the strokes are vector shapes (their outlines from Ink); the images are embedded (a JPEG as it is); the texts and formulas are images at 300 dpi with their text written invisible over them, so that it can be searched and copied (the characters out of Latin-1 are left out of this text). From the editor, the page on screen alone.
+* **Image**: the page on screen as PNG, drawn as the editor draws it (200 dpi).
+* The lines, grid and dots of the backgrounds can be left out. The file is saved where the user chooses (the dialog of the desktop, the documents of Android, the Files of iOS).
+
 ### Lecture assistant
 
 The microphone button of the editor opens the lecture assistant (followed by the models on the desktop; on iOS and Android the lectures are recorded only, see below):
@@ -117,7 +126,7 @@ Running:
 
 ## Running Tests
 
-* **Modules**: `./gradlew :drawview-<module>:jvmTest` (also `iosSimulatorArm64Test`), e.g. `:drawview-data:jvmTest`, `:drawview-explorer:jvmTest`, `:drawview-lecture:jvmTest`
+* **Modules**: `./gradlew :drawview-<module>:jvmTest` (also `iosSimulatorArm64Test`), e.g. `:drawview-data:jvmTest`, `:drawview-explorer:jvmTest`, `:drawview-lecture:jvmTest`, `:drawview-export:jvmTest`
 * **Sample**:
   * Android: `./gradlew :sample-shared:testAndroidHostTest`
   * Desktop: `./gradlew :sample-shared:jvmTest`

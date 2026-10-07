@@ -40,6 +40,7 @@ kotlin {
             implementation(project(":drawview-explorer"))
             implementation(project(":drawview-lecture"))
             implementation(project(":drawview-sync-ui"))
+            implementation(project(":drawview-export"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)

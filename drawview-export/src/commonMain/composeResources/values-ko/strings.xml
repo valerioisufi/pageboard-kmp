@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="export_action">내보내기</string>
+    <string name="export_title">“%1$s” 내보내기</string>
+    <string name="export_format">형식</string>
+    <string name="export_format_pdf">PDF 문서</string>
+    <string name="export_format_png">화면에 보이는 페이지의 이미지 (PNG)</string>
+    <string name="export_pages">페이지</string>
+    <string name="export_pages_all">모든 페이지</string>
+    <string name="export_pages_on_screen">화면에 보이는 페이지</string>
+    <string name="export_background">배경의 줄, 모눈, 점</string>
+    <string name="export_confirm">내보내기</string>
+    <string name="export_cancel">취소</string>
+    <string name="export_close">닫기</string>
+    <string name="export_in_progress">내보내는 중…</string>
+    <string name="export_done">문서를 내보냈습니다.</string>
+    <string name="export_skipped">파일이 없어 제외된 요소: %1$d</string>
+    <string name="export_failed">문서를 내보낼 수 없습니다.</string>
+    <string name="export_save_title">문서 내보내기</string>
+</resources>

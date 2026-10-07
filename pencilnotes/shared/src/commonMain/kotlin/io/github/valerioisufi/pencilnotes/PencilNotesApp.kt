@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.data.DrawViewStore
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
 import io.github.valerioisufi.drawview.explorer.ui.AboutLicensesButton
+import io.github.valerioisufi.drawview.export.ui.rememberDocumentExportUi
 import io.github.valerioisufi.drawview.lecture.ui.LectureDialogs
 import io.github.valerioisufi.drawview.lecture.ui.LectureRecordingIndicator
 import io.github.valerioisufi.drawview.lecture.ui.editorExtension
@@ -53,8 +54,10 @@ fun PencilNotesApp() {
         val collaboration = rememberCollaboration(attachments = lectureAssistant.attachments)
         // A tablet uses the models of a computer of the local network (Ollama)
         LaunchedEffect(lectureAssistant, collaboration) { lectureAssistant.localModels.nearbyHosts = collaboration::nearbyHosts }
-        val editorExtension = remember(lectureAssistant, collaboration) {
-            lectureAssistant.editorExtension() + collaboration.editorExtension()
+        // The documents exported as PDF or as the image of a page
+        val export = rememberDocumentExportUi()
+        val editorExtension = remember(lectureAssistant, collaboration, export) {
+            lectureAssistant.editorExtension() + collaboration.editorExtension() + export.editorExtension
         }
         // The lectures of the documents deleted go with them
         LaunchedEffect(lectureAssistant) {
@@ -85,6 +88,7 @@ fun PencilNotesApp() {
                 },
                 fullScreenEditor = true,
                 editorExtension = editorExtension,
+                documentActions = listOf(export.documentAction),
                 libraryOverlay = { openDocument ->
                     LectureRecordingIndicator(
                         assistant = lectureAssistant,
