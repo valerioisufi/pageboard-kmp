@@ -618,6 +618,11 @@ class DrawViewController(
 
     fun firstVisiblePageIndex(): Int? = visiblePages().firstOrNull()?.index
 
+    /** Index of the page taking the largest part of the viewport (the page being looked at), or `null`. */
+    fun mostVisiblePageIndex(): Int? = visiblePages().maxByOrNull { page ->
+        minOf(page.rect.bottom, viewportHeight) - maxOf(page.rect.top, 0f)
+    }?.index
+
     /**
      * Index of the page containing [worldPoint] (or the nearest one when [nearest] is `true`).
      */

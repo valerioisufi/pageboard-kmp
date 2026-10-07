@@ -7,7 +7,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
 import io.github.valerioisufi.drawview.core.model.PageBackground
-import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 
@@ -57,83 +56,41 @@ class PageBackgroundRenderer {
         if (pageWidthMm <= 0f) return
 
         val pixelsPerMm = pageRect.width / pageWidthMm
+        val pageHeightMm = pageRect.height / pixelsPerMm
+
+        // Visible part of the page, in page millimeters
+        val visible = Rect(
+            max(0f, -pageRect.left) / pixelsPerMm,
+            max(0f, -pageRect.top) / pixelsPerMm,
+            min(pageRect.width, targetWidth - pageRect.left) / pixelsPerMm,
+            min(pageRect.height, targetHeight - pageRect.top) / pixelsPerMm
+        )
+        if (visible.left >= visible.right || visible.top >= visible.bottom) return
+        val pattern = background.pattern(pageWidthMm, pageHeightMm, visible) ?: return
+        // Too dense at this zoom level: not drawn
+        val spacingPx = pattern.spacingMm * pixelsPerMm
+        if (spacingPx < if (pattern.dots) 4f else 3f) return
 
         canvas.save()
         canvas.clipRect(pageRect)
         canvas.translate(pageRect.left, pageRect.top)
 
-        val visibleLeft = max(0f, -pageRect.left)
-        val visibleRight = min(pageRect.width, targetWidth - pageRect.left)
-        val visibleTop = max(0f, -pageRect.top)
-        val visibleBottom = min(pageRect.height, targetHeight - pageRect.top)
-
-        if (visibleLeft < visibleRight && visibleTop < visibleBottom) {
-            when (background) {
-                is PageBackground.Ruled -> {
-                    val spacingPx = background.spacingMm * pixelsPerMm
-                    if (spacingPx >= 3f) {
-                        patternStrokePaint.strokeWidth = max(1f, background.thicknessMm * pixelsPerMm)
-                        patternStrokePaint.color = Color(background.lineColor)
-
-                        val startY = (floor(visibleTop / spacingPx) * spacingPx).coerceAtLeast(spacingPx)
-                        var y = startY
-                        val width = pageRect.width
-                        while (y < visibleBottom) {
-                            canvas.drawLine(Offset(0f, y), Offset(width, y), patternStrokePaint)
-                            y += spacingPx
-                        }
-                    }
+        if (pattern.dots) {
+            val radiusPx = max(1f, pattern.sizeMm * pixelsPerMm)
+            patternFillPaint.color = Color(pattern.color)
+            for (x in pattern.columns) {
+                for (y in pattern.rows) {
+                    canvas.drawCircle(Offset(x * pixelsPerMm, y * pixelsPerMm), radiusPx, patternFillPaint)
                 }
-
-                is PageBackground.Grid -> {
-                    val spacingPx = background.spacingMm * pixelsPerMm
-                    if (spacingPx >= 3f) {
-                        patternStrokePaint.strokeWidth = max(1f, background.thicknessMm * pixelsPerMm)
-                        patternStrokePaint.color = Color(background.lineColor)
-
-                        val width = pageRect.width
-                        val height = pageRect.height
-
-                        // Horizontal grid lines
-                        val startY = (floor(visibleTop / spacingPx) * spacingPx).coerceAtLeast(spacingPx)
-                        var y = startY
-                        while (y < visibleBottom) {
-                            canvas.drawLine(Offset(0f, y), Offset(width, y), patternStrokePaint)
-                            y += spacingPx
-                        }
-
-                        // Vertical grid lines
-                        val startX = (floor(visibleLeft / spacingPx) * spacingPx).coerceAtLeast(spacingPx)
-                        var x = startX
-                        while (x < visibleRight) {
-                            canvas.drawLine(Offset(x, 0f), Offset(x, height), patternStrokePaint)
-                            x += spacingPx
-                        }
-                    }
-                }
-
-                is PageBackground.Dotted -> {
-                    val spacingPx = background.spacingMm * pixelsPerMm
-                    if (spacingPx >= 4f) {
-                        val radiusPx = max(1f, background.dotRadiusMm * pixelsPerMm)
-                        patternFillPaint.color = Color(background.dotColor)
-
-                        val startX = (floor(visibleLeft / spacingPx) * spacingPx).coerceAtLeast(spacingPx)
-                        val startY = (floor(visibleTop / spacingPx) * spacingPx).coerceAtLeast(spacingPx)
-
-                        var x = startX
-                        while (x < visibleRight) {
-                            var y = startY
-                            while (y < visibleBottom) {
-                                canvas.drawCircle(Offset(x, y), radiusPx, patternFillPaint)
-                                y += spacingPx
-                            }
-                            x += spacingPx
-                        }
-                    }
-                }
-
-                is PageBackground.Solid -> Unit
+            }
+        } else {
+            patternStrokePaint.strokeWidth = max(1f, pattern.sizeMm * pixelsPerMm)
+            patternStrokePaint.color = Color(pattern.color)
+            for (y in pattern.rows) {
+                canvas.drawLine(Offset(0f, y * pixelsPerMm), Offset(pageRect.width, y * pixelsPerMm), patternStrokePaint)
+            }
+            for (x in pattern.columns) {
+                canvas.drawLine(Offset(x * pixelsPerMm, 0f), Offset(x * pixelsPerMm, pageRect.height), patternStrokePaint)
             }
         }
 

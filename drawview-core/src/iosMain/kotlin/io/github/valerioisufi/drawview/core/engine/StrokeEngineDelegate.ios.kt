@@ -8,6 +8,9 @@ import io.github.valerioisufi.drawview.core.ink.cinterop.ink_stroke_builder_crea
 import io.github.valerioisufi.drawview.core.ink.cinterop.ink_stroke_builder_destroy
 import io.github.valerioisufi.drawview.core.ink.cinterop.ink_stroke_builder_finish_inputs
 import io.github.valerioisufi.drawview.core.ink.cinterop.ink_stroke_builder_get_mesh
+import io.github.valerioisufi.drawview.core.ink.cinterop.ink_stroke_builder_get_outline_count
+import io.github.valerioisufi.drawview.core.ink.cinterop.ink_stroke_builder_get_outline_vertex_count
+import io.github.valerioisufi.drawview.core.ink.cinterop.ink_stroke_builder_get_outlines
 import io.github.valerioisufi.drawview.core.ink.cinterop.ink_stroke_builder_get_triangle_count
 import io.github.valerioisufi.drawview.core.ink.cinterop.ink_stroke_builder_get_vertex_count
 import io.github.valerioisufi.drawview.core.ink.cinterop.ink_stroke_builder_start
@@ -71,6 +74,27 @@ internal object CInteropInkApi : InkNativeApi {
                     outPositions.size,
                     indices.addressOf(0).reinterpret<UIntVar>(),
                     outIndices.size
+                ) == 0
+            }
+        }
+    }
+
+    override fun getOutlineCount(builderHandle: Long): Int =
+        ink_stroke_builder_get_outline_count(builderHandle.toCPointer<COpaque>())
+
+    override fun getOutlineVertexCount(builderHandle: Long): Int =
+        ink_stroke_builder_get_outline_vertex_count(builderHandle.toCPointer<COpaque>())
+
+    override fun getOutlines(builderHandle: Long, outPositions: FloatArray, outLengths: IntArray): Boolean {
+        if (outPositions.isEmpty() || outLengths.isEmpty()) return false
+        return outPositions.usePinned { positions ->
+            outLengths.usePinned { lengths ->
+                ink_stroke_builder_get_outlines(
+                    builderHandle.toCPointer<COpaque>(),
+                    positions.addressOf(0),
+                    outPositions.size,
+                    lengths.addressOf(0),
+                    outLengths.size
                 ) == 0
             }
         }

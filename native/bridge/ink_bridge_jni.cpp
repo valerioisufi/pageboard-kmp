@@ -128,4 +128,50 @@ JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_core_ink_InkNati
     return res == 0 ? JNI_TRUE : JNI_FALSE;
 }
 
+JNIEXPORT jint JNICALL Java_io_github_valerioisufi_drawview_core_ink_InkNative_getOutlineCount(
+    JNIEnv*, jclass,
+    jlong builder_handle
+) {
+    return ink_stroke_builder_get_outline_count(reinterpret_cast<InkStrokeBuilderHandle>(builder_handle));
+}
+
+JNIEXPORT jint JNICALL Java_io_github_valerioisufi_drawview_core_ink_InkNative_getOutlineVertexCount(
+    JNIEnv*, jclass,
+    jlong builder_handle
+) {
+    return ink_stroke_builder_get_outline_vertex_count(reinterpret_cast<InkStrokeBuilderHandle>(builder_handle));
+}
+
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_core_ink_InkNative_getOutlines(
+    JNIEnv* env, jclass,
+    jlong builder_handle,
+    jfloatArray out_positions,
+    jintArray out_lengths
+) {
+    if (builder_handle == 0 || out_positions == nullptr || out_lengths == nullptr) {
+        return JNI_FALSE;
+    }
+    jsize max_pos = env->GetArrayLength(out_positions);
+    jsize max_outlines = env->GetArrayLength(out_lengths);
+
+    jfloat* pos_ptr = env->GetFloatArrayElements(out_positions, nullptr);
+    jint* len_ptr = env->GetIntArrayElements(out_lengths, nullptr);
+    if (!pos_ptr || !len_ptr) {
+        if (pos_ptr) env->ReleaseFloatArrayElements(out_positions, pos_ptr, JNI_ABORT);
+        if (len_ptr) env->ReleaseIntArrayElements(out_lengths, len_ptr, JNI_ABORT);
+        return JNI_FALSE;
+    }
+
+    int32_t res = ink_stroke_builder_get_outlines(
+        reinterpret_cast<InkStrokeBuilderHandle>(builder_handle),
+        pos_ptr, max_pos,
+        reinterpret_cast<int32_t*>(len_ptr), max_outlines
+    );
+
+    env->ReleaseFloatArrayElements(out_positions, pos_ptr, res == 0 ? 0 : JNI_ABORT);
+    env->ReleaseIntArrayElements(out_lengths, len_ptr, res == 0 ? 0 : JNI_ABORT);
+
+    return res == 0 ? JNI_TRUE : JNI_FALSE;
+}
+
 } // extern "C"

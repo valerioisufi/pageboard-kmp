@@ -58,6 +58,19 @@ internal object InkNative {
         outPositions: FloatArray,
         outIndices: IntArray
     ): Boolean
+
+    @JvmStatic
+    external fun getOutlineCount(builderHandle: Long): Int
+
+    @JvmStatic
+    external fun getOutlineVertexCount(builderHandle: Long): Int
+
+    @JvmStatic
+    external fun getOutlines(
+        builderHandle: Long,
+        outPositions: FloatArray,
+        outLengths: IntArray
+    ): Boolean
 }
 
 /**
@@ -89,4 +102,11 @@ internal object JniInkApi : InkNativeApi {
 
     override fun getMeshData(builderHandle: Long, outPositions: FloatArray, outIndices: IntArray): Boolean =
         InkNative.getMeshData(builderHandle, outPositions, outIndices)
+
+    override fun getOutlineCount(builderHandle: Long): Int = InkNative.getOutlineCount(builderHandle)
+
+    override fun getOutlineVertexCount(builderHandle: Long): Int = InkNative.getOutlineVertexCount(builderHandle)
+
+    override fun getOutlines(builderHandle: Long, outPositions: FloatArray, outLengths: IntArray): Boolean =
+        InkNative.getOutlines(builderHandle, outPositions, outLengths)
 }

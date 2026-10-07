@@ -14,7 +14,11 @@ import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPage
+import io.github.valerioisufi.drawview.core.model.DrawPdf
 import io.github.valerioisufi.drawview.core.model.DrawResource
+import io.github.valerioisufi.drawview.core.model.DrawStroke
+import io.github.valerioisufi.drawview.core.model.DrawText
+import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.PageContentSnapshot
 import io.github.valerioisufi.drawview.core.platform.decodeImageFile
 import kotlin.math.ceil
@@ -125,76 +129,67 @@ class TileRenderer(
         canvas.save()
         canvas.clipRect(visibleRect)
 
-        // --- 2. PDF layers ---
+        // --- 2. Layers: PDF pages, marks of their text, images, texts and formulas, strokes ---
         val pdf = pdfAdapter
-        if (pdf != null && content.pdfs.isNotEmpty()) {
-            for (pdfItem in content.pdfs) {
-                val resource = document.findResource(pdfItem.resourceId) ?: continue
-                if (resource.type != DrawResource.ResourceType.PDF) continue
-                try {
-                    pdf.renderPdfPage(canvas, resource.path, pdfItem.pdfPageIndex, pageCanvasRect, visibleRect)
-                } catch (_: Throwable) {
-                    // A corrupted or missing PDF must not break the rendering of the page
-                }
-            }
-        }
-
-        // --- 3. Highlights, underlines and strikeouts of the text of the PDFs ---
-        if (content.markups.isNotEmpty()) {
-            val markupPaint = Paint()
-            for (markup in content.markups) {
-                val pointsToMm = markup.pointsToPageMm(content.widthMm, content.heightMm)
-                if (!pointsToMm.mapRect(markup.boundsPoints).overlaps(visibleMmBounds)) continue
-                TextMarkupPainter.draw(
-                    canvas = canvas,
-                    rects = markup.rects,
-                    kind = markup.kind,
-                    color = Color(markup.color),
-                    pointsToCanvas = pointsToMm.postConcat(mmToCanvas),
-                    paint = markupPaint
-                )
-            }
-        }
-
-        // --- 4. Images ---
-        if (content.images.isNotEmpty()) {
-            val imagePaint = Paint().apply {
-                filterQuality = FilterQuality.Medium
-                isAntiAlias = true
-            }
-            for (image in content.images) {
-                if (image.isHidden) continue
-                if (!image.getRotatedBounds().overlaps(visibleMmBounds)) continue
-                val bitmap = ensureImageLoaded(document, image) ?: continue
-                drawImage(canvas, image, bitmap, mmToCanvas, imagePaint)
-            }
-        }
-
-        // --- 5. Texts & LaTeX formulas ---
         val text = textAdapter
-        if (text != null && content.texts.isNotEmpty()) {
-            for (item in content.texts) {
-                if (item.isHidden) continue
-                if (!item.getRotatedBounds().overlaps(visibleMmBounds)) continue
-                try {
-                    text.drawText(canvas, item, mmToCanvas)
-                } catch (_: Throwable) {
-                }
-            }
+        val markupPaint = Paint()
+        val imagePaint = Paint().apply {
+            filterQuality = FilterQuality.Medium
+            isAntiAlias = true
         }
+        val strokePainter = StrokeMeshPainter()
+        for (element in content.paintOrder) {
+            when (element) {
+                is DrawPdf -> {
+                    if (pdf == null) continue
+                    val resource = document.findResource(element.resourceId) ?: continue
+                    if (resource.type != DrawResource.ResourceType.PDF) continue
+                    try {
+                        pdf.renderPdfPage(canvas, resource.path, element.pdfPageIndex, pageCanvasRect, visibleRect)
+                    } catch (_: Throwable) {
+                        // A corrupted or missing PDF must not break the rendering of the page
+                    }
+                }
 
-        // --- 6. Vector strokes ---
-        if (content.strokes.isNotEmpty()) {
-            val painter = StrokeMeshPainter()
-            for (stroke in content.strokes) {
-                if (stroke.isHidden) continue
-                val bounds = stroke.bounds
-                if (bounds.left < visibleMmBounds.right &&
-                    bounds.right > visibleMmBounds.left &&
-                    bounds.top < visibleMmBounds.bottom &&
-                    bounds.bottom > visibleMmBounds.top
-                ) {
-                    painter.draw(canvas, stroke.mesh, mmToCanvas)
+                is DrawTextMarkup -> {
+                    val pointsToMm = element.pointsToPageMm(content.widthMm, content.heightMm)
+                    if (!pointsToMm.mapRect(element.boundsPoints).overlaps(visibleMmBounds)) continue
+                    TextMarkupPainter.draw(
+                        canvas = canvas,
+                        rects = element.rects,
+                        kind = element.kind,
+                        color = Color(element.color),
+                        pointsToCanvas = pointsToMm.postConcat(mmToCanvas),
+                        paint = markupPaint
+                    )
+                }
+
+                is DrawImage -> {
+                    if (element.isHidden) continue
+                    if (!element.getRotatedBounds().overlaps(visibleMmBounds)) continue
+                    val bitmap = ensureImageLoaded(document, element) ?: continue
+                    drawImage(canvas, element, bitmap, mmToCanvas, imagePaint)
+                }
+
+                is DrawText -> {
+                    if (text == null || element.isHidden) continue
+                    if (!element.getRotatedBounds().overlaps(visibleMmBounds)) continue
+                    try {
+                        text.drawText(canvas, element, mmToCanvas)
+                    } catch (_: Throwable) {
+                    }
+                }
+
+                is DrawStroke -> {
+                    if (element.isHidden) continue
+                    val bounds = element.bounds
+                    if (bounds.left < visibleMmBounds.right &&
+                        bounds.right > visibleMmBounds.left &&
+                        bounds.top < visibleMmBounds.bottom &&
+                        bounds.bottom > visibleMmBounds.top
+                    ) {
+                        strokePainter.draw(canvas, element.mesh, mmToCanvas)
+                    }
                 }
             }
         }

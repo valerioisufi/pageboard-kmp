@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.core.engine
 import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.InputToolType
 import io.github.valerioisufi.drawview.core.model.StrokeMesh
+import io.github.valerioisufi.drawview.core.model.StrokeOutline
 import io.github.valerioisufi.drawview.core.model.StrokePoint
 
 /**
@@ -21,6 +22,9 @@ interface InkNativeApi {
     fun getVertexCount(builderHandle: Long): Int
     fun getTriangleCount(builderHandle: Long): Int
     fun getMeshData(builderHandle: Long, outPositions: FloatArray, outIndices: IntArray): Boolean
+    fun getOutlineCount(builderHandle: Long): Int
+    fun getOutlineVertexCount(builderHandle: Long): Int
+    fun getOutlines(builderHandle: Long, outPositions: FloatArray, outLengths: IntArray): Boolean
 }
 
 /**
@@ -89,6 +93,23 @@ class NativeStrokeEngineDelegate(private val api: InkNativeApi) : StrokeEngineDe
             points = points,
             inputToolType = toolType
         )
+    }
+
+    override fun currentOutline(): StrokeOutline? {
+        if (!started) return null
+        val outlineCount = api.getOutlineCount(builderHandle)
+        val vertexCount = api.getOutlineVertexCount(builderHandle)
+        if (outlineCount <= 0 || vertexCount <= 0) return null
+
+        val positions = FloatArray(vertexCount * 2)
+        val lengths = IntArray(outlineCount)
+        if (!api.getOutlines(builderHandle, positions, lengths)) return null
+
+        var offset = 0
+        val polygons = lengths.map { length ->
+            positions.copyOfRange(offset * 2, (offset + length) * 2).also { offset += length }
+        }
+        return StrokeOutline(polygons)
     }
 
     override fun clear() {

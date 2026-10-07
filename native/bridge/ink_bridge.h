@@ -127,6 +127,36 @@ int32_t ink_stroke_builder_get_mesh(
     int32_t max_indices
 );
 
+/**
+ * Returns the number of outlines of the modeled stroke (all brush coats): closed polygons whose
+ * union, filled with the non-zero winding rule, is the shape of the stroke.
+ */
+int32_t ink_stroke_builder_get_outline_count(InkStrokeBuilderHandle handle);
+
+/**
+ * Returns the number of vertices of all the outlines of the modeled stroke.
+ */
+int32_t ink_stroke_builder_get_outline_vertex_count(InkStrokeBuilderHandle handle);
+
+/**
+ * Extracts the outlines of the modeled stroke (all brush coats).
+ * @param handle The builder handle.
+ * @param out_positions Output buffer for the vertices of the outlines, one outline after the
+ *        other (x, y pairs -> 2 floats per vertex).
+ * @param max_positions Maximum floats the out_positions buffer can hold (must be >= 2 * outline
+ *        vertex count).
+ * @param out_lengths Output buffer for the number of vertices of every outline.
+ * @param max_outlines Maximum values the out_lengths buffer can hold (must be >= outline count).
+ * @return 0 on success, or -1 on error/buffer too small.
+ */
+int32_t ink_stroke_builder_get_outlines(
+    InkStrokeBuilderHandle handle,
+    float* out_positions,
+    int32_t max_positions,
+    int32_t* out_lengths,
+    int32_t max_outlines
+);
+
 #ifdef __cplusplus
 }
 #endif

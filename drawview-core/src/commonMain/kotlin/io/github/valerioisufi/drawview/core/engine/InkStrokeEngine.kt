@@ -1,9 +1,12 @@
 package io.github.valerioisufi.drawview.core.engine
 
 import io.github.valerioisufi.drawview.core.model.BrushConfig
+import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.InputToolType
 import io.github.valerioisufi.drawview.core.model.StrokeMesh
+import io.github.valerioisufi.drawview.core.model.StrokeOutline
 import io.github.valerioisufi.drawview.core.model.StrokePoint
+import io.github.valerioisufi.drawview.core.model.triangleOutline
 
 /**
  * Physical length of one stroke unit: DrawView models every stroke in page millimeters.
@@ -105,6 +108,20 @@ class InkStrokeEngine {
         return mesh
     }
 
+    /**
+     * Completes the stroke and returns its outline instead of its mesh, or `null` when the
+     * modeller cannot give it (see [StrokeEngineDelegate.currentOutline]).
+     */
+    fun finishStrokeOutline(): StrokeOutline? {
+        if (!isActive) return null
+        isActive = false
+        delegate.finishInputs()
+        val outline = delegate.currentOutline()
+        delegate.clear()
+        recordedPoints.clear()
+        return outline?.takeUnless { it.isEmpty }
+    }
+
     fun cancelStroke() {
         isActive = false
         delegate.clear()
@@ -143,6 +160,40 @@ class InkStrokeEngine {
                 engine.release()
             }
         }
+
+        /**
+         * Outline of a complete stroke modeled from recorded inputs, or `null` when the engine
+         * cannot give one (no inputs, or not the native engine).
+         */
+        fun buildOutline(
+            points: List<StrokePoint>,
+            brush: BrushConfig,
+            toolType: InputToolType = InputToolType.UNKNOWN,
+            strokeUnitLengthCm: Float = STROKE_UNIT_LENGTH_CM_MM
+        ): StrokeOutline? {
+            if (points.isEmpty()) return null
+            val engine = InkStrokeEngine()
+            return try {
+                engine.startStroke(brush, strokeUnitLengthCm)
+                for (p in points) {
+                    engine.addInput(p.x, p.y, p.pressure, p.timestampMs, toolType)
+                }
+                engine.finishStrokeOutline()
+            } finally {
+                engine.release()
+            }
+        }
+
+        /**
+         * Outline of [stroke] on its page: modeled again from its inputs (the outlines of Ink),
+         * or the triangles of its mesh when the engine cannot give it.
+         */
+        fun outline(stroke: DrawStroke): StrokeOutline {
+            val base = stroke.baseMesh
+            val modeled = buildOutline(base.points, stroke.baseBrush, base.inputToolType)
+                ?: return stroke.mesh.triangleOutline()
+            return if (stroke.transform.isIdentity) modeled else modeled.transformed(stroke.transform.toMatrix())
+        }
     }
 }
 
@@ -155,6 +206,9 @@ interface StrokeEngineDelegate {
     fun addInput(x: Float, y: Float, pressure: Float, timeMs: Long, toolType: InputToolType)
     fun finishInputs()
     fun currentMesh(brush: BrushConfig, points: List<StrokePoint>, toolType: InputToolType): StrokeMesh?
+
+    /** Outline of the stroke modeled so far, or `null` when this modeller cannot give it. */
+    fun currentOutline(): StrokeOutline? = null
     fun clear()
     fun release()
 }

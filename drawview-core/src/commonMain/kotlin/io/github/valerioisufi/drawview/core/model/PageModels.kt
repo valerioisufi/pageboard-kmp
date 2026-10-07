@@ -19,6 +19,7 @@ import kotlin.concurrent.Volatile
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.floor
 import kotlin.math.sin
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -32,6 +33,30 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed class PageBackground {
     abstract val backgroundColor: Int
+
+    /**
+     * The lines or the dots drawn over [backgroundColor] on a page of [widthMm] x [heightMm], those
+     * of [area] only (page millimeters; the whole page by default), or `null` for a solid color.
+     */
+    fun pattern(widthMm: Float, heightMm: Float, area: Rect = Rect(0f, 0f, widthMm, heightMm)): BackgroundPattern? {
+        fun positions(spacingMm: Float, lengthMm: Float, from: Float, to: Float): FloatArray {
+            if (spacingMm <= 0f) return FloatArray(0)
+            val end = minOf(to, lengthMm)
+            val positions = ArrayList<Float>()
+            // Every spacing after the edge, from the one before the area (a line crossing its edge)
+            var k = maxOf(floor(from / spacingMm).toInt(), 1)
+            while (k * spacingMm < end) positions.add(k++ * spacingMm)
+            return positions.toFloatArray()
+        }
+        val rows = { spacing: Float -> positions(spacing, heightMm, area.top, area.bottom) }
+        val columns = { spacing: Float -> positions(spacing, widthMm, area.left, area.right) }
+        return when (this) {
+            is Solid -> null
+            is Ruled -> BackgroundPattern(lineColor, spacingMm, thicknessMm, dots = false, rows(spacingMm), FloatArray(0), widthMm, heightMm)
+            is Grid -> BackgroundPattern(lineColor, spacingMm, thicknessMm, dots = false, rows(spacingMm), columns(spacingMm), widthMm, heightMm)
+            is Dotted -> BackgroundPattern(dotColor, spacingMm, dotRadiusMm, dots = true, rows(spacingMm), columns(spacingMm), widthMm, heightMm)
+        }
+    }
 
     @Serializable
     @SerialName("Solid")
@@ -66,6 +91,25 @@ sealed class PageBackground {
         val dotRadiusMm: Float = 0.5f
     ) : PageBackground()
 }
+
+/**
+ * The pattern of a [PageBackground] on a page of [widthMm] x [heightMm], in page millimeters:
+ * horizontal lines at [rows] and vertical lines at [columns] across the page, or ([dots]) a dot at
+ * every row and column.
+ *
+ * @param spacingMm distance between two lines or two dots.
+ * @param sizeMm thickness of the lines, or radius of the dots.
+ */
+class BackgroundPattern(
+    val color: Int,
+    val spacingMm: Float,
+    val sizeMm: Float,
+    val dots: Boolean,
+    val rows: FloatArray,
+    val columns: FloatArray,
+    val widthMm: Float,
+    val heightMm: Float
+)
 
 /**
  * An element of a page: a stroke, a text block, an image, a PDF page or a mark of its text.
@@ -521,6 +565,40 @@ class PageContentSnapshot(
     val markups: List<DrawTextMarkup> = emptyList()
 ) {
     fun rect(): Rect = Rect(0f, 0f, widthMm, heightMm)
+
+    /**
+     * The elements in the order they are painted, from the bottom: the PDF pages, the marks of
+     * their text, the images, the texts and the strokes, each kind in its stacking order.
+     */
+    val paintOrder: List<DrawElement> get() = pdfs + markups + images + texts + strokes
+
+    /**
+     * A copy of this content whose elements are copies too: the elements of a page are changed in
+     * place, this copy stays as it is (e.g. while a document is exported). The copies are shown,
+     * none of them is selected or moved.
+     */
+    fun detached(): PageContentSnapshot = PageContentSnapshot(
+        strokes = strokes.map { DrawStroke(it.id, it.baseMesh, it.baseBrush, it.transform) },
+        texts = texts.map { text -> DrawText(text.id).also { it.copyFrom(text) } },
+        images = images.map { image ->
+            DrawImage(image.id).also {
+                it.resourceId = image.resourceId
+                it.x = image.x
+                it.y = image.y
+                it.width = image.width
+                it.height = image.height
+                it.rotation = image.rotation
+                it.bitmap = image.bitmap
+            }
+        },
+        pdfs = pdfs.map { pdf -> DrawPdf(pdf.pdfPageIndex, pdf.id).also { it.resourceId = pdf.resourceId } },
+        background = background,
+        widthMm = widthMm,
+        heightMm = heightMm,
+        markups = markups.map {
+            DrawTextMarkup(it.id, it.resourceId, it.pdfPageIndex, it.pdfWidthPt, it.pdfHeightPt, it.startIndex, it.endIndex, it.text, it.rects, it.kind, it.color)
+        }
+    )
 }
 
 /**

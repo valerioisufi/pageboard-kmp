@@ -2,9 +2,14 @@ package io.github.valerioisufi.drawview.core
 
 import androidx.compose.ui.graphics.Color
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
+import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.model.BrushConfig
+import io.github.valerioisufi.drawview.core.model.DrawStroke
+import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
+import kotlin.math.abs
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -47,5 +52,29 @@ class InkStrokeEngineTest {
 
         println("Unit Test Verified: Google Ink generated ${completedStroke.vertexCount} vertices and ${completedStroke.triangleCount} triangles for stroke!")
         engine.release()
+    }
+
+    @Test
+    fun theOutlineOfAStrokeFollowsItsMesh() {
+        val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 2f, color = Color.Blue, epsilon = 0.05f)
+        val points = (0..20).map { i -> StrokePoint(10f + i * 3f, 20f + (i * i) * 0.2f, 0.5f, 16L * (i + 1)) }
+        val mesh = assertNotNull(InkStrokeEngine.buildMesh(points, brush))
+        val outline = assertNotNull(InkStrokeEngine.buildOutline(points, brush), "Ink gives the outline of the stroke")
+
+        // Fewer points than the triangles, around the same shape
+        val vertices = outline.polygons.sumOf { it.size / 2 }
+        assertTrue(vertices in 3 until mesh.triangleCount * 3, "outline of $vertices vertices for ${mesh.triangleCount} triangles")
+        val meshBounds = mesh.computeBounds()
+        val xs = outline.polygons.flatMap { p -> p.filterIndexed { i, _ -> i % 2 == 0 } }
+        val ys = outline.polygons.flatMap { p -> p.filterIndexed { i, _ -> i % 2 == 1 } }
+        assertTrue(abs(xs.min() - meshBounds.left) < 0.01f && abs(xs.max() - meshBounds.right) < 0.01f)
+        assertTrue(abs(ys.min() - meshBounds.top) < 0.01f && abs(ys.max() - meshBounds.bottom) < 0.01f)
+
+        // The outline of a stroke placed on its page is placed with it
+        val stroke = DrawStroke(mesh = mesh.withPoints(points), brushConfig = brush, transform = AffineTransform(tx = 100f))
+        val placed = InkStrokeEngine.outline(stroke)
+        assertEquals(outline.polygons.size, placed.polygons.size)
+        assertEquals(outline.polygons[0][0] + 100f, placed.polygons[0][0], 0.001f)
+        assertEquals(outline.polygons[0][1], placed.polygons[0][1], 0.001f)
     }
 }

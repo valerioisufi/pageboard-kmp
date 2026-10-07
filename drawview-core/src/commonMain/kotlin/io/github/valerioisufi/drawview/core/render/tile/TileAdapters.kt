@@ -78,7 +78,21 @@ interface TextTileAdapter {
      * Draws [text] on [canvas], mapping page millimeters to canvas pixels through [mmToCanvas].
      */
     fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D)
+
+    /**
+     * The lines of [text] as [drawText] lays them out (what they say, without the Markdown marks
+     * and the formulas), e.g. to write the text over an image of the block; empty when the adapter
+     * cannot tell them (a LaTeX block).
+     */
+    fun lines(text: DrawText): List<TextLine> = emptyList()
 }
+
+/**
+ * A line of a text block laid out by a [TextTileAdapter], in millimeters of the block (from its
+ * top-left corner, before its rotation): its [text] goes from [left] for [width] on the
+ * [baseline], in letters [fontSize] high.
+ */
+class TextLine(val text: String, val left: Float, val baseline: Float, val width: Float, val fontSize: Float)
 
 /**
  * Adapter for rasterizing LaTeX math formulas into ImageBitmaps.

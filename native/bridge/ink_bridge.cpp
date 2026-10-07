@@ -285,4 +285,69 @@ int32_t ink_stroke_builder_get_mesh(
     return 0;
 }
 
+int32_t ink_stroke_builder_get_outline_count(InkStrokeBuilderHandle handle) {
+    if (handle == nullptr) return 0;
+    auto* builder = static_cast<InkStrokeBuilderWrapper*>(handle);
+    if (!builder->started) return 0;
+
+    uint64_t total = 0;
+    for (uint32_t coat = 0; coat < builder->stroke.BrushCoatCount(); ++coat) {
+        for (const auto& outline : builder->stroke.GetCoatOutlines(coat)) {
+            if (!outline.empty()) ++total;
+        }
+    }
+    return static_cast<int32_t>(total);
+}
+
+int32_t ink_stroke_builder_get_outline_vertex_count(InkStrokeBuilderHandle handle) {
+    if (handle == nullptr) return 0;
+    auto* builder = static_cast<InkStrokeBuilderWrapper*>(handle);
+    if (!builder->started) return 0;
+
+    uint64_t total = 0;
+    for (uint32_t coat = 0; coat < builder->stroke.BrushCoatCount(); ++coat) {
+        for (const auto& outline : builder->stroke.GetCoatOutlines(coat)) {
+            total += outline.size();
+        }
+    }
+    return static_cast<int32_t>(total);
+}
+
+int32_t ink_stroke_builder_get_outlines(
+    InkStrokeBuilderHandle handle,
+    float* out_positions,
+    int32_t max_positions,
+    int32_t* out_lengths,
+    int32_t max_outlines
+) {
+    if (handle == nullptr || out_positions == nullptr || out_lengths == nullptr) {
+        return -1;
+    }
+    auto* builder = static_cast<InkStrokeBuilderWrapper*>(handle);
+    if (!builder->started) {
+        return 0;
+    }
+
+    uint64_t position_cursor = 0;
+    int32_t outline_cursor = 0;
+    for (uint32_t coat = 0; coat < builder->stroke.BrushCoatCount(); ++coat) {
+        const auto& mesh = builder->stroke.GetMesh(coat);
+        for (const auto& outline : builder->stroke.GetCoatOutlines(coat)) {
+            if (outline.empty()) continue;
+            if (outline_cursor >= max_outlines ||
+                position_cursor + outline.size() * 2 > static_cast<uint64_t>(max_positions)) {
+                return -1;
+            }
+            for (uint32_t index : outline) {
+                ink::Point pt = mesh.VertexPosition(index);
+                out_positions[position_cursor++] = pt.x;
+                out_positions[position_cursor++] = pt.y;
+            }
+            out_lengths[outline_cursor++] = static_cast<int32_t>(outline.size());
+        }
+    }
+
+    return 0;
+}
+
 } // extern "C"
