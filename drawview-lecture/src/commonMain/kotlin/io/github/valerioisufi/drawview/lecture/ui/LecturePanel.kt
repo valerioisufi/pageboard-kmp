@@ -104,8 +104,8 @@ import io.github.valerioisufi.drawview.lecture.AssistantSettings
 import io.github.valerioisufi.drawview.lecture.ImportStep
 import io.github.valerioisufi.drawview.lecture.LectureAssistant
 import io.github.valerioisufi.drawview.lecture.audio.importableExtensions
-import io.github.valerioisufi.drawview.lecture.platform.chooseFileToOpen
-import io.github.valerioisufi.drawview.lecture.platform.chooseFileToSave
+import io.github.valerioisufi.drawview.lecture.platform.rememberFileOpener
+import io.github.valerioisufi.drawview.lecture.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.lecture.platform.isComputer
 import io.github.valerioisufi.drawview.lecture.LectureProblem
 import io.github.valerioisufi.drawview.lecture.ControllerNotebookSource
@@ -172,16 +172,16 @@ internal fun LecturePanel(assistant: LectureAssistant, documentId: String, contr
                     val lecture = assistant.shownLecture(documentId)
                     val recorder = assistant.recorderOf(documentId)
                     LectureSelector(assistant, documentId, lecture)
-                    val importTitle = stringResource(Res.string.lecture_import_title)
+                    val chooseRecording = rememberFileOpener(stringResource(Res.string.lecture_import_title), importableExtensions()) { file ->
+                        assistant.importRecording(documentId, controller, file)
+                    }
                     RecordingSection(
                         assistant = assistant,
                         lecture = lecture,
                         recorder = recorder,
                         onImport = {
                             assistant.clearImportAndExportMessages()
-                            chooseFileToOpen(importTitle, importableExtensions())?.let { file ->
-                                assistant.importRecording(documentId, controller, file)
-                            }
+                            chooseRecording()
                         },
                         onStart = {
                             // A key is needed only when something is sent to Gemini
@@ -235,6 +235,9 @@ private fun PanelHeader(onSettings: (() -> Unit)?, onClose: () -> Unit) {
  * The lectures of the document: the one shown, the others to choose from, and the deletion of
  * the shown one (with its audio).
  */
+/** The type of the exported recordings (m4a). */
+private const val RecordingExportType = "audio/mp4"
+
 @Composable
 private fun LectureSelector(assistant: LectureAssistant, documentId: String, lecture: Lecture?) {
     val lectures = assistant.lecturesOf(documentId)
@@ -243,7 +246,11 @@ private fun LectureSelector(assistant: LectureAssistant, documentId: String, lec
     var confirmDelete by remember { mutableStateOf<LectureSummary?>(null) }
     val shown = lectures.firstOrNull { it.directory == lecture.directory }
     val isActive = assistant.activeRecorder?.lecture === lecture || assistant.importing === lecture
-    val exportTitle = stringResource(Res.string.lecture_export_title)
+    // The lecture shown when the student chose where to save it
+    val exported = remember { arrayOfNulls<Lecture>(1) }
+    val saveRecording = rememberFileSaver(stringResource(Res.string.lecture_export_title), RecordingExportType) { target ->
+        exported[0]?.let { assistant.exportAudio(it, target) }
+    }
 
     Box(modifier = Modifier.padding(horizontal = 8.dp)) {
         TextButton(onClick = { expanded = true }) {
@@ -285,7 +292,8 @@ private fun LectureSelector(assistant: LectureAssistant, documentId: String, lec
                         expanded = false
                         assistant.clearImportAndExportMessages()
                         val name = "${lecture.documentTitle.ifBlank { "lecture" }} ${formatLectureDate(lecture.startedAt).replace('/', '-').replace(':', '.')}"
-                        chooseFileToSave(exportTitle, "$name.${assistant.exportExtension}")?.let { assistant.exportAudio(lecture, it) }
+                        exported[0] = lecture
+                        saveRecording("$name.${assistant.exportExtension}")
                     }
                 )
             }

@@ -484,6 +484,22 @@ class LectureRecorderTest {
         assertTrue(File(directory, "lecture/audio.opus").exists())
     }
 
+    @Test
+    fun aRecordingImportedWithoutTheModelsKeepsItsAudioOnly() = runBlocking<Unit> {
+        val engine = MockEngine { respond("", HttpStatusCode.InternalServerError) }
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath)
+        val input = File(directory, "lezione.wav").apply { writeBytes(Wav.encode(ShortArray(5 * LECTURE_SAMPLE_RATE) { (it % 200 * 50).toShort() })) }
+        val lecture = newLecture(settingsStore, engine)
+        LectureImporter(lecture, settingsStore, transcriber = null).run(input.absolutePath, emptyList(), emptyList(), reviews = false)
+
+        // Finished, to be reviewed by a device with the models
+        assertEquals(LectureStatus.FINISHED, lecture.status)
+        assertEquals(5_000L, lecture.elapsedMs)
+        assertTrue(lecture.transcript.isEmpty())
+        assertNull(lecture.finalReview)
+        assertEquals(5_000L, RecordingFile(File(directory, "lecture").path).durationMs())
+    }
+
     /** A notebook with a block of handwriting written before the lecture on its page 2. */
     private class InkNotebook : NotebookSource {
         val block = InkBlock(1, "11", "k1", setOf("old"), Rect(10f, 10f, 50f, 30f))

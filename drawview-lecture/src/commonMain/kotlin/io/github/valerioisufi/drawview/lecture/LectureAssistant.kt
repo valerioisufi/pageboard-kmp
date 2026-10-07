@@ -15,7 +15,7 @@ import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
 import io.github.valerioisufi.drawview.lecture.audio.exportRecording
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
 import io.github.valerioisufi.drawview.lecture.platform.ChosenFile
-import io.github.valerioisufi.drawview.lecture.platform.canChooseFiles
+import io.github.valerioisufi.drawview.lecture.platform.FileTarget
 import io.github.valerioisufi.drawview.lecture.platform.generationSupported
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
@@ -27,6 +27,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.NonCancellable
+import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -523,8 +525,8 @@ class LectureAssistant(
     /** Whether a recording or an import is in progress (one at a time). */
     val isBusy: Boolean get() = activeRecorder != null || importing != null
 
-    /** Whether recordings can be imported and exported here (the desktop). */
-    val canImportAndExport: Boolean get() = canChooseFiles
+    /** Whether recordings can be imported and exported here (every platform chooses files). */
+    val canImportAndExport: Boolean get() = true
 
     /**
      * Imports [file], a recording made elsewhere (a phone, a recorder), as a lecture of
@@ -558,7 +560,7 @@ class LectureAssistant(
                 val pageIds = withContext(stateContext) { controller.document.pages.map { it.id } }
                 val settings = settingsStore.settings
                 val transcriber = if (settings.sendsAudio) null else transcriberFactory(settings)
-                LectureImporter(lecture, settingsStore, transcriber).run(file.path, pages, pageIds)
+                LectureImporter(lecture, settingsStore, transcriber).run(file.path, pages, pageIds, reviews = canGenerate)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
@@ -569,6 +571,7 @@ class LectureAssistant(
                     if (shownLectures[documentId] === lecture) shownLectures.remove(documentId)
                 }
             } finally {
+                if (file.temporary) withContext(NonCancellable + Dispatchers.IO) { SystemFileSystem.delete(Path(file.path), mustExist = false) }
                 withContext(NonCancellable + stateContext) { importing = null }
                 refresh(documentId)
             }
@@ -638,16 +641,17 @@ class LectureAssistant(
     }
 
     /** The audio of [lecture] saved in [target], as m4a. */
-    fun exportAudio(lecture: Lecture, target: String) {
+    fun exportAudio(lecture: Lecture, target: FileTarget) {
         exportResult = null
         scope.launch {
             val result = try {
-                val saved = withContext(Dispatchers.IO) { exportRecording(lecture.recording, target) }
+                val saved = withContext(Dispatchers.IO) { exportRecording(lecture.recording, target.path) }
+                target.deliver(saved)
                 ExportResult(saved.substringAfterLast('/'), failure = null)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
-                ExportResult(target.substringAfterLast('/'), failure = e.message ?: e::class.simpleName.orEmpty())
+                ExportResult(target.path.substringAfterLast('/'), failure = e.message ?: e::class.simpleName.orEmpty())
             }
             withContext(stateContext) { exportResult = result }
         }

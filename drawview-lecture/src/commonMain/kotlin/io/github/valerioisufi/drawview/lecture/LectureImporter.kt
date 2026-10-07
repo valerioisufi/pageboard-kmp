@@ -37,7 +37,7 @@ internal class LectureImporter(
      *
      * @throws IllegalArgumentException when [input] cannot be read as audio.
      */
-    suspend fun run(input: String, pages: List<PageContent>, pageIds: List<String>) {
+    suspend fun run(input: String, pages: List<PageContent>, pageIds: List<String>, reviews: Boolean = true) {
         lecture.setState {
             importStep = ImportStep.CONVERTING
             importProgress = -1f
@@ -57,7 +57,16 @@ internal class LectureImporter(
         }
         lecture.setState { elapsedMs = samplesToMs(samples) }
         lecture.persist()
-        transcribeAndReview(settingsStore.settings.reviewProvider)
+        if (reviews) {
+            transcribeAndReview(settingsStore.settings.reviewProvider)
+        } else {
+            // No models here: the audio only, reviewed by a device with them
+            lecture.setState {
+                status = LectureStatus.FINISHED
+                importStep = null
+            }
+            lecture.persist()
+        }
     }
 
     /** Transcribes the audio of the lecture, then writes its review with [provider]. */
