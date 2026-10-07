@@ -60,4 +60,51 @@ internal object PdfiumNative {
 
     @JvmStatic
     external fun nCloseDocument(docHandle: Long)
+
+    // Writing (see pdfium_bridge.h)
+
+    @JvmStatic
+    external fun nNewDocument(): Long
+
+    @JvmStatic
+    external fun nNewPage(docHandle: Long, widthPt: Double, heightPt: Double): Long
+
+    @JvmStatic
+    external fun nPageAddPath(
+        pageHandle: Long,
+        verbs: ByteArray,
+        verbCount: Int,
+        points: FloatArray,
+        fillArgb: Int,
+        strokeArgb: Int,
+        strokeWidth: Float
+    ): Boolean
+
+    @JvmStatic
+    external fun nPageAddJpeg(docHandle: Long, pageHandle: Long, data: ByteArray, matrix: DoubleArray): Boolean
+
+    @JvmStatic
+    external fun nPageAddBitmap(docHandle: Long, pageHandle: Long, pixels: IntArray, width: Int, height: Int, matrix: DoubleArray): Boolean
+
+    @JvmStatic
+    external fun nPageAddPdfPage(docHandle: Long, pageHandle: Long, sourceHandle: Long, pageIndex: Int, matrix: DoubleArray): Boolean
+
+    @JvmStatic
+    external fun nPageAddMarkup(pageHandle: Long, kind: Int, quads: FloatArray, argb: Int): Boolean
+
+    @JvmStatic
+    external fun nPageAddInvisibleText(
+        docHandle: Long,
+        pageHandle: Long,
+        text: String,
+        fontSize: Float,
+        maxWidth: Float,
+        matrix: DoubleArray
+    ): Boolean
+
+    @JvmStatic
+    external fun nEndPage(pageHandle: Long): Boolean
+
+    @JvmStatic
+    external fun nSaveDocument(docHandle: Long, path: String): Boolean
 }

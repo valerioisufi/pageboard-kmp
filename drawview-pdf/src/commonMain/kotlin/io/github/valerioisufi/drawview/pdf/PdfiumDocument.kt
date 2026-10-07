@@ -42,6 +42,33 @@ internal expect object PdfiumBindings {
     fun pageTextLayout(document: Long, pageIndex: Int): Pair<IntArray, FloatArray>?
 
     fun closeDocument(document: Long)
+
+    // Writing (see pdfium_bridge.h: the coordinates are in the PDF user space of the page, the
+    // matrices are six values a, b, c, d, e, f)
+
+    /** Creates a new empty document: returns its handle, or 0 on failure. */
+    fun newDocument(): Long
+
+    /** Adds a page at the end of [document]: returns its handle, or 0 on failure. */
+    fun newPage(document: Long, widthPt: Double, heightPt: Double): Long
+
+    fun pageAddPath(page: Long, verbs: ByteArray, verbCount: Int, points: FloatArray, fillArgb: Int, strokeArgb: Int, strokeWidth: Float): Boolean
+
+    fun pageAddJpeg(document: Long, page: Long, data: ByteArray, matrix: DoubleArray): Boolean
+
+    /** [pixels] are ARGB, top row first. */
+    fun pageAddBitmap(document: Long, page: Long, pixels: IntArray, width: Int, height: Int, matrix: DoubleArray): Boolean
+
+    fun pageAddPdfPage(document: Long, page: Long, source: Long, pageIndex: Int, matrix: DoubleArray): Boolean
+
+    fun pageAddMarkup(page: Long, kind: Int, quads: FloatArray, argb: Int): Boolean
+
+    fun pageAddInvisibleText(document: Long, page: Long, text: String, fontSize: Float, maxWidth: Float, matrix: DoubleArray): Boolean
+
+    /** Writes the content of [page] and closes it. */
+    fun endPage(page: Long): Boolean
+
+    fun saveDocument(document: Long, path: String): Boolean
 }
 
 /**

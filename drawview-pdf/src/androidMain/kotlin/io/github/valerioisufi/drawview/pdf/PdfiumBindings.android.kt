@@ -53,4 +53,30 @@ internal actual object PdfiumBindings {
     }
 
     actual fun closeDocument(document: Long) = PdfiumNative.nCloseDocument(document)
+
+    actual fun newDocument(): Long = PdfiumNative.nNewDocument()
+
+    actual fun newPage(document: Long, widthPt: Double, heightPt: Double): Long = PdfiumNative.nNewPage(document, widthPt, heightPt)
+
+    actual fun pageAddPath(page: Long, verbs: ByteArray, verbCount: Int, points: FloatArray, fillArgb: Int, strokeArgb: Int, strokeWidth: Float): Boolean =
+        PdfiumNative.nPageAddPath(page, verbs, verbCount, points, fillArgb, strokeArgb, strokeWidth)
+
+    actual fun pageAddJpeg(document: Long, page: Long, data: ByteArray, matrix: DoubleArray): Boolean =
+        PdfiumNative.nPageAddJpeg(document, page, data, matrix)
+
+    actual fun pageAddBitmap(document: Long, page: Long, pixels: IntArray, width: Int, height: Int, matrix: DoubleArray): Boolean =
+        PdfiumNative.nPageAddBitmap(document, page, pixels, width, height, matrix)
+
+    actual fun pageAddPdfPage(document: Long, page: Long, source: Long, pageIndex: Int, matrix: DoubleArray): Boolean =
+        PdfiumNative.nPageAddPdfPage(document, page, source, pageIndex, matrix)
+
+    actual fun pageAddMarkup(page: Long, kind: Int, quads: FloatArray, argb: Int): Boolean =
+        PdfiumNative.nPageAddMarkup(page, kind, quads, argb)
+
+    actual fun pageAddInvisibleText(document: Long, page: Long, text: String, fontSize: Float, maxWidth: Float, matrix: DoubleArray): Boolean =
+        PdfiumNative.nPageAddInvisibleText(document, page, text, fontSize, maxWidth, matrix)
+
+    actual fun endPage(page: Long): Boolean = PdfiumNative.nEndPage(page)
+
+    actual fun saveDocument(document: Long, path: String): Boolean = PdfiumNative.nSaveDocument(document, path)
 }

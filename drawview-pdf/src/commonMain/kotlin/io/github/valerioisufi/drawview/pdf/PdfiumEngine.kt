@@ -52,6 +52,16 @@ object PdfiumEngine {
     fun isAvailable(): Boolean = PdfPlatform.isAvailable()
 
     /**
+     * Starts a new PDF document, written page by page and then saved (see [PdfWriter]).
+     */
+    fun create(): PdfWriter {
+        if (!isAvailable()) throw UnsupportedOperationException("PDF documents are not supported on this platform")
+        val handle = PdfiumBindings.newDocument()
+        check(handle != 0L) { "Cannot create a PDF document" }
+        return PdfiumWriter(handle)
+    }
+
+    /**
      * Creates the adapter used by the tile engine to render the PDF pages of the documents, or
      * `null` when PDFs are not supported on this platform.
      */

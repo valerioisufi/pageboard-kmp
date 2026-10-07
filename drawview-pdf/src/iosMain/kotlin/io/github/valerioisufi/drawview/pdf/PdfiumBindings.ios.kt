@@ -3,12 +3,22 @@ package io.github.valerioisufi.drawview.pdf
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_close_document
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_end_page
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_count
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_size
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_text
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_text_layout
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_new_document
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_new_page
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_open_document
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_page_add_bitmap
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_page_add_invisible_text
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_page_add_jpeg
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_page_add_markup
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_page_add_path
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_page_add_pdf_page
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_render_page_bitmap
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_save_document
 import kotlinx.cinterop.DoubleVar
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
@@ -105,4 +115,62 @@ internal actual object PdfiumBindings {
     }
 
     actual fun closeDocument(document: Long) = pdfium_close_document(document)
+
+    actual fun newDocument(): Long = pdfium_new_document()
+
+    actual fun newPage(document: Long, widthPt: Double, heightPt: Double): Long = pdfium_new_page(document, widthPt, heightPt)
+
+    actual fun pageAddPath(page: Long, verbs: ByteArray, verbCount: Int, points: FloatArray, fillArgb: Int, strokeArgb: Int, strokeWidth: Float): Boolean {
+        if (verbCount <= 0 || verbs.size < verbCount || points.isEmpty()) return false
+        return verbs.usePinned { pinnedVerbs ->
+            points.usePinned { pinnedPoints ->
+                pdfium_page_add_path(
+                    page, pinnedVerbs.addressOf(0).reinterpret(), verbCount, pinnedPoints.addressOf(0),
+                    fillArgb.toUInt(), strokeArgb.toUInt(), strokeWidth
+                ) != 0
+            }
+        }
+    }
+
+    actual fun pageAddJpeg(document: Long, page: Long, data: ByteArray, matrix: DoubleArray): Boolean {
+        if (data.isEmpty() || matrix.size < 6) return false
+        return data.usePinned { pinnedData ->
+            matrix.usePinned { pinnedMatrix ->
+                pdfium_page_add_jpeg(document, page, pinnedData.addressOf(0).reinterpret(), data.size, pinnedMatrix.addressOf(0)) != 0
+            }
+        }
+    }
+
+    actual fun pageAddBitmap(document: Long, page: Long, pixels: IntArray, width: Int, height: Int, matrix: DoubleArray): Boolean {
+        if (width <= 0 || height <= 0 || pixels.size < width * height || matrix.size < 6) return false
+        return pixels.usePinned { pinnedPixels ->
+            matrix.usePinned { pinnedMatrix ->
+                pdfium_page_add_bitmap(document, page, pinnedPixels.addressOf(0).reinterpret(), width, height, pinnedMatrix.addressOf(0)) != 0
+            }
+        }
+    }
+
+    actual fun pageAddPdfPage(document: Long, page: Long, source: Long, pageIndex: Int, matrix: DoubleArray): Boolean {
+        if (matrix.size < 6) return false
+        return matrix.usePinned { pinned -> pdfium_page_add_pdf_page(document, page, source, pageIndex, pinned.addressOf(0)) != 0 }
+    }
+
+    actual fun pageAddMarkup(page: Long, kind: Int, quads: FloatArray, argb: Int): Boolean {
+        if (quads.size < 8) return false
+        return quads.usePinned { pinned -> pdfium_page_add_markup(page, kind, pinned.addressOf(0), quads.size / 8, argb.toUInt()) != 0 }
+    }
+
+    actual fun pageAddInvisibleText(document: Long, page: Long, text: String, fontSize: Float, maxWidth: Float, matrix: DoubleArray): Boolean {
+        if (text.isEmpty() || matrix.size < 6) return false
+        val units = UShortArray(text.length) { text[it].code.toUShort() }
+        return units.usePinned { pinnedText ->
+            matrix.usePinned { pinnedMatrix ->
+                pdfium_page_add_invisible_text(document, page, pinnedText.addressOf(0), text.length, fontSize, maxWidth, pinnedMatrix.addressOf(0)) != 0
+            }
+        }
+    }
+
+    actual fun endPage(page: Long): Boolean = pdfium_end_page(page) != 0
+
+    actual fun saveDocument(document: Long, path: String): Boolean = pdfium_save_document(document, path) != 0
 }

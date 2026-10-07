@@ -85,4 +85,107 @@ JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nCl
     pdfium_close_document(handle);
 }
 
+// ==========================================================
+// Writing
+// ==========================================================
+
+JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nNewDocument(JNIEnv*, jclass) {
+    return pdfium_new_document();
+}
+
+JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nNewPage(
+    JNIEnv*, jclass, jlong doc, jdouble width_pt, jdouble height_pt) {
+    return pdfium_new_page(doc, width_pt, height_pt);
+}
+
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nPageAddPath(
+    JNIEnv* env, jclass, jlong page, jbyteArray jverbs, jint verb_count, jfloatArray jpoints,
+    jint fill_argb, jint stroke_argb, jfloat stroke_width) {
+    if (!jverbs || !jpoints || env->GetArrayLength(jverbs) < verb_count) return JNI_FALSE;
+    jbyte* verbs = env->GetByteArrayElements(jverbs, nullptr);
+    jfloat* points = env->GetFloatArrayElements(jpoints, nullptr);
+    int32_t res = verbs && points ? pdfium_page_add_path(
+        page, reinterpret_cast<const uint8_t*>(verbs), verb_count, points,
+        static_cast<uint32_t>(fill_argb), static_cast<uint32_t>(stroke_argb), stroke_width
+    ) : 0;
+    if (points) env->ReleaseFloatArrayElements(jpoints, points, JNI_ABORT);
+    if (verbs) env->ReleaseByteArrayElements(jverbs, verbs, JNI_ABORT);
+    return res ? JNI_TRUE : JNI_FALSE;
+}
+
+/** The six values of [jmatrix] into [out], or false. */
+static bool read_matrix(JNIEnv* env, jdoubleArray jmatrix, double* out) {
+    if (!jmatrix || env->GetArrayLength(jmatrix) < 6) return false;
+    env->GetDoubleArrayRegion(jmatrix, 0, 6, out);
+    return true;
+}
+
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nPageAddJpeg(
+    JNIEnv* env, jclass, jlong doc, jlong page, jbyteArray jdata, jdoubleArray jmatrix) {
+    double matrix[6];
+    if (!jdata || !read_matrix(env, jmatrix, matrix)) return JNI_FALSE;
+    jbyte* data = env->GetByteArrayElements(jdata, nullptr);
+    if (!data) return JNI_FALSE;
+    int32_t res = pdfium_page_add_jpeg(doc, page, reinterpret_cast<const uint8_t*>(data), env->GetArrayLength(jdata), matrix);
+    env->ReleaseByteArrayElements(jdata, data, JNI_ABORT);
+    return res ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nPageAddBitmap(
+    JNIEnv* env, jclass, jlong doc, jlong page, jintArray jpixels, jint width, jint height, jdoubleArray jmatrix) {
+    double matrix[6];
+    if (!jpixels || width <= 0 || height <= 0 || env->GetArrayLength(jpixels) < width * height || !read_matrix(env, jmatrix, matrix)) {
+        return JNI_FALSE;
+    }
+    jint* pixels = env->GetIntArrayElements(jpixels, nullptr);
+    if (!pixels) return JNI_FALSE;
+    int32_t res = pdfium_page_add_bitmap(doc, page, reinterpret_cast<const uint32_t*>(pixels), width, height, matrix);
+    env->ReleaseIntArrayElements(jpixels, pixels, JNI_ABORT);
+    return res ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nPageAddPdfPage(
+    JNIEnv* env, jclass, jlong doc, jlong page, jlong source, jint page_index, jdoubleArray jmatrix) {
+    double matrix[6];
+    if (!read_matrix(env, jmatrix, matrix)) return JNI_FALSE;
+    return pdfium_page_add_pdf_page(doc, page, source, page_index, matrix) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nPageAddMarkup(
+    JNIEnv* env, jclass, jlong page, jint kind, jfloatArray jquads, jint color) {
+    if (!jquads) return JNI_FALSE;
+    jsize count = env->GetArrayLength(jquads) / 8;
+    jfloat* quads = env->GetFloatArrayElements(jquads, nullptr);
+    if (!quads) return JNI_FALSE;
+    int32_t res = pdfium_page_add_markup(page, kind, quads, count, static_cast<uint32_t>(color));
+    env->ReleaseFloatArrayElements(jquads, quads, JNI_ABORT);
+    return res ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nPageAddInvisibleText(
+    JNIEnv* env, jclass, jlong doc, jlong page, jstring jtext, jfloat font_size, jfloat max_width, jdoubleArray jmatrix) {
+    double matrix[6];
+    if (!jtext || !read_matrix(env, jmatrix, matrix)) return JNI_FALSE;
+    jsize length = env->GetStringLength(jtext);
+    const jchar* text = env->GetStringChars(jtext, nullptr);
+    if (!text) return JNI_FALSE;
+    int32_t res = pdfium_page_add_invisible_text(doc, page, reinterpret_cast<const uint16_t*>(text), length, font_size, max_width, matrix);
+    env->ReleaseStringChars(jtext, text);
+    return res ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nEndPage(JNIEnv*, jclass, jlong page) {
+    return pdfium_end_page(page) ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nSaveDocument(
+    JNIEnv* env, jclass, jlong doc, jstring jpath) {
+    if (!jpath) return JNI_FALSE;
+    const char* path = env->GetStringUTFChars(jpath, nullptr);
+    if (!path) return JNI_FALSE;
+    int32_t res = pdfium_save_document(doc, path);
+    env->ReleaseStringUTFChars(jpath, path);
+    return res ? JNI_TRUE : JNI_FALSE;
+}
+
 }
