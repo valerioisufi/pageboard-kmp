@@ -40,7 +40,7 @@ Variations).
 | Lines of a mark in millimeters | `DrawTextMarkup.pointsToPageMm` | Information Expert |
 | Place of a PDF page in a page | `fitPdfPage` | Information Expert |
 | Write a PDF with primitives: pages, paths, images, marks, pages of another PDF, saving | `PdfWriter` (`drawview-pdf`), created by `PdfiumEngine.create()` | Pure Fabrication, Creator, Low Coupling |
-| Draw the texts and the formulas; the lines of a text as it lays them out (the invisible text of the PDF, over the visible one) | `TextTileAdapter.drawText`, `TextTileAdapter.lines` (interface of `drawview-core`; `ComposeTextTileAdapter` of the editor) | Information Expert, Indirection, Protected Variations |
+| Draw the texts and the formulas; the words and the formulas of a text as it lays them out (the text of the PDF) | `TextTileAdapter.drawText`, `TextTileAdapter.layout` (interface of `drawview-core`; `ComposeTextTileAdapter` of the editor) | Information Expert, Indirection, Protected Variations |
 | Where to save the file | `FileTarget`, `rememberFileSaver` (moved to `drawview-ui`) | Indirection, Protected Variations |
 | Actions of the application on a document of the library | `DocumentAction` (`drawview-ui`, beside `EditorExtension`), shown by `DocumentLibrary` in the bar of the selection | Low Coupling, Protected Variations |
 | "Export" in the library and in the editor | `DocumentExportUi` (`drawview-export`): a `DocumentAction` and an `EditorExtension`, both opening the export dialog | Low Coupling, Protected Variations |
@@ -67,7 +67,7 @@ Variations).
 | PDF page (`DrawPdf`) | the page of the original PDF as a form object, placed where the page shows it: vectors, text and fonts kept (searchable, selectable); its annotations flattened into it first |
 | Highlight, underline, strikeout (`DrawTextMarkup`) | an annotation of the same kind (QuadPoints, color), recognized by the other readers |
 | Image (`DrawImage`) | an image object; a JPEG is embedded as it is, the others as pixels |
-| Text, Markdown, LaTeX (`DrawText`) | an image of the block at 300 dpi (as the editor draws it), with its text written invisible over it (searchable, copied) |
+| Text, Markdown, LaTeX (`DrawText`) | its words as text of the PDF, where the editor lays them out, in the font of the editor (a subset of Noto Sans embedded); its formulas as vectors; the words with characters out of the font as images at 300 dpi (see [Quality of the PDF](#quality-of-the-pdf)) |
 | Stroke (`DrawStroke`) | its outline filled (non-zero winding), with the opacity of its color |
 
 ## Plan
@@ -100,6 +100,66 @@ Variations).
   pixel by pixel with the original); the order of the elements and the files missing with a
   recording writer; the export of a document through `OpenDocuments`. A PDF exported is also
   drawn as expected by PDFKit (macOS), with its highlight listed as an annotation.
-* Limits: the invisible text of the texts keeps the Latin-1 characters only (Helvetica of the
-  standard fonts); the formulas are images without text.
+* Limits, lifted by the [quality phases](#quality-of-the-pdf): the invisible text of the texts
+  kept the Latin-1 characters only (Helvetica of the standard fonts); the formulas were images
+  without text.
 
+## Quality of the PDF
+
+The PDF is written the same way on every platform, by PDFium, from data the model and the
+editor give in common code: no drawing of a platform is captured.
+
+* The text of the notes is real text of the PDF (selected, searched, copied in every language
+  its font covers), placed word by word where the editor lays it out. Its font is the one of the
+  editor on every platform: Noto Sans (and Noto Sans Mono for the code), shipped with
+  `drawview-ui`; each PDF embeds a subset of it (the characters used). The characters the font
+  does not have (emoji, Chinese, Japanese, Korean), drawn by a font of the system, are images of
+  their words.
+* The formulas are vectors: MicroTeX describes them the same way on every platform (characters of
+  its TrueType fonts, lines, rectangles), and the outlines of the characters are read from the
+  fonts. The `\text{}` of the formulas is in Noto Sans too.
+* The pages of an imported PDF are imported once per file (one call: their fonts and images are
+  shared, not copied for every page), as pages of the document: their links stay, placed with
+  them.
+* The underlines and the strikeouts have the thickness and the place of the editor; the images
+  their full resolution (a JPEG turned by its Exif embedded as it is, turned by its placement);
+  the document its title and the application that made it.
+
+| Responsibility | Class (module) | GRASP |
+|---|---|---|
+| The fonts of the notes, for the editor and the PDF | `NotesFonts`, `NotesFontFiles` (`drawview-ui`) | Information Expert |
+| The words of a text as it is laid out: face, size, color, place, width; its formulas | `TextTileAdapter.layout` → `TextBlockLayout` (`drawview-core`), `ComposeTextTileAdapter` | Information Expert |
+| Read a TrueType font: glyphs of the characters, outlines, subset | `TrueTypeFont` (`drawview-pdf`) | Pure Fabrication |
+| A formula as data, the same on every platform | `LatexEngine.drawing` → `TexDrawing` (`drawview-latex`) | Information Expert, Protected Variations |
+| A formula as vectors | `TexPaths` (`drawview-export`) | Pure Fabrication |
+| Fonts and text of the PDF, pages of another PDF as pages | `PdfWriter.loadFont`, `addText`, `beginPage(base)` | Pure Fabrication, Creator |
+
+| Phase | Content | Status |
+|---|---|---|
+| Q1 | Noto Sans and Noto Sans Mono for the text of the notes (editor, editing, notes of the lectures) | Done |
+| Q2 | `TrueTypeFont` (cmap, outlines, subset); `PdfWriter.loadFont` / `addText` | Done |
+| Q3 | The words of the texts as real text of the PDF (`TextBlockLayout`); images for the characters out of the font | Done |
+| Q4 | The formulas as vectors (`TexDrawing`); `\text{}` in Noto Sans | Done |
+| Q5 | The pages of the imported PDFs imported once per file, with their links | |
+| Q6 | Underlines and strikeouts as in the editor; images at full resolution; title and creator of the PDF | |
+
+### Results of the quality
+
+* The editor, the editing overlay and the notes of the lectures write in Noto Sans (Noto Sans
+  Mono for the code) on every platform (`rememberNotesFonts`); the files are read again by the
+  export (`NotesFontFiles`).
+* `TrueTypeFont` reads the glyphs of the characters (cmap 4 and 12), their advances, their
+  outlines (simple and composite glyphs) and the strikeout of the font, and writes a subset
+  keeping the glyph numbers. Each face used is embedded once, as a subset of its characters.
+* `ComposeTextTileAdapter.layout` gives the words of a text as the editor lays them out (face,
+  size, color, box, strikethrough) and the boxes of its formulas; each word is written at its
+  place and stretched to its width, so that the PDF matches the editor whatever the reader's
+  text layout. A word with a character out of the font (emoji, Chinese, Japanese, Korean) is the
+  image of its box in the block drawn at 300 dpi.
+* MicroTeX gives a formula as operations (`TexDrawing`), the same on every platform; `TexPaths`
+  replays them as the graphics of the platforms do (scales and translations on the coordinates,
+  rotations on the canvas, synthesized bold and italic) with the outlines of the glyphs of the
+  TeX fonts. The `\text{}` of the formulas is in Noto Sans (`LatexEngine.setTextFonts`).
+* Tests: the text of a PDF read again in every script of the font (Greek), the PDF of a text
+  with formulas drawn by PDFium overlapping the editor's drawing (more than 75 % of the ink), no
+  image in it; an emoji word as an image.

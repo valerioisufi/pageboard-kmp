@@ -71,6 +71,14 @@ actual object LatexPlatformEngine {
         }
     }
 
+    actual fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): TexDrawing? {
+        if (!isNativeReady()) return null
+        return synchronized(lock) {
+            val render: TeXRender = LaTeX.instance().parse(latex, fontSizePx, colorArgb)
+            TexDrawing(render.width, render.height, render.baseline.coerceIn(0f, 1f), render.ops())
+        }
+    }
+
     actual fun generateErrorBitmap(latex: String, fontSizePx: Float): ImageBitmap =
         SkiaLatexBadges.errorBadge(latex, fontSizePx)
 }

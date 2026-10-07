@@ -19,11 +19,17 @@ import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.pdfPointsToPageMm
 import io.github.valerioisufi.drawview.core.platform.PlatformFiles
 import io.github.valerioisufi.drawview.core.platform.decodeImageBitmap
+import io.github.valerioisufi.drawview.core.render.tile.TextBlockLayout
+import io.github.valerioisufi.drawview.core.render.tile.TextFace
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
+import io.github.valerioisufi.drawview.core.render.tile.TextWord
+import io.github.valerioisufi.drawview.latex.LatexEngine
+import io.github.valerioisufi.drawview.pdf.PdfFont
 import io.github.valerioisufi.drawview.pdf.PdfMarkupKind
 import io.github.valerioisufi.drawview.pdf.PdfPath
 import io.github.valerioisufi.drawview.pdf.PdfWriter
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
+import io.github.valerioisufi.drawview.pdf.TrueTypeFont
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlinx.coroutines.Dispatchers
@@ -31,17 +37,21 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 
 /**
- * Writes the documents as PDF (see `docs/export.md`): every page a page of the same size, with
- * its background, the pages of the PDFs it shows (their vectors and text kept), the marks of
- * their text as annotations, its images, its texts as images with their text invisible over them,
- * and its strokes as filled outlines.
+ * Writes the documents as PDF (see `docs/export.md`), the same way on every platform: every page
+ * a page of the same size, with its background, the pages of the PDFs it shows (their vectors and
+ * text kept), the marks of their text as annotations, its images, its texts as real text in the
+ * fonts of the notes (a subset of them embedded) with their formulas as vectors, and its strokes as
+ * filled outlines.
  *
- * @param textAdapter draws the texts and gives their lines (the one of the editor), or `null` to
- *   leave the texts out.
+ * @param textAdapter lays out and draws the texts (the one of the editor), or `null` to leave the
+ *   texts out.
+ * @param fontFiles the TrueType files of the fonts the adapter draws the texts with
+ *   (`NotesFontFiles`), or `null`: the texts are then images of them.
  * @param createWriter the PDF written.
  */
 class PdfExporter(
     private val textAdapter: TextTileAdapter?,
+    private val fontFiles: (suspend (TextFace) -> ByteArray?)? = null,
     private val createWriter: () -> PdfWriter = PdfiumEngine::create
 ) : DocumentExporter {
     override val extension: String get() = "pdf"
@@ -49,11 +59,16 @@ class PdfExporter(
 
     override suspend fun export(content: DocumentContent, options: ExportOptions, path: String, progress: (Float) -> Unit): ExportResult =
         withContext(Dispatchers.Default) {
+            // The texts laid out once, the characters of their words embedded once per face
+            val layouts = HashMap<DrawText, TextBlockLayout?>()
+            for (page in content.pages) for (text in page.texts) layouts[text] = textAdapter?.layout(text)
+            val faces = loadFaces(layouts.values.filterNotNull())
             var skipped = 0
             createWriter().use { writer ->
+                val texts = TextWriter(writer, layouts, embed(writer, faces, layouts.values.filterNotNull()), faces)
                 content.pages.forEachIndexed { index, page ->
                     ensureActive()
-                    skipped += PageWriter(writer, content, page).write(options)
+                    skipped += PageWriter(writer, content, page, texts).write(options)
                     progress((index + 1f) / content.pages.size)
                 }
                 writer.save(path)
@@ -61,11 +76,175 @@ class PdfExporter(
             ExportResult(content.pages.size, skipped)
         }
 
+    /** The fonts of the faces the texts use, and of the text of their formulas. */
+    private suspend fun loadFaces(layouts: List<TextBlockLayout>): Map<TextFace, TrueTypeFont> {
+        val files = fontFiles ?: return emptyMap()
+        val used = layouts.flatMapTo(mutableSetOf()) { layout -> layout.words.map { it.face } }
+        if (layouts.any { it.formulas.isNotEmpty() }) used += listOf(TextFace.REGULAR, TextFace.BOLD, TextFace.ITALIC, TextFace.BOLD_ITALIC)
+        return used.mapNotNull { face ->
+            val bytes = files(face) ?: return@mapNotNull null
+            try {
+                face to TrueTypeFont(bytes)
+            } catch (_: IllegalArgumentException) {
+                null
+            }
+        }.toMap()
+    }
+
+    /** Embeds in [writer] the subset of each face with the characters of the words it writes. */
+    private fun embed(writer: PdfWriter, faces: Map<TextFace, TrueTypeFont>, layouts: List<TextBlockLayout>): Map<TextFace, PdfFont> {
+        val characters = HashMap<TextFace, MutableSet<Int>>()
+        for (layout in layouts) for (word in layout.words) {
+            val font = faces[word.face] ?: continue
+            val points = codePoints(word.printable)
+            if (points.all(font::covers)) characters.getOrPut(word.face) { mutableSetOf() } += points
+        }
+        return characters.mapNotNull { (face, points) ->
+            writer.loadFont(faces.getValue(face).subset(points))?.let { face to it }
+        }.toMap()
+    }
+
+    /** Writes the texts, their words with [fonts], their formulas as vectors. */
+    private inner class TextWriter(
+        private val writer: PdfWriter,
+        private val layouts: Map<DrawText, TextBlockLayout?>,
+        private val fonts: Map<TextFace, PdfFont>,
+        private val faces: Map<TextFace, TrueTypeFont>
+    ) {
+        private val texFonts = HashMap<String, TrueTypeFont?>()
+        private val texPaths = TexPaths { font ->
+            val file = font.file
+            if (file == null) {
+                faces[textFace(font.style)]
+            } else {
+                texFonts.getOrPut(file) {
+                    PlatformFiles.readBytes(file)?.let { bytes ->
+                        try {
+                            TrueTypeFont(bytes)
+                        } catch (_: IllegalArgumentException) {
+                            null
+                        }
+                    }
+                }
+            }
+        }
+
+        /** Writes [text] placed by [mmToPt] on its page; returns whether it could. */
+        fun write(text: DrawText, mmToPt: Matrix2D): Boolean {
+            val layout = layouts[text] ?: return writeImage(text, mmToPt)
+            val toBlock = Matrix2D()
+                .postRotate(text.rotation, text.width / 2f, layout.height / 2f)
+                .postTranslate(text.x, text.y)
+                .postConcat(mmToPt)
+            val raster = BlockRaster(text, toBlock)
+            for (word in layout.words) {
+                val printable = word.printable
+                if (printable.isBlank()) continue
+                val font = fonts[word.face]
+                val covered = font != null && codePoints(printable).all(font.metrics::covers)
+                if (covered) {
+                    val toWord = Matrix2D().postTranslate(word.left, word.baseline).postConcat(toBlock)
+                    writer.addText(font!!, printable, word.fontSize, toWord, word.color, width = word.width)
+                } else {
+                    // The characters out of the font, as the editor draws them
+                    raster.draw(Rect(word.left, word.lineTop, word.left + word.width, word.lineBottom))
+                }
+                if (word.strikethrough) strike(word, faces[word.face], toBlock)
+            }
+            for (formula in layout.formulas) {
+                val drawing = LatexEngine.drawing(formula.latex, FORMULA_PX, formula.color)
+                if (drawing == null || drawing.width <= 0) {
+                    raster.draw(Rect(formula.left, formula.top, formula.left + formula.width, formula.top + formula.height))
+                    continue
+                }
+                val scale = formula.width / drawing.width
+                val toPage = Matrix2D().postScale(scale, scale).postTranslate(formula.left, formula.top).postConcat(toBlock)
+                for (shape in texPaths.shapes(drawing, toPage)) {
+                    if (shape.strokeWidth > 0f) writer.strokePath(shape.path, shape.argb, shape.strokeWidth) else writer.fillPath(shape.path, shape.argb)
+                }
+            }
+            return true
+        }
+
+        /** The line through [word], where its font strikes out. */
+        private fun strike(word: TextWord, font: TrueTypeFont?, toBlock: Matrix2D) {
+            val (position, thickness) = font?.strikeout()?.let { (p, t) ->
+                p.toFloat() / font.unitsPerEm to t.toFloat() / font.unitsPerEm
+            } ?: (0.3f to 0.05f)
+            val y = word.baseline - position * word.fontSize
+            val half = thickness * word.fontSize / 2f
+            val corners = floatArrayOf(word.left, y - half, word.left + word.width, y - half, word.left + word.width, y + half, word.left, y + half)
+            toBlock.mapPoints(corners)
+            writer.fillPath(PdfPath().apply { addPolygon(corners) }, word.color)
+        }
+
+        /** [text] as an image, the way the editor draws it (without a layout). */
+        private fun writeImage(text: DrawText, mmToPt: Matrix2D): Boolean {
+            val adapter = textAdapter ?: return true
+            if (text.width <= 0f || text.text.isBlank()) return true
+            // A formula sets the height of its block when it is drawn
+            if (text.isLatex) adapter.drawText(Canvas(ImageBitmap(1, 1)), text, Matrix2D().postScale(TEXT_PX_PER_MM, TEXT_PX_PER_MM))
+            val toBlock = Matrix2D()
+                .postRotate(text.rotation, text.width / 2f, text.height / 2f)
+                .postTranslate(text.x, text.y)
+                .postConcat(mmToPt)
+            return BlockRaster(text, toBlock).draw(Rect(0f, 0f, text.width, text.height))
+        }
+
+        /**
+         * The image of [text] without its rotation at 300 dpi, drawn by the adapter when a part of
+         * it is first needed; [toBlock] places the block.
+         */
+        private inner class BlockRaster(private val text: DrawText, private val toBlock: Matrix2D) {
+            private var pixels: IntArray? = null
+            private var width = 0
+            private var height = 0
+            private var scale = 1f
+
+            /** Draws the part [area] of the block (millimeters of the block); returns whether it could. */
+            fun draw(area: Rect): Boolean {
+                val all = pixels ?: render() ?: return false
+                val left = (area.left * scale).toInt().coerceIn(0, width)
+                val top = (area.top * scale).toInt().coerceIn(0, height)
+                val right = ceil(area.right * scale).toInt().coerceIn(left, width)
+                val bottom = ceil(area.bottom * scale).toInt().coerceIn(top, height)
+                val w = right - left
+                val h = bottom - top
+                if (w <= 0 || h <= 0) return true
+                val part = IntArray(w * h) { all[(top + it / w) * width + left + it % w] }
+                if (part.all { it ushr 24 == 0 }) return true
+                val toPage = Matrix2D()
+                    .postScale(w / scale, h / scale)
+                    .postTranslate(left / scale, top / scale)
+                    .postConcat(toBlock)
+                return writer.drawImage(part, w, h, toPage)
+            }
+
+            private fun render(): IntArray? {
+                val adapter = textAdapter ?: return null
+                val blockHeight = max(text.height, 0.1f)
+                scale = minOf(TEXT_PX_PER_MM, MAX_TEXT_SIDE / max(text.width, blockHeight))
+                width = ceil(text.width * scale).toInt().coerceAtLeast(1)
+                height = ceil(blockHeight * scale).toInt().coerceAtLeast(1)
+                val bitmap = ImageBitmap(width, height)
+                val canvas = Canvas(bitmap)
+                canvas.drawRect(Rect(0f, 0f, width.toFloat(), height.toFloat()), Paint().apply { blendMode = BlendMode.Clear })
+                val toBitmap = Matrix2D()
+                    .postRotate(-text.rotation, text.x + text.width / 2f, text.y + text.height / 2f)
+                    .postTranslate(-text.x, -text.y)
+                    .postScale(scale, scale)
+                adapter.drawText(canvas, text, toBitmap)
+                return IntArray(width * height).also { bitmap.readPixels(it); pixels = it }
+            }
+        }
+    }
+
     /** Writes [page] with [writer]. */
     private inner class PageWriter(
         private val writer: PdfWriter,
         private val content: DocumentContent,
-        private val page: PageContentSnapshot
+        private val page: PageContentSnapshot,
+        private val texts: TextWriter
     ) {
         private val mmToPt = Matrix2D().postScale(PT_PER_MM, PT_PER_MM)
         private var skipped = 0
@@ -143,41 +322,7 @@ class PdfExporter(
             return writer.drawImage(pixels, bitmap.width, bitmap.height, toPage)
         }
 
-        private fun writeText(text: DrawText): Boolean {
-            val adapter = textAdapter ?: return true
-            if (text.width <= 0f || text.text.isBlank()) return true
-            // A formula sets the height of its block when it is drawn
-            if (text.isLatex) adapter.drawText(Canvas(ImageBitmap(1, 1)), text, Matrix2D().postScale(TEXT_PX_PER_MM, TEXT_PX_PER_MM))
-            if (text.height <= 0f) return true
-
-            // The block drawn without its rotation, then placed with it
-            val scale = minOf(TEXT_PX_PER_MM, MAX_TEXT_SIDE / max(text.width, text.height))
-            val width = ceil(text.width * scale).toInt().coerceAtLeast(1)
-            val height = ceil(text.height * scale).toInt().coerceAtLeast(1)
-            val bitmap = ImageBitmap(width, height)
-            val canvas = Canvas(bitmap)
-            canvas.drawRect(Rect(0f, 0f, width.toFloat(), height.toFloat()), Paint().apply { blendMode = BlendMode.Clear })
-            val toBitmap = Matrix2D()
-                .postRotate(-text.rotation, text.x + text.width / 2f, text.y + text.height / 2f)
-                .postTranslate(-text.x, -text.y)
-                .postScale(scale, scale)
-            adapter.drawText(canvas, text, toBitmap)
-            val pixels = IntArray(width * height)
-            bitmap.readPixels(pixels)
-            if (pixels.all { it ushr 24 == 0 }) return true
-            val toPage = boxToPage(text.x, text.y, width / scale, height / scale, text.rotation, text.width, text.height)
-            if (!writer.drawImage(pixels, width, height, toPage)) return false
-
-            for (line in adapter.lines(text)) {
-                val toLine = Matrix2D()
-                    .postTranslate(line.left, line.baseline)
-                    .postRotate(text.rotation, text.width / 2f, text.height / 2f)
-                    .postTranslate(text.x, text.y)
-                    .postConcat(mmToPt)
-                writer.addInvisibleText(line.text, line.fontSize, line.width, toLine)
-            }
-            return true
-        }
+        private fun writeText(text: DrawText): Boolean = texts.write(text, mmToPt)
 
         private fun writeStroke(stroke: DrawStroke): Boolean {
             val outline = InkStrokeEngine.outline(stroke)
@@ -216,6 +361,17 @@ class PdfExporter(
 
     private companion object {
         const val PT_PER_MM = 72f / 25.4f
+
+        /** Size the formulas are laid out at before being fitted in their box (any: they are vectors). */
+        const val FORMULA_PX = 100f
+
+        /** The face of the text of the formulas of [style] (bold 1, italic 2). */
+        fun textFace(style: Int): TextFace = when (style and 3) {
+            1 -> TextFace.BOLD
+            2 -> TextFace.ITALIC
+            3 -> TextFace.BOLD_ITALIC
+            else -> TextFace.REGULAR
+        }
         const val WHITE = 0xFFFFFFFF.toInt()
 
         /** Resolution of the texts: 300 dpi. */
@@ -228,3 +384,7 @@ class PdfExporter(
         const val MAX_IMAGE_SIDE = 4096
     }
 }
+
+/** The text of the word without the characters that are not written (controls). */
+private val TextWord.printable: String get() = text.filter { it >= ' ' }
+

@@ -3,20 +3,22 @@ package io.github.valerioisufi.drawview.pdf
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_close_document
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_close_font
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_end_page
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_count
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_size
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_text
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_text_layout
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_load_font
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_new_document
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_new_page
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_open_document
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_page_add_bitmap
-import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_page_add_invisible_text
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_page_add_jpeg
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_page_add_markup
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_page_add_path
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_page_add_pdf_page
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_page_add_text
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_render_page_bitmap
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_save_document
 import kotlinx.cinterop.DoubleVar
@@ -160,12 +162,22 @@ internal actual object PdfiumBindings {
         return quads.usePinned { pinned -> pdfium_page_add_markup(page, kind, pinned.addressOf(0), quads.size / 8, argb.toUInt()) != 0 }
     }
 
-    actual fun pageAddInvisibleText(document: Long, page: Long, text: String, fontSize: Float, maxWidth: Float, matrix: DoubleArray): Boolean {
+    actual fun loadFont(document: Long, data: ByteArray): Long {
+        if (data.isEmpty()) return 0L
+        return data.usePinned { pinned -> pdfium_load_font(document, pinned.addressOf(0).reinterpret(), data.size) }
+    }
+
+    actual fun closeFont(font: Long) = pdfium_close_font(font)
+
+    actual fun pageAddText(document: Long, page: Long, font: Long, text: String, fontSize: Float, argb: Int, invisible: Boolean, matrix: DoubleArray): Boolean {
         if (text.isEmpty() || matrix.size < 6) return false
         val units = UShortArray(text.length) { text[it].code.toUShort() }
         return units.usePinned { pinnedText ->
             matrix.usePinned { pinnedMatrix ->
-                pdfium_page_add_invisible_text(document, page, pinnedText.addressOf(0), text.length, fontSize, maxWidth, pinnedMatrix.addressOf(0)) != 0
+                pdfium_page_add_text(
+                    document, page, font, pinnedText.addressOf(0), text.length, fontSize, argb.toUInt(), if (invisible) 1 else 0,
+                    pinnedMatrix.addressOf(0)
+                ) != 0
             }
         }
     }

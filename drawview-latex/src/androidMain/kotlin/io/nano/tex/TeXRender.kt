@@ -13,6 +13,13 @@ class TeXRender internal constructor(private var nativePtr: Long) {
     val baseline: Float get() = nGetBaseline(nativePtr)
     val textSize: Float get() = nGetTextSize(nativePtr)
 
+    /** The operations drawing the formula from its top-left corner (see [ActionRecorder.toOps]). */
+    fun ops(): List<io.github.valerioisufi.drawview.latex.TexOp> {
+        val r = ActionRecorder()
+        nDraw(nativePtr, r, 0, 0)
+        return r.toOps()
+    }
+
     fun draw(g2: Graphics2D, x: Int, y: Int) {
         val r = recorder ?: ActionRecorder().also {
             nDraw(nativePtr, it, 0, 0)

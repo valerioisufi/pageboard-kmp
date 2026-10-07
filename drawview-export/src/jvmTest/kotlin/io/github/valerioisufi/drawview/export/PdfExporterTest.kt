@@ -1,8 +1,21 @@
 package io.github.valerioisufi.drawview.export
 
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Rect as ComposeRect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Canvas as ComposeCanvas
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.createFontFamilyResolver
+import androidx.compose.ui.text.platform.Font as PlatformFont
+import io.github.valerioisufi.drawview.core.render.tile.TextFace
+import io.github.valerioisufi.drawview.core.render.tile.TileRenderer
+import io.github.valerioisufi.drawview.latex.LatexEngine
+import io.github.valerioisufi.drawview.latex.TexFont
+import io.github.valerioisufi.drawview.pdf.PdfFont
+import io.github.valerioisufi.drawview.ui.theme.NotesFonts
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.BrushConfig
@@ -45,14 +58,15 @@ import org.jetbrains.skia.Image
 import org.jetbrains.skia.ImageInfo
 
 class PdfExporterTest {
-    private val textAdapter = ComposeTextTileAdapter(createFontFamilyResolver())
+    private val textAdapter = ComposeTextTileAdapter(createFontFamilyResolver(), NOTES_FONTS)
+    private val fontFiles: suspend (TextFace) -> ByteArray? = { NOTES_FILES[it] }
 
     @Test
     fun aNotebookIsExportedAsItIsDrawn() = runBlocking {
         val document = notebook()
         val pdf = tempFile("notebook", ".pdf")
         val progress = mutableListOf<Float>()
-        val result = PdfExporter(textAdapter).export(DocumentContent.of(document), ExportOptions(), pdf.path) { progress += it }
+        val result = PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), pdf.path) { progress += it }
         assertEquals(2, result.pages)
         assertEquals(0, result.skipped)
         assertEquals(listOf(0.5f, 1f), progress)
@@ -69,6 +83,7 @@ class PdfExporterTest {
         }
         val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
         assertTrue("/Highlight" in bytes)
+        assertTrue("/FontFile2" in bytes, "the text is written in an embedded font")
 
         val page = render(pdf, 0)
         // The stroke, the PNG, the JPEG, the text and the grid
@@ -87,7 +102,7 @@ class PdfExporterTest {
     @Test
     fun thePatternOfTheBackgroundCanBeLeftOut() = runBlocking {
         val pdf = tempFile("plain", ".pdf")
-        PdfExporter(textAdapter).export(DocumentContent.of(notebook()), ExportOptions(backgroundPattern = false), pdf.path)
+        PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(notebook()), ExportOptions(backgroundPattern = false), pdf.path)
         val page = render(pdf, 0)
         assertEquals(WHITE, page.at(page.mm(5f, 150f)))
     }
@@ -110,15 +125,62 @@ class PdfExporterTest {
     }
 
     @Test
+    fun theTextIsTheEditorsAndItsFormulasAreVectors() = runBlocking {
+        val document = DrawDocument(title = "Testo")
+        val page = document.pages[0]
+        page.add(DrawText().apply {
+            text = "Hash αβγ **grassetto** _corsivo_ `codice` ~~barrato~~ e \$x^2+1\$ fine"
+            x = 15f; y = 20f; width = 170f; height = 40f; fontSize = 24f
+        })
+        page.add(DrawText().apply {
+            text = "\\int_0^1 x^2\\,dx = \\frac{1}{3}"
+            isLatex = true
+            x = 15f; y = 90f; width = 120f; height = 30f; fontSize = 24f
+        })
+        val pdf = tempFile("text", ".pdf")
+        PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), pdf.path)
+
+        val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
+        assertTrue(!Regex("/Subtype\\s*/Image").containsMatchIn(bytes), "no picture: real text and vectors")
+        PdfiumEngine.open(pdf.path).use { exported ->
+            val read = exported.getPageText(0).orEmpty().replace(Regex("\\s+"), " ")
+            assertTrue("Hash αβγ grassetto corsivo codice barrato" in read, read)
+        }
+
+        // Drawn by the PDF as by the editor
+        val exported = render(pdf, 0)
+        val editor = renderEditor(document, exported.width, exported.height)
+        for (area in listOf(Rect(15f, 20f, 185f, 60f), Rect(15f, 90f, 135f, 125f))) {
+            val similarity = inkOverlap(exported, editor, area)
+            assertTrue(similarity > 0.75f, "$area: overlap of the ink $similarity")
+        }
+    }
+
+    @Test
+    fun theCharactersOutOfTheFontAreImagesOfTheirWords() = runBlocking {
+        val document = DrawDocument(title = "Emoji")
+        document.pages[0].add(DrawText().apply { text = "ciao \uD83D\uDE00 mondo"; x = 15f; y = 20f; width = 170f; height = 20f; fontSize = 24f })
+        val pdf = tempFile("emoji", ".pdf")
+        PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), pdf.path)
+        val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
+        assertTrue(Regex("/Subtype\\s*/Image").containsMatchIn(bytes), "the word with the emoji is a picture")
+        PdfiumEngine.open(pdf.path).use { exported ->
+            val read = exported.getPageText(0).orEmpty()
+            assertTrue("ciao" in read && "mondo" in read, read)
+        }
+    }
+
+    @Test
     fun theElementsAreWrittenInTheOrderTheyArePaintedAndTheMissingFilesAreSkipped() = runBlocking {
         val document = notebook()
         document.resources.first { it.type == DrawResource.ResourceType.IMAGE }.path = "/missing.png"
         val writer = RecordingWriter()
-        val result = PdfExporter(textAdapter) { writer }.export(DocumentContent.of(document), ExportOptions(), "unused.pdf")
+        val result = PdfExporter(textAdapter, fontFiles) { writer }.export(DocumentContent.of(document), ExportOptions(), "unused.pdf")
         assertEquals(1, result.skipped)
-        // The images, the texts (their image and their line), the strokes; the PDF pages, their marks
+        // The fonts of the faces used (not loaded: the words are images of them); the images, the
+        // words, the strokes; the PDF pages, their marks
         assertEquals(
-            listOf("page", "pattern", "image", "text-image", "text", "stroke-path", "page", "pdf", "markup:HIGHLIGHT", "save"),
+            listOf("font", "font", "page", "pattern", "image", "text-image", "text-image", "text-image", "stroke-path", "page", "pdf", "markup:HIGHLIGHT", "save"),
             writer.calls
         )
     }
@@ -135,7 +197,7 @@ class PdfExporterTest {
         val delivered = mutableListOf<String>()
         val result = export.export(
             document.id,
-            PdfExporter(textAdapter),
+            PdfExporter(textAdapter, fontFiles),
             ExportOptions(pageIds = setOf(document.pages[1].id)),
             FileTarget(pdf.path) { delivered += it }
         )
@@ -190,6 +252,33 @@ class PdfExporterTest {
 
     private fun tempFile(prefix: String, suffix: String) = File.createTempFile(prefix, suffix).apply { deleteOnExit() }
 
+    /** The first page of [document] as the editor draws it, [width] x [height] pixels. */
+    private fun renderEditor(document: DrawDocument, width: Int, height: Int): Page {
+        val content = document.pages[0].snapshotContent()
+        val bitmap = ImageBitmap(width, height)
+        val scale = width / content.widthMm
+        TileRenderer(null, textAdapter).renderPageContent(
+            ComposeCanvas(bitmap), document, content, Matrix2D().postScale(scale, scale), ComposeRect(0f, 0f, width.toFloat(), height.toFloat())
+        )
+        return Page(width, height, IntArray(width * height).also { bitmap.readPixels(it) })
+    }
+
+    /** How much the ink of [a] and [b] overlaps in [area] (millimeters): intersection over union. */
+    private fun inkOverlap(a: Page, b: Page, area: Rect): Float {
+        var both = 0
+        var either = 0
+        val (left, top) = a.mm(area.left, area.top)
+        val (right, bottom) = a.mm(area.right, area.bottom)
+        for (y in top until bottom) for (x in left until right) {
+            // Dilated by a pixel: the edges of the glyphs are drawn a little differently
+            val inkA = (-1..1).any { dy -> (-1..1).any { dx -> a.isInk(x + dx, y + dy) } }
+            val inkB = (-1..1).any { dy -> (-1..1).any { dx -> b.isInk(x + dx, y + dy) } }
+            if (a.isInk(x, y) || b.isInk(x, y)) either++
+            if ((a.isInk(x, y) && inkB) || (b.isInk(x, y) && inkA)) both++
+        }
+        return if (either == 0) 0f else both.toFloat() / either
+    }
+
     /** Page [index] of [pdf] at two pixels per point. */
     private fun render(pdf: File, index: Int): Page = PdfiumEngine.open(pdf.path).use { document ->
         val size = document.getPageSize(index)
@@ -202,6 +291,7 @@ class PdfExporterTest {
         fun mm(x: Float, y: Float) = Pair((x * PT_PER_MM * 2).roundToInt(), (y * PT_PER_MM * 2).roundToInt())
         fun pt(x: Float, y: Float) = Pair((x * 2).roundToInt(), (y * 2).roundToInt())
         fun at(p: Pair<Int, Int>) = pixels[p.second * width + p.first] or (0xFF shl 24)
+        fun isInk(x: Int, y: Int) = x in 0 until width && y in 0 until height && brightness(pixels[y * width + x] or (0xFF shl 24)) < 140
         fun isDark(p: Pair<Int, Int>) = (-2..2).any { dy -> (-2..2).any { dx -> brightness(at(Pair(p.first + dx, p.second + dy))) < 200 } }
         fun countDark(from: Pair<Int, Int>, to: Pair<Int, Int>) =
             (from.second until to.second).sumOf { y -> (from.first until to.first).count { x -> brightness(at(Pair(x, y))) < 128 } }
@@ -226,12 +316,51 @@ class PdfExporterTest {
         override fun drawImage(pixels: IntArray, width: Int, height: Int, transform: Matrix2D) =
             true.also { calls += if (width == 16) "image" else "text-image" }
         override fun addMarkup(kind: PdfMarkupKind, lines: List<Rect>, argb: Int) = true.also { calls += "markup:$kind" }
-        override fun addInvisibleText(text: String, fontSize: Float, maxWidth: Float, transform: Matrix2D) = true.also { calls += "text" }
+        override fun loadFont(data: ByteArray): PdfFont? = null.also { calls += "font" }
+        override fun addText(font: PdfFont, text: String, fontSize: Float, transform: Matrix2D, argb: Int, width: Float, invisible: Boolean) =
+            true.also { calls += "text" }
         override fun save(path: String) { calls += "save" }
         override fun close() {}
     }
 
     private companion object {
+        val NOTES_FILES = mapOf(
+            TextFace.REGULAR to "noto_sans_regular",
+            TextFace.ITALIC to "noto_sans_italic",
+            TextFace.BOLD to "noto_sans_bold",
+            TextFace.BOLD_ITALIC to "noto_sans_bold_italic",
+            TextFace.MONO to "noto_sans_mono_regular",
+            TextFace.MONO_BOLD to "noto_sans_mono_bold"
+        ).mapValues { (_, name) -> File("../drawview-ui/src/commonMain/composeResources/font/$name.ttf").readBytes() }
+
+        /** The fonts of the notes, as the editor draws them. */
+        val NOTES_FONTS = NotesFonts(
+            FontFamily(
+                PlatformFont("noto-regular", NOTES_FILES.getValue(TextFace.REGULAR), FontWeight.Normal, FontStyle.Normal),
+                PlatformFont("noto-italic", NOTES_FILES.getValue(TextFace.ITALIC), FontWeight.Normal, FontStyle.Italic),
+                PlatformFont("noto-bold", NOTES_FILES.getValue(TextFace.BOLD), FontWeight.Bold, FontStyle.Normal),
+                PlatformFont("noto-bold-italic", NOTES_FILES.getValue(TextFace.BOLD_ITALIC), FontWeight.Bold, FontStyle.Italic)
+            ),
+            FontFamily(
+                PlatformFont("noto-mono", NOTES_FILES.getValue(TextFace.MONO), FontWeight.Normal),
+                PlatformFont("noto-mono-bold", NOTES_FILES.getValue(TextFace.MONO_BOLD), FontWeight.Bold)
+            )
+        )
+
+        init {
+            runBlocking {
+                LatexEngine.setTextFonts(
+                    mapOf(
+                        0 to NOTES_FILES.getValue(TextFace.REGULAR),
+                        TexFont.BOLD to NOTES_FILES.getValue(TextFace.BOLD),
+                        TexFont.ITALIC to NOTES_FILES.getValue(TextFace.ITALIC),
+                        TexFont.BOLD or TexFont.ITALIC to NOTES_FILES.getValue(TextFace.BOLD_ITALIC)
+                    )
+                )
+                LatexEngine.initialize()
+            }
+        }
+
         const val PT_PER_MM = 72f / 25.4f
         const val WHITE = 0xFFFFFFFF.toInt()
 

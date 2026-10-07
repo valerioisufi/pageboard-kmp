@@ -36,6 +36,13 @@ class TeXRender(private var nativePtr: Long) {
         nSetHeight(nativePtr, height, align)
     }
 
+    /** The operations drawing the formula from its top-left corner (see [ActionRecorder.toOps]). */
+    fun ops(): List<io.github.valerioisufi.drawview.latex.TexOp> {
+        val r = ActionRecorder()
+        nDraw(nativePtr, r, 0, 0)
+        return r.toOps()
+    }
+
     fun draw(g2: Graphics2D, x: Int, y: Int) {
         if (recorder == null) {
             val r = ActionRecorder()

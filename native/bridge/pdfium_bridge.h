@@ -141,18 +141,31 @@ int32_t pdfium_page_add_pdf_page(int64_t doc_handle, int64_t page_handle, int64_
 int32_t pdfium_page_add_markup(int64_t page_handle, int32_t kind, const float* quads, int32_t quad_count, uint32_t argb);
 
 /**
- * Adds the text [utf16] ([length] UTF-16 units, one line, characters of the WinAnsi encoding) to
- * [page_handle], invisible (searchable and selectable), in Helvetica [font_size] points, narrowed
- * to [max_width] points when it is wider: [matrix] places the start of its baseline.
+ * Loads the TrueType font [data] into the document (embedded, its characters mapped to Unicode).
+ * Returns its handle, closed by pdfium_close_font, or 0 on failure.
+ */
+int64_t pdfium_load_font(int64_t doc_handle, const uint8_t* data, int32_t size);
+
+/**
+ * Closes a font handle of pdfium_load_font (the font stays in the document).
+ */
+void pdfium_close_font(int64_t font_handle);
+
+/**
+ * Adds the text [utf16] ([length] UTF-16 units, one line) to [page_handle] in [font_handle],
+ * [font_size] units high, filled with [argb] or invisible (searchable and selectable): [matrix]
+ * places the start of its baseline.
  * Returns 1 on success, 0 on failure.
  */
-int32_t pdfium_page_add_invisible_text(
+int32_t pdfium_page_add_text(
     int64_t doc_handle,
     int64_t page_handle,
+    int64_t font_handle,
     const uint16_t* utf16,
     int32_t length,
     float font_size,
-    float max_width,
+    uint32_t argb,
+    int32_t invisible,
     const double* matrix
 );
 

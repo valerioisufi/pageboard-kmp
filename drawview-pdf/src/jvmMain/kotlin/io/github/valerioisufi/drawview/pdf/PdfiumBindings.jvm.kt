@@ -90,8 +90,12 @@ internal actual object PdfiumBindings {
     actual fun pageAddMarkup(page: Long, kind: Int, quads: FloatArray, argb: Int): Boolean =
         PdfiumNative.nPageAddMarkup(page, kind, quads, argb)
 
-    actual fun pageAddInvisibleText(document: Long, page: Long, text: String, fontSize: Float, maxWidth: Float, matrix: DoubleArray): Boolean =
-        PdfiumNative.nPageAddInvisibleText(document, page, text, fontSize, maxWidth, matrix)
+    actual fun loadFont(document: Long, data: ByteArray): Long = PdfiumNative.nLoadFont(document, data)
+
+    actual fun closeFont(font: Long) = PdfiumNative.nCloseFont(font)
+
+    actual fun pageAddText(document: Long, page: Long, font: Long, text: String, fontSize: Float, argb: Int, invisible: Boolean, matrix: DoubleArray): Boolean =
+        PdfiumNative.nPageAddText(document, page, font, text, fontSize, argb, invisible, matrix)
 
     actual fun endPage(page: Long): Boolean = PdfiumNative.nEndPage(page)
 

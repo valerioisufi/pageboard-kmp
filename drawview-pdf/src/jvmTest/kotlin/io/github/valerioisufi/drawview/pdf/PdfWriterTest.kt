@@ -14,6 +14,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class PdfWriterTest {
@@ -120,13 +121,58 @@ class PdfWriterTest {
     }
 
     @Test
-    fun invisibleTextIsReadButNotSeen() {
-        val pdf = write(200f, 100f) {
-            assertTrue(addInvisibleText("Perché Ω ok", 12f, 100f, Matrix2D().postTranslate(10f, 50f)))
+    fun theCharactersOfAFontAreReadWithTheirOutlines() {
+        val font = TrueTypeFont(NOTO_SANS)
+        assertTrue(font.unitsPerEm > 0)
+        assertTrue(font.covers('A'.code) && font.covers('é'.code) && font.covers('Ω'.code))
+        assertFalse(font.covers('中'.code))
+        // An "o" is two contours, a space none
+        assertEquals(2, font.outline(font.glyphId('o'.code)).size)
+        assertEquals(0, font.outline(font.glyphId(' '.code)).size)
+        // "é" is composite: the "e" and the accent
+        assertEquals(font.outline(font.glyphId('e'.code)).size + 1, font.outline(font.glyphId('é'.code)).size)
+        assertTrue(font.advance("mm") > font.advance("ii"))
+    }
+
+    @Test
+    fun aSubsetKeepsTheGlyphsOfItsCharactersOnly() {
+        val font = TrueTypeFont(NOTO_SANS)
+        val subset = TrueTypeFont(font.subset("Perché Ωμ".codePointSet()))
+        assertTrue(NOTO_SANS.size > 0, "font read")
+        for (ch in "Perché Ωμ") {
+            assertEquals(font.glyphId(ch.code), subset.glyphId(ch.code))
+            assertEquals(font.advance(font.glyphId(ch.code)), subset.advance(subset.glyphId(ch.code)))
         }
-        // Without the characters out of Latin-1
-        PdfiumEngine.open(pdf.path).use { assertEquals("Perché ok", it.getPageText(0)?.trim()?.replace("  ", " ")) }
-        assertEquals(0, render(pdf).count { it != WHITE })
+        assertFalse(subset.covers('z'.code))
+        // The glyphs of the components of "é" are kept with it
+        assertEquals(font.outline(font.glyphId('é'.code)).size, subset.outline(subset.glyphId('é'.code)).size)
+        val size = font.subset("Perché Ωμ".codePointSet()).size
+        assertTrue(size < NOTO_SANS.size / 5, "subset of $size bytes")
+    }
+
+    @Test
+    fun textIsWrittenInAnEmbeddedFont() {
+        val text = "Perché Ωμ ok"
+        val subset = TrueTypeFont(NOTO_SANS).subset(text.codePointSet())
+        val pdf = write(300f, 100f) {
+            val font = assertNotNull(loadFont(subset))
+            assertTrue(addText(font, text, 20f, Matrix2D().postTranslate(20f, 40f)))
+            // Stretched to 200 points, and invisible
+            assertTrue(addText(font, text, 20f, Matrix2D().postTranslate(20f, 80f), width = 200f, invisible = true))
+            assertNull(loadFont(byteArrayOf(1, 2, 3)))
+        }
+        PdfiumEngine.open(pdf.path).use { document ->
+            val read = document.getPageText(0).orEmpty().lines().map { it.trim() }.filter { it.isNotEmpty() }
+            assertEquals(listOf(text, text), read)
+            // The invisible text spans the width it was given
+            val layout = assertNotNull(document.getPageTextLayout(0))
+            val second = (0 until layout.charCount).filter { layout.hasBox(it) }.map { layout.boxOf(it) }.filter { it.top > 50f }
+            assertEquals(220f, second.maxOf { it.right }, 4f)
+        }
+        val page = render(pdf)
+        val ink = (10 until 50).sumOf { y -> (0 until 300).count { x -> page.at(x, y) != WHITE } }
+        assertTrue(ink > 300, "the text is drawn")
+        assertEquals(0, (60 until 100).sumOf { y -> (0 until 300).count { x -> page.at(x, y) != WHITE } }, "the invisible text is not")
     }
 
     // ==========================================================
@@ -162,7 +208,11 @@ class PdfWriterTest {
         assertTrue(sameColor(expected, actual, tolerance), "expected ${expected.toUInt().toString(16)}, got ${actual.toUInt().toString(16)}")
     }
 
+    private fun String.codePointSet(): Set<Int> = map { it.code }.toSet()
+
     private companion object {
+        val NOTO_SANS = File("../drawview-ui/src/commonMain/composeResources/font/noto_sans_regular.ttf").readBytes()
+
         const val RED = 0xFFFF0000.toInt()
         const val GREEN = 0xFF00FF00.toInt()
         const val BLUE = 0xFF0000FF.toInt()

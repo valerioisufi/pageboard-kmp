@@ -63,7 +63,12 @@ internal expect object PdfiumBindings {
 
     fun pageAddMarkup(page: Long, kind: Int, quads: FloatArray, argb: Int): Boolean
 
-    fun pageAddInvisibleText(document: Long, page: Long, text: String, fontSize: Float, maxWidth: Float, matrix: DoubleArray): Boolean
+    /** Loads a TrueType font into [document]: returns its handle, or 0 on failure. */
+    fun loadFont(document: Long, data: ByteArray): Long
+
+    fun closeFont(font: Long)
+
+    fun pageAddText(document: Long, page: Long, font: Long, text: String, fontSize: Float, argb: Int, invisible: Boolean, matrix: DoubleArray): Boolean
 
     /** Writes the content of [page] and closes it. */
     fun endPage(page: Long): Boolean

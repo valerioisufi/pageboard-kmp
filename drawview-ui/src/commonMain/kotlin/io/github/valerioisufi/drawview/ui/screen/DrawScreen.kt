@@ -110,6 +110,7 @@ import io.github.valerioisufi.drawview.ui.platform.HideSystemBarsEffect
 import io.github.valerioisufi.drawview.ui.platform.PickerType
 import io.github.valerioisufi.drawview.ui.platform.rememberFilePicker
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
+import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -153,10 +154,11 @@ fun DrawScreen(
 
     // Text blocks rendering (Markdown + LaTeX) of the tiles, thumbnails and selection
     val fontFamilyResolver = LocalFontFamilyResolver.current
-    DisposableEffect(controller, fontFamilyResolver) {
+    val notesFonts = rememberNotesFonts()
+    DisposableEffect(controller, fontFamilyResolver, notesFonts) {
         val renderer = controller.tileManager.tileRenderer
         if (renderer.textAdapter == null) {
-            renderer.textAdapter = ComposeTextTileAdapter(fontFamilyResolver)
+            renderer.textAdapter = ComposeTextTileAdapter(fontFamilyResolver, notesFonts)
             controller.tileManager.invalidateAll()
             controller.requestRedraw()
         }

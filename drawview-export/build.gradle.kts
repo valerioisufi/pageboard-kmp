@@ -47,6 +47,7 @@ kotlin {
         commonMain.dependencies {
             api(project(":drawview-ui"))
             implementation(project(":drawview-pdf"))
+            implementation(project(":drawview-latex"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
@@ -61,6 +62,9 @@ kotlin {
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
+        }
+        jvmTest.dependencies {
+            implementation(project(":drawview-latex"))
         }
     }
 }

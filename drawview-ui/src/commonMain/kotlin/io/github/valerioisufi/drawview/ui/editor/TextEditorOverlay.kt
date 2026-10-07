@@ -93,6 +93,7 @@ import io.github.valerioisufi.drawview.ui.components.TextColorPaletteRow
 import io.github.valerioisufi.drawview.ui.components.TextColorPickerDialog
 import io.github.valerioisufi.drawview.ui.generated.resources.*
 import io.github.valerioisufi.drawview.ui.render.PT_TO_MM
+import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 
@@ -116,6 +117,8 @@ fun TextEditorOverlay(controller: DrawViewController) {
 @Composable
 private fun TextEditorSession(controller: DrawViewController) {
     val editor = controller.textEditorManager
+    // Edited with the fonts the canvas draws it with
+    val notesFonts = rememberNotesFonts()
     val pageIndex = editor.activeTextPageIndex
     // Recomposes on every camera movement (fling and bounce included) and page change
     @Suppress("UNUSED_VARIABLE")
@@ -262,7 +265,7 @@ private fun TextEditorSession(controller: DrawViewController) {
                     textStyle = TextStyle(
                         color = textColor,
                         fontSize = scaledFontSizeSp,
-                        fontFamily = FontFamily.Default,
+                        fontFamily = notesFonts.text,
                         letterSpacing = 0.sp,
                         lineHeight = TextUnit.Unspecified,
                         textAlign = textAlign
@@ -275,7 +278,8 @@ private fun TextEditorSession(controller: DrawViewController) {
                                 selection = textValue.selection,
                                 isMarkdownEnabled = isMarkdownEnabled,
                                 defaultColor = textColor,
-                                baseFontSizeSp = scaledFontSizeSp
+                                baseFontSizeSp = scaledFontSizeSp,
+                                monospace = notesFonts.monospace
                             ),
                             OffsetMapping.Identity
                         )

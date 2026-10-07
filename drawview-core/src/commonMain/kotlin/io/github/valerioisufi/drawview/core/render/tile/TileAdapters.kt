@@ -80,19 +80,52 @@ interface TextTileAdapter {
     fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D)
 
     /**
-     * The lines of [text] as [drawText] lays them out (what they say, without the Markdown marks
-     * and the formulas), e.g. to write the text over an image of the block; empty when the adapter
-     * cannot tell them (a LaTeX block).
+     * [text] as [drawText] lays it out (its words, their style and place, its formulas), e.g. to
+     * write it in a PDF; `null` when the adapter cannot tell it.
      */
-    fun lines(text: DrawText): List<TextLine> = emptyList()
+    fun layout(text: DrawText): TextBlockLayout? = null
 }
 
 /**
- * A line of a text block laid out by a [TextTileAdapter], in millimeters of the block (from its
- * top-left corner, before its rotation): its [text] goes from [left] for [width] on the
- * [baseline], in letters [fontSize] high.
+ * A text block as a [TextTileAdapter] lays it out, in millimeters of the block (from its top-left
+ * corner, before its rotation, which turns it around its middle, [height] being the height it is
+ * drawn): its [words] and its [formulas] (a LaTeX block is one formula).
  */
-class TextLine(val text: String, val left: Float, val baseline: Float, val width: Float, val fontSize: Float)
+class TextBlockLayout(val words: List<TextWord>, val formulas: List<TextFormula>, val height: Float)
+
+/**
+ * A word of a text block with the spaces after it: its [text] goes from [left] for [width] on the
+ * [baseline] of its line (from [lineTop] to [lineBottom]), in [face] [fontSize] high, of [color]
+ * (ARGB), struck through or not.
+ */
+class TextWord(
+    val text: String,
+    val face: TextFace,
+    val fontSize: Float,
+    val color: Int,
+    val left: Float,
+    val baseline: Float,
+    val width: Float,
+    val lineTop: Float,
+    val lineBottom: Float,
+    val strikethrough: Boolean = false
+)
+
+/**
+ * A formula of a text block: [latex] drawn in [color] (ARGB) in the box ([left], [top], [width],
+ * [height]).
+ */
+class TextFormula(val latex: String, val color: Int, val left: Float, val top: Float, val width: Float, val height: Float)
+
+/** A face of the fonts of the notes: the text and its code (monospace), regular or bold, upright or italic. */
+enum class TextFace {
+    REGULAR,
+    ITALIC,
+    BOLD,
+    BOLD_ITALIC,
+    MONO,
+    MONO_BOLD
+}
 
 /**
  * Adapter for rasterizing LaTeX math formulas into ImageBitmaps.

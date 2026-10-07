@@ -1,5 +1,7 @@
 package io.nano.tex
 
+import io.github.valerioisufi.drawview.latex.TexOp
+
 /**
  * Records the drawing operations emitted by the native engine (through JNI) and replays them
  * on a [Graphics2D].
@@ -23,6 +25,29 @@ class ActionRecorder {
     /** Called by the native engine. */
     fun record(action: Int, arg: Any?, args: FloatArray?) {
         actions.add(Action(action, arg, args))
+    }
+
+    /** The operations recorded, for a [TexDrawing][io.github.valerioisufi.drawview.latex.TexDrawing]. */
+    fun toOps(): List<TexOp> = actions.mapNotNull { act ->
+        val a = act.args
+        when (act.action) {
+            ACT_SET_FONT -> TexOp.SetFont((act.arg as? Font)?.toTexFont())
+            ACT_SET_COLOR -> a?.getOrNull(0)?.let { TexOp.SetColor(it.toInt()) }
+            ACT_SET_STROKE_WIDTH -> a?.getOrNull(0)?.let { TexOp.SetStrokeWidth(it) }
+            ACT_SET_STROKE -> if (a != null && a.size >= 4) TexOp.SetStroke(a[0], a[1], a[2].toInt(), a[3].toInt()) else null
+            ACT_TRANSLATE -> if (a != null && a.size >= 2) TexOp.Translate(a[0], a[1]) else null
+            ACT_SCALE -> if (a != null && a.size >= 2) TexOp.Scale(a[0], a[1]) else null
+            ACT_ROTATE -> if (a != null && a.size >= 3) TexOp.Rotate(a[0], a[1], a[2]) else null
+            ACT_RESET -> TexOp.Reset
+            ACT_DRAW_CHAR -> if (a != null && a.size >= 3) TexOp.DrawText(a[0].toInt().toChar().toString(), a[1], a[2]) else null
+            ACT_DRAW_TEXT -> if (a != null && a.size >= 2) TexOp.DrawText(act.arg as? String ?: "", a[0], a[1]) else null
+            ACT_DRAW_LINE -> if (a != null && a.size >= 4) TexOp.DrawLine(a[0], a[1], a[2], a[3]) else null
+            ACT_DRAW_RECT -> if (a != null && a.size >= 4) TexOp.DrawRect(a[0], a[1], a[2], a[3], fill = false) else null
+            ACT_FILL_RECT -> if (a != null && a.size >= 4) TexOp.DrawRect(a[0], a[1], a[2], a[3], fill = true) else null
+            ACT_DRAW_ROUND_RECT -> if (a != null && a.size >= 6) TexOp.DrawRoundRect(a[0], a[1], a[2], a[3], a[4], a[5], fill = false) else null
+            ACT_FILL_ROUND_RECT -> if (a != null && a.size >= 6) TexOp.DrawRoundRect(a[0], a[1], a[2], a[3], a[4], a[5], fill = true) else null
+            else -> null
+        }
     }
 
     fun play(g2: Graphics2D) {

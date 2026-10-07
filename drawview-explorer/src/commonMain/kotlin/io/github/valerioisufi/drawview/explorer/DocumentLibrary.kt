@@ -9,6 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.valerioisufi.drawview.core.render.tile.TextFace
 import io.github.valerioisufi.drawview.data.DocumentStore
 import io.github.valerioisufi.drawview.data.DrawViewStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
@@ -16,10 +17,12 @@ import io.github.valerioisufi.drawview.explorer.platform.SystemBarsHidden
 import io.github.valerioisufi.drawview.explorer.ui.AboutLicensesButton
 import io.github.valerioisufi.drawview.explorer.ui.ExplorerScreen
 import io.github.valerioisufi.drawview.latex.LatexEngine
+import io.github.valerioisufi.drawview.latex.TexFont
 import io.github.valerioisufi.drawview.ui.session.DocumentAction
 import io.github.valerioisufi.drawview.ui.session.DocumentEditorViewModel
 import io.github.valerioisufi.drawview.ui.session.EditorExtension
 import io.github.valerioisufi.drawview.ui.session.EditorSessionScreen
+import io.github.valerioisufi.drawview.ui.theme.NotesFontFiles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -53,9 +56,20 @@ fun DocumentLibrary(
     val fileExplorerViewModel = viewModel { FileExplorerViewModel(store, documents) }
     val editorViewModel = viewModel { DocumentEditorViewModel(store, documents) }
 
-    // The native TeX engine unpacks its fonts at the first start: off the main thread
+    // The native TeX engine unpacks its fonts at the first start: off the main thread. The text of
+    // the formulas (\text{}) is in the font of the notes, as their text
     LaunchedEffect(Unit) {
-        withContext(Dispatchers.Default) { LatexEngine.initialize() }
+        withContext(Dispatchers.Default) {
+            LatexEngine.setTextFonts(
+                mapOf(
+                    0 to NotesFontFiles.bytes(TextFace.REGULAR),
+                    TexFont.BOLD to NotesFontFiles.bytes(TextFace.BOLD),
+                    TexFont.ITALIC to NotesFontFiles.bytes(TextFace.ITALIC),
+                    TexFont.BOLD or TexFont.ITALIC to NotesFontFiles.bytes(TextFace.BOLD_ITALIC)
+                )
+            )
+            LatexEngine.initialize()
+        }
     }
 
     val session = editorViewModel.session

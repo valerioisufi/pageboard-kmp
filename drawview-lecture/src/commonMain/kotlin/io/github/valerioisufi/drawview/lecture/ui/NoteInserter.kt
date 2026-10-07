@@ -18,6 +18,7 @@ import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.lecture.NoteSuggestion
 import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
+import io.github.valerioisufi.drawview.ui.theme.NotesFonts
 import io.github.valerioisufi.drawview.ui.render.PT_TO_MM
 import kotlin.math.ceil
 import kotlin.math.max
@@ -28,8 +29,9 @@ import kotlin.math.min
  * like the texts typed by the student), in a color telling them apart from the student's notes.
  *
  * @param measurer text measurer at density 1 (1 sp = 1 px), used to size the blocks.
+ * @param fonts the fonts the canvas draws the texts with.
  */
-internal class NoteInserter(private val measurer: TextMeasurer) {
+internal class NoteInserter(private val measurer: TextMeasurer, private val fonts: NotesFonts) {
 
     /**
      * Lets the student place [suggestion]: the next tap on a page puts the note there (see
@@ -160,9 +162,9 @@ internal class NoteInserter(private val measurer: TextMeasurer) {
      */
     fun measureHeightMm(markdown: String, fontSizePt: Float, widthMm: Float): Float {
         val fontPx = fontSizePt * PT_TO_MM * MEASURE_PX_PER_MM
-        val style = TextStyle(fontSize = fontPx.sp, letterSpacing = 0.sp)
+        val style = TextStyle(fontSize = fontPx.sp, fontFamily = fonts.text, letterSpacing = 0.sp)
         val ascent = measurer.measure(AnnotatedString("Hg"), style).firstBaseline
-        val canvasText = MarkdownTextUtil.toCanvasText(markdown, true, Color.Black, fontPx, ascent) { latex, sizePx ->
+        val canvasText = MarkdownTextUtil.toCanvasText(markdown, true, Color.Black, fontPx, ascent, fonts.monospace) { latex, sizePx ->
             LatexEngine.renderFormula(latex, sizePx, Color.Black.toArgb())?.let {
                 MarkdownTextUtil.RenderedFormula(it.bitmap, it.width.toFloat(), it.height.toFloat(), it.baselineRatio)
             }

@@ -181,6 +181,30 @@ actual object LatexPlatformEngine {
             }
         }
 
+    actual fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): TexDrawing? =
+        syncLock(engineLock) {
+            if (!initialized) return@syncLock null
+            val render = tex_parse(latex, 0, fontSizePx, 0f, colorArgb)
+            if (render == 0L) return@syncLock null
+            try {
+                val recorder = ActionRecorder()
+                val recorderHandle = TexObjects.registerRecorder(recorder)
+                try {
+                    tex_render_draw(render, recorderHandle, 0, 0)
+                } finally {
+                    TexObjects.releaseRecorder(recorderHandle)
+                }
+                TexDrawing(
+                    tex_render_get_width(render),
+                    tex_render_get_height(render),
+                    tex_render_get_baseline(render).coerceIn(0f, 1f),
+                    recorder.toOps()
+                )
+            } finally {
+                tex_render_free(render)
+            }
+        }
+
     actual fun generateErrorBitmap(latex: String, fontSizePx: Float): ImageBitmap =
         SkiaLatexBadges.errorBadge(latex, fontSizePx)
 }

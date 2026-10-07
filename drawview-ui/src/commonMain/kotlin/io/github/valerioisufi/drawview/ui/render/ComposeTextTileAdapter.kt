@@ -6,6 +6,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.isSpecified
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
@@ -14,19 +16,27 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextPainter
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.DrawText
-import io.github.valerioisufi.drawview.core.render.tile.TextLine
+import io.github.valerioisufi.drawview.core.render.tile.TextBlockLayout
+import io.github.valerioisufi.drawview.core.render.tile.TextFace
+import io.github.valerioisufi.drawview.core.render.tile.TextFormula
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
+import io.github.valerioisufi.drawview.core.render.tile.TextWord
 import io.github.valerioisufi.drawview.core.util.SyncLock
 import io.github.valerioisufi.drawview.core.util.syncLock
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
+import io.github.valerioisufi.drawview.ui.theme.NotesFonts
+import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.ln
@@ -48,10 +58,12 @@ const val PT_TO_MM = 0.3527f
  * Thread-safe: the tiles are rasterized on background threads.
  *
  * @param fontFamilyResolver resolver of the composition (`LocalFontFamilyResolver`).
+ * @param fonts the fonts of the texts ([rememberNotesFonts] in the editor, the same on every
+ *   platform).
  */
 class ComposeTextTileAdapter(
     fontFamilyResolver: FontFamily.Resolver,
-    private val fontFamily: FontFamily = FontFamily.Default
+    private val fonts: NotesFonts = NotesFonts.System
 ) : TextTileAdapter {
 
     private val lock = SyncLock()
@@ -100,23 +112,110 @@ class ComposeTextTileAdapter(
         }
     }
 
-    override fun lines(text: DrawText): List<TextLine> {
-        if (text.width <= 0f || text.text.isBlank()) return emptyList()
-        if (text.isLatex && LatexEngine.isNativeReady()) return emptyList()
-        // Laid out as drawText does, at a resolution where the rounding of the width is negligible
-        val scale = LINES_PX_PER_MM
-        val fontPx = text.fontSize * PT_TO_MM * scale
-        val layout = syncLock(lock) { prepare(text, fontPx, (text.width * scale).toInt().coerceAtLeast(1)).layout }
-        val shown = layout.layoutInput.text.text
-        return (0 until layout.lineCount).mapNotNull { line ->
-            val content = shown.substring(layout.getLineStart(line), layout.getLineEnd(line, visibleEnd = true))
-                .replace(MarkdownTextUtil.OBJECT_REPLACEMENT, "")
-                .replace(MarkdownTextUtil.WORD_JOINER, "")
-            if (content.isBlank()) return@mapNotNull null
-            val left = layout.getLineLeft(line)
-            TextLine(content, left / scale, layout.getLineBaseline(line) / scale, (layout.getLineRight(line) - left) / scale, fontPx / scale)
+    override fun layout(text: DrawText): TextBlockLayout? {
+        if (text.width <= 0f || text.text.isBlank()) return null
+        return syncLock(lock) {
+            if (text.isLatex && LatexEngine.isNativeReady()) latexBlockLayout(text) ?: richTextLayout(text) else richTextLayout(text)
         }
     }
+
+    /** The words and the formulas of a plain or Markdown text, laid out as [drawRichText] does. */
+    private fun richTextLayout(text: DrawText): TextBlockLayout {
+        // At a resolution where the rounding of the width is negligible
+        val scale = LAYOUT_PX_PER_MM
+        val fontPx = text.fontSize * PT_TO_MM * scale
+        val prepared = prepare(text, fontPx, (text.width * scale).toInt().coerceAtLeast(1))
+        val layout = prepared.layout
+        val shown = layout.layoutInput.text
+        val chars = shown.text
+        val words = mutableListOf<TextWord>()
+        for (line in 0 until layout.lineCount) {
+            val end = layout.getLineEnd(line)
+            var start = layout.getLineStart(line)
+            while (start < end) {
+                if (chars[start].isPlaceholder() || chars[start] == '\n') {
+                    start++
+                    continue
+                }
+                // The word and the spaces after it, in one style
+                val style = styleAt(shown, start, text.color, fontPx)
+                var stop = start
+                var spaces = false
+                while (stop < end && !chars[stop].isPlaceholder() && chars[stop] != '\n' && styleAt(shown, stop, text.color, fontPx) == style) {
+                    val space = chars[stop].isWhitespace()
+                    if (spaces && !space) break
+                    spaces = spaces || space
+                    stop++
+                }
+                val left = layout.getBoundingBox(start).left
+                val right = layout.getBoundingBox(stop - 1).right
+                words += TextWord(
+                    text = chars.substring(start, stop),
+                    face = style.face,
+                    fontSize = style.sizePx / scale,
+                    color = style.color,
+                    left = left / scale,
+                    baseline = layout.getLineBaseline(line) / scale,
+                    width = (right - left) / scale,
+                    lineTop = layout.getLineTop(line) / scale,
+                    lineBottom = layout.getLineBottom(line) / scale,
+                    strikethrough = style.strikethrough
+                )
+                start = stop
+            }
+        }
+        val rects = layout.placeholderRects
+        val formulas = prepared.formulas.mapNotNull { formula ->
+            val rect = rects.getOrNull(formula.placeholderIndex) ?: return@mapNotNull null
+            val top = rect.bottom - formula.heightPx * formula.baselineRatio
+            TextFormula(formula.latex, text.color, rect.left / scale, top / scale, formula.widthPx / scale, formula.heightPx / scale)
+        }
+        return TextBlockLayout(words, formulas, text.height)
+    }
+
+    /** A LaTeX block: one formula on the width of the block, as [drawLatexBlock] draws it. */
+    private fun latexBlockLayout(text: DrawText): TextBlockLayout? {
+        val clean = LatexEngine.sanitizeLatexString(text.text)
+        if (clean.isBlank()) return null
+        val reference = latexBitmap(clean, text.color, text.fontSize * 3f, 1f).bitmap
+        if (reference.width <= 2 * LATEX_PADDING_PX || reference.height <= 2 * LATEX_PADDING_PX) return null
+        // The formula inside the margin of its image, the image on the width of the block
+        val scale = text.width / reference.width
+        val padding = LATEX_PADDING_PX * scale
+        val formula = TextFormula(clean, text.color, padding, padding, text.width - 2f * padding, reference.height * scale - 2f * padding)
+        return TextBlockLayout(emptyList(), listOf(formula), reference.height * scale)
+    }
+
+    private data class WordStyle(val face: TextFace, val sizePx: Float, val color: Int, val strikethrough: Boolean)
+
+    /** The style of the character [index] of [shown] (its spans over the base style of the block). */
+    private fun styleAt(shown: AnnotatedString, index: Int, baseColor: Int, baseSizePx: Float): WordStyle {
+        var bold = false
+        var italic = false
+        var mono = false
+        var sizePx = baseSizePx
+        var color = baseColor
+        var strikethrough = false
+        for (span in shown.spanStyles) {
+            if (index < span.start || index >= span.end) continue
+            val style = span.item
+            style.fontWeight?.let { bold = it.weight >= FontWeight.SemiBold.weight }
+            style.fontStyle?.let { italic = it == FontStyle.Italic }
+            style.fontFamily?.let { mono = it == fonts.monospace || it == FontFamily.Monospace }
+            if (style.fontSize.isSp) sizePx = style.fontSize.value
+            if (style.color.isSpecified) color = style.color.toArgb()
+            style.textDecoration?.let { strikethrough = it.contains(TextDecoration.LineThrough) }
+        }
+        val face = when {
+            mono -> if (bold) TextFace.MONO_BOLD else TextFace.MONO
+            bold -> if (italic) TextFace.BOLD_ITALIC else TextFace.BOLD
+            else -> if (italic) TextFace.ITALIC else TextFace.REGULAR
+        }
+        return WordStyle(face, sizePx, color, strikethrough)
+    }
+
+    private fun Char.isPlaceholder() =
+        this == MarkdownTextUtil.OBJECT_REPLACEMENT[0] || this == MarkdownTextUtil.WORD_JOINER[0]
 
     /**
      * Drops the cached layouts and formulas (e.g. when the LaTeX engine becomes available).
@@ -172,7 +271,7 @@ class ComposeTextTileAdapter(
         val baseStyle = TextStyle(
             color = color,
             fontSize = fontPx.sp,
-            fontFamily = fontFamily,
+            fontFamily = fonts.text,
             letterSpacing = 0.sp,
             textAlign = when (text.alignment) {
                 1 -> TextAlign.Center
@@ -185,7 +284,8 @@ class ComposeTextTileAdapter(
             isMarkdownEnabled = text.isMarkdownEnabled,
             baseColor = color,
             fontSizePx = fontPx,
-            fontAscentPx = fontAscent(baseStyle, fontPx)
+            fontAscentPx = fontAscent(baseStyle, fontPx),
+            monospace = fonts.monospace
         ) { latex, sizePx ->
             renderInlineFormula(latex, sizePx, text.color)?.let {
                 MarkdownTextUtil.RenderedFormula(it.bitmap, it.bitmap.width.toFloat(), it.bitmap.height.toFloat(), it.baselineRatio)
@@ -287,7 +387,7 @@ class ComposeTextTileAdapter(
         val sizePx = referencePx * multiplier
         val bucket = sizePx.roundToInt().coerceAtLeast(1)
         return formulaCache.getOrPut(FormulaKey("block:$clean", color, bucket)) {
-            val result = LatexEngine.renderFormula(clean, sizePx, color, paddingPx = 12f * multiplier)
+            val result = LatexEngine.renderFormula(clean, sizePx, color, paddingPx = LATEX_PADDING_PX * multiplier)
             if (result != null) {
                 LatexBitmap(result.bitmap, result.baselineRatio)
             } else {
@@ -299,11 +399,14 @@ class ComposeTextTileAdapter(
     companion object {
         private const val MAX_LAYOUTS = 256
 
-        /** Resolution of the layouts of [lines]. */
-        private const val LINES_PX_PER_MM = 20f
+        /** Resolution of the layouts of [layout]. */
+        private const val LAYOUT_PX_PER_MM = 20f
         private const val MAX_FORMULAS = 128
         private const val MAX_LATEX_MULTIPLIER = 16f
         private const val MAX_LATEX_BITMAP_SIDE = 4096f
+
+        /** Margin of the image of a LaTeX block around its formula, at its reference size. */
+        private const val LATEX_PADDING_PX = 12f
     }
 }
 

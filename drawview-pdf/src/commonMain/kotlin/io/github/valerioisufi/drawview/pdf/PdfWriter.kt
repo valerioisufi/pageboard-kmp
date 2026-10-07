@@ -45,12 +45,27 @@ interface PdfWriter : AutoCloseable {
     fun addMarkup(kind: PdfMarkupKind, lines: List<Rect>, argb: Int): Boolean
 
     /**
-     * Writes one line of [text] invisible, to be searched and selected, in Helvetica [fontSize]
-     * high, narrowed to [maxWidth] when it is wider: [transform] maps the start of its baseline
-     * (the origin, y going down) and these sizes to the page. The characters outside of Latin-1 are
-     * left out.
+     * Embeds the TrueType font [data] (typically a subset, see [TrueTypeFont.subset]): the text
+     * written with it is searched and copied in every language it covers. `null` when it cannot be
+     * read.
      */
-    fun addInvisibleText(text: String, fontSize: Float, maxWidth: Float, transform: Matrix2D): Boolean
+    fun loadFont(data: ByteArray): PdfFont?
+
+    /**
+     * Writes one line of [text] in [font], [fontSize] high, filled with [argb] or [invisible] (to
+     * be searched and selected over a picture of it): [transform] maps the start of its baseline
+     * (the origin, y going down) and the sizes to the page. With a [width], the text is stretched
+     * or narrowed to it (where the layout that placed it ends it).
+     */
+    fun addText(
+        font: PdfFont,
+        text: String,
+        fontSize: Float,
+        transform: Matrix2D,
+        argb: Int = 0xFF000000.toInt(),
+        width: Float = 0f,
+        invisible: Boolean = false
+    ): Boolean
 
     /** Finishes the last page and writes the document to [path]. */
     fun save(path: String)
@@ -58,6 +73,9 @@ interface PdfWriter : AutoCloseable {
     /** Releases the document (also when it was not saved). */
     override fun close()
 }
+
+/** A font embedded by a [PdfWriter] (see [PdfWriter.loadFont]), with its [metrics]. */
+class PdfFont internal constructor(internal val handle: Long, val metrics: TrueTypeFont)
 
 /** How an annotation of a PDF marks a passage of text. */
 enum class PdfMarkupKind { HIGHLIGHT, UNDERLINE, STRIKEOUT }
@@ -137,6 +155,7 @@ internal class PdfiumWriter(private var document: Long) : PdfWriter {
     private var page = 0L
     private var pageHeight = 0f
     private val sources = mutableMapOf<String, Long>()
+    private val fonts = mutableListOf<Long>()
 
     override fun beginPage(widthPt: Float, heightPt: Float) {
         endPage()
@@ -196,12 +215,26 @@ internal class PdfiumWriter(private var document: Long) : PdfWriter {
         return PdfiumBindings.pageAddMarkup(currentPage(), kind.ordinal, quads, argb)
     }
 
-    override fun addInvisibleText(text: String, fontSize: Float, maxWidth: Float, transform: Matrix2D): Boolean {
-        val latin = text.filter { it.code in 0x20..0x7E || it.code in 0xA0..0xFF }
-        if (latin.isBlank()) return true
+    override fun loadFont(data: ByteArray): PdfFont? {
+        val metrics = try {
+            TrueTypeFont(data)
+        } catch (_: IllegalArgumentException) {
+            return null
+        }
+        check(document != 0L) { "The PDF has been closed" }
+        val handle = PdfiumBindings.loadFont(document, data)
+        if (handle == 0L) return null
+        fonts += handle
+        return PdfFont(handle, metrics)
+    }
+
+    override fun addText(font: PdfFont, text: String, fontSize: Float, transform: Matrix2D, argb: Int, width: Float, invisible: Boolean): Boolean {
+        if (text.isEmpty()) return true
+        val natural = font.metrics.advance(text) * fontSize / font.metrics.unitsPerEm
+        val stretch = if (width > 0f && natural > 0f) width / natural else 1f
         // The glyphs are drawn with y going up
-        val upward = Matrix2D(1f, 0f, 0f, -1f, 0f, 0f)
-        return PdfiumBindings.pageAddInvisibleText(document, currentPage(), latin, fontSize, maxWidth, toPdf(upward.postConcat(transform)))
+        val glyphs = Matrix2D(stretch, 0f, 0f, -1f, 0f, 0f)
+        return PdfiumBindings.pageAddText(document, currentPage(), font.handle, text, fontSize, argb, invisible, toPdf(glyphs.postConcat(transform)))
     }
 
     override fun save(path: String) {
@@ -215,6 +248,8 @@ internal class PdfiumWriter(private var document: Long) : PdfWriter {
             PdfiumBindings.endPage(page)
             page = 0L
         }
+        fonts.forEach(PdfiumBindings::closeFont)
+        fonts.clear()
         sources.values.filter { it != 0L }.forEach(PdfiumBindings::closeDocument)
         sources.clear()
         if (document != 0L) {

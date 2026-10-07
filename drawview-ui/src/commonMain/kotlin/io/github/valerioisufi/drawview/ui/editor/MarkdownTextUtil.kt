@@ -49,7 +49,8 @@ object MarkdownTextUtil {
         selection: TextRange,
         isMarkdownEnabled: Boolean,
         defaultColor: Color,
-        baseFontSizeSp: TextUnit = 16.sp
+        baseFontSizeSp: TextUnit = 16.sp,
+        monospace: FontFamily = FontFamily.Monospace
     ): AnnotatedString {
         if (!isMarkdownEnabled || text.isEmpty()) {
             return AnnotatedString(text)
@@ -84,17 +85,17 @@ object MarkdownTextUtil {
                     addStyle(concealStyle, t.contentEnd, t.fullEnd)
                 }
 
-                addStyle(contentStyle(t.type, defaultColor, baseFontSizeSp), t.contentStart, t.contentEnd)
+                addStyle(contentStyle(t.type, defaultColor, baseFontSizeSp, monospace), t.contentStart, t.contentEnd)
             }
         }
     }
 
-    private fun contentStyle(type: TokenType, defaultColor: Color, baseFontSize: TextUnit): SpanStyle = when (type) {
+    private fun contentStyle(type: TokenType, defaultColor: Color, baseFontSize: TextUnit, monospace: FontFamily): SpanStyle = when (type) {
         TokenType.BOLD -> SpanStyle(fontWeight = FontWeight.Bold)
         TokenType.ITALIC -> SpanStyle(fontStyle = FontStyle.Italic)
         TokenType.STRIKE -> SpanStyle(textDecoration = TextDecoration.LineThrough)
         TokenType.CODE -> SpanStyle(
-            fontFamily = FontFamily.Monospace,
+            fontFamily = monospace,
             background = defaultColor.copy(alpha = 0.1f)
         )
         TokenType.INLINE_MATH -> SpanStyle(
@@ -120,13 +121,15 @@ object MarkdownTextUtil {
      * @property placeholderIndex index (in [CanvasText.placeholders]) of the placeholder that
      * reserves the room of the formula above the baseline.
      * @property baselineRatio position of the formula baseline (0 = top, 1 = bottom).
+     * @property latex the source of the formula.
      */
     class InlineFormula<T>(
         val image: T,
         val widthPx: Float,
         val heightPx: Float,
         val baselineRatio: Float,
-        val placeholderIndex: Int
+        val placeholderIndex: Int,
+        val latex: String = ""
     )
 
     /**
@@ -167,6 +170,7 @@ object MarkdownTextUtil {
         baseColor: Color,
         fontSizePx: Float,
         fontAscentPx: Float,
+        monospace: FontFamily = FontFamily.Monospace,
         renderFormula: (latex: String, fontSizePx: Float) -> RenderedFormula<T>?
     ): CanvasText<T> {
         if (!isMarkdownEnabled || text.isEmpty()) {
@@ -204,7 +208,7 @@ object MarkdownTextUtil {
                             append(OBJECT_REPLACEMENT)
                             placeholders.add(PlaceholderSpec(bodyStart, bodyStart + 1, rendered.widthPx, ascent.coerceAtLeast(1f), true))
                             formulas.add(
-                                InlineFormula(rendered.image, rendered.widthPx, rendered.heightPx, rendered.baselineRatio, placeholders.size - 1)
+                                InlineFormula(rendered.image, rendered.widthPx, rendered.heightPx, rendered.baselineRatio, placeholders.size - 1, content)
                             )
                             if (descent > 0.5f) {
                                 // Zero-width placeholder hanging from the top of the font down to the
@@ -231,7 +235,7 @@ object MarkdownTextUtil {
                             TokenType.BOLD -> addStyle(SpanStyle(fontWeight = FontWeight.Bold), startSpan, endSpan)
                             TokenType.ITALIC -> addStyle(SpanStyle(fontStyle = FontStyle.Italic), startSpan, endSpan)
                             TokenType.STRIKE -> addStyle(SpanStyle(textDecoration = TextDecoration.LineThrough), startSpan, endSpan)
-                            TokenType.CODE -> addStyle(SpanStyle(fontFamily = FontFamily.Monospace), startSpan, endSpan)
+                            TokenType.CODE -> addStyle(SpanStyle(fontFamily = monospace), startSpan, endSpan)
                             TokenType.HEADING -> addStyle(
                                 SpanStyle(fontWeight = FontWeight.Bold, fontSize = (fontSizePx * 1.25f).sp),
                                 startSpan,

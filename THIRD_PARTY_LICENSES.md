@@ -21,6 +21,7 @@ The PencilNotes application (`pencilnotes/`) includes every DrawView component p
 | **Opus** (libopus) | Xiph.Org Foundation and contributors | [BSD 3-Clause License](#bsd-3-clause-license-opus) | Compression of the recordings of the lecture assistant (Desktop JVM, Android and iOS) |
 | **VisualOn AAC encoder** (vo-aacenc) | VisualOn | [Apache License 2.0](#apache-license-version-20) | AAC encoding of the exported recordings (Desktop JVM, Android and iOS) |
 | **Nunito Font** | Vernon Adams, Cyreal, Jacques Le Bailly | [SIL Open Font License 1.1](#sil-open-font-license-11) | UI typography |
+| **Noto Sans, Noto Sans Mono** | The Noto Project Authors | [SIL Open Font License 1.1](#sil-open-font-license-11) | Text of the notes (editor and exported PDFs) |
 | **Cherry Bomb One Font** | The Cherry Bomb Project Authors (satsuyako) | [SIL Open Font License 1.1](#sil-open-font-license-11) | *PencilNotes*: title typography |
 | **Computer Modern Fonts**| Donald E. Knuth | [Knuth License](#knuth-license) | Math typography for LaTeX formula rendering |
 | **Doublestroke Fonts**| Olaf Kummer | [Doublestroke License](#doublestroke-font-license) | Blackboard bold font for LaTeX formula rendering |
@@ -60,6 +61,10 @@ The PencilNotes application (`pencilnotes/`) includes every DrawView component p
 ### Nunito Font
 > Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito)
 > Licensed under the SIL Open Font License, Version 1.1.
+
+### Noto Sans and Noto Sans Mono
+> Copyright 2018 The Noto Project Authors (https://github.com/googlei18n/noto-fonts)
+> Licensed under the SIL Open Font License, Version 1.1. Subsets of them are embedded in the exported PDFs.
 
 ### Cherry Bomb One Font (PencilNotes)
 > Copyright 2019 The Cherry Bomb Project Authors (https://github.com/satsuyako/CherryBomb)

@@ -52,6 +52,18 @@ actual object LatexPlatformEngine {
         }
     }
 
+    actual fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): TexDrawing? {
+        if (!isNativeReady()) return null
+        return synchronized(lock) {
+            val render = LaTeX.instance().parse(latex, fontSizePx, colorArgb)
+            try {
+                TexDrawing(render.width, render.height, render.baseline.coerceIn(0f, 1f), render.ops())
+            } finally {
+                render.release()
+            }
+        }
+    }
+
     actual fun generateErrorBitmap(latex: String, fontSizePx: Float): ImageBitmap {
         val size = fontSizePx.coerceIn(12f, 60f)
         val text = "⚠ [LaTeX: $latex]"

@@ -134,6 +134,7 @@ import io.github.valerioisufi.drawview.lecture.platform.rememberFileOpener
 import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
+import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 import kotlinx.coroutines.delay
@@ -692,8 +693,9 @@ private fun LectureTabs(assistant: LectureAssistant, lecture: Lecture, controlle
         stringResource(Res.string.lecture_tab_review)
     )
     val fontFamilyResolver = LocalFontFamilyResolver.current
-    val inserter = remember(fontFamilyResolver) {
-        NoteInserter(TextMeasurer(fontFamilyResolver, Density(1f, 1f), LayoutDirection.Ltr))
+    val notesFonts = rememberNotesFonts()
+    val inserter = remember(fontFamilyResolver, notesFonts) {
+        NoteInserter(TextMeasurer(fontFamilyResolver, Density(1f, 1f), LayoutDirection.Ltr), notesFonts)
     }
 
     SecondaryScrollableTabRow(selectedTabIndex = tab, edgePadding = 0.dp) {

@@ -93,12 +93,20 @@ internal object PdfiumNative {
     external fun nPageAddMarkup(pageHandle: Long, kind: Int, quads: FloatArray, argb: Int): Boolean
 
     @JvmStatic
-    external fun nPageAddInvisibleText(
+    external fun nLoadFont(docHandle: Long, data: ByteArray): Long
+
+    @JvmStatic
+    external fun nCloseFont(fontHandle: Long)
+
+    @JvmStatic
+    external fun nPageAddText(
         docHandle: Long,
         pageHandle: Long,
+        fontHandle: Long,
         text: String,
         fontSize: Float,
-        maxWidth: Float,
+        argb: Int,
+        invisible: Boolean,
         matrix: DoubleArray
     ): Boolean
 

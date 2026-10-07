@@ -18,6 +18,9 @@ expect object LatexPlatformEngine {
     fun init(resourcesDirectory: String): Boolean
     fun isNativeReady(): Boolean
     fun renderFormula(latex: String, fontSizePx: Float, colorArgb: Int, paddingPx: Float): LatexResult?
+
+    /** The drawing of a sanitized formula (see [LatexEngine.drawing]), or `null`. */
+    fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): TexDrawing?
     fun generateErrorBitmap(latex: String, fontSizePx: Float): ImageBitmap
 }
 
@@ -151,6 +154,28 @@ object LatexEngine {
             null
         }
     }
+
+    /**
+     * The formula [latex] as MicroTeX draws it at [fontSizePx] in [colorArgb], the same on every
+     * platform (characters of its fonts, lines, rectangles: see [TexDrawing]), e.g. to write it as
+     * vectors; `null` when it is invalid or the engine is not initialized yet.
+     */
+    fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): TexDrawing? {
+        val clean = sanitizeLatexString(latex)
+        if (clean.isBlank() || !LatexPlatformEngine.isNativeReady()) return null
+        return try {
+            LatexPlatformEngine.drawing(clean, fontSizePx.coerceAtLeast(1f), colorArgb)
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
+    /**
+     * The fonts of the text of the formulas (`\text{}`), TrueType files by style (0 regular,
+     * [TexFont.BOLD], [TexFont.ITALIC], both): the same on every platform, instead of the fonts of
+     * the system. Set before the first formula.
+     */
+    fun setTextFonts(byStyle: Map<Int, ByteArray>) = TexTextFonts.set(byStyle)
 
     /**
      * Renders a LaTeX formula directly into an ImageBitmap with transparent background.

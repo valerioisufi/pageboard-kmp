@@ -115,9 +115,9 @@ private val THIRD_PARTY_LIBRARIES = listOf(
     ThirdPartyLicense(
         name = "Typography & Fonts",
         license = "SIL OFL 1.1 / Knuth License",
-        copyright = "Nunito: Copyright © 2014 The Nunito Project Authors.\nComputer Modern: Donald E. Knuth.\nAMS Fonts: American Mathematical Society.",
-        purpose = "Application UI typography (Nunito) and LaTeX mathematical symbols.",
-        notice = "Nunito and AMS Fonts are licensed under the SIL Open Font License, Version 1.1. Computer Modern is licensed under Donald E. Knuth's license."
+        copyright = "Nunito: Copyright © 2014 The Nunito Project Authors.\nNoto Sans, Noto Sans Mono: Copyright © 2018 The Noto Project Authors.\nComputer Modern: Donald E. Knuth.\nAMS Fonts: American Mathematical Society.",
+        purpose = "Application UI typography (Nunito), text of the notes (Noto Sans, Noto Sans Mono) and LaTeX mathematical symbols.",
+        notice = "Nunito, Noto Sans, Noto Sans Mono and AMS Fonts are licensed under the SIL Open Font License, Version 1.1. Computer Modern is licensed under Donald E. Knuth's license."
     )
 )
 

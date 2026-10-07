@@ -367,34 +367,45 @@ int32_t pdfium_page_add_markup(int64_t page_handle, int32_t kind, const float* q
     return ok ? 1 : 0;
 }
 
-int32_t pdfium_page_add_invisible_text(
+int64_t pdfium_load_font(int64_t doc_handle, const uint8_t* data, int32_t size) {
+    if (!doc_handle || !data || size <= 0) return 0;
+    std::lock_guard<std::mutex> lock(g_pdfium_mutex);
+    return reinterpret_cast<int64_t>(
+        FPDFText_LoadFont(reinterpret_cast<FPDF_DOCUMENT>(doc_handle), data, static_cast<uint32_t>(size), FPDF_FONT_TRUETYPE, 1)
+    );
+}
+
+void pdfium_close_font(int64_t font_handle) {
+    if (!font_handle) return;
+    std::lock_guard<std::mutex> lock(g_pdfium_mutex);
+    FPDFFont_Close(reinterpret_cast<FPDF_FONT>(font_handle));
+}
+
+int32_t pdfium_page_add_text(
     int64_t doc_handle,
     int64_t page_handle,
+    int64_t font_handle,
     const uint16_t* utf16,
     int32_t length,
     float font_size,
-    float max_width,
+    uint32_t argb,
+    int32_t invisible,
     const double* matrix
 ) {
-    if (!doc_handle || !page_handle || !utf16 || length <= 0 || font_size <= 0 || !matrix) return 0;
+    if (!doc_handle || !page_handle || !font_handle || !utf16 || length <= 0 || font_size <= 0 || !matrix) return 0;
     std::lock_guard<std::mutex> lock(g_pdfium_mutex);
-    FPDF_DOCUMENT doc = reinterpret_cast<FPDF_DOCUMENT>(doc_handle);
-    FPDF_FONT font = FPDFText_LoadStandardFont(doc, "Helvetica");
-    if (!font) return 0;
-    FPDF_PAGEOBJECT text = FPDFPageObj_CreateTextObj(doc, font, font_size);
-    FPDFFont_Close(font);
+    FPDF_PAGEOBJECT text = FPDFPageObj_CreateTextObj(
+        reinterpret_cast<FPDF_DOCUMENT>(doc_handle), reinterpret_cast<FPDF_FONT>(font_handle), font_size
+    );
     if (!text) return 0;
     std::vector<uint16_t> terminated(utf16, utf16 + length);
     terminated.push_back(0);
-    if (!FPDFText_SetText(text, reinterpret_cast<FPDF_WIDESTRING>(terminated.data())) ||
-        !FPDFTextObj_SetTextRenderMode(text, FPDF_TEXTRENDERMODE_INVISIBLE)) {
+    const bool ok = FPDFText_SetText(text, reinterpret_cast<FPDF_WIDESTRING>(terminated.data())) &&
+        FPDFTextObj_SetTextRenderMode(text, invisible ? FPDF_TEXTRENDERMODE_INVISIBLE : FPDF_TEXTRENDERMODE_FILL) &&
+        FPDFPageObj_SetFillColor(text, (argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF, argb >> 24);
+    if (!ok) {
         FPDFPageObj_Destroy(text);
         return 0;
-    }
-    float left = 0, bottom = 0, right = 0, top = 0;
-    if (max_width > 0 && FPDFPageObj_GetBounds(text, &left, &bottom, &right, &top) && right - left > max_width) {
-        FS_MATRIX narrow = {max_width / (right - left), 0, 0, 1, 0, 0};
-        FPDFPageObj_TransformF(text, &narrow);
     }
     set_matrix(text, matrix);
     FPDFPage_InsertObject(reinterpret_cast<FPDF_PAGE>(page_handle), text);

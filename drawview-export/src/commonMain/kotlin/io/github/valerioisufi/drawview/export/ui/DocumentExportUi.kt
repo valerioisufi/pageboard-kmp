@@ -58,6 +58,8 @@ import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.session.DocumentAction
 import io.github.valerioisufi.drawview.ui.session.EditorExtension
+import io.github.valerioisufi.drawview.ui.theme.NotesFontFiles
+import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
@@ -122,7 +124,8 @@ private sealed interface ExportState {
 @Composable
 internal fun ExportDialog(export: DocumentExport, documentId: String, title: String, pageOnScreen: String?, onDismiss: () -> Unit) {
     val fontFamilyResolver = LocalFontFamilyResolver.current
-    val textAdapter = remember(fontFamilyResolver) { ComposeTextTileAdapter(fontFamilyResolver) }
+    val notesFonts = rememberNotesFonts()
+    val textAdapter = remember(fontFamilyResolver, notesFonts) { ComposeTextTileAdapter(fontFamilyResolver, notesFonts) }
     var format by remember { mutableStateOf(ExportFormat.PDF) }
     var onlyPageOnScreen by remember { mutableStateOf(false) }
     var backgroundPattern by remember { mutableStateOf(true) }
@@ -130,7 +133,7 @@ internal fun ExportDialog(export: DocumentExport, documentId: String, title: Str
     val scope = rememberCoroutineScope()
 
     val exporter = when (format) {
-        ExportFormat.PDF -> PdfExporter(textAdapter)
+        ExportFormat.PDF -> PdfExporter(textAdapter, NotesFontFiles::bytes)
         ExportFormat.PNG -> PageImageExporter(textAdapter)
     }
     val pages = if (pageOnScreen != null && (onlyPageOnScreen || format == ExportFormat.PNG)) setOf(pageOnScreen) else null
