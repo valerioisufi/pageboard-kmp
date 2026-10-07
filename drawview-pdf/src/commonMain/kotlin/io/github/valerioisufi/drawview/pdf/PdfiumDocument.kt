@@ -49,8 +49,19 @@ internal expect object PdfiumBindings {
     /** Creates a new empty document: returns its handle, or 0 on failure. */
     fun newDocument(): Long
 
-    /** Adds a page at the end of [document]: returns its handle, or 0 on failure. */
-    fun newPage(document: Long, widthPt: Double, heightPt: Double): Long
+    /** Adds a page at [index] of [document]: returns its handle, or 0 on failure. */
+    fun newPage(document: Long, index: Int, widthPt: Double, heightPt: Double): Long
+
+    /** Imports the pages [pageIndices] of [source] at the end of [document] in one go. */
+    fun importPages(document: Long, source: Long, pageIndices: IntArray): Boolean
+
+    /**
+     * Moves page [fromIndex] of [document] to [toIndex] and opens it, its matrix from its points as
+     * it is displayed to its user space into [matrix]: returns its handle, or 0 on failure.
+     */
+    fun placePage(document: Long, fromIndex: Int, toIndex: Int, matrix: DoubleArray): Long
+
+    fun deletePage(document: Long, index: Int): Boolean
 
     fun pageAddPath(page: Long, verbs: ByteArray, verbCount: Int, points: FloatArray, fillArgb: Int, strokeArgb: Int, strokeWidth: Float): Boolean
 

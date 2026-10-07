@@ -73,7 +73,16 @@ internal actual object PdfiumBindings {
 
     actual fun newDocument(): Long = PdfiumNative.nNewDocument()
 
-    actual fun newPage(document: Long, widthPt: Double, heightPt: Double): Long = PdfiumNative.nNewPage(document, widthPt, heightPt)
+    actual fun newPage(document: Long, index: Int, widthPt: Double, heightPt: Double): Long =
+        PdfiumNative.nNewPage(document, index, widthPt, heightPt)
+
+    actual fun importPages(document: Long, source: Long, pageIndices: IntArray): Boolean =
+        PdfiumNative.nImportPages(document, source, pageIndices)
+
+    actual fun placePage(document: Long, fromIndex: Int, toIndex: Int, matrix: DoubleArray): Long =
+        PdfiumNative.nPlacePage(document, fromIndex, toIndex, matrix)
+
+    actual fun deletePage(document: Long, index: Int): Boolean = PdfiumNative.nDeletePage(document, index)
 
     actual fun pageAddPath(page: Long, verbs: ByteArray, verbCount: Int, points: FloatArray, fillArgb: Int, strokeArgb: Int, strokeWidth: Float): Boolean =
         PdfiumNative.nPageAddPath(page, verbs, verbCount, points, fillArgb, strokeArgb, strokeWidth)

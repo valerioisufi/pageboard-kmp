@@ -4,11 +4,13 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_close_document
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_close_font
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_delete_page
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_end_page
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_count
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_size
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_text
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_get_page_text_layout
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_import_pages
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_load_font
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_new_document
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_new_page
@@ -19,6 +21,7 @@ import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_page_add_markup
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_page_add_path
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_page_add_pdf_page
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_page_add_text
+import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_place_page
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_render_page_bitmap
 import io.github.valerioisufi.drawview.pdf.cinterop.pdfium_save_document
 import kotlinx.cinterop.DoubleVar
@@ -120,7 +123,20 @@ internal actual object PdfiumBindings {
 
     actual fun newDocument(): Long = pdfium_new_document()
 
-    actual fun newPage(document: Long, widthPt: Double, heightPt: Double): Long = pdfium_new_page(document, widthPt, heightPt)
+    actual fun newPage(document: Long, index: Int, widthPt: Double, heightPt: Double): Long =
+        pdfium_new_page(document, index, widthPt, heightPt)
+
+    actual fun importPages(document: Long, source: Long, pageIndices: IntArray): Boolean {
+        if (pageIndices.isEmpty()) return false
+        return pageIndices.usePinned { pinned -> pdfium_import_pages(document, source, pinned.addressOf(0), pageIndices.size) != 0 }
+    }
+
+    actual fun placePage(document: Long, fromIndex: Int, toIndex: Int, matrix: DoubleArray): Long {
+        if (matrix.size < 6) return 0L
+        return matrix.usePinned { pinned -> pdfium_place_page(document, fromIndex, toIndex, pinned.addressOf(0)) }
+    }
+
+    actual fun deletePage(document: Long, index: Int): Boolean = pdfium_delete_page(document, index) != 0
 
     actual fun pageAddPath(page: Long, verbs: ByteArray, verbCount: Int, points: FloatArray, fillArgb: Int, strokeArgb: Int, strokeWidth: Float): Boolean {
         if (verbCount <= 0 || verbs.size < verbCount || points.isEmpty()) return false

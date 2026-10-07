@@ -25,11 +25,13 @@ import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.core.render.tile.TextWord
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.pdf.PdfFont
+import io.github.valerioisufi.drawview.pdf.PdfImportedPage
 import io.github.valerioisufi.drawview.pdf.PdfMarkupKind
 import io.github.valerioisufi.drawview.pdf.PdfPath
 import io.github.valerioisufi.drawview.pdf.PdfWriter
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import io.github.valerioisufi.drawview.pdf.TrueTypeFont
+import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlinx.coroutines.Dispatchers
@@ -39,7 +41,8 @@ import kotlinx.coroutines.withContext
 /**
  * Writes the documents as PDF (see `docs/export.md`), the same way on every platform: every page
  * a page of the same size, with its background, the pages of the PDFs it shows (their vectors and
- * text kept), the marks of their text as annotations, its images, its texts as real text in the
+ * text kept; when they cover it, the page is theirs, imported once per file with their links), the
+ * marks of their text as annotations, its images, its texts as real text in the
  * fonts of the notes (a subset of them embedded) with their formulas as vectors, and its strokes as
  * filled outlines.
  *
@@ -66,9 +69,10 @@ class PdfExporter(
             var skipped = 0
             createWriter().use { writer ->
                 val texts = TextWriter(writer, layouts, embed(writer, faces, layouts.values.filterNotNull()), faces)
+                val bases = importBases(writer, content)
                 content.pages.forEachIndexed { index, page ->
                     ensureActive()
-                    skipped += PageWriter(writer, content, page, texts).write(options)
+                    skipped += PageWriter(writer, content, page, texts, bases[index]).write(options)
                     progress((index + 1f) / content.pages.size)
                 }
                 writer.save(path)
@@ -90,6 +94,36 @@ class PdfExporter(
             }
         }.toMap()
     }
+
+    /**
+     * The pages of the PDFs the pages are written on, imported once per file (their fonts and
+     * images written once): those a page shows under everything else and covering it at their
+     * size (as the import of a PDF makes them), each once; `null` for the other pages.
+     */
+    private fun importBases(writer: PdfWriter, content: DocumentContent): List<BasePage?> {
+        val shown = arrayOfNulls<DrawPdf>(content.pages.size)
+        val pagesByFile = LinkedHashMap<String, MutableList<Int>>()
+        val imported = HashSet<Pair<String, Int>>()
+        content.pages.forEachIndexed { index, page ->
+            val pdf = page.paintOrder.firstOrNull() as? DrawPdf ?: return@forEachIndexed
+            val file = content.resourceFile(pdf.resourceId, DrawResource.ResourceType.PDF) ?: return@forEachIndexed
+            val size = writer.pdfPageSize(file, pdf.pdfPageIndex) ?: return@forEachIndexed
+            val covers = abs(size.widthPt.toFloat() - page.widthMm * PT_PER_MM) < SAME_SIZE_PT &&
+                abs(size.heightPt.toFloat() - page.heightMm * PT_PER_MM) < SAME_SIZE_PT
+            if (!covers || !imported.add(file to pdf.pdfPageIndex)) return@forEachIndexed
+            shown[index] = pdf
+            pagesByFile.getOrPut(file) { mutableListOf() } += index
+        }
+        val bases = arrayOfNulls<BasePage>(content.pages.size)
+        for ((file, pages) in pagesByFile) {
+            val base = writer.importPdfPages(file, pages.map { shown[it]!!.pdfPageIndex }) ?: continue
+            pages.forEachIndexed { k, index -> bases[index] = BasePage(shown[index]!!, base[k]) }
+        }
+        return bases.toList()
+    }
+
+    /** A page written on [page], the page of a PDF [pdf] shows. */
+    private class BasePage(val pdf: DrawPdf, val page: PdfImportedPage)
 
     /** Embeds in [writer] the subset of each face with the characters of the words it writes. */
     private fun embed(writer: PdfWriter, faces: Map<TextFace, TrueTypeFont>, layouts: List<TextBlockLayout>): Map<TextFace, PdfFont> {
@@ -239,21 +273,32 @@ class PdfExporter(
         }
     }
 
-    /** Writes [page] with [writer]. */
+    /** Writes [page] with [writer], on [base] when it is written on the page of a PDF. */
     private inner class PageWriter(
         private val writer: PdfWriter,
         private val content: DocumentContent,
         private val page: PageContentSnapshot,
-        private val texts: TextWriter
+        private val texts: TextWriter,
+        private val base: BasePage?
     ) {
         private val mmToPt = Matrix2D().postScale(PT_PER_MM, PT_PER_MM)
         private var skipped = 0
 
+        /** Whether something has been drawn the next PDF page covers (the editor draws them opaque, on white). */
+        private var covering = false
+
         /** Returns the number of elements that could not be written. */
         fun write(options: ExportOptions): Int {
-            writer.beginPage(page.widthMm * PT_PER_MM, page.heightMm * PT_PER_MM)
-            writeBackground(options.backgroundPattern)
+            if (base != null) {
+                // The page of the PDF covers the page and its background
+                writer.beginPage(base.page)
+                covering = true
+            } else {
+                writer.beginPage(page.widthMm * PT_PER_MM, page.heightMm * PT_PER_MM)
+                writeBackground(options.backgroundPattern)
+            }
             for (element in page.paintOrder) {
+                if (element === base?.pdf) continue
                 val written = when (element) {
                     is DrawPdf -> writePdfPage(element)
                     is DrawTextMarkup -> writeMarkup(element)
@@ -270,9 +315,11 @@ class PdfExporter(
             val background = page.background
             if (background.backgroundColor != WHITE) {
                 writer.fillPath(PdfPath().apply { addPolygon(rect(0f, 0f, page.widthMm, page.heightMm)) }, background.backgroundColor)
+                covering = true
             }
             if (!withPattern) return
             val pattern = background.pattern(page.widthMm, page.heightMm) ?: return
+            covering = true
             val path = PdfPath()
             if (pattern.dots) {
                 for (x in pattern.columns) for (y in pattern.rows) {
@@ -293,9 +340,14 @@ class PdfExporter(
         }
 
         private fun writePdfPage(pdf: DrawPdf): Boolean {
-            val file = resourceFile(pdf.resourceId, DrawResource.ResourceType.PDF) ?: return false
+            val file = content.resourceFile(pdf.resourceId, DrawResource.ResourceType.PDF) ?: return false
             val size = writer.pdfPageSize(file, pdf.pdfPageIndex) ?: return false
             val toPage = pdfPointsToPageMm(size.widthPt.toFloat(), size.heightPt.toFloat(), page.widthMm, page.heightMm)
+            if (covering) {
+                val area = toPage.mapRect(Rect(0f, 0f, size.widthPt.toFloat(), size.heightPt.toFloat()))
+                writer.fillPath(PdfPath().apply { addPolygon(rect(area.left, area.top, area.right, area.bottom)) }, WHITE)
+            }
+            covering = true
             return writer.drawPdfPage(file, pdf.pdfPageIndex, toPage.postConcat(mmToPt))
         }
 
@@ -311,7 +363,7 @@ class PdfExporter(
 
         private fun writeImage(image: DrawImage): Boolean {
             if (image.width <= 0f || image.height <= 0f) return true
-            val file = resourceFile(image.resourceId, DrawResource.ResourceType.IMAGE) ?: return false
+            val file = content.resourceFile(image.resourceId, DrawResource.ResourceType.IMAGE) ?: return false
             val bytes = PlatformFiles.readBytes(file) ?: return false
             val toPage = boxToPage(image.x, image.y, image.width, image.height, image.rotation)
             // A JPEG is embedded as it is, unless its metadata turn it
@@ -350,11 +402,11 @@ class PdfExporter(
             .postRotate(rotation, boxWidth / 2f, boxHeight / 2f)
             .postTranslate(x, y)
             .postConcat(mmToPt)
-
-        /** The file of the resource [id] of [type], or `null`. */
-        private fun resourceFile(id: String, type: DrawResource.ResourceType): String? =
-            content.resources[id]?.takeIf { it.type == type && PlatformFiles.exists(it.path) }?.path
     }
+
+    /** The file of the resource [id] of [type], or `null`. */
+    private fun DocumentContent.resourceFile(id: String, type: DrawResource.ResourceType): String? =
+        resources[id]?.takeIf { it.type == type && PlatformFiles.exists(it.path) }?.path
 
     private fun rect(left: Float, top: Float, right: Float, bottom: Float) =
         floatArrayOf(left, top, right, top, right, bottom, left, bottom).also { Matrix2D().postScale(PT_PER_MM, PT_PER_MM).mapPoints(it) }
@@ -373,6 +425,9 @@ class PdfExporter(
             else -> TextFace.REGULAR
         }
         const val WHITE = 0xFFFFFFFF.toInt()
+
+        /** Largest difference of the sizes of a page and of the PDF page covering it, in points. */
+        const val SAME_SIZE_PT = 0.05f
 
         /** Resolution of the texts: 300 dpi. */
         const val TEXT_PX_PER_MM = 300f / 25.4f

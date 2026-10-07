@@ -7,9 +7,11 @@ import org.jetbrains.skia.ColorAlphaType
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Image
 import org.jetbrains.skia.ImageInfo
+import java.io.ByteArrayOutputStream
 import java.io.File
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -105,6 +107,75 @@ class PdfWriterTest {
     }
 
     @Test
+    fun importedPagesShareTheirPicturesAndKeepTheirLinks() {
+        val source = sharedSource()
+        val expected = PdfiumEngine.open(source.path).use { document -> (0 until 5).map { render(document, it) } }
+        val pdf = tempFile("imported", ".pdf")
+        PdfiumEngine.create().use { writer ->
+            val pages = assertNotNull(writer.importPdfPages(source.path, (0 until 5).toList()))
+            assertNull(writer.importPdfPages(source.path + ".missing", listOf(0)))
+            for (page in pages) {
+                writer.beginPage(page)
+                // Over the page, at its top-left corner as it is displayed
+                writer.fillPath(PdfPath().apply { addPolygon(floatArrayOf(10f, 10f, 30f, 10f, 30f, 30f, 10f, 30f)) }, RED)
+            }
+            writer.save(pdf.path)
+        }
+        // The picture is written once (about 200 KB), not once per page
+        assertTrue(pdf.length() < PICTURE_BYTES * 3 / 2, "${pdf.length()} bytes")
+        val copied = tempFile("copied", ".pdf")
+        PdfiumEngine.create().use { writer ->
+            for (index in 0 until 5) {
+                val size = assertNotNull(writer.pdfPageSize(source.path, index))
+                writer.beginPage(size.widthPt.toFloat(), size.heightPt.toFloat())
+                assertTrue(writer.drawPdfPage(source.path, index, Matrix2D()))
+            }
+            writer.save(copied.path)
+        }
+        assertTrue(copied.length() > PICTURE_BYTES * 4, "copied for every page: ${copied.length()} bytes")
+
+        PdfiumEngine.open(pdf.path).use { document ->
+            assertEquals(5, document.pageCount)
+            for (index in 0 until 5) {
+                val page = render(document, index)
+                val original = expected[index]
+                assertEquals(original.width to original.height, page.width to page.height, "page $index as it is displayed")
+                assertColor(RED, page.at(20, 20))
+                var differences = 0
+                for (y in 0 until page.height) for (x in 0 until page.width) {
+                    if ((x > 32 || y > 32) && !sameColor(original.at(x, y), page.at(x, y), 8)) differences++
+                }
+                assertEquals(0, differences, "page $index as the original")
+                assertEquals("Page $index", document.getPageText(index)?.trim())
+            }
+        }
+        val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
+        assertEquals(1, Regex(Regex.escape(LINK)).findAll(bytes).count(), "the link of the first page, once")
+        assertTrue(Regex("/Subtype\\s*/Link").containsMatchIn(bytes))
+    }
+
+    @Test
+    fun importedPagesAreWhereTheyAreBegunAndTheOthersAreLeftOut() {
+        val source = sharedSource()
+        val pdf = tempFile("order", ".pdf")
+        PdfiumEngine.create().use { writer ->
+            writer.beginPage(100f, 100f)
+            val (third, first) = assertNotNull(writer.importPdfPages(source.path, listOf(3, 1)))
+            assertNotNull(writer.importPdfPages(source.path, listOf(4)))
+            writer.beginPage(first)
+            writer.beginPage(100f, 100f)
+            writer.beginPage(third)
+            writer.save(pdf.path)
+        }
+        PdfiumEngine.open(pdf.path).use { document ->
+            assertEquals(4, document.pageCount)
+            assertEquals(listOf("", "Page 1", "", "Page 3"), (0 until 4).map { document.getPageText(it)?.trim() })
+            // Turned a quarter: 200 x 300 points
+            assertEquals(200.0, document.getPageSize(1).widthPt, 0.5)
+        }
+    }
+
+    @Test
     fun marksAreAnnotationsWithTheirAppearance() {
         val pdf = write(200f, 100f) {
             assertTrue(addMarkup(PdfMarkupKind.HIGHLIGHT, listOf(Rect(10f, 10f, 90f, 30f), Rect(10f, 40f, 50f, 60f)), YELLOW))
@@ -190,9 +261,51 @@ class PdfWriterTest {
     private fun tempFile(prefix: String, suffix: String) = File.createTempFile(prefix, suffix).apply { deleteOnExit() }
 
     /** The first page of [pdf] at one pixel per point. */
-    private fun render(pdf: File): Page = PdfiumEngine.open(pdf.path).use { document ->
-        val size = document.getPageSize(0)
-        Page(size.widthPt.roundToInt(), size.heightPt.roundToInt()) { w, h, out -> document.renderPage(0, w, h)!!.readPixels(out) }
+    private fun render(pdf: File): Page = PdfiumEngine.open(pdf.path).use { render(it, 0) }
+
+    /** Page [index] of [document] at one pixel per point. */
+    private fun render(document: PdfDocument, index: Int): Page {
+        val size = document.getPageSize(index)
+        return Page(size.widthPt.roundToInt(), size.heightPt.roundToInt()) { w, h, out -> document.renderPage(index, w, h)!!.readPixels(out) }
+    }
+
+    /**
+     * A PDF of five 300 x 200 pages showing the same picture ([PICTURE_BYTES]) and "Page <n>",
+     * displayed as [PAGE_BOXES] say; the first with a link to [LINK].
+     */
+    private fun sharedSource(): File {
+        val out = ByteArrayOutputStream()
+        val offsets = mutableListOf<Int>()
+        fun write(text: String) = out.write(text.toByteArray(Charsets.ISO_8859_1))
+        fun obj(body: String) {
+            offsets += out.size()
+            write("${offsets.size} 0 obj $body endobj\n")
+        }
+        write("%PDF-1.4\n")
+        obj("<< /Type /Catalog /Pages 2 0 R >>")
+        obj("<< /Type /Pages /Kids [${(0 until 5).joinToString(" ") { "${6 + it * 2} 0 R" }}] /Count 5 >>")
+        // Not compressible: written as it is
+        val pixels = Random(7).nextBytes(PICTURE_BYTES)
+        offsets += out.size()
+        write("3 0 obj << /Type /XObject /Subtype /Image /Width 260 /Height 260 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Length ${pixels.size} >>\nstream\n")
+        out.write(pixels)
+        write("\nendstream endobj\n")
+        obj("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>")
+        obj("<< /Type /Annot /Subtype /Link /Rect [40 140 200 170] /Border [0 0 0] /A << /S /URI /URI ($LINK) >> >>")
+        for (index in 0 until 5) {
+            val content = "q 100 0 0 100 150 40 cm /Im Do Q 0 0 1 rg 260 160 30 30 re f BT /F1 24 Tf 40 150 Td (Page $index) Tj ET"
+            val annots = if (index == 0) " /Annots [5 0 R]" else ""
+            obj(
+                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 200] ${PAGE_BOXES[index]} /Contents ${7 + index * 2} 0 R " +
+                    "/Resources << /XObject << /Im 3 0 R >> /Font << /F1 4 0 R >> >>$annots >>"
+            )
+            obj("<< /Length ${content.length} >>\nstream\n$content\nendstream")
+        }
+        val xref = out.size()
+        write("xref\n0 ${offsets.size + 1}\n0000000000 65535 f \n")
+        for (offset in offsets) write("${offset.toString().padStart(10, '0')} 00000 n \n")
+        write("trailer << /Size ${offsets.size + 1} /Root 1 0 R >>\nstartxref\n$xref\n%%EOF\n")
+        return tempFile("shared", ".pdf").apply { writeBytes(out.toByteArray()) }
     }
 
     private class Page(val width: Int, val height: Int, read: (Int, Int, IntArray) -> Unit) {
@@ -218,6 +331,13 @@ class PdfWriterTest {
         const val BLUE = 0xFF0000FF.toInt()
         const val YELLOW = 0xFFFFF176.toInt()
         const val WHITE = 0xFFFFFFFF.toInt()
+
+        /** The picture of the pages of [sharedSource]: 260 x 260 RGB pixels. */
+        const val PICTURE_BYTES = 260 * 260 * 3
+        const val LINK = "https://example.com/notes"
+
+        /** How the pages of [sharedSource] are displayed: turned, cropped. */
+        val PAGE_BOXES = listOf("", "/Rotate 90", "/Rotate 180", "/Rotate 270 /CropBox [20 10 290 190]", "/CropBox [10 0 300 190]")
 
         /** A 300 x 200 page with a black square in its bottom-left corner and "Hash functions". */
         val SOURCE_PDF = """

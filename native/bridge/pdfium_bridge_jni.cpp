@@ -94,8 +94,32 @@ JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nN
 }
 
 JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nNewPage(
-    JNIEnv*, jclass, jlong doc, jdouble width_pt, jdouble height_pt) {
-    return pdfium_new_page(doc, width_pt, height_pt);
+    JNIEnv*, jclass, jlong doc, jint index, jdouble width_pt, jdouble height_pt) {
+    return pdfium_new_page(doc, index, width_pt, height_pt);
+}
+
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nImportPages(
+    JNIEnv* env, jclass, jlong doc, jlong source, jintArray jindices) {
+    if (!jindices) return JNI_FALSE;
+    jsize count = env->GetArrayLength(jindices);
+    jint* indices = env->GetIntArrayElements(jindices, nullptr);
+    if (!indices) return JNI_FALSE;
+    int32_t res = pdfium_import_pages(doc, source, reinterpret_cast<const int32_t*>(indices), count);
+    env->ReleaseIntArrayElements(jindices, indices, JNI_ABORT);
+    return res ? JNI_TRUE : JNI_FALSE;
+}
+
+JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nPlacePage(
+    JNIEnv* env, jclass, jlong doc, jint from_index, jint to_index, jdoubleArray jmatrix) {
+    if (!jmatrix || env->GetArrayLength(jmatrix) < 6) return 0;
+    double matrix[6];
+    int64_t page = pdfium_place_page(doc, from_index, to_index, matrix);
+    if (page) env->SetDoubleArrayRegion(jmatrix, 0, 6, matrix);
+    return page;
+}
+
+JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nDeletePage(JNIEnv*, jclass, jlong doc, jint index) {
+    return pdfium_delete_page(doc, index) ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nPageAddPath(

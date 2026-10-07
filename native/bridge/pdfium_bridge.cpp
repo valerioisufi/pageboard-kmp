@@ -1,16 +1,19 @@
 #include "fpdfview.h"
 #include "fpdf_annot.h"
+#include "fpdf_doc.h"
 #include "fpdf_edit.h"
 #include "fpdf_flatten.h"
 #include "fpdf_ppo.h"
 #include "fpdf_save.h"
 #include "fpdf_text.h"
+#include "fpdf_transformpage.h"
 #include "pdfium_bridge.h"
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <mutex>
+#include <string>
 #include <vector>
 
 static std::mutex g_pdfium_mutex;
@@ -212,11 +215,142 @@ int64_t pdfium_new_document(void) {
     return reinterpret_cast<int64_t>(FPDF_CreateNewDocument());
 }
 
-int64_t pdfium_new_page(int64_t doc_handle, double width_pt, double height_pt) {
+int64_t pdfium_new_page(int64_t doc_handle, int32_t index, double width_pt, double height_pt) {
     if (!doc_handle || width_pt <= 0 || height_pt <= 0) return 0;
     std::lock_guard<std::mutex> lock(g_pdfium_mutex);
     FPDF_DOCUMENT doc = reinterpret_cast<FPDF_DOCUMENT>(doc_handle);
-    return reinterpret_cast<int64_t>(FPDFPage_New(doc, FPDF_GetPageCount(doc), width_pt, height_pt));
+    if (index < 0 || index > FPDF_GetPageCount(doc)) return 0;
+    return reinterpret_cast<int64_t>(FPDFPage_New(doc, index, width_pt, height_pt));
+}
+
+namespace {
+/** A link of a page to the web: its area and its address. */
+struct WebLink {
+    FS_RECTF rect;
+    std::vector<FS_QUADPOINTSF> quads;
+    std::string uri;
+};
+
+/** The links of [page] (of [doc]) to the web into [links]. */
+void web_links(FPDF_DOCUMENT doc, FPDF_PAGE page, std::vector<WebLink>& links) {
+    int position = 0;
+    FPDF_LINK link = nullptr;
+    while (FPDFLink_Enumerate(page, &position, &link)) {
+        FPDF_ACTION action = FPDFLink_GetAction(link);
+        if (!action || FPDFAction_GetType(action) != PDFACTION_URI) continue;
+        // Its length with the terminator
+        const unsigned long length = FPDFAction_GetURIPath(doc, action, nullptr, 0);
+        if (length <= 1) continue;
+        std::vector<char> uri(length);
+        if (FPDFAction_GetURIPath(doc, action, uri.data(), length) != length) continue;
+        WebLink web;
+        if (!FPDFLink_GetAnnotRect(link, &web.rect)) continue;
+        web.uri.assign(uri.data(), length - 1);
+        const int quad_count = FPDFLink_CountQuadPoints(link);
+        for (int i = 0; i < quad_count; i++) {
+            FS_QUADPOINTSF quad;
+            if (FPDFLink_GetQuadPoints(link, i, &quad)) web.quads.push_back(quad);
+        }
+        links.push_back(std::move(web));
+    }
+}
+
+/** Adds [link] to [page], without a border (the one it had, if drawn, is part of the page). */
+bool add_web_link(FPDF_PAGE page, const WebLink& link) {
+    FPDF_ANNOTATION annot = FPDFPage_CreateAnnot(page, FPDF_ANNOT_LINK);
+    if (!annot) return false;
+    bool ok = FPDFAnnot_SetRect(annot, &link.rect) && FPDFAnnot_SetURI(annot, link.uri.c_str()) && FPDFAnnot_SetBorder(annot, 0, 0, 0);
+    for (const FS_QUADPOINTSF& quad : link.quads) ok = ok && FPDFAnnot_AppendAttachmentPoints(annot, &quad);
+    const int index = ok ? -1 : FPDFPage_GetAnnotIndex(page, annot);
+    FPDFPage_CloseAnnot(annot);
+    if (index >= 0) FPDFPage_RemoveAnnot(page, index);
+    return ok;
+}
+
+/**
+ * The matrix from the points of a page as it is displayed (from its top-left corner, y going
+ * down) to its user space, from its [box] as it is displayed and its [rotation] (quarter turns).
+ */
+void display_to_user(const FS_RECTF& box, int rotation, double* m) {
+    const double l = box.left, b = box.bottom, r = box.right, t = box.top;
+    double values[6];
+    switch (rotation) {
+        case 1: values[0] = 0; values[1] = 1; values[2] = 1; values[3] = 0; values[4] = l; values[5] = b; break;
+        case 2: values[0] = -1; values[1] = 0; values[2] = 0; values[3] = 1; values[4] = r; values[5] = b; break;
+        case 3: values[0] = 0; values[1] = -1; values[2] = -1; values[3] = 0; values[4] = r; values[5] = t; break;
+        default: values[0] = 1; values[1] = 0; values[2] = 0; values[3] = -1; values[4] = l; values[5] = t; break;
+    }
+    std::memcpy(m, values, sizeof(values));
+}
+}  // namespace
+
+int32_t pdfium_import_pages(int64_t doc_handle, int64_t source_handle, const int32_t* page_indices, int32_t count) {
+    if (!doc_handle || !source_handle || !page_indices || count <= 0) return 0;
+    std::lock_guard<std::mutex> lock(g_pdfium_mutex);
+    FPDF_DOCUMENT doc = reinterpret_cast<FPDF_DOCUMENT>(doc_handle);
+    FPDF_DOCUMENT source = reinterpret_cast<FPDF_DOCUMENT>(source_handle);
+    const int source_count = FPDF_GetPageCount(source);
+    std::vector<int> indices(page_indices, page_indices + count);
+    std::vector<std::vector<WebLink>> links(count);
+    for (int32_t i = 0; i < count; i++) {
+        if (indices[i] < 0 || indices[i] >= source_count) return 0;
+        FPDF_PAGE page = FPDF_LoadPage(source, indices[i]);
+        if (!page) return 0;
+        web_links(source, page, links[i]);
+        // The annotations shown with the page (FPDF_ANNOT when rendering) become part of it; those
+        // left (without an appearance, as the links usually are) are removed, not imported with
+        // what they refer to (the other pages of the source, its form)
+        FPDFPage_Flatten(page, FLAT_NORMALDISPLAY);
+        for (int k = FPDFPage_GetAnnotCount(page) - 1; k >= 0; k--) FPDFPage_RemoveAnnot(page, k);
+        FPDF_ClosePage(page);
+    }
+    const int first = FPDF_GetPageCount(doc);
+    if (!FPDF_ImportPagesByIndex(doc, source, indices.data(), static_cast<unsigned long>(count), first)) {
+        while (FPDF_GetPageCount(doc) > first) FPDFPage_Delete(doc, first);
+        return 0;
+    }
+    for (int32_t i = 0; i < count; i++) {
+        if (links[i].empty()) continue;
+        FPDF_PAGE page = FPDF_LoadPage(doc, first + i);
+        if (!page) continue;
+        for (const WebLink& link : links[i]) add_web_link(page, link);
+        FPDF_ClosePage(page);
+    }
+    return 1;
+}
+
+int64_t pdfium_place_page(int64_t doc_handle, int32_t from_index, int32_t to_index, double* out_matrix) {
+    if (!doc_handle || !out_matrix) return 0;
+    std::lock_guard<std::mutex> lock(g_pdfium_mutex);
+    FPDF_DOCUMENT doc = reinterpret_cast<FPDF_DOCUMENT>(doc_handle);
+    int from = from_index;
+    if (from != to_index && !FPDF_MovePages(doc, &from, 1, to_index)) return 0;
+    FPDF_PAGE page = FPDF_LoadPage(doc, to_index);
+    if (!page) return 0;
+    // Its content between q and Q: what is added after it starts from the default state. Loaded
+    // again to be parsed so (a page without content has nothing to enclose)
+    const FS_MATRIX identity = {1, 0, 0, 1, 0, 0};
+    if (FPDFPage_TransFormWithClip(page, &identity, nullptr)) {
+        FPDF_ClosePage(page);
+        page = FPDF_LoadPage(doc, to_index);
+        if (!page) return 0;
+    }
+    FS_RECTF box;
+    if (!FPDF_GetPageBoundingBox(page, &box)) {
+        FPDF_ClosePage(page);
+        return 0;
+    }
+    display_to_user(box, FPDFPage_GetRotation(page), out_matrix);
+    return reinterpret_cast<int64_t>(page);
+}
+
+int32_t pdfium_delete_page(int64_t doc_handle, int32_t index) {
+    if (!doc_handle) return 0;
+    std::lock_guard<std::mutex> lock(g_pdfium_mutex);
+    FPDF_DOCUMENT doc = reinterpret_cast<FPDF_DOCUMENT>(doc_handle);
+    if (index < 0 || index >= FPDF_GetPageCount(doc)) return 0;
+    FPDFPage_Delete(doc, index);
+    return 1;
 }
 
 int32_t pdfium_page_add_path(

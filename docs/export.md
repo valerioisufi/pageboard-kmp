@@ -140,7 +140,7 @@ editor give in common code: no drawing of a platform is captured.
 | Q2 | `TrueTypeFont` (cmap, outlines, subset); `PdfWriter.loadFont` / `addText` | Done |
 | Q3 | The words of the texts as real text of the PDF (`TextBlockLayout`); images for the characters out of the font | Done |
 | Q4 | The formulas as vectors (`TexDrawing`); `\text{}` in Noto Sans | Done |
-| Q5 | The pages of the imported PDFs imported once per file, with their links | |
+| Q5 | The pages of the imported PDFs imported once per file, with their links | Done |
 | Q6 | Underlines and strikeouts as in the editor; images at full resolution; title and creator of the PDF | |
 
 ### Results of the quality
@@ -163,3 +163,15 @@ editor give in common code: no drawing of a platform is captured.
 * Tests: the text of a PDF read again in every script of the font (Greek), the PDF of a text
   with formulas drawn by PDFium overlapping the editor's drawing (more than 75 % of the ink), no
   image in it; an emoji word as an image.
+* The pages of the PDFs covering the pages they are shown on (as the import of a PDF makes
+  them) are imported in one call per file (`PdfWriter.importPdfPages`, `FPDF_ImportPagesByIndex`):
+  the fonts and the images they share are written once (five pages sharing a picture of 200 KB:
+  208 KB, 1 MB when each page is copied). A page begun on one (`beginPage(base)`) is it, moved to
+  its place, its content enclosed between `q` and `Q` and left as it is, as it is displayed
+  (rotation, crop box): what is drawn over it is mapped from its displayed corner to its user
+  space. Its annotations are flattened into it, the others removed (they would bring the pages
+  they point to), its links to the web added again as links. The pages showing a PDF page
+  otherwise (a page shown twice, a page of another size) copy it as a form object, drawn opaque on
+  white like the editor draws it, over the background.
+* Limits: the links of the PDFs to their own pages are not kept (PDFium cannot write their
+  destinations).

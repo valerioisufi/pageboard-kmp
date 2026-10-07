@@ -33,6 +33,7 @@ import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
+import io.github.valerioisufi.drawview.pdf.PdfImportedPage
 import io.github.valerioisufi.drawview.pdf.PdfMarkupKind
 import io.github.valerioisufi.drawview.pdf.PdfPath
 import io.github.valerioisufi.drawview.pdf.PdfSize
@@ -40,10 +41,12 @@ import io.github.valerioisufi.drawview.pdf.PdfWriter
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import io.github.valerioisufi.drawview.ui.platform.FileTarget
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
+import java.io.ByteArrayOutputStream
 import java.io.File
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -171,16 +174,55 @@ class PdfExporterTest {
     }
 
     @Test
+    fun thePagesOfAPdfAreImportedOncePerFileWithTheirLinks() = runBlocking {
+        // The pages of a PDF imported on a grid, a page showing the first one again
+        val document = DrawDocument(title = "Slides", defaultBackground = PageBackground.Grid(lineColor = 0xFF0000FF.toInt()), addInitialPage = false)
+        val pdf = resource(document, "pdf", DrawResource.ResourceType.PDF, slides())
+        for (index in listOf(0, 1, 2, 0)) {
+            document.addPage(width = 300f / PT_PER_MM, height = 200f / PT_PER_MM).add(DrawPdf(index).apply { resourceId = pdf })
+        }
+        val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1.5f, color = Color.Black, epsilon = 0.05f)
+        val points = (0..30).map { StrokePoint(10f + it * 2f, 10f, 0.6f, 16L * (it + 1)) }
+        document.pages[1].add(DrawStroke(mesh = InkStrokeEngine.buildMesh(points, brush)!!.withPoints(points), brushConfig = brush))
+
+        val exported = tempFile("slides", ".pdf")
+        val result = PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), exported.path)
+        assertEquals(0, result.skipped)
+        // The picture of the slides written twice: once for the pages imported, once for the page
+        // showing the first one again (a copy of it)
+        assertTrue(exported.length() < SLIDE_PICTURE_BYTES * 5 / 2, "${exported.length()} bytes")
+        PdfiumEngine.open(exported.path).use { read ->
+            assertEquals(4, read.pageCount)
+            assertEquals(listOf("Slide 0", "Slide 1", "Slide 2", "Slide 0"), (0 until 4).map { read.getPageText(it)?.trim() })
+        }
+        val bytes = exported.readBytes().decodeToString(throwOnInvalidSequence = false)
+        assertEquals(1, Regex(Regex.escape(SLIDE_LINK)).findAll(bytes).count(), "the link of the first page")
+
+        for (index in 0 until 4) {
+            val page = render(exported, index)
+            // The grid is under the page of the PDF, drawn opaque as in the editor
+            val blank = (page.pt(0f, 60f).second until page.pt(0f, 140f).second).all { y ->
+                (0 until page.pt(40f, 0f).first).all { x -> page.at(Pair(x, y)) == WHITE }
+            }
+            assertTrue(blank, "page $index: the grid is not seen")
+        }
+        assertTrue(render(exported, 1).isDark(render(exported, 1).mm(30f, 10f)), "the stroke is drawn over the page of the PDF")
+    }
+
+    @Test
     fun theElementsAreWrittenInTheOrderTheyArePaintedAndTheMissingFilesAreSkipped() = runBlocking {
         val document = notebook()
         document.resources.first { it.type == DrawResource.ResourceType.IMAGE }.path = "/missing.png"
         val writer = RecordingWriter()
         val result = PdfExporter(textAdapter, fontFiles) { writer }.export(DocumentContent.of(document), ExportOptions(), "unused.pdf")
         assertEquals(1, result.skipped)
-        // The fonts of the faces used (not loaded: the words are images of them); the images, the
-        // words, the strokes; the PDF pages, their marks
+        // The fonts of the faces used (not loaded: the words are images of them), the PDF page
+        // covering the second page; the images, the words, the strokes; the marks of the PDF page
         assertEquals(
-            listOf("font", "font", "page", "pattern", "image", "text-image", "text-image", "text-image", "stroke-path", "page", "pdf", "markup:HIGHLIGHT", "save"),
+            listOf(
+                "font", "font", "import", "page", "pattern", "image", "text-image", "text-image", "text-image", "stroke-path",
+                "page-on-pdf", "markup:HIGHLIGHT", "save"
+            ),
             writer.calls
         )
     }
@@ -235,6 +277,39 @@ class PdfExporterTest {
             )
         )
         return document
+    }
+
+    /** A PDF of three 300 x 200 pages showing the same picture ([SLIDE_PICTURE_BYTES]), "Slide <n>"; the first with a link to [SLIDE_LINK]. */
+    private fun slides(): ByteArray {
+        val out = ByteArrayOutputStream()
+        val offsets = mutableListOf<Int>()
+        fun write(text: String) = out.write(text.toByteArray(Charsets.ISO_8859_1))
+        fun obj(body: String) {
+            offsets += out.size()
+            write("${offsets.size} 0 obj $body endobj\n")
+        }
+        write("%PDF-1.4\n")
+        obj("<< /Type /Catalog /Pages 2 0 R >>")
+        obj("<< /Type /Pages /Kids [6 0 R 8 0 R 10 0 R] /Count 3 >>")
+        // Not compressible: written as it is
+        val pixels = Random(7).nextBytes(SLIDE_PICTURE_BYTES)
+        offsets += out.size()
+        write("3 0 obj << /Type /XObject /Subtype /Image /Width 260 /Height 260 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Length ${pixels.size} >>\nstream\n")
+        out.write(pixels)
+        write("\nendstream endobj\n")
+        obj("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>")
+        obj("<< /Type /Annot /Subtype /Link /Rect [40 140 200 170] /Border [0 0 0] /A << /S /URI /URI ($SLIDE_LINK) >> >>")
+        for (index in 0 until 3) {
+            val content = "q 100 0 0 100 150 40 cm /Im Do Q BT /F1 24 Tf 40 150 Td (Slide $index) Tj ET"
+            val annots = if (index == 0) " /Annots [5 0 R]" else ""
+            obj("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 200] /Contents ${7 + index * 2} 0 R /Resources << /XObject << /Im 3 0 R >> /Font << /F1 4 0 R >> >>$annots >>")
+            obj("<< /Length ${content.length} >>\nstream\n$content\nendstream")
+        }
+        val xref = out.size()
+        write("xref\n0 ${offsets.size + 1}\n0000000000 65535 f \n")
+        for (offset in offsets) write("${offset.toString().padStart(10, '0')} 00000 n \n")
+        write("trailer << /Size ${offsets.size + 1} /Root 1 0 R >>\nstartxref\n$xref\n%%EOF\n")
+        return out.toByteArray()
     }
 
     private fun resource(document: DrawDocument, extension: String, type: DrawResource.ResourceType, bytes: ByteArray): String {
@@ -308,6 +383,9 @@ class PdfExporterTest {
     private class RecordingWriter : PdfWriter {
         val calls = mutableListOf<String>()
         override fun beginPage(widthPt: Float, heightPt: Float) { calls += "page" }
+        override fun beginPage(base: PdfImportedPage) { calls += "page-on-pdf" }
+        override fun importPdfPages(sourcePath: String, pageIndices: List<Int>) =
+            pageIndices.map { PdfImportedPage(300f, 200f) }.also { calls += "import" }
         override fun fillPath(path: PdfPath, argb: Int) = true.also { calls += if (argb == 0xFF000000.toInt()) "stroke-path" else "fill" }
         override fun strokePath(path: PdfPath, argb: Int, widthPt: Float) = true.also { calls += "pattern" }
         override fun drawPdfPage(sourcePath: String, pageIndex: Int, transform: Matrix2D) = true.also { calls += "pdf" }
@@ -365,6 +443,10 @@ class PdfExporterTest {
         const val WHITE = 0xFFFFFFFF.toInt()
 
         /** A 300 x 200 page with a black square in its bottom-left corner and "Hash functions". */
+        /** The picture of the [slides]: 260 x 260 RGB pixels. */
+        const val SLIDE_PICTURE_BYTES = 260 * 260 * 3
+        const val SLIDE_LINK = "https://example.com/slides"
+
         val SOURCE_PDF = """
             %PDF-1.4
             1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj

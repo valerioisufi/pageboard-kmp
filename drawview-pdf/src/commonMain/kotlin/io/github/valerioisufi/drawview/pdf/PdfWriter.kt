@@ -15,6 +15,22 @@ interface PdfWriter : AutoCloseable {
     /** Starts a page of [widthPt] x [heightPt] after the others, finishing the previous one. */
     fun beginPage(widthPt: Float, heightPt: Float)
 
+    /**
+     * Starts a page after the others on [base], a page of another PDF imported by
+     * [importPdfPages], finishing the previous one: the page is [base] as it is displayed (its
+     * size, its rotation, its content and its links as they are), and what is drawn goes over it.
+     */
+    fun beginPage(base: PdfImportedPage)
+
+    /**
+     * Imports the pages [pageIndices] (distinct) of the PDF file [sourcePath] at once, for pages
+     * begun on them ([beginPage]): the fonts and the images they share are written once, where
+     * [drawPdfPage] copies them for every page. Their annotations become part of them, but their
+     * links to the web, which stay links. Returns them in the order of [pageIndices], or `null`
+     * when they cannot be imported; those no page is begun on are left out of the document.
+     */
+    fun importPdfPages(sourcePath: String, pageIndices: List<Int>): List<PdfImportedPage>?
+
     /** Fills [path] in [argb] (the non-zero winding rule: overlapping parts are filled once). */
     fun fillPath(path: PdfPath, argb: Int): Boolean
 
@@ -73,6 +89,9 @@ interface PdfWriter : AutoCloseable {
     /** Releases the document (also when it was not saved). */
     override fun close()
 }
+
+/** A page of another PDF imported by [PdfWriter.importPdfPages], [widthPt] x [heightPt] as it is displayed. */
+class PdfImportedPage(val widthPt: Float, val heightPt: Float)
 
 /** A font embedded by a [PdfWriter] (see [PdfWriter.loadFont]), with its [metrics]. */
 class PdfFont internal constructor(internal val handle: Long, val metrics: TrueTypeFont)
@@ -149,20 +168,50 @@ class PdfPath {
 
 /**
  * [PdfWriter] of PDFium. The pages of another PDF are copied from documents opened once each,
- * closed with the writer.
+ * closed with the writer. The pages imported wait at the end of the document, after the pages
+ * begun, until a page is begun on them.
  */
 internal class PdfiumWriter(private var document: Long) : PdfWriter {
     private var page = 0L
-    private var pageHeight = 0f
+    private var begun = 0
+
+    /** From the points of the page (from its top-left corner) to its user space. */
+    private var toUser = Matrix2D()
+    private val imported = mutableListOf<PdfImportedPage>()
     private val sources = mutableMapOf<String, Long>()
     private val fonts = mutableListOf<Long>()
 
     override fun beginPage(widthPt: Float, heightPt: Float) {
         endPage()
         check(document != 0L) { "The PDF has been closed" }
-        page = PdfiumBindings.newPage(document, widthPt.toDouble(), heightPt.toDouble())
+        page = PdfiumBindings.newPage(document, begun, widthPt.toDouble(), heightPt.toDouble())
         check(page != 0L) { "Cannot add a page of $widthPt x $heightPt points" }
-        pageHeight = heightPt
+        begun++
+        toUser = Matrix2D(1f, 0f, 0f, -1f, 0f, heightPt)
+    }
+
+    override fun beginPage(base: PdfImportedPage) {
+        endPage()
+        check(document != 0L) { "The PDF has been closed" }
+        val position = imported.indexOf(base)
+        require(position >= 0) { "The page has not been imported, or a page has been begun on it" }
+        val matrix = DoubleArray(6)
+        page = PdfiumBindings.placePage(document, begun + position, begun, matrix)
+        check(page != 0L) { "Cannot write on an imported page" }
+        imported.removeAt(position)
+        begun++
+        toUser = Matrix2D(matrix[0].toFloat(), matrix[1].toFloat(), matrix[2].toFloat(), matrix[3].toFloat(), matrix[4].toFloat(), matrix[5].toFloat())
+    }
+
+    override fun importPdfPages(sourcePath: String, pageIndices: List<Int>): List<PdfImportedPage>? {
+        check(document != 0L) { "The PDF has been closed" }
+        require(pageIndices.toSet().size == pageIndices.size) { "The pages are imported once" }
+        if (pageIndices.isEmpty()) return emptyList()
+        val source = source(sourcePath)
+        if (source == 0L) return null
+        val sizes = pageIndices.map { PdfiumBindings.pageSize(source, it) ?: return null }
+        if (!PdfiumBindings.importPages(document, source, pageIndices.toIntArray())) return null
+        return sizes.map { PdfImportedPage(it.widthPt.toFloat(), it.heightPt.toFloat()) }.also { imported += it }
     }
 
     override fun fillPath(path: PdfPath, argb: Int): Boolean = addPath(path, fillArgb = argb, strokeArgb = 0, strokeWidth = 0f)
@@ -172,11 +221,7 @@ internal class PdfiumWriter(private var document: Long) : PdfWriter {
     private fun addPath(path: PdfPath, fillArgb: Int, strokeArgb: Int, strokeWidth: Float): Boolean {
         if (path.isEmpty) return true
         val points = path.points.copyOf(path.pointCount)
-        var i = 1
-        while (i < points.size) {
-            points[i] = pageHeight - points[i]
-            i += 2
-        }
+        toUser.mapPoints(points)
         return PdfiumBindings.pageAddPath(currentPage(), path.verbs, path.verbCount, points, fillArgb, strokeArgb, strokeWidth)
     }
 
@@ -208,10 +253,10 @@ internal class PdfiumWriter(private var document: Long) : PdfWriter {
         if (lines.isEmpty()) return true
         val quads = FloatArray(lines.size * 8)
         lines.forEachIndexed { i, line ->
-            val top = pageHeight - line.top
-            val bottom = pageHeight - line.bottom
-            floatArrayOf(line.left, top, line.right, top, line.left, bottom, line.right, bottom).copyInto(quads, i * 8)
+            // Upper-left, upper-right, lower-left and lower-right corners of the line
+            floatArrayOf(line.left, line.top, line.right, line.top, line.left, line.bottom, line.right, line.bottom).copyInto(quads, i * 8)
         }
+        toUser.mapPoints(quads)
         return PdfiumBindings.pageAddMarkup(currentPage(), kind.ordinal, quads, argb)
     }
 
@@ -240,6 +285,9 @@ internal class PdfiumWriter(private var document: Long) : PdfWriter {
     override fun save(path: String) {
         endPage()
         check(document != 0L) { "The PDF has been closed" }
+        // The pages imported that no page has been begun on
+        repeat(imported.size) { PdfiumBindings.deletePage(document, begun) }
+        imported.clear()
         check(PdfiumBindings.saveDocument(document, path)) { "Cannot write the PDF to $path" }
     }
 
@@ -276,9 +324,9 @@ internal class PdfiumWriter(private var document: Long) : PdfWriter {
     /** The unit square of an image from its bottom-left corner (PDF) to its top-left corner. */
     private fun imageToTop() = Matrix2D(1f, 0f, 0f, -1f, 0f, 1f)
 
-    /** [transform] (to the page from its top-left corner) followed by the flip of the page: a PDF matrix. */
+    /** [transform] (to the page from its top-left corner) followed by the page to its user space: a PDF matrix. */
     private fun toPdf(transform: Matrix2D): DoubleArray {
-        val m = Matrix2D().set(transform).postConcat(Matrix2D(1f, 0f, 0f, -1f, 0f, pageHeight))
+        val m = Matrix2D().set(transform).postConcat(toUser)
         return doubleArrayOf(m.a.toDouble(), m.b.toDouble(), m.c.toDouble(), m.d.toDouble(), m.tx.toDouble(), m.ty.toDouble())
     }
 }

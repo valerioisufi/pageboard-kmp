@@ -67,7 +67,16 @@ internal object PdfiumNative {
     external fun nNewDocument(): Long
 
     @JvmStatic
-    external fun nNewPage(docHandle: Long, widthPt: Double, heightPt: Double): Long
+    external fun nNewPage(docHandle: Long, index: Int, widthPt: Double, heightPt: Double): Long
+
+    @JvmStatic
+    external fun nImportPages(docHandle: Long, sourceHandle: Long, pageIndices: IntArray): Boolean
+
+    @JvmStatic
+    external fun nPlacePage(docHandle: Long, fromIndex: Int, toIndex: Int, matrix: DoubleArray): Long
+
+    @JvmStatic
+    external fun nDeletePage(docHandle: Long, index: Int): Boolean
 
     @JvmStatic
     external fun nPageAddPath(

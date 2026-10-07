@@ -86,10 +86,36 @@ void pdfium_close_document(int64_t doc_handle);
 int64_t pdfium_new_document(void);
 
 /**
- * Adds a page of [width_pt] x [height_pt] at the end of the document. Returns its handle, open
- * until pdfium_end_page, or 0 on failure.
+ * Adds a page of [width_pt] x [height_pt] at [index] of the document (before the pages imported
+ * and not yet written, see pdfium_import_pages). Returns its handle, open until pdfium_end_page,
+ * or 0 on failure.
  */
-int64_t pdfium_new_page(int64_t doc_handle, double width_pt, double height_pt);
+int64_t pdfium_new_page(int64_t doc_handle, int32_t index, double width_pt, double height_pt);
+
+/**
+ * Imports the pages [page_indices] ([count], distinct) of [source_handle] (a document opened by
+ * pdfium_open_document) at the end of the document in one go, so that the fonts and the images
+ * they share are written once. Their annotations shown are flattened into them first (as
+ * pdfium_page_add_pdf_page does), the others left out, but their links to the web, which stay
+ * links. Each is then written over after pdfium_place_page.
+ * Returns 1 on success, 0 on failure.
+ */
+int32_t pdfium_import_pages(int64_t doc_handle, int64_t source_handle, const int32_t* page_indices, int32_t count);
+
+/**
+ * Moves page [from_index] of the document (imported by pdfium_import_pages) to [to_index] and
+ * opens it to add content over its own, which stays as it is (what is added starts from the
+ * default graphics state). [out_matrix] receives the matrix from the points of the page as it is
+ * displayed (from its top-left corner, y going down) to its user space.
+ * Returns its handle, open until pdfium_end_page, or 0 on failure.
+ */
+int64_t pdfium_place_page(int64_t doc_handle, int32_t from_index, int32_t to_index, double* out_matrix);
+
+/**
+ * Removes page [index] of the document.
+ * Returns 1 on success, 0 on failure.
+ */
+int32_t pdfium_delete_page(int64_t doc_handle, int32_t index);
 
 /**
  * Adds a path to [page_handle]. [verbs] are 0 (move to, one point), 1 (line to, one point),
