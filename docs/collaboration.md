@@ -459,13 +459,20 @@ The application is not released yet, so the stored documents are not migrated:
   the handwriting all of it; a lecture deleted is deleted everywhere (`deleted.json`), but not
   while it is being recorded.
 * A lecture being recorded is seen on the others as it is saved (every update, or every 30 s
-  without the models): "being recorded on iPad"; its audio is offered once finished (a tablet
-  recording 1 h sends about 115 MB, in chunks of 256 KiB, the operations going first). The
+  without the models): "being recorded on iPad"; its audio is offered as it is recorded, every
+  5 s (Ogg Opus, about 11 MB an hour, in chunks of 256 KiB, the operations going first). The
+  audio only grows, so that what a device has is the start of what the others have: it is asked
+  for from there (`DocumentAttachments.received`) and appended, from one device at a time. The
   images of the pages are wanted at the version the lecture names, which may arrive after them:
   the items not wanted are asked for again after each one received (`SyncEngine.askForOffered`).
 * A lecture recorded where the models are not (the tablets) is transcribed and reviewed on the
   desktop (`LectureAssistant.generate`, as an imported recording), and the transcript, the review
   and the notes go back to the tablet, which shows them at once in the panel.
+* While it is recorded, the desktop can follow it live (at once, or asked first, as its settings
+  say): a `LectureRecorder` that `follows` reads its audio as it arrives (`FollowedRecording`, in
+  place of the microphone) and analyzes it as its own recordings, holding the `GenerationLock`;
+  the transcript and the notes reach the tablet during the lecture, the review once it is over.
+  The status and the length of the lecture stay the ones of the tablet.
 * The lecture being recorded or shown takes what is received under the lock of the records
   (`LectureLibrary.records`, held when it is saved): nothing is lost between the two; a device
   keeping something else than what it received sends its version back.

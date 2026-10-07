@@ -54,10 +54,13 @@ class RecordingFile(directory: String) {
     fun readEncoded(): ByteArray? = if (!exists) null else SystemFileSystem.source(path).buffered().use { it.readByteArray() }
 
     /** Reads [durationMs] of audio from [startMs] (while recording or after [finish]). */
-    fun readSegment(startMs: Long, durationMs: Long): ShortArray? {
-        val start = msToSamples(startMs.coerceAtLeast(0L))
+    fun readSegment(startMs: Long, durationMs: Long): ShortArray? =
+        readSamples(msToSamples(startMs.coerceAtLeast(0L)), msToSamples(durationMs))
+
+    /** Reads [count] samples from the sample [start] (as far as there are). */
+    fun readSamples(start: Long, count: Long): ShortArray? {
         val total = pageIndex()?.samples ?: return null
-        val length = msToSamples(durationMs).coerceAtMost(total - start)
+        val length = count.coerceAtMost(total - start)
         if (length <= 0) return null
         val output = ShortArray(length.toInt())
         var written = 0

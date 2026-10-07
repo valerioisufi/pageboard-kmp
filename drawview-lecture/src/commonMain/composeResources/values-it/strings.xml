@@ -208,4 +208,9 @@
     <string name="lecture_settings_generate_here_hint">Altrimenti qui le lezioni sono solo registrate: un computer con i modelli ne scrive le note quando vengono condivise.</string>
     <string name="lecture_local_network_hint">Ollama gira su un computer della rete locale: avvialo lì con OLLAMA_HOST=0.0.0.0 perché questo dispositivo lo raggiunga.</string>
     <string name="lecture_local_find">Cerca nella rete</string>
+    <string name="lecture_offer_live_title">Seguire la lezione in diretta?</string>
+    <string name="lecture_offer_live_message">%1$s sta registrando una lezione: questo computer può scriverne le note man mano, dal suo audio che arriva mentre è registrato, e la revisione alla fine.</string>
+    <string name="lecture_offer_tokens_hour">Circa %1$d token a Gemini all\'ora (l\'audio, trascritto e poi rivisto), addebitati secondo il tuo piano.</string>
+    <string name="lecture_offer_follow">Segui in diretta</string>
+    <string name="lecture_followed_here">Seguita in diretta da questo computer: le note sono scritte man mano che arriva l\'audio.</string>
 </resources>

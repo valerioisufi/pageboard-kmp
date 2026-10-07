@@ -78,7 +78,7 @@ class LectureSharingTest {
         val tablet = assistant("tablet", canGenerate = false)
         val computer = assistant("computer", canGenerate = true)
 
-        // Recorded on the tablet: seen on the computer while it is recorded, without its audio
+        // Recorded on the tablet: seen on the computer while it is recorded, with its audio so far
         assertTrue(withContext(stateContext) { tablet.start("doc", "Analisi 1", FakeNotebook()) })
         val recorded = tablet.recorder!!.lecture
         microphone.speak(12.0, loud = true, random = Random(1))
@@ -87,7 +87,14 @@ class LectureSharingTest {
         val live = computer.library.list("doc").single()
         assertTrue(live.activeElsewhere)
         assertEquals(tablet.library.deviceName, live.recordedElsewhere)
-        assertFalse(File(live.directory, "audio.opus").exists())
+        val streamed = File(live.directory, "audio.opus").readBytes()
+        assertTrue(streamed.isNotEmpty())
+        assertContentEquals(streamed, File(recorded.directory, "audio.opus").readBytes().copyOf(streamed.size))
+        // Offered to be followed live (asked first: the default)
+        val liveOffer = await { computer.generationOffers.firstOrNull() }
+        assertTrue(liveOffer.live)
+        assertEquals(3_600L * 32 * 2, liveOffer.estimatedTokens)
+        withContext(stateContext) { computer.declineGeneration(liveOffer) }
 
         withContext(stateContext) { tablet.recorder!!.stop() }
         await { recorded.status == LectureStatus.FINISHED }
@@ -150,6 +157,45 @@ class LectureSharingTest {
         assertFalse(File(recorded.directory).exists())
         assertNull(withContext(stateContext) { tablet.shownLecture("doc") })
         assertTrue(tablet.library.list("doc").isEmpty())
+    }
+
+    @Test
+    fun aLectureRecordedOnATabletIsFollowedLiveOnAComputer() = runBlocking<Unit> {
+        val tablet = assistant("tablet", canGenerate = false)
+        val computer = assistant("computer", canGenerate = true)
+        withContext(stateContext) { computer.settingsStore.update(computer.settingsStore.settings.copy(receivedLectures = ReceivedLectures.ALWAYS)) }
+
+        // Recorded on the tablet, its audio reaching the computer as it is recorded
+        assertTrue(withContext(stateContext) { tablet.start("doc", "Analisi 1", FakeNotebook()) })
+        val recorded = tablet.recorder!!.lecture
+        // A minute of speech, a pause (where the chunk is cut), then more
+        microphone.speak(62.0, loud = true, random = Random(3))
+        microphone.speak(2.0, loud = false, random = Random(3))
+        microphone.speak(10.0, loud = true, random = Random(4))
+        await { recorded.elapsedMs >= 73_000 }
+        await { tablet.attachments.versions("doc").any { (key, version) -> key.endsWith("/audio") && version.removePrefix("a").toLong() >= File(recorded.directory, "audio.opus").length() - 4_000 } }
+        meet(tablet.attachments, computer.attachments)
+
+        // Followed on the computer: transcribed there while the tablet records, and shown on the tablet
+        val followed = await { computer.shownLecture("doc")?.takeIf { it.followedHere } }
+        await { computer.library.readRecord(followed.directory)?.transcript?.isNotEmpty() }
+        assertEquals(LectureStatus.RECORDING, followed.status)
+        meet(tablet.attachments, computer.attachments)
+        assertEquals(LectureStatus.RECORDING, recorded.status)
+        await { recorded.transcript.isNotEmpty() }
+        assertEquals(computer.library.deviceName, recorded.generatingElsewhere(System.currentTimeMillis())?.name)
+
+        // Over on the tablet: the rest of its audio followed, then the review written on the computer
+        withContext(stateContext) { tablet.recorder!!.stop() }
+        await { recorded.status == LectureStatus.FINISHED }
+        meet(tablet.attachments, computer.attachments)
+        await { followed.finalReview != null && !followed.followedHere }
+        assertEquals("# Teorema ponte", followed.finalReview)
+        assertEquals(LectureStatus.FINISHED, followed.status)
+        meet(tablet.attachments, computer.attachments)
+        assertEquals("# Teorema ponte", recorded.finalReview)
+        assertNull(recorded.generation)
+        assertContentEquals(File(recorded.directory, "audio.opus").readBytes(), File(followed.directory, "audio.opus").readBytes())
     }
 
     @Test
@@ -238,8 +284,10 @@ class LectureSharingTest {
         for ((key, version) in from.versions("doc")) {
             if (known[key] == version || !to.wants("doc", key, version)) continue
             val source = assertNotNull(from.open("doc", key), key)
-            val receiver = to.receive("doc", key, source.version, source.size) ?: continue
-            var offset = 0L
+            // As the synchronization does: from what the other device has already
+            val start = to.received("doc", key, source.version)
+            val receiver = to.receive("doc", key, source.version, source.size, start) ?: continue
+            var offset = start
             while (offset < source.size) {
                 val bytes = assertNotNull(source.read(offset, PART_SIZE))
                 receiver.write(bytes)

@@ -36,7 +36,8 @@ import kotlinx.serialization.builtins.serializer
  * Fabrication: the synchronization knows only items with a key and a version):
  *
  * * `lecture/<id>`: the lecture, merged with the one of the other device ([LectureRecords.merge]);
- * * `lecture/<id>/audio`: its audio, once recorded (the device without it wants it);
+ * * `lecture/<id>/audio`: its audio, as it is recorded (it only grows, so that what a device has
+ *   is the start of what the others have: it is asked for from there, and followed live);
  * * `lecture/<id>/page/<name>`: the images of the pages seen, the ones its lecture names;
  * * `context`: the course context, the most recent one; `handwriting`: the handwriting read, all
  *   of it; `deleted`: the lectures deleted, deleted on every device.
@@ -85,12 +86,12 @@ internal class LectureAttachments(
         val directory = directoryOf(documentId, lectureId)
         when (item) {
             is Item.Record -> true
-            // Recorded once: the device without it wants it
-            // Shared by the device that recorded it, and wanted here now (see LectureSharingSettings)
+            // Shared by the device that recorded it, and wanted here now (see LectureSharingSettings):
+            // more of it than there is here
             is Item.Audio -> {
                 val record = files.readRecord(directory) ?: return@withContext false
                 val sharing = files.sharingOf(documentId)
-                record.audioShared && !library.isActiveHere(directory) && !RecordingFile(directory).exists &&
+                record.audioShared && !library.isActiveHere(directory) && (audioSize(version) ?: 0) > RecordingFile(directory).size() &&
                     (sharing.downloadAudio == AudioDownload.AUTOMATIC || lectureId in sharing.requestedAudio)
             }
             // The one its lecture names (any, before the lecture arrives)
@@ -110,8 +111,8 @@ internal class LectureAttachments(
                 MemorySource(LectureRecords.version(record), LectureRecords.encode(record))
             }
             is Item.Audio -> {
-                if (library.isActiveHere(directory!!)) return@withContext null
-                val path = RecordingFile(directory).path
+                // Being recorded too: what is written already (it never changes)
+                val path = RecordingFile(directory!!).path
                 val size = SystemFileSystem.metadataOrNull(path)?.size ?: return@withContext null
                 FileSource(audioVersion(size), size, path)
             }
@@ -141,16 +142,16 @@ internal class LectureAttachments(
     private val audioProgressState = MutableStateFlow<Map<String, Float>>(emptyMap())
     val audioProgress: StateFlow<Map<String, Float>> = audioProgressState
 
+    /** The audio here: the start of the audio of any version longer (it only grows). */
     override suspend fun received(documentId: String, key: String, version: String): Long {
         val item = Item.parse(key) as? Item.Audio ?: return 0
-        return withContext(Dispatchers.IO) { partialAudio(directoryOf(documentId, item.lectureId), version) }
+        val size = withContext(Dispatchers.IO) { RecordingFile(directoryOf(documentId, item.lectureId)).size() }
+        return size.takeIf { it <= (audioSize(version) ?: 0) } ?: 0
     }
 
-    /** The bytes of the audio at [version] received by a transfer interrupted (kept in `audio.part`). */
-    private fun partialAudio(directory: String, version: String): Long {
-        if (PlatformFiles.readBytes("$directory/$PART_VERSION")?.decodeToString() != version) return 0
-        return SystemFileSystem.metadataOrNull(Path("$directory/$PART"))?.size ?: 0
-    }
+    /** The folders whose audio is being received (from one device at a time: it is appended). */
+    private val receivingAudio = mutableSetOf<String>()
+    private val receivingLock = Mutex()
 
     override suspend fun receive(documentId: String, key: String, version: String, size: Long, from: Long): AttachmentReceiver? {
         val item = Item.parse(key) ?: return null
@@ -159,17 +160,18 @@ internal class LectureAttachments(
             is Item.Audio -> {
                 if (size > MAX_AUDIO_BYTES) return null
                 val directory = directoryOf(documentId, item.lectureId)
-                val resumed = from > 0 && withContext(Dispatchers.IO) { partialAudio(directory, version) } == from
-                if (!resumed) {
-                    // From the start: the part of another version goes
-                    withContext(Dispatchers.IO) {
-                        SystemFileSystem.delete(Path("$directory/$PART"), mustExist = false)
-                        PlatformFiles.writeBytes("$directory/$PART_VERSION", version.encodeToByteArray())
-                    }
+                // Appended to the audio here, which must be what comes before
+                val path = RecordingFile(directory).path
+                val appends = receivingLock.withLock {
+                    directory !in receivingAudio && withContext(Dispatchers.IO) { RecordingFile(directory).size() } == from && receivingAudio.add(directory)
                 }
-                FileReceiver(Path("$directory/$PART"), append = resumed, size = size, start = if (resumed) from else 0L, onProgress = { received ->
+                if (!appends) return null
+                FileReceiver(path, append = true, size = size, start = from, onProgress = { received ->
                     audioProgressState.update { it + (directory to (received.toFloat() / size).coerceIn(0f, 1f)) }
-                }) { part -> keepAudio(documentId, item.lectureId, part) }
+                }, onEnd = {
+                    receivingLock.withLock { receivingAudio.remove(directory) }
+                    audioProgressState.update { it - directory }
+                }) { keepAudio(documentId, item.lectureId) }
             }
             else -> {
                 if (size > MAX_ITEM_BYTES) return null
@@ -220,6 +222,8 @@ internal class LectureAttachments(
             else -> null
         }
         arrival?.let { library.onArrival(LectureArrival(documentId, directory, it, from = arrivedFrom(kept, it), startedAt = kept.startedAt)) }
+        // Over now, its audio arrived while it was recorded
+        if (previous?.status != LectureStatus.FINISHED) audioArrivedIfWhole(documentId, directory, kept)
     }
 
     /** The name of the device a lecture, or its review, comes from. */
@@ -242,26 +246,25 @@ internal class LectureAttachments(
         updateIndex(documentId) { index -> indexLecture(documentId, item.lectureId, index) }
     }
 
-    private suspend fun keepAudio(documentId: String, lectureId: String, part: Path) {
+    /** More of the audio of a lecture arrived (its whole audio, once recorded). */
+    private suspend fun keepAudio(documentId: String, lectureId: String) {
         val directory = directoryOf(documentId, lectureId)
-        audioProgressState.update { it - directory }
-        val kept = withContext(Dispatchers.IO) {
-            try {
-                SystemFileSystem.atomicMove(part, RecordingFile(directory).path)
-                SystemFileSystem.delete(Path("$directory/$PART_VERSION"), mustExist = false)
-                true
-            } catch (e: Exception) {
-                println("DrawView: cannot keep the audio received for $directory: ${e.message}")
-                false
-            }
-        }
-        if (!kept) return
         updateIndex(documentId) { index -> indexLecture(documentId, lectureId, index) }
         library.loadedLecture(directory)?.audioReceived()
         library.onReceived(documentId)
-        withContext(Dispatchers.IO) { files.readRecord(directory) }?.let { record ->
-            library.onArrival(LectureArrival(documentId, directory, LectureArrival.Kind.AUDIO, record.recordedOn, record.startedAt))
-        }
+        withContext(Dispatchers.IO) { files.readRecord(directory) }?.let { audioArrivedIfWhole(documentId, directory, it) }
+    }
+
+    /** The folders whose whole audio was told of (once: it may arrive before or after the lecture is over). */
+    private val audioTold = mutableSetOf<String>()
+
+    /** Tells of the audio of a lecture recorded elsewhere once it is whole here: recorded whole, and arrived whole. */
+    private suspend fun audioArrivedIfWhole(documentId: String, directory: String, record: LectureRecord) {
+        if (record.status != LectureStatus.FINISHED || record.recordedBy == files.deviceId) return
+        val here = withContext(Dispatchers.IO) { RecordingFile(directory).durationMs() }
+        if (here == 0L || here < record.durationMs - WHOLE_AUDIO_TOLERANCE_MS) return
+        if (!receivingLock.withLock { audioTold.add(directory) }) return
+        library.onArrival(LectureArrival(documentId, directory, LectureArrival.Kind.AUDIO, record.recordedOn, record.startedAt))
     }
 
     private val wantedAgainFlow = MutableSharedFlow<String>(extraBufferCapacity = 64)
@@ -394,8 +397,8 @@ internal class LectureAttachments(
         if (lectureId in files.deletedLectures(documentId)) return
         val record = files.readRecord(directory) ?: return
         index[prefix] = LectureRecords.version(record)
-        // The audio once recorded
-        if (record.status == LectureStatus.FINISHED && record.audioShared) {
+        // The audio, also while it is recorded
+        if (record.audioShared) {
             RecordingFile(directory).size().takeIf { it > 0 }?.let { index[Item.Audio(lectureId).key] = audioVersion(it) }
         }
         for (page in record.pages) {
@@ -424,6 +427,9 @@ internal class LectureAttachments(
     private fun handwritingPath(documentId: String) = files.documentDirectory(documentId) + "/handwriting.json"
 
     private fun audioVersion(size: Long) = "a$size"
+
+    /** The size of the audio at [version]. */
+    private fun audioSize(version: String): Long? = version.removePrefix("a").toLongOrNull()
 
     private fun encodeContext(context: CourseContext) = Lecture.recordJson.encodeToString(CourseContext.serializer(), context).encodeToByteArray()
 
@@ -529,15 +535,18 @@ internal class LectureAttachments(
         override suspend fun cancel() = buffer.clear()
     }
 
-    /** Written to [part], kept by [onComplete] once whole. */
-    /** Written to [part] (after the [start] bytes there when [append]), kept by [onComplete] once whole. */
+    /**
+     * Written to [part] (after the [start] bytes there when [append]), kept by [onComplete] once
+     * whole; [onEnd] once received, or not (what was written stays: it goes on from there).
+     */
     private class FileReceiver(
         private val part: Path,
         private val append: Boolean,
         private val size: Long,
         start: Long,
         private val onProgress: (Long) -> Unit,
-        private val onComplete: suspend (Path) -> Unit
+        private val onEnd: suspend () -> Unit = {},
+        private val onComplete: suspend () -> Unit
     ) : AttachmentReceiver {
         private var sink: RawSink? = null
         private var received = start
@@ -553,29 +562,30 @@ internal class LectureAttachments(
         }
 
         override suspend fun complete() {
+            close()
+            onComplete()
+        }
+
+        // Kept: the transfer goes on from there (see received)
+        override suspend fun cancel() = close()
+
+        private suspend fun close() {
             withContext(Dispatchers.IO) {
                 sink?.flush()
                 sink?.close()
                 sink = null
             }
-            onComplete(part)
-        }
-
-        // Kept: the transfer goes on from there (see received)
-        override suspend fun cancel() = withContext(Dispatchers.IO) {
-            sink?.flush()
-            sink?.close()
-            sink = null
+            onEnd()
         }
     }
 
     private companion object {
         const val MAX_ITEM_BYTES = 64L * 1024 * 1024
 
-        /** The audio being received, and its version. */
-        const val PART = "audio.part"
-        const val PART_VERSION = "audio.part.version"
         const val MAX_AUDIO_BYTES = 4L * 1024 * 1024 * 1024
+
+        /** The audio here is whole when it is this close to the length the recording device says. */
+        const val WHOLE_AUDIO_TOLERANCE_MS = 2_000L
         const val SKIP_BYTES = 64L * 1024
         val deletedSerializer = MapSerializer(String.serializer(), Long.serializer())
 

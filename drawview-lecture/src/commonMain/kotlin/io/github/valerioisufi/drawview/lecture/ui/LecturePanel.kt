@@ -491,6 +491,8 @@ private fun RecordingSection(
                             style = MaterialTheme.typography.titleSmall
                         )
                     }
+                    // Its notes written here as its audio arrives
+                    if (lecture.followedHere) MutedText(stringResource(Res.string.lecture_followed_here))
                 }
             }
 

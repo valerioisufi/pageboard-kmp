@@ -208,4 +208,9 @@
     <string name="lecture_settings_generate_here_hint">Otherwise the lectures are only recorded here: a computer with the models writes their notes once they are shared.</string>
     <string name="lecture_local_network_hint">Ollama runs on a computer of the local network: start it there with OLLAMA_HOST=0.0.0.0 so that this device reaches it.</string>
     <string name="lecture_local_find">Find on the network</string>
+    <string name="lecture_offer_live_title">Follow the lecture live?</string>
+    <string name="lecture_offer_live_message">%1$s is recording a lecture: this computer can write its notes as it goes, from its audio arriving as it is recorded, and its review at the end.</string>
+    <string name="lecture_offer_tokens_hour">About %1$d tokens to Gemini an hour (the audio, transcribed then reviewed), billed as your plan says.</string>
+    <string name="lecture_offer_follow">Follow live</string>
+    <string name="lecture_followed_here">Followed live by this computer: its notes are written as its audio arrives.</string>
 </resources>

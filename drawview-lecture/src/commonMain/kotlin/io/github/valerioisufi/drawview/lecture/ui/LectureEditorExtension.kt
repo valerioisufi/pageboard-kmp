@@ -130,15 +130,23 @@ fun LectureDialogs(assistant: LectureAssistant) {
     val offer = assistant.generationOffers.firstOrNull() ?: return
     AlertDialog(
         onDismissRequest = { assistant.declineGeneration(offer) },
-        title = { Text(stringResource(Res.string.lecture_offer_title)) },
+        title = { Text(stringResource(if (offer.live) Res.string.lecture_offer_live_title else Res.string.lecture_offer_title)) },
         text = {
             Text(
-                stringResource(Res.string.lecture_offer_message, offer.arrival.from, formatLectureTime(offer.durationMs)) + "\n\n" +
-                    if (offer.provider == ModelProvider.LOCAL) stringResource(Res.string.lecture_offer_free)
-                    else stringResource(Res.string.lecture_offer_tokens, offer.estimatedTokens)
+                (if (offer.live) stringResource(Res.string.lecture_offer_live_message, offer.arrival.from)
+                else stringResource(Res.string.lecture_offer_message, offer.arrival.from, formatLectureTime(offer.durationMs))) + "\n\n" +
+                    when {
+                        offer.provider == ModelProvider.LOCAL -> stringResource(Res.string.lecture_offer_free)
+                        offer.live -> stringResource(Res.string.lecture_offer_tokens_hour, offer.estimatedTokens)
+                        else -> stringResource(Res.string.lecture_offer_tokens, offer.estimatedTokens)
+                    }
             )
         },
-        confirmButton = { TextButton(onClick = { assistant.acceptGeneration(offer) }) { Text(stringResource(Res.string.lecture_offer_accept)) } },
+        confirmButton = {
+            TextButton(onClick = { assistant.acceptGeneration(offer) }) {
+                Text(stringResource(if (offer.live) Res.string.lecture_offer_follow else Res.string.lecture_offer_accept))
+            }
+        },
         dismissButton = { TextButton(onClick = { assistant.declineGeneration(offer) }) { Text(stringResource(Res.string.lecture_action_cancel)) } }
     )
 }

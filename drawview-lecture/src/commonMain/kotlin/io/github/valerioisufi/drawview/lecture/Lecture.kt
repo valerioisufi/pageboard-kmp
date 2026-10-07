@@ -218,6 +218,10 @@ class Lecture internal constructor(
     var deletedElsewhere by mutableStateOf(false)
         internal set
 
+    /** Recorded on another device and followed here live (see LectureRecorder.follows). */
+    var followedHere by mutableStateOf(false)
+        internal set
+
     /** The transcription or review running here, stopped when another device took it over (see [generation]). */
     internal var generating: Job? = null
 
@@ -648,6 +652,9 @@ class Lecture internal constructor(
     }
 
     /** Its audio was received from the device that recorded it. */
+    /** More audio was recorded: offered to the other devices (see LectureAttachments). */
+    internal fun audioGrew() = onChanged(id)
+
     internal suspend fun audioReceived() = setState {
         hasAudio = true
         player?.refresh()

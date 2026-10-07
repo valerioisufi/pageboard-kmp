@@ -50,6 +50,11 @@ import kotlin.math.min
  * only the audio and the pages seen are recorded (the notebook is captured now and then): the
  * notes and the review are written later, e.g. by a device with the models the lecture reaches.
  *
+ * A lecture recorded on another device can be followed here live ([follows]): its audio, read as
+ * it arrives ([io.github.valerioisufi.drawview.lecture.audio.FollowedRecording]), is analyzed the
+ * same way, and the review written once it is over; the recording itself (its status, its length)
+ * stays the one of the device recording it.
+ *
  * To limit the cost, the chunks without speech are not analyzed, the outline is rewritten every
  * few minutes only, and the notebook is sent as text ([PageContent]) with the images of the
  * visible pages only: after every update a few blocks of handwriting are transcribed
@@ -62,8 +67,12 @@ class LectureRecorder internal constructor(
     notebook: NotebookSource?,
     private val transcriber: Transcriber? = null,
     private val analyzes: Boolean = true,
+    private val follows: Boolean = false,
     private val onFinished: (LectureRecorder) -> Unit = {}
 ) {
+    /** Following a lecture recorded elsewhere, until it is over ([stop]). */
+    private val following = atomic(false)
+
     private val backends get() = lecture.backends
 
     @Volatile
@@ -119,7 +128,7 @@ class LectureRecorder internal constructor(
      * @throws io.github.valerioisufi.drawview.lecture.audio.AudioCaptureException when no microphone can be opened.
      */
     internal fun start() {
-        lecture.recording.open()
+        if (follows) following.value = true else lecture.recording.open()
         lecture.isNotebookAttached = notebook != null
         val chunker = if (analyzes) SpeechChunker(targetSeconds = settingsStore.settings.chunkSeconds, overlapSeconds = OVERLAP_SECONDS) else null
 
@@ -146,8 +155,9 @@ class LectureRecorder internal constructor(
             var heardSomething = false
             var lastStateUpdate = 0L
             var lastSaved = 0L
+            var lastShared = 0L
             for (block in audioBlocks) {
-                lecture.recording.append(block)
+                if (!follows) lecture.recording.append(block)
                 totalSamples += block.size
                 if (!heardSomething && block.any { it != 0.toShort() }) heardSomething = true
                 val blockLevel = (rms(block) / LEVEL_FULL_SCALE).coerceIn(0f, 1f)
@@ -164,6 +174,8 @@ class LectureRecorder internal constructor(
                 }
 
                 val recordedMs = samplesToMs(totalSamples)
+                // Followed: the length and the level are the ones of the device recording it
+                if (follows) continue
                 if (chunks.isNotEmpty() || recordedMs - lastStateUpdate >= STATE_UPDATE_MS) {
                     lastStateUpdate = recordedMs
                     lecture.setState {
@@ -171,6 +183,11 @@ class LectureRecorder internal constructor(
                         level = blockLevel
                         noAudioWarning = !heardSomething && recordedMs > SILENCE_WARNING_MS
                     }
+                }
+                // The audio shared as it is recorded: the other devices follow it
+                if (lecture.audioShared && recordedMs - lastShared >= AUDIO_SHARE_MS) {
+                    lastShared = recordedMs
+                    lecture.audioGrew()
                 }
                 // Now and then: the other devices know it is still being recorded
                 if (recordedMs - lastSaved >= HEARTBEAT_MS) {
@@ -184,9 +201,11 @@ class LectureRecorder internal constructor(
                 updates.trySend(QueuedChunk(it, catchUp = false))
             }
             updates.close()
-            lecture.setState {
-                elapsedMs = samplesToMs(totalSamples)
-                level = 0f
+            if (!follows) {
+                lecture.setState {
+                    elapsedMs = samplesToMs(totalSamples)
+                    level = 0f
+                }
             }
             finishRecordingFile()
         }
@@ -211,6 +230,7 @@ class LectureRecorder internal constructor(
 
     /** Stops the recording, analyzes the last chunks and reviews the whole lecture. */
     fun stop() {
+        if (follows) return stopFollowing()
         if (!isRecording) return
         lecture.status = LectureStatus.FINALIZING
         stopMicrophone()
@@ -230,6 +250,36 @@ class LectureRecorder internal constructor(
             lecture.persist()
             onFinished(this@LectureRecorder)
         }
+    }
+
+    /** The lecture followed is over: its last chunks analyzed, then its review written. */
+    private fun stopFollowing() {
+        if (!following.compareAndSet(expect = true, update = false)) return
+        stopMicrophone()
+        lecture.scope.launch {
+            audioJob?.join()
+            analysisJob?.join()
+            readRemainingHandwriting()
+            lecture.setState { isAnalyzing = false }
+            releaseLocalModels()
+            lecture.runFinalReview(settingsStore.settings.reviewProvider)
+            lecture.persist()
+            onFinished(this@LectureRecorder)
+        }
+    }
+
+    /** Stops following the lecture at once (another device writes its notes now, or it is deleted): nothing more written. */
+    internal suspend fun abandon() {
+        if (!following.compareAndSet(expect = true, update = false)) return
+        analysisJob?.cancel()
+        stopMicrophone()
+        audioJob?.cancelAndJoin()
+        transcriber?.close()
+        lecture.setState {
+            isAnalyzing = false
+            pendingUpdates = 0
+        }
+        onFinished(this)
     }
 
     /**
@@ -626,6 +676,9 @@ class LectureRecorder internal constructor(
 
         /** How often the lecture being recorded is saved (and sent to the other devices) at least. */
         const val HEARTBEAT_MS = 30_000L
+
+        /** How often the audio recorded is offered to the other devices, which follow it. */
+        const val AUDIO_SHARE_MS = 5_000L
 
         /** Without news of a lecture being recorded on another device for so long, it may have stopped. */
         const val SILENT_ELSEWHERE_MS = 2 * 60_000L
