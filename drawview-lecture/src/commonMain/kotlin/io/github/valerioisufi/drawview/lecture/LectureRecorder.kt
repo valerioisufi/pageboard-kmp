@@ -275,7 +275,7 @@ class LectureRecorder internal constructor(
         audioBlocks.close()
     }
 
-    /** Converts the raw audio into its WAV file, once (by the audio coroutine or [finishNow]). */
+    /** Ends the recording file (its last page), once (by the audio coroutine or [finishNow]). */
     private fun finishRecordingFile() {
         if (!recordingFileFinished.compareAndSet(expect = false, update = true)) return
         try {

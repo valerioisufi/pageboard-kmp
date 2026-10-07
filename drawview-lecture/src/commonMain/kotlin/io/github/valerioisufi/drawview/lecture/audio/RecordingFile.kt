@@ -1,78 +1,164 @@
 package io.github.valerioisufi.drawview.lecture.audio
 
-import kotlinx.io.Sink
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.readByteArray
 
 /**
- * The audio of a lecture on disk.
+ * The audio of a lecture on disk: Opus in an Ogg file (`audio.opus`, see [OggOpus]), mono at
+ * 16 kHz, about 11 MB per hour.
  *
- * While recording, the raw PCM is appended (and flushed) to `audio.pcm`, so that nothing is lost
- * if the application stops abruptly; [finish] converts it into `audio.wav` (a raw `audio.pcm` left
- * by an interrupted recording is still 16-bit mono PCM at [LECTURE_SAMPLE_RATE] Hz).
+ * While recording, the pages are written (and flushed) every second, so that nothing but the
+ * last second is lost if the application stops abruptly; the recording is read from any position
+ * meanwhile ([readSegment]), e.g. to listen to it or to transcribe it.
  */
 class RecordingFile(directory: String) {
     private val directoryPath = Path(directory)
-    val pcmPath = Path(directory, "audio.pcm")
-    val wavPath = Path(directory, "audio.wav")
+    val path = Path(directory, FILE_NAME)
 
-    private var sink: Sink? = null
+    private var writer: OggOpusWriter? = null
 
+    /** The pages of the file (by its size: the new ones read when it grew). */
+    private var index: PageIndex? = null
+
+    /** Starts a new recording (written as it goes). */
     fun open() {
         SystemFileSystem.createDirectories(directoryPath)
-        sink = SystemFileSystem.sink(pcmPath, append = true).buffered()
+        index = null
+        writer = OggOpusWriter(SystemFileSystem.sink(path))
     }
 
     fun append(samples: ShortArray) {
-        val current = sink ?: return
-        current.write(samples.toLittleEndianBytes())
-        current.flush()
+        writer?.append(samples)
     }
 
-    /** Closes the recording and converts it into `audio.wav`. */
+    /** Ends the recording (its last page written): whether there is a recording. */
     fun finish(): Boolean {
-        sink?.close()
-        sink = null
-        if (!SystemFileSystem.exists(pcmPath)) return SystemFileSystem.exists(wavPath)
-        val dataBytes = SystemFileSystem.metadataOrNull(pcmPath)?.size ?: return false
-        SystemFileSystem.sink(wavPath).buffered().use { wav ->
-            wav.write(Wav.header(dataBytes))
-            SystemFileSystem.source(pcmPath).buffered().use { pcm -> pcm.transferTo(wav) }
-        }
-        SystemFileSystem.delete(pcmPath)
-        return true
+        writer?.finish()
+        writer = null
+        return exists
     }
 
-    /** Size of the recorded audio in bytes of PCM. */
-    fun pcmBytes(): Long = when {
-        SystemFileSystem.exists(pcmPath) -> SystemFileSystem.metadataOrNull(pcmPath)?.size ?: 0L
-        SystemFileSystem.exists(wavPath) -> ((SystemFileSystem.metadataOrNull(wavPath)?.size ?: 0L) - Wav.HEADER_SIZE).coerceAtLeast(0L)
-        else -> 0L
-    }
+    val exists: Boolean get() = SystemFileSystem.exists(path)
+
+    /** The size of the file. */
+    fun size(): Long = SystemFileSystem.metadataOrNull(path)?.size ?: 0L
+
+    /** The samples recorded (as far as written). */
+    fun samples(): Long = pageIndex()?.samples ?: 0L
+
+    fun durationMs(): Long = samplesToMs(samples())
+
+    /** The whole file (e.g. sent to Gemini, as [MIME_TYPE]). */
+    fun readEncoded(): ByteArray? = if (!exists) null else SystemFileSystem.source(path).buffered().use { it.readByteArray() }
 
     /** Reads [durationMs] of audio from [startMs] (while recording or after [finish]). */
     fun readSegment(startMs: Long, durationMs: Long): ShortArray? {
-        val (path, headerBytes) = when {
-            SystemFileSystem.exists(pcmPath) -> pcmPath to 0L
-            SystemFileSystem.exists(wavPath) -> wavPath to Wav.HEADER_SIZE.toLong()
-            else -> return null
-        }
-        val fileSize = SystemFileSystem.metadataOrNull(path)?.size ?: return null
-        val offset = headerBytes + msToSamples(startMs.coerceAtLeast(0L)) * 2
-        if (offset >= fileSize) return null
-        val length = minOf(msToSamples(durationMs) * 2, fileSize - offset).toInt() and 1.inv()
+        val start = msToSamples(startMs.coerceAtLeast(0L))
+        val total = pageIndex()?.samples ?: return null
+        val length = msToSamples(durationMs).coerceAtMost(total - start)
         if (length <= 0) return null
-        return SystemFileSystem.source(path).buffered().use { source ->
-            source.skip(offset)
-            source.readByteArray(length).littleEndianToShorts()
+        val output = ShortArray(length.toInt())
+        var written = 0
+        decode(start, length) { samples ->
+            samples.copyInto(output, written)
+            written += samples.size
+        }
+        return if (written == output.size) output else output.copyOf(written).takeIf { written > 0 }
+    }
+
+    /** Decodes the whole recording, giving [onBlock] its samples in order. */
+    fun decodeAll(onBlock: (ShortArray) -> Unit) {
+        val total = pageIndex()?.samples ?: return
+        decode(0, total, onBlock)
+    }
+
+    /** Decodes [length] samples from [start], from the page before the one holding it (the decoder settles). */
+    private fun decode(start: Long, length: Long, onBlock: (ShortArray) -> Unit) {
+        val index = pageIndex() ?: return
+        val holding = index.pages.indexOfFirst { it.endSample > start }.takeIf { it >= 0 } ?: return
+        val first = index.pages[(holding - 1).coerceAtLeast(0)]
+        var left = length
+        var position = first.startSample
+        val decoder = OpusDecoder(LECTURE_SAMPLE_RATE)
+        try {
+            SystemFileSystem.source(path).buffered().use { source ->
+                source.skip(first.offset)
+                OggOpusReader.pages(source, withPackets = true, from = first.offset) { page ->
+                    for (packet in page.packets) {
+                        val samples = decoder.decode(packet)
+                        val from = (start - position).coerceIn(0L, samples.size.toLong()).toInt()
+                        val count = minOf((samples.size - from).toLong(), left).toInt()
+                        position += samples.size
+                        if (count <= 0) continue
+                        onBlock(if (from == 0 && count == samples.size) samples else samples.copyOfRange(from, from + count))
+                        left -= count
+                        if (left == 0L) return@pages false
+                    }
+                    true
+                }
+            }
+        } finally {
+            decoder.close()
         }
     }
 
-    /** The complete WAV file, once [finish]ed. */
-    fun readWav(): ByteArray? {
-        if (!SystemFileSystem.exists(wavPath)) return null
-        return SystemFileSystem.source(wavPath).buffered().use { it.readByteArray() }
+    /** The pages of the file; when it grew, the new ones are read (after the last page known). */
+    private fun pageIndex(): PageIndex? {
+        val size = size()
+        if (size == 0L) return null
+        val known = index?.takeIf { it.size <= size }
+        if (known != null && known.size == size) return known
+        val pages = known?.pages?.toMutableList() ?: mutableListOf()
+        var granules = known?.granules ?: emptyList()
+        val from = known?.scannedTo ?: 0L
+        var scannedTo = from
+        SystemFileSystem.source(path).buffered().use { source ->
+            source.skip(from)
+            val read = mutableListOf<OggPage>()
+            OggOpusReader.pages(source, withPackets = false, from = from) { page ->
+                read.add(page)
+                true
+            }
+            read.lastOrNull()?.let { last -> scannedTo = last.offset + last.size }
+            granules = granules + read.map { it.offset to it.granule }
+        }
+        // The identification header, the comments, then the audio
+        if (granules.size < 2) return null
+        val preSkip = known?.preSkip ?: readPreSkip()
+        fun sampleAt(granule: Long) = (granule - preSkip) / OggOpus.RATE_FACTOR
+        for (i in maxOf(2, pages.size + 2) until granules.size) {
+            pages.add(IndexedPage(granules[i].first, sampleAt(granules[i - 1].second), sampleAt(granules[i].second)))
+        }
+        return PageIndex(size, scannedTo, preSkip, granules, pages).also { index = it }
+    }
+
+    /** The pre-skip of the identification header (the first packet of the file). */
+    private fun readPreSkip(): Int = SystemFileSystem.source(path).buffered().use { source ->
+        var preSkip = 0
+        OggOpusReader.pages(source, withPackets = true) { page ->
+            page.packets.firstOrNull()?.let { preSkip = OggOpusReader.preSkip(it) }
+            false
+        }
+        preSkip
+    }
+
+    /** A page of the audio: where it is, the samples it starts and ends with. */
+    private data class IndexedPage(val offset: Long, val startSample: Long, val endSample: Long)
+
+    private class PageIndex(
+        val size: Long,
+        val scannedTo: Long,
+        val preSkip: Int,
+        val granules: List<Pair<Long, Long>>,
+        val pages: List<IndexedPage>
+    ) {
+        val samples: Long get() = pages.lastOrNull()?.endSample?.coerceAtLeast(0) ?: 0L
+    }
+
+    companion object {
+        const val FILE_NAME = "audio.opus"
+        const val MIME_TYPE = "audio/ogg"
     }
 }

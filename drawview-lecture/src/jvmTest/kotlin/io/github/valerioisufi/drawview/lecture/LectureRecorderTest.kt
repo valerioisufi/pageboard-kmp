@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.lecture
 
 import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
+import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
 import io.github.valerioisufi.drawview.lecture.audio.Wav
 import io.github.valerioisufi.drawview.lecture.audio.toLittleEndianBytes
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
@@ -71,7 +72,7 @@ class LectureRecorderTest {
                 }
                 path == "/upload/v1beta/files" -> respond("{}", HttpStatusCode.OK, headersOf("X-Goog-Upload-URL", "https://upload.test/1"))
                 path == "/1" -> respond(
-                    """{"file":{"name":"files/rec","uri":"https://x/files/rec","mimeType":"audio/wav","state":"ACTIVE"}}""",
+                    """{"file":{"name":"files/rec","uri":"https://x/files/rec","mimeType":"audio/ogg","state":"ACTIVE"}}""",
                     HttpStatusCode.OK,
                     headersOf(HttpHeaders.ContentType, "application/json")
                 )
@@ -134,9 +135,7 @@ class LectureRecorderTest {
         assertEquals("test-model", lecture.reviewModel)
         assertEquals(66_000L, lecture.elapsedMs)
 
-        val wav = File(directory, "lecture/audio.wav")
-        assertEquals(Wav.HEADER_SIZE + 66L * LECTURE_SAMPLE_RATE * 2, wav.length())
-        assertFalse(File(directory, "lecture/audio.pcm").exists())
+        assertEquals(66_000L, RecordingFile(File(directory, "lecture").path).durationMs())
         val record = Json { ignoreUnknownKeys = true }.decodeFromString(
             LectureRecord.serializer(),
             File(directory, "lecture/lecture.json").readText()
@@ -176,7 +175,7 @@ class LectureRecorderTest {
         withTimeout(20_000) {
             while (lecture.status != LectureStatus.FINISHED) delay(20)
         }
-        assertTrue(File(directory, "lecture/audio.wav").length() > Wav.HEADER_SIZE)
+        assertTrue(RecordingFile(File(directory, "lecture").path).samples() > 0)
     }
 
     @Test
@@ -197,7 +196,7 @@ class LectureRecorderTest {
         awaitFinished(lecture)
 
         assertEquals(0, requests, "no model is asked")
-        assertTrue(File(directory, "lecture/audio.wav").length() > Wav.HEADER_SIZE)
+        assertTrue(RecordingFile(File(directory, "lecture").path).samples() > 0)
         assertNull(lecture.finalReview)
         assertTrue(lecture.suggestions.isEmpty())
         // The pages seen, with the image of the visible one (for the review written elsewhere)
@@ -408,7 +407,7 @@ class LectureRecorderTest {
                 path.endsWith(":generateContent") ->
                     respond(geminiAnswer(if (body.contains("The lecture is over")) reviewAnswer else plainChunkAnswer), HttpStatusCode.OK, jsonHeaders)
                 path == "/upload/v1beta/files" -> respond("{}", HttpStatusCode.OK, headersOf("X-Goog-Upload-URL", "https://upload.test/1"))
-                path == "/1" -> respond("""{"file":{"name":"files/rec","uri":"https://x/files/rec","mimeType":"audio/wav","state":"ACTIVE"}}""", HttpStatusCode.OK, jsonHeaders)
+                path == "/1" -> respond("""{"file":{"name":"files/rec","uri":"https://x/files/rec","mimeType":"audio/ogg","state":"ACTIVE"}}""", HttpStatusCode.OK, jsonHeaders)
                 else -> respond("", HttpStatusCode.NotFound)
             }
         }
@@ -426,8 +425,7 @@ class LectureRecorderTest {
         recorder.finishNow()
         assertEquals(LectureStatus.FINISHED, lecture.status)
         assertEquals(ReviewStatus.NONE, lecture.reviewStatus)
-        assertTrue(File(directory, "lecture/audio.wav").length() > Wav.HEADER_SIZE)
-        assertFalse(File(directory, "lecture/audio.pcm").exists())
+        assertTrue(RecordingFile(File(directory, "lecture").path).samples() > 0)
 
         // Opened again: the review can be written now
         val library = LectureLibrary(directory.absolutePath)
@@ -483,7 +481,7 @@ class LectureRecorderTest {
         val review = requests.single { it.contains("The lecture is over") }
         assertTrue(review.contains("### Page 2\\nSlide 2 of PDF 1:\\nDerivate"), review)
         assertFalse(review.contains("(visible)"))
-        assertTrue(File(directory, "lecture/audio.wav").exists())
+        assertTrue(File(directory, "lecture/audio.opus").exists())
     }
 
     /** A notebook with a block of handwriting written before the lecture on its page 2. */
@@ -522,7 +520,7 @@ class LectureRecorderTest {
                     respond(geminiAnswer(answer), HttpStatusCode.OK, jsonHeaders)
                 }
                 path == "/upload/v1beta/files" -> respond("{}", HttpStatusCode.OK, headersOf("X-Goog-Upload-URL", "https://upload.test/1"))
-                path == "/1" -> respond("""{"file":{"name":"files/rec","uri":"https://x/files/rec","mimeType":"audio/wav","state":"ACTIVE"}}""", HttpStatusCode.OK, jsonHeaders)
+                path == "/1" -> respond("""{"file":{"name":"files/rec","uri":"https://x/files/rec","mimeType":"audio/ogg","state":"ACTIVE"}}""", HttpStatusCode.OK, jsonHeaders)
                 else -> respond("", HttpStatusCode.NotFound)
             }
         }

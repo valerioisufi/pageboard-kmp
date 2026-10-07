@@ -3,7 +3,6 @@ package io.github.valerioisufi.drawview.lecture
 import io.github.valerioisufi.drawview.core.platform.PlatformFiles
 import io.github.valerioisufi.drawview.core.platform.DeviceProfile
 import io.github.valerioisufi.drawview.core.util.currentTimeMillis
-import io.github.valerioisufi.drawview.lecture.audio.LECTURE_BYTES_PER_SECOND
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
 import io.github.valerioisufi.drawview.lecture.platform.lectureDataDirectory
 import kotlinx.coroutines.sync.Mutex
@@ -129,19 +128,18 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
 
     /**
      * Reads the lecture saved in [directory]. A lecture saved while recording here is recovered:
-     * the application stopped (closed or crashed) during the recording, whose raw audio is
-     * converted into its WAV file (and the lecture saved again, finished). Must not be called for
+     * the application stopped (closed or crashed) during the recording, whose audio is kept as far
+     * as written (the lecture saved again, finished). Must not be called for
      * the lecture being recorded; a lecture being recorded on another device stays as it is.
      */
     fun load(directory: String): LectureRecord? {
         val record = readRecord(directory) ?: return null
         if (record.status == LectureStatus.FINISHED || !statusSetHere(record)) return record
-        val audio = RecordingFile(directory)
-        val recordedMs = audio.pcmBytes() * 1000 / LECTURE_BYTES_PER_SECOND
-        try {
-            audio.finish()
+        val recordedMs = try {
+            RecordingFile(directory).durationMs()
         } catch (e: Throwable) {
-            println("DrawView: cannot recover the recording $directory: ${e.message}")
+            println("DrawView: cannot read the recording $directory: ${e.message}")
+            0L
         }
         val recovered = record.copy(status = LectureStatus.FINISHED, durationMs = maxOf(record.durationMs, recordedMs))
         val stamped = LectureRecords.stamped(recovered, record, deviceId, currentTimeMillis())

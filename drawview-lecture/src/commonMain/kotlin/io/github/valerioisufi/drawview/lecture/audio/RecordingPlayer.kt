@@ -89,7 +89,7 @@ class RecordingPlayer internal constructor(
         durationMs = recordedMs()
     }
 
-    private fun recordedMs(): Long = samplesToMs(recording.pcmBytes() / 2)
+    private fun recordedMs(): Long = recording.durationMs()
 
     private suspend fun run(startMs: Long, speed: Float) {
         val output = outputFactory()

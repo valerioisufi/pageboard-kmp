@@ -1,6 +1,16 @@
+import java.io.StringReader
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidLibrary)
 }
+
+/** The version of the source of an audio codec (native/<name>/<name>.properties). */
+fun codecVersion(name: String): String = Properties().apply {
+    load(StringReader(rootProject.file("native/$name/$name.properties").readText()))
+}.getProperty("version")
+val opusVersion = codecVersion("opus")
+val aacVersion = codecVersion("aac")
 
 /**
  * Android-only module that compiles the C++ engines shared by every platform with the NDK:
@@ -8,6 +18,8 @@ plugins {
  * - `libtex.so`: MicroTeX LaTeX engine (consumed by :drawview-latex).
  * - `libpdfium_bridge.so`: JNI bridge to the prebuilt `libpdfium.so` of pdfium-binaries, which is
  *   packaged with it (consumed by :drawview-pdf).
+ * - `libaudio_bridge.so`: the audio codecs of the lecture recordings, libopus and vo-aacenc
+ *   (consumed by :drawview-lecture).
  *
  * The Kotlin Multiplatform Android library plugin does not support `externalNativeBuild`,
  * so the native build lives in this plain Android library which the KMP modules depend on.
@@ -29,9 +41,11 @@ android {
                 arguments += listOf(
                     "-DANDROID_STL=c++_static",
                     "-DDRAWVIEW_BUILD_JNI=ON",
-                    "-DDRAWVIEW_PDFIUM_ROOT=${rootProject.layout.buildDirectory.dir("pdfium").get().asFile.absolutePath}"
+                    "-DDRAWVIEW_PDFIUM_ROOT=${rootProject.layout.buildDirectory.dir("pdfium").get().asFile.absolutePath}",
+                    "-DDRAWVIEW_OPUS_DIR=${rootProject.layout.buildDirectory.dir("opus/src/opus-$opusVersion").get().asFile.absolutePath}",
+                    "-DDRAWVIEW_AAC_DIR=${rootProject.layout.buildDirectory.dir("aac/src/vo-aacenc-$aacVersion").get().asFile.absolutePath}"
                 )
-                targets += listOf("ink_bridge", "tex", "pdfium_bridge")
+                targets += listOf("ink_bridge", "tex", "pdfium_bridge", "audio_bridge")
             }
         }
     }
@@ -49,9 +63,10 @@ android {
     }
 }
 
-// The PDFium packages of every ABI must be extracted before CMake configures the project
+// The PDFium packages of every ABI and the sources of the audio codecs must be extracted before
+// CMake configures the project
 tasks.configureEach {
     if (name.startsWith("configureCMake")) {
-        dependsOn(":preparePdfiumAndroid")
+        dependsOn(":preparePdfiumAndroid", ":extractOpusSource", ":extractAacSource")
     }
 }

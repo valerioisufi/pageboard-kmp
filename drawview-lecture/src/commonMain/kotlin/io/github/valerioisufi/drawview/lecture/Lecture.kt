@@ -195,7 +195,7 @@ class Lecture internal constructor(
     val totalUsage: TokenUsage get() = otherUsage.values.fold(usage) { total, other -> total + other.usage }
 
     /** The audio is here (a lecture recorded on another device gets it once finished there). */
-    var hasAudio by mutableStateOf(record != null && RecordingFile(directory).pcmBytes() > 0)
+    var hasAudio by mutableStateOf(record != null && RecordingFile(directory).exists)
         private set
 
     /** Whether its audio goes to the other devices working on the notebook. */
@@ -441,7 +441,7 @@ class Lecture internal constructor(
 
     internal suspend fun runFinalReview(provider: ModelProvider) {
         val transcriptCopy = withContext(stateContext) { transcript.toList() }
-        if (transcriptCopy.isEmpty() && recording.pcmBytes() < MIN_REVIEW_SECONDS * LECTURE_SAMPLE_RATE * 2L) return
+        if (transcriptCopy.isEmpty() && recording.samples() < MIN_REVIEW_SECONDS * LECTURE_SAMPLE_RATE.toLong()) return
         val settings = settingsStore.settings
         val model = settings.task(LectureTask.FINAL_REVIEW).let { if (provider == ModelProvider.GEMINI) it.gemini else it.local }
         val apiKey = settingsStore.apiKey
@@ -471,7 +471,7 @@ class Lecture internal constructor(
                 ModelProvider.GEMINI -> {
                     // The complete recording, when the audio may leave the device
                     val audioFile = if (!settings.sendsAudio) null else try {
-                        recording.readWav()?.let { backends.gemini.client.uploadFile(apiKey, it, "audio/wav", "lecture-$id.wav") }
+                        recording.readEncoded()?.let { backends.gemini.client.uploadFile(apiKey, it, RecordingFile.MIME_TYPE, "lecture-$id.opus") }
                     } catch (e: CancellationException) {
                         throw e
                     } catch (e: Throwable) {

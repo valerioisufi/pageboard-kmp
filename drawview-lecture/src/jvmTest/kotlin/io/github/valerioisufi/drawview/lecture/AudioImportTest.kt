@@ -5,7 +5,6 @@ import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
 import io.github.valerioisufi.drawview.lecture.audio.decodeAudioFile
 import io.github.valerioisufi.drawview.lecture.audio.exportRecording
-import io.github.valerioisufi.drawview.lecture.audio.littleEndianToShorts
 import io.github.valerioisufi.drawview.lecture.audio.rms
 import java.io.File
 import java.nio.ByteBuffer
@@ -18,6 +17,7 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AudioImportTest {
@@ -58,12 +58,12 @@ class AudioImportTest {
         return File(directory, name).apply { writeBytes(header.array() + data.array()) }
     }
 
+    /** [file] imported as the recording of a lecture (Opus), read back. */
     private fun decoded(file: File): ShortArray {
-        val output = File(directory, file.name + ".pcm")
-        val samples = decodeAudioFile(file.absolutePath, output.absolutePath)
-        val pcm = output.readBytes().littleEndianToShorts()
-        assertEquals(samples, pcm.size.toLong())
-        return pcm
+        val recording = RecordingFile(File(directory, file.name + ".lecture").absolutePath)
+        val samples = decodeAudioFile(file.absolutePath, recording)
+        assertEquals(samples, recording.samples())
+        return recording.readSegment(0, recording.durationMs()) ?: ShortArray(0)
     }
 
     @Test
@@ -95,15 +95,14 @@ class AudioImportTest {
             append(ShortArray(10 * LECTURE_SAMPLE_RATE) { (8000 * sin(2 * PI * 300 * it / LECTURE_SAMPLE_RATE)).toInt().toShort() })
             finish()
         }
-        val exported = File(exportRecording(recording, File(directory, "Analisi 1.m4a").absolutePath))
-        if (!AudioCodecNative.isAvailable) {
-            // Elsewhere: the WAV file
-            assertEquals("Analisi 1.wav", exported.name)
-            return
-        }
+        val exported = File(exportRecording(recording, File(directory, "Analisi 1.wav").absolutePath))
         assertEquals("Analisi 1.m4a", exported.name)
-        // About 32 kbit/s: 40 KB instead of the 320 KB of the WAV file
+        // About 32 kbit/s: 40 KB instead of the 320 KB of a WAV file
         assertTrue(exported.length() in 20_000L..60_000L, "${exported.length()} bytes")
+        assertEquals("ftyp", exported.readBytes().copyOfRange(4, 8).decodeToString())
+        assertFalse(File(exported.path + ".frames").exists())
+        // Read again by the codecs of the system (macOS)
+        if (!AudioCodecNative.isAvailable) return
         val pcm = decoded(exported)
         assertTrue(abs(pcm.size - 10 * LECTURE_SAMPLE_RATE) < LECTURE_SAMPLE_RATE / 5, "${pcm.size}")
         assertTrue(rms(pcm, LECTURE_SAMPLE_RATE, 2 * LECTURE_SAMPLE_RATE) > 4_000f)

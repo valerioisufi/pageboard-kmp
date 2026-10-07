@@ -75,10 +75,20 @@ if [[ -z "$WHISPER_DIR" ]]; then
     "$ROOT_DIR/gradlew" -p "$ROOT_DIR" -q ":extractWhisperSource"
 fi
 
+# Sources of libopus and vo-aacenc (downloaded and verified by Gradle)
+OPUS_DIR="${DRAWVIEW_OPUS_DIR:-}"
+AAC_DIR="${DRAWVIEW_AAC_DIR:-}"
+if [[ -z "$OPUS_DIR" || -z "$AAC_DIR" ]]; then
+    OPUS_DIR="$ROOT_DIR/build/opus/src/opus-$(sed -n 's/^version=//p' "$NATIVE_DIR/opus/opus.properties")"
+    AAC_DIR="$ROOT_DIR/build/aac/src/vo-aacenc-$(sed -n 's/^version=//p' "$NATIVE_DIR/aac/aac.properties")"
+    "$ROOT_DIR/gradlew" -p "$ROOT_DIR" -q ":extractOpusSource" ":extractAacSource"
+fi
+
 BUILD_DIR="$NATIVE_DIR/build/desktop-$PLATFORM"
 cmake -S "$NATIVE_DIR" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release -DDRAWVIEW_BUILD_JNI=ON \
-    -DDRAWVIEW_PDFIUM_DIR="$PDFIUM_DIR" -DDRAWVIEW_WHISPER_DIR="$WHISPER_DIR" ${CMAKE_ARGS[@]+"${CMAKE_ARGS[@]}"}
-TARGETS=(ink_bridge tex pdfium_bridge whisper_bridge)
+    -DDRAWVIEW_PDFIUM_DIR="$PDFIUM_DIR" -DDRAWVIEW_WHISPER_DIR="$WHISPER_DIR" \
+    -DDRAWVIEW_OPUS_DIR="$OPUS_DIR" -DDRAWVIEW_AAC_DIR="$AAC_DIR" ${CMAKE_ARGS[@]+"${CMAKE_ARGS[@]}"}
+TARGETS=(ink_bridge tex pdfium_bridge whisper_bridge audio_bridge)
 if [[ "$PLATFORM" == darwin-* ]]; then
     TARGETS+=(trackpad_bridge) # scroll phases and pinch of the trackpad
     TARGETS+=(audio_codec_bridge) # audio files of other applications, AAC
@@ -106,6 +116,9 @@ cp "$NATIVE_DIR/ink/LICENSE" "$OUT_DIR/drawview-core/native/$PLATFORM/INK_LICENS
 install_lib tex drawview-latex
 install_lib pdfium_bridge drawview-pdf
 install_lib whisper_bridge drawview-lecture
+install_lib audio_bridge drawview-lecture
+cp "$OPUS_DIR/COPYING" "$OUT_DIR/drawview-lecture/native/$PLATFORM/OPUS_LICENSE.txt"
+cp "$AAC_DIR/COPYING" "$OUT_DIR/drawview-lecture/native/$PLATFORM/VO_AACENC_LICENSE.txt"
 if [[ "$PLATFORM" == darwin-* ]]; then
     install_lib audio_codec_bridge drawview-lecture
 fi

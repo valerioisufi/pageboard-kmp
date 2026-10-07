@@ -12,15 +12,7 @@ internal object AudioCodecNative : AudioCodec {
     @JvmStatic
     private external fun nDecode(input: String, output: String): Long
 
-    @JvmStatic
-    private external fun nEncodeM4a(input: String, output: String, bitrate: Int): Int
-
     override fun decode(input: String, output: String): Long = nDecode(input, output)
-
-    override fun encodeM4a(input: String, output: String): Boolean = nEncodeM4a(input, output, SPEECH_BITRATE) == 0
-
-    /** Speech at 16 kHz (AAC accepts 12 to 48 kbit/s): about 14 MB per hour. */
-    private const val SPEECH_BITRATE = 32_000
 }
 
 internal actual fun audioCodec(): AudioCodec? = AudioCodecNative.takeIf { it.isAvailable }

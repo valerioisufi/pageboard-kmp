@@ -2,7 +2,7 @@ package io.github.valerioisufi.drawview.lecture
 
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
-import io.github.valerioisufi.drawview.lecture.audio.Wav
+import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.AfterTest
@@ -96,15 +96,17 @@ class LectureLibraryTest {
     fun anInterruptedRecordingIsRecovered() {
         val directory = library.newLectureDirectory("5", 1_000)
         save(directory, LectureRecord(id = "a", documentId = "5", startedAt = 1_000, durationMs = 1_000, status = LectureStatus.RECORDING))
-        // Two seconds of raw audio, never converted
-        File(directory, "audio.pcm").writeBytes(ByteArray(2 * LECTURE_SAMPLE_RATE * 2))
+        // Two and a half seconds of audio, the recording never finished: the pages of two seconds written
+        RecordingFile(directory).apply {
+            open()
+            append(ShortArray(5 * LECTURE_SAMPLE_RATE / 2))
+        }
 
         assertTrue(library.list("5").single().wasRecording)
         val record = assertNotNull(library.load(directory))
         assertEquals(LectureStatus.FINISHED, record.status)
         assertEquals(2_000, record.durationMs)
-        assertFalse(File(directory, "audio.pcm").exists())
-        assertEquals(Wav.HEADER_SIZE + 2L * LECTURE_SAMPLE_RATE * 2, File(directory, "audio.wav").length())
+        assertEquals(2_000, RecordingFile(directory).durationMs())
         assertNull(library.load("$directory-missing"))
     }
 

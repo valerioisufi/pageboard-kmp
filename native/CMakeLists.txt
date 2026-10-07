@@ -344,3 +344,53 @@ if(DRAWVIEW_BUILD_JNI AND NOT ANDROID AND EXISTS "${DRAWVIEW_WHISPER_DIR}/includ
     target_link_libraries(whisper_bridge PRIVATE whisper)
     drawview_configure_shared_library(whisper_bridge)
 endif()
+
+# ==============================================================================
+# Audio codecs of the lecture recordings (every platform): libopus records and plays them,
+# vo-aacenc exports them as AAC; both from the sources of their releases, prepared by the Gradle
+# tasks extractOpusSource and extractAacSource (see native/opus/opus.properties and
+# native/aac/aac.properties).
+# ==============================================================================
+set(DRAWVIEW_OPUS_DIR "" CACHE PATH "Source of libopus")
+set(DRAWVIEW_AAC_DIR "" CACHE PATH "Source of vo-aacenc")
+file(TO_CMAKE_PATH "${DRAWVIEW_OPUS_DIR}" DRAWVIEW_OPUS_DIR)
+file(TO_CMAKE_PATH "${DRAWVIEW_AAC_DIR}" DRAWVIEW_AAC_DIR)
+if(EXISTS "${DRAWVIEW_OPUS_DIR}/include/opus.h" AND EXISTS "${DRAWVIEW_AAC_DIR}/common/include/voAAC.h")
+    set(OPUS_BUILD_SHARED_LIBRARY OFF CACHE BOOL "" FORCE)
+    set(OPUS_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+    set(OPUS_BUILD_PROGRAMS OFF CACHE BOOL "" FORCE)
+    set(OPUS_INSTALL_PKG_CONFIG_MODULE OFF CACHE BOOL "" FORCE)
+    set(OPUS_INSTALL_CMAKE_CONFIG_MODULE OFF CACHE BOOL "" FORCE)
+    add_subdirectory("${DRAWVIEW_OPUS_DIR}" opus EXCLUDE_FROM_ALL)
+
+    set(AAC_SRC "${DRAWVIEW_AAC_DIR}/aacenc/src")
+    add_library(vo_aacenc STATIC
+        "${DRAWVIEW_AAC_DIR}/common/cmnMemory.c"
+        "${DRAWVIEW_AAC_DIR}/aacenc/basic_op/basicop2.c"
+        "${DRAWVIEW_AAC_DIR}/aacenc/basic_op/oper_32b.c"
+        "${AAC_SRC}/aac_rom.c" "${AAC_SRC}/aacenc.c" "${AAC_SRC}/aacenc_core.c" "${AAC_SRC}/adj_thr.c"
+        "${AAC_SRC}/band_nrg.c" "${AAC_SRC}/bit_cnt.c" "${AAC_SRC}/bitbuffer.c" "${AAC_SRC}/bitenc.c"
+        "${AAC_SRC}/block_switch.c" "${AAC_SRC}/channel_map.c" "${AAC_SRC}/dyn_bits.c" "${AAC_SRC}/grp_data.c"
+        "${AAC_SRC}/interface.c" "${AAC_SRC}/line_pe.c" "${AAC_SRC}/memalign.c" "${AAC_SRC}/ms_stereo.c"
+        "${AAC_SRC}/pre_echo_control.c" "${AAC_SRC}/psy_configuration.c" "${AAC_SRC}/psy_main.c" "${AAC_SRC}/qc_main.c"
+        "${AAC_SRC}/quantize.c" "${AAC_SRC}/sf_estim.c" "${AAC_SRC}/spreading.c" "${AAC_SRC}/stat_bits.c"
+        "${AAC_SRC}/tns.c" "${AAC_SRC}/transform.c"
+    )
+    target_include_directories(vo_aacenc PUBLIC
+        "${DRAWVIEW_AAC_DIR}/common/include"
+        "${DRAWVIEW_AAC_DIR}/aacenc/inc"
+        "${DRAWVIEW_AAC_DIR}/aacenc/basic_op"
+    )
+    if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
+        target_compile_options(vo_aacenc PRIVATE -w)
+    endif()
+
+    if(DRAWVIEW_BUILD_JNI)
+        add_library(audio_bridge SHARED bridge/audio_bridge.c bridge/audio_bridge_jni.c)
+        drawview_configure_shared_library(audio_bridge)
+    else()
+        add_library(audio_bridge STATIC bridge/audio_bridge.c)
+    endif()
+    target_include_directories(audio_bridge PUBLIC bridge)
+    target_link_libraries(audio_bridge PRIVATE opus vo_aacenc)
+endif()

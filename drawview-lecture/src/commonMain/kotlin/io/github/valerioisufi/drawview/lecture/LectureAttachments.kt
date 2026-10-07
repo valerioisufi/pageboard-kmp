@@ -90,7 +90,7 @@ internal class LectureAttachments(
             is Item.Audio -> {
                 val record = files.readRecord(directory) ?: return@withContext false
                 val sharing = files.sharingOf(documentId)
-                record.audioShared && !library.isActiveHere(directory) && RecordingFile(directory).pcmBytes() == 0L &&
+                record.audioShared && !library.isActiveHere(directory) && !RecordingFile(directory).exists &&
                     (sharing.downloadAudio == AudioDownload.AUTOMATIC || lectureId in sharing.requestedAudio)
             }
             // The one its lecture names (any, before the lecture arrives)
@@ -111,7 +111,7 @@ internal class LectureAttachments(
             }
             is Item.Audio -> {
                 if (library.isActiveHere(directory!!)) return@withContext null
-                val path = RecordingFile(directory).wavPath
+                val path = RecordingFile(directory).path
                 val size = SystemFileSystem.metadataOrNull(path)?.size ?: return@withContext null
                 FileSource(audioVersion(size), size, path)
             }
@@ -247,7 +247,7 @@ internal class LectureAttachments(
         audioProgressState.update { it - directory }
         val kept = withContext(Dispatchers.IO) {
             try {
-                SystemFileSystem.atomicMove(part, RecordingFile(directory).wavPath)
+                SystemFileSystem.atomicMove(part, RecordingFile(directory).path)
                 SystemFileSystem.delete(Path("$directory/$PART_VERSION"), mustExist = false)
                 true
             } catch (e: Exception) {
@@ -394,10 +394,9 @@ internal class LectureAttachments(
         if (lectureId in files.deletedLectures(documentId)) return
         val record = files.readRecord(directory) ?: return
         index[prefix] = LectureRecords.version(record)
-        // The audio once recorded (the raw one is being recorded)
-        val audio = RecordingFile(directory)
-        if (record.status == LectureStatus.FINISHED && record.audioShared && !SystemFileSystem.exists(audio.pcmPath)) {
-            SystemFileSystem.metadataOrNull(audio.wavPath)?.size?.let { index[Item.Audio(lectureId).key] = audioVersion(it) }
+        // The audio once recorded
+        if (record.status == LectureStatus.FINISHED && record.audioShared) {
+            RecordingFile(directory).size().takeIf { it > 0 }?.let { index[Item.Audio(lectureId).key] = audioVersion(it) }
         }
         for (page in record.pages) {
             val name = page.image?.takeIf(::isName) ?: continue

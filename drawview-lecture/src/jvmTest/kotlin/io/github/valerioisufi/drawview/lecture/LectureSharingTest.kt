@@ -87,7 +87,7 @@ class LectureSharingTest {
         val live = computer.library.list("doc").single()
         assertTrue(live.activeElsewhere)
         assertEquals(tablet.library.deviceName, live.recordedElsewhere)
-        assertFalse(File(live.directory, "audio.wav").exists())
+        assertFalse(File(live.directory, "audio.opus").exists())
 
         withContext(stateContext) { tablet.recorder!!.stop() }
         await { recorded.status == LectureStatus.FINISHED }
@@ -95,7 +95,7 @@ class LectureSharingTest {
         val summary = computer.library.list("doc").single()
         assertFalse(summary.activeElsewhere)
         assertEquals(recorded.id, File(summary.directory).name)
-        assertContentEquals(File(recorded.directory, "audio.wav").readBytes(), File(summary.directory, "audio.wav").readBytes())
+        assertContentEquals(File(recorded.directory, "audio.opus").readBytes(), File(summary.directory, "audio.opus").readBytes())
         assertContentEquals(byteArrayOf(1, 2, 3), File(summary.directory, "pages/p11.jpg").readBytes())
         // Told: the lecture, its audio; offered to be transcribed and reviewed here, with its cost
         assertEquals(listOf(LectureArrival.Kind.LECTURE, LectureArrival.Kind.AUDIO), await { computer.arrivals.toList().takeIf { it.size == 2 } }.map { it.kind })
@@ -161,7 +161,7 @@ class LectureSharingTest {
         val kept = record(tablet, seconds = 3.0)
         meet(tablet.attachments, computer.attachments)
         val summary = computer.library.list("doc").single()
-        assertFalse(File(summary.directory, "audio.wav").exists())
+        assertFalse(File(summary.directory, "audio.opus").exists())
 
         // Shared, received on request only
         withContext(stateContext) {
@@ -171,16 +171,16 @@ class LectureSharingTest {
         val asked = record(tablet, seconds = 3.0)
         meet(tablet.attachments, computer.attachments)
         val directory = computer.library.lectureDirectory("doc", asked.id)
-        assertFalse(File(directory, "audio.wav").exists())
+        assertFalse(File(directory, "audio.opus").exists())
         val askedSummary = computer.library.list("doc").single { it.directory == directory }
         withContext(stateContext) { computer.show("doc", askedSummary) }
         val lecture = await { computer.shownLecture("doc")?.takeIf { it.id == asked.id } }
         withContext(stateContext) { computer.requestAudio(lecture) }
         await { computer.sharingOf("doc").requestedAudio.isNotEmpty() && File(computer.library.documentDirectory("doc"), "sharing.json").exists() }
         meet(tablet.attachments, computer.attachments)
-        assertContentEquals(File(asked.directory, "audio.wav").readBytes(), File(directory, "audio.wav").readBytes())
+        assertContentEquals(File(asked.directory, "audio.opus").readBytes(), File(directory, "audio.opus").readBytes())
         // The first one, shared afterwards from the tablet
-        assertFalse(File(computer.library.lectureDirectory("doc", kept.id), "audio.wav").exists())
+        assertFalse(File(computer.library.lectureDirectory("doc", kept.id), "audio.opus").exists())
     }
 
     @Test
@@ -217,7 +217,7 @@ class LectureSharingTest {
         val lecture = device.recorder!!.lecture
         microphone.speak(seconds, loud = true, random = Random(seconds.toInt()))
         withContext(stateContext) { device.recorder!!.stop() }
-        await { lecture.status == LectureStatus.FINISHED && File(lecture.directory, "audio.wav").exists() }
+        await { lecture.status == LectureStatus.FINISHED && File(lecture.directory, "audio.opus").exists() }
         return lecture
     }
 

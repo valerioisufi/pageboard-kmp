@@ -9,18 +9,15 @@ import kotlinx.io.readIntLe
 import kotlinx.io.readShortLe
 
 /**
- * The audio files of other applications: decoded into the audio of the lectures (an imported
- * recording) and encoded from it (an exported recording), with the codecs of the system.
+ * The audio files of other applications decoded into the audio of the lectures (an imported
+ * recording), with the codecs of the system (GRASP Protected Variations).
  */
 internal interface AudioCodec {
     /** Decodes [input] into [output] (raw 16-bit mono PCM at 16 kHz): the samples, -1 on error. */
     fun decode(input: String, output: String): Long
-
-    /** Encodes [input] (a WAV) into [output], AAC in an m4a: whether it worked. */
-    fun encodeM4a(input: String, output: String): Boolean
 }
 
-/** The codecs of this platform (Audio Toolbox on macOS), `null` elsewhere. */
+/** The codecs of this platform (Audio Toolbox on Apple, MediaCodec on Android), `null` where there are none. */
 internal expect fun audioCodec(): AudioCodec?
 
 /** The audio of other applications this platform reads (the WAV files everywhere). */
@@ -28,21 +25,40 @@ internal fun importableExtensions(): Set<String> =
     if (audioCodec() != null) setOf("m4a", "mp4", "aac", "mp3", "wav", "aif", "aiff", "caf", "flac") else setOf("wav")
 
 /**
- * Converts the audio file [input] into [output] (raw 16-bit mono PCM at 16 kHz), with the codecs
- * of the system where there are, otherwise as a WAV file ([WavDecoder]).
+ * Converts the audio file [input] into the recording [recording] (Opus), with the codecs of the
+ * system where there are, otherwise as a WAV file ([WavDecoder]).
  *
  * @return the samples.
  * @throws IllegalArgumentException when the file cannot be read.
  */
-internal fun decodeAudioFile(input: String, output: String): Long {
+internal fun decodeAudioFile(input: String, recording: RecordingFile): Long {
     audioCodec()?.let { codec ->
-        val samples = codec.decode(input, output)
-        if (samples >= 0) return samples
-    }
-    return SystemFileSystem.source(Path(input)).buffered().use { source ->
-        SystemFileSystem.sink(Path(output)).buffered().use { sink ->
-            WavDecoder.decode(source) { block -> sink.write(block.toLittleEndianBytes()) }
+        val pcm = Path("${recording.path}.pcm")
+        recording.path.parent?.let { SystemFileSystem.createDirectories(it) }
+        try {
+            val samples = codec.decode(input, pcm.toString())
+            if (samples >= 0) {
+                recording.open()
+                SystemFileSystem.source(pcm).buffered().use { source ->
+                    val bytes = ByteArray(32_768)
+                    while (true) {
+                        val read = source.readAtMostTo(bytes)
+                        if (read <= 0) break
+                        recording.append(ShortArray(read / 2) { i -> ((bytes[2 * i].toInt() and 0xFF) or (bytes[2 * i + 1].toInt() shl 8)).toShort() })
+                    }
+                }
+                recording.finish()
+                return samples
+            }
+        } finally {
+            SystemFileSystem.delete(pcm, mustExist = false)
         }
+    }
+    recording.open()
+    try {
+        return SystemFileSystem.source(Path(input)).buffered().use { source -> WavDecoder.decode(source) { block -> recording.append(block) } }
+    } finally {
+        recording.finish()
     }
 }
 
@@ -132,28 +148,47 @@ internal object WavDecoder {
     }
 }
 
-/** Whether this platform encodes the recordings as m4a. */
-internal fun canEncodeM4a(): Boolean = audioCodec() != null
+/** The exported recordings: AAC-LC, speech at 16 kHz (about 14 MB per hour). */
+internal const val EXPORT_BITRATE = 32_000
 
 /**
- * Saves [recording] in [target]: AAC in an m4a where the platform encodes it (the extension of
- * [target] becomes .m4a), otherwise its WAV file (.wav).
+ * Saves [recording] in [target] as AAC in an m4a (the extension of [target] becomes .m4a), the same
+ * on every platform ([AacEncoder], [M4aWriter]).
  *
  * @return the path written.
  */
 internal fun exportRecording(recording: RecordingFile, target: String): String {
-    val wav = recording.wavPath
-    require(SystemFileSystem.exists(wav)) { "the recording is not finished" }
-    val codec = audioCodec()
+    require(recording.samples() > 0) { "the recording is empty" }
     val base = target.substringBeforeLast('.').takeIf { target.substringAfterLast('/').contains('.') } ?: target
-    if (codec != null) {
-        val m4a = "$base.m4a"
-        check(codec.encodeM4a(wav.toString(), m4a)) { "the audio cannot be encoded" }
-        return m4a
+    val m4a = Path("$base.m4a")
+    val encoder = AacEncoder(LECTURE_SAMPLE_RATE, EXPORT_BITRATE)
+    val writer = M4aWriter(m4a, LECTURE_SAMPLE_RATE, EXPORT_BITRATE)
+    try {
+        val frame = ShortArray(AAC_FRAME_SAMPLES)
+        var filled = 0
+        recording.decodeAll { block ->
+            var offset = 0
+            while (offset < block.size) {
+                val copied = minOf(frame.size - filled, block.size - offset)
+                block.copyInto(frame, filled, offset, offset + copied)
+                filled += copied
+                offset += copied
+                if (filled == frame.size) {
+                    writer.add(encoder.encode(frame))
+                    filled = 0
+                }
+            }
+        }
+        if (filled > 0) {
+            frame.fill(0, filled)
+            writer.add(encoder.encode(frame))
+        }
+        writer.finish()
+    } catch (e: Throwable) {
+        writer.cancel()
+        throw e
+    } finally {
+        encoder.close()
     }
-    val copy = "$base.wav"
-    SystemFileSystem.source(wav).buffered().use { source ->
-        SystemFileSystem.sink(Path(copy)).buffered().use { sink -> source.transferTo(sink) }
-    }
-    return copy
+    return m4a.toString()
 }

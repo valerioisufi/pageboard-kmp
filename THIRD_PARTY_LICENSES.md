@@ -18,6 +18,8 @@ The PencilNotes application (`pencilnotes/`) includes every DrawView component p
 | **The FreeType Project** | David Turner, Robert Wilhelm, Werner Lemberg | [FreeType Project License](#the-freetype-project-license-ftl) | Font rasterization engine statically linked in PDFium |
 | **MicroTeX** | NanoMichael | [MIT License](#mit-license-microtex) | Dynamic LaTeX mathematical formula rendering |
 | **whisper.cpp** (with **ggml**) | The ggml authors | [MIT License](#mit-license-bblanchonpdfium-binaries-microtex--whispercpp) | Speech recognition of the lecture assistant (Desktop JVM) |
+| **Opus** (libopus) | Xiph.Org Foundation and contributors | [BSD 3-Clause License](#bsd-3-clause-license-opus) | Compression of the recordings of the lecture assistant (Desktop JVM, Android and iOS) |
+| **VisualOn AAC encoder** (vo-aacenc) | VisualOn | [Apache License 2.0](#apache-license-version-20) | AAC encoding of the exported recordings (Desktop JVM, Android and iOS) |
 | **Nunito Font** | Vernon Adams, Cyreal, Jacques Le Bailly | [SIL Open Font License 1.1](#sil-open-font-license-11) | UI typography |
 | **Cherry Bomb One Font** | The Cherry Bomb Project Authors (satsuyako) | [SIL Open Font License 1.1](#sil-open-font-license-11) | *PencilNotes*: title typography |
 | **Computer Modern Fonts**| Donald E. Knuth | [Knuth License](#knuth-license) | Math typography for LaTeX formula rendering |
@@ -43,6 +45,13 @@ The PencilNotes application (`pencilnotes/`) includes every DrawView component p
 ### pdfium-binaries (Benoit Blanchon)
 > Copyright 2014-2025 Benoit Blanchon
 > Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction...
+
+### Opus
+> Copyright 2001-2023 Xiph.Org, Skype Limited, Octasic, Jean-Marc Valin, Timothy B. Terriberry, CSIRO, Gregory Maxwell, Mark Borgerding, Erik de Castro Lopo, Mozilla, Amazon.
+> Opus is subject to the royalty-free patent licenses specified at https://opus-codec.org/license/.
+
+### VisualOn AAC encoder (vo-aacenc)
+> These files are Copyright 2003-2010 VisualOn, but released under the Apache2 License.
 
 ### MicroTeX
 > Copyright (c) NanoMichael
@@ -271,6 +280,45 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+
+---
+
+### BSD 3-Clause License (Opus)
+
+```text
+Copyright 2001-2023 Xiph.Org, Skype Limited, Octasic,
+                    Jean-Marc Valin, Timothy B. Terriberry,
+                    CSIRO, Gregory Maxwell, Mark Borgerding,
+                    Erik de Castro Lopo, Mozilla, Amazon
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+- Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+
+- Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+- Neither the name of Internet Society, IETF or IETF Trust, nor the
+names of specific contributors, may be used to endorse or promote
+products derived from this software without specific prior written
+permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
 ---

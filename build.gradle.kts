@@ -29,10 +29,12 @@ val nativeSourcesDir = layout.projectDirectory.dir("native")
 mapOf("iphoneos" to "ios-device-arm64", "iphonesimulator" to "ios-simulator-arm64").forEach { (sdk, pdfiumPackage) ->
     tasks.register<Exec>("buildIosNativeLibs-$sdk") {
         group = "native"
-        description = "Builds the Google Ink, MicroTeX and PDFium bridge static libraries for the $sdk SDK"
+        description = "Builds the Google Ink, MicroTeX, PDFium bridge and audio codecs static libraries for the $sdk SDK"
         onlyIf { System.getProperty("os.name").lowercase().contains("mac") }
-        dependsOn(":extractPdfium-$pdfiumPackage")
+        dependsOn(":extractPdfium-$pdfiumPackage", ":extractOpusSource", ":extractAacSource")
         environment("DRAWVIEW_PDFIUM_DIR", layout.buildDirectory.dir("pdfium/$pdfiumPackage").get().asFile.absolutePath)
+        environment("DRAWVIEW_OPUS_DIR", opusSourceDir.get().asFile.absolutePath)
+        environment("DRAWVIEW_AAC_DIR", aacSourceDir.get().asFile.absolutePath)
         inputs.files(
             fileTree(nativeSourcesDir) {
                 include("CMakeLists.txt", "bridge/**", "tex/src/**", "tex/port/**", "ink/ink/**", "external/**", "scripts/build_ios.sh")
@@ -225,6 +227,36 @@ val extractWhisperSource = tasks.register<Sync>("extractWhisperSource") {
 val whisperSourceDir = whisperBuildDir.map { it.dir("src/whisper.cpp-$whisperVersion") }
 
 // =====================================================================================
+// Audio codecs: the sources of libopus (native/opus/opus.properties) and vo-aacenc
+// (native/aac/aac.properties), downloaded and verified, built with the native libraries of every
+// platform (the lecture recordings, their export as AAC)
+// =====================================================================================
+fun audioCodecSource(name: String, archiveName: (String) -> String, url: (String) -> String): Pair<String, Provider<Directory>> {
+    val properties = Properties().apply {
+        load(StringReader(providers.fileContents(layout.projectDirectory.file("native/$name/$name.properties")).asText.get()))
+    }
+    val version: String = properties.getProperty("version")
+    val buildDir = layout.buildDirectory.dir(name)
+    val label = name.replaceFirstChar { it.uppercase() }
+    val download = tasks.register<DownloadVerifiedFile>("download${label}Source") {
+        group = "audio"
+        description = "Downloads and verifies the source of ${archiveName(version)}"
+        this.url.set(url(version))
+        sha256.set(properties.getProperty("sha256"))
+        destination.set(buildDir.map { it.file("downloads/${archiveName(version)}.tar.gz") })
+    }
+    tasks.register<Sync>("extract${label}Source") {
+        group = "audio"
+        description = "Extracts the source of ${archiveName(version)} into build/$name/src"
+        from(download.map { tarTree(resources.gzip(it.destination.get().asFile)) })
+        into(buildDir.map { it.dir("src") })
+    }
+    return version to buildDir.map { it.dir("src/${archiveName(version)}") }
+}
+val (opusVersion, opusSourceDir) = audioCodecSource("opus", { "opus-$it" }) { "https://downloads.xiph.org/releases/opus/opus-$it.tar.gz" }
+val (aacVersion, aacSourceDir) = audioCodecSource("aac", { "vo-aacenc-$it" }) { "https://github.com/mstorsjo/vo-aacenc/archive/refs/tags/v$it.tar.gz" }
+
+// =====================================================================================
 // Desktop JVM native engines (Google Ink, MicroTeX, PDFium bridge, whisper.cpp bridge): JNI
 // libraries built by native/scripts/build_desktop.sh into
 // build/nativeLibs/jvm/<module>/native/<platform>/, added to the jvmMain resources of
@@ -246,7 +278,7 @@ tasks.register<Exec>("buildDesktopNativeLibs") {
     val prebuilt = nativeLibsPrebuilt
     onlyIf { !prebuilt }
     val pdfium = extractPdfiumTasks.getValue(desktopPdfiumPackage)
-    if (!prebuilt) dependsOn(pdfium, extractWhisperSource)
+    if (!prebuilt) dependsOn(pdfium, extractWhisperSource, "extractOpusSource", "extractAacSource")
     inputs.files(
         fileTree(nativeSourcesDir) {
             include("CMakeLists.txt", "bridge/**", "tex/src/**", "tex/port/**", "ink/ink/**", "ink/LICENSE", "external/**", "scripts/build_desktop.sh")
@@ -255,11 +287,15 @@ tasks.register<Exec>("buildDesktopNativeLibs") {
     ).withPropertyName("nativeSources").withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.property("platform", desktopPlatform)
     inputs.property("whisperVersion", whisperVersion)
+    inputs.property("opusVersion", opusVersion)
+    inputs.property("aacVersion", aacVersion)
     listOf("drawview-core", "drawview-latex", "drawview-pdf", "drawview-lecture").forEach { module ->
         outputs.dir(layout.buildDirectory.dir("nativeLibs/jvm/$module/native/$desktopPlatform")).withPropertyName(module)
     }
     environment("DRAWVIEW_PDFIUM_DIR", pdfiumBuildDir.get().dir(desktopPdfiumPackage).asFile.absolutePath)
     environment("DRAWVIEW_WHISPER_DIR", whisperSourceDir.get().asFile.absolutePath)
+    environment("DRAWVIEW_OPUS_DIR", opusSourceDir.get().asFile.absolutePath)
+    environment("DRAWVIEW_AAC_DIR", aacSourceDir.get().asFile.absolutePath)
     // JNI headers of the JDK running Gradle
     environment("JAVA_HOME", System.getProperty("java.home"))
     workingDir(nativeSourcesDir)

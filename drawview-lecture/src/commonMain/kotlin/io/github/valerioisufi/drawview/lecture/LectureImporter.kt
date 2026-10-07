@@ -46,14 +46,13 @@ internal class LectureImporter(
         val samples = withContext(Dispatchers.IO) {
             SystemFileSystem.createDirectories(Path(lecture.directory))
             val samples = try {
-                decodeAudioFile(input, lecture.recording.pcmPath.toString())
+                decodeAudioFile(input, lecture.recording)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 throw IllegalArgumentException(e.message ?: "unreadable audio", e)
             }
             require(samples > 0) { "no audio in the file" }
-            lecture.recording.finish()
             samples
         }
         lecture.setState { elapsedMs = samplesToMs(samples) }

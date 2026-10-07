@@ -12,7 +12,6 @@ import io.github.valerioisufi.drawview.lecture.audio.AudioOutput
 import io.github.valerioisufi.drawview.lecture.audio.createAudioCapture
 import io.github.valerioisufi.drawview.lecture.audio.createAudioOutput
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
-import io.github.valerioisufi.drawview.lecture.audio.canEncodeM4a
 import io.github.valerioisufi.drawview.lecture.audio.exportRecording
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
 import io.github.valerioisufi.drawview.lecture.platform.ChosenFile
@@ -248,7 +247,7 @@ class LectureAssistant(
         val choice = settingsStore.settings.receivedLectures
         if (choice == ReceivedLectures.NEVER) return
         val record = withContext(Dispatchers.Default) { library.readRecord(arrival.directory) } ?: return
-        val audioHere = RecordingFile(arrival.directory).pcmBytes() > 0
+        val audioHere = RecordingFile(arrival.directory).exists
         if (record.status != LectureStatus.FINISHED || record.transcript.isNotEmpty() || record.finalReview != null || !audioHere) return
         if (record.generation?.takeIf { it.device != library.deviceId }?.holds(currentTimeMillis()) == true) return
         val offer = GenerationOffer(arrival, record.durationMs, settingsStore.settings.reviewProvider)
@@ -638,7 +637,7 @@ class LectureAssistant(
         }
     }
 
-    /** The audio of [lecture] saved in [target]: as m4a where the platform encodes it, otherwise as WAV. */
+    /** The audio of [lecture] saved in [target], as m4a. */
     fun exportAudio(lecture: Lecture, target: String) {
         exportResult = null
         scope.launch {
@@ -654,8 +653,8 @@ class LectureAssistant(
         }
     }
 
-    /** The extension of the exported audio: m4a where the platform encodes it. */
-    val exportExtension: String get() = if (canEncodeM4a()) "m4a" else "wav"
+    /** The extension of the exported audio. */
+    val exportExtension: String get() = "m4a"
 
     fun clearImportAndExportMessages() {
         importError = null

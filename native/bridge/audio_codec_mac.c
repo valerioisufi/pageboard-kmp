@@ -1,6 +1,6 @@
 // JNI entry points of io.github.valerioisufi.drawview.lecture.audio.AudioCodecNative (desktop JVM,
 // macOS): the audio files of other applications (m4a, mp3, wav, aiff, caf, flac...) decoded into
-// the PCM of the lectures, and the recordings encoded as AAC in an m4a, with Audio Toolbox.
+// the PCM of the lectures, with Audio Toolbox.
 #include <AudioToolbox/AudioToolbox.h>
 #include <jni.h>
 #include <stdio.h>
@@ -91,69 +91,4 @@ JNIEXPORT jlong JNICALL Java_io_github_valerioisufi_drawview_lecture_audio_Audio
     fclose(out);
     ExtAudioFileDispose(file);
     return total;
-}
-
-// Encodes [input] (e.g. the audio.wav of a lecture) into [output], AAC at [bitrate] bits per second
-// in an m4a: 0 on success
-JNIEXPORT jint JNICALL Java_io_github_valerioisufi_drawview_lecture_audio_AudioCodecNative_nEncodeM4a(
-    JNIEnv* env, jclass cls, jstring input, jstring output, jint bitrate) {
-    (void)cls;
-    ExtAudioFileRef in = open_input(env, input);
-    if (!in) return 1;
-
-    AudioStreamBasicDescription aac;
-    memset(&aac, 0, sizeof(aac));
-    aac.mSampleRate = 16000;
-    aac.mFormatID = kAudioFormatMPEG4AAC;
-    aac.mChannelsPerFrame = 1;
-    UInt32 size = sizeof(aac);
-    AudioFormatGetProperty(kAudioFormatProperty_FormatInfo, 0, NULL, &size, &aac);
-
-    CFURLRef url = url_of(env, output);
-    ExtAudioFileRef out = NULL;
-    OSStatus status = url ? ExtAudioFileCreateWithURL(url, kAudioFileM4AType, &aac, NULL, kAudioFileFlags_EraseFile, &out) : -1;
-    if (url) CFRelease(url);
-    if (status != noErr) {
-        ExtAudioFileDispose(in);
-        return 2;
-    }
-    AudioStreamBasicDescription client = lecture_format();
-    if (ExtAudioFileSetProperty(out, kExtAudioFileProperty_ClientDataFormat, sizeof(client), &client) != noErr) {
-        ExtAudioFileDispose(out);
-        ExtAudioFileDispose(in);
-        return 3;
-    }
-    // The bitrate of the encoder (speech: a low one is enough); the default when refused
-    AudioConverterRef converter = NULL;
-    size = sizeof(converter);
-    if (ExtAudioFileGetProperty(out, kExtAudioFileProperty_AudioConverter, &size, &converter) == noErr && converter) {
-        UInt32 rate = (UInt32)bitrate;
-        if (AudioConverterSetProperty(converter, kAudioConverterEncodeBitRate, sizeof(rate), &rate) == noErr) {
-            CFArrayRef config = NULL;
-            ExtAudioFileSetProperty(out, kExtAudioFileProperty_ConverterConfig, sizeof(config), &config);
-        }
-    }
-
-    SInt16 buffer[BLOCK_FRAMES];
-    jint result = 0;
-    for (;;) {
-        long frames = read_block(in, buffer);
-        if (frames < 0) {
-            result = 4;
-            break;
-        }
-        if (frames == 0) break;
-        AudioBufferList list;
-        list.mNumberBuffers = 1;
-        list.mBuffers[0].mNumberChannels = 1;
-        list.mBuffers[0].mDataByteSize = (UInt32)(frames * sizeof(SInt16));
-        list.mBuffers[0].mData = buffer;
-        if (ExtAudioFileWrite(out, (UInt32)frames, &list) != noErr) {
-            result = 5;
-            break;
-        }
-    }
-    if (ExtAudioFileDispose(out) != noErr && result == 0) result = 6;
-    ExtAudioFileDispose(in);
-    return result;
 }

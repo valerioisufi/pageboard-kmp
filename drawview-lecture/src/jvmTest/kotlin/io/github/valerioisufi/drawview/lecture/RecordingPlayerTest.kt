@@ -4,6 +4,7 @@ import io.github.valerioisufi.drawview.lecture.audio.AudioOutput
 import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
 import io.github.valerioisufi.drawview.lecture.audio.RecordingPlayer
+import io.github.valerioisufi.drawview.lecture.audio.rms
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.newSingleThreadContext
@@ -45,10 +46,12 @@ class RecordingPlayerTest {
         }
     }
 
-    /** 10 s of recording: the sample value is the second it belongs to. */
+    /** 10 s of recording: a tone louder each second (1000 times the second, plus one). */
     private fun recording(): RecordingFile = RecordingFile(directory.absolutePath).apply {
         open()
-        for (second in 0 until 10) append(ShortArray(LECTURE_SAMPLE_RATE) { second.toShort() })
+        for (second in 0 until 10) {
+            append(ShortArray(LECTURE_SAMPLE_RATE) { (1000 * (second + 1) * kotlin.math.sin(2 * kotlin.math.PI * 300 * it / LECTURE_SAMPLE_RATE)).toInt().toShort() })
+        }
         finish()
     }
 
@@ -62,7 +65,9 @@ class RecordingPlayerTest {
         withTimeout(10_000) { while (player.isPlaying) delay(10) }
         // From the eighth second to the end, then at the end
         assertEquals(3 * LECTURE_SAMPLE_RATE, output.received.size)
-        assertEquals(7.toShort(), output.received.first())
+        // The eighth second: about 8000 / sqrt(2)
+        val level = rms(output.received.toShortArray(), LECTURE_SAMPLE_RATE / 10, LECTURE_SAMPLE_RATE / 2)
+        assertTrue(level in 4_500f..7_000f, "$level")
         assertEquals(10_000L, player.positionMs)
         assertTrue(output.closed)
 

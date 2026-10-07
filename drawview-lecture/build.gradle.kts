@@ -19,8 +19,21 @@ kotlin {
         }
     }
 
-    iosArm64()
-    iosSimulatorArm64()
+    val nativeDir = rootProject.layout.projectDirectory.dir("native")
+    listOf(
+        iosArm64() to "iphoneos",
+        iosSimulatorArm64() to "iphonesimulator"
+    ).forEach { (iosTarget, sdk) ->
+        // The audio codecs, libopus and vo-aacenc (native/scripts/build_ios.sh)
+        val audio = iosTarget.compilations.getByName("main").cinterops.create("audiobridge") {
+            definitionFile.set(project.file("src/nativeInterop/cinterop/audiobridge.def"))
+            includeDirs(nativeDir.dir("bridge"))
+            extraOpts("-libraryPath", nativeDir.dir("build/ios/$sdk/lib").asFile.absolutePath)
+        }
+        tasks.named(audio.interopProcessingTaskName) {
+            dependsOn(":buildIosNativeLibs-$sdk")
+        }
+    }
 
     jvm()
 
@@ -67,6 +80,8 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
+            // The audio codecs (libaudio_bridge.so)
+            implementation(project(":drawview-native"))
             // The permission of the microphone
             implementation(libs.androidx.activity.compose)
         }
