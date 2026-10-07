@@ -7,12 +7,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import platform.Foundation.NSDate
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSFileModificationDate
-import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
 import platform.Foundation.timeIntervalSince1970
 import platform.UIKit.UIApplication
@@ -47,38 +44,6 @@ internal actual fun rememberFileOpener(title: String, extensions: Set<String>, o
                 picker.allowsMultipleSelection = false
                 presenter.presentViewController(picker, animated = true, completion = null)
             }
-        }
-    }
-}
-
-/** Written in the temporary directory, then exported with the document picker (Files, iCloud...). */
-@Composable
-internal actual fun rememberFileSaver(title: String, mimeType: String, onTarget: (FileTarget) -> Unit): (suggestedName: String) -> Unit {
-    val target by rememberUpdatedState(onTarget)
-    val holder = remember { DelegateHolder() }
-    return remember(holder) {
-        { name ->
-            val path = NSTemporaryDirectory().trimEnd('/') + "/" + name.replace('/', '-')
-            target(FileTarget(path) { written ->
-                withContext(Dispatchers.Main) {
-                    val url = NSURL.fileURLWithPath(written)
-                    val delete = {
-                        holder.delegate = null
-                        NSFileManager.defaultManager.removeItemAtPath(written, null)
-                        Unit
-                    }
-                    val presenter = topViewController()
-                    if (presenter == null) {
-                        delete()
-                    } else {
-                        val picker = UIDocumentPickerViewController(forExportingURLs = listOf(url), asCopy = true)
-                        val delegate = PickerDelegate(onPicked = {}, onDone = delete)
-                        holder.delegate = delegate
-                        picker.delegate = delegate
-                        presenter.presentViewController(picker, animated = true, completion = null)
-                    }
-                }
-            })
         }
     }
 }

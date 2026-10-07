@@ -15,7 +15,7 @@ import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
 import io.github.valerioisufi.drawview.lecture.audio.exportRecording
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
 import io.github.valerioisufi.drawview.lecture.platform.ChosenFile
-import io.github.valerioisufi.drawview.lecture.platform.FileTarget
+import io.github.valerioisufi.drawview.ui.platform.FileTarget
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
 import io.github.valerioisufi.drawview.lecture.model.ModelBackends

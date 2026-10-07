@@ -387,8 +387,8 @@ object MarkdownTextUtil {
         )
     }
 
-    private const val OBJECT_REPLACEMENT = "￼"
-    private const val WORD_JOINER = "⁠"
+    internal const val OBJECT_REPLACEMENT = "￼"
+    internal const val WORD_JOINER = "⁠"
     private val ERROR_COLOR = Color(0xFFD32F2F)
 
     // [\s\S]: any character, line breaks included (DOT_MATCHES_ALL is not multiplatform)

@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.DrawText
+import io.github.valerioisufi.drawview.core.render.tile.TextLine
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.core.util.SyncLock
 import io.github.valerioisufi.drawview.core.util.syncLock
@@ -96,6 +97,24 @@ class ComposeTextTileAdapter(
                 if (drawLatexBlock(canvas, text, mmToCanvas, scale)) return
             }
             drawRichText(canvas, text, mmToCanvas, scale)
+        }
+    }
+
+    override fun lines(text: DrawText): List<TextLine> {
+        if (text.width <= 0f || text.text.isBlank()) return emptyList()
+        if (text.isLatex && LatexEngine.isNativeReady()) return emptyList()
+        // Laid out as drawText does, at a resolution where the rounding of the width is negligible
+        val scale = LINES_PX_PER_MM
+        val fontPx = text.fontSize * PT_TO_MM * scale
+        val layout = syncLock(lock) { prepare(text, fontPx, (text.width * scale).toInt().coerceAtLeast(1)).layout }
+        val shown = layout.layoutInput.text.text
+        return (0 until layout.lineCount).mapNotNull { line ->
+            val content = shown.substring(layout.getLineStart(line), layout.getLineEnd(line, visibleEnd = true))
+                .replace(MarkdownTextUtil.OBJECT_REPLACEMENT, "")
+                .replace(MarkdownTextUtil.WORD_JOINER, "")
+            if (content.isBlank()) return@mapNotNull null
+            val left = layout.getLineLeft(line)
+            TextLine(content, left / scale, layout.getLineBaseline(line) / scale, (layout.getLineRight(line) - left) / scale, fontPx / scale)
         }
     }
 
@@ -279,6 +298,9 @@ class ComposeTextTileAdapter(
 
     companion object {
         private const val MAX_LAYOUTS = 256
+
+        /** Resolution of the layouts of [lines]. */
+        private const val LINES_PX_PER_MM = 20f
         private const val MAX_FORMULAS = 128
         private const val MAX_LATEX_MULTIPLIER = 16f
         private const val MAX_LATEX_BITMAP_SIDE = 4096f

@@ -131,7 +131,7 @@ import io.github.valerioisufi.drawview.lecture.formatLectureTime
 import io.github.valerioisufi.drawview.lecture.generated.resources.*
 import io.github.valerioisufi.drawview.lecture.platform.isComputer
 import io.github.valerioisufi.drawview.lecture.platform.rememberFileOpener
-import io.github.valerioisufi.drawview.lecture.platform.rememberFileSaver
+import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
 import kotlin.time.ExperimentalTime
@@ -1223,7 +1223,7 @@ private fun InsertPagesButton(controller: DrawViewController, onInsert: (afterPa
     var currentPage by remember { mutableStateOf<Int?>(null) }
     Box {
         FilledTonalButton(onClick = {
-            currentPage = mostVisiblePageIndex(controller)
+            currentPage = controller.mostVisiblePageIndex()
             expanded = true
         }) {
             Icon(Icons.Outlined.PostAdd, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -1251,12 +1251,6 @@ private fun InsertPagesButton(controller: DrawViewController, onInsert: (afterPa
         }
     }
 }
-
-/** The page taking the largest part of the viewport. */
-internal fun mostVisiblePageIndex(controller: DrawViewController): Int? =
-    controller.visiblePages().maxByOrNull { page ->
-        minOf(page.rect.bottom, controller.viewportHeight) - maxOf(page.rect.top, 0f)
-    }?.index
 
 // ==========================================================
 // Common

@@ -29,7 +29,7 @@ import platform.darwin.dispatch_get_main_queue
 import platform.posix.memcpy
 
 /** Keeps the picker delegate alive: UIKit references delegates weakly. */
-private class DelegateHolder {
+internal class DelegateHolder {
     var delegate: NSObject? = null
 }
 
@@ -110,7 +110,7 @@ private class DocumentPickerDelegate(private val onPicked: (PickedFile) -> Unit)
 }
 
 @Suppress("DEPRECATION")
-private fun topViewController(): UIViewController? {
+internal fun topViewController(): UIViewController? {
     val application = UIApplication.sharedApplication
     val window = application.keyWindow ?: application.windows.firstOrNull() as? UIWindow
     var controller = window?.rootViewController

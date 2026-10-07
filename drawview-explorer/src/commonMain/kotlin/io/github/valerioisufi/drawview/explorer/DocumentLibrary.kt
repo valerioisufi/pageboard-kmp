@@ -16,6 +16,7 @@ import io.github.valerioisufi.drawview.explorer.platform.SystemBarsHidden
 import io.github.valerioisufi.drawview.explorer.ui.AboutLicensesButton
 import io.github.valerioisufi.drawview.explorer.ui.ExplorerScreen
 import io.github.valerioisufi.drawview.latex.LatexEngine
+import io.github.valerioisufi.drawview.ui.session.DocumentAction
 import io.github.valerioisufi.drawview.ui.session.DocumentEditorViewModel
 import io.github.valerioisufi.drawview.ui.session.EditorExtension
 import io.github.valerioisufi.drawview.ui.session.EditorSessionScreen
@@ -34,6 +35,8 @@ import kotlinx.coroutines.withContext
  * @param editorExtension content contributed to the editor (top bar actions, side panel).
  * @param libraryOverlay content drawn over the library (e.g. a recording in progress), given the
  *   function opening a document.
+ * @param documentActions actions of the application on a document of the library (e.g. its
+ *   export), in the bar of the selection.
  */
 @Composable
 fun DocumentLibrary(
@@ -44,7 +47,8 @@ fun DocumentLibrary(
     actions: @Composable RowScope.() -> Unit = { AboutLicensesButton() },
     fullScreenEditor: Boolean = false,
     editorExtension: EditorExtension? = null,
-    libraryOverlay: @Composable BoxScope.(openDocument: (String) -> Unit) -> Unit = {}
+    libraryOverlay: @Composable BoxScope.(openDocument: (String) -> Unit) -> Unit = {},
+    documentActions: List<DocumentAction> = emptyList()
 ) {
     val fileExplorerViewModel = viewModel { FileExplorerViewModel(store, documents) }
     val editorViewModel = viewModel { DocumentEditorViewModel(store, documents) }
@@ -63,6 +67,7 @@ fun DocumentLibrary(
                 onOpenDocument = { documentId -> editorViewModel.openDocument(documentId) },
                 title = title,
                 actions = actions,
+                documentActions = documentActions,
                 modifier = Modifier.fillMaxSize()
             )
             libraryOverlay { documentId -> editorViewModel.openDocument(documentId) }

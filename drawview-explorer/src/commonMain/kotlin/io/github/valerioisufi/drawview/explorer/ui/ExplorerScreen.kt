@@ -77,6 +77,7 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_fab
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_input_name
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_selected_count
 import io.github.valerioisufi.drawview.ui.components.AboutLicensesDialog
+import io.github.valerioisufi.drawview.ui.session.DocumentAction
 import io.github.valerioisufi.drawview.ui.generated.resources.about_dialog_title
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -88,6 +89,7 @@ import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
  *
  * @param title title shown in the root folder (typically the name of the application).
  * @param actions actions of the title bar of the root folder: the About & Licenses dialog by default.
+ * @param documentActions actions of the application on a selected document (e.g. its export).
  */
 @Composable
 fun ExplorerScreen(
@@ -95,9 +97,13 @@ fun ExplorerScreen(
     onOpenDocument: (String) -> Unit,
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    actions: @Composable RowScope.() -> Unit = { AboutLicensesButton() }
+    actions: @Composable RowScope.() -> Unit = { AboutLicensesButton() },
+    documentActions: List<DocumentAction> = emptyList()
 ) {
     val listState = rememberLazyListState()
+    // The action chosen on a document, shown until it is done (the selection is cleared meanwhile)
+    var chosenAction by remember { mutableStateOf<Pair<DocumentAction, FileExplorerViewModel.FileItem>?>(null) }
+    chosenAction?.let { (action, item) -> action.content(item.id, item.name) { chosenAction = null } }
     var fabMenuExpanded by rememberSaveable { mutableStateOf(false) }
     // The menu is hidden together with its button while items are selected
     LaunchedEffect(fileExplorerViewModel.selectionMode) {
@@ -115,7 +121,10 @@ fun ExplorerScreen(
         modifier = modifier,
         topBar = {
             if (fileExplorerViewModel.selectionMode) {
-                SelectionTopBar(fileExplorerViewModel)
+                SelectionTopBar(fileExplorerViewModel, documentActions) { action, item ->
+                    chosenAction = action to item
+                    fileExplorerViewModel.clearSelection()
+                }
             } else {
                 FolderTopBar(fileExplorerViewModel, title, actions)
             }
@@ -177,10 +186,18 @@ private fun ExplorerBackHandler(enabled: Boolean, onBack: () -> Unit) {
     )
 }
 
-/** Title bar of the selection mode, with the actions on the selected items. */
+/**
+ * Title bar of the selection mode, with the actions on the selected items: those of the
+ * application ([documentActions], chosen through [onDocumentAction]) when a single document is
+ * selected.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SelectionTopBar(fileExplorerViewModel: FileExplorerViewModel) {
+private fun SelectionTopBar(
+    fileExplorerViewModel: FileExplorerViewModel,
+    documentActions: List<DocumentAction>,
+    onDocumentAction: (DocumentAction, FileExplorerViewModel.FileItem) -> Unit
+) {
     val selectedItems = fileExplorerViewModel.selectedItems
     TopAppBar(
         title = {
@@ -229,6 +246,14 @@ private fun SelectionTopBar(fileExplorerViewModel: FileExplorerViewModel) {
                 )
             }
 
+            val document = selectedItems.singleOrNull()?.takeIf { it.type == FileType.FILE }
+            if (document != null) {
+                for (action in documentActions) {
+                    IconButton(onClick = { onDocumentAction(action, document) }) {
+                        Icon(action.icon, contentDescription = action.label())
+                    }
+                }
+            }
             IconButton(onClick = { showMoveDialog = true }) {
                 Icon(
                     Icons.AutoMirrored.Filled.DriveFileMove,
