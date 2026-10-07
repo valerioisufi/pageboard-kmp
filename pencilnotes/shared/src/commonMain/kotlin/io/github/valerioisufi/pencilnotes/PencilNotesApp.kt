@@ -55,7 +55,7 @@ fun PencilNotesApp() {
         // A tablet uses the models of a computer of the local network (Ollama)
         LaunchedEffect(lectureAssistant, collaboration) { lectureAssistant.localModels.nearbyHosts = collaboration::nearbyHosts }
         // The documents exported as PDF or as the image of a page
-        val export = rememberDocumentExportUi()
+        val export = rememberDocumentExportUi(appName = "PencilNotes")
         val editorExtension = remember(lectureAssistant, collaboration, export) {
             lectureAssistant.editorExtension() + collaboration.editorExtension() + export.editorExtension
         }

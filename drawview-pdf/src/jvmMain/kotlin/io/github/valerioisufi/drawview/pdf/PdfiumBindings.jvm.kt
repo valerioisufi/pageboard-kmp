@@ -96,8 +96,8 @@ internal actual object PdfiumBindings {
     actual fun pageAddPdfPage(document: Long, page: Long, source: Long, pageIndex: Int, matrix: DoubleArray): Boolean =
         PdfiumNative.nPageAddPdfPage(document, page, source, pageIndex, matrix)
 
-    actual fun pageAddMarkup(page: Long, kind: Int, quads: FloatArray, argb: Int): Boolean =
-        PdfiumNative.nPageAddMarkup(page, kind, quads, argb)
+    actual fun pageAddMarkup(page: Long, kind: Int, quads: FloatArray, argb: Int, appearance: String?): Boolean =
+        PdfiumNative.nPageAddMarkup(page, kind, quads, argb, appearance)
 
     actual fun loadFont(document: Long, data: ByteArray): Long = PdfiumNative.nLoadFont(document, data)
 
@@ -108,5 +108,5 @@ internal actual object PdfiumBindings {
 
     actual fun endPage(page: Long): Boolean = PdfiumNative.nEndPage(page)
 
-    actual fun saveDocument(document: Long, path: String): Boolean = PdfiumNative.nSaveDocument(document, path)
+    actual fun saveDocument(document: Long, path: String, info: String?): Boolean = PdfiumNative.nSaveDocument(document, path, info)
 }

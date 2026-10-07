@@ -72,7 +72,8 @@ internal expect object PdfiumBindings {
 
     fun pageAddPdfPage(document: Long, page: Long, source: Long, pageIndex: Int, matrix: DoubleArray): Boolean
 
-    fun pageAddMarkup(page: Long, kind: Int, quads: FloatArray, argb: Int): Boolean
+    /** [appearance] is the content stream drawing the annotation, or `null` for the one PDFium generates. */
+    fun pageAddMarkup(page: Long, kind: Int, quads: FloatArray, argb: Int, appearance: String?): Boolean
 
     /** Loads a TrueType font into [document]: returns its handle, or 0 on failure. */
     fun loadFont(document: Long, data: ByteArray): Long
@@ -84,7 +85,8 @@ internal expect object PdfiumBindings {
     /** Writes the content of [page] and closes it. */
     fun endPage(page: Long): Boolean
 
-    fun saveDocument(document: Long, path: String): Boolean
+    /** [info] are the entries of the information dictionary of the document (PDF syntax), or `null`. */
+    fun saveDocument(document: Long, path: String, info: String?): Boolean
 }
 
 /**

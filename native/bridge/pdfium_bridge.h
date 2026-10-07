@@ -161,10 +161,12 @@ int32_t pdfium_page_add_pdf_page(int64_t doc_handle, int64_t page_handle, int64_
 /**
  * Adds an annotation of [kind] (0 highlight, 1 underline, 2 strikeout) of the color [argb] over
  * [quad_count] lines: [quads] has eight floats per line, its upper-left, upper-right, lower-left
- * and lower-right corners.
+ * and lower-right corners. [appearance] is the content stream drawing it (in the user space of
+ * the page; its opacity, when the color has one, is the graphics state /GS), or null for the one
+ * PDFium generates.
  * Returns 1 on success, 0 on failure.
  */
-int32_t pdfium_page_add_markup(int64_t page_handle, int32_t kind, const float* quads, int32_t quad_count, uint32_t argb);
+int32_t pdfium_page_add_markup(int64_t page_handle, int32_t kind, const float* quads, int32_t quad_count, uint32_t argb, const char* appearance);
 
 /**
  * Loads the TrueType font [data] into the document (embedded, its characters mapped to Unicode).
@@ -202,10 +204,11 @@ int32_t pdfium_page_add_text(
 int32_t pdfium_end_page(int64_t page_handle);
 
 /**
- * Saves the document to [file_path].
+ * Saves the document to [file_path], with [info] (the entries of its information dictionary in
+ * the syntax of PDF, such as "/Title (Notes)", or null) written as an update of the file.
  * Returns 1 on success, 0 on failure.
  */
-int32_t pdfium_save_document(int64_t doc_handle, const char* file_path);
+int32_t pdfium_save_document(int64_t doc_handle, const char* file_path, const char* info);
 
 #ifdef __cplusplus
 }

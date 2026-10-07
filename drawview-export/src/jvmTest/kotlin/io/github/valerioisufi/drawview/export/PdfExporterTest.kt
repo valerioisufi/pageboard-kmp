@@ -30,10 +30,12 @@ import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
+import io.github.valerioisufi.drawview.core.platform.decodeImageBitmap
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.pdf.PdfImportedPage
+import io.github.valerioisufi.drawview.pdf.PdfInfo
 import io.github.valerioisufi.drawview.pdf.PdfMarkupKind
 import io.github.valerioisufi.drawview.pdf.PdfPath
 import io.github.valerioisufi.drawview.pdf.PdfSize
@@ -57,6 +59,7 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.ColorAlphaType
 import org.jetbrains.skia.EncodedImageFormat
+import org.jetbrains.skia.IRect
 import org.jetbrains.skia.Image
 import org.jetbrains.skia.ImageInfo
 
@@ -69,7 +72,7 @@ class PdfExporterTest {
         val document = notebook()
         val pdf = tempFile("notebook", ".pdf")
         val progress = mutableListOf<Float>()
-        val result = PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), pdf.path) { progress += it }
+        val result = PdfExporter(textAdapter, fontFiles, creator = "PencilNotes").export(DocumentContent.of(document), ExportOptions(), pdf.path) { progress += it }
         assertEquals(2, result.pages)
         assertEquals(0, result.skipped)
         assertEquals(listOf(0.5f, 1f), progress)
@@ -87,6 +90,7 @@ class PdfExporterTest {
         val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
         assertTrue("/Highlight" in bytes)
         assertTrue("/FontFile2" in bytes, "the text is written in an embedded font")
+        assertTrue("/Title ${hex("Lezione 3: hash")}" in bytes && "/Creator ${hex("PencilNotes")}" in bytes, "its title and its application")
 
         val page = render(pdf, 0)
         // The stroke, the PNG, the JPEG, the text and the grid
@@ -210,6 +214,59 @@ class PdfExporterTest {
     }
 
     @Test
+    fun theMarksAreDrawnAsByTheEditor() = runBlocking {
+        val document = DrawDocument(title = "Marks", addInitialPage = false)
+        val pdf = resource(document, "pdf", DrawResource.ResourceType.PDF, SOURCE_PDF.encodeToByteArray())
+        val page = document.addPage(width = 300f / PT_PER_MM, height = 200f / PT_PER_MM)
+        page.add(DrawPdf(0).apply { resourceId = pdf })
+        page.add(
+            DrawTextMarkup(
+                resourceId = pdf, pdfPageIndex = 0, pdfWidthPt = 300f, pdfHeightPt = 200f, startIndex = 0, endIndex = 4,
+                text = "Hash", rects = listOf(Rect(150f, 100f, 250f, 130f)), kind = TextMarkupKind.STRIKEOUT, color = 0xFFFF0000.toInt()
+            )
+        )
+        val exported = tempFile("marks", ".pdf")
+        PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), exported.path)
+        val drawn = render(exported, 0)
+        // Through the lowercase letters (58 % of the line), not through its middle
+        assertColor(0xFFFF0000.toInt(), drawn.at(drawn.pt(200f, 117.4f)), tolerance = 8)
+        assertEquals(WHITE, drawn.at(drawn.pt(200f, 115f)))
+    }
+
+    @Test
+    fun aJpegTurnedByItsExifIsEmbeddedAsItIsAndTurnedByItsPlace() = runBlocking {
+        // Stored 32 x 16: red, blue above green, yellow; shown turned a quarter clockwise
+        val stored = Bitmap().apply {
+            allocPixels(ImageInfo.makeN32(32, 16, ColorAlphaType.OPAQUE))
+            for (y in 0 until 16) for (x in 0 until 32) {
+                erase(QUADRANTS[(if (y < 8) 0 else 2) + if (x < 16) 0 else 1], IRect.makeXYWH(x, y, 1, 1))
+            }
+        }
+        val jpeg = withOrientation(Image.makeFromBitmap(stored).encodeToData(EncodedImageFormat.JPEG, 100)!!.bytes, 6)
+        // As the editor shows it
+        val shown = decodeImageBitmap(jpeg, 64)!!
+        assertEquals(16 to 32, shown.width to shown.height)
+        val shownPixels = IntArray(16 * 32).also { shown.readPixels(it) }
+
+        val document = DrawDocument(title = "Photo")
+        val image = resource(document, "jpg", DrawResource.ResourceType.IMAGE, jpeg)
+        document.pages[0].add(DrawImage().apply { resourceId = image; x = 20f; y = 20f; width = 20f; height = 40f })
+        val exported = tempFile("photo", ".pdf")
+        PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), exported.path)
+
+        val bytes = exported.readBytes().decodeToString(throwOnInvalidSequence = false)
+        assertEquals(1, Regex("/Subtype\\s*/Image").findAll(bytes).count())
+        assertTrue("/DCTDecode" in bytes, "the JPEG as it is")
+        val page = render(exported, 0)
+        for ((x, y) in listOf(4 to 8, 12 to 8, 4 to 24, 12 to 24)) {
+            val expected = shownPixels[y * 16 + x] or (0xFF shl 24)
+            assertColor(expected, page.at(page.mm(20f + x * 20f / 16f, 20f + y * 40f / 32f)), tolerance = 24)
+        }
+        // The stored top-left corner, red, is at the top-right corner
+        assertColor(0xFFFF0000.toInt(), page.at(page.mm(35f, 30f)), tolerance = 24)
+    }
+
+    @Test
     fun theElementsAreWrittenInTheOrderTheyArePaintedAndTheMissingFilesAreSkipped() = runBlocking {
         val document = notebook()
         document.resources.first { it.type == DrawResource.ResourceType.IMAGE }.path = "/missing.png"
@@ -312,6 +369,25 @@ class PdfExporterTest {
         return out.toByteArray()
     }
 
+    /** [jpeg] with Exif metadata turning it by [orientation], after its JFIF header. */
+    private fun withOrientation(jpeg: ByteArray, orientation: Int): ByteArray {
+        val tiff = byteArrayOf(
+            'M'.code.toByte(), 'M'.code.toByte(), 0, 42, 0, 0, 0, 8,
+            // One entry: the orientation, a short
+            0, 1, 0x01, 0x12, 0, 3, 0, 0, 0, 1, 0, orientation.toByte(), 0, 0,
+            0, 0, 0, 0
+        )
+        val payload = "Exif".encodeToByteArray() + byteArrayOf(0, 0) + tiff
+        val length = payload.size + 2
+        val segment = byteArrayOf(0xFF.toByte(), 0xE1.toByte(), (length shr 8).toByte(), length.toByte()) + payload
+        // After the start of the image and its JFIF segment
+        val at = if (jpeg[3] == 0xE0.toByte()) 4 + ((jpeg[4].toInt() and 0xFF) shl 8 or (jpeg[5].toInt() and 0xFF)) else 2
+        return jpeg.copyOfRange(0, at) + segment + jpeg.copyOfRange(at, jpeg.size)
+    }
+
+    /** [text] as a string of PDF (UTF-16BE in hexadecimal). */
+    private fun hex(text: String) = "<FEFF" + text.map { it.code.toString(16).uppercase().padStart(4, '0') }.joinToString("") + ">"
+
     private fun resource(document: DrawDocument, extension: String, type: DrawResource.ResourceType, bytes: ByteArray): String {
         val file = tempFile("resource", ".$extension").apply { writeBytes(bytes) }
         val resource = DrawResource(id = "$extension-${document.resources.size}", type = type, path = file.path)
@@ -393,11 +469,11 @@ class PdfExporterTest {
         override fun drawJpeg(data: ByteArray, transform: Matrix2D) = true.also { calls += "image" }
         override fun drawImage(pixels: IntArray, width: Int, height: Int, transform: Matrix2D) =
             true.also { calls += if (width == 16) "image" else "text-image" }
-        override fun addMarkup(kind: PdfMarkupKind, lines: List<Rect>, argb: Int) = true.also { calls += "markup:$kind" }
+        override fun addMarkup(kind: PdfMarkupKind, lines: List<Rect>, argb: Int, appearance: List<Rect>?) = true.also { calls += "markup:$kind" }
         override fun loadFont(data: ByteArray): PdfFont? = null.also { calls += "font" }
         override fun addText(font: PdfFont, text: String, fontSize: Float, transform: Matrix2D, argb: Int, width: Float, invisible: Boolean) =
             true.also { calls += "text" }
-        override fun save(path: String) { calls += "save" }
+        override fun save(path: String, info: PdfInfo) { calls += "save" }
         override fun close() {}
     }
 
@@ -443,6 +519,9 @@ class PdfExporterTest {
         const val WHITE = 0xFFFFFFFF.toInt()
 
         /** A 300 x 200 page with a black square in its bottom-left corner and "Hash functions". */
+        /** Red, blue, green, yellow. */
+        val QUADRANTS = intArrayOf(0xFFFF0000.toInt(), 0xFF0000FF.toInt(), 0xFF00FF00.toInt(), 0xFFFFFF00.toInt())
+
         /** The picture of the [slides]: 260 x 260 RGB pixels. */
         const val SLIDE_PICTURE_BYTES = 260 * 260 * 3
         const val SLIDE_LINK = "https://example.com/slides"

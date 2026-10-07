@@ -65,8 +65,8 @@ Variations).
 | Page | a page of the same size (millimeters to points) |
 | Background | its color and its pattern, vector lines and dots (an option leaves the pattern out) |
 | PDF page (`DrawPdf`) | the page of the original PDF as a form object, placed where the page shows it: vectors, text and fonts kept (searchable, selectable); its annotations flattened into it first |
-| Highlight, underline, strikeout (`DrawTextMarkup`) | an annotation of the same kind (QuadPoints, color), recognized by the other readers |
-| Image (`DrawImage`) | an image object; a JPEG is embedded as it is, the others as pixels |
+| Highlight, underline, strikeout (`DrawTextMarkup`) | an annotation of the same kind (QuadPoints, color), recognized by the other readers; the underlines and the strikeouts drawn where and as thick as the editor draws them |
+| Image (`DrawImage`) | an image object; a JPEG is embedded as it is (turned by its place when its Exif turns it), the others as pixels |
 | Text, Markdown, LaTeX (`DrawText`) | its words as text of the PDF, where the editor lays them out, in the font of the editor (a subset of Noto Sans embedded); its formulas as vectors; the words with characters out of the font as images at 300 dpi (see [Quality of the PDF](#quality-of-the-pdf)) |
 | Stroke (`DrawStroke`) | its outline filled (non-zero winding), with the opacity of its color |
 
@@ -93,7 +93,7 @@ Variations).
   turned the same way (`StrokeOutline`): a translucent stroke is filled once where its outlines
   overlap. Without the native engine, the triangles of the mesh.
 * A JPEG turned by its Exif orientation is decoded and embedded as pixels (the systems decode it
-  turned or not).
+  turned or not); since Q6 it is embedded as it is, turned by its place.
 * Tests (`drawview-pdf`, `drawview-export`, JVM): the PDFs written are read again with PDFium
   (pages, sizes, text of the copied pages and of the texts, colors of the strokes, images,
   backgrounds and highlights at their place, pages copied with a rotation or a crop box compared
@@ -132,7 +132,10 @@ editor give in common code: no drawing of a platform is captured.
 | Read a TrueType font: glyphs of the characters, outlines, subset | `TrueTypeFont` (`drawview-pdf`) | Pure Fabrication |
 | A formula as data, the same on every platform | `LatexEngine.drawing` → `TexDrawing` (`drawview-latex`) | Information Expert, Protected Variations |
 | A formula as vectors | `TexPaths` (`drawview-export`) | Pure Fabrication |
-| Fonts and text of the PDF, pages of another PDF as pages | `PdfWriter.loadFont`, `addText`, `beginPage(base)` | Pure Fabrication, Creator |
+| Fonts and text of the PDF, pages of another PDF as pages | `PdfWriter.loadFont`, `addText`, `importPdfPages`, `beginPage(base)` | Pure Fabrication, Creator |
+| Where a mark of the text of a PDF is drawn, in the editor and in the PDF | `TextMarkupPainter.markRect` (`drawview-core`) | Information Expert |
+| How a JPEG is turned to be shown, by the decoding and in the PDF | `jpegOrientation`, `exifOrientation` (`drawview-core`) | Information Expert |
+| Title and application of a PDF | `PdfInfo` (`drawview-pdf`), `appName` of `DocumentExportUi` | Pure Fabrication, Protected Variations |
 
 | Phase | Content | Status |
 |---|---|---|
@@ -141,7 +144,7 @@ editor give in common code: no drawing of a platform is captured.
 | Q3 | The words of the texts as real text of the PDF (`TextBlockLayout`); images for the characters out of the font | Done |
 | Q4 | The formulas as vectors (`TexDrawing`); `\text{}` in Noto Sans | Done |
 | Q5 | The pages of the imported PDFs imported once per file, with their links | Done |
-| Q6 | Underlines and strikeouts as in the editor; images at full resolution; title and creator of the PDF | |
+| Q6 | Underlines and strikeouts as in the editor; images at full resolution; title and creator of the PDF | Done |
 
 ### Results of the quality
 
@@ -173,5 +176,16 @@ editor give in common code: no drawing of a platform is captured.
   they point to), its links to the web added again as links. The pages showing a PDF page
   otherwise (a page shown twice, a page of another size) copy it as a form object, drawn opaque on
   white like the editor draws it, over the background.
+* The underlines and the strikeouts of the PDFs are annotations drawn by their own appearance,
+  the rectangles of the editor (`TextMarkupPainter.markRect`); the highlights keep the one PDFium
+  generates (the line multiplied by its color, as the editor). PDFKit draws an appearance without
+  resources in black: an opaque mark is written opaque to 254/255, so that PDFium gives its
+  appearance the graphics state of its opacity.
+* A JPEG is embedded as it is, also when its Exif turns it: the turn is part of its place
+  (`exifOrientation`). The editor shows it turned on every platform (Skia turns it, Android turns
+  it after `BitmapFactory`, which does not). The other images are pixels, up to 4096 a side.
+* The title of the document and the application that made it (`PdfInfo`, `appName` of
+  `rememberDocumentExportUi`) are written in the information dictionary, added by the bridge as
+  an update of the file PDFium saved (PDFium cannot write it).
 * Limits: the links of the PDFs to their own pages are not kept (PDFium cannot write their
   destinations).

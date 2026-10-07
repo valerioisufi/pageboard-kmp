@@ -9,6 +9,8 @@
 #include "fpdf_transformpage.h"
 #include "pdfium_bridge.h"
 #include <algorithm>
+#include <cctype>
+#include <cstdlib>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -468,7 +470,7 @@ int32_t pdfium_page_add_pdf_page(int64_t doc_handle, int64_t page_handle, int64_
     return 1;
 }
 
-int32_t pdfium_page_add_markup(int64_t page_handle, int32_t kind, const float* quads, int32_t quad_count, uint32_t argb) {
+int32_t pdfium_page_add_markup(int64_t page_handle, int32_t kind, const float* quads, int32_t quad_count, uint32_t argb, const char* appearance) {
     if (!page_handle || !quads || quad_count <= 0) return 0;
     FPDF_ANNOTATION_SUBTYPE subtype;
     switch (kind) {
@@ -497,6 +499,16 @@ int32_t pdfium_page_add_markup(int64_t page_handle, int32_t kind, const float* q
     }
     FS_RECTF rect = {left, top, right, bottom};
     ok = ok && FPDFAnnot_SetRect(annot, &rect);
+    if (ok && appearance) {
+        // Its box is the rectangle of the annotation, its space the one of the page. PDFium gives
+        // it resources (the opacity of the annotation) only when the annotation is translucent,
+        // and PDFKit draws one without resources in black: an opaque one is made opaque to 254/255
+        // (its color cannot be set again once it has an appearance)
+        if ((argb >> 24) == 0xFF) ok = FPDFAnnot_SetColor(annot, FPDFANNOT_COLORTYPE_Color, (argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF, 0xFE);
+        std::vector<unsigned short> wide(appearance, appearance + std::strlen(appearance));
+        wide.push_back(0);
+        ok = ok && FPDFAnnot_SetAP(annot, FPDF_ANNOT_APPEARANCEMODE_NORMAL, reinterpret_cast<FPDF_WIDESTRING>(wide.data()));
+    }
     FPDFPage_CloseAnnot(annot);
     return ok ? 1 : 0;
 }
@@ -567,23 +579,80 @@ int32_t pdfium_end_page(int64_t page_handle) {
 namespace {
 struct FileWriter : FPDF_FILEWRITE {
     FILE* file;
+    // Bytes written, the last of them
+    unsigned long long length;
+    std::string tail;
 };
 
 int write_block(FPDF_FILEWRITE* self, const void* data, unsigned long size) {
     auto* writer = static_cast<FileWriter*>(self);
-    return std::fwrite(data, 1, size, writer->file) == size ? 1 : 0;
+    if (std::fwrite(data, 1, size, writer->file) != size) return 0;
+    writer->length += size;
+    writer->tail.append(static_cast<const char*>(data), size);
+    const size_t kept = 4096;
+    if (writer->tail.size() > 2 * kept) writer->tail.erase(0, writer->tail.size() - kept);
+    return 1;
+}
+
+/** The value written after [key] in [text] from [from] (up to a delimiter) into [value], or empty. */
+void value_after(const std::string& text, size_t from, const char* key, std::string& value) {
+    value.clear();
+    const size_t at = text.find(key, from);
+    if (at == std::string::npos) return;
+    size_t start = at + std::strlen(key);
+    while (start < text.size() && std::isspace(static_cast<unsigned char>(text[start]))) start++;
+    size_t end = start;
+    while (end < text.size() && text[end] != '/' && text[end] != '>') end++;
+    while (end > start && std::isspace(static_cast<unsigned char>(text[end - 1]))) end--;
+    value = text.substr(start, end - start);
+}
+
+/**
+ * Appends to the file of [writer] (a document just saved, its cross-reference table and trailer
+ * at its end) an update adding the information dictionary [info], unless its trailer cannot be
+ * read. Returns false when the update cannot be written.
+ */
+bool append_info(FileWriter& writer, const char* info) {
+    const std::string& tail = writer.tail;
+    const size_t trailer = tail.rfind("trailer");
+    const size_t startxref = tail.rfind("startxref");
+    if (trailer == std::string::npos || startxref == std::string::npos || startxref < trailer) return true;
+    std::string root, size_text;
+    value_after(tail, trailer, "/Root", root);
+    value_after(tail, trailer, "/Size", size_text);
+    const long long size = std::atoll(size_text.c_str());
+    const long long previous = std::atoll(tail.c_str() + startxref + std::strlen("startxref"));
+    if (root.empty() || size <= 0 || previous <= 0) return true;
+    const size_t id_at = tail.find("/ID", trailer);
+    const size_t id_end = id_at == std::string::npos ? id_at : tail.find(']', id_at);
+    const std::string id = id_end == std::string::npos || id_end > startxref ? "" : tail.substr(id_at, id_end + 1 - id_at);
+
+    std::string update = "\n";
+    const unsigned long long object = writer.length + update.size();
+    update += std::to_string(size) + " 0 obj\n<< " + info + " >>\nendobj\n";
+    const unsigned long long xref = writer.length + update.size();
+    char entry[24];
+    std::snprintf(entry, sizeof(entry), "%010llu 00000 n \n", object);
+    update += "xref\n" + std::to_string(size) + " 1\n" + entry;
+    update += "trailer\n<< /Size " + std::to_string(size + 1) + " /Root " + root + " /Info " + std::to_string(size) +
+        " 0 R /Prev " + std::to_string(previous) + (id.empty() ? "" : " " + id) + " >>\n";
+    update += "startxref\n" + std::to_string(xref) + "\n%%EOF\n";
+    return std::fwrite(update.data(), 1, update.size(), writer.file) == update.size();
 }
 }  // namespace
 
-int32_t pdfium_save_document(int64_t doc_handle, const char* file_path) {
+int32_t pdfium_save_document(int64_t doc_handle, const char* file_path, const char* info) {
     if (!doc_handle || !file_path) return 0;
     std::lock_guard<std::mutex> lock(g_pdfium_mutex);
     FileWriter writer;
     writer.version = 1;
     writer.WriteBlock = write_block;
+    writer.length = 0;
     writer.file = std::fopen(file_path, "wb");
     if (!writer.file) return 0;
-    const bool saved = FPDF_SaveAsCopy(reinterpret_cast<FPDF_DOCUMENT>(doc_handle), &writer, FPDF_NO_INCREMENTAL);
+    bool saved = FPDF_SaveAsCopy(reinterpret_cast<FPDF_DOCUMENT>(doc_handle), &writer, FPDF_NO_INCREMENTAL);
+    // PDFium writes no information dictionary: added as an update of the file
+    if (saved && info && *info) saved = append_info(writer, info);
     const bool closed = std::fclose(writer.file) == 0;
     return saved && closed ? 1 : 0;
 }

@@ -173,9 +173,9 @@ internal actual object PdfiumBindings {
         return matrix.usePinned { pinned -> pdfium_page_add_pdf_page(document, page, source, pageIndex, pinned.addressOf(0)) != 0 }
     }
 
-    actual fun pageAddMarkup(page: Long, kind: Int, quads: FloatArray, argb: Int): Boolean {
+    actual fun pageAddMarkup(page: Long, kind: Int, quads: FloatArray, argb: Int, appearance: String?): Boolean {
         if (quads.size < 8) return false
-        return quads.usePinned { pinned -> pdfium_page_add_markup(page, kind, pinned.addressOf(0), quads.size / 8, argb.toUInt()) != 0 }
+        return quads.usePinned { pinned -> pdfium_page_add_markup(page, kind, pinned.addressOf(0), quads.size / 8, argb.toUInt(), appearance) != 0 }
     }
 
     actual fun loadFont(document: Long, data: ByteArray): Long {
@@ -200,5 +200,5 @@ internal actual object PdfiumBindings {
 
     actual fun endPage(page: Long): Boolean = pdfium_end_page(page) != 0
 
-    actual fun saveDocument(document: Long, path: String): Boolean = pdfium_save_document(document, path) != 0
+    actual fun saveDocument(document: Long, path: String, info: String?): Boolean = pdfium_save_document(document, path, info) != 0
 }

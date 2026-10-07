@@ -176,13 +176,15 @@ JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative
 }
 
 JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nPageAddMarkup(
-    JNIEnv* env, jclass, jlong page, jint kind, jfloatArray jquads, jint color) {
+    JNIEnv* env, jclass, jlong page, jint kind, jfloatArray jquads, jint color, jstring jappearance) {
     if (!jquads) return JNI_FALSE;
     jsize count = env->GetArrayLength(jquads) / 8;
+    const char* appearance = jappearance ? env->GetStringUTFChars(jappearance, nullptr) : nullptr;
+    if (jappearance && !appearance) return JNI_FALSE;
     jfloat* quads = env->GetFloatArrayElements(jquads, nullptr);
-    if (!quads) return JNI_FALSE;
-    int32_t res = pdfium_page_add_markup(page, kind, quads, count, static_cast<uint32_t>(color));
-    env->ReleaseFloatArrayElements(jquads, quads, JNI_ABORT);
+    int32_t res = quads ? pdfium_page_add_markup(page, kind, quads, count, static_cast<uint32_t>(color), appearance) : 0;
+    if (quads) env->ReleaseFloatArrayElements(jquads, quads, JNI_ABORT);
+    if (appearance) env->ReleaseStringUTFChars(jappearance, appearance);
     return res ? JNI_TRUE : JNI_FALSE;
 }
 
@@ -221,12 +223,14 @@ JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative
 }
 
 JNIEXPORT jboolean JNICALL Java_io_github_valerioisufi_drawview_pdf_PdfiumNative_nSaveDocument(
-    JNIEnv* env, jclass, jlong doc, jstring jpath) {
+    JNIEnv* env, jclass, jlong doc, jstring jpath, jstring jinfo) {
     if (!jpath) return JNI_FALSE;
+    const char* info = jinfo ? env->GetStringUTFChars(jinfo, nullptr) : nullptr;
+    if (jinfo && !info) return JNI_FALSE;
     const char* path = env->GetStringUTFChars(jpath, nullptr);
-    if (!path) return JNI_FALSE;
-    int32_t res = pdfium_save_document(doc, path);
-    env->ReleaseStringUTFChars(jpath, path);
+    int32_t res = path ? pdfium_save_document(doc, path, info) : 0;
+    if (path) env->ReleaseStringUTFChars(jpath, path);
+    if (info) env->ReleaseStringUTFChars(jinfo, info);
     return res ? JNI_TRUE : JNI_FALSE;
 }
 

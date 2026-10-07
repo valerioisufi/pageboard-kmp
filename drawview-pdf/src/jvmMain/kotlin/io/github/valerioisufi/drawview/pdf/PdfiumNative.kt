@@ -100,7 +100,7 @@ internal object PdfiumNative {
     external fun nPageAddPdfPage(docHandle: Long, pageHandle: Long, sourceHandle: Long, pageIndex: Int, matrix: DoubleArray): Boolean
 
     @JvmStatic
-    external fun nPageAddMarkup(pageHandle: Long, kind: Int, quads: FloatArray, argb: Int): Boolean
+    external fun nPageAddMarkup(pageHandle: Long, kind: Int, quads: FloatArray, argb: Int, appearance: String?): Boolean
 
     @JvmStatic
     external fun nLoadFont(docHandle: Long, data: ByteArray): Long
@@ -124,5 +124,5 @@ internal object PdfiumNative {
     external fun nEndPage(pageHandle: Long): Boolean
 
     @JvmStatic
-    external fun nSaveDocument(docHandle: Long, path: String): Boolean
+    external fun nSaveDocument(docHandle: Long, path: String, info: String?): Boolean
 }

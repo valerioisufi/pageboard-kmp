@@ -2,6 +2,8 @@ package io.github.valerioisufi.drawview.pdf
 
 import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import kotlin.math.abs
+import kotlin.math.roundToLong
 
 /**
  * A new PDF document written page by page (see [PdfiumEngine.create]). Every coordinate is in
@@ -57,8 +59,11 @@ interface PdfWriter : AutoCloseable {
      */
     fun drawImage(pixels: IntArray, width: Int, height: Int, transform: Matrix2D): Boolean
 
-    /** Marks the passage of text on [lines] as [kind] in [argb]: an annotation the readers know. */
-    fun addMarkup(kind: PdfMarkupKind, lines: List<Rect>, argb: Int): Boolean
+    /**
+     * Marks the passage of text on [lines] as [kind] in [argb]: an annotation the readers know,
+     * drawn by filling [appearance] (or as PDFium draws it when `null`).
+     */
+    fun addMarkup(kind: PdfMarkupKind, lines: List<Rect>, argb: Int, appearance: List<Rect>? = null): Boolean
 
     /**
      * Embeds the TrueType font [data] (typically a subset, see [TrueTypeFont.subset]): the text
@@ -83,12 +88,15 @@ interface PdfWriter : AutoCloseable {
         invisible: Boolean = false
     ): Boolean
 
-    /** Finishes the last page and writes the document to [path]. */
-    fun save(path: String)
+    /** Finishes the last page and writes the document to [path], with its [info]. */
+    fun save(path: String, info: PdfInfo = PdfInfo())
 
     /** Releases the document (also when it was not saved). */
     override fun close()
 }
+
+/** What a PDF tells of itself: its [title], the application that made it ([creator]). */
+class PdfInfo(val title: String? = null, val creator: String? = null)
 
 /** A page of another PDF imported by [PdfWriter.importPdfPages], [widthPt] x [heightPt] as it is displayed. */
 class PdfImportedPage(val widthPt: Float, val heightPt: Float)
@@ -249,7 +257,7 @@ internal class PdfiumWriter(private var document: Long) : PdfWriter {
     override fun drawImage(pixels: IntArray, width: Int, height: Int, transform: Matrix2D): Boolean =
         PdfiumBindings.pageAddBitmap(document, currentPage(), pixels, width, height, toPdf(imageToTop().postConcat(transform)))
 
-    override fun addMarkup(kind: PdfMarkupKind, lines: List<Rect>, argb: Int): Boolean {
+    override fun addMarkup(kind: PdfMarkupKind, lines: List<Rect>, argb: Int, appearance: List<Rect>?): Boolean {
         if (lines.isEmpty()) return true
         val quads = FloatArray(lines.size * 8)
         lines.forEachIndexed { i, line ->
@@ -257,7 +265,24 @@ internal class PdfiumWriter(private var document: Long) : PdfWriter {
             floatArrayOf(line.left, line.top, line.right, line.top, line.left, line.bottom, line.right, line.bottom).copyInto(quads, i * 8)
         }
         toUser.mapPoints(quads)
-        return PdfiumBindings.pageAddMarkup(currentPage(), kind.ordinal, quads, argb)
+        return PdfiumBindings.pageAddMarkup(currentPage(), kind.ordinal, quads, argb, appearance?.let { filling(it, argb) })
+    }
+
+    /** The content stream filling [areas] in [argb], in the user space of the page. */
+    private fun filling(areas: List<Rect>, argb: Int): String = buildString {
+        // A translucent one is so by the graphics state PDFium gives it (the opacity of the annotation)
+        if (argb ushr 24 != 0xFF) append("/GS gs ")
+        for (shift in intArrayOf(16, 8, 0)) append(pdfNumber(((argb shr shift) and 0xFF) / 255f)).append(' ')
+        append("rg")
+        for (area in areas) {
+            val corners = floatArrayOf(area.left, area.top, area.right, area.top, area.right, area.bottom, area.left, area.bottom)
+            toUser.mapPoints(corners)
+            for (i in 0 until 4) {
+                append(' ').append(pdfNumber(corners[i * 2])).append(' ').append(pdfNumber(corners[i * 2 + 1]))
+                append(if (i == 0) " m" else " l")
+            }
+            append(" h f")
+        }
     }
 
     override fun loadFont(data: ByteArray): PdfFont? {
@@ -282,13 +307,14 @@ internal class PdfiumWriter(private var document: Long) : PdfWriter {
         return PdfiumBindings.pageAddText(document, currentPage(), font.handle, text, fontSize, argb, invisible, toPdf(glyphs.postConcat(transform)))
     }
 
-    override fun save(path: String) {
+    override fun save(path: String, info: PdfInfo) {
         endPage()
         check(document != 0L) { "The PDF has been closed" }
         // The pages imported that no page has been begun on
         repeat(imported.size) { PdfiumBindings.deletePage(document, begun) }
         imported.clear()
-        check(PdfiumBindings.saveDocument(document, path)) { "Cannot write the PDF to $path" }
+        val entries = listOfNotNull(info.title?.let { "/Title ${pdfText(it)}" }, info.creator?.let { "/Creator ${pdfText(it)}" })
+        check(PdfiumBindings.saveDocument(document, path, entries.joinToString(" ").ifEmpty { null })) { "Cannot write the PDF to $path" }
     }
 
     override fun close() {
@@ -329,6 +355,21 @@ internal class PdfiumWriter(private var document: Long) : PdfWriter {
         val m = Matrix2D().set(transform).postConcat(toUser)
         return doubleArrayOf(m.a.toDouble(), m.b.toDouble(), m.c.toDouble(), m.d.toDouble(), m.tx.toDouble(), m.ty.toDouble())
     }
+}
+
+/** [value] as a number of PDF: a decimal of up to three digits after the point. */
+internal fun pdfNumber(value: Float): String {
+    val thousandths = (value * 1000f).roundToLong()
+    val magnitude = abs(thousandths)
+    val fraction = (magnitude % 1000).toString().padStart(3, '0').trimEnd('0')
+    return (if (thousandths < 0) "-" else "") + (magnitude / 1000) + (if (fraction.isEmpty()) "" else ".$fraction")
+}
+
+/** [text] as a string of PDF: UTF-16BE in hexadecimal, after its byte order mark. */
+internal fun pdfText(text: String): String = buildString {
+    append("<FEFF")
+    for (unit in text) append(unit.code.toString(16).uppercase().padStart(4, '0'))
+    append('>')
 }
 
 /**

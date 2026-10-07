@@ -71,30 +71,34 @@ import org.jetbrains.compose.resources.stringResource
  * opening the export dialog.
  *
  * @param documents the documents of the application (those of its library).
+ * @param appName the name of the application, written in the PDFs as the one that made them.
  */
-class DocumentExportUi(documents: OpenDocuments) {
+class DocumentExportUi(documents: OpenDocuments, private val appName: String? = null) {
     private val export = DocumentExport(documents)
 
     /** "Export" on the document selected in the library (see `DocumentLibrary.documentActions`). */
     val documentAction: DocumentAction = DocumentAction(
         icon = Icons.Outlined.IosShare,
         label = { stringResource(Res.string.export_action) },
-        content = { documentId, title, onDone -> ExportDialog(export, documentId, title, pageOnScreen = null, onDismiss = onDone) }
+        content = { documentId, title, onDone -> ExportDialog(export, appName, documentId, title, pageOnScreen = null, onDismiss = onDone) }
     )
 
     /** "Export" in the top bar of the editor: the page on screen can also be exported alone. */
     val editorExtension: EditorExtension = EditorExtension(
-        toolbarActions = { session, controller -> ExportButton(export, session.documentId, controller) }
+        toolbarActions = { session, controller -> ExportButton(export, appName, session.documentId, controller) }
     )
 }
 
-/** The export of the documents of [documents] (by default those of the library of `DrawViewStore`). */
+/**
+ * The export of the documents of [documents] (by default those of the library of `DrawViewStore`)
+ * in the application [appName].
+ */
 @Composable
-fun rememberDocumentExportUi(documents: OpenDocuments = DrawViewStore.documents): DocumentExportUi =
-    remember(documents) { DocumentExportUi(documents) }
+fun rememberDocumentExportUi(documents: OpenDocuments = DrawViewStore.documents, appName: String? = null): DocumentExportUi =
+    remember(documents, appName) { DocumentExportUi(documents, appName) }
 
 @Composable
-private fun ExportButton(export: DocumentExport, documentId: String, controller: DrawViewController) {
+private fun ExportButton(export: DocumentExport, appName: String?, documentId: String, controller: DrawViewController) {
     var pageOnScreen by remember { mutableStateOf<String?>(null) }
     var dialog by remember { mutableStateOf(false) }
     ToolButton(onClick = {
@@ -103,7 +107,7 @@ private fun ExportButton(export: DocumentExport, documentId: String, controller:
     }) {
         Icon(imageVector = Icons.Outlined.IosShare, contentDescription = stringResource(Res.string.export_action))
     }
-    if (dialog) ExportDialog(export, documentId, controller.document.title, pageOnScreen, onDismiss = { dialog = false })
+    if (dialog) ExportDialog(export, appName, documentId, controller.document.title, pageOnScreen, onDismiss = { dialog = false })
 }
 
 private enum class ExportFormat { PDF, PNG }
@@ -116,13 +120,20 @@ private sealed interface ExportState {
 }
 
 /**
- * The export of the document [documentId] named [title]: its format (the PDF of the pages, or the
- * image of [pageOnScreen] when there is one), its pages (all of them or [pageOnScreen]) and the
- * pattern of the backgrounds; then where to save it, the progress and the result. Dismissed while
- * running, the export stops.
+ * The export of the document [documentId] named [title] in the application [appName]: its format
+ * (the PDF of the pages, or the image of [pageOnScreen] when there is one), its pages (all of them
+ * or [pageOnScreen]) and the pattern of the backgrounds; then where to save it, the progress and
+ * the result. Dismissed while running, the export stops.
  */
 @Composable
-internal fun ExportDialog(export: DocumentExport, documentId: String, title: String, pageOnScreen: String?, onDismiss: () -> Unit) {
+internal fun ExportDialog(
+    export: DocumentExport,
+    appName: String?,
+    documentId: String,
+    title: String,
+    pageOnScreen: String?,
+    onDismiss: () -> Unit
+) {
     val fontFamilyResolver = LocalFontFamilyResolver.current
     val notesFonts = rememberNotesFonts()
     val textAdapter = remember(fontFamilyResolver, notesFonts) { ComposeTextTileAdapter(fontFamilyResolver, notesFonts) }
@@ -133,7 +144,7 @@ internal fun ExportDialog(export: DocumentExport, documentId: String, title: Str
     val scope = rememberCoroutineScope()
 
     val exporter = when (format) {
-        ExportFormat.PDF -> PdfExporter(textAdapter, NotesFontFiles::bytes)
+        ExportFormat.PDF -> PdfExporter(textAdapter, NotesFontFiles::bytes, creator = appName)
         ExportFormat.PNG -> PageImageExporter(textAdapter)
     }
     val pages = if (pageOnScreen != null && (onlyPageOnScreen || format == ExportFormat.PNG)) setOf(pageOnScreen) else null

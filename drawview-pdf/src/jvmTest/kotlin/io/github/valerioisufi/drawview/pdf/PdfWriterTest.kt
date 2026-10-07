@@ -192,6 +192,40 @@ class PdfWriterTest {
     }
 
     @Test
+    fun aMarkIsDrawnAsItIsGiven() {
+        val pdf = write(200f, 100f) {
+            // A strikeout drawn through the upper part of its line
+            assertTrue(addMarkup(PdfMarkupKind.STRIKEOUT, listOf(Rect(10f, 10f, 190f, 50f)), BLUE, appearance = listOf(Rect(10f, 18f, 190f, 22f))))
+        }
+        val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
+        assertTrue("/StrikeOut" in bytes)
+        // With resources: PDFKit draws an appearance without them in black
+        assertTrue(Regex("/BBox[^>]*/Resources").containsMatchIn(bytes))
+        val page = render(pdf)
+        assertColor(BLUE, page.at(100, 20))
+        assertColor(WHITE, page.at(100, 30))
+    }
+
+    @Test
+    fun theTitleAndTheApplicationAreWritten() {
+        val pdf = tempFile("info", ".pdf")
+        PdfiumEngine.create().use { writer ->
+            writer.beginPage(100f, 100f)
+            writer.save(pdf.path, PdfInfo(title = "Lezione 3: σ", creator = "PencilNotes"))
+        }
+        val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
+        assertTrue("/Info" in bytes && "/Title <FEFF004C0065007A0069006F006E006500200033003A002003C3>" in bytes, bytes.takeLast(400))
+        assertTrue("/Creator <FEFF00500065006E00630069006C004E006F007400650073>" in bytes)
+        // Still read as a whole
+        PdfiumEngine.open(pdf.path).use { assertEquals(1, it.pageCount) }
+    }
+
+    @Test
+    fun numbersAreWrittenAsDecimals() {
+        assertEquals(listOf("1.5", "0", "12", "0.123", "-2.25", "100000"), listOf(1.5f, -0.0004f, 12f, 0.1234f, -2.25f, 1e5f).map(::pdfNumber))
+    }
+
+    @Test
     fun theCharactersOfAFontAreReadWithTheirOutlines() {
         val font = TrueTypeFont(NOTO_SANS)
         assertTrue(font.unitsPerEm > 0)

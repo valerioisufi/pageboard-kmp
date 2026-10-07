@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.toArgb
+import io.github.valerioisufi.drawview.core.canvas.TextMarkupPainter
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.DrawImage
@@ -19,6 +20,9 @@ import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.pdfPointsToPageMm
 import io.github.valerioisufi.drawview.core.platform.PlatformFiles
 import io.github.valerioisufi.drawview.core.platform.decodeImageBitmap
+import io.github.valerioisufi.drawview.core.platform.exifOrientation
+import io.github.valerioisufi.drawview.core.platform.isJpeg
+import io.github.valerioisufi.drawview.core.platform.jpegOrientation
 import io.github.valerioisufi.drawview.core.render.tile.TextBlockLayout
 import io.github.valerioisufi.drawview.core.render.tile.TextFace
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
@@ -26,6 +30,7 @@ import io.github.valerioisufi.drawview.core.render.tile.TextWord
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.pdf.PdfFont
 import io.github.valerioisufi.drawview.pdf.PdfImportedPage
+import io.github.valerioisufi.drawview.pdf.PdfInfo
 import io.github.valerioisufi.drawview.pdf.PdfMarkupKind
 import io.github.valerioisufi.drawview.pdf.PdfPath
 import io.github.valerioisufi.drawview.pdf.PdfWriter
@@ -50,11 +55,14 @@ import kotlinx.coroutines.withContext
  *   texts out.
  * @param fontFiles the TrueType files of the fonts the adapter draws the texts with
  *   (`NotesFontFiles`), or `null`: the texts are then images of them.
+ * @param creator the name of the application making the PDF, written in it with the title of
+ *   the document.
  * @param createWriter the PDF written.
  */
 class PdfExporter(
     private val textAdapter: TextTileAdapter?,
     private val fontFiles: (suspend (TextFace) -> ByteArray?)? = null,
+    private val creator: String? = null,
     private val createWriter: () -> PdfWriter = PdfiumEngine::create
 ) : DocumentExporter {
     override val extension: String get() = "pdf"
@@ -75,7 +83,7 @@ class PdfExporter(
                     skipped += PageWriter(writer, content, page, texts, bases[index]).write(options)
                     progress((index + 1f) / content.pages.size)
                 }
-                writer.save(path)
+                writer.save(path, PdfInfo(title = content.title, creator = creator))
             }
             ExportResult(content.pages.size, skipped)
         }
@@ -358,7 +366,13 @@ class PdfExporter(
                 TextMarkupKind.UNDERLINE -> PdfMarkupKind.UNDERLINE
                 TextMarkupKind.STRIKEOUT -> PdfMarkupKind.STRIKEOUT
             }
-            return writer.addMarkup(kind, markup.rects.map(toPage::mapRect), markup.color)
+            // A highlight covers its lines (as PDFium draws it), the other marks are drawn as by the editor
+            val drawn = if (markup.kind == TextMarkupKind.HIGHLIGHT) {
+                null
+            } else {
+                markup.rects.map { toPage.mapRect(TextMarkupPainter.markRect(it, markup.kind)) }
+            }
+            return writer.addMarkup(kind, markup.rects.map(toPage::mapRect), markup.color, drawn)
         }
 
         private fun writeImage(image: DrawImage): Boolean {
@@ -366,8 +380,8 @@ class PdfExporter(
             val file = content.resourceFile(image.resourceId, DrawResource.ResourceType.IMAGE) ?: return false
             val bytes = PlatformFiles.readBytes(file) ?: return false
             val toPage = boxToPage(image.x, image.y, image.width, image.height, image.rotation)
-            // A JPEG is embedded as it is, unless its metadata turn it
-            if (isJpeg(bytes) && jpegOrientation(bytes) == 1 && writer.drawJpeg(bytes, toPage)) return true
+            // A JPEG is embedded as it is, turned by its place as its Exif metadata say (as it is shown)
+            if (isJpeg(bytes) && writer.drawJpeg(bytes, exifOrientation(jpegOrientation(bytes)).postConcat(toPage))) return true
             val bitmap = decodeImageBitmap(bytes, MAX_IMAGE_SIDE) ?: return false
             val pixels = IntArray(bitmap.width * bitmap.height)
             bitmap.readPixels(pixels)
@@ -435,7 +449,7 @@ class PdfExporter(
         /** Largest side of the image of a text, in pixels. */
         const val MAX_TEXT_SIDE = 8192f
 
-        /** Largest side of an image that is not embedded as it is, in pixels. */
+        /** Largest side of an image that is not a JPEG (written as pixels), in pixels. */
         const val MAX_IMAGE_SIDE = 4096
     }
 }
