@@ -67,7 +67,8 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * The lecture assistant in the DrawView editor: a button of the top bar (the recording time while
- * recording), the assistant panel beside the canvas and the hints over it. Closing the editor does
+ * recording), the assistant panel beside the canvas (rising from the bottom over it on a phone)
+ * and the hints over it. Closing the editor does
  * not stop the recording (see [LectureRecordingIndicator]).
  */
 fun LectureAssistant.editorExtension(): EditorExtension = EditorExtension(
@@ -76,6 +77,8 @@ fun LectureAssistant.editorExtension(): EditorExtension = EditorExtension(
     canvasOverlay = { session, controller ->
         PlacementHint(this@editorExtension, controller)
         ArrivalsBanner(this@editorExtension, session.documentId)
+        // On a phone the panel rises from the bottom, over the canvas
+        LectureSheet(this@editorExtension, session.documentId, controller)
     }
 )
 

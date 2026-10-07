@@ -1,16 +1,20 @@
 package io.github.valerioisufi.drawview.lecture.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -19,16 +23,19 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -48,6 +55,7 @@ import androidx.compose.material.icons.outlined.Slideshow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -57,9 +65,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -67,10 +75,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.material3.Checkbox
-import kotlinx.coroutines.delay
-import io.github.valerioisufi.drawview.core.util.currentTimeMillis
-import io.github.valerioisufi.drawview.lecture.AudioDownload
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -85,13 +89,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -100,20 +106,19 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.core.util.currentTimeMillis
+import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.lecture.AssistantSettings
-import io.github.valerioisufi.drawview.lecture.ImportStep
-import io.github.valerioisufi.drawview.lecture.LectureAssistant
-import io.github.valerioisufi.drawview.lecture.audio.importableExtensions
-import io.github.valerioisufi.drawview.lecture.platform.rememberFileOpener
-import io.github.valerioisufi.drawview.lecture.platform.rememberFileSaver
-import io.github.valerioisufi.drawview.lecture.platform.isComputer
-import io.github.valerioisufi.drawview.lecture.LectureProblem
+import io.github.valerioisufi.drawview.lecture.AudioDownload
 import io.github.valerioisufi.drawview.lecture.ControllerNotebookSource
+import io.github.valerioisufi.drawview.lecture.ImportStep
 import io.github.valerioisufi.drawview.lecture.Lecture
+import io.github.valerioisufi.drawview.lecture.LectureAssistant
+import io.github.valerioisufi.drawview.lecture.LectureProblem
 import io.github.valerioisufi.drawview.lecture.LectureRecorder
+import io.github.valerioisufi.drawview.lecture.LectureStatus
 import io.github.valerioisufi.drawview.lecture.LectureSummary
 import io.github.valerioisufi.drawview.lecture.LectureTask
-import io.github.valerioisufi.drawview.lecture.LectureStatus
 import io.github.valerioisufi.drawview.lecture.NoteKind
 import io.github.valerioisufi.drawview.lecture.NoteSuggestion
 import io.github.valerioisufi.drawview.lecture.ReviewProvider
@@ -121,13 +126,17 @@ import io.github.valerioisufi.drawview.lecture.ReviewStatus
 import io.github.valerioisufi.drawview.lecture.SharedData
 import io.github.valerioisufi.drawview.lecture.SuggestionStatus
 import io.github.valerioisufi.drawview.lecture.TokenUsage
+import io.github.valerioisufi.drawview.lecture.audio.importableExtensions
 import io.github.valerioisufi.drawview.lecture.formatLectureTime
-import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.lecture.generated.resources.*
-import io.github.valerioisufi.drawview.latex.LatexEngine
+import io.github.valerioisufi.drawview.lecture.platform.isComputer
+import io.github.valerioisufi.drawview.lecture.platform.rememberFileOpener
+import io.github.valerioisufi.drawview.lecture.platform.rememberFileSaver
+import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import kotlinx.coroutines.delay
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
@@ -135,9 +144,19 @@ import org.jetbrains.compose.resources.stringResource
 
 private val PanelWidth = 380.dp
 
+/** Narrower than this (a phone), the panel rises from the bottom over the canvas instead of being beside it. */
+private val SideBySideMinWidth = 600.dp
+
+/** Whether the window leaves room for the panel beside the canvas. */
+@Composable
+private fun panelBeside(): Boolean {
+    val width = LocalWindowInfo.current.containerSize.width
+    return with(LocalDensity.current) { width.toDp() } >= SideBySideMinWidth
+}
+
 /**
- * The panel of the lecture assistant, beside the canvas of the editor of [documentId]: recording,
- * suggested notes, transcript, outline and final review.
+ * The panel of the lecture assistant, beside the canvas of the editor of [documentId] (on a phone,
+ * [LectureSheet] over it): recording, suggested notes, transcript, outline and final review.
  */
 @Composable
 internal fun LecturePanel(assistant: LectureAssistant, documentId: String, controller: DrawViewController) {
@@ -147,7 +166,7 @@ internal fun LecturePanel(assistant: LectureAssistant, documentId: String, contr
         assistant.onEditorShown(documentId, notebook)
         onDispose { assistant.onEditorHidden(documentId, notebook) }
     }
-    var showSettings by remember { mutableStateOf(false) }
+    if (!panelBeside()) return
 
     AnimatedVisibility(
         visible = assistant.isPanelOpen,
@@ -163,42 +182,108 @@ internal fun LecturePanel(assistant: LectureAssistant, documentId: String, contr
                     .width(PanelWidth)
                     .fillMaxHeight()
             ) {
-                Column {
-                    PanelHeader(
-                        // The settings of the models, where they are
-                        onSettings = { showSettings = true },
-                        onClose = { assistant.isPanelOpen = false }
-                    )
-                    val lecture = assistant.shownLecture(documentId)
-                    val recorder = assistant.recorderOf(documentId)
-                    LectureSelector(assistant, documentId, lecture)
-                    val chooseRecording = rememberFileOpener(stringResource(Res.string.lecture_import_title), importableExtensions()) { file ->
-                        assistant.importRecording(documentId, controller, file)
-                    }
-                    RecordingSection(
-                        assistant = assistant,
-                        lecture = lecture,
-                        recorder = recorder,
-                        onImport = {
-                            assistant.clearImportAndExportMessages()
-                            chooseRecording()
-                        },
-                        onStart = {
-                            // A key is needed only when something is sent to Gemini
-                            val settings = assistant.settingsStore.settings
-                            if (assistant.canGenerate && settings.sentToGoogle.isNotEmpty() && !assistant.settingsStore.hasApiKey) showSettings = true
-                            else assistant.record(documentId, controller)
-                        },
-                        onOpenSettings = { showSettings = true }
-                    )
-                    if (lecture != null) PlayerBar(lecture)
-                    HorizontalDivider()
-                    if (lecture != null) {
-                        ProfessorPageBanner(lecture, controller)
-                        LectureTabs(assistant, lecture, controller)
-                    }
-                }
+                PanelContent(assistant, documentId, controller)
             }
+        }
+    }
+}
+
+/**
+ * The panel on a phone: it rises from the bottom over the canvas, which stays visible above it;
+ * its handle makes it taller or shorter (dragged or tapped).
+ */
+@Composable
+internal fun BoxScope.LectureSheet(assistant: LectureAssistant, documentId: String, controller: DrawViewController) {
+    if (panelBeside()) return
+    var tall by remember { mutableStateOf(false) }
+    val fraction by animateFloatAsState(if (tall) SheetTallFraction else SheetFraction)
+    AnimatedVisibility(
+        visible = assistant.isPanelOpen,
+        enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+        exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+        modifier = Modifier.align(Alignment.BottomCenter)
+    ) {
+        Surface(
+            color = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+            shadowElevation = 8.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(fraction)
+        ) {
+            // Above the bar of the system (the home indicator)
+            Column(modifier = Modifier.navigationBarsPadding()) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { tall = !tall }
+                        .pointerInput(Unit) {
+                            detectVerticalDragGestures { _, dragAmount ->
+                                if (dragAmount < -SheetDragThreshold) tall = true
+                                if (dragAmount > SheetDragThreshold) {
+                                    if (tall) tall = false else assistant.isPanelOpen = false
+                                }
+                            }
+                        }
+                        .padding(vertical = 8.dp)
+                ) {
+                    Box(
+                        Modifier
+                            .size(width = 32.dp, height = 4.dp)
+                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), RoundedCornerShape(2.dp))
+                    )
+                }
+                PanelContent(assistant, documentId, controller)
+            }
+        }
+    }
+}
+
+/** The part of the canvas the panel takes on a phone, and when made taller. */
+private const val SheetFraction = 0.45f
+private const val SheetTallFraction = 0.85f
+
+/** A drag of the handle longer than this (in pixels, at once) moves the panel. */
+private const val SheetDragThreshold = 8f
+
+/** What the panel shows, beside the canvas or rising from the bottom. */
+@Composable
+private fun PanelContent(assistant: LectureAssistant, documentId: String, controller: DrawViewController) {
+    var showSettings by remember { mutableStateOf(false) }
+    Column {
+        PanelHeader(
+            // The settings of the models, where they are
+            onSettings = { showSettings = true },
+            onClose = { assistant.isPanelOpen = false }
+        )
+        val lecture = assistant.shownLecture(documentId)
+        val recorder = assistant.recorderOf(documentId)
+        LectureSelector(assistant, documentId, lecture)
+        val chooseRecording = rememberFileOpener(stringResource(Res.string.lecture_import_title), importableExtensions()) { file ->
+            assistant.importRecording(documentId, controller, file)
+        }
+        RecordingSection(
+            assistant = assistant,
+            lecture = lecture,
+            recorder = recorder,
+            onImport = {
+                assistant.clearImportAndExportMessages()
+                chooseRecording()
+            },
+            onStart = {
+                // A key is needed only when something is sent to Gemini
+                val settings = assistant.settingsStore.settings
+                if (assistant.canGenerate && settings.sentToGoogle.isNotEmpty() && !assistant.settingsStore.hasApiKey) showSettings = true
+                else assistant.record(documentId, controller)
+            },
+            onOpenSettings = { showSettings = true }
+        )
+        if (lecture != null) PlayerBar(lecture)
+        HorizontalDivider()
+        if (lecture != null) {
+            ProfessorPageBanner(lecture, controller)
+            LectureTabs(assistant, lecture, controller)
         }
     }
 

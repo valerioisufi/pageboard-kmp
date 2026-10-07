@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.lecture.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -250,14 +251,12 @@ internal fun AssistantSettingsDialog(store: AssistantSettingsStore, localModels:
 private fun TaskModelRow(task: LectureTask, settings: AssistantSettings, localModels: LocalModels, onChange: (AssistantSettings) -> Unit) {
     val model = settings.task(task)
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = stringResource(taskLabel(task)),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f)
-            )
+        val label = @Composable { modifier: Modifier ->
+            Text(text = stringResource(taskLabel(task)), style = MaterialTheme.typography.bodyMedium, modifier = modifier)
+        }
+        val choice = @Composable { modifier: Modifier ->
             val providers = ModelProvider.entries
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.width(220.dp)) {
+            SingleChoiceSegmentedButtonRow(modifier = modifier) {
                 providers.forEachIndexed { index, provider ->
                     // Without the speech recognition here, the audio is transcribed (and followed) online
                     val possible = provider == ModelProvider.GEMINI || localModels.canTranscribe ||
@@ -284,6 +283,20 @@ private fun TaskModelRow(task: LectureTask, settings: AssistantSettings, localMo
                             )
                         )
                     }
+                }
+            }
+        }
+        // Beside each other, or the label above on a narrow screen (a phone)
+        BoxWithConstraints {
+            if (maxWidth >= TaskRowMinWidth) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    label(Modifier.weight(1f))
+                    choice(Modifier.width(220.dp))
+                }
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    label(Modifier)
+                    choice(Modifier.fillMaxWidth())
                 }
             }
         }
@@ -602,6 +615,9 @@ private fun SectionTitle(text: StringResource) {
 private fun Hint(text: String) {
     Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
+
+/** Narrower than this, the label of a request is above its choice. */
+private val TaskRowMinWidth = 400.dp
 
 /** Ollama is checked again this long after its address was typed. */
 private const val URL_CHECK_DELAY_MS = 600L
