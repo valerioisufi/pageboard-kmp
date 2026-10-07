@@ -4,8 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import java.io.File
 
-internal actual fun generationSupported(): Boolean = true
-
 internal actual val isComputer: Boolean = true
 
 // The access to the microphone is the one of the application launching the JVM

@@ -20,6 +20,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.io.buffered
@@ -80,18 +83,56 @@ class LocalModels internal constructor(
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
+    /**
+     * The hosts of the other devices of the local network (given by the application, which finds
+     * them): where [findOnNetwork] looks for Ollama.
+     */
+    var nearbyHosts: suspend () -> List<String> = { emptyList() }
+
+    /** The addresses of Ollama found on the local network ([findOnNetwork]). */
+    val foundServers = mutableStateListOf<String>()
+
+    var isSearching by mutableStateOf(false)
+        private set
+
+    /** Looks for Ollama on the devices of the local network (e.g. the computer of the student, from a tablet). */
+    fun findOnNetwork() {
+        if (isSearching) return
+        isSearching = true
+        scope.launch {
+            val found = try {
+                coroutineScope {
+                    nearbyHosts().distinct().map { host ->
+                        async {
+                            val url = "http://" + (if (':' in host) "[$host]" else host) + ":" + OLLAMA_PORT
+                            url.takeIf { ollama.version(url) != null }
+                        }
+                    }.awaitAll().filterNotNull()
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                emptyList()
+            }
+            withContext(stateContext) {
+                foundServers.clear()
+                foundServers.addAll(found)
+                isSearching = false
+            }
+        }
+    }
+
     /** Whether the transcription can run on this device (the desktop, for now). */
     val canTranscribe: Boolean get() = WhisperTranscriber.isAvailable
 
-    /** Checks Ollama and its models, and the whisper models downloaded. */
-    fun refresh() {
+    /** Checks Ollama (at [url]) and its models, and the whisper models downloaded. */
+    fun refresh(url: String = settingsStore.settings.localUrl) {
         scope.launch {
             val whisper = WhisperModel.entries.filter { SystemFileSystem.exists(Path(whisperPath(it))) }.toSet()
             withContext(stateContext) {
                 whisperModels = whisper
                 if (installed.isEmpty()) ollamaState = OllamaState.CHECKING
             }
-            val url = settingsStore.settings.localUrl
             val version = ollama.version(url)
             val models = if (version == null) emptyList() else try {
                 ollama.models(url).map { model ->
@@ -202,6 +243,9 @@ class LocalModels internal constructor(
     }
 
     private companion object {
+        /** The port Ollama listens on. */
+        const val OLLAMA_PORT = 11434
+
         const val BUFFER_SIZE = 256 * 1024
     }
 }

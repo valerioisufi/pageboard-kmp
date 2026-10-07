@@ -4,12 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.drawview.core.platform.dataDirectory
 
-/**
- * Whether the lectures recorded here are followed by the models (Gemini, local models): the
- * desktop, for now. Elsewhere they are recorded only (see [io.github.valerioisufi.drawview.lecture.LectureAssistant.canGenerate]).
- */
-internal expect fun generationSupported(): Boolean
-
 /** Whether the microphone is the one of a computer (its access granted to the application launching it). */
 internal expect val isComputer: Boolean
 

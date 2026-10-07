@@ -204,4 +204,8 @@
     <string name="lecture_settings_received_ask">Ask, with what it costs</string>
     <string name="lecture_settings_received_always">Transcribe and review them at once</string>
     <string name="lecture_settings_received_never">Leave them as they are</string>
+    <string name="lecture_settings_generate_here">Write the notes on this device</string>
+    <string name="lecture_settings_generate_here_hint">Otherwise the lectures are only recorded here: a computer with the models writes their notes once they are shared.</string>
+    <string name="lecture_local_network_hint">Ollama runs on a computer of the local network: start it there with OLLAMA_HOST=0.0.0.0 so that this device reaches it.</string>
+    <string name="lecture_local_find">Find on the network</string>
 </resources>

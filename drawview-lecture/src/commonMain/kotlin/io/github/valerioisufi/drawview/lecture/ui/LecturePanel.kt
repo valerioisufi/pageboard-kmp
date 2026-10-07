@@ -166,7 +166,7 @@ internal fun LecturePanel(assistant: LectureAssistant, documentId: String, contr
                 Column {
                     PanelHeader(
                         // The settings of the models, where they are
-                        onSettings = { showSettings = true }.takeIf { assistant.canGenerate },
+                        onSettings = { showSettings = true },
                         onClose = { assistant.isPanelOpen = false }
                     )
                     val lecture = assistant.shownLecture(documentId)

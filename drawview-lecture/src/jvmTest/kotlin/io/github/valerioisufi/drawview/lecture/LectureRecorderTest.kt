@@ -80,7 +80,7 @@ class LectureRecorderTest {
                 else -> respond("", HttpStatusCode.NotFound)
             }
         }
-        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath).apply {
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets()).apply {
             update(settings.copy(apiKey = "test-key").withTask(LectureTask.LIVE_NOTES, TaskModel(gemini = "test-model")).withTask(LectureTask.FINAL_REVIEW, TaskModel(gemini = "test-model")))
         }
         val microphone = FakeMicrophone()
@@ -159,7 +159,7 @@ class LectureRecorderTest {
     @Test
     fun withoutAKeyTheRecordingGoesOn() = runBlocking<Unit> {
         val engine = MockEngine { respond("", HttpStatusCode.InternalServerError) }
-        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath)
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets())
         val microphone = FakeMicrophone()
         val lecture = newLecture(settingsStore, engine)
         val recorder = LectureRecorder(lecture, settingsStore, microphone, FakeNotebook())
@@ -182,7 +182,7 @@ class LectureRecorderTest {
     @Test
     fun aCallInterruptsTheMicrophoneAndTheRecordingGoesOn() = runBlocking<Unit> {
         val engine = MockEngine { respond("", HttpStatusCode.InternalServerError) }
-        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath)
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets())
         val microphone = FakeMicrophone()
         val lecture = newLecture(settingsStore, engine)
         val recorder = LectureRecorder(lecture, settingsStore, microphone, FakeNotebook(), analyzes = false)
@@ -210,7 +210,7 @@ class LectureRecorderTest {
             requests++
             respond("", HttpStatusCode.InternalServerError)
         }
-        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath)
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets())
         val microphone = FakeMicrophone()
         val lecture = newLecture(settingsStore, engine)
         val recorder = LectureRecorder(lecture, settingsStore, microphone, FakeNotebook(), analyzes = false)
@@ -232,7 +232,7 @@ class LectureRecorderTest {
 
     @Test
     fun repeatedNotesAreSuggestedOnce() = runBlocking<Unit> {
-        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath)
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets())
         val lecture = newLecture(settingsStore, MockEngine { respond("", HttpStatusCode.NotFound) })
         val first = AnalysisNote(
             kind = "DEFINITION",
@@ -293,7 +293,7 @@ class LectureRecorderTest {
             requests.add(request.url.encodedPath)
             respond("", HttpStatusCode.InternalServerError)
         }
-        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath).apply {
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets()).apply {
             update(settings.copy(apiKey = "test-key").withTask(LectureTask.FINAL_REVIEW, TaskModel(provider = ModelProvider.LOCAL)))
         }
         val microphone = FakeMicrophone()
@@ -349,7 +349,7 @@ class LectureRecorderTest {
                 else -> respond("unexpected $path", HttpStatusCode.NotFound)
             }
         }
-        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath).apply {
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets()).apply {
             update(settings.copy(apiKey = "test-key", localUrl = "http://ollama.test").withTask(LectureTask.FINAL_REVIEW, TaskModel(provider = ModelProvider.LOCAL)))
         }
         val microphone = FakeMicrophone()
@@ -391,7 +391,7 @@ class LectureRecorderTest {
             requests.add(request.body.toByteArray().decodeToString())
             respond(geminiAnswer(plainChunkAnswer), HttpStatusCode.OK, jsonHeaders)
         }
-        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath).apply {
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets()).apply {
             update(settings.copy(apiKey = "test-key"))
         }
         val microphone = FakeMicrophone()
@@ -436,7 +436,7 @@ class LectureRecorderTest {
                 else -> respond("", HttpStatusCode.NotFound)
             }
         }
-        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath).apply {
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets()).apply {
             update(settings.copy(apiKey = "test-key"))
         }
         val microphone = FakeMicrophone()
@@ -478,7 +478,7 @@ class LectureRecorderTest {
             respond(ollamaAnswer(answer), HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/x-ndjson"))
         }
         val local = TaskModel(provider = ModelProvider.LOCAL)
-        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath).apply {
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets()).apply {
             update(LectureTask.entries.fold(settings) { s, task -> s.withTask(task, local) })
         }
         // 2 minutes of speech with a pause, recorded by a phone at 44.1 kHz stereo
@@ -512,7 +512,7 @@ class LectureRecorderTest {
     @Test
     fun aRecordingImportedWithoutTheModelsKeepsItsAudioOnly() = runBlocking<Unit> {
         val engine = MockEngine { respond("", HttpStatusCode.InternalServerError) }
-        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath)
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets())
         val input = File(directory, "lezione.wav").apply { writeBytes(Wav.encode(ShortArray(5 * LECTURE_SAMPLE_RATE) { (it % 200 * 50).toShort() })) }
         val lecture = newLecture(settingsStore, engine)
         LectureImporter(lecture, settingsStore, transcriber = null).run(input.absolutePath, emptyList(), emptyList(), reviews = false)
@@ -565,7 +565,7 @@ class LectureRecorderTest {
                 else -> respond("", HttpStatusCode.NotFound)
             }
         }
-        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath).apply {
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets()).apply {
             update(settings.copy(apiKey = "test-key"))
         }
         val microphone = FakeMicrophone()
@@ -638,7 +638,7 @@ class LectureRecorderTest {
         }
         val local = TaskModel(provider = ModelProvider.LOCAL)
         // No Gemini key: nothing goes online
-        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath).apply {
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets()).apply {
             update(
                 settings.withTask(LectureTask.TRANSCRIPTION, local)
                     .withTask(LectureTask.LIVE_NOTES, local.copy(local = "gemma4:e4b"))

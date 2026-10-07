@@ -16,7 +16,6 @@ import io.github.valerioisufi.drawview.lecture.audio.exportRecording
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
 import io.github.valerioisufi.drawview.lecture.platform.ChosenFile
 import io.github.valerioisufi.drawview.lecture.platform.FileTarget
-import io.github.valerioisufi.drawview.lecture.platform.generationSupported
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
 import io.github.valerioisufi.drawview.lecture.model.ModelBackends
@@ -60,8 +59,9 @@ import kotlin.coroutines.CoroutineContext
  * a lecture recorded on a device without the models is transcribed and reviewed where they are
  * ([generate]).
  *
- * @param canGenerate whether the models follow the lectures here (the live notes, the review, the
- *   course context): elsewhere the lectures are recorded only (see [generationSupported]).
+ * @param canGenerate whether the models may follow the lectures here (the live notes, the review,
+ *   the course context), as [AssistantSettings.generateHere] chooses: elsewhere the lectures are
+ *   recorded only.
  */
 class LectureAssistant(
     val settingsStore: AssistantSettingsStore = AssistantSettingsStore(),
@@ -72,8 +72,13 @@ class LectureAssistant(
     val library: LectureLibrary = LectureLibrary(),
     private val stateContext: CoroutineContext = Dispatchers.Main,
     private val transcriberFactory: (AssistantSettings) -> Transcriber? = { WhisperTranscriber.of(it) },
-    val canGenerate: Boolean = generationSupported()
+    canGenerate: Boolean = true
 ) {
+    private val generationAllowed = canGenerate
+
+    /** Whether the models follow the lectures here (see [AssistantSettings.generateHere]). */
+    val canGenerate: Boolean get() = generationAllowed && settingsStore.settings.generateHere
+
     private val backends = ModelBackends(
         gemini = GeminiBackend(client) { settingsStore.apiKey },
         local = OllamaBackend(localClient) { settingsStore.settings.localUrl }
@@ -432,7 +437,7 @@ class LectureAssistant(
         stateContext = stateContext,
         courseContext = { contextOf(documentId)?.text.orEmpty() },
         startedAt = startedAt,
-        generates = canGenerate,
+        generatesHere = { canGenerate },
         device = library.deviceId,
         deviceName = library.deviceName,
         recordsLock = library.records,

@@ -326,7 +326,7 @@ class AssistantSettingsTest {
 
     @Test
     fun theLanguageSpokenIsACode() {
-        val store = AssistantSettingsStore("/nonexistent-dir/settings.json")
+        val store = AssistantSettingsStore("/nonexistent-dir/settings.json", MemorySecrets())
         store.update(AssistantSettings(whisperLanguage = " IT "))
         assertEquals("it", store.settings.whisperLanguage)
         store.update(AssistantSettings(whisperLanguage = "italiano"))

@@ -4,13 +4,34 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.github.valerioisufi.drawview.core.platform.PlatformFiles
+import io.github.valerioisufi.drawview.core.platform.SecureStore
+import io.github.valerioisufi.drawview.lecture.platform.isComputer
 import io.github.valerioisufi.drawview.lecture.platform.environmentApiKey
 import io.github.valerioisufi.drawview.lecture.platform.lectureDataDirectory
 import io.github.valerioisufi.drawview.lecture.platform.restrictToOwner
+import io.github.valerioisufi.drawview.lecture.transcription.WhisperTranscriber
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.json.Json
 
-/** Who answers a request: the Gemini API (online) or a model on this computer. */
+/**
+ * Where the small secrets of the assistant are kept (the key of Gemini): the store of the system
+ * ([SecureStore]: the Keychain, the Android Keystore, a file of the user on the desktop).
+ */
+interface SecretStorage {
+    fun read(name: String): String?
+
+    fun write(name: String, value: String?): Boolean
+
+    /** The store of the system. */
+    object System : SecretStorage {
+        override fun read(name: String): String? = SecureStore.read(name)
+
+        override fun write(name: String, value: String?): Boolean = SecureStore.write(name, value)
+    }
+}
+
+/** Who answers a request: the Gemini API (online) or a model of Ollama (on this computer, or one of the local network). */
 @Serializable
 enum class ModelProvider { GEMINI, LOCAL }
 
@@ -63,7 +84,10 @@ data class TaskModel(
 /**
  * Settings of the lecture assistant.
  *
- * @param apiKey key of the Gemini API (empty: the `GEMINI_API_KEY` environment variable).
+ * @param apiKey key of the Gemini API (empty: the `GEMINI_API_KEY` environment variable), kept in
+ *   the [SecretStorage], not with the other settings.
+ * @param generateHere whether the models follow the lectures on this device (the computers by
+ *   default); otherwise they are recorded only, and a device with the models writes their notes.
  * @param chunkSeconds new audio analyzed at every update.
  * @param notesLanguage language of the notes (empty: the language of the lecture).
  * @param tasks provider and models of every kind of request (see [task]).
@@ -73,7 +97,8 @@ data class TaskModel(
  */
 @Serializable
 data class AssistantSettings(
-    val apiKey: String = "",
+    @Transient val apiKey: String = "",
+    val generateHere: Boolean = isComputer,
     val chunkSeconds: Int = 60,
     val notesLanguage: String = "",
     val thinkingLevel: String = "low",
@@ -112,14 +137,23 @@ data class AssistantSettings(
 
     /**
      * These settings with the combinations that cannot work corrected: the local models do not
-     * receive audio, so the live suggestions answered by a local model need a local transcription.
+     * receive audio, so the live suggestions answered by a local model need a local transcription;
+     * where there is none ([canTranscribe] `false`: the phones), they are online.
      */
-    fun consistent(): AssistantSettings =
-        if (task(LectureTask.LIVE_NOTES).provider == ModelProvider.LOCAL && sendsAudio) {
-            withTask(LectureTask.TRANSCRIPTION, task(LectureTask.TRANSCRIPTION).copy(provider = ModelProvider.LOCAL))
-        } else {
-            this
+    fun consistent(canTranscribe: Boolean = true): AssistantSettings {
+        var settings = this
+        if (!canTranscribe && !settings.sendsAudio) {
+            settings = settings.withTask(LectureTask.TRANSCRIPTION, settings.task(LectureTask.TRANSCRIPTION).copy(provider = ModelProvider.GEMINI))
         }
+        if (settings.task(LectureTask.LIVE_NOTES).provider == ModelProvider.LOCAL && settings.sendsAudio) {
+            settings = if (canTranscribe) {
+                settings.withTask(LectureTask.TRANSCRIPTION, settings.task(LectureTask.TRANSCRIPTION).copy(provider = ModelProvider.LOCAL))
+            } else {
+                settings.withTask(LectureTask.LIVE_NOTES, settings.task(LectureTask.LIVE_NOTES).copy(provider = ModelProvider.GEMINI))
+            }
+        }
+        return settings
+    }
 
     companion object {
         const val DEFAULT_MODEL = "gemini-3.8-flash"
@@ -139,11 +173,14 @@ data class AssistantSettings(
 }
 
 /**
- * Persists the [AssistantSettings] in `assistant-settings.json` of the [lectureDataDirectory]
- * (readable by the owner only: it holds the API key).
+ * Persists the [AssistantSettings] in `assistant-settings.json` of the [lectureDataDirectory], the
+ * API key in [secrets]. [canTranscribe]: whether the speech is recognized on this device (see
+ * [AssistantSettings.consistent]).
  */
 class AssistantSettingsStore(
-    private val path: String = lectureDataDirectory() + "/assistant-settings.json"
+    private val path: String = lectureDataDirectory() + "/assistant-settings.json",
+    private val secrets: SecretStorage = SecretStorage.System,
+    private val canTranscribe: Boolean = WhisperTranscriber.isAvailable
 ) {
     var settings: AssistantSettings by mutableStateOf(load())
         private set
@@ -170,7 +207,8 @@ class AssistantSettingsStore(
             whisperModel = newSettings.whisperModel.trim(),
             // An ISO code ("it") or "auto": a name typed by hand is not understood by whisper
             whisperLanguage = newSettings.whisperLanguage.trim().lowercase().takeIf { it == "auto" || ISO_LANGUAGE.matches(it) } ?: "auto"
-        ).consistent()
+        ).consistent(canTranscribe)
+        if (sanitized.apiKey != settings.apiKey) secrets.write(API_KEY, sanitized.apiKey.ifEmpty { null })
         settings = sanitized
         if (PlatformFiles.writeBytes(path, json.encodeToString(AssistantSettings.serializer(), sanitized).encodeToByteArray())) {
             restrictToOwner(path)
@@ -178,16 +216,21 @@ class AssistantSettingsStore(
     }
 
     private fun load(): AssistantSettings {
-        val bytes = PlatformFiles.readBytes(path) ?: return AssistantSettings()
-        return try {
-            json.decodeFromString(AssistantSettings.serializer(), bytes.decodeToString())
-        } catch (_: Exception) {
-            AssistantSettings()
-        }
+        val saved = PlatformFiles.readBytes(path)?.let { bytes ->
+            try {
+                json.decodeFromString(AssistantSettings.serializer(), bytes.decodeToString())
+            } catch (_: Exception) {
+                null
+            }
+        } ?: AssistantSettings()
+        return saved.copy(apiKey = secrets.read(API_KEY).orEmpty())
     }
 
     internal companion object {
         private val ISO_LANGUAGE = Regex("[a-z]{2,3}")
+
+        /** The name of the key of Gemini in the [SecretStorage]. */
+        const val API_KEY = "gemini-api-key"
 
         val json = Json {
             ignoreUnknownKeys = true

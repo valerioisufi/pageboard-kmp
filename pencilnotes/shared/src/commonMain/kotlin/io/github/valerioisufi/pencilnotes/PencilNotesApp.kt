@@ -47,10 +47,12 @@ fun PencilNotesApp() {
             description = stringResource(Res.string.about_description),
             additionalLicenses = listOf(CherryBombOneLicense)
         )
-        // Lecture recording, followed by Gemini or a local model on the desktop: it goes on in the background
+        // Lecture recording, followed by Gemini or a local model: it goes on in the background
         val lectureAssistant = rememberLectureAssistant()
         // The documents shared with the devices of the local network, with their lectures
         val collaboration = rememberCollaboration(attachments = lectureAssistant.attachments)
+        // A tablet uses the models of a computer of the local network (Ollama)
+        LaunchedEffect(lectureAssistant, collaboration) { lectureAssistant.localModels.nearbyHosts = collaboration::nearbyHosts }
         val editorExtension = remember(lectureAssistant, collaboration) {
             lectureAssistant.editorExtension() + collaboration.editorExtension()
         }

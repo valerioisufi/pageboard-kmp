@@ -19,9 +19,6 @@ import io.github.valerioisufi.drawview.core.platform.DrawViewAndroid
 import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.CompletableDeferred
 
-// The models follow the lectures on the desktop only, for now
-internal actual fun generationSupported(): Boolean = false
-
 internal actual val isComputer: Boolean = false
 
 /** The microphone, and the notifications (the one of the recording going on in the background). */

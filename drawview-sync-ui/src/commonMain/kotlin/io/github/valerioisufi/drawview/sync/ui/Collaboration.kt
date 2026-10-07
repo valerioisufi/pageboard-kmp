@@ -41,7 +41,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.stringResource
+
+/** How long the devices of the local network are looked for (see [Collaboration.nearbyHosts]). */
+private const val NEARBY_WAIT_MS = 3_000L
 
 /**
  * Working on the documents with the other devices of the local network (GRASP Controller of
@@ -155,6 +159,18 @@ class Collaboration(
 
     /** Approves (or refuses) a device joining. */
     fun answer(request: JoinRequest, approve: Boolean) = engine.answer(request, approve)
+
+    /**
+     * The hosts of the devices found on the local network within [waitMs] (e.g. a computer with
+     * the models of the lectures, see LocalModels.nearbyHosts).
+     */
+    suspend fun nearbyHosts(waitMs: Long = NEARBY_WAIT_MS): List<String> {
+        val hosts = mutableSetOf<String>()
+        withTimeoutOrNull(waitMs) {
+            discovery.services.collect { services -> services.mapTo(hosts) { it.host } }
+        }
+        return hosts.toList()
+    }
 
     /** Gives a member another role (this device is the owner). */
     suspend fun setRole(documentId: String, member: String, role: Role) = engine.setRole(documentId, member, role)

@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.lecture.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -27,16 +29,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.foundation.clickable
-import androidx.compose.material3.RadioButton
-import io.github.valerioisufi.drawview.lecture.ReceivedLectures
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,12 +54,15 @@ import io.github.valerioisufi.drawview.lecture.AssistantSettingsStore
 import io.github.valerioisufi.drawview.lecture.LectureTask
 import io.github.valerioisufi.drawview.lecture.LocalModels
 import io.github.valerioisufi.drawview.lecture.ModelProvider
+import io.github.valerioisufi.drawview.lecture.ReceivedLectures
 import io.github.valerioisufi.drawview.lecture.WhisperModel
 import io.github.valerioisufi.drawview.lecture.generated.resources.*
+import io.github.valerioisufi.drawview.lecture.platform.isComputer
 import io.github.valerioisufi.drawview.ui.util.formatDecimal
+import kotlin.math.roundToInt
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import kotlin.math.roundToInt
 
 /**
  * Settings of the lecture assistant, with no path of the computer in sight: the provider of every
@@ -72,7 +76,11 @@ internal fun AssistantSettingsDialog(store: AssistantSettingsStore, localModels:
     var draft by remember { mutableStateOf(store.settings) }
     var showKey by remember { mutableStateOf(false) }
     var showAdvanced by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { localModels.refresh() }
+    // Ollama checked where the student says it is (typed, or found on the network)
+    LaunchedEffect(draft.localUrl) {
+        delay(URL_CHECK_DELAY_MS)
+        localModels.refresh(draft.localUrl)
+    }
     val usesOllama = LectureTask.entries.any { it != LectureTask.TRANSCRIPTION && draft.task(it).provider == ModelProvider.LOCAL }
     val usesGemini = LectureTask.entries.any { draft.task(it).provider == ModelProvider.GEMINI }
 
@@ -82,128 +90,139 @@ internal fun AssistantSettingsDialog(store: AssistantSettingsStore, localModels:
         text = {
             Column(
                 modifier = Modifier
-                    .width(520.dp)
+                    .widthIn(max = 520.dp)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // --- Models of every kind of request ---
-                SectionTitle(Res.string.lecture_settings_models)
-                for (task in LectureTask.entries) {
-                    TaskModelRow(
-                        task = task,
-                        settings = draft,
-                        localModels = localModels,
-                        onChange = { draft = it.consistent() }
-                    )
+                // --- Whether the models follow the lectures here ---
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(Res.string.lecture_settings_generate_here), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                    Switch(checked = draft.generateHere, onCheckedChange = { draft = draft.copy(generateHere = it) })
                 }
-
-                // --- Ollama ---
-                if (usesOllama) {
+                Hint(stringResource(Res.string.lecture_settings_generate_here_hint))
+                if (draft.generateHere) {
                     HorizontalDivider()
-                    SectionTitle(Res.string.lecture_settings_local_section)
-                    OllamaStatus(localModels)
-                }
+                    // --- Models of every kind of request ---
+                    SectionTitle(Res.string.lecture_settings_models)
+                    for (task in LectureTask.entries) {
+                        TaskModelRow(
+                            task = task,
+                            settings = draft,
+                            localModels = localModels,
+                            onChange = { draft = it.consistent() }
+                        )
+                    }
 
-                // --- Gemini ---
-                if (usesGemini) {
-                    HorizontalDivider()
-                    SectionTitle(Res.string.lecture_settings_gemini_section)
-                    OutlinedTextField(
-                        value = draft.apiKey,
-                        onValueChange = { draft = draft.copy(apiKey = it) },
-                        label = { Text(stringResource(Res.string.lecture_settings_api_key)) },
-                        singleLine = true,
-                        visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
-                        trailingIcon = {
-                            IconButton(onClick = { showKey = !showKey }) {
-                                Icon(
-                                    imageVector = if (showKey) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
-                                    contentDescription = stringResource(
-                                        if (showKey) Res.string.lecture_settings_hide_key else Res.string.lecture_settings_show_key
+                    // --- Ollama ---
+                    if (usesOllama) {
+                        HorizontalDivider()
+                        SectionTitle(Res.string.lecture_settings_local_section)
+                        OllamaStatus(localModels)
+                        // Not on this device: on a computer of the local network
+                        if (!isComputer) OllamaOnTheNetwork(draft.localUrl, localModels) { draft = draft.copy(localUrl = it) }
+                    }
+
+                    // --- Gemini ---
+                    if (usesGemini) {
+                        HorizontalDivider()
+                        SectionTitle(Res.string.lecture_settings_gemini_section)
+                        OutlinedTextField(
+                            value = draft.apiKey,
+                            onValueChange = { draft = draft.copy(apiKey = it) },
+                            label = { Text(stringResource(Res.string.lecture_settings_api_key)) },
+                            singleLine = true,
+                            visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
+                            trailingIcon = {
+                                IconButton(onClick = { showKey = !showKey }) {
+                                    Icon(
+                                        imageVector = if (showKey) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                                        contentDescription = stringResource(
+                                            if (showKey) Res.string.lecture_settings_hide_key else Res.string.lecture_settings_show_key
+                                        )
+                                    )
+                                }
+                            },
+                            supportingText = {
+                                Text(
+                                    stringResource(
+                                        if (draft.apiKey.isBlank() && store.usesEnvironmentKey) Res.string.lecture_settings_api_key_env
+                                        else Res.string.lecture_settings_api_key_hint
                                     )
                                 )
-                            }
-                        },
-                        supportingText = {
-                            Text(
-                                stringResource(
-                                    if (draft.apiKey.isBlank() && store.usesEnvironmentKey) Res.string.lecture_settings_api_key_env
-                                    else Res.string.lecture_settings_api_key_hint
-                                )
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
 
-                // --- The lecture ---
-                HorizontalDivider()
-                SectionTitle(Res.string.lecture_settings_lecture_section)
-                Column {
-                    Text(stringResource(Res.string.lecture_settings_chunk, draft.chunkSeconds), style = MaterialTheme.typography.bodyMedium)
-                    val range = AssistantSettings.CHUNK_SECONDS_RANGE
-                    Slider(
-                        value = draft.chunkSeconds.toFloat(),
-                        onValueChange = { draft = draft.copy(chunkSeconds = ((it / 15f).roundToInt() * 15).coerceIn(range)) },
-                        valueRange = range.first.toFloat()..range.last.toFloat(),
-                        steps = (range.last - range.first) / 15 - 1
-                    )
-                    Hint(stringResource(Res.string.lecture_settings_chunk_hint))
-                }
-                // The lectures recorded where the models are not
-                Column {
-                    Text(stringResource(Res.string.lecture_settings_received), style = MaterialTheme.typography.bodyMedium)
-                    for (choice in ReceivedLectures.entries) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth().clickable { draft = draft.copy(receivedLectures = choice) }
-                        ) {
-                            RadioButton(selected = draft.receivedLectures == choice, onClick = { draft = draft.copy(receivedLectures = choice) })
-                            Text(
-                                stringResource(
-                                    when (choice) {
-                                        ReceivedLectures.ASK -> Res.string.lecture_settings_received_ask
-                                        ReceivedLectures.ALWAYS -> Res.string.lecture_settings_received_always
-                                        ReceivedLectures.NEVER -> Res.string.lecture_settings_received_never
-                                    }
-                                ),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+                    // --- The lecture ---
+                    HorizontalDivider()
+                    SectionTitle(Res.string.lecture_settings_lecture_section)
+                    Column {
+                        Text(stringResource(Res.string.lecture_settings_chunk, draft.chunkSeconds), style = MaterialTheme.typography.bodyMedium)
+                        val range = AssistantSettings.CHUNK_SECONDS_RANGE
+                        Slider(
+                            value = draft.chunkSeconds.toFloat(),
+                            onValueChange = { draft = draft.copy(chunkSeconds = ((it / 15f).roundToInt() * 15).coerceIn(range)) },
+                            valueRange = range.first.toFloat()..range.last.toFloat(),
+                            steps = (range.last - range.first) / 15 - 1
+                        )
+                        Hint(stringResource(Res.string.lecture_settings_chunk_hint))
+                    }
+                    // The lectures recorded where the models are not
+                    Column {
+                        Text(stringResource(Res.string.lecture_settings_received), style = MaterialTheme.typography.bodyMedium)
+                        for (choice in ReceivedLectures.entries) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth().clickable { draft = draft.copy(receivedLectures = choice) }
+                            ) {
+                                RadioButton(selected = draft.receivedLectures == choice, onClick = { draft = draft.copy(receivedLectures = choice) })
+                                Text(
+                                    stringResource(
+                                        when (choice) {
+                                            ReceivedLectures.ASK -> Res.string.lecture_settings_received_ask
+                                            ReceivedLectures.ALWAYS -> Res.string.lecture_settings_received_always
+                                            ReceivedLectures.NEVER -> Res.string.lecture_settings_received_never
+                                        }
+                                    ),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
                         }
                     }
-                }
-                OutlinedTextField(
-                    value = draft.notesLanguage,
-                    onValueChange = { draft = draft.copy(notesLanguage = it) },
-                    label = { Text(stringResource(Res.string.lecture_settings_language)) },
-                    supportingText = { Text(stringResource(Res.string.lecture_settings_language_hint)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    OutlinedTextField(
+                        value = draft.notesLanguage,
+                        onValueChange = { draft = draft.copy(notesLanguage = it) },
+                        label = { Text(stringResource(Res.string.lecture_settings_language)) },
+                        supportingText = { Text(stringResource(Res.string.lecture_settings_language_hint)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                // --- Advanced ---
-                HorizontalDivider()
-                TextButton(onClick = { showAdvanced = !showAdvanced }) {
-                    Text(stringResource(Res.string.lecture_settings_advanced))
-                    Icon(if (showAdvanced) Icons.Outlined.ArrowDropUp else Icons.Outlined.ArrowDropDown, contentDescription = null)
-                }
-                if (showAdvanced) {
-                    OutlinedTextField(
-                        value = draft.localUrl,
-                        onValueChange = { draft = draft.copy(localUrl = it) },
-                        label = { Text(stringResource(Res.string.lecture_settings_local_url)) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    OutlinedTextField(
-                        value = draft.whisperModel,
-                        onValueChange = { draft = draft.copy(whisperModel = it) },
-                        label = { Text(stringResource(Res.string.lecture_settings_whisper_file)) },
-                        supportingText = { Text(stringResource(Res.string.lecture_settings_whisper_file_hint)) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    ThinkingLevel(draft.thinkingLevel) { draft = draft.copy(thinkingLevel = it) }
+                    // --- Advanced ---
+                    HorizontalDivider()
+                    TextButton(onClick = { showAdvanced = !showAdvanced }) {
+                        Text(stringResource(Res.string.lecture_settings_advanced))
+                        Icon(if (showAdvanced) Icons.Outlined.ArrowDropUp else Icons.Outlined.ArrowDropDown, contentDescription = null)
+                    }
+                    if (showAdvanced) {
+                        OutlinedTextField(
+                            value = draft.localUrl,
+                            onValueChange = { draft = draft.copy(localUrl = it) },
+                            label = { Text(stringResource(Res.string.lecture_settings_local_url)) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = draft.whisperModel,
+                            onValueChange = { draft = draft.copy(whisperModel = it) },
+                            label = { Text(stringResource(Res.string.lecture_settings_whisper_file)) },
+                            supportingText = { Text(stringResource(Res.string.lecture_settings_whisper_file_hint)) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        ThinkingLevel(draft.thinkingLevel) { draft = draft.copy(thinkingLevel = it) }
+                    }
                 }
             }
         },
@@ -240,8 +259,12 @@ private fun TaskModelRow(task: LectureTask, settings: AssistantSettings, localMo
             val providers = ModelProvider.entries
             SingleChoiceSegmentedButtonRow(modifier = Modifier.width(220.dp)) {
                 providers.forEachIndexed { index, provider ->
+                    // Without the speech recognition here, the audio is transcribed (and followed) online
+                    val possible = provider == ModelProvider.GEMINI || localModels.canTranscribe ||
+                        (task != LectureTask.TRANSCRIPTION && task != LectureTask.LIVE_NOTES)
                     SegmentedButton(
                         selected = model.provider == provider,
+                        enabled = possible,
                         onClick = {
                             var changed = settings.withTask(task, model.copy(provider = provider))
                             // Back to the audio online: the suggestions online as well
@@ -405,13 +428,42 @@ private fun OllamaStatus(localModels: LocalModels) {
         LocalModels.OllamaState.NOT_FOUND -> Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(stringResource(Res.string.lecture_local_ollama_missing), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilledTonalButton(onClick = { uriHandler.openUri(OLLAMA_DOWNLOAD_URL) }) {
-                    Text(stringResource(Res.string.lecture_local_ollama_install))
+                if (isComputer) {
+                    FilledTonalButton(onClick = { uriHandler.openUri(OLLAMA_DOWNLOAD_URL) }) {
+                        Text(stringResource(Res.string.lecture_local_ollama_install))
+                    }
                 }
                 TextButton(onClick = { localModels.refresh() }) {
                     Text(stringResource(Res.string.lecture_local_check_again))
                 }
             }
+        }
+    }
+}
+
+/**
+ * Ollama on a computer of the local network (this device has none): its address, typed or found
+ * among the devices of the network.
+ */
+@Composable
+private fun OllamaOnTheNetwork(url: String, localModels: LocalModels, onUrl: (String) -> Unit) {
+    Hint(stringResource(Res.string.lecture_local_network_hint))
+    OutlinedTextField(
+        value = url,
+        onValueChange = onUrl,
+        label = { Text(stringResource(Res.string.lecture_settings_local_url)) },
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth()
+    )
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FilledTonalButton(onClick = { localModels.findOnNetwork() }, enabled = !localModels.isSearching) {
+            Text(stringResource(Res.string.lecture_local_find))
+        }
+        if (localModels.isSearching) CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+    }
+    for (server in localModels.foundServers) {
+        TextButton(onClick = { onUrl(server) }) {
+            Text((if (server == url) "✓ " else "") + server)
         }
     }
 }
@@ -550,3 +602,6 @@ private fun SectionTitle(text: StringResource) {
 private fun Hint(text: String) {
     Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
+
+/** Ollama is checked again this long after its address was typed. */
+private const val URL_CHECK_DELAY_MS = 600L

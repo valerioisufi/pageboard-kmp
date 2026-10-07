@@ -33,7 +33,7 @@ class LocalModelsTest {
     }
 
     private fun models(engine: MockEngine) = LocalModels(
-        AssistantSettingsStore(File(directory, "settings.json").absolutePath),
+        AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets()),
         OllamaClient(HttpClient(engine)),
         HttpClient(engine),
         modelsDirectory = File(directory, "whisper").absolutePath,

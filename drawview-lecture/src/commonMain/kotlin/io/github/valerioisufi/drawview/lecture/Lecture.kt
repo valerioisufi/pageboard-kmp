@@ -92,7 +92,7 @@ class Lecture internal constructor(
     internal val stateContext: CoroutineContext = Dispatchers.Main,
     internal val courseContext: () -> String = { "" },
     startedAt: Long? = null,
-    val generates: Boolean = true,
+    private val generatesHere: () -> Boolean = { true },
     internal val device: String = "",
     private val deviceName: String = "",
     private val recordsLock: Mutex = Mutex(),
@@ -226,6 +226,9 @@ class Lecture internal constructor(
 
 
     /** The final review can be written (again): the recording is over and no review is running. */
+    /** Whether this device writes what the models write (now: it is a setting). */
+    val generates: Boolean get() = generatesHere()
+
     val canGenerateReview: Boolean get() = generates && status == LectureStatus.FINISHED && reviewStatus != ReviewStatus.RUNNING
 
     internal val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)

@@ -14,9 +14,6 @@ import platform.UserNotifications.UNMutableNotificationContent
 import platform.UserNotifications.UNNotificationRequest
 import platform.UserNotifications.UNUserNotificationCenter
 
-// The models follow the lectures on the desktop only, for now
-internal actual fun generationSupported(): Boolean = false
-
 internal actual val isComputer: Boolean = false
 
 @Composable

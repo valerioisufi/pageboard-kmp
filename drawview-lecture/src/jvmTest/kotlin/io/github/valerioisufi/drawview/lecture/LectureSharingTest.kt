@@ -56,7 +56,7 @@ class LectureSharingTest {
     private val microphone = FakeMicrophone()
 
     private fun assistant(name: String, canGenerate: Boolean) = LectureAssistant(
-        settingsStore = AssistantSettingsStore(File(directory, "$name-settings.json").absolutePath).apply {
+        settingsStore = AssistantSettingsStore(File(directory, "$name-settings.json").absolutePath, MemorySecrets()).apply {
             update(
                 settings.copy(apiKey = "test-key")
                     // Transcribed on this computer, reviewed online
