@@ -127,6 +127,7 @@ Running:
 ## Running Tests
 
 * **Modules**: `./gradlew :drawview-<module>:jvmTest` (also `iosSimulatorArm64Test`), e.g. `:drawview-data:jvmTest`, `:drawview-explorer:jvmTest`, `:drawview-lecture:jvmTest`, `:drawview-export:jvmTest`
+* **Screenshots** of the library and of the editor in the reference windows of the adaptive interface (phones, tablets, desktop; see [docs/adaptive-ui.md](./docs/adaptive-ui.md)): `./gradlew :drawview-explorer:verifyRoborazziJvm` compares the interface with the images of `drawview-explorer/screenshots`, `recordRoborazziJvm` records them again after a change of the interface
 * **Sample**:
   * Android: `./gradlew :sample-shared:testAndroidHostTest`
   * Desktop: `./gradlew :sample-shared:jvmTest`

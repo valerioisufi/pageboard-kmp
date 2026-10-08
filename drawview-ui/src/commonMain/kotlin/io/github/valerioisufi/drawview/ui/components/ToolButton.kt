@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -16,6 +17,8 @@ import androidx.compose.ui.unit.dp
 
 /**
  * Specialized button for the drawing toolbar supporting click, long-click, and flyout menu.
+ * It is drawn 36 dp wide and takes the minimum interactive size of the input around it (48 dp
+ * for a finger, 40 dp for a precise pointer, see `AdaptiveRoot`).
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -38,6 +41,7 @@ fun ToolButton(
         }
         Row(
             modifier = Modifier
+                .minimumInteractiveComponentSize()
                 .size(36.dp)
                 .clip(CircleShape)
                 .combinedClickable(

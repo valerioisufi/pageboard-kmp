@@ -92,7 +92,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
@@ -131,6 +130,7 @@ import io.github.valerioisufi.drawview.lecture.formatLectureTime
 import io.github.valerioisufi.drawview.lecture.generated.resources.*
 import io.github.valerioisufi.drawview.lecture.platform.isComputer
 import io.github.valerioisufi.drawview.lecture.platform.rememberFileOpener
+import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
@@ -145,15 +145,12 @@ import org.jetbrains.compose.resources.stringResource
 
 private val PanelWidth = 380.dp
 
-/** Narrower than this (a phone), the panel rises from the bottom over the canvas instead of being beside it. */
-private val SideBySideMinWidth = 600.dp
-
-/** Whether the window leaves room for the panel beside the canvas. */
+/**
+ * Whether the window leaves room for the panel beside the canvas; in a compact window (a phone)
+ * the panel rises from the bottom over the canvas.
+ */
 @Composable
-private fun panelBeside(): Boolean {
-    val width = LocalWindowInfo.current.containerSize.width
-    return with(LocalDensity.current) { width.toDp() } >= SideBySideMinWidth
-}
+private fun panelBeside(): Boolean = !currentAdaptiveInfo().window.isCompact
 
 /**
  * The panel of the lecture assistant, beside the canvas of the editor of [documentId] (on a phone,

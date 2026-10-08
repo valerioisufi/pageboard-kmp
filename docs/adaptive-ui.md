@@ -1,0 +1,279 @@
+# Adaptive interface
+
+The applications built on DrawView must look and work well on every platform and every kind of
+device: phones, tablets with a stylus, desktop windows of any size, with touch, stylus, mouse,
+trackpad and keyboard. The interface adapts along three independent axes, never by asking which
+platform it runs on:
+
+1. **Space**: the size class of the window (or of the part of it a component has), not the kind
+   of device: an iPad in Split View is a phone, a desktop window made narrow too.
+2. **Input**: what the user has at hand (stylus, finger, precise pointer that hovers, hardware
+   keyboard): an iPad with a Magic Keyboard wants the shortcuts, a Windows touch laptop large
+   targets.
+3. **Conventions of the platform**: the menu bar of macOS (and of iPadOS 26), Cmd or Ctrl, the
+   back of Android, the gestures of the Apple Pencil.
+
+Like the other features, the adaptivity belongs to the modules: an application built on
+`DocumentLibrary` gets it without code of its own, the extensions (lecture, collaboration,
+export) contribute content and let the editor decide where it goes.
+
+The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
+Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected
+Variations).
+
+## Starting point
+
+* **Editor** (`DrawScreen`): the same layout at every size. A top bar 44 dp high (back, page grid,
+  document information, actions of the extensions, drawing mode, more options) and, in drawing
+  mode, a second row 48 dp high scrolled horizontally (undo, redo, pen, highlighter, text markup,
+  eraser, text, lasso, pan, import PDF, import image), both always at the top. `ToolButton` is
+  36 dp: under the 48 dp of a finger, fine for a stylus or a mouse. The settings of a tool are a
+  popup of its button (tap on the selected tool, or long press).
+* **Each action is written where it is shown**: undo is a `ToolButton` calling
+  `controller.undo()` in `DrawScreen`, and exists nowhere else; there is no description of the
+  actions that a menu, a shortcut or a tooltip could use.
+* **Keyboard**: no shortcut. Escape works through the system back (`NavigationBackHandler` of the
+  editor and of the library), Ctrl / Cmd with the wheel zooms the canvas. `SelectionManager` has
+  `copySelection`, `cutSelection`, `pasteSelection`, `deleteSelection`; `DrawViewController` has
+  `zoomIn`, `zoomOut`: reachable only by touch.
+* **Canvas**: already aware of the input (`CanvasGestureHandler`): the first stylus contact
+  switches to stylus-only mode, the right button opens the context menu, the middle button pans,
+  the hover shows the eraser cursor and the preview of a pending placement, the trackpad of macOS
+  scrolls and pinches with its phases (`libtrackpad_bridge`).
+* **Extensions** (`EditorExtension`: `toolbarActions`, `sidePanel`, `canvasOverlay`): the lecture
+  decides itself where its panel goes (`panelBeside()`, 600 dp of the window: `LecturePanel`
+  beside the canvas, else `LectureSheet` from the bottom through `canvasOverlay`). Collaboration
+  and export contribute a toolbar button each.
+* **Sheets**: the configurators of the page and of the document background, the details of a
+  file of the library are `ModalBottomSheet`s at every size: on a desktop window they rise from
+  the bottom of a 27" screen.
+* **Library** (`ExplorerScreen`, `FileList`): a `LazyColumn` of rows with an icon of the type
+  (no thumbnail) at every width; long press selects; no right-click menu, no multiple selection
+  with Cmd / Shift, no drag and drop. `TileRenderer.renderThumbnail` already draws a page as a
+  thumbnail (used by the page grid).
+* **Theme**: the color schemes of DrawView and of PencilNotes do not set the `surfaceContainer*`,
+  `surfaceBright` and `surfaceDim` roles: where the dynamic colors of Android 12+ are missing
+  (desktop, iOS, older Android) dialogs, menus, sheets and cards take the neutrals of the Material
+  baseline, slightly purple, beside the background of the palette. No density for a precise
+  pointer: the desktop has the sizes of a phone.
+* **No tooltip, no pointer icon** (except the eraser cursor of the canvas).
+* **Platforms**: the desktop window opens at 1280×860 without minimum size, menu bar or saved
+  state; the iOS app targets iPhone and iPad (`TARGETED_DEVICE_FAMILY = 1,2`); the Android
+  activity handles the changes of size itself (`configChanges`), so resizing it in split screen
+  or in a desktop window does not recreate it.
+* **Tests**: no test of the interface; any change of the layouts is verified by hand.
+
+## Design
+
+### Principles
+
+* **The expert of the space is the container.** The structure of a screen (one pane or two, a
+  sheet or a side panel) follows the size class of the window; a component (the toolbar, a
+  card) follows its own constraints, because a side panel can make the canvas narrow in a wide
+  window.
+* **The input is observed, not guessed.** A stylus, a mouse or a key seen once say what the user
+  has; the platform only gives the first guess.
+* **An action is defined once** and presented in many ways: toolbar button, menu bar item,
+  shortcut, context menu entry, tooltip.
+* **Extensions give content, the editor places it.** The lecture describes its panel; the editor,
+  which knows the space and the other panels, decides beside or below.
+* **One interface, many layouts.** No screen is forked per platform: the variations are
+  polymorphic pieces chosen by the adaptive information.
+
+### Adaptive information
+
+| Responsibility | Class (module) | GRASP |
+|---|---|---|
+| Size class of a width and a height (compact < 600 dp, medium < 840 dp, expanded; compact height < 480 dp) | `WindowLayout.of(width, height)` (`drawview-ui`) | Information Expert, Pure Fabrication |
+| Size class of the window, updated when it is resized | `currentWindowLayout()`, from `LocalWindowInfo.containerSize` | Protected Variations (the source can become `material3-adaptive` without touching the screens) |
+| What the user has at hand: stylus, precise pointer, hover, hardware keyboard | `InputCapabilities` (`drawview-ui`), updated by the pointer and key events seen at the root of the application (`Modifier.observeInput`, initial pass, nothing consumed) | Information Expert (the events know their type), Low Coupling |
+| First guess of the input, before any event | `platformInputHints()` (expect / actual: the desktop a pointer and a keyboard; Android `Configuration.keyboard` and the input devices; iOS `GCKeyboard`) | Polymorphism, Protected Variations |
+| Conventions of the platform: primary modifier (Cmd on Apple, Ctrl elsewhere), where the menus live (menu bar or in the window), names of the keys | `PlatformConventions` (expect / actual, `drawview-ui`) | Polymorphism, Protected Variations |
+| Give the three to every composable | `AdaptiveInfo` (window layout, input, conventions) in `LocalAdaptiveInfo`, provided by `AdaptiveRoot`: `DocumentLibrary` and `EditorSessionScreen` declare one, the application may declare one around its dialogs (the inner ones then only show their content); `currentAdaptiveInfo()` outside of a root | Indirection, Low Coupling (the theme belongs to the application: PencilNotes has its own) |
+| Density by input: minimum interactive size 48 dp with touch, 40 dp with a precise pointer only | `InputCapabilities.minimumInteractiveSize`, given by `AdaptiveRoot` as `LocalMinimumInteractiveComponentSize`; `ToolButton` drawn 36 dp and as large as it | Information Expert (the input knows what it can reach) |
+| Complete color schemes (every role, `surfaceContainer*` included) | `Color.kt` of DrawView and of PencilNotes, generated from their seed | Information Expert |
+
+`isStylusOnlyMode` stays in the controller: it is a behavior of the editor (fingers pan), chosen
+by the user; `InputCapabilities.hasStylus` only says that a stylus exists.
+
+### Commands
+
+| Responsibility | Class (module) | GRASP |
+|---|---|---|
+| An action: label, icon, shortcut, group (Edit, View, Insert, Tools, Document), enabled, checked, priority in the toolbar, perform | `Command` (`drawview-ui`) | Information Expert (it asks its expert: `canUndo`, the selection) |
+| A combination of keys, written once for every platform (`primary + Z`) | `KeyShortcut` with `PlatformConventions.primaryModifier` | Protected Variations |
+| The commands of the editor: tools, undo / redo, selection (copy, cut, paste, delete), zoom, page grid, drawing mode, import, backgrounds | `EditorCommands(controller, pickers)` | Creator (it holds the controller and the pickers) |
+| The camera commands missing: fit the width, next / previous page, go to a page | `DrawViewController` (with `CameraPhysicsEngine`) | Information Expert |
+| The commands of the library: new note, new folder, rename, move, delete, select all, sort | `LibraryCommands(fileExplorerViewModel)` (`drawview-explorer`) | Creator, Information Expert |
+| The commands of an extension (record, I missed something, share, export) | `EditorExtension.commands` | Low Coupling, Protected Variations |
+| The commands of the screen in front, for the presenters outside of it (menu bar) | `CommandHost` (`drawview-ui`), filled by the screen shown; `DocumentLibrary` takes it as a parameter | Pure Fabrication, Indirection |
+| Shortcuts: a key event to a command, after the focused element (a text field keeps its own Cmd+Z) | `ShortcutDispatcher`, `Modifier.onKeyEvent` at the root of the screen | Pure Fabrication, Controller |
+| Show the commands | `CommandButton` (with a tooltip "label  ⌘Z" where the pointer hovers), `CommandMenu` (context menu, right click or long press), `DrawViewMenuBar` (`jvmMain`, a Compose `MenuBar` of the window), the menu of iPadOS and the shortcut helper of Android (see [Platforms](#platforms)) | Polymorphism |
+
+`toolbarActions` stays for the content that is not an action (the time of a recording, the
+avatars of the participants), next to the commands of the extension.
+
+### Panels and sheets
+
+| Responsibility | Class (module) | GRASP |
+|---|---|---|
+| A panel contributed to the editor: title, icon, open state, content | `EditorPanel`, listed by `EditorExtension.panels` (replacing `sidePanel` and the sheet of the lecture in `canvasOverlay`) | Low Coupling, Protected Variations |
+| Where the panels go: beside the canvas when it keeps at least its minimum width, else rising from the bottom over it (a handle makes it taller); two panels at once side by side or as tabs | `EditorScaffold` (`drawview-ui`, the frame of `DrawScreen`) | Information Expert (it knows the space and every panel), Controller |
+| A sheet of the application (configurators of the backgrounds, details of a file, settings of the lecture): bottom sheet when compact, dialog or side pane when wider | `AdaptiveSheet` (`drawview-ui`) | Polymorphism |
+
+The lecture loses `panelBeside()` and `LectureSheet`: it describes `PanelContent` once.
+
+### Editor
+
+| Responsibility | Class (module) | GRASP |
+|---|---|---|
+| The toolbar of the editor, from the commands | `EditorToolbar` (`drawview-ui`), replacing the two rows of `DrawScreen` | High Cohesion |
+| Which commands fit in a width, which go to the overflow, by priority | `ToolbarLayout.arrange(commands, width)` (pure, unit tested) | Pure Fabrication |
+| The settings of a tool (sizes, presets, colors): popup by its button, also from the menu bar | the current composables (`InkToolButton`, `TextToolSettings`…), opened by the command of the tool | Information Expert |
+| Cursor of the canvas on hover: dot of the pen as large as the stroke, circle of the eraser (exists), I-beam of the text, hand of the pan | `CanvasGestureHandler` (it knows the tool, the mode and the pointer), `pointerHoverIcon` of `DrawCanvas` | Information Expert |
+
+### Library
+
+| Responsibility | Class (module) | GRASP |
+|---|---|---|
+| The layout by size class: list, grid, navigation pane + grid | `LibraryLayout` (`drawview-explorer`), used by `ExplorerScreen` | Polymorphism |
+| Thumbnail of a document: its first page drawn, cached on disk, drawn again when the document changes | `DocumentThumbnails` (`drawview-explorer`), through `OpenDocuments` and `TileRenderer.renderThumbnail` | Pure Fabrication, Information Expert (the renderer draws, the store knows the last change) |
+| Pointer selection: Cmd / Ctrl click adds, Shift click extends, right click opens the menu of the file | `FileExplorerViewModel` (selection), `FileListItem` / `FileGridItem` | Information Expert |
+| Drag and drop: files dropped on a folder, PDFs and images dropped from the system imported | `ExplorerScreen` (`dragAndDropSource` / `dragAndDropTarget`) with `LibraryCommands` | Controller |
+
+### Layouts
+
+| | Compact (phone; any window under 600 dp) | Medium (tablet in portrait, split screen) | Expanded (tablet in landscape, desktop) |
+|---|---|---|---|
+| Library | list (as now) | grid of thumbnails | navigation pane (folders, recent, shared) + grid; the details of a file beside |
+| Editor toolbar | top bar with back, title and overflow; the tools in a floating toolbar at the bottom, near the thumb | one bar when it fits, else two | one bar; on the desktop also the menu bar and the shortcuts |
+| Panels (lecture…) | from the bottom over the canvas | beside the canvas when it keeps its minimum width, else from the bottom | beside the canvas |
+| Sheets | bottom sheet | dialog | dialog or side pane |
+| Compact height (phone in landscape) | the toolbar on one row, the floating tools at the side | | |
+
+Input changes the details, not the structure: tooltips, hover cursors and right-click menus with
+a precise pointer, the shortcuts shown in menus and tooltips with a keyboard, the smaller density
+with a pointer only.
+
+### Platforms
+
+| Platform | What it adds | Where |
+|---|---|---|
+| macOS | Menu bar from the commands; toolbar in the title bar (`apple.awt.fullWindowContent`, transparent title bar); size, position and maximized state of the window kept; minimum size | `DrawViewMenuBar`, `rememberDrawViewWindowState` (`drawview-ui`, `jvmMain`), `pencilnotes-desktop` |
+| Windows, Linux | Ctrl shortcuts; the menu bar in the window; the same window state | as above |
+| iPadOS | Shortcuts of a hardware keyboard (Compose delivers the key events); the list of shortcuts while Cmd is held and the menu bar of iPadOS 26 (`UIKeyCommand`, `UIMenuBuilder`, from the commands); Apple Pencil: double tap and squeeze following the preference of the system (`UIPencilInteraction`), hover of the Pencil where Compose delivers it; Stage Manager and Split View by the size classes | `iosMain` of `drawview-ui` (a bridge the app installs), `pencilnotes/iosApp` |
+| Android | Shortcuts of a keyboard and their list (`onProvideKeyboardShortcuts`); the stylus button (eraser while held); stylus hover; split screen and desktop windows by the size classes | `androidMain` of `drawview-ui`, `pencilnotes-android` |
+
+The gestures of the Pencil and of the stylus button are commands too (`PencilAction`: switch to
+the eraser, to the previous tool, show the palette): the platform tells only which action the
+user chose.
+
+### Reference configurations
+
+| Name | Size (dp) | Classes |
+|---|---|---|
+| Phone | 411×891 | compact |
+| Phone landscape | 891×411 | expanded width, compact height |
+| Tablet portrait | 800×1280 | medium |
+| Tablet split screen | 640×800 | medium |
+| Tablet landscape | 1280×800 | expanded |
+| Desktop narrow | 720×800 | medium |
+| Desktop | 1440×900 | expanded |
+
+Each with the input profiles touch, stylus, pointer + keyboard, in light and dark. The screenshot
+tests (JVM, where a size is set at once) draw the library, the editor, the panels and the sheets
+in these configurations; the pure pieces (`WindowLayout`, `ToolbarLayout`, `ShortcutDispatcher`,
+`InputCapabilities`) have unit tests.
+
+### Modules
+
+```
+drawview-ui        adaptive/ (WindowLayout, InputCapabilities, PlatformConventions, AdaptiveInfo),
+                   command/ (Command, KeyShortcut, CommandHost, ShortcutDispatcher, CommandButton,
+                   CommandMenu), EditorScaffold, EditorPanel, AdaptiveSheet, EditorToolbar,
+                   ToolbarLayout; jvmMain: DrawViewMenuBar, window state; iosMain / androidMain:
+                   menus and shortcuts of the platform, Pencil and stylus button
+drawview-core      cursors of the canvas, camera commands of DrawViewController
+drawview-explorer  LibraryCommands, LibraryLayout, DocumentThumbnails, pointer selection, drag and drop
+drawview-lecture,  commands and panels instead of toolbar buttons, sidePanel and their own sheet
+drawview-sync-ui,
+drawview-export
+pencilnotes        menu bar and window state (desktop), bridge of the menus and of the Pencil (iOS)
+```
+
+## Plan
+
+| Phase | Content | Status |
+|---|---|---|
+| 0. Foundations | Complete color schemes (DrawView, PencilNotes); `WindowLayout`, `InputCapabilities`, `PlatformConventions`, `AdaptiveInfo` given by `AdaptiveRoot`; density by input; screenshot tests on the reference configurations (current state as the first reference); the lecture on `WindowLayout` | done |
+| 1. Commands | `Command`, `KeyShortcut`, `CommandHost`, `ShortcutDispatcher`; `EditorCommands`, `LibraryCommands`, commands of the extensions; tooltips with the shortcut; right-click menus in the library; menu bar of the desktop | |
+| 2. Panels and sheets | `EditorPanel`, `EditorScaffold`; `AdaptiveSheet` for the configurators, the details and the settings; lecture and collaboration moved | |
+| 3. Editor | `EditorToolbar` and `ToolbarLayout`; floating tools on the phone; one bar when it fits; cursors of the canvas; camera commands (fit, pages) | |
+| 4. Library | `DocumentThumbnails`; grid; navigation pane; details beside; pointer selection; drag and drop | |
+| 5. Platforms | macOS title bar and window state; iPadOS shortcuts, menu bar and Pencil; Android shortcut helper, stylus button and hover | |
+| Later | A document per window (desktop, iPadOS); postures of the foldables; toolbar at the side for the left-handed; focus mode (the bars hidden while writing) | |
+
+Each phase ends with its screenshots compared to the previous ones and a check on real devices:
+an iPad with a Pencil, an Android tablet with a stylus, a phone, a Mac with a trackpad.
+
+### Phase 0 results
+
+* **Colors**: the color schemes of DrawView and of PencilNotes set every role. The surfaces are
+  the tones of the neutral palette that made the colors already there (hue of the seed, chroma 4:
+  its tones 10, 20, 90, 95 and 99 are those of the schemes), the fixed roles the tones 90, 80, 10
+  and 30 of each palette. Dialogs, menus and sheets no longer take the purple neutrals of Material
+  on the desktop, on iOS and on Android before 12.
+* **`drawview-ui/adaptive`**: `WindowLayout` (size classes only, so that a window being resized
+  changes the screens only when a class changes), `InputCapabilities` with `InputHints` and
+  `Modifier.observeInput` (a key counts when it comes from a hardware keyboard: the soft keyboards
+  of Android send some keys too), `PlatformConventions` (the modifier of the shortcuts),
+  `AdaptiveInfo`, `AdaptiveRoot`, `ReferenceWindow`. The hints of the platform: a pointer and a
+  keyboard on the desktop; the configuration and the input devices on Android; a touch screen and
+  the Pencil-only drawing of the system on iOS.
+* **`AdaptiveRoot`** is declared by `DocumentLibrary`, `EditorSessionScreen` and PencilNotes
+  around its dialogs (not by `DrawViewTheme`: PencilNotes has a theme of its own). It gives the
+  minimum interactive size of the input to Material and to `ToolButton`, drawn 36 dp and taking
+  48 dp for a finger, 40 dp for a pointer.
+* **The lecture** asks `WindowLayout` whether its panel goes beside the canvas (the same 600 dp).
+* **Screenshot tests** (`AdaptiveScreenshotTest`, `drawview-explorer`, Roborazzi): the library
+  and the editor in the seven reference windows with their input, the phone and the desktop in
+  the dark theme too, the background configurator on a phone, a tablet and a desktop; 21 images
+  in `drawview-explorer/screenshots`, the same at every run (fixed clock of `KeyValueDocumentStore`,
+  US locale, UTC). `recordRoborazziJvm` records them, `verifyRoborazziJvm` fails when the interface
+  differs. They show the starting point of the next phases: the list of a phone on a 1440 dp
+  window, the tools cut on a phone, the bottom sheet rising in the middle of a desktop.
+* **The canvas asks for frames only while it moves.** Its loop of frames ran at every frame of the
+  display while a document was open, at rest too: the main thread of a tablet woke up 60 to 120
+  times a second during a whole lecture, and a test never saw the interface idle. The camera
+  counts the animations it starts (`CameraPhysicsEngine.animationStarts`, a fling or a bounce
+  after `onRelease` and `restoreToBounds`), the auto-scroll of a drag is observable, and the loop
+  waits for one of them. `TileManager.isRasterizing` tells the tests when the pages are drawn.
+* Tests: the size classes, the reference windows, the input learned and kept, the minimum size by
+  input (`AdaptiveInfoTest`); the start of the animations of the camera.
+
+### Risks
+
+* **Long press**: it opens the settings of a tool and selects a file; the tooltips of Material
+  use it on touch screens. The tooltips are shown only where the pointer hovers.
+* **Focus of the keys**: Compose delivers the keys to the focused element. The shortcuts are
+  handled after it (`onKeyEvent`, not `onPreviewKeyEvent`) so that a text field keeps its own
+  editing keys, and the root of the screen takes the focus when nothing has it.
+* **The menu bar belongs to the window** (`FrameWindowScope` of the desktop, `UIMenuBuilder` of
+  the app delegate): the modules give the commands through `CommandHost`, the application
+  installs the menu; on iOS a few lines of Swift in the app.
+* **Thumbnails**: drawing the first page of many documents (PDFs included) costs time and memory:
+  drawn lazily for the visible items, small, on a background dispatcher, cached on disk.
+* **Hover of the Pencil and of the Android stylus**: depends on what Compose delivers on each
+  platform; verified in phase 5 before any bridge.
+* **Regressions of the layouts**: every phase changes many screens; the screenshot tests of
+  phase 0 come first.
+
+### Decisions
+
+Taken with the user on 2026-10-08:
+
+* **Size classes**: computed by `WindowLayout` from `LocalWindowInfo`, without dependency; the
+  library may adopt the scaffolds of `material3-adaptive` behind `LibraryLayout`.
+* **Screenshot tests**: Roborazzi for Compose Desktop.
+* **Toolbar of the phone**: the tools at the bottom, in a floating toolbar within reach of the
+  thumb.

@@ -25,6 +25,7 @@ import io.github.valerioisufi.drawview.sync.ui.InvitationLinks
 import io.github.valerioisufi.drawview.sync.ui.JoinSharedDocumentButton
 import io.github.valerioisufi.drawview.sync.ui.editorExtension
 import io.github.valerioisufi.drawview.sync.ui.rememberCollaboration
+import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.components.AboutAppInfo
 import io.github.valerioisufi.drawview.ui.components.LocalAboutAppInfo
 import io.github.valerioisufi.drawview.ui.components.ThirdPartyLicense
@@ -68,38 +69,41 @@ fun PencilNotesApp() {
                 known = ids
             }
         }
-        CompositionLocalProvider(LocalAboutAppInfo provides aboutAppInfo) {
-            CollaborationDialogs(collaboration)
-            LectureDialogs(lectureAssistant)
-            DocumentLibrary(
-                title = {
-                    Text(
-                        text = stringResource(Res.string.app_name),
-                        modifier = Modifier.padding(start = 16.dp, end = 24.dp),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontFamily = cherryBombOneFontFamily()
-                    )
-                },
-                actions = {
-                    JoinSharedDocumentButton(collaboration)
-                    AboutLicensesButton()
-                },
-                fullScreenEditor = true,
-                editorExtension = editorExtension,
-                documentActions = listOf(export.documentAction),
-                libraryOverlay = { openDocument ->
-                    LectureRecordingIndicator(
-                        assistant = lectureAssistant,
-                        onOpenDocument = openDocument,
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(16.dp)
-                    )
-                },
-                modifier = Modifier.fillMaxSize()
-            )
+        // The dialogs of the application adapt like the library: one root for all of them
+        AdaptiveRoot(modifier = Modifier.fillMaxSize()) {
+            CompositionLocalProvider(LocalAboutAppInfo provides aboutAppInfo) {
+                CollaborationDialogs(collaboration)
+                LectureDialogs(lectureAssistant)
+                DocumentLibrary(
+                    title = {
+                        Text(
+                            text = stringResource(Res.string.app_name),
+                            modifier = Modifier.padding(start = 16.dp, end = 24.dp),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontFamily = cherryBombOneFontFamily()
+                        )
+                    },
+                    actions = {
+                        JoinSharedDocumentButton(collaboration)
+                        AboutLicensesButton()
+                    },
+                    fullScreenEditor = true,
+                    editorExtension = editorExtension,
+                    documentActions = listOf(export.documentAction),
+                    libraryOverlay = { openDocument ->
+                        LectureRecordingIndicator(
+                            assistant = lectureAssistant,
+                            onOpenDocument = openDocument,
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(16.dp)
+                        )
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
     }
 }

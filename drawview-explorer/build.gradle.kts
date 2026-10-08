@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    // Screenshot tests of the library and of the editor (recordRoborazziJvm, verifyRoborazziJvm)
+    alias(libs.plugins.roborazzi)
 }
 
 kotlin {
@@ -52,10 +54,19 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
         }
+        jvmTest.dependencies {
+            implementation(libs.compose.uiTest)
+            implementation(libs.roborazzi.composeDesktop)
+        }
     }
 }
 
 compose.resources {
     publicResClass = true
     packageOfResClass = "io.github.valerioisufi.drawview.explorer.generated.resources"
+}
+
+// The reference images of the screenshot tests (see AdaptiveScreenshotTest)
+roborazzi {
+    outputDir.set(layout.projectDirectory.dir("screenshots"))
 }

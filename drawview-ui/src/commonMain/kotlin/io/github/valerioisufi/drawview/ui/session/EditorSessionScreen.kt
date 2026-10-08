@@ -17,6 +17,7 @@ import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.screen.DrawScreen
 
 /**
@@ -33,29 +34,31 @@ fun EditorSessionScreen(
     extension: EditorExtension? = null
 ) {
     val controller = session.controller
-    if (controller == null) {
-        // The document is being loaded
-        Box(
-            modifier = modifier.background(MaterialTheme.colorScheme.surface)
-        ) {
-            LinearProgressIndicator(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
-                color = MaterialTheme.colorScheme.secondary,
-                trackColor = MaterialTheme.colorScheme.surfaceVariant
+    // The editor adapts to the window, the input and the platform (also outside of a library)
+    AdaptiveRoot(modifier = modifier) {
+        if (controller == null) {
+            // The document is being loaded
+            Box(
+                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+            ) {
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
+                    color = MaterialTheme.colorScheme.secondary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            }
+        } else {
+            EditorBackHandler(controller, onClose = onClose)
+            DrawScreen(
+                controller = controller,
+                onNavigateBack = onClose,
+                toolbarActions = { extension?.toolbarActions?.invoke(this, session, controller) },
+                sidePanel = { extension?.sidePanel?.invoke(session, controller) },
+                canvasOverlay = { extension?.canvasOverlay?.invoke(this, session, controller) }
             )
         }
-    } else {
-        EditorBackHandler(controller, onClose = onClose)
-        DrawScreen(
-            controller = controller,
-            onNavigateBack = onClose,
-            modifier = modifier,
-            toolbarActions = { extension?.toolbarActions?.invoke(this, session, controller) },
-            sidePanel = { extension?.sidePanel?.invoke(session, controller) },
-            canvasOverlay = { extension?.canvasOverlay?.invoke(this, session, controller) }
-        )
     }
 }
 

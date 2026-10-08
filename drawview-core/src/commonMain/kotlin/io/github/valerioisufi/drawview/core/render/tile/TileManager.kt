@@ -428,6 +428,12 @@ class TileManager(
     }
 
     /**
+     * Whether tiles are being rasterized: the pages on screen may still be drawn without them (a
+     * screenshot test waits for them).
+     */
+    val isRasterizing: Boolean get() = syncLock(lock) { activeTileJobs.isNotEmpty() }
+
+    /**
      * Enqueues a tile for background rasterization on the dedicated worker dispatcher.
      */
     fun enqueueTile(

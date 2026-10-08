@@ -18,6 +18,7 @@ import io.github.valerioisufi.drawview.explorer.ui.AboutLicensesButton
 import io.github.valerioisufi.drawview.explorer.ui.ExplorerScreen
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.latex.TexFont
+import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.session.DocumentAction
 import io.github.valerioisufi.drawview.ui.session.DocumentEditorViewModel
 import io.github.valerioisufi.drawview.ui.session.EditorExtension
@@ -74,24 +75,26 @@ fun DocumentLibrary(
 
     val session = editorViewModel.session
     SystemBarsHidden(hidden = fullScreenEditor && session != null)
-    if (session == null) {
-        Box(modifier = modifier) {
-            ExplorerScreen(
-                fileExplorerViewModel = fileExplorerViewModel,
-                onOpenDocument = { documentId -> editorViewModel.openDocument(documentId) },
-                title = title,
-                actions = actions,
-                documentActions = documentActions,
-                modifier = Modifier.fillMaxSize()
+    // The library and the editor adapt to the window, the input and the platform
+    AdaptiveRoot(modifier = modifier) {
+        if (session == null) {
+            Box {
+                ExplorerScreen(
+                    fileExplorerViewModel = fileExplorerViewModel,
+                    onOpenDocument = { documentId -> editorViewModel.openDocument(documentId) },
+                    title = title,
+                    actions = actions,
+                    documentActions = documentActions,
+                    modifier = Modifier.fillMaxSize()
+                )
+                libraryOverlay { documentId -> editorViewModel.openDocument(documentId) }
+            }
+        } else {
+            EditorSessionScreen(
+                session = session,
+                onClose = { editorViewModel.closeSession() },
+                extension = editorExtension
             )
-            libraryOverlay { documentId -> editorViewModel.openDocument(documentId) }
         }
-    } else {
-        EditorSessionScreen(
-            session = session,
-            onClose = { editorViewModel.closeSession() },
-            modifier = modifier,
-            extension = editorExtension
-        )
     }
 }

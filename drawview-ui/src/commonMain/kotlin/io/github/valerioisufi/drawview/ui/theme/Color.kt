@@ -74,4 +74,39 @@ val md_theme_dark_surfaceTint = Color(0xFF97CBFF)
 val md_theme_dark_outlineVariant = Color(0xFF42474E)
 val md_theme_dark_scrim = Color(0xFF000000)
 
+// --- SURFACES (tones of the neutral palette: hue of the seed, chroma 4, as the colors above) ---
+// Containers of dialogs, menus, sheets, cards and bars; without them Material falls back to its
+// baseline neutrals, purple beside this palette
+val md_theme_light_surfaceDim = Color(0xFFDADADD) // N87
+val md_theme_light_surfaceBright = Color(0xFFFCFCFF) // N99, as the surface
+val md_theme_light_surfaceContainerLowest = Color(0xFFFFFFFF) // N100
+val md_theme_light_surfaceContainerLow = Color(0xFFF3F3F7) // N96
+val md_theme_light_surfaceContainer = Color(0xFFEEEDF1) // N94
+val md_theme_light_surfaceContainerHigh = Color(0xFFE8E8EB) // N92
+val md_theme_light_surfaceContainerHighest = Color(0xFFE2E2E5) // N90
+
+val md_theme_dark_surfaceDim = Color(0xFF121416) // N6
+val md_theme_dark_surfaceBright = Color(0xFF37393C) // N24
+val md_theme_dark_surfaceContainerLowest = Color(0xFF0C0E11) // N4
+val md_theme_dark_surfaceContainerLow = Color(0xFF1A1C1E) // N10, as the surface
+val md_theme_dark_surfaceContainer = Color(0xFF1E2022) // N12
+val md_theme_dark_surfaceContainerHigh = Color(0xFF282A2D) // N17
+val md_theme_dark_surfaceContainerHighest = Color(0xFF333538) // N22
+
+// --- FIXED (the same in the light and dark themes: tones 90, 80, 10, 30 of each palette) ---
+val md_theme_primaryFixed = md_theme_light_primaryContainer
+val md_theme_primaryFixedDim = md_theme_dark_primary
+val md_theme_onPrimaryFixed = md_theme_light_onPrimaryContainer
+val md_theme_onPrimaryFixedVariant = md_theme_dark_primaryContainer
+
+val md_theme_secondaryFixed = md_theme_light_secondaryContainer
+val md_theme_secondaryFixedDim = md_theme_dark_secondary
+val md_theme_onSecondaryFixed = md_theme_light_onSecondaryContainer
+val md_theme_onSecondaryFixedVariant = md_theme_dark_secondaryContainer
+
+val md_theme_tertiaryFixed = md_theme_light_tertiaryContainer
+val md_theme_tertiaryFixedDim = md_theme_dark_tertiary
+val md_theme_onTertiaryFixed = md_theme_light_onTertiaryContainer
+val md_theme_onTertiaryFixedVariant = md_theme_dark_tertiaryContainer
+
 val seed = Color(0xFF00639B)

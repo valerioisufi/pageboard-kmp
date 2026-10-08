@@ -81,11 +81,15 @@ class InMemoryKeyValueStorage : KeyValueStorage {
  * operation marks the document as modified and its whole content is written shortly after
  * (writes are coalesced). The files of the resources (imported images) are stored as Base64
  * values and restored into [PlatformFiles] when the document is loaded.
+ *
+ * @param clock the time of the changes, in milliseconds: a fixed time makes the dates shown by a
+ *   test the same at every run.
  */
 class KeyValueDocumentStore(
     private val storage: KeyValueStorage,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
-    private val saveDelayMs: Long = 400L
+    private val saveDelayMs: Long = 400L,
+    private val clock: () -> Long = ::currentTimeMillis
 ) : DocumentStore, DrawPersistence {
 
     private val json = Json {
@@ -126,7 +130,7 @@ class KeyValueDocumentStore(
         background: PageBackground,
         folderId: String?
     ): DrawDocument {
-        val now = currentTimeMillis()
+        val now = clock()
         val document = syncLock(lock) {
             val document = DrawDocument(
                 title = name,
@@ -159,7 +163,7 @@ class KeyValueDocumentStore(
     }
 
     override suspend fun insertDocument(document: DrawDocument, folderId: String?, versionVector: Map<String, Long>) {
-        val now = currentTimeMillis()
+        val now = clock()
         syncLock(lock) {
             if (versionVector.isNotEmpty()) index = index.copy(operationBases = index.operationBases + (document.id to versionVector))
             val summary = StoredSummary(
@@ -245,7 +249,7 @@ class KeyValueDocumentStore(
             val summary = index.documents.firstOrNull { it.id == documentId } ?: return false
             if (folderId != null && index.folders.none { it.id == folderId }) return false
             if (index.documents.any { it.folderId == folderId && it.name == summary.name }) return false
-            updateSummaryLocked(documentId) { it.copy(folderId = folderId, modifiedAt = currentTimeMillis()) }
+            updateSummaryLocked(documentId) { it.copy(folderId = folderId, modifiedAt = clock()) }
             writeIndexLocked()
         }
         publishSummaries()
@@ -254,7 +258,7 @@ class KeyValueDocumentStore(
 
     override suspend fun updateLastOpened(documentId: String) {
         syncLock(lock) {
-            val now = currentTimeMillis()
+            val now = clock()
             updateSummaryLocked(documentId) { it.copy(lastOpenedAt = now) }
             openDocuments[documentId]?.lastOpenedAt = now
             writeIndexLocked()
@@ -266,7 +270,7 @@ class KeyValueDocumentStore(
         syncLock(lock) {
             if (parentId != null && index.folders.none { it.id == parentId }) return false
             if (index.folders.any { it.parentId == parentId && it.name == name }) return false
-            val now = currentTimeMillis()
+            val now = clock()
             val folder = StoredFolder(newElementId(), name, parentId, createdAt = now, modifiedAt = now)
             index = index.copy(folders = index.folders + folder)
             writeIndexLocked()
@@ -279,7 +283,7 @@ class KeyValueDocumentStore(
         syncLock(lock) {
             val folder = index.folders.firstOrNull { it.id == folderId } ?: return false
             if (index.folders.any { it.parentId == folder.parentId && it.name == newName }) return false
-            updateFolderLocked(folderId) { it.copy(name = newName, modifiedAt = currentTimeMillis()) }
+            updateFolderLocked(folderId) { it.copy(name = newName, modifiedAt = clock()) }
             writeIndexLocked()
         }
         publishSummaries()
@@ -314,7 +318,7 @@ class KeyValueDocumentStore(
                 ancestorId = index.folders.firstOrNull { it.id == ancestorId }?.parentId
             }
             if (index.folders.any { it.parentId == parentId && it.name == folder.name }) return false
-            updateFolderLocked(folderId) { it.copy(parentId = parentId, modifiedAt = currentTimeMillis()) }
+            updateFolderLocked(folderId) { it.copy(parentId = parentId, modifiedAt = clock()) }
             writeIndexLocked()
         }
         publishSummaries()
