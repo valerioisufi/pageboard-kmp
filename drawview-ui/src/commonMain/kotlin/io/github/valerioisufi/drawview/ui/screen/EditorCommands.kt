@@ -25,6 +25,9 @@ import io.github.valerioisufi.drawview.ui.command.Shortcut
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.about_dialog_title
 import io.github.valerioisufi.drawview.ui.generated.resources.command_close
+import io.github.valerioisufi.drawview.ui.generated.resources.command_fit_width
+import io.github.valerioisufi.drawview.ui.generated.resources.command_next_page
+import io.github.valerioisufi.drawview.ui.generated.resources.command_previous_page
 import io.github.valerioisufi.drawview.ui.generated.resources.command_zoom_in
 import io.github.valerioisufi.drawview.ui.generated.resources.command_zoom_out
 import io.github.valerioisufi.drawview.ui.generated.resources.common_action_copy
@@ -164,14 +167,31 @@ class EditorCommands internal constructor(
         shortcuts = listOf(primary(Key.Minus), primary(Key.NumPadSubtract))
     ) { controller.zoomOut() }
 
+    val fitWidth = Command(
+        "fit-width", label(Res.string.command_fit_width), CommandGroup.VIEW,
+        shortcuts = listOf(primary(Key.Zero))
+    ) { controller.fitWidth() }
+
+    val nextPage = Command(
+        "next-page", label(Res.string.command_next_page), CommandGroup.VIEW, section = 1,
+        shortcuts = listOf(Shortcut(Key.PageDown)),
+        isEnabled = { (controller.mostVisiblePageIndex() ?: 0) < controller.document.pages.lastIndex }
+    ) { controller.showNextPage() }
+
+    val previousPage = Command(
+        "previous-page", label(Res.string.command_previous_page), CommandGroup.VIEW, section = 1,
+        shortcuts = listOf(Shortcut(Key.PageUp)),
+        isEnabled = { (controller.mostVisiblePageIndex() ?: 0) > 0 }
+    ) { controller.showPreviousPage() }
+
     val pageGrid = Command(
-        "page-grid", label(Res.string.draw_toolbar_action_grid_view), CommandGroup.VIEW, section = 1,
+        "page-grid", label(Res.string.draw_toolbar_action_grid_view), CommandGroup.VIEW, section = 2,
         shortcuts = listOf(primary(Key.G)),
         isChecked = { controller.isPageGridVisible }
     ) { controller.togglePageGrid() }
 
     val stylusOnly = Command(
-        "stylus-only", label(Res.string.draw_menu_stylus_only), CommandGroup.VIEW, section = 1,
+        "stylus-only", label(Res.string.draw_menu_stylus_only), CommandGroup.VIEW, section = 2,
         isChecked = { controller.isStylusOnlyMode }
     ) { controller.updateStylusOnlyMode(!controller.isStylusOnlyMode) }
 
@@ -232,7 +252,7 @@ class EditorCommands internal constructor(
     val all: List<Command> = listOf(
         close,
         undo, redo, cut, copy, paste, delete,
-        zoomIn, zoomOut, pageGrid, stylusOnly,
+        zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly,
         addPage, importPdf, importImage,
         documentBackground,
         drawingMode, pen, highlighter, textMarkup, eraser, text, lasso, pan,

@@ -75,6 +75,8 @@ internal fun keyName(key: Key, apple: Boolean): String {
         Key.DirectionDown -> "↓"
         Key.DirectionLeft -> "←"
         Key.DirectionRight -> "→"
+        Key.PageUp -> if (apple) "⇞" else "PgUp"
+        Key.PageDown -> if (apple) "⇟" else "PgDn"
         Key.F2 -> "F2"
         // A key without a name here (the tests check those of the commands)
         else -> key.toString()

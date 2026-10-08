@@ -137,4 +137,7 @@
     <string name="command_zoom_in">Zoom avant</string>
     <string name="command_zoom_out">Zoom arrière</string>
     <string name="common_action_close">Fermer</string>
+    <string name="command_fit_width">Ajuster à la largeur</string>
+    <string name="command_next_page">Page suivante</string>
+    <string name="command_previous_page">Page précédente</string>
 </resources>

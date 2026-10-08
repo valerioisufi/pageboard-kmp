@@ -137,4 +137,7 @@
     <string name="command_zoom_in">Vergrößern</string>
     <string name="command_zoom_out">Verkleinern</string>
     <string name="common_action_close">Schließen</string>
+    <string name="command_fit_width">An Breite anpassen</string>
+    <string name="command_next_page">Nächste Seite</string>
+    <string name="command_previous_page">Vorherige Seite</string>
 </resources>

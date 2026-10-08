@@ -21,6 +21,8 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -29,6 +31,7 @@ import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.DrawText
+import io.github.valerioisufi.drawview.core.model.Tool
 import kotlinx.coroutines.flow.first
 
 /**
@@ -84,9 +87,20 @@ fun DrawCanvas(
         }
     }
 
+    // The cursor of the tool where a mouse hovers the pages: a crosshair for the pens, the eraser and
+    // the lasso, an I-beam for the texts, a hand for the pan
+    val pointerIcon = when {
+        controller.placementManager.isActive -> PointerIcon.Crosshair
+        !controller.isDrawingMode -> PointerIcon.Default
+        controller.selectedTool == Tool.PAN -> PointerIcon.Hand
+        controller.selectedTool == Tool.TEXT || controller.selectedTool == Tool.TEXT_MARKUP -> PointerIcon.Text
+        else -> PointerIcon.Crosshair
+    }
+
     Canvas(
         modifier = modifier
             .fillMaxSize()
+            .pointerHoverIcon(pointerIcon)
             .clipToBounds()
             .onSizeChanged { size ->
                 if (size.width > 0 && size.height > 0) {
@@ -164,11 +178,20 @@ fun DrawCanvas(
             }
         }
 
-        // 6. Eraser cursor
+        // 6. Eraser cursor, and where the ink of a pen would land
         live.eraserCursor?.let { cursor ->
             if (controller.isDrawingMode) {
                 drawCircle(Color(0x33FF8DA1), radius = live.eraserRadiusPx, center = cursor)
                 drawCircle(Color(0xCCFF8DA1), radius = live.eraserRadiusPx, center = cursor, style = Stroke(width = 2f))
+            }
+        }
+        live.inkCursor?.let { cursor ->
+            if (controller.isDrawingMode && controller.toolManager.isInkTool) {
+                val ink = Color(live.inkCursorColor)
+                // At least a dot of a few pixels, ringed so that it shows on any background
+                val radius = live.inkCursorRadiusPx.coerceAtLeast(1.5f)
+                drawCircle(ink.copy(alpha = ink.alpha * 0.6f), radius = radius, center = cursor)
+                drawCircle(Color(0x99FFFFFF), radius = radius + 1f, center = cursor, style = Stroke(width = 1f))
             }
         }
 

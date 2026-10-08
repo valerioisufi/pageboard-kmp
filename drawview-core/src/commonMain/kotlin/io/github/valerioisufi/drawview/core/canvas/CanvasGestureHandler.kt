@@ -72,6 +72,22 @@ class CanvasLiveState {
         tick++
     }
 
+    /** Where the ink would land under a hovering pointer (screen pixels), its radius and color. */
+    var inkCursor: Offset? = null
+        private set
+    var inkCursorRadiusPx: Float = 0f
+        private set
+    var inkCursorColor: Int = 0
+        private set
+
+    fun setInkCursor(position: Offset?, radiusPx: Float = 0f, color: Int = 0) {
+        if (inkCursor == position && inkCursorRadiusPx == radiusPx && inkCursorColor == color) return
+        inkCursor = position
+        inkCursorRadiusPx = radiusPx
+        inkCursorColor = color
+        tick++
+    }
+
     fun invalidate() {
         tick++
     }
@@ -187,6 +203,7 @@ internal class CanvasGestureHandler(
             }
             PointerEventType.Exit -> {
                 live.setEraserCursor(null, 0f)
+                live.setInkCursor(null)
                 controller.placementManager.pointer = null
                 return
             }
@@ -197,18 +214,24 @@ internal class CanvasGestureHandler(
         val anyDown = changes.any { it.changedToDownIgnoreConsumed() }
         val anyUp = changes.any { it.changedToUpIgnoreConsumed() }
 
-        // Hover (desktop mouse, stylus hover): eraser cursor, preview of a pending placement
+        // Hover (desktop mouse, stylus hover): where the eraser or the ink would land, preview of a
+        // pending placement
         if (pressed.isEmpty() && !anyUp) {
             val hover = changes.firstOrNull()
             if (hover != null && controller.placementManager.isActive) {
                 controller.placementManager.pointer = hover.position
-            } else if (hover != null && controller.toolManager.isEraserTool && controller.isDrawingMode && mode == Mode.NONE) {
-                live.setEraserCursor(hover.position, eraserRadiusPx(hover.position))
+            } else if (hover != null && controller.isDrawingMode && mode == Mode.NONE) {
+                val tools = controller.toolManager
+                if (tools.isEraserTool) live.setEraserCursor(hover.position, eraserRadiusPx(hover.position)) else live.setEraserCursor(null, 0f)
+                val ink = tools.activePreset()?.takeIf { tools.isInkTool }
+                if (ink != null) live.setInkCursor(hover.position, inkRadiusPx(hover.position, ink.sizeMm), ink.color) else live.setInkCursor(null)
             }
             return
         }
 
         if (anyDown && mode == Mode.NONE && pressed.size == 1) {
+            // The stroke shows where the ink lands
+            live.setInkCursor(null)
             onFirstDown(pressed[0], event)
             return
         }
@@ -935,6 +958,12 @@ internal class CanvasGestureHandler(
     /** How far from the text of the PDFs a pointer of [type] may be to select or mark it, in pixels. */
     private fun textTolerancePx(type: PointerType): Float =
         (if (type == PointerType.Touch) 12f else 6f) * controller.density
+
+    /** The radius on screen of a stroke [sizeMm] wide drawn at [position]. */
+    private fun inkRadiusPx(position: Offset, sizeMm: Float): Float {
+        val pageIndex = controller.findPageIndexAtScreen(position) ?: controller.firstVisiblePageIndex() ?: 0
+        return sizeMm / 2f * controller.pixelsPerMm(pageIndex)
+    }
 
     private fun eraserRadiusPx(position: Offset): Float {
         val pageIndex = controller.findPageIndexAtScreen(position) ?: controller.firstVisiblePageIndex() ?: 0

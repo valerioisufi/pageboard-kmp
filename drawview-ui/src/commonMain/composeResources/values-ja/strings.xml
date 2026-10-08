@@ -137,4 +137,7 @@
     <string name="command_zoom_in">拡大</string>
     <string name="command_zoom_out">縮小</string>
     <string name="common_action_close">閉じる</string>
+    <string name="command_fit_width">幅に合わせる</string>
+    <string name="command_next_page">次のページ</string>
+    <string name="command_previous_page">前のページ</string>
 </resources>

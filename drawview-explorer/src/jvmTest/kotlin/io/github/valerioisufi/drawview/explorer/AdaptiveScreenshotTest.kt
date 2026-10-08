@@ -15,6 +15,7 @@ import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.rightClick
@@ -96,6 +97,13 @@ class AdaptiveScreenshotTest {
         openNote(viewModels)
         onNodeWithContentDescription("Grid View").performMouseInput { moveTo(center) }
         mainClock.advanceTimeBy(1_000)
+    }
+
+    /** The "more" menu on a phone: the commands left out of its bars (the imports, under the floating tools). */
+    @Test
+    fun editorMoreMenu() = capture("editor-more-menu", ReferenceWindow.PHONE, dark = false) { viewModels ->
+        openNote(viewModels)
+        onNodeWithContentDescription("More options").performClick()
     }
 
     /** A panel of an extension, placed by the editor: beside the canvas where it keeps room enough, else from the bottom. */
@@ -193,6 +201,10 @@ class AdaptiveScreenshotTest {
         onNodeWithText(NOTE).performClick()
         // While the document loads, its progress bar never lets the interface be idle
         awaitInRealTime { viewModels.editor()?.session?.controller != null }
+        waitForIdle()
+        // The mouse leaves the canvas for the title of the top bar: no cursor of the pen where it
+        // clicked the note
+        onRoot().performMouseInput { moveTo(Offset(centerX, 4f)) }
         waitForIdle()
     }
 

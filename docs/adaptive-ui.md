@@ -131,10 +131,12 @@ that follow the editor (the recording seeing the pages) and the dialogs of an ex
 
 | Responsibility | Class (module) | GRASP |
 |---|---|---|
-| The toolbar of the editor, from the commands | `EditorToolbar` (`drawview-ui`), replacing the two rows of `DrawScreen` | High Cohesion |
-| Which commands fit in a width, which go to the overflow, by priority | `ToolbarLayout.arrange(commands, width)` (pure, unit tested) | Pure Fabrication |
-| The settings of a tool (sizes, presets, colors): popup by its button, also from the menu bar | the current composables (`InkToolButton`, `TextToolSettings`…), opened by the command of the tool | Information Expert |
-| Cursor of the canvas on hover: dot of the pen as large as the stroke, circle of the eraser (exists), I-beam of the text, hand of the pan | `CanvasGestureHandler` (it knows the tool, the mode and the pointer), `pointerHoverIcon` of `DrawCanvas` | Information Expert |
+| The bars of the editor: the top bar (back, page grid, title, the tools when they fit, the actions of the extensions, drawing mode, "more"), the bar of the tools, the floating tools | `EditorTopBar`, `EditorTools`, `FloatingTools` (`drawview-ui`, `EditorToolbar.kt`), replacing the two rows of `DrawScreen` | High Cohesion |
+| Where the tools go by the width of the editor, the height of the window and the size of the buttons of the input; which buttons of the top bar fit beside the title | `ToolbarLayout.arrange` → `ToolbarArrangement` (one bar, two bars, floating tools), `ToolbarLayout.pageGridFits` (pure, unit tested) | Pure Fabrication |
+| The commands left out of the bars | the "more" menu, a `CommandMenu` of sections (the page grid and the imports when they do not fit, adding a page, fit width, stylus only, background, about) | Polymorphism |
+| The settings of a tool (sizes, presets, colors): popup by its button | the current composables (`InkToolButton`, `TextToolSettings`…), moved with the tools | Information Expert |
+| Cursor of the canvas on hover: the dot of the pen as large and as colored as its stroke, the circle of the eraser, the system cursor of the tool (crosshair, I-beam, hand) | `CanvasGestureHandler` and `CanvasLiveState.inkCursor` (they know the tool, the mode and the pointer), `pointerHoverIcon` of `DrawCanvas` | Information Expert |
+| The camera commands: fit the width, next / previous page | `DrawViewController.fitWidth`, `showPage`, `showNextPage`, `showPreviousPage` | Information Expert |
 
 ### Library
 
@@ -153,7 +155,7 @@ that follow the editor (the recording seeing the pages) and the dialogs of an ex
 | Editor toolbar | top bar with back, title and overflow; the tools in a floating toolbar at the bottom, near the thumb | one bar when it fits, else two | one bar; on the desktop also the menu bar and the shortcuts |
 | Panels (lecture…) | from the bottom over the canvas | beside the canvas when it keeps its minimum width, else from the bottom | beside the canvas |
 | Sheets | bottom sheet | dialog | dialog or side pane |
-| Compact height (phone in landscape) | the toolbar on one row, the floating tools at the side | | |
+| Compact height (phone in landscape) | the top bar on one row, the floating tools at the bottom | | |
 
 Input changes the details, not the structure: tooltips, hover cursors and right-click menus with
 a precise pointer, the shortcuts shown in menus and tooltips with a keyboard, the smaller density
@@ -212,7 +214,7 @@ pencilnotes        menu bar and window state (desktop), bridge of the menus and 
 | 0. Foundations | Complete color schemes (DrawView, PencilNotes); `WindowLayout`, `InputCapabilities`, `PlatformConventions`, `AdaptiveInfo` given by `AdaptiveRoot`; density by input; screenshot tests on the reference configurations (current state as the first reference); the lecture on `WindowLayout` | done |
 | 1. Commands | `Command`, `Shortcut`, `CommandHost`, `CommandRoot`; `EditorCommands`, `LibraryCommands`, commands of the extensions; tooltips with the shortcut; right-click menus in the library; menu bar of the desktop | done |
 | 2. Panels and sheets | `EditorPanel`, `EditorScaffold`; `AdaptiveSheet` for the configurators, the details and the settings; the lecture moved | done |
-| 3. Editor | `EditorToolbar` and `ToolbarLayout`; floating tools on the phone; one bar when it fits; cursors of the canvas; camera commands (fit, pages) | |
+| 3. Editor | `EditorToolbar` and `ToolbarLayout`; floating tools on the phone; one bar when it fits; cursors of the canvas; camera commands (fit, pages) | done |
 | 4. Library | `DocumentThumbnails`; grid; navigation pane; details beside; pointer selection; drag and drop | |
 | 5. Platforms | macOS title bar and window state; iPadOS shortcuts, menu bar and Pencil; Android shortcut helper, stylus button and hover | |
 | Later | A document per window (desktop, iPadOS); postures of the foldables; toolbar at the side for the left-handed; focus mode (the bars hidden while writing) | |
@@ -328,6 +330,32 @@ an iPad with a Pencil, an Android tablet with a stylus, a phone, a Mac with a tr
   portrait (tabs) and on a desktop (side by side), the details of a note on a phone (sheet) and
   on a desktop (dialog); the configurator on a tablet in landscape and on a desktop recorded again
   (now a dialog). 34 screenshots in all.
+
+### Phase 3 results
+
+* **The bars** (`EditorToolbar.kt`): `ToolbarLayout` measures the top bar (its buttons at the
+  minimum size of the input, the actions of the extensions as they are laid out, a title of
+  160 dp at least) and the tools (undo and redo, the tools, the imports): one bar when both fit
+  (a tablet in landscape and a desktop, also with three extensions), two bars otherwise (a tablet
+  in portrait or in split screen, a narrow desktop window), the tools floating at the bottom of
+  the canvas in a compact window or a short one (a phone in portrait and in landscape), where the
+  thumb reaches them. The floating tools stay above a panel rising from the bottom
+  (`EditorScaffold` gives the canvas the height the panels take) and scroll when they do not fit.
+  The page grid leaves the top bar for the "more" menu when the title would be too short, the
+  imports when the tools float. The bars are 48 dp high.
+* **The "more" menu** is a `CommandMenu` of sections; the menus show the shortcuts only where
+  there is a keyboard (as the tooltips appear only where a pointer hovers).
+* **The cursors**: a mouse or a hovering stylus shows the dot of the pen where the ink would land,
+  as large and as colored as its stroke (ringed to show on any page), as the eraser shows its
+  circle; the canvas takes the cursor of the tool (crosshair, I-beam for the texts and the text of
+  the PDFs, hand for the pan, crosshair while placing).
+* **The camera**: fit width (⌘0), previous and next page (PgUp, PgDn), showing the top of a page
+  at the current zoom (`DrawViewController.showPage`).
+* Tests: the arrangements of the reference windows, with and without extensions, the edge between
+  one bar and two, the page grid in the menu (`ToolbarLayoutTest`); the pages shown one by one and
+  the width fitted (`EditorCoreTest`); every editor screenshot recorded again (the 48 dp bars, the
+  arrangements), one more: the "more" menu of a phone. The screenshot tests move the mouse off the
+  canvas once the note is open, so that the dot of the pen does not show.
 
 ### Risks
 

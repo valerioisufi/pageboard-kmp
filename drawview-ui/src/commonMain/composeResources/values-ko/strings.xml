@@ -137,4 +137,7 @@
     <string name="command_zoom_in">확대</string>
     <string name="command_zoom_out">축소</string>
     <string name="common_action_close">닫기</string>
+    <string name="command_fit_width">너비에 맞추기</string>
+    <string name="command_next_page">다음 페이지</string>
+    <string name="command_previous_page">이전 페이지</string>
 </resources>

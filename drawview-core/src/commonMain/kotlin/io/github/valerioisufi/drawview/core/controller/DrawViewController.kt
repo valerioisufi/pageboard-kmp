@@ -723,6 +723,41 @@ class DrawViewController(
     fun zoomOut() = zoomBy(0.8f)
 
     /**
+     * Shows the top of the page [pageIndex] at the zoom level [scale] (the current one by default),
+     * centered when the page is narrower than the viewport.
+     */
+    fun showPage(pageIndex: Int, scale: Float = cameraPhysics.getCurrentScale()) {
+        if (viewportWidth <= 0f || viewportHeight <= 0f) return
+        val page = calcPage.pagesRectOnWindow.getOrNull(pageIndex) ?: return
+        cameraPhysics.centerOnWorldPoint(
+            worldX = page.center.x,
+            worldY = page.top + (viewportHeight / 2f - cameraPhysics.topPaddingPx) / scale,
+            scale = scale,
+            screenWidth = viewportWidth,
+            screenHeight = viewportHeight
+        )
+        cameraPhysics.restoreToBounds(animated = false)
+        requestRedraw()
+    }
+
+    /** Shows the top of the page after the one being looked at. */
+    fun showNextPage() {
+        val current = mostVisiblePageIndex() ?: return
+        showPage((current + 1).coerceAtMost(document.pages.lastIndex))
+    }
+
+    /** Shows the top of the page before the one being looked at. */
+    fun showPreviousPage() {
+        val current = mostVisiblePageIndex() ?: return
+        showPage((current - 1).coerceAtLeast(0))
+    }
+
+    /** The pages as wide as the viewport (the zoom of the opening), from the top of the one being looked at. */
+    fun fitWidth() {
+        showPage(mostVisiblePageIndex() ?: 0, scale = 1f)
+    }
+
+    /**
      * Pans the camera by ([dx], [dy]) screen pixels (e.g. to keep the edited text above the
      * software keyboard).
      */

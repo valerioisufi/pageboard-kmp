@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.ui.screen
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -43,6 +44,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -96,25 +98,32 @@ private const val SheetDragThreshold = 8f
  * the width the editor has (not the window: the expert of the space is the container, see
  * [PanelPlacement]). Beside the canvas they share its height; otherwise they rise from the bottom
  * over it, the canvas staying visible above them.
+ *
+ * @param canvas the canvas and what floats over it, given the height the panels take at its
+ *   bottom (the floating tools stay above them).
  */
 @Composable
 internal fun EditorScaffold(
     panels: List<EditorPanel>,
     modifier: Modifier = Modifier,
-    canvas: @Composable BoxScope.() -> Unit
+    canvas: @Composable BoxScope.(bottomInset: Dp) -> Unit
 ) {
     BoxWithConstraints(modifier = modifier) {
         val open = panels.filter { it.isOpen() }
         val placement = PanelPlacement.of(maxWidth, open.size)
+        var tall by remember { mutableStateOf(false) }
+        val fraction by animateFloatAsState(if (tall) SheetTallFraction else SheetFraction)
+        val sheetShown = placement == PanelPlacement.BOTTOM && open.isNotEmpty()
+        val bottomInset by animateDpAsState(if (sheetShown) maxHeight * fraction else 0.dp)
         Row(modifier = Modifier.fillMaxSize()) {
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
             ) {
-                canvas()
+                canvas(bottomInset)
                 if (placement == PanelPlacement.BOTTOM) {
-                    PanelSheet(open, Modifier.align(Alignment.BottomCenter))
+                    PanelSheet(open, fraction, onTallChange = { tall = it }, modifier = Modifier.align(Alignment.BottomCenter))
                 }
             }
             when (placement) {
@@ -158,13 +167,16 @@ private fun SidePane(content: @Composable () -> Unit) {
  * (dragged or tapped), dragged down from short it closes them.
  */
 @Composable
-private fun PanelSheet(open: List<EditorPanel>, modifier: Modifier) {
-    var tall by remember { mutableStateOf(false) }
-    val fraction by animateFloatAsState(if (tall) SheetTallFraction else SheetFraction)
+private fun PanelSheet(open: List<EditorPanel>, fraction: Float, onTallChange: (Boolean) -> Unit, modifier: Modifier) {
+    val tall = fraction > (SheetFraction + SheetTallFraction) / 2
     // The panels stay drawn while the sheet goes down
     val last = remember { LastShown() }
     if (open.isNotEmpty()) last.panels = open
     val shown = last.panels
+    // Read by the gesture of the handle, which goes on while the sheet changes
+    val currentShown by rememberUpdatedState(shown)
+    val currentTall by rememberUpdatedState(tall)
+    val setTall by rememberUpdatedState(onTallChange)
     AnimatedVisibility(
         visible = open.isNotEmpty(),
         enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
@@ -185,12 +197,12 @@ private fun PanelSheet(open: List<EditorPanel>, modifier: Modifier) {
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { tall = !tall }
+                        .clickable { setTall(!currentTall) }
                         .pointerInput(Unit) {
                             detectVerticalDragGestures { _, dragAmount ->
-                                if (dragAmount < -SheetDragThreshold) tall = true
+                                if (dragAmount < -SheetDragThreshold) setTall(true)
                                 if (dragAmount > SheetDragThreshold) {
-                                    if (tall) tall = false else shown.forEach { it.onClose() }
+                                    if (currentTall) setTall(false) else currentShown.forEach { it.onClose() }
                                 }
                             }
                         }

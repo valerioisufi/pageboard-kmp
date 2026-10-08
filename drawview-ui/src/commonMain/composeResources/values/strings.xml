@@ -138,4 +138,7 @@
     <string name="command_zoom_in">Zoom In</string>
     <string name="command_zoom_out">Zoom Out</string>
     <string name="common_action_close">Close</string>
+    <string name="command_fit_width">Fit Width</string>
+    <string name="command_next_page">Next Page</string>
+    <string name="command_previous_page">Previous Page</string>
 </resources>

@@ -190,6 +190,32 @@ class EditorCoreTest {
     }
 
     @Test
+    fun theCameraShowsThePagesOneByOne() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controllerWith(3, backgroundScope)
+        assertEquals(0, controller.mostVisiblePageIndex())
+
+        controller.showNextPage()
+        assertEquals(1, controller.mostVisiblePageIndex())
+        // The top of the page under the top margin
+        val top = controller.visiblePages().single { it.index == 1 }.rect.top
+        assertEquals(controller.cameraPhysics.topPaddingPx, top, 1f)
+
+        controller.showNextPage()
+        controller.showNextPage()
+        assertEquals(2, controller.mostVisiblePageIndex())
+        controller.showPreviousPage()
+        assertEquals(1, controller.mostVisiblePageIndex())
+
+        // Zoomed in, then the width of the pages again, from the page looked at
+        controller.zoomIn()
+        controller.zoomIn()
+        assertTrue(controller.cameraPhysics.getCurrentScale() > 1.4f)
+        controller.fitWidth()
+        assertEquals(1f, controller.cameraPhysics.getCurrentScale(), 0.001f)
+        assertEquals(1, controller.mostVisiblePageIndex())
+    }
+
+    @Test
     fun strokesCrossingPagesAreDuplicatedOnEveryPage() = runTest(UnconfinedTestDispatcher()) {
         val controller = controllerWith(2, backgroundScope)
         val page0 = controller.document.pages[0]
