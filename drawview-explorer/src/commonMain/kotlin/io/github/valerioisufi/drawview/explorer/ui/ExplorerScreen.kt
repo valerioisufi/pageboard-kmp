@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Article
-import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
@@ -33,16 +32,17 @@ import androidx.compose.material3.ToggleFloatingActionButtonDefaults.animateIcon
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.animateFloatingActionButton
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
@@ -63,9 +63,9 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_act
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_clear_selection
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_confirm
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_delete
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_move
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_select_all
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_dialog_delete_description
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_dialog_delete_multiple_description
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_rename
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_dialog_new_folder
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_dialog_new_note
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_fab_close_menu
@@ -77,6 +77,10 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_fab
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_input_name
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_selected_count
 import io.github.valerioisufi.drawview.ui.components.AboutLicensesDialog
+import io.github.valerioisufi.drawview.ui.command.Command
+import io.github.valerioisufi.drawview.ui.command.CommandTooltip
+import io.github.valerioisufi.drawview.ui.command.HoverTooltip
+import io.github.valerioisufi.drawview.ui.command.RegisterCommands
 import io.github.valerioisufi.drawview.ui.session.DocumentAction
 import io.github.valerioisufi.drawview.ui.generated.resources.about_dialog_title
 import org.jetbrains.compose.resources.StringResource
@@ -104,6 +108,21 @@ fun ExplorerScreen(
     // The action chosen on a document, shown until it is done (the selection is cleared meanwhile)
     var chosenAction by remember { mutableStateOf<Pair<DocumentAction, FileExplorerViewModel.FileItem>?>(null) }
     chosenAction?.let { (action, item) -> action.content(item.id, item.name) { chosenAction = null } }
+    // The dialog opened by a command (new item, rename, move, delete, about)
+    var dialog by remember { mutableStateOf<LibraryDialog?>(null) }
+    dialog?.let { LibraryDialogHost(it, fileExplorerViewModel, onDismiss = { dialog = null }) }
+    // The commands of the library: its bars and menus, the menu bar of the window, the shortcuts
+    val commands = rememberLibraryCommands(
+        viewModel = fileExplorerViewModel,
+        documentActions = documentActions,
+        onOpenDocument = onOpenDocument,
+        onShowDialog = { dialog = it },
+        onChooseAction = { action, item ->
+            chosenAction = action to item
+            fileExplorerViewModel.clearSelection()
+        }
+    )
+    RegisterCommands(commands.all)
     var fabMenuExpanded by rememberSaveable { mutableStateOf(false) }
     // The menu is hidden together with its button while items are selected
     LaunchedEffect(fileExplorerViewModel.selectionMode) {
@@ -121,18 +140,15 @@ fun ExplorerScreen(
         modifier = modifier,
         topBar = {
             if (fileExplorerViewModel.selectionMode) {
-                SelectionTopBar(fileExplorerViewModel, documentActions) { action, item ->
-                    chosenAction = action to item
-                    fileExplorerViewModel.clearSelection()
-                }
+                SelectionTopBar(fileExplorerViewModel, commands)
             } else {
-                FolderTopBar(fileExplorerViewModel, title, actions)
+                FolderTopBar(fileExplorerViewModel, commands, title, actions)
             }
         },
         floatingActionButton = {
             if (!fileExplorerViewModel.selectionMode) {
                 NewItemMenu(
-                    fileExplorerViewModel = fileExplorerViewModel,
+                    commands = commands,
                     listState = listState,
                     expanded = fabMenuExpanded,
                     onExpandedChange = { fabMenuExpanded = it }
@@ -150,7 +166,8 @@ fun ExplorerScreen(
                 directoryFiles = fileExplorerViewModel.currentDirectoryFiles,
                 fileExplorerViewModel = fileExplorerViewModel,
                 onOpenDocument = onOpenDocument,
-                listState = listState
+                listState = listState,
+                commands = commands
             )
         }
     }
@@ -160,11 +177,13 @@ fun ExplorerScreen(
 @Composable
 fun AboutLicensesButton() {
     var showAboutDialog by remember { mutableStateOf(false) }
-    IconButton(onClick = { showAboutDialog = true }) {
-        Icon(
-            imageVector = Icons.Outlined.Info,
-            contentDescription = stringResource(DrawViewRes.string.about_dialog_title)
-        )
+    HoverTooltip(stringResource(DrawViewRes.string.about_dialog_title)) {
+        IconButton(onClick = { showAboutDialog = true }) {
+            Icon(
+                imageVector = Icons.Outlined.Info,
+                contentDescription = stringResource(DrawViewRes.string.about_dialog_title)
+            )
+        }
     }
     if (showAboutDialog) {
         AboutLicensesDialog(onDismiss = { showAboutDialog = false })
@@ -187,17 +206,12 @@ private fun ExplorerBackHandler(enabled: Boolean, onBack: () -> Unit) {
 }
 
 /**
- * Title bar of the selection mode, with the actions on the selected items: those of the
- * application ([documentActions], chosen through [onDocumentAction]) when a single document is
- * selected.
+ * Title bar of the selection mode, with the commands on the selected items: those of the
+ * application (e.g. "Export") when a single document is selected.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SelectionTopBar(
-    fileExplorerViewModel: FileExplorerViewModel,
-    documentActions: List<DocumentAction>,
-    onDocumentAction: (DocumentAction, FileExplorerViewModel.FileItem) -> Unit
-) {
+private fun SelectionTopBar(fileExplorerViewModel: FileExplorerViewModel, commands: LibraryCommands) {
     val selectedItems = fileExplorerViewModel.selectedItems
     TopAppBar(
         title = {
@@ -208,64 +222,22 @@ private fun SelectionTopBar(
             )
         },
         navigationIcon = {
-            IconButton(onClick = { fileExplorerViewModel.clearSelection() }) {
-                Icon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = stringResource(Res.string.explorer_action_clear_selection)
-                )
+            HoverTooltip(stringResource(Res.string.explorer_action_clear_selection)) {
+                IconButton(onClick = { fileExplorerViewModel.clearSelection() }) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = stringResource(Res.string.explorer_action_clear_selection)
+                    )
+                }
             }
         },
         actions = {
-            var showDeleteConfirmDialog by remember { mutableStateOf(false) }
-            if (showDeleteConfirmDialog) {
-                ConfirmActionDialog(
-                    title = stringResource(Res.string.explorer_action_delete),
-                    textDescription = stringResource(Res.string.explorer_dialog_delete_multiple_description, selectedItems.size),
-                    textConfirmButton = stringResource(Res.string.explorer_action_confirm),
-                    onDismissRequest = { showDeleteConfirmDialog = false },
-                    onConfirm = {
-                        fileExplorerViewModel.deleteSelected()
-                        showDeleteConfirmDialog = false
-                    }
-                )
+            for (command in commands.documentActionCommands) {
+                if (command.isEnabled()) CommandIconButton(command)
             }
-
-            var showMoveDialog by remember { mutableStateOf(false) }
-            if (showMoveDialog) {
-                MoveFileDialog(
-                    onDismissRequest = { showMoveDialog = false },
-                    getSubFolders = { folderId -> fileExplorerViewModel.getSubFolders(folderId) },
-                    isFolderSelected = { folderId ->
-                        selectedItems.any { it.id == folderId && it.type == FileType.FOLDER }
-                    },
-                    isValidMove = { targetId -> fileExplorerViewModel.isValidMove(targetId) },
-                    onConfirm = { targetFolderId ->
-                        fileExplorerViewModel.moveSelected(targetFolderId)
-                        showMoveDialog = false
-                    }
-                )
-            }
-
-            val document = selectedItems.singleOrNull()?.takeIf { it.type == FileType.FILE }
-            if (document != null) {
-                for (action in documentActions) {
-                    IconButton(onClick = { onDocumentAction(action, document) }) {
-                        Icon(action.icon, contentDescription = action.label())
-                    }
-                }
-            }
-            IconButton(onClick = { showMoveDialog = true }) {
-                Icon(
-                    Icons.AutoMirrored.Filled.DriveFileMove,
-                    contentDescription = stringResource(Res.string.explorer_action_move)
-                )
-            }
-            IconButton(onClick = { showDeleteConfirmDialog = true }) {
-                Icon(Icons.Filled.Delete, contentDescription = stringResource(Res.string.explorer_action_delete))
-            }
-            IconButton(onClick = { fileExplorerViewModel.selectAll() }) {
-                Icon(Icons.Filled.SelectAll, contentDescription = stringResource(Res.string.explorer_action_select_all))
-            }
+            CommandIconButton(commands.move)
+            CommandIconButton(commands.delete)
+            CommandIconButton(commands.selectAll, icon = Icons.Filled.SelectAll)
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -276,11 +248,23 @@ private fun SelectionTopBar(
     )
 }
 
+/** The icon button of [command] (its own icon, or [icon]), with its tooltip. */
+@Composable
+private fun CommandIconButton(command: Command, icon: ImageVector? = null) {
+    CommandTooltip(command) {
+        IconButton(onClick = { command.performIfEnabled() }, enabled = command.isEnabled()) {
+            val painter = if (icon != null) rememberVectorPainter(icon) else command.icon?.invoke()
+            if (painter != null) Icon(painter, contentDescription = command.label())
+        }
+    }
+}
+
 /** Title bar of the root ([title] and [actions]) or of a folder (its name and the back button). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FolderTopBar(
     fileExplorerViewModel: FileExplorerViewModel,
+    commands: LibraryCommands,
     title: @Composable () -> Unit,
     actions: @Composable RowScope.() -> Unit
 ) {
@@ -297,11 +281,13 @@ private fun FolderTopBar(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { fileExplorerViewModel.backFolder() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(Res.string.explorer_action_back)
-                        )
+                    CommandTooltip(commands.enclosingFolder) {
+                        IconButton(onClick = { commands.enclosingFolder.performIfEnabled() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(Res.string.explorer_action_back)
+                            )
+                        }
                     }
                 }
             )
@@ -309,35 +295,16 @@ private fun FolderTopBar(
     }
 }
 
-/** The floating button whose menu creates a new note or a new folder in the current folder. */
+/** The floating button whose menu creates a new note or a new folder in the current folder ([commands]). */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun NewItemMenu(
-    fileExplorerViewModel: FileExplorerViewModel,
+    commands: LibraryCommands,
     listState: LazyListState,
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit
 ) {
     val fabVisible by remember { derivedStateOf { listState.firstVisibleItemIndex == 0 } }
-
-    var openDialogNewFile by rememberSaveable { mutableStateOf(false) }
-    if (openDialogNewFile) {
-        NewItemDialog(
-            type = FileType.FILE,
-            title = stringResource(Res.string.explorer_dialog_new_note),
-            fileExplorerViewModel = fileExplorerViewModel,
-            onDismissRequest = { openDialogNewFile = false }
-        )
-    }
-    var openDialogNewFolder by rememberSaveable { mutableStateOf(false) }
-    if (openDialogNewFolder) {
-        NewItemDialog(
-            type = FileType.FOLDER,
-            title = stringResource(Res.string.explorer_dialog_new_folder),
-            fileExplorerViewModel = fileExplorerViewModel,
-            onDismissRequest = { openDialogNewFolder = false }
-        )
-    }
 
     val items = listOf(
         Icons.AutoMirrored.Filled.Article to stringResource(Res.string.explorer_fab_item_note),
@@ -401,8 +368,8 @@ private fun NewItemMenu(
                 onClick = {
                     onExpandedChange(false)
                     when (i) {
-                        0 -> openDialogNewFile = true
-                        1 -> openDialogNewFolder = true
+                        0 -> commands.newNote.perform()
+                        1 -> commands.newFolder.perform()
                     }
                 },
                 icon = { Icon(item.first, contentDescription = null) },
@@ -439,4 +406,56 @@ private fun NewItemDialog(
             )
         }
     )
+}
+
+/** Shows [dialog], opened by a command of the library, until it is done or dismissed. */
+@Composable
+private fun LibraryDialogHost(dialog: LibraryDialog, viewModel: FileExplorerViewModel, onDismiss: () -> Unit) {
+    when (dialog) {
+        is LibraryDialog.NewItem -> NewItemDialog(
+            type = dialog.type,
+            title = stringResource(
+                if (dialog.type == FileType.FILE) Res.string.explorer_dialog_new_note else Res.string.explorer_dialog_new_folder
+            ),
+            fileExplorerViewModel = viewModel,
+            onDismissRequest = onDismiss
+        )
+        is LibraryDialog.Rename -> RequestNameDialog(
+            title = stringResource(Res.string.explorer_action_rename),
+            labelTextField = stringResource(Res.string.explorer_input_name),
+            textConfirmButton = stringResource(Res.string.explorer_action_confirm),
+            initialText = dialog.item.name,
+            onDismissRequest = onDismiss,
+            isAllowedInput = { text -> viewModel.validateFileName(text, renamedFile = dialog.item) },
+            onConfirm = { text ->
+                viewModel.renameFile(dialog.item, text)
+                onDismiss()
+            }
+        )
+        is LibraryDialog.Move -> MoveFileDialog(
+            onDismissRequest = onDismiss,
+            getSubFolders = { folderId -> viewModel.getSubFolders(folderId) },
+            isFolderSelected = { folderId -> dialog.items.any { it.id == folderId && it.type == FileType.FOLDER } },
+            isValidMove = { targetId -> viewModel.isValidMove(targetId, dialog.items) },
+            onConfirm = { targetFolderId ->
+                viewModel.moveFiles(dialog.items, targetFolderId)
+                onDismiss()
+            }
+        )
+        is LibraryDialog.Delete -> ConfirmActionDialog(
+            title = stringResource(Res.string.explorer_action_delete),
+            textDescription = if (dialog.items.size == 1) {
+                stringResource(Res.string.explorer_dialog_delete_description)
+            } else {
+                stringResource(Res.string.explorer_dialog_delete_multiple_description, dialog.items.size)
+            },
+            textConfirmButton = stringResource(Res.string.explorer_action_confirm),
+            onDismissRequest = onDismiss,
+            onConfirm = {
+                viewModel.deleteFiles(dialog.items)
+                onDismiss()
+            }
+        )
+        LibraryDialog.About -> AboutLicensesDialog(onDismiss = onDismiss)
+    }
 }

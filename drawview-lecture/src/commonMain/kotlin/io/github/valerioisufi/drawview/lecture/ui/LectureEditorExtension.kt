@@ -33,6 +33,7 @@ import io.github.valerioisufi.drawview.lecture.LectureArrival
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,26 +62,40 @@ import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_place
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_title
 import io.github.valerioisufi.drawview.lecture.platform.rememberMicrophoneAccess
 import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
+import io.github.valerioisufi.drawview.ui.command.Command
+import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.components.ToolButton
 import io.github.valerioisufi.drawview.ui.session.EditorExtension
 import org.jetbrains.compose.resources.stringResource
 
 /**
  * The lecture assistant in the DrawView editor: a button of the top bar (the recording time while
- * recording), the assistant panel beside the canvas (rising from the bottom over it on a phone)
- * and the hints over it. Closing the editor does
- * not stop the recording (see [LectureRecordingIndicator]).
+ * recording), the assistant panel beside the canvas (rising from the bottom over it on a phone;
+ * also shown and hidden from the menus) and the hints over it. Closing the editor does not stop
+ * the recording (see [LectureRecordingIndicator]).
  */
-fun LectureAssistant.editorExtension(): EditorExtension = EditorExtension(
-    toolbarActions = { session, _ -> LectureToolbarButton(this@editorExtension, session.documentId) },
-    sidePanel = { session, controller -> LecturePanel(this@editorExtension, session.documentId, controller) },
-    canvasOverlay = { session, controller ->
-        PlacementHint(this@editorExtension, controller)
-        ArrivalsBanner(this@editorExtension, session.documentId)
-        // On a phone the panel rises from the bottom, over the canvas
-        LectureSheet(this@editorExtension, session.documentId, controller)
-    }
-)
+fun LectureAssistant.editorExtension(): EditorExtension {
+    // The panel shown or hidden, where the lectures can be recorded
+    val panel = Command(
+        id = "lecture-panel",
+        label = { stringResource(Res.string.lecture_title) },
+        group = CommandGroup.VIEW,
+        section = 2,
+        icon = { rememberVectorPainter(Icons.Outlined.Mic) },
+        isChecked = { isPanelOpen }
+    ) { isPanelOpen = !isPanelOpen }
+    return EditorExtension(
+        toolbarActions = { session, _ -> LectureToolbarButton(this@editorExtension, session.documentId, panel) },
+        sidePanel = { session, controller -> LecturePanel(this@editorExtension, session.documentId, controller) },
+        canvasOverlay = { session, controller ->
+            PlacementHint(this@editorExtension, controller)
+            ArrivalsBanner(this@editorExtension, session.documentId)
+            // On a phone the panel rises from the bottom, over the canvas
+            LectureSheet(this@editorExtension, session.documentId, controller)
+        },
+        commands = { _, _ -> if (isRecordingSupported) listOf(panel) else emptyList() }
+    )
+}
 
 /**
  * What arrived from the other devices for [documentId] (a lecture, its audio, its review), at the
@@ -239,7 +254,7 @@ fun LectureExitDialog(onExit: () -> Unit, onDismiss: () -> Unit) {
 }
 
 @Composable
-private fun LectureToolbarButton(assistant: LectureAssistant, documentId: String) {
+private fun LectureToolbarButton(assistant: LectureAssistant, documentId: String, panel: Command) {
     if (!assistant.isRecordingSupported) return
     val lecture = assistant.shownLecture(documentId)
     val recording = assistant.recorderOf(documentId)?.lecture?.takeIf { it.status == LectureStatus.RECORDING }
@@ -278,7 +293,7 @@ private fun LectureToolbarButton(assistant: LectureAssistant, documentId: String
         }
     } else {
         Box(modifier = Modifier.zIndex(1f)) {
-            ToolButton(onClick = togglePanel, selected = assistant.isPanelOpen) {
+            ToolButton(onClick = togglePanel, selected = assistant.isPanelOpen, command = panel) {
                 Icon(
                     imageVector = Icons.Outlined.Mic,
                     contentDescription = stringResource(Res.string.lecture_title),

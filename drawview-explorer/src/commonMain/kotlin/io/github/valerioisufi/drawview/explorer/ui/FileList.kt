@@ -23,9 +23,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.DriveFileMove
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DriveFileRenameOutline
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.North
@@ -42,17 +39,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.DpOffset
+import io.github.valerioisufi.drawview.ui.command.Command
+import io.github.valerioisufi.drawview.ui.command.CommandMenu
+import io.github.valerioisufi.drawview.ui.command.HoverTooltip
+import io.github.valerioisufi.drawview.ui.command.onSecondaryClick
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_shared
 import io.github.valerioisufi.drawview.ui.generated.resources.date_months_short
@@ -62,22 +65,16 @@ import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileItem
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.SortOption
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_confirm
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_details
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_dialog_delete_description
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_label_last_modified
 import io.github.valerioisufi.drawview.explorer.generated.resources.icon_document
 import io.github.valerioisufi.drawview.ui.generated.resources.img_folder
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sort_date_created
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_delete
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sort_folders_on_top
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sort_last_modified
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sort_last_opened
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_move_to
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sort_name
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_rename
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sort_invert
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_input_name
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
@@ -85,6 +82,9 @@ import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 
 /**
  * Content of a folder: the sort options and the list of its folders and documents.
+ *
+ * @param commands the commands of the library: those of an item in its context menu and its
+ *   sheet.
  */
 @Composable
 fun FileList(
@@ -92,7 +92,8 @@ fun FileList(
     fileExplorerViewModel: FileExplorerViewModel,
     onOpenDocument: (String) -> Unit,
     modifier: Modifier = Modifier,
-    listState: LazyListState = rememberLazyListState()
+    listState: LazyListState = rememberLazyListState(),
+    commands: LibraryCommands? = null
 ) {
     val selectionMode = fileExplorerViewModel.selectionMode
 
@@ -116,7 +117,8 @@ fun FileList(
                     modifier = Modifier.animateItem(),
                     dataFile = file,
                     fileExplorerViewModel = fileExplorerViewModel,
-                    onOpenDocument = onOpenDocument
+                    onOpenDocument = onOpenDocument,
+                    commands = commands
                 )
             }
             item {
@@ -152,12 +154,14 @@ private fun SortHeader(fileExplorerViewModel: FileExplorerViewModel) {
             }
 
             // Inverts the order (ascending / descending)
-            IconButton(onClick = { fileExplorerViewModel.toggleSortDirection() }) {
-                Icon(
-                    imageVector = if (fileExplorerViewModel.sortAscending) Icons.Default.North else Icons.Default.South,
-                    contentDescription = stringResource(Res.string.explorer_sort_invert),
-                    modifier = Modifier.size(16.dp)
-                )
+            HoverTooltip(stringResource(Res.string.explorer_sort_invert)) {
+                IconButton(onClick = { fileExplorerViewModel.toggleSortDirection() }) {
+                    Icon(
+                        imageVector = if (fileExplorerViewModel.sortAscending) Icons.Default.North else Icons.Default.South,
+                        contentDescription = stringResource(Res.string.explorer_sort_invert),
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
             }
         }
         DropdownMenu(
@@ -198,7 +202,8 @@ private fun SortHeader(fileExplorerViewModel: FileExplorerViewModel) {
 
 /**
  * A folder or a document: a tap opens it (or selects it in selection mode), a long press
- * selects it, the trailing button shows its details and actions.
+ * selects it, the trailing button shows its details and actions ([commands] of the item), which
+ * a click of the secondary button of a pointer opens as a menu too.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -206,67 +211,88 @@ fun FileListItem(
     dataFile: FileItem,
     fileExplorerViewModel: FileExplorerViewModel,
     onOpenDocument: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    commands: LibraryCommands? = null
 ) {
     val selectionMode = fileExplorerViewModel.selectionMode
     val isSelected = fileExplorerViewModel.isSelected(dataFile)
+    val itemCommands = remember(commands, dataFile) { commands?.forItem(dataFile).orEmpty() }
+    var contextMenu by remember { mutableStateOf<DpOffset?>(null) }
+    val density = LocalDensity.current
 
     // Visuals for selection
     val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
     val contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth(1f)
-            .background(
-                backgroundColor, shape = RoundedCornerShape(8.dp)
-            )
-            .clip(RoundedCornerShape(8.dp))
-            .combinedClickable(
-                onClick = {
-                    if (selectionMode) {
-                        fileExplorerViewModel.toggleSelection(dataFile)
-                    } else when (dataFile.type) {
-                        FileType.FILE -> onOpenDocument(dataFile.id)
-                        FileType.FOLDER -> fileExplorerViewModel.enterFolder(dataFile)
-                    }
-                },
-                onLongClick = {
-                    fileExplorerViewModel.toggleSelection(dataFile)
-                }
-            )
-            .padding(0.dp, 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Selection checkbox or icon
-        if (selectionMode) {
-            Checkbox(
-                checked = isSelected,
-                onCheckedChange = { fileExplorerViewModel.toggleSelection(dataFile) },
-                modifier = Modifier
-                    .padding(start = 16.dp)
-                    .size(24.dp)
-            )
-        } else {
-            FileIcon(
-                type = dataFile.type,
-                isShared = dataFile.isShared,
-                modifier = Modifier
-                    .padding(start = 16.dp)
-                    .size(32.dp)
-            )
-        }
-
-        FileDescription(
-            dataFile = dataFile,
-            contentColor = contentColor,
+    Box(modifier = modifier) {
+        Row(
             modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 16.dp)
-        )
+                .fillMaxWidth(1f)
+                .background(
+                    backgroundColor, shape = RoundedCornerShape(8.dp)
+                )
+                .clip(RoundedCornerShape(8.dp))
+                .onSecondaryClick { position ->
+                    // Opened where the pointer is (from the corner of the item)
+                    if (itemCommands.isNotEmpty()) contextMenu = with(density) { DpOffset(position.x.toDp(), position.y.toDp()) }
+                }
+                .combinedClickable(
+                    onClick = {
+                        if (selectionMode) {
+                            fileExplorerViewModel.toggleSelection(dataFile)
+                        } else when (dataFile.type) {
+                            FileType.FILE -> onOpenDocument(dataFile.id)
+                            FileType.FOLDER -> fileExplorerViewModel.enterFolder(dataFile)
+                        }
+                    },
+                    onLongClick = {
+                        fileExplorerViewModel.toggleSelection(dataFile)
+                    }
+                )
+                .padding(0.dp, 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Selection checkbox or icon
+            if (selectionMode) {
+                Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = { fileExplorerViewModel.toggleSelection(dataFile) },
+                    modifier = Modifier
+                        .padding(start = 16.dp)
+                        .size(24.dp)
+                )
+            } else {
+                FileIcon(
+                    type = dataFile.type,
+                    isShared = dataFile.isShared,
+                    modifier = Modifier
+                        .padding(start = 16.dp)
+                        .size(32.dp)
+                )
+            }
 
-        if (!selectionMode) {
-            FileDetailsSheet(dataFile, fileExplorerViewModel)
+            FileDescription(
+                dataFile = dataFile,
+                contentColor = contentColor,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 16.dp)
+            )
+
+            if (!selectionMode) {
+                FileDetailsSheet(dataFile, itemCommands)
+            }
+        }
+        // The anchor of the context menu: the top left corner of the item
+        Box {
+            contextMenu?.let { position ->
+                CommandMenu(
+                    commands = itemCommands,
+                    expanded = true,
+                    onDismissRequest = { contextMenu = null },
+                    offset = position
+                )
+            }
         }
     }
 }
@@ -319,21 +345,26 @@ private fun FileDescription(
     }
 }
 
-/** The button that shows the details of an item and its actions (rename, move, delete). */
+/**
+ * The button that shows the details of an item and its actions ([itemCommands] but "open": rename,
+ * move, delete, the actions of the application); an action chosen closes the sheet.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FileDetailsSheet(
     dataFile: FileItem,
-    fileExplorerViewModel: FileExplorerViewModel
+    itemCommands: List<Command>
 ) {
     var isSheetOpen by rememberSaveable {
         mutableStateOf(false)
     }
 
-    IconButton(onClick = {
-        isSheetOpen = true
-    }) {
-        Icon(imageVector = Icons.Default.MoreHoriz, contentDescription = stringResource(Res.string.explorer_action_details))
+    HoverTooltip(stringResource(Res.string.explorer_action_details)) {
+        IconButton(onClick = {
+            isSheetOpen = true
+        }) {
+            Icon(imageVector = Icons.Default.MoreHoriz, contentDescription = stringResource(Res.string.explorer_action_details))
+        }
     }
 
     if (isSheetOpen) {
@@ -369,73 +400,17 @@ private fun FileDetailsSheet(
                         .padding(16.dp)
                 )
 
-                var showRenameDialog by remember { mutableStateOf(false) }
-                if (showRenameDialog) {
-                    RequestNameDialog(
-                        title = stringResource(Res.string.explorer_action_rename),
-                        labelTextField = stringResource(Res.string.explorer_input_name),
-                        textConfirmButton = stringResource(Res.string.explorer_action_confirm),
-                        initialText = dataFile.name,
-                        onDismissRequest = { showRenameDialog = false },
-                        isAllowedInput = { text ->
-                            fileExplorerViewModel.validateFileName(text, renamedFile = dataFile)
-                        },
-                        onConfirm = { text ->
-                            fileExplorerViewModel.renameFile(dataFile, text)
-                            showRenameDialog = false
-                        }
-                    )
-                }
-
-                var showDeleteConfirmDialog by remember { mutableStateOf(false) }
-                if (showDeleteConfirmDialog) {
-                    ConfirmActionDialog(
-                        title = stringResource(Res.string.explorer_action_delete),
-                        textDescription = stringResource(Res.string.explorer_dialog_delete_description),
-                        textConfirmButton = stringResource(Res.string.explorer_action_confirm),
-                        onDismissRequest = { showDeleteConfirmDialog = false },
-                        onConfirm = {
-                            fileExplorerViewModel.deleteFile(dataFile)
-                            showDeleteConfirmDialog = false
+                for (command in itemCommands) {
+                    if (command.id == "open") continue
+                    OptionItem(
+                        icon = command.icon?.invoke(),
+                        text = command.label(),
+                        onClick = {
                             isSheetOpen = false
+                            command.performIfEnabled()
                         }
                     )
                 }
-
-                var showMoveDialog by remember { mutableStateOf(false) }
-                if (showMoveDialog) {
-                    MoveFileDialog(
-                        onDismissRequest = { showMoveDialog = false },
-                        getSubFolders = { folderId -> fileExplorerViewModel.getSubFolders(folderId) },
-                        isFolderSelected = { folderId ->
-                            dataFile.type == FileType.FOLDER && dataFile.id == folderId
-                        },
-                        isValidMove = { targetId ->
-                            fileExplorerViewModel.isValidMove(targetId, listOf(dataFile))
-                        },
-                        onConfirm = { targetFolderId ->
-                            fileExplorerViewModel.moveFile(dataFile, targetFolderId)
-                            showMoveDialog = false
-                            isSheetOpen = false
-                        }
-                    )
-                }
-
-                OptionItem(
-                    icon = Icons.Filled.DriveFileRenameOutline,
-                    text = stringResource(Res.string.explorer_action_rename),
-                    onClick = { showRenameDialog = true }
-                )
-                OptionItem(
-                    icon = Icons.AutoMirrored.Filled.DriveFileMove,
-                    text = stringResource(Res.string.explorer_action_move_to),
-                    onClick = { showMoveDialog = true }
-                )
-                OptionItem(
-                    icon = Icons.Filled.Delete,
-                    text = stringResource(Res.string.explorer_action_delete),
-                    onClick = { showDeleteConfirmDialog = true }
-                )
 
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -445,7 +420,7 @@ private fun FileDetailsSheet(
 
 @Composable
 private fun OptionItem(
-    icon: ImageVector,
+    icon: Painter?,
     text: String,
     onClick: () -> Unit = {}
 ) {
@@ -457,11 +432,13 @@ private fun OptionItem(
             .padding(16.dp, 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = text,
-            modifier = Modifier.size(24.dp)
-        )
+        if (icon != null) {
+            Icon(
+                painter = icon,
+                contentDescription = text,
+                modifier = Modifier.size(24.dp)
+            )
+        }
         Text(
             text = text,
             style = MaterialTheme.typography.bodyLarge,

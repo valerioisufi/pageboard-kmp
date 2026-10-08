@@ -44,6 +44,9 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Palette
 import io.github.valerioisufi.drawview.ui.components.AboutLicensesDialog
+import io.github.valerioisufi.drawview.ui.command.Command
+import io.github.valerioisufi.drawview.ui.command.HoverTooltip
+import io.github.valerioisufi.drawview.ui.command.RegisterCommands
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -60,15 +63,15 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -125,6 +128,8 @@ import org.jetbrains.compose.resources.stringResource
  * @param toolbarActions additional actions of the top bar, before the drawing mode toggle.
  * @param sidePanel panel shown at the end of the canvas (e.g. an assistant), sharing its height.
  * @param canvasOverlay content drawn over the canvas (e.g. hints of an assistant).
+ * @param extraCommands commands contributed to the editor (e.g. by its extensions), registered
+ *   with those of the editor for the menu bar and the shortcuts.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -135,7 +140,8 @@ fun DrawScreen(
     isLoading: Boolean = false,
     toolbarActions: @Composable RowScope.() -> Unit = {},
     sidePanel: @Composable () -> Unit = {},
-    canvasOverlay: @Composable BoxScope.() -> Unit = {}
+    canvasOverlay: @Composable BoxScope.() -> Unit = {},
+    extraCommands: List<Command> = emptyList()
 ) {
     // Immersive editor (Android), as in the original app
     HideSystemBarsEffect()
@@ -208,6 +214,17 @@ fun DrawScreen(
 
     val toolManager = controller.toolManager
 
+    // The commands of the editor: the bars below, the menu bar of the window, the shortcuts
+    val commands = rememberEditorCommands(
+        controller = controller,
+        onClose = onNavigateBack,
+        onImportPdf = pdfPicker,
+        onImportImage = imagePicker,
+        onEditDocumentBackground = { showDocumentConfigurator = true },
+        onShowAbout = { showAboutDialog = true }
+    )
+    RegisterCommands(remember(commands, extraCommands) { commands.all + extraCommands })
+
     Box(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -233,15 +250,16 @@ fun DrawScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row {
-                            ToolButton(onClick = onNavigateBack) {
+                            ToolButton(onClick = commands.close.perform, command = commands.close) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                                     contentDescription = stringResource(Res.string.common_action_back)
                                 )
                             }
                             ToolButton(
-                                onClick = { controller.togglePageGrid() },
-                                selected = controller.isPageGridVisible
+                                onClick = commands.pageGrid.perform,
+                                selected = controller.isPageGridVisible,
+                                command = commands.pageGrid
                             ) {
                                 Icon(
                                     imageVector = Icons.Outlined.GridView,
@@ -272,7 +290,8 @@ fun DrawScreen(
                                         expandedToolSettings = null
                                         controller.toggleDrawingMode()
                                     },
-                                    selected = controller.isDrawingMode
+                                    selected = controller.isDrawingMode,
+                                    command = commands.drawingMode
                                 ) {
                                     Icon(
                                         imageVector = Icons.Outlined.Draw,
@@ -316,7 +335,7 @@ fun DrawScreen(
                                                 .fillMaxWidth()
                                                 .clickable {
                                                     moreOptionsExpanded = false
-                                                    showDocumentConfigurator = true
+                                                    commands.documentBackground.perform()
                                                 }
                                                 .padding(vertical = 8.dp)
                                         ) {
@@ -340,7 +359,7 @@ fun DrawScreen(
                                                 .fillMaxWidth()
                                                 .clickable {
                                                     moreOptionsExpanded = false
-                                                    showAboutDialog = true
+                                                    commands.about.perform()
                                                 }
                                                 .padding(vertical = 8.dp)
                                         ) {
@@ -358,10 +377,12 @@ fun DrawScreen(
                                     }
                                 }
                             ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.MoreHoriz,
-                                    contentDescription = stringResource(Res.string.common_action_more_options)
-                                )
+                                HoverTooltip(stringResource(Res.string.common_action_more_options)) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.MoreHoriz,
+                                        contentDescription = stringResource(Res.string.common_action_more_options)
+                                    )
+                                }
                             }
                         }
                     }
@@ -379,8 +400,9 @@ fun DrawScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 ToolButton(
-                                    onClick = { controller.undo() },
-                                    enabled = controller.canUndo
+                                    onClick = commands.undo.perform,
+                                    enabled = controller.canUndo,
+                                    command = commands.undo
                                 ) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Outlined.Undo,
@@ -394,8 +416,9 @@ fun DrawScreen(
                                 }
 
                                 ToolButton(
-                                    onClick = { controller.redo() },
-                                    enabled = controller.canRedo
+                                    onClick = commands.redo.perform,
+                                    enabled = controller.canRedo,
+                                    command = commands.redo
                                 ) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Outlined.Redo,
@@ -418,6 +441,7 @@ fun DrawScreen(
                                 // ==========================================
                                 InkToolButton(
                                     controller = controller,
+                                    command = commands.pen,
                                     tool = Tool.INK_PEN,
                                     expanded = expandedToolSettings == Tool.INK_PEN,
                                     onExpandedChange = { expandedToolSettings = if (it) Tool.INK_PEN else null },
@@ -434,6 +458,7 @@ fun DrawScreen(
                                 // ==========================================
                                 InkToolButton(
                                     controller = controller,
+                                    command = commands.highlighter,
                                     tool = Tool.INK_HIGHLIGHTER,
                                     expanded = expandedToolSettings == Tool.INK_HIGHLIGHTER,
                                     onExpandedChange = { expandedToolSettings = if (it) Tool.INK_HIGHLIGHTER else null },
@@ -452,6 +477,7 @@ fun DrawScreen(
                                 if (pdfImportAvailable && (hasPdfPages || controller.selectedTool == Tool.TEXT_MARKUP)) {
                                     TextMarkupToolButton(
                                         controller = controller,
+                                        command = commands.textMarkup,
                                         expanded = expandedToolSettings == Tool.TEXT_MARKUP,
                                         onExpandedChange = { expandedToolSettings = if (it) Tool.TEXT_MARKUP else null }
                                     )
@@ -476,6 +502,7 @@ fun DrawScreen(
                                         eraserSettingsExpanded = true
                                     },
                                     selected = controller.selectedTool == Tool.ERASER,
+                                    command = commands.eraser,
                                     dropDownMenu = {
                                         val eraserIndex = toolManager.selectedPresetIndex(Tool.ERASER)
                                         val eraserPreset = toolManager.activePreset(Tool.ERASER)
@@ -532,6 +559,7 @@ fun DrawScreen(
                                         textSettingsExpanded = true
                                     },
                                     selected = controller.selectedTool == Tool.TEXT,
+                                    command = commands.text,
                                     dropDownMenu = { TextToolSettings(controller) },
                                     expanded = textSettingsExpanded,
                                     onDismissRequest = { textSettingsExpanded = false }
@@ -561,6 +589,7 @@ fun DrawScreen(
                                         lassoSettingsExpanded = true
                                     },
                                     selected = controller.selectedTool == Tool.LAZO,
+                                    command = commands.lasso,
                                     dropDownMenu = {
                                         Column(
                                             modifier = Modifier.padding(16.dp),
@@ -601,7 +630,8 @@ fun DrawScreen(
                                         expandedToolSettings = null
                                         controller.selectTool(Tool.PAN)
                                     },
-                                    selected = controller.selectedTool == Tool.PAN
+                                    selected = controller.selectedTool == Tool.PAN,
+                                    command = commands.pan
                                 ) {
                                     Icon(
                                         painter = painterResource(Res.drawable.icon_pan_tool),
@@ -615,7 +645,7 @@ fun DrawScreen(
                                 )
 
                                 if (pdfImportAvailable) {
-                                    ToolButton(onClick = pdfPicker) {
+                                    ToolButton(onClick = commands.importPdf.perform, command = commands.importPdf) {
                                         Icon(
                                             imageVector = Icons.Default.PictureAsPdf,
                                             contentDescription = stringResource(Res.string.draw_toolbar_action_import_pdf)
@@ -623,7 +653,7 @@ fun DrawScreen(
                                     }
                                 }
 
-                                ToolButton(onClick = imagePicker) {
+                                ToolButton(onClick = commands.importImage.perform, command = commands.importImage) {
                                     Icon(
                                         imageVector = Icons.Default.Image,
                                         contentDescription = stringResource(Res.string.draw_toolbar_action_import_image)
@@ -664,6 +694,7 @@ fun DrawScreen(
 
                         SelectionActionBar(
                             controller = controller,
+                            commands = commands,
                             modifier = Modifier.align(Alignment.TopCenter)
                         )
 
@@ -787,6 +818,7 @@ fun DrawScreen(
 @Composable
 private fun InkToolButton(
     controller: DrawViewController,
+    command: Command,
     tool: Tool,
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
@@ -799,6 +831,7 @@ private fun InkToolButton(
     val toolManager = controller.toolManager
     PresetToolButton(
         controller = controller,
+        command = command,
         tool = tool,
         expanded = expanded,
         onExpandedChange = onExpandedChange,
@@ -849,6 +882,7 @@ private fun InkToolButton(
 @Composable
 private fun TextMarkupToolButton(
     controller: DrawViewController,
+    command: Command,
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit
 ) {
@@ -856,6 +890,7 @@ private fun TextMarkupToolButton(
     val tool = Tool.TEXT_MARKUP
     PresetToolButton(
         controller = controller,
+        command = command,
         tool = tool,
         expanded = expanded,
         onExpandedChange = onExpandedChange,
@@ -897,11 +932,13 @@ private fun TextMarkupToolButton(
 
 /**
  * Button of a tool with presets expanding into them: tap a preset to select it, tap the selected
- * one to edit it ([presetEditMenu], anchored to the preset), "+" to add a preset.
+ * one to edit it ([presetEditMenu], anchored to the preset), "+" to add a preset. [command] is
+ * the one choosing the tool (its tooltip).
  */
 @Composable
 private fun PresetToolButton(
     controller: DrawViewController,
+    command: Command,
     tool: Tool,
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
@@ -931,7 +968,8 @@ private fun PresetToolButton(
                     controller.selectTool(tool)
                     onExpandedChange(true)
                 },
-                selected = isToolSelected
+                selected = isToolSelected,
+                command = command
             ) {
                 Icon(painter = icon, contentDescription = contentDescription)
             }

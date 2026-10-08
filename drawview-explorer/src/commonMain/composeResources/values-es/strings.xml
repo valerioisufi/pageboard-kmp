@@ -38,4 +38,6 @@
     <string name="explorer_error_name_exists">Este nombre ya existe</string>
     <string name="explorer_error_create_failed">Error durante la creación</string>
     <string name="explorer_shared">Compartido con otros dispositivos</string>
+    <string name="explorer_action_open">Abrir</string>
+    <string name="explorer_command_sort_by">Ordenar por: %1$s</string>
 </resources>

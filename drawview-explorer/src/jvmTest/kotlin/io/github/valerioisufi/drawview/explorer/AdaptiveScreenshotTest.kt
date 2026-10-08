@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.DesktopComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasScrollToNodeAction
@@ -12,6 +13,8 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performMouseInput
+import androidx.compose.ui.test.rightClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.dp
@@ -23,7 +26,9 @@ import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
+import io.github.valerioisufi.drawview.ui.adaptive.PlatformConventions
 import io.github.valerioisufi.drawview.ui.adaptive.ReferenceWindow
+import io.github.valerioisufi.drawview.ui.adaptive.ShortcutModifier
 import io.github.valerioisufi.drawview.ui.session.DocumentEditorViewModel
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import java.util.Locale
@@ -74,6 +79,20 @@ class AdaptiveScreenshotTest {
         }
     }
 
+    /** A note clicked with the secondary button of a mouse: its commands in a menu. */
+    @Test
+    fun libraryContextMenu() = capture("library-context-menu", ReferenceWindow.DESKTOP, dark = false) {
+        onNodeWithText(NOTE).performMouseInput { rightClick(Offset(240f, centerY)) }
+    }
+
+    /** The pointer resting on a button of the editor: its tooltip, with the shortcut. */
+    @Test
+    fun editorTooltip() = capture("editor-tooltip", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        onNodeWithContentDescription("Grid View").performMouseInput { moveTo(center) }
+        mainClock.advanceTimeBy(1_000)
+    }
+
     /** Every reference window in the light theme, the phone and the desktop in the dark one too. */
     private fun forEachConfiguration(capture: (ReferenceWindow, dark: Boolean) -> Unit) {
         ReferenceWindow.entries.forEach { capture(it, false) }
@@ -104,7 +123,8 @@ class AdaptiveScreenshotTest {
         setContent {
             CompositionLocalProvider(LocalViewModelStoreOwner provides viewModels) {
                 DrawViewTheme(darkTheme = dark, dynamicColor = false) {
-                    AdaptiveRoot(hints = window.input) {
+                    // The shortcuts written as on a Mac on every system
+                    AdaptiveRoot(hints = window.input, conventions = PlatformConventions(ShortcutModifier.COMMAND)) {
                         DocumentLibrary(
                             title = { Text("DrawView", modifier = Modifier.padding(horizontal = 16.dp)) },
                             store = store,

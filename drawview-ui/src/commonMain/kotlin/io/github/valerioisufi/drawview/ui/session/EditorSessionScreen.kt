@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
@@ -18,6 +19,7 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
+import io.github.valerioisufi.drawview.ui.command.CommandRoot
 import io.github.valerioisufi.drawview.ui.screen.DrawScreen
 
 /**
@@ -34,30 +36,37 @@ fun EditorSessionScreen(
     extension: EditorExtension? = null
 ) {
     val controller = session.controller
-    // The editor adapts to the window, the input and the platform (also outside of a library)
+    // The editor adapts to the window, the input and the platform, and its commands reach the
+    // shortcuts and the menu bar (also outside of a library)
     AdaptiveRoot(modifier = modifier) {
-        if (controller == null) {
-            // The document is being loaded
-            Box(
-                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-            ) {
-                LinearProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
-                    color = MaterialTheme.colorScheme.secondary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+        CommandRoot {
+            if (controller == null) {
+                // The document is being loaded
+                Box(
+                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                ) {
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
+                        color = MaterialTheme.colorScheme.secondary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                }
+            } else {
+                EditorBackHandler(controller, onClose = onClose)
+                val extensionCommands = remember(extension, session, controller) {
+                    extension?.commands?.invoke(session, controller).orEmpty()
+                }
+                DrawScreen(
+                    controller = controller,
+                    onNavigateBack = onClose,
+                    toolbarActions = { extension?.toolbarActions?.invoke(this, session, controller) },
+                    sidePanel = { extension?.sidePanel?.invoke(session, controller) },
+                    canvasOverlay = { extension?.canvasOverlay?.invoke(this, session, controller) },
+                    extraCommands = extensionCommands
                 )
             }
-        } else {
-            EditorBackHandler(controller, onClose = onClose)
-            DrawScreen(
-                controller = controller,
-                onNavigateBack = onClose,
-                toolbarActions = { extension?.toolbarActions?.invoke(this, session, controller) },
-                sidePanel = { extension?.sidePanel?.invoke(session, controller) },
-                canvasOverlay = { extension?.canvasOverlay?.invoke(this, session, controller) }
-            )
         }
     }
 }

@@ -125,4 +125,15 @@
     <string name="draw_menu_about_licenses">정보 및 라이선스</string>
     <string name="about_dialog_close">닫기</string>
     <string name="draw_read_only">읽기 전용</string>
+    <!-- Menus and commands -->
+    <string name="menu_file">파일</string>
+    <string name="menu_edit">편집</string>
+    <string name="menu_view">보기</string>
+    <string name="menu_insert">삽입</string>
+    <string name="menu_format">포맷</string>
+    <string name="menu_tools">도구</string>
+    <string name="menu_help">도움말</string>
+    <string name="command_close">문서 닫기</string>
+    <string name="command_zoom_in">확대</string>
+    <string name="command_zoom_out">축소</string>
 </resources>

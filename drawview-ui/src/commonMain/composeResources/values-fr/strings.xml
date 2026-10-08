@@ -125,4 +125,15 @@
     <string name="draw_menu_about_licenses">À propos et Licences</string>
     <string name="about_dialog_close">Fermer</string>
     <string name="draw_read_only">Lecture seule</string>
+    <!-- Menus and commands -->
+    <string name="menu_file">Fichier</string>
+    <string name="menu_edit">Édition</string>
+    <string name="menu_view">Présentation</string>
+    <string name="menu_insert">Insertion</string>
+    <string name="menu_format">Format</string>
+    <string name="menu_tools">Outils</string>
+    <string name="menu_help">Aide</string>
+    <string name="command_close">Fermer le document</string>
+    <string name="command_zoom_in">Zoom avant</string>
+    <string name="command_zoom_out">Zoom arrière</string>
 </resources>

@@ -125,4 +125,15 @@
     <string name="draw_menu_about_licenses">アプリ情報とライセンス</string>
     <string name="about_dialog_close">閉じる</string>
     <string name="draw_read_only">閲覧のみ</string>
+    <!-- Menus and commands -->
+    <string name="menu_file">ファイル</string>
+    <string name="menu_edit">編集</string>
+    <string name="menu_view">表示</string>
+    <string name="menu_insert">挿入</string>
+    <string name="menu_format">フォーマット</string>
+    <string name="menu_tools">ツール</string>
+    <string name="menu_help">ヘルプ</string>
+    <string name="command_close">書類を閉じる</string>
+    <string name="command_zoom_in">拡大</string>
+    <string name="command_zoom_out">縮小</string>
 </resources>

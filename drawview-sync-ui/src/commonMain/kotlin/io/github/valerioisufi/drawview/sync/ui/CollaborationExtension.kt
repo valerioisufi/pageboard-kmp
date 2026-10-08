@@ -41,6 +41,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,6 +58,8 @@ import io.github.valerioisufi.drawview.sync.InvitationGrant
 import io.github.valerioisufi.drawview.sync.Membership
 import io.github.valerioisufi.drawview.sync.Role
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.*
+import io.github.valerioisufi.drawview.ui.command.Command
+import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.components.ToolButton
 import io.github.valerioisufi.drawview.ui.session.EditorExtension
 import kotlin.math.abs
@@ -68,16 +71,39 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * The collaboration in the editor: the action sharing the document (with the number of the other
- * devices on it), and over the canvas where the others are and what they are drawing (who is
- * writing a text the user tried to edit too).
+ * devices on it; also in the menus, "Share…"), and over the canvas where the others are and what
+ * they are drawing (who is writing a text the user tried to edit too) and the sharing dialog.
  */
-fun Collaboration.editorExtension(): EditorExtension = EditorExtension(
-    toolbarActions = { session, controller -> ShareAction(this@editorExtension, session.documentId, controller) },
-    canvasOverlay = { session, controller ->
-        CollaboratorsLayer(this@editorExtension, session.documentId, controller)
-        WritingElsewhereNotice(controller)
-    }
-)
+fun Collaboration.editorExtension(): EditorExtension {
+    // The document whose sharing is shown, asked by the button or by the command
+    val sharing = SharingShown()
+    fun shareCommand(documentId: String) = Command(
+        id = "share",
+        label = { stringResource(Res.string.sync_share) },
+        group = CommandGroup.FILE,
+        section = 1,
+        icon = { rememberVectorPainter(Icons.Outlined.PersonAdd) }
+    ) { sharing.documentId = documentId }
+    return EditorExtension(
+        toolbarActions = { session, _ ->
+            val command = remember(session) { shareCommand(session.documentId) }
+            ShareAction(this@editorExtension, session.documentId, command)
+        },
+        canvasOverlay = { session, controller ->
+            CollaboratorsLayer(this@editorExtension, session.documentId, controller)
+            WritingElsewhereNotice(controller)
+            if (sharing.documentId == session.documentId) {
+                ShareDialog(this@editorExtension, session.documentId, controller.document.title, onDismiss = { sharing.documentId = null })
+            }
+        },
+        commands = { session, _ -> listOf(shareCommand(session.documentId)) }
+    )
+}
+
+/** The document whose sharing dialog the editor shows, `null` when none. */
+private class SharingShown {
+    var documentId by mutableStateOf<String?>(null)
+}
 
 /** How long the user is told who is writing the text they tried to edit. */
 private const val WRITING_ELSEWHERE_NOTICE_MS = 2_500L
@@ -116,13 +142,13 @@ private fun BoxScope.WritingElsewhereNotice(controller: DrawViewController) {
     }
 }
 
+/** The button sharing the document ([share]), with the number of the other devices on it. */
 @Composable
-private fun ShareAction(collaboration: Collaboration, documentId: String, controller: DrawViewController) {
-    var dialog by remember { mutableStateOf(false) }
+private fun ShareAction(collaboration: Collaboration, documentId: String, share: Command) {
     val peers by collaboration.peers.collectAsState()
     val others = peers.filter { it.documentId == documentId }.distinctBy { it.replica }
     Box {
-        ToolButton(onClick = { dialog = true }) {
+        ToolButton(onClick = share.perform, command = share) {
             Icon(imageVector = Icons.Outlined.PersonAdd, contentDescription = stringResource(Res.string.sync_share))
         }
         if (others.isNotEmpty()) {
@@ -136,7 +162,6 @@ private fun ShareAction(collaboration: Collaboration, documentId: String, contro
             }
         }
     }
-    if (dialog) ShareDialog(collaboration, documentId, controller.document.title, onDismiss = { dialog = false })
 }
 
 /**

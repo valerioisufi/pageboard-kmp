@@ -45,11 +45,14 @@ fun currentAdaptiveInfo(): AdaptiveInfo {
  *
  * @param hints what the platform tells of the input; the screenshot tests give the hints of the
  *   device they draw.
+ * @param conventions the conventions of the platform; the screenshot tests give the same on every
+ *   system.
  */
 @Composable
 fun AdaptiveRoot(
     modifier: Modifier = Modifier,
     hints: InputHints = platformInputHints(),
+    conventions: PlatformConventions = platformConventions,
     content: @Composable () -> Unit
 ) {
     if (LocalAdaptiveInfo.current != null) {
@@ -58,7 +61,7 @@ fun AdaptiveRoot(
     }
     val input = remember { InputCapabilities(hints) }
     LaunchedEffect(hints) { input.learn(hints) }
-    val info = AdaptiveInfo(currentWindowLayout(), input, platformConventions)
+    val info = AdaptiveInfo(currentWindowLayout(), input, conventions)
     CompositionLocalProvider(
         LocalAdaptiveInfo provides info,
         LocalMinimumInteractiveComponentSize provides input.minimumInteractiveSize

@@ -125,4 +125,15 @@
     <string name="draw_menu_about_licenses">Info e Licenze</string>
     <string name="about_dialog_close">Chiudi</string>
     <string name="draw_read_only">Sola lettura</string>
+    <!-- Menus and commands -->
+    <string name="menu_file">File</string>
+    <string name="menu_edit">Modifica</string>
+    <string name="menu_view">Vista</string>
+    <string name="menu_insert">Inserisci</string>
+    <string name="menu_format">Formato</string>
+    <string name="menu_tools">Strumenti</string>
+    <string name="menu_help">Aiuto</string>
+    <string name="command_close">Chiudi documento</string>
+    <string name="command_zoom_in">Ingrandisci</string>
+    <string name="command_zoom_out">Riduci</string>
 </resources>

@@ -1,0 +1,303 @@
+package io.github.valerioisufi.drawview.ui.screen
+
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Redo
+import androidx.compose.material.icons.automirrored.outlined.Undo
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.ContentCut
+import androidx.compose.material.icons.filled.ContentPaste
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
+import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.ui.command.Command
+import io.github.valerioisufi.drawview.ui.command.CommandGroup
+import io.github.valerioisufi.drawview.ui.command.Shortcut
+import io.github.valerioisufi.drawview.ui.generated.resources.Res
+import io.github.valerioisufi.drawview.ui.generated.resources.about_dialog_title
+import io.github.valerioisufi.drawview.ui.generated.resources.command_close
+import io.github.valerioisufi.drawview.ui.generated.resources.command_zoom_in
+import io.github.valerioisufi.drawview.ui.generated.resources.command_zoom_out
+import io.github.valerioisufi.drawview.ui.generated.resources.common_action_copy
+import io.github.valerioisufi.drawview.ui.generated.resources.common_action_cut
+import io.github.valerioisufi.drawview.ui.generated.resources.common_action_delete
+import io.github.valerioisufi.drawview.ui.generated.resources.common_action_paste
+import io.github.valerioisufi.drawview.ui.generated.resources.common_action_redo
+import io.github.valerioisufi.drawview.ui.generated.resources.common_action_undo
+import io.github.valerioisufi.drawview.ui.generated.resources.context_menu_action_add_page
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_menu_document_background
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_menu_stylus_only
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_draw
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_eraser
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_grid_view
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_highlighter
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_import_image
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_import_pdf
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_ink_pen
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_lasso
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_pan
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_text
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_text_markup
+import io.github.valerioisufi.drawview.ui.generated.resources.icon_ink_eraser
+import io.github.valerioisufi.drawview.ui.generated.resources.icon_ink_highlighter
+import io.github.valerioisufi.drawview.ui.generated.resources.icon_ink_pen
+import io.github.valerioisufi.drawview.ui.generated.resources.icon_lasso_select
+import io.github.valerioisufi.drawview.ui.generated.resources.icon_pan_tool
+import io.github.valerioisufi.drawview.ui.generated.resources.icon_text_fields
+import io.github.valerioisufi.drawview.ui.generated.resources.icon_text_markup
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+
+/**
+ * What the commands of the editor ask of the screen showing it: the pickers of the files and the
+ * dialogs it owns.
+ */
+internal class EditorScreenActions(
+    val close: () -> Unit,
+    val importPdf: () -> Unit,
+    val importImage: () -> Unit,
+    val editDocumentBackground: () -> Unit,
+    val showAbout: () -> Unit
+)
+
+/**
+ * The commands of the editor of [controller]: the toolbar, the menu bar, the shortcuts and the
+ * tooltips show the same ones. Each asks its expert whether it can run (the history, the
+ * selections, the mode of the editor) and runs through it.
+ */
+@Stable
+class EditorCommands internal constructor(
+    private val controller: DrawViewController,
+    private val clipboard: ClipboardManager,
+    private val actions: EditorScreenActions
+) {
+    private val writable = { !controller.isReadOnly }
+
+    // ----- File -----
+
+    val close = Command("close", label(Res.string.command_close), CommandGroup.FILE, shortcuts = listOf(primary(Key.W))) { actions.close() }
+
+    // ----- Edit -----
+
+    val undo = Command(
+        "undo", label(Res.string.common_action_undo), CommandGroup.EDIT,
+        icon = { rememberVectorPainter(Icons.AutoMirrored.Outlined.Undo) },
+        shortcuts = listOf(primary(Key.Z)),
+        isEnabled = { controller.canUndo }
+    ) { controller.undo() }
+
+    val redo = Command(
+        "redo", label(Res.string.common_action_redo), CommandGroup.EDIT,
+        icon = { rememberVectorPainter(Icons.AutoMirrored.Outlined.Redo) },
+        shortcuts = listOf(Shortcut(Key.Z, primary = true, shift = true), primary(Key.Y)),
+        isEnabled = { controller.canRedo }
+    ) { controller.redo() }
+
+    /** The lasso selection, if any (the elements of the pages). */
+    private val hasSelection get() = controller.isDrawingMode && controller.selectionManager.currentSelection != null
+
+    /** The selected text of the PDFs or the selected mark, if any. */
+    private val hasTextSelection get() = controller.textMarkupManager.hasSelection
+
+    val cut = Command(
+        "cut", label(Res.string.common_action_cut), CommandGroup.EDIT, section = 1,
+        icon = { rememberVectorPainter(Icons.Default.ContentCut) },
+        shortcuts = listOf(primary(Key.X)),
+        isEnabled = { hasSelection && writable() }
+    ) { controller.selectionManager.cutSelection() }
+
+    val copy = Command(
+        "copy", label(Res.string.common_action_copy), CommandGroup.EDIT, section = 1,
+        icon = { rememberVectorPainter(Icons.Default.ContentCopy) },
+        shortcuts = listOf(primary(Key.C)),
+        isEnabled = { hasTextSelection || hasSelection }
+    ) {
+        val text = controller.textMarkupManager.selectedText
+        if (hasTextSelection) {
+            if (!text.isNullOrEmpty()) clipboard.setText(AnnotatedString(text))
+        } else {
+            controller.selectionManager.copySelection()
+        }
+    }
+
+    val paste = Command(
+        "paste", label(Res.string.common_action_paste), CommandGroup.EDIT, section = 1,
+        icon = { rememberVectorPainter(Icons.Default.ContentPaste) },
+        shortcuts = listOf(primary(Key.V)),
+        isEnabled = { controller.isDrawingMode && controller.selectionManager.canPaste() }
+    ) { controller.selectionManager.pasteSelection() }
+
+    val delete = Command(
+        "delete", label(Res.string.common_action_delete), CommandGroup.EDIT, section = 1,
+        icon = { rememberVectorPainter(Icons.Default.Delete) },
+        shortcuts = listOf(Shortcut(Key.Backspace), Shortcut(Key.Delete)),
+        isEnabled = { (hasSelection || controller.textMarkupManager.selectedMarkup != null) && writable() }
+    ) {
+        if (controller.textMarkupManager.selectedMarkup != null) {
+            controller.textMarkupManager.deleteSelectedMarkup()
+        } else {
+            controller.selectionManager.deleteSelection()
+        }
+    }
+
+    // ----- View -----
+
+    val zoomIn = Command(
+        "zoom-in", label(Res.string.command_zoom_in), CommandGroup.VIEW,
+        // ⌘+ is ⌘= (with or without ⇧) on many keyboards, + on others and on the keypad
+        shortcuts = listOf(primary(Key.Plus), primary(Key.Equals), Shortcut(Key.Equals, primary = true, shift = true), primary(Key.NumPadAdd))
+    ) { controller.zoomIn() }
+
+    val zoomOut = Command(
+        "zoom-out", label(Res.string.command_zoom_out), CommandGroup.VIEW,
+        shortcuts = listOf(primary(Key.Minus), primary(Key.NumPadSubtract))
+    ) { controller.zoomOut() }
+
+    val pageGrid = Command(
+        "page-grid", label(Res.string.draw_toolbar_action_grid_view), CommandGroup.VIEW, section = 1,
+        shortcuts = listOf(primary(Key.G)),
+        isChecked = { controller.isPageGridVisible }
+    ) { controller.togglePageGrid() }
+
+    val stylusOnly = Command(
+        "stylus-only", label(Res.string.draw_menu_stylus_only), CommandGroup.VIEW, section = 1,
+        isChecked = { controller.isStylusOnlyMode }
+    ) { controller.updateStylusOnlyMode(!controller.isStylusOnlyMode) }
+
+    // ----- Insert -----
+
+    val addPage = Command(
+        "add-page", label(Res.string.context_menu_action_add_page), CommandGroup.INSERT,
+        isEnabled = writable
+    ) {
+        val pages = controller.pageManager
+        pages.addNewPageAfter(controller.mostVisiblePageIndex() ?: (controller.document.pages.size - 1))
+    }
+
+    val importPdf = Command(
+        "import-pdf", label(Res.string.draw_toolbar_action_import_pdf), CommandGroup.INSERT, section = 1,
+        shortcuts = listOf(Shortcut(Key.P, primary = true, shift = true)),
+        isEnabled = { writable() && controller.tileManager.tileRenderer.pdfAdapter != null }
+    ) { actions.importPdf() }
+
+    val importImage = Command(
+        "import-image", label(Res.string.draw_toolbar_action_import_image), CommandGroup.INSERT, section = 1,
+        shortcuts = listOf(Shortcut(Key.I, primary = true, shift = true)),
+        isEnabled = writable
+    ) { actions.importImage() }
+
+    // ----- Format -----
+
+    val documentBackground = Command(
+        "document-background", label(Res.string.draw_menu_document_background), CommandGroup.FORMAT,
+        isEnabled = writable
+    ) { actions.editDocumentBackground() }
+
+    // ----- Tools -----
+
+    val drawingMode = Command(
+        "drawing-mode", label(Res.string.draw_toolbar_action_draw), CommandGroup.TOOLS,
+        isEnabled = writable,
+        isChecked = { controller.isDrawingMode }
+    ) { controller.toggleDrawingMode() }
+
+    val pen = tool(Tool.INK_PEN, Res.string.draw_toolbar_action_ink_pen, Res.drawable.icon_ink_pen, Key.P)
+    val highlighter = tool(Tool.INK_HIGHLIGHTER, Res.string.draw_toolbar_action_highlighter, Res.drawable.icon_ink_highlighter, Key.H)
+    val textMarkup = tool(
+        Tool.TEXT_MARKUP, Res.string.draw_toolbar_action_text_markup, Res.drawable.icon_text_markup, Key.U,
+        // The text of the PDF pages, where the PDFs are drawn
+        available = { controller.tileManager.tileRenderer.pdfAdapter != null && controller.document.pages.any { it.pdfs.isNotEmpty() } }
+    )
+    val eraser = tool(Tool.ERASER, Res.string.draw_toolbar_action_eraser, Res.drawable.icon_ink_eraser, Key.E)
+    val text = tool(Tool.TEXT, Res.string.draw_toolbar_action_text, Res.drawable.icon_text_fields, Key.T)
+    val lasso = tool(Tool.LAZO, Res.string.draw_toolbar_action_lasso, Res.drawable.icon_lasso_select, Key.L)
+    val pan = tool(Tool.PAN, Res.string.draw_toolbar_action_pan, Res.drawable.icon_pan_tool, key = null)
+
+    // ----- Help -----
+
+    val about = Command("about", label(Res.string.about_dialog_title), CommandGroup.HELP) { actions.showAbout() }
+
+    /** Every command, in the order of the menus. */
+    val all: List<Command> = listOf(
+        close,
+        undo, redo, cut, copy, paste, delete,
+        zoomIn, zoomOut, pageGrid, stylusOnly,
+        addPage, importPdf, importImage,
+        documentBackground,
+        drawingMode, pen, highlighter, textMarkup, eraser, text, lasso, pan,
+        about
+    )
+
+    /**
+     * The command choosing [tool] (in drawing mode): its single key [key] is left to the text being
+     * written.
+     */
+    private fun tool(
+        tool: Tool,
+        title: StringResource,
+        icon: DrawableResource,
+        key: Key?,
+        available: () -> Boolean = { true }
+    ) = Command(
+        id = "tool-${tool.name.lowercase()}",
+        label = label(title),
+        group = CommandGroup.TOOLS,
+        section = 1,
+        icon = { painterResource(icon) },
+        shortcuts = listOfNotNull(key?.let { Shortcut(it) }),
+        isEnabled = { writable() && !controller.textEditorManager.isEditing && available() },
+        isChecked = { controller.isDrawingMode && controller.selectedTool == tool }
+    ) {
+        if (!controller.isDrawingMode) controller.toggleDrawingMode()
+        controller.selectTool(tool)
+    }
+}
+
+private fun primary(key: Key) = Shortcut(key, primary = true)
+
+private fun label(resource: StringResource): @Composable () -> String = { stringResource(resource) }
+
+/**
+ * The commands of the editor of [controller], running the actions of the screen given here (the
+ * last ones given, the screen recomposing).
+ */
+@Composable
+internal fun rememberEditorCommands(
+    controller: DrawViewController,
+    onClose: () -> Unit,
+    onImportPdf: () -> Unit,
+    onImportImage: () -> Unit,
+    onEditDocumentBackground: () -> Unit,
+    onShowAbout: () -> Unit
+): EditorCommands {
+    val clipboard = LocalClipboardManager.current
+    val close by rememberUpdatedState(onClose)
+    val importPdf by rememberUpdatedState(onImportPdf)
+    val importImage by rememberUpdatedState(onImportImage)
+    val editDocumentBackground by rememberUpdatedState(onEditDocumentBackground)
+    val showAbout by rememberUpdatedState(onShowAbout)
+    return remember(controller, clipboard) {
+        EditorCommands(
+            controller = controller,
+            clipboard = clipboard,
+            actions = EditorScreenActions(
+                close = { close() },
+                importPdf = { importPdf() },
+                importImage = { importImage() },
+                editDocumentBackground = { editDocumentBackground() },
+                showAbout = { showAbout() }
+            )
+        )
+    }
+}

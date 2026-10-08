@@ -192,13 +192,9 @@ class FileExplorerViewModel(
         }
     }
 
-    fun deleteFile(file: FileItem) {
-        viewModelScope.launch { delete(file) }
-    }
+    fun deleteFile(file: FileItem) = deleteFiles(listOf(file))
 
-    fun moveFile(file: FileItem, targetFolderId: String?) {
-        viewModelScope.launch { move(file, targetFolderId) }
-    }
+    fun moveFile(file: FileItem, targetFolderId: String?) = moveFiles(listOf(file), targetFolderId)
 
     /**
      * Whether [files] can be moved into [targetFolderId]: not into the current folder (nothing
@@ -248,20 +244,30 @@ class FileExplorerViewModel(
         selectionMode = true
     }
 
-    fun deleteSelected() {
-        val itemsToDelete = selectedItems.toList()
-        clearSelection()
+    fun deleteSelected() = deleteFiles(selectedItems.toList())
+
+    fun moveSelected(targetFolderId: String?) = moveFiles(selectedItems.toList(), targetFolderId)
+
+    /** Deletes [files] (the selected ones, or one of a menu), leaving the selection. */
+    fun deleteFiles(files: List<FileItem>) {
+        unselect(files)
         viewModelScope.launch {
-            itemsToDelete.forEach { delete(it) }
+            files.forEach { delete(it) }
         }
     }
 
-    fun moveSelected(targetFolderId: String?) {
-        val itemsToMove = selectedItems.toList()
-        clearSelection()
+    /** Moves [files] into [targetFolderId] (`null`: the root), leaving the selection. */
+    fun moveFiles(files: List<FileItem>, targetFolderId: String?) {
+        unselect(files)
         viewModelScope.launch {
-            itemsToMove.forEach { move(it, targetFolderId) }
+            files.forEach { move(it, targetFolderId) }
         }
+    }
+
+    private fun unselect(files: List<FileItem>) {
+        val keys = files.mapTo(mutableSetOf()) { it.key }
+        selectedItems.removeAll { it.key in keys }
+        if (selectedItems.isEmpty()) selectionMode = false
     }
 
     private companion object {

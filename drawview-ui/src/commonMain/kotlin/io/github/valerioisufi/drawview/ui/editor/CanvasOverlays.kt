@@ -33,11 +33,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.VerticalDivider
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,16 +52,22 @@ import io.github.valerioisufi.drawview.ui.components.FontSizeStepper
 import io.github.valerioisufi.drawview.ui.components.TextColorPaletteRow
 import io.github.valerioisufi.drawview.ui.components.TextColorPickerDialog
 import io.github.valerioisufi.drawview.ui.generated.resources.*
+import io.github.valerioisufi.drawview.ui.command.Command
+import io.github.valerioisufi.drawview.ui.command.CommandTooltip
+import io.github.valerioisufi.drawview.ui.screen.EditorCommands
 import org.jetbrains.compose.resources.stringResource
 
 /**
  * Floating contextual action bar of the lasso selection: cut, copy, delete and, for texts,
  * edit, color and font size.
+ *
+ * @param commands the commands of the editor, whose tooltips the buttons show.
  */
 @Composable
 fun SelectionActionBar(
     controller: DrawViewController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    commands: EditorCommands? = null
 ) {
     val selectionManager = controller.selectionManager
     val selection = selectionManager.currentSelection
@@ -94,21 +100,21 @@ fun SelectionActionBar(
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { selectionManager.cutSelection() }) {
+                SelectionButton(commands?.cut, onClick = { selectionManager.cutSelection() }) {
                     Icon(
                         Icons.Default.ContentCut,
                         contentDescription = stringResource(Res.string.common_action_cut),
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
-                IconButton(onClick = { selectionManager.copySelection() }) {
+                SelectionButton(commands?.copy, onClick = { selectionManager.copySelection() }) {
                     Icon(
                         Icons.Default.ContentCopy,
                         contentDescription = stringResource(Res.string.common_action_copy),
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
-                IconButton(onClick = { selectionManager.deleteSelection() }) {
+                SelectionButton(commands?.delete, onClick = { selectionManager.deleteSelection() }) {
                     Icon(
                         Icons.Default.Delete,
                         contentDescription = stringResource(Res.string.common_action_delete),
@@ -184,6 +190,16 @@ fun SelectionActionBar(
                 onColorConfirmed = { selectionManager.updateSelectedTextsColor(it.toArgb()) }
             )
         }
+    }
+}
+
+/** A button of the selection bar, with the tooltip of [command] when given. */
+@Composable
+private fun SelectionButton(command: Command?, onClick: () -> Unit, icon: @Composable () -> Unit) {
+    if (command == null) {
+        IconButton(onClick = onClick) { icon() }
+    } else {
+        CommandTooltip(command) { IconButton(onClick = onClick) { icon() } }
     }
 }
 

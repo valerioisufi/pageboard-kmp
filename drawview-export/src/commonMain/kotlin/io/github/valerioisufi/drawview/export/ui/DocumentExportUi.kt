@@ -25,6 +25,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -53,7 +55,11 @@ import io.github.valerioisufi.drawview.export.generated.resources.export_pages_o
 import io.github.valerioisufi.drawview.export.generated.resources.export_save_title
 import io.github.valerioisufi.drawview.export.generated.resources.export_skipped
 import io.github.valerioisufi.drawview.export.generated.resources.export_title
+import io.github.valerioisufi.drawview.ui.command.Command
+import io.github.valerioisufi.drawview.ui.command.CommandGroup
+import io.github.valerioisufi.drawview.ui.command.Shortcut
 import io.github.valerioisufi.drawview.ui.components.ToolButton
+import io.github.valerioisufi.drawview.ui.session.EditorSession
 import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.session.DocumentAction
@@ -76,6 +82,24 @@ import org.jetbrains.compose.resources.stringResource
 class DocumentExportUi(documents: OpenDocuments, private val appName: String? = null) {
     private val export = DocumentExport(documents)
 
+    /** The export asked in an editor, shown until it is dismissed. */
+    private class EditorExport(val documentId: String, val title: String, val pageOnScreen: String?)
+
+    private var editorExport by mutableStateOf<EditorExport?>(null)
+
+    /** "Export…" in the editor of [session]: the document, and the page on screen to export it alone. */
+    private fun exportCommand(session: EditorSession, controller: DrawViewController) = Command(
+        id = "export",
+        label = { stringResource(Res.string.export_action) },
+        group = CommandGroup.FILE,
+        section = 1,
+        icon = { rememberVectorPainter(Icons.Outlined.IosShare) },
+        shortcuts = listOf(Shortcut(Key.E, primary = true, shift = true))
+    ) {
+        val pageOnScreen = controller.mostVisiblePageIndex()?.let { controller.document.pages.getOrNull(it)?.id }
+        editorExport = EditorExport(session.documentId, controller.document.title, pageOnScreen)
+    }
+
     /** "Export" on the document selected in the library (see `DocumentLibrary.documentActions`). */
     val documentAction: DocumentAction = DocumentAction(
         icon = Icons.Outlined.IosShare,
@@ -83,9 +107,23 @@ class DocumentExportUi(documents: OpenDocuments, private val appName: String? = 
         content = { documentId, title, onDone -> ExportDialog(export, appName, documentId, title, pageOnScreen = null, onDismiss = onDone) }
     )
 
-    /** "Export" in the top bar of the editor: the page on screen can also be exported alone. */
+    /**
+     * "Export" in the top bar, the menus and the shortcuts of the editor: the page on screen can
+     * also be exported alone. The dialog is shown over the canvas.
+     */
     val editorExtension: EditorExtension = EditorExtension(
-        toolbarActions = { session, controller -> ExportButton(export, appName, session.documentId, controller) }
+        toolbarActions = { session, controller ->
+            val command = remember(session, controller) { exportCommand(session, controller) }
+            ToolButton(onClick = command.perform, command = command) {
+                Icon(imageVector = Icons.Outlined.IosShare, contentDescription = stringResource(Res.string.export_action))
+            }
+        },
+        canvasOverlay = { session, _ ->
+            editorExport?.takeIf { it.documentId == session.documentId }?.let {
+                ExportDialog(export, appName, it.documentId, it.title, it.pageOnScreen, onDismiss = { editorExport = null })
+            }
+        },
+        commands = { session, controller -> listOf(exportCommand(session, controller)) }
     )
 }
 
@@ -96,19 +134,6 @@ class DocumentExportUi(documents: OpenDocuments, private val appName: String? = 
 @Composable
 fun rememberDocumentExportUi(documents: OpenDocuments = DrawViewStore.documents, appName: String? = null): DocumentExportUi =
     remember(documents, appName) { DocumentExportUi(documents, appName) }
-
-@Composable
-private fun ExportButton(export: DocumentExport, appName: String?, documentId: String, controller: DrawViewController) {
-    var pageOnScreen by remember { mutableStateOf<String?>(null) }
-    var dialog by remember { mutableStateOf(false) }
-    ToolButton(onClick = {
-        pageOnScreen = controller.mostVisiblePageIndex()?.let { controller.document.pages.getOrNull(it)?.id }
-        dialog = true
-    }) {
-        Icon(imageVector = Icons.Outlined.IosShare, contentDescription = stringResource(Res.string.export_action))
-    }
-    if (dialog) ExportDialog(export, appName, documentId, controller.document.title, pageOnScreen, onDismiss = { dialog = false })
-}
 
 private enum class ExportFormat { PDF, PNG }
 

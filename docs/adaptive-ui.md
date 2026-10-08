@@ -100,15 +100,16 @@ by the user; `InputCapabilities.hasStylus` only says that a stylus exists.
 
 | Responsibility | Class (module) | GRASP |
 |---|---|---|
-| An action: label, icon, shortcut, group (Edit, View, Insert, Tools, Document), enabled, checked, priority in the toolbar, perform | `Command` (`drawview-ui`) | Information Expert (it asks its expert: `canUndo`, the selection) |
-| A combination of keys, written once for every platform (`primary + Z`) | `KeyShortcut` with `PlatformConventions.primaryModifier` | Protected Variations |
-| The commands of the editor: tools, undo / redo, selection (copy, cut, paste, delete), zoom, page grid, drawing mode, import, backgrounds | `EditorCommands(controller, pickers)` | Creator (it holds the controller and the pickers) |
+| An action: label, icon, group of the menus (File, Edit, View, Insert, Format, Tools, Help) and section, shortcuts, enabled, checked, perform | `Command` (`drawview-ui`) | Information Expert (it asks its expert: `canUndo`, the selection, the mode of the editor) |
+| A combination of keys, written once for every platform (`primary + Z`: ⌘Z or Ctrl+Z), and its label (⇧⌘Z, Ctrl+Shift+Z) | `Shortcut` (not `KeyShortcut`, the class of the accelerators of Compose Desktop) with `PlatformConventions.shortcutModifier` | Information Expert, Protected Variations |
+| The commands of the editor: close, undo / redo, cut, copy, paste, delete (of the lasso, of the text of the PDFs, of a mark), zoom, page grid, stylus only, add a page, import, document background, drawing mode, the tools, about | `EditorCommands` (`drawview-ui`), created by `DrawScreen` with its pickers and dialogs (`EditorScreenActions`) | Creator, Controller |
 | The camera commands missing: fit the width, next / previous page, go to a page | `DrawViewController` (with `CameraPhysicsEngine`) | Information Expert |
-| The commands of the library: new note, new folder, rename, move, delete, select all, sort | `LibraryCommands(fileExplorerViewModel)` (`drawview-explorer`) | Creator, Information Expert |
-| The commands of an extension (record, I missed something, share, export) | `EditorExtension.commands` | Low Coupling, Protected Variations |
-| The commands of the screen in front, for the presenters outside of it (menu bar) | `CommandHost` (`drawview-ui`), filled by the screen shown; `DocumentLibrary` takes it as a parameter | Pure Fabrication, Indirection |
-| Shortcuts: a key event to a command, after the focused element (a text field keeps its own Cmd+Z) | `ShortcutDispatcher`, `Modifier.onKeyEvent` at the root of the screen | Pure Fabrication, Controller |
-| Show the commands | `CommandButton` (with a tooltip "label  ⌘Z" where the pointer hovers), `CommandMenu` (context menu, right click or long press), `DrawViewMenuBar` (`jvmMain`, a Compose `MenuBar` of the window), the menu of iPadOS and the shortcut helper of Android (see [Platforms](#platforms)) | Polymorphism |
+| The commands of the library: new note, new folder, select all, rename, move, delete, enclosing folder, sort, about; those of an item (`forItem`: open, rename, move, delete, the actions of the application) | `LibraryCommands` (`drawview-explorer`), on `FileExplorerViewModel` (`deleteFiles`, `moveFiles` of any items) | Creator, Information Expert |
+| The dialogs the commands open in the library (new item, rename, move, delete, about), one at a time | `LibraryDialog`, shown by `ExplorerScreen` (no longer by the sheet and the bar of the selection, each with its own) | High Cohesion |
+| The commands of an extension: "Export…", "Share…", the panel of the lecture | `EditorExtension.commands`; the state of their dialog in the extension (`DocumentExportUi`, the extension of `Collaboration`), the dialog drawn over the canvas, so that the button and the command open the same | Low Coupling, Protected Variations |
+| The commands of the screens shown, for the presenters outside of them (menu bar) and the shortcuts | `CommandHost` (`drawview-ui`): the screens register their commands while shown (`RegisterCommands`), the screen in front first; `dispatch` runs the enabled command of a key | Pure Fabrication, Indirection |
+| The root of the commands: the host of the application (or its own), the keys the focused element leaves (a text field keeps its own ⌘Z), the focus when nothing has it (at first, when touched) | `CommandRoot`, declared by `DocumentLibrary`, `EditorSessionScreen` and the application around its dialogs (the inner ones then only show their content) | Controller |
+| Show the commands | `ToolButton(command)` and `CommandTooltip` / `HoverTooltip` (label and shortcut where a precise pointer rests: the long press stays to the controls), `CommandMenu` (a context menu; `Modifier.onSecondaryClick`), `DrawViewMenuBar` (`jvmMain`: a Compose `MenuBar`, the window running the shortcuts with `Window(onKeyEvent = host::dispatch)`), the menu of iPadOS and the shortcut helper of Android (see [Platforms](#platforms)) | Polymorphism |
 
 `toolbarActions` stays for the content that is not an action (the time of a recording, the
 avatars of the participants), next to the commands of the extension.
@@ -206,7 +207,7 @@ pencilnotes        menu bar and window state (desktop), bridge of the menus and 
 | Phase | Content | Status |
 |---|---|---|
 | 0. Foundations | Complete color schemes (DrawView, PencilNotes); `WindowLayout`, `InputCapabilities`, `PlatformConventions`, `AdaptiveInfo` given by `AdaptiveRoot`; density by input; screenshot tests on the reference configurations (current state as the first reference); the lecture on `WindowLayout` | done |
-| 1. Commands | `Command`, `KeyShortcut`, `CommandHost`, `ShortcutDispatcher`; `EditorCommands`, `LibraryCommands`, commands of the extensions; tooltips with the shortcut; right-click menus in the library; menu bar of the desktop | |
+| 1. Commands | `Command`, `Shortcut`, `CommandHost`, `CommandRoot`; `EditorCommands`, `LibraryCommands`, commands of the extensions; tooltips with the shortcut; right-click menus in the library; menu bar of the desktop | done |
 | 2. Panels and sheets | `EditorPanel`, `EditorScaffold`; `AdaptiveSheet` for the configurators, the details and the settings; lecture and collaboration moved | |
 | 3. Editor | `EditorToolbar` and `ToolbarLayout`; floating tools on the phone; one bar when it fits; cursors of the canvas; camera commands (fit, pages) | |
 | 4. Library | `DocumentThumbnails`; grid; navigation pane; details beside; pointer selection; drag and drop | |
@@ -250,6 +251,55 @@ an iPad with a Pencil, an Android tablet with a stylus, a phone, a Mac with a tr
   waits for one of them. `TileManager.isRasterizing` tells the tests when the pages are drawn.
 * Tests: the size classes, the reference windows, the input learned and kept, the minimum size by
   input (`AdaptiveInfoTest`); the start of the animations of the camera.
+
+### Phase 1 results
+
+* **The commands** (`drawview-ui/command`): `Command`, `Shortcut`, `CommandHost`, `CommandRoot`,
+  `RegisterCommands`, `CommandTooltip` / `HoverTooltip`, `CommandMenu`, `Modifier.onSecondaryClick`;
+  `DrawViewMenuBar` on the desktop. A command is one object for every presenter: the bars run it
+  and show its tooltip, the menu bar lists it with its state and shortcut, the keys run it.
+* **The editor** (`EditorCommands`): its buttons run its commands (close, page grid, undo, redo,
+  imports) and show their tooltips, the tools too (their click still opens their settings when
+  chosen again); the bar of the selection shows the tooltips of cut, copy and delete. The tools
+  have single keys (P pen, H highlighter, U text markup, E eraser, T text, L lasso), left to the
+  text being written; delete removes the lasso selection or the selected mark of a PDF, copy
+  copies the selected text of the PDFs too.
+
+  | Command | Shortcut |
+  |---|---|
+  | Close the document | ⌘W |
+  | Undo, redo | ⌘Z, ⇧⌘Z (also ⌘Y) |
+  | Cut, copy, paste, delete | ⌘X, ⌘C, ⌘V, ⌫ (also ⌦) |
+  | Zoom in, out | ⌘+ (also ⌘=), ⌘- |
+  | Page grid | ⌘G |
+  | Import PDF, image | ⇧⌘P, ⇧⌘I |
+  | Export | ⇧⌘E |
+
+  (Ctrl in place of ⌘ on Windows, Linux and Android.)
+* **The library** (`LibraryCommands`): ⌘N new note, ⇧⌘N new folder, ⌘A select all, ⌫ delete
+  the selection (asking first), ⌘↑ enclosing folder; the sort options as checked items of the
+  View menu. A click of the secondary button on an item opens its menu (open, rename, move,
+  delete, the actions of the application, e.g. export); its sheet lists the same commands. The
+  dialogs are one per screen (`LibraryDialog`), the view model deletes and moves any items
+  (`deleteFiles`, `moveFiles`, leaving them out of the selection).
+* **The extensions**: "Export…" (⇧⌘E) and "Share…" in the File menu, the panel of the lecture as
+  a checked item of the View menu; their buttons show the same commands.
+* **The applications** declare `CommandRoot(host)` around their screens: PencilNotes and the
+  sample take the host as a parameter, given on the desktop to `DrawViewMenuBar` and to
+  `Window(onKeyEvent = { host.dispatch(it) })` (the menus of macOS in the bar of the system). A
+  key the content or the window handles is consumed by Compose, so the accelerators of the menu
+  never run a command twice.
+* Tests: the shortcuts written and matched on both conventions, the host running the enabled
+  command of the screen in front, every key of the commands named and every shortcut running
+  one command (`CommandTest`); the commands of the editor through their experts; the library
+  (selection, an item, sorting, deletion leaving the selection: `LibraryCommandsTest`); the keys
+  pressed on the interface (`ShortcutsTest`: ⌘N opens the new note, E the eraser, ⌘G the page
+  grid); two screenshots more on the desktop (the menu of a note, the tooltip of a button).
+  `AdaptiveRoot` takes the conventions too: the screenshots write the shortcuts as on a Mac on
+  every system.
+* Not verified here: the menu bar of the system (a window is needed) and a hardware keyboard on
+  an iPad or an Android tablet (the root of the commands takes the focus at first and when
+  touched).
 
 ### Risks
 

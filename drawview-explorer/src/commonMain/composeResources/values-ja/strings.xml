@@ -38,4 +38,6 @@
     <string name="explorer_error_name_exists">この名前は既に存在します</string>
     <string name="explorer_error_create_failed">作成中にエラーが発生しました</string>
     <string name="explorer_shared">他のデバイスと共有中</string>
+    <string name="explorer_action_open">開く</string>
+    <string name="explorer_command_sort_by">並べ替え: %1$s</string>
 </resources>
