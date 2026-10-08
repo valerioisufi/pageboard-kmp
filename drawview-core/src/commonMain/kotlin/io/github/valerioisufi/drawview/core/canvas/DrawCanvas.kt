@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -28,6 +29,7 @@ import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.DrawText
+import kotlinx.coroutines.flow.first
 
 /**
  * Full-featured vector drawing canvas: multi-resolution tiles for the committed content, live
@@ -55,24 +57,29 @@ fun DrawCanvas(
         onDispose { engine.release() }
     }
 
-    // Physics animation loop and auto-scroll while dragging near the edges
+    // Physics animation loop and auto-scroll while dragging near the edges. No frame is asked for
+    // while nothing moves by itself: a page only looked at lets the device sleep
     var animationTick by remember { mutableStateOf(0L) }
     LaunchedEffect(controller) {
-        var lastNanos = 0L
+        val camera = controller.cameraPhysics
+        fun moving() = camera.isAnimating() || live.autoScrollPerFrame != 0f
         while (true) {
-            withFrameNanos { nowNanos ->
-                if (lastNanos > 0L) {
-                    val dtMillis = ((nowNanos - lastNanos) / 1_000_000L).coerceAtLeast(1L)
-                    if (controller.cameraPhysics.isAnimating()) {
-                        controller.cameraPhysics.update(dtMillis)
+            snapshotFlow { camera.animationStarts to live.autoScrollPerFrame }.first { moving() }
+            var lastNanos = 0L
+            while (moving()) {
+                withFrameNanos { nowNanos ->
+                    // The first frame of a movement advances by one frame of a 60 Hz display
+                    val dtMillis = if (lastNanos > 0L) ((nowNanos - lastNanos) / 1_000_000L).coerceAtLeast(1L) else 16L
+                    if (camera.isAnimating()) {
+                        camera.update(dtMillis)
                         animationTick = nowNanos
                     }
                     if (live.autoScrollPerFrame != 0f) {
                         gestures.onAutoScrollFrame()
                         animationTick = nowNanos
                     }
+                    lastNanos = nowNanos
                 }
-                lastNanos = nowNanos
             }
         }
     }

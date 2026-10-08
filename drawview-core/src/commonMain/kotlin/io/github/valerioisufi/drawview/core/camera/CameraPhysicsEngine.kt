@@ -73,6 +73,13 @@ class CameraPhysicsEngine(
     var moveCount by mutableIntStateOf(0)
         private set
 
+    /**
+     * Incremented when an animation starts (fling, bounce): observable, so that the canvas asks
+     * for frames only while the camera animates and lets the device sleep at rest.
+     */
+    var animationStarts by mutableIntStateOf(0)
+        private set
+
     private var isUserDragging = false
     private var viewportRect = Rect.Zero
 
@@ -187,6 +194,7 @@ class CameraPhysicsEngine(
         }
 
         if (scaleAxis.calculateExcess() != 0f) scaleAxis.startBounce()
+        if (isAnimating()) animationStarts++
     }
 
     fun stopAllAnimations() {
@@ -202,6 +210,7 @@ class CameraPhysicsEngine(
             if (axisX.calculateExcess() != 0f) axisX.startBounce()
             if (axisY.calculateExcess() != 0f) axisY.startBounce()
             if (scaleAxis.calculateExcess() != 0f) scaleAxis.startBounce()
+            if (isAnimating()) animationStarts++
         } else {
             if (axisX.calculateExcess() != 0f) axisX.position -= axisX.calculateExcess()
             if (axisY.calculateExcess() != 0f) axisY.position -= axisY.calculateExcess()

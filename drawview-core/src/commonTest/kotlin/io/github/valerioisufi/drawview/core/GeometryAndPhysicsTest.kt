@@ -155,6 +155,34 @@ class GeometryAndPhysicsTest {
         assertTrue(engine.getCurrentScale() <= engine.maxScale && engine.getCurrentScale() > engine.maxScale * 0.9f)
     }
 
+    @Test
+    fun testCameraTellsWhenAnAnimationStarts() {
+        val engine = CameraPhysicsEngine(density = 1f, getContentRect = { Rect(0f, 0f, 800f, 2000f) })
+        engine.setViewport(800f, 1000f)
+
+        // Released at rest, inside the edges: nothing moves by itself, the canvas asks for no frame
+        engine.onDragStart()
+        engine.onDrag(dx = 0f, dy = -100f, scaleFactor = 1f, focusX = 400f, focusY = 500f)
+        engine.onRelease(0f, 0f)
+        engine.restoreToBounds()
+        assertEquals(0, engine.animationStarts)
+
+        // A fling starts an animation
+        engine.onDragStart()
+        engine.onRelease(0f, -3000f)
+        assertTrue(engine.isAnimating())
+        assertEquals(1, engine.animationStarts)
+
+        // Beyond the edges, the bounce back starts one too
+        val pulled = CameraPhysicsEngine(density = 1f, getContentRect = { Rect(0f, 0f, 800f, 2000f) })
+        pulled.setViewport(800f, 1000f)
+        pulled.onDragStart()
+        pulled.onDrag(dx = 0f, dy = 200f, scaleFactor = 1f, focusX = 400f, focusY = 500f)
+        pulled.onRelease(0f, 0f)
+        assertTrue(pulled.isAnimating())
+        assertEquals(1, pulled.animationStarts)
+    }
+
     // --- 5. HISTORY MANAGER (UNDO/REDO) TESTS ---
 
     @Test

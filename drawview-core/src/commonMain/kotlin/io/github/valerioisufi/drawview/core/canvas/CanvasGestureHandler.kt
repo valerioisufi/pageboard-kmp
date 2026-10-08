@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.core.canvas
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
@@ -52,8 +53,11 @@ class CanvasLiveState {
     var eraserRadiusPx: Float = 0f
         private set
 
-    /** Vertical auto-scroll speed (pixels per frame) while dragging near the viewport edges. */
-    var autoScrollPerFrame: Float = 0f
+    /**
+     * Vertical auto-scroll speed (pixels per frame) while dragging near the viewport edges:
+     * observable, so that the canvas asks for frames only while it scrolls.
+     */
+    var autoScrollPerFrame by mutableFloatStateOf(0f)
 
     fun setLiveMesh(mesh: StrokeMesh?, pageIndex: Int) {
         liveMesh = mesh
