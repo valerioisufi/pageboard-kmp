@@ -84,7 +84,25 @@ interface TextTileAdapter {
      * write it in a PDF; `null` when the adapter cannot tell it.
      */
     fun layout(text: DrawText): TextBlockLayout? = null
+
+    /**
+     * The size of [text] as [drawText] lays it out on its width; `null` when the adapter cannot
+     * tell it.
+     */
+    fun measure(text: DrawText): TextBlockSize? = null
+
+    /** A line of a text of [fontSize] points; `null` when the adapter cannot tell it. */
+    fun lineMetrics(fontSize: Float): TextLineMetrics? = null
 }
+
+/**
+ * The size of a text block in millimeters: [height] of its lines laid out on its width, [width]
+ * of its longest line.
+ */
+class TextBlockSize(val width: Float, val height: Float)
+
+/** A line of text in millimeters: its [height] and its [baseline] from its top. */
+class TextLineMetrics(val height: Float, val baseline: Float)
 
 /**
  * A text block as a [TextTileAdapter] lays it out, in millimeters of the block (from its top-left

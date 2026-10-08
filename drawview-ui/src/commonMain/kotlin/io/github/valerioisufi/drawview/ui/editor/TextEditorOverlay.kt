@@ -65,6 +65,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.toArgb
@@ -92,7 +93,7 @@ import io.github.valerioisufi.drawview.ui.components.FontSizeStepper
 import io.github.valerioisufi.drawview.ui.components.TextColorPaletteRow
 import io.github.valerioisufi.drawview.ui.components.TextColorPickerDialog
 import io.github.valerioisufi.drawview.ui.generated.resources.*
-import io.github.valerioisufi.drawview.ui.render.PT_TO_MM
+import io.github.valerioisufi.drawview.core.text.TextSizes.PT_TO_MM
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
@@ -287,6 +288,11 @@ private fun TextEditorSession(controller: DrawViewController) {
                     onTextLayout = { result ->
                         textLayoutResult = result
                         actualTextHeightPx = result.size.height.toFloat()
+                        // The caret on the character the user touched
+                        editor.takeCaretRequest()?.let { local ->
+                            val offset = result.getOffsetForPosition(Offset(local.x * currentScale, local.y * currentScale))
+                            textValue = textValue.copy(selection = TextRange(offset))
+                        }
                     }
                 )
 
@@ -464,7 +470,7 @@ private fun TextEditorSession(controller: DrawViewController) {
                         IconButton(onClick = { textValue = MarkdownTextUtil.toggleDelimiters(textValue, "`", "`") }) {
                             Icon(Icons.Default.Code, contentDescription = stringResource(Res.string.text_editor_action_code))
                         }
-                        IconButton(onClick = { textValue = MarkdownTextUtil.toggleDelimiters(textValue, "# ", "") }) {
+                        IconButton(onClick = { textValue = MarkdownTextUtil.toggleHeading(textValue) }) {
                             Icon(Icons.Default.Title, contentDescription = stringResource(Res.string.text_editor_action_heading))
                         }
 

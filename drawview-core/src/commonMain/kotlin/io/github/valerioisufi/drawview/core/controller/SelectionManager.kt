@@ -312,6 +312,8 @@ class SelectionManager(private val controller: DrawViewController) {
                 text.width = rightEdge - newLeft
             }
         }
+        // The lines wrap again on the new width
+        controller.measureText(text)?.let { text.height = it.height }
         text.markDirty()
         selection.boundingBox = Rect(text.x, text.y, text.x + text.width, text.y + text.height)
         notifyChanged()
@@ -524,9 +526,11 @@ class SelectionManager(private val controller: DrawViewController) {
         if (selection.texts.isEmpty()) return
         val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
         val clamped = fontSize.coerceIn(8f, 72f)
-        // The text box grows with the font (the wrapping width is preserved)
+        // The text box grows with the font, its lines wrapping again on the same width
         val texts = selection.texts.map {
-            it.toData().copy(fontSize = clamped, height = it.height * clamped / it.fontSize.coerceAtLeast(0.1f))
+            val resized = it.toData().copy(fontSize = clamped)
+            val height = controller.measureText(resized.toElement())?.height ?: (it.height * clamped / it.fontSize.coerceAtLeast(0.1f))
+            resized.copy(height = height)
         }
         controller.session.submit(UpdateTexts(page.id, texts))
         if (selection.isSingleText) {

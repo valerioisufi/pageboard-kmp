@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.ChangeEffects
 import io.github.valerioisufi.drawview.core.change.RemoveElements
@@ -14,6 +15,8 @@ import io.github.valerioisufi.drawview.core.change.toData
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.Versions
 import io.github.valerioisufi.drawview.core.model.newElementId
+import io.github.valerioisufi.drawview.core.text.TextSizes
+import kotlin.math.min
 
 /**
  * State of the on-canvas text editing session.
@@ -52,15 +55,43 @@ class TextEditorManager(private val controller: DrawViewController) {
     private var editedFrom: TextData? = null
 
     /**
+     * Where the caret goes once the edited text is laid out: a point of the box in millimeters
+     * from its top-left corner (before its rotation), or `null` for the end of the text.
+     */
+    private var caretRequest: Offset? = null
+
+    /**
+     * The point of the box where the user put the caret (see [startEditing]), given once: the
+     * editor places the caret on the character there.
+     */
+    fun takeCaretRequest(): Offset? = caretRequest.also { caretRequest = null }
+
+    /**
+     * Starts a new text on the page [pageIndex] with the caret on the point ([xMm], [yMm]) of the
+     * page: the box starts there, its first line centered on the point.
+     */
+    fun startNewText(pageIndex: Int, xMm: Float, yMm: Float) {
+        val page = controller.document.pages.getOrNull(pageIndex) ?: return
+        val fontSize = controller.defaultTextFontSize
+        val lineHeight = controller.textLineMetrics(fontSize)?.height ?: TextSizes.estimatedLineHeightMm(fontSize)
+        val width = min(DEFAULT_WIDTH_MM, page.widthMm - xMm - PAGE_MARGIN_MM).coerceAtLeast(MIN_WIDTH_MM)
+        startEditing(null, pageIndex, xMm, (yMm - lineHeight / 2f).coerceAtLeast(0f), width)
+    }
+
+    /**
      * Starts editing [item] (or a new text when `null`) on the page [pageIndex], at the given
      * page coordinates; not a text another device is writing (see [DrawViewController.writerOf]).
+     *
+     * @param caretAt where the user touched the text, in millimeters from the top-left corner of
+     *   its box before its rotation (see `RotatableItem.toLocal`): the caret goes on the character
+     *   there; at the end of the text when `null`.
      */
-    fun startEditing(item: DrawText?, pageIndex: Int, xMm: Float, yMm: Float, boxWidthMm: Float) {
+    fun startEditing(item: DrawText?, pageIndex: Int, xMm: Float, yMm: Float, boxWidthMm: Float, caretAt: Offset? = null) {
         item?.let { controller.writerOf(it) }?.let { writer ->
             controller.refuseEdit(writer)
             return
         }
-        if (isEditing) cancelTextEditing()
+        if (isEditing) requestFinishEditing()
         controller.selectionManager.clearSelection()
         controller.textMarkupManager.clearSelection()
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
@@ -68,7 +99,8 @@ class TextEditorManager(private val controller: DrawViewController) {
         activeTextPageIndex = pageIndex
         activeTextMmX = xMm
         activeTextMmY = yMm
-        activeBoxWidthMm = boxWidthMm.coerceAtLeast(20f)
+        activeBoxWidthMm = boxWidthMm.coerceAtLeast(MIN_WIDTH_MM)
+        caretRequest = caretAt
         isMathMode = item?.isLatex ?: false
         isMarkdownLivePreviewEnabled = item?.isMarkdownEnabled ?: true
         newTextId = newElementId()
@@ -137,7 +169,7 @@ class TextEditorManager(private val controller: DrawViewController) {
             alignment = alignment,
             x = activeTextMmX,
             y = activeTextMmY,
-            width = activeBoxWidthMm.coerceAtLeast(20f),
+            width = activeBoxWidthMm.coerceAtLeast(MIN_WIDTH_MM),
             height = measuredHeightMm.coerceAtLeast(4f),
             rotation = existing?.rotation ?: 0f,
             color = color,
@@ -175,7 +207,7 @@ class TextEditorManager(private val controller: DrawViewController) {
             alignment = alignment,
             x = activeTextMmX,
             y = activeTextMmY,
-            width = activeBoxWidthMm.coerceAtLeast(20f),
+            width = activeBoxWidthMm.coerceAtLeast(MIN_WIDTH_MM),
             height = heightMm.coerceAtLeast(4f),
             rotation = existing?.rotation ?: 0f,
             color = color,
@@ -220,7 +252,17 @@ class TextEditorManager(private val controller: DrawViewController) {
     private fun resetSession() {
         activeTextItem = null
         activeTextPageIndex = -1
+        caretRequest = null
         controller.reportTextDraft(null, null)
         controller.requestRedraw()
+    }
+
+    private companion object {
+        /** Width of a new text (millimeters), less near the right edge of its page. */
+        const val DEFAULT_WIDTH_MM = 70f
+        const val MIN_WIDTH_MM = 20f
+
+        /** Room left between a new text and the right edge of its page. */
+        const val PAGE_MARGIN_MM = 5f
     }
 }

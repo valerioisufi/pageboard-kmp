@@ -80,14 +80,12 @@ import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
-import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.util.currentTimeMillis
@@ -120,6 +118,7 @@ import io.github.valerioisufi.drawview.ui.session.EditorPanel
 import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
+import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -595,7 +594,7 @@ private fun LectureTabs(assistant: LectureAssistant, lecture: Lecture, controlle
     val fontFamilyResolver = LocalFontFamilyResolver.current
     val notesFonts = rememberNotesFonts()
     val inserter = remember(fontFamilyResolver, notesFonts) {
-        NoteInserter(TextMeasurer(fontFamilyResolver, Density(1f, 1f), LayoutDirection.Ltr), notesFonts)
+        NoteInserter(ComposeTextTileAdapter(fontFamilyResolver, notesFonts))
     }
 
     SecondaryScrollableTabRow(selectedTabIndex = tab, edgePadding = 0.dp) {

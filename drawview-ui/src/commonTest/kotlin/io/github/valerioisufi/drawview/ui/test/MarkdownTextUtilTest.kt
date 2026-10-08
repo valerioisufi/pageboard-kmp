@@ -93,4 +93,19 @@ class MarkdownTextUtilTest {
         ) { _, _ -> null }
         assertEquals("Subtitle", canvas.text.text)
     }
+
+    @Test
+    fun aHeadingStartsItsLineWhereverTheCaretIs() {
+        val original = TextFieldValue(text = "Intro\nTitle here\nEnd", selection = TextRange(12))
+        val heading = MarkdownTextUtil.toggleHeading(original)
+        assertEquals("Intro\n# Title here\nEnd", heading.text)
+        assertEquals(TextRange(14), heading.selection, "the caret stays on its character")
+
+        val plain = MarkdownTextUtil.toggleHeading(heading)
+        assertEquals(original, plain)
+
+        val subtitle = MarkdownTextUtil.toggleHeading(TextFieldValue("##  Sub", TextRange(1)))
+        assertEquals("Sub", subtitle.text)
+        assertEquals(TextRange(0), subtitle.selection)
+    }
 }

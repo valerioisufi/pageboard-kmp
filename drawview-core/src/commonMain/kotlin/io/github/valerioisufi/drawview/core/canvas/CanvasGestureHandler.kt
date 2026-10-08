@@ -32,7 +32,6 @@ import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.exp
 import kotlin.math.hypot
-import kotlin.math.min
 
 /**
  * Live (not yet committed) state of the canvas, drawn on top of the tiles.
@@ -752,14 +751,12 @@ internal class CanvasGestureHandler(
     private fun onTextToolTap(position: Offset) {
         if (editTextAt(position)) return
         val pageIndex = controller.findPageIndexAtScreen(position) ?: return
-        val page = controller.document.pages.getOrNull(pageIndex) ?: return
         val mm = controller.screenToPageMm(pageIndex, position) ?: return
-        val width = min(70f, page.widthMm - mm.x - 5f).coerceAtLeast(25f)
-        controller.textEditorManager.startEditing(null, pageIndex, mm.x, mm.y, width)
+        controller.textEditorManager.startNewText(pageIndex, mm.x, mm.y)
     }
 
     /**
-     * Opens the editor on the text block under [position].
+     * Opens the editor on the text block under [position], the caret on the character there.
      * @return `true` if a text block was found.
      */
     private fun editTextAt(position: Offset): Boolean {
@@ -767,7 +764,7 @@ internal class CanvasGestureHandler(
         val page = controller.document.pages.getOrNull(pageIndex) ?: return false
         val mm = controller.screenToPageMm(pageIndex, position) ?: return false
         val text = page.texts.lastOrNull { it.containsPoint(mm.x, mm.y) } ?: return false
-        controller.textEditorManager.startEditing(text, pageIndex, text.x, text.y, text.width)
+        controller.textEditorManager.startEditing(text, pageIndex, text.x, text.y, text.width, caretAt = text.toLocal(mm.x, mm.y))
         return true
     }
 

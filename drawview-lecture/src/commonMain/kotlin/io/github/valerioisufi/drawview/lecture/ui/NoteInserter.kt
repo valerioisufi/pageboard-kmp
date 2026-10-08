@@ -1,26 +1,14 @@
 package io.github.valerioisufi.drawview.lecture.ui
 
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.Placeholder
-import androidx.compose.ui.text.PlaceholderVerticalAlign
-import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.PlacementRequest
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawText
-import io.github.valerioisufi.drawview.latex.LatexEngine
+import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
+import io.github.valerioisufi.drawview.core.text.TextSizes
 import io.github.valerioisufi.drawview.lecture.NoteSuggestion
 import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
-import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
-import io.github.valerioisufi.drawview.ui.theme.NotesFonts
-import io.github.valerioisufi.drawview.ui.render.PT_TO_MM
-import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
 
@@ -28,10 +16,9 @@ import kotlin.math.min
  * Inserts the content of the assistant in the notebook as Markdown text blocks (undoable, saved
  * like the texts typed by the student), in a color telling them apart from the student's notes.
  *
- * @param measurer text measurer at density 1 (1 sp = 1 px), used to size the blocks.
- * @param fonts the fonts the canvas draws the texts with.
+ * @param textAdapter lays the blocks out as the canvas draws them, to size them.
  */
-internal class NoteInserter(private val measurer: TextMeasurer, private val fonts: NotesFonts) {
+internal class NoteInserter(private val textAdapter: TextTileAdapter) {
 
     /**
      * Lets the student place [suggestion]: the next tap on a page puts the note there (see
@@ -156,38 +143,10 @@ internal class NoteInserter(private val measurer: TextMeasurer, private val font
         controller.session.submit(AddElements.of(page, listOf(item)))
     }
 
-    /**
-     * Height in millimeters of [markdown] laid out on [widthMm], as the canvas draws it (Markdown
-     * styles, formulas rendered by MicroTeX once the engine is ready).
-     */
+    /** Height in millimeters of [markdown] laid out on [widthMm], as the canvas draws it. */
     fun measureHeightMm(markdown: String, fontSizePt: Float, widthMm: Float): Float {
-        val fontPx = fontSizePt * PT_TO_MM * MEASURE_PX_PER_MM
-        val style = TextStyle(fontSize = fontPx.sp, fontFamily = fonts.text, letterSpacing = 0.sp)
-        val ascent = measurer.measure(AnnotatedString("Hg"), style).firstBaseline
-        val canvasText = MarkdownTextUtil.toCanvasText(markdown, true, Color.Black, fontPx, ascent, fonts.monospace) { latex, sizePx ->
-            LatexEngine.renderFormula(latex, sizePx, Color.Black.toArgb())?.let {
-                MarkdownTextUtil.RenderedFormula(it.bitmap, it.width.toFloat(), it.height.toFloat(), it.baselineRatio)
-            }
-        }
-        val placeholders = canvasText.placeholders.map { spec ->
-            AnnotatedString.Range(
-                Placeholder(
-                    width = spec.widthPx.sp,
-                    height = spec.heightPx.sp,
-                    placeholderVerticalAlign = if (spec.aboveBaseline) PlaceholderVerticalAlign.AboveBaseline else PlaceholderVerticalAlign.TextTop
-                ),
-                spec.start,
-                spec.end
-            )
-        }
-        val layout = measurer.measure(
-            text = canvasText.text,
-            style = style,
-            softWrap = true,
-            placeholders = placeholders,
-            constraints = Constraints(maxWidth = ceil(widthMm * MEASURE_PX_PER_MM).toInt().coerceAtLeast(1))
-        )
-        return layout.size.height / MEASURE_PX_PER_MM + 1f
+        val probe = newText(markdown, widthMm, 0f, fontSizePt)
+        return textAdapter.measure(probe)?.height ?: (markdown.lines().size * TextSizes.estimatedLineHeightMm(fontSizePt))
     }
 
     private companion object {
@@ -195,7 +154,6 @@ internal class NoteInserter(private val measurer: TextMeasurer, private val font
         const val NOTE_FONT_PT = 11f
         const val REVIEW_FONT_PT = 11f
         const val MARGIN_MM = 15f
-        const val MEASURE_PX_PER_MM = 8f
         const val PAGE_TOP_INSET_PX = 24f
 
         /** Blue ink of the assistant. */

@@ -92,7 +92,7 @@ class PageManager(private val controller: DrawViewController) {
 
     fun startPageReorderMode() {
         controller.selectionManager.clearSelection()
-        controller.textEditorManager.cancelTextEditing()
+        controller.textEditorManager.requestFinishEditing()
         controller.contextMenuPosition = null
         originalPageOrder = document.pages.toList()
         isReorderingPages = true

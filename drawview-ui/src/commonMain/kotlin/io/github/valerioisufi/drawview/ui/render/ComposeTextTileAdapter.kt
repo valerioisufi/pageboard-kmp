@@ -27,10 +27,13 @@ import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.render.tile.TextBlockLayout
+import io.github.valerioisufi.drawview.core.render.tile.TextBlockSize
 import io.github.valerioisufi.drawview.core.render.tile.TextFace
 import io.github.valerioisufi.drawview.core.render.tile.TextFormula
+import io.github.valerioisufi.drawview.core.render.tile.TextLineMetrics
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.core.render.tile.TextWord
+import io.github.valerioisufi.drawview.core.text.TextSizes.PT_TO_MM
 import io.github.valerioisufi.drawview.core.util.SyncLock
 import io.github.valerioisufi.drawview.core.util.syncLock
 import io.github.valerioisufi.drawview.latex.LatexEngine
@@ -44,9 +47,6 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt
-
-/** Typographic points to millimeters. */
-const val PT_TO_MM = 0.3527f
 
 /**
  * Draws the text blocks of the pages (the `TextLayerRenderer` of the original app):
@@ -110,6 +110,33 @@ class ComposeTextTileAdapter(
             }
             drawRichText(canvas, text, mmToCanvas, scale)
         }
+    }
+
+    override fun measure(text: DrawText): TextBlockSize? {
+        if (text.width <= 0f) return null
+        return syncLock(lock) {
+            val block = if (text.isLatex && LatexEngine.isNativeReady() && text.text.isNotBlank()) latexBlockLayout(text) else null
+            if (block != null) TextBlockSize(text.width, block.height) else richTextSize(text)
+        }
+    }
+
+    override fun lineMetrics(fontSize: Float): TextLineMetrics? {
+        if (fontSize <= 0f) return null
+        return syncLock(lock) {
+            val fontPx = fontSize * PT_TO_MM * LAYOUT_PX_PER_MM
+            val line = measurer.measure(AnnotatedString(" "), baseStyle(Color.Black, fontPx, TextAlign.Start), skipCache = true)
+            TextLineMetrics(line.size.height / LAYOUT_PX_PER_MM, line.firstBaseline / LAYOUT_PX_PER_MM)
+        }
+    }
+
+    /** The size of a plain or Markdown text, laid out as [drawRichText] does. */
+    private fun richTextSize(text: DrawText): TextBlockSize {
+        val scale = LAYOUT_PX_PER_MM
+        val fontPx = text.fontSize * PT_TO_MM * scale
+        val layout = prepare(text, fontPx, (text.width * scale).toInt().coerceAtLeast(1)).layout
+        var longest = 0f
+        for (line in 0 until layout.lineCount) longest = max(longest, layout.getLineRight(line) - layout.getLineLeft(line))
+        return TextBlockSize(longest / scale, layout.size.height / scale)
     }
 
     override fun layout(text: DrawText): TextBlockLayout? {
@@ -266,14 +293,20 @@ class ComposeTextTileAdapter(
         canvas.restore()
     }
 
+    private fun baseStyle(color: Color, fontPx: Float, align: TextAlign) = TextStyle(
+        color = color,
+        fontSize = fontPx.sp,
+        fontFamily = fonts.text,
+        letterSpacing = 0.sp,
+        textAlign = align
+    )
+
     private fun prepare(text: DrawText, fontPx: Float, widthPx: Int): PreparedText {
         val color = Color(text.color)
-        val baseStyle = TextStyle(
-            color = color,
-            fontSize = fontPx.sp,
-            fontFamily = fonts.text,
-            letterSpacing = 0.sp,
-            textAlign = when (text.alignment) {
+        val baseStyle = baseStyle(
+            color,
+            fontPx,
+            when (text.alignment) {
                 1 -> TextAlign.Center
                 2 -> TextAlign.End
                 else -> TextAlign.Start
@@ -307,7 +340,9 @@ class ComposeTextTileAdapter(
             style = baseStyle,
             softWrap = true,
             placeholders = placeholders,
-            constraints = Constraints(maxWidth = widthPx),
+            // The whole width of the block: the lines are aligned in it (with a maximum width only,
+            // the layout would take the width of its longest line)
+            constraints = Constraints.fixedWidth(widthPx),
             skipCache = true
         )
         return PreparedText(layout, canvasText.formulas, fontPx)

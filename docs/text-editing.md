@@ -190,7 +190,7 @@ work against the user, and text can be lost.
 
 | Phase | Content | Status |
 |---|---|---|
-| 1 | Fixes: alignment (`Constraints.fixedWidth` in the adapter and `NoteInserter`), the text saved on every way out (F1), caret at the tap for a new text and at the tapped character for an existing one, heading at the start of the line, height measured again on width and size changes (`measure` on the port), the switches of the tool; tests | To do |
+| 1 | Fixes: alignment (`Constraints.fixedWidth` in the adapter and `NoteInserter`), the text saved on every way out (F1), caret at the tap for a new text and at the tapped character for an existing one, heading at the start of the line, height measured again on width and size changes (`measure` on the port); tests (the switches of the tool, F2, go away with their flags in phase 2) | Done |
 | 2 | One kind of text: `isLatex` and `isMathMode` removed (model, Room, synchronization format, export, lecture), the LaTeX block paths, the symbol bar and the whole-text preview removed; `RichTextParser` in the core with the Pandoc and CommonMark rules and the escapes, display formulas on their own centered line; `MarkdownTextUtil` split into parser and presenters | To do |
 | 3 | The editing session: `TextEditorManager` owns the draft and commits (no callback, height from the port), `TextBoxEditor` and `TextFormatBar` split out of `TextEditorOverlay`; tests of the use case in the core | To do |
 | 4 | One frame: `FrameStyle` in dp, `FramePainter` for the selection and the editor, the handles of the editor routed by `CanvasGestureHandler`, rotated texts edited rotated; screenshot tests of both frames | To do |
@@ -199,6 +199,29 @@ work against the user, and text can be lost.
 | 7 | Creating and sizing: automatic width, box drawn by a drag, one tap to move to another text, text pasted from the system, texts copied as plain text | To do |
 | 8 | Snapping: `SnapEngine`, guides, moving the selection and the edited text, width handles, new texts on the lines of the paper, images being placed; ⌥ / Alt and the switch | To do |
 | 9 | Proposed: bulleted, numbered and check lists; a choice of fonts; completion of the LaTeX commands while typing | Proposed |
+
+### Phase 1 results
+
+* `TextTileAdapter` measures: `measure(text)` (the height of the lines on the width of the box,
+  the width of the longest line) and `lineMetrics(fontSize)` (height and baseline of a line);
+  `DrawViewController.measureText` and `textLineMetrics` reach them. `TextSizes.PT_TO_MM` moved to
+  the core (`core.text`).
+* `ComposeTextTileAdapter` lays the texts out on the fixed width of their box: centered and right
+  aligned texts are drawn, measured and exported as the editor shows them. `NoteInserter` measures
+  its notes with the adapter instead of its copy of the layout.
+* Every way out of the editor saves the text: another tool, the drawing mode turned off, the page
+  grid, the reordering of the pages, another text opened (`requestFinishEditing` instead of
+  `cancelTextEditing`; only the deletion of the page of the text still discards it).
+* `TextEditorManager.startNewText` puts the box where the caret lands on the tap (its first line
+  centered on it, from `lineMetrics`); the gesture router no longer decides where a text goes.
+  A text opened by a tap gets the caret on the tapped character: `RotatableItem.toLocal` gives
+  the point in the box before its rotation, the editor turns it into an offset of its layout.
+* The width handles and the size of the selection measure the text again (`SelectionManager`).
+* The heading button makes the line of the caret a heading, or plain text again
+  (`MarkdownTextUtil.toggleHeading`).
+* Tests: the caret of a new and of an opened text, a point of a rotated text, the text kept by
+  every way out, the height after a resize and a new size (core, with a fake adapter); the
+  alignment and the measures of the adapter (desktop); the heading.
 
 ## Decisions
 

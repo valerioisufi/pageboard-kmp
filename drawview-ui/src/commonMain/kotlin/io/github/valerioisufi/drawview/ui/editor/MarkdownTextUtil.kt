@@ -374,6 +374,30 @@ object MarkdownTextUtil {
     }
 
     /**
+     * Makes the line of the caret (of the start of the selection) a heading, or a heading line
+     * plain text again: the `#` and the spaces after them at the start of the line.
+     */
+    fun toggleHeading(currentValue: TextFieldValue): TextFieldValue {
+        val text = currentValue.text
+        val sel = currentValue.selection
+        val lineStart = text.lastIndexOf('\n', min(sel.start, sel.end) - 1) + 1
+        var prefixEnd = lineStart
+        while (prefixEnd < text.length && text[prefixEnd] == '#') prefixEnd++
+        val isHeading = prefixEnd > lineStart && prefixEnd < text.length && text[prefixEnd] == ' '
+        if (isHeading) {
+            while (prefixEnd < text.length && text[prefixEnd] == ' ') prefixEnd++
+        }
+        val removed = if (isHeading) prefixEnd - lineStart else 0
+        val inserted = if (isHeading) "" else HEADING_PREFIX
+        val shift = inserted.length - removed
+        fun moved(offset: Int) = if (offset < lineStart) offset else max(lineStart, offset + shift)
+        return currentValue.copy(
+            text = text.substring(0, lineStart) + inserted + text.substring(lineStart + removed),
+            selection = TextRange(moved(sel.start), moved(sel.end))
+        )
+    }
+
+    /**
      * Inserts a math template (e.g. `\frac{}{}`) replacing the selection, placing the cursor
      * [cursorOffsetInside] characters after its start.
      */
@@ -391,6 +415,7 @@ object MarkdownTextUtil {
         )
     }
 
+    private const val HEADING_PREFIX = "# "
     internal const val OBJECT_REPLACEMENT = "￼"
     internal const val WORD_JOINER = "⁠"
     private val ERROR_COLOR = Color(0xFFD32F2F)

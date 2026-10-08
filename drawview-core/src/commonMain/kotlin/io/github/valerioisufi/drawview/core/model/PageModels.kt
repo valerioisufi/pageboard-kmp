@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.drawview.core.geometry.AffineTransform
@@ -239,17 +240,22 @@ interface RotatableItem {
      * Whether the point ([px], [py]) in page millimeters falls inside the rotated rectangle.
      */
     fun containsPoint(px: Float, py: Float): Boolean {
-        if (rotation == 0f) {
-            return px >= x && px <= x + width && py >= y && py <= y + height
-        }
+        val local = toLocal(px, py)
+        return local.x >= 0f && local.x <= width && local.y >= 0f && local.y <= height
+    }
+
+    /**
+     * The point ([px], [py]) of the page in millimeters from the top-left corner of the item
+     * before its rotation (inside the item from (0, 0) to ([width], [height])).
+     */
+    fun toLocal(px: Float, py: Float): Offset {
+        if (rotation == 0f) return Offset(px - x, py - y)
         val rad = rotation * PI.toFloat() / 180f
         val c = cos(rad)
         val s = sin(rad)
         val dx = px - centerX
         val dy = py - centerY
-        val localX = dx * c + dy * s
-        val localY = -dx * s + dy * c
-        return abs(localX) <= width / 2f && abs(localY) <= height / 2f
+        return Offset(dx * c + dy * s + width / 2f, -dx * s + dy * c + height / 2f)
     }
 }
 

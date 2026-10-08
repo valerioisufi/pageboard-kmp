@@ -32,6 +32,8 @@ import io.github.valerioisufi.drawview.core.model.DrawThemeColors
 import io.github.valerioisufi.drawview.core.model.LassoMode
 import io.github.valerioisufi.drawview.core.model.StrokeMesh
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.core.render.tile.TextBlockSize
+import io.github.valerioisufi.drawview.core.render.tile.TextLineMetrics
 import io.github.valerioisufi.drawview.core.render.tile.TileManager
 import kotlin.math.hypot
 import kotlinx.atomicfu.atomic
@@ -201,7 +203,7 @@ class DrawViewController(
 
     fun selectTool(tool: Tool, presetIndex: Int? = null) {
         if (tool != Tool.LAZO) selectionManager.clearSelection()
-        if (tool != Tool.TEXT && textEditorManager.isEditing) textEditorManager.cancelTextEditing()
+        if (tool != Tool.TEXT && textEditorManager.isEditing) textEditorManager.requestFinishEditing()
         textMarkupManager.clearSelection()
         toolManager.selectTool(tool, presetIndex)
         if (tool == Tool.TEXT_MARKUP) textMarkupManager.prefetchVisiblePages()
@@ -214,7 +216,7 @@ class DrawViewController(
         textMarkupManager.clearSelection()
         if (!isDrawingMode) {
             selectionManager.clearSelection()
-            textEditorManager.cancelTextEditing()
+            textEditorManager.requestFinishEditing()
             contextMenuPosition = null
         }
         requestRedraw()
@@ -225,7 +227,7 @@ class DrawViewController(
         if (isPageGridVisible) {
             selectionManager.clearSelection()
             textMarkupManager.clearSelection()
-            textEditorManager.cancelTextEditing()
+            textEditorManager.requestFinishEditing()
             contextMenuPosition = null
         }
     }
@@ -287,6 +289,12 @@ class DrawViewController(
 
     /** Suspends until every pending persistence operation has been executed. */
     suspend fun flushPersistence() = persistenceQueue.flush()
+
+    /** The size of [text] as the renderer lays it out, or `null` without a text adapter. */
+    fun measureText(text: DrawText): TextBlockSize? = tileManager.tileRenderer.textAdapter?.measure(text)
+
+    /** A line of a text of [fontSize] points as the renderer lays it out, or `null` without a text adapter. */
+    fun textLineMetrics(fontSize: Float): TextLineMetrics? = tileManager.tileRenderer.textAdapter?.lineMetrics(fontSize)
 
     fun invalidatePageContent(page: DrawPage, mmRect: Rect?) {
         val pageWorldRect = calcPage.pagesRectOnWindow.getOrNull(document.pages.indexOf(page))
