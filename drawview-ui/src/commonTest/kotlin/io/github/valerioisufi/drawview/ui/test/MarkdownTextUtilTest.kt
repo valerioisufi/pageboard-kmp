@@ -5,36 +5,12 @@ import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class MarkdownTextUtilTest {
-
-    @Test
-    fun wrapsTheSelectionWithDelimiters() {
-        val original = TextFieldValue(text = "Hello World", selection = TextRange(6, 11))
-        val wrapped = MarkdownTextUtil.toggleDelimiters(original, "**", "**")
-        assertEquals("Hello **World**", wrapped.text)
-        assertEquals(TextRange(8, 13), wrapped.selection)
-    }
-
-    @Test
-    fun unwrapsWhenTheSelectionIsAlreadyWrapped() {
-        val original = TextFieldValue(text = "Hello **World**", selection = TextRange(8, 13))
-        val unwrapped = MarkdownTextUtil.toggleDelimiters(original, "**", "**")
-        assertEquals("Hello World", unwrapped.text)
-    }
-
-    @Test
-    fun insertsDelimitersAtTheCursor() {
-        val original = TextFieldValue(text = "E = mc", selection = TextRange(6))
-        val result = MarkdownTextUtil.toggleDelimiters(original, "$", "$")
-        assertEquals("E = mc$$", result.text)
-        assertEquals(TextRange(7), result.selection)
-    }
 
     @Test
     fun liveStringKeepsTheOffsets() {
@@ -84,21 +60,6 @@ class MarkdownTextUtilTest {
             fontAscentPx = 18f
         ) { _, _ -> null }
         assertEquals("Subtitle", canvas.text.text)
-    }
-
-    @Test
-    fun aHeadingStartsItsLineWhereverTheCaretIs() {
-        val original = TextFieldValue(text = "Intro\nTitle here\nEnd", selection = TextRange(12))
-        val heading = MarkdownTextUtil.toggleHeading(original)
-        assertEquals("Intro\n# Title here\nEnd", heading.text)
-        assertEquals(TextRange(14), heading.selection, "the caret stays on its character")
-
-        val plain = MarkdownTextUtil.toggleHeading(heading)
-        assertEquals(original, plain)
-
-        val subtitle = MarkdownTextUtil.toggleHeading(TextFieldValue("##  Sub", TextRange(1)))
-        assertEquals("Sub", subtitle.text)
-        assertEquals(TextRange(0), subtitle.selection)
     }
 
     @Test

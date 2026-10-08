@@ -9,7 +9,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
@@ -24,8 +23,7 @@ import kotlin.math.min
  * 1. the field of the editor, Obsidian-like: the delimiters away from the caret concealed, the
  *    formatting applied, the offsets of the text kept (see [toLiveAnnotatedString]);
  * 2. the text drawn on the canvas: delimiters removed, formulas rendered by MicroTeX in their
- *    place (see [toCanvasText]);
- * 3. the helpers of the formatting bar of the editor.
+ *    place (see [toCanvasText]).
  */
 object MarkdownTextUtil {
 
@@ -228,75 +226,6 @@ object MarkdownTextUtil {
         return CanvasText(annotated, placeholders, formulas)
     }
 
-    // --- Editing helpers (formatting bar) ---
-
-    /**
-     * Adds or removes the Markdown delimiters around the selection, or inserts them at the
-     * cursor (placing the cursor between them).
-     */
-    fun toggleDelimiters(currentValue: TextFieldValue, prefix: String, suffix: String): TextFieldValue {
-        val text = currentValue.text
-        val sel = currentValue.selection
-
-        val start = min(sel.start, sel.end)
-        val end = max(sel.start, sel.end)
-
-        if (start != end) {
-            val selected = text.substring(start, end)
-            val pLen = prefix.length
-            val sLen = suffix.length
-            // Already wrapped: remove the delimiters
-            if (start >= pLen && end + sLen <= text.length &&
-                text.substring(start - pLen, start) == prefix &&
-                text.substring(end, end + sLen) == suffix
-            ) {
-                val newText = text.substring(0, start - pLen) + selected + text.substring(end + sLen)
-                return currentValue.copy(
-                    text = newText,
-                    selection = TextRange(start - pLen, end - pLen)
-                )
-            } else {
-                val newText = text.substring(0, start) + prefix + selected + suffix + text.substring(end)
-                return currentValue.copy(
-                    text = newText,
-                    selection = TextRange(start + pLen, end + pLen)
-                )
-            }
-        } else {
-            val newText = text.substring(0, start) + prefix + suffix + text.substring(start)
-            val newCursor = start + prefix.length
-            return currentValue.copy(
-                text = newText,
-                selection = TextRange(newCursor, newCursor)
-            )
-        }
-    }
-
-    /**
-     * Makes the line of the caret (of the start of the selection) a heading, or a heading line
-     * plain text again: the `#` and the spaces after them at the start of the line.
-     */
-    fun toggleHeading(currentValue: TextFieldValue): TextFieldValue {
-        val text = currentValue.text
-        val sel = currentValue.selection
-        val lineStart = text.lastIndexOf('\n', min(sel.start, sel.end) - 1) + 1
-        var prefixEnd = lineStart
-        while (prefixEnd < text.length && text[prefixEnd] == '#') prefixEnd++
-        val isHeading = prefixEnd > lineStart && prefixEnd < text.length && text[prefixEnd] == ' '
-        if (isHeading) {
-            while (prefixEnd < text.length && text[prefixEnd] == ' ') prefixEnd++
-        }
-        val removed = if (isHeading) prefixEnd - lineStart else 0
-        val inserted = if (isHeading) "" else HEADING_PREFIX
-        val shift = inserted.length - removed
-        fun moved(offset: Int) = if (offset < lineStart) offset else max(lineStart, offset + shift)
-        return currentValue.copy(
-            text = text.substring(0, lineStart) + inserted + text.substring(lineStart + removed),
-            selection = TextRange(moved(sel.start), moved(sel.end))
-        )
-    }
-
-    private const val HEADING_PREFIX = "# "
     internal const val OBJECT_REPLACEMENT = "￼"
     internal const val WORD_JOINER = "⁠"
 

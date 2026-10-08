@@ -91,7 +91,7 @@ private fun EditorBackHandler(controller: DrawViewController, onClose: () -> Uni
             when {
                 controller.placementManager.isActive -> controller.placementManager.cancel()
                 controller.isPageGridVisible -> controller.togglePageGrid()
-                controller.textEditorManager.isEditing -> controller.textEditorManager.requestFinishEditing()
+                controller.textEditorManager.isEditing -> controller.textEditorManager.finishEditing()
                 controller.contextMenuPosition != null -> controller.contextMenuPosition = null
                 controller.textMarkupManager.hasSelection -> controller.textMarkupManager.clearSelection()
                 controller.selectionManager.currentSelection != null -> controller.selectionManager.clearSelection()

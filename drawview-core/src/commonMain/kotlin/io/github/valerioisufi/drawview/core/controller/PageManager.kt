@@ -70,7 +70,7 @@ class PageManager(private val controller: DrawViewController) {
         if (document.pages.size <= 1 || pageIndex !in document.pages.indices) return
         controller.selectionManager.clearSelection()
         if (controller.textEditorManager.activeTextPageIndex == pageIndex) {
-            controller.textEditorManager.cancelTextEditing()
+            controller.textEditorManager.cancelEditing()
         }
         controller.session.submit(RemovePage(document.pages[pageIndex].id))
     }
@@ -92,7 +92,7 @@ class PageManager(private val controller: DrawViewController) {
 
     fun startPageReorderMode() {
         controller.selectionManager.clearSelection()
-        controller.textEditorManager.requestFinishEditing()
+        controller.textEditorManager.finishEditing()
         controller.contextMenuPosition = null
         originalPageOrder = document.pages.toList()
         isReorderingPages = true

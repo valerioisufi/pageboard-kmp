@@ -1,107 +1,36 @@
 package io.github.valerioisufi.drawview.ui.editor
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.FormatBold
-import androidx.compose.material.icons.filled.FormatItalic
-import androidx.compose.material.icons.filled.FormatStrikethrough
-import androidx.compose.material.icons.filled.Functions
-import androidx.compose.material.icons.filled.OpenWith
-import androidx.compose.material.icons.filled.Title
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.OffsetMapping
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.TransformedText
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.model.TextAlignment
-import io.github.valerioisufi.drawview.ui.components.FontSizeStepper
-import io.github.valerioisufi.drawview.ui.components.TextColorPaletteRow
-import io.github.valerioisufi.drawview.ui.components.TextColorPickerDialog
-import io.github.valerioisufi.drawview.ui.render.toTextAlign
-import io.github.valerioisufi.drawview.ui.generated.resources.*
-import io.github.valerioisufi.drawview.core.text.TextSizes.PT_TO_MM
-import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
-import org.jetbrains.compose.resources.stringResource
-import kotlin.math.roundToInt
 
 /**
- * On-canvas text editor with the Markdown live preview, word-wrap handles and a formatting
- * toolbar (above the software keyboard when it is shown).
+ * The editor of the text being written (see `TextEditorManager`): its field over the canvas and
+ * its formatting bar above the software keyboard; the text is kept above both.
  *
- * The edited box is anchored in page millimeters, so it follows the page while the canvas is
- * panned and zoomed.
+ * No pointer input of its own: outside the field and the bar the canvas keeps its gestures (a tap
+ * outside saves the text).
  */
 @Composable
 fun TextEditorOverlay(controller: DrawViewController) {
@@ -116,422 +45,50 @@ fun TextEditorOverlay(controller: DrawViewController) {
 @Composable
 private fun TextEditorSession(controller: DrawViewController) {
     val editor = controller.textEditorManager
-    // Edited with the fonts the canvas draws it with
-    val notesFonts = rememberNotesFonts()
-    val pageIndex = editor.activeTextPageIndex
-    // Recomposes on every camera movement (fling and bounce included) and page change
-    @Suppress("UNUSED_VARIABLE")
-    val frame = controller.version
-    @Suppress("UNUSED_VARIABLE")
-    val camera = controller.cameraPhysics.moveCount
-    val mmToScreen = controller.pageMmToScreen(pageIndex) ?: return
-
-    // Scale and position anchored to the page (page millimeters -> screen pixels)
-    val liveScale = mmToScreen.scaleFactor.coerceAtLeast(0.01f)
-    val origin = mmToScreen.mapPoint(editor.activeTextMmX, editor.activeTextMmY)
-    val liveScreenX = origin.x
-    val liveScreenY = origin.y
-    // Read by the drag handlers, which must not restart when the canvas moves during a drag
-    val currentScale by rememberUpdatedState(liveScale)
-
-    // Raw Markdown text of the block
-    val activeItem = editor.activeTextItem
-    val initialRawText = activeItem?.text ?: ""
-    var textValue by remember {
-        mutableStateOf(TextFieldValue(text = initialRawText, selection = TextRange(initialRawText.length)))
-    }
-
-    val focusRequester = remember { FocusRequester() }
-    val keyboardController = LocalSoftwareKeyboardController.current
     val density = LocalDensity.current
-    // Font sizes follow the page, not the accessibility font scale
-    val unscaledDensity = remember(density.density) { Density(density = density.density, fontScale = 1.0f) }
     val imeBottom = WindowInsets.ime.getBottom(density)
-    var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
-    var actualTextHeightPx by remember { mutableFloatStateOf(10f) }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+    // Height of the formatting bar: the edited text is kept above it
+    var barHeightPx by remember { mutableIntStateOf(0) }
 
-    // Formatting of the block
-    var currentFontSizePt by remember { mutableFloatStateOf(activeItem?.fontSize ?: controller.defaultTextFontSize) }
-    var currentColorInt by remember { mutableIntStateOf(activeItem?.color ?: controller.defaultTextColor) }
-    var currentAlignment by remember { mutableStateOf(activeItem?.alignment ?: TextAlignment.START) }
-    var showColorPickerRow by remember { mutableStateOf(false) }
-    var showColorWheelDialog by remember { mutableStateOf(false) }
-    var showFontSizeSliderRow by remember { mutableStateOf(false) }
-    // Height of the formatting toolbar: the edited text is kept above it
-    var toolbarHeightPx by remember { mutableIntStateOf(0) }
-
-    val baseFontSizeMm = currentFontSizePt * PT_TO_MM
-    val scaledFontSizePx = baseFontSizeMm * liveScale
-    val scaledFontSizeSp = with(unscaledDensity) { scaledFontSizePx.toSp() }
-
-    val textColor = Color(currentColorInt)
-
-    // Exact width of the box in pixels, the same used to lay out the text on the canvas
-    val screenWidthPx = (editor.activeBoxWidthMm * liveScale).toInt().coerceAtLeast(1)
-    val boxWidthDp = with(unscaledDensity) { screenWidthPx.toDp() }
-
-    val textAlign = currentAlignment.toTextAlign()
-
-    // Outer frame: does not move the sub-pixel origin of the glyphs
-    val borderPadding = 4.dp
-    val borderPaddingPx = with(unscaledDensity) { borderPadding.toPx() }
-
-    fun saveAndFinish() {
-        keyboardController?.hide()
-        editor.finishTextEditing(
-            text = textValue.text,
-            color = currentColorInt,
-            fontSize = currentFontSizePt,
-            measuredHeightMm = actualTextHeightPx / liveScale,
-            alignment = currentAlignment
-        )
+    DisposableEffect(Unit) {
+        onDispose { keyboardController?.hide() }
     }
 
-    // The system back and a tap on the canvas outside the box save the text
-    val currentSaveAndFinish by rememberUpdatedState { saveAndFinish() }
-    DisposableEffect(editor) {
-        editor.finishEditingRequest = { currentSaveAndFinish() }
-        onDispose { editor.finishEditingRequest = null }
-    }
-
-    // The others working on the document see the text as it is written
-    val draftHeightMm = actualTextHeightPx / liveScale
-    LaunchedEffect(
-        textValue.text, currentColorInt, currentFontSizePt, currentAlignment,
-        editor.activeBoxWidthMm, editor.activeTextMmX, editor.activeTextMmY, draftHeightMm
-    ) {
-        editor.reportDraft(textValue.text, currentColorInt, currentFontSizePt, draftHeightMm, currentAlignment)
-    }
-
-    // No pointer input of its own: outside the box and the toolbar the canvas keeps its gestures
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val containerHeightPx = constraints.maxHeight.toFloat()
-        val primary = MaterialTheme.colorScheme.primary
 
-        CompositionLocalProvider(LocalDensity provides unscaledDensity) {
-            // Text box with the selection frame and the word-wrap handles
-            Box(
-                modifier = Modifier
-                    .offset {
-                        IntOffset(
-                            (liveScreenX - borderPaddingPx).roundToInt(),
-                            (liveScreenY - borderPaddingPx).roundToInt()
-                        )
-                    }
-                    .width(boxWidthDp + borderPadding * 2)
-                    .border(
-                        width = 1.dp,
-                        color = primary.copy(alpha = 0.6f),
-                        shape = RoundedCornerShape(4.dp)
-                    )
-                    .padding(borderPadding)
-            ) {
-                BasicTextField(
-                    value = textValue,
-                    onValueChange = { textValue = it },
-                    modifier = Modifier
-                        .width(boxWidthDp)
-                        .focusRequester(focusRequester),
-                    textStyle = TextStyle(
-                        color = textColor,
-                        fontSize = scaledFontSizeSp,
-                        fontFamily = notesFonts.text,
-                        letterSpacing = 0.sp,
-                        lineHeight = TextUnit.Unspecified,
-                        textAlign = textAlign
-                    ),
-                    cursorBrush = SolidColor(primary),
-                    visualTransformation = { annotated ->
-                        TransformedText(
-                            MarkdownTextUtil.toLiveAnnotatedString(
-                                text = annotated.text,
-                                selection = textValue.selection,
-                                defaultColor = textColor,
-                                baseFontSizeSp = scaledFontSizeSp,
-                                monospace = notesFonts.monospace
-                            ),
-                            OffsetMapping.Identity
-                        )
-                    },
-                    onTextLayout = { result ->
-                        textLayoutResult = result
-                        actualTextHeightPx = result.size.height.toFloat()
-                        // The caret on the character the user touched
-                        editor.takeCaretRequest()?.let { local ->
-                            val offset = result.getOffsetForPosition(Offset(local.x * currentScale, local.y * currentScale))
-                            textValue = textValue.copy(selection = TextRange(offset))
-                        }
-                    }
-                )
+        TextBoxEditor(controller, onLayout = { layout = it })
 
-                // Right word-wrap handle
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .offset(x = 10.dp)
-                        .size(width = 12.dp, height = 28.dp)
-                        .clip(CircleShape)
-                        .background(primary)
-                        .pointerInput(Unit) {
-                            detectDragGestures { change, dragAmount ->
-                                change.consume()
-                                val deltaMm = dragAmount.x / currentScale
-                                editor.activeBoxWidthMm = (editor.activeBoxWidthMm + deltaMm).coerceIn(MIN_BOX_WIDTH_MM, MAX_BOX_WIDTH_MM)
-                            }
-                        }
-                )
-
-                // Left word-wrap handle
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .offset(x = (-10).dp)
-                        .size(width = 12.dp, height = 28.dp)
-                        .clip(CircleShape)
-                        .background(primary)
-                        .pointerInput(Unit) {
-                            detectDragGestures { change, dragAmount ->
-                                change.consume()
-                                val deltaMm = dragAmount.x / currentScale
-                                val newWidth = editor.activeBoxWidthMm - deltaMm
-                                if (newWidth >= MIN_BOX_WIDTH_MM) {
-                                    editor.activeTextMmX += deltaMm
-                                    editor.activeBoxWidthMm = newWidth
-                                }
-                            }
-                        }
-                )
-
-                // Move handle: drags the box on the page while its text is being edited
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .offset(y = -MOVE_HANDLE_SIZE - 6.dp)
-                        .size(MOVE_HANDLE_SIZE)
-                        .clip(CircleShape)
-                        .background(primary)
-                        .pointerInput(Unit) {
-                            detectDragGestures { change, dragAmount ->
-                                change.consume()
-                                val page = controller.document.pages.getOrNull(pageIndex) ?: return@detectDragGestures
-                                val heightMm = actualTextHeightPx / currentScale
-                                // Part of the box always stays on the page
-                                editor.activeTextMmX = (editor.activeTextMmX + dragAmount.x / currentScale)
-                                    .coerceIn(MIN_VISIBLE_MM - editor.activeBoxWidthMm, page.widthMm - MIN_VISIBLE_MM)
-                                editor.activeTextMmY = (editor.activeTextMmY + dragAmount.y / currentScale)
-                                    .coerceIn(MIN_VISIBLE_MM - heightMm, page.heightMm - MIN_VISIBLE_MM)
-                            }
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.OpenWith,
-                        contentDescription = stringResource(Res.string.text_editor_action_move),
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-            }
-        }
-
-        // Formatting toolbar (above the software keyboard)
-        AnimatedVisibility(
-            visible = true,
+        TextFormatBar(
+            editor,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = with(density) { imeBottom.toDp() } + 8.dp)
-        ) {
-            ElevatedCard(
-                modifier = Modifier.onSizeChanged { toolbarHeightPx = it.height },
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp),
-                colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)) {
-                    // Row 1: size, color and formatting
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.horizontalScroll(rememberScrollState())
-                    ) {
-                        FontSizeStepper(
-                            fontSizePt = currentFontSizePt,
-                            onFontSizeChanged = { currentFontSizePt = it },
-                            onChipClick = {
-                                showFontSizeSliderRow = !showFontSizeSliderRow
-                                showColorPickerRow = false
-                            }
-                        )
+                .onSizeChanged { barHeightPx = it.height }
+        )
 
-                        // Text color
-                        Box(
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clip(CircleShape)
-                                .background(textColor)
-                                .border(
-                                    width = 2.dp,
-                                    color = if (showColorPickerRow) primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
-                                    shape = CircleShape
-                                )
-                                .clickable {
-                                    showColorPickerRow = !showColorPickerRow
-                                    showFontSizeSliderRow = false
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {}
-
-                        VerticalDivider(
-                            modifier = Modifier
-                                .height(20.dp)
-                                .padding(horizontal = 2.dp),
-                            thickness = 1.dp
-                        )
-
-                        IconButton(onClick = { textValue = MarkdownTextUtil.toggleDelimiters(textValue, "**", "**") }) {
-                            Icon(Icons.Default.FormatBold, contentDescription = stringResource(Res.string.text_editor_action_bold))
-                        }
-                        IconButton(onClick = { textValue = MarkdownTextUtil.toggleDelimiters(textValue, "*", "*") }) {
-                            Icon(Icons.Default.FormatItalic, contentDescription = stringResource(Res.string.text_editor_action_italic))
-                        }
-                        IconButton(onClick = { textValue = MarkdownTextUtil.toggleDelimiters(textValue, "~~", "~~") }) {
-                            Icon(Icons.Default.FormatStrikethrough, contentDescription = stringResource(Res.string.text_editor_action_strikethrough))
-                        }
-                        IconButton(onClick = { textValue = MarkdownTextUtil.toggleDelimiters(textValue, "`", "`") }) {
-                            Icon(Icons.Default.Code, contentDescription = stringResource(Res.string.text_editor_action_code))
-                        }
-                        IconButton(onClick = { textValue = MarkdownTextUtil.toggleHeading(textValue) }) {
-                            Icon(Icons.Default.Title, contentDescription = stringResource(Res.string.text_editor_action_heading))
-                        }
-
-                        // Alignment (start, center, end)
-                        TextButton(onClick = { currentAlignment = TextAlignment.entries[(currentAlignment.ordinal + 1) % TextAlignment.entries.size] }) {
-                            Text(
-                                text = when (currentAlignment) {
-                                    TextAlignment.CENTER -> "≡"
-                                    TextAlignment.END -> "⇥"
-                                    TextAlignment.START -> "⇤"
-                                },
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-                                color = primary
-                            )
-                        }
-
-                        // A formula in the line: $…$ around the selection
-                        IconButton(onClick = { textValue = MarkdownTextUtil.toggleDelimiters(textValue, "$", "$") }) {
-                            Icon(Icons.Default.Functions, contentDescription = stringResource(Res.string.text_editor_action_math))
-                        }
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        // Save & close
-                        IconButton(onClick = { saveAndFinish() }) {
-                            Icon(Icons.Default.Check, contentDescription = stringResource(Res.string.text_editor_action_save), tint = primary)
-                        }
-                    }
-
-                    // Row 1.1: quick color palette
-                    AnimatedVisibility(visible = showColorPickerRow) {
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                        ) {
-                            TextColorPaletteRow(
-                                selectedColor = textColor,
-                                onColorSelected = {
-                                    currentColorInt = it.toArgb()
-                                    showColorPickerRow = false
-                                },
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                                onCustomWheelClick = {
-                                    showColorPickerRow = false
-                                    showColorWheelDialog = true
-                                }
-                            )
-                        }
-                    }
-
-                    // Row 1.2: continuous font size slider
-                    AnimatedVisibility(visible = showFontSizeSliderRow) {
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                            ) {
-                                Text(
-                                    text = "${currentFontSizePt.toInt()} pt",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = primary,
-                                    modifier = Modifier.width(44.dp)
-                                )
-                                Slider(
-                                    value = currentFontSizePt,
-                                    onValueChange = { currentFontSizePt = it },
-                                    valueRange = 10f..60f,
-                                    steps = 24,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                        }
-                    }
-
-                }
-            }
-        }
-
-        if (showColorWheelDialog) {
-            TextColorPickerDialog(
-                initialColor = Color(currentColorInt),
-                onDismissRequest = { showColorWheelDialog = false },
-                onColorConfirmed = { currentColorInt = it.toArgb() }
-            )
-        }
-
-        LaunchedEffect(Unit) {
-            focusRequester.requestFocus()
-            keyboardController?.show()
-        }
-
-        // Keeps the edited text above the software keyboard and the formatting toolbar. Not keyed
-        // on the layout itself, which changes at every zoom step: it would fight a pinch
-        val lineCount = textLayoutResult?.lineCount ?: 0
-        LaunchedEffect(textValue.text, lineCount, imeBottom, containerHeightPx, toolbarHeightPx) {
-            val layout = textLayoutResult
-            if (layout != null && layout.lineCount > 0) {
-                val textBottomLocal = layout.getLineBottom(layout.lineCount - 1)
-                val absoluteBottomY = liveScreenY + textBottomLocal
-                // The toolbar sits 8 dp above the keyboard; the box border and its handles extend
-                // below the last line: 32 dp of free space above the toolbar
-                val marginPx = maxOf(with(density) { 80.dp.toPx() }, toolbarHeightPx + with(density) { 40.dp.toPx() })
-                val safeAreaBottom = containerHeightPx - imeBottom - marginPx
-                if (absoluteBottomY > safeAreaBottom) {
-                    val deltaY = absoluteBottomY - safeAreaBottom
-                    var previous = 0f
-                    Animatable(0f).animateTo(deltaY, tween(durationMillis = 250)) {
-                        val step = value - previous
-                        previous = value
-                        controller.panCanvasBy(0f, -step)
-                    }
+        // Keeps the edited text above the software keyboard and the formatting bar. Not keyed on
+        // the layout itself, which changes at every zoom step: it would fight a pinch
+        val lineCount = layout?.lineCount ?: 0
+        LaunchedEffect(editor.value.text, lineCount, imeBottom, containerHeightPx, barHeightPx) {
+            val current = layout ?: return@LaunchedEffect
+            if (current.lineCount == 0) return@LaunchedEffect
+            val top = controller.pageMmToScreen(editor.activeTextPageIndex)?.mapPoint(editor.boxX, editor.boxY)?.y ?: return@LaunchedEffect
+            val textBottom = top + current.getLineBottom(current.lineCount - 1)
+            // The bar sits 8 dp above the keyboard; the box border and its handles extend below the
+            // last line: 32 dp of free space above the bar
+            val marginPx = maxOf(with(density) { 80.dp.toPx() }, barHeightPx + with(density) { 40.dp.toPx() })
+            val safeBottom = containerHeightPx - imeBottom - marginPx
+            if (textBottom > safeBottom) {
+                var previous = 0f
+                Animatable(0f).animateTo(textBottom - safeBottom, tween(durationMillis = 250)) {
+                    val step = value - previous
+                    previous = value
+                    controller.panCanvasBy(0f, -step)
                 }
             }
         }
     }
 }
-
-private const val MIN_BOX_WIDTH_MM = 20f
-private const val MAX_BOX_WIDTH_MM = 350f
-
-/** Millimeters of a moved box that always stay on its page. */
-private const val MIN_VISIBLE_MM = 5f
-
-private val MOVE_HANDLE_SIZE = 28.dp

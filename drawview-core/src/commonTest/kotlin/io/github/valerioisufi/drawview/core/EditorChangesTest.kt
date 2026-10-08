@@ -2,10 +2,13 @@ package io.github.valerioisufi.drawview.core
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.core.change.CommittedChange
 import io.github.valerioisufi.drawview.core.change.RemoveElements
 import io.github.valerioisufi.drawview.core.controller.Collaborator
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.core.controller.TextEditorManager
 import io.github.valerioisufi.drawview.core.geometry.Dimension
 import io.github.valerioisufi.drawview.core.geometry.mm
 import io.github.valerioisufi.drawview.core.model.BrushConfig
@@ -112,23 +115,24 @@ class EditorChangesTest {
         val page = controller.document.pages[0]
         val editor = controller.textEditorManager
 
-        editor.startEditing(null, 0, 10f, 20f, 60f)
-        editor.finishTextEditing("Hello", color = 0xFF000000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
+        editor.startNewText(0, 10f, 20f)
+        editor.write("Hello")
         val text = page.texts.single()
         assertEquals("Hello", text.text)
 
-        editor.startEditing(text, 0, text.x, text.y, text.width)
-        editor.finishTextEditing("Hello, world", color = 0xFFFF0000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
+        editor.startEditing(text, 0)
+        editor.changeColor(0xFFFF0000.toInt())
+        editor.write("Hello, world")
         assertSame(text, page.texts.single())
         assertEquals("Hello, world", text.text)
         assertFalse(text.isDragging)
 
         // Saved without changes: nothing to undo
-        editor.startEditing(text, 0, text.x, text.y, text.width)
-        editor.finishTextEditing("Hello, world", color = 0xFFFF0000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
+        editor.startEditing(text, 0)
+        editor.finishEditing()
 
-        editor.startEditing(text, 0, text.x, text.y, text.width)
-        editor.finishTextEditing(" ", color = 0xFFFF0000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
+        editor.startEditing(text, 0)
+        editor.write(" ")
         assertTrue(page.texts.isEmpty())
 
         controller.undo()
@@ -145,8 +149,8 @@ class EditorChangesTest {
         val controller = controllerWith(1, backgroundScope)
         val page = controller.document.pages[0]
         val editor = controller.textEditorManager
-        editor.startEditing(null, 0, 10f, 20f, 60f)
-        editor.finishTextEditing("Notes", color = 0xFF000000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
+        editor.startNewText(0, 10f, 20f)
+        editor.write("Notes")
         val text = page.texts.single()
         val refused = mutableListOf<String>()
         backgroundScope.launch { controller.editsRefused.collect { refused.add(it.name) } }
@@ -158,7 +162,7 @@ class EditorChangesTest {
         )
         assertNull(controller.selectionManager.currentSelection)
         // Neither opened nor selected meanwhile: the user is told who is writing it
-        editor.startEditing(text, 0, text.x, text.y, text.width)
+        editor.startEditing(text, 0)
         assertFalse(editor.isEditing)
         controller.selectionManager.selectWithLasso(0, floatArrayOf(0f, 0f, 200f, 0f, 200f, 200f, 0f, 200f))
         assertNull(controller.selectionManager.currentSelection)
@@ -166,7 +170,7 @@ class EditorChangesTest {
 
         // Written: free again
         controller.collaborators = emptyList()
-        editor.startEditing(text, 0, text.x, text.y, text.width)
+        editor.startEditing(text, 0)
         assertTrue(editor.isEditing)
     }
 
@@ -212,5 +216,11 @@ class EditorChangesTest {
         controller.undo()
         assertEquals(listOf(210f, 210f), document.pages.map { it.widthMm })
         assertEquals(210f, document.defaultWidthMm)
+    }
+
+    /** Writes [text] in the editor (the whole of it) and saves it. */
+    private fun TextEditorManager.write(text: String) {
+        updateValue(TextFieldValue(text, TextRange(text.length)))
+        finishEditing()
     }
 }

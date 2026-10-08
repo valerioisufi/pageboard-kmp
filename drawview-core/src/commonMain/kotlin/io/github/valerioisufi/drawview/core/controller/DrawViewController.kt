@@ -203,7 +203,7 @@ class DrawViewController(
 
     fun selectTool(tool: Tool, presetIndex: Int? = null) {
         if (tool != Tool.LAZO) selectionManager.clearSelection()
-        if (tool != Tool.TEXT && textEditorManager.isEditing) textEditorManager.requestFinishEditing()
+        if (tool != Tool.TEXT && textEditorManager.isEditing) textEditorManager.finishEditing()
         textMarkupManager.clearSelection()
         toolManager.selectTool(tool, presetIndex)
         if (tool == Tool.TEXT_MARKUP) textMarkupManager.prefetchVisiblePages()
@@ -216,7 +216,7 @@ class DrawViewController(
         textMarkupManager.clearSelection()
         if (!isDrawingMode) {
             selectionManager.clearSelection()
-            textEditorManager.requestFinishEditing()
+            textEditorManager.finishEditing()
             contextMenuPosition = null
         }
         requestRedraw()
@@ -227,7 +227,7 @@ class DrawViewController(
         if (isPageGridVisible) {
             selectionManager.clearSelection()
             textMarkupManager.clearSelection()
-            textEditorManager.requestFinishEditing()
+            textEditorManager.finishEditing()
             contextMenuPosition = null
         }
     }

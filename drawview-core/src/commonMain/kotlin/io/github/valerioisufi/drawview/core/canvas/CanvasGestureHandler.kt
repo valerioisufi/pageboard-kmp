@@ -686,7 +686,7 @@ internal class CanvasGestureHandler(
             }
 
             Mode.EDITOR_TAP -> {
-                if (wasTap) controller.textEditorManager.requestFinishEditing()
+                if (wasTap) controller.textEditorManager.finishEditing()
             }
 
             else -> {}
@@ -764,7 +764,7 @@ internal class CanvasGestureHandler(
         val page = controller.document.pages.getOrNull(pageIndex) ?: return false
         val mm = controller.screenToPageMm(pageIndex, position) ?: return false
         val text = page.texts.lastOrNull { it.containsPoint(mm.x, mm.y) } ?: return false
-        controller.textEditorManager.startEditing(text, pageIndex, text.x, text.y, text.width, caretAt = text.toLocal(mm.x, mm.y))
+        controller.textEditorManager.startEditing(text, pageIndex, caretAt = text.toLocal(mm.x, mm.y))
         return true
     }
 

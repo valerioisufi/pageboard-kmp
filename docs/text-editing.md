@@ -192,7 +192,7 @@ work against the user, and text can be lost.
 |---|---|---|
 | 1 | Fixes: alignment (`Constraints.fixedWidth` in the adapter and `NoteInserter`), the text saved on every way out (F1), caret at the tap for a new text and at the tapped character for an existing one, heading at the start of the line, height measured again on width and size changes (`measure` on the port); tests (the switches of the tool, F2, go away with their flags in phase 2) | Done |
 | 2 | One kind of text: `isLatex` and `isMathMode` removed (model, Room, synchronization format, export, lecture), the LaTeX block paths, the symbol bar and the whole-text preview removed; `RichTextParser` in the core with the Pandoc and CommonMark rules and the escapes, display formulas on their own centered line; `MarkdownTextUtil` split into parser and presenters | Done |
-| 3 | The editing session: `TextEditorManager` owns the draft and commits (no callback, height from the port), `TextBoxEditor` and `TextFormatBar` split out of `TextEditorOverlay`; tests of the use case in the core | To do |
+| 3 | The editing session: `TextEditorManager` owns the draft and commits (no callback, height from the port), `TextBoxEditor` and `TextFormatBar` split out of `TextEditorOverlay`; tests of the use case in the core | Done |
 | 4 | One frame: `FrameStyle` in dp, `FramePainter` for the selection and the editor, the handles of the editor routed by `CanvasGestureHandler`, rotated texts edited rotated; screenshot tests of both frames | To do |
 | 5 | Formulas in the editor: drawn over their concealed source, popover at the caret with the errors (a spike first, see [Risks](#risks)) | To do |
 | 6 | Formatting: `TextCommands` (shortcuts, Format menu, tooltips), `TextFormatBar` shared with the lasso and placed by `AdaptiveInfo`, `TextSizes` and `FontSizeControl`, alignment icons, defaults with the alignment | To do |
@@ -248,6 +248,26 @@ work against the user, and text can be lost.
 * Tests: the rules of the parser (formulas, prices, escapes, display and block formulas, code,
   `_`, emphasis, nesting, no partial overlap), the canvas text (nesting, escapes, block formulas
   and their size), the export of a block formula (as text and vectors, drawn as by the editor).
+
+### Phase 3 results
+
+* `TextEditorManager` owns the text being written: its content and selection (`value`), its
+  style (`fontSize`, `color`, `alignment`) and its box (`boxX`, `boxY`, `boxWidth`, the
+  `boxHeight` the editor lays it out); it formats it (`toggle(Format)`, `toggleHeading`), moves
+  and resizes its box (`moveBy`, `resizeBy`, a part always on the page), reports the draft to the
+  others at every change and saves it itself (`finishEditing`: the height measured by the text
+  adapter; `cancelEditing`). The editor of the interface no longer registers a callback to be
+  asked to save, nor passes six values at the end.
+* The formatting of the notation is in the core (`RichTextEditing`: the delimiters of a format
+  around the selection, the heading of a line), next to its parser.
+* The interface is split by responsibility: `TextBoxEditor` (the field over the canvas, its frame
+  and handles), `TextFormatBar` (the bar), `TextEditorOverlay` (both, the keyboard hidden when the
+  editor closes, the text kept above the keyboard and the bar).
+* Tests: the use case without an interface (caret, every way out saving, the style and the
+  measured height saved, the drafts, the formatting, the box on its page), the formatting of the
+  notation; screenshots of a text being written, of texts drawn by the page and of a text
+  selected (`TextScreenshotTest`, with the scenes of the editor shared with
+  `AdaptiveScreenshotTest` in `EditorScene`).
 
 ## Decisions
 

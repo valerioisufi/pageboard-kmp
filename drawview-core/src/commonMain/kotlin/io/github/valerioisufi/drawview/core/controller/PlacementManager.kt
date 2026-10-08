@@ -43,7 +43,7 @@ class PlacementManager(private val controller: DrawViewController) {
     fun start(newRequest: PlacementRequest) {
         cancel()
         controller.selectionManager.clearSelection()
-        if (controller.textEditorManager.isEditing) controller.textEditorManager.requestFinishEditing()
+        if (controller.textEditorManager.isEditing) controller.textEditorManager.finishEditing()
         controller.contextMenuPosition = null
         controller.isPageGridVisible = false
         request = newRequest

@@ -6,6 +6,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.ChangeEffects
 import io.github.valerioisufi.drawview.core.change.RemoveElements
@@ -16,26 +18,61 @@ import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.Versions
 import io.github.valerioisufi.drawview.core.model.newElementId
+import io.github.valerioisufi.drawview.core.text.RichTextEditing
 import io.github.valerioisufi.drawview.core.text.TextSizes
+import kotlin.math.abs
 import kotlin.math.min
 
 /**
- * State of the on-canvas text editing session.
+ * The use case "write a text": the text being written (its content, its style and its box), its
+ * formatting, its box moved and resized, and the change of the document that saves it.
  *
- * The edited box is anchored in page millimeters ([activeTextMmX], [activeTextMmY],
- * [activeBoxWidthMm]) so that it follows the page while the canvas is panned and zoomed.
+ * The box is anchored in page millimeters ([boxX], [boxY], [boxWidth]) so that it follows the page
+ * while the canvas is panned and zoomed. The editor of the interface shows [value] and reports
+ * what the user types ([updateValue]) and the height it lays the text out ([reportLayoutHeight]).
  */
 class TextEditorManager(private val controller: DrawViewController) {
 
+    /** The text being changed, `null` for a new one. */
     var activeTextItem: DrawText? by mutableStateOf(null)
         private set
 
     var activeTextPageIndex: Int by mutableIntStateOf(-1)
         private set
 
-    var activeTextMmX: Float by mutableFloatStateOf(0f)
-    var activeTextMmY: Float by mutableFloatStateOf(0f)
-    var activeBoxWidthMm: Float by mutableFloatStateOf(60f)
+    /** Left of the box in page millimeters. */
+    var boxX: Float by mutableFloatStateOf(0f)
+        private set
+
+    /** Top of the box in page millimeters. */
+    var boxY: Float by mutableFloatStateOf(0f)
+        private set
+
+    /** Width of the box in page millimeters (the lines wrap on it). */
+    var boxWidth: Float by mutableFloatStateOf(DEFAULT_WIDTH_MM)
+        private set
+
+    /** Height of the text as the editor lays it out, in page millimeters. */
+    var boxHeight: Float by mutableFloatStateOf(0f)
+        private set
+
+    /** The text written so far, with its selection. */
+    var value: TextFieldValue by mutableStateOf(TextFieldValue())
+        private set
+
+    /** Size of the text in typographic points. */
+    var fontSize: Float by mutableFloatStateOf(16f)
+        private set
+
+    /** ARGB color of the text. */
+    var color: Int by mutableIntStateOf(0xFF000000.toInt())
+        private set
+
+    var alignment: TextAlignment by mutableStateOf(TextAlignment.START)
+        private set
+
+    /** Rotation of the text in degrees (kept: the editor does not turn a text). */
+    val rotation: Float get() = activeTextItem?.rotation ?: 0f
 
     /** Incremented at every new session (resets the editor UI state). */
     var sessionId: Int by mutableIntStateOf(0)
@@ -64,40 +101,54 @@ class TextEditorManager(private val controller: DrawViewController) {
      */
     fun takeCaretRequest(): Offset? = caretRequest.also { caretRequest = null }
 
+    // ==========================================================
+    // Opening and closing
+    // ==========================================================
+
     /**
      * Starts a new text on the page [pageIndex] with the caret on the point ([xMm], [yMm]) of the
      * page: the box starts there, its first line centered on the point.
      */
     fun startNewText(pageIndex: Int, xMm: Float, yMm: Float) {
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
-        val fontSize = controller.defaultTextFontSize
-        val lineHeight = controller.textLineMetrics(fontSize)?.height ?: TextSizes.estimatedLineHeightMm(fontSize)
+        val size = controller.defaultTextFontSize
+        val lineHeight = controller.textLineMetrics(size)?.height ?: TextSizes.estimatedLineHeightMm(size)
         val width = min(DEFAULT_WIDTH_MM, page.widthMm - xMm - PAGE_MARGIN_MM).coerceAtLeast(MIN_WIDTH_MM)
-        startEditing(null, pageIndex, xMm, (yMm - lineHeight / 2f).coerceAtLeast(0f), width)
+        open(null, pageIndex, xMm, (yMm - lineHeight / 2f).coerceAtLeast(0f), width, caretAt = null)
     }
 
     /**
-     * Starts editing [item] (or a new text when `null`) on the page [pageIndex], at the given
-     * page coordinates; not a text another device is writing (see [DrawViewController.writerOf]).
+     * Starts editing [item] on the page [pageIndex]; not a text another device is writing (see
+     * [DrawViewController.writerOf]).
      *
      * @param caretAt where the user touched the text, in millimeters from the top-left corner of
      *   its box before its rotation (see `RotatableItem.toLocal`): the caret goes on the character
      *   there; at the end of the text when `null`.
      */
-    fun startEditing(item: DrawText?, pageIndex: Int, xMm: Float, yMm: Float, boxWidthMm: Float, caretAt: Offset? = null) {
-        item?.let { controller.writerOf(it) }?.let { writer ->
+    fun startEditing(item: DrawText, pageIndex: Int, caretAt: Offset? = null) {
+        controller.writerOf(item)?.let { writer ->
             controller.refuseEdit(writer)
             return
         }
-        if (isEditing) requestFinishEditing()
+        open(item, pageIndex, item.x, item.y, item.width, caretAt)
+    }
+
+    private fun open(item: DrawText?, pageIndex: Int, xMm: Float, yMm: Float, widthMm: Float, caretAt: Offset?) {
+        if (isEditing) finishEditing()
         controller.selectionManager.clearSelection()
         controller.textMarkupManager.clearSelection()
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
         activeTextItem = item
         activeTextPageIndex = pageIndex
-        activeTextMmX = xMm
-        activeTextMmY = yMm
-        activeBoxWidthMm = boxWidthMm.coerceAtLeast(MIN_WIDTH_MM)
+        boxX = xMm
+        boxY = yMm
+        boxWidth = widthMm.coerceAtLeast(MIN_WIDTH_MM)
+        boxHeight = item?.height ?: (controller.textLineMetrics(controller.defaultTextFontSize)?.height ?: 0f)
+        val content = item?.text.orEmpty()
+        value = TextFieldValue(content, TextRange(content.length))
+        fontSize = item?.fontSize ?: controller.defaultTextFontSize
+        color = item?.color ?: controller.defaultTextColor
+        alignment = item?.alignment ?: TextAlignment.START
         caretRequest = caretAt
         newTextId = newElementId()
         editedFrom = item?.toData()?.copy(order = null)
@@ -110,6 +161,7 @@ class TextEditorManager(private val controller: DrawViewController) {
         }
         controller.cameraPhysics.stopAllAnimations()
         controller.requestRedraw()
+        reportDraft()
     }
 
     /**
@@ -124,51 +176,33 @@ class TextEditorManager(private val controller: DrawViewController) {
         val text = selection.texts[0]
         val pageIndex = selection.pageIndex
         controller.selectionManager.clearSelection()
-        startEditing(text, pageIndex, text.x, text.y, text.width)
+        startEditing(text, pageIndex)
         return true
     }
 
     /**
-     * Saves the edited text (creating, updating or deleting the text block).
-     *
-     * @param measuredHeightMm height of the laid out text in page millimeters.
+     * Saves the text being written and closes the editor: a new text is added, a changed one
+     * updated, an emptied one removed. The text is measured as the canvas lays it out.
      */
-    fun finishTextEditing(
-        text: String,
-        color: Int,
-        fontSize: Float,
-        measuredHeightMm: Float,
-        alignment: TextAlignment = TextAlignment.START
-    ) {
+    fun finishEditing() {
         val pageIndex = activeTextPageIndex
         if (pageIndex < 0) return
         val page = controller.document.pages.getOrNull(pageIndex)
         val existing = activeTextItem
         if (page == null) {
-            cancelTextEditing()
+            cancelEditing()
             return
         }
 
-        if (text.isBlank()) {
+        if (value.text.isBlank()) {
             existing?.isDragging = false
             if (existing != null) controller.session.submit(RemoveElements.of(page, listOf(existing)))
             resetSession()
             return
         }
 
-        val data = TextData(
-            id = existing?.id ?: newTextId,
-            text = text,
-            alignment = alignment,
-            x = activeTextMmX,
-            y = activeTextMmY,
-            width = activeBoxWidthMm.coerceAtLeast(MIN_WIDTH_MM),
-            height = measuredHeightMm.coerceAtLeast(4f),
-            rotation = existing?.rotation ?: 0f,
-            color = color,
-            fontSize = fontSize,
-            versions = editedFrom?.versions ?: Versions.NONE
-        )
+        val laidOut = draft(versions = editedFrom?.versions ?: Versions.NONE)
+        val data = laidOut.copy(height = (controller.measureText(laidOut.toElement())?.height ?: boxHeight).coerceAtLeast(MIN_HEIGHT_MM))
         if (existing != null) {
             existing.isDragging = false
             // Shown again even when nothing changed
@@ -184,46 +218,9 @@ class TextEditorManager(private val controller: DrawViewController) {
     }
 
     /**
-     * The text being written as it is now (reported by the editor UI, which owns it), for the
-     * others working on the document.
-     *
-     * @param heightMm height of the laid out text in page millimeters.
-     */
-    fun reportDraft(text: String, color: Int, fontSize: Float, heightMm: Float, alignment: TextAlignment = TextAlignment.START) {
-        val page = controller.document.pages.getOrNull(activeTextPageIndex) ?: return
-        val existing = activeTextItem
-        val draft = TextData(
-            id = existing?.id ?: newTextId,
-            text = text,
-            alignment = alignment,
-            x = activeTextMmX,
-            y = activeTextMmY,
-            width = activeBoxWidthMm.coerceAtLeast(MIN_WIDTH_MM),
-            height = heightMm.coerceAtLeast(4f),
-            rotation = existing?.rotation ?: 0f,
-            color = color,
-            fontSize = fontSize
-        )
-        controller.reportTextDraft(page.id, draft)
-    }
-
-    /**
-     * Saves the text being edited: registered by the editor UI, which owns the edited text.
-     */
-    var finishEditingRequest: (() -> Unit)? = null
-
-    /**
-     * Saves and closes the open editor (e.g. on the system back), or closes it when no editor UI
-     * is attached.
-     */
-    fun requestFinishEditing() {
-        finishEditingRequest?.invoke() ?: cancelTextEditing()
-    }
-
-    /**
      * Closes the editor discarding the changes.
      */
-    fun cancelTextEditing() {
+    fun cancelEditing() {
         val item = activeTextItem
         val page = controller.document.pages.getOrNull(activeTextPageIndex)
         if (item != null && page != null) {
@@ -237,23 +234,128 @@ class TextEditorManager(private val controller: DrawViewController) {
     /** Closes the editor of a text that a change made on another device removed. */
     internal fun onChange(effects: ChangeEffects) {
         val item = activeTextItem ?: return
-        if (item in effects.deletedElements) cancelTextEditing()
+        if (item in effects.deletedElements) cancelEditing()
     }
 
     private fun resetSession() {
         activeTextItem = null
         activeTextPageIndex = -1
         caretRequest = null
+        value = TextFieldValue()
         controller.reportTextDraft(null, null)
         controller.requestRedraw()
+    }
+
+    // ==========================================================
+    // Writing and formatting
+    // ==========================================================
+
+    /** The text and its selection as the user changed them. */
+    fun updateValue(newValue: TextFieldValue) {
+        if (!isEditing) return
+        val textChanged = newValue.text != value.text
+        value = newValue
+        if (textChanged) reportDraft()
+    }
+
+    /** Adds or removes [format] around the selection (or inserts its delimiters at the caret). */
+    fun toggle(format: RichTextEditing.Format) = updateValue(RichTextEditing.toggle(value, format))
+
+    /** Makes the line of the caret a heading, or plain text again. */
+    fun toggleHeading() = updateValue(RichTextEditing.toggleHeading(value))
+
+    fun changeFontSize(size: Float) {
+        if (!isEditing || size == fontSize) return
+        fontSize = size
+        reportDraft()
+    }
+
+    fun changeColor(argb: Int) {
+        if (!isEditing || argb == color) return
+        color = argb
+        reportDraft()
+    }
+
+    fun changeAlignment(newAlignment: TextAlignment) {
+        if (!isEditing || newAlignment == alignment) return
+        alignment = newAlignment
+        reportDraft()
+    }
+
+    /** The height (page millimeters) the editor lays the text out. */
+    fun reportLayoutHeight(heightMm: Float) {
+        if (!isEditing || abs(heightMm - boxHeight) < HEIGHT_EPSILON_MM) return
+        boxHeight = heightMm
+        reportDraft()
+    }
+
+    // ==========================================================
+    // The box
+    // ==========================================================
+
+    /** Moves the box by ([dxMm], [dyMm]) page millimeters, a part of it always on its page. */
+    fun moveBy(dxMm: Float, dyMm: Float) {
+        val page = controller.document.pages.getOrNull(activeTextPageIndex) ?: return
+        boxX = (boxX + dxMm).coerceIn(MIN_VISIBLE_MM - boxWidth, page.widthMm - MIN_VISIBLE_MM)
+        boxY = (boxY + dyMm).coerceIn(MIN_VISIBLE_MM - boxHeight, page.heightMm - MIN_VISIBLE_MM)
+        reportDraft()
+    }
+
+    /**
+     * Moves the left or the right edge of the box by [dxMm] page millimeters: the lines wrap on
+     * the new width (never less than its minimum, the other edge staying where it is).
+     */
+    fun resizeBy(dxMm: Float, leftEdge: Boolean) {
+        if (!isEditing) return
+        if (leftEdge) {
+            val width = (boxWidth - dxMm).coerceIn(MIN_WIDTH_MM, MAX_WIDTH_MM)
+            boxX += boxWidth - width
+            boxWidth = width
+        } else {
+            boxWidth = (boxWidth + dxMm).coerceIn(MIN_WIDTH_MM, MAX_WIDTH_MM)
+        }
+        reportDraft()
+    }
+
+    // ==========================================================
+    // Others
+    // ==========================================================
+
+    /** The text being written as it is now. */
+    private fun draft(versions: Versions = Versions.NONE) = TextData(
+        id = activeTextItem?.id ?: newTextId,
+        text = value.text,
+        alignment = alignment,
+        x = boxX,
+        y = boxY,
+        width = boxWidth,
+        height = boxHeight.coerceAtLeast(MIN_HEIGHT_MM),
+        rotation = rotation,
+        color = color,
+        fontSize = fontSize,
+        versions = versions
+    )
+
+    /** The text being written as it is now, for the others working on the document. */
+    private fun reportDraft() {
+        val page = controller.document.pages.getOrNull(activeTextPageIndex) ?: return
+        controller.reportTextDraft(page.id, draft())
     }
 
     private companion object {
         /** Width of a new text (millimeters), less near the right edge of its page. */
         const val DEFAULT_WIDTH_MM = 70f
         const val MIN_WIDTH_MM = 20f
+        const val MAX_WIDTH_MM = 350f
+        const val MIN_HEIGHT_MM = 4f
 
         /** Room left between a new text and the right edge of its page. */
         const val PAGE_MARGIN_MM = 5f
+
+        /** Millimeters of a moved box that always stay on its page. */
+        const val MIN_VISIBLE_MM = 5f
+
+        /** A change of the laid out height smaller than this is not reported. */
+        const val HEIGHT_EPSILON_MM = 0.01f
     }
 }
