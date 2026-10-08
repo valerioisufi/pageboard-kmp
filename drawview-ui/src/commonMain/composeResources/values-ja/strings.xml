@@ -96,7 +96,6 @@
     <string name="text_editor_action_heading">見出し</string>
     <string name="text_editor_action_math">数式</string>
     <string name="text_editor_action_save">保存</string>
-    <string name="text_editor_action_move">テキストボックスを移動</string>
     <string name="text_editor_action_alignment">配置</string>
     <string name="draw_toolbar_action_add_preset">プリセットを追加</string>
     <string-array name="date_months_short">

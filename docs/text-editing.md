@@ -143,7 +143,7 @@ work against the user, and text can be lost.
 | Where a new text goes: caret at the tap, automatic width, inside the page, first baseline on the line of the paper when snapping | `TextEditorManager.startNewText(page, pointMm)` with `metrics` and `SnapEngine` | Information Expert |
 | The field over the canvas: caret, selection, input method, rotation, formulas drawn over their concealed source | `TextBoxEditor` (`drawview-ui`) | High Cohesion, Pure Fabrication |
 | The formula under the caret: rendered above it, with the error when invalid, off the main thread | `FormulaPopover` (`drawview-ui`) | High Cohesion |
-| The frame of the selection and of the edited text: geometry, style in dp, handles, hit test | `SelectionFrame`, `FrameStyle`, `FramePainter` (`drawview-core`), drawn by the canvas for both | Information Expert, High Cohesion |
+| The frame of the selection and of the edited text: geometry, style in dp, handles, hit test | `SelectionFrame`, `FrameStyle`, `SelectionOverlay.drawFrame` (`drawview-core`), drawn by the canvas for both | Information Expert, High Cohesion |
 | The gestures on the handles of the edited text, as on the selection | `CanvasGestureHandler` (modes of the editor) → `TextEditorManager.moveBy`, `resizeWidth` | Controller |
 | The formatting actions: bold, italic, strikethrough, code, heading, formula, alignment, size, color | `TextCommands` (`drawview-ui`, `Command`s with shortcuts, the Format menu, tooltips), acting on the text being written or on the selected texts | Controller, Polymorphism (target) |
 | The formatting bar, one for both targets, placed by the window: above the keyboard on a phone, floating by the box on a tablet or a desktop | `TextFormatBar` (`drawview-ui`) with `AdaptiveInfo` | High Cohesion, Low Coupling |
@@ -193,7 +193,7 @@ work against the user, and text can be lost.
 | 1 | Fixes: alignment (`Constraints.fixedWidth` in the adapter and `NoteInserter`), the text saved on every way out (F1), caret at the tap for a new text and at the tapped character for an existing one, heading at the start of the line, height measured again on width and size changes (`measure` on the port); tests (the switches of the tool, F2, go away with their flags in phase 2) | Done |
 | 2 | One kind of text: `isLatex` and `isMathMode` removed (model, Room, synchronization format, export, lecture), the LaTeX block paths, the symbol bar and the whole-text preview removed; `RichTextParser` in the core with the Pandoc and CommonMark rules and the escapes, display formulas on their own centered line; `MarkdownTextUtil` split into parser and presenters | Done |
 | 3 | The editing session: `TextEditorManager` owns the draft and commits (no callback, height from the port), `TextBoxEditor` and `TextFormatBar` split out of `TextEditorOverlay`; tests of the use case in the core | Done |
-| 4 | One frame: `FrameStyle` in dp, `FramePainter` for the selection and the editor, the handles of the editor routed by `CanvasGestureHandler`, rotated texts edited rotated; screenshot tests of both frames | To do |
+| 4 | One frame: `FrameStyle` in dp, one drawing (`SelectionOverlay.drawFrame`) for the selection and the editor, the handles of the editor routed by `CanvasGestureHandler`, rotated texts edited rotated; screenshot tests of both frames | Done |
 | 5 | Formulas in the editor: drawn over their concealed source, popover at the caret with the errors (a spike first, see [Risks](#risks)) | To do |
 | 6 | Formatting: `TextCommands` (shortcuts, Format menu, tooltips), `TextFormatBar` shared with the lasso and placed by `AdaptiveInfo`, `TextSizes` and `FontSizeControl`, alignment icons, defaults with the alignment | To do |
 | 7 | Creating and sizing: automatic width, box drawn by a drag, one tap to move to another text, text pasted from the system, texts copied as plain text | To do |
@@ -268,6 +268,27 @@ work against the user, and text can be lost.
   notation; screenshots of a text being written, of texts drawn by the page and of a text
   selected (`TextScreenshotTest`, with the scenes of the editor shared with
   `AdaptiveScreenshotTest` in `EditorScene`).
+
+### Phase 4 results
+
+* `FrameStyle` (`drawview-core`) sizes the frame in dp: padding, stroke, corners, rotation knob,
+  corner and side handles, and the reach of the handles (44 dp targets for a finger, 24 dp for a
+  pen or a mouse; also those of the selected text of the PDFs). The frame of a selection was in
+  pixels: a third of its size on a 3× phone.
+* `SelectionFrame` computes the frame of a selection (`compute`) and of the text being written
+  (`ofEditedText`: its width handles, neither rotation knob nor scaling corners) the same way, and
+  tells which handle a pointer takes (`handleAt`); `SelectionOverlay.drawFrame` draws both. The
+  same text has the same frame selected and written.
+* The editor of the interface no longer draws a frame nor handles: the canvas draws the frame of
+  the text being written under its field, and its gestures move the box by its frame
+  (`EDITOR_MOVE`, also while the canvas scrolls by itself near the edges) and resize it by its
+  sides (`EDITOR_RESIZE_LEFT`/`RIGHT`, along the width of a turned text); a mouse over the frame
+  shows a hand.
+* A turned text is written turned: the field turns around the middle of the box, as the canvas
+  draws it.
+* Tests: the frames of the same text selected and written, the handles and their reach;
+  screenshots of a text being written, selected, and turned while written. Seen there: on a phone
+  the formatting bar falls under the floating tools when no keyboard pushes it up (phase 6).
 
 ## Decisions
 

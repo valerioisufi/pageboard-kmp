@@ -96,7 +96,6 @@
     <string name="text_editor_action_heading">Título</string>
     <string name="text_editor_action_math">Fórmula</string>
     <string name="text_editor_action_save">Guardar</string>
-    <string name="text_editor_action_move">Mover el cuadro de texto</string>
     <string name="text_editor_action_alignment">Alineación</string>
     <string name="draw_toolbar_action_add_preset">Añadir ajuste predefinido</string>
     <string-array name="date_months_short">

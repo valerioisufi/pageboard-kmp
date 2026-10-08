@@ -2,8 +2,11 @@ package io.github.valerioisufi.drawview.core
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import io.github.valerioisufi.drawview.core.canvas.FrameStyle
+import io.github.valerioisufi.drawview.core.canvas.SelectionFrame
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.TextEditorManager
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
@@ -225,5 +228,36 @@ class TextEditingTest {
         controller.selectionManager.updateSelectedTextsFontSize(32f)
         assertEquals(32f, text.fontSize)
         assertEquals(assertNotNull(controller.measureText(text)).height, text.height)
+    }
+
+    @Test
+    fun aTextHasTheSameFrameSelectedAndWritten() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        controller.density = 2f
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 30f, 50f)
+        editor.type("Framed")
+        editor.finishEditing()
+        val text = controller.document.pages[0].texts.single()
+
+        controller.selectionManager.selectText(0, text)
+        val selected = assertNotNull(controller.selectionManager.currentSelection?.let { SelectionFrame.compute(controller, it) })
+        controller.selectionManager.clearSelection()
+        editor.startEditing(text, 0)
+        val written = assertNotNull(SelectionFrame.ofEditedText(controller))
+
+        for ((a, b) in selected.corners.zip(written.corners)) {
+            assertEquals(a.x, b.x, 0.01f)
+            assertEquals(a.y, b.y, 0.01f)
+        }
+        // The text being written is resized and moved, not turned nor scaled
+        assertNotNull(selected.rotationHandle)
+        assertNull(written.rotationHandle)
+        assertFalse(written.scalesFromCorners)
+        val radius = FrameStyle.hitRadiusPx(PointerType.Touch, controller.density)
+        assertEquals(SelectionFrame.Handle.LEFT, written.handleAt(written.sideHandles[0] + Offset(radius - 1f, 0f), radius))
+        assertEquals(SelectionFrame.Handle.RIGHT, written.handleAt(written.sideHandles[1], radius))
+        assertNull(written.handleAt(written.center, radius))
+        assertEquals(44f, radius, "a target of 44 dp for a finger")
     }
 }

@@ -97,7 +97,6 @@
     <string name="text_editor_action_heading">Heading</string>
     <string name="text_editor_action_math">Formula</string>
     <string name="text_editor_action_save">Save</string>
-    <string name="text_editor_action_move">Move text box</string>
     <string name="text_editor_action_alignment">Alignment</string>
     <string name="draw_toolbar_action_add_preset">Add new preset</string>
     <string-array name="date_months_short">

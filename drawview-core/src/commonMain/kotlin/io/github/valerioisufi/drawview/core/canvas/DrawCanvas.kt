@@ -91,6 +91,8 @@ fun DrawCanvas(
     // the lasso, an I-beam for the texts, a hand for the pan
     val pointerIcon = when {
         controller.placementManager.isActive -> PointerIcon.Crosshair
+        // The frame of the text being written moves it
+        controller.textEditorManager.isEditing && live.overEditedTextFrame -> PointerIcon.Hand
         !controller.isDrawingMode -> PointerIcon.Default
         controller.selectedTool == Tool.PAN -> PointerIcon.Hand
         controller.selectedTool == Tool.TEXT || controller.selectedTool == Tool.TEXT_MARKUP -> PointerIcon.Text
@@ -159,9 +161,12 @@ fun DrawCanvas(
             }
         }
 
-        // 4. Live selection
+        // 4. Live selection, or the frame of the text being written (its field draws the text over it)
         controller.selectionManager.currentSelection?.let { selection ->
             SelectionOverlay.draw(this, controller, selection, Color(theme.primaryColor))
+        }
+        if (controller.textEditorManager.isEditing && controller.isDrawingMode) {
+            SelectionOverlay.drawEditedText(this, controller, Color(theme.primaryColor))
         }
 
         // 4b. Text of the PDFs: passage being marked, selected text, selected mark

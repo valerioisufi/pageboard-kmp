@@ -62,6 +62,24 @@ class TextScreenshotTest {
         }
     }
 
+    /** A turned text being written: its field and its frame turned with it. */
+    @Test
+    fun textWritingTurned() = capture("text-writing-turned", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 30f, "A turned note")
+        save(viewModels)
+        runOnIdle {
+            val controller = viewModels.controller()
+            val text = controller.document.pages[0].texts.single()
+            controller.selectionManager.selectText(0, text)
+            controller.selectionManager.beginTransformation()
+            controller.selectionManager.rotateBy(-12f)
+            controller.selectionManager.applyTransformation()
+            controller.selectionManager.clearSelection()
+            controller.textEditorManager.startEditing(text, 0)
+        }
+    }
+
     /** Starts a text at ([xMm], [yMm]) of the first page and types [text] in its field. */
     private fun DesktopComposeUiTest.write(
         viewModels: ViewModelStoreOwner,

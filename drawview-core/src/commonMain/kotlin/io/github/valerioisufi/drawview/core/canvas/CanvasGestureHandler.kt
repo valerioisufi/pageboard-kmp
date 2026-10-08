@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.core.canvas
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
@@ -31,7 +32,6 @@ import io.github.valerioisufi.drawview.core.model.Tool
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.exp
-import kotlin.math.hypot
 
 /**
  * Live (not yet committed) state of the canvas, drawn on top of the tiles.
@@ -57,6 +57,9 @@ class CanvasLiveState {
      * observable, so that the canvas asks for frames only while it scrolls.
      */
     var autoScrollPerFrame by mutableFloatStateOf(0f)
+
+    /** Whether a hovering pointer is on the frame of the text being written (which moves it). */
+    var overEditedTextFrame by mutableStateOf(false)
 
     fun setLiveMesh(mesh: StrokeMesh?, pageIndex: Int) {
         liveMesh = mesh
@@ -107,6 +110,9 @@ internal class CanvasGestureHandler(
         NONE, INK, LASSO, ERASE, PAN, PINCH,
         SELECTION_MOVE, SELECTION_SCALE, SELECTION_ROTATE, TEXT_RESIZE_LEFT, TEXT_RESIZE_RIGHT,
         PAGE_REORDER, TEXT_TAP, PLACE_TAP, EDITOR_TAP,
+
+        /** Moving the text being written by its frame, or one of its sides. */
+        EDITOR_MOVE, EDITOR_RESIZE_LEFT, EDITOR_RESIZE_RIGHT,
 
         /** Marking the text of a PDF with the text markup tool. */
         MARKUP,
@@ -201,6 +207,7 @@ internal class CanvasGestureHandler(
                 return
             }
             PointerEventType.Exit -> {
+                live.overEditedTextFrame = false
                 live.setEraserCursor(null, 0f)
                 live.setInkCursor(null)
                 controller.placementManager.pointer = null
@@ -217,6 +224,8 @@ internal class CanvasGestureHandler(
         // pending placement
         if (pressed.isEmpty() && !anyUp) {
             val hover = changes.firstOrNull()
+            live.overEditedTextFrame = hover != null && controller.textEditorManager.isEditing &&
+                SelectionFrame.ofEditedText(controller)?.contains(hover.position, FrameStyle.hitRadiusPx(hover.type, controller.density)) == true
             if (hover != null && controller.placementManager.isActive) {
                 controller.placementManager.pointer = hover.position
             } else if (hover != null && controller.isDrawingMode && mode == Mode.NONE) {
@@ -295,7 +304,7 @@ internal class CanvasGestureHandler(
         val textMarkup = controller.textMarkupManager
         clearTextSelectionOnUp = false
         if (textMarkup.hasSelection) {
-            val handle = textMarkup.handleAt(position, if (change.type == PointerType.Touch) 36f else 24f)
+            val handle = textMarkup.handleAt(position, FrameStyle.hitRadiusPx(change.type, controller.density))
             if (handle != null) {
                 textMarkup.beginHandleDrag(handle, position)
                 mode = Mode.TEXT_HANDLE
@@ -306,9 +315,23 @@ internal class CanvasGestureHandler(
 
         val isMouse = change.type == PointerType.Mouse
 
-        // Text editor open: a tap outside the box saves it, a drag or a pinch moves the canvas
+        // Text editor open: its frame moves it, its sides resize it; a tap outside the box saves
+        // it, a drag or a pinch moves the canvas
         if (controller.textEditorManager.isEditing && controller.isDrawingMode) {
-            if (isMouse && event.buttons.isTertiaryPressed) startPan() else mode = Mode.EDITOR_TAP
+            if (isMouse && event.buttons.isTertiaryPressed) {
+                startPan()
+                return
+            }
+            val frame = SelectionFrame.ofEditedText(controller)
+            val radius = FrameStyle.hitRadiusPx(change.type, controller.density)
+            mode = when {
+                frame == null -> Mode.EDITOR_TAP
+                else -> when (frame.handleAt(position, radius)) {
+                    SelectionFrame.Handle.LEFT -> Mode.EDITOR_RESIZE_LEFT
+                    SelectionFrame.Handle.RIGHT -> Mode.EDITOR_RESIZE_RIGHT
+                    else -> if (frame.contains(position, radius)) Mode.EDITOR_MOVE else Mode.EDITOR_TAP
+                }
+            }
             return
         }
 
@@ -345,14 +368,12 @@ internal class CanvasGestureHandler(
         if (selection != null) {
             val frame = SelectionFrame.compute(controller, selection)
             if (frame != null) {
-                val handleRadius = if (change.type == PointerType.Touch) 36f else 24f
-                val hitMode = when {
-                    hypot(position.x - frame.rotationHandle.x, position.y - frame.rotationHandle.y) <= handleRadius -> Mode.SELECTION_ROTATE
-                    frame.corners.any { hypot(position.x - it.x, position.y - it.y) <= handleRadius } -> Mode.SELECTION_SCALE
-                    frame.sideHandles.size == 2 && hypot(position.x - frame.sideHandles[0].x, position.y - frame.sideHandles[0].y) <= handleRadius -> Mode.TEXT_RESIZE_LEFT
-                    frame.sideHandles.size == 2 && hypot(position.x - frame.sideHandles[1].x, position.y - frame.sideHandles[1].y) <= handleRadius -> Mode.TEXT_RESIZE_RIGHT
-                    frame.contains(position) -> Mode.SELECTION_MOVE
-                    else -> null
+                val hitMode = when (frame.handleAt(position, FrameStyle.hitRadiusPx(change.type, controller.density))) {
+                    SelectionFrame.Handle.ROTATION -> Mode.SELECTION_ROTATE
+                    SelectionFrame.Handle.CORNER -> Mode.SELECTION_SCALE
+                    SelectionFrame.Handle.LEFT -> Mode.TEXT_RESIZE_LEFT
+                    SelectionFrame.Handle.RIGHT -> Mode.TEXT_RESIZE_RIGHT
+                    null -> if (frame.contains(position)) Mode.SELECTION_MOVE else null
                 }
                 if (hitMode != null) {
                     mode = hitMode
@@ -514,6 +535,26 @@ internal class CanvasGestureHandler(
             Mode.TEXT_HANDLE -> {
                 controller.textMarkupManager.dragHandleTo(position)
                 updateAutoScroll(position)
+            }
+
+            Mode.EDITOR_MOVE -> {
+                val editor = controller.textEditorManager
+                val pxPerMm = controller.pixelsPerMm(editor.activeTextPageIndex).coerceAtLeast(0.01f)
+                val delta = position - lastPosition
+                editor.moveBy(delta.x / pxPerMm, delta.y / pxPerMm)
+                updateAutoScroll(position)
+            }
+
+            Mode.EDITOR_RESIZE_LEFT, Mode.EDITOR_RESIZE_RIGHT -> {
+                val editor = controller.textEditorManager
+                val frame = SelectionFrame.ofEditedText(controller)
+                if (frame != null) {
+                    // Along the width of the box, turned with the text
+                    val axis = frame.horizontalAxis
+                    val delta = position - lastPosition
+                    val pxPerMm = controller.pixelsPerMm(editor.activeTextPageIndex).coerceAtLeast(0.01f)
+                    editor.resizeBy((delta.x * axis.x + delta.y * axis.y) / pxPerMm, leftEdge = mode == Mode.EDITOR_RESIZE_LEFT)
+                }
             }
 
             Mode.TEXT_TAP, Mode.PLACE_TAP, Mode.EDITOR_TAP -> {
@@ -693,7 +734,8 @@ internal class CanvasGestureHandler(
         }
 
         // Double tap on a text block: edit it (whatever the active tool)
-        if (wasTap && mode != Mode.IGNORED && mode != Mode.PAGE_REORDER && mode != Mode.EDITOR_TAP) {
+        val editorMode = mode == Mode.EDITOR_TAP || mode == Mode.EDITOR_MOVE || mode == Mode.EDITOR_RESIZE_LEFT || mode == Mode.EDITOR_RESIZE_RIGHT
+        if (wasTap && mode != Mode.IGNORED && mode != Mode.PAGE_REORDER && !editorMode) {
             val isDouble = up.uptimeMillis - lastTapTime <= doubleTapTimeout &&
                     (position - lastTapPosition).getDistance() <= touchSlop * 2f
             if (isDouble && mode != Mode.TEXT_TAP && mode != Mode.PLACE_TAP) {
@@ -995,6 +1037,12 @@ internal class CanvasGestureHandler(
                     val pxPerMm = controller.pixelsPerMm(selection.pageIndex).coerceAtLeast(0.01f)
                     controller.selectionManager.translateBy(0f, -delta / pxPerMm)
                 }
+            }
+            Mode.EDITOR_MOVE -> {
+                // Keep the text being written under the pointer while the camera moves
+                val editor = controller.textEditorManager
+                val pxPerMm = controller.pixelsPerMm(editor.activeTextPageIndex).coerceAtLeast(0.01f)
+                editor.moveBy(0f, -delta / pxPerMm)
             }
             Mode.PAGE_REORDER -> controller.pageManager.onCameraMovedWhileDragging()
             // Keep extending the text under the pointer while the camera moves
