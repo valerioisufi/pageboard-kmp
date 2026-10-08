@@ -71,6 +71,7 @@ import io.github.valerioisufi.drawview.ui.editor.TextEditorOverlay
 import io.github.valerioisufi.drawview.ui.generated.resources.*
 import io.github.valerioisufi.drawview.ui.platform.HideSystemBarsEffect
 import io.github.valerioisufi.drawview.ui.platform.PickerType
+import io.github.valerioisufi.drawview.ui.platform.fileDropTarget
 import io.github.valerioisufi.drawview.ui.platform.rememberFilePicker
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.session.EditorPanel
@@ -244,7 +245,14 @@ fun DrawScreen(
                     .weight(1f)
                     .fillMaxWidth()
             ) { bottomInset ->
-                Box(modifier = Modifier.fillMaxSize()) {
+                // A PDF or an image dragged from the files of the computer is imported
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .fileDropTarget { files ->
+                            !controller.isReadOnly && files.map { controller.mediaManager.importFile(it.bytes, it.extension) }.any { it }
+                        }
+                ) {
                     if (isLoading) {
                         LinearProgressIndicator(
                             modifier = Modifier.fillMaxWidth(),

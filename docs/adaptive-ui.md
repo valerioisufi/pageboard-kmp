@@ -142,16 +142,19 @@ that follow the editor (the recording seeing the pages) and the dialogs of an ex
 
 | Responsibility | Class (module) | GRASP |
 |---|---|---|
-| The layout by size class: list, grid, navigation pane + grid | `LibraryLayout` (`drawview-explorer`), used by `ExplorerScreen` | Polymorphism |
-| Thumbnail of a document: its first page drawn, cached on disk, drawn again when the document changes | `DocumentThumbnails` (`drawview-explorer`), through `OpenDocuments` and `TileRenderer.renderThumbnail` | Pure Fabrication, Information Expert (the renderer draws, the store knows the last change) |
-| Pointer selection: Cmd / Ctrl click adds, Shift click extends, right click opens the menu of the file | `FileExplorerViewModel` (selection), `FileListItem` / `FileGridItem` | Information Expert |
-| Drag and drop: files dropped on a folder, PDFs and images dropped from the system imported | `ExplorerScreen` (`dragAndDropSource` / `dragAndDropTarget`) with `LibraryCommands` | Controller |
+| How a folder is shown by the width of the library: a list, a grid of cards, the panes (folders, grid, details) | `LibraryLayout.of(width)` (`drawview-explorer`), used by `ExplorerScreen` | Polymorphism, Pure Fabrication |
+| Thumbnail of a document: its first page copied on the thread of the document, drawn on another one document at a time, kept in memory (the last 48) and on disk with the date of its change, drawn again when the document changes or is shown larger | `DocumentThumbnails` (`drawview-explorer`), through `OpenDocuments` and `TileRenderer.renderThumbnail` of a page copied; `encodePng` moved to the core beside `decodeImageBitmap` | Pure Fabrication, Information Expert (the renderer draws, the library knows the date of the change) |
+| A card of the grid (first page or folder, name, date, details) | `FileGridItem`, `FileGrid` | High Cohesion |
+| What a pointer does on an item of the list or the grid: click opens (or selects in selection mode), ⌘ / Ctrl click adds to the selection, Shift click extends it, long press selects, right click opens its menu | `Modifier.fileItemInteraction`, `FileContextMenu`; the selection by `FileExplorerViewModel` (`extendSelection` from the item last selected, `selectOnly`) | Information Expert |
+| The pane of the folders (the root, its folders, the notes opened since they were made) and the details of the item selected alone | `LibraryNavigationPane` (`FileExplorerViewModel.showFolder`, `rootFolders`), `LibraryDetailsPane` (the same `FileDetails` as the sheet) | High Cohesion |
+| Items dragged with a mouse onto a folder (of the list, of the grid, of the pane, the root) | `LibraryDrag` (where the folders are, which one is under the pointer), `Modifier.draggableItem`, `Modifier.dropTarget`, `LibraryDragShadow`; `FileExplorerViewModel.moveFiles` | Pure Fabrication, Controller |
+| Files dropped from the system (desktop): onto the editor imported, onto the library a note of them | `Modifier.fileDropTarget` (`drawview-ui/platform`, expect / actual); `MediaManager.importFile` (the kinds it imports, a PDF replacing the empty page of a note just made); `DocumentEditorViewModel.createAndOpenDocument(then)`, `FileExplorerViewModel.availableName` | Information Expert, Protected Variations |
 
 ### Layouts
 
 | | Compact (phone; any window under 600 dp) | Medium (tablet in portrait, split screen) | Expanded (tablet in landscape, desktop) |
 |---|---|---|---|
-| Library | list (as now) | grid of thumbnails | navigation pane (folders, recent, shared) + grid; the details of a file beside |
+| Library | list (as now) | grid of thumbnails | navigation pane (root, folders, recent) + grid; the details of a file beside |
 | Editor toolbar | top bar with back, title and overflow; the tools in a floating toolbar at the bottom, near the thumb | one bar when it fits, else two | one bar; on the desktop also the menu bar and the shortcuts |
 | Panels (lecture…) | from the bottom over the canvas | beside the canvas when it keeps its minimum width, else from the bottom | beside the canvas |
 | Sheets | bottom sheet | dialog | dialog or side pane |
@@ -215,7 +218,7 @@ pencilnotes        menu bar and window state (desktop), bridge of the menus and 
 | 1. Commands | `Command`, `Shortcut`, `CommandHost`, `CommandRoot`; `EditorCommands`, `LibraryCommands`, commands of the extensions; tooltips with the shortcut; right-click menus in the library; menu bar of the desktop | done |
 | 2. Panels and sheets | `EditorPanel`, `EditorScaffold`; `AdaptiveSheet` for the configurators, the details and the settings; the lecture moved | done |
 | 3. Editor | `EditorToolbar` and `ToolbarLayout`; floating tools on the phone; one bar when it fits; cursors of the canvas; camera commands (fit, pages) | done |
-| 4. Library | `DocumentThumbnails`; grid; navigation pane; details beside; pointer selection; drag and drop | |
+| 4. Library | `DocumentThumbnails`; grid; navigation pane; details beside; pointer selection; drag and drop | done |
 | 5. Platforms | macOS title bar and window state; iPadOS shortcuts, menu bar and Pencil; Android shortcut helper, stylus button and hover | |
 | Later | A document per window (desktop, iPadOS); postures of the foldables; toolbar at the side for the left-handed; focus mode (the bars hidden while writing) | |
 
@@ -356,6 +359,33 @@ an iPad with a Pencil, an Android tablet with a stylus, a phone, a Mac with a tr
   the width fitted (`EditorCoreTest`); every editor screenshot recorded again (the 48 dp bars, the
   arrangements), one more: the "more" menu of a phone. The screenshot tests move the mouse off the
   canvas once the note is open, so that the dot of the pen does not show.
+
+### Phase 4 results
+
+* **The layouts** (`LibraryLayout`, by the width of the library): a list under 600 dp (a phone),
+  a grid of cards from 600 dp (a phone in landscape, a tablet in portrait or in split screen, a
+  narrow desktop window), the panes from 1000 dp (a tablet in landscape, a desktop): the folders
+  of the root and the notes opened since they were made on the left, the grid, and the details of
+  the item selected alone on the right (its "Info" button selects it there, a sheet elsewhere).
+* **The thumbnails** (`DocumentThumbnails`): the first page of each document as the editor draws
+  it (backgrounds, PDF pages, images, strokes, texts), drawn one at a time off the main thread at
+  widths in steps of 120 px, kept in memory and in `thumbnails/` of the data directory (the
+  documents of `DrawViewStore`; in memory for the others, the tests among them). A card shows the
+  icon of the documents until its page is drawn.
+* **The pointers**: ⌘ / Ctrl click adds an item to the selection, Shift click extends it in the
+  order of the folder, a mouse drags the items (the selection when the item is in it) onto a
+  folder of the list, of the grid or of the pane, the root included, ringing it while they can go
+  there; a finger keeps scrolling and the long press selecting.
+* **The files of the system** (desktop): a PDF or an image dropped onto the editor is imported
+  into the note; dropped onto the library, it becomes a note named after it (a free name of the
+  folder) opened with it. A PDF imported into a note of one empty page replaces that page (also
+  from the toolbar), in the same change (one undo). Android and iOS do not take them yet.
+* Tests: the layouts of the reference windows, Shift and the anchor of the selection, a folder
+  shown from the root, items dropped onto a folder, onto themselves, beside the folders
+  (`AdaptiveLibraryTest`); a thumbnail drawn, kept in memory and on disk, drawn again when changed
+  or larger (`DocumentThumbnailsTest`); the free name of a note, a PDF replacing the empty page
+  (`FileImportTest`); the library screenshots recorded again (grid, panes with the first pages,
+  details beside).
 
 ### Risks
 

@@ -1,11 +1,11 @@
-package io.github.valerioisufi.drawview.export
+package io.github.valerioisufi.drawview.core.platform
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asSkiaBitmap
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Image
 
-internal actual fun encodePng(bitmap: ImageBitmap): ByteArray? = try {
+actual fun encodePng(bitmap: ImageBitmap): ByteArray? = try {
     Image.makeFromBitmap(bitmap.asSkiaBitmap()).encodeToData(EncodedImageFormat.PNG)?.bytes
 } catch (_: Throwable) {
     null

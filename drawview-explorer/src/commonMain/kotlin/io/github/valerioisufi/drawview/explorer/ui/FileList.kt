@@ -4,7 +4,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,13 +47,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.command.Command
-import io.github.valerioisufi.drawview.ui.command.CommandMenu
 import io.github.valerioisufi.drawview.ui.command.HoverTooltip
-import io.github.valerioisufi.drawview.ui.command.onSecondaryClick
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_shared
 import io.github.valerioisufi.drawview.ui.generated.resources.date_months_short
@@ -84,6 +81,8 @@ import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
  *
  * @param commands the commands of the library: those of an item in its context menu and its
  *   sheet.
+ * @param onShowDetails shows the details of an item elsewhere (beside, in a wide library); `null`:
+ *   in a sheet.
  */
 @Composable
 fun FileList(
@@ -92,7 +91,8 @@ fun FileList(
     onOpenDocument: (String) -> Unit,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
-    commands: LibraryCommands? = null
+    commands: LibraryCommands? = null,
+    onShowDetails: ((FileItem) -> Unit)? = null
 ) {
     val selectionMode = fileExplorerViewModel.selectionMode
 
@@ -117,7 +117,8 @@ fun FileList(
                     dataFile = file,
                     fileExplorerViewModel = fileExplorerViewModel,
                     onOpenDocument = onOpenDocument,
-                    commands = commands
+                    commands = commands,
+                    onShowDetails = onShowDetails
                 )
             }
             item {
@@ -127,8 +128,9 @@ fun FileList(
     }
 }
 
+/** The order of the items: the sort option and its direction. */
 @Composable
-private fun SortHeader(fileExplorerViewModel: FileExplorerViewModel) {
+internal fun SortHeader(fileExplorerViewModel: FileExplorerViewModel) {
     Row(
         modifier = Modifier.height(48.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -211,13 +213,13 @@ fun FileListItem(
     fileExplorerViewModel: FileExplorerViewModel,
     onOpenDocument: (String) -> Unit,
     modifier: Modifier = Modifier,
-    commands: LibraryCommands? = null
+    commands: LibraryCommands? = null,
+    onShowDetails: ((FileItem) -> Unit)? = null
 ) {
     val selectionMode = fileExplorerViewModel.selectionMode
     val isSelected = fileExplorerViewModel.isSelected(dataFile)
     val itemCommands = remember(commands, dataFile) { commands?.forItem(dataFile).orEmpty() }
     var contextMenu by remember { mutableStateOf<DpOffset?>(null) }
-    val density = LocalDensity.current
 
     // Visuals for selection
     val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
@@ -231,23 +233,12 @@ fun FileListItem(
                     backgroundColor, shape = RoundedCornerShape(8.dp)
                 )
                 .clip(RoundedCornerShape(8.dp))
-                .onSecondaryClick { position ->
-                    // Opened where the pointer is (from the corner of the item)
-                    if (itemCommands.isNotEmpty()) contextMenu = with(density) { DpOffset(position.x.toDp(), position.y.toDp()) }
+                // Dragged with a mouse onto a folder; a folder takes the items dropped onto it
+                .draggableItem(dataFile, fileExplorerViewModel)
+                .then(if (dataFile.type == FileType.FOLDER) Modifier.dropTarget(fileExplorerViewModel, dataFile.id) else Modifier)
+                .fileItemInteraction(dataFile, fileExplorerViewModel, onOpenDocument) { position ->
+                    if (itemCommands.isNotEmpty()) contextMenu = position
                 }
-                .combinedClickable(
-                    onClick = {
-                        if (selectionMode) {
-                            fileExplorerViewModel.toggleSelection(dataFile)
-                        } else when (dataFile.type) {
-                            FileType.FILE -> onOpenDocument(dataFile.id)
-                            FileType.FOLDER -> fileExplorerViewModel.enterFolder(dataFile)
-                        }
-                    },
-                    onLongClick = {
-                        fileExplorerViewModel.toggleSelection(dataFile)
-                    }
-                )
                 .padding(0.dp, 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -279,26 +270,17 @@ fun FileListItem(
             )
 
             if (!selectionMode) {
-                FileDetailsSheet(dataFile, itemCommands)
+                FileDetailsButton(dataFile, itemCommands, onShowDetails)
             }
         }
-        // The anchor of the context menu: the top left corner of the item
-        Box {
-            contextMenu?.let { position ->
-                CommandMenu(
-                    commands = itemCommands,
-                    expanded = true,
-                    onDismissRequest = { contextMenu = null },
-                    offset = position
-                )
-            }
-        }
+        // Opened where the pointer is, from the corner of the item
+        FileContextMenu(itemCommands, contextMenu, onDismiss = { contextMenu = null })
     }
 }
 
 /** The icon of a document or a folder; a shared document has the badge of the people. */
 @Composable
-private fun FileIcon(type: FileType, isShared: Boolean, modifier: Modifier = Modifier) {
+internal fun FileIcon(type: FileType, isShared: Boolean, modifier: Modifier = Modifier) {
     Box(modifier = modifier) {
         Image(
             modifier = Modifier.fillMaxSize(),
@@ -323,16 +305,19 @@ private fun FileIcon(type: FileType, isShared: Boolean, modifier: Modifier = Mod
 
 /** Name and date of the last change of an item. */
 @Composable
-private fun FileDescription(
+internal fun FileDescription(
     dataFile: FileItem,
     modifier: Modifier = Modifier,
-    contentColor: Color = MaterialTheme.colorScheme.onSurface
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    maxLines: Int = Int.MAX_VALUE
 ) {
     Column(modifier = modifier) {
         Text(
             text = dataFile.name,
             style = MaterialTheme.typography.bodyLarge,
-            color = contentColor
+            color = contentColor,
+            maxLines = maxLines,
+            overflow = TextOverflow.Ellipsis
         )
         val monthNames = stringArrayResource(DrawViewRes.array.date_months_short)
         val date = remember(dataFile.modifiedAt, monthNames) { formatDateTime(dataFile.modifiedAt, monthNames) }
@@ -350,9 +335,10 @@ private fun FileDescription(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FileDetailsSheet(
+internal fun FileDetailsButton(
     dataFile: FileItem,
-    itemCommands: List<Command>
+    itemCommands: List<Command>,
+    onShowDetails: ((FileItem) -> Unit)?
 ) {
     var isSheetOpen by rememberSaveable {
         mutableStateOf(false)
@@ -360,7 +346,7 @@ private fun FileDetailsSheet(
 
     HoverTooltip(stringResource(Res.string.explorer_action_details)) {
         IconButton(onClick = {
-            isSheetOpen = true
+            if (onShowDetails != null) onShowDetails(dataFile) else isSheetOpen = true
         }) {
             Icon(imageVector = Icons.Default.MoreHoriz, contentDescription = stringResource(Res.string.explorer_action_details))
         }
@@ -369,49 +355,59 @@ private fun FileDetailsSheet(
     if (isSheetOpen) {
         // A sheet on a phone, a dialog on a tablet and a desktop
         AdaptiveSheet(onDismissRequest = { isSheetOpen = false }) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(1f)
-                        .padding(16.dp, 0.dp)
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    FileIcon(type = dataFile.type, isShared = dataFile.isShared, modifier = Modifier.size(32.dp))
-                    FileDescription(
-                        dataFile = dataFile,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(horizontal = 16.dp)
-                    )
-                }
-
-                HorizontalDivider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                )
-
-                for (command in itemCommands) {
-                    if (command.id == "open") continue
-                    OptionItem(
-                        icon = command.icon?.invoke(),
-                        text = command.label(),
-                        onClick = {
-                            isSheetOpen = false
-                            command.performIfEnabled()
-                        }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+            FileDetails(dataFile, itemCommands, onCommand = { isSheetOpen = false })
         }
+    }
+}
+
+/**
+ * The details of an item and its actions ([itemCommands] but "open": rename, move, delete, the
+ * actions of the application), in a sheet or beside a wide library; [onCommand] is called before
+ * an action chosen runs.
+ */
+@Composable
+internal fun FileDetails(dataFile: FileItem, itemCommands: List<Command>, onCommand: () -> Unit = {}) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(1f)
+                .padding(16.dp, 0.dp)
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            FileIcon(type = dataFile.type, isShared = dataFile.isShared, modifier = Modifier.size(32.dp))
+            FileDescription(
+                dataFile = dataFile,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 16.dp)
+            )
+        }
+
+        HorizontalDivider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        for (command in itemCommands) {
+            if (command.id == "open") continue
+            OptionItem(
+                icon = command.icon?.invoke(),
+                text = command.label(),
+                onClick = {
+                    onCommand()
+                    command.performIfEnabled()
+                }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 

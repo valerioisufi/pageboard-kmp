@@ -78,6 +78,14 @@ class FileExplorerViewModel(
         sortFiles(items, sortOption, sortAscending, keepFoldersOnTop)
     }
 
+    /** The folders of the root, by name (the navigation pane of a wide library). */
+    val rootFolders: List<FileItem> by derivedStateOf {
+        folders.filter { it.parentId == null }.sortedBy { it.name }.map { it.toFileItem() }
+    }
+
+    /** The identifier of the folder of the root holding the current one, `null` in the root. */
+    val currentRootFolderId: String? get() = directoryIdSequence.firstOrNull()
+
     /** The most recently opened documents. */
     val recentFiles: List<FileItem> by derivedStateOf {
         documents.sortedByDescending { it.lastOpenedAt }.take(RECENT_FILES_LIMIT).map { it.toFileItem() }
@@ -129,6 +137,13 @@ class FileExplorerViewModel(
         }
     }
 
+    /** Shows the folder [folderId] (`null`: the root), its path from the root known by its parents. */
+    fun showFolder(folderId: String?) {
+        val path = generateSequence(folderId) { id -> folders.firstOrNull { it.id == id }?.parentId }.toList().asReversed()
+        directoryIdSequence.clear()
+        directoryIdSequence.addAll(path)
+    }
+
     /** Goes back to the parent folder; `false` in the root. */
     fun backFolder(): Boolean = directoryIdSequence.removeLastOrNull() != null
 
@@ -157,6 +172,13 @@ class FileExplorerViewModel(
 
     fun existNameInDirectory(name: String, except: FileItem? = null): Boolean =
         currentDirectoryFiles.any { it.name == name && it.key != except?.key }
+
+    /** [name], or the first of "name (2)", "name (3)"… free in the current folder. */
+    fun availableName(name: String): String {
+        val base = name.trim().replace('/', '-').replace('\\', '-').ifEmpty { "Document" }
+        if (!existNameInDirectory(base)) return base
+        return generateSequence(2) { it + 1 }.map { "$base ($it)" }.first { !existNameInDirectory(it) }
+    }
 
     fun createFile(
         type: FileType,
@@ -220,6 +242,9 @@ class FileExplorerViewModel(
      */
     fun isSelected(file: FileItem): Boolean = selectedItems.any { it.key == file.key }
 
+    /** The item the selection extends from ([extendSelection]): the last one selected. */
+    private var selectionAnchor: FileItem? = null
+
     fun toggleSelection(file: FileItem) {
         val index = selectedItems.indexOfFirst { it.key == file.key }
         if (index >= 0) {
@@ -230,12 +255,40 @@ class FileExplorerViewModel(
         } else {
             selectedItems.add(file)
             selectionMode = true
+            selectionAnchor = file
         }
+    }
+
+    /** Selects [file] alone (a wide library shows its details beside). */
+    fun selectOnly(file: FileItem) {
+        selectedItems.clear()
+        selectedItems.add(file)
+        selectionMode = true
+        selectionAnchor = file
+    }
+
+    /**
+     * Extends the selection from the item last selected to [file] (Shift with a click), in the
+     * order of the folder; without one, selects [file].
+     */
+    fun extendSelection(file: FileItem) {
+        val items = currentDirectoryFiles
+        val from = selectionAnchor?.let { anchor -> items.indexOfFirst { it.key == anchor.key } }?.takeIf { it >= 0 }
+        val to = items.indexOfFirst { it.key == file.key }
+        if (from == null || to < 0) {
+            if (!isSelected(file)) toggleSelection(file)
+            return
+        }
+        for (item in items.subList(minOf(from, to), maxOf(from, to) + 1)) {
+            if (!isSelected(item)) selectedItems.add(item)
+        }
+        selectionMode = true
     }
 
     fun clearSelection() {
         selectedItems.clear()
         selectionMode = false
+        selectionAnchor = null
     }
 
     fun selectAll() {

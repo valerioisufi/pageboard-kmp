@@ -77,8 +77,14 @@ class TileRenderer(
     /**
      * Renders the whole page into a new bitmap [widthPx] pixels wide (page thumbnails).
      */
-    fun renderThumbnail(document: DrawDocument, page: DrawPage, widthPx: Int): ImageBitmap {
-        val content = page.snapshotContent()
+    fun renderThumbnail(document: DrawDocument, page: DrawPage, widthPx: Int): ImageBitmap =
+        renderThumbnail(document, page.snapshotContent(), widthPx)
+
+    /**
+     * Rasterizes [content] (a page copied, drawn on any thread) into a thumbnail [widthPx] wide;
+     * [document] gives the files of its resources.
+     */
+    fun renderThumbnail(document: DrawDocument, content: PageContentSnapshot, widthPx: Int): ImageBitmap {
         val w = widthPx.coerceAtLeast(1)
         val h = if (content.widthMm > 0f) ceil(w * content.heightMm / content.widthMm).toInt().coerceAtLeast(1) else w
         val bitmap = ImageBitmap(w, h)

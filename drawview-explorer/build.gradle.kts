@@ -34,6 +34,8 @@ kotlin {
             api(project(":drawview-data"))
             api(project(":drawview-ui"))
             implementation(project(":drawview-latex"))
+            // The PDF pages of the thumbnails
+            implementation(project(":drawview-pdf"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)

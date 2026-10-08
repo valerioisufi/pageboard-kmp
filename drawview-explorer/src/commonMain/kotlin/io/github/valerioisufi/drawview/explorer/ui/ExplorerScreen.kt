@@ -1,10 +1,17 @@
 package io.github.valerioisufi.drawview.explorer.ui
 
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material3.VerticalDivider
+import androidx.compose.runtime.CompositionLocalProvider
+import io.github.valerioisufi.drawview.explorer.DocumentThumbnails
+import io.github.valerioisufi.drawview.ui.platform.PickedFile
+import io.github.valerioisufi.drawview.ui.platform.fileDropTarget
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -94,6 +101,10 @@ import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
  * @param title title shown in the root folder (typically the name of the application).
  * @param actions actions of the title bar of the root folder: the About & Licenses dialog by default.
  * @param documentActions actions of the application on a selected document (e.g. its export).
+ * @param thumbnails draws the first pages of the documents for the grid of a wider window;
+ *   without them the library is a list.
+ * @param onFilesDropped takes the files dropped from the system onto the library (e.g. makes a
+ *   note of a PDF); whether it took them.
  */
 @Composable
 fun ExplorerScreen(
@@ -102,9 +113,16 @@ fun ExplorerScreen(
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     actions: @Composable RowScope.() -> Unit = { AboutLicensesButton() },
-    documentActions: List<DocumentAction> = emptyList()
+    documentActions: List<DocumentAction> = emptyList(),
+    thumbnails: DocumentThumbnails? = null,
+    onFilesDropped: ((List<PickedFile>) -> Boolean)? = null
 ) {
     val listState = rememberLazyListState()
+    val gridState = rememberLazyGridState()
+    // The floating button hides while the content is scrolled
+    val atTop by remember { derivedStateOf { listState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemIndex == 0 } }
+    // The items dragged with a mouse onto a folder
+    val drag = remember { LibraryDrag() }
     // The action chosen on a document, shown until it is done (the selection is cleared meanwhile)
     var chosenAction by remember { mutableStateOf<Pair<DocumentAction, FileExplorerViewModel.FileItem>?>(null) }
     chosenAction?.let { (action, item) -> action.content(item.id, item.name) { chosenAction = null } }
@@ -149,7 +167,7 @@ fun ExplorerScreen(
             if (!fileExplorerViewModel.selectionMode) {
                 NewItemMenu(
                     commands = commands,
-                    listState = listState,
+                    atTop = atTop,
                     expanded = fabMenuExpanded,
                     onExpandedChange = { fabMenuExpanded = it }
                 )
@@ -157,18 +175,53 @@ fun ExplorerScreen(
         },
         floatingActionButtonPosition = FabPosition.End,
     ) { innerPadding ->
-        Surface(
-            modifier = Modifier
-                .consumeWindowInsets(innerPadding)
-                .padding(innerPadding)
-        ) {
-            FileList(
-                directoryFiles = fileExplorerViewModel.currentDirectoryFiles,
-                fileExplorerViewModel = fileExplorerViewModel,
-                onOpenDocument = onOpenDocument,
-                listState = listState,
-                commands = commands
-            )
+        CompositionLocalProvider(LocalLibraryDrag provides drag) {
+            BoxWithConstraints(
+                modifier = Modifier
+                    .consumeWindowInsets(innerPadding)
+                    .padding(innerPadding)
+                    .then(if (onFilesDropped != null) Modifier.fileDropTarget(onFilesDropped) else Modifier)
+            ) {
+                // A list on a phone, a grid of the first pages wider, beside the folders and the
+                // details of the item selected on the widest (or without thumbnails, a list)
+                val layout = if (thumbnails == null) LibraryLayout.LIST else LibraryLayout.of(maxWidth)
+                val files = fileExplorerViewModel.currentDirectoryFiles
+                val showDetails: ((FileExplorerViewModel.FileItem) -> Unit)? =
+                    if (layout == LibraryLayout.PANES) { item -> fileExplorerViewModel.selectOnly(item) } else null
+                Row {
+                    if (layout == LibraryLayout.PANES) {
+                        LibraryNavigationPane(fileExplorerViewModel, onOpenDocument)
+                        VerticalDivider()
+                    }
+                    Surface(modifier = Modifier.weight(1f)) {
+                        if (layout == LibraryLayout.LIST || thumbnails == null) {
+                            FileList(
+                                directoryFiles = files,
+                                fileExplorerViewModel = fileExplorerViewModel,
+                                onOpenDocument = onOpenDocument,
+                                listState = listState,
+                                commands = commands
+                            )
+                        } else {
+                            FileGrid(
+                                directoryFiles = files,
+                                fileExplorerViewModel = fileExplorerViewModel,
+                                onOpenDocument = onOpenDocument,
+                                thumbnails = thumbnails,
+                                gridState = gridState,
+                                commands = commands,
+                                onShowDetails = showDetails
+                            )
+                        }
+                    }
+                    val selected = fileExplorerViewModel.selectedItems.singleOrNull()
+                    if (layout == LibraryLayout.PANES && selected != null) {
+                        VerticalDivider()
+                        LibraryDetailsPane(selected, commands, onClose = { fileExplorerViewModel.clearSelection() })
+                    }
+                }
+                LibraryDragShadow(drag)
+            }
         }
     }
 }
@@ -300,11 +353,11 @@ private fun FolderTopBar(
 @Composable
 private fun NewItemMenu(
     commands: LibraryCommands,
-    listState: LazyListState,
+    atTop: Boolean,
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit
 ) {
-    val fabVisible by remember { derivedStateOf { listState.firstVisibleItemIndex == 0 } }
+    val fabVisible = atTop
 
     val items = listOf(
         Icons.AutoMirrored.Filled.Article to stringResource(Res.string.explorer_fab_item_note),

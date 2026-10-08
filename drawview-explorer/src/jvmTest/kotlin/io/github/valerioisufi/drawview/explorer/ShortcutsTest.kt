@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.explorer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.DesktopComposeUiTest
@@ -21,6 +22,7 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
+import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.adaptive.InputHints
 import io.github.valerioisufi.drawview.ui.adaptive.PlatformConventions
@@ -31,6 +33,7 @@ import io.github.valerioisufi.drawview.ui.command.CommandRoot
 import io.github.valerioisufi.drawview.ui.session.DocumentEditorViewModel
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -98,7 +101,13 @@ class ShortcutsTest {
                 DrawViewTheme(dynamicColor = false) {
                     AdaptiveRoot(hints = InputHints.PointerAndKeyboard, conventions = platformConventions) {
                         CommandRoot(host = host) {
-                            DocumentLibrary(title = { Text("DrawView") }, store = store, modifier = Modifier.fillMaxSize())
+                            // The documents read on the thread asking (the scene of a test has no main thread)
+                            DocumentLibrary(
+                                title = { Text("DrawView") },
+                                store = store,
+                                documents = remember { OpenDocuments(store, dispatcher = Dispatchers.Unconfined) },
+                                modifier = Modifier.fillMaxSize()
+                            )
                         }
                     }
                 }

@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.ui.platform
 
+import io.github.valerioisufi.drawview.core.controller.MediaManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -12,7 +13,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private val IMAGE_EXTENSIONS = setOf("png", "jpg", "jpeg", "webp", "gif", "bmp")
 
 @Composable
 actual fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) -> Unit): () -> Unit {
@@ -21,7 +21,7 @@ actual fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) -> Unit):
     return remember(type) {
         {
             val extensions = when (type) {
-                PickerType.IMAGE -> IMAGE_EXTENSIONS
+                PickerType.IMAGE -> MediaManager.IMAGE_EXTENSIONS
                 PickerType.PDF -> setOf("pdf")
             }
             val dialog = FileDialog(null as Frame?, null, FileDialog.LOAD).apply {

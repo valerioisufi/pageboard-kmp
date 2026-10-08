@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.valerioisufi.drawview.core.render.tile.TextFace
+import io.github.valerioisufi.drawview.core.controller.MediaManager
 import io.github.valerioisufi.drawview.data.DocumentStore
 import io.github.valerioisufi.drawview.data.DrawViewStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
@@ -42,6 +43,9 @@ import kotlinx.coroutines.withContext
  *   function opening a document.
  * @param documentActions actions of the application on a document of the library (e.g. its
  *   export), in the bar of the selection.
+ * @param thumbnails the thumbnails of the documents (the first pages of the grid of a wider
+ *   window), kept in the data directory for the documents of `DrawViewStore`, in memory for the
+ *   others.
  */
 @Composable
 fun DocumentLibrary(
@@ -53,7 +57,11 @@ fun DocumentLibrary(
     fullScreenEditor: Boolean = false,
     editorExtension: EditorExtension? = null,
     libraryOverlay: @Composable BoxScope.(openDocument: (String) -> Unit) -> Unit = {},
-    documentActions: List<DocumentAction> = emptyList()
+    documentActions: List<DocumentAction> = emptyList(),
+    thumbnails: DocumentThumbnails = rememberDocumentThumbnails(
+        documents,
+        directory = if (store === DrawViewStore.default) DocumentThumbnails.defaultDirectory() else null
+    )
 ) {
     val fileExplorerViewModel = viewModel { FileExplorerViewModel(store, documents) }
     val editorViewModel = viewModel { DocumentEditorViewModel(store, documents) }
@@ -88,6 +96,19 @@ fun DocumentLibrary(
                         title = title,
                         actions = actions,
                         documentActions = documentActions,
+                        thumbnails = thumbnails,
+                        // A PDF or an image dropped from the system: a note of it, in the folder shown
+                        onFilesDropped = { files ->
+                            val imported = files.filter { it.extension in MediaManager.IMPORTED_EXTENSIONS }
+                            val first = imported.firstOrNull()
+                            if (first != null) {
+                                val name = fileExplorerViewModel.availableName(first.name.substringBeforeLast('.'))
+                                editorViewModel.createAndOpenDocument(name, fileExplorerViewModel.currentFolder?.id) { controller ->
+                                    for (file in imported) controller.mediaManager.importFile(file.bytes, file.extension)
+                                }
+                            }
+                            first != null
+                        },
                         modifier = Modifier.fillMaxSize()
                     )
                     libraryOverlay { documentId -> editorViewModel.openDocument(documentId) }

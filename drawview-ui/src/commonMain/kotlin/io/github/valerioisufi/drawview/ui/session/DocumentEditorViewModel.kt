@@ -74,8 +74,11 @@ class DocumentEditorViewModel(
         viewModelScope.launch { load(newSession) }
     }
 
-    /** Creates a new document (one A4 page, as in the original app) in [folderId] and opens it. */
-    fun createAndOpenDocument(name: String, folderId: String? = null) {
+    /**
+     * Creates a new document (one A4 page, as in the original app) in [folderId] and opens it;
+     * [then] is given its editor once open (e.g. to import the files it was made from).
+     */
+    fun createAndOpenDocument(name: String, folderId: String? = null, then: (DrawViewController) -> Unit = {}) {
         viewModelScope.launch {
             val document = store.createDocument(name, folderId = folderId)
             closeSession()
@@ -83,6 +86,7 @@ class DocumentEditorViewModel(
             session = newSession
             DrawViewSessions.register(newSession)
             load(newSession)
+            newSession.controller?.let(then)
         }
     }
 

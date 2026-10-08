@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.core.controller
 import androidx.compose.ui.geometry.Offset
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.AddPage
+import io.github.valerioisufi.drawview.core.change.RemovePage
 import io.github.valerioisufi.drawview.core.change.AddResource
 import io.github.valerioisufi.drawview.core.change.CompositeChange
 import io.github.valerioisufi.drawview.core.model.DrawImage
@@ -86,7 +87,22 @@ class MediaManager(private val controller: DrawViewController) {
     }
 
     /**
-     * Imports a PDF document, appending one page per PDF page at the end of the document.
+     * Imports a file by its [extension] (a PDF, an image: [IMPORTED_EXTENSIONS]), an image placed
+     * on the page under [targetScreen]; whether it is a kind of file the editor imports.
+     */
+    fun importFile(bytes: ByteArray, extension: String, targetScreen: Offset? = null): Boolean {
+        val kind = extension.lowercase()
+        when (kind) {
+            "pdf" -> importPdf(bytes)
+            in IMAGE_EXTENSIONS -> importImage(bytes, kind, targetScreen)
+            else -> return false
+        }
+        return true
+    }
+
+    /**
+     * Imports a PDF document, appending one page per PDF page at the end of the document; a
+     * document of one empty page (a note just made) becomes the PDF, without that page.
      */
     fun importPdf(bytes: ByteArray) {
         val adapter = controller.tileManager.tileRenderer.pdfAdapter
@@ -118,7 +134,9 @@ class MediaManager(private val controller: DrawViewController) {
             val document = controller.document
             controller.selectionManager.clearSelection()
             val resourceId = newElementId()
-            val firstIndex = document.pages.size
+            // The empty page of a note just made gives way to the PDF
+            val emptyPage = document.pages.singleOrNull()?.takeIf { it.elements().isEmpty() }
+            val firstIndex = if (emptyPage != null) 0 else document.pages.size
             // At the end of the document
             val keys = FractionalIndex.after(document.pages.lastOrNull()?.orderKey, sizes.size)
             val pages = sizes.mapIndexed { pdfIndex, (widthMm, heightMm) ->
@@ -127,9 +145,20 @@ class MediaManager(private val controller: DrawViewController) {
                 }
             }
             controller.session.submit(
-                CompositeChange(listOf(AddResource.of(resourceId, DrawResource.ResourceType.PDF, path, hash)) + pages.map { AddPage.of(it) })
+                CompositeChange(
+                    listOf(AddResource.of(resourceId, DrawResource.ResourceType.PDF, path, hash)) + pages.map { AddPage.of(it) } +
+                        listOfNotNull(emptyPage?.let { RemovePage(it.id) })
+                )
             )
             controller.pageManager.jumpToPage(firstIndex)
         }
+    }
+
+    companion object {
+        /** The extensions of the images the editor imports. */
+        val IMAGE_EXTENSIONS: Set<String> = setOf("png", "jpg", "jpeg", "webp", "gif", "bmp")
+
+        /** The extensions of the files the editor imports: the PDFs and the images. */
+        val IMPORTED_EXTENSIONS: Set<String> = IMAGE_EXTENSIONS + "pdf"
     }
 }

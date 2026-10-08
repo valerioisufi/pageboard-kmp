@@ -29,6 +29,7 @@ import io.github.takahirom.roborazzi.captureRoboImage
 import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
+import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.adaptive.PlatformConventions
 import io.github.valerioisufi.drawview.ui.adaptive.ReferenceWindow
@@ -168,6 +169,10 @@ class AdaptiveScreenshotTest {
         val viewModels = object : ViewModelStoreOwner {
             override val viewModelStore = ViewModelStore()
         }
+        // The thumbnails of the grid, in memory, drawn from the documents of the library; the
+        // documents read on the thread asking (the scene of a test has no main thread)
+        val documents = OpenDocuments(store, dispatcher = Dispatchers.Unconfined)
+        val thumbnails = ThumbnailsHolder()
 
         setContent {
             CompositionLocalProvider(LocalViewModelStoreOwner provides viewModels) {
@@ -177,6 +182,8 @@ class AdaptiveScreenshotTest {
                         DocumentLibrary(
                             title = { Text("DrawView", modifier = Modifier.padding(horizontal = 16.dp)) },
                             store = store,
+                            documents = documents,
+                            thumbnails = rememberDocumentThumbnails(documents, directory = null).also { thumbnails.value = it },
                             editorExtension = extension,
                             modifier = Modifier.fillMaxSize()
                         )
@@ -186,7 +193,7 @@ class AdaptiveScreenshotTest {
         }
         waitForIdle()
         actions(viewModels)
-        awaitPagesDrawn(viewModels)
+        awaitPagesDrawn(viewModels, thumbnails.value)
 
         val theme = if (dark) "dark" else "light"
         captureToImage().captureRoboImage("screenshots/$screen-${window.name.lowercase().replace('_', '-')}-$theme.png")
@@ -196,8 +203,12 @@ class AdaptiveScreenshotTest {
 
     /** Opens [NOTE] in the editor. */
     private fun DesktopComposeUiTest.openNote(viewModels: ViewModelStoreOwner) {
-        // Below the fold of a short window (a phone in landscape)
-        onNode(hasScrollToNodeAction()).performScrollToNode(hasText(NOTE))
+        // Below the fold of a short window (a phone in landscape): the list or the grid holding it
+        // (a wide library also scrolls its pane of the folders)
+        val containers = onAllNodes(hasScrollToNodeAction())
+        for (index in containers.fetchSemanticsNodes().indices) {
+            if (runCatching { containers[index].performScrollToNode(hasText(NOTE)) }.isSuccess) break
+        }
         onNodeWithText(NOTE).performClick()
         // While the document loads, its progress bar never lets the interface be idle
         awaitInRealTime { viewModels.editor()?.session?.controller != null }
@@ -208,15 +219,22 @@ class AdaptiveScreenshotTest {
         waitForIdle()
     }
 
-    /** Waits for the tiles of the open document (if any) to be rasterized and drawn. */
-    private fun DesktopComposeUiTest.awaitPagesDrawn(viewModels: ViewModelStoreOwner) {
+    /** The thumbnails of the library of a test. */
+    private class ThumbnailsHolder {
+        var value: DocumentThumbnails? = null
+    }
+
+    /** Waits for the tiles of the open document (if any) and the thumbnails of the grid to be drawn. */
+    private fun DesktopComposeUiTest.awaitPagesDrawn(viewModels: ViewModelStoreOwner, thumbnails: DocumentThumbnails?) {
         // The animations end first (the bar of the tools appearing resizes the canvas)
         waitForIdle()
-        val tiles = viewModels.editor()?.session?.controller?.tileManager ?: return
-        // A tile drawn may ask for others (a sharper level): ten frames in a row with none to draw
+        val tiles = viewModels.editor()?.session?.controller?.tileManager
+        // A tile drawn may ask for others (a sharper level), a thumbnail drawn lets the next one be:
+        // ten frames in a row with none to draw
         var quietFrames = 0
         awaitInRealTime {
-            quietFrames = if (tiles.isRasterizing) 0 else quietFrames + 1
+            val drawing = tiles?.isRasterizing == true || (thumbnails?.rendering ?: 0) > 0
+            quietFrames = if (drawing) 0 else quietFrames + 1
             quietFrames >= 10
         }
         waitForIdle()
