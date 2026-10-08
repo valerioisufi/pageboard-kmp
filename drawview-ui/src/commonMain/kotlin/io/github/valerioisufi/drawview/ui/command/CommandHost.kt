@@ -1,5 +1,18 @@
 package io.github.valerioisufi.drawview.ui.command
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import io.github.valerioisufi.drawview.ui.generated.resources.Res
+import io.github.valerioisufi.drawview.ui.generated.resources.menu_edit
+import io.github.valerioisufi.drawview.ui.generated.resources.menu_file
+import io.github.valerioisufi.drawview.ui.generated.resources.menu_format
+import io.github.valerioisufi.drawview.ui.generated.resources.menu_help
+import io.github.valerioisufi.drawview.ui.generated.resources.menu_insert
+import io.github.valerioisufi.drawview.ui.generated.resources.menu_tools
+import io.github.valerioisufi.drawview.ui.generated.resources.menu_view
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -35,16 +48,27 @@ import io.github.valerioisufi.drawview.ui.adaptive.platformConventions
 @Stable
 class CommandHost {
 
-    private class Registration(val commands: List<Command>)
+    private class Registration(val commands: List<Command>, val labels: List<String>)
 
     private val registrations = mutableStateListOf<Registration>()
 
     /** The commands registered, in the order of their registration. */
     val commands: List<Command> get() = registrations.flatMap { it.commands }
 
-    /** Adds [commands] until the returned function is called. */
-    fun register(commands: List<Command>): () -> Unit {
-        val registration = Registration(commands)
+    /**
+     * The commands registered with their labels in the language of the interface, for the menus
+     * of the system asked outside of the composition (the list of the shortcuts of Android).
+     */
+    val labeledCommands: List<Pair<Command, String>>
+        get() = registrations.flatMap { registration -> registration.commands.zip(registration.labels) }
+
+    /** The titles of the menus in the language of the interface (given by [CommandRoot]). */
+    var groupTitles: Map<CommandGroup, String> by mutableStateOf(emptyMap())
+        internal set
+
+    /** Adds [commands] (their [labels] written) until the returned function is called. */
+    fun register(commands: List<Command>, labels: List<String> = emptyList()): () -> Unit {
+        val registration = Registration(commands, labels)
         registrations += registration
         return { registrations.remove(registration) }
     }
@@ -70,8 +94,10 @@ val LocalCommandHost = compositionLocalOf<CommandHost?> { null }
 @Composable
 fun RegisterCommands(commands: List<Command>) {
     val host = LocalCommandHost.current ?: return
-    DisposableEffect(host, commands) {
-        val unregister = host.register(commands)
+    // Written here, in the language of the interface, for the menus of the system
+    val labels = commands.map { it.label() }
+    DisposableEffect(host, commands, labels) {
+        val unregister = host.register(commands, labels)
         onDispose { unregister() }
     }
 }
@@ -98,6 +124,8 @@ fun CommandRoot(
     val focus = remember { FocusRequester() }
     val focusState = remember { RootFocus() }
     val conventions = currentAdaptiveInfo().conventions
+    val groupTitles = CommandGroup.entries.associateWith { stringResource(it.title) }
+    LaunchedEffect(host, groupTitles) { host.groupTitles = groupTitles }
     LaunchedEffect(focus) { focus.requestFocus() }
     CompositionLocalProvider(LocalCommandHost provides host) {
         Box(
@@ -123,3 +151,15 @@ fun CommandRoot(
 private class RootFocus {
     var hasFocus = false
 }
+
+/** The title of the menu of the group. */
+internal val CommandGroup.title: StringResource
+    get() = when (this) {
+        CommandGroup.FILE -> Res.string.menu_file
+        CommandGroup.EDIT -> Res.string.menu_edit
+        CommandGroup.VIEW -> Res.string.menu_view
+        CommandGroup.INSERT -> Res.string.menu_insert
+        CommandGroup.FORMAT -> Res.string.menu_format
+        CommandGroup.TOOLS -> Res.string.menu_tools
+        CommandGroup.HELP -> Res.string.menu_help
+    }

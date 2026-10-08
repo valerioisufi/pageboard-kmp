@@ -1,5 +1,8 @@
 package io.github.valerioisufi.drawview.core.canvas
 
+import androidx.compose.ui.input.pointer.isSecondaryPressed
+import androidx.compose.ui.input.pointer.isPrimaryPressed
+import androidx.compose.ui.input.pointer.PointerEvent
 import android.view.MotionEvent
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -27,3 +30,6 @@ internal actual fun Modifier.trackpadInput(
     onPinch: (phase: TrackpadPinchPhase, factor: Float, focus: Offset) -> Unit,
     onScrollPhase: (phase: TrackpadScrollPhase, timeMillis: Long) -> Unit
 ): Modifier = this
+
+/** Compose reports the first button of a stylus as the primary one, the second as the secondary one. */
+internal actual fun PointerEvent.isStylusButtonPressed(): Boolean = buttons.isPrimaryPressed || buttons.isSecondaryPressed

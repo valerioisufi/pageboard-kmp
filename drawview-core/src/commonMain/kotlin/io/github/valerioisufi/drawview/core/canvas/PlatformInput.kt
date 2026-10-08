@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.core.canvas
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerEvent
 
 /**
  * Requests the platform to deliver stylus input without batching it to the display refresh
@@ -54,3 +55,10 @@ internal expect fun Modifier.trackpadInput(
     onPinch: (phase: TrackpadPinchPhase, factor: Float, focus: Offset) -> Unit,
     onScrollPhase: (phase: TrackpadScrollPhase, timeMillis: Long) -> Unit
 ): Modifier
+
+/**
+ * Whether a button of the stylus is held during [event] (the stylus erases while it is held),
+ * where the platform reports it: Android; the Apple Pencil has no button, the desktop reports the
+ * pens as mice.
+ */
+internal expect fun PointerEvent.isStylusButtonPressed(): Boolean

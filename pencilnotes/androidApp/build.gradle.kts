@@ -12,6 +12,8 @@ kotlin {
 }
 dependencies {
     implementation(project(":pencilnotes-shared"))
+    // The commands of the screen shown, for the list of the shortcuts of the system
+    implementation(project(":drawview-ui"))
     implementation(project(":drawview-core"))
 
     implementation(libs.androidx.activity.compose)

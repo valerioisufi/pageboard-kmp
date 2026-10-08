@@ -39,6 +39,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -530,6 +532,21 @@ internal fun RowScope.EditorTools(controller: DrawViewController, commands: Edit
                 imageVector = Icons.Default.Image,
                 contentDescription = stringResource(Res.string.draw_toolbar_action_import_image)
             )
+        }
+    }
+
+    // The palette asked by a gesture of the stylus: the settings of the tool chosen (not the
+    // requests made before this bar was shown)
+    val paletteHandled = remember { mutableIntStateOf(commands.paletteRequests) }
+    LaunchedEffect(commands.paletteRequests) {
+        if (commands.paletteRequests == paletteHandled.intValue) return@LaunchedEffect
+        paletteHandled.intValue = commands.paletteRequests
+        when (controller.selectedTool) {
+            Tool.INK_PEN, Tool.INK_HIGHLIGHTER, Tool.TEXT_MARKUP -> expandedToolSettings = controller.selectedTool
+            Tool.ERASER -> eraserSettingsExpanded = true
+            Tool.TEXT -> textSettingsExpanded = true
+            Tool.LAZO -> lassoSettingsExpanded = true
+            Tool.PAN -> Unit
         }
     }
 }

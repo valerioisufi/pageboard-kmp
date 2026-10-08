@@ -11,6 +11,7 @@ import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.ui.adaptive.PlatformConventions
 import io.github.valerioisufi.drawview.ui.adaptive.ShortcutModifier
+import io.github.valerioisufi.drawview.ui.platform.PencilAction
 import io.github.valerioisufi.drawview.ui.screen.EditorCommands
 import io.github.valerioisufi.drawview.ui.screen.EditorScreenActions
 import kotlinx.coroutines.CoroutineScope
@@ -109,6 +110,42 @@ class CommandTest {
         assertTrue(controller.isPageGridVisible)
         commands.pageGrid.perform()
         assertFalse(controller.isPageGridVisible)
+    }
+
+    @Test
+    fun theGesturesOfThePencilSwitchTheTools() {
+        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val commands = editorCommands(controller)
+        assertEquals(Tool.INK_PEN, controller.selectedTool)
+
+        // The eraser, and back to the pen
+        commands.perform(PencilAction.SWITCH_ERASER)
+        assertEquals(Tool.ERASER, controller.selectedTool)
+        commands.perform(PencilAction.SWITCH_ERASER)
+        assertEquals(Tool.INK_PEN, controller.selectedTool)
+
+        // The tool before, back and forth
+        controller.selectTool(Tool.INK_HIGHLIGHTER)
+        commands.perform(PencilAction.SWITCH_PREVIOUS)
+        assertEquals(Tool.INK_PEN, controller.selectedTool)
+        commands.perform(PencilAction.SWITCH_PREVIOUS)
+        assertEquals(Tool.INK_HIGHLIGHTER, controller.selectedTool)
+
+        // The palette is asked to the bar of the tools
+        commands.perform(PencilAction.SHOW_PALETTE)
+        assertEquals(1, commands.paletteRequests)
+        commands.perform(PencilAction.NONE)
+        assertEquals(Tool.INK_HIGHLIGHTER, controller.selectedTool)
+    }
+
+    @Test
+    fun theHostKeepsTheLabelsWrittenForTheMenusOfTheSystem() {
+        val host = CommandHost()
+        val undo = Command("undo", { "" }, CommandGroup.EDIT) {}
+        val unregister = host.register(listOf(undo), listOf("Annulla"))
+        assertEquals(listOf(undo to "Annulla"), host.labeledCommands)
+        unregister()
+        assertTrue(host.labeledCommands.isEmpty())
     }
 
     @Test

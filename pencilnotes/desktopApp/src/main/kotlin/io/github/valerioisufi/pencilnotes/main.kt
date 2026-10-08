@@ -1,9 +1,7 @@
 package io.github.valerioisufi.pencilnotes
 
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import androidx.compose.ui.window.rememberWindowState
 import io.github.valerioisufi.drawview.core.platform.DRAWVIEW_DATA_DIRECTORY_PROPERTY
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -13,6 +11,8 @@ import io.github.valerioisufi.drawview.lecture.LectureRecordings
 import io.github.valerioisufi.drawview.lecture.ui.LectureExitDialog
 import io.github.valerioisufi.drawview.ui.command.CommandHost
 import io.github.valerioisufi.drawview.ui.command.DrawViewMenuBar
+import io.github.valerioisufi.drawview.ui.window.WindowMinimumSize
+import io.github.valerioisufi.drawview.ui.window.rememberDrawViewWindowState
 import io.github.valerioisufi.drawview.ui.session.DrawViewSessions
 import io.github.valerioisufi.pencilnotes.ui.theme.PencilNotesTheme
 import java.io.File
@@ -43,11 +43,13 @@ fun main() {
         }
         Window(
             onCloseRequest = { if (LectureRecordings.isRecording) confirmExit = true else exit() },
-            state = rememberWindowState(width = 1280.dp, height = 860.dp),
+            // Its size, position and placement kept between the launches
+            state = rememberDrawViewWindowState(),
             title = "PencilNotes",
             onKeyEvent = { commands.dispatch(it) }
         ) {
             DrawViewMenuBar(commands)
+            WindowMinimumSize()
             PencilNotesApp(commandHost = commands)
             if (confirmExit) {
                 PencilNotesTheme {

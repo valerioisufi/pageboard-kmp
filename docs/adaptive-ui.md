@@ -219,8 +219,8 @@ pencilnotes        menu bar and window state (desktop), bridge of the menus and 
 | 2. Panels and sheets | `EditorPanel`, `EditorScaffold`; `AdaptiveSheet` for the configurators, the details and the settings; the lecture moved | done |
 | 3. Editor | `EditorToolbar` and `ToolbarLayout`; floating tools on the phone; one bar when it fits; cursors of the canvas; camera commands (fit, pages) | done |
 | 4. Library | `DocumentThumbnails`; grid; navigation pane; details beside; pointer selection; drag and drop | done |
-| 5. Platforms | macOS title bar and window state; iPadOS shortcuts, menu bar and Pencil; Android shortcut helper, stylus button and hover | |
-| Later | A document per window (desktop, iPadOS); postures of the foldables; toolbar at the side for the left-handed; focus mode (the bars hidden while writing) | |
+| 5. Platforms | Window state and minimum size of the desktop; the Apple Pencil (double tap, squeeze); the stylus button erasing; the shortcut list of Android | done |
+| Later | The toolbar in the title bar of macOS; the menu bar and the shortcut list of iPadOS; files dropped on Android and iOS; a document per window (desktop, iPadOS); postures of the foldables; toolbar at the side for the left-handed; focus mode (the bars hidden while writing) | |
 
 Each phase ends with its screenshots compared to the previous ones and a check on real devices:
 an iPad with a Pencil, an Android tablet with a stylus, a phone, a Mac with a trackpad.
@@ -386,6 +386,33 @@ an iPad with a Pencil, an Android tablet with a stylus, a phone, a Mac with a tr
   or larger (`DocumentThumbnailsTest`); the free name of a note, a PDF replacing the empty page
   (`FileImportTest`); the library screenshots recorded again (grid, panes with the first pages,
   details beside).
+
+### Phase 5 results
+
+* **The desktop windows** (`rememberDrawViewWindowState`, `WindowMinimumSize`, `drawview-ui`
+  `jvmMain`): the size, the position and the placement (maximized, full screen) of the window are
+  kept in `window-<name>.properties` of the data directory, the floating size while it is
+  maximized; a position no longer on a screen is left to the system. The window cannot be made
+  smaller than 360 × 480 dp, where the layouts of a phone fit. PencilNotes and the sample use them.
+* **The Apple Pencil** (`PencilInteractionEffect`, `iosMain`; `PencilAction`): the double tap and
+  the squeeze of the Pencil Pro do what the user set in the system: the eraser and back, the tool
+  before (`ToolManager.previousTool`, also the "Previous Tool" command of the Tools menu), the
+  settings of the tool chosen (`EditorCommands.perform`, the bar of the tools opening them).
+* **The stylus button** (`isStylusButtonPressed`, `androidMain` of the core; `false` elsewhere):
+  a stylus whose button is held erases, as its eraser end does.
+* **The shortcut list of Android** (`CommandHost.keyboardShortcutGroups`, `androidMain`): Meta + /
+  lists the shortcuts of the screen shown by menu; `RegisterCommands` writes the labels in the
+  language of the interface and `CommandRoot` the titles of the menus, kept by the host for the
+  menus asked outside of the composition. PencilNotes gives them from its activity.
+* **Hover of a stylus**: the canvas handles the hover of any pointer, so the dot of the pen and the
+  circle of the eraser follow a hovering S Pen or Apple Pencil where Compose delivers it.
+* **Left for later**, because they must be checked on the device: the toolbar in the title bar of
+  macOS (the content under the title bar must leave its buttons and the dragging of the window);
+  the menu bar of iPadOS 26 and its list of shortcuts (`UIKeyCommand` is matched by UIKit before
+  the text fields of Compose, which would lose their own ⌘Z); the files dropped on Android and iOS
+  (content URIs, item providers).
+* Tests: the window kept and read again, a position no longer on a screen (`WindowStateTest`);
+  the gestures of the Pencil, the labels kept by the host (`CommandTest`).
 
 ### Risks
 

@@ -71,6 +71,7 @@ import io.github.valerioisufi.drawview.ui.editor.TextEditorOverlay
 import io.github.valerioisufi.drawview.ui.generated.resources.*
 import io.github.valerioisufi.drawview.ui.platform.HideSystemBarsEffect
 import io.github.valerioisufi.drawview.ui.platform.PickerType
+import io.github.valerioisufi.drawview.ui.platform.PencilInteractionEffect
 import io.github.valerioisufi.drawview.ui.platform.fileDropTarget
 import io.github.valerioisufi.drawview.ui.platform.rememberFilePicker
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
@@ -179,6 +180,8 @@ fun DrawScreen(
         onShowAbout = { showAboutDialog = true }
     )
     RegisterCommands(remember(commands, extraCommands) { commands.all + extraCommands })
+    // The double tap and the squeeze of an Apple Pencil, as the user set them in the system
+    PencilInteractionEffect(onAction = commands::perform)
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         // Where the tools go, by the width of the editor and the buttons of its input

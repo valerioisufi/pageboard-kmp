@@ -141,4 +141,5 @@
     <string name="command_fit_width">Fit Width</string>
     <string name="command_next_page">Next Page</string>
     <string name="command_previous_page">Previous Page</string>
+    <string name="command_previous_tool">Previous Tool</string>
 </resources>

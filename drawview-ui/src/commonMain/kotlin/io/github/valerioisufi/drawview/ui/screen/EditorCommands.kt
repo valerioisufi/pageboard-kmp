@@ -8,6 +8,8 @@ import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
@@ -22,12 +24,14 @@ import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.command.Shortcut
+import io.github.valerioisufi.drawview.ui.platform.PencilAction
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.about_dialog_title
 import io.github.valerioisufi.drawview.ui.generated.resources.command_close
 import io.github.valerioisufi.drawview.ui.generated.resources.command_fit_width
 import io.github.valerioisufi.drawview.ui.generated.resources.command_next_page
 import io.github.valerioisufi.drawview.ui.generated.resources.command_previous_page
+import io.github.valerioisufi.drawview.ui.generated.resources.command_previous_tool
 import io.github.valerioisufi.drawview.ui.generated.resources.command_zoom_in
 import io.github.valerioisufi.drawview.ui.generated.resources.command_zoom_out
 import io.github.valerioisufi.drawview.ui.generated.resources.common_action_copy
@@ -244,6 +248,33 @@ class EditorCommands internal constructor(
     val lasso = tool(Tool.LAZO, Res.string.draw_toolbar_action_lasso, Res.drawable.icon_lasso_select, Key.L)
     val pan = tool(Tool.PAN, Res.string.draw_toolbar_action_pan, Res.drawable.icon_pan_tool, key = null)
 
+    /** Back to the tool chosen before (also the double tap of an Apple Pencil). */
+    val previousTool = Command(
+        "previous-tool", label(Res.string.command_previous_tool), CommandGroup.TOOLS, section = 2,
+        isEnabled = { writable() && !controller.textEditorManager.isEditing }
+    ) {
+        if (!controller.isDrawingMode) controller.toggleDrawingMode()
+        controller.selectTool(controller.toolManager.previousTool)
+    }
+
+    /** Asks the bar of the tools to open the settings of the tool chosen (counted, read by the bar). */
+    var paletteRequests by mutableIntStateOf(0)
+        private set
+
+    /**
+     * Does what a gesture of the stylus itself asks (the double tap or the squeeze of an Apple
+     * Pencil, as the user set them in the system).
+     */
+    fun perform(action: PencilAction) {
+        if (controller.isReadOnly) return
+        when (action) {
+            PencilAction.SWITCH_ERASER -> if (controller.selectedTool == Tool.ERASER) previousTool.performIfEnabled() else eraser.performIfEnabled()
+            PencilAction.SWITCH_PREVIOUS -> previousTool.performIfEnabled()
+            PencilAction.SHOW_PALETTE -> if (controller.isDrawingMode) paletteRequests++
+            PencilAction.NONE -> Unit
+        }
+    }
+
     // ----- Help -----
 
     val about = Command("about", label(Res.string.about_dialog_title), CommandGroup.HELP) { actions.showAbout() }
@@ -255,7 +286,7 @@ class EditorCommands internal constructor(
         zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly,
         addPage, importPdf, importImage,
         documentBackground,
-        drawingMode, pen, highlighter, textMarkup, eraser, text, lasso, pan,
+        drawingMode, pen, highlighter, textMarkup, eraser, text, lasso, pan, previousTool,
         about
     )
 

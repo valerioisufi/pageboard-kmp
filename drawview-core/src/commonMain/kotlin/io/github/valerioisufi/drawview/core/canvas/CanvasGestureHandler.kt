@@ -382,7 +382,8 @@ internal class CanvasGestureHandler(
             return
         }
 
-        if (change.type == PointerType.Eraser || tool == Tool.ERASER) {
+        // The eraser end of a stylus, the eraser tool, or a stylus whose button is held
+        if (change.type == PointerType.Eraser || tool == Tool.ERASER || (isStylus && event.isStylusButtonPressed())) {
             mode = Mode.ERASE
             controller.eraserManager.eraseAlongSegment(position, position)
             live.setEraserCursor(position, eraserRadiusPx(position))

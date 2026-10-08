@@ -140,4 +140,5 @@
     <string name="command_fit_width">Ajustar al ancho</string>
     <string name="command_next_page">Página siguiente</string>
     <string name="command_previous_page">Página anterior</string>
+    <string name="command_previous_tool">Herramienta anterior</string>
 </resources>

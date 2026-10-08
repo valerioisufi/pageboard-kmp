@@ -140,4 +140,5 @@
     <string name="command_fit_width">Ajuster à la largeur</string>
     <string name="command_next_page">Page suivante</string>
     <string name="command_previous_page">Page précédente</string>
+    <string name="command_previous_tool">Outil précédent</string>
 </resources>

@@ -35,11 +35,15 @@ On the canvas, two fingers on a trackpad move the pages like a finger on a touch
 
 ### Keyboard and menus
 
-Every action of the editor and of the library is a command (see [docs/adaptive-ui.md](./docs/adaptive-ui.md)), shown by the buttons (with a tooltip where a mouse or a trackpad rests), by the menu bar of the desktop and by the keyboard: ⌘Z / ⇧⌘Z undo and redo, ⌘X ⌘C ⌘V and ⌫ on the selection, ⌘+ / ⌘- zoom, ⌘0 the width of the pages, PgUp / PgDn the previous and next page, ⌘G the page grid, ⇧⌘P / ⇧⌘I import a PDF or an image, ⇧⌘E export, ⌘W close the document; the tools with a single key (P pen, H highlighter, U text markup, E eraser, T text, L lasso). In the library: ⌘N a note, ⇧⌘N a folder, ⌘A select all, ⌫ delete, ⌘↑ the enclosing folder, and a right click on an item opens its menu. Ctrl replaces ⌘ on Windows, Linux and Android. An application shows the menu bar with `DrawViewMenuBar(host)` and runs the shortcuts of its window with `Window(onKeyEvent = { host.dispatch(it) })`, the host given to `CommandRoot` around its screens.
+Every action of the editor and of the library is a command (see [docs/adaptive-ui.md](./docs/adaptive-ui.md)), shown by the buttons (with a tooltip where a mouse or a trackpad rests), by the menu bar of the desktop and by the keyboard: ⌘Z / ⇧⌘Z undo and redo, ⌘X ⌘C ⌘V and ⌫ on the selection, ⌘+ / ⌘- zoom, ⌘0 the width of the pages, PgUp / PgDn the previous and next page, ⌘G the page grid, ⇧⌘P / ⇧⌘I import a PDF or an image, ⇧⌘E export, ⌘W close the document; the tools with a single key (P pen, H highlighter, U text markup, E eraser, T text, L lasso). In the library: ⌘N a note, ⇧⌘N a folder, ⌘A select all, ⌫ delete, ⌘↑ the enclosing folder, and a right click on an item opens its menu. Ctrl replaces ⌘ on Windows, Linux and Android. The desktop windows keep their size, position and placement between launches (`rememberDrawViewWindowState`). Android lists the shortcuts with Meta + / (`CommandHost.keyboardShortcutGroups`). An application shows the menu bar with `DrawViewMenuBar(host)` and runs the shortcuts of its window with `Window(onKeyEvent = { host.dispatch(it) })`, the host given to `CommandRoot` around its screens.
 
 ### Library
 
 The library follows the width of the window: a list on a phone, a grid of cards showing the first page of each note on a tablet or a narrow window, and on a wide one the folders and the recent notes beside the grid and the details of the selected item on the other side. With a mouse, ⌘ / Ctrl click adds an item to the selection, Shift click extends it, and items dragged onto a folder move there. On the desktop, a PDF or an image dragged from the files of the computer becomes a note, or is imported into the open one.
+
+### Stylus
+
+The first contact of a stylus switches the editor to stylus-only mode (fingers pan and zoom). A stylus whose button is held erases (Android), and the double tap or the squeeze of an Apple Pencil does what the user set in the system: the eraser and back, the previous tool or the settings of the tool. A hovering stylus or mouse shows where the ink of the pen would land.
 
 ### Text of the PDFs
 

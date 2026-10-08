@@ -73,8 +73,13 @@ class ToolManager(
     val isInkTool: Boolean get() = selectedTool == Tool.INK_PEN || selectedTool == Tool.INK_HIGHLIGHTER
     val isTextMarkupTool: Boolean get() = selectedTool == Tool.TEXT_MARKUP
 
+    /** The tool chosen before the selected one (the Apple Pencil switches back to it). */
+    var previousTool: Tool by mutableStateOf(Tool.INK_PEN)
+        private set
+
     fun selectTool(tool: Tool, presetIndex: Int? = null) {
         val changed = selectedTool != tool
+        if (changed) previousTool = selectedTool
         selectedTool = tool
         if (presetIndex != null && tool in presets) {
             selectedIndexes[tool] = presetIndex.coerceIn(0, (presetsOf(tool).size - 1).coerceAtLeast(0))

@@ -1,12 +1,12 @@
 package io.github.valerioisufi.drawview
 
 import androidx.compose.runtime.remember
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import androidx.compose.ui.window.rememberWindowState
 import io.github.valerioisufi.drawview.ui.command.CommandHost
 import io.github.valerioisufi.drawview.ui.command.DrawViewMenuBar
+import io.github.valerioisufi.drawview.ui.window.WindowMinimumSize
+import io.github.valerioisufi.drawview.ui.window.rememberDrawViewWindowState
 import io.github.valerioisufi.drawview.ui.session.DrawViewSessions
 import kotlinx.coroutines.runBlocking
 
@@ -22,11 +22,13 @@ fun main() {
                 runBlocking { DrawViewSessions.flushAll() }
                 exitApplication()
             },
-            state = rememberWindowState(width = 1280.dp, height = 860.dp),
+            // Its size, position and placement kept between the launches
+            state = rememberDrawViewWindowState(),
             title = "DrawView",
             onKeyEvent = { commands.dispatch(it) }
         ) {
             DrawViewMenuBar(commands)
+            WindowMinimumSize()
             App(commandHost = commands)
         }
     }
