@@ -70,9 +70,9 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * The lecture assistant in the DrawView editor: a button of the top bar (the recording time while
- * recording), the assistant panel beside the canvas (rising from the bottom over it on a phone;
- * also shown and hidden from the menus) and the hints over it. Closing the editor does not stop
- * the recording (see [LectureRecordingIndicator]).
+ * recording), the assistant panel (placed by the editor beside the canvas or rising from the
+ * bottom over it; also shown and hidden from the menus), its settings and the hints over the
+ * canvas. Closing the editor does not stop the recording (see [LectureRecordingIndicator]).
  */
 fun LectureAssistant.editorExtension(): EditorExtension {
     // The panel shown or hidden, where the lectures can be recorded
@@ -84,16 +84,17 @@ fun LectureAssistant.editorExtension(): EditorExtension {
         icon = { rememberVectorPainter(Icons.Outlined.Mic) },
         isChecked = { isPanelOpen }
     ) { isPanelOpen = !isPanelOpen }
+    val panelState = LecturePanelState()
     return EditorExtension(
         toolbarActions = { session, _ -> LectureToolbarButton(this@editorExtension, session.documentId, panel) },
-        sidePanel = { session, controller -> LecturePanel(this@editorExtension, session.documentId, controller) },
         canvasOverlay = { session, controller ->
+            LectureEditorEffects(this@editorExtension, session.documentId, controller)
             PlacementHint(this@editorExtension, controller)
             ArrivalsBanner(this@editorExtension, session.documentId)
-            // On a phone the panel rises from the bottom, over the canvas
-            LectureSheet(this@editorExtension, session.documentId, controller)
+            LectureSettings(this@editorExtension, panelState)
         },
-        commands = { _, _ -> if (isRecordingSupported) listOf(panel) else emptyList() }
+        commands = { _, _ -> if (isRecordingSupported) listOf(panel) else emptyList() },
+        panels = { session, controller -> listOf(lecturePanel(this@editorExtension, session.documentId, controller, panelState)) }
     )
 }
 

@@ -118,11 +118,14 @@ avatars of the participants), next to the commands of the extension.
 
 | Responsibility | Class (module) | GRASP |
 |---|---|---|
-| A panel contributed to the editor: title, icon, open state, content | `EditorPanel`, listed by `EditorExtension.panels` (replacing `sidePanel` and the sheet of the lecture in `canvasOverlay`) | Low Coupling, Protected Variations |
-| Where the panels go: beside the canvas when it keeps at least its minimum width, else rising from the bottom over it (a handle makes it taller); two panels at once side by side or as tabs | `EditorScaffold` (`drawview-ui`, the frame of `DrawScreen`) | Information Expert (it knows the space and every panel), Controller |
-| A sheet of the application (configurators of the backgrounds, details of a file, settings of the lecture): bottom sheet when compact, dialog or side pane when wider | `AdaptiveSheet` (`drawview-ui`) | Polymorphism |
+| A panel contributed to the editor: title, open state, closing, actions of its header, content | `EditorPanel` (`drawview-ui`), listed by `EditorExtension.panels` (replacing `sidePanel` and the sheet of the lecture in `canvasOverlay`) | Low Coupling, Protected Variations |
+| Where the open panels go, by the width of the editor (not of the window): beside the canvas when it keeps 360 dp (a panel is 380 dp), several side by side or in tabs, else rising from the bottom over it | `PanelPlacement.of(width, open)` (pure, unit tested) | Pure Fabrication |
+| The frame of the editor under its bars: the canvas and the panels where `PanelPlacement` puts them, their header (title, actions, close) and tabs, the handle of the sheet (taller, shorter, closed) | `EditorScaffold` (`drawview-ui`, the frame of `DrawScreen`) | Information Expert (it knows the space and every panel), Controller |
+| A sheet of the application (configurators of the backgrounds, details of a file, settings of the lecture): bottom sheet in a compact window, dialog in a wider one; title, content and actions the same in both | `AdaptiveSheet` (`drawview-ui/adaptive`) | Polymorphism |
 
-The lecture loses `panelBeside()` and `LectureSheet`: it describes `PanelContent` once.
+The lecture loses `panelBeside()` and `LectureSheet`: it describes its panel once. The effects
+that follow the editor (the recording seeing the pages) and the dialogs of an extension are in
+`canvasOverlay`, always composed with the editor whether the panel is shown or not.
 
 ### Editor
 
@@ -208,7 +211,7 @@ pencilnotes        menu bar and window state (desktop), bridge of the menus and 
 |---|---|---|
 | 0. Foundations | Complete color schemes (DrawView, PencilNotes); `WindowLayout`, `InputCapabilities`, `PlatformConventions`, `AdaptiveInfo` given by `AdaptiveRoot`; density by input; screenshot tests on the reference configurations (current state as the first reference); the lecture on `WindowLayout` | done |
 | 1. Commands | `Command`, `Shortcut`, `CommandHost`, `CommandRoot`; `EditorCommands`, `LibraryCommands`, commands of the extensions; tooltips with the shortcut; right-click menus in the library; menu bar of the desktop | done |
-| 2. Panels and sheets | `EditorPanel`, `EditorScaffold`; `AdaptiveSheet` for the configurators, the details and the settings; lecture and collaboration moved | |
+| 2. Panels and sheets | `EditorPanel`, `EditorScaffold`; `AdaptiveSheet` for the configurators, the details and the settings; the lecture moved | done |
 | 3. Editor | `EditorToolbar` and `ToolbarLayout`; floating tools on the phone; one bar when it fits; cursors of the canvas; camera commands (fit, pages) | |
 | 4. Library | `DocumentThumbnails`; grid; navigation pane; details beside; pointer selection; drag and drop | |
 | 5. Platforms | macOS title bar and window state; iPadOS shortcuts, menu bar and Pencil; Android shortcut helper, stylus button and hover | |
@@ -300,6 +303,31 @@ an iPad with a Pencil, an Android tablet with a stylus, a phone, a Mac with a tr
 * Not verified here: the menu bar of the system (a window is needed) and a hardware keyboard on
   an iPad or an Android tablet (the root of the commands takes the focus at first and when
   touched).
+
+### Phase 2 results
+
+* **The panels** (`EditorPanel`, `EditorScaffold`, `PanelPlacement`): an extension gives what its
+  panel shows, its title and the actions of its header; the editor places it by the width it has
+  (the expert of the space is the container: a panel opened in a wide window of a narrow editor
+  goes to the bottom too). In the reference windows one panel goes beside the canvas on the
+  tablets (portrait and landscape), the phone in landscape and the desktop; from the bottom on
+  the phone, in split screen and in a narrow desktop window. Two panels go side by side on the
+  desktop and in a tablet in landscape, in tabs on a tablet in portrait. The side panes keep clear
+  of the bars and the cutouts of the system (a phone in landscape).
+* **The lecture** gives `lecturePanel` (its settings in the header) and keeps its effect
+  (`LectureEditorEffects`: the recording sees the pages while the editor is open) and its settings
+  (`LectureSettings`, asked by the header and by a recording without a key) in `canvasOverlay`.
+  The settings are an `AdaptiveSheet`: a sheet on a phone, a dialog elsewhere.
+* **The sheets** (`AdaptiveSheet`): the configurators of the page and of the document background,
+  the details of a file of the library, the settings of the lecture. On a desktop and a tablet
+  they are dialogs, with all their content in sight (the configurator rose from the bottom of a
+  1440 dp window with half of it hidden). The collaboration had no sheet nor panel: its dialogs
+  stay alert dialogs.
+* Tests: the placement of one and two panels, the reference windows (`PanelPlacementTest`); 11
+  screenshots more: an editor panel in the seven reference windows, two panels on a tablet in
+  portrait (tabs) and on a desktop (side by side), the details of a note on a phone (sheet) and
+  on a desktop (dialog); the configurator on a tablet in landscape and on a desktop recorded again
+  (now a dialog). 34 screenshots in all.
 
 ### Risks
 

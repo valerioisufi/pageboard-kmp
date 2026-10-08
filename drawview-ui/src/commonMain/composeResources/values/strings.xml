@@ -137,4 +137,5 @@
     <string name="command_close">Close Document</string>
     <string name="command_zoom_in">Zoom In</string>
     <string name="command_zoom_out">Zoom Out</string>
+    <string name="common_action_close">Close</string>
 </resources>

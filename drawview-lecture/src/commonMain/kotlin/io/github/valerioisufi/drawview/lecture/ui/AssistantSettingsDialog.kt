@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -19,7 +18,6 @@ import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.ArrowDropUp
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -59,6 +57,7 @@ import io.github.valerioisufi.drawview.lecture.ReceivedLectures
 import io.github.valerioisufi.drawview.lecture.WhisperModel
 import io.github.valerioisufi.drawview.lecture.generated.resources.*
 import io.github.valerioisufi.drawview.lecture.platform.isComputer
+import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.util.formatDecimal
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
@@ -85,162 +84,160 @@ internal fun AssistantSettingsDialog(store: AssistantSettingsStore, localModels:
     val usesOllama = LectureTask.entries.any { it != LectureTask.TRANSCRIPTION && draft.task(it).provider == ModelProvider.LOCAL }
     val usesGemini = LectureTask.entries.any { draft.task(it).provider == ModelProvider.GEMINI }
 
-    AlertDialog(
+    // A sheet on a phone, a dialog on a tablet and a desktop
+    AdaptiveSheet(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(Res.string.lecture_title)) },
-        text = {
-            Column(
-                modifier = Modifier
-                    .widthIn(max = 520.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // --- Whether the models follow the lectures here ---
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(Res.string.lecture_settings_generate_here), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                    Switch(checked = draft.generateHere, onCheckedChange = { draft = draft.copy(generateHere = it) })
-                }
-                Hint(stringResource(Res.string.lecture_settings_generate_here_hint))
-                if (draft.generateHere) {
-                    HorizontalDivider()
-                    // --- Models of every kind of request ---
-                    SectionTitle(Res.string.lecture_settings_models)
-                    for (task in LectureTask.entries) {
-                        TaskModelRow(
-                            task = task,
-                            settings = draft,
-                            localModels = localModels,
-                            onChange = { draft = it.consistent() }
-                        )
-                    }
-
-                    // --- Ollama ---
-                    if (usesOllama) {
-                        HorizontalDivider()
-                        SectionTitle(Res.string.lecture_settings_local_section)
-                        OllamaStatus(localModels)
-                        // Not on this device: on a computer of the local network
-                        if (!isComputer) OllamaOnTheNetwork(draft.localUrl, localModels) { draft = draft.copy(localUrl = it) }
-                    }
-
-                    // --- Gemini ---
-                    if (usesGemini) {
-                        HorizontalDivider()
-                        SectionTitle(Res.string.lecture_settings_gemini_section)
-                        OutlinedTextField(
-                            value = draft.apiKey,
-                            onValueChange = { draft = draft.copy(apiKey = it) },
-                            label = { Text(stringResource(Res.string.lecture_settings_api_key)) },
-                            singleLine = true,
-                            visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
-                            trailingIcon = {
-                                IconButton(onClick = { showKey = !showKey }) {
-                                    Icon(
-                                        imageVector = if (showKey) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
-                                        contentDescription = stringResource(
-                                            if (showKey) Res.string.lecture_settings_hide_key else Res.string.lecture_settings_show_key
-                                        )
-                                    )
-                                }
-                            },
-                            supportingText = {
-                                Text(
-                                    stringResource(
-                                        if (draft.apiKey.isBlank() && store.usesEnvironmentKey) Res.string.lecture_settings_api_key_env
-                                        else Res.string.lecture_settings_api_key_hint
-                                    )
-                                )
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-
-                    // --- The lecture ---
-                    HorizontalDivider()
-                    SectionTitle(Res.string.lecture_settings_lecture_section)
-                    Column {
-                        Text(stringResource(Res.string.lecture_settings_chunk, draft.chunkSeconds), style = MaterialTheme.typography.bodyMedium)
-                        val range = AssistantSettings.CHUNK_SECONDS_RANGE
-                        Slider(
-                            value = draft.chunkSeconds.toFloat(),
-                            onValueChange = { draft = draft.copy(chunkSeconds = ((it / 15f).roundToInt() * 15).coerceIn(range)) },
-                            valueRange = range.first.toFloat()..range.last.toFloat(),
-                            steps = (range.last - range.first) / 15 - 1
-                        )
-                        Hint(stringResource(Res.string.lecture_settings_chunk_hint))
-                    }
-                    // The lectures recorded where the models are not
-                    Column {
-                        Text(stringResource(Res.string.lecture_settings_received), style = MaterialTheme.typography.bodyMedium)
-                        for (choice in ReceivedLectures.entries) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth().clickable { draft = draft.copy(receivedLectures = choice) }
-                            ) {
-                                RadioButton(selected = draft.receivedLectures == choice, onClick = { draft = draft.copy(receivedLectures = choice) })
-                                Text(
-                                    stringResource(
-                                        when (choice) {
-                                            ReceivedLectures.ASK -> Res.string.lecture_settings_received_ask
-                                            ReceivedLectures.ALWAYS -> Res.string.lecture_settings_received_always
-                                            ReceivedLectures.NEVER -> Res.string.lecture_settings_received_never
-                                        }
-                                    ),
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            }
-                        }
-                    }
-                    OutlinedTextField(
-                        value = draft.notesLanguage,
-                        onValueChange = { draft = draft.copy(notesLanguage = it) },
-                        label = { Text(stringResource(Res.string.lecture_settings_language)) },
-                        supportingText = { Text(stringResource(Res.string.lecture_settings_language_hint)) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    // --- Advanced ---
-                    HorizontalDivider()
-                    TextButton(onClick = { showAdvanced = !showAdvanced }) {
-                        Text(stringResource(Res.string.lecture_settings_advanced))
-                        Icon(if (showAdvanced) Icons.Outlined.ArrowDropUp else Icons.Outlined.ArrowDropDown, contentDescription = null)
-                    }
-                    if (showAdvanced) {
-                        OutlinedTextField(
-                            value = draft.localUrl,
-                            onValueChange = { draft = draft.copy(localUrl = it) },
-                            label = { Text(stringResource(Res.string.lecture_settings_local_url)) },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        OutlinedTextField(
-                            value = draft.whisperModel,
-                            onValueChange = { draft = draft.copy(whisperModel = it) },
-                            label = { Text(stringResource(Res.string.lecture_settings_whisper_file)) },
-                            supportingText = { Text(stringResource(Res.string.lecture_settings_whisper_file_hint)) },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        ThinkingLevel(draft.thinkingLevel) { draft = draft.copy(thinkingLevel = it) }
-                    }
-                }
+        actions = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(Res.string.lecture_action_cancel))
             }
-        },
-        confirmButton = {
             TextButton(onClick = {
                 store.update(draft)
                 onDismiss()
             }) {
                 Text(stringResource(Res.string.lecture_action_save))
             }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(Res.string.lecture_action_cancel))
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // --- Whether the models follow the lectures here ---
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(Res.string.lecture_settings_generate_here), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                Switch(checked = draft.generateHere, onCheckedChange = { draft = draft.copy(generateHere = it) })
+            }
+            Hint(stringResource(Res.string.lecture_settings_generate_here_hint))
+            if (draft.generateHere) {
+                HorizontalDivider()
+                // --- Models of every kind of request ---
+                SectionTitle(Res.string.lecture_settings_models)
+                for (task in LectureTask.entries) {
+                    TaskModelRow(
+                        task = task,
+                        settings = draft,
+                        localModels = localModels,
+                        onChange = { draft = it.consistent() }
+                    )
+                }
+
+                // --- Ollama ---
+                if (usesOllama) {
+                    HorizontalDivider()
+                    SectionTitle(Res.string.lecture_settings_local_section)
+                    OllamaStatus(localModels)
+                    // Not on this device: on a computer of the local network
+                    if (!isComputer) OllamaOnTheNetwork(draft.localUrl, localModels) { draft = draft.copy(localUrl = it) }
+                }
+
+                // --- Gemini ---
+                if (usesGemini) {
+                    HorizontalDivider()
+                    SectionTitle(Res.string.lecture_settings_gemini_section)
+                    OutlinedTextField(
+                        value = draft.apiKey,
+                        onValueChange = { draft = draft.copy(apiKey = it) },
+                        label = { Text(stringResource(Res.string.lecture_settings_api_key)) },
+                        singleLine = true,
+                        visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { showKey = !showKey }) {
+                                Icon(
+                                    imageVector = if (showKey) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                                    contentDescription = stringResource(
+                                        if (showKey) Res.string.lecture_settings_hide_key else Res.string.lecture_settings_show_key
+                                    )
+                                )
+                            }
+                        },
+                        supportingText = {
+                            Text(
+                                stringResource(
+                                    if (draft.apiKey.isBlank() && store.usesEnvironmentKey) Res.string.lecture_settings_api_key_env
+                                    else Res.string.lecture_settings_api_key_hint
+                                )
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                // --- The lecture ---
+                HorizontalDivider()
+                SectionTitle(Res.string.lecture_settings_lecture_section)
+                Column {
+                    Text(stringResource(Res.string.lecture_settings_chunk, draft.chunkSeconds), style = MaterialTheme.typography.bodyMedium)
+                    val range = AssistantSettings.CHUNK_SECONDS_RANGE
+                    Slider(
+                        value = draft.chunkSeconds.toFloat(),
+                        onValueChange = { draft = draft.copy(chunkSeconds = ((it / 15f).roundToInt() * 15).coerceIn(range)) },
+                        valueRange = range.first.toFloat()..range.last.toFloat(),
+                        steps = (range.last - range.first) / 15 - 1
+                    )
+                    Hint(stringResource(Res.string.lecture_settings_chunk_hint))
+                }
+                // The lectures recorded where the models are not
+                Column {
+                    Text(stringResource(Res.string.lecture_settings_received), style = MaterialTheme.typography.bodyMedium)
+                    for (choice in ReceivedLectures.entries) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth().clickable { draft = draft.copy(receivedLectures = choice) }
+                        ) {
+                            RadioButton(selected = draft.receivedLectures == choice, onClick = { draft = draft.copy(receivedLectures = choice) })
+                            Text(
+                                stringResource(
+                                    when (choice) {
+                                        ReceivedLectures.ASK -> Res.string.lecture_settings_received_ask
+                                        ReceivedLectures.ALWAYS -> Res.string.lecture_settings_received_always
+                                        ReceivedLectures.NEVER -> Res.string.lecture_settings_received_never
+                                    }
+                                ),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+                OutlinedTextField(
+                    value = draft.notesLanguage,
+                    onValueChange = { draft = draft.copy(notesLanguage = it) },
+                    label = { Text(stringResource(Res.string.lecture_settings_language)) },
+                    supportingText = { Text(stringResource(Res.string.lecture_settings_language_hint)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // --- Advanced ---
+                HorizontalDivider()
+                TextButton(onClick = { showAdvanced = !showAdvanced }) {
+                    Text(stringResource(Res.string.lecture_settings_advanced))
+                    Icon(if (showAdvanced) Icons.Outlined.ArrowDropUp else Icons.Outlined.ArrowDropDown, contentDescription = null)
+                }
+                if (showAdvanced) {
+                    OutlinedTextField(
+                        value = draft.localUrl,
+                        onValueChange = { draft = draft.copy(localUrl = it) },
+                        label = { Text(stringResource(Res.string.lecture_settings_local_url)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = draft.whisperModel,
+                        onValueChange = { draft = draft.copy(whisperModel = it) },
+                        label = { Text(stringResource(Res.string.lecture_settings_whisper_file)) },
+                        supportingText = { Text(stringResource(Res.string.lecture_settings_whisper_file_hint)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    ThinkingLevel(draft.thinkingLevel) { draft = draft.copy(thinkingLevel = it) }
+                }
             }
         }
-    )
+    }
 }
 
 /**

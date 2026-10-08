@@ -136,4 +136,5 @@
     <string name="command_close">Dokument schließen</string>
     <string name="command_zoom_in">Vergrößern</string>
     <string name="command_zoom_out">Verkleinern</string>
+    <string name="common_action_close">Schließen</string>
 </resources>

@@ -1,5 +1,7 @@
 package io.github.valerioisufi.drawview.explorer
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -8,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.DesktopComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -30,6 +33,8 @@ import io.github.valerioisufi.drawview.ui.adaptive.PlatformConventions
 import io.github.valerioisufi.drawview.ui.adaptive.ReferenceWindow
 import io.github.valerioisufi.drawview.ui.adaptive.ShortcutModifier
 import io.github.valerioisufi.drawview.ui.session.DocumentEditorViewModel
+import io.github.valerioisufi.drawview.ui.session.EditorExtension
+import io.github.valerioisufi.drawview.ui.session.EditorPanel
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import java.util.Locale
 import java.util.TimeZone
@@ -93,6 +98,41 @@ class AdaptiveScreenshotTest {
         mainClock.advanceTimeBy(1_000)
     }
 
+    /** A panel of an extension, placed by the editor: beside the canvas where it keeps room enough, else from the bottom. */
+    @Test
+    fun editorPanel() = ReferenceWindow.entries.forEach { window ->
+        capture("editor-panel", window, dark = false, extension = panelsExtension("Notes")) { viewModels -> openNote(viewModels) }
+    }
+
+    /** Two panels: side by side on a desktop, in tabs on a tablet in portrait. */
+    @Test
+    fun editorTwoPanels() = listOf(ReferenceWindow.TABLET_PORTRAIT, ReferenceWindow.DESKTOP).forEach { window ->
+        capture("editor-two-panels", window, dark = false, extension = panelsExtension("Notes", "Outline")) { viewModels -> openNote(viewModels) }
+    }
+
+    /** The details of a note: a sheet on a phone, a dialog on a desktop. */
+    @Test
+    fun libraryDetails() = listOf(ReferenceWindow.PHONE, ReferenceWindow.DESKTOP).forEach { window ->
+        capture("library-details", window, dark = false) {
+            onAllNodesWithContentDescription("Info")[4].performClick()
+        }
+    }
+
+    /** An extension with a panel named after each of [titles], open, listing a few notes. */
+    private fun panelsExtension(vararg titles: String) = EditorExtension(
+        panels = { _, _ ->
+            titles.map { title ->
+                EditorPanel(id = title, title = { title }, isOpen = { true }, onClose = {}) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        for (note in listOf("Limits of sequences", "The ε-δ definition", "Limits of functions")) {
+                            Text(note)
+                        }
+                    }
+                }
+            }
+        }
+    )
+
     /** Every reference window in the light theme, the phone and the desktop in the dark one too. */
     private fun forEachConfiguration(capture: (ReferenceWindow, dark: Boolean) -> Unit) {
         ReferenceWindow.entries.forEach { capture(it, false) }
@@ -107,6 +147,7 @@ class AdaptiveScreenshotTest {
         screen: String,
         window: ReferenceWindow,
         dark: Boolean,
+        extension: EditorExtension? = null,
         actions: DesktopComposeUiTest.(viewModels: ViewModelStoreOwner) -> Unit = {}
     ) = runDesktopComposeUiTest(width = window.width.value.toInt(), height = window.height.value.toInt()) {
         val storeScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -128,6 +169,7 @@ class AdaptiveScreenshotTest {
                         DocumentLibrary(
                             title = { Text("DrawView", modifier = Modifier.padding(horizontal = 16.dp)) },
                             store = store,
+                            editorExtension = extension,
                             modifier = Modifier.fillMaxSize()
                         )
                     }

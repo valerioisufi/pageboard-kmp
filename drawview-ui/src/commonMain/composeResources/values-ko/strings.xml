@@ -136,4 +136,5 @@
     <string name="command_close">문서 닫기</string>
     <string name="command_zoom_in">확대</string>
     <string name="command_zoom_out">축소</string>
+    <string name="common_action_close">닫기</string>
 </resources>

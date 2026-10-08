@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -43,6 +42,7 @@ import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Palette
+import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.components.AboutLicensesDialog
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.HoverTooltip
@@ -54,7 +54,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
@@ -113,6 +112,7 @@ import io.github.valerioisufi.drawview.ui.platform.HideSystemBarsEffect
 import io.github.valerioisufi.drawview.ui.platform.PickerType
 import io.github.valerioisufi.drawview.ui.platform.rememberFilePicker
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
+import io.github.valerioisufi.drawview.ui.session.EditorPanel
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
@@ -126,7 +126,8 @@ import org.jetbrains.compose.resources.stringResource
  * @param onNavigateBack invoked by the back button of the toolbar.
  * @param isLoading shows a progress bar while the document is loaded.
  * @param toolbarActions additional actions of the top bar, before the drawing mode toggle.
- * @param sidePanel panel shown at the end of the canvas (e.g. an assistant), sharing its height.
+ * @param panels panels contributed to the editor (e.g. an assistant), placed beside the canvas or
+ *   over it by [EditorScaffold].
  * @param canvasOverlay content drawn over the canvas (e.g. hints of an assistant).
  * @param extraCommands commands contributed to the editor (e.g. by its extensions), registered
  *   with those of the editor for the menu bar and the shortcuts.
@@ -139,7 +140,7 @@ fun DrawScreen(
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     toolbarActions: @Composable RowScope.() -> Unit = {},
-    sidePanel: @Composable () -> Unit = {},
+    panels: List<EditorPanel> = emptyList(),
     canvasOverlay: @Composable BoxScope.() -> Unit = {},
     extraCommands: List<Command> = emptyList()
 ) {
@@ -668,18 +669,15 @@ fun DrawScreen(
             }
 
             // =========================================================
-            // CANVAS AND OVERLAYS (+ SIDE PANEL)
+            // CANVAS AND OVERLAYS (+ PANELS)
             // =========================================================
-            Row(
+            EditorScaffold(
+                panels = panels,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
             ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                ) {
+                Box(modifier = Modifier.fillMaxSize()) {
                     if (isLoading) {
                         LinearProgressIndicator(
                             modifier = Modifier.fillMaxWidth(),
@@ -720,8 +718,6 @@ fun DrawScreen(
                             .padding(16.dp)
                     )
                 }
-
-                sidePanel()
             }
         }
 
@@ -752,7 +748,7 @@ fun DrawScreen(
         val targetIndex = controller.pageManager.contextMenuTargetPageIndex
         val targetPage = controller.document.pages.getOrNull(targetIndex)
 
-        ModalBottomSheet(onDismissRequest = { showSinglePageConfigurator = false }) {
+        AdaptiveSheet(onDismissRequest = { showSinglePageConfigurator = false }) {
             PageTemplateConfigurator(
                 initialDimension = targetPage?.dimension ?: Dimension.A4(),
                 initialBackground = targetPage?.background ?: PageBackground.Solid(),
@@ -768,7 +764,7 @@ fun DrawScreen(
     // 2. Whole document
     if (showDocumentConfigurator) {
         val document = controller.document
-        ModalBottomSheet(onDismissRequest = { showDocumentConfigurator = false }) {
+        AdaptiveSheet(onDismissRequest = { showDocumentConfigurator = false }) {
             PageTemplateConfigurator(
                 initialDimension = Dimension(document.defaultWidthMm.mm, document.defaultHeightMm.mm),
                 initialBackground = document.defaultBackground,

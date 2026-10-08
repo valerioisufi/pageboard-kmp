@@ -1,29 +1,17 @@
 package io.github.valerioisufi.drawview.lecture.ui
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
@@ -35,7 +23,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -73,7 +60,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -89,7 +75,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.AnnotatedString
@@ -130,7 +115,8 @@ import io.github.valerioisufi.drawview.lecture.formatLectureTime
 import io.github.valerioisufi.drawview.lecture.generated.resources.*
 import io.github.valerioisufi.drawview.lecture.platform.isComputer
 import io.github.valerioisufi.drawview.lecture.platform.rememberFileOpener
-import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
+import io.github.valerioisufi.drawview.ui.command.HoverTooltip
+import io.github.valerioisufi.drawview.ui.session.EditorPanel
 import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
@@ -143,118 +129,63 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-private val PanelWidth = 380.dp
+/** Whether the settings of the assistant are shown: asked by the header of the panel and by its recording. */
+internal class LecturePanelState {
+    var settingsShown by mutableStateOf(false)
+}
 
 /**
- * Whether the window leaves room for the panel beside the canvas; in a compact window (a phone)
- * the panel rises from the bottom over the canvas.
+ * The recording of [documentId] sees its pages while its editor is open (and goes on without):
+ * composed with the editor, the panel shown or not.
  */
 @Composable
-private fun panelBeside(): Boolean = !currentAdaptiveInfo().window.isCompact
-
-/**
- * The panel of the lecture assistant, beside the canvas of the editor of [documentId] (on a phone,
- * [LectureSheet] over it): recording, suggested notes, transcript, outline and final review.
- */
-@Composable
-internal fun LecturePanel(assistant: LectureAssistant, documentId: String, controller: DrawViewController) {
-    // The recording of the document sees its pages while the editor is open (and goes on without)
+internal fun LectureEditorEffects(assistant: LectureAssistant, documentId: String, controller: DrawViewController) {
     DisposableEffect(assistant, documentId, controller) {
         val notebook = ControllerNotebookSource(controller)
         assistant.onEditorShown(documentId, notebook)
         onDispose { assistant.onEditorHidden(documentId, notebook) }
     }
-    if (!panelBeside()) return
-
-    AnimatedVisibility(
-        visible = assistant.isPanelOpen,
-        enter = expandHorizontally(expandFrom = Alignment.Start) + fadeIn(),
-        exit = shrinkHorizontally(shrinkTowards = Alignment.Start) + fadeOut()
-    ) {
-        Row(modifier = Modifier.fillMaxHeight()) {
-            VerticalDivider()
-            // A surface, so that the texts take the content color of the theme
-            Surface(
-                color = MaterialTheme.colorScheme.surface,
-                modifier = Modifier
-                    .width(PanelWidth)
-                    .fillMaxHeight()
-            ) {
-                PanelContent(assistant, documentId, controller)
-            }
-        }
-    }
 }
 
 /**
- * The panel on a phone: it rises from the bottom over the canvas, which stays visible above it;
- * its handle makes it taller or shorter (dragged or tapped).
+ * The panel of the lecture assistant in the editor of [documentId]: recording, suggested notes,
+ * transcript, outline and final review. The editor places it (beside the canvas, or rising from
+ * the bottom over it on a phone) and draws its header, with the settings of the models.
  */
-@Composable
-internal fun BoxScope.LectureSheet(assistant: LectureAssistant, documentId: String, controller: DrawViewController) {
-    if (panelBeside()) return
-    var tall by remember { mutableStateOf(false) }
-    val fraction by animateFloatAsState(if (tall) SheetTallFraction else SheetFraction)
-    AnimatedVisibility(
-        visible = assistant.isPanelOpen,
-        enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-        exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
-        modifier = Modifier.align(Alignment.BottomCenter)
-    ) {
-        Surface(
-            color = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-            shadowElevation = 8.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(fraction)
-        ) {
-            // Above the bar of the system (the home indicator)
-            Column(modifier = Modifier.navigationBarsPadding()) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { tall = !tall }
-                        .pointerInput(Unit) {
-                            detectVerticalDragGestures { _, dragAmount ->
-                                if (dragAmount < -SheetDragThreshold) tall = true
-                                if (dragAmount > SheetDragThreshold) {
-                                    if (tall) tall = false else assistant.isPanelOpen = false
-                                }
-                            }
-                        }
-                        .padding(vertical = 8.dp)
-                ) {
-                    Box(
-                        Modifier
-                            .size(width = 32.dp, height = 4.dp)
-                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), RoundedCornerShape(2.dp))
-                    )
-                }
-                PanelContent(assistant, documentId, controller)
+internal fun lecturePanel(
+    assistant: LectureAssistant,
+    documentId: String,
+    controller: DrawViewController,
+    state: LecturePanelState
+): EditorPanel = EditorPanel(
+    id = "lecture",
+    title = { stringResource(Res.string.lecture_title) },
+    isOpen = { assistant.isPanelOpen },
+    onClose = { assistant.isPanelOpen = false },
+    actions = {
+        // The settings of the models, where they are
+        val settings = stringResource(Res.string.lecture_action_settings)
+        HoverTooltip(settings) {
+            IconButton(onClick = { state.settingsShown = true }) {
+                Icon(Icons.Outlined.Settings, contentDescription = settings)
             }
         }
+    },
+    content = { PanelContent(assistant, documentId, controller, state) }
+)
+
+/** The settings of the assistant, while asked. */
+@Composable
+internal fun LectureSettings(assistant: LectureAssistant, state: LecturePanelState) {
+    if (state.settingsShown) {
+        AssistantSettingsDialog(store = assistant.settingsStore, localModels = assistant.localModels, onDismiss = { state.settingsShown = false })
     }
 }
 
-/** The part of the canvas the panel takes on a phone, and when made taller. */
-private const val SheetFraction = 0.45f
-private const val SheetTallFraction = 0.85f
-
-/** A drag of the handle longer than this (in pixels, at once) moves the panel. */
-private const val SheetDragThreshold = 8f
-
-/** What the panel shows, beside the canvas or rising from the bottom. */
+/** What the panel shows under its header, beside the canvas or rising from the bottom. */
 @Composable
-private fun PanelContent(assistant: LectureAssistant, documentId: String, controller: DrawViewController) {
-    var showSettings by remember { mutableStateOf(false) }
+private fun PanelContent(assistant: LectureAssistant, documentId: String, controller: DrawViewController, state: LecturePanelState) {
     Column {
-        PanelHeader(
-            // The settings of the models, where they are
-            onSettings = { showSettings = true },
-            onClose = { assistant.isPanelOpen = false }
-        )
         val lecture = assistant.shownLecture(documentId)
         val recorder = assistant.recorderOf(documentId)
         LectureSelector(assistant, documentId, lecture)
@@ -272,44 +203,16 @@ private fun PanelContent(assistant: LectureAssistant, documentId: String, contro
             onStart = {
                 // A key is needed only when something is sent to Gemini
                 val settings = assistant.settingsStore.settings
-                if (assistant.canGenerate && settings.sentToGoogle.isNotEmpty() && !assistant.settingsStore.hasApiKey) showSettings = true
+                if (assistant.canGenerate && settings.sentToGoogle.isNotEmpty() && !assistant.settingsStore.hasApiKey) state.settingsShown = true
                 else assistant.record(documentId, controller)
             },
-            onOpenSettings = { showSettings = true }
+            onOpenSettings = { state.settingsShown = true }
         )
         if (lecture != null) PlayerBar(lecture)
         HorizontalDivider()
         if (lecture != null) {
             ProfessorPageBanner(lecture, controller)
             LectureTabs(assistant, lecture, controller)
-        }
-    }
-
-    if (showSettings) {
-        AssistantSettingsDialog(store = assistant.settingsStore, localModels = assistant.localModels, onDismiss = { showSettings = false })
-    }
-}
-
-@Composable
-private fun PanelHeader(onSettings: (() -> Unit)?, onClose: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = stringResource(Res.string.lecture_title),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.weight(1f)
-        )
-        if (onSettings != null) {
-            IconButton(onClick = onSettings) {
-                Icon(Icons.Outlined.Settings, contentDescription = stringResource(Res.string.lecture_action_settings))
-            }
-        }
-        IconButton(onClick = onClose) {
-            Icon(Icons.Outlined.Close, contentDescription = stringResource(Res.string.lecture_action_close))
         }
     }
 }
