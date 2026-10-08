@@ -11,6 +11,7 @@ import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.core.text.TextDefaults
 
 /**
  * A preset of a drawing tool.
@@ -32,8 +33,7 @@ data class ToolPreset(
 data class DrawPreferences(
     val isStylusOnlyMode: Boolean = false,
     val lastSelectedTool: Tool = Tool.INK_PEN,
-    val defaultTextFontSize: Float = 16f,
-    val defaultTextColor: Int = 0xFF000000.toInt(),
+    val textDefaults: TextDefaults = TextDefaults(),
     val presets: Map<Tool, List<ToolPreset>> = ToolManager.defaultPresets()
 )
 

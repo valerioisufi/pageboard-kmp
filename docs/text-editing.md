@@ -138,14 +138,14 @@ work against the user, and text can be lost.
 | The notation: spans of Markdown, inline and display formulas, escapes, rules of `$` and `_` | `RichTextParser` → `RichText` (`drawview-core`, `core.text`: pure Kotlin), replacing the parsing of `MarkdownTextUtil` | Information Expert, Pure Fabrication |
 | Present the notation: the field of the editor (concealed delimiters, concealed formula sources), the canvas (delimiters removed, formula placeholders) | `RichTextPresenter` (`drawview-ui`), from `MarkdownTextUtil` | High Cohesion |
 | Lay a text out: lines, words, formulas, height, automatic width; the metrics of a size (height of a line, first baseline) | `TextTileAdapter.measure(text)` and `metrics(fontSize)` added to the port; `ComposeTextTileAdapter` measuring with `Constraints.fixedWidth`; `NoteInserter` using it | Information Expert, Protected Variations |
-| The values of the style: range and presets of the sizes, alignment, defaults (size, color, alignment) | `TextSizes`, `TextAlignment` (`drawview-core`); the defaults with the tools (`ToolManager.textDefaults`, persisted) | Information Expert |
+| The values of the style: range and presets of the sizes, alignment, defaults (size, color, alignment) | `TextSizes`, `TextAlignment`, `TextDefaults` (`drawview-core`; the defaults in `DrawViewController.textDefaults` and `DrawPreferences`, persisted) | Information Expert |
 | Use case "write a text": start at a point or in a text at a character, the draft (content, style, box), move, resize, commit (measure, submit the change, report the draft), cancel | `TextEditorManager` owning the draft `TextData` (no callback to the UI, one commit) | Controller, Information Expert |
 | Where a new text goes: caret at the tap, automatic width, inside the page, first baseline on the line of the paper when snapping | `TextEditorManager.startNewText(page, pointMm)` with `metrics` and `SnapEngine` | Information Expert |
 | The field over the canvas: caret, selection, input method, rotation, formulas drawn over their concealed source | `TextBoxEditor` (`drawview-ui`) | High Cohesion, Pure Fabrication |
 | The formula under the caret: rendered above it, with the error when invalid, off the main thread | `FormulaPopover` (`drawview-ui`) | High Cohesion |
 | The frame of the selection and of the edited text: geometry, style in dp, handles, hit test | `SelectionFrame`, `FrameStyle`, `SelectionOverlay.drawFrame` (`drawview-core`), drawn by the canvas for both | Information Expert, High Cohesion |
 | The gestures on the handles of the edited text, as on the selection | `CanvasGestureHandler` (modes of the editor) → `TextEditorManager.moveBy`, `resizeWidth` | Controller |
-| The formatting actions: bold, italic, strikethrough, code, heading, formula, alignment, size, color | `TextCommands` (`drawview-ui`, `Command`s with shortcuts, the Format menu, tooltips), acting on the text being written or on the selected texts | Controller, Polymorphism (target) |
+| The formatting actions: bold, italic, strikethrough, code, heading, formula, alignment, size, color | the format commands of `EditorCommands` (`drawview-ui`: shortcuts, the Format menu, tooltips) acting on `DrawViewController.textFormatTarget`: a `TextFormatTarget` (`drawview-core`), the text being written (`TextEditorManager`) or the texts selected (`SelectionManager.selectedTexts`) | Controller, Polymorphism (target) |
 | The formatting bar, one for both targets, placed by the window: above the keyboard on a phone, floating by the box on a tablet or a desktop | `TextFormatBar` (`drawview-ui`) with `AdaptiveInfo` | High Cohesion, Low Coupling |
 | The size control: steps on the presets, a typed value, the whole range | `FontSizeControl` (`drawview-ui`) with `TextSizes` | Information Expert |
 | Snapping: the candidates (edges, margins and center of the page, edges and centers of the other elements, lines of the background), the threshold in screen pixels, the result and its guides | `SnapEngine` (`drawview-core`); the lines from `PageBackground.pattern`; guides drawn by `SnapGuidesOverlay` | Pure Fabrication, Indirection, Information Expert |
@@ -195,7 +195,7 @@ work against the user, and text can be lost.
 | 3 | The editing session: `TextEditorManager` owns the draft and commits (no callback, height from the port), `TextBoxEditor` and `TextFormatBar` split out of `TextEditorOverlay`; tests of the use case in the core | Done |
 | 4 | One frame: `FrameStyle` in dp, one drawing (`SelectionOverlay.drawFrame`) for the selection and the editor, the handles of the editor routed by `CanvasGestureHandler`, rotated texts edited rotated; screenshot tests of both frames | Done |
 | 5 | Formulas in the editor: drawn over their concealed source, popover at the caret with the errors (a spike first, see [Risks](#risks)) | Done |
-| 6 | Formatting: `TextCommands` (shortcuts, Format menu, tooltips), `TextFormatBar` shared with the lasso and placed by `AdaptiveInfo`, `TextSizes` and `FontSizeControl`, alignment icons, defaults with the alignment | To do |
+| 6 | Formatting: `TextCommands` (shortcuts, Format menu, tooltips), `TextFormatBar` shared with the lasso and placed by `AdaptiveInfo`, `TextSizes` and `FontSizeControl`, alignment icons, defaults with the alignment | Done |
 | 7 | Creating and sizing: automatic width, box drawn by a drag, one tap to move to another text, text pasted from the system, texts copied as plain text | To do |
 | 8 | Snapping: `SnapEngine`, guides, moving the selection and the edited text, width handles, new texts on the lines of the paper, images being placed; ⌥ / Alt and the switch | To do |
 | 9 | Proposed: bulleted, numbered and check lists; a choice of fonts; completion of the LaTeX commands while typing | Proposed |
@@ -312,6 +312,33 @@ work against the user, and text can be lost.
 * `BasicTextField` accepts no placeholders, as foreseen in [Risks](#risks); the concealed
   character replaced them on the desktop. Its caret, input methods and handles are to be checked
   on the phones and tablets.
+
+### Phase 6 results
+
+* `TextSizes` (4–288 pt, the presets of the word processors, `larger`, `smaller`, `clamp`) is the
+  only place of the sizes: the editor, the selection (also scaled by its corners: the scale of a
+  selection stops where one of its texts would leave the range) and the defaults use it.
+  `FontSizeControl` steps through the presets and opens them all with a field for any size; it
+  replaces the stepper of 8–72 pt and the sliders of 10–48 and 10–60 pt.
+* `TextFormatTarget` (`drawview-core`) is what the formatting applies to: the text being written
+  (`TextEditorManager`: size, color, alignment, and the formats of its characters) or the texts
+  selected (`SelectionManager.selectedTexts`: their style); `DrawViewController.textFormatTarget`
+  tells which. The style of a new text is `TextDefaults` (size, color, alignment: the alignment is
+  remembered too), stored with the preferences (Room version 14).
+* The format commands of `EditorCommands` (menu Format): bold ⌘B, italic ⌘I, strikethrough ⌘⇧X,
+  code ⌘E, formula ⌘⇧M, heading ⌘⌥1, alignment ⌘⇧L / ⌘⇧C / ⌘⇧R, size ⌘⇧. / ⌘⇧, (Ctrl
+  elsewhere); the buttons run them and show their tooltips.
+* One set of controls (`TextStyleControls`: size, color, alignment with its three icons) in the
+  formatting bar of the editor, in the bar of the selection and, with the defaults as target, in
+  the settings of the tool. `TextFormatBar` adds the formats of the characters and the button
+  closing the editor.
+* The bar is placed by the window: above the keyboard on a phone or when the software keyboard is
+  shown, by the frame of the text elsewhere (above it, below it without room above); on a phone
+  the floating tools give it their place while a text is written.
+* Tests: the format commands on the text written and on the texts selected (by their keys too),
+  the range and the steps of the sizes, the scale of a selection stopped by its texts, the
+  formatting target and its undo, the defaults stored; screenshots of the bar by the text, at the
+  bottom of a phone and in the bar of a selection.
 
 ## Decisions
 

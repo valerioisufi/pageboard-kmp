@@ -35,6 +35,8 @@ import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.render.tile.TextBlockSize
 import io.github.valerioisufi.drawview.core.render.tile.TextLineMetrics
 import io.github.valerioisufi.drawview.core.render.tile.TileManager
+import io.github.valerioisufi.drawview.core.text.TextDefaults
+import io.github.valerioisufi.drawview.core.text.TextSizes
 import kotlin.math.hypot
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineScope
@@ -153,9 +155,8 @@ class DrawViewController(
     /** Screen position of the long-press context menu, or `null` when hidden. */
     var contextMenuPosition by mutableStateOf<Offset?>(null)
 
-    var defaultTextFontSize by mutableFloatStateOf(16f)
-        private set
-    var defaultTextColor by mutableIntStateOf(0xFF000000.toInt())
+    /** The style of a new text: the one of the text written last. */
+    var textDefaults by mutableStateOf(TextDefaults())
         private set
 
     val selectedTool: Tool get() = toolManager.selectedTool
@@ -249,11 +250,18 @@ class DrawViewController(
         }
     }
 
-    fun updateTextDefaults(fontSize: Float, color: Int) {
-        if (defaultTextFontSize == fontSize && defaultTextColor == color) return
-        defaultTextFontSize = fontSize
-        defaultTextColor = color
-        persist { saveTextDefaults(fontSize, color) }
+    /**
+     * What the formatting of the texts applies to now: the text being written, the texts
+     * selected, or `null`.
+     */
+    val textFormatTarget: TextFormatTarget?
+        get() = if (textEditorManager.isEditing) textEditorManager else selectionManager.selectedTexts
+
+    fun updateTextDefaults(defaults: TextDefaults) {
+        val clamped = defaults.copy(fontSize = TextSizes.clamp(defaults.fontSize))
+        if (textDefaults == clamped) return
+        textDefaults = clamped
+        persist { saveTextDefaults(clamped) }
     }
 
     /**
@@ -261,8 +269,7 @@ class DrawViewController(
      */
     fun applyPreferences(preferences: DrawPreferences) {
         isStylusOnlyMode = preferences.isStylusOnlyMode
-        defaultTextFontSize = preferences.defaultTextFontSize
-        defaultTextColor = preferences.defaultTextColor
+        textDefaults = preferences.textDefaults
         toolManager.applyPreferences(preferences)
     }
 

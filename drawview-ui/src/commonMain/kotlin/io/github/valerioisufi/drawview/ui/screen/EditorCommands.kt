@@ -1,12 +1,21 @@
 package io.github.valerioisufi.drawview.ui.screen
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.FormatAlignLeft
+import androidx.compose.material.icons.automirrored.filled.FormatAlignRight
 import androidx.compose.material.icons.automirrored.outlined.Redo
 import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.ContentPaste
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FormatAlignCenter
+import androidx.compose.material.icons.filled.FormatBold
+import androidx.compose.material.icons.filled.FormatItalic
+import androidx.compose.material.icons.filled.FormatStrikethrough
+import androidx.compose.material.icons.filled.Functions
+import androidx.compose.material.icons.filled.Title
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
@@ -14,17 +23,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.core.text.RichTextEditing.Format
+import io.github.valerioisufi.drawview.core.text.TextSizes
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.command.Shortcut
-import io.github.valerioisufi.drawview.ui.platform.PencilAction
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.about_dialog_title
 import io.github.valerioisufi.drawview.ui.generated.resources.command_close
@@ -43,12 +55,14 @@ import io.github.valerioisufi.drawview.ui.generated.resources.common_action_undo
 import io.github.valerioisufi.drawview.ui.generated.resources.context_menu_action_add_page
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_menu_document_background
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_menu_stylus_only
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_decrease_font_size
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_draw
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_eraser
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_grid_view
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_highlighter
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_import_image
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_import_pdf
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_increase_font_size
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_ink_pen
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_lasso
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_pan
@@ -61,6 +75,16 @@ import io.github.valerioisufi.drawview.ui.generated.resources.icon_lasso_select
 import io.github.valerioisufi.drawview.ui.generated.resources.icon_pan_tool
 import io.github.valerioisufi.drawview.ui.generated.resources.icon_text_fields
 import io.github.valerioisufi.drawview.ui.generated.resources.icon_text_markup
+import io.github.valerioisufi.drawview.ui.generated.resources.text_align_center
+import io.github.valerioisufi.drawview.ui.generated.resources.text_align_end
+import io.github.valerioisufi.drawview.ui.generated.resources.text_align_start
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_bold
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_code
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_heading
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_italic
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_math
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_strikethrough
+import io.github.valerioisufi.drawview.ui.platform.PencilAction
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
@@ -275,6 +299,67 @@ class EditorCommands internal constructor(
         }
     }
 
+    // ----- Format -----
+
+    /** The texts the formatting applies to: the text being written or the texts selected. */
+    private val textTarget get() = controller.textFormatTarget?.takeIf { controller.isDrawingMode && writable() }
+
+    val bold = characterFormat(Format.BOLD, Res.string.text_editor_action_bold, Icons.Default.FormatBold, primary(Key.B))
+    val italic = characterFormat(Format.ITALIC, Res.string.text_editor_action_italic, Icons.Default.FormatItalic, primary(Key.I))
+    val strikethrough = characterFormat(
+        Format.STRIKETHROUGH, Res.string.text_editor_action_strikethrough, Icons.Default.FormatStrikethrough, Shortcut(Key.X, primary = true, shift = true)
+    )
+    val code = characterFormat(Format.CODE, Res.string.text_editor_action_code, Icons.Default.Code, primary(Key.E))
+    val formula = characterFormat(Format.FORMULA, Res.string.text_editor_action_math, Icons.Default.Functions, Shortcut(Key.M, primary = true, shift = true))
+
+    val heading = Command(
+        "format-heading", label(Res.string.text_editor_action_heading), CommandGroup.FORMAT,
+        icon = { rememberVectorPainter(Icons.Default.Title) },
+        shortcuts = listOf(Shortcut(Key.One, primary = true, alt = true)),
+        isEnabled = { textTarget?.formatsCharacters == true }
+    ) { textTarget?.toggleHeading() }
+
+    val alignStart = alignment(TextAlignment.START, Res.string.text_align_start, Icons.AutoMirrored.Filled.FormatAlignLeft, Key.L)
+    val alignCenter = alignment(TextAlignment.CENTER, Res.string.text_align_center, Icons.Default.FormatAlignCenter, Key.C)
+    val alignEnd = alignment(TextAlignment.END, Res.string.text_align_end, Icons.AutoMirrored.Filled.FormatAlignRight, Key.R)
+
+    val largerText = Command(
+        "format-larger", label(Res.string.draw_toolbar_action_increase_font_size), CommandGroup.FORMAT, section = 2,
+        shortcuts = listOf(Shortcut(Key.Period, primary = true, shift = true)),
+        isEnabled = { textTarget.let { it != null && it.fontSize < TextSizes.MAX } }
+    ) { textTarget?.let { it.changeFontSize(TextSizes.larger(it.fontSize)) } }
+
+    val smallerText = Command(
+        "format-smaller", label(Res.string.draw_toolbar_action_decrease_font_size), CommandGroup.FORMAT, section = 2,
+        shortcuts = listOf(Shortcut(Key.Comma, primary = true, shift = true)),
+        isEnabled = { textTarget.let { it != null && it.fontSize > TextSizes.MIN } }
+    ) { textTarget?.let { it.changeFontSize(TextSizes.smaller(it.fontSize)) } }
+
+    /** The commands of the formatting bars and of the menu Format. */
+    val formats: List<Command> = listOf(bold, italic, strikethrough, code, formula, heading, alignStart, alignCenter, alignEnd, largerText, smallerText)
+
+    /** The command adding or removing [format] around the selection of the text being written. */
+    private fun characterFormat(format: Format, title: StringResource, icon: ImageVector, shortcut: Shortcut) = Command(
+        id = "format-${format.name.lowercase()}",
+        label = label(title),
+        group = CommandGroup.FORMAT,
+        icon = { rememberVectorPainter(icon) },
+        shortcuts = listOf(shortcut),
+        isEnabled = { textTarget?.formatsCharacters == true }
+    ) { textTarget?.toggle(format) }
+
+    /** The command aligning the lines of the texts at [alignment], ⌘⇧ + [key]. */
+    private fun alignment(alignment: TextAlignment, title: StringResource, icon: ImageVector, key: Key) = Command(
+        id = "align-${alignment.name.lowercase()}",
+        label = label(title),
+        group = CommandGroup.FORMAT,
+        section = 1,
+        icon = { rememberVectorPainter(icon) },
+        shortcuts = listOf(Shortcut(key, primary = true, shift = true)),
+        isEnabled = { textTarget != null },
+        isChecked = { textTarget?.alignment == alignment }
+    ) { textTarget?.changeAlignment(alignment) }
+
     // ----- Help -----
 
     val about = Command("about", label(Res.string.about_dialog_title), CommandGroup.HELP) { actions.showAbout() }
@@ -288,7 +373,7 @@ class EditorCommands internal constructor(
         documentBackground,
         drawingMode, pen, highlighter, textMarkup, eraser, text, lasso, pan, previousTool,
         about
-    )
+    ) + formats
 
     /**
      * The command choosing [tool] (in drawing mode): its single key [key] is left to the text being

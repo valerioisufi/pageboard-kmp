@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -27,7 +25,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,17 +37,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.ui.components.FontSizeStepper
-import io.github.valerioisufi.drawview.ui.components.TextColorPaletteRow
-import io.github.valerioisufi.drawview.ui.components.TextColorPickerDialog
 import io.github.valerioisufi.drawview.ui.generated.resources.*
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandTooltip
@@ -59,7 +51,7 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * Floating contextual action bar of the lasso selection: cut, copy, delete and, for texts,
- * edit, color and font size.
+ * edit and their style (size, color, alignment: the controls of the formatting bar).
  *
  * @param commands the commands of the editor, whose tooltips the buttons show.
  */
@@ -84,9 +76,6 @@ fun SelectionActionBar(
         val current = selection
         val hasTexts = current?.texts?.isNotEmpty() == true
         val isSingleText = current?.isSingleText == true
-        var showLassoColorMenu by remember { mutableStateOf(false) }
-        var showLassoColorWheelDialog by remember { mutableStateOf(false) }
-        val firstTextColor = Color(current?.texts?.firstOrNull()?.color ?: 0xFF000000.toInt())
 
         ElevatedCard(
             modifier = Modifier.padding(top = 24.dp),
@@ -140,55 +129,12 @@ fun SelectionActionBar(
                         }
                     }
 
-                    // Color of the selected texts
-                    Box {
-                        IconButton(onClick = { showLassoColorMenu = true }) {
-                            Box(
-                                modifier = Modifier
-                                    .size(22.dp)
-                                    .clip(CircleShape)
-                                    .background(firstTextColor)
-                                    .border(2.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), CircleShape)
-                            )
-                        }
-
-                        DropdownMenu(
-                            expanded = showLassoColorMenu,
-                            onDismissRequest = { showLassoColorMenu = false },
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Box(modifier = Modifier.padding(8.dp)) {
-                                TextColorPaletteRow(
-                                    selectedColor = firstTextColor,
-                                    onColorSelected = {
-                                        selectionManager.updateSelectedTextsColor(it.toArgb())
-                                        showLassoColorMenu = false
-                                    },
-                                    onCustomWheelClick = {
-                                        showLassoColorMenu = false
-                                        showLassoColorWheelDialog = true
-                                    }
-                                )
-                            }
-                        }
+                    // Size, color and alignment of the selected texts, as in the editor
+                    controller.selectionManager.selectedTexts?.let { texts ->
+                        TextStyleControls(texts, commands)
                     }
-
-                    // Font size of the selected texts
-                    val currentSize = current.texts.firstOrNull()?.fontSize ?: 16f
-                    FontSizeStepper(
-                        fontSizePt = currentSize,
-                        onFontSizeChanged = { newSize -> selectionManager.updateSelectedTextsFontSize(newSize) }
-                    )
                 }
             }
-        }
-
-        if (showLassoColorWheelDialog) {
-            TextColorPickerDialog(
-                initialColor = firstTextColor,
-                onDismissRequest = { showLassoColorWheelDialog = false },
-                onColorConfirmed = { selectionManager.updateSelectedTextsColor(it.toArgb()) }
-            )
         }
     }
 }

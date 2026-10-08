@@ -383,6 +383,8 @@ data class UserPreferencesEntity(
     // --- Text Preferences ---
     val defaultTextFontSize: Float = 16f,
     val defaultTextColor: Int = 0xFF000000.toInt(),
+    /** The name of the `TextAlignment` of a new text. */
+    val defaultTextAlignment: String = "START",
 
     // --- Tool Configurations ---
     val penPresets: List<BrushSettingsData> = emptyList(),

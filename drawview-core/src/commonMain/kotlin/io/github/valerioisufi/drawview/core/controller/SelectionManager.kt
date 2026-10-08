@@ -25,6 +25,8 @@ import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.LassoMode
+import io.github.valerioisufi.drawview.core.model.TextAlignment
+import io.github.valerioisufi.drawview.core.text.TextSizes
 import kotlin.math.max
 import kotlin.math.min
 
@@ -268,12 +270,22 @@ class SelectionManager(private val controller: DrawViewController) {
         notifyChanged()
     }
 
-    /** Scales the selection by [factor] around its (transformed) center. */
+    /**
+     * Scales the selection by [factor] around its (transformed) center; never its texts beyond
+     * the sizes of the texts (see [TextSizes]).
+     */
     fun scaleBy(factor: Float) {
         val selection = currentSelection ?: return
         if (!(factor > 0f) || !factor.isFinite()) return
+        var applied = factor
+        if (selection.texts.isNotEmpty()) {
+            val current = selection.transform.scaleFactor.takeIf { it > 0f } ?: return
+            val least = selection.texts.maxOf { TextSizes.MIN / it.fontSize }
+            val most = selection.texts.minOf { TextSizes.MAX / it.fontSize }
+            applied = (current * factor).coerceIn(least, most.coerceAtLeast(least)) / current
+        }
         val c = selection.transform.mapPoint(selection.boundingBox.center.x, selection.boundingBox.center.y)
-        selection.transform.postScale(factor, factor, c.x, c.y)
+        selection.transform.postScale(applied, applied, c.x, c.y)
         notifyChanged()
     }
 
@@ -513,6 +525,22 @@ class SelectionManager(private val controller: DrawViewController) {
     // Text formatting of the selection
     // ==========================================================
 
+    /** The texts selected, as a target of the formatting; `null` when no text is selected. */
+    val selectedTexts: TextFormatTarget?
+        get() = currentSelection?.takeIf { it.texts.isNotEmpty() }?.let { SelectedTexts(it) }
+
+    /** The texts of [selection], formatted together (the first one tells their style). */
+    private inner class SelectedTexts(private val selection: SelectionGroup) : TextFormatTarget {
+        // Read by the composition: follows the changes of the selected texts
+        private val first get() = selection.texts.first().also { selectionVersion }
+        override val fontSize: Float get() = first.fontSize
+        override val color: Int get() = first.color
+        override val alignment: TextAlignment get() = first.alignment
+        override fun changeFontSize(size: Float) = updateSelectedTextsFontSize(size)
+        override fun changeColor(argb: Int) = updateSelectedTextsColor(argb)
+        override fun changeAlignment(newAlignment: TextAlignment) = updateSelectedTextsAlignment(newAlignment)
+    }
+
     fun updateSelectedTextsColor(color: Int) {
         val selection = currentSelection ?: return
         if (selection.texts.isEmpty()) return
@@ -525,7 +553,7 @@ class SelectionManager(private val controller: DrawViewController) {
         val selection = currentSelection ?: return
         if (selection.texts.isEmpty()) return
         val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
-        val clamped = fontSize.coerceIn(8f, 72f)
+        val clamped = TextSizes.clamp(fontSize)
         // The text box grows with the font, its lines wrapping again on the same width
         val texts = selection.texts.map {
             val resized = it.toData().copy(fontSize = clamped)
@@ -537,6 +565,14 @@ class SelectionManager(private val controller: DrawViewController) {
             val t = selection.texts[0]
             selection.boundingBox = Rect(t.x, t.y, t.x + t.width, t.y + t.height)
         }
+        notifyChanged()
+    }
+
+    fun updateSelectedTextsAlignment(alignment: TextAlignment) {
+        val selection = currentSelection ?: return
+        if (selection.texts.isEmpty()) return
+        val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
+        controller.session.submit(UpdateTexts(page.id, selection.texts.map { it.toData().copy(alignment = alignment) }))
         notifyChanged()
     }
 }

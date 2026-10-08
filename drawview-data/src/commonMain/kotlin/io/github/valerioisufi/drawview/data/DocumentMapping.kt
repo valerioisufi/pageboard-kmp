@@ -4,8 +4,10 @@ import io.github.valerioisufi.drawview.core.controller.DrawPreferences
 import io.github.valerioisufi.drawview.core.controller.ToolManager
 import io.github.valerioisufi.drawview.core.controller.ToolPreset
 import io.github.valerioisufi.drawview.core.model.StrokeTool
+import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.core.text.TextDefaults
 import io.github.valerioisufi.drawview.data.db.BrushSettingsData
 
 /**
@@ -23,6 +25,7 @@ internal fun buildDrawPreferences(
     lastSelectedTool: String,
     defaultTextFontSize: Float,
     defaultTextColor: Int,
+    defaultTextAlignment: String,
     penPresets: List<BrushSettingsData>,
     highlighterPresets: List<BrushSettingsData>,
     eraserPresets: List<BrushSettingsData>,
@@ -37,8 +40,11 @@ internal fun buildDrawPreferences(
     return DrawPreferences(
         isStylusOnlyMode = isStylusOnlyMode,
         lastSelectedTool = Tool.entries.firstOrNull { it.name == lastSelectedTool } ?: Tool.INK_PEN,
-        defaultTextFontSize = defaultTextFontSize,
-        defaultTextColor = defaultTextColor,
+        textDefaults = TextDefaults(
+            fontSize = defaultTextFontSize,
+            color = defaultTextColor,
+            alignment = TextAlignment.fromName(defaultTextAlignment) ?: TextAlignment.START
+        ),
         presets = mapOf(
             Tool.INK_PEN to map(Tool.INK_PEN, penPresets, StrokeTool.PRESSURE_PEN),
             Tool.INK_HIGHLIGHTER to map(Tool.INK_HIGHLIGHTER, highlighterPresets, StrokeTool.HIGHLIGHTER),

@@ -18,32 +18,41 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.dp
+import io.github.valerioisufi.drawview.core.canvas.SelectionFrame
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
+import io.github.valerioisufi.drawview.ui.screen.EditorCommands
+import kotlin.math.roundToInt
 
 /**
  * The editor of the text being written (see `TextEditorManager`): its field over the canvas and
- * its formatting bar above the software keyboard; the text is kept above both.
+ * its formatting bar, the text kept above the keyboard and the bar.
+ *
+ * The bar is where the hands are: above the software keyboard on a phone or when the keyboard is
+ * shown, by the frame of the text elsewhere (a tablet with a keyboard, a desktop), above it or
+ * below it when there is no room above.
  *
  * No pointer input of its own: outside the field and the bar the canvas keeps its gestures (a tap
  * outside saves the text).
  */
 @Composable
-fun TextEditorOverlay(controller: DrawViewController) {
+fun TextEditorOverlay(controller: DrawViewController, commands: EditorCommands) {
     val editor = controller.textEditorManager
     if (!editor.isEditing || !controller.isDrawingMode) return
     // Every editing session starts from a fresh state
     key(editor.sessionId) {
-        TextEditorSession(controller)
+        TextEditorSession(controller, commands)
     }
 }
 
 @Composable
-private fun TextEditorSession(controller: DrawViewController) {
+private fun TextEditorSession(controller: DrawViewController, commands: EditorCommands) {
     val editor = controller.textEditorManager
     val density = LocalDensity.current
     val imeBottom = WindowInsets.ime.getBottom(density)
@@ -51,6 +60,7 @@ private fun TextEditorSession(controller: DrawViewController) {
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
     // Height of the formatting bar: the edited text is kept above it
     var barHeightPx by remember { mutableIntStateOf(0) }
+    val atBottom = currentAdaptiveInfo().window.isCompact || imeBottom > 0
 
     DisposableEffect(Unit) {
         onDispose { keyboardController?.hide() }
@@ -61,25 +71,34 @@ private fun TextEditorSession(controller: DrawViewController) {
 
         TextBoxEditor(controller, onLayout = { layout = it })
 
-        TextFormatBar(
-            editor,
-            modifier = Modifier
+        val barModifier = if (atBottom) {
+            Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = with(density) { imeBottom.toDp() } + 8.dp)
-                .onSizeChanged { barHeightPx = it.height }
+        } else {
+            Modifier.besideEditedText(controller)
+        }
+        TextFormatBar(
+            target = editor,
+            commands = commands,
+            onDone = editor::finishEditing,
+            modifier = barModifier.onSizeChanged { barHeightPx = it.height }
         )
 
         // Keeps the edited text above the software keyboard and the formatting bar. Not keyed on
         // the layout itself, which changes at every zoom step: it would fight a pinch
         val lineCount = layout?.lineCount ?: 0
-        LaunchedEffect(editor.value.text, lineCount, imeBottom, containerHeightPx, barHeightPx) {
+        LaunchedEffect(editor.value.text, lineCount, imeBottom, containerHeightPx, barHeightPx, atBottom) {
             val current = layout ?: return@LaunchedEffect
             if (current.lineCount == 0) return@LaunchedEffect
             val top = controller.pageMmToScreen(editor.activeTextPageIndex)?.mapPoint(editor.boxX, editor.boxY)?.y ?: return@LaunchedEffect
             val textBottom = top + current.getLineBottom(current.lineCount - 1)
-            // The bar sits 8 dp above the keyboard; the box border and its handles extend below the
-            // last line: 32 dp of free space above the bar
-            val marginPx = maxOf(with(density) { 80.dp.toPx() }, barHeightPx + with(density) { 40.dp.toPx() })
+            // A bar at the bottom sits 8 dp above the keyboard; the frame extends below the last line
+            val marginPx = if (atBottom) {
+                maxOf(with(density) { 80.dp.toPx() }, barHeightPx + with(density) { 40.dp.toPx() })
+            } else {
+                with(density) { 40.dp.toPx() }
+            }
             val safeBottom = containerHeightPx - imeBottom - marginPx
             if (textBottom > safeBottom) {
                 var previous = 0f
@@ -92,3 +111,33 @@ private fun TextEditorSession(controller: DrawViewController) {
         }
     }
 }
+
+/**
+ * Places the element by the frame of the text being written: centered on it, above it, or below
+ * it when there is no room above; always inside the canvas.
+ */
+private fun Modifier.besideEditedText(controller: DrawViewController): Modifier = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
+    val width = if (constraints.hasBoundedWidth) constraints.maxWidth else placeable.width
+    val height = if (constraints.hasBoundedHeight) constraints.maxHeight else placeable.height
+    layout(width, height) {
+        // Read while placing: follows the camera and the box without composing again
+        @Suppress("UNUSED_VARIABLE") val frameVersion = controller.version
+        @Suppress("UNUSED_VARIABLE") val camera = controller.cameraPhysics.moveCount
+        val frame = SelectionFrame.ofEditedText(controller)
+        val gap = BAR_GAP.roundToPx()
+        if (frame == null) {
+            placeable.place((width - placeable.width) / 2, gap)
+            return@layout
+        }
+        val top = frame.corners.minOf { it.y }
+        val bottom = frame.corners.maxOf { it.y }
+        val centerX = frame.center.x
+        val x = (centerX - placeable.width / 2f).roundToInt().coerceIn(gap, (width - placeable.width - gap).coerceAtLeast(gap))
+        val above = (top - gap - placeable.height).roundToInt()
+        val y = if (above >= gap) above else (bottom + gap).roundToInt().coerceAtMost((height - placeable.height - gap).coerceAtLeast(gap))
+        placeable.place(x, y)
+    }
+}
+
+private val BAR_GAP = 12.dp

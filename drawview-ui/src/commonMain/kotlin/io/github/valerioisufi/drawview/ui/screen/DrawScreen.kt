@@ -284,13 +284,15 @@ fun DrawScreen(
                             onEditPageBackground = { showSinglePageConfigurator = true }
                         )
 
-                        TextEditorOverlay(controller = controller)
+                        TextEditorOverlay(controller = controller, commands = commands)
 
                         canvasOverlay()
                     }
 
                     // The tools floating at the bottom, above the panels rising from there
-                    val floating = arrangement == ToolbarArrangement.FLOATING_TOOLS && controller.isDrawingMode && !isLoading
+                    // (while a text is written its formatting bar takes their place)
+                    val floating = arrangement == ToolbarArrangement.FLOATING_TOOLS && controller.isDrawingMode && !isLoading &&
+                        !controller.textEditorManager.isEditing
                     // Not the one of the column of the screen, around
                     androidx.compose.animation.AnimatedVisibility(
                         visible = floating,

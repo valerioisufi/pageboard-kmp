@@ -71,6 +71,8 @@ internal fun keyName(key: Key, apple: Boolean): String {
         Key.Plus, Key.NumPadAdd -> "+"
         Key.Minus, Key.NumPadSubtract -> "-"
         Key.Equals -> "="
+        Key.Period -> "."
+        Key.Comma -> ","
         Key.DirectionUp -> "↑"
         Key.DirectionDown -> "↓"
         Key.DirectionLeft -> "←"

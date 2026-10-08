@@ -96,6 +96,10 @@
     <string name="text_editor_action_heading">Titre</string>
     <string name="text_editor_action_math">Formule</string>
     <string name="text_editor_formula_invalid">Formule non valide</string>
+    <string name="text_align_start">Aligner à gauche</string>
+    <string name="text_align_center">Centrer</string>
+    <string name="text_align_end">Aligner à droite</string>
+    <string name="text_font_size_points">Taille (pt)</string>
     <string name="text_editor_action_save">Enregistrer</string>
     <string name="text_editor_action_alignment">Alignement</string>
     <string name="draw_toolbar_action_add_preset">Ajouter un préréglage</string>

@@ -19,6 +19,7 @@ import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.Versions
 import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.core.text.RichTextEditing
+import io.github.valerioisufi.drawview.core.text.TextDefaults
 import io.github.valerioisufi.drawview.core.text.TextSizes
 import kotlin.math.abs
 import kotlin.math.min
@@ -31,7 +32,7 @@ import kotlin.math.min
  * while the canvas is panned and zoomed. The editor of the interface shows [value] and reports
  * what the user types ([updateValue]) and the height it lays the text out ([reportLayoutHeight]).
  */
-class TextEditorManager(private val controller: DrawViewController) {
+class TextEditorManager(private val controller: DrawViewController) : TextFormatTarget {
 
     /** The text being changed, `null` for a new one. */
     var activeTextItem: DrawText? by mutableStateOf(null)
@@ -61,15 +62,17 @@ class TextEditorManager(private val controller: DrawViewController) {
         private set
 
     /** Size of the text in typographic points. */
-    var fontSize: Float by mutableFloatStateOf(16f)
+    override var fontSize: Float by mutableFloatStateOf(16f)
         private set
 
     /** ARGB color of the text. */
-    var color: Int by mutableIntStateOf(0xFF000000.toInt())
+    override var color: Int by mutableIntStateOf(0xFF000000.toInt())
         private set
 
-    var alignment: TextAlignment by mutableStateOf(TextAlignment.START)
+    override var alignment: TextAlignment by mutableStateOf(TextAlignment.START)
         private set
+
+    override val formatsCharacters: Boolean get() = true
 
     /** Rotation of the text in degrees (kept: the editor does not turn a text). */
     val rotation: Float get() = activeTextItem?.rotation ?: 0f
@@ -111,7 +114,7 @@ class TextEditorManager(private val controller: DrawViewController) {
      */
     fun startNewText(pageIndex: Int, xMm: Float, yMm: Float) {
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
-        val size = controller.defaultTextFontSize
+        val size = controller.textDefaults.fontSize
         val lineHeight = controller.textLineMetrics(size)?.height ?: TextSizes.estimatedLineHeightMm(size)
         val width = min(DEFAULT_WIDTH_MM, page.widthMm - xMm - PAGE_MARGIN_MM).coerceAtLeast(MIN_WIDTH_MM)
         open(null, pageIndex, xMm, (yMm - lineHeight / 2f).coerceAtLeast(0f), width, caretAt = null)
@@ -143,12 +146,13 @@ class TextEditorManager(private val controller: DrawViewController) {
         boxX = xMm
         boxY = yMm
         boxWidth = widthMm.coerceAtLeast(MIN_WIDTH_MM)
-        boxHeight = item?.height ?: (controller.textLineMetrics(controller.defaultTextFontSize)?.height ?: 0f)
+        val defaults = controller.textDefaults
+        boxHeight = item?.height ?: (controller.textLineMetrics(defaults.fontSize)?.height ?: 0f)
         val content = item?.text.orEmpty()
         value = TextFieldValue(content, TextRange(content.length))
-        fontSize = item?.fontSize ?: controller.defaultTextFontSize
-        color = item?.color ?: controller.defaultTextColor
-        alignment = item?.alignment ?: TextAlignment.START
+        fontSize = item?.fontSize ?: defaults.fontSize
+        color = item?.color ?: defaults.color
+        alignment = item?.alignment ?: defaults.alignment
         caretRequest = caretAt
         newTextId = newElementId()
         editedFrom = item?.toData()?.copy(order = null)
@@ -213,7 +217,7 @@ class TextEditorManager(private val controller: DrawViewController) {
         } else {
             controller.session.submit(AddElements.of(page, listOf(data.toElement())))
         }
-        controller.updateTextDefaults(fontSize, color)
+        controller.updateTextDefaults(TextDefaults(fontSize, color, alignment))
         resetSession()
     }
 
@@ -259,24 +263,25 @@ class TextEditorManager(private val controller: DrawViewController) {
     }
 
     /** Adds or removes [format] around the selection (or inserts its delimiters at the caret). */
-    fun toggle(format: RichTextEditing.Format) = updateValue(RichTextEditing.toggle(value, format))
+    override fun toggle(format: RichTextEditing.Format) = updateValue(RichTextEditing.toggle(value, format))
 
     /** Makes the line of the caret a heading, or plain text again. */
-    fun toggleHeading() = updateValue(RichTextEditing.toggleHeading(value))
+    override fun toggleHeading() = updateValue(RichTextEditing.toggleHeading(value))
 
-    fun changeFontSize(size: Float) {
-        if (!isEditing || size == fontSize) return
-        fontSize = size
+    override fun changeFontSize(size: Float) {
+        val clamped = TextSizes.clamp(size)
+        if (!isEditing || clamped == fontSize) return
+        fontSize = clamped
         reportDraft()
     }
 
-    fun changeColor(argb: Int) {
+    override fun changeColor(argb: Int) {
         if (!isEditing || argb == color) return
         color = argb
         reportDraft()
     }
 
-    fun changeAlignment(newAlignment: TextAlignment) {
+    override fun changeAlignment(newAlignment: TextAlignment) {
         if (!isEditing || newAlignment == alignment) return
         alignment = newAlignment
         reportDraft()

@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -176,61 +174,4 @@ fun TextColorPickerDialog(
             }
         }
     )
-}
-
-/**
- * Stepper for controlling font size (- / chip with pt / +).
- */
-@Composable
-fun FontSizeStepper(
-    fontSizePt: Float,
-    onFontSizeChanged: (Float) -> Unit,
-    modifier: Modifier = Modifier,
-    onChipClick: (() -> Unit)? = null
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(2.dp)
-    ) {
-        IconButton(
-            onClick = { onFontSizeChanged((fontSizePt - 2f).coerceAtLeast(8f)) },
-            modifier = Modifier.size(28.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Remove,
-                contentDescription = stringResource(Res.string.draw_toolbar_action_decrease_font_size),
-                modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.onSurface
-            )
-        }
-
-        Surface(
-            shape = RoundedCornerShape(6.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-            modifier = Modifier
-                .then(if (onChipClick != null) Modifier.clickable { onChipClick() } else Modifier)
-                .padding(horizontal = 2.dp)
-        ) {
-            Text(
-                text = "${fontSizePt.toInt()} pt",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
-            )
-        }
-
-        IconButton(
-            onClick = { onFontSizeChanged((fontSizePt + 2f).coerceAtMost(72f)) },
-            modifier = Modifier.size(28.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = stringResource(Res.string.draw_toolbar_action_increase_font_size),
-                modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
 }

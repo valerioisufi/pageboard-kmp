@@ -97,6 +97,10 @@
     <string name="text_editor_action_heading">Heading</string>
     <string name="text_editor_action_math">Formula</string>
     <string name="text_editor_formula_invalid">Invalid formula</string>
+    <string name="text_align_start">Align Left</string>
+    <string name="text_align_center">Center</string>
+    <string name="text_align_end">Align Right</string>
+    <string name="text_font_size_points">Size (pt)</string>
     <string name="text_editor_action_save">Save</string>
     <string name="text_editor_action_alignment">Alignment</string>
     <string name="draw_toolbar_action_add_preset">Add new preset</string>

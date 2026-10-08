@@ -11,6 +11,7 @@ import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.PurgedContent
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.core.text.TextDefaults
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -60,7 +61,7 @@ interface DrawPersistence {
     suspend fun savePresets(tool: Tool, presets: List<ToolPreset>) {}
     suspend fun saveStylusOnlyMode(enabled: Boolean) {}
     suspend fun saveLastSelectedTool(tool: Tool) {}
-    suspend fun saveTextDefaults(fontSize: Float, color: Int) {}
+    suspend fun saveTextDefaults(defaults: TextDefaults) {}
 }
 
 /**

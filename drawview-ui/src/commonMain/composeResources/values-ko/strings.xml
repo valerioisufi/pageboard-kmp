@@ -96,6 +96,10 @@
     <string name="text_editor_action_heading">제목</string>
     <string name="text_editor_action_math">수식</string>
     <string name="text_editor_formula_invalid">잘못된 수식</string>
+    <string name="text_align_start">왼쪽 정렬</string>
+    <string name="text_align_center">가운데 정렬</string>
+    <string name="text_align_end">오른쪽 정렬</string>
+    <string name="text_font_size_points">크기 (pt)</string>
     <string name="text_editor_action_save">저장</string>
     <string name="text_editor_action_alignment">정렬</string>
     <string name="draw_toolbar_action_add_preset">프리셋 추가</string>

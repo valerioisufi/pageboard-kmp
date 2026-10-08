@@ -35,10 +35,12 @@ import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.model.Versions
 import io.github.valerioisufi.drawview.core.model.newElementId
+import io.github.valerioisufi.drawview.core.text.TextDefaults
 import io.github.valerioisufi.drawview.core.util.FractionalIndex
 import io.github.valerioisufi.drawview.data.db.*
 import io.github.valerioisufi.drawview.data.repository.DrawDocumentRepository
 import io.github.valerioisufi.drawview.data.repository.FileRepository
+import io.github.valerioisufi.drawview.data.repository.toDrawPreferences
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
@@ -365,14 +367,13 @@ class DrawDatabaseTest {
     fun testUserPreferences() = runTest {
         repository.saveStylusOnlyMode(true)
         repository.saveLastSelectedTool(Tool.INK_HIGHLIGHTER)
-        repository.saveTextDefaults(fontSize = 18f, color = 0xFF00FF00.toInt())
+        repository.saveTextDefaults(TextDefaults(fontSize = 18f, color = 0xFF00FF00.toInt(), alignment = TextAlignment.END))
 
         val prefs = database.preferencesDao().getPreferences()
         assertNotNull(prefs)
         assertTrue(prefs.isStylusOnlyMode)
         assertEquals("INK_HIGHLIGHTER", prefs.lastSelectedTool)
-        assertEquals(18f, prefs.defaultTextFontSize)
-        assertEquals(0xFF00FF00.toInt(), prefs.defaultTextColor)
+        assertEquals(TextDefaults(18f, 0xFF00FF00.toInt(), TextAlignment.END), prefs.toDrawPreferences().textDefaults)
     }
 
     @Test

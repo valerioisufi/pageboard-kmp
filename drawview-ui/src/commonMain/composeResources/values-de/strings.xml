@@ -96,6 +96,10 @@
     <string name="text_editor_action_heading">Überschrift</string>
     <string name="text_editor_action_math">Formel</string>
     <string name="text_editor_formula_invalid">Ungültige Formel</string>
+    <string name="text_align_start">Linksbündig</string>
+    <string name="text_align_center">Zentriert</string>
+    <string name="text_align_end">Rechtsbündig</string>
+    <string name="text_font_size_points">Größe (pt)</string>
     <string name="text_editor_action_save">Speichern</string>
     <string name="text_editor_action_alignment">Ausrichtung</string>
     <string name="draw_toolbar_action_add_preset">Neue Voreinstellung hinzufügen</string>

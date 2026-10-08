@@ -96,6 +96,10 @@
     <string name="text_editor_action_heading">Titolo</string>
     <string name="text_editor_action_math">Formula</string>
     <string name="text_editor_formula_invalid">Formula non valida</string>
+    <string name="text_align_start">Allinea a sinistra</string>
+    <string name="text_align_center">Centra</string>
+    <string name="text_align_end">Allinea a destra</string>
+    <string name="text_font_size_points">Dimensione (pt)</string>
     <string name="text_editor_action_save">Salva</string>
     <string name="text_editor_action_alignment">Allineamento</string>
     <string name="draw_toolbar_action_add_preset">Aggiungi preset</string>

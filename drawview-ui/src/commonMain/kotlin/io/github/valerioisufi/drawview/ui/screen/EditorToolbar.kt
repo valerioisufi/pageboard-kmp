@@ -61,9 +61,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.core.controller.TextFormatTarget
 import io.github.valerioisufi.drawview.core.controller.ToolPreset
 import io.github.valerioisufi.drawview.core.geometry.mm
 import io.github.valerioisufi.drawview.core.model.LassoMode
+import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.ui.adaptive.HeightClass
 import io.github.valerioisufi.drawview.ui.adaptive.WindowLayout
@@ -72,6 +74,7 @@ import io.github.valerioisufi.drawview.ui.command.CommandMenu
 import io.github.valerioisufi.drawview.ui.command.HoverTooltip
 import io.github.valerioisufi.drawview.ui.components.DocumentInfoSelector
 import io.github.valerioisufi.drawview.ui.components.ExpandableToolButton
+import io.github.valerioisufi.drawview.ui.components.FontSizeControl
 import io.github.valerioisufi.drawview.ui.components.PresetEditMenu
 import io.github.valerioisufi.drawview.ui.components.QuickPresetButton
 import io.github.valerioisufi.drawview.ui.components.SizeSlider
@@ -80,6 +83,7 @@ import io.github.valerioisufi.drawview.ui.components.TextColorPickerDialog
 import io.github.valerioisufi.drawview.ui.components.TextMarkupPresetButton
 import io.github.valerioisufi.drawview.ui.components.TextMarkupPresetEditMenu
 import io.github.valerioisufi.drawview.ui.components.ToolButton
+import io.github.valerioisufi.drawview.ui.editor.TextAlignmentButtons
 import io.github.valerioisufi.drawview.ui.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -776,14 +780,16 @@ private fun PresetToolButton(
 }
 
 /**
- * Defaults of the text tool: font size and color.
+ * Defaults of the text tool: the style of a new text (size, color, alignment), with the controls
+ * of the formatting bar.
  */
 @Composable
 private fun TextToolSettings(controller: DrawViewController) {
+    val defaults = remember(controller) { TextDefaultsTarget(controller) }
     Column(
         modifier = Modifier
             .padding(16.dp)
-            .width(260.dp),
+            .width(280.dp),
         horizontalAlignment = Alignment.Start
     ) {
         Text(
@@ -792,46 +798,40 @@ private fun TextToolSettings(controller: DrawViewController) {
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 12.dp)
         )
-
-        Text(
-            text = "${stringResource(Res.string.draw_toolbar_label_font_size)}: ${controller.defaultTextFontSize.toInt()} pt",
-            fontSize = 14.sp
-        )
-        Slider(
-            value = controller.defaultTextFontSize,
-            onValueChange = { newSize -> controller.updateTextDefaults(newSize, controller.defaultTextColor) },
-            valueRange = 10f..48f,
-            steps = 18,
-            modifier = Modifier.fillMaxWidth()
-        )
+        Text(text = stringResource(Res.string.draw_toolbar_label_font_size), fontSize = 14.sp)
+        FontSizeControl(fontSizePt = defaults.fontSize, onFontSizeChange = defaults::changeFontSize)
 
         Spacer(modifier = Modifier.height(10.dp))
-
-        Text(
-            text = stringResource(Res.string.draw_toolbar_label_text_color),
-            fontSize = 14.sp,
-            modifier = Modifier.padding(bottom = 6.dp)
-        )
+        Text(text = stringResource(Res.string.draw_toolbar_label_text_color), fontSize = 14.sp, modifier = Modifier.padding(bottom = 6.dp))
         var showDefaultColorWheelDialog by remember { mutableStateOf(false) }
         TextColorPaletteRow(
-            selectedColor = Color(controller.defaultTextColor),
-            onColorSelected = { newColor ->
-                controller.updateTextDefaults(controller.defaultTextFontSize, newColor.toArgb())
-            },
+            selectedColor = Color(defaults.color),
+            onColorSelected = { defaults.changeColor(it.toArgb()) },
             modifier = Modifier.fillMaxWidth(),
             onCustomWheelClick = { showDefaultColorWheelDialog = true }
         )
-
         if (showDefaultColorWheelDialog) {
             TextColorPickerDialog(
-                initialColor = Color(controller.defaultTextColor),
+                initialColor = Color(defaults.color),
                 onDismissRequest = { showDefaultColorWheelDialog = false },
-                onColorConfirmed = { newColor ->
-                    controller.updateTextDefaults(controller.defaultTextFontSize, newColor.toArgb())
-                }
+                onColorConfirmed = { defaults.changeColor(it.toArgb()) }
             )
         }
+
+        Spacer(modifier = Modifier.height(10.dp))
+        Text(text = stringResource(Res.string.text_editor_action_alignment), fontSize = 14.sp)
+        TextAlignmentButtons(defaults, commands = null)
     }
+}
+
+/** The style of a new text, as a target of the formatting controls. */
+private class TextDefaultsTarget(private val controller: DrawViewController) : TextFormatTarget {
+    override val fontSize: Float get() = controller.textDefaults.fontSize
+    override val color: Int get() = controller.textDefaults.color
+    override val alignment: TextAlignment get() = controller.textDefaults.alignment
+    override fun changeFontSize(size: Float) = controller.updateTextDefaults(controller.textDefaults.copy(fontSize = size))
+    override fun changeColor(argb: Int) = controller.updateTextDefaults(controller.textDefaults.copy(color = argb))
+    override fun changeAlignment(newAlignment: TextAlignment) = controller.updateTextDefaults(controller.textDefaults.copy(alignment = newAlignment))
 }
 
 @OptIn(ExperimentalFoundationApi::class)

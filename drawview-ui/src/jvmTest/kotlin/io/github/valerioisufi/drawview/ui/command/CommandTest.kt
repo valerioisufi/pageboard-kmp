@@ -6,8 +6,11 @@ import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.model.DrawDocument
+import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.ui.adaptive.PlatformConventions
 import io.github.valerioisufi.drawview.ui.adaptive.ShortcutModifier
@@ -110,6 +113,37 @@ class CommandTest {
         assertTrue(controller.isPageGridVisible)
         commands.pageGrid.perform()
         assertFalse(controller.isPageGridVisible)
+    }
+
+    @Test
+    fun theFormatCommandsWorkOnTheTextWrittenAndOnTheTextsSelected() {
+        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val commands = editorCommands(controller)
+        val host = CommandHost().apply { register(commands.all) }
+        val editor = controller.textEditorManager
+        assertFalse(commands.bold.isEnabled(), "no text")
+
+        // The text being written: its characters, its style
+        editor.startNewText(0, 20f, 20f)
+        editor.updateValue(TextFieldValue("Hello world", TextRange(6, 11)))
+        assertTrue(host.dispatch(press(Key.B, meta = true), apple))
+        assertEquals("Hello **world**", editor.value.text)
+        assertTrue(host.dispatch(press(Key.C, meta = true, shift = true), apple))
+        assertEquals(TextAlignment.CENTER, editor.alignment)
+        assertTrue(commands.alignCenter.isChecked!!.invoke())
+        assertTrue(host.dispatch(press(Key.Period, meta = true, shift = true), apple))
+        assertEquals(18f, editor.fontSize, "the next size")
+        editor.finishEditing()
+
+        // The texts selected: their style only
+        val text = controller.document.pages[0].texts.single()
+        controller.selectionManager.selectText(0, text)
+        assertFalse(commands.bold.isEnabled())
+        assertTrue(commands.alignEnd.isEnabled())
+        commands.alignEnd.perform()
+        assertEquals(TextAlignment.END, text.alignment)
+        commands.smallerText.perform()
+        assertEquals(16f, text.fontSize)
     }
 
     @Test

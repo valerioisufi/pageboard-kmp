@@ -18,12 +18,15 @@ import io.github.valerioisufi.drawview.core.render.tile.TextBlockSize
 import io.github.valerioisufi.drawview.core.render.tile.TextLineMetrics
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.core.text.RichTextEditing
+import io.github.valerioisufi.drawview.core.text.TextDefaults
+import io.github.valerioisufi.drawview.core.text.TextSizes
 import kotlin.math.ceil
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -60,7 +63,7 @@ class TextEditingTest {
     @Test
     fun aNewTextPutsTheCaretOnTheTap() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope)
-        controller.updateTextDefaults(20f, controller.defaultTextColor)
+        controller.updateTextDefaults(TextDefaults(fontSize = 20f, alignment = TextAlignment.CENTER))
         val editor = controller.textEditorManager
 
         editor.startNewText(0, 30f, 50f)
@@ -68,6 +71,7 @@ class TextEditingTest {
         assertEquals(30f, editor.boxX)
         assertEquals(45f, editor.boxY)
         assertEquals(20f, editor.fontSize, "the size of the tool")
+        assertEquals(TextAlignment.CENTER, editor.alignment, "the alignment of the tool")
         assertNull(editor.takeCaretRequest(), "a new text has its caret at its start")
     }
 
@@ -152,7 +156,7 @@ class TextEditingTest {
         assertEquals(50f, text.width)
         // 40 characters of 12 mm on 50 mm: 10 lines of 12 mm
         assertEquals(120f, text.height)
-        assertEquals(24f, controller.defaultTextFontSize, "the style used becomes the one of the tool")
+        assertEquals(TextDefaults(24f, 0xFF1A73E8.toInt(), TextAlignment.CENTER), controller.textDefaults, "the style used becomes the one of the tool")
     }
 
     @Test
@@ -259,5 +263,60 @@ class TextEditingTest {
         assertEquals(SelectionFrame.Handle.RIGHT, written.handleAt(written.sideHandles[1], radius))
         assertNull(written.handleAt(written.center, radius))
         assertEquals(44f, radius, "a target of 44 dp for a finger")
+    }
+
+    @Test
+    fun theSizesGoFromFourToTwoHundredEightyEightPoints() = runTest(UnconfinedTestDispatcher()) {
+        assertEquals(18f, TextSizes.larger(16f))
+        assertEquals(14f, TextSizes.smaller(16f))
+        assertEquals(12f, TextSizes.larger(11.5f), "a typed size steps to the next preset")
+        assertEquals(TextSizes.MAX, TextSizes.larger(288f))
+        assertEquals(TextSizes.MIN, TextSizes.smaller(6f))
+
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 10f, 50f)
+        editor.changeFontSize(1000f)
+        assertEquals(288f, editor.fontSize)
+        editor.changeFontSize(1f)
+        assertEquals(4f, editor.fontSize)
+        editor.changeFontSize(200f)
+        editor.type("Big")
+        editor.finishEditing()
+
+        // Scaled by its corners, never beyond the largest size
+        val text = controller.document.pages[0].texts.single()
+        controller.selectionManager.selectText(0, text)
+        controller.selectionManager.beginTransformation()
+        controller.selectionManager.scaleBy(3f)
+        controller.selectionManager.applyTransformation()
+        assertEquals(288f, text.fontSize, 0.01f)
+    }
+
+    @Test
+    fun theFormattingAppliesToTheTextWrittenOrToTheTextsSelected() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        assertNull(controller.textFormatTarget)
+
+        editor.startNewText(0, 10f, 50f)
+        assertSame(editor, controller.textFormatTarget)
+        editor.type("One")
+        editor.finishEditing()
+        val text = controller.document.pages[0].texts.single()
+
+        controller.selectionManager.selectText(0, text)
+        val selected = assertNotNull(controller.textFormatTarget)
+        assertFalse(selected.formatsCharacters)
+        selected.changeAlignment(TextAlignment.END)
+        selected.changeColor(0xFF188038.toInt())
+        assertEquals(TextAlignment.END, text.alignment)
+        assertEquals(TextAlignment.END, selected.alignment)
+        assertEquals(0xFF188038.toInt(), text.color)
+
+        controller.undo()
+        assertEquals(TextAlignment.END, text.alignment, "the color undone first")
+        controller.undo()
+        assertEquals(TextAlignment.START, text.alignment)
     }
 }

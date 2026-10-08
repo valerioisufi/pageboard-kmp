@@ -18,6 +18,7 @@ import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.core.text.TextDefaults
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -210,13 +211,13 @@ class KeyValueDocumentStoreTest {
         store.savePresets(Tool.INK_PEN, presets)
         store.saveStylusOnlyMode(true)
         store.saveLastSelectedTool(Tool.TEXT)
-        store.saveTextDefaults(24f, 0xFFFF0000.toInt())
+        store.saveTextDefaults(TextDefaults(24f, 0xFFFF0000.toInt(), TextAlignment.CENTER))
 
         val preferences = KeyValueDocumentStore(storage, scope = backgroundScope).preferences.first()
         assertEquals(presets, preferences.presets.getValue(Tool.INK_PEN))
         assertTrue(preferences.isStylusOnlyMode)
         assertEquals(Tool.TEXT, preferences.lastSelectedTool)
-        assertEquals(24f, preferences.defaultTextFontSize)
+        assertEquals(TextDefaults(24f, 0xFFFF0000.toInt(), TextAlignment.CENTER), preferences.textDefaults)
         // Tools without stored presets use the defaults
         assertTrue(preferences.presets.getValue(Tool.INK_HIGHLIGHTER).isNotEmpty())
     }

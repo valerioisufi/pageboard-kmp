@@ -20,6 +20,7 @@ import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.core.model.readSnapshot
 import io.github.valerioisufi.drawview.core.platform.PlatformFiles
+import io.github.valerioisufi.drawview.core.text.TextDefaults
 import io.github.valerioisufi.drawview.core.util.SyncLock
 import io.github.valerioisufi.drawview.core.util.syncLock
 import io.github.valerioisufi.drawview.data.db.BrushSettingsData
@@ -499,8 +500,8 @@ class KeyValueDocumentStore(
 
     override suspend fun saveLastSelectedTool(tool: Tool) = updatePreferences { it.copy(lastSelectedTool = tool.name) }
 
-    override suspend fun saveTextDefaults(fontSize: Float, color: Int) = updatePreferences {
-        it.copy(defaultTextFontSize = fontSize, defaultTextColor = color)
+    override suspend fun saveTextDefaults(defaults: TextDefaults) = updatePreferences {
+        it.copy(defaultTextFontSize = defaults.fontSize, defaultTextColor = defaults.color, defaultTextAlignment = defaults.alignment.name)
     }
 
     // ==========================================================
@@ -721,6 +722,7 @@ internal data class StoredPreferences(
     val lastSelectedTool: String = Tool.INK_PEN.name,
     val defaultTextFontSize: Float = 16f,
     val defaultTextColor: Int = 0xFF000000.toInt(),
+    val defaultTextAlignment: String = "START",
     val penPresets: List<BrushSettingsData> = emptyList(),
     val highlighterPresets: List<BrushSettingsData> = emptyList(),
     val eraserPresets: List<BrushSettingsData> = emptyList(),
@@ -732,6 +734,7 @@ internal data class StoredPreferences(
         lastSelectedTool = lastSelectedTool,
         defaultTextFontSize = defaultTextFontSize,
         defaultTextColor = defaultTextColor,
+        defaultTextAlignment = defaultTextAlignment,
         penPresets = penPresets,
         highlighterPresets = highlighterPresets,
         eraserPresets = eraserPresets,

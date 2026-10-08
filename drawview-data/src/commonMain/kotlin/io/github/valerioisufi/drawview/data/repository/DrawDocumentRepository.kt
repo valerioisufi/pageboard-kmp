@@ -29,6 +29,7 @@ import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.model.newElementId
+import io.github.valerioisufi.drawview.core.text.TextDefaults
 import io.github.valerioisufi.drawview.data.buildDrawPreferences
 import io.github.valerioisufi.drawview.data.db.DocumentEntity
 import io.github.valerioisufi.drawview.data.db.DrawDatabase
@@ -544,8 +545,8 @@ class DrawDocumentRepository(
 
     override suspend fun saveLastSelectedTool(tool: Tool) = updatePreferences { it.copy(lastSelectedTool = tool.name) }
 
-    override suspend fun saveTextDefaults(fontSize: Float, color: Int) = updatePreferences {
-        it.copy(defaultTextFontSize = fontSize, defaultTextColor = color)
+    override suspend fun saveTextDefaults(defaults: TextDefaults) = updatePreferences {
+        it.copy(defaultTextFontSize = defaults.fontSize, defaultTextColor = defaults.color, defaultTextAlignment = defaults.alignment.name)
     }
 }
 
@@ -557,6 +558,7 @@ fun UserPreferencesEntity.toDrawPreferences(): DrawPreferences = buildDrawPrefer
     lastSelectedTool = lastSelectedTool,
     defaultTextFontSize = defaultTextFontSize,
     defaultTextColor = defaultTextColor,
+    defaultTextAlignment = defaultTextAlignment,
     penPresets = penPresets,
     highlighterPresets = highlighterPresets,
     eraserPresets = eraserPresets,
