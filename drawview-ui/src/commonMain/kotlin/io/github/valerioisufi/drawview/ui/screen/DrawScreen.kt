@@ -281,6 +281,7 @@ fun DrawScreen(
 
                         CanvasContextMenu(
                             controller = controller,
+                            commands = commands,
                             onEditPageBackground = { showSinglePageConfigurator = true }
                         )
 

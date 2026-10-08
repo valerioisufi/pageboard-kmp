@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.key.Key
@@ -141,12 +142,26 @@ class EditorCommands internal constructor(
     /** The selected text of the PDFs or the selected mark, if any. */
     private val hasTextSelection get() = controller.textMarkupManager.hasSelection
 
+    /**
+     * The text of the texts copied last in the editor, also put in the clipboard of the system:
+     * pasted again, it pastes the elements copied with them (another text came from elsewhere).
+     */
+    private var copiedText: String? = null
+
+    /** Puts the text of the texts selected in the clipboard of the system, for the other applications. */
+    private fun shareSelectedText() {
+        copiedText = controller.selectionManager.selectedPlainText?.also { clipboard.setText(AnnotatedString(it)) }
+    }
+
     val cut = Command(
         "cut", label(Res.string.common_action_cut), CommandGroup.EDIT, section = 1,
         icon = { rememberVectorPainter(Icons.Default.ContentCut) },
         shortcuts = listOf(primary(Key.X)),
         isEnabled = { hasSelection && writable() }
-    ) { controller.selectionManager.cutSelection() }
+    ) {
+        shareSelectedText()
+        controller.selectionManager.cutSelection()
+    }
 
     val copy = Command(
         "copy", label(Res.string.common_action_copy), CommandGroup.EDIT, section = 1,
@@ -158,6 +173,7 @@ class EditorCommands internal constructor(
         if (hasTextSelection) {
             if (!text.isNullOrEmpty()) clipboard.setText(AnnotatedString(text))
         } else {
+            shareSelectedText()
             controller.selectionManager.copySelection()
         }
     }
@@ -166,8 +182,24 @@ class EditorCommands internal constructor(
         "paste", label(Res.string.common_action_paste), CommandGroup.EDIT, section = 1,
         icon = { rememberVectorPainter(Icons.Default.ContentPaste) },
         shortcuts = listOf(primary(Key.V)),
-        isEnabled = { controller.isDrawingMode && controller.selectionManager.canPaste() }
-    ) { controller.selectionManager.pasteSelection() }
+        isEnabled = { controller.isDrawingMode && writable() }
+    ) { pasteAt(null) }
+
+    /**
+     * Pastes at [position] of the canvas (the middle of the page shown when `null`): a text copied
+     * in another application becomes a new text; else what was copied here.
+     */
+    fun pasteAt(position: Offset?) {
+        val text = clipboard.getText()?.text
+        if (!text.isNullOrBlank() && text != copiedText) {
+            controller.textEditorManager.pasteText(text, position)
+        } else {
+            controller.selectionManager.pasteSelection(position)
+        }
+    }
+
+    /** Whether there is something to paste: elements copied here or a text of the clipboard. */
+    fun canPaste(): Boolean = controller.selectionManager.canPaste() || clipboard.getText()?.text?.isNotBlank() == true
 
     val delete = Command(
         "delete", label(Res.string.common_action_delete), CommandGroup.EDIT, section = 1,

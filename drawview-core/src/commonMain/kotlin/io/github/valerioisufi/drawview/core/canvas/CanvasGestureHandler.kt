@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -61,6 +62,9 @@ class CanvasLiveState {
     /** Whether a hovering pointer is on the frame of the text being written (which moves it). */
     var overEditedTextFrame by mutableStateOf(false)
 
+    /** The box of a new text being drawn with the text tool (screen pixels), if any. */
+    var textBoxDraft by mutableStateOf<Rect?>(null)
+
     fun setLiveMesh(mesh: StrokeMesh?, pageIndex: Int) {
         liveMesh = mesh
         livePageIndex = pageIndex
@@ -113,6 +117,9 @@ internal class CanvasGestureHandler(
 
         /** Moving the text being written by its frame, or one of its sides. */
         EDITOR_MOVE, EDITOR_RESIZE_LEFT, EDITOR_RESIZE_RIGHT,
+
+        /** Drawing the box of a new text with a pen or a mouse (the text tool). */
+        TEXT_BOX,
 
         /** Marking the text of a PDF with the text markup tool. */
         MARKUP,
@@ -476,6 +483,7 @@ internal class CanvasGestureHandler(
             Mode.TEXT_RESIZE_LEFT, Mode.TEXT_RESIZE_RIGHT -> {
                 controller.selectionManager.applyTransformation()
             }
+            Mode.TEXT_BOX -> live.textBoxDraft = null
             Mode.PAGE_REORDER -> return
             else -> {}
         }
@@ -557,8 +565,14 @@ internal class CanvasGestureHandler(
                 }
             }
 
+            Mode.TEXT_BOX -> live.textBoxDraft = boxBetween(downPosition, position)
+
             Mode.TEXT_TAP, Mode.PLACE_TAP, Mode.EDITOR_TAP -> {
-                if (movedBeyondSlop) {
+                if (movedBeyondSlop && mode == Mode.TEXT_TAP && activeType != PointerType.Touch) {
+                    // A pen or a mouse draws the box of the text; a finger moves the canvas
+                    mode = Mode.TEXT_BOX
+                    live.textBoxDraft = boxBetween(downPosition, position)
+                } else if (movedBeyondSlop) {
                     mode = Mode.PAN
                     controller.cameraPhysics.onDragStart()
                     val delta = position - downPosition
@@ -722,12 +736,18 @@ internal class CanvasGestureHandler(
                 if (wasTap) onTextToolTap(position)
             }
 
+            Mode.TEXT_BOX -> {
+                live.textBoxDraft = null
+                onTextBoxDrawn(boxBetween(downPosition, position))
+            }
+
             Mode.PLACE_TAP -> {
                 if (wasTap) controller.placementManager.placeAt(position)
             }
 
             Mode.EDITOR_TAP -> {
-                if (wasTap) controller.textEditorManager.finishEditing()
+                // On another text: saves this one and opens that one; elsewhere: saves this one
+                if (wasTap && !editTextAt(position)) controller.textEditorManager.finishEditing()
             }
 
             else -> {}
@@ -797,15 +817,25 @@ internal class CanvasGestureHandler(
         controller.textEditorManager.startNewText(pageIndex, mm.x, mm.y)
     }
 
+    /** Starts a new text in the box drawn on the screen [box] with the text tool. */
+    private fun onTextBoxDrawn(box: Rect) {
+        val pageIndex = controller.findPageIndexAtScreen(box.topLeft) ?: controller.findPageIndexAtScreen(box.center) ?: return
+        val topLeft = controller.screenToPageMm(pageIndex, box.topLeft) ?: return
+        val bottomRight = controller.screenToPageMm(pageIndex, box.bottomRight) ?: return
+        controller.textEditorManager.startDrawnText(pageIndex, Rect(topLeft, bottomRight))
+    }
+
     /**
-     * Opens the editor on the text block under [position], the caret on the character there.
+     * Opens the editor on the text block under [position] (not the one being written), the caret
+     * on the character there.
      * @return `true` if a text block was found.
      */
     private fun editTextAt(position: Offset): Boolean {
         val pageIndex = controller.findPageIndexAtScreen(position) ?: return false
         val page = controller.document.pages.getOrNull(pageIndex) ?: return false
         val mm = controller.screenToPageMm(pageIndex, position) ?: return false
-        val text = page.texts.lastOrNull { it.containsPoint(mm.x, mm.y) } ?: return false
+        val edited = controller.textEditorManager.activeTextItem
+        val text = page.texts.lastOrNull { it !== edited && it.containsPoint(mm.x, mm.y) } ?: return false
         controller.textEditorManager.startEditing(text, pageIndex, caretAt = text.toLocal(mm.x, mm.y))
         return true
     }
@@ -1053,3 +1083,6 @@ internal class CanvasGestureHandler(
         controller.requestRedraw()
     }
 }
+
+/** The rectangle with the corners [a] and [b], wherever they are. */
+private fun boxBetween(a: Offset, b: Offset) = Rect(minOf(a.x, b.x), minOf(a.y, b.y), maxOf(a.x, b.x), maxOf(a.y, b.y))

@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.core.change.AddElements
@@ -50,11 +51,19 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
         private set
 
     /** Width of the box in page millimeters (the lines wrap on it). */
-    var boxWidth: Float by mutableFloatStateOf(DEFAULT_WIDTH_MM)
+    var boxWidth: Float by mutableFloatStateOf(MIN_WIDTH_MM)
         private set
 
     /** Height of the text as the editor lays it out, in page millimeters. */
     var boxHeight: Float by mutableFloatStateOf(0f)
+        private set
+
+    /**
+     * Whether the width of the box follows the text (a text started by a tap): it grows with the
+     * longest line up to the margin of the page, then the lines wrap. A width set by the handles
+     * or drawn stays.
+     */
+    var autoWidth: Boolean by mutableStateOf(false)
         private set
 
     /** The text written so far, with its selection. */
@@ -110,14 +119,29 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
 
     /**
      * Starts a new text on the page [pageIndex] with the caret on the point ([xMm], [yMm]) of the
-     * page: the box starts there, its first line centered on the point.
+     * page: its first line centered on the point, the box starting there (centered on it, ending
+     * there, as the alignment of a new text puts the caret), its width following the text (see
+     * [autoWidth]).
      */
     fun startNewText(pageIndex: Int, xMm: Float, yMm: Float) {
-        val page = controller.document.pages.getOrNull(pageIndex) ?: return
-        val size = controller.textDefaults.fontSize
-        val lineHeight = controller.textLineMetrics(size)?.height ?: TextSizes.estimatedLineHeightMm(size)
-        val width = min(DEFAULT_WIDTH_MM, page.widthMm - xMm - PAGE_MARGIN_MM).coerceAtLeast(MIN_WIDTH_MM)
-        open(null, pageIndex, xMm, (yMm - lineHeight / 2f).coerceAtLeast(0f), width, caretAt = null)
+        controller.document.pages.getOrNull(pageIndex) ?: return
+        val defaults = controller.textDefaults
+        val lineHeight = controller.textLineMetrics(defaults.fontSize)?.height ?: TextSizes.estimatedLineHeightMm(defaults.fontSize)
+        val left = when (defaults.alignment) {
+            TextAlignment.START -> xMm
+            TextAlignment.CENTER -> xMm - AUTO_MIN_WIDTH_MM / 2f
+            TextAlignment.END -> xMm - AUTO_MIN_WIDTH_MM
+        }
+        open(null, pageIndex, left, (yMm - lineHeight / 2f).coerceAtLeast(0f), AUTO_MIN_WIDTH_MM, caretAt = null, autoWidth = true)
+    }
+
+    /**
+     * Starts a new text in the box [box] (page millimeters) drawn on the page [pageIndex]: its
+     * width stays the one drawn (not narrower than its minimum).
+     */
+    fun startDrawnText(pageIndex: Int, box: Rect) {
+        controller.document.pages.getOrNull(pageIndex) ?: return
+        open(null, pageIndex, box.left, box.top, box.width, caretAt = null, autoWidth = false)
     }
 
     /**
@@ -133,10 +157,10 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
             controller.refuseEdit(writer)
             return
         }
-        open(item, pageIndex, item.x, item.y, item.width, caretAt)
+        open(item, pageIndex, item.x, item.y, item.width, caretAt, item.autoWidth)
     }
 
-    private fun open(item: DrawText?, pageIndex: Int, xMm: Float, yMm: Float, widthMm: Float, caretAt: Offset?) {
+    private fun open(item: DrawText?, pageIndex: Int, xMm: Float, yMm: Float, widthMm: Float, caretAt: Offset?, autoWidth: Boolean) {
         if (isEditing) finishEditing()
         controller.selectionManager.clearSelection()
         controller.textMarkupManager.clearSelection()
@@ -145,7 +169,8 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
         activeTextPageIndex = pageIndex
         boxX = xMm
         boxY = yMm
-        boxWidth = widthMm.coerceAtLeast(MIN_WIDTH_MM)
+        this.autoWidth = autoWidth
+        boxWidth = widthMm.coerceAtLeast(if (autoWidth) AUTO_MIN_WIDTH_MM else MIN_WIDTH_MM)
         val defaults = controller.textDefaults
         boxHeight = item?.height ?: (controller.textLineMetrics(defaults.fontSize)?.height ?: 0f)
         val content = item?.text.orEmpty()
@@ -163,9 +188,42 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
             item.isDragging = true
             controller.invalidatePageContent(page, item.getRotatedBounds())
         }
+        fitWidth()
         controller.cameraPhysics.stopAllAnimations()
         controller.requestRedraw()
         reportDraft()
+    }
+
+    /**
+     * Adds [content] as a new text centered on [atScreen] (a point of the canvas, the middle of
+     * the page shown when `null`), in the style of a new text, its width following the text, and
+     * selects it, so that it can be moved; one change.
+     */
+    fun pasteText(content: String, atScreen: Offset? = null) {
+        if (content.isBlank()) return
+        if (isEditing) finishEditing()
+        // The page under the point, or the page shown (the first one before the canvas is laid out)
+        val point = atScreen ?: Offset(controller.viewportWidth / 2f, controller.viewportHeight / 2f)
+        val pageIndex = atScreen?.let { controller.findPageIndexAtScreen(it) } ?: controller.firstVisiblePageIndex() ?: 0
+        val page = controller.document.pages.getOrNull(pageIndex) ?: return
+        val middle = controller.screenToPageMm(pageIndex, point) ?: Offset(page.widthMm / 2f, page.heightMm / 2f)
+        val defaults = controller.textDefaults
+        val most = (page.widthMm - 2f * PAGE_MARGIN_MM).coerceAtLeast(MIN_WIDTH_MM)
+        val probe = TextData(
+            id = newElementId(), text = content, alignment = defaults.alignment, autoWidth = true,
+            x = 0f, y = 0f, width = most, height = 0f, color = defaults.color, fontSize = defaults.fontSize
+        )
+        val size = controller.measureText(probe.toElement())
+        val width = ((size?.width ?: most) + AUTO_SLACK_MM).coerceIn(AUTO_MIN_WIDTH_MM, most)
+        val height = controller.measureText(probe.copy(width = width).toElement())?.height ?: (size?.height ?: MIN_HEIGHT_MM)
+        val text = probe.copy(
+            x = (middle.x - width / 2f).coerceIn(PAGE_MARGIN_MM, (page.widthMm - PAGE_MARGIN_MM - width).coerceAtLeast(PAGE_MARGIN_MM)),
+            y = (middle.y - height / 2f).coerceIn(0f, (page.heightMm - height).coerceAtLeast(0f)),
+            width = width,
+            height = height.coerceAtLeast(MIN_HEIGHT_MM)
+        ).toElement()
+        controller.session.submit(AddElements.of(page, listOf(text)))
+        controller.selectionManager.selectText(pageIndex, text)
     }
 
     /**
@@ -259,7 +317,10 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
         if (!isEditing) return
         val textChanged = newValue.text != value.text
         value = newValue
-        if (textChanged) reportDraft()
+        if (textChanged) {
+            fitWidth()
+            reportDraft()
+        }
     }
 
     /** Adds or removes [format] around the selection (or inserts its delimiters at the caret). */
@@ -272,6 +333,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
         val clamped = TextSizes.clamp(size)
         if (!isEditing || clamped == fontSize) return
         fontSize = clamped
+        fitWidth()
         reportDraft()
     }
 
@@ -312,6 +374,8 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
      */
     fun resizeBy(dxMm: Float, leftEdge: Boolean) {
         if (!isEditing) return
+        // A width set by hand stays
+        autoWidth = false
         if (leftEdge) {
             val width = (boxWidth - dxMm).coerceIn(MIN_WIDTH_MM, MAX_WIDTH_MM)
             boxX += boxWidth - width
@@ -326,11 +390,38 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
     // Others
     // ==========================================================
 
+    /**
+     * The width of a box following its text: its longest line laid out up to the margins of the
+     * page, with a little room for the caret. The box grows from the side of its alignment: its
+     * left edge stays for a text aligned at the start, its middle for a centered one, its right
+     * edge for one aligned at the end.
+     */
+    private fun fitWidth() {
+        if (!autoWidth) return
+        val page = controller.document.pages.getOrNull(activeTextPageIndex) ?: return
+        val left = boxX
+        val right = boxX + boxWidth
+        val most = when (alignment) {
+            TextAlignment.START -> page.widthMm - PAGE_MARGIN_MM - left
+            TextAlignment.CENTER -> 2f * min((left + right) / 2f - PAGE_MARGIN_MM, page.widthMm - PAGE_MARGIN_MM - (left + right) / 2f)
+            TextAlignment.END -> right - PAGE_MARGIN_MM
+        }.coerceAtLeast(MIN_WIDTH_MM)
+        val natural = controller.measureText(draft().copy(width = most).toElement())?.width ?: return
+        val width = (natural + AUTO_SLACK_MM).coerceIn(AUTO_MIN_WIDTH_MM, most)
+        boxX = when (alignment) {
+            TextAlignment.START -> left
+            TextAlignment.CENTER -> (left + right) / 2f - width / 2f
+            TextAlignment.END -> right - width
+        }
+        boxWidth = width
+    }
+
     /** The text being written as it is now. */
     private fun draft(versions: Versions = Versions.NONE) = TextData(
         id = activeTextItem?.id ?: newTextId,
         text = value.text,
         alignment = alignment,
+        autoWidth = autoWidth,
         x = boxX,
         y = boxY,
         width = boxWidth,
@@ -348,13 +439,16 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
     }
 
     private companion object {
-        /** Width of a new text (millimeters), less near the right edge of its page. */
-        const val DEFAULT_WIDTH_MM = 70f
+        /** The least width of a box set by hand, and of a box following its text. */
         const val MIN_WIDTH_MM = 20f
+        const val AUTO_MIN_WIDTH_MM = 5f
+
+        /** Room for the caret after the longest line of a box following its text. */
+        const val AUTO_SLACK_MM = 1f
         const val MAX_WIDTH_MM = 350f
         const val MIN_HEIGHT_MM = 4f
 
-        /** Room left between a new text and the right edge of its page. */
+        /** Room left between a text following its width and the right edge of its page. */
         const val PAGE_MARGIN_MM = 5f
 
         /** Millimeters of a moved box that always stay on its page. */

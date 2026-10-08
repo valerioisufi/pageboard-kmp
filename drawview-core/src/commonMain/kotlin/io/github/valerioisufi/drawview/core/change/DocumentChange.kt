@@ -349,7 +349,9 @@ data class BoxPlacement(
     val height: Float,
     val rotation: Float,
     val fontSize: Float? = null,
-    override val order: ElementOrder? = null
+    override val order: ElementOrder? = null,
+    /** Whether the width of a text follows its text (see `DrawText.autoWidth`). */
+    val autoWidth: Boolean? = null
 ) : Placement {
     override fun applyTo(element: DrawElement) {
         when (element) {
@@ -358,6 +360,7 @@ data class BoxPlacement(
                 element.width = width; element.height = height
                 element.rotation = rotation
                 fontSize?.let { element.fontSize = it }
+                autoWidth?.let { element.autoWidth = it }
                 element.markDirty()
             }
             is DrawImage -> {
@@ -373,7 +376,7 @@ data class BoxPlacement(
 /** Where [element] is placed now (with its order), or `null` for an element not placed freely. */
 fun placementOf(element: DrawElement): Placement? = when (element) {
     is DrawStroke -> StrokePlacement(element.id, element.transform, element.order)
-    is DrawText -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation, element.fontSize, element.order)
+    is DrawText -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation, element.fontSize, element.order, element.autoWidth)
     is DrawImage -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation, order = element.order)
     else -> null
 }

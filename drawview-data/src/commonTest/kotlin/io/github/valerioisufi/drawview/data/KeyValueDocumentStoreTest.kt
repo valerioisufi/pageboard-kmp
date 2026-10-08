@@ -60,6 +60,7 @@ class KeyValueDocumentStoreTest {
             height = 12f
             fontSize = 20f
             alignment = TextAlignment.CENTER
+            autoWidth = true
         }
         page.texts.add(text)
         store.saveText(page, text)
@@ -107,6 +108,7 @@ class KeyValueDocumentStoreTest {
         val loadedText = firstPage.texts.single()
         assertEquals(text.text, loadedText.text)
         assertEquals(TextAlignment.CENTER, loadedText.alignment)
+        assertTrue(loadedText.autoWidth)
         assertEquals(20f, loadedText.fontSize)
 
         val loadedMarkup = firstPage.markups.single()

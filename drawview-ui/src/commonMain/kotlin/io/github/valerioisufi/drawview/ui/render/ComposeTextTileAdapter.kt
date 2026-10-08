@@ -102,9 +102,19 @@ class ComposeTextTileAdapter(
         if (text.width <= 0f) return null
         return syncLock(lock) {
             val scale = LAYOUT_PX_PER_MM
-            val layout = prepare(text, text.fontSize * PT_TO_MM * scale, (text.width * scale).toInt().coerceAtLeast(1)).layout
+            val prepared = prepare(text, text.fontSize * PT_TO_MM * scale, (text.width * scale).toInt().coerceAtLeast(1))
+            val layout = prepared.layout
+            // A formula alone on its line takes the line: its own width counts
+            val blockLines = HashMap<Int, Float>()
+            for (formula in prepared.formulas) {
+                if (!formula.block) continue
+                val rect = layout.placeholderRects.getOrNull(formula.placeholderIndex) ?: continue
+                blockLines[layout.getLineForVerticalPosition(rect.center.y)] = formula.widthPx
+            }
             var longest = 0f
-            for (line in 0 until layout.lineCount) longest = max(longest, layout.getLineRight(line) - layout.getLineLeft(line))
+            for (line in 0 until layout.lineCount) {
+                longest = max(longest, blockLines[line] ?: (layout.getLineRight(line) - layout.getLineLeft(line)))
+            }
             TextBlockSize(longest / scale, layout.size.height / scale)
         }
     }

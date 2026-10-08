@@ -90,6 +90,8 @@ data class TextData(
     override val id: String,
     val text: String,
     val alignment: TextAlignment = TextAlignment.START,
+    /** Whether its width follows its text (see `DrawText.autoWidth`): part of its placement. */
+    val autoWidth: Boolean = false,
     val x: Float,
     val y: Float,
     val width: Float,
@@ -111,6 +113,7 @@ data class TextData(
         text.contentVersions = versions
         text.text = this.text
         text.alignment = alignment
+        text.autoWidth = autoWidth
         text.x = x
         text.y = y
         text.width = width
@@ -246,6 +249,7 @@ fun DrawText.toData() = TextData(
     id = id,
     text = text,
     alignment = alignment,
+    autoWidth = autoWidth,
     x = x,
     y = y,
     width = width,
@@ -300,7 +304,7 @@ fun DrawPage.toData(): PageData = PageData(
  */
 fun ElementData.placement(): Placement? = when (this) {
     is StrokeData -> StrokePlacement(id, transform, order)
-    is TextData -> BoxPlacement(id, x, y, width, height, rotation, fontSize, order)
+    is TextData -> BoxPlacement(id, x, y, width, height, rotation, fontSize, order, autoWidth)
     is ImageData -> BoxPlacement(id, x, y, width, height, rotation, order = order)
     is PdfData, is TextMarkupData -> null
 }

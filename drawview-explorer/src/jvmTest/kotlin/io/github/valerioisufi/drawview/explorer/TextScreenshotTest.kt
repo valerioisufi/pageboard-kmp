@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.explorer
 
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.test.DesktopComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasSetTextAction
@@ -58,7 +59,7 @@ class TextScreenshotTest {
         openNote(viewModels)
         write(viewModels, 20f, 30f, "Area of a circle: \$\\pi r^2\$ and **bold**")
         save(viewModels)
-        write(viewModels, 20f, 60f, "Centered title", TextAlignment.CENTER)
+        write(viewModels, 20f, 60f, "Centered title", TextAlignment.CENTER, drawnWidthMm = 90f)
         save(viewModels)
         write(viewModels, 20f, 80f, "The integral\n\$\$\\int_0^1 x^2\\,dx = \\frac{1}{3}\$\$\nis a third.")
         save(viewModels)
@@ -103,12 +104,18 @@ class TextScreenshotTest {
         xMm: Float,
         yMm: Float,
         text: String,
-        alignment: TextAlignment = TextAlignment.START
+        alignment: TextAlignment = TextAlignment.START,
+        drawnWidthMm: Float? = null
     ) {
         runOnIdle {
             val controller = viewModels.controller()
             controller.selectTool(Tool.TEXT)
-            controller.textEditorManager.startNewText(0, xMm, yMm)
+            // Tapped (its width following the text), or drawn [drawnWidthMm] wide
+            if (drawnWidthMm == null) {
+                controller.textEditorManager.startNewText(0, xMm, yMm)
+            } else {
+                controller.textEditorManager.startDrawnText(0, Rect(xMm, yMm, xMm + drawnWidthMm, yMm + 10f))
+            }
             controller.textEditorManager.changeAlignment(alignment)
         }
         waitForIdle()

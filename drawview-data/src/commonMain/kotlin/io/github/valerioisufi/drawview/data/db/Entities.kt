@@ -169,6 +169,8 @@ data class TextEntity(
     val fontSize: Float,
     /** The name of its `TextAlignment`. */
     val alignment: String = "START",
+    /** Whether its width follows its text. */
+    val autoWidth: Boolean = false,
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,

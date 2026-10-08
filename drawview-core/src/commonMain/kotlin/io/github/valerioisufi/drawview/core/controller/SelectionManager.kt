@@ -375,7 +375,9 @@ class SelectionManager(private val controller: DrawViewController) {
             val height = text.height * scale
             placements.add(
                 BoxPlacement(
-                    text.id, c.x - width / 2f, c.y - height / 2f, width, height, (text.rotation + angle) % 360f, text.fontSize * scale, orderOf(text)
+                    text.id, c.x - width / 2f, c.y - height / 2f, width, height, (text.rotation + angle) % 360f, text.fontSize * scale, orderOf(text),
+                    // A width set by its handles no longer follows the text
+                    autoWidth = text.autoWidth && !textResized
                 )
             )
         }
@@ -524,6 +526,15 @@ class SelectionManager(private val controller: DrawViewController) {
     // ==========================================================
     // Text formatting of the selection
     // ==========================================================
+
+    /**
+     * The text of the texts selected, from the top of the page down, separated by an empty line
+     * (their notation kept); `null` when no text is selected.
+     */
+    val selectedPlainText: String?
+        get() = currentSelection?.texts?.takeIf { it.isNotEmpty() }
+            ?.sortedWith(compareBy<DrawText> { it.y }.thenBy { it.x })
+            ?.joinToString("\n\n") { it.text }
 
     /** The texts selected, as a target of the formatting; `null` when no text is selected. */
     val selectedTexts: TextFormatTarget?

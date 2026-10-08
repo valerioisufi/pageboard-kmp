@@ -153,11 +153,13 @@ private fun SelectionButton(command: Command?, onClick: () -> Unit, icon: @Compo
  * Long-press context menu of the canvas: paste, page management (add after, delete, move) and
  * background of the page.
  *
+ * @param commands the commands of the editor (the paste of the menu is theirs).
  * @param onEditPageBackground opens the template configurator of the targeted page.
  */
 @Composable
 fun CanvasContextMenu(
     controller: DrawViewController,
+    commands: EditorCommands,
     onEditPageBackground: () -> Unit
 ) {
     val position = controller.contextMenuPosition
@@ -190,10 +192,11 @@ fun CanvasContextMenu(
             colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Row(modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)) {
-                if (controller.selectionManager.canPaste()) {
+                // What was copied here or in another application, where the menu was opened
+                if (remember(position) { commands.canPaste() }) {
                     IconButton(onClick = {
                         controller.contextMenuPosition = null
-                        controller.selectionManager.pasteSelection(position)
+                        commands.pasteAt(position)
                     }) {
                         Icon(
                             Icons.Default.ContentPaste,

@@ -292,6 +292,12 @@ class DrawText(override val id: String = newElementId()) : RotatableItem, DrawEl
     @Volatile var text: String = ""
     @Volatile var alignment: TextAlignment = TextAlignment.START
 
+    /**
+     * Whether [width] follows the text (a text started by a tap: its box grows with its longest
+     * line up to the margin of the page, then the lines wrap), or was set (drawn, resized).
+     */
+    @Volatile var autoWidth: Boolean = false
+
     @Volatile override var x: Float = 0f
     @Volatile override var y: Float = 0f
     @Volatile override var width: Float = 50f
@@ -327,6 +333,7 @@ class DrawText(override val id: String = newElementId()) : RotatableItem, DrawEl
     fun copyFrom(other: DrawText) {
         text = other.text
         alignment = other.alignment
+        autoWidth = other.autoWidth
         x = other.x
         y = other.y
         width = other.width

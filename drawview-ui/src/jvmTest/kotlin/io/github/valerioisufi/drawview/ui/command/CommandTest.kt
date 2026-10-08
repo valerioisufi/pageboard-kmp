@@ -147,6 +147,30 @@ class CommandTest {
     }
 
     @Test
+    fun copiedTextsReachTheOtherApplicationsAndTheirTextComesBack() {
+        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val clipboard = FakeClipboard()
+        val commands = editorCommands(controller, clipboard)
+        val page = controller.document.pages[0]
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 20f, 20f)
+        editor.updateValue(TextFieldValue("Copied **here**", TextRange(15)))
+        editor.finishEditing()
+
+        // Copied: its text in the clipboard of the system; pasted: the text copied here, again
+        controller.selectionManager.selectText(0, page.texts.single())
+        commands.copy.perform()
+        assertEquals("Copied **here**", clipboard.text)
+        commands.paste.perform()
+        assertEquals(2, page.texts.size)
+
+        // A text copied in another application: a new text
+        clipboard.text = "From another app"
+        commands.paste.perform()
+        assertEquals(listOf("Copied **here**", "Copied **here**", "From another app"), page.texts.map { it.text })
+    }
+
+    @Test
     fun theGesturesOfThePencilSwitchTheTools() {
         val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
         val commands = editorCommands(controller)
@@ -197,12 +221,18 @@ class CommandTest {
         assertEquals(shortcuts.size, shortcuts.map { it.first }.toSet().size, shortcuts.groupBy { it.first }.filter { it.value.size > 1 }.toString())
     }
 
-    private fun editorCommands(controller: DrawViewController) = EditorCommands(
+    /** The clipboard of the system in a test: the text set last. */
+    private class FakeClipboard : ClipboardManager {
+        var text: String? = null
+        override fun setText(annotatedString: AnnotatedString) {
+            text = annotatedString.text
+        }
+        override fun getText(): AnnotatedString? = text?.let(::AnnotatedString)
+    }
+
+    private fun editorCommands(controller: DrawViewController, clipboard: ClipboardManager = FakeClipboard()) = EditorCommands(
         controller = controller,
-        clipboard = object : ClipboardManager {
-            override fun setText(annotatedString: AnnotatedString) = Unit
-            override fun getText(): AnnotatedString? = null
-        },
+        clipboard = clipboard,
         actions = EditorScreenActions(close = {}, importPdf = {}, importImage = {}, editDocumentBackground = {}, showAbout = {})
     )
 }

@@ -217,6 +217,17 @@ fun DrawCanvas(
             drawRect(Color(theme.primaryColor), topLeft = floatingPage.topLeft, size = floatingPage.size, style = Stroke(width = 4f))
         }
 
+        // 7b. Box of a new text being drawn with the text tool
+        live.textBoxDraft?.let { box ->
+            drawRect(Color(theme.primaryColor).copy(alpha = FrameStyle.FILL_ALPHA), topLeft = box.topLeft, size = box.size)
+            drawRect(
+                Color(theme.primaryColor),
+                topLeft = box.topLeft,
+                size = box.size,
+                style = Stroke(width = FrameStyle.STROKE_DP * controller.density, pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 6f)))
+            )
+        }
+
         // 8. Element waiting to be placed, under the mouse or the hovering stylus
         val placement = controller.placementManager
         val placementRequest = placement.request

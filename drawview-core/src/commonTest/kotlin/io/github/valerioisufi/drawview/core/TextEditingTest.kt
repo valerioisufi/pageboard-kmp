@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.core
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.text.TextRange
@@ -67,8 +68,8 @@ class TextEditingTest {
         val editor = controller.textEditorManager
 
         editor.startNewText(0, 30f, 50f)
-        // The box starts at the tap, its first line (10 mm high) centered on it
-        assertEquals(30f, editor.boxX)
+        // The caret on the tap: the first line (10 mm high) centered on it, the box too (centered text)
+        assertEquals(30f, editor.boxX + editor.boxWidth / 2f)
         assertEquals(45f, editor.boxY)
         assertEquals(20f, editor.fontSize, "the size of the tool")
         assertEquals(TextAlignment.CENTER, editor.alignment, "the alignment of the tool")
@@ -141,7 +142,7 @@ class TextEditingTest {
         val page = controller.document.pages[0]
         val editor = controller.textEditorManager
 
-        editor.startNewText(0, 10f, 50f)
+        editor.startDrawnText(0, Rect(10f, 50f, 80f, 60f))
         editor.type("x".repeat(40))
         editor.changeFontSize(24f)
         editor.changeColor(0xFF1A73E8.toInt())
@@ -318,5 +319,118 @@ class TextEditingTest {
         assertEquals(TextAlignment.END, text.alignment, "the color undone first")
         controller.undo()
         assertEquals(TextAlignment.START, text.alignment)
+    }
+
+    @Test
+    fun aTappedTextHasTheWidthOfItsText() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val page = controller.document.pages[0]
+        val editor = controller.textEditorManager
+
+        editor.startNewText(0, 30f, 50f)
+        assertTrue(editor.autoWidth)
+        // 2 characters of 8 mm, and room for the caret
+        editor.type("Hi")
+        assertEquals(17f, editor.boxWidth, 0.01f)
+        // Up to the margin of the page, then the lines wrap
+        editor.type("x".repeat(100))
+        assertEquals(page.widthMm - 30f - 5f, editor.boxWidth, 0.01f)
+        editor.finishEditing()
+        val text = page.texts.single()
+        assertTrue(text.autoWidth)
+
+        // Its width set by hand: it stays
+        editor.startEditing(text, 0)
+        editor.resizeBy(-40f, leftEdge = false)
+        assertFalse(editor.autoWidth)
+        editor.type("Short")
+        editor.finishEditing()
+        assertFalse(text.autoWidth)
+        assertEquals(page.widthMm - 35f - 40f, text.width, 0.01f)
+    }
+
+    @Test
+    fun aDrawnTextKeepsItsWidth() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        editor.startDrawnText(0, Rect(10f, 20f, 90f, 40f))
+        assertEquals(10f, editor.boxX)
+        assertEquals(20f, editor.boxY)
+        assertFalse(editor.autoWidth)
+        editor.type("Hi")
+        assertEquals(80f, editor.boxWidth)
+        editor.finishEditing()
+        assertEquals(80f, controller.document.pages[0].texts.single().width)
+    }
+
+    @Test
+    fun aSelectedTextResizedByItsSidesStopsFollowingItsText() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 10f, 50f)
+        editor.type("Some words here")
+        editor.finishEditing()
+        val text = controller.document.pages[0].texts.single()
+
+        controller.selectionManager.selectText(0, text)
+        controller.selectionManager.beginTransformation()
+        controller.selectionManager.resizeText(Offset(text.x + 60f, text.y), isRightEdge = true)
+        controller.selectionManager.applyTransformation()
+        assertFalse(text.autoWidth)
+        controller.undo()
+        assertTrue(text.autoWidth, "one change, undone at once")
+    }
+
+    @Test
+    fun aTextCopiedElsewhereIsPastedAsANewText() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val page = controller.document.pages[0]
+        controller.textEditorManager.pasteText("A note **from** elsewhere")
+        val text = page.texts.single()
+        assertEquals("A note **from** elsewhere", text.text)
+        assertTrue(text.autoWidth)
+        assertTrue(text.x >= 5f && text.x + text.width <= page.widthMm - 5f)
+        assertSame(text, controller.selectionManager.currentSelection?.texts?.single(), "selected, to be moved")
+        controller.undo()
+        assertTrue(page.texts.isEmpty())
+    }
+
+    @Test
+    fun theTextsSelectedGiveTheirTextFromTheTopDown() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 10f, 120f)
+        editor.type("Second")
+        editor.finishEditing()
+        editor.startNewText(0, 10f, 40f)
+        editor.type("First")
+        editor.finishEditing()
+        controller.selectionManager.selectWithLasso(0, floatArrayOf(0f, 0f, 200f, 0f, 200f, 200f, 0f, 200f))
+        assertEquals("First\n\nSecond", controller.selectionManager.selectedPlainText)
+    }
+
+    @Test
+    fun aTextFollowingItsWidthGrowsFromTheSideOfItsAlignment() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+
+        // Centered: its middle stays where it was tapped
+        controller.updateTextDefaults(TextDefaults(alignment = TextAlignment.CENTER))
+        editor.startNewText(0, 100f, 50f)
+        assertEquals(100f, editor.boxX + editor.boxWidth / 2f, 0.01f)
+        editor.type("Hi")
+        assertEquals(100f, editor.boxX + editor.boxWidth / 2f, 0.01f)
+        editor.type("Hello there")
+        assertEquals(100f, editor.boxX + editor.boxWidth / 2f, 0.01f)
+        editor.finishEditing()
+
+        // At the end: its right edge stays
+        controller.updateTextDefaults(TextDefaults(alignment = TextAlignment.START))
+        editor.startNewText(0, 100f, 100f)
+        editor.type("Hi")
+        val right = editor.boxX + editor.boxWidth
+        editor.changeAlignment(TextAlignment.END)
+        editor.type("Hello there")
+        assertEquals(right, editor.boxX + editor.boxWidth, 0.01f)
     }
 }

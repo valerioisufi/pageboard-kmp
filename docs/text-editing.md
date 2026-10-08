@@ -196,7 +196,7 @@ work against the user, and text can be lost.
 | 4 | One frame: `FrameStyle` in dp, one drawing (`SelectionOverlay.drawFrame`) for the selection and the editor, the handles of the editor routed by `CanvasGestureHandler`, rotated texts edited rotated; screenshot tests of both frames | Done |
 | 5 | Formulas in the editor: drawn over their concealed source, popover at the caret with the errors (a spike first, see [Risks](#risks)) | Done |
 | 6 | Formatting: `TextCommands` (shortcuts, Format menu, tooltips), `TextFormatBar` shared with the lasso and placed by `AdaptiveInfo`, `TextSizes` and `FontSizeControl`, alignment icons, defaults with the alignment | Done |
-| 7 | Creating and sizing: automatic width, box drawn by a drag, one tap to move to another text, text pasted from the system, texts copied as plain text | To do |
+| 7 | Creating and sizing: automatic width, box drawn by a drag, one tap to move to another text, text pasted from the system, texts copied as plain text | Done |
 | 8 | Snapping: `SnapEngine`, guides, moving the selection and the edited text, width handles, new texts on the lines of the paper, images being placed; ⌥ / Alt and the switch | To do |
 | 9 | Proposed: bulleted, numbered and check lists; a choice of fonts; completion of the LaTeX commands while typing | Proposed |
 
@@ -339,6 +339,31 @@ work against the user, and text can be lost.
   the range and the steps of the sizes, the scale of a selection stopped by its texts, the
   formatting target and its undo, the defaults stored; screenshots of the bar by the text, at the
   bottom of a phone and in the bar of a selection.
+
+### Phase 7 results
+
+* A text started by a tap follows its text (`DrawText.autoWidth`, part of the placement of a
+  text: `BoxPlacement.autoWidth`, Room version 15, the format of the synchronization recorded
+  again): its box grows with its longest line up to the margin of the page, then the lines wrap;
+  it grows from the side of its alignment (the left edge stays for a text at the start, the middle
+  for a centered one, the right edge for one at the end), and a new text starts so that its caret
+  is on the tap whatever the alignment. The width handles, of the editor and of the selection,
+  fix the width (one change, undone at once). A formula alone on its line counts its own width,
+  not the line it takes.
+* A pen or a mouse dragged with the text tool draws the box of a new text (dashed while drawn),
+  whose width stays; a finger still moves the canvas.
+* While a text is written, a tap on another text saves it and opens that one, the caret where it
+  was tapped; a tap elsewhere saves it.
+* Paste: a text copied in another application becomes a new text, in the middle of the page shown
+  or where the context menu was opened, selected to be moved (`TextEditorManager.pasteText`);
+  the texts copied or cut in the editor put their text in the clipboard of the system too
+  (`SelectionManager.selectedPlainText`, from the top down), and pasted back they paste the
+  elements copied. The paste of the context menu goes through the same command.
+* Tests: the automatic width (its growth, the margin, the width set by hand, the side of the
+  alignment), a drawn box, a resize of the selection undone at once, a pasted text, the text of
+  the texts selected; the gestures on a canvas (`TextGesturesTest`: a box drawn with a mouse, a
+  tap on another text and elsewhere while writing); copy and paste through the clipboard of the
+  system (`CommandTest`).
 
 ## Decisions
 

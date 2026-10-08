@@ -193,6 +193,7 @@ class DrawDatabaseTest {
             this.text = "**Hello** $\\frac{a}{b}$"
             x = 12f; y = 30f; width = 80f; height = 14f
             alignment = TextAlignment.CENTER
+            autoWidth = true
             color = 0xFF112233.toInt()
             fontSize = 20f
         }
@@ -234,6 +235,7 @@ class DrawDatabaseTest {
         val loadedText = loaded.pages[0].texts.single()
         assertEquals(text.text, loadedText.text)
         assertEquals(TextAlignment.CENTER, loadedText.alignment)
+        assertTrue(loadedText.autoWidth)
         assertEquals(20f, loadedText.fontSize)
 
         val loadedImage = loaded.pages[0].images.single()

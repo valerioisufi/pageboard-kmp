@@ -191,6 +191,7 @@ class DrawDocumentRepository(
     private fun mapText(entity: TextEntity) = DrawText(entity.id).apply {
         text = entity.text
         alignment = TextAlignment.fromName(entity.alignment) ?: TextAlignment.START
+        autoWidth = entity.autoWidth
         x = entity.x
         y = entity.y
         width = entity.width
@@ -408,6 +409,7 @@ class DrawDocumentRepository(
                 color = text.color,
                 fontSize = text.fontSize,
                 alignment = text.alignment.name,
+                autoWidth = text.autoWidth,
                 added = text.added,
                 removed = text.removed,
                 placed = text.placed,
