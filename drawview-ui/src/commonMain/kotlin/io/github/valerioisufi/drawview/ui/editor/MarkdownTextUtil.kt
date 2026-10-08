@@ -9,6 +9,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
@@ -59,6 +60,185 @@ object MarkdownTextUtil {
             }
         }
     }
+
+    /**
+     * The font of a text, per pixel of its size: the [ascent] and the [descent] of a line, the
+     * [advance] of the character standing for a concealed formula (see [toEditorText]).
+     */
+    class FontRoom(val ascent: Float, val descent: Float, val advance: Float)
+
+    /**
+     * A formula drawn over the field of the editor, on the character [offset] of its text standing
+     * for the source of the formula; [widthPx] x [heightPx], its baseline at [baselineRatio] of its
+     * height, or centered in its line when [block].
+     */
+    class EditorFormula<T>(
+        val offset: Int,
+        val image: T,
+        val widthPx: Float,
+        val heightPx: Float,
+        val baselineRatio: Float,
+        val block: Boolean
+    )
+
+    /**
+     * The text shown by the field of the editor: [text] with the formulas away from the caret
+     * standing as one character each (see [toEditorText]), [offsetMapping] between the offsets of
+     * the text written and of [text], the [formulas] to draw over their characters, and the
+     * formula under the caret ([formulaAtCaret], its source shown), if any.
+     */
+    class EditorText<T>(
+        val text: AnnotatedString,
+        val offsetMapping: OffsetMapping,
+        val formulas: List<EditorFormula<T>>,
+        val formulaAtCaret: Span?
+    )
+
+    /**
+     * The text of the field of the editor, as the page draws it: delimiters concealed away from
+     * the caret (see [toLiveAnnotatedString]); every formula away from the caret rendered by
+     * [renderFormula] and standing as one transparent character exactly as wide as its image and
+     * giving its line room for it, the image drawn over it by the editor (no placeholder in a text
+     * field); the formula under the caret shows its source. A formula that cannot be rendered is
+     * red italic source, as on the page.
+     *
+     * @param fontSizePx size of the text in pixels; [density] pixels per sp.
+     * @param lineWidthPx width of the lines (a block formula takes a line).
+     * @param room the font of the text per pixel of its size.
+     */
+    fun <T> toEditorText(
+        text: String,
+        selection: TextRange,
+        defaultColor: Color,
+        fontSizePx: Float,
+        density: Float,
+        lineWidthPx: Float,
+        room: FontRoom,
+        textFont: FontFamily,
+        monospace: FontFamily = FontFamily.Monospace,
+        renderFormula: (latex: String, fontSizePx: Float) -> RenderedFormula<T>?
+    ): EditorText<T> {
+        val selMin = min(selection.start, selection.end)
+        val selMax = max(selection.start, selection.end)
+        val spans = RichTextParser.parse(text)
+        fun Float.toSp() = (this / density).sp
+        val faded = SpanStyle(color = defaultColor.copy(alpha = 0.45f), fontSize = (fontSizePx * 0.9f).toSp())
+
+        class Concealed(val span: Span, val rendered: RenderedFormula<T>, val widthPx: Float, val heightPx: Float, val block: Boolean)
+        val concealed = mutableListOf<Concealed>()
+        val errors = mutableListOf<Span>()
+        var atCaret: Span? = null
+        for (span in spans) {
+            if (span.kind != Kind.FORMULA) continue
+            val touched = selMin <= span.end && selMax >= span.start
+            if (touched) {
+                if (atCaret == null) atCaret = span
+                continue
+            }
+            val rendered = renderFormula(formulaSource(text, span), formulaSizePx(span, fontSizePx))?.takeIf { it.widthPx > 0f && it.heightPx > 0f }
+            when {
+                rendered == null -> errors += span
+                span.block -> {
+                    val fit = min(1f, lineWidthPx / rendered.widthPx)
+                    concealed += Concealed(span, rendered, rendered.widthPx * fit, rendered.heightPx * fit, block = true)
+                }
+                else -> concealed += Concealed(span, rendered, rendered.widthPx, rendered.heightPx, block = false)
+            }
+        }
+        val mapping = ConcealMapping(concealed.map { it.span.start until it.span.end })
+
+        val formulas = mutableListOf<EditorFormula<T>>()
+        val annotated = buildAnnotatedString {
+            var last = 0
+            for (formula in concealed) {
+                append(text, last, formula.span.start)
+                last = formula.span.end
+                append(OBJECT_REPLACEMENT)
+            }
+            append(text, last, text.length)
+
+            fun style(style: SpanStyle, start: Int, end: Int) {
+                val from = mapping.originalToTransformed(start)
+                val to = mapping.originalToTransformed(end)
+                if (to > from) addStyle(style, from, to)
+            }
+            val concealedSpans = concealed.map { it.span }.toSet()
+            for (span in spans) {
+                if (span in concealedSpans || span in errors) continue
+                val touched = selMin <= span.end && selMax >= span.start
+                for (delimiter in span.delimiters) style(if (touched) faded else CONCEALED, delimiter.first, delimiter.last + 1)
+                val content = when (span.kind) {
+                    Kind.FORMULA -> SpanStyle(fontStyle = FontStyle.Italic, fontFamily = FontFamily.Serif, color = FORMULA_COLOR)
+                    else -> contentStyle(span, fontSizePx / density, monospace)
+                }
+                if (content != null) style(content, span.contentStart, span.contentEnd)
+            }
+            for (span in errors) style(SpanStyle(color = ERROR_COLOR, fontStyle = FontStyle.Italic), span.start, span.end)
+
+            // Last: the room of every formula overrides the styles around it
+            for (formula in concealed) {
+                val offset = mapping.originalToTransformed(formula.span.start)
+                val size = if (formula.block) {
+                    formula.heightPx / (room.ascent + room.descent)
+                } else {
+                    val ascent = formula.heightPx * formula.rendered.baselineRatio
+                    max(ascent / room.ascent, (formula.heightPx - ascent) / room.descent)
+                }.coerceAtLeast(MIN_ROOM_PX)
+                val width = if (formula.block) lineWidthPx * LINE_FILL else formula.widthPx
+                addStyle(
+                    SpanStyle(
+                        color = Color.Transparent,
+                        fontSize = size.toSp(),
+                        fontFamily = textFont,
+                        fontWeight = FontWeight.Normal,
+                        fontStyle = FontStyle.Normal,
+                        letterSpacing = (width - size * room.advance).toSp(),
+                        textDecoration = TextDecoration.None
+                    ),
+                    offset,
+                    offset + 1
+                )
+                formulas += EditorFormula(offset, formula.rendered.image, formula.widthPx, formula.heightPx, formula.rendered.baselineRatio, formula.block)
+            }
+        }
+        return EditorText(annotated, mapping, formulas, atCaret)
+    }
+
+    /**
+     * The offsets of a text whose [ranges] (sorted, apart) each stand as one character, and of the
+     * text written: an offset inside a range goes to its character.
+     */
+    private class ConcealMapping(private val ranges: List<IntRange>) : OffsetMapping {
+        override fun originalToTransformed(offset: Int): Int {
+            var removed = 0
+            for (range in ranges) {
+                val end = range.last + 1
+                when {
+                    offset >= end -> removed += end - range.first - 1
+                    offset > range.first -> return range.first - removed
+                    else -> break
+                }
+            }
+            return offset - removed
+        }
+
+        override fun transformedToOriginal(offset: Int): Int {
+            var removed = 0
+            for (range in ranges) {
+                if (offset > range.first - removed) removed += range.last + 1 - range.first - 1 else break
+            }
+            return offset + removed
+        }
+    }
+
+    /** The source MicroTeX renders for the formula [span] of [text]: in display style when written `$$…$$`. */
+    fun formulaSource(text: String, span: Span): String {
+        val content = text.substring(span.contentStart, span.contentEnd)
+        return if (span.display) "\\displaystyle $content" else content
+    }
+
+    /** The size of the formula [span] in a text of [fontSizePx]. */
+    fun formulaSizePx(span: Span, fontSizePx: Float): Float = fontSizePx * if (span.display) DISPLAY_SCALE else INLINE_SCALE
 
     /** The style of the content of [span] (`null`: none), the sizes relative to [baseFontSize]. */
     private fun contentStyle(span: Span, baseFontSize: Float, monospace: FontFamily): SpanStyle? = when (span.kind) {
@@ -172,10 +352,8 @@ object MarkdownTextUtil {
                     i++
                     continue
                 }
-                val content = text.substring(formula.contentStart, formula.contentEnd)
-                val latex = if (formula.display) "\\displaystyle $content" else content
-                val rendered = renderFormula(latex, fontSizePx * if (formula.display) DISPLAY_SCALE else INLINE_SCALE)
-                    ?.takeIf { it.widthPx > 0f && it.heightPx > 0f }
+                val latex = formulaSource(text, formula)
+                val rendered = renderFormula(latex, formulaSizePx(formula, fontSizePx))?.takeIf { it.widthPx > 0f && it.heightPx > 0f }
                 when {
                     rendered == null -> {
                         // The source, highlighted when it cannot be rendered
@@ -235,6 +413,9 @@ object MarkdownTextUtil {
 
     /** Share of the line a block formula takes: all of it, without wrapping on a rounding. */
     private const val LINE_FILL = 0.999f
+
+    /** The least size of the character standing for a formula (a size of zero is no size). */
+    private const val MIN_ROOM_PX = 0.5f
 
     /** Concealed delimiters: invisible, almost no room (the offsets of the field are kept). */
     private val CONCEALED = SpanStyle(color = Color.Transparent, fontSize = 0.001.sp)

@@ -95,6 +95,7 @@
     <string name="text_editor_action_code">Code</string>
     <string name="text_editor_action_heading">Titre</string>
     <string name="text_editor_action_math">Formule</string>
+    <string name="text_editor_formula_invalid">Formule non valide</string>
     <string name="text_editor_action_save">Enregistrer</string>
     <string name="text_editor_action_alignment">Alignement</string>
     <string name="draw_toolbar_action_add_preset">Ajouter un préréglage</string>

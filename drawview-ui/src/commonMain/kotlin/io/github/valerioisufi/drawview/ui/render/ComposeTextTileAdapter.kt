@@ -39,7 +39,6 @@ import io.github.valerioisufi.drawview.core.render.tile.TextWord
 import io.github.valerioisufi.drawview.core.text.TextSizes.PT_TO_MM
 import io.github.valerioisufi.drawview.core.util.SyncLock
 import io.github.valerioisufi.drawview.core.util.syncLock
-import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
 import io.github.valerioisufi.drawview.ui.theme.NotesFonts
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
@@ -69,7 +68,7 @@ class ComposeTextTileAdapter(
     private val measurer = TextMeasurer(fontFamilyResolver, Density(1f, 1f), LayoutDirection.Ltr, cacheSize = 0)
 
     private val layouts = LruCache<LayoutKey, PreparedText>(MAX_LAYOUTS)
-    private val formulaCache = LruCache<FormulaKey, LatexBitmap?>(MAX_FORMULAS)
+    private val formulaImages = FormulaImages()
     private val ascentCache = mutableMapOf<Int, Float>()
 
     private val imagePaint = Paint().apply {
@@ -92,10 +91,6 @@ class ComposeTextTileAdapter(
         val formulas: List<MarkdownTextUtil.InlineFormula<ImageBitmap>>,
         val fontPx: Float
     )
-
-    private data class FormulaKey(val latex: String, val color: Int, val sizeBucket: Int)
-
-    private class LatexBitmap(val bitmap: ImageBitmap, val baselineRatio: Float)
 
     override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D) {
         val scale = mmToCanvas.scaleFactor
@@ -226,7 +221,7 @@ class ComposeTextTileAdapter(
      */
     fun clearCaches() = syncLock(lock) {
         layouts.clear()
-        formulaCache.clear()
+        formulaImages.clear()
     }
 
     private fun drawRichText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, scale: Float) {
@@ -289,7 +284,7 @@ class ComposeTextTileAdapter(
             lineWidthPx = widthPx.toFloat(),
             monospace = fonts.monospace
         ) { latex, sizePx ->
-            renderFormula(latex, sizePx, text.color)?.let {
+            formulaImages.render(latex, sizePx, text.color)?.let {
                 MarkdownTextUtil.RenderedFormula(it.bitmap, it.bitmap.width.toFloat(), it.bitmap.height.toFloat(), it.baselineRatio)
             }
         }
@@ -318,24 +313,11 @@ class ComposeTextTileAdapter(
         }
     }
 
-    private fun renderFormula(latex: String, sizePx: Float, color: Int): LatexBitmap? {
-        if (!LatexEngine.isNativeReady()) return null
-        val clean = LatexEngine.sanitizeLatexString(latex)
-        if (clean.isBlank()) return null
-        val bucket = sizePx.roundToInt().coerceAtLeast(1)
-        return formulaCache.getOrPut(FormulaKey(clean, color, bucket)) {
-            LatexEngine.renderFormula(clean, bucket.toFloat(), color, paddingPx = 0f)?.let {
-                LatexBitmap(it.bitmap, it.baselineRatio)
-            }
-        }
-    }
-
     companion object {
         private const val MAX_LAYOUTS = 256
 
         /** Resolution of the layouts of [layout] and [measure]. */
         private const val LAYOUT_PX_PER_MM = 20f
-        private const val MAX_FORMULAS = 128
     }
 }
 

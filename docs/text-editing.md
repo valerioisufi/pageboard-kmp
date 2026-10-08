@@ -194,7 +194,7 @@ work against the user, and text can be lost.
 | 2 | One kind of text: `isLatex` and `isMathMode` removed (model, Room, synchronization format, export, lecture), the LaTeX block paths, the symbol bar and the whole-text preview removed; `RichTextParser` in the core with the Pandoc and CommonMark rules and the escapes, display formulas on their own centered line; `MarkdownTextUtil` split into parser and presenters | Done |
 | 3 | The editing session: `TextEditorManager` owns the draft and commits (no callback, height from the port), `TextBoxEditor` and `TextFormatBar` split out of `TextEditorOverlay`; tests of the use case in the core | Done |
 | 4 | One frame: `FrameStyle` in dp, one drawing (`SelectionOverlay.drawFrame`) for the selection and the editor, the handles of the editor routed by `CanvasGestureHandler`, rotated texts edited rotated; screenshot tests of both frames | Done |
-| 5 | Formulas in the editor: drawn over their concealed source, popover at the caret with the errors (a spike first, see [Risks](#risks)) | To do |
+| 5 | Formulas in the editor: drawn over their concealed source, popover at the caret with the errors (a spike first, see [Risks](#risks)) | Done |
 | 6 | Formatting: `TextCommands` (shortcuts, Format menu, tooltips), `TextFormatBar` shared with the lasso and placed by `AdaptiveInfo`, `TextSizes` and `FontSizeControl`, alignment icons, defaults with the alignment | To do |
 | 7 | Creating and sizing: automatic width, box drawn by a drag, one tap to move to another text, text pasted from the system, texts copied as plain text | To do |
 | 8 | Snapping: `SnapEngine`, guides, moving the selection and the edited text, width handles, new texts on the lines of the paper, images being placed; ⌥ / Alt and the switch | To do |
@@ -289,6 +289,29 @@ work against the user, and text can be lost.
 * Tests: the frames of the same text selected and written, the handles and their reach;
   screenshots of a text being written, selected, and turned while written. Seen there: on a phone
   the formatting bar falls under the floating tools when no keyboard pushes it up (phase 6).
+
+### Phase 5 results
+
+* The field of the editor shows the formulas as the page does (`MarkdownTextUtil.toEditorText`):
+  a formula away from the caret stands as one transparent character, as wide as its image
+  (letter spacing) and giving its line the room of the image above and below the baseline (font
+  size, from the metrics of the font per pixel, `FontRoom`); the editor draws the image over it
+  (`drawWithContent`, positions from the layout of the field). One character, not the concealed
+  source: a line never breaks inside a formula, as on the page, where a formula is one
+  placeholder. The offsets of the field and of the text written are mapped (`ConcealMapping`):
+  the caret, the selection and a tap land on the characters of the text written.
+* The formula under the caret shows its source in the line, and above it the formula rendered as
+  it is being written (MicroTeX draws an unknown command in red; a formula it cannot read at all
+  says so, "Invalid formula"). A formula that cannot be rendered is red source, as on the page.
+* `FormulaImages` renders and keeps the images of the formulas for the canvas and the editor; the
+  editor renders them at sizes in steps of 8 % (fewer images while zooming), scaled to the exact
+  size.
+* Tests: the character of a formula (its size, its spacing, the mapping of the offsets), the
+  source under the caret, an invalid formula, a block formula; screenshots of the caret in a
+  formula and of invalid formulas.
+* `BasicTextField` accepts no placeholders, as foreseen in [Risks](#risks); the concealed
+  character replaced them on the desktop. Its caret, input methods and handles are to be checked
+  on the phones and tablets.
 
 ## Decisions
 

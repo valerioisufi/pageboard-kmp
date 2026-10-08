@@ -4,6 +4,7 @@ import androidx.compose.ui.test.DesktopComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.text.TextRange
 import androidx.lifecycle.ViewModelStoreOwner
 import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.Tool
@@ -33,6 +34,22 @@ class TextScreenshotTest {
             openNote(viewModels)
             write(viewModels, 20f, 30f, "Area of a circle: \$\\pi r^2\$\n**Bold** and *italic*")
         }
+    }
+
+    /** The caret in a formula: its source in the line, the formula rendered above it. */
+    @Test
+    fun textWritingFormula() = capture("text-writing-formula", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 30f, "Area: \$\\pi r^2\$ and \$\\frac{a}{b}\$ end")
+        caretAfter(viewModels, "\\pi r")
+    }
+
+    /** A formula that cannot be read: red source in the line, and the reason above it when the caret is in it. */
+    @Test
+    fun textWritingInvalidFormula() = capture("text-writing-invalid-formula", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 30f, "Good \$x^2\$, bad \$\\nocommand{x}\$ and \$\\alsobad\$")
+        caretAfter(viewModels, "\\noc")
     }
 
     /** Texts drawn by the page: aligned in their box, with a formula in the line and one on a line of its own. */
@@ -96,6 +113,16 @@ class TextScreenshotTest {
         }
         waitForIdle()
         onNode(hasSetTextAction()).performTextInput(text)
+        waitForIdle()
+    }
+
+    /** Puts the caret of the text being written after the first [text] in it. */
+    private fun DesktopComposeUiTest.caretAfter(viewModels: ViewModelStoreOwner, text: String) {
+        runOnIdle {
+            val editor = viewModels.controller().textEditorManager
+            val offset = editor.value.text.indexOf(text) + text.length
+            editor.updateValue(editor.value.copy(selection = TextRange(offset)))
+        }
         waitForIdle()
     }
 
