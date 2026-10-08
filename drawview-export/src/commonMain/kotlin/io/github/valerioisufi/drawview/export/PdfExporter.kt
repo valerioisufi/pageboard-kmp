@@ -224,8 +224,6 @@ class PdfExporter(
         private fun writeImage(text: DrawText, mmToPt: Matrix2D): Boolean {
             val adapter = textAdapter ?: return true
             if (text.width <= 0f || text.text.isBlank()) return true
-            // A formula sets the height of its block when it is drawn
-            if (text.isLatex) adapter.drawText(Canvas(ImageBitmap(1, 1)), text, Matrix2D().postScale(TEXT_PX_PER_MM, TEXT_PX_PER_MM))
             val toBlock = Matrix2D()
                 .postRotate(text.rotation, text.width / 2f, text.height / 2f)
                 .postTranslate(text.x, text.y)

@@ -40,8 +40,6 @@
     <string name="draw_toolbar_action_edit_text">Modifica Testo</string>
     <string name="draw_toolbar_action_decrease_font_size">Riduci dimensione font</string>
     <string name="draw_toolbar_action_increase_font_size">Aumenta dimensione font</string>
-    <string name="draw_toolbar_label_markdown">Anteprima Markdown</string>
-    <string name="draw_toolbar_label_math_mode">Formula Matematica (LaTeX)</string>
     <string name="draw_toolbar_action_pan">Strumento Pan</string>
     <string name="draw_toolbar_action_import_pdf">Importa PDF</string>
     <string name="draw_toolbar_action_import_image">Importa Immagine</string>
@@ -96,12 +94,10 @@
     <string name="text_editor_action_strikethrough">Barrato</string>
     <string name="text_editor_action_code">Codice</string>
     <string name="text_editor_action_heading">Titolo</string>
-    <string name="text_editor_action_math">Matematica / LaTeX</string>
+    <string name="text_editor_action_math">Formula</string>
     <string name="text_editor_action_save">Salva</string>
     <string name="text_editor_action_move">Sposta la casella di testo</string>
     <string name="text_editor_action_alignment">Allineamento</string>
-    <string name="text_editor_label_formula">Formula TeX:</string>
-    <string name="text_editor_desc_latex_preview">Anteprima LaTeX</string>
     <string name="draw_toolbar_action_add_preset">Aggiungi preset</string>
     <string-array name="date_months_short">
         <item>gen</item>

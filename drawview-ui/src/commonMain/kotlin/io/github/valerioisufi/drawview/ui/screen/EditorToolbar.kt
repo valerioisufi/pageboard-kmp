@@ -776,11 +776,10 @@ private fun PresetToolButton(
 }
 
 /**
- * Defaults of the text tool: font size, color, Markdown live preview and math mode.
+ * Defaults of the text tool: font size and color.
  */
 @Composable
 private fun TextToolSettings(controller: DrawViewController) {
-    val editor = controller.textEditorManager
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -830,34 +829,6 @@ private fun TextToolSettings(controller: DrawViewController) {
                 onColorConfirmed = { newColor ->
                     controller.updateTextDefaults(controller.defaultTextFontSize, newColor.toArgb())
                 }
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(Res.string.draw_toolbar_label_markdown), fontSize = 14.sp)
-            Switch(
-                checked = editor.isMarkdownLivePreviewEnabled,
-                onCheckedChange = { editor.isMarkdownLivePreviewEnabled = it }
-            )
-        }
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(Res.string.draw_toolbar_label_math_mode), fontSize = 14.sp)
-            Switch(
-                checked = editor.isMathMode,
-                onCheckedChange = { editor.isMathMode = it }
             )
         }
     }

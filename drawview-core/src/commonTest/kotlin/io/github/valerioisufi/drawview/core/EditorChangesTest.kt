@@ -113,22 +113,22 @@ class EditorChangesTest {
         val editor = controller.textEditorManager
 
         editor.startEditing(null, 0, 10f, 20f, 60f)
-        editor.finishTextEditing("Hello", isLatex = false, color = 0xFF000000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
+        editor.finishTextEditing("Hello", color = 0xFF000000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
         val text = page.texts.single()
         assertEquals("Hello", text.text)
 
         editor.startEditing(text, 0, text.x, text.y, text.width)
-        editor.finishTextEditing("Hello, world", isLatex = false, color = 0xFFFF0000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
+        editor.finishTextEditing("Hello, world", color = 0xFFFF0000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
         assertSame(text, page.texts.single())
         assertEquals("Hello, world", text.text)
         assertFalse(text.isDragging)
 
         // Saved without changes: nothing to undo
         editor.startEditing(text, 0, text.x, text.y, text.width)
-        editor.finishTextEditing("Hello, world", isLatex = false, color = 0xFFFF0000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
+        editor.finishTextEditing("Hello, world", color = 0xFFFF0000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
 
         editor.startEditing(text, 0, text.x, text.y, text.width)
-        editor.finishTextEditing(" ", isLatex = false, color = 0xFFFF0000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
+        editor.finishTextEditing(" ", color = 0xFFFF0000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
         assertTrue(page.texts.isEmpty())
 
         controller.undo()
@@ -146,7 +146,7 @@ class EditorChangesTest {
         val page = controller.document.pages[0]
         val editor = controller.textEditorManager
         editor.startEditing(null, 0, 10f, 20f, 60f)
-        editor.finishTextEditing("Notes", isLatex = false, color = 0xFF000000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
+        editor.finishTextEditing("Notes", color = 0xFF000000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
         val text = page.texts.single()
         val refused = mutableListOf<String>()
         backgroundScope.launch { controller.editsRefused.collect { refused.add(it.name) } }

@@ -15,6 +15,7 @@ import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.Stamp
 import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
+import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import kotlinx.coroutines.flow.first
@@ -57,7 +58,7 @@ class KeyValueDocumentStoreTest {
             width = 40f
             height = 12f
             fontSize = 20f
-            alignment = 1
+            alignment = TextAlignment.CENTER
         }
         page.texts.add(text)
         store.saveText(page, text)
@@ -104,7 +105,7 @@ class KeyValueDocumentStoreTest {
 
         val loadedText = firstPage.texts.single()
         assertEquals(text.text, loadedText.text)
-        assertEquals(1, loadedText.alignment)
+        assertEquals(TextAlignment.CENTER, loadedText.alignment)
         assertEquals(20f, loadedText.fontSize)
 
         val loadedMarkup = firstPage.markups.single()

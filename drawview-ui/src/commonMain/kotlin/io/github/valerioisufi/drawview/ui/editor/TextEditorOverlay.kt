@@ -3,7 +3,6 @@ package io.github.valerioisufi.drawview.ui.editor
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -51,7 +50,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
@@ -81,17 +79,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.latex.LatexEngine
+import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.ui.components.FontSizeStepper
 import io.github.valerioisufi.drawview.ui.components.TextColorPaletteRow
 import io.github.valerioisufi.drawview.ui.components.TextColorPickerDialog
+import io.github.valerioisufi.drawview.ui.render.toTextAlign
 import io.github.valerioisufi.drawview.ui.generated.resources.*
 import io.github.valerioisufi.drawview.core.text.TextSizes.PT_TO_MM
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
@@ -99,8 +97,8 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 
 /**
- * On-canvas text editor with Markdown live preview, LaTeX preview, word-wrap handles and a
- * formatting toolbar (above the software keyboard when it is shown).
+ * On-canvas text editor with the Markdown live preview, word-wrap handles and a formatting
+ * toolbar (above the software keyboard when it is shown).
  *
  * The edited box is anchored in page millimeters, so it follows the page while the canvas is
  * panned and zoomed.
@@ -155,7 +153,7 @@ private fun TextEditorSession(controller: DrawViewController) {
     // Formatting of the block
     var currentFontSizePt by remember { mutableFloatStateOf(activeItem?.fontSize ?: controller.defaultTextFontSize) }
     var currentColorInt by remember { mutableIntStateOf(activeItem?.color ?: controller.defaultTextColor) }
-    var currentAlignment by remember { mutableIntStateOf(activeItem?.alignment ?: 0) }
+    var currentAlignment by remember { mutableStateOf(activeItem?.alignment ?: TextAlignment.START) }
     var showColorPickerRow by remember { mutableStateOf(false) }
     var showColorWheelDialog by remember { mutableStateOf(false) }
     var showFontSizeSliderRow by remember { mutableStateOf(false) }
@@ -167,52 +165,24 @@ private fun TextEditorSession(controller: DrawViewController) {
     val scaledFontSizeSp = with(unscaledDensity) { scaledFontSizePx.toSp() }
 
     val textColor = Color(currentColorInt)
-    val isMarkdownEnabled = editor.isMarkdownLivePreviewEnabled
-    var showMathQuickBar by remember { mutableStateOf(editor.isMathMode || activeItem?.isLatex == true) }
 
     // Exact width of the box in pixels, the same used to lay out the text on the canvas
     val screenWidthPx = (editor.activeBoxWidthMm * liveScale).toInt().coerceAtLeast(1)
     val boxWidthDp = with(unscaledDensity) { screenWidthPx.toDp() }
 
-    val textAlign = when (currentAlignment) {
-        1 -> TextAlign.Center
-        2 -> TextAlign.End
-        else -> TextAlign.Start
-    }
+    val textAlign = currentAlignment.toTextAlign()
 
     // Outer frame: does not move the sub-pixel origin of the glyphs
     val borderPadding = 4.dp
     val borderPaddingPx = with(unscaledDensity) { borderPadding.toPx() }
 
-    // Live preview of the LaTeX formula
-    val latexReady by LatexEngine.isReady.collectAsState()
-    val mathPreviewBitmap = remember(textValue.text, currentColorInt, scaledFontSizePx, latexReady, showMathQuickBar) {
-        val raw = textValue.text.trim()
-        if (latexReady && raw.isNotEmpty() && (editor.isMathMode || showMathQuickBar || raw.contains("$") || raw.startsWith("\\"))) {
-            val clean = if (raw.startsWith("$$") && raw.endsWith("$$") && raw.length >= 4) {
-                raw.substring(2, raw.length - 2)
-            } else if (raw.startsWith("$") && raw.endsWith("$") && raw.length >= 2) {
-                raw.substring(1, raw.length - 1)
-            } else {
-                raw
-            }
-            LatexEngine.renderToBitmap(clean, scaledFontSizePx * 1.3f, currentColorInt, paddingPx = 8f)
-        } else {
-            null
-        }
-    }
-
     fun saveAndFinish() {
         keyboardController?.hide()
-        val isFormula = editor.isMathMode || textValue.text.trim().startsWith("$$")
-        val heightMm = (if (isFormula) latexBlockHeightMm(textValue.text, currentFontSizePt, currentColorInt, editor.activeBoxWidthMm) else null)
-            ?: (actualTextHeightPx / liveScale)
         editor.finishTextEditing(
             text = textValue.text,
-            isLatex = isFormula,
             color = currentColorInt,
             fontSize = currentFontSizePt,
-            measuredHeightMm = heightMm,
+            measuredHeightMm = actualTextHeightPx / liveScale,
             alignment = currentAlignment
         )
     }
@@ -227,11 +197,10 @@ private fun TextEditorSession(controller: DrawViewController) {
     // The others working on the document see the text as it is written
     val draftHeightMm = actualTextHeightPx / liveScale
     LaunchedEffect(
-        textValue.text, currentColorInt, currentFontSizePt, currentAlignment, isMarkdownEnabled,
+        textValue.text, currentColorInt, currentFontSizePt, currentAlignment,
         editor.activeBoxWidthMm, editor.activeTextMmX, editor.activeTextMmY, draftHeightMm
     ) {
-        val isFormula = editor.isMathMode || textValue.text.trim().startsWith("$$")
-        editor.reportDraft(textValue.text, isFormula, currentColorInt, currentFontSizePt, draftHeightMm, currentAlignment)
+        editor.reportDraft(textValue.text, currentColorInt, currentFontSizePt, draftHeightMm, currentAlignment)
     }
 
     // No pointer input of its own: outside the box and the toolbar the canvas keeps its gestures
@@ -277,7 +246,6 @@ private fun TextEditorSession(controller: DrawViewController) {
                             MarkdownTextUtil.toLiveAnnotatedString(
                                 text = annotated.text,
                                 selection = textValue.selection,
-                                isMarkdownEnabled = isMarkdownEnabled,
                                 defaultColor = textColor,
                                 baseFontSizeSp = scaledFontSizeSp,
                                 monospace = notesFonts.monospace
@@ -380,36 +348,7 @@ private fun TextEditorSession(controller: DrawViewController) {
                 colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)) {
-                    // Row 0: live preview of the LaTeX formula
-                    if (mathPreviewBitmap != null) {
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 6.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .horizontalScroll(rememberScrollState())
-                                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    text = stringResource(Res.string.text_editor_label_formula),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Image(
-                                    bitmap = mathPreviewBitmap,
-                                    contentDescription = stringResource(Res.string.text_editor_desc_latex_preview)
-                                )
-                            }
-                        }
-                    }
-
-                    // Row 1: size, color, Markdown and formatting
+                    // Row 1: size, color and formatting
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -449,15 +388,6 @@ private fun TextEditorSession(controller: DrawViewController) {
                             thickness = 1.dp
                         )
 
-                        // Live Markdown toggle
-                        TextButton(onClick = { editor.isMarkdownLivePreviewEnabled = !editor.isMarkdownLivePreviewEnabled }) {
-                            Text(
-                                text = "M↓",
-                                fontWeight = FontWeight.Bold,
-                                color = if (editor.isMarkdownLivePreviewEnabled) primary else MaterialTheme.colorScheme.outline
-                            )
-                        }
-
                         IconButton(onClick = { textValue = MarkdownTextUtil.toggleDelimiters(textValue, "**", "**") }) {
                             Icon(Icons.Default.FormatBold, contentDescription = stringResource(Res.string.text_editor_action_bold))
                         }
@@ -475,12 +405,12 @@ private fun TextEditorSession(controller: DrawViewController) {
                         }
 
                         // Alignment (start, center, end)
-                        TextButton(onClick = { currentAlignment = (currentAlignment + 1) % 3 }) {
+                        TextButton(onClick = { currentAlignment = TextAlignment.entries[(currentAlignment.ordinal + 1) % TextAlignment.entries.size] }) {
                             Text(
                                 text = when (currentAlignment) {
-                                    1 -> "≡"
-                                    2 -> "⇥"
-                                    else -> "⇤"
+                                    TextAlignment.CENTER -> "≡"
+                                    TextAlignment.END -> "⇥"
+                                    TextAlignment.START -> "⇤"
                                 },
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
@@ -488,20 +418,9 @@ private fun TextEditorSession(controller: DrawViewController) {
                             )
                         }
 
-                        // Math mode ($)
-                        IconButton(
-                            onClick = {
-                                showMathQuickBar = !showMathQuickBar
-                                if (showMathQuickBar) {
-                                    textValue = MarkdownTextUtil.toggleDelimiters(textValue, "$", "$")
-                                }
-                            }
-                        ) {
-                            Icon(
-                                Icons.Default.Functions,
-                                contentDescription = stringResource(Res.string.text_editor_action_math),
-                                tint = if (showMathQuickBar) primary else MaterialTheme.colorScheme.onSurface
-                            )
+                        // A formula in the line: $…$ around the selection
+                        IconButton(onClick = { textValue = MarkdownTextUtil.toggleDelimiters(textValue, "$", "$") }) {
+                            Icon(Icons.Default.Functions, contentDescription = stringResource(Res.string.text_editor_action_math))
                         }
 
                         Spacer(modifier = Modifier.width(8.dp))
@@ -566,40 +485,6 @@ private fun TextEditorSession(controller: DrawViewController) {
                         }
                     }
 
-                    // Row 2: math quick bar
-                    if (showMathQuickBar) {
-                        Row(
-                            modifier = Modifier
-                                .horizontalScroll(rememberScrollState())
-                                .padding(top = 4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            for ((label, template) in MATH_SYMBOLS) {
-                                ElevatedCard(
-                                    onClick = {
-                                        textValue = MarkdownTextUtil.insertTemplate(
-                                            textValue,
-                                            template.first + template.second,
-                                            template.first.length
-                                        )
-                                    },
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = CardDefaults.elevatedCardColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                                    ),
-                                    modifier = Modifier.padding(horizontal = 2.dp)
-                                ) {
-                                    Text(
-                                        text = label,
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -643,19 +528,6 @@ private fun TextEditorSession(controller: DrawViewController) {
     }
 }
 
-/**
- * Height in page millimeters of a LaTeX block [widthMm] wide (the formula is scaled on the width
- * of the block), or `null` when the engine is not available.
- */
-private fun latexBlockHeightMm(text: String, fontSizePt: Float, color: Int, widthMm: Float): Float? {
-    if (!LatexEngine.isNativeReady()) return null
-    val clean = LatexEngine.sanitizeLatexString(text)
-    if (clean.isBlank()) return null
-    val result = LatexEngine.renderFormula(clean, fontSizePt * 3f, color, paddingPx = 12f) ?: return null
-    if (result.width <= 0 || result.height <= 0) return null
-    return widthMm * result.height / result.width
-}
-
 private const val MIN_BOX_WIDTH_MM = 20f
 private const val MAX_BOX_WIDTH_MM = 350f
 
@@ -663,20 +535,3 @@ private const val MAX_BOX_WIDTH_MM = 350f
 private const val MIN_VISIBLE_MM = 5f
 
 private val MOVE_HANDLE_SIZE = 28.dp
-
-private val MATH_SYMBOLS = listOf(
-    "a/b" to ("\\frac{" to "}{}"),
-    "√x" to ("\\sqrt{" to "}"),
-    "x²" to ("^{" to "}"),
-    "x_i" to ("_{" to "}"),
-    "∑" to ("\\sum_{i=1}^{n} " to ""),
-    "∫" to ("\\int_{a}^{b} " to ""),
-    "±" to ("\\pm " to ""),
-    "≤" to ("\\le " to ""),
-    "≥" to ("\\ge " to ""),
-    "≠" to ("\\neq " to ""),
-    "π" to ("\\pi " to ""),
-    "θ" to ("\\theta " to ""),
-    "∞" to ("\\infty " to ""),
-    "{ }" to ("{" to "}")
-)

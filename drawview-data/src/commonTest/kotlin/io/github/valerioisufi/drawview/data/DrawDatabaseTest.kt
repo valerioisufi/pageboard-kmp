@@ -30,6 +30,7 @@ import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.Stamp
 import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
+import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.model.Versions
@@ -189,8 +190,7 @@ class DrawDatabaseTest {
         val text = DrawText().apply {
             this.text = "**Hello** $\\frac{a}{b}$"
             x = 12f; y = 30f; width = 80f; height = 14f
-            alignment = 1
-            isMarkdownEnabled = false
+            alignment = TextAlignment.CENTER
             color = 0xFF112233.toInt()
             fontSize = 20f
         }
@@ -231,8 +231,7 @@ class DrawDatabaseTest {
 
         val loadedText = loaded.pages[0].texts.single()
         assertEquals(text.text, loadedText.text)
-        assertEquals(1, loadedText.alignment)
-        assertFalse(loadedText.isMarkdownEnabled)
+        assertEquals(TextAlignment.CENTER, loadedText.alignment)
         assertEquals(20f, loadedText.fontSize)
 
         val loadedImage = loaded.pages[0].images.single()

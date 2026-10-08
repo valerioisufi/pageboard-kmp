@@ -48,7 +48,7 @@ class TextEditingTest {
     /** Saves what the editor shows, as the editor of the interface does. */
     private fun DrawViewController.attachEditor(text: String) {
         textEditorManager.finishEditingRequest = {
-            textEditorManager.finishTextEditing(text, isLatex = false, color = 0xFF000000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
+            textEditorManager.finishTextEditing(text, color = 0xFF000000.toInt(), fontSize = 16f, measuredHeightMm = 8f)
         }
     }
 

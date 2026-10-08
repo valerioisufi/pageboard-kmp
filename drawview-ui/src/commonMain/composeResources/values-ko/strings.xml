@@ -87,8 +87,6 @@
     <string name="draw_toolbar_action_edit_text">텍스트 편집</string>
     <string name="draw_toolbar_action_decrease_font_size">글꼴 크기 줄이기</string>
     <string name="draw_toolbar_action_increase_font_size">글꼴 크기 늘리기</string>
-    <string name="draw_toolbar_label_markdown">Markdown 실시간 미리보기</string>
-    <string name="draw_toolbar_label_math_mode">수식 (LaTeX)</string>
     <string name="message_import_image_failed">이미지를 가져올 수 없습니다</string>
     <string name="message_import_pdf_failed">PDF를 가져올 수 없습니다</string>
     <string name="message_pdf_not_supported">이 플랫폼에서는 PDF 가져오기를 사용할 수 없습니다</string>
@@ -96,12 +94,10 @@
     <string name="text_editor_action_strikethrough">취소선</string>
     <string name="text_editor_action_code">코드</string>
     <string name="text_editor_action_heading">제목</string>
-    <string name="text_editor_action_math">수식 / LaTeX</string>
+    <string name="text_editor_action_math">수식</string>
     <string name="text_editor_action_save">저장</string>
     <string name="text_editor_action_move">텍스트 상자 이동</string>
     <string name="text_editor_action_alignment">정렬</string>
-    <string name="text_editor_label_formula">TeX 수식:</string>
-    <string name="text_editor_desc_latex_preview">LaTeX 미리보기</string>
     <string name="draw_toolbar_action_add_preset">프리셋 추가</string>
     <string-array name="date_months_short">
         <item>1월</item>

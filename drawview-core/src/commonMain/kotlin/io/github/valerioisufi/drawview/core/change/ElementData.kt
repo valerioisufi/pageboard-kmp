@@ -20,6 +20,7 @@ import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.StrokeMesh
 import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
+import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Versions
 import io.github.valerioisufi.drawview.core.model.remodelingBrush
@@ -88,10 +89,7 @@ data class StrokeData(
 data class TextData(
     override val id: String,
     val text: String,
-    val isLatex: Boolean = false,
-    val isMarkdownEnabled: Boolean = true,
-    /** 0 = start, 1 = center, 2 = end. */
-    val alignment: Int = 0,
+    val alignment: TextAlignment = TextAlignment.START,
     val x: Float,
     val y: Float,
     val width: Float,
@@ -106,15 +104,12 @@ data class TextData(
 
     /** Whether its content (the text and its format) is the one of [other]. */
     fun hasContentOf(other: TextData): Boolean =
-        text == other.text && isLatex == other.isLatex && isMarkdownEnabled == other.isMarkdownEnabled &&
-            alignment == other.alignment && color == other.color
+        text == other.text && alignment == other.alignment && color == other.color
 
     /** Writes this content into [text] (its identifier and its order excepted). */
     fun applyTo(text: DrawText) {
         text.contentVersions = versions
         text.text = this.text
-        text.isLatex = isLatex
-        text.isMarkdownEnabled = isMarkdownEnabled
         text.alignment = alignment
         text.x = x
         text.y = y
@@ -250,8 +245,6 @@ fun DrawStroke.toData() = StrokeData(
 fun DrawText.toData() = TextData(
     id = id,
     text = text,
-    isLatex = isLatex,
-    isMarkdownEnabled = isMarkdownEnabled,
     alignment = alignment,
     x = x,
     y = y,
@@ -320,8 +313,6 @@ internal fun writeContent(element: DrawElement, data: ElementData) {
     when {
         element is DrawText && data is TextData -> {
             element.text = data.text
-            element.isLatex = data.isLatex
-            element.isMarkdownEnabled = data.isMarkdownEnabled
             element.alignment = data.alignment
             element.color = data.color
             element.markDirty()

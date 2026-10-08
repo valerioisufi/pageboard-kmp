@@ -41,8 +41,6 @@
     <string name="draw_toolbar_action_edit_text">Edit Text</string>
     <string name="draw_toolbar_action_decrease_font_size">Decrease font size</string>
     <string name="draw_toolbar_action_increase_font_size">Increase font size</string>
-    <string name="draw_toolbar_label_markdown">Markdown Live Preview</string>
-    <string name="draw_toolbar_label_math_mode">Math Formula (LaTeX)</string>
     <string name="draw_toolbar_action_pan">Pan Tool</string>
     <string name="draw_toolbar_action_import_pdf">Import PDF</string>
     <string name="draw_toolbar_action_import_image">Import Image</string>
@@ -97,12 +95,10 @@
     <string name="text_editor_action_strikethrough">Strikethrough</string>
     <string name="text_editor_action_code">Code</string>
     <string name="text_editor_action_heading">Heading</string>
-    <string name="text_editor_action_math">Math / LaTeX</string>
+    <string name="text_editor_action_math">Formula</string>
     <string name="text_editor_action_save">Save</string>
     <string name="text_editor_action_move">Move text box</string>
     <string name="text_editor_action_alignment">Alignment</string>
-    <string name="text_editor_label_formula">TeX formula:</string>
-    <string name="text_editor_desc_latex_preview">LaTeX preview</string>
     <string name="draw_toolbar_action_add_preset">Add new preset</string>
     <string-array name="date_months_short">
         <item>Jan</item>

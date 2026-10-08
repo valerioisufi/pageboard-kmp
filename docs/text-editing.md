@@ -191,7 +191,7 @@ work against the user, and text can be lost.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | Fixes: alignment (`Constraints.fixedWidth` in the adapter and `NoteInserter`), the text saved on every way out (F1), caret at the tap for a new text and at the tapped character for an existing one, heading at the start of the line, height measured again on width and size changes (`measure` on the port); tests (the switches of the tool, F2, go away with their flags in phase 2) | Done |
-| 2 | One kind of text: `isLatex` and `isMathMode` removed (model, Room, synchronization format, export, lecture), the LaTeX block paths, the symbol bar and the whole-text preview removed; `RichTextParser` in the core with the Pandoc and CommonMark rules and the escapes, display formulas on their own centered line; `MarkdownTextUtil` split into parser and presenters | To do |
+| 2 | One kind of text: `isLatex` and `isMathMode` removed (model, Room, synchronization format, export, lecture), the LaTeX block paths, the symbol bar and the whole-text preview removed; `RichTextParser` in the core with the Pandoc and CommonMark rules and the escapes, display formulas on their own centered line; `MarkdownTextUtil` split into parser and presenters | Done |
 | 3 | The editing session: `TextEditorManager` owns the draft and commits (no callback, height from the port), `TextBoxEditor` and `TextFormatBar` split out of `TextEditorOverlay`; tests of the use case in the core | To do |
 | 4 | One frame: `FrameStyle` in dp, `FramePainter` for the selection and the editor, the handles of the editor routed by `CanvasGestureHandler`, rotated texts edited rotated; screenshot tests of both frames | To do |
 | 5 | Formulas in the editor: drawn over their concealed source, popover at the caret with the errors (a spike first, see [Risks](#risks)) | To do |
@@ -222,6 +222,32 @@ work against the user, and text can be lost.
 * Tests: the caret of a new and of an opened text, a point of a rotated text, the text kept by
   every way out, the height after a resize and a new size (core, with a fake adapter); the
   alignment and the measures of the adapter (desktop); the heading.
+
+### Phase 2 results
+
+* A text is Markdown with formulas: `isLatex`, `isMarkdownEnabled` and the "math mode" left
+  `DrawText`, `TextData`, `TextEntity` (Room version 13) and the format of the synchronization
+  (recorded again under the same protocol version, before the first release). The alignment is
+  `TextAlignment` (`START`, `CENTER`, `END`), stored by name.
+* `RichTextParser` (`core.text`) reads the notation once for the editor, the canvas and the
+  export: escapes, code and formulas first (written as they are), then emphasis and headings
+  around them; the spans nest and never overlap partially. `$` follows Pandoc (`$5 and $10` is
+  text), `_` does not work inside words, the emphasis touches its text (`2 * 3 * 4` is text), the
+  headings have levels (1.4, 1.25, 1.1 times the size).
+* `MarkdownTextUtil` presents the spans: the field of the editor (delimiters concealed away from
+  the caret) and the canvas (delimiters and escape backslashes removed, every offset of the
+  source mapped, so that nested styles apply). A `$$…$$` alone on its lines takes its line, the
+  formula centered in it (smaller when wider than the box); in a line it is in display style
+  (`\displaystyle`) on the baseline. Compose `ParagraphStyle`s were tried for the centering and
+  left out: around the line breaks of the text they add empty lines.
+* `ComposeTextTileAdapter` has one path for every text; the renderer no longer rewrites the height
+  of a text while drawing it, and the export no longer draws a formula to learn its height.
+* The editor lost the symbol bar, the preview of the whole text, the M↓ switch and the height of
+  the LaTeX blocks; Σ wraps the selection in `$…$` ("Formula"). The settings of the tool lost the
+  "Markdown" and "Math mode" switches.
+* Tests: the rules of the parser (formulas, prices, escapes, display and block formulas, code,
+  `_`, emphasis, nesting, no partial overlap), the canvas text (nesting, escapes, block formulas
+  and their size), the export of a block formula (as text and vectors, drawn as by the editor).
 
 ## Decisions
 

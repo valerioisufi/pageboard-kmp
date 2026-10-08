@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.ui.render
 
 import androidx.compose.ui.text.font.createFontFamilyResolver
 import io.github.valerioisufi.drawview.core.model.DrawText
+import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.text.TextSizes
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -15,7 +16,7 @@ class ComposeTextTileAdapterTest {
 
     private val adapter = ComposeTextTileAdapter(createFontFamilyResolver())
 
-    private fun text(content: String, alignment: Int = 0, width: Float = 100f) = DrawText().apply {
+    private fun text(content: String, alignment: TextAlignment = TextAlignment.START, width: Float = 100f) = DrawText().apply {
         text = content
         this.alignment = alignment
         this.width = width
@@ -31,15 +32,15 @@ class ComposeTextTileAdapterTest {
 
     @Test
     fun aShortLineIsAlignedInTheWidthOfItsBox() {
-        val (startLeft, startRight) = extent(text("Short", alignment = 0))
+        val (startLeft, startRight) = extent(text("Short", alignment = TextAlignment.START))
         assertEquals(0f, startLeft, 0.5f)
 
-        val (centerLeft, centerRight) = extent(text("Short", alignment = 1))
+        val (centerLeft, centerRight) = extent(text("Short", alignment = TextAlignment.CENTER))
         val lineWidth = startRight - startLeft
         assertEquals((100f - lineWidth) / 2f, centerLeft, 0.5f)
         assertEquals(50f, (centerLeft + centerRight) / 2f, 0.5f)
 
-        val (_, endRight) = extent(text("Short", alignment = 2))
+        val (_, endRight) = extent(text("Short", alignment = TextAlignment.END))
         assertEquals(100f, endRight, 0.5f)
     }
 

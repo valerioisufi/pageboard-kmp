@@ -140,8 +140,7 @@ class PdfExporterTest {
             x = 15f; y = 20f; width = 170f; height = 40f; fontSize = 24f
         })
         page.add(DrawText().apply {
-            text = "\\int_0^1 x^2\\,dx = \\frac{1}{3}"
-            isLatex = true
+            text = "\$\$\\int_0^1 x^2\\,dx = \\frac{1}{3}\$\$"
             x = 15f; y = 90f; width = 120f; height = 30f; fontSize = 24f
         })
         val pdf = tempFile("text", ".pdf")

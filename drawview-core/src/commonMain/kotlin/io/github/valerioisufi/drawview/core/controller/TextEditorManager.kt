@@ -13,6 +13,7 @@ import io.github.valerioisufi.drawview.core.change.TextData
 import io.github.valerioisufi.drawview.core.change.UpdateTexts
 import io.github.valerioisufi.drawview.core.change.toData
 import io.github.valerioisufi.drawview.core.model.DrawText
+import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.Versions
 import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.core.text.TextSizes
@@ -39,9 +40,6 @@ class TextEditorManager(private val controller: DrawViewController) {
     /** Incremented at every new session (resets the editor UI state). */
     var sessionId: Int by mutableIntStateOf(0)
         private set
-
-    var isMarkdownLivePreviewEnabled: Boolean by mutableStateOf(true)
-    var isMathMode: Boolean by mutableStateOf(false)
 
     val isEditing: Boolean get() = activeTextPageIndex >= 0
 
@@ -101,8 +99,6 @@ class TextEditorManager(private val controller: DrawViewController) {
         activeTextMmY = yMm
         activeBoxWidthMm = boxWidthMm.coerceAtLeast(MIN_WIDTH_MM)
         caretRequest = caretAt
-        isMathMode = item?.isLatex ?: false
-        isMarkdownLivePreviewEnabled = item?.isMarkdownEnabled ?: true
         newTextId = newElementId()
         editedFrom = item?.toData()?.copy(order = null)
         sessionId++
@@ -139,11 +135,10 @@ class TextEditorManager(private val controller: DrawViewController) {
      */
     fun finishTextEditing(
         text: String,
-        isLatex: Boolean,
         color: Int,
         fontSize: Float,
         measuredHeightMm: Float,
-        alignment: Int = 0
+        alignment: TextAlignment = TextAlignment.START
     ) {
         val pageIndex = activeTextPageIndex
         if (pageIndex < 0) return
@@ -164,8 +159,6 @@ class TextEditorManager(private val controller: DrawViewController) {
         val data = TextData(
             id = existing?.id ?: newTextId,
             text = text,
-            isLatex = isLatex,
-            isMarkdownEnabled = isMarkdownLivePreviewEnabled,
             alignment = alignment,
             x = activeTextMmX,
             y = activeTextMmY,
@@ -196,14 +189,12 @@ class TextEditorManager(private val controller: DrawViewController) {
      *
      * @param heightMm height of the laid out text in page millimeters.
      */
-    fun reportDraft(text: String, isLatex: Boolean, color: Int, fontSize: Float, heightMm: Float, alignment: Int = 0) {
+    fun reportDraft(text: String, color: Int, fontSize: Float, heightMm: Float, alignment: TextAlignment = TextAlignment.START) {
         val page = controller.document.pages.getOrNull(activeTextPageIndex) ?: return
         val existing = activeTextItem
         val draft = TextData(
             id = existing?.id ?: newTextId,
             text = text,
-            isLatex = isLatex,
-            isMarkdownEnabled = isMarkdownLivePreviewEnabled,
             alignment = alignment,
             x = activeTextMmX,
             y = activeTextMmY,

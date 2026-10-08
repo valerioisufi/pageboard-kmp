@@ -69,7 +69,7 @@ fun fitPdfPage(pdfWidth: Double, pdfHeight: Double, pageRect: Rect): Rect {
 }
 
 /**
- * Adapter for rasterizing text blocks (plain text, Markdown and LaTeX) into tiles.
+ * Adapter for rasterizing text blocks (Markdown with formulas) into tiles.
  *
  * Implementations must be thread-safe: tiles are rasterized on background workers.
  */
@@ -107,7 +107,7 @@ class TextLineMetrics(val height: Float, val baseline: Float)
 /**
  * A text block as a [TextTileAdapter] lays it out, in millimeters of the block (from its top-left
  * corner, before its rotation, which turns it around its middle, [height] being the height it is
- * drawn): its [words] and its [formulas] (a LaTeX block is one formula).
+ * drawn): its [words] and its [formulas].
  */
 class TextBlockLayout(val words: List<TextWord>, val formulas: List<TextFormula>, val height: Float)
 

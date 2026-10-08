@@ -87,8 +87,6 @@
     <string name="draw_toolbar_action_edit_text">テキストを編集</string>
     <string name="draw_toolbar_action_decrease_font_size">フォントを小さく</string>
     <string name="draw_toolbar_action_increase_font_size">フォントを大きく</string>
-    <string name="draw_toolbar_label_markdown">Markdownライブプレビュー</string>
-    <string name="draw_toolbar_label_math_mode">数式 (LaTeX)</string>
     <string name="message_import_image_failed">画像を読み込めませんでした</string>
     <string name="message_import_pdf_failed">PDFを読み込めませんでした</string>
     <string name="message_pdf_not_supported">このプラットフォームではPDFの読み込みは利用できません</string>
@@ -96,12 +94,10 @@
     <string name="text_editor_action_strikethrough">取り消し線</string>
     <string name="text_editor_action_code">コード</string>
     <string name="text_editor_action_heading">見出し</string>
-    <string name="text_editor_action_math">数式 / LaTeX</string>
+    <string name="text_editor_action_math">数式</string>
     <string name="text_editor_action_save">保存</string>
     <string name="text_editor_action_move">テキストボックスを移動</string>
     <string name="text_editor_action_alignment">配置</string>
-    <string name="text_editor_label_formula">TeX数式:</string>
-    <string name="text_editor_desc_latex_preview">LaTeXプレビュー</string>
     <string name="draw_toolbar_action_add_preset">プリセットを追加</string>
     <string-array name="date_months_short">
         <item>1月</item>

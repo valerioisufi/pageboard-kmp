@@ -259,8 +259,20 @@ interface RotatableItem {
     }
 }
 
+/** Where the lines of a text go in the width of its box. */
+@Serializable
+enum class TextAlignment {
+    START,
+    CENTER,
+    END;
+
+    companion object {
+        fun fromName(name: String?): TextAlignment? = entries.firstOrNull { it.name == name }
+    }
+}
+
 /**
- * A text block (plain text, Markdown or a LaTeX formula) placed on a page.
+ * A text block placed on a page: Markdown with formulas (see `RichTextParser`).
  *
  * [id] identifies the block on every device (see [newElementId]).
  */
@@ -278,11 +290,7 @@ class DrawText(override val id: String = newElementId()) : RotatableItem, DrawEl
     var contentVersions: Versions = Versions.NONE
 
     @Volatile var text: String = ""
-    @Volatile var isLatex: Boolean = false
-    @Volatile var isMarkdownEnabled: Boolean = true
-
-    /** 0 = start, 1 = center, 2 = end. */
-    @Volatile var alignment: Int = 0
+    @Volatile var alignment: TextAlignment = TextAlignment.START
 
     @Volatile override var x: Float = 0f
     @Volatile override var y: Float = 0f
@@ -318,8 +326,6 @@ class DrawText(override val id: String = newElementId()) : RotatableItem, DrawEl
 
     fun copyFrom(other: DrawText) {
         text = other.text
-        isLatex = other.isLatex
-        isMarkdownEnabled = other.isMarkdownEnabled
         alignment = other.alignment
         x = other.x
         y = other.y

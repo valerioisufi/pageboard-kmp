@@ -25,6 +25,7 @@ import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.PurgedContent
 import io.github.valerioisufi.drawview.core.model.Stamp
 import io.github.valerioisufi.drawview.core.model.StrokeTool
+import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.model.newElementId
@@ -188,9 +189,7 @@ class DrawDocumentRepository(
 
     private fun mapText(entity: TextEntity) = DrawText(entity.id).apply {
         text = entity.text
-        isLatex = entity.isLatex
-        isMarkdownEnabled = entity.isMarkdownEnabled
-        alignment = entity.alignment
+        alignment = TextAlignment.fromName(entity.alignment) ?: TextAlignment.START
         x = entity.x
         y = entity.y
         width = entity.width
@@ -400,7 +399,6 @@ class DrawDocumentRepository(
                 pageId = page.id,
                 orderKey = text.order,
                 text = text.text,
-                isLatex = text.isLatex,
                 x = text.x,
                 y = text.y,
                 width = text.width,
@@ -408,8 +406,7 @@ class DrawDocumentRepository(
                 rotation = text.rotation,
                 color = text.color,
                 fontSize = text.fontSize,
-                alignment = text.alignment,
-                isMarkdownEnabled = text.isMarkdownEnabled,
+                alignment = text.alignment.name,
                 added = text.added,
                 removed = text.removed,
                 placed = text.placed,

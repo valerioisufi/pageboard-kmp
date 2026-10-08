@@ -160,7 +160,6 @@ data class TextEntity(
     val pageId: String,
     val orderKey: ElementOrder,
     val text: String,
-    val isLatex: Boolean,
     val x: Float, // mm
     val y: Float, // mm
     val width: Float, // mm
@@ -168,9 +167,8 @@ data class TextEntity(
     val rotation: Float, // degrees
     val color: Int,
     val fontSize: Float,
-    /** 0 = start, 1 = center, 2 = end. */
-    val alignment: Int = 0,
-    val isMarkdownEnabled: Boolean = true,
+    /** The name of its `TextAlignment`. */
+    val alignment: String = "START",
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,

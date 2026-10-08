@@ -131,7 +131,6 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
 
     private fun newText(content: String, widthMm: Float, heightMm: Float, fontSizePt: Float) = DrawText().apply {
         text = content
-        isMarkdownEnabled = true
         width = widthMm
         height = heightMm
         color = ASSISTANT_TEXT_COLOR

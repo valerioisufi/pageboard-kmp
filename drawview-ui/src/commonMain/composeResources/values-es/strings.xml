@@ -87,8 +87,6 @@
     <string name="draw_toolbar_action_edit_text">Editar texto</string>
     <string name="draw_toolbar_action_decrease_font_size">Reducir tamaño de fuente</string>
     <string name="draw_toolbar_action_increase_font_size">Aumentar tamaño de fuente</string>
-    <string name="draw_toolbar_label_markdown">Vista previa de Markdown</string>
-    <string name="draw_toolbar_label_math_mode">Fórmula matemática (LaTeX)</string>
     <string name="message_import_image_failed">No se pudo importar la imagen</string>
     <string name="message_import_pdf_failed">No se pudo importar el PDF</string>
     <string name="message_pdf_not_supported">La importación de PDF no está disponible en esta plataforma</string>
@@ -96,12 +94,10 @@
     <string name="text_editor_action_strikethrough">Tachado</string>
     <string name="text_editor_action_code">Código</string>
     <string name="text_editor_action_heading">Título</string>
-    <string name="text_editor_action_math">Matemáticas / LaTeX</string>
+    <string name="text_editor_action_math">Fórmula</string>
     <string name="text_editor_action_save">Guardar</string>
     <string name="text_editor_action_move">Mover el cuadro de texto</string>
     <string name="text_editor_action_alignment">Alineación</string>
-    <string name="text_editor_label_formula">Fórmula TeX:</string>
-    <string name="text_editor_desc_latex_preview">Vista previa de LaTeX</string>
     <string name="draw_toolbar_action_add_preset">Añadir ajuste predefinido</string>
     <string-array name="date_months_short">
         <item>ene</item>

@@ -79,7 +79,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.Placeholder
-import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -1187,7 +1186,6 @@ private fun MarkdownText(markdown: String) {
             MarkdownTextUtil.toLiveAnnotatedString(
                 text = markdown,
                 selection = TextRange(markdown.length + 1),
-                isMarkdownEnabled = true,
                 defaultColor = color
             ) to emptyMap()
         )
@@ -1203,7 +1201,7 @@ private fun markdownWithFormulas(
     density: Density
 ): Pair<AnnotatedString, Map<String, InlineTextContent>> {
     val fontPx = with(density) { style.fontSize.toPx() }
-    val canvasText = MarkdownTextUtil.toCanvasText(markdown, true, color, fontPx, fontAscentPx = fontPx * 0.8f) { latex, sizePx ->
+    val canvasText = MarkdownTextUtil.toCanvasText(markdown, color, fontPx, fontAscentPx = fontPx * 0.8f) { latex, sizePx ->
         LatexEngine.renderFormula(latex, sizePx, color.toArgb())?.let {
             MarkdownTextUtil.RenderedFormula(it.bitmap, it.width.toFloat(), it.height.toFloat(), it.baselineRatio)
         }
@@ -1222,7 +1220,7 @@ private fun markdownWithFormulas(
                     Placeholder(
                         width = placeholder.widthPx.toSp(),
                         height = placeholder.heightPx.toSp(),
-                        placeholderVerticalAlign = if (placeholder.aboveBaseline) PlaceholderVerticalAlign.AboveBaseline else PlaceholderVerticalAlign.TextTop
+                        placeholderVerticalAlign = placeholder.verticalAlign
                     )
                 }
             ) {

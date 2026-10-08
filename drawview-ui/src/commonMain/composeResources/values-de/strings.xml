@@ -87,8 +87,6 @@
     <string name="draw_toolbar_action_edit_text">Text bearbeiten</string>
     <string name="draw_toolbar_action_decrease_font_size">Schrift verkleinern</string>
     <string name="draw_toolbar_action_increase_font_size">Schrift vergrößern</string>
-    <string name="draw_toolbar_label_markdown">Markdown-Livevorschau</string>
-    <string name="draw_toolbar_label_math_mode">Mathematische Formel (LaTeX)</string>
     <string name="message_import_image_failed">Das Bild konnte nicht importiert werden</string>
     <string name="message_import_pdf_failed">Das PDF konnte nicht importiert werden</string>
     <string name="message_pdf_not_supported">Der PDF-Import ist auf dieser Plattform nicht verfügbar</string>
@@ -96,12 +94,10 @@
     <string name="text_editor_action_strikethrough">Durchgestrichen</string>
     <string name="text_editor_action_code">Code</string>
     <string name="text_editor_action_heading">Überschrift</string>
-    <string name="text_editor_action_math">Mathematik / LaTeX</string>
+    <string name="text_editor_action_math">Formel</string>
     <string name="text_editor_action_save">Speichern</string>
     <string name="text_editor_action_move">Textfeld verschieben</string>
     <string name="text_editor_action_alignment">Ausrichtung</string>
-    <string name="text_editor_label_formula">TeX-Formel:</string>
-    <string name="text_editor_desc_latex_preview">LaTeX-Vorschau</string>
     <string name="draw_toolbar_action_add_preset">Neue Voreinstellung hinzufügen</string>
     <string-array name="date_months_short">
         <item>Jan.</item>
