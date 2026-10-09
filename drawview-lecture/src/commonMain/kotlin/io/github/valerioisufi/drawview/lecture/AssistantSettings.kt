@@ -49,9 +49,6 @@ enum class ReceivedLectures {
 /** What a lecture can send to Google. */
 enum class SharedData { AUDIO, TRANSCRIPT, NOTEBOOK }
 
-/** Kept for the code written with the first name of [ModelProvider]. */
-typealias ReviewProvider = ModelProvider
-
 /** The kinds of requests of the assistant, each answered by the provider chosen for it. */
 @Serializable
 enum class LectureTask {
@@ -94,6 +91,7 @@ data class TaskModel(
  * @param localUrl address of the Ollama server (the local models).
  * @param whisperModel path of the ggml model of whisper.cpp (e.g. ggml-large-v3-turbo.bin).
  * @param whisperLanguage language spoken, ISO code ("it", "en") or "auto".
+ * @param reviewAtTheEnd the final review is written when a lecture ends (otherwise on request).
  */
 @Serializable
 data class AssistantSettings(
@@ -107,7 +105,8 @@ data class AssistantSettings(
     val whisperModel: String = "",
     val whisperLanguage: String = "auto",
     /** What to do with the lectures received from devices without the models (see [ReceivedLectures]). */
-    val receivedLectures: ReceivedLectures = ReceivedLectures.ASK
+    val receivedLectures: ReceivedLectures = ReceivedLectures.ASK,
+    val reviewAtTheEnd: Boolean = true
 ) {
     /** Provider and models of [task] (the defaults when not configured). */
     fun task(task: LectureTask): TaskModel = tasks[task] ?: defaultTask(task)
@@ -119,6 +118,12 @@ data class AssistantSettings(
 
     /** Local model of the final review. */
     val localModel: String get() = task(LectureTask.FINAL_REVIEW).local
+
+    /** The local models of the requests made during the lecture (kept loaded until its end). */
+    val liveLocalModels: Set<String>
+        get() = listOf(LectureTask.LIVE_NOTES, LectureTask.CATCH_UP).map { task(it) }
+            .filter { it.provider == ModelProvider.LOCAL }
+            .mapTo(mutableSetOf()) { it.local }
 
     /** The audio is sent to Google only when Gemini transcribes it: otherwise it stays on this computer. */
     val sendsAudio: Boolean get() = task(LectureTask.TRANSCRIPTION).provider == ModelProvider.GEMINI

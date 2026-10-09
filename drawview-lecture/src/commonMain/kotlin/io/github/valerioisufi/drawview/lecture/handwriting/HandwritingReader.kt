@@ -13,6 +13,7 @@ import io.github.valerioisufi.drawview.lecture.model.ModelBackends
 import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
 import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
 import io.github.valerioisufi.drawview.lecture.model.PromptPart
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
@@ -25,6 +26,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
+import kotlin.concurrent.Volatile
 
 /**
  * Transcribes the handwriting of a notebook once: every block of strokes ([InkBlock]) is sent as
@@ -35,16 +37,23 @@ import kotlinx.serialization.json.putJsonObject
  * The devices working on the notebook share what they read ([merge]): the file gathers it when
  * saved ([onSaved]).
  *
- * Used by one coroutine at a time (the analysis of a lecture, then its end).
+ * One per notebook, shared by its recording and its reviews: one transcription at a time, the
+ * texts read from any coroutine.
  */
 internal class HandwritingReader(
     private val path: String,
     private val backends: ModelBackends,
     private val onSaved: () -> Unit = {}
 ) {
-    private val texts: MutableMap<String, Entry> by lazy { load() }
+    private val store = atomic<Map<String, Entry>?>(null)
+    private val mutex = Mutex()
+
+    /** The texts by key of block (replaced, never changed: read without a lock). */
+    private val texts: Map<String, Entry>
+        get() = store.value ?: load().let { loaded -> if (store.compareAndSet(null, loaded)) loaded else store.value!! }
 
     /** Keys of the blocks of the previous capture: unchanged since then, the student is done with them. */
+    @Volatile
     private var previousKeys: Set<String> = emptySet()
 
     @Serializable
@@ -80,12 +89,12 @@ internal class HandwritingReader(
         max: Int,
         stableOnly: Boolean,
         initialStrokeIds: Set<String> = emptySet()
-    ): TokenUsage? {
+    ): TokenUsage? = mutex.withLock {
         val candidates = blocks.filter { block ->
             block.key !in texts && (!stableOnly || block.key in previousKeys || initialStrokeIds.containsAll(block.strokeIds))
         }.take(max)
         if (stableOnly) previousKeys = blocks.mapTo(mutableSetOf()) { it.key }
-        if (candidates.isEmpty()) return null
+        if (candidates.isEmpty()) return@withLock null
         var usage: TokenUsage? = null
         val batch = if (task.provider == ModelProvider.LOCAL) LOCAL_BATCH else ONLINE_BATCH
         for (group in candidates.chunked(batch)) {
@@ -97,14 +106,15 @@ internal class HandwritingReader(
                 ModelProvider.LOCAL -> backends.local.generate(prompt, task.local, OllamaBackend.LIVE_KEEP_LOADED_SECONDS) {}
             }
             val read = LectureAnalysis.parseHandwriting(answer.text)
-            images.forEachIndexed { i, (block, _) ->
-                // A block the model did not answer stays to be read
-                read[i + 1]?.let { text -> texts[block.key] = Entry(block.pageId, text.trim()) }
+            // A block the model did not answer stays to be read
+            val newTexts = images.withIndex().mapNotNull { (i, image) ->
+                read[i + 1]?.let { text -> image.first.key to Entry(image.first.pageId, text.trim()) }
             }
+            store.value = texts + newTexts
             usage = (usage ?: TokenUsage()) + (answer.usage ?: TokenUsage(localRequests = 1))
         }
         save()
-        return usage
+        usage
     }
 
     private fun prompt(images: List<Pair<InkBlock, ByteArray>>, pages: List<PageContent>): ModelPrompt {
@@ -128,15 +138,17 @@ internal class HandwritingReader(
         )
     }
 
-    private fun load(): MutableMap<String, Entry> = LinkedHashMap(readFile(path))
+    private fun load(): Map<String, Entry> = readFile(path)
 
     private suspend fun save() {
         fileLock.withLock {
             // With what the other devices read meanwhile
-            for ((key, entry) in readFile(path)) if (key !in texts) texts[key] = entry
+            val all = LinkedHashMap(texts)
+            for ((key, entry) in readFile(path)) if (key !in all) all[key] = entry
             // The oldest entries go first (insertion order)
-            while (texts.size > MAX_ENTRIES) texts.remove(texts.keys.first())
-            writeAtomically(path, encode(texts).encodeToByteArray())
+            while (all.size > MAX_ENTRIES) all.remove(all.keys.first())
+            store.value = all
+            writeAtomically(path, encode(all).encodeToByteArray())
         }
         onSaved()
     }

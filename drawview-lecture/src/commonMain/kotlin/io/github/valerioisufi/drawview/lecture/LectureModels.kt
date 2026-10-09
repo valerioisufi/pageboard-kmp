@@ -187,7 +187,7 @@ data class LectureRecord(
     val finalReview: String? = null,
     /** Model that wrote the final review. */
     val finalReviewBy: String? = null,
-    val finalReviewProvider: ReviewProvider? = null,
+    val finalReviewProvider: ModelProvider? = null,
     /** The tokens used for it, by device (each one counts its own). */
     val usageByDevice: Map<String, DeviceUsage> = emptyMap(),
     /** The pages of the notebook seen during the lecture, the most recent last. */

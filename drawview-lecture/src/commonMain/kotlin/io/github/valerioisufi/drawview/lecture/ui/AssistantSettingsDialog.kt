@@ -315,6 +315,15 @@ private fun TaskModelRow(task: LectureTask, settings: AssistantSettings, localMo
             )
         }
         taskHint(task, settings)?.let { Hint(stringResource(it)) }
+        if (task == LectureTask.FINAL_REVIEW) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(stringResource(Res.string.lecture_settings_review_at_end), style = MaterialTheme.typography.bodyMedium)
+                    if (!settings.reviewAtTheEnd) Hint(stringResource(Res.string.lecture_settings_review_on_request_hint))
+                }
+                Switch(checked = settings.reviewAtTheEnd, onCheckedChange = { onChange(settings.copy(reviewAtTheEnd = it)) })
+            }
+        }
     }
 }
 

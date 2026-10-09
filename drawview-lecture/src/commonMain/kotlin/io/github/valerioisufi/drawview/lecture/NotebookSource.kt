@@ -113,6 +113,9 @@ interface NotebookSource {
     /** Every page of the notebook in text, without images (e.g. to write the course context). */
     suspend fun allPages(): List<PageContent> = emptyList()
 
+    /** The identifier of every page, by index. */
+    suspend fun pageIds(): List<String> = emptyList()
+
     /** The handwriting of the pages [pageIndexes], in blocks. */
     suspend fun inkBlocks(pageIndexes: List<Int>): List<InkBlock> = emptyList()
 
@@ -189,6 +192,8 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
             )
         }
     }
+
+    override suspend fun pageIds(): List<String> = withContext(Dispatchers.Main) { controller.document.pages.map { it.id } }
 
     override suspend fun allPages(): List<PageContent> {
         val pages = withContext(Dispatchers.Main) { controller.document.pages.toList() }

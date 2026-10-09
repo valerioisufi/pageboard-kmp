@@ -102,7 +102,7 @@ import io.github.valerioisufi.drawview.lecture.LectureSummary
 import io.github.valerioisufi.drawview.lecture.LectureTask
 import io.github.valerioisufi.drawview.lecture.NoteKind
 import io.github.valerioisufi.drawview.lecture.NoteSuggestion
-import io.github.valerioisufi.drawview.lecture.ReviewProvider
+import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.ReviewStatus
 import io.github.valerioisufi.drawview.lecture.SharedData
 import io.github.valerioisufi.drawview.lecture.SuggestionStatus
@@ -610,7 +610,7 @@ private fun LectureTabs(assistant: LectureAssistant, lecture: Lecture, controlle
             0 -> NotesTab(assistant, lecture, controller, inserter)
             1 -> TranscriptTab(lecture)
             2 -> OutlineTab(assistant, lecture)
-            else -> ReviewTab(assistant, lecture, controller, inserter, assistant.settingsStore.settings)
+            else -> ReviewTab(assistant, lecture, controller, inserter)
         }
     }
 }
@@ -954,9 +954,9 @@ private fun ReviewTab(
     assistant: LectureAssistant,
     lecture: Lecture,
     controller: DrawViewController,
-    inserter: NoteInserter,
-    settings: AssistantSettings
+    inserter: NoteInserter
 ) {
+    val settings = assistant.settingsStore.settings
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -977,7 +977,7 @@ private fun ReviewTab(
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                     Spacer(Modifier.width(12.dp))
                     MutedText(
-                        if (lecture.reviewProvider == ReviewProvider.LOCAL && lecture.reviewStatus == ReviewStatus.RUNNING) {
+                        if (lecture.reviewProvider == ModelProvider.LOCAL && lecture.reviewStatus == ReviewStatus.RUNNING) {
                             stringResource(Res.string.lecture_review_running_local, lecture.reviewModel.orEmpty(), lecture.reviewProgressTokens)
                         } else {
                             stringResource(Res.string.lecture_review_running, lecture.reviewModel ?: settings.task(LectureTask.FINAL_REVIEW).model)
@@ -987,7 +987,7 @@ private fun ReviewTab(
             }
             lecture.reviewStatus == ReviewStatus.FAILED -> {
                 MutedText(stringResource(Res.string.lecture_review_failed))
-                if (canRegenerate) RegenerateReviewButton(assistant, lecture, settings)
+                if (canRegenerate) RegenerateReviewButton(assistant, lecture)
             }
             review != null -> {
                 InsertPagesButton(controller) { afterPageIndex -> inserter.insertPages(controller, review, afterPageIndex) }
@@ -996,20 +996,21 @@ private fun ReviewTab(
                         lecture.reviewModel?.let { stringResource(Res.string.lecture_review_by, it) }.orEmpty(),
                         Modifier.weight(1f)
                     )
-                    if (canRegenerate) RegenerateReviewButton(assistant, lecture, settings)
+                    if (canRegenerate) RegenerateReviewButton(assistant, lecture)
                 }
                 SelectionContainer { MarkdownText(review) }
             }
             // Written by a device with the models
             !lecture.generates -> MutedText(stringResource(Res.string.lecture_review_elsewhere))
             lecture.status == LectureStatus.FINISHED -> {
-                // Recorded where the models are not, or interrupted before its review (e.g. the application was closed)
+                // Recorded where the models are not, written on request, or interrupted before its review (e.g. the application was closed)
                 MutedText(
                     if (lecture.recordedElsewhere && lecture.transcript.isEmpty()) stringResource(Res.string.lecture_review_received, lecture.recordedOn)
                     else stringResource(Res.string.lecture_review_pending)
                 )
-                if (canRegenerate) RegenerateReviewButton(assistant, lecture, settings, label = Res.string.lecture_review_generate)
+                if (canRegenerate) RegenerateReviewButton(assistant, lecture, label = Res.string.lecture_review_generate)
             }
+            !settings.reviewAtTheEnd -> MutedText(stringResource(Res.string.lecture_review_on_request))
             else -> MutedText(stringResource(Res.string.lecture_review_none, settings.task(LectureTask.FINAL_REVIEW).model))
         }
 
@@ -1026,14 +1027,14 @@ private fun ReviewTab(
     }
 }
 
-/** Writes the final review again, online or by the local model. */
+/** Writes the final review (again), online or by the local model. */
 @Composable
 private fun RegenerateReviewButton(
     assistant: LectureAssistant,
     lecture: Lecture,
-    settings: AssistantSettings,
     label: StringResource = Res.string.lecture_review_regenerate
 ) {
+    val settings = assistant.settingsStore.settings
     var expanded by remember { mutableStateOf(false) }
     Box {
         TextButton(onClick = { expanded = true }) {
@@ -1045,14 +1046,14 @@ private fun RegenerateReviewButton(
                 text = { Text(stringResource(Res.string.lecture_review_with_gemini, settings.task(LectureTask.FINAL_REVIEW).gemini)) },
                 onClick = {
                     expanded = false
-                    assistant.generate(lecture, ReviewProvider.GEMINI)
+                    assistant.generate(lecture, ModelProvider.GEMINI)
                 }
             )
             DropdownMenuItem(
                 text = { Text(stringResource(Res.string.lecture_review_with_local, settings.task(LectureTask.FINAL_REVIEW).local)) },
                 onClick = {
                     expanded = false
-                    assistant.generate(lecture, ReviewProvider.LOCAL)
+                    assistant.generate(lecture, ModelProvider.LOCAL)
                 }
             )
         }

@@ -1,49 +1,51 @@
 package io.github.valerioisufi.drawview.lecture
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.github.valerioisufi.drawview.core.attachment.DocumentAttachments
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.core.util.SyncLock
 import io.github.valerioisufi.drawview.core.util.currentTimeMillis
+import io.github.valerioisufi.drawview.core.util.syncLock
 import io.github.valerioisufi.drawview.lecture.audio.AudioCapture
 import io.github.valerioisufi.drawview.lecture.audio.AudioOutput
+import io.github.valerioisufi.drawview.lecture.audio.FollowedRecording
+import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
 import io.github.valerioisufi.drawview.lecture.audio.createAudioCapture
 import io.github.valerioisufi.drawview.lecture.audio.createAudioOutput
-import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
 import io.github.valerioisufi.drawview.lecture.audio.exportRecording
+import io.github.valerioisufi.drawview.lecture.audio.samplesToMs
+import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
+import io.github.valerioisufi.drawview.lecture.generated.resources.*
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
-import io.github.valerioisufi.drawview.lecture.platform.ChosenFile
-import io.github.valerioisufi.drawview.ui.platform.FileTarget
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
 import io.github.valerioisufi.drawview.lecture.model.ModelBackends
 import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
+import io.github.valerioisufi.drawview.lecture.platform.ChosenFile
+import io.github.valerioisufi.drawview.lecture.platform.showNotification
 import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
 import io.github.valerioisufi.drawview.lecture.transcription.WhisperTranscriber
+import io.github.valerioisufi.drawview.ui.platform.FileTarget
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.NonCancellable
-import kotlinx.io.files.Path
-import kotlinx.io.files.SystemFileSystem
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import io.github.valerioisufi.drawview.lecture.platform.showNotification
-import io.github.valerioisufi.drawview.lecture.generated.resources.*
-import org.jetbrains.compose.resources.getString
-import io.github.valerioisufi.drawview.lecture.audio.FollowedRecording
-import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
-import io.github.valerioisufi.drawview.lecture.audio.samplesToMs
-import kotlinx.coroutines.CompletableDeferred
-import androidx.compose.runtime.mutableStateListOf
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlin.coroutines.CoroutineContext
+import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
+import org.jetbrains.compose.resources.getString
 
 /**
  * The lecture assistant of an application.
@@ -139,6 +141,8 @@ class LectureAssistant(
     private val contexts = mutableStateMapOf<String, CourseContext>()
     private val writingContexts = mutableStateMapOf<String, Boolean>()
     private val editorNotebooks = mutableMapOf<String, NotebookSource>()
+    private val handwritingReaders = mutableMapOf<String, HandwritingReader>()
+    private val handwritingLock = SyncLock()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private val lectureAttachments: LectureAttachments by lazy { LectureAttachments(sharing, scope) }
@@ -336,7 +340,8 @@ class LectureAssistant(
             onEnd = { if (lecture.deletedElsewhere) scope.launch { follower.abandon() } else follower.stop() }
         )
         follower = LectureRecorder(
-            lecture, settingsStore, capture, editorNotebooks[documentId], transcriber, analyzes = true, follows = true, onFinished = { ended.complete(Unit) }
+            lecture, settingsStore, capture, editorNotebooks[documentId], transcriber, analyzes = true, follows = true,
+            handwriting = handwritingOf(documentId), onFinished = { ended.complete(Unit) }
         )
         withContext(stateContext) {
             followers[directory] = follower
@@ -455,7 +460,7 @@ class LectureAssistant(
         val pages = notebook.allPages()
         if (pages.isEmpty()) return null
         // With the handwriting already transcribed
-        val reader = HandwritingReader(library.documentDirectory(documentId) + "/handwriting.json", backends) { library.changed(documentId, null) }
+        val reader = handwritingOf(documentId)
         val blocks = notebook.inkBlocks(pages.filter { it.hasInk }.map { it.index })
         val filled = pages.map { page -> reader.fill(page, blocks.filter { it.pageIndex == page.index }) }
         val prompt = LecturePrompts.courseContextPrompt(settingsStore.settings, notebook.documentTitle, filled)
@@ -558,7 +563,8 @@ class LectureAssistant(
         val settings = settingsStore.settings
         val transcriber = if (!canGenerate || settings.sendsAudio) null else transcriberFactory(settings)
         val newRecorder = LectureRecorder(
-            lecture, settingsStore, capture, notebook, transcriber, analyzes = canGenerate, onFinished = { finished(it.lecture) }
+            lecture, settingsStore, capture, notebook, transcriber, analyzes = canGenerate, handwriting = handwritingOf(documentId),
+            onFinished = { finished(it.lecture) }
         )
         return try {
             newRecorder.start()
@@ -599,6 +605,13 @@ class LectureAssistant(
         val active = activeRecorder?.lecture?.documentId
         scope.launch {
             for (documentId in documentIds - setOfNotNull(active)) library.deleteFiles(library.documentDirectory(documentId))
+        }
+    }
+
+    /** The handwriting of the notebook [documentId], transcribed once for all its lectures (and shared with its devices). */
+    private fun handwritingOf(documentId: String): HandwritingReader = syncLock(handwritingLock) {
+        handwritingReaders.getOrPut(documentId) {
+            HandwritingReader(library.documentDirectory(documentId) + "/handwriting.json", backends) { library.changed(documentId, null) }
         }
     }
 
@@ -675,6 +688,9 @@ class LectureAssistant(
             if (isBusy) return false
             importing = lecture
             importError = null
+        } else if (!lecture.claimReview(provider)) {
+            // Shown as running at once: a second request is refused
+            return false
         }
         lecture.generating = scope.launch {
             // The other devices leave it to this one (see GenerationLock)
@@ -684,13 +700,20 @@ class LectureAssistant(
                     val transcriber = if (settings.sendsAudio) null else transcriberFactory(settings)
                     LectureImporter(lecture, settingsStore, transcriber).transcribeAndReview(provider)
                 } else {
-                    lecture.runFinalReview(provider)
+                    // With the handwriting of the notebook not read yet, when it is open
+                    FinalReviewer(lecture, settingsStore, handwritingOf(lecture.documentId)).write(provider, editorNotebooks[lecture.documentId])
                     lecture.persist()
                 }
             }
         }.also { job ->
             job.invokeOnCompletion {
-                if (transcribes) scope.launch { withContext(stateContext) { importing = null } }
+                scope.launch {
+                    withContext(stateContext) {
+                        if (transcribes) importing = null
+                        // Stopped before its end (another device took it over)
+                        lecture.releaseReviewClaim()
+                    }
+                }
                 refresh(lecture.documentId)
             }
         }

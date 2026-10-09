@@ -21,7 +21,7 @@ import kotlinx.io.files.SystemFileSystem
  * Turns an audio file recorded elsewhere (a phone, a recorder) into a [lecture] of a notebook:
  * converted into the audio of the lectures, transcribed in chunks cut at the pauses (on this
  * computer by [transcriber], or by Gemini when the audio may be sent and [transcriber] is `null`),
- * then reviewed as a recorded lecture. No live suggestion: the review writes the notes and what is
+ * then reviewed as a recorded lecture (unless the review is written on request). No live suggestion: the review writes the notes and what is
  * missing from the notebook ([pages]).
  *
  * A lecture recorded on a device without the models is transcribed and reviewed the same way
@@ -58,7 +58,7 @@ internal class LectureImporter(
         lecture.setState { elapsedMs = samplesToMs(samples) }
         lecture.persist()
         if (reviews) {
-            transcribeAndReview(settingsStore.settings.reviewProvider)
+            transcribeAndReview(settingsStore.settings.reviewProvider, review = settingsStore.settings.reviewAtTheEnd)
         } else {
             // No models here: the audio only, reviewed by a device with them
             lecture.setState {
@@ -69,8 +69,11 @@ internal class LectureImporter(
         }
     }
 
-    /** Transcribes the audio of the lecture, then writes its review with [provider]. */
-    suspend fun transcribeAndReview(provider: ModelProvider) {
+    /**
+     * Transcribes the audio of the lecture, then writes its review with [provider] ([review]: the
+     * review written at the end, see [AssistantSettings.reviewAtTheEnd]; otherwise on request).
+     */
+    suspend fun transcribeAndReview(provider: ModelProvider, review: Boolean = true) {
         val durationMs = lecture.setStateResult {
             status = LectureStatus.IMPORTING
             elapsedMs
@@ -82,13 +85,15 @@ internal class LectureImporter(
             transcriber?.close()
         }
 
-        lecture.setState {
-            importStep = ImportStep.REVIEWING
-            importProgress = -1f
-        }
-        lecture.persist()
         try {
-            lecture.runFinalReview(provider)
+            if (review) {
+                lecture.setState {
+                    importStep = ImportStep.REVIEWING
+                    importProgress = -1f
+                }
+                lecture.persist()
+                FinalReviewer(lecture, settingsStore, handwriting = null).write(provider, notebook = null)
+            }
         } finally {
             withContext(NonCancellable) {
                 lecture.setState {

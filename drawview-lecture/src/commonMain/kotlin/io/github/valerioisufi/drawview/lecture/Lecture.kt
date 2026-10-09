@@ -288,15 +288,19 @@ class Lecture internal constructor(
     }
 
     /**
-     * Writes the final review (again, e.g. after a network error or for a lecture interrupted
-     * before its review), by [provider] (by default the one of the settings).
+     * Marks the final review as being written by [provider] (called on the state thread, before it
+     * starts: a second request is refused); `false` when it cannot be written now.
      */
-    fun generateFinalReview(provider: ModelProvider = settingsStore.settings.reviewProvider) {
-        if (!canGenerateReview) return
-        scope.launch {
-            runFinalReview(provider)
-            persist()
-        }
+    internal fun claimReview(provider: ModelProvider): Boolean {
+        if (!canGenerateReview) return false
+        reviewStatus = ReviewStatus.RUNNING
+        reviewProvider = provider
+        return true
+    }
+
+    /** The review claimed did not run to its end (stopped): shown as it was. Called on the state thread. */
+    internal fun releaseReviewClaim() {
+        if (reviewStatus == ReviewStatus.RUNNING) reviewStatus = if (finalReview != null) ReviewStatus.DONE else ReviewStatus.NONE
     }
 
     // ==========================================================
@@ -450,9 +454,17 @@ class Lecture internal constructor(
     // Final review
     // ==========================================================
 
-    internal suspend fun runFinalReview(provider: ModelProvider) {
+    /**
+     * Writes the final review by [provider]: [prepare] completes its material first (e.g. the
+     * handwriting not transcribed yet), while the review is shown as running.
+     */
+    internal suspend fun runFinalReview(provider: ModelProvider, prepare: suspend () -> Unit = {}) {
         val transcriptCopy = withContext(stateContext) { transcript.toList() }
-        if (transcriptCopy.isEmpty() && recording.samples() < MIN_REVIEW_SECONDS * LECTURE_SAMPLE_RATE.toLong()) return
+        if (transcriptCopy.isEmpty() && recording.samples() < MIN_REVIEW_SECONDS * LECTURE_SAMPLE_RATE.toLong()) {
+            // Nothing to review (a few seconds of silence)
+            setState { reviewStatus = if (finalReview != null) ReviewStatus.DONE else ReviewStatus.NONE }
+            return
+        }
         val settings = settingsStore.settings
         val model = settings.task(LectureTask.FINAL_REVIEW).let { if (provider == ModelProvider.GEMINI) it.gemini else it.local }
         val apiKey = settingsStore.apiKey
@@ -478,6 +490,7 @@ class Lecture internal constructor(
             reviewProgressTokens = 0
         }
         try {
+            prepare()
             val prompt = when (provider) {
                 ModelProvider.GEMINI -> {
                     // The complete recording, when the audio may leave the device

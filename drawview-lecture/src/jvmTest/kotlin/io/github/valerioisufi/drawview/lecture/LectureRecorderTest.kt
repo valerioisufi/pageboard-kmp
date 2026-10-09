@@ -7,6 +7,7 @@ import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
 import io.github.valerioisufi.drawview.lecture.audio.Wav
 import io.github.valerioisufi.drawview.lecture.audio.toLittleEndianBytes
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
+import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
 import io.github.valerioisufi.drawview.lecture.handwriting.InkBlock
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
@@ -132,7 +133,7 @@ class LectureRecorderTest {
         assertEquals("# Limiti\n- Definizione", lecture.finalReview)
         assertEquals(3, lecture.usage.requests)
         assertEquals(mapOf("TEXT" to 1200L, "AUDIO" to 1800L), lecture.usage.promptByModality)
-        assertEquals(ReviewProvider.GEMINI, lecture.reviewProvider)
+        assertEquals(ModelProvider.GEMINI, lecture.reviewProvider)
         assertEquals("test-model", lecture.reviewModel)
         assertEquals(66_000L, lecture.elapsedMs)
 
@@ -375,7 +376,7 @@ class LectureRecorderTest {
         assertTrue(ollamaRequest.contains("\"keep_alive\":0"))
         assertTrue(ollamaRequest.contains("\"format\":{"))
         assertEquals("# Limiti", lecture.finalReview)
-        assertEquals(ReviewProvider.LOCAL, lecture.reviewProvider)
+        assertEquals(ModelProvider.LOCAL, lecture.reviewProvider)
         assertEquals("gemma4:12b", lecture.reviewModel)
         assertEquals(ReviewStatus.DONE, lecture.reviewStatus)
         // The local review is free: only the live update is billed
@@ -461,7 +462,7 @@ class LectureRecorderTest {
         val reloaded = newLecture(settingsStore, engine, record.copy(pages = listOf(seen)))
         assertEquals("Analisi 1", reloaded.documentTitle)
         assertTrue(reloaded.canGenerateReview)
-        reloaded.generateFinalReview(ReviewProvider.GEMINI)
+        assertTrue(withContext(stateContext) { FinalReviewer(reloaded, settingsStore, handwriting = null).start(ModelProvider.GEMINI, notebook = null) })
         withTimeout(20_000) { while (reloaded.reviewStatus != ReviewStatus.DONE) delay(20) }
         assertEquals("# Limiti", reloaded.finalReview)
         assertTrue(reviewRequests.single().contains("### Page 5\\nSlide 4 of PDF 1:\\nTeorema ponte"), reviewRequests.single())
@@ -525,9 +526,9 @@ class LectureRecorderTest {
         assertEquals(5_000L, RecordingFile(File(directory, "lecture").path).durationMs())
     }
 
-    /** A notebook with a block of handwriting written before the lecture on its page 2. */
-    private class InkNotebook : NotebookSource {
-        val block = InkBlock(1, "11", "k1", setOf("old"), Rect(10f, 10f, 50f, 30f))
+    /** A notebook with a block of handwriting on its page 2: written before the lecture, or of [strokes]. */
+    private class InkNotebook(strokes: Set<String> = setOf("old")) : NotebookSource {
+        val block = InkBlock(1, "11", "k1", strokes, Rect(10f, 10f, 50f, 30f))
         override val documentTitle = "Analisi 1"
         override suspend fun strokeIds() = setOf("old")
         override suspend fun capture(knownStrokeIds: Set<String>, textPages: Int, imagePages: Int) = NotebookSnapshot(
@@ -588,6 +589,59 @@ class LectureRecorderTest {
         assertTrue(requests.single { it.contains("The lecture is over") }.contains("lim f(x) = L"))
         // Kept for the next lectures of the notebook
         assertTrue(File(directory, "handwriting.json").readText().contains("lim f(x) = L"))
+    }
+
+    @Test
+    fun theReviewIsWrittenOnRequest() = runBlocking<Unit> {
+        val requests = Collections.synchronizedList(mutableListOf<String>())
+        val engine = MockEngine { request ->
+            val path = request.url.encodedPath
+            val body = request.body.toByteArray().decodeToString()
+            when {
+                path.endsWith(":generateContent") -> {
+                    requests.add(body)
+                    val answer = when {
+                        body.contains("You transcribe the handwritten notes") -> """{"blocks":[{"image":1,"text":"lim f(x) = L"}]}"""
+                        body.contains("The lecture is over") -> """{"notesMarkdown":"# Limiti","missing":[]}"""
+                        else -> plainChunkAnswer
+                    }
+                    respond(geminiAnswer(answer), HttpStatusCode.OK, jsonHeaders)
+                }
+                path == "/upload/v1beta/files" -> respond("{}", HttpStatusCode.OK, headersOf("X-Goog-Upload-URL", "https://upload.test/1"))
+                path == "/1" -> respond("""{"file":{"name":"files/rec","uri":"https://x/files/rec","mimeType":"audio/wav","state":"ACTIVE"}}""", HttpStatusCode.OK, jsonHeaders)
+                else -> respond("", HttpStatusCode.NotFound)
+            }
+        }
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath).apply {
+            update(settings.copy(apiKey = "test-key", reviewAtTheEnd = false).withTask(LectureTask.TRANSCRIPTION, TaskModel(gemini = AssistantSettings.DEFAULT_MODEL)))
+        }
+        val microphone = FakeMicrophone()
+        val lecture = newLecture(settingsStore, engine)
+        val notebook = InkNotebook(strokes = setOf("new"))
+        val recorder = LectureRecorder(lecture, settingsStore, microphone, notebook)
+        recorder.start()
+        // Written during the lecture: still being written at the only update
+        microphone.speak(61.0, loud = true, random = Random(9))
+        microphone.speak(1.0, loud = false, random = Random(9))
+        recorder.stop()
+        awaitFinished(lecture)
+
+        // Over without a review, nor the handwriting read for it
+        assertEquals(ReviewStatus.NONE, lecture.reviewStatus)
+        assertTrue(requests.none { it.contains("The lecture is over") || it.contains("You transcribe the handwritten notes") })
+        assertTrue(lecture.canGenerateReview)
+
+        // Asked: the handwriting first, then the review
+        val reviewer = FinalReviewer(lecture, settingsStore, HandwritingReader(File(directory, "handwriting.json").absolutePath, lecture.backends))
+        assertTrue(withContext(stateContext) { reviewer.start(ModelProvider.GEMINI, notebook) })
+        // A second request while it runs is refused
+        assertFalse(withContext(stateContext) { reviewer.start(ModelProvider.GEMINI, notebook) })
+        withTimeout(20_000) { while (lecture.reviewStatus != ReviewStatus.DONE) delay(20) }
+        assertEquals("# Limiti", lecture.finalReview)
+        val handwriting = requests.indexOfFirst { it.contains("You transcribe the handwritten notes") }
+        val review = requests.indexOfFirst { it.contains("The lecture is over") }
+        assertTrue(handwriting in 0 until review)
+        assertTrue(requests[review].contains("lim f(x) = L"))
     }
 
     /** An answer of Ollama, streamed as its chat API does. */

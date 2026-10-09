@@ -96,7 +96,7 @@
     <string name="lecture_delete_message">Vengono eliminati la registrazione, la trascrizione, i suggerimenti e la revisione della lezione del %1$s, anche sui dispositivi con cui condividi il quaderno. Gli appunti inseriti nel quaderno restano.</string>
     <string name="lecture_action_delete">Elimina</string>
     <string name="lecture_review_generate">Genera la revisione</string>
-    <string name="lecture_review_pending">La lezione è stata interrotta prima della revisione (per esempio l\'app è stata chiusa).</string>
+    <string name="lecture_review_pending">La revisione di questa lezione non è ancora stata scritta.</string>
     <string name="lecture_indicator_open">Apri</string>
     <string name="lecture_indicator_reviewing">Revisione di «%1$s»…</string>
     <string name="lecture_exit_title">Registrazione in corso</string>
@@ -213,4 +213,7 @@
     <string name="lecture_offer_tokens_hour">Circa %1$d token a Gemini all\'ora (l\'audio, trascritto e poi rivisto), addebitati secondo il tuo piano.</string>
     <string name="lecture_offer_follow">Segui in diretta</string>
     <string name="lecture_followed_here">Seguita in diretta da questo computer: le note sono scritte man mano che arriva l\'audio.</string>
+    <string name="lecture_review_on_request">Quando la registrazione si ferma potrai chiedere la revisione dell\'intera lezione: appunti ordinati e ciò che manca ai tuoi.</string>
+    <string name="lecture_settings_review_at_end">Scrivila al termine di ogni lezione</string>
+    <string name="lecture_settings_review_on_request_hint">Spento: la chiedi tu dalla scheda Revisione, quando ti serve.</string>
 </resources>

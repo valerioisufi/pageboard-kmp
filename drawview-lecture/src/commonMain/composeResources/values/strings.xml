@@ -96,7 +96,7 @@
     <string name="lecture_delete_message">The recording, the transcript, the suggestions and the review of the lecture of %1$s are deleted, also on the devices the notebook is shared with. The notes inserted in the notebook stay.</string>
     <string name="lecture_action_delete">Delete</string>
     <string name="lecture_review_generate">Generate the review</string>
-    <string name="lecture_review_pending">The lecture was interrupted before its review (e.g. the app was closed).</string>
+    <string name="lecture_review_pending">The review of this lecture has not been written yet.</string>
     <string name="lecture_indicator_open">Open</string>
     <string name="lecture_indicator_reviewing">Reviewing «%1$s»…</string>
     <string name="lecture_exit_title">A lecture is being recorded</string>
@@ -213,4 +213,7 @@
     <string name="lecture_offer_tokens_hour">About %1$d tokens to Gemini an hour (the audio, transcribed then reviewed), billed as your plan says.</string>
     <string name="lecture_offer_follow">Follow live</string>
     <string name="lecture_followed_here">Followed live by this computer: its notes are written as its audio arrives.</string>
+    <string name="lecture_review_on_request">When the recording stops you can ask for the review of the whole lecture: organized notes and what is missing from yours.</string>
+    <string name="lecture_settings_review_at_end">Write it at the end of every lecture</string>
+    <string name="lecture_settings_review_on_request_hint">Off: you ask for it from the Review tab, when you need it.</string>
 </resources>

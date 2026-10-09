@@ -40,7 +40,7 @@ import kotlin.math.min
  * leave it. Every kind of request is answered by the provider of its [LectureTask] (Gemini or a
  * local model). When the analysis falls behind (slow model or missing network) the waiting chunks
  * are merged into a single request. When the recording stops, the lecture is reviewed once more
- * ([Lecture.generateFinalReview]).
+ * ([FinalReviewer]), or later on request.
  *
  * The recording goes on when the document is closed: the notebook is then detached
  * ([detachNotebook]) and the analysis works on the audio only, until the document is opened again
@@ -68,6 +68,9 @@ class LectureRecorder internal constructor(
     private val transcriber: Transcriber? = null,
     private val analyzes: Boolean = true,
     private val follows: Boolean = false,
+    private val handwriting: HandwritingReader = HandwritingReader(lecture.directory.trimEnd('/').substringBeforeLast('/') + "/handwriting.json", lecture.backends) {
+        lecture.onChanged(null)
+    },
     private val onFinished: (LectureRecorder) -> Unit = {}
 ) {
     /** Following a lecture recorded elsewhere, until it is over ([stop]). */
@@ -99,9 +102,6 @@ class LectureRecorder internal constructor(
 
     /** Text of the slides the student was looking at, for the prompt of the transcription. */
     private var visibleSlides: List<String> = emptyList()
-    private val handwriting = HandwritingReader(lecture.directory.trimEnd('/').substringBeforeLast('/') + "/handwriting.json", lecture.backends) {
-        lecture.onChanged(null)
-    }
     private val recentChunks = ArrayDeque<AudioChunk>()
     private var lastOutlineMs = Long.MIN_VALUE
 
@@ -228,7 +228,10 @@ class LectureRecorder internal constructor(
         cutRequested.value = true
     }
 
-    /** Stops the recording, analyzes the last chunks and reviews the whole lecture. */
+    /**
+     * Stops the recording, analyzes the last chunks and reviews the whole lecture (unless the
+     * review is written on request: [AssistantSettings.reviewAtTheEnd]).
+     */
     fun stop() {
         if (follows) return stopFollowing()
         if (!isRecording) return
@@ -238,10 +241,9 @@ class LectureRecorder internal constructor(
             audioJob?.join()
             if (analyzes) {
                 analysisJob?.join()
-                readRemainingHandwriting()
                 lecture.setState { isAnalyzing = false }
-                releaseLocalModels()
-                lecture.runFinalReview(settingsStore.settings.reviewProvider)
+                closeTranscriber()
+                reviewAtTheEnd()
             } else {
                 notebookJob?.cancelAndJoin()
                 rememberPagesSeen()
@@ -259,10 +261,9 @@ class LectureRecorder internal constructor(
         lecture.scope.launch {
             audioJob?.join()
             analysisJob?.join()
-            readRemainingHandwriting()
             lecture.setState { isAnalyzing = false }
-            releaseLocalModels()
-            lecture.runFinalReview(settingsStore.settings.reviewProvider)
+            closeTranscriber()
+            reviewAtTheEnd()
             lecture.persist()
             onFinished(this@LectureRecorder)
         }
@@ -305,19 +306,26 @@ class LectureRecorder internal constructor(
         onFinished(this)
     }
 
-    /** The local models of the live requests stay loaded during the lecture: freed at its end. */
-    private suspend fun releaseLocalModels() {
+    /**
+     * The review of the lecture over, when it is written at the end ([AssistantSettings.reviewAtTheEnd]);
+     * otherwise written on request: the models of the lecture are freed.
+     */
+    private suspend fun reviewAtTheEnd() {
+        val settings = settingsStore.settings
+        if (settings.reviewAtTheEnd) {
+            FinalReviewer(lecture, settingsStore, handwriting).write(settings.reviewProvider, notebook)
+        } else {
+            backends.unloadLiveModels(settings)
+        }
+    }
+
+    /** The speech recognition stays ready during the lecture: freed at its end. */
+    private suspend fun closeTranscriber() {
         try {
             transcriber?.close()
         } catch (e: Throwable) {
             println("DrawView: cannot stop the transcription: ${e.message}")
         }
-        val settings = settingsStore.settings
-        listOf(LectureTask.LIVE_NOTES, LectureTask.CATCH_UP).map { settings.task(it) }
-            .filter { it.provider == ModelProvider.LOCAL }
-            .map { it.local }
-            .distinct()
-            .forEach { backends.local.unload(it) }
     }
 
     /** The system took the microphone (a call, Siri) or gave it back: the capture goes on by itself. */
@@ -595,33 +603,6 @@ class LectureRecorder internal constructor(
             lecture.setState {
                 usage += tokens
                 updateSeenPages(pages)
-            }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Throwable) {
-            println("DrawView: cannot read the handwriting: ${e.message}")
-        }
-    }
-
-    /** The lecture is over: the handwriting of the pages seen not transcribed yet, for the final review. */
-    private suspend fun readRemainingHandwriting() {
-        val source = notebook ?: return
-        val task = settingsStore.settings.task(LectureTask.LIVE_NOTES)
-        if (task.provider == ModelProvider.GEMINI && !settingsStore.hasApiKey) return
-        try {
-            val (pages, pageIds) = lecture.setStateResult { seenPageContents() to lastPageIds }
-            // The pages where they are now (they may have been moved)
-            val current = pages.map { page -> page.copy(index = pageIds.indexOf(page.pageId).takeIf { it >= 0 } ?: page.index) }
-            val blocks = source.inkBlocks(current.filter { it.hasInk }.map { it.index }.reversed())
-            if (blocks.none { !handwriting.isRead(it) }) return
-            lecture.setState { isAnalyzing = true }
-            val tokens = handwriting.read(blocks, current, source, task, HandwritingReader.MAX_AT_THE_END, stableOnly = false)
-            val filled = current.map { page -> handwriting.fill(page, blocks.filter { it.pageIndex == page.index }) }
-            // Saved with the index they had when seen
-            val seen = pages.zip(filled).map { (before, page) -> page.copy(index = before.index) }
-            lecture.setState {
-                tokens?.let { usage += it }
-                updateSeenPages(seen)
             }
         } catch (e: CancellationException) {
             throw e
