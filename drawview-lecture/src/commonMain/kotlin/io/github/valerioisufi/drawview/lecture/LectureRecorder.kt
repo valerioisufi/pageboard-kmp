@@ -12,6 +12,7 @@ import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
 import io.github.valerioisufi.drawview.lecture.local.OllamaException
 import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
 import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
+import io.github.valerioisufi.drawview.lecture.transcription.StreamingTranscriber
 import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CancellationException
@@ -67,6 +68,7 @@ class LectureRecorder internal constructor(
     private val transcriber: Transcriber? = null,
     private val analyzes: Boolean = true,
     private val follows: Boolean = false,
+    private val stream: StreamingTranscriber? = null,
     private val handwriting: HandwritingReader = HandwritingReader(lecture.directory.trimEnd('/').substringBeforeLast('/') + "/handwriting.json", lecture.backends) {
         lecture.onChanged(null)
     },
@@ -78,7 +80,11 @@ class LectureRecorder internal constructor(
     private val backends get() = lecture.backends
 
     /** What was said in every update: its audio, or its transcript. */
-    private val speech: SpeechSource = if (transcriber != null) ChunkSpeech(lecture, transcriber, ::speechHints) else AudioSpeech
+    private val speech: SpeechSource = when {
+        stream != null -> StreamSpeech(lecture, stream, ::speechHints)
+        transcriber != null -> ChunkSpeech(lecture, transcriber, ::speechHints)
+        else -> AudioSpeech
+    }
 
     @Volatile
     private var notebook: NotebookSource? = notebook
@@ -160,6 +166,7 @@ class LectureRecorder internal constructor(
             var lastShared = 0L
             for (block in audioBlocks) {
                 if (!follows) lecture.recording.append(block)
+                speech.onAudio(block)
                 totalSamples += block.size
                 if (!heardSomething && block.any { it != 0.toShort() }) heardSomething = true
                 val blockLevel = (rms(block) / LEVEL_FULL_SCALE).coerceIn(0f, 1f)
@@ -198,6 +205,7 @@ class LectureRecorder internal constructor(
                 }
             }
             // Stopped: the last words
+            speech.onAudioEnd()
             chunker?.cutNow(minSeconds = 2f)?.let {
                 lecture.setState { pendingUpdates += 1 }
                 updates.trySend(QueuedChunk(it, catchUp = false))
@@ -212,12 +220,14 @@ class LectureRecorder internal constructor(
             finishRecordingFile()
         }
 
+        speech.start()
         try {
             capture.start(onSamples = { samples -> audioBlocks.trySend(samples) }, onEvent = ::onCaptureEvent)
         } catch (e: Throwable) {
             audioJob?.cancel()
             analysisJob?.cancel()
             notebookJob?.cancel()
+            lecture.scope.launch { speech.close() }
             throw e
         }
         lecture.scope.launch { lecture.persist() }

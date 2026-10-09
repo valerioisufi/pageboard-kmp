@@ -14,6 +14,7 @@ import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
 import io.github.valerioisufi.drawview.lecture.model.ModelBackends
 import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
 import io.github.valerioisufi.drawview.lecture.transcription.SpeechHints
+import io.github.valerioisufi.drawview.lecture.transcription.StreamingTranscriber
 import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
 import io.github.valerioisufi.drawview.lecture.transcription.Transcribers
 import io.github.valerioisufi.drawview.lecture.transcription.Transcription
@@ -24,13 +25,17 @@ import io.ktor.client.engine.mock.toByteArray
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -727,6 +732,89 @@ class LectureRecorderTest {
         assertTrue(seconds in 4.0..5.0, "$seconds s")
         assertEquals(2, lecture.transcript.size)
         assertEquals(ReviewStatus.NONE, lecture.reviewStatus)
+    }
+
+    /** A live transcription: an utterance every 10 s of audio, the last one at the end of the audio. */
+    private class FakeStream : StreamingTranscriber {
+        lateinit var listener: StreamingTranscriber.Listener
+        lateinit var scope: CoroutineScope
+        val final = MutableStateFlow(0L)
+        var receivedMs = 0L
+        var lastEnd = 0L
+        var count = 0
+        var closed = false
+
+        override fun start(scope: CoroutineScope, hints: () -> SpeechHints, listener: StreamingTranscriber.Listener) {
+            this.scope = scope
+            this.listener = listener
+        }
+
+        override fun push(samples: ShortArray) {
+            receivedMs += samples.size * 1000L / LECTURE_SAMPLE_RATE
+            if (receivedMs - lastEnd >= 10_000) utterance()
+        }
+
+        override fun endOfAudio() = utterance()
+
+        private fun utterance() {
+            val segment = TranscriptSegment(lastEnd, receivedMs, "frase ${++count}")
+            lastEnd = receivedMs
+            runBlocking { listener.onFinal(segment) }
+            final.value = receivedMs
+        }
+
+        override suspend fun awaitFinal(untilMs: Long, timeoutMs: Long) {
+            withTimeoutOrNull(timeoutMs) { final.first { it >= untilMs - 1_000 } }
+        }
+
+        override suspend fun close() {
+            closed = true
+        }
+    }
+
+    @Test
+    fun theTranscriptMadeLiveIsSharedAmongTheUpdates() = runBlocking<Unit> {
+        val requests = Collections.synchronizedList(mutableListOf<String>())
+        val engine = MockEngine { request ->
+            requests.add(request.body.toByteArray().decodeToString())
+            respond(geminiAnswer(plainChunkAnswer), HttpStatusCode.OK, jsonHeaders)
+        }
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets()).apply {
+            update(settings.copy(apiKey = "test-key", reviewAtTheEnd = false))
+        }
+        assertEquals(TranscriptionMode.STREAMING, settingsStore.settings.transcription)
+        val microphone = FakeMicrophone()
+        val lecture = newLecture(settingsStore, engine)
+        val stream = FakeStream()
+        val recorder = LectureRecorder(lecture, settingsStore, microphone, FakeNotebook(), stream = stream)
+        recorder.start()
+        val random = Random(12)
+        microphone.speak(35.0, loud = true, random = random)
+        // While it is said
+        withTimeout(5_000) { while (lecture.transcript.size < 3) delay(10) }
+        stream.listener.onInterim("e quindi il limite")
+        withTimeout(5_000) { while (lecture.interimTranscript.isEmpty()) delay(10) }
+        microphone.speak(26.0, loud = true, random = random)
+        microphone.speak(1.0, loud = false, random = random)
+        withTimeout(20_000) { while (requests.isEmpty()) delay(20) }
+
+        // The utterances of the first minute, as text
+        val first = requests.single()
+        assertTrue(first.contains("## New transcript"), first)
+        assertTrue(first.contains("[0:00] frase 1") && first.contains("[0:50] frase 6"), first)
+        assertFalse(first.contains("audio/wav"))
+        assertEquals("", lecture.interimTranscript)
+
+        microphone.speak(4.0, loud = true, random = random)
+        recorder.stop()
+        awaitFinished(lecture)
+        // The last words become final at the end of the audio, and go to the last update only
+        val last = requests[1].substringAfter("## New transcript")
+        assertTrue(last.contains("frase 7"), last)
+        // (The end of the transcript before is in the memory of the lecture)
+        assertFalse(last.contains("frase 6"))
+        assertEquals((1..7).map { "frase $it" }, lecture.transcript.map { it.text })
+        assertTrue(stream.closed)
     }
 
     @Test

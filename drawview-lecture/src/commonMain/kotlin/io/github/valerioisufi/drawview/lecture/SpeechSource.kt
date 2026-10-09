@@ -4,16 +4,24 @@ import io.github.valerioisufi.drawview.lecture.audio.AudioChunk
 import io.github.valerioisufi.drawview.lecture.audio.Wav
 import io.github.valerioisufi.drawview.lecture.audio.samplesToMs
 import io.github.valerioisufi.drawview.lecture.transcription.SpeechHints
+import io.github.valerioisufi.drawview.lecture.transcription.StreamingTranscriber
 import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
 import kotlinx.coroutines.CancellationException
 
 /**
  * What was said in an update of a recording, for the request of the live suggestions: its audio
- * (the model transcribes it), or its transcript, made a chunk at a time or while it is said.
+ * (the model transcribes it), or its transcript, made a chunk at a time ([ChunkSpeech]) or while it
+ * is said ([StreamSpeech]).
  */
 internal sealed interface SpeechSource {
+    /** The recording starts. */
+    fun start() {}
+
     /** A block of the microphone, in order (only the live transcription uses it). */
     fun onAudio(samples: ShortArray) {}
+
+    /** The microphone stopped: what was said becomes final. */
+    fun onAudioEnd() {}
 
     /** The speech of [chunks] (consecutive), or `null` when there is nothing to send. */
     suspend fun speechOf(chunks: List<AudioChunk>): RequestSpeech?
@@ -55,6 +63,64 @@ internal class ChunkSpeech(
     }
 
     override suspend fun close() = transcriber.close()
+}
+
+/**
+ * The transcript made while the lecturer speaks by [stream]: every utterance is added to the
+ * [lecture] when final, the one being said is shown ([Lecture.interimTranscript]); an update waits
+ * a little for the words said until its end, and takes the utterances not taken yet.
+ */
+internal class StreamSpeech(
+    private val lecture: Lecture,
+    private val stream: StreamingTranscriber,
+    private val hints: () -> SpeechHints
+) : SpeechSource {
+    /** Utterances of the transcript taken by the updates (the analysis coroutine only). */
+    private var taken = 0
+
+    override fun start() = stream.start(lecture.scope, hints, listener)
+
+    override fun onAudio(samples: ShortArray) = stream.push(samples)
+
+    override fun onAudioEnd() = stream.endOfAudio()
+
+    override suspend fun speechOf(chunks: List<AudioChunk>): RequestSpeech? {
+        if (chunks.isEmpty()) return null
+        val endMs = chunks.last().endMs
+        stream.awaitFinal(endMs, AWAIT_FINAL_MS)
+        val segments = lecture.setStateResult {
+            transcript.drop(taken).takeWhile { it.startMs < endMs }.also { taken += it.size }
+        }
+        if (segments.isEmpty()) return null
+        val startMs = minOf(chunks.first().newStartMs, segments.first().startMs)
+        return RequestTranscript(emptyList(), segments, startMs, 0L, maxOf(endMs, segments.last().endMs))
+    }
+
+    override suspend fun close() = stream.close()
+
+    private val listener = object : StreamingTranscriber.Listener {
+        override suspend fun onFinal(segment: TranscriptSegment) = lecture.setState {
+            transcript.add(segment)
+            interimTranscript = ""
+        }
+
+        override suspend fun onInterim(text: String) = lecture.setState { interimTranscript = text }
+
+        override suspend fun onUsage(usage: TokenUsage) = lecture.setState { this.usage += usage }
+
+        override suspend fun onProblem(error: Exception?, retryInSeconds: Int) = lecture.setState {
+            problem = when {
+                error == null -> problem.takeUnless { it is LectureProblem.Retrying || it is LectureProblem.TranscriptionUnavailable }
+                retryInSeconds > 0 -> LectureProblem.Retrying(error.message ?: error::class.simpleName.orEmpty(), retryInSeconds)
+                else -> transcriptionProblem(error)
+            }
+        }
+    }
+
+    private companion object {
+        /** The final text of the last words arrives a second or two after a pause. */
+        const val AWAIT_FINAL_MS = 6_000L
+    }
 }
 
 /**

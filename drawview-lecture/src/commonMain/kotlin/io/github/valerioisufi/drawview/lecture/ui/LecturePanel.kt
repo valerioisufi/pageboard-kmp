@@ -82,6 +82,7 @@ import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
@@ -100,9 +101,9 @@ import io.github.valerioisufi.drawview.lecture.LectureRecorder
 import io.github.valerioisufi.drawview.lecture.LectureStatus
 import io.github.valerioisufi.drawview.lecture.LectureSummary
 import io.github.valerioisufi.drawview.lecture.LectureTask
+import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.NoteKind
 import io.github.valerioisufi.drawview.lecture.NoteSuggestion
-import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.ReviewStatus
 import io.github.valerioisufi.drawview.lecture.SharedData
 import io.github.valerioisufi.drawview.lecture.SuggestionStatus
@@ -112,20 +113,20 @@ import io.github.valerioisufi.drawview.lecture.formatLectureTime
 import io.github.valerioisufi.drawview.lecture.generated.resources.*
 import io.github.valerioisufi.drawview.lecture.platform.isComputer
 import io.github.valerioisufi.drawview.lecture.platform.rememberFileOpener
-import io.github.valerioisufi.drawview.ui.command.HoverTooltip
-import io.github.valerioisufi.drawview.ui.session.EditorPanel
-import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
+import io.github.valerioisufi.drawview.ui.command.HoverTooltip
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
+import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
+import io.github.valerioisufi.drawview.ui.session.EditorPanel
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 import kotlinx.coroutines.delay
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 /** Whether the settings of the assistant are shown: asked by the header of the panel and by its recording. */
 internal class LecturePanelState {
@@ -817,8 +818,11 @@ private fun KindLabel(kind: NoteKind, important: Boolean) {
 private fun TranscriptTab(lecture: Lecture) {
     val listState = rememberLazyListState()
     val count = lecture.transcript.size
-    LaunchedEffect(count) {
-        if (count > 0) listState.animateScrollToItem(count - 1)
+    // What the lecturer is saying, transcribed live: the last line
+    val interim = lecture.interimTranscript.takeIf { it.isNotBlank() && lecture.status == LectureStatus.RECORDING }
+    val items = count + if (interim != null) 1 else 0
+    LaunchedEffect(count, interim != null) {
+        if (items > 0) listState.animateScrollToItem(items - 1)
     }
     val player = lecture.player
     val playing = playingSegment(player, lecture.transcript.map { it.startMs })
@@ -826,7 +830,7 @@ private fun TranscriptTab(lecture: Lecture) {
     LaunchedEffect(playing) {
         if (playing != null && player?.isPlaying == true) listState.animateScrollToItem(playing)
     }
-    if (count == 0) {
+    if (items == 0) {
         MutedText(stringResource(Res.string.lecture_transcript_empty), Modifier.padding(16.dp))
         return
     }
@@ -853,6 +857,16 @@ private fun TranscriptTab(lecture: Lecture) {
                         )
                         Text(segment.text, style = MaterialTheme.typography.bodyMedium)
                     }
+                }
+            }
+            if (interim != null) {
+                item(key = "interim") {
+                    Text(
+                        text = interim,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
                 }
             }
         }

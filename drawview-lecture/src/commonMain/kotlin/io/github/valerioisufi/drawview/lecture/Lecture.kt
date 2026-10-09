@@ -169,6 +169,10 @@ class Lecture internal constructor(
     val suggestions = mutableStateListOf<NoteSuggestion>().apply { record?.let { addAll(it.suggestions) } }
     val transcript = mutableStateListOf<TranscriptSegment>().apply { record?.let { addAll(it.transcript) } }
 
+    /** What the lecturer is saying, transcribed live and still changing (not saved). */
+    var interimTranscript by mutableStateOf("")
+        internal set
+
     var finalReview by mutableStateOf(record?.finalReview)
         private set
 

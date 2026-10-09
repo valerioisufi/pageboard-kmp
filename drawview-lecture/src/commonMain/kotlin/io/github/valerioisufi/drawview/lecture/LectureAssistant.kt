@@ -344,8 +344,8 @@ class LectureAssistant(
             onEnd = { if (lecture.deletedElsewhere) scope.launch { follower.abandon() } else follower.stop() }
         )
         follower = LectureRecorder(
-            lecture, settingsStore, capture, editorNotebooks[documentId], transcriber, analyzes = true, follows = true,
-            handwriting = handwritingOf(documentId), onFinished = { ended.complete(Unit) }
+            lecture, settingsStore, capture, editorNotebooks[documentId], transcriber, stream = transcribers.forStreaming(settings),
+            analyzes = true, follows = true, handwriting = handwritingOf(documentId), onFinished = { ended.complete(Unit) }
         )
         withContext(stateContext) {
             followers[directory] = follower
@@ -565,9 +565,12 @@ class LectureAssistant(
                 audioShared = sharingOf(documentId).shareAudio
             }
         val settings = settingsStore.settings
-        val transcriber = if (!canGenerate) null else transcribers.forUpdates(settings)
         val newRecorder = LectureRecorder(
-            lecture, settingsStore, capture, notebook, transcriber, analyzes = canGenerate, handwriting = handwritingOf(documentId),
+            lecture, settingsStore, capture, notebook,
+            transcriber = if (canGenerate) transcribers.forUpdates(settings) else null,
+            stream = if (canGenerate) transcribers.forStreaming(settings) else null,
+            analyzes = canGenerate,
+            handwriting = handwritingOf(documentId),
             onFinished = { finished(it.lecture) }
         )
         return try {

@@ -4,6 +4,8 @@ import io.github.valerioisufi.drawview.lecture.AssistantSettings
 import io.github.valerioisufi.drawview.lecture.LectureTask
 import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.TranscriptionMode
+import io.github.valerioisufi.drawview.lecture.gemini.GeminiLiveClient
+import io.github.valerioisufi.drawview.lecture.gemini.LiveConnector
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
 
 /**
@@ -14,21 +16,27 @@ import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
  */
 class Transcribers(
     private val gemini: GeminiBackend,
-    private val whisper: (AssistantSettings) -> Transcriber = { WhisperTranscriber.of(it) }
+    private val whisper: (AssistantSettings) -> Transcriber = { WhisperTranscriber.of(it) },
+    private val live: LiveConnector = GeminiLiveClient()
 ) {
     /**
      * The transcriber of the updates of a recording, `null` when the model of the suggestions hears
-     * the audio itself ([TranscriptionMode.WITH_NOTES]).
+     * the audio itself ([TranscriptionMode.WITH_NOTES]) or when it is transcribed live ([forStreaming]).
      */
     fun forUpdates(settings: AssistantSettings): Transcriber? {
         val model = settings.task(LectureTask.TRANSCRIPTION).gemini
         return when (settings.transcription) {
             TranscriptionMode.LOCAL -> whisper(settings)
-            TranscriptionMode.STREAMING -> GeminiSpeechTranscriber(gemini, AssistantSettings.recordedSpeechModel(model))
             TranscriptionMode.SPEECH_CHUNKS -> GeminiSpeechTranscriber(gemini, model)
             TranscriptionMode.PROMPT_CHUNKS -> GeminiPromptTranscriber(gemini, model, { settings })
-            TranscriptionMode.WITH_NOTES -> null
+            TranscriptionMode.STREAMING, TranscriptionMode.WITH_NOTES -> null
         }
+    }
+
+    /** The live transcription of a recording ([TranscriptionMode.STREAMING]), `null` with the other modes. */
+    fun forStreaming(settings: AssistantSettings): StreamingTranscriber? {
+        if (settings.transcription != TranscriptionMode.STREAMING) return null
+        return GeminiLiveTranscriber(live, gemini::currentApiKey, settings.task(LectureTask.TRANSCRIPTION).gemini)
     }
 
     /**
