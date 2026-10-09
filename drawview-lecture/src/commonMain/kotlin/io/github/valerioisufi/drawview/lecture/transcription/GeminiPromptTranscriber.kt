@@ -34,13 +34,8 @@ class GeminiPromptTranscriber(
                 return Transcription(if (text.isEmpty()) emptyList() else listOf(TranscriptSegment(0, durationMs, text)), answer.usage)
             } catch (e: GeminiException) {
                 attempt++
-                if (!e.isRetryable || attempt >= MAX_ATTEMPTS) throw e
-                delay((retryDelayMs shl (attempt - 1)).coerceAtMost(30_000L))
+                delay(retryDelay(e, attempt, retryDelayMs) ?: throw e)
             }
         }
-    }
-
-    private companion object {
-        const val MAX_ATTEMPTS = 4
     }
 }

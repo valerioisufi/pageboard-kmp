@@ -53,6 +53,23 @@ Variations).
   the transcription, the one of the live suggestions): the recorder, the importer and the
   settings ask it, instead of testing `sendsAudio`.
 
+## Verified against the API (October 2026)
+
+* `gemini-3.5-transcribe` answers with `parts[].audioTranscription.text` (not a text part), 1,500
+  tokens a minute of audio; it accepts the audio inline. The models in preview allow 10,000 input
+  tokens a minute (some 6 minutes of audio): a request refused says how long to wait ("Please
+  retry in 39.9s"), and is repeated then; two pieces at a time.
+* `gemini-3.5-transcribe-live`: the setup is complete in half a second; the interim text is the
+  whole utterance so far, the final one comes about half a second after a pause; no times on the
+  transcripts, but `voiceActivity` (`ACTIVITY_START`, `ACTIVITY_END`, with the offset in the audio
+  of the session) gives where the speech starts and ends; no tokens counted (estimated from the
+  audio, 25 a second).
+* The detection of the speech of the server dropped a lecturer speaking softly (a third of the
+  usual level): with `START_SENSITIVITY_HIGH`, `END_SENSITIVITY_LOW` and the soft speech made
+  louder before it is sent (`SpeechLevel`, up to 4×) most of it is transcribed.
+* Ten minutes of a lecture: Gemini 3.5 Transcribe in 71 s (waits of the quota included) with the
+  technical terms right, whisper large-v3-turbo in 70 s with several wrong.
+
 ## Phases
 
 1. **The review on request**: `reviewAtTheEnd`, `FinalReviewer`, one `HandwritingReader` per
@@ -71,6 +88,6 @@ Variations).
 |---|---|
 | 1. The review on request | done |
 | 2. The transcription models a chunk at a time | done |
-| 3. Gemini 3.5 Transcribe Live | done (to verify against the real API) |
+| 3. Gemini 3.5 Transcribe Live | done, verified against the API |
 | 4. Transcribe again | done |
 | 5. README | done |

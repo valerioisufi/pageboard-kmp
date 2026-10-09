@@ -44,9 +44,29 @@ data class LiveGenerationConfig(val responseModalities: List<String>) {
     }
 }
 
-/** @param interimTranscriptTimestampEnabled the times of the interim transcripts too. */
+/**
+ * How the server finds the speech in the audio sent ([automaticActivityDetection]).
+ *
+ * @param interimTranscriptTimestampEnabled the times of the interim transcripts too.
+ */
 @Serializable
-data class LiveRealtimeInputConfig(val interimTranscriptTimestampEnabled: Boolean? = null)
+data class LiveRealtimeInputConfig(
+    val automaticActivityDetection: LiveActivityDetection? = null,
+    val interimTranscriptTimestampEnabled: Boolean? = null
+)
+
+/**
+ * The detection of the speech of the server: how readily it hears speech starting
+ * (`START_SENSITIVITY_HIGH`/`_LOW`) and ending (`END_SENSITIVITY_HIGH`/`_LOW`).
+ */
+@Serializable
+data class LiveActivityDetection(
+    val disabled: Boolean? = null,
+    val startOfSpeechSensitivity: String? = null,
+    val endOfSpeechSensitivity: String? = null,
+    val prefixPaddingMs: Int? = null,
+    val silenceDurationMs: Int? = null
+)
 
 /** Audio (PCM 16 kHz, base64) or the end of the audio: what was sent becomes final. */
 @Serializable
@@ -57,9 +77,20 @@ data class LiveRealtimeInput(val audio: GeminiBlob? = null, val audioStreamEnd: 
 data class LiveServerMessage(
     val setupComplete: JsonObject? = null,
     val serverContent: LiveServerContent? = null,
+    val voiceActivity: LiveVoiceActivity? = null,
     val goAway: LiveGoAway? = null,
     val usageMetadata: LiveUsage? = null
 )
+
+/**
+ * The speech found by the server ([type]: `ACTIVITY_START`, `ACTIVITY_END`), at [audioOffset] from
+ * the start of the audio of the session ("7.240s").
+ */
+@Serializable
+data class LiveVoiceActivity(val type: String = "", val audioOffset: String? = null) {
+    val isStart: Boolean get() = type == "ACTIVITY_START"
+    val isEnd: Boolean get() = type == "ACTIVITY_END"
+}
 
 @Serializable
 data class LiveServerContent(

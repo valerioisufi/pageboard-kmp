@@ -41,8 +41,9 @@ class GeminiTranscribersTest {
         val transcriber = GeminiSpeechTranscriber(backend { request ->
             urls.add(request.url.encodedPath)
             bodies.add(request.body.toByteArray().decodeToString())
+            // As the model answers (August 2026): the text in the transcription of the part
             respond(
-                """{"candidates":[{"content":{"role":"model","parts":[{"text":"Una funzione hash resistente alle collisioni."}]}}],"usageMetadata":{"promptTokenCount":64,"candidatesTokenCount":12}}""",
+                """{"candidates":[{"content":{"role":"model","parts":[{"audioTranscription":{"text":"Una funzione hash resistente alle collisioni."}}]},"finishReason":"STOP"}],"usageMetadata":{"promptTokenCount":64,"candidatesTokenCount":12}}""",
                 HttpStatusCode.OK,
                 jsonHeaders
             )
@@ -65,7 +66,7 @@ class GeminiTranscribersTest {
     }
 
     @Test
-    fun theWordsAreReadWhenThereIsNoText() = runTest {
+    fun theWordsOrATextPartAreReadWhenThereIsNoText() = runTest {
         val transcriber = GeminiSpeechTranscriber(backend {
             respond(
                 """{"candidates":[{"content":{"parts":[{"audioTranscription":{"words":[{"word":"Buongiorno","startOffset":"0.1s"},{"word":"a tutti.","startOffset":"0.6s"}]}}]}}]}""",
@@ -74,6 +75,10 @@ class GeminiTranscribersTest {
             )
         }, "gemini-3.5-transcribe")
         assertEquals("Buongiorno a tutti.", transcriber.transcribe(wav, SpeechHints()).segments.single().text)
+        val asText = GeminiSpeechTranscriber(backend {
+            respond("""{"candidates":[{"content":{"parts":[{"text":"Buonasera."}]}}]}""", HttpStatusCode.OK, jsonHeaders)
+        }, "gemini-3.5-transcribe")
+        assertEquals("Buonasera.", asText.transcribe(wav, SpeechHints()).segments.single().text)
     }
 
     @Test
@@ -98,6 +103,26 @@ class GeminiTranscribersTest {
             respond("""{"error":{"code":403,"message":"API key not valid","status":"PERMISSION_DENIED"}}""", HttpStatusCode.Forbidden, jsonHeaders)
         }, "gemini-3.5-transcribe", retryDelayMs = 1)
         assertTrue(assertFailsWith<GeminiException> { refused.transcribe(wav, SpeechHints()) }.isAuthenticationError)
+    }
+
+    @Test
+    fun theWaitAskedByTheApiIsRespectedWhenTheRequestsAreTooMany() = runTest {
+        var refused = 6
+        val transcriber = GeminiSpeechTranscriber(backend {
+            if (refused-- > 0) {
+                respond(
+                    """{"error":{"code":429,"message":"You exceeded your current quota. Quota exceeded for metric: generate_content_paid_tier_input_token_count, limit: 10000. Please retry in 39.999837456s.","status":"RESOURCE_EXHAUSTED"}}""",
+                    HttpStatusCode.TooManyRequests,
+                    jsonHeaders
+                )
+            } else {
+                respond("""{"candidates":[{"content":{"parts":[{"audioTranscription":{"text":"Eccomi."}}]}}]}""", HttpStatusCode.OK, jsonHeaders)
+            }
+        }, "gemini-3.5-transcribe", retryDelayMs = 1)
+        val started = testScheduler.currentTime
+        // More refusals than the usual attempts: still repeated, waiting as asked
+        assertEquals("Eccomi.", transcriber.transcribe(wav, SpeechHints()).segments.single().text)
+        assertEquals(6 * 40_499L, testScheduler.currentTime - started)
     }
 
     @Test

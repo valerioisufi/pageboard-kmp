@@ -171,6 +171,44 @@ class GeminiLiveTranscriberTest {
     }
 
     @Test
+    fun theStartComesFromTheSpeechFoundByTheServer() = runBlocking<Unit> {
+        val connector = FakeConnector()
+        val results = Results()
+        val transcriber = GeminiLiveTranscriber(connector, { "key" }, "gemini-3.5-transcribe-live")
+        transcriber.start(scope, { hints }, results)
+        until { connector.connections.isNotEmpty() }
+        val connection = connector.connections.single()
+        // As the server answers (August 2026): the activity found, the interim texts, the final one, the end of the activity
+        connection.server.send("""{"setupComplete":{}}""")
+        transcriber.push(speech(3.0))
+        until { connection.audioMs() == 3_000L }
+        connection.server.send("""{"serverContent":{},"voiceActivity":{"type":"ACTIVITY_START","audioOffset":"0.520s"}}""")
+        connection.server.send("""{"serverContent":{"interimInputTranscription":{"text":"somma"}}}""")
+        connection.server.send("""{"serverContent":{"inputTranscription":{"text":"Somma modulare."}}}""")
+        connection.server.send("""{"serverContent":{"generationComplete":true}}""")
+        connection.server.send("""{"serverContent":{},"voiceActivity":{"type":"ACTIVITY_END","audioOffset":"2.900s"}}""")
+        until { results.finals.isNotEmpty() }
+        assertEquals(TranscriptSegment(520, 2_300, "Somma modulare."), results.finals.single())
+        // Final up to the end of the activity
+        withTimeout(1_000) { transcriber.awaitFinal(2_900, 5_000) }
+        transcriber.close()
+        // No tokens from the server: those of the audio sent
+        assertEquals(listOf(TokenUsage(requests = 1, promptTokens = 75, promptByModality = mapOf("AUDIO" to 75L))), results.usage)
+    }
+
+    @Test
+    fun theSoftSpeechIsMadeLouder() {
+        val level = io.github.valerioisufi.drawview.lecture.transcription.SpeechLevel()
+        fun piece(amplitude: Int) = ShortArray(LECTURE_SAMPLE_RATE / 10) { if (it % 2 == 0) amplitude.toShort() else (-amplitude).toShort() }
+        // Loud: as it is
+        repeat(10) { level.level(piece(3_000)) }
+        assertEquals(3_000, kotlin.math.abs(level.level(piece(3_000)).last().toInt()))
+        // Soft for a while: louder, at most four times
+        repeat(10) { level.level(piece(300)) }
+        assertTrue(kotlin.math.abs(level.level(piece(300)).last().toInt()) in 1_150..1_200)
+    }
+
+    @Test
     fun aNewSessionStartsAtAPauseFromTheAudioNotFinal() = runBlocking<Unit> {
         val connector = FakeConnector()
         val results = Results()

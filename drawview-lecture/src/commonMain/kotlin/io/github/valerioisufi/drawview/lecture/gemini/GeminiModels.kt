@@ -51,9 +51,10 @@ data class AudioTranscriptionConfig(
     val mode: String? = null
 )
 
-/** What a speech model recognized in a part of its answer. */
+/** What a speech model recognized in a part of its answer: its [text], and its [words] when asked. */
 @Serializable
 data class GeminiAudioTranscription(
+    val text: String? = null,
     val speakerLabel: String? = null,
     val words: List<GeminiWord> = emptyList()
 )
@@ -92,12 +93,14 @@ data class GenerateContentResponse(
         .mapNotNull { it.text }
         .joinToString("")
 
-    /** The text of a speech model: its text, or its words when it answers with them only. */
+    /** The text of a speech model: the text of its transcription (or of its words), or a text part. */
     fun transcriptionText(): String {
         val parts = candidates.firstOrNull()?.content?.parts.orEmpty().filter { it.thought != true }
-        val text = parts.mapNotNull { it.text }.joinToString("").trim()
-        if (text.isNotEmpty()) return text
-        return parts.flatMap { it.audioTranscription?.words.orEmpty() }.joinToString(" ") { it.word.trim() }.trim()
+        val transcribed = parts.mapNotNull { part ->
+            part.audioTranscription?.let { it.text ?: it.words.joinToString(" ") { word -> word.word.trim() } }
+        }.joinToString(" ").trim()
+        if (transcribed.isNotEmpty()) return transcribed
+        return parts.mapNotNull { it.text }.joinToString("").trim()
     }
 }
 

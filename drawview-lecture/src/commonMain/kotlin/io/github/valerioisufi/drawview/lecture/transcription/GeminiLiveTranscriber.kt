@@ -9,11 +9,13 @@ import io.github.valerioisufi.drawview.lecture.gemini.AudioTranscriptionConfig
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiBlob
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiException
+import io.github.valerioisufi.drawview.lecture.gemini.LiveActivityDetection
 import io.github.valerioisufi.drawview.lecture.gemini.LiveClientMessage
 import io.github.valerioisufi.drawview.lecture.gemini.LiveConnection
 import io.github.valerioisufi.drawview.lecture.gemini.LiveConnector
 import io.github.valerioisufi.drawview.lecture.gemini.LiveGenerationConfig
 import io.github.valerioisufi.drawview.lecture.gemini.LiveRealtimeInput
+import io.github.valerioisufi.drawview.lecture.gemini.LiveRealtimeInputConfig
 import io.github.valerioisufi.drawview.lecture.gemini.LiveServerMessage
 import io.github.valerioisufi.drawview.lecture.gemini.LiveSetup
 import io.github.valerioisufi.drawview.lecture.gemini.LiveUsage
@@ -56,7 +58,8 @@ class GeminiLiveTranscriber(
     private val model: String,
     private val sessionAudioMs: Long = SESSION_AUDIO_MS,
     private val maxSessionAudioMs: Long = MAX_SESSION_AUDIO_MS,
-    private val retryUnitMs: Long = 1_000L
+    private val retryUnitMs: Long = 1_000L,
+    private val activityDetection: LiveActivityDetection? = QUIET_SPEECH
 ) : StreamingTranscriber {
 
     private sealed interface Event {
@@ -84,9 +87,13 @@ class GeminiLiveTranscriber(
         /** Where the utterance being said started (estimated), if one is. */
         var utteranceStart: Long? = null
         var usage: LiveUsage? = null
+        var reported = false
     }
 
     private val events = Channel<Event>(Channel.UNLIMITED)
+
+    /** The soft speech made louder for the detection of the server (the recording stays as it is). */
+    private val loudness = SpeechLevel()
     private lateinit var scope: CoroutineScope
     private lateinit var hints: () -> SpeechHints
     private lateinit var listener: StreamingTranscriber.Listener
@@ -197,6 +204,13 @@ class GeminiLiveTranscriber(
             send(session)
             if (audioEnded) endAudio(session)
         }
+        // Where the server hears the speech start and end: the start of the utterance, the audio final up to its end
+        message.voiceActivity?.let { activity ->
+            val offset = parseDurationMs(activity.audioOffset) ?: return@let
+            val at = session.startSample + msToSamples(offset)
+            if (activity.isStart) session.utteranceStart = max(lastFinalEnd, at)
+            if (activity.isEnd && session.utteranceStart == null) committed = max(committed, at)
+        }
         val content = message.serverContent
         content?.interimInputTranscription?.let { interim ->
             if (session.utteranceStart == null) session.utteranceStart = max(lastFinalEnd, session.sentSample - INTERIM_LAG_SAMPLES)
@@ -283,7 +297,8 @@ class GeminiLiveTranscriber(
                         languageCodes = session.languages,
                         customVocabulary = vocabulary.ifEmpty { null },
                         mode = GeminiSpeechTranscriber.MODE
-                    )
+                    ),
+                    realtimeInputConfig = activityDetection?.let { LiveRealtimeInputConfig(automaticActivityDetection = it) }
                 )
                 connection.send(GeminiClient.json.encodeToString(LiveClientMessage.serializer(), LiveClientMessage(setup = setup)))
                 for (message in connection.incoming) events.send(Event.Message(session, message))
@@ -304,7 +319,7 @@ class GeminiLiveTranscriber(
         if (session.sentSample < keptStart) session.sentSample = keptStart
         while (session.sentSample < received) {
             val to = min(received, session.sentSample + FRAME_SAMPLES)
-            val pcm = keptSamples(session.sentSample, to).toLittleEndianBytes()
+            val pcm = loudness.level(keptSamples(session.sentSample, to)).toLittleEndianBytes()
             val input = LiveRealtimeInput(audio = GeminiBlob(MIME_TYPE, Base64.encode(pcm)))
             connection.send(GeminiClient.json.encodeToString(LiveClientMessage.serializer(), LiveClientMessage(realtimeInput = input)))
             session.sentSample = to
@@ -331,10 +346,22 @@ class GeminiLiveTranscriber(
         return max(committed, session.sentSample - INTERIM_LAG_SAMPLES)
     }
 
+    /**
+     * The tokens of a session ended: those of the server, or (it gives none, August 2026) its audio
+     * at [AUDIO_TOKENS_PER_SECOND].
+     */
     private suspend fun reportUsage(session: Session) {
-        val usage = session.usage ?: return
-        session.usage = null
-        listener.onUsage(TokenUsage(requests = 1, promptTokens = usage.promptTokenCount, outputTokens = usage.responseTokenCount))
+        if (session.reported) return
+        session.reported = true
+        val usage = session.usage
+        val tokens = if (usage != null) {
+            TokenUsage(requests = 1, promptTokens = usage.promptTokenCount, outputTokens = usage.responseTokenCount)
+        } else {
+            val audioTokens = samplesToMs(session.sentSample - session.startSample) * AUDIO_TOKENS_PER_SECOND / 1000
+            if (audioTokens == 0L) return
+            TokenUsage(requests = 1, promptTokens = audioTokens, promptByModality = mapOf("AUDIO" to audioTokens))
+        }
+        listener.onUsage(tokens)
     }
 
     /** The samples kept from [from] to [to] (both within the kept audio). */
@@ -376,9 +403,18 @@ class GeminiLiveTranscriber(
     private fun msToSamples(ms: Long): Long = ms * LECTURE_SAMPLE_RATE / 1000
 
     companion object {
+        /**
+         * The detection of the speech of the server, readier to hear it start: a lecturer speaking
+         * softly (walking away from the microphone, a question of a student) is speech too.
+         */
+        val QUIET_SPEECH = LiveActivityDetection(startOfSpeechSensitivity = "START_SENSITIVITY_HIGH", endOfSpeechSensitivity = "END_SENSITIVITY_LOW")
+
         /** A new session after this much audio, at a pause (a session lasts 10 minutes at most). */
         const val SESSION_AUDIO_MS = 9 * 60_000L
         const val MAX_SESSION_AUDIO_MS = 9 * 60_000L + 30_000L
+
+        /** The tokens of the audio of the speech models (measured on the model for recorded audio). */
+        const val AUDIO_TOKENS_PER_SECOND = 25L
 
         /** Audio kept while the connection is down. */
         const val MAX_KEPT_MS = 3 * 60_000L
@@ -394,5 +430,39 @@ class GeminiLiveTranscriber(
 
         /** What was said this little before the moment waited for may still be in the next utterance. */
         private const val FINAL_TOLERANCE_MS = 1_000L
+    }
+}
+
+/**
+ * Makes the soft speech louder, a piece of 100 ms at a time: the gain follows the level of the
+ * last half second (up to [MAX_GAIN]), so that a lecturer speaking softly is heard by the detection
+ * of the speech of the server as the loud parts are; the loud parts stay as they are.
+ */
+internal class SpeechLevel {
+    private val recent = ArrayDeque<Double>()
+    private var gain = 1.0
+
+    fun level(samples: ShortArray): ShortArray {
+        if (samples.isEmpty()) return samples
+        var sum = 0.0
+        for (sample in samples) sum += sample.toDouble() * sample
+        recent.addLast(sum / samples.size)
+        while (recent.size > WINDOW) recent.removeFirst()
+        val rms = kotlin.math.sqrt(recent.average())
+        val target = (TARGET_RMS / rms.coerceAtLeast(1.0)).coerceIn(1.0, MAX_GAIN)
+        val from = gain
+        gain += (target - gain) * SMOOTHING
+        // From the previous gain to the new one along the piece: no step
+        return ShortArray(samples.size) { i ->
+            val g = from + (gain - from) * i / samples.size
+            (samples[i] * g).coerceIn(Short.MIN_VALUE.toDouble(), Short.MAX_VALUE.toDouble()).toInt().toShort()
+        }
+    }
+
+    private companion object {
+        const val WINDOW = 5
+        const val TARGET_RMS = 1_500.0
+        const val MAX_GAIN = 4.0
+        const val SMOOTHING = 0.5
     }
 }

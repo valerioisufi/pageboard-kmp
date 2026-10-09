@@ -133,4 +133,12 @@ class GeminiException(val statusCode: Int, message: String) : Exception(message)
     val isAuthenticationError: Boolean
         get() = statusCode == 401 || statusCode == 403 ||
             (statusCode == 400 && message.orEmpty().contains("API key", ignoreCase = true))
+
+    /** How long the API asks to wait before the next request ("Please retry in 39.9s."), if it says. */
+    val retryAfterMs: Long?
+        get() = RETRY_IN.find(message.orEmpty())?.groupValues?.get(1)?.toDoubleOrNull()?.let { (it * 1000).toLong() }
+
+    private companion object {
+        val RETRY_IN = Regex("""retry in ([0-9]+(?:\.[0-9]+)?)\s*s""", RegexOption.IGNORE_CASE)
+    }
 }

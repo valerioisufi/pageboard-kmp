@@ -41,8 +41,7 @@ class GeminiSpeechTranscriber(
                     continue
                 }
                 attempt++
-                if (!e.isRetryable || attempt >= MAX_ATTEMPTS) throw e
-                delay((retryDelayMs shl (attempt - 1)).coerceAtMost(30_000L))
+                delay(retryDelay(e, attempt, retryDelayMs) ?: throw e)
             }
         }
     }
@@ -53,7 +52,25 @@ class GeminiSpeechTranscriber(
 
         /** The vocabulary works best within 100 terms. */
         const val MAX_VOCABULARY = 100
-        const val PARALLEL_REQUESTS = 4
-        private const val MAX_ATTEMPTS = 4
+
+        /** The models in preview allow few tokens a minute (10,000 in August 2026: some 6 minutes of audio). */
+        const val PARALLEL_REQUESTS = 2
     }
 }
+
+/**
+ * How long to wait before repeating a request failed with [e] for the [attempt]-th time, `null`
+ * when it is not to be repeated: the wait the API asks for when the requests are too many (as
+ * long as it asks, [MAX_RATE_LIMITED_ATTEMPTS] times at most), otherwise longer every time (up to
+ * [MAX_ATTEMPTS] times).
+ */
+internal fun retryDelay(e: GeminiException, attempt: Int, baseMs: Long): Long? {
+    if (!e.isRetryable) return null
+    val asked = e.retryAfterMs
+    if (e.statusCode == 429 && asked != null) return if (attempt < MAX_RATE_LIMITED_ATTEMPTS) asked + RATE_LIMIT_MARGIN_MS else null
+    return if (attempt < MAX_ATTEMPTS) (baseMs shl (attempt - 1)).coerceAtMost(30_000L) else null
+}
+
+private const val MAX_ATTEMPTS = 4
+private const val MAX_RATE_LIMITED_ATTEMPTS = 30
+private const val RATE_LIMIT_MARGIN_MS = 500L
