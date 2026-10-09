@@ -36,7 +36,7 @@ Variations).
 | Write the final review: the handwriting not transcribed yet (notebook open), the local models of the lecture freed, the review | `FinalReviewer` | Pure Fabrication, High Cohesion |
 | The review itself, its state, a second request refused | `Lecture.runFinalReview(provider, prepare)`, `Lecture.claimReview` | Information Expert |
 | The handwriting of a notebook, read once, shared by its recording and its reviews | `HandwritingReader`, one per document created by `LectureAssistant` | Creator, Information Expert |
-| Use cases "review on request", "transcribe again" | `LectureAssistant.writeReview`, `LectureAssistant.retranscribe` | Controller |
+| Use cases "review on request", "transcribe again", holding the generation of the lecture (the other devices leave it to this one, `GenerationLock`) | `LectureAssistant.generate`, `LectureAssistant.retranscribe` | Controller |
 | Transcribe a chunk | `Transcriber`: `WhisperTranscriber`, `GeminiSpeechTranscriber`, `GeminiPromptTranscriber` | Polymorphism, Protected Variations |
 | Transcribe while the lecturer speaks | `StreamingTranscriber`: `GeminiLiveTranscriber` over a `LiveConnection` (`GeminiLiveClient`, a WebSocket) | Polymorphism, Indirection |
 | The transcriber of the settings, for a recording and for a whole recording | `Transcribers` | Creator, Low Coupling |
@@ -45,9 +45,9 @@ Variations).
 | The words to recognize (course context, slides on screen) | `LecturePrompts.vocabulary` | Information Expert |
 
 * `FinalReviewer` gathers what was spread between the recorder (the handwriting at the end) and
-  the lecture (the review): the recorder calls it when the review is written at the end, the
-  assistant when the student asks for it, with the notebook open in the editor (the panel lives
-  there). The material is completed inside `runFinalReview` (`prepare`), while the review is shown
+  the lecture (the review): the recorder calls it when the review is written at the end (also of a
+  lecture followed from another device), the assistant when the student asks for it
+  (`generate`), with the notebook open in the editor (the panel lives there). The material is completed inside `runFinalReview` (`prepare`), while the review is shown
   as running: the button cannot be pressed twice.
 * The mode of the transcription is computed in one place from the models chosen (the model id of
   the transcription, the one of the live suggestions): the recorder, the importer and the
@@ -73,4 +73,4 @@ Variations).
 | 2. The transcription models a chunk at a time | done |
 | 3. Gemini 3.5 Transcribe Live | done (to verify against the real API) |
 | 4. Transcribe again | done |
-| 5. README | to do |
+| 5. README | done |
