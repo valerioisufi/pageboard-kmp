@@ -111,7 +111,7 @@ internal class LectureImporter(
         try {
             RecordingTranscriber(lecture.recording, transcriber, hints).transcribe(durationMs) { chunk, progress ->
                 lecture.setState {
-                    chunk.segment?.let { transcript.add(it) }
+                    transcript.addAll(chunk.segments)
                     chunk.usage?.let { usage += it }
                     importProgress = progress
                 }

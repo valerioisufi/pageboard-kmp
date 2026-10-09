@@ -56,6 +56,12 @@ sealed interface LectureProblem {
 
     /** The audio cannot be transcribed on this computer (whisper.cpp missing or failing). */
     data class TranscriptionUnavailable(val detail: String) : LectureProblem
+
+    /**
+     * The plan of Gemini allows no more requests to [model] now: none until the next day
+     * ([daily]), or for a while; they come back in [retryInMs], when the API says.
+     */
+    data class QuotaExhausted(val model: String, val daily: Boolean, val retryInMs: Long?) : LectureProblem
 }
 
 /**
@@ -683,6 +689,7 @@ class Lecture internal constructor(
             val detail = e.message ?: e::class.simpleName.orEmpty()
             return when {
                 e is GeminiException && e.isAuthenticationError -> LectureProblem.Authentication(detail)
+                e is GeminiException && e.statusCode == 429 -> LectureProblem.QuotaExhausted(e.quotaModel.orEmpty(), e.isDailyQuota, e.retryAfterMs)
                 e is OllamaException && (e.statusCode == 0 || e.statusCode == 404) -> LectureProblem.LocalModelUnavailable(detail)
                 else -> LectureProblem.Failed(detail)
             }

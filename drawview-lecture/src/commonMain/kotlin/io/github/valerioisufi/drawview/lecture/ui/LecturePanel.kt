@@ -541,12 +541,28 @@ private fun RecordingSection(
                 is LectureProblem.LocalModelUnavailable -> stringResource(Res.string.lecture_problem_local_unavailable, problem.detail)
                 LectureProblem.NoTranscript -> stringResource(Res.string.lecture_problem_no_transcript)
                 is LectureProblem.TranscriptionUnavailable -> stringResource(Res.string.lecture_problem_transcription, problem.detail)
+                is LectureProblem.QuotaExhausted -> {
+                    val model = problem.model.ifEmpty { "Gemini" }
+                    val wait = problem.retryInMs?.let { formatWait(it) }
+                    when {
+                        problem.daily && wait != null -> stringResource(Res.string.lecture_problem_quota_day_in, model, wait)
+                        problem.daily -> stringResource(Res.string.lecture_problem_quota_day, model)
+                        else -> stringResource(Res.string.lecture_problem_quota, model)
+                    }
+                }
             }
             val needsSettings = problem is LectureProblem.MissingApiKey || problem is LectureProblem.Authentication ||
-                problem is LectureProblem.LocalModelUnavailable || problem is LectureProblem.TranscriptionUnavailable
+                problem is LectureProblem.LocalModelUnavailable || problem is LectureProblem.TranscriptionUnavailable ||
+                problem is LectureProblem.QuotaExhausted
             ProblemBanner(message, action = if (needsSettings) Res.string.lecture_action_settings to onOpenSettings else null)
         }
     }
+}
+
+/** A wait of the API: "7 h 39 min", "12 min", "1 min". */
+private fun formatWait(ms: Long): String {
+    val minutes = ((ms + 59_999) / 60_000).coerceAtLeast(1)
+    return if (minutes >= 60) "${minutes / 60} h ${minutes % 60} min" else "$minutes min"
 }
 
 @Composable

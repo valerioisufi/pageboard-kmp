@@ -21,7 +21,7 @@ class GeminiPromptTranscriber(
     private val settings: () -> AssistantSettings,
     private val retryDelayMs: Long = 2_000L
 ) : Transcriber {
-    override val parallelism: Int get() = GeminiSpeechTranscriber.PARALLEL_REQUESTS
+    override val parallelism: Int get() = 2
 
     override suspend fun transcribe(wav: ByteArray, hints: SpeechHints): Transcription {
         val prompt = LecturePrompts.transcriptionOnlyPrompt(settings(), hints.courseContext, wav)

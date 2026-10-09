@@ -56,9 +56,15 @@ Variations).
 ## Verified against the API (October 2026)
 
 * `gemini-3.5-transcribe` answers with `parts[].audioTranscription.text` (not a text part), 1,500
-  tokens a minute of audio; it accepts the audio inline. The models in preview allow 10,000 input
-  tokens a minute (some 6 minutes of audio): a request refused says how long to wait ("Please
-  retry in 39.9s"), and is repeated then; two pieces at a time.
+  tokens a minute of audio; it accepts the audio inline. The plans allow few requests to the
+  models in preview (the first level: 10 a minute, 100 a day, 10,000 input tokens a minute): a
+  whole recording goes in pieces of 5 minutes (7,500 tokens, the sentences timed in proportion to
+  their length), one at a time, paced within the tokens a minute once the API said them; a request
+  refused says how long to wait ("Please retry in 39.9s", "in 7h39m28s" for the quota of the day:
+  not waited, the transcription stops); the transcript transcribed again replaces the old one as it
+  goes, saved at every piece, so that what was paid is kept. (Transcribed again a minute at a time,
+  an hour and a half of lecture took 76 requests, the quota of the day was over before its end and
+  the transcript, replaced only at the end, was lost.)
 * `gemini-3.5-transcribe-live`: the setup is complete in half a second; the interim text is the
   whole utterance so far, the final one comes about half a second after a pause; no times on the
   transcripts, but `voiceActivity` (`ACTIVITY_START`, `ACTIVITY_END`, with the offset in the audio

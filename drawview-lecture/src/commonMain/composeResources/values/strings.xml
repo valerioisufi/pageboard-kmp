@@ -221,8 +221,11 @@
     <string name="lecture_speech_chunks">A piece at every update</string>
     <string name="lecture_speech_with_notes">The model of the suggestions: one request at every update</string>
     <string name="lecture_hint_transcription_streaming">The transcript appears while the lecturer speaks; the suggestions read it. The audio is sent to Google.</string>
-    <string name="lecture_hint_transcription_chunks">A speech model transcribes the audio of every update; the suggestions read the transcript. The audio is sent to Google.</string>
+    <string name="lecture_hint_transcription_chunks">A speech model transcribes the audio of every update; the suggestions read the transcript. One request at every update: the plans of the models in preview allow 100 a day (about an hour and a half of lecture), the live model needs far fewer. The audio is sent to Google.</string>
     <string name="lecture_hint_transcription_prompt">This model transcribes the audio of every update in a request of its own; the suggestions read the transcript. The audio is sent to Google.</string>
     <string name="lecture_retranscribe_online">Transcribe again online (%1$s)</string>
     <string name="lecture_retranscribe_local">Transcribe again on this computer (whisper)</string>
+    <string name="lecture_problem_quota_day_in">Your Gemini plan allows no more requests to %1$s today: they come back in %2$s. Meanwhile you can transcribe on this computer (Settings). What was transcribed is kept.</string>
+    <string name="lecture_problem_quota_day">Your Gemini plan allows no more requests to %1$s today. Meanwhile you can transcribe on this computer (Settings). What was transcribed is kept.</string>
+    <string name="lecture_problem_quota">Too many requests to %1$s for your Gemini plan: try again in a few minutes.</string>
 </resources>

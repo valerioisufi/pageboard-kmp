@@ -348,7 +348,7 @@ class GeminiLiveTranscriber(
 
     /**
      * The tokens of a session ended: those of the server, or (it gives none, August 2026) its audio
-     * at [AUDIO_TOKENS_PER_SECOND].
+     * at [GeminiSpeechTranscriber.AUDIO_TOKENS_PER_SECOND].
      */
     private suspend fun reportUsage(session: Session) {
         if (session.reported) return
@@ -357,7 +357,7 @@ class GeminiLiveTranscriber(
         val tokens = if (usage != null) {
             TokenUsage(requests = 1, promptTokens = usage.promptTokenCount, outputTokens = usage.responseTokenCount)
         } else {
-            val audioTokens = samplesToMs(session.sentSample - session.startSample) * AUDIO_TOKENS_PER_SECOND / 1000
+            val audioTokens = samplesToMs(session.sentSample - session.startSample) * GeminiSpeechTranscriber.AUDIO_TOKENS_PER_SECOND / 1000
             if (audioTokens == 0L) return
             TokenUsage(requests = 1, promptTokens = audioTokens, promptByModality = mapOf("AUDIO" to audioTokens))
         }
@@ -412,9 +412,6 @@ class GeminiLiveTranscriber(
         /** A new session after this much audio, at a pause (a session lasts 10 minutes at most). */
         const val SESSION_AUDIO_MS = 9 * 60_000L
         const val MAX_SESSION_AUDIO_MS = 9 * 60_000L + 30_000L
-
-        /** The tokens of the audio of the speech models (measured on the model for recorded audio). */
-        const val AUDIO_TOKENS_PER_SECOND = 25L
 
         /** Audio kept while the connection is down. */
         const val MAX_KEPT_MS = 3 * 60_000L

@@ -822,7 +822,7 @@ class LectureRecorderTest {
     fun aLectureIsTranscribedAgainByAnotherModel() = runBlocking<Unit> {
         val engine = MockEngine { respond("", HttpStatusCode.NotFound) }
         val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets())
-        val old = listOf(TranscriptSegment(0, 60_000, "trascrizione di whisper"))
+        val old = listOf(TranscriptSegment(0, 60_000, "whisper 1"), TranscriptSegment(60_000, 120_000, "whisper 2"), TranscriptSegment(120_000, 130_000, "whisper 3"))
         val record = LectureRecord(id = "lecture", documentId = "7", startedAt = 1L, durationMs = 130_000, transcript = old)
         val lecture = newLecture(settingsStore, engine, record)
         lecture.recording.open()
@@ -830,11 +830,16 @@ class LectureRecorderTest {
         repeat(130) { second -> lecture.recording.append(ShortArray(LECTURE_SAMPLE_RATE) { if (second % 60 == 59) 0 else random.nextInt(-6000, 6000).toShort() }) }
         lecture.recording.finish()
 
-        var fail = false
+        var allowed = 1
         val transcriber = object : Transcriber {
-            override val parallelism = 2
             override suspend fun transcribe(wav: ByteArray, hints: SpeechHints): Transcription {
-                if (fail) throw GeminiException(403, "API key not valid")
+                if (allowed-- <= 0) {
+                    throw GeminiException(
+                        429,
+                        "You exceeded your current quota. * Quota exceeded for metric: generativelanguage.googleapis.com/generate_requests_per_model_per_day, " +
+                            "limit: 100, model: gemini-3.5-transcribe Please retry in 7h39m28.572455s."
+                    )
+                }
                 val seconds = (wav.size - Wav.HEADER_SIZE) / 2 / LECTURE_SAMPLE_RATE
                 return Transcription(listOf(TranscriptSegment(0, seconds * 1000L, "Gemini $seconds s")), TokenUsage(requests = 1, promptTokens = 100))
             }
@@ -847,21 +852,24 @@ class LectureRecorderTest {
             LectureRetranscriber(lecture, settingsStore, transcriber).run()
         }
 
+        // The quota of the day over after the first piece: the piece transcribed is kept, the old transcript after it
         runAgain()
-        assertEquals(LectureStatus.FINISHED, lecture.status)
-        assertTrue(lecture.transcript.size >= 2)
-        assertTrue(lecture.transcript.all { it.text.startsWith("Gemini") })
-        assertEquals(lecture.transcript.size, lecture.usage.requests)
-        assertTrue(File(directory, "lecture/lecture.json").readText().contains("Gemini"))
-
-        // A failure keeps the transcript there is
-        val before = lecture.transcript.toList()
-        fail = true
-        runAgain()
-        assertEquals(before, lecture.transcript.toList())
-        assertTrue(lecture.problem is LectureProblem.Authentication)
+        assertEquals(listOf("Gemini", "whisper 2", "whisper 3"), lecture.transcript.map { if (it.text.startsWith("Gemini")) "Gemini" else it.text })
+        assertEquals(1, lecture.usage.requests)
+        val problem = lecture.problem as LectureProblem.QuotaExhausted
+        assertEquals("gemini-3.5-transcribe", problem.model)
+        assertTrue(problem.daily)
+        assertEquals(27_568_572L, problem.retryInMs)
         assertEquals(LectureStatus.FINISHED, lecture.status)
         assertNull(lecture.importStep)
+        assertTrue(File(directory, "lecture/lecture.json").readText().contains("Gemini"))
+
+        // The quota back: all of it
+        allowed = 100
+        runAgain()
+        assertTrue(lecture.transcript.size >= 2)
+        assertTrue(lecture.transcript.all { it.text.startsWith("Gemini") })
+        assertNull(lecture.problem)
     }
 
     @Test
@@ -896,7 +904,7 @@ class LectureRecorderTest {
             chunks.add(chunk)
             progress.add(done)
         }
-        val segments = chunks.mapNotNull { it.segment }
+        val segments = chunks.flatMap { it.segments }
         assertTrue(segments.size >= 3, segments.toString())
         assertEquals(segments.sortedBy { it.startMs }, segments)
         // No overlap: every chunk starts where the previous one ends

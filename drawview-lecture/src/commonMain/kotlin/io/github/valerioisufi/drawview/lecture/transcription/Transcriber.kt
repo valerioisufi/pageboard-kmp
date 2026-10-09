@@ -39,6 +39,9 @@ interface Transcriber {
     /** Pieces transcribed at the same time when a whole recording is transcribed. */
     val parallelism: Int get() = 1
 
+    /** The length of a piece when a whole recording is transcribed (cut at a pause). */
+    val pieceSeconds: Int get() = 60
+
     /**
      * Transcribes [wav] (16-bit mono PCM at 16 kHz).
      *

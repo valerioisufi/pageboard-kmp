@@ -17,8 +17,8 @@ import kotlinx.coroutines.withContext
 
 /**
  * Transcribes a whole [recording] (a lecture imported, or transcribed again) with [transcriber]:
- * in chunks of about a minute cut at the pauses (with the overlap whisper uses as context), up to
- * [Transcriber.parallelism] at the same time, delivered in order.
+ * in pieces of [Transcriber.pieceSeconds] cut at the pauses (with the overlap whisper uses as
+ * context), up to [Transcriber.parallelism] at the same time, delivered in order.
  *
  * @param hints what helps the recognition (the course: no slide is on screen).
  */
@@ -27,8 +27,8 @@ internal class RecordingTranscriber(
     private val transcriber: Transcriber,
     private val hints: () -> SpeechHints
 ) {
-    /** A chunk transcribed: its text as one segment (`null`: nothing said), its tokens, where it ends. */
-    class Chunk(val segment: TranscriptSegment?, val usage: TokenUsage?, val endMs: Long)
+    /** A piece transcribed: its text in segments of half a minute or so (none: nothing said), its tokens, where it ends. */
+    class Chunk(val segments: List<TranscriptSegment>, val usage: TokenUsage?, val endMs: Long)
 
     /**
      * Transcribes the recording of [durationMs], giving every chunk to [onChunk] in order.
@@ -36,7 +36,11 @@ internal class RecordingTranscriber(
      * @throws Exception the error of the transcription (the chunks given so far stay valid).
      */
     suspend fun transcribe(durationMs: Long, onChunk: suspend (Chunk, progress: Float) -> Unit) = coroutineScope {
-        val chunker = SpeechChunker(targetSeconds = CHUNK_SECONDS, overlapSeconds = if (transcriber.usesLeadingContext) LectureRecorder.OVERLAP_SECONDS else 0)
+        val chunker = SpeechChunker(
+            targetSeconds = transcriber.pieceSeconds,
+            maxSeconds = transcriber.pieceSeconds + MAX_EXTRA_SECONDS,
+            overlapSeconds = if (transcriber.usesLeadingContext) LectureRecorder.OVERLAP_SECONDS else 0
+        )
         val pending = ArrayDeque<Deferred<Chunk>>()
 
         suspend fun deliverFirst() {
@@ -47,7 +51,7 @@ internal class RecordingTranscriber(
         suspend fun submit(chunk: AudioChunk) {
             while (pending.size >= transcriber.parallelism.coerceAtLeast(1)) deliverFirst()
             pending.addLast(
-                if (isSilent(chunk.samples, chunk.overlapSamples)) CompletableDeferred(Chunk(null, null, chunk.endMs))
+                if (isSilent(chunk.samples, chunk.overlapSamples)) CompletableDeferred(Chunk(emptyList(), null, chunk.endMs))
                 else async { transcribe(chunk) }
             )
         }
@@ -65,11 +69,12 @@ internal class RecordingTranscriber(
 
     private suspend fun transcribe(chunk: AudioChunk): Chunk {
         val transcript = transcribeChunks(transcriber, listOf(chunk), hints())
-        return Chunk(transcript?.merged, transcript?.usage, chunk.endMs)
+        return Chunk(transcript?.grouped().orEmpty(), transcript?.usage, chunk.endMs)
     }
 
     private companion object {
-        const val CHUNK_SECONDS = 60
+        /** A piece goes on until a pause at most this much after its length. */
+        const val MAX_EXTRA_SECONDS = 30
         const val BLOCK_MS = 10_000L
     }
 }

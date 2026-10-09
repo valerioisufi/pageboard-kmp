@@ -134,11 +134,37 @@ class GeminiException(val statusCode: Int, message: String) : Exception(message)
         get() = statusCode == 401 || statusCode == 403 ||
             (statusCode == 400 && message.orEmpty().contains("API key", ignoreCase = true))
 
-    /** How long the API asks to wait before the next request ("Please retry in 39.9s."), if it says. */
+    /**
+     * How long the API asks to wait before the next request ("Please retry in 39.9s.", "Please retry
+     * in 7h39m28.5s."), if it says.
+     */
     val retryAfterMs: Long?
-        get() = RETRY_IN.find(message.orEmpty())?.groupValues?.get(1)?.toDoubleOrNull()?.let { (it * 1000).toLong() }
+        get() {
+            val match = RETRY_IN.find(message.orEmpty()) ?: return null
+            val (hours, minutes, seconds) = match.destructured
+            if (hours.isEmpty() && minutes.isEmpty() && seconds.isEmpty()) return null
+            return (hours.toLongOrNull() ?: 0) * 3_600_000 + (minutes.toLongOrNull() ?: 0) * 60_000 + ((seconds.toDoubleOrNull() ?: 0.0) * 1000).toLong()
+        }
+
+    /** The requests of the day allowed by the plan are over (they come back the next day). */
+    val isDailyQuota: Boolean
+        get() = statusCode == 429 && (message.orEmpty().contains("per_day", ignoreCase = true) || (retryAfterMs ?: 0) > DAILY_WAIT_MS)
+
+    /** The input tokens a minute allowed by the plan, when the request was refused for them ("limit: 10000"). */
+    val tokensPerMinuteLimit: Long?
+        get() = if (statusCode != 429 || !message.orEmpty().contains("input_token_count", ignoreCase = true)) null
+        else LIMIT.find(message.orEmpty())?.groupValues?.get(1)?.toLongOrNull()
+
+    /** The model the quota is of ("model: gemini-3.5-transcribe"), if the API says. */
+    val quotaModel: String?
+        get() = MODEL.find(message.orEmpty())?.groupValues?.get(1)
 
     private companion object {
-        val RETRY_IN = Regex("""retry in ([0-9]+(?:\.[0-9]+)?)\s*s""", RegexOption.IGNORE_CASE)
+        val RETRY_IN = Regex("""retry in\s+(?:(\d+)h)?(?:(\d+)m(?!s))?(?:([0-9]+(?:\.[0-9]+)?)s)?""", RegexOption.IGNORE_CASE)
+        val LIMIT = Regex("""limit:\s*(\d+)""")
+        val MODEL = Regex("""model:\s*([\w.\-]+)""")
+
+        /** A wait longer than this: the quota of the day. */
+        const val DAILY_WAIT_MS = 30 * 60_000L
     }
 }

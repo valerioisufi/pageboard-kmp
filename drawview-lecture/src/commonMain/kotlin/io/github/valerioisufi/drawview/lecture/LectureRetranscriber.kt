@@ -7,8 +7,10 @@ import kotlinx.coroutines.withContext
 
 /**
  * Transcribes a [lecture] already recorded again, from its recording, with [transcriber] (another
- * model): the new transcript replaces the old one when it is complete, the old one stays when it
- * fails. The notes and the review stay as they are.
+ * model): the new transcript takes the place of the old one as it goes, and is saved at every
+ * piece, so that what was transcribed (and paid) is kept when it stops (the quota of the day, the
+ * network, the application closed); the old transcript stays for the rest. The notes and the
+ * review stay as they are.
  */
 internal class LectureRetranscriber(
     private val lecture: Lecture,
@@ -18,20 +20,23 @@ internal class LectureRetranscriber(
     /** Runs the transcription; the lecture is [LectureStatus.IMPORTING] already. */
     suspend fun run() {
         val settings = settingsStore.settings
+        val old = lecture.setStateResult { transcript.toList() }
         val segments = mutableListOf<TranscriptSegment>()
-        var tokens = TokenUsage()
         try {
             val hints = { LecturePrompts.speechHints(settings, lecture.courseContext(), visibleSlides = emptyList()) }
             RecordingTranscriber(lecture.recording, transcriber, hints).transcribe(lecture.elapsedMs) { chunk, progress ->
-                chunk.segment?.let { segments.add(it) }
-                chunk.usage?.let { tokens += it }
-                lecture.setState { importProgress = progress }
+                segments.addAll(chunk.segments)
+                lecture.setState {
+                    chunk.usage?.let { usage += it }
+                    importProgress = progress
+                    // The new transcript up to here, the old one after
+                    val rest = old.filter { (it.startMs + it.endMs) / 2 >= chunk.endMs }
+                    transcript.clear()
+                    transcript.addAll(segments + rest)
+                }
+                lecture.persist()
             }
-            lecture.setState {
-                transcript.clear()
-                transcript.addAll(segments)
-                problem = null
-            }
+            lecture.setState { problem = null }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -40,7 +45,6 @@ internal class LectureRetranscriber(
             withContext(NonCancellable) {
                 transcriber.close()
                 lecture.setState {
-                    usage += tokens
                     status = LectureStatus.FINISHED
                     importStep = null
                     importProgress = -1f

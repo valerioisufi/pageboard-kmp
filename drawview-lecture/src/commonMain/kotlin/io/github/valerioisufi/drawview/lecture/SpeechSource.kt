@@ -131,6 +131,25 @@ internal class ChunkTranscript(val audio: RequestAudio, val segments: List<Trans
     /** The segments as one, as the lecture keeps them (one per update). */
     val merged: TranscriptSegment?
         get() = if (segments.isEmpty()) null else TranscriptSegment(segments.first().startMs, segments.last().endMs, segments.joinToString(" ") { it.text.trim() })
+
+    /** The segments joined in segments of about [spanMs] (the transcript of a whole recording). */
+    fun grouped(spanMs: Long = GROUP_SPAN_MS): List<TranscriptSegment> {
+        val groups = mutableListOf<TranscriptSegment>()
+        for (segment in segments) {
+            val last = groups.lastOrNull()
+            groups += if (last != null && segment.endMs - last.startMs <= spanMs) {
+                groups.removeLast()
+                last.copy(endMs = segment.endMs, text = last.text.trim() + " " + segment.text.trim())
+            } else {
+                segment.copy(text = segment.text.trim())
+            }
+        }
+        return groups
+    }
+
+    private companion object {
+        const val GROUP_SPAN_MS = 40_000L
+    }
 }
 
 /**

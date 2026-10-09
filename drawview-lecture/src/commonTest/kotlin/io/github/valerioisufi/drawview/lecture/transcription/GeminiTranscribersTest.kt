@@ -126,6 +126,69 @@ class GeminiTranscribersTest {
     }
 
     @Test
+    fun theQuotasOfThePlanAreRecognized() {
+        val daily = GeminiException(
+            429,
+            "You exceeded your current quota. * Quota exceeded for metric: generativelanguage.googleapis.com/generate_requests_per_model_per_day, " +
+                "limit: 100, model: gemini-3.5-transcribe Please retry in 7h39m28.572455s."
+        )
+        assertTrue(daily.isDailyQuota)
+        assertEquals(27_568_572L, daily.retryAfterMs)
+        assertEquals("gemini-3.5-transcribe", daily.quotaModel)
+        assertEquals(null, daily.tokensPerMinuteLimit)
+        // Not waited for hours: the transcription stops
+        assertEquals(null, retryDelay(daily, attempt = 1, baseMs = 1))
+
+        val perMinute = GeminiException(
+            429,
+            "Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_paid_tier_input_token_count, limit: 10000, model: gemini-3.5-transcribe Please retry in 39.9s."
+        )
+        assertFalse(perMinute.isDailyQuota)
+        assertEquals(10_000L, perMinute.tokensPerMinuteLimit)
+        assertEquals(40_400L, retryDelay(perMinute, attempt = 1, baseMs = 1))
+        assertEquals(90_000L, GeminiException(429, "Please retry in 1m30s.").retryAfterMs)
+    }
+
+    @Test
+    fun aLongPieceGetsItsSentencesInTime() {
+        val text = "Prima frase abbastanza lunga da contare. Seconda frase, un po' più lunga della prima per vedere. " +
+            "Terza frase. Quarta frase che chiude il discorso del professore."
+        val segments = GeminiSpeechTranscriber.timedSentences(text, durationMs = 120_000)
+        assertTrue(segments.size >= 2, segments.toString())
+        assertEquals(0L, segments.first().startMs)
+        assertEquals(120_000L, segments.last().endMs)
+        segments.zipWithNext().forEach { (a, b) -> assertEquals(a.endMs, b.startMs) }
+        assertEquals(text, segments.joinToString(" ") { it.text })
+        // A short piece: one segment
+        assertEquals(1, GeminiSpeechTranscriber.timedSentences(text, durationMs = 40_000).size)
+    }
+
+    @Test
+    fun theRequestsStayWithinTheTokensAMinuteOnceTheApiSaidThem() = runTest {
+        val sentAt = mutableListOf<Long>()
+        var refusedOnce = false
+        val transcriber = GeminiSpeechTranscriber(backend {
+            if (!refusedOnce) {
+                refusedOnce = true
+                respond(
+                    """{"error":{"code":429,"message":"Quota exceeded for metric: generate_content_paid_tier_input_token_count, limit: 10000. Please retry in 30s.","status":"RESOURCE_EXHAUSTED"}}""",
+                    HttpStatusCode.TooManyRequests,
+                    jsonHeaders
+                )
+            } else {
+                sentAt.add(testScheduler.currentTime)
+                respond("""{"candidates":[{"content":{"parts":[{"audioTranscription":{"text":"Un pezzo."}}]}}]}""", HttpStatusCode.OK, jsonHeaders)
+            }
+        }, "gemini-3.5-transcribe", retryDelayMs = 1, now = { testScheduler.currentTime })
+        // Five minutes: 7,500 tokens, two of them do not stay within 9,500 in a minute
+        val piece = Wav.encode(ShortArray(300 * LECTURE_SAMPLE_RATE))
+        transcriber.transcribe(piece, SpeechHints())
+        transcriber.transcribe(piece, SpeechHints())
+        assertEquals(2, sentAt.size)
+        assertTrue(sentAt[1] - sentAt[0] >= 60_000, "${sentAt[1] - sentAt[0]} ms")
+    }
+
+    @Test
     fun aGeneralModelTranscribesWithInstructions() = runTest {
         var body = ""
         val transcriber = GeminiPromptTranscriber(backend { request ->

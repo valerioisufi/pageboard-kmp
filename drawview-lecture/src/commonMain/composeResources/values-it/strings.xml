@@ -221,8 +221,11 @@
     <string name="lecture_speech_chunks">Un pezzo a ogni aggiornamento</string>
     <string name="lecture_speech_with_notes">Il modello dei suggerimenti: una richiesta sola a ogni aggiornamento</string>
     <string name="lecture_hint_transcription_streaming">La trascrizione compare mentre il professore parla; i suggerimenti la leggono. L\'audio viene inviato a Google.</string>
-    <string name="lecture_hint_transcription_chunks">Un modello di trascrizione trascrive l\'audio di ogni aggiornamento; i suggerimenti leggono la trascrizione. L\'audio viene inviato a Google.</string>
+    <string name="lecture_hint_transcription_chunks">Un modello di trascrizione trascrive l\'audio di ogni aggiornamento; i suggerimenti leggono la trascrizione. Una richiesta a ogni aggiornamento: i piani dei modelli in anteprima ne permettono 100 al giorno (circa un\'ora e mezza di lezione), il modello in tempo reale ne usa molte meno. L\'audio viene inviato a Google.</string>
     <string name="lecture_hint_transcription_prompt">Questo modello trascrive l\'audio di ogni aggiornamento in una richiesta a parte; i suggerimenti leggono la trascrizione. L\'audio viene inviato a Google.</string>
     <string name="lecture_retranscribe_online">Trascrivi di nuovo online (%1$s)</string>
     <string name="lecture_retranscribe_local">Trascrivi di nuovo su questo computer (whisper)</string>
+    <string name="lecture_problem_quota_day_in">Il tuo piano Gemini non permette altre richieste a %1$s per oggi: tornano tra %2$s. Nel frattempo puoi trascrivere su questo computer (Impostazioni). Ciò che è stato trascritto resta.</string>
+    <string name="lecture_problem_quota_day">Il tuo piano Gemini non permette altre richieste a %1$s per oggi. Nel frattempo puoi trascrivere su questo computer (Impostazioni). Ciò che è stato trascritto resta.</string>
+    <string name="lecture_problem_quota">Troppe richieste a %1$s per il tuo piano Gemini: riprova tra qualche minuto.</string>
 </resources>
