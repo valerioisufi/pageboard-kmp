@@ -26,6 +26,7 @@ internal fun buildDrawPreferences(
     defaultTextFontSize: Float,
     defaultTextColor: Int,
     defaultTextAlignment: String,
+    isSnapEnabled: Boolean,
     penPresets: List<BrushSettingsData>,
     highlighterPresets: List<BrushSettingsData>,
     eraserPresets: List<BrushSettingsData>,
@@ -45,6 +46,7 @@ internal fun buildDrawPreferences(
             color = defaultTextColor,
             alignment = TextAlignment.fromName(defaultTextAlignment) ?: TextAlignment.START
         ),
+        isSnapEnabled = isSnapEnabled,
         presets = mapOf(
             Tool.INK_PEN to map(Tool.INK_PEN, penPresets, StrokeTool.PRESSURE_PEN),
             Tool.INK_HIGHLIGHTER to map(Tool.INK_HIGHLIGHTER, highlighterPresets, StrokeTool.HIGHLIGHTER),

@@ -34,6 +34,8 @@ data class DrawPreferences(
     val isStylusOnlyMode: Boolean = false,
     val lastSelectedTool: Tool = Tool.INK_PEN,
     val textDefaults: TextDefaults = TextDefaults(),
+    /** Whether the boxes snap to what is around them (see `SnapManager`). */
+    val isSnapEnabled: Boolean = true,
     val presets: Map<Tool, List<ToolPreset>> = ToolManager.defaultPresets()
 )
 

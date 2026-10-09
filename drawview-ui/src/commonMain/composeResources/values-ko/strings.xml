@@ -141,4 +141,5 @@
     <string name="command_next_page">다음 페이지</string>
     <string name="command_previous_page">이전 페이지</string>
     <string name="command_previous_tool">이전 도구</string>
+    <string name="command_snapping">안내선에 맞추기</string>
 </resources>

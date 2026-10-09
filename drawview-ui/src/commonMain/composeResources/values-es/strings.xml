@@ -141,4 +141,5 @@
     <string name="command_next_page">Página siguiente</string>
     <string name="command_previous_page">Página anterior</string>
     <string name="command_previous_tool">Herramienta anterior</string>
+    <string name="command_snapping">Ajustar a las guías</string>
 </resources>

@@ -45,6 +45,7 @@ import io.github.valerioisufi.drawview.ui.generated.resources.command_fit_width
 import io.github.valerioisufi.drawview.ui.generated.resources.command_next_page
 import io.github.valerioisufi.drawview.ui.generated.resources.command_previous_page
 import io.github.valerioisufi.drawview.ui.generated.resources.command_previous_tool
+import io.github.valerioisufi.drawview.ui.generated.resources.command_snapping
 import io.github.valerioisufi.drawview.ui.generated.resources.command_zoom_in
 import io.github.valerioisufi.drawview.ui.generated.resources.command_zoom_out
 import io.github.valerioisufi.drawview.ui.generated.resources.common_action_copy
@@ -255,6 +256,12 @@ class EditorCommands internal constructor(
         isChecked = { controller.isStylusOnlyMode }
     ) { controller.updateStylusOnlyMode(!controller.isStylusOnlyMode) }
 
+    /** Whether the boxes snap to what is around them (⌥ / Alt held moves freely). */
+    val snapping = Command(
+        "snapping", label(Res.string.command_snapping), CommandGroup.VIEW, section = 2,
+        isChecked = { controller.snapManager.isEnabled }
+    ) { controller.snapManager.updateEnabled(!controller.snapManager.isEnabled) }
+
     // ----- Insert -----
 
     val addPage = Command(
@@ -400,7 +407,7 @@ class EditorCommands internal constructor(
     val all: List<Command> = listOf(
         close,
         undo, redo, cut, copy, paste, delete,
-        zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly,
+        zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, snapping,
         addPage, importPdf, importImage,
         documentBackground,
         drawingMode, pen, highlighter, textMarkup, eraser, text, lasso, pan, previousTool,

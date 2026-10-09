@@ -121,6 +121,7 @@ class DrawViewController(
     val mediaManager = MediaManager(this)
     val placementManager = PlacementManager(this)
     val textMarkupManager = TextMarkupManager(this)
+    val snapManager = SnapManager(this)
 
     // ==========================================================
     // Observable state
@@ -270,6 +271,7 @@ class DrawViewController(
     fun applyPreferences(preferences: DrawPreferences) {
         isStylusOnlyMode = preferences.isStylusOnlyMode
         textDefaults = preferences.textDefaults
+        snapManager.applyPreferences(preferences)
         toolManager.applyPreferences(preferences)
     }
 

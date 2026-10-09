@@ -387,6 +387,7 @@ data class UserPreferencesEntity(
     val defaultTextColor: Int = 0xFF000000.toInt(),
     /** The name of the `TextAlignment` of a new text. */
     val defaultTextAlignment: String = "START",
+    val isSnapEnabled: Boolean = true,
 
     // --- Tool Configurations ---
     val penPresets: List<BrushSettingsData> = emptyList(),

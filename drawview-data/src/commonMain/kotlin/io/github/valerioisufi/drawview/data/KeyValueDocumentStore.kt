@@ -500,6 +500,8 @@ class KeyValueDocumentStore(
 
     override suspend fun saveLastSelectedTool(tool: Tool) = updatePreferences { it.copy(lastSelectedTool = tool.name) }
 
+    override suspend fun saveSnapEnabled(enabled: Boolean) = updatePreferences { it.copy(isSnapEnabled = enabled) }
+
     override suspend fun saveTextDefaults(defaults: TextDefaults) = updatePreferences {
         it.copy(defaultTextFontSize = defaults.fontSize, defaultTextColor = defaults.color, defaultTextAlignment = defaults.alignment.name)
     }
@@ -723,6 +725,7 @@ internal data class StoredPreferences(
     val defaultTextFontSize: Float = 16f,
     val defaultTextColor: Int = 0xFF000000.toInt(),
     val defaultTextAlignment: String = "START",
+    val isSnapEnabled: Boolean = true,
     val penPresets: List<BrushSettingsData> = emptyList(),
     val highlighterPresets: List<BrushSettingsData> = emptyList(),
     val eraserPresets: List<BrushSettingsData> = emptyList(),
@@ -735,6 +738,7 @@ internal data class StoredPreferences(
         defaultTextFontSize = defaultTextFontSize,
         defaultTextColor = defaultTextColor,
         defaultTextAlignment = defaultTextAlignment,
+        isSnapEnabled = isSnapEnabled,
         penPresets = penPresets,
         highlighterPresets = highlighterPresets,
         eraserPresets = eraserPresets,

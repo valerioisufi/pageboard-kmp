@@ -16,6 +16,7 @@ import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.changedToDownIgnoreConsumed
 import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
+import androidx.compose.ui.input.pointer.isAltPressed
 import androidx.compose.ui.input.pointer.isCtrlPressed
 import androidx.compose.ui.input.pointer.isMetaPressed
 import androidx.compose.ui.input.pointer.isPrimaryPressed
@@ -150,6 +151,13 @@ internal class CanvasGestureHandler(
     /** The text selected before the gesture is dropped when it ends (unless it moves the canvas). */
     private var clearTextSelectionOnUp = false
 
+    /** ⌥ / Alt held: the gesture moves and places freely, without snapping. */
+    private var freeGesture = false
+
+    /** Where the box of the text being written was when the gesture started moving it, and the move so far (page mm). */
+    private var editorMoveOrigin = Offset.Zero
+    private var editorMoveOffset = Offset.Zero
+
     // Pinch tracking
     private var pinchCentroid = Offset.Zero
     private var pinchDistance = 0f
@@ -199,6 +207,7 @@ internal class CanvasGestureHandler(
     private fun AwaitPointerEventScope.handle(event: PointerEvent, touchSlop: Float, doubleTapTimeout: Long) {
         val changes = event.changes
         changes.firstOrNull()?.let { lastEventTime = it.uptimeMillis }
+        freeGesture = event.keyboardModifiers.isAltPressed
 
         when (event.type) {
             PointerEventType.Scroll -> {
@@ -339,6 +348,9 @@ internal class CanvasGestureHandler(
                     else -> if (frame.contains(position, radius)) Mode.EDITOR_MOVE else Mode.EDITOR_TAP
                 }
             }
+            val editor = controller.textEditorManager
+            editorMoveOrigin = Offset(editor.boxX, editor.boxY)
+            editorMoveOffset = Offset.Zero
             return
         }
 
@@ -549,19 +561,27 @@ internal class CanvasGestureHandler(
                 val editor = controller.textEditorManager
                 val pxPerMm = controller.pixelsPerMm(editor.activeTextPageIndex).coerceAtLeast(0.01f)
                 val delta = position - lastPosition
-                editor.moveBy(delta.x / pxPerMm, delta.y / pxPerMm)
+                editorMoveOffset += Offset(delta.x / pxPerMm, delta.y / pxPerMm)
+                editor.moveTo(editorMoveOrigin.x + editorMoveOffset.x, editorMoveOrigin.y + editorMoveOffset.y, freeGesture)
                 updateAutoScroll(position)
             }
 
             Mode.EDITOR_RESIZE_LEFT, Mode.EDITOR_RESIZE_RIGHT -> {
                 val editor = controller.textEditorManager
-                val frame = SelectionFrame.ofEditedText(controller)
-                if (frame != null) {
+                val left = mode == Mode.EDITOR_RESIZE_LEFT
+                val pxPerMm = controller.pixelsPerMm(editor.activeTextPageIndex).coerceAtLeast(0.01f)
+                val mm = controller.screenToPageMm(editor.activeTextPageIndex, position)
+                if (editor.rotation == 0f && mm != null) {
+                    // The handle is on the frame, its padding away from the text
+                    val padding = FrameStyle.PADDING_DP * controller.density / pxPerMm
+                    editor.resizeTo(if (left) mm.x + padding else mm.x - padding, left, freeGesture)
+                } else {
                     // Along the width of the box, turned with the text
-                    val axis = frame.horizontalAxis
-                    val delta = position - lastPosition
-                    val pxPerMm = controller.pixelsPerMm(editor.activeTextPageIndex).coerceAtLeast(0.01f)
-                    editor.resizeBy((delta.x * axis.x + delta.y * axis.y) / pxPerMm, leftEdge = mode == Mode.EDITOR_RESIZE_LEFT)
+                    val axis = SelectionFrame.ofEditedText(controller)?.horizontalAxis
+                    if (axis != null) {
+                        val delta = position - lastPosition
+                        editor.resizeBy((delta.x * axis.x + delta.y * axis.y) / pxPerMm, leftEdge = left)
+                    }
                 }
             }
 
@@ -585,7 +605,7 @@ internal class CanvasGestureHandler(
                 if (selection != null) {
                     val pxPerMm = controller.pixelsPerMm(selection.pageIndex).coerceAtLeast(0.01f)
                     val delta = position - lastPosition
-                    controller.selectionManager.translateBy(delta.x / pxPerMm, delta.y / pxPerMm)
+                    controller.selectionManager.moveBy(delta.x / pxPerMm, delta.y / pxPerMm, freeGesture)
                 }
                 updateAutoScroll(position)
             }
@@ -617,7 +637,7 @@ internal class CanvasGestureHandler(
                 val selection = controller.selectionManager.currentSelection
                 if (selection != null) {
                     controller.screenToPageMm(selection.pageIndex, position)?.let {
-                        controller.selectionManager.resizeText(it, mode == Mode.TEXT_RESIZE_RIGHT)
+                        controller.selectionManager.resizeText(it, mode == Mode.TEXT_RESIZE_RIGHT, freeGesture)
                     }
                 }
             }
@@ -736,6 +756,8 @@ internal class CanvasGestureHandler(
                 if (wasTap) onTextToolTap(position)
             }
 
+            Mode.EDITOR_MOVE, Mode.EDITOR_RESIZE_LEFT, Mode.EDITOR_RESIZE_RIGHT -> controller.snapManager.clearGuides()
+
             Mode.TEXT_BOX -> {
                 live.textBoxDraft = null
                 onTextBoxDrawn(boxBetween(downPosition, position))
@@ -814,7 +836,7 @@ internal class CanvasGestureHandler(
         if (editTextAt(position)) return
         val pageIndex = controller.findPageIndexAtScreen(position) ?: return
         val mm = controller.screenToPageMm(pageIndex, position) ?: return
-        controller.textEditorManager.startNewText(pageIndex, mm.x, mm.y)
+        controller.textEditorManager.startNewText(pageIndex, mm.x, mm.y, freeGesture)
     }
 
     /** Starts a new text in the box drawn on the screen [box] with the text tool. */
@@ -1065,14 +1087,15 @@ internal class CanvasGestureHandler(
                 val selection = controller.selectionManager.currentSelection
                 if (selection != null) {
                     val pxPerMm = controller.pixelsPerMm(selection.pageIndex).coerceAtLeast(0.01f)
-                    controller.selectionManager.translateBy(0f, -delta / pxPerMm)
+                    controller.selectionManager.moveBy(0f, -delta / pxPerMm, freeGesture)
                 }
             }
             Mode.EDITOR_MOVE -> {
                 // Keep the text being written under the pointer while the camera moves
                 val editor = controller.textEditorManager
                 val pxPerMm = controller.pixelsPerMm(editor.activeTextPageIndex).coerceAtLeast(0.01f)
-                editor.moveBy(0f, -delta / pxPerMm)
+                editorMoveOffset += Offset(0f, -delta / pxPerMm)
+                editor.moveTo(editorMoveOrigin.x + editorMoveOffset.x, editorMoveOrigin.y + editorMoveOffset.y, freeGesture)
             }
             Mode.PAGE_REORDER -> controller.pageManager.onCameraMovedWhileDragging()
             // Keep extending the text under the pointer while the camera moves

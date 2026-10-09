@@ -169,6 +169,18 @@ fun DrawCanvas(
             SelectionOverlay.drawEditedText(this, controller, Color(theme.primaryColor))
         }
 
+        // 4a. The guides of a box snapped to what is around it
+        val snaps = controller.snapManager
+        if (snaps.guides.isNotEmpty()) {
+            controller.pageMmToScreen(snaps.guidesPageIndex)?.let { mmToScreen ->
+                for (guide in snaps.guides) {
+                    val start = if (guide.vertical) mmToScreen.mapPoint(guide.position, guide.from) else mmToScreen.mapPoint(guide.from, guide.position)
+                    val end = if (guide.vertical) mmToScreen.mapPoint(guide.position, guide.to) else mmToScreen.mapPoint(guide.to, guide.position)
+                    drawLine(Color(FrameStyle.GUIDE_COLOR), start, end, strokeWidth = FrameStyle.GUIDE_STROKE_DP * controller.density)
+                }
+            }
+        }
+
         // 4b. Text of the PDFs: passage being marked, selected text, selected mark
         TextMarkupOverlay.draw(this, controller, Color(theme.primaryColor))
 

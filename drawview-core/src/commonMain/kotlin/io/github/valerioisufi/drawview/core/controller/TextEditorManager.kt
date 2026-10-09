@@ -121,18 +121,25 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
      * Starts a new text on the page [pageIndex] with the caret on the point ([xMm], [yMm]) of the
      * page: its first line centered on the point, the box starting there (centered on it, ending
      * there, as the alignment of a new text puts the caret), its width following the text (see
-     * [autoWidth]).
+     * [autoWidth]). Unless [free], the text snaps (see [SnapManager]): on lined paper its first
+     * baseline sits on the line under the point, and its edge aligns with the texts around it.
      */
-    fun startNewText(pageIndex: Int, xMm: Float, yMm: Float) {
+    fun startNewText(pageIndex: Int, xMm: Float, yMm: Float, free: Boolean = false) {
         controller.document.pages.getOrNull(pageIndex) ?: return
         val defaults = controller.textDefaults
-        val lineHeight = controller.textLineMetrics(defaults.fontSize)?.height ?: TextSizes.estimatedLineHeightMm(defaults.fontSize)
+        val line = controller.textLineMetrics(defaults.fontSize)
+        val lineHeight = line?.height ?: TextSizes.estimatedLineHeightMm(defaults.fontSize)
+        val snaps = controller.snapManager
+        val row = line?.let { snaps.rowFor(pageIndex, yMm, free) }
+        val top = if (row != null && line != null) row - line.baseline else yMm - lineHeight / 2f
+        val caretX = xMm + snaps.snapEdge(pageIndex, xMm, top, top + lineHeight, emptyList(), free)
+        snaps.clearGuides()
         val left = when (defaults.alignment) {
-            TextAlignment.START -> xMm
-            TextAlignment.CENTER -> xMm - AUTO_MIN_WIDTH_MM / 2f
-            TextAlignment.END -> xMm - AUTO_MIN_WIDTH_MM
+            TextAlignment.START -> caretX
+            TextAlignment.CENTER -> caretX - AUTO_MIN_WIDTH_MM / 2f
+            TextAlignment.END -> caretX - AUTO_MIN_WIDTH_MM
         }
-        open(null, pageIndex, left, (yMm - lineHeight / 2f).coerceAtLeast(0f), AUTO_MIN_WIDTH_MM, caretAt = null, autoWidth = true)
+        open(null, pageIndex, left, top.coerceAtLeast(0f), AUTO_MIN_WIDTH_MM, caretAt = null, autoWidth = true)
     }
 
     /**
@@ -361,11 +368,38 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
     // ==========================================================
 
     /** Moves the box by ([dxMm], [dyMm]) page millimeters, a part of it always on its page. */
-    fun moveBy(dxMm: Float, dyMm: Float) {
+    fun moveBy(dxMm: Float, dyMm: Float) = moveTo(boxX + dxMm, boxY + dyMm, free = true)
+
+    /**
+     * Moves the box to ([xMm], [yMm]) of its page, a part of it always on the page; unless
+     * [free], snapped to what is around it (its first baseline on the rows of the paper).
+     */
+    fun moveTo(xMm: Float, yMm: Float, free: Boolean = false) {
         val page = controller.document.pages.getOrNull(activeTextPageIndex) ?: return
-        boxX = (boxX + dxMm).coerceIn(MIN_VISIBLE_MM - boxWidth, page.widthMm - MIN_VISIBLE_MM)
-        boxY = (boxY + dyMm).coerceIn(MIN_VISIBLE_MM - boxHeight, page.heightMm - MIN_VISIBLE_MM)
+        val box = Rect(xMm, yMm, xMm + boxWidth, yMm + boxHeight)
+        val baseline = if (rotation == 0f) controller.textLineMetrics(fontSize)?.let { yMm + it.baseline } else null
+        val snap = if (free) {
+            controller.snapManager.clearGuides()
+            Offset.Zero
+        } else {
+            controller.snapManager.snapBox(activeTextPageIndex, box, listOfNotNull(activeTextItem), baseline)
+        }
+        boxX = (xMm + snap.x).coerceIn(MIN_VISIBLE_MM - boxWidth, page.widthMm - MIN_VISIBLE_MM)
+        boxY = (yMm + snap.y).coerceIn(MIN_VISIBLE_MM - boxHeight, page.heightMm - MIN_VISIBLE_MM)
         reportDraft()
+    }
+
+    /**
+     * Puts the left or the right edge of the box at [edgeXMm] of its page (the other edge staying,
+     * the width not under its minimum); unless [free], snapped to what is around it. The width is
+     * then set by hand (see [autoWidth]).
+     */
+    fun resizeTo(edgeXMm: Float, leftEdge: Boolean, free: Boolean = false) {
+        if (!isEditing) return
+        val edge = edgeXMm + if (rotation == 0f) {
+            controller.snapManager.snapEdge(activeTextPageIndex, edgeXMm, boxY, boxY + boxHeight, listOfNotNull(activeTextItem), free)
+        } else 0f
+        resizeBy(if (leftEdge) edge - boxX else edge - (boxX + boxWidth), leftEdge)
     }
 
     /**

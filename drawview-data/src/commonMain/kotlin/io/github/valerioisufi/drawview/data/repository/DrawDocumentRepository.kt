@@ -547,6 +547,8 @@ class DrawDocumentRepository(
 
     override suspend fun saveLastSelectedTool(tool: Tool) = updatePreferences { it.copy(lastSelectedTool = tool.name) }
 
+    override suspend fun saveSnapEnabled(enabled: Boolean) = updatePreferences { it.copy(isSnapEnabled = enabled) }
+
     override suspend fun saveTextDefaults(defaults: TextDefaults) = updatePreferences {
         it.copy(defaultTextFontSize = defaults.fontSize, defaultTextColor = defaults.color, defaultTextAlignment = defaults.alignment.name)
     }
@@ -561,6 +563,7 @@ fun UserPreferencesEntity.toDrawPreferences(): DrawPreferences = buildDrawPrefer
     defaultTextFontSize = defaultTextFontSize,
     defaultTextColor = defaultTextColor,
     defaultTextAlignment = defaultTextAlignment,
+    isSnapEnabled = isSnapEnabled,
     penPresets = penPresets,
     highlighterPresets = highlighterPresets,
     eraserPresets = eraserPresets,

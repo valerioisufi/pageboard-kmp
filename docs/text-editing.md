@@ -184,7 +184,8 @@ work against the user, and text can be lost.
   the first baseline follows.
 * Threshold of a few dp on the screen, converted to millimeters with the zoom; the guides are drawn
   while snapped (thin lines across the page).
-* On by default; held ⌥ / Alt moves freely; a "Snap" switch in the view menu and in the settings.
+* On by default; held ⌥ / Alt moves freely; "Snap to Guides" in the View menu and in the "more"
+  menu of the editor (remembered with the preferences).
 
 ## Plan
 
@@ -197,7 +198,7 @@ work against the user, and text can be lost.
 | 5 | Formulas in the editor: drawn over their concealed source, popover at the caret with the errors (a spike first, see [Risks](#risks)) | Done |
 | 6 | Formatting: `TextCommands` (shortcuts, Format menu, tooltips), `TextFormatBar` shared with the lasso and placed by `AdaptiveInfo`, `TextSizes` and `FontSizeControl`, alignment icons, defaults with the alignment | Done |
 | 7 | Creating and sizing: automatic width, box drawn by a drag, one tap to move to another text, text pasted from the system, texts copied as plain text | Done |
-| 8 | Snapping: `SnapEngine`, guides, moving the selection and the edited text, width handles, new texts on the lines of the paper, images being placed; ⌥ / Alt and the switch | To do |
+| 8 | Snapping: `SnapEngine`, guides, moving the selection and the edited text, width handles, new texts on the lines of the paper; ⌥ / Alt and the switch (the elements placed by the lecture assistant are left for later) | Done |
 | 9 | Proposed: bulleted, numbered and check lists; a choice of fonts; completion of the LaTeX commands while typing | Proposed |
 
 ### Phase 1 results
@@ -364,6 +365,40 @@ work against the user, and text can be lost.
   the texts selected; the gestures on a canvas (`TextGesturesTest`: a box drawn with a mouse, a
   tap on another text and elsewhere while writing); copy and paste through the clipboard of the
   system (`CommandTest`).
+
+### Phase 8 results
+
+* `SnapEngine` (`drawview-core`, `core.snap`) aligns a box with lines: its left edge, middle or
+  right edge with a vertical line, its top, middle or bottom with a horizontal one, or the first
+  baseline of a text with a row of the paper; the nearest line within the tolerance on each axis,
+  and the guides to show. `SnapManager` (owned by `DrawViewController`) gives it what is around:
+  the edges and the middles of the other elements of the page (not those moved, not those another
+  device is writing), the middle of the page, the rows of the paper (`PageBackground.pattern`); a
+  tolerance of 6 dp on the screen, whatever the zoom; the guides of the box snapped now.
+* The selection is moved from where the gesture started (`SelectionManager.moveBy`: the move so
+  far, then snapped), a single text not turned with its first baseline on the lines; the text being
+  written likewise (`TextEditorManager.moveTo`); the sides of a text, written or selected, snap
+  (`resizeTo`, `resizeText`; their handles take the padding of the frame into account, which the
+  selection measured in pixels); a new text tapped on lined paper sits on the line under the tap,
+  its edge aligned with the texts around it. Held ⌥ / Alt, a gesture is free.
+* The canvas draws the guides (a thin pink line) while the box is held; "Snap to Guides" (View menu
+  and "more" menu) turns snapping off, stored with the preferences (Room version 16).
+* Tests: the engine (lines, tolerance, guides, rows, the row under a point), a selection snapped
+  to a text then free and with snapping off, a text written on the lines of the paper, the side of
+  a text snapped (also on the iOS simulator); screenshots of a snapped move and of the "more" menu.
+
+### Left for later
+
+* On real devices: the caret, the input methods and the selection handles of a field showing a
+  formula as one character (phase 5) and of a turned field (phase 4), on Android and iOS; Scribble
+  of the Apple Pencil in the field of a text.
+* Snapping of the notes placed by the lecture assistant (`PlacementManager`).
+* The screenshot tests of the explorer fail now and then (seen once in this work, on a test of the
+  texts, passing again at once): `DrawViewController.requestRedraw` writes the state of the canvas
+  from the scope of the controller, which in the desktop tests is not the thread of the scene,
+  and Compose then corrupts its queue of measures. Not from these phases; to fix with the scope
+  of the editor in the tests.
+* Phase 9 (lists, fonts, completion of the LaTeX commands) waits for a decision.
 
 ## Decisions
 

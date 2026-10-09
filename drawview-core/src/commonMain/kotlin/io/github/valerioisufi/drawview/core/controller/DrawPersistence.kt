@@ -62,6 +62,7 @@ interface DrawPersistence {
     suspend fun saveStylusOnlyMode(enabled: Boolean) {}
     suspend fun saveLastSelectedTool(tool: Tool) {}
     suspend fun saveTextDefaults(defaults: TextDefaults) {}
+    suspend fun saveSnapEnabled(enabled: Boolean) {}
 }
 
 /**

@@ -141,4 +141,5 @@
     <string name="command_next_page">次のページ</string>
     <string name="command_previous_page">前のページ</string>
     <string name="command_previous_tool">前のツール</string>
+    <string name="command_snapping">ガイドにスナップ</string>
 </resources>

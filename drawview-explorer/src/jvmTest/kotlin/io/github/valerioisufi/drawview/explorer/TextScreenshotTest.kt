@@ -80,6 +80,25 @@ class TextScreenshotTest {
         }
     }
 
+    /** A text being moved, snapped to the left edge of another one: the guide shown. */
+    @Test
+    fun textSnapped() = capture("text-snapped", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 30f, 30f, "A first note")
+        save(viewModels)
+        write(viewModels, 70f, 90f, "Moved")
+        save(viewModels)
+        runOnIdle {
+            val controller = viewModels.controller()
+            val (first, second) = controller.document.pages[0].texts
+            controller.selectTool(Tool.LAZO)
+            controller.selectionManager.selectText(0, second)
+            controller.selectionManager.beginTransformation()
+            // Its left edge brought half a millimeter from the one of the first note
+            controller.selectionManager.moveBy(first.x - second.x + 0.5f, -20f)
+        }
+    }
+
     /** A turned text being written: its field and its frame turned with it. */
     @Test
     fun textWritingTurned() = capture("text-writing-turned", ReferenceWindow.DESKTOP, dark = false) { viewModels ->

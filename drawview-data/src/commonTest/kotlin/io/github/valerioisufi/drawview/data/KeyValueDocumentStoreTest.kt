@@ -214,12 +214,14 @@ class KeyValueDocumentStoreTest {
         store.saveStylusOnlyMode(true)
         store.saveLastSelectedTool(Tool.TEXT)
         store.saveTextDefaults(TextDefaults(24f, 0xFFFF0000.toInt(), TextAlignment.CENTER))
+        store.saveSnapEnabled(false)
 
         val preferences = KeyValueDocumentStore(storage, scope = backgroundScope).preferences.first()
         assertEquals(presets, preferences.presets.getValue(Tool.INK_PEN))
         assertTrue(preferences.isStylusOnlyMode)
         assertEquals(Tool.TEXT, preferences.lastSelectedTool)
         assertEquals(TextDefaults(24f, 0xFFFF0000.toInt(), TextAlignment.CENTER), preferences.textDefaults)
+        assertFalse(preferences.isSnapEnabled)
         // Tools without stored presets use the defaults
         assertTrue(preferences.presets.getValue(Tool.INK_HIGHLIGHTER).isNotEmpty())
     }

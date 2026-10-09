@@ -47,6 +47,10 @@ object FrameStyle {
     const val SIDE_HANDLE_WIDTH_DP = 8f
     const val SIDE_HANDLE_LENGTH_DP = 24f
 
+    /** The guides of a box snapped to what is around it (see `SnapManager`): color and thickness. */
+    const val GUIDE_COLOR = 0xFFE5397A.toInt()
+    const val GUIDE_STROKE_DP = 1f
+
     /** How far from a handle a finger, and a pen or a mouse, may be: targets of 44 and 24 dp. */
     const val TOUCH_HIT_DP = 22f
     const val POINTER_HIT_DP = 12f

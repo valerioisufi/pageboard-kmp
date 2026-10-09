@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import io.github.valerioisufi.drawview.core.canvas.FrameStyle
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.BoxPlacement
 import io.github.valerioisufi.drawview.core.change.ChangeEffects
@@ -259,8 +260,36 @@ class SelectionManager(private val controller: DrawViewController) {
     // Live transformation (driven by the canvas gestures)
     // ==========================================================
 
+    /** The live transformation when the move of the gesture started (see [moveBy]). */
+    private var moveStart: Matrix2D? = null
+
+    /** The move of the gesture so far, in page millimeters, before snapping. */
+    private var moveOffset = Offset.Zero
+
     fun beginTransformation() {
-        currentSelection?.captureOriginalStates()
+        val selection = currentSelection ?: return
+        selection.captureOriginalStates()
+        moveStart = Matrix2D(selection.transform)
+        moveOffset = Offset.Zero
+    }
+
+    /**
+     * Moves the selection by ([dxMm], [dyMm]) more in the source page space during a gesture,
+     * snapped to what is around it (see [SnapManager]) unless [free].
+     */
+    fun moveBy(dxMm: Float, dyMm: Float, free: Boolean = false) {
+        val selection = currentSelection ?: return
+        val start = moveStart ?: Matrix2D(selection.transform).also { moveStart = it }
+        moveOffset += Offset(dxMm, dyMm)
+        val moved = Matrix2D(start).postTranslate(moveOffset.x, moveOffset.y)
+        val frame = Matrix2D().postRotate(selection.baseRotation, selection.boundingBox.center.x, selection.boundingBox.center.y).postConcat(moved)
+        val box = frame.mapRect(selection.boundingBox)
+        // The first baseline of a single text, not turned, on the rows of the paper
+        val text = selection.texts.singleOrNull()?.takeIf { selection.isSingleText && it.rotation == 0f && moved.rotationDegrees == 0f }
+        val baseline = text?.let { controller.textLineMetrics(it.fontSize * moved.scaleFactor)?.let { line -> box.top + line.baseline } }
+        val snap = controller.snapManager.snapBox(selection.pageIndex, box, selection.elements(), baseline, free)
+        selection.transform.set(moved.postTranslate(snap.x, snap.y))
+        notifyChanged()
     }
 
     /** Translates the selection by ([dxMm], [dyMm]) in the source page space. */
@@ -302,7 +331,7 @@ class SelectionManager(private val controller: DrawViewController) {
      *
      * @param touchMm finger position in the source page space.
      */
-    fun resizeText(touchMm: Offset, isRightEdge: Boolean) {
+    fun resizeText(touchMm: Offset, isRightEdge: Boolean, free: Boolean = false) {
         val selection = currentSelection ?: return
         val text = selection.texts.singleOrNull() ?: return
         val inverse = Matrix2D()
@@ -312,16 +341,21 @@ class SelectionManager(private val controller: DrawViewController) {
         val x = if (selection.baseRotation != 0f) {
             Matrix2D().postRotate(-selection.baseRotation, text.centerX, text.centerY).mapPoint(local.x, local.y).x
         } else local.x
-        val padding = 4f / max(controller.pixelsPerMm(selection.pageIndex), 0.01f) / max(selection.transform.scaleFactor, 0.01f)
+        // The handle is on the frame, its padding away from the text
+        val padding = FrameStyle.PADDING_DP * controller.density / max(controller.pixelsPerMm(selection.pageIndex), 0.01f) / max(selection.transform.scaleFactor, 0.01f)
+        var edge = if (isRightEdge) x - padding else x + padding
+        // An edge of a text not turned nor moved snaps to what is around it
+        if (selection.baseRotation == 0f && selection.transform.isIdentity) {
+            edge += controller.snapManager.snapEdge(selection.pageIndex, edge, text.y, text.y + text.height, selection.elements(), free)
+        }
         val minWidth = 20f
         if (isRightEdge) {
-            text.width = max(minWidth, x - padding - text.x)
+            text.width = max(minWidth, edge - text.x)
         } else {
             val rightEdge = text.x + text.width
-            val newLeft = x + padding
-            if (rightEdge - newLeft >= minWidth) {
-                text.x = newLeft
-                text.width = rightEdge - newLeft
+            if (rightEdge - edge >= minWidth) {
+                text.x = edge
+                text.width = rightEdge - edge
             }
         }
         // The lines wrap again on the new width
@@ -341,6 +375,8 @@ class SelectionManager(private val controller: DrawViewController) {
         val oldPage = doc.pages.getOrNull(selection.pageIndex) ?: return
         val original = selection.originalPlacements ?: return
         selection.originalPlacements = null
+        moveStart = null
+        controller.snapManager.clearGuides()
 
         val transform = Matrix2D(selection.transform)
         val textResized = selection.isSingleText && original[selection.texts[0].id] != placementOf(selection.texts[0])
