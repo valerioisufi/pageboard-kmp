@@ -115,9 +115,16 @@ private val THIRD_PARTY_LIBRARIES = listOf(
     ThirdPartyLicense(
         name = "Typography & Fonts",
         license = "SIL OFL 1.1 / Knuth License",
-        copyright = "Nunito: Copyright © 2014 The Nunito Project Authors.\nNoto Sans, Noto Sans Mono: Copyright © 2018 The Noto Project Authors.\nComputer Modern: Donald E. Knuth.\nAMS Fonts: American Mathematical Society.",
-        purpose = "Application UI typography (Nunito), text of the notes (Noto Sans, Noto Sans Mono) and LaTeX mathematical symbols.",
-        notice = "Nunito, Noto Sans, Noto Sans Mono and AMS Fonts are licensed under the SIL Open Font License, Version 1.1. Computer Modern is licensed under Donald E. Knuth's license."
+        copyright = "Plus Jakarta Sans: Copyright © 2020 The Plus Jakarta Sans Project Authors.\nNoto Sans, Noto Sans Mono: Copyright © 2018 The Noto Project Authors.\nComputer Modern: Donald E. Knuth.\nAMS Fonts: American Mathematical Society.",
+        purpose = "Application UI typography (Plus Jakarta Sans), text of the notes (Noto Sans, Noto Sans Mono) and LaTeX mathematical symbols.",
+        notice = "Plus Jakarta Sans, Noto Sans, Noto Sans Mono and AMS Fonts are licensed under the SIL Open Font License, Version 1.1. Computer Modern is licensed under Donald E. Knuth's license."
+    ),
+    ThirdPartyLicense(
+        name = "Lucide",
+        license = "ISC License",
+        copyright = "Copyright © 2022 Lucide Contributors. Portions Copyright © 2013-2022 Cole Bemis (Feather).",
+        purpose = "Icons of the interface.",
+        notice = "Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies. THE SOFTWARE IS PROVIDED 'AS IS' AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE."
     )
 )
 

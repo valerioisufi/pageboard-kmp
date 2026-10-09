@@ -76,6 +76,7 @@ import io.github.valerioisufi.drawview.ui.platform.fileDropTarget
 import io.github.valerioisufi.drawview.ui.platform.rememberFilePicker
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.session.EditorPanel
+import io.github.valerioisufi.drawview.ui.theme.LocalCanvasColors
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
@@ -111,9 +112,10 @@ fun DrawScreen(
 
     // Theme colors of the canvas (desk, paper, selection), updated with the Material theme
     val colorScheme = MaterialTheme.colorScheme
-    LaunchedEffect(colorScheme) {
+    val canvasColors = LocalCanvasColors.current
+    LaunchedEffect(colorScheme, canvasColors) {
         controller.themeColors = io.github.valerioisufi.drawview.core.model.DrawThemeColors(
-            backgroundColor = colorScheme.surfaceVariant.toArgb(),
+            backgroundColor = canvasColors.desk.toArgb(),
             surfaceColor = colorScheme.surface.toArgb(),
             primaryColor = colorScheme.primary.toArgb(),
             onSurfaceColor = colorScheme.onSurface.toArgb()

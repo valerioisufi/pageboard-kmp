@@ -20,7 +20,8 @@ The PencilNotes application (`pencilnotes/`) includes every DrawView component p
 | **whisper.cpp** (with **ggml**) | The ggml authors | [MIT License](#mit-license-bblanchonpdfium-binaries-microtex--whispercpp) | Speech recognition of the lecture assistant (Desktop JVM) |
 | **Opus** (libopus) | Xiph.Org Foundation and contributors | [BSD 3-Clause License](#bsd-3-clause-license-opus) | Compression of the recordings of the lecture assistant (Desktop JVM, Android and iOS) |
 | **VisualOn AAC encoder** (vo-aacenc) | VisualOn | [Apache License 2.0](#apache-license-version-20) | AAC encoding of the exported recordings (Desktop JVM, Android and iOS) |
-| **Nunito Font** | Vernon Adams, Cyreal, Jacques Le Bailly | [SIL Open Font License 1.1](#sil-open-font-license-11) | UI typography |
+| **Plus Jakarta Sans Font** | The Plus Jakarta Sans Project Authors (Tokotype) | [SIL Open Font License 1.1](#sil-open-font-license-11) | UI typography |
+| **Lucide** | Lucide Contributors, Cole Bemis (Feather) | [ISC License](#isc-license-lucide) | Icons of the interface |
 | **Noto Sans, Noto Sans Mono** | The Noto Project Authors | [SIL Open Font License 1.1](#sil-open-font-license-11) | Text of the notes (editor and exported PDFs) |
 | **Cherry Bomb One Font** | The Cherry Bomb Project Authors (satsuyako) | [SIL Open Font License 1.1](#sil-open-font-license-11) | *PencilNotes*: title typography |
 | **Computer Modern Fonts**| Donald E. Knuth | [Knuth License](#knuth-license) | Math typography for LaTeX formula rendering |
@@ -58,9 +59,13 @@ The PencilNotes application (`pencilnotes/`) includes every DrawView component p
 > Copyright (c) NanoMichael
 > Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction...
 
-### Nunito Font
-> Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito)
+### Plus Jakarta Sans Font
+> Copyright 2020 The Plus Jakarta Sans Project Authors (https://github.com/tokotype/PlusJakartaSans)
 > Licensed under the SIL Open Font License, Version 1.1.
+
+### Lucide
+> Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
+> The icons of the interface are generated from Lucide (`DrawViewIcons`).
 
 ### Noto Sans and Noto Sans Mono
 > Copyright 2018 The Noto Project Authors (https://github.com/googlei18n/noto-fonts)
@@ -492,6 +497,26 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
 ---
+
+### ISC License (Lucide)
+
+```
+ISC License
+
+Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+```
 
 ### SIL Open Font License 1.1
 

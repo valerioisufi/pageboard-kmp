@@ -8,6 +8,7 @@ import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 
 internal val LightColorScheme = lightColorScheme(
     primary = md_theme_light_primary,
@@ -111,10 +112,20 @@ internal val DarkColorScheme = darkColorScheme(
     onTertiaryFixedVariant = md_theme_onTertiaryFixedVariant,
 )
 
+/** The color scheme of the design in the light theme. */
+val DrawViewLightColors: ColorScheme get() = LightColorScheme
+
+/** The color scheme of the design in the dark theme. */
+val DrawViewDarkColors: ColorScheme get() = DarkColorScheme
+
 /**
- * Material 3 theme of DrawView: the dynamic colors of the system on Android 12+ (as in the
- * original app), the DrawView palette elsewhere, the Nunito typography and the expressive
- * motion scheme.
+ * Material 3 theme of DrawView, as the design draws it (docs/ui-design.md): the palette of the
+ * design (or the dynamic colors of the system on Android 12+, or the schemes of an application),
+ * Plus Jakarta Sans, the shapes of the design, the colors of the canvas and the expressive motion
+ * scheme.
+ *
+ * @param lightColors the colors of the light theme (the palette of the design by default).
+ * @param darkColors the colors of the dark theme.
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -122,17 +133,21 @@ fun DrawViewTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
+    lightColors: ColorScheme = LightColorScheme,
+    darkColors: ColorScheme = DarkColorScheme,
     content: @Composable () -> Unit
 ) {
     val colorScheme = (if (dynamicColor) dynamicColorScheme(darkTheme) else null)
-        ?: if (darkTheme) DarkColorScheme else LightColorScheme
+        ?: if (darkTheme) darkColors else lightColors
 
     MaterialTheme(
         colorScheme = colorScheme,
         motionScheme = MotionScheme.expressive(),
         typography = drawViewTypography(),
-        content = content
-    )
+        shapes = DrawViewShapes
+    ) {
+        CompositionLocalProvider(LocalCanvasColors provides CanvasColors.of(colorScheme, darkTheme), content = content)
+    }
 }
 
 /**

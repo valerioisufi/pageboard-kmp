@@ -6,74 +6,64 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
-import io.github.valerioisufi.drawview.ui.generated.resources.nunito_bold
-import io.github.valerioisufi.drawview.ui.generated.resources.nunito_regular
-import io.github.valerioisufi.drawview.ui.generated.resources.nunito_semibold
+import io.github.valerioisufi.drawview.ui.generated.resources.plus_jakarta_sans_bold
+import io.github.valerioisufi.drawview.ui.generated.resources.plus_jakarta_sans_extrabold
+import io.github.valerioisufi.drawview.ui.generated.resources.plus_jakarta_sans_medium
+import io.github.valerioisufi.drawview.ui.generated.resources.plus_jakarta_sans_regular
+import io.github.valerioisufi.drawview.ui.generated.resources.plus_jakarta_sans_semibold
 import org.jetbrains.compose.resources.Font
 
 /**
- * The Nunito font family of the original app (bundled: Google downloadable fonts are available
- * on Android only).
+ * Plus Jakarta Sans, the typeface of the interface (bundled: the downloadable fonts of Google are
+ * available on Android only).
  */
 @Composable
-fun nunitoFontFamily(): FontFamily {
-    val regular = Font(Res.font.nunito_regular, FontWeight.Normal)
-    // Nunito Medium is not bundled: the regular file is the closest match
-    val medium = Font(Res.font.nunito_regular, FontWeight.Medium)
-    val semiBold = Font(Res.font.nunito_semibold, FontWeight.SemiBold)
-    val bold = Font(Res.font.nunito_bold, FontWeight.Bold)
-    return remember(regular, medium, semiBold, bold) { FontFamily(regular, medium, semiBold, bold) }
+fun plusJakartaSansFontFamily(): FontFamily {
+    val regular = Font(Res.font.plus_jakarta_sans_regular, FontWeight.Normal)
+    val medium = Font(Res.font.plus_jakarta_sans_medium, FontWeight.Medium)
+    val semiBold = Font(Res.font.plus_jakarta_sans_semibold, FontWeight.SemiBold)
+    val bold = Font(Res.font.plus_jakarta_sans_bold, FontWeight.Bold)
+    val extraBold = Font(Res.font.plus_jakarta_sans_extrabold, FontWeight.ExtraBold)
+    return remember(regular, medium, semiBold, bold, extraBold) { FontFamily(regular, medium, semiBold, bold, extraBold) }
 }
 
+/**
+ * The type scale of the design: headlines in bold, titles and labels in semibold, the body
+ * regular, all in Plus Jakarta Sans.
+ */
 @Composable
 fun drawViewTypography(): Typography {
-    val nunito = nunitoFontFamily()
-    return remember(nunito) {
-        Typography(
-            headlineLarge = TextStyle(
-                fontFamily = nunito,
-                fontWeight = FontWeight.Bold,
-                fontSize = 32.sp,
-                lineHeight = 40.sp,
-                letterSpacing = 0.sp
-            ),
-            titleLarge = TextStyle(
-                fontFamily = nunito,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 20.sp,
-                lineHeight = 28.sp,
-                letterSpacing = 0.15.sp
-            ),
-            titleMedium = TextStyle(
-                fontFamily = nunito,
-                fontWeight = FontWeight.Medium,
-                fontSize = 16.sp,
-                lineHeight = 24.sp,
-                letterSpacing = 0.15.sp
-            ),
-            bodyLarge = TextStyle(
-                fontFamily = nunito,
-                fontWeight = FontWeight.Normal,
-                fontSize = 16.sp,
-                lineHeight = 24.sp,
-                letterSpacing = 0.5.sp
-            ),
-            bodyMedium = TextStyle(
-                fontFamily = nunito,
-                fontWeight = FontWeight.Normal,
-                fontSize = 14.sp,
-                lineHeight = 20.sp,
-                letterSpacing = 0.25.sp
-            ),
-            labelMedium = TextStyle(
-                fontFamily = nunito,
-                fontWeight = FontWeight.Medium,
-                fontSize = 12.sp,
-                lineHeight = 16.sp,
-                letterSpacing = 0.5.sp
-            )
-        )
-    }
+    val family = plusJakartaSansFontFamily()
+    return remember(family) { drawViewTypography(family) }
+}
+
+/** The type scale of the design in [family]. */
+fun drawViewTypography(family: FontFamily): Typography {
+    fun style(weight: FontWeight, size: Int, lineHeight: Int, tracking: Double = 0.0) = TextStyle(
+        fontFamily = family,
+        fontWeight = weight,
+        fontSize = size.sp,
+        lineHeight = lineHeight.sp,
+        letterSpacing = tracking.em
+    )
+    return Typography(
+        displayLarge = style(FontWeight.ExtraBold, 57, 64, -0.02),
+        displayMedium = style(FontWeight.ExtraBold, 45, 52, -0.015),
+        displaySmall = style(FontWeight.ExtraBold, 36, 44, -0.01),
+        headlineLarge = style(FontWeight.ExtraBold, 32, 40, -0.01),
+        headlineMedium = style(FontWeight.Bold, 26, 32, -0.005),
+        headlineSmall = style(FontWeight.Bold, 24, 32),
+        titleLarge = style(FontWeight.Bold, 22, 28),
+        titleMedium = style(FontWeight.SemiBold, 16, 24),
+        titleSmall = style(FontWeight.SemiBold, 14, 20),
+        bodyLarge = style(FontWeight.Normal, 16, 24),
+        bodyMedium = style(FontWeight.Normal, 14, 20),
+        bodySmall = style(FontWeight.Normal, 12, 16),
+        labelLarge = style(FontWeight.SemiBold, 14, 20),
+        labelMedium = style(FontWeight.SemiBold, 12, 16),
+        labelSmall = style(FontWeight.SemiBold, 11, 16, 0.02)
+    )
 }
