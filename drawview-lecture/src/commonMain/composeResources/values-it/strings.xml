@@ -115,12 +115,12 @@
     <string name="lecture_task_live_notes">Suggerimenti durante la lezione</string>
     <string name="lecture_task_catch_up">Mi sono perso qualcosa</string>
     <string name="lecture_task_final_review">Revisione finale</string>
-    <string name="lecture_hint_transcription_online">Gemini trascrive l\'audio nelle richieste dei suggerimenti: l\'audio viene inviato a Google.</string>
+    <string name="lecture_hint_transcription_online">Il modello dei suggerimenti trascrive l\'audio nelle sue richieste: una richiesta sola a ogni aggiornamento. L\'audio viene inviato a Google.</string>
     <string name="lecture_hint_transcription_local">whisper.cpp trascrive su questo computer: l\'audio non lo lascia mai, e i modelli online ricevono la trascrizione.</string>
-    <string name="lecture_hint_live_local">Gratis e privato, ma deve tenere il passo della lezione: con 16 GB meglio un modello piccolo (gemma4:e4b). Usa la trascrizione locale.</string>
+    <string name="lecture_hint_live_local">Gratis e privato, ma deve tenere il passo della lezione: con 16 GB meglio un modello piccolo (gemma4:e4b). Legge la trascrizione.</string>
     <string name="lecture_hint_catch_up_local">Legge la trascrizione degli ultimi minuti.</string>
     <string name="lecture_hint_review_local">Rilegge la trascrizione e i tuoi appunti in 10–20 minuti; alla fine il modello viene scaricato. Deve accettare immagini (es. gemma4:12b).</string>
-    <string name="lecture_problem_transcription">L\'audio non può essere trascritto su questo computer: controlla whisper.cpp nelle impostazioni (%1$s)</string>
+    <string name="lecture_problem_transcription">L\'audio non può essere trascritto: controlla la trascrizione nelle impostazioni (%1$s)</string>
     <string name="lecture_usage_tokens">%1$d richieste · ingresso %2$s (%3$s in cache) · uscita %4$s</string>
     <string name="lecture_usage_local">Richieste a questo computer: %1$d</string>
     <string name="lecture_privacy_local">Tutto resta su questo computer: l\'audio, le pagine e i tuoi appunti. Chiedi al docente prima di registrare.</string>
@@ -216,4 +216,11 @@
     <string name="lecture_review_on_request">Quando la registrazione si ferma potrai chiedere la revisione dell\'intera lezione: appunti ordinati e ciò che manca ai tuoi.</string>
     <string name="lecture_settings_review_at_end">Scrivila al termine di ogni lezione</string>
     <string name="lecture_settings_review_on_request_hint">Spento: la chiedi tu dalla scheda Revisione, quando ti serve.</string>
+    <string name="lecture_settings_speech_model">Modello di trascrizione</string>
+    <string name="lecture_speech_live">In tempo reale: le parole compaiono mentre vengono dette</string>
+    <string name="lecture_speech_chunks">Un pezzo a ogni aggiornamento</string>
+    <string name="lecture_speech_with_notes">Il modello dei suggerimenti: una richiesta sola a ogni aggiornamento</string>
+    <string name="lecture_hint_transcription_streaming">La trascrizione compare mentre il professore parla; i suggerimenti la leggono. L\'audio viene inviato a Google.</string>
+    <string name="lecture_hint_transcription_chunks">Un modello di trascrizione trascrive l\'audio di ogni aggiornamento; i suggerimenti leggono la trascrizione. L\'audio viene inviato a Google.</string>
+    <string name="lecture_hint_transcription_prompt">Questo modello trascrive l\'audio di ogni aggiornamento in una richiesta a parte; i suggerimenti leggono la trascrizione. L\'audio viene inviato a Google.</string>
 </resources>

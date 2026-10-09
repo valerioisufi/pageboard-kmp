@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.lecture.model
 
 import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.TokenUsage
+import io.github.valerioisufi.drawview.lecture.gemini.AudioTranscriptionConfig
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiContent
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiException
@@ -42,6 +43,26 @@ class GeminiBackend(val client: GeminiClient, private val apiKey: () -> String) 
         }
         return ModelAnswer(response.text(), response.usageMetadata.toTokenUsage())
     }
+
+    /**
+     * Transcribes [wav] with the speech model [model] (Gemini 3.5 Transcribe): the audio only,
+     * no instructions.
+     *
+     * @throws GeminiException also for a missing key (status 401).
+     */
+    suspend fun transcribe(wav: ByteArray, model: String, config: AudioTranscriptionConfig): ModelAnswer {
+        val key = apiKey()
+        if (key.isEmpty()) throw GeminiException(401, "API key not set")
+        val request = GenerateContentRequest(
+            contents = listOf(GeminiContent(role = "user", parts = listOf(GeminiPart.inline("audio/wav", Base64.encode(wav))))),
+            generationConfig = GenerationConfig(audioTranscriptionConfig = config)
+        )
+        val response = client.generateContent(key, model, request)
+        return ModelAnswer(response.transcriptionText(), response.usageMetadata.toTokenUsage())
+    }
+
+    /** The key of the settings, for the connections of the Live API. */
+    internal fun currentApiKey(): String = apiKey()
 
     companion object {
         /**

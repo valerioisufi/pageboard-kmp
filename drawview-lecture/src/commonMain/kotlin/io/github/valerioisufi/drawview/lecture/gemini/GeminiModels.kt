@@ -17,7 +17,9 @@ data class GeminiPart(
     val inlineData: GeminiBlob? = null,
     val fileData: GeminiFileData? = null,
     /** `true` for the thought summaries of the thinking models (not part of the answer). */
-    val thought: Boolean? = null
+    val thought: Boolean? = null,
+    /** The words recognized by a speech model (with their times, when asked). */
+    val audioTranscription: GeminiAudioTranscription? = null
 ) {
     companion object {
         fun text(value: String) = GeminiPart(text = value)
@@ -37,6 +39,28 @@ data class GeminiFileData(val mimeType: String, val fileUri: String)
 @Serializable
 data class ThinkingConfig(val thinkingLevel: String? = null)
 
+/**
+ * The configuration of the speech models (Gemini 3.5 Transcribe): the languages spoken (BCP-47,
+ * empty: recognized), the words to recognize (at most 1000, best within 100) and the mode,
+ * `VERBATIM` (every word) or `SMART` (no hesitations, numbers and lists formatted).
+ */
+@Serializable
+data class AudioTranscriptionConfig(
+    val languageCodes: List<String> = emptyList(),
+    val customVocabulary: List<String>? = null,
+    val mode: String? = null
+)
+
+/** What a speech model recognized in a part of its answer. */
+@Serializable
+data class GeminiAudioTranscription(
+    val speakerLabel: String? = null,
+    val words: List<GeminiWord> = emptyList()
+)
+
+@Serializable
+data class GeminiWord(val word: String = "", val startOffset: String? = null, val endOffset: String? = null)
+
 @Serializable
 data class GenerationConfig(
     val responseMimeType: String? = null,
@@ -44,7 +68,9 @@ data class GenerationConfig(
     val maxOutputTokens: Int? = null,
     val thinkingConfig: ThinkingConfig? = null,
     /** Tokens per image and PDF page: MEDIA_RESOLUTION_LOW, _MEDIUM or _HIGH. */
-    val mediaResolution: String? = null
+    val mediaResolution: String? = null,
+    /** The transcription of a speech model (the only content of its answer). */
+    val audioTranscriptionConfig: AudioTranscriptionConfig? = null
 )
 
 @Serializable
@@ -65,6 +91,14 @@ data class GenerateContentResponse(
         .filter { it.thought != true }
         .mapNotNull { it.text }
         .joinToString("")
+
+    /** The text of a speech model: its text, or its words when it answers with them only. */
+    fun transcriptionText(): String {
+        val parts = candidates.firstOrNull()?.content?.parts.orEmpty().filter { it.thought != true }
+        val text = parts.mapNotNull { it.text }.joinToString("").trim()
+        if (text.isNotEmpty()) return text
+        return parts.flatMap { it.audioTranscription?.words.orEmpty() }.joinToString(" ") { it.word.trim() }.trim()
+    }
 }
 
 @Serializable

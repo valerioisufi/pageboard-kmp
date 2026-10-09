@@ -3,7 +3,9 @@ package io.github.valerioisufi.drawview.lecture
 import io.github.valerioisufi.drawview.lecture.audio.AudioCapture
 import io.github.valerioisufi.drawview.lecture.audio.CaptureEvent
 import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
+import io.github.valerioisufi.drawview.lecture.transcription.SpeechHints
 import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
+import io.github.valerioisufi.drawview.lecture.transcription.Transcription
 import io.ktor.http.HttpHeaders
 import io.ktor.http.headersOf
 import kotlinx.serialization.json.add
@@ -70,12 +72,14 @@ internal class FakeNotebook : NotebookSource {
     )
 }
 
+/** A transcription on this computer (with times, with the overlap as context). */
 internal class FakeTranscriber : Transcriber {
     var closed = false
     val prompts = Collections.synchronizedList(mutableListOf<String>())
-    override suspend fun transcribe(wav: ByteArray, language: String, prompt: String): List<TranscriptSegment> {
-        prompts.add(prompt)
-        return listOf(TranscriptSegment(2_000, 5_000, "Il teorema ponte"), TranscriptSegment(5_000, 9_000, "vale per ogni successione"))
+    override val usesLeadingContext = true
+    override suspend fun transcribe(wav: ByteArray, hints: SpeechHints): Transcription {
+        prompts.add(hints.prompt)
+        return Transcription(listOf(TranscriptSegment(2_000, 5_000, "Il teorema ponte"), TranscriptSegment(5_000, 9_000, "vale per ogni successione")))
     }
 
     override suspend fun close() {

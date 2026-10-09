@@ -70,7 +70,7 @@ Variations).
 | Phase | State |
 |---|---|
 | 1. The review on request | done |
-| 2. The transcription models a chunk at a time | to do |
+| 2. The transcription models a chunk at a time | done |
 | 3. Gemini 3.5 Transcribe Live | to do |
 | 4. Transcribe again | to do |
 | 5. README | to do |

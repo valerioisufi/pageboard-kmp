@@ -13,6 +13,10 @@ import io.github.valerioisufi.drawview.lecture.local.OllamaClient
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
 import io.github.valerioisufi.drawview.lecture.model.ModelBackends
 import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
+import io.github.valerioisufi.drawview.lecture.transcription.SpeechHints
+import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
+import io.github.valerioisufi.drawview.lecture.transcription.Transcribers
+import io.github.valerioisufi.drawview.lecture.transcription.Transcription
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -516,7 +520,7 @@ class LectureRecorderTest {
         val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets())
         val input = File(directory, "lezione.wav").apply { writeBytes(Wav.encode(ShortArray(5 * LECTURE_SAMPLE_RATE) { (it % 200 * 50).toShort() })) }
         val lecture = newLecture(settingsStore, engine)
-        LectureImporter(lecture, settingsStore, transcriber = null).run(input.absolutePath, emptyList(), emptyList(), reviews = false)
+        LectureImporter(lecture, settingsStore, FakeTranscriber()).run(input.absolutePath, emptyList(), emptyList(), reviews = false)
 
         // Finished, to be reviewed by a device with the models
         assertEquals(LectureStatus.FINISHED, lecture.status)
@@ -612,7 +616,7 @@ class LectureRecorderTest {
                 else -> respond("", HttpStatusCode.NotFound)
             }
         }
-        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath).apply {
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets()).apply {
             update(settings.copy(apiKey = "test-key", reviewAtTheEnd = false).withTask(LectureTask.TRANSCRIPTION, TaskModel(gemini = AssistantSettings.DEFAULT_MODEL)))
         }
         val microphone = FakeMicrophone()
@@ -662,6 +666,111 @@ class LectureRecorderTest {
             put("eval_count", 10)
         }
     ).joinToString("\n") + "\n"
+
+    @Test
+    fun localSuggestionsReadTheTranscriptOfGemini() = runBlocking<Unit> {
+        val speech = Collections.synchronizedList(mutableListOf<String>())
+        val ollamaRequests = Collections.synchronizedList(mutableListOf<String>())
+        val notes = """{"currentTopic":"Limiti","outline":"- Limiti","notes":[{"kind":"THEOREM","title":"Teorema ponte","content":"Vale per ogni successione","importance":3,"atSeconds":2}]}"""
+        val engine = MockEngine { request ->
+            val path = request.url.encodedPath
+            val body = request.body.toByteArray().decodeToString()
+            when {
+                path.endsWith("gemini-3.5-transcribe:generateContent") -> {
+                    speech.add(body)
+                    respond(geminiAnswer("Il teorema ponte vale per ogni successione."), HttpStatusCode.OK, jsonHeaders)
+                }
+                path == "/api/chat" -> {
+                    ollamaRequests.add(body)
+                    respond(ollamaAnswer(if (body.contains("\"messages\":[]")) "" else notes), HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/x-ndjson"))
+                }
+                else -> respond("", HttpStatusCode.NotFound)
+            }
+        }
+        val local = TaskModel(provider = ModelProvider.LOCAL, local = "gemma4:e4b")
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets()).apply {
+            update(
+                settings.copy(apiKey = "test-key", spokenLanguage = "it", reviewAtTheEnd = false)
+                    .withTask(LectureTask.TRANSCRIPTION, TaskModel(gemini = "gemini-3.5-transcribe"))
+                    .withTask(LectureTask.LIVE_NOTES, local)
+                    .withTask(LectureTask.CATCH_UP, local)
+            )
+        }
+        assertEquals(TranscriptionMode.SPEECH_CHUNKS, settingsStore.settings.transcription)
+        val microphone = FakeMicrophone()
+        val lecture = newLecture(settingsStore, engine, courseContext = "Analisi 1\nLimiti; successioni\nteorema ponte, epsilon-delta")
+        val transcriber = Transcribers(lecture.backends.gemini).forUpdates(settingsStore.settings)
+        val recorder = LectureRecorder(lecture, settingsStore, microphone, FakeNotebook(), transcriber)
+        recorder.start()
+        val random = Random(10)
+        microphone.speak(61.0, loud = true, random = random)
+        microphone.speak(1.0, loud = false, random = random)
+        withTimeout(20_000) { while (lecture.suggestions.isEmpty()) delay(20) }
+
+        // Transcribed by Gemini, then read by the local model
+        val segment = lecture.transcript.single()
+        assertEquals("Il teorema ponte vale per ogni successione.", segment.text)
+        assertEquals(0L, segment.startMs)
+        val live = ollamaRequests.single()
+        assertTrue(live.contains("## New transcript"), live)
+        assertTrue(live.contains("[0:00] Il teorema ponte vale per ogni successione."), live)
+        assertTrue(speech.single().contains("\"languageCodes\":[\"it-IT\"]"))
+        assertTrue(speech.single().contains("\"customVocabulary\":[\"Limiti\",\"successioni\",\"teorema ponte\",\"epsilon-delta\"]"), speech.single())
+
+        // The last seconds: the new audio only, without the overlap with the previous chunk
+        microphone.speak(4.0, loud = true, random = random)
+        recorder.stop()
+        awaitFinished(lecture)
+        assertEquals(2, speech.size)
+        val data = Regex("\"data\":\"([^\"]+)\"").find(speech[1])!!.groupValues[1]
+        val seconds = (java.util.Base64.getDecoder().decode(data).size - Wav.HEADER_SIZE) / 2.0 / LECTURE_SAMPLE_RATE
+        assertTrue(seconds in 4.0..5.0, "$seconds s")
+        assertEquals(2, lecture.transcript.size)
+        assertEquals(ReviewStatus.NONE, lecture.reviewStatus)
+    }
+
+    @Test
+    fun aRecordingIsTranscribedInParallelAndInOrder() = runBlocking<Unit> {
+        val recording = RecordingFile(File(directory, "parallel").absolutePath)
+        recording.open()
+        // Four minutes of speech, with a pause every 50 s
+        val random = Random(11)
+        repeat(240) { second ->
+            val pause = second % 50 == 49
+            recording.append(ShortArray(LECTURE_SAMPLE_RATE) { if (pause) 0 else random.nextInt(-6000, 6000).toShort() })
+        }
+        recording.finish()
+
+        val running = java.util.concurrent.atomic.AtomicInteger()
+        var mostAtOnce = 0
+        val transcriber = object : Transcriber {
+            override val parallelism = 3
+            override suspend fun transcribe(wav: ByteArray, hints: SpeechHints): Transcription {
+                val now = running.incrementAndGet()
+                synchronized(this) { mostAtOnce = maxOf(mostAtOnce, now) }
+                val seconds = (wav.size - Wav.HEADER_SIZE) / 2 / LECTURE_SAMPLE_RATE
+                // The first chunks are the slowest
+                delay(300L - seconds)
+                running.decrementAndGet()
+                return Transcription(listOf(TranscriptSegment(0, seconds * 1000L, "${hints.courseContext} $seconds s")), TokenUsage(requests = 1))
+            }
+        }
+        val chunks = mutableListOf<RecordingTranscriber.Chunk>()
+        val progress = mutableListOf<Float>()
+        RecordingTranscriber(recording, transcriber) { SpeechHints(courseContext = "Analisi") }.transcribe(240_000L) { chunk, done ->
+            chunks.add(chunk)
+            progress.add(done)
+        }
+        val segments = chunks.mapNotNull { it.segment }
+        assertTrue(segments.size >= 3, segments.toString())
+        assertEquals(segments.sortedBy { it.startMs }, segments)
+        // No overlap: every chunk starts where the previous one ends
+        segments.zipWithNext().forEach { (a, b) -> assertEquals(a.endMs, b.startMs) }
+        assertTrue(segments.all { it.text.startsWith("Analisi ") })
+        assertEquals(progress.sorted(), progress)
+        assertEquals(1f, progress.last())
+        assertEquals(3, mostAtOnce)
+    }
 
     @Test
     fun aLectureEntirelyOnThisComputer() = runBlocking<Unit> {

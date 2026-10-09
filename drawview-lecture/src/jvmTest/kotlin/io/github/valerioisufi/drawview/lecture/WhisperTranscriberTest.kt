@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.lecture
 
 import io.github.valerioisufi.drawview.lecture.audio.Wav
+import io.github.valerioisufi.drawview.lecture.transcription.SpeechHints
 import io.github.valerioisufi.drawview.lecture.transcription.TranscriptionException
 import io.github.valerioisufi.drawview.lecture.transcription.WhisperEngine
 import io.github.valerioisufi.drawview.lecture.transcription.WhisperNative
@@ -56,7 +57,7 @@ class WhisperTranscriberTest {
         )
         val transcriber = WhisperTranscriber(model.path, engine)
         val wav = Wav.encode(shortArrayOf(0, 16384, -32768))
-        val segments = transcriber.transcribe(wav, "it", "Sicurezza: MAC e funzioni hash")
+        val segments = transcriber.transcribe(wav, SpeechHints(language = "it", prompt = "Sicurezza: MAC e funzioni hash")).segments
         assertEquals(
             listOf(TranscriptSegment(0, 3500, "definito il concetto di integrità,"), TranscriptSegment(4000, 5500, "se vi ricordate.")),
             segments
@@ -64,7 +65,7 @@ class WhisperTranscriberTest {
         assertContentEquals(floatArrayOf(0f, 0.5f, -1f), engine.samples)
         assertEquals(listOf("it|Sicurezza: MAC e funzioni hash"), engine.prompts)
 
-        transcriber.transcribe(wav, "", "")
+        transcriber.transcribe(wav, SpeechHints(language = ""))
         assertEquals(listOf(model.path), engine.loaded)
         assertEquals("auto|", engine.prompts.last())
         transcriber.close()
@@ -74,9 +75,9 @@ class WhisperTranscriberTest {
     @Test
     fun aMissingModelOrPlatformIsReported() = runBlocking<Unit> {
         val missing = WhisperTranscriber(File(directory, "missing.bin").path, FakeEngine("{}"))
-        assertTrue(assertFailsWith<TranscriptionException> { missing.transcribe(Wav.encode(ShortArray(1)), "it") }.message.orEmpty().contains("not downloaded"))
+        assertTrue(assertFailsWith<TranscriptionException> { missing.transcribe(Wav.encode(ShortArray(1)), SpeechHints("it")) }.message.orEmpty().contains("not downloaded"))
         val unsupported = WhisperTranscriber(model.path, engine = null)
-        assertTrue(assertFailsWith<TranscriptionException> { unsupported.transcribe(Wav.encode(ShortArray(1)), "it") }.message.orEmpty().contains("not available"))
+        assertTrue(assertFailsWith<TranscriptionException> { unsupported.transcribe(Wav.encode(ShortArray(1)), SpeechHints("it")) }.message.orEmpty().contains("not available"))
     }
 
     @Test

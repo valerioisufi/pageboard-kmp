@@ -32,7 +32,11 @@ class WhisperTranscriber internal constructor(
     private val mutex = Mutex()
     private var handle = 0L
 
-    override suspend fun transcribe(wav: ByteArray, language: String, prompt: String): List<TranscriptSegment> = mutex.withLock {
+    override val usesLeadingContext: Boolean get() = true
+
+    override suspend fun transcribe(wav: ByteArray, hints: SpeechHints): Transcription = Transcription(transcribe(wav, hints.language, hints.prompt))
+
+    private suspend fun transcribe(wav: ByteArray, language: String, prompt: String): List<TranscriptSegment> = mutex.withLock {
         val engine = engine ?: throw TranscriptionException("the transcription on this computer is not available on this platform")
         withContext(Dispatchers.IO) {
             if (handle == 0L) {

@@ -69,7 +69,7 @@ class LectureSharingTest {
         audioOutput = null,
         library = LectureLibrary(File(directory, name).absolutePath),
         stateContext = stateContext,
-        transcriberFactory = { FakeTranscriber() },
+        whisper = { FakeTranscriber() },
         canGenerate = canGenerate
     )
 

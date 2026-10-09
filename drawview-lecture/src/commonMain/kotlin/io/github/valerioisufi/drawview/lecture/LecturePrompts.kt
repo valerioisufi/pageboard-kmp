@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.lecture
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiFile
 import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
 import io.github.valerioisufi.drawview.lecture.model.PromptPart
+import io.github.valerioisufi.drawview.lecture.transcription.SpeechHints
 
 /**
  * What was said in the part of the lecture of a request: its audio (Gemini transcribes it) or its
@@ -63,7 +64,7 @@ object LecturePrompts {
      * The language spoken, by its name ("Italian"), when the settings say it: the slides are often
      * in another language (English), which the models would follow otherwise.
      */
-    internal fun spokenLanguage(settings: AssistantSettings): String? = LANGUAGE_NAMES[settings.whisperLanguage.trim().lowercase()]
+    internal fun spokenLanguage(settings: AssistantSettings): String? = LANGUAGE_NAMES[settings.spokenLanguage.trim().lowercase()]
 
     private fun languageRule(settings: AssistantSettings, fields: String, withTranscript: Boolean): String {
         val language = settings.notesLanguage.trim().ifEmpty {
@@ -287,19 +288,11 @@ object LecturePrompts {
         thinkingLevel = "low"
     )
 
-    /**
-     * The transcription alone of a part of a lecture recorded elsewhere (by Gemini, when the audio
-     * may leave the computer): the first [contextMs] are context, transcribed already.
-     */
-    fun transcriptionOnlyPrompt(settings: AssistantSettings, courseContext: String, wav: ByteArray, contextMs: Long): ModelPrompt {
+    /** The transcription alone of a piece of a lecture, by a general model of Gemini. */
+    fun transcriptionOnlyPrompt(settings: AssistantSettings, courseContext: String, wav: ByteArray): ModelPrompt {
         val parts = mutableListOf<PromptPart>()
         courseText(courseContext, null)?.let { parts.add(PromptPart.Text(it)) }
-        parts.add(
-            PromptPart.Text(
-                if (contextMs > 0) "The first ${contextMs / 1000} s of the audio are context, transcribed already: transcribe only what follows."
-                else "Transcribe the audio."
-            )
-        )
+        parts.add(PromptPart.Text("Transcribe the audio."))
         parts.add(PromptPart.Audio(wav))
         val language = spokenLanguage(settings)?.let { "It is spoken in $it." } ?: ""
         return ModelPrompt(
@@ -313,6 +306,34 @@ object LecturePrompts {
             thinkingLevel = "low"
         )
     }
+
+    /** What helps the speech recognition: the language of [settings], the course, the slides on screen. */
+    fun speechHints(settings: AssistantSettings, courseContext: String, visibleSlides: List<String>) = SpeechHints(
+        language = settings.spokenLanguage,
+        locales = settings.speechLocales,
+        prompt = transcriptionPrompt(courseContext, visibleSlides),
+        vocabulary = vocabulary(courseContext, visibleSlides),
+        courseContext = courseContext
+    )
+
+    /**
+     * The words a speech model should recognize, at most [max]: the terms listed in the course
+     * context (separated by commas or semicolons), then the technical words of the slides on screen
+     * (acronyms, words with digits or hyphens: "IND-CPA", "SHA-256").
+     */
+    fun vocabulary(courseContext: String, visibleSlides: List<String>, max: Int = 100): List<String> {
+        val terms = courseContext.lines()
+            .filter { ',' in it || ';' in it }
+            .flatMap { it.split(',', ';') }
+            .map { it.trim().trimEnd('.').trim() }
+            .filter { it.length in 2..MAX_TERM_CHARS && it.split(' ').size <= MAX_TERM_WORDS }
+        val technical = visibleSlides.flatMap { slide -> SLIDE_WORD.findAll(slide).map { it.value }.filter(::isTechnical) }
+        val seen = mutableSetOf<String>()
+        return (terms + technical).filter { seen.add(it.lowercase()) }.take(max)
+    }
+
+    private fun isTechnical(word: String): Boolean =
+        word.count { it.isUpperCase() } >= 2 || (word.any { it.isDigit() } && word.any { it.isLetter() }) || ('-' in word && word.any { it.isUpperCase() })
 
     /**
      * The prompt of the speech recognition: the slides the student is looking at (their first
@@ -446,6 +467,10 @@ object LecturePrompts {
     private const val MAX_NOTEBOOK_TEXT_CHARS = 8_000
 
     /** English names of the languages of the speech recognition, by ISO code. */
+    private val SLIDE_WORD = Regex("""[\p{L}\p{N}][\p{L}\p{N}-]*[\p{L}\p{N}]""")
+    private const val MAX_TERM_CHARS = 60
+    private const val MAX_TERM_WORDS = 4
+
     private val LANGUAGE_NAMES = mapOf(
         "it" to "Italian", "en" to "English", "es" to "Spanish", "fr" to "French", "de" to "German", "pt" to "Portuguese",
         "nl" to "Dutch", "pl" to "Polish", "ro" to "Romanian", "el" to "Greek", "ru" to "Russian", "uk" to "Ukrainian",

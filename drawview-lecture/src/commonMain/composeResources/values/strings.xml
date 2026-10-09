@@ -115,12 +115,12 @@
     <string name="lecture_task_live_notes">Suggestions during the lecture</string>
     <string name="lecture_task_catch_up">I missed something</string>
     <string name="lecture_task_final_review">Final review</string>
-    <string name="lecture_hint_transcription_online">Gemini transcribes the audio in the requests of the suggestions: the audio is sent to Google.</string>
+    <string name="lecture_hint_transcription_online">The model of the suggestions transcribes the audio in its own requests: one request at every update. The audio is sent to Google.</string>
     <string name="lecture_hint_transcription_local">whisper.cpp transcribes on this computer: the audio never leaves it, and the online models receive the transcript.</string>
-    <string name="lecture_hint_live_local">Free and private, but it must keep up with the lecture: on 16 GB prefer a small model (gemma4:e4b). It uses the local transcription.</string>
+    <string name="lecture_hint_live_local">Free and private, but it must keep up with the lecture: on 16 GB prefer a small model (gemma4:e4b). It reads the transcript.</string>
     <string name="lecture_hint_catch_up_local">Reads the transcript of the last minutes.</string>
     <string name="lecture_hint_review_local">Rereads the transcript and your notes in 10–20 minutes; the model is unloaded at the end. It must accept images (e.g. gemma4:12b).</string>
-    <string name="lecture_problem_transcription">The audio cannot be transcribed on this computer: check whisper.cpp in the settings (%1$s)</string>
+    <string name="lecture_problem_transcription">The audio cannot be transcribed: check the transcription in the settings (%1$s)</string>
     <string name="lecture_usage_tokens">%1$d requests · input %2$s (%3$s cached) · output %4$s</string>
     <string name="lecture_usage_local">Requests answered on this computer: %1$d</string>
     <string name="lecture_privacy_local">Everything stays on this computer: the audio, the pages and your notes. Ask the lecturer before recording.</string>
@@ -216,4 +216,11 @@
     <string name="lecture_review_on_request">When the recording stops you can ask for the review of the whole lecture: organized notes and what is missing from yours.</string>
     <string name="lecture_settings_review_at_end">Write it at the end of every lecture</string>
     <string name="lecture_settings_review_on_request_hint">Off: you ask for it from the Review tab, when you need it.</string>
+    <string name="lecture_settings_speech_model">Transcription model</string>
+    <string name="lecture_speech_live">Live: the words appear while they are said</string>
+    <string name="lecture_speech_chunks">A piece at every update</string>
+    <string name="lecture_speech_with_notes">The model of the suggestions: one request at every update</string>
+    <string name="lecture_hint_transcription_streaming">The transcript appears while the lecturer speaks; the suggestions read it. The audio is sent to Google.</string>
+    <string name="lecture_hint_transcription_chunks">A speech model transcribes the audio of every update; the suggestions read the transcript. The audio is sent to Google.</string>
+    <string name="lecture_hint_transcription_prompt">This model transcribes the audio of every update in a request of its own; the suggestions read the transcript. The audio is sent to Google.</string>
 </resources>

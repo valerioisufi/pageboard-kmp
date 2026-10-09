@@ -4,7 +4,6 @@ import io.github.valerioisufi.drawview.lecture.audio.AudioCapture
 import io.github.valerioisufi.drawview.lecture.audio.AudioChunk
 import io.github.valerioisufi.drawview.lecture.audio.CaptureEvent
 import io.github.valerioisufi.drawview.lecture.audio.SpeechChunker
-import io.github.valerioisufi.drawview.lecture.audio.Wav
 import io.github.valerioisufi.drawview.lecture.audio.isSilent
 import io.github.valerioisufi.drawview.lecture.audio.rms
 import io.github.valerioisufi.drawview.lecture.audio.samplesToMs
@@ -77,6 +76,9 @@ class LectureRecorder internal constructor(
     private val following = atomic(false)
 
     private val backends get() = lecture.backends
+
+    /** What was said in every update: its audio, or its transcript. */
+    private val speech: SpeechSource = if (transcriber != null) ChunkSpeech(lecture, transcriber, ::speechHints) else AudioSpeech
 
     @Volatile
     private var notebook: NotebookSource? = notebook
@@ -297,7 +299,7 @@ class LectureRecorder internal constructor(
         audioJob?.cancel()
         withTimeoutOrNull(2_000) { audioJob?.join() }
         finishRecordingFile()
-        withTimeoutOrNull(2_000) { transcriber?.close() }
+        withTimeoutOrNull(2_000) { speech.close() }
         lecture.status = LectureStatus.FINISHED
         lecture.level = 0f
         lecture.pendingUpdates = 0
@@ -322,7 +324,7 @@ class LectureRecorder internal constructor(
     /** The speech recognition stays ready during the lecture: freed at its end. */
     private suspend fun closeTranscriber() {
         try {
-            transcriber?.close()
+            speech.close()
         } catch (e: Throwable) {
             println("DrawView: cannot stop the transcription: ${e.message}")
         }
@@ -410,11 +412,7 @@ class LectureRecorder internal constructor(
     /** The live update of [chunks]: suggestions, outline and (with the audio) transcript. */
     private suspend fun analyzeChunks(chunks: List<AudioChunk>) {
         val settings = settingsStore.settings
-        val speech: RequestSpeech = if (settings.sendsAudio) {
-            audioOf(chunks, contextMs = null) ?: return
-        } else {
-            transcribe(chunks, settings) ?: return
-        }
+        val speech = speech.speechOf(chunks) ?: return
         var includeOutline = false
         val result = request(settings.task(LectureTask.LIVE_NOTES), settings) { notebook ->
             val memory = lecture.memory(speech.endMs)
@@ -445,7 +443,7 @@ class LectureRecorder internal constructor(
         val settings = settingsStore.settings
         val task = settings.task(LectureTask.CATCH_UP)
         val speech: RequestSpeech = if (task.provider == ModelProvider.GEMINI && settings.sendsAudio) {
-            audioOf(recentChunks.toList(), contextMs = 0L) ?: return
+            requestAudio(recentChunks.toList(), contextMs = 0L) ?: return
         } else {
             val latest = recentChunks.lastOrNull()?.endMs ?: lecture.elapsedMs
             val segments = lecture.setStateResult { transcript.filter { it.endMs > latest - CATCH_UP_MS } }
@@ -464,33 +462,6 @@ class LectureRecorder internal constructor(
             usage += result.usage
             problem = null
         }
-    }
-
-    /**
-     * The transcript of [chunks] made on this computer, added to the lecture right away (before
-     * the suggestions); the part repeating the previous chunk is dropped.
-     */
-    private suspend fun transcribe(chunks: List<AudioChunk>, settings: AssistantSettings): RequestTranscript? {
-        val transcriber = transcriber ?: run {
-            lecture.setState { problem = LectureProblem.TranscriptionUnavailable("") }
-            return null
-        }
-        val audio = audioOf(chunks, contextMs = null) ?: return null
-        val segments = try {
-            transcriber.transcribe(audio.wav, settings.whisperLanguage, LecturePrompts.transcriptionPrompt(lecture.courseContext(), visibleSlides))
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Throwable) {
-            lecture.setState { problem = LectureProblem.TranscriptionUnavailable(e.message ?: e::class.simpleName.orEmpty()) }
-            return null
-        }.map { it.copy(startMs = it.startMs + audio.startMs, endMs = it.endMs + audio.startMs) }
-            .filter { it.endMs > audio.newStartMs + OVERLAP_TOLERANCE_MS && it.text.isNotBlank() }
-        if (segments.isNotEmpty()) {
-            // One segment per update, as the transcripts of Gemini
-            val merged = TranscriptSegment(segments.first().startMs, segments.last().endMs, segments.joinToString(" ") { it.text.trim() })
-            lecture.setState { transcript.add(merged) }
-        }
-        return RequestTranscript(emptyList(), segments, audio.newStartMs, 0L, audio.endMs)
     }
 
     private class Answer(val analysis: ChunkAnalysis, val notebook: NotebookSnapshot?, val usage: TokenUsage)
@@ -611,43 +582,8 @@ class LectureRecorder internal constructor(
         }
     }
 
-    /**
-     * The audio of [chunks] (consecutive). [contextMs]: leading audio already analyzed; `null` for
-     * the overlap of the first chunk with the previous one.
-     */
-    private fun audioOf(chunks: List<AudioChunk>, contextMs: Long?): RequestAudio? {
-        if (chunks.isEmpty()) return null
-        // The most recent audio, within the budget of a request (inline data is limited)
-        var budgetMs = MAX_REQUEST_AUDIO_MS
-        val selected = ArrayDeque<AudioChunk>()
-        for (chunk in chunks.asReversed()) {
-            budgetMs -= chunk.endMs - chunk.newStartMs
-            if (budgetMs < 0 && selected.isNotEmpty()) break
-            selected.addFirst(chunk)
-        }
-        var end = selected.first().startSample
-        val start = end
-        val pieces = mutableListOf<ShortArray>()
-        for (chunk in selected) {
-            val skip = (end - chunk.startSample).coerceIn(0L, chunk.samples.size.toLong()).toInt()
-            if (skip < chunk.samples.size) {
-                pieces.add(chunk.samples.copyOfRange(skip, chunk.samples.size))
-                end = chunk.endSample
-            }
-        }
-        val samples = ShortArray(pieces.sumOf { it.size })
-        var offset = 0
-        for (piece in pieces) {
-            piece.copyInto(samples, offset)
-            offset += piece.size
-        }
-        return RequestAudio(
-            wav = Wav.encode(samples),
-            startMs = samplesToMs(start),
-            contextMs = contextMs ?: samplesToMs(selected.first().newStartSample - start),
-            endMs = samplesToMs(end)
-        )
-    }
+    /** What helps the speech recognition now: the course and the slides on screen. */
+    private fun speechHints() = LecturePrompts.speechHints(settingsStore.settings, lecture.courseContext(), visibleSlides)
 
     internal companion object {
         const val OVERLAP_SECONDS = 5
@@ -671,8 +607,6 @@ class LectureRecorder internal constructor(
         /** New audio merged in a request when the analysis is behind (a chunk can exceed it). */
         const val MAX_MERGED_MS = 3 * 60_000L
 
-        /** Audio of a request (inline data: the whole request must stay under 20 MB). */
-        const val MAX_REQUEST_AUDIO_MS = 6 * 60_000L
         const val CATCH_UP_MS = 3 * 60_000L
         const val MAX_ATTEMPTS = 6
         const val SILENCE_WARNING_MS = 4_000L
@@ -681,8 +615,5 @@ class LectureRecorder internal constructor(
 
         /** The outline is rewritten (output tokens) every few minutes only. */
         const val OUTLINE_INTERVAL_MS = 210_000L
-
-        /** A segment of the local transcript ending this little after the overlap is repeated. */
-        const val OVERLAP_TOLERANCE_MS = 300L
     }
 }

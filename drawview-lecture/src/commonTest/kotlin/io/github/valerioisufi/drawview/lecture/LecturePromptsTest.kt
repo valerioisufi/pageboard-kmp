@@ -111,7 +111,7 @@ class LecturePromptsTest {
 
     @Test
     fun theCourseContextIsWrittenFromTheNotebookAndHelpsTheTranscription() {
-        val prompt = LecturePrompts.courseContextPrompt(AssistantSettings(whisperLanguage = "it"), "Analisi 1", notebook.pages)
+        val prompt = LecturePrompts.courseContextPrompt(AssistantSettings(spokenLanguage = "it"), "Analisi 1", notebook.pages)
         assertTrue(prompt.system.contains("short context in Italian"))
         val text = prompt.parts.filterIsInstance<PromptPart.Text>().single().text
         assertTrue(text.startsWith("## Notebook: Analisi 1"))
@@ -129,9 +129,9 @@ class LecturePromptsTest {
 
     @Test
     fun theNotesAreInTheLanguageSpokenNotInTheOneOfTheSlides() {
-        assertTrue(LecturePrompts.chunkSystemInstruction(AssistantSettings(whisperLanguage = "it")).contains("write currentTopic, outline and notes in Italian, the language of the lecture"))
+        assertTrue(LecturePrompts.chunkSystemInstruction(AssistantSettings(spokenLanguage = "it")).contains("write currentTopic, outline and notes in Italian, the language of the lecture"))
         assertTrue(LecturePrompts.chunkSystemInstruction(AssistantSettings()).contains("not necessarily the language of the slides"))
-        assertTrue(LecturePrompts.chunkSystemInstruction(AssistantSettings(notesLanguage = "English", whisperLanguage = "it")).contains("in English."))
+        assertTrue(LecturePrompts.chunkSystemInstruction(AssistantSettings(notesLanguage = "English", spokenLanguage = "it")).contains("in English."))
     }
 
     @Test
@@ -319,18 +319,18 @@ class LectureAnalysisTest {
 class AssistantSettingsTest {
     @Test
     fun theSettingsSavedWithThePricesAreRead() {
-        val saved = """{"apiKey":"k","tasks":{},"priceInput":0.75,"priceCachedInput":0.075,"priceOutput":3.75,"whisperLanguage":"it"}"""
+        val saved = """{"apiKey":"k","tasks":{},"priceInput":0.75,"priceCachedInput":0.075,"priceOutput":3.75,"spokenLanguage":"it"}"""
         val settings = AssistantSettingsStore.json.decodeFromString(AssistantSettings.serializer(), saved)
-        assertEquals("it", settings.whisperLanguage)
+        assertEquals("it", settings.spokenLanguage)
     }
 
     @Test
     fun theLanguageSpokenIsACode() {
         val store = AssistantSettingsStore("/nonexistent-dir/settings.json", MemorySecrets())
-        store.update(AssistantSettings(whisperLanguage = " IT "))
-        assertEquals("it", store.settings.whisperLanguage)
-        store.update(AssistantSettings(whisperLanguage = "italiano"))
-        assertEquals("auto", store.settings.whisperLanguage)
+        store.update(AssistantSettings(spokenLanguage = " IT "))
+        assertEquals("it", store.settings.spokenLanguage)
+        store.update(AssistantSettings(spokenLanguage = "italiano"))
+        assertEquals("auto", store.settings.spokenLanguage)
     }
 
     @Test
@@ -347,13 +347,54 @@ class AssistantSettingsTest {
     }
 
     @Test
-    fun localSuggestionsNeedTheLocalTranscription() {
-        val settings = AssistantSettings()
-            .withTask(LectureTask.LIVE_NOTES, TaskModel(provider = ModelProvider.LOCAL))
-            .consistent()
-        assertEquals(ModelProvider.LOCAL, settings.task(LectureTask.TRANSCRIPTION).provider)
-        assertFalse(settings.sendsAudio)
+    fun theTranscriptionFollowsTheModelsChosen() {
+        // A speech model of Gemini, live by default; saved without a model: the default one
+        assertEquals(TranscriptionMode.STREAMING, AssistantSettings().transcription)
+        val saved = AssistantSettingsStore.json.decodeFromString(AssistantSettings.serializer(), """{"tasks":{"TRANSCRIPTION":{},"LIVE_NOTES":{"local":"qwen3.5:9b"}}}""")
+        assertEquals(AssistantSettings.DEFAULT_SPEECH_MODEL, saved.task(LectureTask.TRANSCRIPTION).gemini)
+        assertEquals("qwen3.5:9b", saved.task(LectureTask.LIVE_NOTES).local)
+        assertEquals(AssistantSettings.DEFAULT_MODEL, saved.task(LectureTask.LIVE_NOTES).gemini)
+
+        fun transcribedBy(model: String, notes: TaskModel = TaskModel()) =
+            AssistantSettings().withTask(LectureTask.TRANSCRIPTION, TaskModel(gemini = model)).withTask(LectureTask.LIVE_NOTES, notes).transcription
+        assertEquals(TranscriptionMode.SPEECH_CHUNKS, transcribedBy("gemini-3.5-transcribe"))
+        assertEquals(TranscriptionMode.STREAMING, transcribedBy("gemini-3.5-transcribe-live-preview"))
+        // The model of the suggestions hears the audio in its own request
+        assertEquals(TranscriptionMode.WITH_NOTES, transcribedBy(AssistantSettings.DEFAULT_MODEL))
+        assertEquals(TranscriptionMode.PROMPT_CHUNKS, transcribedBy("gemini-3.8-flash-lite"))
+        // Local suggestions read the transcript of Gemini
+        assertEquals(TranscriptionMode.PROMPT_CHUNKS, transcribedBy(AssistantSettings.DEFAULT_MODEL, TaskModel(provider = ModelProvider.LOCAL)))
+        val local = AssistantSettings().withTask(LectureTask.TRANSCRIPTION, TaskModel(provider = ModelProvider.LOCAL))
+        assertEquals(TranscriptionMode.LOCAL, local.transcription)
+        assertEquals(TranscriptionMode.STREAMING, local.onlineTranscription)
+        assertEquals("gemini-3.5-transcribe", AssistantSettings.recordedSpeechModel("gemini-3.5-transcribe-live"))
+
+        val withLocalNotes = AssistantSettings().withTask(LectureTask.LIVE_NOTES, TaskModel(provider = ModelProvider.LOCAL))
+            .withTask(LectureTask.CATCH_UP, TaskModel(provider = ModelProvider.LOCAL))
+            .withTask(LectureTask.FINAL_REVIEW, TaskModel(provider = ModelProvider.LOCAL))
+        assertEquals(setOf(SharedData.AUDIO), withLocalNotes.sentToGoogle)
         assertEquals(AssistantSettings.DEFAULT_LOCAL_LIVE_MODEL, AssistantSettings().task(LectureTask.LIVE_NOTES).local)
     }
-}
 
+    @Test
+    fun theSpeechModelsGetTheLanguageAndTheTermsOfTheCourse() {
+        assertEquals(listOf("it-IT"), AssistantSettings(spokenLanguage = "it").speechLocales)
+        assertEquals(listOf("en-US", "en-GB"), AssistantSettings(spokenLanguage = "en").speechLocales)
+        assertTrue(AssistantSettings().speechLocales.isEmpty())
+
+        val context = "Crittografia, corso di sicurezza\nHash; MAC; cifrari a blocchi\nIND-CPA, HMAC, SHA-256, funzione di compressione di Merkle-Damgård molto lunga davvero"
+        val slides = listOf("Costruzione CBC-MAC\nSicurezza EUF-CMA del MAC con chiave k", "AES128 e SHA-256")
+        val vocabulary = LecturePrompts.vocabulary(context, slides)
+        assertEquals(
+            listOf("Crittografia", "corso di sicurezza", "Hash", "MAC", "cifrari a blocchi", "IND-CPA", "HMAC", "SHA-256", "CBC-MAC", "EUF-CMA", "AES128"),
+            vocabulary
+        )
+        assertEquals(3, LecturePrompts.vocabulary(context, slides, max = 3).size)
+
+        val hints = LecturePrompts.speechHints(AssistantSettings(spokenLanguage = "it"), context, slides)
+        assertEquals("it", hints.language)
+        assertEquals(listOf("it-IT"), hints.locales)
+        assertEquals(vocabulary, hints.vocabulary)
+        assertTrue(hints.prompt.startsWith("Costruzione CBC-MAC Sicurezza EUF-CMA"), hints.prompt)
+    }
+}

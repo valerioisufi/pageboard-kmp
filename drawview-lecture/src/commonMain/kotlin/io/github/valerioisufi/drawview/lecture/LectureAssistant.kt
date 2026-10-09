@@ -28,9 +28,9 @@ import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
 import io.github.valerioisufi.drawview.lecture.platform.ChosenFile
 import io.github.valerioisufi.drawview.lecture.platform.showNotification
 import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
+import io.github.valerioisufi.drawview.lecture.transcription.Transcribers
 import io.github.valerioisufi.drawview.lecture.transcription.WhisperTranscriber
 import io.github.valerioisufi.drawview.ui.platform.FileTarget
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -46,6 +46,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import org.jetbrains.compose.resources.getString
+import kotlin.coroutines.CoroutineContext
 
 /**
  * The lecture assistant of an application.
@@ -76,7 +77,7 @@ class LectureAssistant(
     private val audioOutput: (() -> AudioOutput?)? = ::createAudioOutput.takeIf { createAudioOutput() != null },
     val library: LectureLibrary = LectureLibrary(),
     private val stateContext: CoroutineContext = Dispatchers.Main,
-    private val transcriberFactory: (AssistantSettings) -> Transcriber? = { WhisperTranscriber.of(it) },
+    private val whisper: (AssistantSettings) -> Transcriber = { WhisperTranscriber.of(it) },
     canGenerate: Boolean = true
 ) {
     private val generationAllowed = canGenerate
@@ -88,6 +89,9 @@ class LectureAssistant(
         gemini = GeminiBackend(client) { settingsStore.apiKey },
         local = OllamaBackend(localClient) { settingsStore.settings.localUrl }
     )
+
+    /** The speech recognition chosen in the settings. */
+    private val transcribers = Transcribers(backends.gemini, whisper)
 
     /** The models on this computer (Ollama, whisper.cpp), for the settings. */
     val localModels = LocalModels(settingsStore, localClient, stateContext = stateContext)
@@ -330,7 +334,7 @@ class LectureAssistant(
             if (sharingOf(documentId).downloadAudio == AudioDownload.ON_REQUEST) requestAudio(lecture)
         }
         val settings = settingsStore.settings
-        val transcriber = if (settings.sendsAudio) null else transcriberFactory(settings)
+        val transcriber = transcribers.forUpdates(settings)
         val ended = CompletableDeferred<Unit>()
         lateinit var follower: LectureRecorder
         val capture = FollowedRecording(
@@ -561,7 +565,7 @@ class LectureAssistant(
                 audioShared = sharingOf(documentId).shareAudio
             }
         val settings = settingsStore.settings
-        val transcriber = if (!canGenerate || settings.sendsAudio) null else transcriberFactory(settings)
+        val transcriber = if (!canGenerate) null else transcribers.forUpdates(settings)
         val newRecorder = LectureRecorder(
             lecture, settingsStore, capture, notebook, transcriber, analyzes = canGenerate, handwriting = handwritingOf(documentId),
             onFinished = { finished(it.lecture) }
@@ -652,8 +656,7 @@ class LectureAssistant(
                 }
                 val pageIds = withContext(stateContext) { controller.document.pages.map { it.id } }
                 val settings = settingsStore.settings
-                val transcriber = if (settings.sendsAudio) null else transcriberFactory(settings)
-                LectureImporter(lecture, settingsStore, transcriber).run(file.path, pages, pageIds, reviews = canGenerate)
+                LectureImporter(lecture, settingsStore, transcribers.forRecording(settings)).run(file.path, pages, pageIds, reviews = canGenerate)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
@@ -696,9 +699,7 @@ class LectureAssistant(
             // The other devices leave it to this one (see GenerationLock)
             holdingGeneration(lecture) {
                 if (transcribes) {
-                    val settings = settingsStore.settings
-                    val transcriber = if (settings.sendsAudio) null else transcriberFactory(settings)
-                    LectureImporter(lecture, settingsStore, transcriber).transcribeAndReview(provider)
+                    LectureImporter(lecture, settingsStore, transcribers.forRecording(settingsStore.settings)).transcribeAndReview(provider)
                 } else {
                     // With the handwriting of the notebook not read yet, when it is open
                     FinalReviewer(lecture, settingsStore, handwritingOf(lecture.documentId)).write(provider, editorNotebooks[lecture.documentId])

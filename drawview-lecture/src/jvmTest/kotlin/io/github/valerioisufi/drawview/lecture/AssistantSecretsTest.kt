@@ -35,19 +35,20 @@ class AssistantSecretsTest {
     }
 
     @Test
-    fun withoutTheSpeechRecognitionTheSuggestionsAreOnline() {
+    fun withoutTheSpeechRecognitionGeminiTranscribes() {
         val local = TaskModel(provider = ModelProvider.LOCAL)
         val all = LectureTask.entries.fold(AssistantSettings()) { settings, task -> settings.withTask(task, local) }
 
         // A computer: everything on it
         assertFalse(all.consistent(canTranscribe = true).sendsAudio)
-        // A phone: transcribed and followed online, reviewed by Ollama (of a computer of the network)
+        // A phone: transcribed online, followed and reviewed by Ollama (of a computer of the network) on the transcript
         val phone = all.consistent(canTranscribe = false)
         assertTrue(phone.sendsAudio)
-        assertEquals(ModelProvider.GEMINI, phone.task(LectureTask.LIVE_NOTES).provider)
+        assertEquals(ModelProvider.LOCAL, phone.task(LectureTask.LIVE_NOTES).provider)
         assertEquals(ModelProvider.LOCAL, phone.task(LectureTask.FINAL_REVIEW).provider)
         val store = AssistantSettingsStore(File(directory, "phone.json").absolutePath, MemorySecrets(), canTranscribe = false)
         store.update(all)
-        assertEquals(phone, store.settings.copy(chunkSeconds = phone.chunkSeconds))
+        // (Saved with the models of every request filled in)
+        assertEquals(LectureTask.entries.map { phone.task(it) }, LectureTask.entries.map { store.settings.task(it) })
     }
 }
