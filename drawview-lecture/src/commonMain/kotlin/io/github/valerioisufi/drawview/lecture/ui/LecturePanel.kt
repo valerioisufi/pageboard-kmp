@@ -282,6 +282,26 @@ private fun LectureSelector(assistant: LectureAssistant, documentId: String, lec
                     }
                 )
             }
+            // The recording transcribed again, by another model
+            if (shown != null && !isActive && assistant.canRetranscribe(lecture)) {
+                HorizontalDivider()
+                DropdownMenuItem(
+                    text = { Text(stringResource(Res.string.lecture_retranscribe_online, assistant.retranscriptionModel(ModelProvider.GEMINI))) },
+                    onClick = {
+                        expanded = false
+                        assistant.retranscribe(lecture, ModelProvider.GEMINI)
+                    }
+                )
+                if (assistant.canTranscribeHere) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(Res.string.lecture_retranscribe_local)) },
+                        onClick = {
+                            expanded = false
+                            assistant.retranscribe(lecture, ModelProvider.LOCAL)
+                        }
+                    )
+                }
+            }
             SharingItems(assistant, documentId, lecture)
             // Not while it is recorded on another device
             if (shown != null && !isActive && !shown.activeElsewhere) {

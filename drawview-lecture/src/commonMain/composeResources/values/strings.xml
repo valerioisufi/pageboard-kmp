@@ -223,4 +223,6 @@
     <string name="lecture_hint_transcription_streaming">The transcript appears while the lecturer speaks; the suggestions read it. The audio is sent to Google.</string>
     <string name="lecture_hint_transcription_chunks">A speech model transcribes the audio of every update; the suggestions read the transcript. The audio is sent to Google.</string>
     <string name="lecture_hint_transcription_prompt">This model transcribes the audio of every update in a request of its own; the suggestions read the transcript. The audio is sent to Google.</string>
+    <string name="lecture_retranscribe_online">Transcribe again online (%1$s)</string>
+    <string name="lecture_retranscribe_local">Transcribe again on this computer (whisper)</string>
 </resources>

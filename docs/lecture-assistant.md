@@ -72,5 +72,5 @@ Variations).
 | 1. The review on request | done |
 | 2. The transcription models a chunk at a time | done |
 | 3. Gemini 3.5 Transcribe Live | done (to verify against the real API) |
-| 4. Transcribe again | to do |
+| 4. Transcribe again | done |
 | 5. README | to do |

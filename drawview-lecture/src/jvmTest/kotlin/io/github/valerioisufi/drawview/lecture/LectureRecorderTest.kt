@@ -7,6 +7,7 @@ import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
 import io.github.valerioisufi.drawview.lecture.audio.Wav
 import io.github.valerioisufi.drawview.lecture.audio.toLittleEndianBytes
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
+import io.github.valerioisufi.drawview.lecture.gemini.GeminiException
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
 import io.github.valerioisufi.drawview.lecture.handwriting.InkBlock
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
@@ -815,6 +816,52 @@ class LectureRecorderTest {
         assertFalse(last.contains("frase 6"))
         assertEquals((1..7).map { "frase $it" }, lecture.transcript.map { it.text })
         assertTrue(stream.closed)
+    }
+
+    @Test
+    fun aLectureIsTranscribedAgainByAnotherModel() = runBlocking<Unit> {
+        val engine = MockEngine { respond("", HttpStatusCode.NotFound) }
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets())
+        val old = listOf(TranscriptSegment(0, 60_000, "trascrizione di whisper"))
+        val record = LectureRecord(id = "lecture", documentId = "7", startedAt = 1L, durationMs = 130_000, transcript = old)
+        val lecture = newLecture(settingsStore, engine, record)
+        lecture.recording.open()
+        val random = Random(13)
+        repeat(130) { second -> lecture.recording.append(ShortArray(LECTURE_SAMPLE_RATE) { if (second % 60 == 59) 0 else random.nextInt(-6000, 6000).toShort() }) }
+        lecture.recording.finish()
+
+        var fail = false
+        val transcriber = object : Transcriber {
+            override val parallelism = 2
+            override suspend fun transcribe(wav: ByteArray, hints: SpeechHints): Transcription {
+                if (fail) throw GeminiException(403, "API key not valid")
+                val seconds = (wav.size - Wav.HEADER_SIZE) / 2 / LECTURE_SAMPLE_RATE
+                return Transcription(listOf(TranscriptSegment(0, seconds * 1000L, "Gemini $seconds s")), TokenUsage(requests = 1, promptTokens = 100))
+            }
+        }
+        suspend fun runAgain() {
+            withContext(stateContext) {
+                lecture.status = LectureStatus.IMPORTING
+                lecture.importStep = ImportStep.TRANSCRIBING
+            }
+            LectureRetranscriber(lecture, settingsStore, transcriber).run()
+        }
+
+        runAgain()
+        assertEquals(LectureStatus.FINISHED, lecture.status)
+        assertTrue(lecture.transcript.size >= 2)
+        assertTrue(lecture.transcript.all { it.text.startsWith("Gemini") })
+        assertEquals(lecture.transcript.size, lecture.usage.requests)
+        assertTrue(File(directory, "lecture/lecture.json").readText().contains("Gemini"))
+
+        // A failure keeps the transcript there is
+        val before = lecture.transcript.toList()
+        fail = true
+        runAgain()
+        assertEquals(before, lecture.transcript.toList())
+        assertTrue(lecture.problem is LectureProblem.Authentication)
+        assertEquals(LectureStatus.FINISHED, lecture.status)
+        assertNull(lecture.importStep)
     }
 
     @Test

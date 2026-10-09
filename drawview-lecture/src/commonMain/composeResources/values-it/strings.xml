@@ -223,4 +223,6 @@
     <string name="lecture_hint_transcription_streaming">La trascrizione compare mentre il professore parla; i suggerimenti la leggono. L\'audio viene inviato a Google.</string>
     <string name="lecture_hint_transcription_chunks">Un modello di trascrizione trascrive l\'audio di ogni aggiornamento; i suggerimenti leggono la trascrizione. L\'audio viene inviato a Google.</string>
     <string name="lecture_hint_transcription_prompt">Questo modello trascrive l\'audio di ogni aggiornamento in una richiesta a parte; i suggerimenti leggono la trascrizione. L\'audio viene inviato a Google.</string>
+    <string name="lecture_retranscribe_online">Trascrivi di nuovo online (%1$s)</string>
+    <string name="lecture_retranscribe_local">Trascrivi di nuovo su questo computer (whisper)</string>
 </resources>

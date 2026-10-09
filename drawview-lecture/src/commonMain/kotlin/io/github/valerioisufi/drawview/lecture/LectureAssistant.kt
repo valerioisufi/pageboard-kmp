@@ -747,6 +747,47 @@ class LectureAssistant(
         }
     }
 
+    /**
+     * Whether [lecture] can be transcribed again here: over, its audio here, the models here, no
+     * recording or import in progress, no other device writing it now.
+     */
+    fun canRetranscribe(lecture: Lecture): Boolean =
+        canGenerate && !isBusy && lecture.status == LectureStatus.FINISHED && lecture.hasAudio &&
+            lecture.generatingElsewhere(currentTimeMillis()) == null
+
+    /**
+     * Transcribes [lecture] again from its recording, by [provider] (the model of the settings,
+     * online or on this computer), in the background ([LectureRetranscriber]); the other devices
+     * leave it to this one meanwhile ([GenerationLock]).
+     *
+     * @return  when it cannot be transcribed again now ([canRetranscribe]).
+     */
+    fun retranscribe(lecture: Lecture, provider: ModelProvider): Boolean {
+        if (!canRetranscribe(lecture)) return false
+        val transcriber = transcribers.forRecording(settingsStore.settings, provider)
+        lecture.stopPlayback()
+        lecture.status = LectureStatus.IMPORTING
+        lecture.importStep = ImportStep.TRANSCRIBING
+        lecture.importProgress = 0f
+        importing = lecture
+        importError = null
+        lecture.generating = scope.launch {
+            try {
+                holdingGeneration(lecture) { LectureRetranscriber(lecture, settingsStore, transcriber).run() }
+            } finally {
+                withContext(NonCancellable + stateContext) { importing = null }
+                refresh(lecture.documentId)
+            }
+        }
+        return true
+    }
+
+    /** The model transcribing a lecture again by [provider] (online), empty on this computer. */
+    fun retranscriptionModel(provider: ModelProvider): String = transcribers.recordingModel(settingsStore.settings, provider)
+
+    /** Whether this device can transcribe (whisper.cpp built in). */
+    val canTranscribeHere: Boolean get() = WhisperTranscriber.isAvailable
+
     /** The audio of [lecture] saved in [target], as m4a. */
     fun exportAudio(lecture: Lecture, target: FileTarget) {
         exportResult = null

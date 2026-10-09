@@ -89,10 +89,13 @@ data class TokenUsage(
 
 /** State of a lecture. A lecture saved while recording was interrupted (the app was closed). */
 @Serializable
-/** [IMPORTING]: an audio file recorded elsewhere, being converted, transcribed and reviewed. */
+/**
+ * [IMPORTING]: an audio file recorded elsewhere being converted, transcribed and reviewed, or a
+ * lecture being transcribed again.
+ */
 enum class LectureStatus { RECORDING, FINALIZING, FINISHED, IMPORTING }
 
-/** The steps of an import ([LectureStatus.IMPORTING]). */
+/** The steps of an import or of a new transcription ([LectureStatus.IMPORTING]). */
 enum class ImportStep { CONVERTING, TRANSCRIBING, REVIEWING }
 
 /**
