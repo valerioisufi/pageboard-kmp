@@ -106,6 +106,13 @@ class AdaptiveScreenshotTest {
         }
     }
 
+    /** The long press on a page (the click of the secondary button): paste, the page and its background. */
+    @Test
+    fun editorContextMenu() = capture("editor-context-menu", ReferenceWindow.TABLET_LANDSCAPE, dark = false) { viewModels ->
+        openNote(viewModels)
+        runOnIdle { viewModels.controller().contextMenuPosition = Offset(760f, 420f) }
+    }
+
     /** A search without results: why, under the field. */
     @Test
     fun librarySearch() = capture("library-search", ReferenceWindow.PHONE, dark = false) {

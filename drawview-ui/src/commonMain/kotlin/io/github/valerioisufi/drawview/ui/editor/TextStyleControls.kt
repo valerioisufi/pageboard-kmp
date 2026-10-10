@@ -11,7 +11,6 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
@@ -154,12 +153,35 @@ internal fun FormatToggle(command: Command?, checked: Boolean, icon: ImageVector
     if (command == null) button() else CommandTooltip(command) { button() }
 }
 
-/** A button running [command] (its icon, its label and its tooltip). */
+/**
+ * A button running [command] (its icon, its label and its tooltip), as a format toggle: 36 dp
+ * rounded 10, the primary container while the command is on.
+ */
 @Composable
 internal fun FormatButton(command: Command, icon: ImageVector) {
+    val colors = MaterialTheme.colorScheme
+    val checked = command.isChecked?.invoke() == true
+    val enabled = command.isEnabled()
     CommandTooltip(command) {
-        IconButton(onClick = { command.performIfEnabled() }, enabled = command.isEnabled()) {
-            Icon(icon, contentDescription = command.label(), modifier = Modifier.size(20.dp))
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .minimumInteractiveComponentSize()
+                .size(36.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(if (checked) colors.primaryContainer else Color.Transparent)
+                .clickable(enabled = enabled, role = Role.Button, onClickLabel = command.label()) { command.performIfEnabled() }
+        ) {
+            Icon(
+                icon,
+                contentDescription = command.label(),
+                tint = when {
+                    !enabled -> colors.onSurfaceVariant.copy(alpha = 0.38f)
+                    checked -> colors.onPrimaryContainer
+                    else -> colors.onSurfaceVariant
+                },
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }

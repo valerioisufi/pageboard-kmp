@@ -105,7 +105,7 @@ pencilnotes        the brand (mark and wordmark), the tag of the lectures
 | 2. Library | Page count and PDFs in the summaries; header, search, filters, folders, note cards, rows, navigation with counts and brand, details pane, FAB; `DocumentTag` and the tag of the lectures; recording pill | done |
 | 3. Library flows | The new item menu, the sheets of an item and of its details, the selection bar, the dialogs (new folder, rename, move, delete), the path inside a folder, the empty states, About | done |
 | 4. Editor | The top bar (title and its line, the tool group, the actions), the tool button with its ink, the floating tools, the page indicator, desk and paper, the popovers of the tools, the "more" menu | done |
-| 5. Texts and selection | The format bar, the selection bar, the bar of the marks of the PDFs, the context menu, the messages | |
+| 5. Texts and selection | The format bar, the selection bar, the bar of the marks of the PDFs, the context menu, the messages | done |
 | 6. Pages | The page grid, the configurator (dialog and sheet), "Apply to all pages?", the information of the document, the tooltips | |
 | 7. Export and sharing | The export dialog and sheet with their states; the sharing dialog (owner, participant), joining, the requests, the people on the page, read only | |
 | 8. Lecture assistant | The panel (recording, tabs, notes, transcript and player, outline, review), the notices, the settings, the recording pill, the phone recording only | |
@@ -202,3 +202,21 @@ the frames of the file.
   texts take the inks of the design (new installations).
 * Screenshot tests of the components that open over the screens (`drawview-ui/screenshots`,
   `ComponentScreenshotTest`): the popovers of the tools and a menu, light and dark.
+
+### Phase 5 results
+
+* **Bars over the canvas** (`ActionBar`, `BarAction`, `BarDivider`, `DoneAction`): the high
+  container rounded 24 dp, level 2, their actions 40 dp.
+* **Format bar**: the formats of the characters first (toggles 36 dp rounded 10, on in the primary
+  container), then the size, the color and the alignment, then the check on the primary color
+  closing the text. On a phone it lies on the keyboard the whole width (`docked`), the check always
+  in sight; the page indicator hides while a text is written.
+* **Selection bar**: editing a text alone, cut, copy, delete (in the color of the errors), the
+  style of the texts selected.
+* **Bar of the text of the PDFs**: "Copy" with its label, the presets of the marks (circles
+  40 dp, the one of the mark selected ringed), deleting a mark.
+* **Context menu of a page** (the long press, the secondary click): a menu of the design at the
+  touch, paste with its shortcut, add a page after, move it, delete it, its background.
+* **Messages**: `DesignSnackbar`, the inverse surface rounded 12 dp, the action in the inverse
+  primary.
+* Screenshot of the context menu of a page.

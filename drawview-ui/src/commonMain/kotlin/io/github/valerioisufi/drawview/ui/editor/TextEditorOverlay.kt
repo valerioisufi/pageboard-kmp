@@ -71,10 +71,12 @@ private fun TextEditorSession(controller: DrawViewController, commands: EditorCo
 
         TextBoxEditor(controller, onLayout = { layout = it })
 
+        // On a phone the bar lies on the keyboard, the whole width
+        val docked = currentAdaptiveInfo().window.isCompact
         val barModifier = if (atBottom) {
             Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = with(density) { imeBottom.toDp() } + 8.dp)
+                .padding(bottom = with(density) { imeBottom.toDp() } + if (docked) 0.dp else 8.dp)
         } else {
             Modifier.besideEditedText(controller)
         }
@@ -82,6 +84,7 @@ private fun TextEditorSession(controller: DrawViewController, commands: EditorCo
             target = editor,
             commands = commands,
             onDone = editor::finishEditing,
+            docked = docked && atBottom,
             modifier = barModifier.onSizeChanged { barHeightPx = it.height }
         )
 

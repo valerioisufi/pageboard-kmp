@@ -6,47 +6,37 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.ContentCut
-import androidx.compose.material.icons.filled.ContentPaste
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.SwapVert
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.VerticalDivider
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
+import io.github.valerioisufi.drawview.ui.command.MenuDivider
+import io.github.valerioisufi.drawview.ui.command.MenuItem
 import io.github.valerioisufi.drawview.ui.generated.resources.*
-import io.github.valerioisufi.drawview.ui.command.Command
-import io.github.valerioisufi.drawview.ui.command.CommandTooltip
 import io.github.valerioisufi.drawview.ui.screen.EditorCommands
+import io.github.valerioisufi.drawview.ui.theme.DrawViewElevation
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
+import io.github.valerioisufi.drawview.ui.theme.elevation
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -77,75 +67,22 @@ fun SelectionActionBar(
         val hasTexts = current?.texts?.isNotEmpty() == true
         val isSingleText = current?.isSingleText == true
 
-        ElevatedCard(
-            modifier = Modifier.padding(top = 24.dp),
-            shape = RoundedCornerShape(50),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp),
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                SelectionButton(commands?.cut, onClick = { selectionManager.cutSelection() }) {
-                    Icon(
-                        Icons.Default.ContentCut,
-                        contentDescription = stringResource(Res.string.common_action_cut),
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                SelectionButton(commands?.copy, onClick = { selectionManager.copySelection() }) {
-                    Icon(
-                        Icons.Default.ContentCopy,
-                        contentDescription = stringResource(Res.string.common_action_copy),
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                SelectionButton(commands?.delete, onClick = { selectionManager.deleteSelection() }) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = stringResource(Res.string.common_action_delete),
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                }
-
-                if (hasTexts) {
-                    VerticalDivider(
-                        modifier = Modifier
-                            .height(24.dp)
-                            .padding(horizontal = 4.dp),
-                        thickness = 1.dp
-                    )
-
-                    if (isSingleText) {
-                        IconButton(onClick = { controller.textEditorManager.startEditingSelectedText() }) {
-                            Icon(
-                                Icons.Default.Edit,
-                                contentDescription = stringResource(Res.string.draw_toolbar_action_edit_text),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-
-                    // Size, color and alignment of the selected texts, as in the editor
-                    controller.selectionManager.selectedTexts?.let { texts ->
-                        TextStyleControls(texts, commands)
-                    }
+        ActionBar(modifier = Modifier.padding(top = 16.dp)) {
+            if (hasTexts && isSingleText) {
+                BarAction(DrawViewIcons.Pencil, stringResource(Res.string.draw_toolbar_action_edit_text), { controller.textEditorManager.startEditingSelectedText() })
+                BarDivider()
+            }
+            BarAction(DrawViewIcons.Scissors, stringResource(Res.string.common_action_cut), { selectionManager.cutSelection() }, command = commands?.cut)
+            BarAction(DrawViewIcons.Copy, stringResource(Res.string.common_action_copy), { selectionManager.copySelection() }, command = commands?.copy)
+            BarAction(DrawViewIcons.Trash, stringResource(Res.string.common_action_delete), { selectionManager.deleteSelection() }, command = commands?.delete, tint = MaterialTheme.colorScheme.error)
+            if (hasTexts) {
+                BarDivider()
+                // Size, color and alignment of the selected texts, as in the editor
+                controller.selectionManager.selectedTexts?.let { texts ->
+                    TextStyleControls(texts, commands)
                 }
             }
         }
-    }
-}
-
-/** A button of the selection bar, with the tooltip of [command] when given. */
-@Composable
-private fun SelectionButton(command: Command?, onClick: () -> Unit, icon: @Composable () -> Unit) {
-    if (command == null) {
-        IconButton(onClick = onClick) { icon() }
-    } else {
-        CommandTooltip(command) { IconButton(onClick = onClick) { icon() } }
     }
 }
 
@@ -183,63 +120,63 @@ fun CanvasContextMenu(
         val safeX = idealX.coerceIn(0, (screenWidth - menuSize.width).coerceAtLeast(0))
         val safeY = idealY.coerceIn(0, (screenHeight - menuSize.height).coerceAtLeast(0))
 
-        ElevatedCard(
+        val shape = RoundedCornerShape(16.dp)
+        Column(
             modifier = Modifier
                 .onSizeChanged { size -> menuSize = size }
-                .offset { IntOffset(safeX, safeY) },
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp),
-            colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
+                .offset { IntOffset(safeX, safeY) }
+                .width(IntrinsicSize.Max)
+                .elevation(DrawViewElevation.Level3, shape)
+                .background(MaterialTheme.colorScheme.surfaceContainer, shape)
+                .padding(8.dp)
         ) {
-            Row(modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)) {
-                // What was copied here or in another application, where the menu was opened
-                if (remember(position) { commands.canPaste() }) {
-                    IconButton(onClick = {
+            // What was copied here or in another application, where the menu was opened
+            if (remember(position) { commands.canPaste() }) {
+                MenuItem(
+                    text = stringResource(Res.string.common_action_paste),
+                    icon = rememberVectorPainter(DrawViewIcons.Clipboard),
+                    shortcut = commands.paste.shortcutLabel(currentAdaptiveInfo().conventions).takeIf { currentAdaptiveInfo().input.hasKeyboard },
+                    onClick = {
                         controller.contextMenuPosition = null
                         commands.pasteAt(position)
-                    }) {
-                        Icon(
-                            Icons.Default.ContentPaste,
-                            contentDescription = stringResource(Res.string.common_action_paste),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
                     }
-                }
-
-                IconButton(onClick = {
+                )
+                MenuDivider()
+            }
+            MenuItem(
+                text = stringResource(Res.string.context_menu_action_add_page_after),
+                icon = rememberVectorPainter(DrawViewIcons.FilePlus2),
+                onClick = {
                     controller.contextMenuPosition = null
                     pageManager.addNewPageAfter(pageManager.contextMenuTargetPageIndex)
-                }) {
-                    Icon(Icons.Default.Add, contentDescription = stringResource(Res.string.context_menu_action_add_page))
                 }
-                IconButton(onClick = {
-                    controller.contextMenuPosition = null
-                    pageManager.deletePage(pageManager.contextMenuTargetPageIndex)
-                }) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = stringResource(Res.string.context_menu_action_delete_page),
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                }
-                IconButton(onClick = {
+            )
+            MenuItem(
+                text = stringResource(Res.string.context_menu_action_reorder_page),
+                icon = rememberVectorPainter(DrawViewIcons.Grip),
+                onClick = {
                     controller.contextMenuPosition = null
                     pageManager.startPageReorderMode()
-                }) {
-                    Icon(Icons.Default.SwapVert, contentDescription = stringResource(Res.string.context_menu_action_reorder_page))
                 }
-
-                IconButton(onClick = {
+            )
+            MenuItem(
+                text = stringResource(Res.string.context_menu_action_delete_page),
+                icon = rememberVectorPainter(DrawViewIcons.Trash),
+                destructive = true,
+                onClick = {
+                    controller.contextMenuPosition = null
+                    pageManager.deletePage(pageManager.contextMenuTargetPageIndex)
+                }
+            )
+            MenuDivider()
+            MenuItem(
+                text = stringResource(Res.string.context_menu_action_edit_background),
+                icon = rememberVectorPainter(DrawViewIcons.Grid),
+                onClick = {
                     controller.contextMenuPosition = null
                     onEditPageBackground()
-                }) {
-                    Icon(
-                        Icons.Default.Palette,
-                        contentDescription = stringResource(Res.string.context_menu_action_edit_background),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
                 }
-            }
+            )
         }
     }
 }

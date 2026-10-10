@@ -57,6 +57,7 @@ import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.RegisterCommands
 import io.github.valerioisufi.drawview.ui.components.AboutLicensesDialog
+import io.github.valerioisufi.drawview.ui.components.DesignSnackbar
 import io.github.valerioisufi.drawview.ui.components.PageGridOverlay
 import io.github.valerioisufi.drawview.ui.components.PageTemplateConfigurator
 import io.github.valerioisufi.drawview.ui.editor.CanvasContextMenu
@@ -240,83 +241,83 @@ fun DrawScreen(
                         }
                     }
 
-                    Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                            // A PDF or an image dragged from the files of the computer is imported
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .fileDropTarget { files ->
-                                        !controller.isReadOnly && files.map { controller.mediaManager.importFile(it.bytes, it.extension) }.any { it }
-                                    }
-                            ) {
-                                if (isLoading) {
-                                    LinearProgressIndicator(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        color = MaterialTheme.colorScheme.secondary,
-                                        trackColor = MaterialTheme.colorScheme.surfaceVariant
-                                    )
-                                } else {
-                                    DrawCanvas(
-                                        controller = controller,
-                                        modifier = Modifier.fillMaxSize()
-                                    )
-
-                                    SelectionActionBar(
-                                        controller = controller,
-                                        commands = commands,
-                                        modifier = Modifier.align(Alignment.TopCenter)
-                                    )
-
-                                    TextMarkupActionBar(
-                                        controller = controller,
-                                        modifier = Modifier.align(Alignment.TopCenter)
-                                    )
-
-                                    CanvasContextMenu(
-                                        controller = controller,
-                                        commands = commands,
-                                        onEditPageBackground = { showSinglePageConfigurator = true }
-                                    )
-
-                                    TextEditorOverlay(controller = controller, commands = commands)
-
-                                    canvasOverlay()
-                                }
-
-                                // The tools floating at the bottom, above the panels rising from there
-                                // (while a text is written its formatting bar takes their place)
-                                val floating = arrangement == ToolbarArrangement.FLOATING_TOOLS && controller.isDrawingMode && !isLoading &&
-                                    !controller.textEditorManager.isEditing
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                                    modifier = Modifier
-                                        .align(Alignment.BottomCenter)
-                                        .padding(bottom = bottomInset)
-                                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
-                                        .padding(start = 8.dp, end = 8.dp, bottom = if (floating) 8.dp else 18.dp)
-                                ) {
-                                    if (!isLoading && bottomInset == 0.dp) {
-                                        PageIndicator(controller, withZoom = arrangement != ToolbarArrangement.FLOATING_TOOLS)
-                                    }
-                                    // Not the one of the column of the screen, around
-                                    androidx.compose.animation.AnimatedVisibility(
-                                        visible = floating,
-                                        enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
-                                        exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
-                                    ) {
-                                        FloatingTools(controller, commands)
-                                    }
-                                }
-
-                                SnackbarHost(
-                                    hostState = snackbarHostState,
-                                    modifier = Modifier
-                                        .align(Alignment.BottomCenter)
-                                        .padding(bottom = bottomInset + if (floating) ToolbarLayout.FloatingHeight + 56.dp else 48.dp)
-                                        .padding(16.dp)
-                                )
+                    // A PDF or an image dragged from the files of the computer is imported
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .fileDropTarget { files ->
+                                !controller.isReadOnly && files.map { controller.mediaManager.importFile(it.bytes, it.extension) }.any { it }
                             }
+                    ) {
+                        if (isLoading) {
+                            LinearProgressIndicator(
+                                modifier = Modifier.fillMaxWidth(),
+                                color = MaterialTheme.colorScheme.secondary,
+                                trackColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        } else {
+                            DrawCanvas(
+                                controller = controller,
+                                modifier = Modifier.fillMaxSize()
+                            )
+
+                            SelectionActionBar(
+                                controller = controller,
+                                commands = commands,
+                                modifier = Modifier.align(Alignment.TopCenter)
+                            )
+
+                            TextMarkupActionBar(
+                                controller = controller,
+                                modifier = Modifier.align(Alignment.TopCenter)
+                            )
+
+                            CanvasContextMenu(
+                                controller = controller,
+                                commands = commands,
+                                onEditPageBackground = { showSinglePageConfigurator = true }
+                            )
+
+                            TextEditorOverlay(controller = controller, commands = commands)
+
+                            canvasOverlay()
+                        }
+
+                        // The tools floating at the bottom, above the panels rising from there
+                        // (while a text is written its formatting bar takes their place)
+                        val floating = arrangement == ToolbarArrangement.FLOATING_TOOLS && controller.isDrawingMode && !isLoading &&
+                            !controller.textEditorManager.isEditing
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = bottomInset)
+                                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+                                .padding(start = 8.dp, end = 8.dp, bottom = if (floating) 8.dp else 18.dp)
+                        ) {
+                            if (!isLoading && bottomInset == 0.dp && !controller.textEditorManager.isEditing) {
+                                PageIndicator(controller, withZoom = arrangement != ToolbarArrangement.FLOATING_TOOLS)
+                            }
+                            // Not the one of the column of the screen, around
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = floating,
+                                enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
+                                exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
+                            ) {
+                                FloatingTools(controller, commands)
+                            }
+                        }
+
+                        SnackbarHost(
+                            hostState = snackbarHostState,
+                            snackbar = { data -> DesignSnackbar(data) },
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = bottomInset + if (floating) ToolbarLayout.FloatingHeight + 56.dp else 48.dp)
+                                .padding(16.dp)
+                        )
                     }
                 }
             }

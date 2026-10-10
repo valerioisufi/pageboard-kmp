@@ -5,30 +5,30 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.ui.components.TextMarkupPresetButton
 import io.github.valerioisufi.drawview.ui.generated.resources.*
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -54,35 +54,26 @@ fun TextMarkupActionBar(
         exit = fadeOut() + slideOutVertically(targetOffsetY = { -40 }),
         modifier = modifier
     ) {
-        ElevatedCard(
-            modifier = Modifier.padding(top = 24.dp),
-            shape = RoundedCornerShape(50),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp),
-            colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
-        ) {
+        ActionBar(modifier = Modifier.padding(top = 16.dp), height = 52) {
+            val copy = stringResource(Res.string.common_action_copy)
             Row(
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier
+                    .height(40.dp)
+                    .clip(CircleShape)
+                    .clickable(role = Role.Button) {
+                        manager.selectedText?.takeIf { it.isNotEmpty() }?.let { clipboard.setText(AnnotatedString(it)) }
+                        manager.clearSelection()
+                    }
+                    .padding(start = 10.dp, end = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                IconButton(onClick = {
-                    manager.selectedText?.takeIf { it.isNotEmpty() }?.let { clipboard.setText(AnnotatedString(it)) }
-                    manager.clearSelection()
-                }) {
-                    Icon(
-                        Icons.Default.ContentCopy,
-                        contentDescription = stringResource(Res.string.common_action_copy),
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                VerticalDivider(
-                    modifier = Modifier
-                        .height(24.dp)
-                        .padding(horizontal = 4.dp),
-                    thickness = 1.dp
-                )
-
-                // The presets of the text markup tool
+                Icon(DrawViewIcons.Copy, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                Text(copy, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
+            }
+            BarDivider()
+            // The presets of the text markup tool
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 for (preset in controller.toolManager.presetsOf(Tool.TEXT_MARKUP)) {
                     val markup = selectedMarkup?.markup
                     TextMarkupPresetButton(
@@ -95,22 +86,10 @@ fun TextMarkupActionBar(
                         }
                     )
                 }
-
-                if (selectedMarkup != null) {
-                    VerticalDivider(
-                        modifier = Modifier
-                            .height(24.dp)
-                            .padding(horizontal = 4.dp),
-                        thickness = 1.dp
-                    )
-                    IconButton(onClick = { manager.deleteSelectedMarkup() }) {
-                        Icon(
-                            Icons.Default.Delete,
-                            contentDescription = stringResource(Res.string.common_action_delete),
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
+            }
+            if (selectedMarkup != null) {
+                BarDivider()
+                BarAction(DrawViewIcons.Trash, stringResource(Res.string.common_action_delete), { manager.deleteSelectedMarkup() }, tint = MaterialTheme.colorScheme.error)
             }
         }
     }

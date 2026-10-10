@@ -27,6 +27,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarData
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -278,4 +280,17 @@ fun NavigationItem(
 @Composable
 fun WithContentColor(color: Color, content: @Composable () -> Unit) {
     CompositionLocalProvider(LocalContentColor provides color, content = content)
+}
+
+/** A message of the design: the inverse surface rounded 12 dp, its action in the inverse primary. */
+@Composable
+fun DesignSnackbar(data: SnackbarData, modifier: Modifier = Modifier) {
+    Snackbar(
+        snackbarData = data,
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        containerColor = MaterialTheme.colorScheme.inverseSurface,
+        contentColor = MaterialTheme.colorScheme.inverseOnSurface,
+        actionColor = MaterialTheme.colorScheme.inversePrimary
+    )
 }
