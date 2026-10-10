@@ -7,10 +7,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.Color
-import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.TextMarkupKind
 import io.github.valerioisufi.drawview.model.text.TextDefaults
 
 /**

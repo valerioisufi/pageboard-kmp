@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.ui.render
 
 import androidx.compose.ui.text.font.createFontFamilyResolver
-import io.github.valerioisufi.drawview.core.model.DrawText
+import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.text.TextSizes
 import kotlin.test.Test

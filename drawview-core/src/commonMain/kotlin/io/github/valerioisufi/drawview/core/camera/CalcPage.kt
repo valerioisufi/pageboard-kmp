@@ -2,7 +2,7 @@ package io.github.valerioisufi.drawview.core.camera
 
 import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.core.geometry.mapRect
-import io.github.valerioisufi.drawview.core.model.DrawPage
+import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.px
 

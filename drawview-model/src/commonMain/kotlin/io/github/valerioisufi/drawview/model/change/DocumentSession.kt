@@ -1,7 +1,7 @@
-package io.github.valerioisufi.drawview.core.change
+package io.github.valerioisufi.drawview.model.change
 
-import io.github.valerioisufi.drawview.core.model.DrawDocument
-import io.github.valerioisufi.drawview.core.model.newElementId
+import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.newElementId
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

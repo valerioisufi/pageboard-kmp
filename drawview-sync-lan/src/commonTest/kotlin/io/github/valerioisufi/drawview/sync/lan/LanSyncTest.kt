@@ -1,17 +1,22 @@
 package io.github.valerioisufi.drawview.sync.lan
 
-import io.github.valerioisufi.drawview.core.change.AddPage
-import io.github.valerioisufi.drawview.core.change.DocumentChange
-import io.github.valerioisufi.drawview.core.change.DocumentSession
-import io.github.valerioisufi.drawview.core.change.DocumentSnapshot
-import io.github.valerioisufi.drawview.core.change.snapshot
-import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
+import io.github.valerioisufi.drawview.model.DrawPage
+import io.github.valerioisufi.drawview.model.change.AddPage
+import io.github.valerioisufi.drawview.model.change.DocumentChange
+import io.github.valerioisufi.drawview.model.change.DocumentSession
+import io.github.valerioisufi.drawview.model.change.DocumentSnapshot
+import io.github.valerioisufi.drawview.model.change.snapshot
 import io.github.valerioisufi.drawview.sync.InMemorySharedDocuments
 import io.github.valerioisufi.drawview.sync.ResourceFiles
 import io.github.valerioisufi.drawview.sync.SyncEngine
+import kotlin.test.Test
+import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -26,11 +31,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
-import kotlin.test.Test
-import kotlin.test.assertContentEquals
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 class LanSyncTest {
 

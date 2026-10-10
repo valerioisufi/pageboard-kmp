@@ -1,8 +1,8 @@
 package io.github.valerioisufi.drawview.lecture
 
-import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
+import io.github.valerioisufi.drawview.model.DrawDocument
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.AfterTest

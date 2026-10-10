@@ -3,7 +3,7 @@ package io.github.valerioisufi.drawview.core.render.tile
 /**
  * Immutable key identifying a single tile in the multi-resolution pyramid.
  *
- * @property pageKey Key of the page ([io.github.valerioisufi.drawview.core.model.DrawPage.renderKey]):
+ * @property pageKey Key of the page ([io.github.valerioisufi.drawview.model.DrawPage.renderKey]):
  * tiles stay valid when pages are reordered, inserted or deleted.
  * @property lod Level of Detail index (0 = 1x scale, 1 = 2x, -1 = 0.5x, etc.).
  * @property col Column index along the X-axis in the tile grid.

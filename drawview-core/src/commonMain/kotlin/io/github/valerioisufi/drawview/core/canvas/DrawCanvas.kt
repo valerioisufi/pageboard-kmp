@@ -30,9 +30,9 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.geometry.mapRect
 import io.github.valerioisufi.drawview.core.geometry.toCompose
-import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.ink.InkStrokeEngine
+import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import kotlinx.coroutines.flow.first
 

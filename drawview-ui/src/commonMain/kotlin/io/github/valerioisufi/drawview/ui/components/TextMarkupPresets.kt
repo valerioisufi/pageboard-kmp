@@ -26,7 +26,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.valerioisufi.drawview.core.model.TextMarkupKind
+import io.github.valerioisufi.drawview.model.TextMarkupKind
 import io.github.valerioisufi.drawview.ui.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 

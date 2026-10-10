@@ -1,8 +1,8 @@
 package io.github.valerioisufi.drawview.export
 
-import io.github.valerioisufi.drawview.core.model.DrawDocument
-import io.github.valerioisufi.drawview.core.model.DrawResource
-import io.github.valerioisufi.drawview.core.model.PageContentSnapshot
+import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.DrawResource
+import io.github.valerioisufi.drawview.model.PageContentSnapshot
 
 /**
  * A format the documents are exported in (see `docs/export.md`): [PdfExporter],

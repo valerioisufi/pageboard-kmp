@@ -1,5 +1,7 @@
 package io.github.valerioisufi.drawview.model
 
+import io.github.valerioisufi.drawview.model.change.RemovePage
+import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind

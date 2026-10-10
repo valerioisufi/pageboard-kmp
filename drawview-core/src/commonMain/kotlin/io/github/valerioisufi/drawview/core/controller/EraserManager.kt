@@ -2,9 +2,9 @@ package io.github.valerioisufi.drawview.core.controller
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import io.github.valerioisufi.drawview.core.change.RemoveElements
-import io.github.valerioisufi.drawview.core.model.DrawElement
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.model.DrawElement
+import io.github.valerioisufi.drawview.model.change.RemoveElements
 import io.github.valerioisufi.drawview.model.geometry.HitTesting
 import kotlin.math.max
 import kotlin.math.min

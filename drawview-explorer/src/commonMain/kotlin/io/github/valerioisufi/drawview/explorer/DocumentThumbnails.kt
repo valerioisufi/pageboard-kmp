@@ -8,9 +8,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalFontFamilyResolver
-import io.github.valerioisufi.drawview.core.model.DrawDocument
-import io.github.valerioisufi.drawview.core.model.DrawResource
-import io.github.valerioisufi.drawview.core.model.PageContentSnapshot
 import io.github.valerioisufi.drawview.core.platform.decodeImageBitmap
 import io.github.valerioisufi.drawview.core.platform.encodePng
 import io.github.valerioisufi.drawview.core.render.DrawViewEngines
@@ -18,6 +15,9 @@ import io.github.valerioisufi.drawview.core.render.tile.PdfTileAdapter
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.core.render.tile.TileRenderer
 import io.github.valerioisufi.drawview.data.OpenDocuments
+import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.DrawResource
+import io.github.valerioisufi.drawview.model.PageContentSnapshot
 import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.platform.dataDirectory
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter

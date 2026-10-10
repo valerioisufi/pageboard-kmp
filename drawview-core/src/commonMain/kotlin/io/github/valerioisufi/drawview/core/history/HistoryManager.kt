@@ -1,12 +1,12 @@
 package io.github.valerioisufi.drawview.core.history
 
 import androidx.compose.runtime.mutableStateListOf
-import io.github.valerioisufi.drawview.core.change.ChangeObserver
-import io.github.valerioisufi.drawview.core.change.ChangeOrigin
-import io.github.valerioisufi.drawview.core.change.CommittedChange
-import io.github.valerioisufi.drawview.core.change.CompositeChange
-import io.github.valerioisufi.drawview.core.change.DocumentChange
-import io.github.valerioisufi.drawview.core.change.DocumentSession
+import io.github.valerioisufi.drawview.model.change.ChangeObserver
+import io.github.valerioisufi.drawview.model.change.ChangeOrigin
+import io.github.valerioisufi.drawview.model.change.CommittedChange
+import io.github.valerioisufi.drawview.model.change.CompositeChange
+import io.github.valerioisufi.drawview.model.change.DocumentChange
+import io.github.valerioisufi.drawview.model.change.DocumentSession
 
 /**
  * Undo / redo of the changes made on this device: records the change undoing every local change

@@ -1,15 +1,14 @@
-package io.github.valerioisufi.drawview.core.change
+package io.github.valerioisufi.drawview.model.change
 
-import io.github.valerioisufi.drawview.core.model.DrawDocument
-import io.github.valerioisufi.drawview.core.model.DrawElement
-import io.github.valerioisufi.drawview.core.model.DrawImage
-import io.github.valerioisufi.drawview.core.model.DrawPage
-import io.github.valerioisufi.drawview.core.model.DrawPdf
-import io.github.valerioisufi.drawview.core.model.DrawResource
-import io.github.valerioisufi.drawview.core.model.DrawStroke
-import io.github.valerioisufi.drawview.core.model.DrawText
-import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
-import io.github.valerioisufi.drawview.core.model.TextMarkupKind
+import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.DrawElement
+import io.github.valerioisufi.drawview.model.DrawImage
+import io.github.valerioisufi.drawview.model.DrawPage
+import io.github.valerioisufi.drawview.model.DrawPdf
+import io.github.valerioisufi.drawview.model.DrawResource
+import io.github.valerioisufi.drawview.model.DrawStroke
+import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.model.ElementOrder
 import io.github.valerioisufi.drawview.model.InputToolType
 import io.github.valerioisufi.drawview.model.KotlinStrokeModeller
@@ -19,6 +18,7 @@ import io.github.valerioisufi.drawview.model.StrokeModeller
 import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.StrokeTool
 import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.TextMarkupKind
 import io.github.valerioisufi.drawview.model.Versions
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import io.github.valerioisufi.drawview.model.geometry.Rect

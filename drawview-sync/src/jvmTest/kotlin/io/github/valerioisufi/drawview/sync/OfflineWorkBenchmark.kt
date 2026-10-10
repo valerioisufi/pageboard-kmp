@@ -1,14 +1,6 @@
 package io.github.valerioisufi.drawview.sync
 
 import androidx.room.Room
-import io.github.valerioisufi.drawview.core.change.AddElements
-import io.github.valerioisufi.drawview.core.change.AddPage
-import io.github.valerioisufi.drawview.core.change.PlaceElements
-import io.github.valerioisufi.drawview.core.change.RemoveElements
-import io.github.valerioisufi.drawview.core.change.StrokePlacement
-import io.github.valerioisufi.drawview.core.change.snapshot
-import io.github.valerioisufi.drawview.core.model.DrawPage
-import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.data.RoomDocumentStore
 import io.github.valerioisufi.drawview.data.db.DrawDatabase
@@ -16,9 +8,17 @@ import io.github.valerioisufi.drawview.data.db.createDrawDatabase
 import io.github.valerioisufi.drawview.data.db.getInMemoryDatabaseBuilder
 import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.DrawPage
+import io.github.valerioisufi.drawview.model.DrawStroke
 import io.github.valerioisufi.drawview.model.InputToolType
 import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.change.AddElements
+import io.github.valerioisufi.drawview.model.change.AddPage
+import io.github.valerioisufi.drawview.model.change.PlaceElements
+import io.github.valerioisufi.drawview.model.change.RemoveElements
+import io.github.valerioisufi.drawview.model.change.StrokePlacement
+import io.github.valerioisufi.drawview.model.change.snapshot
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import java.io.File
 import kotlin.math.sin

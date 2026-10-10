@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.model
 
+import io.github.valerioisufi.drawview.model.change.HybridClock
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind

@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import io.github.valerioisufi.drawview.core.geometry.toCompose
-import io.github.valerioisufi.drawview.core.model.TextMarkupKind
+import io.github.valerioisufi.drawview.model.TextMarkupKind
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import kotlin.math.max

@@ -23,7 +23,6 @@ import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.dp
 import io.github.takahirom.roborazzi.captureRoboImage
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.lecture.AssistantSettingsStore
 import io.github.valerioisufi.drawview.lecture.CourseContext
 import io.github.valerioisufi.drawview.lecture.DeviceUsage
@@ -39,6 +38,7 @@ import io.github.valerioisufi.drawview.lecture.NoteSuggestion
 import io.github.valerioisufi.drawview.lecture.SuggestionStatus
 import io.github.valerioisufi.drawview.lecture.TokenUsage
 import io.github.valerioisufi.drawview.lecture.TranscriptSegment
+import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import io.github.valerioisufi.drawview.ui.theme.LocalCanvasColors

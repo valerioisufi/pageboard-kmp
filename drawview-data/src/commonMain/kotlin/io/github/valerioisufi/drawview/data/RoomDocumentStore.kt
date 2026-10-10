@@ -1,9 +1,7 @@
 package io.github.valerioisufi.drawview.data
 
-import io.github.valerioisufi.drawview.core.change.Operation
 import io.github.valerioisufi.drawview.core.controller.DrawPersistence
 import io.github.valerioisufi.drawview.core.controller.DrawPreferences
-import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.data.db.DocumentEntity
 import io.github.valerioisufi.drawview.data.db.DrawDatabase
 import io.github.valerioisufi.drawview.data.db.DrawViewDatabase
@@ -13,9 +11,11 @@ import io.github.valerioisufi.drawview.data.db.currentTimeMillis
 import io.github.valerioisufi.drawview.data.repository.DrawDocumentRepository
 import io.github.valerioisufi.drawview.data.repository.FileRepository
 import io.github.valerioisufi.drawview.ink.InkStrokeModeller
+import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.StrokeModeller
+import io.github.valerioisufi.drawview.model.change.Operation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow

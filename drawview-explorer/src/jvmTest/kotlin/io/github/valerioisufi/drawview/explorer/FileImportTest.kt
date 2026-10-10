@@ -1,12 +1,18 @@
 package io.github.valerioisufi.drawview.explorer
 
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.model.DrawDocument
-import io.github.valerioisufi.drawview.platform.DRAWVIEW_DATA_DIRECTORY_PROPERTY
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
+import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
+import io.github.valerioisufi.drawview.platform.DRAWVIEW_DATA_DIRECTORY_PROPERTY
+import java.io.File
+import java.nio.file.Files
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -14,12 +20,6 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import java.io.File
-import java.nio.file.Files
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 /** The files dropped onto the library or the editor: the name of their note, their import. */
 @OptIn(ExperimentalCoroutinesApi::class)

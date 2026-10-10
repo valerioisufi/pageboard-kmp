@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.sync
 
-import io.github.valerioisufi.drawview.core.change.DocumentSnapshot
-import io.github.valerioisufi.drawview.core.change.Operation
+import io.github.valerioisufi.drawview.model.change.DocumentSnapshot
+import io.github.valerioisufi.drawview.model.change.Operation
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

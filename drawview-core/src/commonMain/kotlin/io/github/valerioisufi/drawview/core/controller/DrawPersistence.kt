@@ -1,16 +1,16 @@
 package io.github.valerioisufi.drawview.core.controller
 
-import io.github.valerioisufi.drawview.core.change.Operation
-import io.github.valerioisufi.drawview.core.model.DrawDocument
-import io.github.valerioisufi.drawview.core.model.DrawImage
-import io.github.valerioisufi.drawview.core.model.DrawPage
-import io.github.valerioisufi.drawview.core.model.DrawPdf
-import io.github.valerioisufi.drawview.core.model.DrawResource
-import io.github.valerioisufi.drawview.core.model.DrawStroke
-import io.github.valerioisufi.drawview.core.model.DrawText
-import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
-import io.github.valerioisufi.drawview.core.model.PurgedContent
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.DrawImage
+import io.github.valerioisufi.drawview.model.DrawPage
+import io.github.valerioisufi.drawview.model.DrawPdf
+import io.github.valerioisufi.drawview.model.DrawResource
+import io.github.valerioisufi.drawview.model.DrawStroke
+import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.DrawTextMarkup
+import io.github.valerioisufi.drawview.model.PurgedContent
+import io.github.valerioisufi.drawview.model.change.Operation
 import io.github.valerioisufi.drawview.model.text.TextDefaults
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
  * The documents, pages and elements are identified by their `id` (the same on every device): the
  * save operations insert the element or update the stored one with the same identifier. Nothing
  * is deleted: the removed pages and elements are stored as such (see [DrawPage.removed],
- * [io.github.valerioisufi.drawview.core.model.DrawElement.removed]). The changes of an open
+ * [io.github.valerioisufi.drawview.model.DrawElement.removed]). The changes of an open
  * document reach it through a [ChangePersister].
  */
 interface DrawPersistence {

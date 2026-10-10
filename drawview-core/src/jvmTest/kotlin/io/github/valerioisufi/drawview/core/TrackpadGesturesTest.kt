@@ -16,15 +16,15 @@ import io.github.valerioisufi.drawview.core.canvas.TrackpadPinchPhase
 import io.github.valerioisufi.drawview.core.canvas.TrackpadScrollPhase
 import io.github.valerioisufi.drawview.core.canvas.scrollUnitPx
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.model.DrawDocument
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import io.github.valerioisufi.drawview.model.DrawDocument
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 
 /**
  * Trackpad gestures sent to a [DrawCanvas] as Compose delivers them: two-finger pan and pinch

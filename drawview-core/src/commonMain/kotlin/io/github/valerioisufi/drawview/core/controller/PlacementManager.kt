@@ -4,7 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import io.github.valerioisufi.drawview.core.model.DrawText
+import io.github.valerioisufi.drawview.model.DrawText
 
 /**
  * A text prepared by the application (e.g. a note of an assistant) waiting to be placed by the

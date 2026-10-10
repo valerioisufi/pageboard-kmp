@@ -10,14 +10,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.createFontFamilyResolver
 import androidx.compose.ui.text.platform.Font as PlatformFont
-import io.github.valerioisufi.drawview.core.model.DrawDocument
-import io.github.valerioisufi.drawview.core.model.DrawImage
-import io.github.valerioisufi.drawview.core.model.DrawPdf
-import io.github.valerioisufi.drawview.core.model.DrawResource
-import io.github.valerioisufi.drawview.core.model.DrawStroke
-import io.github.valerioisufi.drawview.core.model.DrawText
-import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
-import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.platform.decodeImageBitmap
 import io.github.valerioisufi.drawview.core.render.tile.TextFace
 import io.github.valerioisufi.drawview.core.render.tile.TileRenderer
@@ -28,9 +20,17 @@ import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.latex.TexFont
 import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.DrawImage
+import io.github.valerioisufi.drawview.model.DrawPdf
+import io.github.valerioisufi.drawview.model.DrawResource
+import io.github.valerioisufi.drawview.model.DrawStroke
+import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.TextMarkupKind
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.pdf.PdfFont

@@ -1,14 +1,14 @@
 package io.github.valerioisufi.drawview.core.controller
 
-import io.github.valerioisufi.drawview.core.change.ChangeObserver
-import io.github.valerioisufi.drawview.core.change.CommittedChange
-import io.github.valerioisufi.drawview.core.model.DrawElement
-import io.github.valerioisufi.drawview.core.model.DrawImage
-import io.github.valerioisufi.drawview.core.model.DrawPage
-import io.github.valerioisufi.drawview.core.model.DrawPdf
-import io.github.valerioisufi.drawview.core.model.DrawStroke
-import io.github.valerioisufi.drawview.core.model.DrawText
-import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
+import io.github.valerioisufi.drawview.model.DrawElement
+import io.github.valerioisufi.drawview.model.DrawImage
+import io.github.valerioisufi.drawview.model.DrawPage
+import io.github.valerioisufi.drawview.model.DrawPdf
+import io.github.valerioisufi.drawview.model.DrawStroke
+import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.DrawTextMarkup
+import io.github.valerioisufi.drawview.model.change.ChangeObserver
+import io.github.valerioisufi.drawview.model.change.CommittedChange
 
 /**
  * Writes the effects of the changes of a document through [persist] (a [PersistenceQueue]):

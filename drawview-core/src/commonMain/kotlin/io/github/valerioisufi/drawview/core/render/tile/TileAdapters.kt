@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.drawview.core.geometry.toCompose
 import io.github.valerioisufi.drawview.core.geometry.toModel
-import io.github.valerioisufi.drawview.core.model.DrawText
+import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.PdfTextLayout
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import kotlinx.coroutines.flow.StateFlow

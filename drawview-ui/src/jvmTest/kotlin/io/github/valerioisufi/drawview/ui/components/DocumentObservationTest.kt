@@ -3,9 +3,9 @@ package io.github.valerioisufi.drawview.ui.components
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runDesktopComposeUiTest
-import io.github.valerioisufi.drawview.core.change.RenameDocument
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.model.DrawDocument
+import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.change.RenameDocument
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import kotlin.test.Test
 import kotlinx.coroutines.CoroutineScope

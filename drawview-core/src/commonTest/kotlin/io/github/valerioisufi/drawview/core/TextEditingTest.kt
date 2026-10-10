@@ -11,13 +11,13 @@ import io.github.valerioisufi.drawview.core.canvas.SelectionFrame
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.TextEditorManager
 import io.github.valerioisufi.drawview.core.geometry.toCompose
-import io.github.valerioisufi.drawview.core.model.DrawDocument
-import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.render.tile.TextBlockSize
 import io.github.valerioisufi.drawview.core.render.tile.TextLineMetrics
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.core.text.RichTextEditing
+import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.text.TextDefaults

@@ -1,6 +1,6 @@
 package io.github.valerioisufi.drawview.lecture
 
-import io.github.valerioisufi.drawview.core.model.DrawDocument
+import io.github.valerioisufi.drawview.model.DrawDocument
 import kotlinx.serialization.Serializable
 
 /** Kind of content suggested by the assistant. */
@@ -22,7 +22,7 @@ enum class SuggestionStatus { NEW, INSERTED, ALREADY_NOTED, DISMISSED }
  *
  * @param content notebook-ready Markdown (formulas between `$...$`).
  * @param pageIndex page of the document where the content belongs (0-based), if known.
- * @param pageId identifier of that page ([io.github.valerioisufi.drawview.core.model.DrawPage.id]):
+ * @param pageId identifier of that page ([io.github.valerioisufi.drawview.model.DrawPage.id]):
  *   the page is found again when the pages have been reordered (see [resolvedPageIndex]).
  * @param importance 1 (detail) to 3 (stressed by the lecturer, exam).
  * @param atMs time of the lecture when it was said.

@@ -2,18 +2,18 @@ package io.github.valerioisufi.drawview.core
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import io.github.valerioisufi.drawview.core.model.DrawImage
-import io.github.valerioisufi.drawview.core.model.DrawPage
-import io.github.valerioisufi.drawview.core.model.DrawPdf
-import io.github.valerioisufi.drawview.core.model.DrawStroke
-import io.github.valerioisufi.drawview.core.model.DrawText
-import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
-import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.DrawImage
+import io.github.valerioisufi.drawview.model.DrawPage
+import io.github.valerioisufi.drawview.model.DrawPdf
+import io.github.valerioisufi.drawview.model.DrawStroke
+import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.StrokeMesh
 import io.github.valerioisufi.drawview.model.StrokeOutline
 import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.TextMarkupKind
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.model.triangleOutline

@@ -21,10 +21,10 @@ import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.core.controller.Collaborator
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.geometry.toCompose
-import io.github.valerioisufi.drawview.core.model.DrawImage
-import io.github.valerioisufi.drawview.core.model.DrawStroke
-import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.render.tile.TileRenderer
+import io.github.valerioisufi.drawview.model.DrawImage
+import io.github.valerioisufi.drawview.model.DrawStroke
+import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 
 /**

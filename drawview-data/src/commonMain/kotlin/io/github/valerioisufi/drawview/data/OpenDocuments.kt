@@ -1,13 +1,13 @@
 package io.github.valerioisufi.drawview.data
 
-import io.github.valerioisufi.drawview.core.change.DocumentSession
-import io.github.valerioisufi.drawview.core.change.Operation
-import io.github.valerioisufi.drawview.core.change.RenameDocument
 import io.github.valerioisufi.drawview.core.controller.ChangePersister
 import io.github.valerioisufi.drawview.core.controller.PersistenceQueue
-import io.github.valerioisufi.drawview.core.model.DrawDocument
-import io.github.valerioisufi.drawview.core.model.DrawResource
+import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.DrawResource
 import io.github.valerioisufi.drawview.model.StrokeModeller
+import io.github.valerioisufi.drawview.model.change.DocumentSession
+import io.github.valerioisufi.drawview.model.change.Operation
+import io.github.valerioisufi.drawview.model.change.RenameDocument
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

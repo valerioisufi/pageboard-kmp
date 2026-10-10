@@ -1,4 +1,4 @@
-package io.github.valerioisufi.drawview.core.change
+package io.github.valerioisufi.drawview.model.change
 
 import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.platform.currentTimeMillis

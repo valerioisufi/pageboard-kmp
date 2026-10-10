@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.core.geometry.toComposeMatrix
-import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.render.tile.FormulaRenderer
 import io.github.valerioisufi.drawview.core.render.tile.TextBlockLayout
 import io.github.valerioisufi.drawview.core.render.tile.TextBlockSize
@@ -36,6 +35,7 @@ import io.github.valerioisufi.drawview.core.render.tile.TextFormula
 import io.github.valerioisufi.drawview.core.render.tile.TextLineMetrics
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.core.render.tile.TextWord
+import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.text.TextSizes.PT_TO_MM

@@ -11,6 +11,8 @@ kotlin {
             api(project(":drawview-platform"))
             api(libs.kotlinx.coroutines.core)
             api(libs.kotlinx.serialization.json)
+            // Read while the document is changed (the counter of the page render keys)
+            implementation(libs.atomicfu)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

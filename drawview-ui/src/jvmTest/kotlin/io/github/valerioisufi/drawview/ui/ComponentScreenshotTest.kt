@@ -21,8 +21,8 @@ import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.dp
 import io.github.takahirom.roborazzi.captureRoboImage
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.geometry.Dimension
 import io.github.valerioisufi.drawview.model.geometry.mm

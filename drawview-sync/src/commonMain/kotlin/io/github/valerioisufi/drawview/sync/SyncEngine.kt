@@ -1,18 +1,18 @@
 package io.github.valerioisufi.drawview.sync
 
 import dev.whyoleg.cryptography.random.CryptographyRandom
-import io.github.valerioisufi.drawview.core.change.ChangeObserver
-import io.github.valerioisufi.drawview.core.change.ChangeOrigin
-import io.github.valerioisufi.drawview.core.change.DocumentSession
-import io.github.valerioisufi.drawview.core.change.DocumentSnapshot
-import io.github.valerioisufi.drawview.core.change.Operation
-import io.github.valerioisufi.drawview.core.change.TextData
-import io.github.valerioisufi.drawview.core.change.snapshot
 import io.github.valerioisufi.drawview.data.OpenDocument
 import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.model.AttachmentChange
 import io.github.valerioisufi.drawview.model.AttachmentReceiver
 import io.github.valerioisufi.drawview.model.DocumentAttachments
+import io.github.valerioisufi.drawview.model.change.ChangeObserver
+import io.github.valerioisufi.drawview.model.change.ChangeOrigin
+import io.github.valerioisufi.drawview.model.change.DocumentSession
+import io.github.valerioisufi.drawview.model.change.DocumentSnapshot
+import io.github.valerioisufi.drawview.model.change.Operation
+import io.github.valerioisufi.drawview.model.change.TextData
+import io.github.valerioisufi.drawview.model.change.snapshot
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import kotlin.math.min
 import kotlinx.coroutines.CompletableDeferred

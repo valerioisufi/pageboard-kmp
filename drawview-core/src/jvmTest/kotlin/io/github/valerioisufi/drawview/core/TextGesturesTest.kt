@@ -11,12 +11,12 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Density
 import io.github.valerioisufi.drawview.core.canvas.DrawCanvas
-import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.geometry.toCompose
-import io.github.valerioisufi.drawview.core.model.DrawDocument
-import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.change.AddElements
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

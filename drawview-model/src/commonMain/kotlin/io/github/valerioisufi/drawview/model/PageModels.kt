@@ -1,4 +1,4 @@
-package io.github.valerioisufi.drawview.core.model
+package io.github.valerioisufi.drawview.model
 
 import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.ElementOrder
@@ -10,6 +10,10 @@ import io.github.valerioisufi.drawview.model.StrokeMesh
 import io.github.valerioisufi.drawview.model.StrokeModeller
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.Versions
+import io.github.valerioisufi.drawview.model.change.Placement
+import io.github.valerioisufi.drawview.model.change.RenameDocument
+import io.github.valerioisufi.drawview.model.change.UpdateTexts
+import io.github.valerioisufi.drawview.model.change.placement
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import io.github.valerioisufi.drawview.model.geometry.Dimension
 import io.github.valerioisufi.drawview.model.geometry.Point

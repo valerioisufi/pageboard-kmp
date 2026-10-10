@@ -4,13 +4,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import io.github.valerioisufi.drawview.core.model.DrawElement
-import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.snap.SnapEngine
 import io.github.valerioisufi.drawview.core.snap.SnapGuide
 import io.github.valerioisufi.drawview.core.snap.SnapLine
 import io.github.valerioisufi.drawview.core.snap.SnapTargets
 import io.github.valerioisufi.drawview.core.snap.Snapped
+import io.github.valerioisufi.drawview.model.DrawElement
+import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.geometry.Point
 import io.github.valerioisufi.drawview.model.geometry.Rect
 

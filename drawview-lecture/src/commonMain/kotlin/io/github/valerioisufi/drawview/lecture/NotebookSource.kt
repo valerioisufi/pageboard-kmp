@@ -4,17 +4,17 @@ import androidx.compose.ui.geometry.Rect as ComposeRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.model.DrawDocument
-import io.github.valerioisufi.drawview.core.model.DrawResource
-import io.github.valerioisufi.drawview.core.model.DrawStroke
-import io.github.valerioisufi.drawview.core.model.PageContentSnapshot
 import io.github.valerioisufi.drawview.core.render.tile.TileRenderer
 import io.github.valerioisufi.drawview.lecture.handwriting.InkBlock
 import io.github.valerioisufi.drawview.lecture.handwriting.blockKey
 import io.github.valerioisufi.drawview.lecture.handwriting.groupStrokes
 import io.github.valerioisufi.drawview.lecture.handwriting.unionOf
 import io.github.valerioisufi.drawview.lecture.platform.encodeJpeg
+import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.DrawResource
+import io.github.valerioisufi.drawview.model.DrawStroke
 import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.PageContentSnapshot
 import io.github.valerioisufi.drawview.model.StrokeTool
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Rect
@@ -48,7 +48,7 @@ data class SlideText(val pdfNumber: Int, val pdfPageIndex: Int, val text: String
  * What the assistant knows of a page of the notebook: the same description for every provider,
  * in text (the images of the visible pages are added to it, see [NotebookSnapshot.pageImages]).
  *
- * @param pageId identifier of the page ([io.github.valerioisufi.drawview.core.model.DrawPage.id]),
+ * @param pageId identifier of the page ([io.github.valerioisufi.drawview.model.DrawPage.id]),
  *   stable when the pages are reordered (empty when not known).
  * @param slide the PDF page of its background, if any.
  * @param typedTexts typed text blocks of the student.

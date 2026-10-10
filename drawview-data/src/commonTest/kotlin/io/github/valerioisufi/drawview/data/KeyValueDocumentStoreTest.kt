@@ -1,20 +1,20 @@
 package io.github.valerioisufi.drawview.data
 
 import io.github.valerioisufi.drawview.core.controller.ToolPreset
-import io.github.valerioisufi.drawview.core.model.DrawPage
-import io.github.valerioisufi.drawview.core.model.DrawStroke
-import io.github.valerioisufi.drawview.core.model.DrawText
-import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
-import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.DrawPage
+import io.github.valerioisufi.drawview.model.DrawStroke
+import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.model.InputToolType
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.StrokeTool
 import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.TextMarkupKind
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.model.text.TextDefaults

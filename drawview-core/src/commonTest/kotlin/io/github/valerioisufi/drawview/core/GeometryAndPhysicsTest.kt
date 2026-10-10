@@ -3,12 +3,12 @@ package io.github.valerioisufi.drawview.core
 import androidx.compose.ui.geometry.Rect as ComposeRect
 import io.github.valerioisufi.drawview.core.camera.CalcPage
 import io.github.valerioisufi.drawview.core.camera.CameraPhysicsEngine
-import io.github.valerioisufi.drawview.core.change.AddElements
-import io.github.valerioisufi.drawview.core.change.DocumentSession
-import io.github.valerioisufi.drawview.core.change.RemoveElements
 import io.github.valerioisufi.drawview.core.history.*
 import io.github.valerioisufi.drawview.core.model.*
 import io.github.valerioisufi.drawview.model.*
+import io.github.valerioisufi.drawview.model.change.AddElements
+import io.github.valerioisufi.drawview.model.change.DocumentSession
+import io.github.valerioisufi.drawview.model.change.RemoveElements
 import io.github.valerioisufi.drawview.model.geometry.*
 import kotlin.test.*
 

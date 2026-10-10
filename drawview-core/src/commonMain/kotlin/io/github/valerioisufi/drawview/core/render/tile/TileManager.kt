@@ -14,10 +14,10 @@ import io.github.valerioisufi.drawview.core.geometry.mapRect
 import io.github.valerioisufi.drawview.core.geometry.setRectToRect
 import io.github.valerioisufi.drawview.core.geometry.toCompose
 import io.github.valerioisufi.drawview.core.geometry.toComposeMatrix
-import io.github.valerioisufi.drawview.core.model.DrawDocument
-import io.github.valerioisufi.drawview.core.model.DrawPage
-import io.github.valerioisufi.drawview.core.model.DrawStroke
-import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
+import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.DrawPage
+import io.github.valerioisufi.drawview.model.DrawStroke
+import io.github.valerioisufi.drawview.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.syncLock
