@@ -323,7 +323,7 @@ class EditorCoreTest {
         controller.selectionManager.selectWithLasso(0, floatArrayOf(10f, 10f, 40f, 10f, 40f, 40f, 10f, 40f))
         val selection = assertNotNull(controller.selectionManager.currentSelection)
         assertEquals(listOf(target), selection.strokes.toList())
-        assertTrue(target.isDragging)
+        assertTrue(controller.hiddenElements.isDragged(target.id))
 
         controller.selectionManager.beginTransformation()
         controller.selectionManager.translateBy(30f, 5f)
@@ -333,7 +333,7 @@ class EditorCoreTest {
         assertEquals(50f, target.mesh.points.first().x, 1e-3f)
 
         controller.selectionManager.clearSelection()
-        assertFalse(target.isDragging)
+        assertFalse(controller.hiddenElements.isDragged(target.id))
         controller.undo()
         assertEquals(20f, target.bounds.left, 1e-3f)
         assertSame(page, controller.document.pages[0])

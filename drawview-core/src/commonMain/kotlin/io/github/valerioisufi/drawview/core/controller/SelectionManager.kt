@@ -23,6 +23,7 @@ import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.LassoMode
+import io.github.valerioisufi.drawview.core.render.HiddenElements
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import io.github.valerioisufi.drawview.model.geometry.HitTesting
@@ -75,10 +76,9 @@ class SelectionGroup(
 
     fun elements(): List<DrawElement> = strokes + texts + images
 
-    fun setDragging(dragging: Boolean) {
-        strokes.forEach { it.isDragging = dragging }
-        texts.forEach { it.isDragging = dragging }
-        images.forEach { it.isDragging = dragging }
+    /** Leaves the elements of the selection out of the tiles of [hidden] while [dragging]. */
+    fun setDragging(hidden: HiddenElements, dragging: Boolean) {
+        hidden.setDragged(elements().map { it.id }, dragging)
     }
 }
 
@@ -235,7 +235,7 @@ class SelectionManager(private val controller: DrawViewController) {
 
     private fun setSelection(selection: SelectionGroup, page: DrawPage) {
         controller.textMarkupManager.clearSelection()
-        selection.setDragging(true)
+        selection.setDragging(controller.hiddenElements, true)
         currentSelection = selection
         // The selected elements are drawn live on top: rasterize the tiles without them
         controller.invalidatePageContent(page, selection.getEnclosingBoundingBoxMm())
@@ -249,7 +249,7 @@ class SelectionManager(private val controller: DrawViewController) {
         val selection = currentSelection ?: return
         currentSelection = null
         val page = controller.document.pages.getOrNull(selection.pageIndex)
-        selection.setDragging(false)
+        selection.setDragging(controller.hiddenElements, false)
         if (page != null) {
             controller.bakeElementsSync(page, selection.strokes, selection.texts, selection.images)
             controller.invalidatePageContent(page, selection.getEnclosingBoundingBoxMm())
@@ -469,7 +469,7 @@ class SelectionManager(private val controller: DrawViewController) {
         val selection = currentSelection ?: return
         val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
         currentSelection = null
-        selection.setDragging(false)
+        selection.setDragging(controller.hiddenElements, false)
         controller.session.submit(RemoveElements.of(page, selection.elements()))
         notifyChanged()
     }
@@ -544,7 +544,6 @@ class SelectionManager(private val controller: DrawViewController) {
                 width = original.width
                 height = original.height
                 rotation = original.rotation
-                bitmap = original.bitmap
             }
         }
 

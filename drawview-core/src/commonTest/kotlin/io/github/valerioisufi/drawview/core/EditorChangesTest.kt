@@ -127,7 +127,7 @@ class EditorChangesTest {
         editor.write("Hello, world")
         assertSame(text, page.texts.single())
         assertEquals("Hello, world", text.text)
-        assertFalse(text.isDragging)
+        assertFalse(controller.hiddenElements.isDragged(text.id))
 
         // Saved without changes: nothing to undo
         editor.startEditing(text, 0)

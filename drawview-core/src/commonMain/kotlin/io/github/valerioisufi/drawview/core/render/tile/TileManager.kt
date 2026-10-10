@@ -503,7 +503,7 @@ class TileManager(
                 val painter = StrokeMeshPainter()
                 for (element in pending) {
                     val stroke = element.stroke
-                    if (stroke != null && !stroke.isHidden) painter.draw(tileCanvas, stroke.mesh, mmToTile)
+                    if (stroke != null && !tileRenderer.isHidden(stroke.id)) painter.draw(tileCanvas, stroke.mesh, mmToTile)
                     element.markup?.let { drawMarkup(tileCanvas, it, content.widthMm, content.heightMm, mmToTile) }
                 }
             }

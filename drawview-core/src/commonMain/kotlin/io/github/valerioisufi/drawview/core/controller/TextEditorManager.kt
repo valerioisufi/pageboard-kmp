@@ -194,7 +194,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
 
         if (item != null) {
             // Hide the edited text from the static layers while the editor is shown
-            item.isDragging = true
+            controller.hiddenElements.setDragged(listOf(item.id), true)
             controller.invalidatePageContent(page, item.getRotatedBounds())
         }
         fitWidth()
@@ -266,7 +266,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
         }
 
         if (value.text.isBlank()) {
-            existing?.isDragging = false
+            existing?.let { controller.hiddenElements.setDragged(listOf(it.id), false) }
             if (existing != null) controller.session.submit(RemoveElements.of(page, listOf(existing)))
             resetSession()
             return
@@ -275,7 +275,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
         val laidOut = draft(versions = editedFrom?.versions ?: Versions.NONE)
         val data = laidOut.copy(height = (controller.measureText(laidOut.toElement())?.height ?: boxHeight).coerceAtLeast(MIN_HEIGHT_MM))
         if (existing != null) {
-            existing.isDragging = false
+            controller.hiddenElements.setDragged(listOf(existing.id), false)
             // Shown again even when nothing changed
             existing.markDirty()
             controller.invalidatePageContent(page, existing.getRotatedBounds())
@@ -295,7 +295,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
         val item = activeTextItem
         val page = controller.document.pages.getOrNull(activeTextPageIndex)
         if (item != null && page != null) {
-            item.isDragging = false
+            controller.hiddenElements.setDragged(listOf(item.id), false)
             item.markDirty()
             controller.invalidatePageContent(page, item.getRotatedBounds())
         }

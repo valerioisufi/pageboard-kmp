@@ -22,7 +22,7 @@ import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.PageContentSnapshot
-import io.github.valerioisufi.drawview.core.platform.decodeImageFile
+import io.github.valerioisufi.drawview.core.render.ImageCache
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import kotlin.math.ceil
 import kotlin.math.max
@@ -37,11 +37,16 @@ import kotlin.math.min
  *
  * @param pdfAdapter Optional adapter for rendering PDF document pages.
  * @param textAdapter Optional adapter for rasterizing text blocks and LaTeX formulas.
+ * @param images the pixels of the images of the documents.
  */
 class TileRenderer(
     var pdfAdapter: PdfTileAdapter? = null,
-    var textAdapter: TextTileAdapter? = null
+    var textAdapter: TextTileAdapter? = null,
+    val images: ImageCache = ImageCache.Shared
 ) {
+    /** Whether the element of an identifier is left out (drawn over the tiles by the editor, see [HiddenElements]). */
+    var isHidden: (String) -> Boolean = { false }
+
     /**
      * Renders the content of [page] for [tileKey] into [targetBitmap].
      */
@@ -173,14 +178,14 @@ class TileRenderer(
                 }
 
                 is DrawImage -> {
-                    if (element.isHidden) continue
+                    if (isHidden(element.id)) continue
                     if (!element.getRotatedBounds().overlaps(visibleMmBounds)) continue
-                    val bitmap = ensureImageLoaded(document, element) ?: continue
+                    val bitmap = imageOf(document, element) ?: continue
                     drawImage(canvas, element, bitmap, mmToCanvas, imagePaint)
                 }
 
                 is DrawText -> {
-                    if (text == null || element.isHidden) continue
+                    if (text == null || isHidden(element.id)) continue
                     if (!element.getRotatedBounds().overlaps(visibleMmBounds)) continue
                     try {
                         text.drawText(canvas, element, mmToCanvas)
@@ -189,7 +194,7 @@ class TileRenderer(
                 }
 
                 is DrawStroke -> {
-                    if (element.isHidden) continue
+                    if (isHidden(element.id)) continue
                     val bounds = element.bounds
                     if (bounds.left < visibleMmBounds.right &&
                         bounds.right > visibleMmBounds.left &&
@@ -205,17 +210,11 @@ class TileRenderer(
         canvas.restore()
     }
 
+    /** The decoded pixels of [image] of [document] (loaded from its resource file when needed). */
+    fun imageOf(document: DrawDocument, image: DrawImage): ImageBitmap? =
+        document.findResource(image.resourceId)?.let { images.load(it.path) }
+
     companion object {
-        /**
-         * Returns the decoded pixels of [image], loading them from its resource file when needed.
-         */
-        fun ensureImageLoaded(document: DrawDocument, image: DrawImage): ImageBitmap? {
-            image.bitmap?.let { return it }
-            val resource = document.findResource(image.resourceId) ?: return null
-            val decoded = decodeImageFile(resource.path) ?: return null
-            image.bitmap = decoded
-            return decoded
-        }
 
         /**
          * Draws [bitmap] stretched over the (rotated) rectangle of [image].

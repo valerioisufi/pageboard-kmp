@@ -72,8 +72,9 @@ class MediaManager(private val controller: DrawViewController) {
                 y = (centerMm.y - heightMm / 2f).coerceIn(0f, (page.heightMm - heightMm).coerceAtLeast(0f))
                 width = widthMm
                 height = heightMm
-                this.bitmap = bitmap
             }
+            // Decoded already: the renderer does not decode it again
+            controller.tileManager.tileRenderer.images.put(path, bitmap)
             controller.session.submit(
                 CompositeChange(
                     listOf(

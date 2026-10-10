@@ -96,7 +96,7 @@ class SnapManager(private val controller: DrawViewController) {
         val xs = mutableListOf(SnapLine(page.widthMm / 2f, 0f, page.heightMm))
         val ys = mutableListOf(SnapLine(page.heightMm / 2f, 0f, page.widthMm))
         val boxes = page.strokes.filter { it !in moved }.map { it.bounds } +
-            page.texts.filter { it !in moved && !it.isShownByCollaborator }.map { it.getRotatedBounds() } +
+            page.texts.filter { it !in moved && !controller.hiddenElements.isShownByCollaborator(it.id) }.map { it.getRotatedBounds() } +
             page.images.filter { it !in moved }.map { it.getRotatedBounds() }
         for (other in boxes) {
             for (x in listOf(other.left, other.center.x, other.right)) xs += SnapLine(x, other.top, other.bottom)

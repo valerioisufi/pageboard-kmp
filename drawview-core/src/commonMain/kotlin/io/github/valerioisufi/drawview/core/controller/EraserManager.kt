@@ -48,7 +48,7 @@ class EraserManager(private val controller: DrawViewController) {
 
             val toRemove = mutableListOf<DrawElement>()
             for (stroke in page.strokes) {
-                if (stroke.isHidden) continue
+                if (controller.hiddenElements.isHidden(stroke.id)) continue
                 val sb = stroke.bounds
                 if (sb.left >= capsule.right || capsule.left >= sb.right || sb.top >= capsule.bottom || capsule.top >= sb.bottom) continue
                 if (HitTesting.meshIntersectsCapsule(stroke.mesh, a.x, a.y, b.x, b.y, radiusMm)) {

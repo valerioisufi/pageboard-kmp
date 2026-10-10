@@ -96,7 +96,7 @@ internal class CollaboratorsOverlay {
             drawIntoCanvas { canvas ->
                 for (element in collaborator.selection) {
                     when (element) {
-                        is DrawImage -> TileRenderer.ensureImageLoaded(controller.document, element)?.let {
+                        is DrawImage -> controller.tileManager.tileRenderer.imageOf(controller.document, element)?.let {
                             TileRenderer.drawImage(canvas, element, it, mmToScreen, imagePaint)
                         }
                         is DrawText -> controller.tileManager.tileRenderer.textAdapter?.drawText(canvas, element, mmToScreen)

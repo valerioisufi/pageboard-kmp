@@ -9,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.ElementOrder
 import io.github.valerioisufi.drawview.model.FractionalIndex
@@ -103,19 +102,6 @@ class DrawStroke(
     @Volatile
     var bounds: Rect = mesh.computeBounds()
         private set
-
-    /** Hidden from the static (tile) layers while the stroke is selected or moved. */
-    @Volatile
-    var isDragging: Boolean = false
-
-    /**
-     * Hidden from the static layers while another device edits or moves it: drawn over them
-     * instead (see `DrawViewController.collaborators`).
-     */
-    @Volatile var isShownByCollaborator: Boolean = false
-
-    /** Hidden from the static (tile) layers: selected, moved or edited here or on another device. */
-    val isHidden: Boolean get() = isDragging || isShownByCollaborator
 
     init {
         if (!transform.isIdentity) place(transform)
@@ -223,17 +209,6 @@ class DrawText(override val id: String = newElementId()) : RotatableItem, DrawEl
     /** Font size in typographic points. */
     @Volatile var fontSize: Float = 16f
 
-    /** Hidden from the static (tile) layers while selected or edited. */
-    @Volatile var isDragging: Boolean = false
-
-    /**
-     * Hidden from the static layers while another device edits or moves it: drawn over them
-     * instead (see `DrawViewController.collaborators`).
-     */
-    @Volatile var isShownByCollaborator: Boolean = false
-
-    /** Hidden from the static (tile) layers: selected, moved or edited here or on another device. */
-    val isHidden: Boolean get() = isDragging || isShownByCollaborator
 
     /** Incremented on every change, used to invalidate the render caches. */
     @Volatile var version: Int = 0
@@ -278,20 +253,6 @@ class DrawImage(override val id: String = newElementId()) : RotatableItem, DrawE
     @Volatile override var height: Float = 0f
     @Volatile override var rotation: Float = 0f
 
-    /** Hidden from the static (tile) layers while selected or moved. */
-    @Volatile var isDragging: Boolean = false
-
-    /**
-     * Hidden from the static layers while another device edits or moves it: drawn over them
-     * instead (see `DrawViewController.collaborators`).
-     */
-    @Volatile var isShownByCollaborator: Boolean = false
-
-    /** Hidden from the static (tile) layers: selected, moved or edited here or on another device. */
-    val isHidden: Boolean get() = isDragging || isShownByCollaborator
-
-    /** Decoded pixels (lazily loaded from the resource file). */
-    @Volatile var bitmap: ImageBitmap? = null
 }
 
 /**
@@ -506,8 +467,7 @@ class PageContentSnapshot(
 
     /**
      * A copy of this content whose elements are copies too: the elements of a page are changed in
-     * place, this copy stays as it is (e.g. while a document is exported). The copies are shown,
-     * none of them is selected or moved.
+     * place, this copy stays as it is (e.g. while a document is exported).
      */
     fun detached(): PageContentSnapshot = PageContentSnapshot(
         strokes = strokes.map { DrawStroke(it.id, it.baseMesh, it.baseBrush, it.transform) },
@@ -520,7 +480,6 @@ class PageContentSnapshot(
                 it.width = image.width
                 it.height = image.height
                 it.rotation = image.rotation
-                it.bitmap = image.bitmap
             }
         },
         pdfs = pdfs.map { pdf -> DrawPdf(pdf.pdfPageIndex, pdf.id).also { it.resourceId = pdf.resourceId } },

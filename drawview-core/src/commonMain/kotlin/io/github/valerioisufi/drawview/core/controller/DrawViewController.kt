@@ -32,6 +32,7 @@ import io.github.valerioisufi.drawview.core.model.DrawThemeColors
 import io.github.valerioisufi.drawview.core.model.LassoMode
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.render.DrawViewEngines
+import io.github.valerioisufi.drawview.core.render.HiddenElements
 import io.github.valerioisufi.drawview.core.render.tile.TextBlockSize
 import io.github.valerioisufi.drawview.core.render.tile.TextLineMetrics
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
@@ -119,6 +120,9 @@ class DrawViewController(
     val historyManager = HistoryManager(session)
 
     val tileManager = TileManager(onInvalidate = { requestRedraw() })
+
+    /** The elements drawn over the tiles: selected, moved or written here or on another device. */
+    val hiddenElements = HiddenElements()
 
     val toolManager = ToolManager(
         onPresetsChanged = { tool, presets -> persist { savePresets(tool, presets) } },
@@ -213,6 +217,7 @@ class DrawViewController(
     init {
         require(session.document === document) { "The session of another document" }
         tileManager.tileRenderer.pdfAdapter = engines.pdfTiles()
+        tileManager.tileRenderer.isHidden = hiddenElements::isHidden
         if (storesChanges) session.addObserver(ChangePersister(::persist))
         session.addObserver(changeObserver)
         updatePageLayout()
@@ -413,7 +418,7 @@ class DrawViewController(
      * The other devices working on the document, drawn over it: where they are, the strokes they
      * are drawing, the texts they are writing and the elements they select (kept by the
      * synchronization, see `drawview-sync-ui`). The texts they write and the elements they move
-     * are hidden from the content meanwhile (see [DrawText.isShownByCollaborator]).
+     * are hidden from the content meanwhile (see [hiddenElements]).
      */
     var collaborators: List<Collaborator>
         get() = shownCollaborators
@@ -456,12 +461,8 @@ class DrawViewController(
 
     private fun setShownByCollaborator(id: String, shown: Boolean) {
         val (page, element) = document.findElement(id) ?: return
-        when (element) {
-            is DrawStroke -> element.isShownByCollaborator = shown
-            is DrawText -> element.isShownByCollaborator = shown
-            is DrawImage -> element.isShownByCollaborator = shown
-            else -> return
-        }
+        if (element !is DrawStroke && element !is DrawText && element !is DrawImage) return
+        hiddenElements.setShownByCollaborator(id, shown)
         invalidatePageContent(page, page.boundsOf(element))
     }
 

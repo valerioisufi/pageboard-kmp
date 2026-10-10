@@ -191,7 +191,7 @@ internal object SelectionOverlay {
 
         scope.drawIntoCanvas { canvas ->
             for (image in selection.images) {
-                val bitmap = TileRenderer.ensureImageLoaded(document, image) ?: continue
+                val bitmap = renderer.imageOf(document, image) ?: continue
                 TileRenderer.drawImage(canvas, image, bitmap, frame.mmToScreen, imagePaint)
             }
             val textAdapter = renderer.textAdapter
