@@ -73,6 +73,7 @@ import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.command.Shortcut
 import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
+import io.github.valerioisufi.drawview.ui.render.LocalDrawViewEngines
 import io.github.valerioisufi.drawview.ui.screen.EditorActionButton
 import io.github.valerioisufi.drawview.ui.session.DocumentAction
 import io.github.valerioisufi.drawview.ui.session.EditorExtension
@@ -173,7 +174,9 @@ internal fun ExportDialog(
 ) {
     val fontFamilyResolver = LocalFontFamilyResolver.current
     val notesFonts = rememberNotesFonts()
-    val textAdapter = remember(fontFamilyResolver, notesFonts) { ComposeTextTileAdapter(fontFamilyResolver, notesFonts) }
+    // The engines of the editor or of the library showing the dialog
+    val engines = LocalDrawViewEngines.current
+    val textAdapter = remember(fontFamilyResolver, notesFonts, engines) { ComposeTextTileAdapter(fontFamilyResolver, notesFonts, engines.formulas) }
     var format by remember { mutableStateOf(ExportFormat.PDF) }
     var onlyPageOnScreen by remember { mutableStateOf(false) }
     var backgroundPattern by remember { mutableStateOf(true) }
@@ -182,7 +185,7 @@ internal fun ExportDialog(
 
     val exporter = when (format) {
         ExportFormat.PDF -> PdfExporter(textAdapter, NotesFontFiles::bytes, creator = appName)
-        ExportFormat.PNG -> PageImageExporter(textAdapter)
+        ExportFormat.PNG -> PageImageExporter(textAdapter, pdfTiles = engines.pdfTiles)
     }
     val pages = if (pageOnScreen != null && (onlyPageOnScreen || format == ExportFormat.PNG)) setOf(pageOnScreen) else null
     val save = rememberFileSaver(stringResource(Res.string.export_save_title), exporter.mimeType) { target ->

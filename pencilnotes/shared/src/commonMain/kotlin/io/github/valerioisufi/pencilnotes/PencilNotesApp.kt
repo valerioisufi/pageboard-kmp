@@ -22,15 +22,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
+import io.github.valerioisufi.drawview.core.render.DrawViewEngines
 import io.github.valerioisufi.drawview.data.DrawViewStore
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
 import io.github.valerioisufi.drawview.explorer.ui.aboutLibraryAction
 import io.github.valerioisufi.drawview.export.ui.rememberDocumentExportUi
+import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.lecture.ui.LectureDialogs
 import io.github.valerioisufi.drawview.lecture.ui.LectureRecordingIndicator
 import io.github.valerioisufi.drawview.lecture.ui.documentTag
 import io.github.valerioisufi.drawview.lecture.ui.editorExtension
 import io.github.valerioisufi.drawview.lecture.ui.rememberLectureAssistant
+import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import io.github.valerioisufi.drawview.sync.ui.CollaborationDialogs
 import io.github.valerioisufi.drawview.sync.ui.InvitationLinks
 import io.github.valerioisufi.drawview.sync.ui.joinAction
@@ -75,6 +78,8 @@ fun PencilNotesApp(commandHost: CommandHost = remember { CommandHost() }) {
         LaunchedEffect(lectureAssistant, collaboration) { lectureAssistant.localModels.nearbyHosts = collaboration::nearbyHosts }
         // The documents exported as PDF or as the image of a page
         val export = rememberDocumentExportUi(appName = "PencilNotes")
+        // The PDF pages drawn by PDFium, the formulas by MicroTeX
+        val engines = remember { DrawViewEngines(pdfTiles = PdfiumEngine::createTileAdapter, formulas = LatexEngine.formulaRenderer) }
         // The documents with a lecture: their badge and a filter of the library
         val lectureTag = remember(lectureAssistant) { lectureAssistant.documentTag() }
         val editorExtension = remember(lectureAssistant, collaboration, export) {
@@ -103,6 +108,7 @@ fun PencilNotesApp(commandHost: CommandHost = remember { CommandHost() }) {
                         editorExtension = editorExtension,
                         documentActions = listOf(export.documentAction),
                         tags = listOf(lectureTag),
+                        engines = engines,
                         libraryOverlay = { openDocument ->
                             LectureRecordingIndicator(
                                 assistant = lectureAssistant,

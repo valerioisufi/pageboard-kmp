@@ -42,6 +42,9 @@ kotlin {
             api(project(":drawview-data"))
             api(project(":drawview-ui"))
             implementation(project(":drawview-explorer"))
+            // The engines of the PDF pages and of the formulas
+            implementation(project(":drawview-pdf"))
+            implementation(project(":drawview-latex"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)

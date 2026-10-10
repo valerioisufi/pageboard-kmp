@@ -4,25 +4,26 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.valerioisufi.drawview.core.render.tile.TextFace
 import io.github.valerioisufi.drawview.core.controller.MediaManager
+import io.github.valerioisufi.drawview.core.render.DrawViewEngines
+import io.github.valerioisufi.drawview.core.render.tile.TextFace
 import io.github.valerioisufi.drawview.data.DocumentStore
 import io.github.valerioisufi.drawview.data.DrawViewStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.explorer.platform.SystemBarsHidden
 import io.github.valerioisufi.drawview.explorer.ui.ExplorerScreen
 import io.github.valerioisufi.drawview.explorer.ui.aboutLibraryAction
-import io.github.valerioisufi.drawview.latex.LatexEngine
-import io.github.valerioisufi.drawview.latex.TexFont
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.command.CommandRoot
 import io.github.valerioisufi.drawview.ui.platform.PickedFile
 import io.github.valerioisufi.drawview.ui.platform.PickerType
 import io.github.valerioisufi.drawview.ui.platform.rememberFilePicker
+import io.github.valerioisufi.drawview.ui.render.LocalDrawViewEngines
 import io.github.valerioisufi.drawview.ui.session.DocumentAction
 import io.github.valerioisufi.drawview.ui.session.DocumentTag
 import io.github.valerioisufi.drawview.ui.session.LibraryAction
@@ -51,6 +52,10 @@ import kotlinx.coroutines.withContext
  *   export), in the bar of the selection.
  * @param tags what the application says of the documents (e.g. that they have a lecture): their
  *   badges and the filters of the library.
+ * @param engines the engines drawing the PDF pages and the formulas (e.g. `PdfiumEngine` and
+ *   `LatexEngine` of `drawview-pdf` and `drawview-latex`), in the editor, the thumbnails and what
+ *   the application composes in the library ([LocalDrawViewEngines]); the formula renderer is
+ *   prepared with the fonts of the notes.
  * @param thumbnails the thumbnails of the documents (the first pages of the grid of a wider
  *   window), kept in the data directory for the documents of `DrawViewStore`, in memory for the
  *   others.
@@ -67,27 +72,23 @@ fun DocumentLibrary(
     libraryOverlay: @Composable BoxScope.(openDocument: (String) -> Unit) -> Unit = {},
     documentActions: List<DocumentAction> = emptyList(),
     tags: List<DocumentTag> = emptyList(),
+    engines: DrawViewEngines = DrawViewEngines.None,
     thumbnails: DocumentThumbnails = rememberDocumentThumbnails(
         documents,
-        directory = if (store === DrawViewStore.default) DocumentThumbnails.defaultDirectory() else null
+        directory = if (store === DrawViewStore.default) DocumentThumbnails.defaultDirectory() else null,
+        engines = engines
     )
 ) {
     val fileExplorerViewModel = viewModel { FileExplorerViewModel(store, documents) }
-    val editorViewModel = viewModel { DocumentEditorViewModel(store, documents) }
+    val editorViewModel = viewModel { DocumentEditorViewModel(store, documents, engines) }
 
-    // The native TeX engine unpacks its fonts at the first start: off the main thread. The text of
-    // the formulas (\text{}) is in the font of the notes, as their text
-    LaunchedEffect(Unit) {
+    // The formula engine may unpack its fonts at the first start: off the main thread. The text
+    // of the formulas (\text{}) is in the font of the notes, as their text
+    LaunchedEffect(engines) {
+        val formulas = engines.formulas ?: return@LaunchedEffect
         withContext(Dispatchers.Default) {
-            LatexEngine.setTextFonts(
-                mapOf(
-                    0 to NotesFontFiles.bytes(TextFace.REGULAR),
-                    TexFont.BOLD to NotesFontFiles.bytes(TextFace.BOLD),
-                    TexFont.ITALIC to NotesFontFiles.bytes(TextFace.ITALIC),
-                    TexFont.BOLD or TexFont.ITALIC to NotesFontFiles.bytes(TextFace.BOLD_ITALIC)
-                )
-            )
-            LatexEngine.initialize()
+            val faces = listOf(TextFace.REGULAR, TextFace.BOLD, TextFace.ITALIC, TextFace.BOLD_ITALIC)
+            formulas.prepare(faces.associateWith { NotesFontFiles.bytes(it) })
         }
     }
 
@@ -95,45 +96,47 @@ fun DocumentLibrary(
     SystemBarsHidden(hidden = fullScreenEditor && session != null)
     // The library and the editor adapt to the window, the input and the platform; their commands
     // reach the shortcuts and the menu bar of the application (see CommandRoot)
-    AdaptiveRoot(modifier = modifier) {
-        CommandRoot {
-            if (session == null) {
-                // A PDF or an image dropped from the system or picked: a note of it, in the folder shown
-                val importFiles: (List<PickedFile>) -> Boolean = { files ->
-                    val imported = files.filter { it.extension in MediaManager.IMPORTED_EXTENSIONS }
-                    val first = imported.firstOrNull()
-                    if (first != null) {
-                        val name = fileExplorerViewModel.availableName(first.name.substringBeforeLast('.'))
-                        editorViewModel.createAndOpenDocument(name, fileExplorerViewModel.currentFolder?.id) { controller ->
-                            for (file in imported) controller.mediaManager.importFile(file.bytes, file.extension)
+    CompositionLocalProvider(LocalDrawViewEngines provides engines) {
+        AdaptiveRoot(modifier = modifier) {
+            CommandRoot {
+                if (session == null) {
+                    // A PDF or an image dropped from the system or picked: a note of it, in the folder shown
+                    val importFiles: (List<PickedFile>) -> Boolean = { files ->
+                        val imported = files.filter { it.extension in MediaManager.IMPORTED_EXTENSIONS }
+                        val first = imported.firstOrNull()
+                        if (first != null) {
+                            val name = fileExplorerViewModel.availableName(first.name.substringBeforeLast('.'))
+                            editorViewModel.createAndOpenDocument(name, fileExplorerViewModel.currentFolder?.id) { controller ->
+                                for (file in imported) controller.mediaManager.importFile(file.bytes, file.extension)
+                            }
                         }
+                        first != null
                     }
-                    first != null
-                }
-                val pdfPicker = rememberFilePicker(PickerType.PDF) { file -> importFiles(listOf(file)) }
-                val imagePicker = rememberFilePicker(PickerType.IMAGE) { file -> importFiles(listOf(file)) }
-                Box {
-                    ExplorerScreen(
-                        fileExplorerViewModel = fileExplorerViewModel,
-                        onOpenDocument = { documentId -> editorViewModel.openDocument(documentId) },
-                        title = title,
-                        actions = actions,
-                        documentActions = documentActions,
-                        tags = tags,
-                        thumbnails = thumbnails,
-                        onFilesDropped = importFiles,
-                        onImportPdf = pdfPicker,
-                        onImportImage = imagePicker,
-                        modifier = Modifier.fillMaxSize()
+                    val pdfPicker = rememberFilePicker(PickerType.PDF) { file -> importFiles(listOf(file)) }
+                    val imagePicker = rememberFilePicker(PickerType.IMAGE) { file -> importFiles(listOf(file)) }
+                    Box {
+                        ExplorerScreen(
+                            fileExplorerViewModel = fileExplorerViewModel,
+                            onOpenDocument = { documentId -> editorViewModel.openDocument(documentId) },
+                            title = title,
+                            actions = actions,
+                            documentActions = documentActions,
+                            tags = tags,
+                            thumbnails = thumbnails,
+                            onFilesDropped = importFiles,
+                            onImportPdf = pdfPicker,
+                            onImportImage = imagePicker,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        libraryOverlay { documentId -> editorViewModel.openDocument(documentId) }
+                    }
+                } else {
+                    EditorSessionScreen(
+                        session = session,
+                        onClose = { editorViewModel.closeSession() },
+                        extension = editorExtension
                     )
-                    libraryOverlay { documentId -> editorViewModel.openDocument(documentId) }
                 }
-            } else {
-                EditorSessionScreen(
-                    session = session,
-                    onClose = { editorViewModel.closeSession() },
-                    extension = editorExtension
-                )
             }
         }
     }

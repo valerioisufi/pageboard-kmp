@@ -48,7 +48,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.text.TextSizes.PT_TO_MM
-import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_formula_invalid
 import io.github.valerioisufi.drawview.ui.render.FormulaImages
@@ -60,6 +59,7 @@ import kotlin.math.ln
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * The field of the text being written, over the canvas where the text is on its page, as the page
@@ -107,8 +107,9 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
     // The formulas drawn as the page draws them
     val resolver = LocalFontFamilyResolver.current
     val room = remember(resolver, notesFonts) { fontRoom(resolver, notesFonts.text) }
-    val images = remember { FormulaImages(maxSize = 32) }
-    val latexReady by LatexEngine.isReady.collectAsState()
+    val formulas = controller.engines.formulas
+    val images = remember(formulas) { FormulaImages(formulas, maxSize = 32) }
+    val latexReady by remember(formulas) { formulas?.isReady ?: MutableStateFlow(false) }.collectAsState()
     val value = editor.value
     val shown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, room, latexReady) {
         MarkdownTextUtil.toEditorText(

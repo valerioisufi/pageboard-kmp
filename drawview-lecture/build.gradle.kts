@@ -45,7 +45,6 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":drawview-ui"))
-            implementation(project(":drawview-latex"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)

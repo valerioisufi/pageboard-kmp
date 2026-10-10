@@ -19,8 +19,6 @@ kotlin {
         commonMain.dependencies {
             api(project(":drawview-core"))
             api(project(":drawview-data"))
-            implementation(project(":drawview-latex"))
-            implementation(project(":drawview-pdf"))
             api(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.navigationevent.compose)
             implementation(libs.compose.runtime)

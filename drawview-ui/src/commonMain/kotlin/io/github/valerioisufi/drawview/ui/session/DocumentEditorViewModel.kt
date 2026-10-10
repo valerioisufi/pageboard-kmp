@@ -6,12 +6,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.core.render.DrawViewEngines
 import io.github.valerioisufi.drawview.core.util.SyncLock
 import io.github.valerioisufi.drawview.core.util.syncLock
 import io.github.valerioisufi.drawview.data.DocumentStore
 import io.github.valerioisufi.drawview.data.OpenDocument
 import io.github.valerioisufi.drawview.data.OpenDocuments
-import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -58,7 +58,9 @@ class EditorSession internal constructor(
  */
 class DocumentEditorViewModel(
     val store: DocumentStore,
-    val documents: OpenDocuments = OpenDocuments(store)
+    val documents: OpenDocuments = OpenDocuments(store),
+    /** The engines of the editors (PDF pages, formulas). */
+    val engines: DrawViewEngines = DrawViewEngines.None
 ) : ViewModel() {
 
     var session: EditorSession? by mutableStateOf(null)
@@ -116,11 +118,10 @@ class DocumentEditorViewModel(
             coroutineScope = viewModelScope,
             persistence = store.persistence,
             persistenceScope = session.persistenceScope,
-            sharedSession = open.session
+            sharedSession = open.session,
+            engines = engines
         ).apply {
             applyPreferences(preferences)
-            // PDF pages rendering (PDFium on Android, iOS and the desktop)
-            tileManager.tileRenderer.pdfAdapter = PdfiumEngine.createTileAdapter()
         }
         session.controller = controller
         // The files arriving from the other devices are drawn

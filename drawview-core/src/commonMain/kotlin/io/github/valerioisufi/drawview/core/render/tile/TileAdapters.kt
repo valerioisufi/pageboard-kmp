@@ -2,12 +2,12 @@ package io.github.valerioisufi.drawview.core.render.tile
 
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.PdfTextLayout
 import kotlin.math.min
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Adapter for rendering PDF pages into tiles and inspecting PDF files.
@@ -93,6 +93,9 @@ interface TextTileAdapter {
 
     /** A line of a text of [fontSize] points; `null` when the adapter cannot tell it. */
     fun lineMetrics(fontSize: Float): TextLineMetrics? = null
+
+    /** Drops what the adapter keeps of the texts it laid out (e.g. its formulas became renderable). */
+    fun clearCaches() {}
 }
 
 /**
@@ -146,17 +149,38 @@ enum class TextFace {
 }
 
 /**
- * Adapter for rasterizing LaTeX math formulas into ImageBitmaps.
- * Allows :drawview-core to decouple completely from MicroTeX or any specific LaTeX engine.
+ * Renders the LaTeX formulas of the texts (implemented by `drawview-latex`): the port through
+ * which the editor, the thumbnails and the export draw formulas without depending on an engine.
+ *
+ * Implementations must be thread-safe: tiles are rasterized on background workers.
  */
-interface LatexTileAdapter {
+interface FormulaRenderer {
     /**
-     * Renders a LaTeX formula to an ImageBitmap with transparent background.
-     * Returns null if syntax error occurs or engine is uninitialized.
+     * Whether formulas can be rendered now: the engine may have to be prepared first (see
+     * [prepare]). The editors draw their texts again when it becomes `true`.
      */
-    fun renderLatex(
-        latex: String,
-        fontSizePx: Float,
-        color: Color
-    ): ImageBitmap?
+    val isReady: StateFlow<Boolean>
+
+    /**
+     * Prepares the engine (e.g. unpacks its fonts), the text of the formulas (`\text{}`) being
+     * written in [textFonts] (TrueType files by face: [TextFace.REGULAR], [TextFace.BOLD],
+     * [TextFace.ITALIC], [TextFace.BOLD_ITALIC]). Heavy: call it off the main thread. Safe to call
+     * several times.
+     */
+    suspend fun prepare(textFonts: Map<TextFace, ByteArray> = emptyMap())
+
+    /**
+     * [latex] as written in a text (with its delimiters, possibly unfinished while it is typed)
+     * made ready for the engine; empty when nothing is left to draw.
+     */
+    fun sanitize(latex: String): String
+
+    /**
+     * The formula [latex] (see [sanitize]) drawn [fontSizePx] high in [colorArgb], or `null`
+     * when it is invalid or the engine is not ready.
+     */
+    fun render(latex: String, fontSizePx: Float, colorArgb: Int): FormulaImage?
 }
+
+/** A formula drawn by a [FormulaRenderer]: its [bitmap] and the place of its baseline (0 top, 1 bottom). */
+class FormulaImage(val bitmap: ImageBitmap, val baselineRatio: Float)

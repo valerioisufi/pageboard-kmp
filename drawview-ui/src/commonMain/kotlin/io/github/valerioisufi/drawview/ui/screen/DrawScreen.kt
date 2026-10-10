@@ -53,7 +53,6 @@ import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.geometry.Dimension
 import io.github.valerioisufi.drawview.core.geometry.mm
 import io.github.valerioisufi.drawview.core.model.PageBackground
-import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.Command
@@ -73,6 +72,7 @@ import io.github.valerioisufi.drawview.ui.platform.PickerType
 import io.github.valerioisufi.drawview.ui.platform.fileDropTarget
 import io.github.valerioisufi.drawview.ui.platform.rememberFilePicker
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
+import io.github.valerioisufi.drawview.ui.render.LocalDrawViewEngines
 import io.github.valerioisufi.drawview.ui.session.EditorPanel
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.LocalCanvasColors
@@ -95,8 +95,10 @@ import org.jetbrains.compose.resources.stringResource
  *   with those of the editor for the menu bar and the shortcuts.
  * @param location where the document is (its folder), shown under its title.
  * @param readOnlyNote why the document may only be read (e.g. who decides who edits), if known.
+ *
+ * The engines of the controller ([DrawViewController.engines]) are the [LocalDrawViewEngines] of
+ * what the editor composes (its panels and overlays included).
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DrawScreen(
     controller: DrawViewController,
@@ -109,6 +111,25 @@ fun DrawScreen(
     extraCommands: List<Command> = emptyList(),
     location: String? = null,
     readOnlyNote: @Composable () -> String? = { null }
+) {
+    CompositionLocalProvider(LocalDrawViewEngines provides controller.engines) {
+        DrawScreenContent(controller, onNavigateBack, modifier, isLoading, toolbarActions, panels, canvasOverlay, extraCommands, location, readOnlyNote)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DrawScreenContent(
+    controller: DrawViewController,
+    onNavigateBack: () -> Unit,
+    modifier: Modifier,
+    isLoading: Boolean,
+    toolbarActions: @Composable RowScope.() -> Unit,
+    panels: List<EditorPanel>,
+    canvasOverlay: @Composable BoxScope.() -> Unit,
+    extraCommands: List<Command>,
+    location: String?,
+    readOnlyNote: @Composable () -> String?
 ) {
     // Immersive editor (Android), as in the original app
     HideSystemBarsEffect()
@@ -130,22 +151,10 @@ fun DrawScreen(
     val fontFamilyResolver = LocalFontFamilyResolver.current
     val notesFonts = rememberNotesFonts()
     DisposableEffect(controller, fontFamilyResolver, notesFonts) {
-        val renderer = controller.tileManager.tileRenderer
-        if (renderer.textAdapter == null) {
-            renderer.textAdapter = ComposeTextTileAdapter(fontFamilyResolver, notesFonts)
-            controller.tileManager.invalidateAll()
-            controller.requestRedraw()
+        if (controller.textAdapter == null) {
+            controller.textAdapter = ComposeTextTileAdapter(fontFamilyResolver, notesFonts, controller.engines.formulas)
         }
         onDispose { }
-    }
-    // The formulas are drawn again once the LaTeX engine is ready
-    val latexReady by LatexEngine.isReady.collectAsState()
-    LaunchedEffect(latexReady) {
-        if (latexReady) {
-            (controller.tileManager.tileRenderer.textAdapter as? ComposeTextTileAdapter)?.clearCaches()
-            controller.tileManager.invalidateAll()
-            controller.requestRedraw()
-        }
     }
 
     // One-shot messages of the editor

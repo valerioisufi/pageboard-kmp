@@ -3,7 +3,9 @@ package io.github.valerioisufi.drawview.latex
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toArgb
-import io.github.valerioisufi.drawview.core.render.tile.LatexTileAdapter
+import io.github.valerioisufi.drawview.core.render.tile.FormulaImage
+import io.github.valerioisufi.drawview.core.render.tile.FormulaRenderer
+import io.github.valerioisufi.drawview.core.render.tile.TextFace
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -205,9 +207,31 @@ object LatexEngine {
     }
 
     /**
-     * Returns a LatexTileAdapter instance for plug-and-play use with :drawview-core TileRenderer.
+     * The engine as the formula renderer of the editors, the thumbnails and the export (give it
+     * to `DrawViewEngines`).
      */
-    fun asTileAdapter(): LatexTileAdapter {
-        return LatexTileAdapterImpl(this)
+    val formulaRenderer: FormulaRenderer = object : FormulaRenderer {
+        override val isReady: StateFlow<Boolean> get() = this@LatexEngine.isReady
+
+        override suspend fun prepare(textFonts: Map<TextFace, ByteArray>) {
+            if (textFonts.isNotEmpty()) {
+                setTextFonts(textFonts.mapNotNull { (face, bytes) -> texStyle(face)?.let { it to bytes } }.toMap())
+            }
+            initialize()
+        }
+
+        override fun sanitize(latex: String): String = sanitizeLatexString(latex)
+
+        override fun render(latex: String, fontSizePx: Float, colorArgb: Int): FormulaImage? =
+            renderFormula(latex, fontSizePx, colorArgb, paddingPx = 0f)?.let { FormulaImage(it.bitmap, it.baselineRatio) }
+    }
+
+    /** The style of the text fonts of MicroTeX for [face] (`null` for the code faces). */
+    private fun texStyle(face: TextFace): Int? = when (face) {
+        TextFace.REGULAR -> 0
+        TextFace.BOLD -> TexFont.BOLD
+        TextFace.ITALIC -> TexFont.ITALIC
+        TextFace.BOLD_ITALIC -> TexFont.BOLD or TexFont.ITALIC
+        TextFace.MONO, TextFace.MONO_BOLD -> null
     }
 }

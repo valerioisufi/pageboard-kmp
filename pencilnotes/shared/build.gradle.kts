@@ -41,6 +41,9 @@ kotlin {
             implementation(project(":drawview-lecture"))
             implementation(project(":drawview-sync-ui"))
             implementation(project(":drawview-export"))
+            // The engines of the PDF pages and of the formulas
+            implementation(project(":drawview-pdf"))
+            implementation(project(":drawview-latex"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)

@@ -6,7 +6,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import io.github.valerioisufi.drawview.core.render.DrawViewEngines
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
+import io.github.valerioisufi.drawview.latex.LatexEngine
+import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import io.github.valerioisufi.drawview.ui.command.CommandHost
 import io.github.valerioisufi.drawview.ui.command.CommandRoot
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
@@ -23,10 +26,13 @@ import org.jetbrains.compose.resources.stringResource
  */
 @Composable
 fun App(commandHost: CommandHost = remember { CommandHost() }) {
+    // The PDF pages drawn by PDFium, the formulas by MicroTeX
+    val engines = remember { DrawViewEngines(pdfTiles = PdfiumEngine::createTileAdapter, formulas = LatexEngine.formulaRenderer) }
     DrawViewTheme {
         CommandRoot(host = commandHost) {
             DocumentLibrary(
                 title = { Text(stringResource(Res.string.app_name), style = MaterialTheme.typography.titleLarge) },
+                engines = engines,
                 modifier = Modifier.fillMaxSize()
             )
         }

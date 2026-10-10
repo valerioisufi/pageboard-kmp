@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.TextAlignment
+import io.github.valerioisufi.drawview.core.render.tile.FormulaRenderer
 import io.github.valerioisufi.drawview.core.render.tile.TextBlockLayout
 import io.github.valerioisufi.drawview.core.render.tile.TextBlockSize
 import io.github.valerioisufi.drawview.core.render.tile.TextFace
@@ -56,10 +57,12 @@ import kotlin.math.roundToInt
  * @param fontFamilyResolver resolver of the composition (`LocalFontFamilyResolver`).
  * @param fonts the fonts of the texts ([rememberNotesFonts] in the editor, the same on every
  *   platform).
+ * @param formulas renders the formulas (`null`: they are drawn as their source).
  */
 class ComposeTextTileAdapter(
     fontFamilyResolver: FontFamily.Resolver,
-    private val fonts: NotesFonts = NotesFonts.System
+    private val fonts: NotesFonts = NotesFonts.System,
+    formulas: FormulaRenderer? = null
 ) : TextTileAdapter {
 
     private val lock = SyncLock()
@@ -68,7 +71,7 @@ class ComposeTextTileAdapter(
     private val measurer = TextMeasurer(fontFamilyResolver, Density(1f, 1f), LayoutDirection.Ltr, cacheSize = 0)
 
     private val layouts = LruCache<LayoutKey, PreparedText>(MAX_LAYOUTS)
-    private val formulaImages = FormulaImages()
+    private val formulaImages = FormulaImages(formulas)
     private val ascentCache = mutableMapOf<Int, Float>()
 
     private val imagePaint = Paint().apply {
@@ -229,7 +232,7 @@ class ComposeTextTileAdapter(
     /**
      * Drops the cached layouts and formulas (e.g. when the LaTeX engine becomes available).
      */
-    fun clearCaches() = syncLock(lock) {
+    override fun clearCaches() = syncLock(lock) {
         layouts.clear()
         formulaImages.clear()
     }

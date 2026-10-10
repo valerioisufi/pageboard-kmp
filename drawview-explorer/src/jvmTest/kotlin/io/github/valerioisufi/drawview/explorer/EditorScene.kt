@@ -22,6 +22,9 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import io.github.takahirom.roborazzi.captureRoboImage
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.core.render.DrawViewEngines
+import io.github.valerioisufi.drawview.latex.LatexEngine
+import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
@@ -79,7 +82,9 @@ internal fun capture(
                         title = { Text("DrawView", modifier = Modifier.padding(horizontal = 16.dp)) },
                         store = store,
                         documents = documents,
-                        thumbnails = rememberDocumentThumbnails(documents, directory = null).also { thumbnails.value = it },
+                        // The PDF pages and the formulas drawn as in the applications
+                        engines = ENGINES,
+                        thumbnails = rememberDocumentThumbnails(documents, directory = null, engines = ENGINES).also { thumbnails.value = it },
                         editorExtension = extension,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -115,6 +120,9 @@ internal fun DesktopComposeUiTest.openNote(viewModels: ViewModelStoreOwner) {
     onRoot().performMouseInput { moveTo(Offset(centerX, 4f)) }
     waitForIdle()
 }
+
+/** The engines of the applications: PDFium and MicroTeX. */
+private val ENGINES = DrawViewEngines(pdfTiles = PdfiumEngine::createTileAdapter, formulas = LatexEngine.formulaRenderer)
 
 /** The thumbnails of the library of a test. */
 private class ThumbnailsHolder {

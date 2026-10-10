@@ -74,8 +74,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.core.render.tile.FormulaRenderer
 import io.github.valerioisufi.drawview.core.util.currentTimeMillis
-import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.lecture.AssistantSettings
 import io.github.valerioisufi.drawview.lecture.AudioDownload
 import io.github.valerioisufi.drawview.lecture.ControllerNotebookSource
@@ -114,6 +114,7 @@ import io.github.valerioisufi.drawview.ui.generated.resources.Res as UiRes
 import io.github.valerioisufi.drawview.ui.generated.resources.date_months_short
 import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
+import io.github.valerioisufi.drawview.ui.render.LocalDrawViewEngines
 import io.github.valerioisufi.drawview.ui.session.EditorPanel
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
@@ -121,6 +122,7 @@ import io.github.valerioisufi.drawview.ui.util.formatShortDateTime
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
@@ -844,8 +846,8 @@ private fun LectureTabs(assistant: LectureAssistant, lecture: Lecture, controlle
     )
     val fontFamilyResolver = LocalFontFamilyResolver.current
     val notesFonts = rememberNotesFonts()
-    val inserter = remember(fontFamilyResolver, notesFonts) {
-        NoteInserter(ComposeTextTileAdapter(fontFamilyResolver, notesFonts))
+    val inserter = remember(fontFamilyResolver, notesFonts, controller.engines) {
+        NoteInserter(ComposeTextTileAdapter(fontFamilyResolver, notesFonts, controller.engines.formulas))
     }
 
     SegmentedChoice(
@@ -1538,17 +1540,18 @@ internal fun privacyNote(settings: AssistantSettings): String {
 }
 
 /**
- * Markdown of the notes, formatted as on the canvas: delimiters hidden and, once the LaTeX engine
- * is ready, the formulas rendered by MicroTeX inline.
+ * Markdown of the notes, formatted as on the canvas: delimiters hidden and, once the formula
+ * renderer of the editor is ready, the formulas rendered inline.
  */
 @Composable
 private fun MarkdownText(markdown: String, color: Color = MaterialTheme.colorScheme.onSurface) {
     val style = MaterialTheme.typography.bodyMedium
     val density = LocalDensity.current
-    val latexReady by LatexEngine.isReady.collectAsState()
-    val content = remember(markdown, color, style, density, latexReady) {
+    val formulas = LocalDrawViewEngines.current.formulas
+    val latexReady by remember(formulas) { formulas?.isReady ?: MutableStateFlow(false) }.collectAsState()
+    val content = remember(markdown, color, style, density, formulas, latexReady) {
         try {
-            if (latexReady) markdownWithFormulas(markdown, color, style, density) else null
+            if (formulas != null && latexReady) markdownWithFormulas(markdown, color, style, density, formulas) else null
         } catch (_: Throwable) {
             null
         } ?: (
@@ -1567,12 +1570,13 @@ private fun markdownWithFormulas(
     markdown: String,
     color: Color,
     style: TextStyle,
-    density: Density
+    density: Density,
+    formulas: FormulaRenderer
 ): Pair<AnnotatedString, Map<String, InlineTextContent>> {
     val fontPx = with(density) { style.fontSize.toPx() }
     val canvasText = MarkdownTextUtil.toCanvasText(markdown, color, fontPx, fontAscentPx = fontPx * 0.8f) { latex, sizePx ->
-        LatexEngine.renderFormula(latex, sizePx, color.toArgb())?.let {
-            MarkdownTextUtil.RenderedFormula(it.bitmap, it.width.toFloat(), it.height.toFloat(), it.baselineRatio)
+        formulas.render(formulas.sanitize(latex), sizePx, color.toArgb())?.let {
+            MarkdownTextUtil.RenderedFormula(it.bitmap, it.bitmap.width.toFloat(), it.bitmap.height.toFloat(), it.baselineRatio)
         }
     }
     val inline = mutableMapOf<String, InlineTextContent>()

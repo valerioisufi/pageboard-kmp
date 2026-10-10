@@ -16,11 +16,13 @@ import io.github.valerioisufi.drawview.core.platform.PlatformFiles
 import io.github.valerioisufi.drawview.core.platform.dataDirectory
 import io.github.valerioisufi.drawview.core.platform.decodeImageBitmap
 import io.github.valerioisufi.drawview.core.platform.encodePng
+import io.github.valerioisufi.drawview.core.render.DrawViewEngines
+import io.github.valerioisufi.drawview.core.render.tile.PdfTileAdapter
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.core.render.tile.TileRenderer
 import io.github.valerioisufi.drawview.data.OpenDocuments
-import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
+import io.github.valerioisufi.drawview.ui.render.LocalDrawViewEngines
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -40,13 +42,15 @@ import kotlinx.coroutines.withContext
  * @param textAdapter draws the texts of the notes (the one of the editor), or `null`.
  * @param directory where the thumbnails are kept, or `null` to keep them in memory only.
  * @param capacity the thumbnails kept in memory.
+ * @param pdfTiles creates the adapter drawing the PDF pages (see `DrawViewEngines.pdfTiles`).
  */
 @Stable
 class DocumentThumbnails(
     private val documents: OpenDocuments,
     private val textAdapter: TextTileAdapter?,
     private val directory: String? = defaultDirectory(),
-    private val capacity: Int = 48
+    private val capacity: Int = 48,
+    private val pdfTiles: () -> PdfTileAdapter? = { null }
 ) {
     private class Thumbnail(val modifiedAt: Long, val widthPx: Int, val image: ImageBitmap)
 
@@ -143,7 +147,7 @@ class DocumentThumbnails(
     private fun drawPage(page: PageContentSnapshot, resources: List<DrawResource>, widthPx: Int): ImageBitmap {
         // The renderer finds the files of the resources in a document
         val document = DrawDocument(addInitialPage = false).apply { this.resources.addAll(resources) }
-        val pdfAdapter = PdfiumEngine.createTileAdapter()
+        val pdfAdapter = pdfTiles()
         return try {
             TileRenderer(pdfAdapter, textAdapter).renderThumbnail(document, page, widthPx)
         } finally {
@@ -154,13 +158,18 @@ class DocumentThumbnails(
 
 /**
  * The thumbnails of [documents] kept in [directory] (`null`: in memory only), their texts drawn by
- * the fonts of the notes.
+ * the fonts of the notes, their PDF pages and formulas by [engines].
  */
 @Composable
-fun rememberDocumentThumbnails(documents: OpenDocuments, directory: String? = DocumentThumbnails.defaultDirectory()): DocumentThumbnails {
+fun rememberDocumentThumbnails(
+    documents: OpenDocuments,
+    directory: String? = DocumentThumbnails.defaultDirectory(),
+    engines: DrawViewEngines = LocalDrawViewEngines.current
+): DocumentThumbnails {
     val fontFamilyResolver = LocalFontFamilyResolver.current
     val notesFonts = rememberNotesFonts()
-    return remember(documents, directory, fontFamilyResolver, notesFonts) {
-        DocumentThumbnails(documents, ComposeTextTileAdapter(fontFamilyResolver, notesFonts), directory)
+    return remember(documents, directory, fontFamilyResolver, notesFonts, engines) {
+        val textAdapter = ComposeTextTileAdapter(fontFamilyResolver, notesFonts, engines.formulas)
+        DocumentThumbnails(documents, textAdapter, directory, pdfTiles = engines.pdfTiles)
     }
 }

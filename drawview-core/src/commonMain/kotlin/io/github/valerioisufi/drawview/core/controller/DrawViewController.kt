@@ -32,14 +32,17 @@ import io.github.valerioisufi.drawview.core.model.DrawThemeColors
 import io.github.valerioisufi.drawview.core.model.LassoMode
 import io.github.valerioisufi.drawview.core.model.StrokeMesh
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.core.render.DrawViewEngines
 import io.github.valerioisufi.drawview.core.render.tile.TextBlockSize
 import io.github.valerioisufi.drawview.core.render.tile.TextLineMetrics
+import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.core.render.tile.TileManager
 import io.github.valerioisufi.drawview.core.text.TextDefaults
 import io.github.valerioisufi.drawview.core.text.TextSizes
 import kotlin.math.hypot
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,6 +50,8 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
 /**
@@ -73,7 +78,9 @@ class DrawViewController(
      * with others (e.g. the synchronization, see `OpenDocuments`), whose owner stores its changes;
      * without one the controller creates it and stores its changes through [persistence].
      */
-    sharedSession: DocumentSession? = null
+    sharedSession: DocumentSession? = null,
+    /** The engines drawing the PDF pages and the formulas (none: drawn blank and as their source). */
+    val engines: DrawViewEngines = DrawViewEngines.None
 ) {
     val session: DocumentSession = sharedSession ?: DocumentSession(document)
     private val storesChanges = sharedSession == null
@@ -190,8 +197,18 @@ class DrawViewController(
     private var changeAlreadyDrawn = false
     private val changeObserver = ChangeObserver(::onChangeCommitted)
 
+    /** Draws the texts again when the formula renderer becomes ready (see [textRenderingChanged]). */
+    private val formulasWatch: Job? = engines.formulas?.let { formulas ->
+        // Ready already: nothing was drawn without the formulas
+        val readyAtStart = formulas.isReady.value
+        coroutineScope.launch {
+            formulas.isReady.filter { it }.drop(if (readyAtStart) 1 else 0).collect { textRenderingChanged() }
+        }
+    }
+
     init {
         require(session.document === document) { "The session of another document" }
+        tileManager.tileRenderer.pdfAdapter = engines.pdfTiles()
         if (storesChanges) session.addObserver(ChangePersister(::persist))
         session.addObserver(changeObserver)
         updatePageLayout()
@@ -304,6 +321,28 @@ class DrawViewController(
 
     /** A line of a text of [fontSize] points as the renderer lays it out, or `null` without a text adapter. */
     fun textLineMetrics(fontSize: Float): TextLineMetrics? = tileManager.tileRenderer.textAdapter?.lineMetrics(fontSize)
+
+    /**
+     * What draws the texts (Markdown and formulas) in the tiles, the thumbnails and the overlays:
+     * set by the UI, which owns the fonts. The tiles are drawn again when it changes.
+     */
+    var textAdapter: TextTileAdapter?
+        get() = tileManager.tileRenderer.textAdapter
+        set(value) {
+            if (tileManager.tileRenderer.textAdapter === value) return
+            tileManager.tileRenderer.textAdapter = value
+            textRenderingChanged()
+        }
+
+    /**
+     * The texts are drawn differently (e.g. the formula renderer became ready): what the text
+     * adapter kept of them is dropped and the tiles are drawn again.
+     */
+    fun textRenderingChanged() {
+        tileManager.tileRenderer.textAdapter?.clearCaches()
+        tileManager.invalidateAll()
+        requestRedraw()
+    }
 
     fun invalidatePageContent(page: DrawPage, mmRect: Rect?) {
         val pageWorldRect = calcPage.pagesRectOnWindow.getOrNull(document.pages.indexOf(page))
@@ -804,6 +843,7 @@ class DrawViewController(
      * Releases the background resources of the session.
      */
     fun dispose() {
+        formulasWatch?.cancel()
         // The session may go on without the editor (e.g. synchronized with other devices)
         session.removeObserver(changeObserver)
         historyManager.dispose()
