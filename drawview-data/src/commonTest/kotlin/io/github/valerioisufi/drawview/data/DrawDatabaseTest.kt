@@ -12,7 +12,6 @@ import io.github.valerioisufi.drawview.core.change.snapshot
 import io.github.valerioisufi.drawview.core.change.toData
 import io.github.valerioisufi.drawview.core.controller.ToolManager
 import io.github.valerioisufi.drawview.core.controller.ToolPreset
-import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPage
@@ -27,6 +26,7 @@ import io.github.valerioisufi.drawview.data.db.*
 import io.github.valerioisufi.drawview.data.repository.DrawDocumentRepository
 import io.github.valerioisufi.drawview.data.repository.FileRepository
 import io.github.valerioisufi.drawview.data.repository.toDrawPreferences
+import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.ElementOrder
 import io.github.valerioisufi.drawview.model.FractionalIndex

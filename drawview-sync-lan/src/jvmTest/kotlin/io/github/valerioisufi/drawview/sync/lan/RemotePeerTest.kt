@@ -5,12 +5,12 @@ import io.github.valerioisufi.drawview.core.change.PlaceElements
 import io.github.valerioisufi.drawview.core.change.StrokePlacement
 import io.github.valerioisufi.drawview.core.change.TextData
 import io.github.valerioisufi.drawview.core.controller.SelectionActivity
-import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
+import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.InputToolType
 import io.github.valerioisufi.drawview.model.StrokePoint

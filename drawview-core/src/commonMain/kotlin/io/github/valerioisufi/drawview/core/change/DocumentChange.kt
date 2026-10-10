@@ -13,6 +13,7 @@ import io.github.valerioisufi.drawview.model.ElementOrder
 import io.github.valerioisufi.drawview.model.FractionalIndex
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.Stamp
+import io.github.valerioisufi.drawview.model.StrokeModeller
 import io.github.valerioisufi.drawview.model.Versions
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import kotlinx.serialization.SerialName
@@ -48,10 +49,10 @@ sealed interface DocumentChange {
 
     /**
      * Does now the slow work of applying it that needs no document (e.g. modeling the strokes it
-     * adds again from their inputs), e.g. on another thread for a change received: it is applied
-     * sooner then.
+     * adds again from their inputs, with [modeller]: the one of the document), e.g. on another
+     * thread for a change received: it is applied sooner then.
      */
-    fun prepare() {}
+    fun prepare(modeller: StrokeModeller) {}
 }
 
 /**
@@ -80,8 +81,8 @@ data class AddElements(val pageId: String, val elements: List<ElementData>, val 
     private var local: Map<String, DrawElement> = emptyMap()
 
     /** Builds its elements now (the strokes are modeled again from their inputs). */
-    override fun prepare() {
-        if (local.isEmpty()) local = elements.associate { it.id to it.toElement() }
+    override fun prepare(modeller: StrokeModeller) {
+        if (local.isEmpty()) local = elements.associate { it.id to it.toElement(modeller) }
     }
 
     override fun applyTo(context: ChangeContext): DocumentChange? {
@@ -97,7 +98,7 @@ data class AddElements(val pageId: String, val elements: List<ElementData>, val 
             val order = data.order ?: ElementOrder(stamp, i)
             val found = document.findAnyElement(data.id, page)
             if (found == null) {
-                val element = local[data.id] ?: data.toElement()
+                val element = local[data.id] ?: data.toElement(document.strokeModeller)
                 element.order = order
                 element.added = stamp
                 element.removed = null
@@ -725,7 +726,7 @@ data object NoChange : DocumentChange {
 @Serializable
 @SerialName("composite")
 data class CompositeChange(val changes: List<DocumentChange>) : DocumentChange {
-    override fun prepare() = changes.forEach { it.prepare() }
+    override fun prepare(modeller: StrokeModeller) = changes.forEach { it.prepare(modeller) }
 
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val inverses = changes.mapNotNull { it.applyTo(context) }

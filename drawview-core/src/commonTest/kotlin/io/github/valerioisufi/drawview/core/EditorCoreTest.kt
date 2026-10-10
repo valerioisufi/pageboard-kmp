@@ -14,7 +14,6 @@ import io.github.valerioisufi.drawview.core.controller.DrawPersistence
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.PersistenceQueue
 import io.github.valerioisufi.drawview.core.controller.PlacementRequest
-import io.github.valerioisufi.drawview.core.engine.KotlinStrokeEngineDelegate
 import io.github.valerioisufi.drawview.core.geometry.toCompose
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawPage
@@ -23,6 +22,7 @@ import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.KotlinStrokeEngineDelegate
 import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.StrokeMesh
 import io.github.valerioisufi.drawview.model.StrokePoint

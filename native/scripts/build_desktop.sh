@@ -97,6 +97,10 @@ cmake --build "$BUILD_DIR" ${BUILD_ARGS[@]+"${BUILD_ARGS[@]}"} --target "${TARGE
     -j "$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)"
 
 OUT_DIR="$ROOT_DIR/build/nativeLibs/jvm"
+# The libraries this build installs only: none left behind by another layout of the modules
+for dir in "$OUT_DIR"/*/native/"$PLATFORM"; do
+    if [[ -d "$dir" ]]; then rm -r "$dir"; fi
+done
 install_lib() {
     local name="$1" module="$2"
     local file="$PREFIX$name.$EXT"
@@ -108,11 +112,11 @@ install_lib() {
     echo "Installed $dest/$file"
 }
 
-install_lib ink_bridge drawview-core
+install_lib ink_bridge drawview-ink
 if [[ "$PLATFORM" == darwin-* ]]; then
     install_lib trackpad_bridge drawview-core
 fi
-cp "$NATIVE_DIR/ink/LICENSE" "$OUT_DIR/drawview-core/native/$PLATFORM/INK_LICENSE.txt"
+cp "$NATIVE_DIR/ink/LICENSE" "$OUT_DIR/drawview-ink/native/$PLATFORM/INK_LICENSE.txt"
 install_lib tex drawview-latex
 install_lib pdfium_bridge drawview-pdf
 install_lib whisper_bridge drawview-lecture

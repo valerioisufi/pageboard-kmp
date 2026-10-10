@@ -262,7 +262,7 @@ val (aacVersion, aacSourceDir) = audioCodecSource("aac", { "vo-aacenc-$it" }) { 
 // Desktop JVM native engines (Google Ink, MicroTeX, PDFium bridge, whisper.cpp bridge): JNI
 // libraries built by native/scripts/build_desktop.sh into
 // build/nativeLibs/jvm/<module>/native/<platform>/, added to the jvmMain resources of
-// :drawview-core, :drawview-latex, :drawview-pdf and :drawview-lecture.
+// :drawview-ink, :drawview-core (trackpad of macOS), :drawview-latex, :drawview-pdf and :drawview-lecture.
 //   -Pdrawview.desktop.platform=<platform>  platform to build (default: the host; macOS hosts can
 //                                           also build the other darwin architecture)
 //   -Pdrawview.native.prebuilt=true         skip the build: build/nativeLibs/jvm already holds the
@@ -291,7 +291,7 @@ tasks.register<Exec>("buildDesktopNativeLibs") {
     inputs.property("whisperVersion", whisperVersion)
     inputs.property("opusVersion", opusVersion)
     inputs.property("aacVersion", aacVersion)
-    listOf("drawview-core", "drawview-latex", "drawview-pdf", "drawview-lecture").forEach { module ->
+    listOf("drawview-ink", "drawview-core", "drawview-latex", "drawview-pdf", "drawview-lecture").forEach { module ->
         outputs.dir(layout.buildDirectory.dir("nativeLibs/jvm/$module/native/$desktopPlatform")).withPropertyName(module)
     }
     environment("DRAWVIEW_PDFIUM_DIR", pdfiumBuildDir.get().dir(desktopPdfiumPackage).asFile.absolutePath)

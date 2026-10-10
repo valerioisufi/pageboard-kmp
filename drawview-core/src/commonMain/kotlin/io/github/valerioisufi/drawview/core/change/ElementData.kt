@@ -1,6 +1,5 @@
 package io.github.valerioisufi.drawview.core.change
 
-import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawElement
 import io.github.valerioisufi.drawview.core.model.DrawImage
@@ -13,8 +12,10 @@ import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.model.ElementOrder
 import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.KotlinStrokeModeller
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokeModeller
 import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.StrokeTool
 import io.github.valerioisufi.drawview.model.TextAlignment
@@ -42,8 +43,11 @@ sealed interface ElementData {
     val id: String
     val order: ElementOrder?
 
-    /** A new model element with this content (and [order], or none yet). */
-    fun toElement(): DrawElement
+    /**
+     * A new model element with this content (and [order], or none yet), its stroke (if any)
+     * modeled by [modeller].
+     */
+    fun toElement(modeller: StrokeModeller = KotlinStrokeModeller): DrawElement
 }
 
 /**
@@ -61,11 +65,11 @@ data class StrokeData(
     val transform: AffineTransform = AffineTransform.IDENTITY,
     override val order: ElementOrder? = null
 ) : ElementData {
-    /** The stroke, modeled again from its inputs by the stroke engine. */
-    override fun toElement(): DrawStroke {
+    /** The stroke, modeled again from its inputs by [modeller]. */
+    override fun toElement(modeller: StrokeModeller): DrawStroke {
         val brush = remodelingBrush(tool, size, color)
         // The inputs are kept as they are (the modeller may adjust what it records)
-        val mesh = InkStrokeEngine.buildMesh(points, brush, inputToolType)?.withPoints(points) ?: StrokeMesh(
+        val mesh = modeller.buildMesh(points, brush, inputToolType)?.withPoints(points) ?: StrokeMesh(
             positions = floatArrayOf(),
             indices = shortArrayOf(),
             color = brush.color,
@@ -100,7 +104,7 @@ data class TextData(
     override val order: ElementOrder? = null,
     val versions: Versions = Versions.NONE
 ) : ElementData {
-    override fun toElement(): DrawText = DrawText(id).also { applyTo(it) }.withOrder(order)
+    override fun toElement(modeller: StrokeModeller): DrawText = DrawText(id).also { applyTo(it) }.withOrder(order)
 
     /** Whether its content (the text and its format) is the one of [other]. */
     fun hasContentOf(other: TextData): Boolean =
@@ -135,7 +139,7 @@ data class ImageData(
     val rotation: Float = 0f,
     override val order: ElementOrder? = null
 ) : ElementData {
-    override fun toElement(): DrawImage = DrawImage(id).withOrder(order).also {
+    override fun toElement(modeller: StrokeModeller): DrawImage = DrawImage(id).withOrder(order).also {
         it.resourceId = resourceId
         it.x = x
         it.y = y
@@ -153,7 +157,7 @@ data class PdfData(
     val pdfPageIndex: Int,
     override val order: ElementOrder? = null
 ) : ElementData {
-    override fun toElement(): DrawPdf = DrawPdf(pdfPageIndex, id).withOrder(order).also { it.resourceId = resourceId }
+    override fun toElement(modeller: StrokeModeller): DrawPdf = DrawPdf(pdfPageIndex, id).withOrder(order).also { it.resourceId = resourceId }
 }
 
 /**
@@ -176,7 +180,7 @@ data class TextMarkupData(
     val color: Int,
     override val order: ElementOrder? = null
 ) : ElementData {
-    override fun toElement(): DrawTextMarkup = DrawTextMarkup(
+    override fun toElement(modeller: StrokeModeller): DrawTextMarkup = DrawTextMarkup(
         id = id,
         resourceId = resourceId,
         pdfPageIndex = pdfPageIndex,
@@ -219,7 +223,7 @@ data class PageData(
             orderKey = orderKey
         )
         page.hasCustomBackground = background != null
-        for (data in elements) page.add(data.toElement())
+        for (data in elements) page.add(data.toElement(document.strokeModeller))
         return page
     }
 }

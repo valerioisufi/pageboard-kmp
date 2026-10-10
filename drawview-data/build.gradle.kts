@@ -11,6 +11,8 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":drawview-core"))
+            // The strokes loaded modeled as the editor draws them
+            implementation(project(":drawview-ink"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.ui)
             implementation(libs.kotlinx.coroutines.core)

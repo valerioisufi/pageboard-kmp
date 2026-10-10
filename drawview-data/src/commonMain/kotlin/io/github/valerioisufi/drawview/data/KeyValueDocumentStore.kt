@@ -19,8 +19,10 @@ import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.core.model.readSnapshot
 import io.github.valerioisufi.drawview.data.db.BrushSettingsData
 import io.github.valerioisufi.drawview.data.db.currentTimeMillis
+import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.Stamp
+import io.github.valerioisufi.drawview.model.StrokeModeller
 import io.github.valerioisufi.drawview.model.text.TextDefaults
 import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.platform.SyncLock
@@ -90,7 +92,8 @@ class KeyValueDocumentStore(
     private val storage: KeyValueStorage,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
     private val saveDelayMs: Long = 400L,
-    private val clock: () -> Long = ::currentTimeMillis
+    private val clock: () -> Long = ::currentTimeMillis,
+    override val strokeModeller: StrokeModeller = InkStrokeModeller
 ) : DocumentStore, DrawPersistence {
 
     private val json = Json {
@@ -139,7 +142,8 @@ class KeyValueDocumentStore(
                 defaultHeightMm = heightMm,
                 defaultBackground = background,
                 createdAt = now,
-                modifiedAt = now
+                modifiedAt = now,
+                strokeModeller = strokeModeller
             )
             document.lastOpenedAt = now
             val summary = StoredSummary(
@@ -200,7 +204,8 @@ class KeyValueDocumentStore(
                 defaultBackground = summary.defaultBackground,
                 createdAt = summary.createdAt,
                 modifiedAt = summary.modifiedAt,
-                addInitialPage = false
+                addInitialPage = false,
+                strokeModeller = strokeModeller
             )
             document.lastOpenedAt = summary.lastOpenedAt
 

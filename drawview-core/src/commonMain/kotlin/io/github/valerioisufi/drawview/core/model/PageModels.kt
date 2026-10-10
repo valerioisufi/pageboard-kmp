@@ -13,9 +13,11 @@ import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.ElementOrder
 import io.github.valerioisufi.drawview.model.FractionalIndex
+import io.github.valerioisufi.drawview.model.KotlinStrokeModeller
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokeModeller
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.Versions
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
@@ -534,7 +536,8 @@ class PageContentSnapshot(
 /**
  * Represents a multi-page vector document.
  *
- * [id] identifies the document on every device (see [newElementId]).
+ * [id] identifies the document on every device (see [newElementId]); [strokeModeller] models
+ * the strokes it receives as data (loaded, from another device, put back by undo).
  */
 class DrawDocument(
     val id: String = newElementId(),
@@ -544,7 +547,8 @@ class DrawDocument(
     defaultBackground: PageBackground = PageBackground.Solid(),
     var createdAt: Long = 0L,
     modifiedAt: Long = 0L,
-    addInitialPage: Boolean = true
+    addInitialPage: Boolean = true,
+    val strokeModeller: StrokeModeller = KotlinStrokeModeller
 ) {
     var title: String by mutableStateOf(title)
 

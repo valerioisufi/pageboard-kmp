@@ -379,7 +379,7 @@ class SyncEngine(
     /** The document of [snapshot], received: stored (unless it arrived meanwhile), then synchronized. */
     private suspend fun adopt(snapshot: DocumentSnapshot, base: Map<String, Long>): DocumentSync = mutex.withLock {
         syncs[snapshot.id]?.let { return it.also { it.users++ } }
-        val open = documents.open(snapshot.id) ?: documents.insert(snapshot.toDocument(), receivedFolder(), base)
+        val open = documents.open(snapshot.id) ?: documents.insert(snapshot.toDocument(documents.strokeModeller), receivedFolder(), base)
         start(open)
     }
 
@@ -892,7 +892,7 @@ class SyncEngine(
         // Prepared first, at the same time (e.g. the strokes modeled again: slow), so that the
         // document waits less
         coroutineScope {
-            for (operation in accepted) launch { operation.change.prepare() }
+            for (operation in accepted) launch { operation.change.prepare(documents.strokeModeller) }
         }
         sync.open.edit { session ->
             link.pending.addAll(accepted)

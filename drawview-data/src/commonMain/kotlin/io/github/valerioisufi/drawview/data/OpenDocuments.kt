@@ -7,6 +7,7 @@ import io.github.valerioisufi.drawview.core.controller.ChangePersister
 import io.github.valerioisufi.drawview.core.controller.PersistenceQueue
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawResource
+import io.github.valerioisufi.drawview.model.StrokeModeller
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +34,9 @@ class OpenDocuments(
 ) {
     private val mutex = Mutex()
     private val open = mutableMapOf<String, OpenDocument>()
+
+    /** Models the strokes of the documents received as data (the one of the store). */
+    val strokeModeller: StrokeModeller get() = store.strokeModeller
 
     /**
      * The open document [documentId] (loaded when nobody uses it yet), or `null` when it does not

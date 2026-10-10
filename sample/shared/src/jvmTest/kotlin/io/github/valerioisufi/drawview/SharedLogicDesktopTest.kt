@@ -2,7 +2,7 @@ package io.github.valerioisufi.drawview
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
+import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.StrokeTool
 import kotlin.test.Test

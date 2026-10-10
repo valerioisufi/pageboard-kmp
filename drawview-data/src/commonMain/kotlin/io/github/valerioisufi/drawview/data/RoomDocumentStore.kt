@@ -12,8 +12,10 @@ import io.github.valerioisufi.drawview.data.db.SharedDocumentEntity
 import io.github.valerioisufi.drawview.data.db.currentTimeMillis
 import io.github.valerioisufi.drawview.data.repository.DrawDocumentRepository
 import io.github.valerioisufi.drawview.data.repository.FileRepository
+import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.Stamp
+import io.github.valerioisufi.drawview.model.StrokeModeller
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
@@ -24,8 +26,11 @@ import kotlinx.coroutines.withContext
 /**
  * [DocumentStore] backed by the Room database (Android, desktop and iOS).
  */
-class RoomDocumentStore(val database: DrawDatabase) : DocumentStore {
-    val repository = DrawDocumentRepository(database)
+class RoomDocumentStore(
+    val database: DrawDatabase,
+    override val strokeModeller: StrokeModeller = InkStrokeModeller
+) : DocumentStore {
+    val repository = DrawDocumentRepository(database, strokeModeller)
     val fileRepository = FileRepository(database)
 
     private val sharedDocuments = database.sharedDocumentDao()

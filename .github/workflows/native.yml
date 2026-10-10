@@ -2,7 +2,7 @@ name: Native libraries
 
 # Builds and tests the native engines (Google Ink, MicroTeX, PDFium) on every platform:
 # - desktop: the JNI libraries of each platform, built on a matching runner and merged into
-#   the jvm jars of :drawview-core, :drawview-latex and :drawview-pdf (artifact "desktop-jars");
+#   the jvm jars of :drawview-ink, :drawview-core, :drawview-latex and :drawview-pdf (artifact "desktop-jars");
 # - android: the NDK libraries (+ the prebuilt libpdfium.so) of the debug APK;
 # - ios: the static libraries + PDFium.xcframework, tested on the simulator and linked by the app.
 
@@ -53,7 +53,7 @@ jobs:
 
       - name: Test the native engines
         if: matrix.test
-        run: ./gradlew :drawview-core:jvmTest :drawview-latex:jvmTest :drawview-pdf:jvmTest :drawview-lecture:jvmTest
+        run: ./gradlew :drawview-ink:jvmTest :drawview-core:jvmTest :drawview-latex:jvmTest :drawview-pdf:jvmTest :drawview-lecture:jvmTest
 
       - uses: actions/upload-artifact@v4
         with:
@@ -84,7 +84,7 @@ jobs:
         # prebuilt: use the libraries of the matrix; all: libpdfium of every desktop platform
         run: >
           ./gradlew -Pdrawview.native.prebuilt=true -Pdrawview.pdfium.desktop=all
-          :drawview-core:jvmJar :drawview-latex:jvmJar :drawview-pdf:jvmJar :drawview-lecture:jvmJar
+          :drawview-ink:jvmJar :drawview-core:jvmJar :drawview-latex:jvmJar :drawview-pdf:jvmJar :drawview-lecture:jvmJar
 
       - name: Check that every platform is bundled
         run: |
@@ -96,7 +96,7 @@ jobs:
               windows-*) pre=; ext=dll ;;
             esac
             entries=(
-              "drawview-core:${pre}ink_bridge"
+              "drawview-ink:${pre}ink_bridge"
               "drawview-latex:${pre}tex"
               "drawview-pdf:${pre}pdfium_bridge"
               "drawview-pdf:${pre}pdfium"

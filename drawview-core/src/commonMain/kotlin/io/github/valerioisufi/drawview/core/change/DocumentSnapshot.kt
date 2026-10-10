@@ -4,8 +4,10 @@ import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawElement
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawResource
+import io.github.valerioisufi.drawview.model.KotlinStrokeModeller
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.Stamp
+import io.github.valerioisufi.drawview.model.StrokeModeller
 import io.github.valerioisufi.drawview.model.Versions
 import kotlinx.serialization.Serializable
 
@@ -32,17 +34,18 @@ data class DocumentSnapshot(
     val resources: List<ResourceData> = emptyList()
 ) {
     /**
-     * A new document with this state; its resources have no file ([DrawResource.path] empty)
-     * until they are received.
+     * A new document with this state, its strokes modeled by [modeller]; its resources have no
+     * file ([DrawResource.path] empty) until they are received.
      */
-    fun toDocument(): DrawDocument {
+    fun toDocument(modeller: StrokeModeller = KotlinStrokeModeller): DrawDocument {
         val document = DrawDocument(
             id = id,
             title = title,
             defaultWidthMm = defaultWidthMm,
             defaultHeightMm = defaultHeightMm,
             defaultBackground = defaultBackground,
-            addInitialPage = false
+            addInitialPage = false,
+            strokeModeller = modeller
         )
         document.defaultsVersion = defaultsVersion
         document.titleVersion = titleVersion
@@ -80,7 +83,7 @@ data class PageSnapshot(
         page.formatVersion = formatVersion
         page.contentVersions = contentVersions
         page.removalSaw = removalSaw
-        removedElements.forEach { page.removedElements.add(it.toElement()) }
+        removedElements.forEach { page.removedElements.add(it.toElement(document.strokeModeller)) }
         for (element in page.elements() + page.removedElements) versions[element.id]?.applyTo(element)
         return page
     }

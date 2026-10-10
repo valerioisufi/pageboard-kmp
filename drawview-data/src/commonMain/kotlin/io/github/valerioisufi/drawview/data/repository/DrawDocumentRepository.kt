@@ -40,10 +40,12 @@ import io.github.valerioisufi.drawview.data.db.TextMarkupEntity
 import io.github.valerioisufi.drawview.data.db.UserPreferencesEntity
 import io.github.valerioisufi.drawview.data.db.currentTimeMillis
 import io.github.valerioisufi.drawview.data.toBrushSettings
+import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.model.ElementOrder
 import io.github.valerioisufi.drawview.model.InputToolType
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.Stamp
+import io.github.valerioisufi.drawview.model.StrokeModeller
 import io.github.valerioisufi.drawview.model.StrokeTool
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.text.TextDefaults
@@ -62,7 +64,9 @@ import kotlinx.serialization.json.Json
  * last changes. All the content coordinates are stored in page millimeters.
  */
 class DrawDocumentRepository(
-    val database: DrawDatabase
+    val database: DrawDatabase,
+    /** Models the strokes loaded from their inputs. */
+    private val strokeModeller: StrokeModeller = InkStrokeModeller
 ) : DrawPersistence {
 
     private val documentDao = database.documentDao()
@@ -102,7 +106,8 @@ class DrawDocumentRepository(
                 defaultBackground = docEntity.defaultBackground,
                 createdAt = docEntity.createdAt,
                 modifiedAt = docEntity.modifiedAt,
-                addInitialPage = false
+                addInitialPage = false,
+                strokeModeller = strokeModeller
             )
             doc.lastOpenedAt = docEntity.lastOpenedAt
             doc.defaultsVersion = docEntity.defaultsVersion
@@ -165,7 +170,7 @@ class DrawDocumentRepository(
         color = entity.color,
         inputToolType = InputToolType.fromName(entity.toolType),
         transform = entity.transform
-    ).toElement()
+    ).toElement(strokeModeller)
 
     private fun mapTextMarkup(entity: TextMarkupEntity): DrawTextMarkup? {
         val rects = try {
@@ -234,7 +239,8 @@ class DrawDocumentRepository(
             defaultHeightMm = heightMm,
             defaultBackground = background,
             createdAt = now,
-            modifiedAt = now
+            modifiedAt = now,
+            strokeModeller = strokeModeller
         )
         document.lastOpenedAt = now
         withContext(Dispatchers.IO) {

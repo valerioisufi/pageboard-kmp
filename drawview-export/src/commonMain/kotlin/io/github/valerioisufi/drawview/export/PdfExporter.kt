@@ -7,7 +7,6 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.core.canvas.TextMarkupPainter
-import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPdf
 import io.github.valerioisufi.drawview.core.model.DrawResource
@@ -25,9 +24,12 @@ import io.github.valerioisufi.drawview.core.render.tile.TextBlockLayout
 import io.github.valerioisufi.drawview.core.render.tile.TextFace
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.core.render.tile.TextWord
+import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.latex.LatexEngine
+import io.github.valerioisufi.drawview.model.StrokeOutline
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.model.triangleOutline
 import io.github.valerioisufi.drawview.pdf.PdfFont
 import io.github.valerioisufi.drawview.pdf.PdfImportedPage
 import io.github.valerioisufi.drawview.pdf.PdfInfo
@@ -390,7 +392,7 @@ class PdfExporter(
         private fun writeText(text: DrawText): Boolean = texts.write(text, mmToPt)
 
         private fun writeStroke(stroke: DrawStroke): Boolean {
-            val outline = InkStrokeEngine.outline(stroke)
+            val outline = outlineOf(stroke)
             val path = PdfPath()
             for (polygon in outline.polygons) {
                 path.addPolygon(polygon.copyOf().also(mmToPt::mapPoints))
@@ -456,3 +458,13 @@ class PdfExporter(
 /** The text of the word without the characters that are not written (controls). */
 private val TextWord.printable: String get() = text.filter { it >= ' ' }
 
+/**
+ * Outline of [stroke] on its page: modeled again from its inputs (the outlines of Google Ink), or
+ * the triangles of its mesh when the engine cannot give it.
+ */
+private fun outlineOf(stroke: DrawStroke): StrokeOutline {
+    val base = stroke.baseMesh
+    val modeled = InkStrokeEngine.buildOutline(base.points, stroke.baseBrush, base.inputToolType)
+        ?: return stroke.mesh.triangleOutline()
+    return if (stroke.transform.isIdentity) modeled else modeled.transformed(stroke.transform.toMatrix())
+}

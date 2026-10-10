@@ -6,6 +6,7 @@ import io.github.valerioisufi.drawview.core.controller.DrawPreferences
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.Stamp
+import io.github.valerioisufi.drawview.model.StrokeModeller
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -57,6 +58,9 @@ interface DocumentStore {
 
     /** Persistence port of the editor: saves every change of the open documents. */
     val persistence: DrawPersistence
+
+    /** Models the strokes of the documents loaded or received (see [DrawDocument.strokeModeller]). */
+    val strokeModeller: StrokeModeller
 
     /** Creates a document with one page of the given format in [folderId] and returns it. */
     suspend fun createDocument(
