@@ -75,7 +75,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.render.tile.FormulaRenderer
-import io.github.valerioisufi.drawview.core.util.currentTimeMillis
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.lecture.AssistantSettings
 import io.github.valerioisufi.drawview.lecture.AudioDownload
 import io.github.valerioisufi.drawview.lecture.ControllerNotebookSource

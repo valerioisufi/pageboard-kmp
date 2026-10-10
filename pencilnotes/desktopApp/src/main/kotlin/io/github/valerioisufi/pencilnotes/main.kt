@@ -2,7 +2,7 @@ package io.github.valerioisufi.pencilnotes
 
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import io.github.valerioisufi.drawview.core.platform.DRAWVIEW_DATA_DIRECTORY_PROPERTY
+import io.github.valerioisufi.drawview.platform.DRAWVIEW_DATA_DIRECTORY_PROPERTY
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember

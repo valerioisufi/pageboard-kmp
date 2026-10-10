@@ -1,6 +1,6 @@
 package io.github.valerioisufi.drawview.lecture.audio
 
-import io.github.valerioisufi.drawview.core.platform.JvmNativeLibraries
+import io.github.valerioisufi.drawview.platform.JvmNativeLibraries
 
 /** JNI entry points of libaudio_bridge (native/bridge/audio_bridge_jni.c). */
 internal object AudioNative {

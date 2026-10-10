@@ -1,6 +1,6 @@
 package io.github.valerioisufi.drawview.latex
 
-import io.github.valerioisufi.drawview.core.platform.PlatformFiles
+import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.latex.generated.resources.Res
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 

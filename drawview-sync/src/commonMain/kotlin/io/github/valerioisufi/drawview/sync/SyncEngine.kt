@@ -11,7 +11,7 @@ import io.github.valerioisufi.drawview.core.change.DocumentSnapshot
 import io.github.valerioisufi.drawview.core.change.Operation
 import io.github.valerioisufi.drawview.core.change.TextData
 import io.github.valerioisufi.drawview.core.change.snapshot
-import io.github.valerioisufi.drawview.core.util.currentTimeMillis
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.data.OpenDocument
 import io.github.valerioisufi.drawview.data.OpenDocuments
 import kotlinx.coroutines.CompletableDeferred

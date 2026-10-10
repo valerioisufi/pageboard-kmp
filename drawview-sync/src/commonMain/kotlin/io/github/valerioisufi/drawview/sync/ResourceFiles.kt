@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.sync
 
-import io.github.valerioisufi.drawview.core.platform.PlatformFiles
-import io.github.valerioisufi.drawview.core.platform.newResourcePath
+import io.github.valerioisufi.drawview.platform.PlatformFiles
+import io.github.valerioisufi.drawview.platform.newResourcePath
 
 /** Where the files of the resources of the documents are read and written. */
 interface ResourceFiles {

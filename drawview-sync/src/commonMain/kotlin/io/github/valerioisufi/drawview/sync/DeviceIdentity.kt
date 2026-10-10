@@ -4,8 +4,8 @@ import dev.whyoleg.cryptography.CryptographyProvider
 import dev.whyoleg.cryptography.algorithms.EC
 import dev.whyoleg.cryptography.algorithms.ECDSA
 import dev.whyoleg.cryptography.algorithms.SHA256
-import io.github.valerioisufi.drawview.core.platform.SecureStore
-import io.github.valerioisufi.drawview.core.util.Sha256
+import io.github.valerioisufi.drawview.platform.SecureStore
+import io.github.valerioisufi.drawview.platform.Sha256
 import kotlin.io.encoding.Base64
 
 /**

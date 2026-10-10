@@ -22,7 +22,7 @@ import android.media.MediaRecorder
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import io.github.valerioisufi.drawview.core.platform.DrawViewAndroid
+import io.github.valerioisufi.drawview.platform.DrawViewAndroid
 import io.github.valerioisufi.drawview.lecture.R
 
 actual fun createAudioCapture(): AudioCapture? = AndroidAudioCapture(DrawViewAndroid.context)

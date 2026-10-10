@@ -16,8 +16,8 @@ import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.readSnapshot
-import io.github.valerioisufi.drawview.core.util.SyncLock
-import io.github.valerioisufi.drawview.core.util.syncLock
+import io.github.valerioisufi.drawview.platform.SyncLock
+import io.github.valerioisufi.drawview.platform.syncLock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers

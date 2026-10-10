@@ -4,7 +4,7 @@ import io.github.valerioisufi.drawview.core.attachment.AttachmentChange
 import io.github.valerioisufi.drawview.core.attachment.AttachmentReceiver
 import io.github.valerioisufi.drawview.core.attachment.AttachmentSource
 import io.github.valerioisufi.drawview.core.attachment.DocumentAttachments
-import io.github.valerioisufi.drawview.core.platform.PlatformFiles
+import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
 import kotlinx.atomicfu.atomic

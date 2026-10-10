@@ -27,7 +27,7 @@ import io.github.valerioisufi.drawview.core.model.StrokeMesh
 import io.github.valerioisufi.drawview.core.model.StrokePoint
 import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.Tool
-import io.github.valerioisufi.drawview.core.util.currentTimeMillis
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals

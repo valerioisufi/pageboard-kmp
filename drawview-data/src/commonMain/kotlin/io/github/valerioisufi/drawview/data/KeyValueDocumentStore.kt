@@ -19,10 +19,10 @@ import io.github.valerioisufi.drawview.core.model.Stamp
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.core.model.readSnapshot
-import io.github.valerioisufi.drawview.core.platform.PlatformFiles
+import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.core.text.TextDefaults
-import io.github.valerioisufi.drawview.core.util.SyncLock
-import io.github.valerioisufi.drawview.core.util.syncLock
+import io.github.valerioisufi.drawview.platform.SyncLock
+import io.github.valerioisufi.drawview.platform.syncLock
 import io.github.valerioisufi.drawview.data.db.BrushSettingsData
 import io.github.valerioisufi.drawview.data.db.currentTimeMillis
 import kotlin.io.encoding.Base64

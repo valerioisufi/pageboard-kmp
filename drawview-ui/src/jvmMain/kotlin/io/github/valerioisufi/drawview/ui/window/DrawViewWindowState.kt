@@ -12,7 +12,7 @@ import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
-import io.github.valerioisufi.drawview.core.platform.drawViewDesktopDataDirectory
+import io.github.valerioisufi.drawview.platform.drawViewDesktopDataDirectory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce

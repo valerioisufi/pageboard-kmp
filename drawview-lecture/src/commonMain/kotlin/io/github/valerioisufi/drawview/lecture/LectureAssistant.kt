@@ -7,9 +7,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.github.valerioisufi.drawview.core.attachment.DocumentAttachments
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.util.SyncLock
-import io.github.valerioisufi.drawview.core.util.currentTimeMillis
-import io.github.valerioisufi.drawview.core.util.syncLock
+import io.github.valerioisufi.drawview.platform.SyncLock
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
+import io.github.valerioisufi.drawview.platform.syncLock
 import io.github.valerioisufi.drawview.lecture.audio.AudioCapture
 import io.github.valerioisufi.drawview.lecture.audio.AudioOutput
 import io.github.valerioisufi.drawview.lecture.audio.FollowedRecording

@@ -2,8 +2,8 @@ package io.github.valerioisufi.drawview.latex
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
-import io.github.valerioisufi.drawview.core.util.SyncLock
-import io.github.valerioisufi.drawview.core.util.syncLock
+import io.github.valerioisufi.drawview.platform.SyncLock
+import io.github.valerioisufi.drawview.platform.syncLock
 import io.github.valerioisufi.drawview.latex.cinterop.TexCallbacks
 import io.github.valerioisufi.drawview.latex.cinterop.TEX_ACT_DRAW_TEXT
 import io.github.valerioisufi.drawview.latex.cinterop.TEX_ACT_SET_FONT

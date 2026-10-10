@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.valerioisufi.drawview.core.attachment.DocumentAttachments
-import io.github.valerioisufi.drawview.core.platform.DeviceProfile
+import io.github.valerioisufi.drawview.platform.DeviceProfile
 import io.github.valerioisufi.drawview.data.DocumentStore
 import io.github.valerioisufi.drawview.data.DrawViewStore
 import io.github.valerioisufi.drawview.data.OpenDocuments

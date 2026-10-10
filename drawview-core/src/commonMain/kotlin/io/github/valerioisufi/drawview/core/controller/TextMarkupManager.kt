@@ -19,8 +19,8 @@ import io.github.valerioisufi.drawview.core.model.PdfTextLayout
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.model.pdfPointsToPageMm
-import io.github.valerioisufi.drawview.core.util.SyncLock
-import io.github.valerioisufi.drawview.core.util.syncLock
+import io.github.valerioisufi.drawview.platform.SyncLock
+import io.github.valerioisufi.drawview.platform.syncLock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.max

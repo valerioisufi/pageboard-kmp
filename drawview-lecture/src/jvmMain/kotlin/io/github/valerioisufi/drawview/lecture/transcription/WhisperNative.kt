@@ -1,6 +1,6 @@
 package io.github.valerioisufi.drawview.lecture.transcription
 
-import io.github.valerioisufi.drawview.core.platform.JvmNativeLibraries
+import io.github.valerioisufi.drawview.platform.JvmNativeLibraries
 
 /** JNI entry points of libwhisper_bridge (native/bridge/whisper_bridge_jni.cpp, whisper.cpp inside). */
 internal object WhisperNative : WhisperEngine {

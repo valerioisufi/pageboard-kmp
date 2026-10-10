@@ -1,8 +1,8 @@
 package io.github.valerioisufi.drawview.core.render.tile
 
 import androidx.compose.ui.graphics.ImageBitmap
-import io.github.valerioisufi.drawview.core.util.SyncLock
-import io.github.valerioisufi.drawview.core.util.syncLock
+import io.github.valerioisufi.drawview.platform.SyncLock
+import io.github.valerioisufi.drawview.platform.syncLock
 
 /**
  * Thread-safe LRU cache for multi-resolution rasterized tiles.

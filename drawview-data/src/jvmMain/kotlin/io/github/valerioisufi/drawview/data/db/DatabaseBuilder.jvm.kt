@@ -2,7 +2,7 @@ package io.github.valerioisufi.drawview.data.db
 
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import io.github.valerioisufi.drawview.core.platform.drawViewDesktopDataDirectory
+import io.github.valerioisufi.drawview.platform.drawViewDesktopDataDirectory
 import java.io.File
 
 actual fun getDatabaseBuilder(): RoomDatabase.Builder<DrawDatabase> {

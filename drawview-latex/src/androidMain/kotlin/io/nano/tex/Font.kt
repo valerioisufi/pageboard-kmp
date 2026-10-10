@@ -1,7 +1,7 @@
 package io.nano.tex
 
 import android.graphics.Typeface
-import io.github.valerioisufi.drawview.core.platform.PlatformFiles
+import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.latex.TexFont
 import io.github.valerioisufi.drawview.latex.TexTextFonts
 

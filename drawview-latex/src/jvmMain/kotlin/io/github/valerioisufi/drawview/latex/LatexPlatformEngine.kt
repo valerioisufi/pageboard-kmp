@@ -2,7 +2,7 @@ package io.github.valerioisufi.drawview.latex
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
-import io.github.valerioisufi.drawview.core.platform.drawViewDesktopDataDirectory
+import io.github.valerioisufi.drawview.platform.drawViewDesktopDataDirectory
 import io.nano.tex.Graphics2D
 import io.nano.tex.LaTeX
 import io.nano.tex.LatexNativeLoader

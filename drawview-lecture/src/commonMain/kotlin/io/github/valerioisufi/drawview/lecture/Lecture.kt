@@ -7,8 +7,8 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import io.github.valerioisufi.drawview.core.platform.PlatformFiles
-import io.github.valerioisufi.drawview.core.util.currentTimeMillis
+import io.github.valerioisufi.drawview.platform.PlatformFiles
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.lecture.audio.AudioOutput
 import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile

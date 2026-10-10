@@ -1,6 +1,6 @@
 package io.github.valerioisufi.drawview.core.ink
 
-import io.github.valerioisufi.drawview.core.platform.JvmNativeLibraries
+import io.github.valerioisufi.drawview.platform.JvmNativeLibraries
 
 internal object InkNativeLoader {
     /**

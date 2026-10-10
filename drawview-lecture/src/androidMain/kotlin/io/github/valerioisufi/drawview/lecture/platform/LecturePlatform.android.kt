@@ -15,7 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalContext
-import io.github.valerioisufi.drawview.core.platform.DrawViewAndroid
+import io.github.valerioisufi.drawview.platform.DrawViewAndroid
 import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.CompletableDeferred
 

@@ -1,8 +1,8 @@
 package io.github.valerioisufi.drawview.lecture
 
-import io.github.valerioisufi.drawview.core.platform.PlatformFiles
-import io.github.valerioisufi.drawview.core.platform.DeviceProfile
-import io.github.valerioisufi.drawview.core.util.currentTimeMillis
+import io.github.valerioisufi.drawview.platform.PlatformFiles
+import io.github.valerioisufi.drawview.platform.DeviceProfile
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
 import io.github.valerioisufi.drawview.lecture.platform.lectureDataDirectory
 import kotlinx.coroutines.sync.Mutex

@@ -7,7 +7,7 @@ import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.PageContentSnapshot
-import io.github.valerioisufi.drawview.core.platform.PlatformFiles
+import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.core.platform.encodePng
 import io.github.valerioisufi.drawview.core.render.tile.PdfTileAdapter
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter

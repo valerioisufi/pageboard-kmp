@@ -2,8 +2,8 @@ package io.github.valerioisufi.drawview.ui.render
 
 import io.github.valerioisufi.drawview.core.render.tile.FormulaImage
 import io.github.valerioisufi.drawview.core.render.tile.FormulaRenderer
-import io.github.valerioisufi.drawview.core.util.SyncLock
-import io.github.valerioisufi.drawview.core.util.syncLock
+import io.github.valerioisufi.drawview.platform.SyncLock
+import io.github.valerioisufi.drawview.platform.syncLock
 import kotlin.math.roundToInt
 
 /**

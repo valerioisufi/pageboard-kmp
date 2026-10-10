@@ -1,6 +1,6 @@
 package io.github.valerioisufi.drawview.lecture.transcription
 
-import io.github.valerioisufi.drawview.core.util.currentTimeMillis
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.lecture.TranscriptSegment
 import io.github.valerioisufi.drawview.lecture.audio.Wav
 import io.github.valerioisufi.drawview.lecture.audio.samplesToMs

@@ -1,6 +1,6 @@
 package io.github.valerioisufi.drawview.pdf
 
-import io.github.valerioisufi.drawview.core.platform.JvmNativeLibraries
+import io.github.valerioisufi.drawview.platform.JvmNativeLibraries
 
 internal object PdfiumNativeLoader {
     /** Loads PDFium and its JNI bridge (in dependency order). */

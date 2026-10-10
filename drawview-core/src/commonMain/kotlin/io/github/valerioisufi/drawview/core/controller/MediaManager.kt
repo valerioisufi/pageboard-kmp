@@ -11,11 +11,11 @@ import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawPdf
 import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.newElementId
-import io.github.valerioisufi.drawview.core.platform.PlatformFiles
+import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.core.platform.decodeImageBitmap
-import io.github.valerioisufi.drawview.core.platform.newResourcePath
+import io.github.valerioisufi.drawview.platform.newResourcePath
 import io.github.valerioisufi.drawview.core.util.FractionalIndex
-import io.github.valerioisufi.drawview.core.util.Sha256
+import io.github.valerioisufi.drawview.platform.Sha256
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

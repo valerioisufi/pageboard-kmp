@@ -2,7 +2,7 @@ package io.github.valerioisufi.drawview.lecture.platform
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.ImageBitmap
-import io.github.valerioisufi.drawview.core.platform.dataDirectory
+import io.github.valerioisufi.drawview.platform.dataDirectory
 
 /** Whether the microphone is the one of a computer (its access granted to the application launching it). */
 internal expect val isComputer: Boolean

@@ -7,7 +7,7 @@ import android.graphics.RectF
 import android.graphics.Typeface
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import io.github.valerioisufi.drawview.core.platform.DrawViewAndroid
+import io.github.valerioisufi.drawview.platform.DrawViewAndroid
 import io.nano.tex.Graphics2D
 import io.nano.tex.LaTeX
 import java.io.File

@@ -1,6 +1,6 @@
 package io.github.valerioisufi.drawview.lecture.handwriting
 
-import io.github.valerioisufi.drawview.core.platform.PlatformFiles
+import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.lecture.LectureAnalysis
 import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.NotebookSnapshot

@@ -18,7 +18,7 @@ import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.PageContentSnapshot
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.pdfPointsToPageMm
-import io.github.valerioisufi.drawview.core.platform.PlatformFiles
+import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.core.platform.decodeImageBitmap
 import io.github.valerioisufi.drawview.core.platform.exifOrientation
 import io.github.valerioisufi.drawview.core.platform.isJpeg

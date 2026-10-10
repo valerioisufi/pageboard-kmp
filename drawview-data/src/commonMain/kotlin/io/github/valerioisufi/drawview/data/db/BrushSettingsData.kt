@@ -13,4 +13,4 @@ data class BrushSettingsData(
 )
 
 /** Wall-clock time in milliseconds since the Unix epoch. */
-internal fun currentTimeMillis(): Long = io.github.valerioisufi.drawview.core.util.currentTimeMillis()
+internal fun currentTimeMillis(): Long = io.github.valerioisufi.drawview.platform.currentTimeMillis()

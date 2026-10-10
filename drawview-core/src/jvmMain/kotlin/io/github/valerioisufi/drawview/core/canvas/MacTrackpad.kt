@@ -1,6 +1,6 @@
 package io.github.valerioisufi.drawview.core.canvas
 
-import io.github.valerioisufi.drawview.core.platform.JvmNativeLibraries
+import io.github.valerioisufi.drawview.platform.JvmNativeLibraries
 import java.awt.EventQueue
 
 /**

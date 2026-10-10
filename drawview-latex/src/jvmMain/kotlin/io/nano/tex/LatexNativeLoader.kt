@@ -1,6 +1,6 @@
 package io.nano.tex
 
-import io.github.valerioisufi.drawview.core.platform.JvmNativeLibraries
+import io.github.valerioisufi.drawview.platform.JvmNativeLibraries
 
 object LatexNativeLoader {
     /** Whether `libtex` has been loaded successfully. */

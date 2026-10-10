@@ -13,8 +13,8 @@ import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.PageContentSnapshot
 import io.github.valerioisufi.drawview.core.model.readSnapshot
 import io.github.valerioisufi.drawview.core.render.tile.TileRenderer
-import io.github.valerioisufi.drawview.core.util.SyncLock
-import io.github.valerioisufi.drawview.core.util.syncLock
+import io.github.valerioisufi.drawview.platform.SyncLock
+import io.github.valerioisufi.drawview.platform.syncLock
 import io.github.valerioisufi.drawview.lecture.handwriting.InkBlock
 import io.github.valerioisufi.drawview.lecture.handwriting.blockKey
 import io.github.valerioisufi.drawview.lecture.handwriting.groupStrokes

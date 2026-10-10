@@ -15,7 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import io.github.valerioisufi.drawview.core.platform.DrawViewAndroid
+import io.github.valerioisufi.drawview.platform.DrawViewAndroid
 import io.github.valerioisufi.drawview.sync.lan.LanDiscovery
 import io.github.valerioisufi.drawview.sync.lan.NsdLanDiscovery
 import kotlinx.coroutines.CompletableDeferred

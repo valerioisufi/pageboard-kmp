@@ -35,7 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.core.controller.Collaborator
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.platform.DeviceProfile
+import io.github.valerioisufi.drawview.platform.DeviceProfile
 import io.github.valerioisufi.drawview.sync.Invitation
 import io.github.valerioisufi.drawview.sync.InvitationGrant
 import io.github.valerioisufi.drawview.sync.Role

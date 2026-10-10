@@ -1,7 +1,7 @@
 package io.nano.tex
 
-import io.github.valerioisufi.drawview.core.util.SyncLock
-import io.github.valerioisufi.drawview.core.util.syncLock
+import io.github.valerioisufi.drawview.platform.SyncLock
+import io.github.valerioisufi.drawview.platform.syncLock
 import io.github.valerioisufi.drawview.latex.TexFont
 import io.github.valerioisufi.drawview.latex.TexTextFonts
 import org.jetbrains.skia.Data

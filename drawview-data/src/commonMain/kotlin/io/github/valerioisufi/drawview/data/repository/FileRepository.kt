@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.data.repository
 
 import io.github.valerioisufi.drawview.core.model.newElementId
-import io.github.valerioisufi.drawview.core.platform.PlatformFiles
+import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.data.db.DocumentEntity
 import io.github.valerioisufi.drawview.data.db.DocumentWithContent
 import io.github.valerioisufi.drawview.data.db.DrawDatabase

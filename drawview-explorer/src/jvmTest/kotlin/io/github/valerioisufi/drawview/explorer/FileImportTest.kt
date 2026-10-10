@@ -2,7 +2,7 @@ package io.github.valerioisufi.drawview.explorer
 
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.model.DrawDocument
-import io.github.valerioisufi.drawview.core.platform.DRAWVIEW_DATA_DIRECTORY_PROPERTY
+import io.github.valerioisufi.drawview.platform.DRAWVIEW_DATA_DIRECTORY_PROPERTY
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType

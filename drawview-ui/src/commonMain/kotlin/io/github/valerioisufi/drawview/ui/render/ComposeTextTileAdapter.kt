@@ -38,8 +38,8 @@ import io.github.valerioisufi.drawview.core.render.tile.TextLineMetrics
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.core.render.tile.TextWord
 import io.github.valerioisufi.drawview.core.text.TextSizes.PT_TO_MM
-import io.github.valerioisufi.drawview.core.util.SyncLock
-import io.github.valerioisufi.drawview.core.util.syncLock
+import io.github.valerioisufi.drawview.platform.SyncLock
+import io.github.valerioisufi.drawview.platform.syncLock
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
 import io.github.valerioisufi.drawview.ui.theme.NotesFonts
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts

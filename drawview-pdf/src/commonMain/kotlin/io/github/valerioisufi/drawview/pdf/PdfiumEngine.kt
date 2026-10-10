@@ -7,8 +7,8 @@ import androidx.compose.ui.graphics.Paint
 import io.github.valerioisufi.drawview.core.model.PdfTextLayout
 import io.github.valerioisufi.drawview.core.render.tile.PdfTileAdapter
 import io.github.valerioisufi.drawview.core.render.tile.fitPdfPage
-import io.github.valerioisufi.drawview.core.util.SyncLock
-import io.github.valerioisufi.drawview.core.util.syncLock
+import io.github.valerioisufi.drawview.platform.SyncLock
+import io.github.valerioisufi.drawview.platform.syncLock
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max

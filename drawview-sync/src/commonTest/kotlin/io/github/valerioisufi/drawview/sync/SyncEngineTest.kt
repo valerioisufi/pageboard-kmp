@@ -863,7 +863,7 @@ class SyncEngineTest {
         val network = InMemoryNetwork()
         val (ada, bob) = listOf("ada", "bob").map { Device(it, work, this, network) }
         val bytes = Random(2).nextBytes(300_000)
-        val hash = io.github.valerioisufi.drawview.core.util.Sha256.of(bytes)
+        val hash = io.github.valerioisufi.drawview.platform.Sha256.of(bytes)
         // Bob has the same image in a document of its own
         val own = bob.store.createDocument("Mine")
         bob.files.files["/bob/photo.jpg"] = bytes

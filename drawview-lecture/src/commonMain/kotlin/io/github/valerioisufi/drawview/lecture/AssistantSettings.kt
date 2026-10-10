@@ -3,8 +3,8 @@ package io.github.valerioisufi.drawview.lecture
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import io.github.valerioisufi.drawview.core.platform.PlatformFiles
-import io.github.valerioisufi.drawview.core.platform.SecureStore
+import io.github.valerioisufi.drawview.platform.PlatformFiles
+import io.github.valerioisufi.drawview.platform.SecureStore
 import io.github.valerioisufi.drawview.lecture.platform.environmentApiKey
 import io.github.valerioisufi.drawview.lecture.platform.isComputer
 import io.github.valerioisufi.drawview.lecture.platform.lectureDataDirectory
