@@ -2,22 +2,18 @@ package io.github.valerioisufi.drawview.ui.editor
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.FormatAlignLeft
-import androidx.compose.material.icons.automirrored.filled.FormatAlignRight
-import androidx.compose.material.icons.filled.FormatAlignCenter
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -36,15 +33,18 @@ import io.github.valerioisufi.drawview.core.controller.TextFormatTarget
 import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandTooltip
+import io.github.valerioisufi.drawview.ui.components.ColorSwatches
 import io.github.valerioisufi.drawview.ui.components.FontSizeControl
-import io.github.valerioisufi.drawview.ui.components.TextColorPaletteRow
 import io.github.valerioisufi.drawview.ui.components.TextColorPickerDialog
+import io.github.valerioisufi.drawview.ui.components.ToolPopover
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_label_text_color
 import io.github.valerioisufi.drawview.ui.generated.resources.text_align_center
 import io.github.valerioisufi.drawview.ui.generated.resources.text_align_end
 import io.github.valerioisufi.drawview.ui.generated.resources.text_align_start
 import io.github.valerioisufi.drawview.ui.screen.EditorCommands
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
+import io.github.valerioisufi.drawview.ui.theme.InkPalette
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -71,24 +71,30 @@ internal fun TextColorButton(target: TextFormatTarget) {
     val color = Color(target.color)
     val label = stringResource(Res.string.draw_toolbar_label_text_color)
     Box {
-        IconButton(onClick = { paletteOpen = true }, modifier = Modifier.semantics { contentDescription = label }) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .clickable(onClickLabel = label) { paletteOpen = true }
+                .semantics { contentDescription = label }
+        ) {
             Box(
-                modifier = Modifier
-                    .size(22.dp)
-                    .clip(CircleShape)
-                    .background(color)
-                    .border(2.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), CircleShape)
-            )
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(28.dp).border(2.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
+            ) {
+                Box(modifier = Modifier.size(20.dp).clip(CircleShape).background(color))
+            }
         }
-        DropdownMenu(expanded = paletteOpen, onDismissRequest = { paletteOpen = false }, shape = RoundedCornerShape(12.dp)) {
-            TextColorPaletteRow(
-                selectedColor = color,
-                onColorSelected = {
+        ToolPopover(expanded = paletteOpen, onDismissRequest = { paletteOpen = false }) {
+            ColorSwatches(
+                colors = InkPalette.inks,
+                selected = color,
+                onSelect = {
                     target.changeColor(it.toArgb())
                     paletteOpen = false
                 },
-                modifier = Modifier.padding(8.dp),
-                onCustomWheelClick = {
+                onCustom = {
                     paletteOpen = false
                     wheelOpen = true
                 }
@@ -123,17 +129,26 @@ internal fun TextAlignmentButtons(target: TextFormatTarget, commands: EditorComm
 private class AlignmentButton(val command: Command?, val icon: ImageVector, val description: StringResource)
 
 private fun alignmentButtons(commands: EditorCommands?) = listOf(
-    TextAlignment.START to AlignmentButton(commands?.alignStart, Icons.AutoMirrored.Filled.FormatAlignLeft, Res.string.text_align_start),
-    TextAlignment.CENTER to AlignmentButton(commands?.alignCenter, Icons.Default.FormatAlignCenter, Res.string.text_align_center),
-    TextAlignment.END to AlignmentButton(commands?.alignEnd, Icons.AutoMirrored.Filled.FormatAlignRight, Res.string.text_align_end)
+    TextAlignment.START to AlignmentButton(commands?.alignStart, DrawViewIcons.AlignLeft, Res.string.text_align_start),
+    TextAlignment.CENTER to AlignmentButton(commands?.alignCenter, DrawViewIcons.AlignCenter, Res.string.text_align_center),
+    TextAlignment.END to AlignmentButton(commands?.alignEnd, DrawViewIcons.AlignRight, Res.string.text_align_end)
 )
 
 /** A button of a format that is on or off, with the tooltip of [command] when given. */
 @Composable
 internal fun FormatToggle(command: Command?, checked: Boolean, icon: ImageVector, description: StringResource, onClick: () -> Unit) {
     val button = @Composable {
-        IconToggleButton(checked = checked, onCheckedChange = { onClick() }) {
-            Icon(icon, contentDescription = stringResource(description))
+        val colors = MaterialTheme.colorScheme
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .minimumInteractiveComponentSize()
+                .size(36.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(if (checked) colors.primaryContainer else Color.Transparent)
+                .toggleable(value = checked, role = Role.Checkbox, onValueChange = { onClick() })
+        ) {
+            Icon(icon, contentDescription = stringResource(description), tint = if (checked) colors.onPrimaryContainer else colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
         }
     }
     if (command == null) button() else CommandTooltip(command) { button() }
@@ -144,7 +159,7 @@ internal fun FormatToggle(command: Command?, checked: Boolean, icon: ImageVector
 internal fun FormatButton(command: Command, icon: ImageVector) {
     CommandTooltip(command) {
         IconButton(onClick = { command.performIfEnabled() }, enabled = command.isEnabled()) {
-            Icon(icon, contentDescription = command.label())
+            Icon(icon, contentDescription = command.label(), modifier = Modifier.size(20.dp))
         }
     }
 }

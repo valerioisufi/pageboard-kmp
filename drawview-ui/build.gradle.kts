@@ -6,6 +6,8 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
+    // Screenshot tests of the components (recordRoborazziJvm, verifyRoborazziJvm)
+    alias(libs.plugins.roborazzi)
 }
 
 kotlin {
@@ -68,7 +70,16 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
         }
+        jvmTest.dependencies {
+            implementation(libs.compose.uiTest)
+            implementation(libs.roborazzi.composeDesktop)
+        }
     }
+}
+
+// The reference images of the components (see ComponentScreenshotTest)
+roborazzi {
+    outputDir.set(layout.projectDirectory.dir("screenshots"))
 }
 
 compose.resources {

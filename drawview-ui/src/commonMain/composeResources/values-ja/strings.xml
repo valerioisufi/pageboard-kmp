@@ -142,4 +142,22 @@
     <string name="command_previous_page">前のページ</string>
     <string name="command_previous_tool">前のツール</string>
     <string name="command_snapping">ガイドにスナップ</string>
+    <string name="tool_pen">ペン</string>
+    <string name="tool_highlighter">蛍光ペン</string>
+    <string name="tool_eraser">消しゴム</string>
+    <string name="tool_settings_size">サイズ</string>
+    <string name="tool_settings_presets">プリセット</string>
+    <string name="tool_settings_ink">インク</string>
+    <string name="tool_settings_delete_preset">プリセットを削除</string>
+    <string name="tool_settings_eraser_hint">消しゴムは触れた線、蛍光ペン、PDF のマークを消します。変更はすべて元に戻せます。</string>
+    <string name="tool_settings_lasso_all_hint">投げ縄の中の線、テキスト、画像</string>
+    <string name="tool_settings_lasso_images_hint">画像のみ。インクを残して移動できます</string>
+    <string name="tool_settings_text_hint">最後に使ったサイズ、色、配置が新しいテキストの既定になります。</string>
+    <string name="tool_settings_markup_hint">プリセット：タップして使い、選択中のものをタップして変更します。</string>
+    <string name="editor_page_indicator">%2$d ページ中 %1$d ページ</string>
+    <string name="color_picker_hex">16進数</string>
+    <string name="drawing_mode">描画モード</string>
+    <plurals name="editor_pages_count">
+        <item quantity="other">%1$d ページ</item>
+    </plurals>
 </resources>

@@ -38,12 +38,15 @@ class CalcPage(
         var horizontalPadding: Float = 8f,
         var topPadding: Float = 8f,
         var betweenPadding: Float = 8f,
-        var bottomPadding: Float = 16f
+        var bottomPadding: Float = 16f,
+        /** The widest page at the zoom of the opening: a wide window keeps the desk beside it. */
+        var maxPageWidth: Float = 880f
     )
 
     /**
      * Computes bounding rectangles for a sequence of pages stacked vertically in continuous scroll.
-     * Content is scaled uniformly to fit the window's width based on the widest page.
+     * Content is scaled uniformly to fit the window's width based on the widest page (at most
+     * [PagePositionOnWindowOption.maxPageWidth] wide, centered).
      */
     fun calcPagesRectOnWindow(
         pages: List<DrawPage>,
@@ -63,7 +66,7 @@ class CalcPage(
         val bottomPadding = options.bottomPadding * density
 
         val maxPageWidthMm = pages.maxOf { it.dimension.width.mm }.coerceAtLeast(1f)
-        val availableWidth = (windowRect.width - horizontalPadding * 2).coerceAtLeast(10f)
+        val availableWidth = (windowRect.width - horizontalPadding * 2).coerceIn(10f, maxOf(10f, options.maxPageWidth * density))
         val scaleFactor = availableWidth / maxPageWidthMm
 
         var leftMostPosition = horizontalPadding

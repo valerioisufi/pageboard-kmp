@@ -1,30 +1,19 @@
 package io.github.valerioisufi.drawview.ui.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AspectRatio
-import androidx.compose.material.icons.outlined.DateRange
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.InsertPageBreak
-import androidx.compose.material.icons.outlined.KeyboardArrowDown
-import androidx.compose.material.icons.outlined.KeyboardArrowUp
-import androidx.compose.material.icons.outlined.ShapeLine
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,209 +21,93 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.ui.generated.resources.*
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.util.formatDateTime
 import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * A composable component that displays an interactive, expandable card containing document metadata.
- * * In its collapsed state, the component shows the document's name and serves as a compact
- * header element. When expanded by the user, it calculates and displays detailed properties
- * of the provided [DrawDocument], including timestamps, total page count, physical dimensions,
- * and a cumulative count of all drawable elements (strokes, images, text, and PDF layers)
- * across the document structure.
+ * The title of the document in the bar of the editor, with what it holds under it ([subtitle]);
+ * a tap opens its information: where it is ([location]), its dates, its pages, its format and how
+ * many elements it holds.
  *
- * @param document The [DrawDocument] object containing the metadata and page content to be analyzed.
- * Can be null to indicate a loading or uninitialized state.
- * @param modifier The [Modifier] to be applied to the root container of this component.
+ * @param document the document, `null` while it is being loaded.
  */
 @Composable
 fun DocumentInfoSelector(
     document: DrawDocument?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    location: String? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val monthNames = stringArrayResource(Res.array.date_months_short)
-
-    val totalPages = document?.pages?.size ?: 0
-    val firstPage = document?.pages?.firstOrNull()
-    val dimensionsStr = firstPage?.let {
-        stringResource(
-            Res.string.document_info_value_dimensions,
-            it.widthMm.toInt(),
-            it.heightMm.toInt()
-        ) } ?: stringResource(
-        Res.string.common_label_not_available
-    )
-
-    var totalElements = 0
-    document?.pages?.forEach { page ->
-        totalElements += page.strokes.size + page.images.size + page.texts.size + page.pdfs.size + page.markups.size
-    }
-
-    ModularExpandableCard(
-        isExpanded = expanded,
-        modifier = modifier,
-        onDismissRequest = { expanded = false },
-        expandedAlignment = Alignment.TopCenter,
-        shape = RoundedCornerShape(16.dp),
-        backgroundColor = MaterialTheme.colorScheme.surface,
-        elevation = if (expanded) 8.dp else 0.dp,
-
-        collapsedContent = {
-            // Creiamo un gestore per lo stato del tocco
-            val interactionSource = remember { MutableInteractionSource() }
-
-            Row(
-                modifier = Modifier
-                    .clickable(
-                        interactionSource = interactionSource,
-                        // Coloriamo il ripple di primary per abbinarlo al testo
-                        indication = ripple(color = MaterialTheme.colorScheme.primary),
-                        onClick = { expanded = true }
-                    )
-                    .padding(horizontal = 16.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    modifier = Modifier.padding(end = 8.dp),
-                    text = document?.name ?: stringResource(Res.string.common_state_loading),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1
-                )
-                Icon(
-                    imageVector = Icons.Outlined.KeyboardArrowDown,
-                    contentDescription = stringResource(Res.string.document_info_action_expand),
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        },
-        expandedContent = {
-            Column(
-                modifier = Modifier
-                    .widthIn(min = 260.dp, max = 320.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Creiamo il gestore anche per la riga di chiusura
-                val interactionSource = remember { MutableInteractionSource() }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(
-                            interactionSource = interactionSource,
-                            // Coloriamo il ripple anche qui
-                            indication = ripple(color = MaterialTheme.colorScheme.primary),
-                            onClick = { expanded = false }
-                        )
-                        .padding(horizontal = 16.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        modifier = Modifier.padding(end = 8.dp),
-                        text = document?.name ?: stringResource(Res.string.common_state_loading),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 1
-                    )
-                    Icon(
-                        imageVector = Icons.Outlined.KeyboardArrowUp,
-                        contentDescription = stringResource(Res.string.document_info_action_collapse),
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                )
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    InfoRow(
-                        icon = Icons.Outlined.DateRange,
-                        label = stringResource(Res.string.document_info_label_created_date),
-                        value = document?.createdAt?.takeIf { it > 0L }?.let { formatDateTime(it, monthNames) } ?: stringResource(Res.string.common_label_not_available)
-                    )
-
-                    InfoRow(
-                        icon = Icons.Outlined.Edit,
-                        label = stringResource(Res.string.document_info_label_modified_date),
-                        value = document?.modifiedAt?.takeIf { it > 0L }?.let { formatDateTime(it, monthNames) } ?: stringResource(Res.string.common_label_not_available)
-                    )
-
-                    InfoRow(
-                        icon = Icons.Outlined.InsertPageBreak,
-                        label = stringResource(Res.string.document_info_label_pages),
-                        value = totalPages.toString()
-                    )
-
-                    InfoRow(
-                        icon = Icons.Outlined.AspectRatio,
-                        label = stringResource(Res.string.document_info_label_format),
-                        value = dimensionsStr
-                    )
-
-                    InfoRow(
-                        icon = Icons.Outlined.ShapeLine,
-                        label = stringResource(Res.string.document_info_label_elements_count),
-                        value = totalElements.toString()
-                    )
+    val title = document?.name ?: stringResource(Res.string.common_state_loading)
+    Box(modifier = modifier) {
+        Row(
+            modifier = Modifier
+                .clip(RoundedCornerShape(12.dp))
+                .clickable(role = Role.Button, onClickLabel = stringResource(Res.string.document_info_action_expand)) { expanded = !expanded }
+                .padding(start = 12.dp, end = 8.dp, top = 2.dp, bottom = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Column(modifier = Modifier.weight(1f, fill = false)) {
+                Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (subtitle != null) {
+                    Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
+            Icon(
+                imageVector = if (expanded) DrawViewIcons.ChevronUp else DrawViewIcons.ChevronDown,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(18.dp)
+            )
         }
-    )
+        ToolPopover(expanded = expanded && document != null, onDismissRequest = { expanded = false }, offset = DpOffset(0.dp, 8.dp)) {
+            if (document != null) DocumentInfo(document, location)
+        }
+    }
 }
 
-/**
- * A private helper composable that renders a standardized row of information within the expanded card.
- *
- * It formats a specific piece of document metadata by pairing an identifying vector icon and label
- * with the corresponding value string.
- *
- * @param icon The [ImageVector] representing the graphical icon to display at the start of the row.
- * @param label The descriptive text label for the given data point.
- * @param value The string representation of the data value to display at the end of the row.
- */
+/** The information of [document]: its title and folder, its dates, pages, format and elements. */
+@Composable
+private fun DocumentInfo(document: DrawDocument, location: String?) {
+    val monthNames = stringArrayResource(Res.array.date_months_short)
+    val firstPage = document.pages.firstOrNull()
+    val notAvailable = stringResource(Res.string.common_label_not_available)
+    val dimensions = firstPage?.let {
+        stringResource(Res.string.document_info_value_dimensions, it.widthMm.toInt(), it.heightMm.toInt())
+    } ?: notAvailable
+    val elements = document.pages.sumOf { page -> page.strokes.size + page.images.size + page.texts.size + page.pdfs.size + page.markups.size }
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Text(document.name, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        if (location != null) {
+            Text(location, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        InfoRow(DrawViewIcons.Clock, stringResource(Res.string.document_info_label_created_date), document.createdAt.takeIf { it > 0L }?.let { formatDateTime(it, monthNames).trimStart('0') } ?: notAvailable)
+        InfoRow(DrawViewIcons.Pencil, stringResource(Res.string.document_info_label_modified_date), document.modifiedAt.takeIf { it > 0L }?.let { formatDateTime(it, monthNames).trimStart('0') } ?: notAvailable)
+        InfoRow(DrawViewIcons.FileText, stringResource(Res.string.document_info_label_pages), document.pages.size.toString())
+        InfoRow(DrawViewIcons.Grid, stringResource(Res.string.document_info_label_format), dimensions)
+        InfoRow(DrawViewIcons.Layers, stringResource(Res.string.document_info_label_elements_count), elements.toString())
+    }
+}
+
+/** A property of the document: its icon and its name, its value at the end. */
 @Composable
 private fun InfoRow(icon: ImageVector, label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(20.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+    Row(modifier = Modifier.fillMaxWidth().height(44.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(text = label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+        Text(text = value, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
     }
 }

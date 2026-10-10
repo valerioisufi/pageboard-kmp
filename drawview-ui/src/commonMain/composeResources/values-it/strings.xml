@@ -142,4 +142,23 @@
     <string name="command_previous_page">Pagina precedente</string>
     <string name="command_previous_tool">Strumento precedente</string>
     <string name="command_snapping">Aggancia alle guide</string>
+    <string name="tool_pen">Penna</string>
+    <string name="tool_highlighter">Evidenziatore</string>
+    <string name="tool_eraser">Gomma</string>
+    <string name="tool_settings_size">Dimensione</string>
+    <string name="tool_settings_presets">Preimpostazioni</string>
+    <string name="tool_settings_ink">Inchiostro</string>
+    <string name="tool_settings_delete_preset">Elimina la preimpostazione</string>
+    <string name="tool_settings_eraser_hint">La gomma toglie i tratti, gli evidenziati e i segni dei PDF che tocca; ogni modifica si può annullare.</string>
+    <string name="tool_settings_lasso_all_hint">Tratti, testi e immagini dentro il lazo</string>
+    <string name="tool_settings_lasso_images_hint">Solo le immagini, per spostarle senza l’inchiostro</string>
+    <string name="tool_settings_text_hint">Dimensione, colore e allineamento usati per ultimi diventano quelli dei nuovi testi.</string>
+    <string name="tool_settings_markup_hint">Preimpostazioni: toccane una per segnare con essa, tocca quella scelta per cambiarla.</string>
+    <string name="editor_page_indicator">Pagina %1$d di %2$d</string>
+    <string name="color_picker_hex">Esadecimale</string>
+    <string name="drawing_mode">Modalità disegno</string>
+    <plurals name="editor_pages_count">
+        <item quantity="one">%1$d pagina</item>
+        <item quantity="other">%1$d pagine</item>
+    </plurals>
 </resources>

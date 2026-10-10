@@ -1,49 +1,33 @@
 package io.github.valerioisufi.drawview.ui.screen
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.automirrored.outlined.Redo
-import androidx.compose.material.icons.automirrored.outlined.Undo
-import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.PictureAsPdf
-import androidx.compose.material.icons.filled.TextFields
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Draw
-import androidx.compose.material.icons.outlined.GridView
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,41 +35,58 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.zIndex
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.TextFormatTarget
-import io.github.valerioisufi.drawview.core.controller.ToolPreset
 import io.github.valerioisufi.drawview.core.geometry.mm
+import io.github.valerioisufi.drawview.core.geometry.pt
 import io.github.valerioisufi.drawview.core.model.LassoMode
 import io.github.valerioisufi.drawview.core.model.TextAlignment
+import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.ui.adaptive.HeightClass
 import io.github.valerioisufi.drawview.ui.adaptive.WindowLayout
+import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandMenu
-import io.github.valerioisufi.drawview.ui.command.HoverTooltip
+import io.github.valerioisufi.drawview.ui.components.AddPresetCard
+import io.github.valerioisufi.drawview.ui.components.ColorSwatches
+import io.github.valerioisufi.drawview.ui.components.DesignIconButton
 import io.github.valerioisufi.drawview.ui.components.DocumentInfoSelector
-import io.github.valerioisufi.drawview.ui.components.ExpandableToolButton
+import io.github.valerioisufi.drawview.ui.components.EraserPreview
 import io.github.valerioisufi.drawview.ui.components.FontSizeControl
-import io.github.valerioisufi.drawview.ui.components.PresetEditMenu
-import io.github.valerioisufi.drawview.ui.components.QuickPresetButton
-import io.github.valerioisufi.drawview.ui.components.SizeSlider
-import io.github.valerioisufi.drawview.ui.components.TextColorPaletteRow
+import io.github.valerioisufi.drawview.ui.components.HybridScale
+import io.github.valerioisufi.drawview.ui.components.IconButtonStyle
+import io.github.valerioisufi.drawview.ui.components.OptionCard
+import io.github.valerioisufi.drawview.ui.components.PopoverTitle
+import io.github.valerioisufi.drawview.ui.components.PresetCard
+import io.github.valerioisufi.drawview.ui.components.SettingHint
+import io.github.valerioisufi.drawview.ui.components.SettingLabel
+import io.github.valerioisufi.drawview.ui.components.SizeSetting
+import io.github.valerioisufi.drawview.ui.components.StrokePreview
 import io.github.valerioisufi.drawview.ui.components.TextColorPickerDialog
 import io.github.valerioisufi.drawview.ui.components.TextMarkupPresetButton
-import io.github.valerioisufi.drawview.ui.components.TextMarkupPresetEditMenu
+import io.github.valerioisufi.drawview.ui.components.TextMarkupSample
 import io.github.valerioisufi.drawview.ui.components.ToolButton
+import io.github.valerioisufi.drawview.ui.components.textMarkupKindLabel
 import io.github.valerioisufi.drawview.ui.editor.TextAlignmentButtons
 import io.github.valerioisufi.drawview.ui.generated.resources.*
-import org.jetbrains.compose.resources.painterResource
+import io.github.valerioisufi.drawview.ui.theme.DrawViewElevation
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
+import io.github.valerioisufi.drawview.ui.theme.InkPalette
+import io.github.valerioisufi.drawview.ui.theme.elevation
+import io.github.valerioisufi.drawview.ui.util.formatDecimal
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 /** Where the tools of the editor go, by the space of the editor. */
@@ -105,27 +106,41 @@ internal enum class ToolbarArrangement {
  * fit beside the title (the others go to the "more" menu).
  */
 internal object ToolbarLayout {
-    /** The height of a bar. */
-    val BarHeight: Dp = 48.dp
+    /** The height of the top bar (and of the bar of the tools under it). */
+    val BarHeight: Dp = 64.dp
+
+    /** The height of the top bar of a phone. */
+    val CompactBarHeight: Dp = 52.dp
+
+    /** The height of the tools floating at the bottom. */
+    val FloatingHeight: Dp = 56.dp
 
     /** The width the title of the document keeps in the top bar. */
     val TitleMinWidth: Dp = 160.dp
 
+    /** The widest title of the document beside the tools. */
+    val TitleMaxWidth: Dp = 280.dp
+
+    /** A tool button and the space after it. */
+    val ToolWidth: Dp = 46.dp
+
     /** The width of a divider between groups of tools. */
-    val DividerWidth: Dp = 18.dp
+    val DividerWidth: Dp = 17.dp
 
-    /** The margins of a bar. */
-    val BarPadding: Dp = 16.dp
+    /** The margins of a bar, and of the group of the tools. */
+    val BarPadding: Dp = 24.dp
+    val GroupPadding: Dp = 16.dp
 
-    /** The buttons of the top bar besides the title and the extensions: back, page grid, drawing mode, more. */
-    const val TopButtons = 4
+    /** The buttons of the top bar besides the title and the extensions: back, page grid, more. */
+    const val TopButtons = 3
 
     /** The width of the top bar without the tools: its buttons, the actions of the extensions, the title. */
     fun topWidth(button: Dp, extensionsWidth: Dp, buttons: Int = TopButtons): Dp =
         BarPadding + button * buttons + extensionsWidth + TitleMinWidth
 
-    /** The width of [tools] buttons of tools in [groups] groups. */
-    fun toolsWidth(button: Dp, tools: Int, groups: Int): Dp = button * tools + DividerWidth * (groups - 1)
+    /** The width of the group of [tools] buttons of tools in [groups] groups, buttons [button] wide at least. */
+    fun toolsWidth(button: Dp, tools: Int, groups: Int): Dp =
+        max(ToolWidth, button + 2.dp) * tools + DividerWidth * (groups - 1) + GroupPadding
 
     /**
      * The arrangement of the tools in an editor [width] wide, in a window of [heightClass], with
@@ -143,10 +158,11 @@ internal object ToolbarLayout {
 }
 
 /**
- * The top bar of the editor: back and the page grid (when it fits), the title of the document,
- * the tools when they fit in one bar, the actions of the extensions, the drawing mode and the
- * "more" menu with the commands left out of the bars.
+ * The top bar of the editor: back and the page grid (when it fits), the title of the document and
+ * what it holds, the tools in their group when they fit in one bar, the actions of the extensions
+ * and the "more" menu with the commands left out of the bars.
  *
+ * @param location where the document is (its folder), shown under its title.
  * @param onExtensionsWidth the width the actions of the extensions take, measured.
  */
 @Composable
@@ -158,54 +174,46 @@ internal fun EditorTopBar(
     showPageGrid: Boolean,
     toolsMaxWidth: Dp,
     toolbarActions: @Composable RowScope.() -> Unit,
-    onExtensionsWidth: (Dp) -> Unit
+    onExtensionsWidth: (Dp) -> Unit,
+    location: String? = null
 ) {
     val density = LocalDensity.current
+    val compact = arrangement == ToolbarArrangement.FLOATING_TOOLS
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .zIndex(1f)
-            .height(ToolbarLayout.BarHeight)
-            .padding(horizontal = ToolbarLayout.BarPadding / 2),
-        verticalAlignment = Alignment.CenterVertically
+            .height(if (compact) ToolbarLayout.CompactBarHeight else ToolbarLayout.BarHeight)
+            .padding(horizontal = if (compact) 4.dp else 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(if (compact) 0.dp else 4.dp)
     ) {
-        ToolButton(onClick = commands.close.perform, command = commands.close) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = stringResource(Res.string.common_action_back)
-            )
-        }
+        BarButton(commands.close, DrawViewIcons.ArrowLeft, label = stringResource(Res.string.common_action_back))
         if (showPageGrid) {
-            ToolButton(
-                onClick = commands.pageGrid.perform,
-                selected = controller.isPageGridVisible,
-                command = commands.pageGrid
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.GridView,
-                    contentDescription = stringResource(Res.string.draw_toolbar_action_grid_view)
-                )
-            }
+            BarButton(commands.pageGrid, DrawViewIcons.LayoutGrid, selected = controller.isPageGridVisible)
         }
 
-        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-            DocumentInfoSelector(document = if (isLoading) null else controller.document)
-        }
+        val subtitle = documentSubtitle(controller, location, pageOnly = compact)
+        val toolsInBar = arrangement == ToolbarArrangement.ONE_BAR && controller.isDrawingMode
+        DocumentInfoSelector(
+            document = if (isLoading) null else controller.document,
+            subtitle = subtitle,
+            location = location,
+            modifier = if (toolsInBar) Modifier.widthIn(max = ToolbarLayout.TitleMaxWidth) else Modifier.weight(1f)
+        )
 
-        if (arrangement == ToolbarArrangement.ONE_BAR && controller.isDrawingMode) {
-            Row(
-                modifier = Modifier
-                    .widthIn(max = toolsMaxWidth)
-                    .horizontalScroll(rememberScrollState()),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+        if (toolsInBar) {
+            Spacer(modifier = Modifier.weight(1f))
+            ToolGroup(modifier = Modifier.widthIn(max = toolsMaxWidth)) {
                 EditorTools(controller, commands, withImports = true)
             }
+            Spacer(modifier = Modifier.weight(1f))
         }
 
         Row(
             modifier = Modifier.onSizeChanged { with(density) { onExtensionsWidth(it.width.toDp()) } },
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             toolbarActions()
         }
@@ -213,48 +221,91 @@ internal fun EditorTopBar(
         if (controller.isReadOnly) {
             // Shared with this device to be read only
             Icon(
-                imageVector = Icons.Outlined.Lock,
+                imageVector = DrawViewIcons.Lock,
                 contentDescription = stringResource(Res.string.draw_read_only),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 12.dp)
+                modifier = Modifier.padding(horizontal = 10.dp).size(20.dp)
             )
-        } else {
-            ToolButton(
-                onClick = commands.drawingMode.perform,
-                selected = controller.isDrawingMode,
-                command = commands.drawingMode
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Draw,
-                    contentDescription = stringResource(Res.string.draw_toolbar_action_draw)
-                )
-            }
         }
 
         MoreMenu(commands, arrangement, showPageGrid)
     }
 }
 
+/** "Analysis · 12 pages" beside the tools, "Page 3 of 12" on a phone (the page looked at). */
+@Composable
+private fun documentSubtitle(controller: DrawViewController, location: String?, pageOnly: Boolean): String {
+    val total = controller.document.pages.size
+    if (pageOnly) {
+        val page by remember(controller) {
+            androidx.compose.runtime.derivedStateOf {
+                controller.cameraPhysics.moveCount
+                controller.version
+                (controller.mostVisiblePageIndex() ?: 0) + 1
+            }
+        }
+        return stringResource(Res.string.editor_page_indicator, page, total)
+    }
+    return listOfNotNull(location, pluralStringResource(Res.plurals.editor_pages_count, total, total)).joinToString(" · ")
+}
+
+/** A button of the top bar running [command] (its label and shortcut in the tooltip). */
+@Composable
+private fun BarButton(command: Command, icon: ImageVector, label: String = command.label(), selected: Boolean = false) {
+    DesignIconButton(
+        icon = icon,
+        label = label,
+        onClick = { command.performIfEnabled() },
+        selected = selected,
+        enabled = command.isEnabled(),
+        shortcut = command.shortcutLabel(currentAdaptiveInfo().conventions),
+        tint = MaterialTheme.colorScheme.onSurface
+    )
+}
+
+/** The group of the tools: a pill of the container of the surfaces, the tools scrolled when they do not fit. */
+@Composable
+internal fun ToolGroup(modifier: Modifier = Modifier, content: @Composable RowScope.() -> Unit) {
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(22.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
+        content = content
+    )
+}
+
+/** The line between two groups of tools. */
+@Composable
+private fun ToolDivider() {
+    Box(modifier = Modifier.width(ToolbarLayout.DividerWidth - 2.dp), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.width(1.dp).height(24.dp).background(MaterialTheme.colorScheme.outlineVariant))
+    }
+}
+
 /**
  * The "more" button and its menu: the commands left out of the bars (the page grid, the imports
- * under floating tools), the pages, the view, the document and about.
+ * under floating tools), the view, the document, the drawing mode and about.
  */
 @Composable
 private fun MoreMenu(commands: EditorCommands, arrangement: ToolbarArrangement, showPageGrid: Boolean) {
     var expanded by remember { mutableStateOf(false) }
     val floating = arrangement == ToolbarArrangement.FLOATING_TOOLS
     Box {
-        val more = stringResource(Res.string.common_action_more_options)
-        HoverTooltip(more) {
-            ToolButton(onClick = { expanded = true }) {
-                Icon(imageVector = Icons.Outlined.MoreHoriz, contentDescription = more)
-            }
-        }
+        DesignIconButton(
+            icon = DrawViewIcons.MoreHorizontal,
+            label = stringResource(Res.string.common_action_more_options),
+            onClick = { expanded = true },
+            tint = MaterialTheme.colorScheme.onSurface
+        )
         CommandMenu(
             sections = listOf(
                 listOfNotNull(commands.pageGrid.takeIf { !showPageGrid }, commands.addPage) +
                     (if (floating) listOf(commands.importPdf, commands.importImage) else emptyList()),
-                listOf(commands.fitWidth, commands.stylusOnly, commands.snapping, commands.documentBackground),
+                listOf(commands.fitWidth, commands.stylusOnly, commands.snapping, commands.documentBackground, commands.drawingMode),
                 listOf(commands.about)
             ),
             expanded = expanded,
@@ -264,279 +315,56 @@ private fun MoreMenu(commands: EditorCommands, arrangement: ToolbarArrangement, 
 }
 
 /**
- * The tools of the editor: undo and redo, the drawing tools (their settings opened by their
- * button chosen again, or by a long press), the imports when [withImports].
+ * The tools of the editor: undo and redo, the drawing tools (their settings in a popover opened
+ * by their button chosen again, or by a long press), the imports when [withImports].
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun RowScope.EditorTools(controller: DrawViewController, commands: EditorCommands, withImports: Boolean) {
-    val toolManager = controller.toolManager
     val pdfImportAvailable = controller.tileManager.tileRenderer.pdfAdapter != null
-    // Tool whose quick-settings ribbon is expanded (null = none)
-    var expandedToolSettings by remember { mutableStateOf<Tool?>(null) }
+    // The tool whose settings are open (null = none)
+    var openSettings by remember { mutableStateOf<Tool?>(null) }
 
-    ToolButton(
-        onClick = commands.undo.perform,
-        enabled = controller.canUndo,
-        command = commands.undo
-    ) {
-        Icon(
-            imageVector = Icons.AutoMirrored.Outlined.Undo,
-            contentDescription = stringResource(Res.string.common_action_undo),
-            tint = if (controller.canUndo) {
-                MaterialTheme.colorScheme.onSurface
-            } else {
-                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-            }
-        )
+    BarButton(commands.undo, DrawViewIcons.Undo)
+    BarButton(commands.redo, DrawViewIcons.Redo)
+    ToolDivider()
+
+    ToolWithSettings(controller, Tool.INK_PEN, commands.pen, DrawViewIcons.Pen, openSettings, { openSettings = it }) {
+        InkSettings(controller, Tool.INK_PEN, stringResource(Res.string.tool_pen), InkPalette.inks, HybridScale(0.1f..15f, linearThreshold = 3f, linearProportion = 0.5f))
     }
-
-    ToolButton(
-        onClick = commands.redo.perform,
-        enabled = controller.canRedo,
-        command = commands.redo
-    ) {
-        Icon(
-            imageVector = Icons.AutoMirrored.Outlined.Redo,
-            contentDescription = stringResource(Res.string.common_action_redo),
-            tint = if (controller.canRedo) {
-                MaterialTheme.colorScheme.onSurface
-            } else {
-                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-            }
-        )
-    }
-
-    VerticalDivider(
-        modifier = Modifier.padding(8.dp),
-        thickness = 2.dp
-    )
-
-    // ==========================================
-    // 1. INK PEN
-    // ==========================================
-    InkToolButton(
-        controller = controller,
-        command = commands.pen,
-        tool = Tool.INK_PEN,
-        expanded = expandedToolSettings == Tool.INK_PEN,
-        onExpandedChange = { expandedToolSettings = if (it) Tool.INK_PEN else null },
-        icon = painterResource(Res.drawable.icon_ink_pen),
-        contentDescription = stringResource(Res.string.draw_toolbar_action_ink_pen),
-        // Linear precision up to 3 pt, on half of the slider
-        sizeRange = 0.1f..15f,
-        linearThreshold = 3f,
-        linearProportion = 0.5f
-    )
-
-    // ==========================================
-    // 2. INK HIGHLIGHTER
-    // ==========================================
-    InkToolButton(
-        controller = controller,
-        command = commands.highlighter,
-        tool = Tool.INK_HIGHLIGHTER,
-        expanded = expandedToolSettings == Tool.INK_HIGHLIGHTER,
-        onExpandedChange = { expandedToolSettings = if (it) Tool.INK_HIGHLIGHTER else null },
-        icon = painterResource(Res.drawable.icon_ink_highlighter),
-        contentDescription = stringResource(Res.string.draw_toolbar_action_highlighter),
+    ToolWithSettings(controller, Tool.INK_HIGHLIGHTER, commands.highlighter, DrawViewIcons.Highlighter, openSettings, { openSettings = it }) {
         // Much wider range for the highlighters, linear only up to 8 pt
-        sizeRange = 1f..30f,
-        linearThreshold = 8f,
-        linearProportion = 0.3f
-    )
-
-    // ==========================================
-    // 2b. TEXT MARKUP (text of the PDFs)
-    // ==========================================
+        InkSettings(controller, Tool.INK_HIGHLIGHTER, stringResource(Res.string.tool_highlighter), InkPalette.highlights, HybridScale(1f..30f, linearThreshold = 8f, linearProportion = 0.3f))
+    }
     val hasPdfPages = controller.document.pages.any { it.pdfs.isNotEmpty() }
     if (pdfImportAvailable && (hasPdfPages || controller.selectedTool == Tool.TEXT_MARKUP)) {
-        TextMarkupToolButton(
-            controller = controller,
-            command = commands.textMarkup,
-            expanded = expandedToolSettings == Tool.TEXT_MARKUP,
-            onExpandedChange = { expandedToolSettings = if (it) Tool.TEXT_MARKUP else null }
-        )
+        ToolWithSettings(controller, Tool.TEXT_MARKUP, commands.textMarkup, DrawViewIcons.TextMarkup, openSettings, { openSettings = it }) {
+            MarkupSettings(controller)
+        }
     }
-
-    // ==========================================
-    // 3. ERASER
-    // ==========================================
-    var eraserSettingsExpanded by remember { mutableStateOf(false) }
+    ToolWithSettings(controller, Tool.ERASER, commands.eraser, DrawViewIcons.Eraser, openSettings, { openSettings = it }) {
+        EraserSettings(controller)
+    }
+    ToolWithSettings(controller, Tool.TEXT, commands.text, DrawViewIcons.Text, openSettings, { openSettings = it }) {
+        TextToolSettings(controller)
+    }
+    ToolWithSettings(controller, Tool.LAZO, commands.lasso, DrawViewIcons.Lasso, openSettings, { openSettings = it }) {
+        LassoSettings(controller)
+    }
     ToolButton(
         onClick = {
-            expandedToolSettings = null
-            if (controller.selectedTool == Tool.ERASER) {
-                eraserSettingsExpanded = true
-            } else {
-                controller.selectTool(Tool.ERASER)
-            }
-        },
-        onLongClick = {
-            expandedToolSettings = null
-            controller.selectTool(Tool.ERASER)
-            eraserSettingsExpanded = true
-        },
-        selected = controller.selectedTool == Tool.ERASER,
-        command = commands.eraser,
-        dropDownMenu = {
-            val eraserIndex = toolManager.selectedPresetIndex(Tool.ERASER)
-            val eraserPreset = toolManager.activePreset(Tool.ERASER)
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = stringResource(Res.string.draw_toolbar_label_eraser_size),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                SizeSlider(
-                    modifier = Modifier.padding(8.dp),
-                    size = (eraserPreset?.sizeMm ?: 8f).mm,
-                    // Large erasers, linear precision only for small corrections
-                    valueRange = 2f..50f,
-                    linearThreshold = 10f,
-                    linearProportion = 0.25f,
-                    onSizeChanged = { newMeasure ->
-                        eraserPreset?.let {
-                            toolManager.updatePreset(Tool.ERASER, eraserIndex, it.copy(sizeMm = newMeasure.mm))
-                        }
-                    }
-                )
-            }
-        },
-        expanded = eraserSettingsExpanded,
-        onDismissRequest = { eraserSettingsExpanded = false }
-    ) {
-        Icon(
-            painter = painterResource(Res.drawable.icon_ink_eraser),
-            contentDescription = stringResource(Res.string.draw_toolbar_action_eraser)
-        )
-    }
-
-    // ==========================================
-    // 4. TEXT
-    // ==========================================
-    var textSettingsExpanded by remember { mutableStateOf(false) }
-    ToolButton(
-        onClick = {
-            expandedToolSettings = null
-            if (controller.selectedTool == Tool.TEXT) {
-                textSettingsExpanded = true
-            } else {
-                controller.selectTool(Tool.TEXT)
-            }
-        },
-        onLongClick = {
-            expandedToolSettings = null
-            controller.selectTool(Tool.TEXT)
-            textSettingsExpanded = true
-        },
-        selected = controller.selectedTool == Tool.TEXT,
-        command = commands.text,
-        dropDownMenu = { TextToolSettings(controller) },
-        expanded = textSettingsExpanded,
-        onDismissRequest = { textSettingsExpanded = false }
-    ) {
-        Icon(
-            imageVector = Icons.Default.TextFields,
-            contentDescription = stringResource(Res.string.draw_toolbar_action_text)
-        )
-    }
-
-    // ==========================================
-    // 5. LASSO
-    // ==========================================
-    var lassoSettingsExpanded by remember { mutableStateOf(false) }
-    ToolButton(
-        onClick = {
-            expandedToolSettings = null
-            if (controller.selectedTool == Tool.LAZO) {
-                lassoSettingsExpanded = true
-            } else {
-                controller.selectTool(Tool.LAZO)
-            }
-        },
-        onLongClick = {
-            expandedToolSettings = null
-            controller.selectTool(Tool.LAZO)
-            lassoSettingsExpanded = true
-        },
-        selected = controller.selectedTool == Tool.LAZO,
-        command = commands.lasso,
-        dropDownMenu = {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.Start
-            ) {
-                Text(
-                    text = stringResource(Res.string.draw_toolbar_title_lasso_mode),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-                LassoModeOption(
-                    selected = controller.lassoMode == LassoMode.ALL,
-                    label = stringResource(Res.string.draw_toolbar_option_select_all),
-                    onSelect = { controller.lassoMode = LassoMode.ALL }
-                )
-                LassoModeOption(
-                    selected = controller.lassoMode == LassoMode.IMAGES_ONLY,
-                    label = stringResource(Res.string.draw_toolbar_option_images_only),
-                    onSelect = { controller.lassoMode = LassoMode.IMAGES_ONLY }
-                )
-            }
-        },
-        expanded = lassoSettingsExpanded,
-        onDismissRequest = { lassoSettingsExpanded = false }
-    ) {
-        Icon(
-            painter = painterResource(Res.drawable.icon_lasso_select),
-            contentDescription = stringResource(Res.string.draw_toolbar_action_lasso)
-        )
-    }
-
-    // ==========================================
-    // 6. PAN
-    // ==========================================
-    ToolButton(
-        onClick = {
-            expandedToolSettings = null
+            openSettings = null
             controller.selectTool(Tool.PAN)
         },
         selected = controller.selectedTool == Tool.PAN,
         command = commands.pan
     ) {
-        Icon(
-            painter = painterResource(Res.drawable.icon_pan_tool),
-            contentDescription = stringResource(Res.string.draw_toolbar_action_pan)
-        )
+        Icon(DrawViewIcons.Pan, contentDescription = stringResource(Res.string.draw_toolbar_action_pan))
     }
 
-
     if (withImports) {
-        VerticalDivider(
-            modifier = Modifier.padding(8.dp),
-            thickness = 2.dp
-        )
-
-        if (pdfImportAvailable) {
-            ToolButton(onClick = commands.importPdf.perform, command = commands.importPdf) {
-                Icon(
-                    imageVector = Icons.Default.PictureAsPdf,
-                    contentDescription = stringResource(Res.string.draw_toolbar_action_import_pdf)
-                )
-            }
-        }
-
-        ToolButton(onClick = commands.importImage.perform, command = commands.importImage) {
-            Icon(
-                imageVector = Icons.Default.Image,
-                contentDescription = stringResource(Res.string.draw_toolbar_action_import_image)
-            )
-        }
+        ToolDivider()
+        if (pdfImportAvailable) BarButton(commands.importPdf, DrawViewIcons.FileText)
+        BarButton(commands.importImage, DrawViewIcons.Image)
     }
 
     // The palette asked by a gesture of the stylus: the settings of the tool chosen (not the
@@ -545,282 +373,217 @@ internal fun RowScope.EditorTools(controller: DrawViewController, commands: Edit
     LaunchedEffect(commands.paletteRequests) {
         if (commands.paletteRequests == paletteHandled.intValue) return@LaunchedEffect
         paletteHandled.intValue = commands.paletteRequests
-        when (controller.selectedTool) {
-            Tool.INK_PEN, Tool.INK_HIGHLIGHTER, Tool.TEXT_MARKUP -> expandedToolSettings = controller.selectedTool
-            Tool.ERASER -> eraserSettingsExpanded = true
-            Tool.TEXT -> textSettingsExpanded = true
-            Tool.LAZO -> lassoSettingsExpanded = true
-            Tool.PAN -> Unit
-        }
+        openSettings = controller.selectedTool.takeIf { it != Tool.PAN }
     }
 }
 
 /**
- * The tools floating at the bottom of the canvas (a phone, a short window): undo, redo and the
- * drawing tools, scrolled when they do not fit; the imports are in the "more" menu.
+ * The button of [tool] and the popover of its [settings]: chosen by a tap, its settings opened by
+ * a tap on it chosen or by a long press; the dot of its ink when it draws.
  */
 @Composable
-internal fun FloatingTools(controller: DrawViewController, commands: EditorCommands, modifier: Modifier = Modifier) {
-    Surface(
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        shadowElevation = 6.dp,
-        modifier = modifier
+private fun ToolWithSettings(
+    controller: DrawViewController,
+    tool: Tool,
+    command: Command,
+    icon: ImageVector,
+    openSettings: Tool?,
+    onOpenSettings: (Tool?) -> Unit,
+    settings: @Composable ColumnScope.() -> Unit
+) {
+    val selected = controller.selectedTool == tool
+    val ink = when (tool) {
+        Tool.INK_PEN, Tool.INK_HIGHLIGHTER, Tool.TEXT_MARKUP -> controller.toolManager.activePreset(tool)?.let { Color(it.color).copy(alpha = 1f) }
+        Tool.TEXT -> Color(controller.textDefaults.color)
+        else -> null
+    }
+    ToolButton(
+        onClick = {
+            if (selected) {
+                onOpenSettings(tool)
+            } else {
+                onOpenSettings(null)
+                controller.selectTool(tool)
+            }
+        },
+        onLongClick = {
+            controller.selectTool(tool)
+            onOpenSettings(tool)
+        },
+        selected = selected,
+        command = command,
+        ink = ink,
+        expanded = openSettings == tool,
+        onDismissRequest = { onOpenSettings(null) },
+        dropDownMenu = settings
     ) {
-        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
-            Row(
-                modifier = Modifier
-                    .height(ToolbarLayout.BarHeight + 8.dp)
-                    .padding(horizontal = 8.dp)
-                    .horizontalScroll(rememberScrollState()),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                EditorTools(controller, commands, withImports = false)
-            }
-        }
+        Icon(icon, contentDescription = command.label())
     }
 }
 
 /**
- * Button of an ink tool (pen, highlighter) expanding into its presets: tap a preset to select
- * it, tap the selected one to edit it, "+" to add a preset.
+ * The settings of an ink tool (the pen, the highlighter): the size, the presets (tap to choose
+ * one, "+" to add one), the inks of [swatches] and the color wheel; they change the preset chosen.
  */
 @Composable
-private fun InkToolButton(
-    controller: DrawViewController,
-    command: Command,
-    tool: Tool,
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-    icon: Painter,
-    contentDescription: String,
-    sizeRange: ClosedFloatingPointRange<Float>,
-    linearThreshold: Float,
-    linearProportion: Float
-) {
+internal fun ColumnScope.InkSettings(controller: DrawViewController, tool: Tool, title: String, swatches: List<Color>, scale: HybridScale) {
     val toolManager = controller.toolManager
-    PresetToolButton(
-        controller = controller,
-        command = command,
-        tool = tool,
-        expanded = expanded,
-        onExpandedChange = onExpandedChange,
-        icon = icon,
-        contentDescription = contentDescription,
-        presetButton = { preset, isSelected, onClick ->
-            QuickPresetButton(
-                color = Color(preset.color),
-                size = preset.sizeMm.mm,
-                valueRange = sizeRange,
-                isSelected = isSelected,
-                onClick = onClick
-            )
-        },
-        presetEditMenu = { index, preset, editing, onDismiss ->
-            PresetEditMenu(
-                expanded = editing,
-                onDismissRequest = onDismiss,
-                presetColor = Color(preset.color),
-                presetSize = preset.sizeMm.mm,
-                sizeValueRange = sizeRange,
-                linearThreshold = linearThreshold,
-                linearProportion = linearProportion,
-                showDeleteOption = toolManager.presetsOf(tool).size > 1,
-                onColorChanged = { newColor ->
-                    toolManager.presetsOf(tool).getOrNull(index)?.let {
-                        toolManager.updatePreset(tool, index, it.copy(color = newColor.toArgb()))
-                    }
-                },
-                onSizeChanged = { newSize ->
-                    toolManager.presetsOf(tool).getOrNull(index)?.let {
-                        toolManager.updatePreset(tool, index, it.copy(sizeMm = newSize.mm))
-                    }
-                },
-                onDeleteClicked = {
-                    toolManager.removePreset(tool, index)
-                    onDismiss()
+    val presets = toolManager.presetsOf(tool)
+    val index = toolManager.selectedPresetIndex(tool)
+    val active = toolManager.activePreset(tool) ?: return
+    val color = Color(active.color)
+    var wheelOpen by remember { mutableStateOf(false) }
+    fun update(transform: (io.github.valerioisufi.drawview.core.controller.ToolPreset) -> io.github.valerioisufi.drawview.core.controller.ToolPreset) {
+        toolManager.presetsOf(tool).getOrNull(index)?.let { toolManager.updatePreset(tool, index, transform(it)) }
+    }
+    val sizePt = active.sizeMm.mm.pt
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp), modifier = Modifier.padding(vertical = 8.dp)) {
+        PopoverTitle(title) { StrokePreview(color.copy(alpha = maxOf(color.alpha, 0.6f)), width = (sizePt * 1.2f).coerceIn(1.5f, 14f).dp) }
+        SizeSetting(
+            label = stringResource(Res.string.tool_settings_size),
+            value = sizePt,
+            unit = "pt",
+            scale = scale,
+            onValueChange = { newPt -> update { it.copy(sizeMm = newPt.pt.mm) } }
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                SettingLabel(stringResource(Res.string.tool_settings_presets), modifier = Modifier.weight(1f))
+                if (presets.size > 1) {
+                    DesignIconButton(
+                        icon = DrawViewIcons.Trash,
+                        label = stringResource(Res.string.tool_settings_delete_preset),
+                        onClick = { toolManager.removePreset(tool, index) },
+                        iconSize = 18.dp
+                    )
                 }
-            )
-        }
-    )
-}
-
-/**
- * Button of the text markup tool expanding into its presets (kind of the marks and color): tap a
- * preset to select it, tap the selected one to edit it, "+" to add a preset.
- */
-@Composable
-private fun TextMarkupToolButton(
-    controller: DrawViewController,
-    command: Command,
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit
-) {
-    val toolManager = controller.toolManager
-    val tool = Tool.TEXT_MARKUP
-    PresetToolButton(
-        controller = controller,
-        command = command,
-        tool = tool,
-        expanded = expanded,
-        onExpandedChange = onExpandedChange,
-        icon = painterResource(Res.drawable.icon_text_markup),
-        contentDescription = stringResource(Res.string.draw_toolbar_action_text_markup),
-        presetButton = { preset, isSelected, onClick ->
-            TextMarkupPresetButton(
-                kind = preset.markup,
-                color = Color(preset.color),
-                isSelected = isSelected,
-                onClick = onClick
-            )
-        },
-        presetEditMenu = { index, preset, editing, onDismiss ->
-            TextMarkupPresetEditMenu(
-                expanded = editing,
-                onDismissRequest = onDismiss,
-                kind = preset.markup,
-                color = Color(preset.color),
-                showDeleteOption = toolManager.presetsOf(tool).size > 1,
-                onKindChanged = { kind ->
-                    toolManager.presetsOf(tool).getOrNull(index)?.let {
-                        toolManager.updatePreset(tool, index, it.copy(markup = kind))
-                    }
-                },
-                onColorChanged = { newColor ->
-                    toolManager.presetsOf(tool).getOrNull(index)?.let {
-                        toolManager.updatePreset(tool, index, it.copy(color = newColor.toArgb()))
-                    }
-                },
-                onDeleteClicked = {
-                    toolManager.removePreset(tool, index)
-                    onDismiss()
-                }
-            )
-        }
-    )
-}
-
-/**
- * Button of a tool with presets expanding into them: tap a preset to select it, tap the selected
- * one to edit it ([presetEditMenu], anchored to the preset), "+" to add a preset. [command] is
- * the one choosing the tool (its tooltip).
- */
-@Composable
-private fun PresetToolButton(
-    controller: DrawViewController,
-    command: Command,
-    tool: Tool,
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-    icon: Painter,
-    contentDescription: String,
-    presetButton: @Composable (preset: ToolPreset, isSelected: Boolean, onClick: () -> Unit) -> Unit,
-    presetEditMenu: @Composable (index: Int, preset: ToolPreset, expanded: Boolean, onDismiss: () -> Unit) -> Unit
-) {
-    val toolManager = controller.toolManager
-    var editingPresetIndex by remember { mutableStateOf<Int?>(null) }
-    val isToolSelected = controller.selectedTool == tool
-
-    ExpandableToolButton(
-        isExpanded = expanded,
-        isSelected = isToolSelected,
-        mainIcon = {
-            ToolButton(
-                onClick = {
-                    if (isToolSelected) {
-                        onExpandedChange(!expanded)
-                    } else {
-                        controller.selectTool(tool)
-                        onExpandedChange(false)
-                    }
-                },
-                onLongClick = {
-                    controller.selectTool(tool)
-                    onExpandedChange(true)
-                },
-                selected = isToolSelected,
-                command = command
+            }
+            // Up to three presets share the width with "+", more are scrolled
+            val fits = presets.size <= 3
+            Row(
+                modifier = if (fits) Modifier.fillMaxWidth() else Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(painter = icon, contentDescription = contentDescription)
-            }
-        },
-        expandedContent = {
-            val presets = toolManager.presetsOf(tool)
-            val selectedIndex = toolManager.selectedPresetIndex(tool)
-
-            presets.forEachIndexed { index, preset ->
-                val isSelected = isToolSelected && selectedIndex == index
-
-                Box {
-                    presetButton(preset, isSelected) {
-                        if (isSelected) editingPresetIndex = index
-                        else controller.selectTool(tool, index)
-                    }
-                    presetEditMenu(index, preset, editingPresetIndex == index) { editingPresetIndex = null }
+                presets.forEachIndexed { i, preset ->
+                    val presetPt = preset.sizeMm.mm.pt
+                    PresetCard(
+                        color = Color(preset.color).let { it.copy(alpha = maxOf(it.alpha, 0.6f)) },
+                        strokeWidth = (presetPt * 1.2f).coerceIn(1.5f, 10f).dp,
+                        label = "${formatDecimal(presetPt, 1)} pt",
+                        selected = i == index,
+                        onClick = { controller.selectTool(tool, i) },
+                        modifier = if (fits) Modifier.weight(1f) else Modifier.width(78.dp)
+                    )
                 }
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            ToolButton(
-                onClick = {
-                    val base = toolManager.activePreset(tool) ?: presets.firstOrNull()
-                    if (base != null) {
-                        val newIndex = toolManager.addPreset(tool, base.copy())
+                AddPresetCard(
+                    label = stringResource(Res.string.draw_toolbar_action_add_preset),
+                    onClick = {
+                        val newIndex = toolManager.addPreset(tool, active.copy())
                         controller.selectTool(tool, newIndex)
-                        editingPresetIndex = newIndex
-                    }
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Add,
-                    contentDescription = stringResource(Res.string.draw_toolbar_action_add_preset)
+                    },
+                    modifier = Modifier.width(44.dp)
                 )
             }
         }
-    )
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            SettingLabel(stringResource(Res.string.tool_settings_ink))
+            // The highlighters keep their transparency
+            ColorSwatches(
+                colors = swatches,
+                selected = color.copy(alpha = 1f),
+                onSelect = { swatch -> update { it.copy(color = swatch.copy(alpha = color.alpha).toArgb()) } },
+                onCustom = { wheelOpen = true }
+            )
+        }
+    }
+    if (wheelOpen) {
+        TextColorPickerDialog(
+            initialColor = color.copy(alpha = 1f),
+            onDismissRequest = { wheelOpen = false },
+            onColorConfirmed = { picked -> update { it.copy(color = picked.copy(alpha = color.alpha).toArgb()) } }
+        )
+    }
+}
+
+/** The settings of the eraser: its size (in millimeters) and what it erases. */
+@Composable
+internal fun ColumnScope.EraserSettings(controller: DrawViewController) {
+    val toolManager = controller.toolManager
+    val index = toolManager.selectedPresetIndex(Tool.ERASER)
+    val preset = toolManager.activePreset(Tool.ERASER)
+    val sizeMm = preset?.sizeMm ?: 8f
+    // Large erasers, linear precision only for small corrections
+    val scale = remember { HybridScale(2f..50f, linearThreshold = 10f, linearProportion = 0.25f) }
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp), modifier = Modifier.padding(vertical = 8.dp)) {
+        PopoverTitle(stringResource(Res.string.tool_eraser)) { EraserPreview(scale.position(sizeMm)) }
+        SizeSetting(
+            label = stringResource(Res.string.draw_toolbar_label_eraser_size),
+            value = sizeMm,
+            unit = "mm",
+            scale = scale,
+            onValueChange = { newMm -> preset?.let { toolManager.updatePreset(Tool.ERASER, index, it.copy(sizeMm = newMm)) } }
+        )
+        SettingHint(stringResource(Res.string.tool_settings_eraser_hint))
+    }
+}
+
+/** The settings of the lasso: what it selects. */
+@Composable
+internal fun ColumnScope.LassoSettings(controller: DrawViewController) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(vertical = 8.dp)) {
+        PopoverTitle(stringResource(Res.string.draw_toolbar_title_lasso_mode))
+        OptionCard(
+            icon = DrawViewIcons.Lasso,
+            title = stringResource(Res.string.draw_toolbar_option_select_all),
+            description = stringResource(Res.string.tool_settings_lasso_all_hint),
+            selected = controller.lassoMode == LassoMode.ALL,
+            onClick = { controller.lassoMode = LassoMode.ALL }
+        )
+        OptionCard(
+            icon = DrawViewIcons.Image,
+            title = stringResource(Res.string.draw_toolbar_option_images_only),
+            description = stringResource(Res.string.tool_settings_lasso_images_hint),
+            selected = controller.lassoMode == LassoMode.IMAGES_ONLY,
+            onClick = { controller.lassoMode = LassoMode.IMAGES_ONLY }
+        )
+    }
 }
 
 /**
- * Defaults of the text tool: the style of a new text (size, color, alignment), with the controls
- * of the formatting bar.
+ * The settings of the text tool, the style of a new text (size, color, alignment), with the
+ * controls of the formatting bar.
  */
 @Composable
-private fun TextToolSettings(controller: DrawViewController) {
+internal fun ColumnScope.TextToolSettings(controller: DrawViewController) {
     val defaults = remember(controller) { TextDefaultsTarget(controller) }
-    Column(
-        modifier = Modifier
-            .padding(16.dp)
-            .width(280.dp),
-        horizontalAlignment = Alignment.Start
-    ) {
-        Text(
-            text = stringResource(Res.string.draw_toolbar_title_text_settings),
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-        Text(text = stringResource(Res.string.draw_toolbar_label_font_size), fontSize = 14.sp)
-        FontSizeControl(fontSizePt = defaults.fontSize, onFontSizeChange = defaults::changeFontSize)
-
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(text = stringResource(Res.string.draw_toolbar_label_text_color), fontSize = 14.sp, modifier = Modifier.padding(bottom = 6.dp))
-        var showDefaultColorWheelDialog by remember { mutableStateOf(false) }
-        TextColorPaletteRow(
-            selectedColor = Color(defaults.color),
-            onColorSelected = { defaults.changeColor(it.toArgb()) },
-            modifier = Modifier.fillMaxWidth(),
-            onCustomWheelClick = { showDefaultColorWheelDialog = true }
-        )
-        if (showDefaultColorWheelDialog) {
-            TextColorPickerDialog(
-                initialColor = Color(defaults.color),
-                onDismissRequest = { showDefaultColorWheelDialog = false },
-                onColorConfirmed = { defaults.changeColor(it.toArgb()) }
+    var wheelOpen by remember { mutableStateOf(false) }
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(vertical = 8.dp)) {
+        PopoverTitle(stringResource(Res.string.draw_toolbar_title_text_settings))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SettingLabel(stringResource(Res.string.draw_toolbar_label_font_size), modifier = Modifier.weight(1f))
+            FontSizeControl(fontSizePt = defaults.fontSize, onFontSizeChange = defaults::changeFontSize)
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            SettingLabel(stringResource(Res.string.draw_toolbar_label_text_color))
+            ColorSwatches(
+                colors = InkPalette.inks.take(5),
+                selected = Color(defaults.color),
+                onSelect = { defaults.changeColor(it.toArgb()) },
+                onCustom = { wheelOpen = true }
             )
         }
-
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(text = stringResource(Res.string.text_editor_action_alignment), fontSize = 14.sp)
-        TextAlignmentButtons(defaults, commands = null)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SettingLabel(stringResource(Res.string.text_editor_action_alignment), modifier = Modifier.weight(1f))
+            TextAlignmentButtons(defaults, commands = null)
+        }
+        SettingHint(stringResource(Res.string.tool_settings_text_hint))
+    }
+    if (wheelOpen) {
+        TextColorPickerDialog(
+            initialColor = Color(defaults.color),
+            onDismissRequest = { wheelOpen = false },
+            onColorConfirmed = { defaults.changeColor(it.toArgb()) }
+        )
     }
 }
 
@@ -834,19 +597,154 @@ private class TextDefaultsTarget(private val controller: DrawViewController) : T
     override fun changeAlignment(newAlignment: TextAlignment) = controller.updateTextDefaults(controller.textDefaults.copy(alignment = newAlignment))
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+/**
+ * The settings of the marks of the text of the PDFs: the presets (tap one to mark with it, "+" to
+ * add one), the kind and the color of the one chosen.
+ */
 @Composable
-private fun LassoModeOption(selected: Boolean, label: String, onSelect: () -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(MaterialTheme.shapes.small)
-            .combinedClickable(onClick = onSelect)
-            .padding(vertical = 8.dp, horizontal = 4.dp)
-    ) {
-        RadioButton(selected = selected, onClick = onSelect)
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(text = label)
+internal fun ColumnScope.MarkupSettings(controller: DrawViewController) {
+    val toolManager = controller.toolManager
+    val tool = Tool.TEXT_MARKUP
+    val presets = toolManager.presetsOf(tool)
+    val index = toolManager.selectedPresetIndex(tool)
+    val active = toolManager.activePreset(tool) ?: return
+    fun update(kind: TextMarkupKind = active.markup, color: Color = Color(active.color)) {
+        toolManager.updatePreset(tool, index, active.copy(markup = kind, color = color.copy(alpha = 1f).toArgb()))
     }
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(vertical = 8.dp)) {
+        PopoverTitle(stringResource(Res.string.draw_toolbar_action_text_markup)) {
+            if (presets.size > 1) {
+                DesignIconButton(
+                    icon = DrawViewIcons.Trash,
+                    label = stringResource(Res.string.tool_settings_delete_preset),
+                    onClick = { toolManager.removePreset(tool, index) },
+                    iconSize = 18.dp
+                )
+            }
+        }
+        SettingHint(stringResource(Res.string.tool_settings_markup_hint))
+        Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            presets.forEachIndexed { i, preset ->
+                TextMarkupPresetButton(kind = preset.markup, color = Color(preset.color), isSelected = i == index, onClick = { controller.selectTool(tool, i) })
+            }
+            val add = stringResource(Res.string.draw_toolbar_action_add_preset)
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
+                    .clickable(role = Role.Button) { controller.selectTool(tool, toolManager.addPreset(tool, active.copy())) }
+                    .semantics { contentDescription = add }
+            ) {
+                Icon(DrawViewIcons.Plus, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+            }
+        }
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerLowest,
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        ) {
+            Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                for (kind in TextMarkupKind.entries) {
+                    val selected = kind == active.markup
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                            .clickable(role = Role.RadioButton) { update(kind = kind) }
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.size(30.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
+                        ) {
+                            TextMarkupSample(kind, Color(active.color))
+                        }
+                        Text(
+                            textMarkupKindLabel(kind),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (selected) Icon(DrawViewIcons.Check, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(18.dp))
+                    }
+                }
+                ColorSwatches(
+                    colors = if (active.markup == TextMarkupKind.HIGHLIGHT) InkPalette.highlights else InkPalette.inks.take(5),
+                    selected = Color(active.color),
+                    onSelect = { update(color = it) },
+                    modifier = Modifier.padding(start = 4.dp, top = 6.dp)
+                )
+            }
+        }
+    }
+}
+
+/**
+ * The tools floating at the bottom of the canvas (a phone, a short window): undo, redo and the
+ * drawing tools, scrolled when they do not fit; the imports are in the "more" menu.
+ */
+@Composable
+internal fun FloatingTools(controller: DrawViewController, commands: EditorCommands, modifier: Modifier = Modifier) {
+    val shape = RoundedCornerShape(28.dp)
+    Row(
+        modifier = modifier
+            .elevation(DrawViewElevation.Level2, shape)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .height(ToolbarLayout.FloatingHeight)
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        EditorTools(controller, commands, withImports = false)
+    }
+}
+
+/** Where the tools of a phone end: the page and the zoom, "3 / 12 · 100%", on the inverse surface. */
+@Composable
+internal fun PageIndicator(controller: DrawViewController, withZoom: Boolean, modifier: Modifier = Modifier) {
+    val state by remember(controller) {
+        androidx.compose.runtime.derivedStateOf {
+            controller.cameraPhysics.moveCount
+            controller.version
+            val page = (controller.mostVisiblePageIndex() ?: 0) + 1
+            val zoom = kotlin.math.round(controller.cameraPhysics.getCurrentScale() * 100f).toInt()
+            Triple(page, controller.document.pages.size, zoom)
+        }
+    }
+    val (page, total, zoom) = state
+    val shape = CircleShape
+    Row(
+        modifier = modifier
+            .elevation(DrawViewElevation.Level2, shape)
+            .background(MaterialTheme.colorScheme.inverseSurface, shape)
+            .padding(horizontal = if (withZoom) 16.dp else 14.dp, vertical = if (withZoom) 8.dp else 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Text("$page / $total", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.inverseOnSurface)
+        if (withZoom) {
+            Box(modifier = Modifier.size(3.dp).background(MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.6f), CircleShape))
+            Text("$zoom%", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.7f))
+        }
+    }
+}
+
+/** An icon button of the tools of an extension (e.g. the assistant), tonal when [active]. */
+@Composable
+fun EditorActionButton(icon: ImageVector, label: String, onClick: () -> Unit, active: Boolean = false, highlighted: Boolean = false) {
+    DesignIconButton(
+        icon = icon,
+        label = label,
+        onClick = onClick,
+        style = if (active || highlighted) IconButtonStyle.Tonal else IconButtonStyle.Standard,
+        selected = highlighted,
+        tint = if (active || highlighted) Color.Unspecified else MaterialTheme.colorScheme.onSurface
+    )
 }

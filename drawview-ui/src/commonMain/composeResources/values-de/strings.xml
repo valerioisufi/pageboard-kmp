@@ -142,4 +142,23 @@
     <string name="command_previous_page">Vorherige Seite</string>
     <string name="command_previous_tool">Vorheriges Werkzeug</string>
     <string name="command_snapping">An Hilfslinien ausrichten</string>
+    <string name="tool_pen">Stift</string>
+    <string name="tool_highlighter">Textmarker</string>
+    <string name="tool_eraser">Radierer</string>
+    <string name="tool_settings_size">Größe</string>
+    <string name="tool_settings_presets">Vorlagen</string>
+    <string name="tool_settings_ink">Tinte</string>
+    <string name="tool_settings_delete_preset">Vorlage löschen</string>
+    <string name="tool_settings_eraser_hint">Der Radierer entfernt die Striche, Markierungen und Zeichen der PDFs, die er berührt; jede Änderung lässt sich rückgängig machen.</string>
+    <string name="tool_settings_lasso_all_hint">Striche, Texte und Bilder im Lasso</string>
+    <string name="tool_settings_lasso_images_hint">Nur die Bilder, um sie ohne die Tinte zu verschieben</string>
+    <string name="tool_settings_text_hint">Die zuletzt verwendete Größe, Farbe und Ausrichtung gelten für neue Texte.</string>
+    <string name="tool_settings_markup_hint">Vorlagen: Tippe auf eine, um damit zu markieren, tippe auf die gewählte, um sie zu ändern.</string>
+    <string name="editor_page_indicator">Seite %1$d von %2$d</string>
+    <string name="color_picker_hex">Hex</string>
+    <string name="drawing_mode">Zeichenmodus</string>
+    <plurals name="editor_pages_count">
+        <item quantity="one">%1$d Seite</item>
+        <item quantity="other">%1$d Seiten</item>
+    </plurals>
 </resources>

@@ -37,6 +37,7 @@ object TextSizes {
 /** The style of a new text: the one of the text written last. */
 data class TextDefaults(
     val fontSize: Float = 16f,
-    val color: Int = 0xFF000000.toInt(),
+    // The black ink of the design
+    val color: Int = 0xFF1A1C18.toInt(),
     val alignment: TextAlignment = TextAlignment.START
 )

@@ -11,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.IosShare
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -58,12 +57,13 @@ import io.github.valerioisufi.drawview.export.generated.resources.export_title
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.command.Shortcut
-import io.github.valerioisufi.drawview.ui.components.ToolButton
-import io.github.valerioisufi.drawview.ui.session.EditorSession
 import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
+import io.github.valerioisufi.drawview.ui.screen.EditorActionButton
 import io.github.valerioisufi.drawview.ui.session.DocumentAction
 import io.github.valerioisufi.drawview.ui.session.EditorExtension
+import io.github.valerioisufi.drawview.ui.session.EditorSession
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.NotesFontFiles
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import kotlinx.coroutines.CancellationException
@@ -102,7 +102,7 @@ class DocumentExportUi(documents: OpenDocuments, private val appName: String? = 
 
     /** "Export" on the document selected in the library (see `DocumentLibrary.documentActions`). */
     val documentAction: DocumentAction = DocumentAction(
-        icon = Icons.Outlined.IosShare,
+        icon = DrawViewIcons.Download,
         label = { stringResource(Res.string.export_action) },
         content = { documentId, title, onDone -> ExportDialog(export, appName, documentId, title, pageOnScreen = null, onDismiss = onDone) }
     )
@@ -114,9 +114,7 @@ class DocumentExportUi(documents: OpenDocuments, private val appName: String? = 
     val editorExtension: EditorExtension = EditorExtension(
         toolbarActions = { session, controller ->
             val command = remember(session, controller) { exportCommand(session, controller) }
-            ToolButton(onClick = command.perform, command = command) {
-                Icon(imageVector = Icons.Outlined.IosShare, contentDescription = stringResource(Res.string.export_action))
-            }
+            EditorActionButton(DrawViewIcons.Share, command.label(), onClick = command.perform)
         },
         canvasOverlay = { session, _ ->
             editorExport?.takeIf { it.documentId == session.documentId }?.let {

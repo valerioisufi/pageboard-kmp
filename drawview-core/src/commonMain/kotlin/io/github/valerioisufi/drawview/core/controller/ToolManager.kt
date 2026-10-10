@@ -158,19 +158,20 @@ class ToolManager(
 
         fun defaultPresets(): Map<Tool, List<ToolPreset>> = mapOf(
             Tool.INK_PEN to listOf(
-                ToolPreset(0.5f, 0xFF000000.toInt(), StrokeTool.PRESSURE_PEN),
-                ToolPreset(1.0f, 0xFF0000FF.toInt(), StrokeTool.PRESSURE_PEN),
-                ToolPreset(2.0f, 0xFFFF0000.toInt(), StrokeTool.PRESSURE_PEN)
+                // The inks of the design (black, blue, red)
+                ToolPreset(0.5f, 0xFF1A1C18.toInt(), StrokeTool.PRESSURE_PEN),
+                ToolPreset(1.0f, 0xFF1F5FBF.toInt(), StrokeTool.PRESSURE_PEN),
+                ToolPreset(2.0f, 0xFFD23B3B.toInt(), StrokeTool.PRESSURE_PEN)
             ),
             Tool.INK_HIGHLIGHTER to listOf(
-                ToolPreset(4.0f, 0x40FFFF00, StrokeTool.HIGHLIGHTER),
-                ToolPreset(4.0f, 0x4000FF00, StrokeTool.HIGHLIGHTER)
+                ToolPreset(4.0f, 0x40F6E94A, StrokeTool.HIGHLIGHTER),
+                ToolPreset(4.0f, 0x40A8E86B, StrokeTool.HIGHLIGHTER)
             ),
             // Opaque colors: the highlights multiply the colors of the PDF
             Tool.TEXT_MARKUP to listOf(
-                ToolPreset(0f, 0xFFFFF176.toInt(), StrokeTool.HIGHLIGHTER, TextMarkupKind.HIGHLIGHT),
-                ToolPreset(0f, 0xFFA5D6A7.toInt(), StrokeTool.HIGHLIGHTER, TextMarkupKind.HIGHLIGHT),
-                ToolPreset(0f, 0xFFE53935.toInt(), StrokeTool.HIGHLIGHTER, TextMarkupKind.UNDERLINE)
+                ToolPreset(0f, 0xFFF6E94A.toInt(), StrokeTool.HIGHLIGHTER, TextMarkupKind.HIGHLIGHT),
+                ToolPreset(0f, 0xFFA8E86B.toInt(), StrokeTool.HIGHLIGHTER, TextMarkupKind.HIGHLIGHT),
+                ToolPreset(0f, 0xFFD23B3B.toInt(), StrokeTool.HIGHLIGHTER, TextMarkupKind.UNDERLINE)
             ),
             Tool.ERASER to listOf(
                 ToolPreset(8.0f, 0xC8FF8DA1.toInt(), StrokeTool.ERASER)

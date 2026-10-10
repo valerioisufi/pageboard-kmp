@@ -142,4 +142,23 @@
     <string name="command_previous_page">Página anterior</string>
     <string name="command_previous_tool">Herramienta anterior</string>
     <string name="command_snapping">Ajustar a las guías</string>
+    <string name="tool_pen">Bolígrafo</string>
+    <string name="tool_highlighter">Resaltador</string>
+    <string name="tool_eraser">Borrador</string>
+    <string name="tool_settings_size">Tamaño</string>
+    <string name="tool_settings_presets">Ajustes</string>
+    <string name="tool_settings_ink">Tinta</string>
+    <string name="tool_settings_delete_preset">Eliminar el ajuste</string>
+    <string name="tool_settings_eraser_hint">El borrador quita los trazos, los resaltados y las marcas de los PDF que toca; cada cambio se puede deshacer.</string>
+    <string name="tool_settings_lasso_all_hint">Trazos, textos e imágenes dentro del lazo</string>
+    <string name="tool_settings_lasso_images_hint">Solo las imágenes, para moverlas sin la tinta</string>
+    <string name="tool_settings_text_hint">El tamaño, el color y la alineación usados por última vez se aplican a los textos nuevos.</string>
+    <string name="tool_settings_markup_hint">Ajustes: toca uno para marcar con él, toca el elegido para cambiarlo.</string>
+    <string name="editor_page_indicator">Página %1$d de %2$d</string>
+    <string name="color_picker_hex">Hex</string>
+    <string name="drawing_mode">Modo dibujo</string>
+    <plurals name="editor_pages_count">
+        <item quantity="one">%1$d página</item>
+        <item quantity="other">%1$d páginas</item>
+    </plurals>
 </resources>

@@ -12,6 +12,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -30,10 +32,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Surface
@@ -53,10 +52,11 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.drawview.ui.command.HoverTooltip
+import io.github.valerioisufi.drawview.ui.components.DesignIconButton
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.common_action_close
 import io.github.valerioisufi.drawview.ui.session.EditorPanel
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import org.jetbrains.compose.resources.stringResource
 
 /** Where the open panels of the editor go, by the width the editor has. */
@@ -143,19 +143,19 @@ internal fun EditorScaffold(
     }
 }
 
-/** A pane beside the canvas, as high as it, clear of the bars and the cutouts of the system. */
+/** A pane beside the bars and the canvas, as high as the editor, clear of the bars and the cutouts of the system. */
 @Composable
 private fun SidePane(content: @Composable () -> Unit) {
     Row(modifier = Modifier.fillMaxHeight()) {
-        VerticalDivider()
+        VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         // A surface, so that the texts take the content color of the theme
         Surface(
-            color = MaterialTheme.colorScheme.surface,
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
             modifier = Modifier
                 .width(PanelPlacement.PanelWidth)
                 .fillMaxHeight()
         ) {
-            Box(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.End + WindowInsetsSides.Bottom))) {
+            Box(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.End + WindowInsetsSides.Vertical))) {
                 content()
             }
         }
@@ -184,8 +184,8 @@ private fun PanelSheet(open: List<EditorPanel>, fraction: Float, onTallChange: (
         modifier = modifier
     ) {
         Surface(
-            color = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
             shadowElevation = 8.dp,
             modifier = Modifier
                 .fillMaxWidth()
@@ -238,8 +238,10 @@ private fun PanelFrame(panels: List<EditorPanel>) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .height(64.dp)
+                .padding(start = 20.dp, end = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
                 text = selected.title(),
@@ -249,12 +251,7 @@ private fun PanelFrame(panels: List<EditorPanel>) {
                 modifier = Modifier.weight(1f)
             )
             selected.actions(this)
-            val close = stringResource(Res.string.common_action_close)
-            HoverTooltip(close) {
-                IconButton(onClick = selected.onClose) {
-                    Icon(Icons.Outlined.Close, contentDescription = close)
-                }
-            }
+            DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.common_action_close), selected.onClose, tint = MaterialTheme.colorScheme.onSurface)
         }
         if (panels.size > 1) {
             PrimaryTabRow(selectedTabIndex = panels.indexOf(selected)) {

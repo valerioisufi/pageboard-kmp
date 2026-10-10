@@ -1,24 +1,14 @@
 package io.github.valerioisufi.drawview.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -94,10 +84,10 @@ fun TextMarkupPresetButton(
     Box(
         modifier = modifier
             .size(40.dp)
-            .padding(4.dp)
             .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
             .border(
-                width = if (isSelected) 2.dp else 1.dp,
+                width = if (isSelected) 2.5.dp else 1.dp,
                 color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
                 shape = CircleShape
             )
@@ -106,91 +96,5 @@ fun TextMarkupPresetButton(
         contentAlignment = Alignment.Center
     ) {
         TextMarkupSample(kind, color)
-    }
-}
-
-/**
- * Dropdown menu editing a preset of the text markup tool: kind of the marks and color.
- */
-@Composable
-fun TextMarkupPresetEditMenu(
-    expanded: Boolean,
-    onDismissRequest: () -> Unit,
-    kind: TextMarkupKind,
-    color: Color,
-    showDeleteOption: Boolean,
-    onKindChanged: (TextMarkupKind) -> Unit,
-    onColorChanged: (Color) -> Unit,
-    onDeleteClicked: () -> Unit
-) {
-    DropdownMenu(
-        modifier = Modifier.width(300.dp),
-        expanded = expanded,
-        onDismissRequest = onDismissRequest,
-        shape = RoundedCornerShape(16.dp),
-        containerColor = MaterialTheme.colorScheme.surface,
-        tonalElevation = 8.dp
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(Res.string.draw_menu_settings),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                if (showDeleteOption) {
-                    IconButton(onClick = onDeleteClicked) {
-                        Icon(
-                            imageVector = Icons.Outlined.Delete,
-                            contentDescription = stringResource(Res.string.common_action_delete),
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                for (option in TextMarkupKind.entries) {
-                    val selected = option == kind
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .border(
-                                width = if (selected) 2.dp else 1.dp,
-                                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .clickable(role = Role.RadioButton) { onKindChanged(option) }
-                            .padding(horizontal = 10.dp, vertical = 8.dp)
-                    ) {
-                        TextMarkupSample(option, color)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = textMarkupKindLabel(option), fontSize = 12.sp)
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Opaque colors: the highlights multiply the colors of the PDF
-            ColorWheel(
-                color = color,
-                onColorChanged = { onColorChanged(it.copy(alpha = 1f)) },
-                showAlphaSlider = false
-            )
-        }
     }
 }

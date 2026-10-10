@@ -1,28 +1,16 @@
 package io.github.valerioisufi.drawview.ui.screen
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.FormatAlignLeft
-import androidx.compose.material.icons.automirrored.filled.FormatAlignRight
 import androidx.compose.material.icons.automirrored.outlined.Redo
 import androidx.compose.material.icons.automirrored.outlined.Undo
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.ContentCut
-import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.FormatAlignCenter
-import androidx.compose.material.icons.filled.FormatBold
-import androidx.compose.material.icons.filled.FormatItalic
-import androidx.compose.material.icons.filled.FormatStrikethrough
-import androidx.compose.material.icons.filled.Functions
-import androidx.compose.material.icons.filled.Title
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -70,13 +58,6 @@ import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_actio
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_pan
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_text
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_text_markup
-import io.github.valerioisufi.drawview.ui.generated.resources.icon_ink_eraser
-import io.github.valerioisufi.drawview.ui.generated.resources.icon_ink_highlighter
-import io.github.valerioisufi.drawview.ui.generated.resources.icon_ink_pen
-import io.github.valerioisufi.drawview.ui.generated.resources.icon_lasso_select
-import io.github.valerioisufi.drawview.ui.generated.resources.icon_pan_tool
-import io.github.valerioisufi.drawview.ui.generated.resources.icon_text_fields
-import io.github.valerioisufi.drawview.ui.generated.resources.icon_text_markup
 import io.github.valerioisufi.drawview.ui.generated.resources.text_align_center
 import io.github.valerioisufi.drawview.ui.generated.resources.text_align_end
 import io.github.valerioisufi.drawview.ui.generated.resources.text_align_start
@@ -87,9 +68,8 @@ import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_math
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_strikethrough
 import io.github.valerioisufi.drawview.ui.platform.PencilAction
-import org.jetbrains.compose.resources.DrawableResource
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -125,14 +105,14 @@ class EditorCommands internal constructor(
 
     val undo = Command(
         "undo", label(Res.string.common_action_undo), CommandGroup.EDIT,
-        icon = { rememberVectorPainter(Icons.AutoMirrored.Outlined.Undo) },
+        icon = { rememberVectorPainter(DrawViewIcons.Undo) },
         shortcuts = listOf(primary(Key.Z)),
         isEnabled = { controller.canUndo }
     ) { controller.undo() }
 
     val redo = Command(
         "redo", label(Res.string.common_action_redo), CommandGroup.EDIT,
-        icon = { rememberVectorPainter(Icons.AutoMirrored.Outlined.Redo) },
+        icon = { rememberVectorPainter(DrawViewIcons.Redo) },
         shortcuts = listOf(Shortcut(Key.Z, primary = true, shift = true), primary(Key.Y)),
         isEnabled = { controller.canRedo }
     ) { controller.redo() }
@@ -156,7 +136,7 @@ class EditorCommands internal constructor(
 
     val cut = Command(
         "cut", label(Res.string.common_action_cut), CommandGroup.EDIT, section = 1,
-        icon = { rememberVectorPainter(Icons.Default.ContentCut) },
+        icon = { rememberVectorPainter(DrawViewIcons.Scissors) },
         shortcuts = listOf(primary(Key.X)),
         isEnabled = { hasSelection && writable() }
     ) {
@@ -166,7 +146,7 @@ class EditorCommands internal constructor(
 
     val copy = Command(
         "copy", label(Res.string.common_action_copy), CommandGroup.EDIT, section = 1,
-        icon = { rememberVectorPainter(Icons.Default.ContentCopy) },
+        icon = { rememberVectorPainter(DrawViewIcons.Copy) },
         shortcuts = listOf(primary(Key.C)),
         isEnabled = { hasTextSelection || hasSelection }
     ) {
@@ -181,7 +161,7 @@ class EditorCommands internal constructor(
 
     val paste = Command(
         "paste", label(Res.string.common_action_paste), CommandGroup.EDIT, section = 1,
-        icon = { rememberVectorPainter(Icons.Default.ContentPaste) },
+        icon = { rememberVectorPainter(DrawViewIcons.Clipboard) },
         shortcuts = listOf(primary(Key.V)),
         isEnabled = { controller.isDrawingMode && writable() }
     ) { pasteAt(null) }
@@ -204,7 +184,8 @@ class EditorCommands internal constructor(
 
     val delete = Command(
         "delete", label(Res.string.common_action_delete), CommandGroup.EDIT, section = 1,
-        icon = { rememberVectorPainter(Icons.Default.Delete) },
+        icon = { rememberVectorPainter(DrawViewIcons.Trash) },
+        destructive = true,
         shortcuts = listOf(Shortcut(Key.Backspace), Shortcut(Key.Delete)),
         isEnabled = { (hasSelection || controller.textMarkupManager.selectedMarkup != null) && writable() }
     ) {
@@ -219,6 +200,7 @@ class EditorCommands internal constructor(
 
     val zoomIn = Command(
         "zoom-in", label(Res.string.command_zoom_in), CommandGroup.VIEW,
+        icon = { rememberVectorPainter(DrawViewIcons.ZoomIn) },
         // ⌘+ is ⌘= (with or without ⇧) on many keyboards, + on others and on the keypad
         shortcuts = listOf(primary(Key.Plus), primary(Key.Equals), Shortcut(Key.Equals, primary = true, shift = true), primary(Key.NumPadAdd))
     ) { controller.zoomIn() }
@@ -230,6 +212,7 @@ class EditorCommands internal constructor(
 
     val fitWidth = Command(
         "fit-width", label(Res.string.command_fit_width), CommandGroup.VIEW,
+        icon = { rememberVectorPainter(DrawViewIcons.MoveH) },
         shortcuts = listOf(primary(Key.Zero))
     ) { controller.fitWidth() }
 
@@ -247,18 +230,21 @@ class EditorCommands internal constructor(
 
     val pageGrid = Command(
         "page-grid", label(Res.string.draw_toolbar_action_grid_view), CommandGroup.VIEW, section = 2,
+        icon = { rememberVectorPainter(DrawViewIcons.LayoutGrid) },
         shortcuts = listOf(primary(Key.G)),
         isChecked = { controller.isPageGridVisible }
     ) { controller.togglePageGrid() }
 
     val stylusOnly = Command(
         "stylus-only", label(Res.string.draw_menu_stylus_only), CommandGroup.VIEW, section = 2,
+        icon = { rememberVectorPainter(DrawViewIcons.Pencil) },
         isChecked = { controller.isStylusOnlyMode }
     ) { controller.updateStylusOnlyMode(!controller.isStylusOnlyMode) }
 
     /** Whether the boxes snap to what is around them (⌥ / Alt held moves freely). */
     val snapping = Command(
         "snapping", label(Res.string.command_snapping), CommandGroup.VIEW, section = 2,
+        icon = { rememberVectorPainter(DrawViewIcons.Magnet) },
         isChecked = { controller.snapManager.isEnabled }
     ) { controller.snapManager.updateEnabled(!controller.snapManager.isEnabled) }
 
@@ -266,6 +252,7 @@ class EditorCommands internal constructor(
 
     val addPage = Command(
         "add-page", label(Res.string.context_menu_action_add_page), CommandGroup.INSERT,
+        icon = { rememberVectorPainter(DrawViewIcons.FilePlus2) },
         isEnabled = writable
     ) {
         val pages = controller.pageManager
@@ -274,12 +261,14 @@ class EditorCommands internal constructor(
 
     val importPdf = Command(
         "import-pdf", label(Res.string.draw_toolbar_action_import_pdf), CommandGroup.INSERT, section = 1,
+        icon = { rememberVectorPainter(DrawViewIcons.FileText) },
         shortcuts = listOf(Shortcut(Key.P, primary = true, shift = true)),
         isEnabled = { writable() && controller.tileManager.tileRenderer.pdfAdapter != null }
     ) { actions.importPdf() }
 
     val importImage = Command(
         "import-image", label(Res.string.draw_toolbar_action_import_image), CommandGroup.INSERT, section = 1,
+        icon = { rememberVectorPainter(DrawViewIcons.Image) },
         shortcuts = listOf(Shortcut(Key.I, primary = true, shift = true)),
         isEnabled = writable
     ) { actions.importImage() }
@@ -288,6 +277,7 @@ class EditorCommands internal constructor(
 
     val documentBackground = Command(
         "document-background", label(Res.string.draw_menu_document_background), CommandGroup.FORMAT,
+        icon = { rememberVectorPainter(DrawViewIcons.Grid) },
         isEnabled = writable
     ) { actions.editDocumentBackground() }
 
@@ -295,21 +285,22 @@ class EditorCommands internal constructor(
 
     val drawingMode = Command(
         "drawing-mode", label(Res.string.draw_toolbar_action_draw), CommandGroup.TOOLS,
+        icon = { rememberVectorPainter(DrawViewIcons.Pen) },
         isEnabled = writable,
         isChecked = { controller.isDrawingMode }
     ) { controller.toggleDrawingMode() }
 
-    val pen = tool(Tool.INK_PEN, Res.string.draw_toolbar_action_ink_pen, Res.drawable.icon_ink_pen, Key.P)
-    val highlighter = tool(Tool.INK_HIGHLIGHTER, Res.string.draw_toolbar_action_highlighter, Res.drawable.icon_ink_highlighter, Key.H)
+    val pen = tool(Tool.INK_PEN, Res.string.draw_toolbar_action_ink_pen, DrawViewIcons.Pen, Key.P)
+    val highlighter = tool(Tool.INK_HIGHLIGHTER, Res.string.draw_toolbar_action_highlighter, DrawViewIcons.Highlighter, Key.H)
     val textMarkup = tool(
-        Tool.TEXT_MARKUP, Res.string.draw_toolbar_action_text_markup, Res.drawable.icon_text_markup, Key.U,
+        Tool.TEXT_MARKUP, Res.string.draw_toolbar_action_text_markup, DrawViewIcons.TextMarkup, Key.U,
         // The text of the PDF pages, where the PDFs are drawn
         available = { controller.tileManager.tileRenderer.pdfAdapter != null && controller.document.pages.any { it.pdfs.isNotEmpty() } }
     )
-    val eraser = tool(Tool.ERASER, Res.string.draw_toolbar_action_eraser, Res.drawable.icon_ink_eraser, Key.E)
-    val text = tool(Tool.TEXT, Res.string.draw_toolbar_action_text, Res.drawable.icon_text_fields, Key.T)
-    val lasso = tool(Tool.LAZO, Res.string.draw_toolbar_action_lasso, Res.drawable.icon_lasso_select, Key.L)
-    val pan = tool(Tool.PAN, Res.string.draw_toolbar_action_pan, Res.drawable.icon_pan_tool, key = null)
+    val eraser = tool(Tool.ERASER, Res.string.draw_toolbar_action_eraser, DrawViewIcons.Eraser, Key.E)
+    val text = tool(Tool.TEXT, Res.string.draw_toolbar_action_text, DrawViewIcons.Text, Key.T)
+    val lasso = tool(Tool.LAZO, Res.string.draw_toolbar_action_lasso, DrawViewIcons.Lasso, Key.L)
+    val pan = tool(Tool.PAN, Res.string.draw_toolbar_action_pan, DrawViewIcons.Pan, key = null)
 
     /** Back to the tool chosen before (also the double tap of an Apple Pencil). */
     val previousTool = Command(
@@ -343,24 +334,24 @@ class EditorCommands internal constructor(
     /** The texts the formatting applies to: the text being written or the texts selected. */
     private val textTarget get() = controller.textFormatTarget?.takeIf { controller.isDrawingMode && writable() }
 
-    val bold = characterFormat(Format.BOLD, Res.string.text_editor_action_bold, Icons.Default.FormatBold, primary(Key.B))
-    val italic = characterFormat(Format.ITALIC, Res.string.text_editor_action_italic, Icons.Default.FormatItalic, primary(Key.I))
+    val bold = characterFormat(Format.BOLD, Res.string.text_editor_action_bold, DrawViewIcons.Bold, primary(Key.B))
+    val italic = characterFormat(Format.ITALIC, Res.string.text_editor_action_italic, DrawViewIcons.Italic, primary(Key.I))
     val strikethrough = characterFormat(
-        Format.STRIKETHROUGH, Res.string.text_editor_action_strikethrough, Icons.Default.FormatStrikethrough, Shortcut(Key.X, primary = true, shift = true)
+        Format.STRIKETHROUGH, Res.string.text_editor_action_strikethrough, DrawViewIcons.Strikethrough, Shortcut(Key.X, primary = true, shift = true)
     )
-    val code = characterFormat(Format.CODE, Res.string.text_editor_action_code, Icons.Default.Code, primary(Key.E))
-    val formula = characterFormat(Format.FORMULA, Res.string.text_editor_action_math, Icons.Default.Functions, Shortcut(Key.M, primary = true, shift = true))
+    val code = characterFormat(Format.CODE, Res.string.text_editor_action_code, DrawViewIcons.Code, primary(Key.E))
+    val formula = characterFormat(Format.FORMULA, Res.string.text_editor_action_math, DrawViewIcons.Sigma, Shortcut(Key.M, primary = true, shift = true))
 
     val heading = Command(
         "format-heading", label(Res.string.text_editor_action_heading), CommandGroup.FORMAT,
-        icon = { rememberVectorPainter(Icons.Default.Title) },
+        icon = { rememberVectorPainter(DrawViewIcons.Heading) },
         shortcuts = listOf(Shortcut(Key.One, primary = true, alt = true)),
         isEnabled = { textTarget?.formatsCharacters == true }
     ) { textTarget?.toggleHeading() }
 
-    val alignStart = alignment(TextAlignment.START, Res.string.text_align_start, Icons.AutoMirrored.Filled.FormatAlignLeft, Key.L)
-    val alignCenter = alignment(TextAlignment.CENTER, Res.string.text_align_center, Icons.Default.FormatAlignCenter, Key.C)
-    val alignEnd = alignment(TextAlignment.END, Res.string.text_align_end, Icons.AutoMirrored.Filled.FormatAlignRight, Key.R)
+    val alignStart = alignment(TextAlignment.START, Res.string.text_align_start, DrawViewIcons.AlignLeft, Key.L)
+    val alignCenter = alignment(TextAlignment.CENTER, Res.string.text_align_center, DrawViewIcons.AlignCenter, Key.C)
+    val alignEnd = alignment(TextAlignment.END, Res.string.text_align_end, DrawViewIcons.AlignRight, Key.R)
 
     val largerText = Command(
         "format-larger", label(Res.string.draw_toolbar_action_increase_font_size), CommandGroup.FORMAT, section = 2,
@@ -401,7 +392,7 @@ class EditorCommands internal constructor(
 
     // ----- Help -----
 
-    val about = Command("about", label(Res.string.about_dialog_title), CommandGroup.HELP) { actions.showAbout() }
+    val about = Command("about", label(Res.string.about_dialog_title), CommandGroup.HELP, icon = { rememberVectorPainter(DrawViewIcons.Info) }) { actions.showAbout() }
 
     /** Every command, in the order of the menus. */
     val all: List<Command> = listOf(
@@ -421,7 +412,7 @@ class EditorCommands internal constructor(
     private fun tool(
         tool: Tool,
         title: StringResource,
-        icon: DrawableResource,
+        icon: ImageVector,
         key: Key?,
         available: () -> Boolean = { true }
     ) = Command(
@@ -429,7 +420,7 @@ class EditorCommands internal constructor(
         label = label(title),
         group = CommandGroup.TOOLS,
         section = 1,
-        icon = { painterResource(icon) },
+        icon = { rememberVectorPainter(icon) },
         shortcuts = listOfNotNull(key?.let { Shortcut(it) }),
         isEnabled = { writable() && !controller.textEditorManager.isEditing && available() },
         isChecked = { controller.isDrawingMode && controller.selectedTool == tool }

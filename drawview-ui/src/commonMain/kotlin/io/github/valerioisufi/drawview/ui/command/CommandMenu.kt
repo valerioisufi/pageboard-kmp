@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -85,12 +86,13 @@ fun CommandMenu(
                     },
                     enabled = command.isEnabled(),
                     icon = when {
-                        checked == true -> rememberVectorPainter(DrawViewIcons.Check)
                         command.icon != null -> command.icon.invoke()
+                        checked == true -> rememberVectorPainter(DrawViewIcons.Check)
                         else -> null
                     },
                     shortcut = conventions?.let { command.shortcutLabel(it) },
-                    destructive = command.destructive
+                    destructive = command.destructive,
+                    checked = checked == true && command.icon != null
                 )
             }
         }
@@ -123,8 +125,9 @@ fun DesignMenu(
 
 /**
  * An item of a [DesignMenu]: its [icon] (a check for a state that is on), its [text], its
- * [shortcut]; [selected] in the primary container, [destructive] in the color of the errors.
- * [alignWithIcons] keeps the place of an icon when it has none (beside items with one).
+ * [shortcut]; [selected] in the primary container, [destructive] in the color of the errors,
+ * [checked] (a state that is on, beside its icon) with a check at the end. [alignWithIcons] keeps
+ * the place of an icon when it has none (beside items with one).
  */
 @Composable
 fun MenuItem(
@@ -136,7 +139,8 @@ fun MenuItem(
     shortcut: String? = null,
     selected: Boolean = false,
     destructive: Boolean = false,
-    alignWithIcons: Boolean = false
+    alignWithIcons: Boolean = false,
+    checked: Boolean = false
 ) {
     val colors = MaterialTheme.colorScheme
     val content = when {
@@ -146,6 +150,7 @@ fun MenuItem(
     }.let { if (enabled) it else it.copy(alpha = 0.38f) }
     Row(
         modifier = modifier
+            .fillMaxWidth()
             .widthIn(min = 200.dp)
             .height(40.dp)
             .clip(RoundedCornerShape(12.dp))
@@ -160,11 +165,9 @@ fun MenuItem(
         } else if (alignWithIcons) {
             Spacer(modifier = Modifier.size(20.dp))
         }
-        Text(text, style = MaterialTheme.typography.labelLarge, color = content, maxLines = 1, modifier = Modifier.weight(1f, fill = false))
-        if (shortcut != null) {
-            Spacer(modifier = Modifier.weight(1f))
-            Text(shortcut, style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant)
-        }
+        Text(text, style = MaterialTheme.typography.labelLarge, color = content, maxLines = 1, modifier = Modifier.weight(1f))
+        if (shortcut != null) Text(shortcut, style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant)
+        if (checked) Icon(DrawViewIcons.Check, contentDescription = null, tint = colors.primary, modifier = Modifier.size(18.dp))
     }
 }
 

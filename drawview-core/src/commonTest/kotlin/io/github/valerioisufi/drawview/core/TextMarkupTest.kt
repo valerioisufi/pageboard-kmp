@@ -152,7 +152,7 @@ class TextMarkupTest {
         assertEquals(2, markup.rects.size)
         // The first preset of the tool: a yellow highlight
         assertEquals(TextMarkupKind.HIGHLIGHT, markup.kind)
-        assertEquals(0xFFFFF176.toInt(), markup.color)
+        assertEquals(0xFFF6E94A.toInt(), markup.color)
 
         controller.undo()
         assertTrue(page.markups.isEmpty())

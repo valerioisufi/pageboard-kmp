@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigationevent.NavigationEventInfo
@@ -21,6 +23,7 @@ import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.command.CommandRoot
 import io.github.valerioisufi.drawview.ui.screen.DrawScreen
+import kotlinx.coroutines.flow.combine
 
 /**
  * The editor of an open document: a progress bar while the document is being loaded, then the
@@ -62,8 +65,16 @@ fun EditorSessionScreen(
                 val extensionPanels = remember(extension, session, controller) {
                     extension?.panels?.invoke(session, controller).orEmpty()
                 }
+                // The folder of the document, under its title
+                val location by remember(session) {
+                    combine(session.store.documents, session.store.folders) { documents, folders ->
+                        val folderId = documents.firstOrNull { it.id == session.documentId }?.folderId
+                        folders.firstOrNull { it.id == folderId }?.name
+                    }
+                }.collectAsState(null)
                 DrawScreen(
                     controller = controller,
+                    location = location,
                     onNavigateBack = onClose,
                     toolbarActions = { extension?.toolbarActions?.invoke(this, session, controller) },
                     panels = extensionPanels,

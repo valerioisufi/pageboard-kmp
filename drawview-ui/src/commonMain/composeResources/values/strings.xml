@@ -143,4 +143,23 @@
     <string name="command_previous_page">Previous Page</string>
     <string name="command_previous_tool">Previous Tool</string>
     <string name="command_snapping">Snap to Guides</string>
+    <string name="tool_pen">Pen</string>
+    <string name="tool_highlighter">Highlighter</string>
+    <string name="tool_eraser">Eraser</string>
+    <string name="tool_settings_size">Size</string>
+    <string name="tool_settings_presets">Presets</string>
+    <string name="tool_settings_ink">Ink</string>
+    <string name="tool_settings_delete_preset">Delete the preset</string>
+    <string name="tool_settings_eraser_hint">The eraser removes strokes, highlights and the marks of the PDFs it touches; every change can be undone.</string>
+    <string name="tool_settings_lasso_all_hint">Strokes, texts and images inside the lasso</string>
+    <string name="tool_settings_lasso_images_hint">Only the images, to move them without the ink</string>
+    <string name="tool_settings_text_hint">The size, color and alignment last used become the defaults of new texts.</string>
+    <string name="tool_settings_markup_hint">Presets: tap one to mark with it, tap the selected one to change it.</string>
+    <string name="editor_page_indicator">Page %1$d of %2$d</string>
+    <string name="color_picker_hex">Hex</string>
+    <string name="drawing_mode">Drawing Mode</string>
+    <plurals name="editor_pages_count">
+        <item quantity="one">%1$d page</item>
+        <item quantity="other">%1$d pages</item>
+    </plurals>
 </resources>

@@ -104,7 +104,7 @@ pencilnotes        the brand (mark and wordmark), the tag of the lectures
 | 1. Foundations | Plus Jakarta Sans, the type scale, the shapes, the elevation, `CanvasColors`, `InkPalette`, `DrawViewIcons`; the palette of the design as the default of DrawView; PencilNotes on `DrawViewTheme` | done |
 | 2. Library | Page count and PDFs in the summaries; header, search, filters, folders, note cards, rows, navigation with counts and brand, details pane, FAB; `DocumentTag` and the tag of the lectures; recording pill | done |
 | 3. Library flows | The new item menu, the sheets of an item and of its details, the selection bar, the dialogs (new folder, rename, move, delete), the path inside a folder, the empty states, About | done |
-| 4. Editor | The top bar (title and its line, the tool group, the actions), the tool button with its ink, the floating tools, the page indicator, desk and paper, the popovers of the tools, the "more" menu | |
+| 4. Editor | The top bar (title and its line, the tool group, the actions), the tool button with its ink, the floating tools, the page indicator, desk and paper, the popovers of the tools, the "more" menu | done |
 | 5. Texts and selection | The format bar, the selection bar, the bar of the marks of the PDFs, the context menu, the messages | |
 | 6. Pages | The page grid, the configurator (dialog and sheet), "Apply to all pages?", the information of the document, the tooltips | |
 | 7. Export and sharing | The export dialog and sheet with their states; the sharing dialog (owner, participant), joining, the requests, the people on the page, read only | |
@@ -168,3 +168,37 @@ the frames of the file.
 * Tests: the search, the filters by kind and by tag, the sections and their counts, the notes
   made on a paper in a folder (`LibraryViewTest`); the pages and the PDFs of the summaries; the
   screenshots of a search without results and of a folder.
+
+### Phase 4 results
+
+* **Top bar** (`EditorTopBar`): back and the page grid, the title of the document with its folder
+  and its pages (on a phone the page looked at) opening its information (`DocumentInfoSelector`:
+  folder, dates, pages, format, elements), the tools in their group (`ToolGroup`, a pill of the
+  container of the surfaces) between two spaces, the actions of the extensions (the assistant
+  tonal, highlighted while its panel is open; export and share as icons, `EditorActionButton`),
+  the "more" menu. 64 dp, 52 on a phone; the folder comes from the store (`EditorSessionScreen`).
+* **Drawing mode**: no longer a button of the bar (the file has none): a state of the "more" menu
+  and of the menu bar, with its shortcut.
+* **Tool button**: 44 dp rounded 16, the primary container when chosen, the dot of its ink (the
+  color of the pen, of the highlighter, of the marks, of the texts).
+* **Popovers of the tools** (`ToolPopover`, `ToolSettings.kt`): under the tool, the high container
+  rounded 24; the pen and the highlighter (their stroke, the size, the presets as cards with their
+  stroke and size, "+" and deleting one, the inks of `InkPalette` and the color wheel), the eraser
+  (its ring, the size in millimeters, what it erases), the lasso (two option cards), the text (the
+  size stepper, the inks, the alignment), the marks of the PDFs (their presets, the kind and the
+  color of the one chosen). The presets no longer expand inside the bar.
+* **Phone**: the tools floating at the bottom (a pill of the high container, level 2), the page
+  indicator above them; elsewhere the indicator "3 / 12 · 100%" (the zoom is the one of the
+  opening, the pages as wide as their width) at the bottom of the canvas.
+* **Canvas**: the pages at most 880 dp wide at the zoom of the opening (`CalcPage`), the desk
+  beside them on a wide window, as in the file.
+* **Panels**: beside the canvas they take the whole height (the top bar covers the canvas only),
+  on the low container, their header 64 dp; the bars choose their arrangement by the width of
+  the canvas.
+* **Menus and controls**: the commands of the editor with the icons of the design (Lucide), a
+  state on with a check at the end, deleting in the color of the errors; the size of the texts
+  as a pill stepper, the format toggles 36 dp rounded 10, the color as a ring.
+* **Defaults**: the presets of the pen, of the highlighter and of the marks and the color of the
+  texts take the inks of the design (new installations).
+* Screenshot tests of the components that open over the screens (`drawview-ui/screenshots`,
+  `ComponentScreenshotTest`): the popovers of the tools and a menu, light and dark.

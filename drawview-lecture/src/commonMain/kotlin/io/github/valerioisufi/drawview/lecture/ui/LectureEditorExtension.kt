@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -27,16 +28,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import io.github.valerioisufi.drawview.lecture.generated.resources.*
-import io.github.valerioisufi.drawview.lecture.ModelProvider
-import io.github.valerioisufi.drawview.lecture.LectureArrival
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -44,19 +42,20 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.lecture.LectureArrival
 import io.github.valerioisufi.drawview.lecture.LectureAssistant
 import io.github.valerioisufi.drawview.lecture.LectureRecordings
 import io.github.valerioisufi.drawview.lecture.LectureStatus
+import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.SuggestionStatus
 import io.github.valerioisufi.drawview.lecture.formatLectureTime
+import io.github.valerioisufi.drawview.lecture.generated.resources.*
 import io.github.valerioisufi.drawview.lecture.generated.resources.Res
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_action_cancel
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_action_stop
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_exit_confirm
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_exit_message
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_exit_title
-import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_indicator_open
-import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_indicator_reviewing
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_place_go_to_page
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_place_hint
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_title
@@ -64,14 +63,13 @@ import io.github.valerioisufi.drawview.lecture.platform.rememberMicrophoneAccess
 import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
-import io.github.valerioisufi.drawview.ui.components.ToolButton
 import io.github.valerioisufi.drawview.ui.components.BadgeTone
+import io.github.valerioisufi.drawview.ui.screen.EditorActionButton
 import io.github.valerioisufi.drawview.ui.session.DocumentTag
 import io.github.valerioisufi.drawview.ui.session.EditorExtension
 import io.github.valerioisufi.drawview.ui.theme.DrawViewElevation
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.elevation
-import androidx.compose.foundation.layout.Column
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -87,7 +85,7 @@ fun LectureAssistant.editorExtension(): EditorExtension {
         label = { stringResource(Res.string.lecture_title) },
         group = CommandGroup.VIEW,
         section = 2,
-        icon = { rememberVectorPainter(Icons.Outlined.Mic) },
+        icon = { rememberVectorPainter(DrawViewIcons.Sparkles) },
         isChecked = { isPanelOpen }
     ) { isPanelOpen = !isPanelOpen }
     val panelState = LecturePanelState()
@@ -291,7 +289,7 @@ private fun LectureToolbarButton(assistant: LectureAssistant, documentId: String
         Row(
             modifier = Modifier
                 .padding(horizontal = 4.dp)
-                .height(32.dp)
+                .height(40.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.errorContainer)
                 .clickable(onClick = togglePanel)
@@ -317,12 +315,13 @@ private fun LectureToolbarButton(assistant: LectureAssistant, documentId: String
         }
     } else {
         Box(modifier = Modifier.zIndex(1f)) {
-            ToolButton(onClick = togglePanel, selected = assistant.isPanelOpen, command = panel) {
-                Icon(
-                    imageVector = Icons.Outlined.Mic,
-                    contentDescription = stringResource(Res.string.lecture_title),
-                )
-            }
+            EditorActionButton(
+                icon = DrawViewIcons.Sparkles,
+                label = panel.label(),
+                onClick = togglePanel,
+                active = true,
+                highlighted = assistant.isPanelOpen
+            )
             if (newNotes > 0 && !assistant.isPanelOpen) {
                 Badge(
                     modifier = Modifier
