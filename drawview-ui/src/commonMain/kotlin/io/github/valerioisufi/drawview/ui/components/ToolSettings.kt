@@ -117,12 +117,14 @@ fun DesignSlider(
     onValueChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
-    steps: Int = 0
+    steps: Int = 0,
+    onValueChangeFinished: (() -> Unit)? = null
 ) {
     val colors = MaterialTheme.colorScheme
     Slider(
         value = value,
         onValueChange = onValueChange,
+        onValueChangeFinished = onValueChangeFinished,
         modifier = modifier.height(24.dp),
         valueRange = valueRange,
         steps = steps,

@@ -29,6 +29,8 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -239,10 +241,21 @@ private fun PanelFrame(panels: List<EditorPanel>) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(64.dp)
-                .padding(start = 20.dp, end = 12.dp),
+                .padding(start = if (selected.icon != null) 16.dp else 20.dp, end = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+            selected.icon?.let { icon ->
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .size(32.dp)
+                        .background(MaterialTheme.colorScheme.tertiaryContainer, CircleShape)
+                ) {
+                    Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onTertiaryContainer, modifier = Modifier.size(18.dp))
+                }
+            }
             Text(
                 text = selected.title(),
                 style = MaterialTheme.typography.titleMedium,

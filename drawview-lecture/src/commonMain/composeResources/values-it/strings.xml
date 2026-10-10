@@ -110,7 +110,7 @@
     <string name="lecture_settings_gemini_model">Modello Gemini</string>
     <string name="lecture_settings_ollama_model">Modello Ollama</string>
     <string name="lecture_provider_online">Online</string>
-    <string name="lecture_provider_local">Locale</string>
+    <string name="lecture_provider_local">Questo computer</string>
     <string name="lecture_task_transcription">Trascrizione</string>
     <string name="lecture_task_live_notes">Suggerimenti durante la lezione</string>
     <string name="lecture_task_catch_up">Mi sono perso qualcosa</string>
@@ -232,4 +232,17 @@
     <string name="lecture_tag_filter">Lezioni</string>
     <string name="lecture_indicator_recording">Registrazione della lezione</string>
     <string name="lecture_indicator_reviewing_label">Revisione della lezione</string>
+    <string name="lecture_list_title">Le lezioni di questo quaderno</string>
+    <string name="lecture_review_ready">revisione pronta</string>
+    <string name="lecture_outline_title">Schema della lezione</string>
+    <string name="lecture_note_insert_page">Inserisci · p. %1$d</string>
+    <string name="lecture_status_listening_short">In ascolto</string>
+    <plurals name="lecture_count">
+        <item quantity="one">%1$d lezione in questo quaderno</item>
+        <item quantity="other">%1$d lezioni in questo quaderno</item>
+    </plurals>
+    <string name="lecture_settings_requests">Richieste</string>
+    <string name="lecture_settings_requests_hint">Ogni richiesta va online (Gemini) o su questo computer (whisper.cpp e Ollama, gratis, niente lascia il computer).</string>
+    <string name="lecture_settings_api_key_title">Chiave API</string>
+    <string name="lecture_settings_ollama">Ollama</string>
 </resources>

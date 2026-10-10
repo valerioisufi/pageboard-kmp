@@ -1,11 +1,13 @@
 package io.github.valerioisufi.drawview.lecture.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -16,11 +18,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AdsClick
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -61,6 +62,7 @@ import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_place
 import io.github.valerioisufi.drawview.lecture.generated.resources.lecture_title
 import io.github.valerioisufi.drawview.lecture.platform.rememberMicrophoneAccess
 import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
+import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.components.BadgeTone
@@ -351,31 +353,48 @@ private fun BoxScope.PlacementHint(assistant: LectureAssistant, controller: Draw
         }
     }
     val notePage = note.resolvedPageIndex(controller.document)?.takeIf { it !in visible }
-    val actionColors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.inversePrimary)
+    val keyboard = currentAdaptiveInfo().input.hasKeyboard
+    val shape = RoundedCornerShape(24.dp)
 
-    Surface(
-        color = MaterialTheme.colorScheme.inverseSurface,
-        contentColor = MaterialTheme.colorScheme.inverseOnSurface,
-        shape = RoundedCornerShape(24.dp),
-        shadowElevation = 6.dp,
+    Row(
         modifier = Modifier
             .align(Alignment.TopCenter)
             .padding(top = 12.dp)
+            .elevation(DrawViewElevation.Level3, shape)
+            .background(MaterialTheme.colorScheme.inverseSurface, shape)
+            .padding(start = 16.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(start = 16.dp, end = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(Icons.Outlined.AdsClick, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text(stringResource(Res.string.lecture_place_hint), style = MaterialTheme.typography.bodyMedium)
-            Spacer(Modifier.width(4.dp))
-            if (notePage != null) {
-                TextButton(onClick = { controller.pageManager.jumpToPage(notePage) }, colors = actionColors) {
-                    Text(stringResource(Res.string.lecture_place_go_to_page, notePage + 1))
-                }
+        Icon(DrawViewIcons.Plus, contentDescription = null, tint = MaterialTheme.colorScheme.inverseOnSurface, modifier = Modifier.size(18.dp))
+        Text(stringResource(Res.string.lecture_place_hint), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.inverseOnSurface)
+        if (notePage != null) {
+            Button(
+                onClick = { controller.pageManager.jumpToPage(notePage) },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.inversePrimary, contentColor = MaterialTheme.colorScheme.onPrimaryContainer),
+                contentPadding = PaddingValues(horizontal = 16.dp)
+            ) {
+                Text(stringResource(Res.string.lecture_place_go_to_page, notePage + 1))
             }
-            TextButton(onClick = { controller.placementManager.cancel() }, colors = actionColors) {
+        }
+        // Esc cancels where there is a keyboard: its key, else the button
+        if (keyboard) {
+            Text(
+                "Esc",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.8f),
+                modifier = Modifier
+                    .padding(end = 6.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .border(1.dp, MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
+                    .clickable { controller.placementManager.cancel() }
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            )
+        } else {
+            TextButton(
+                onClick = { controller.placementManager.cancel() },
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.inversePrimary)
+            ) {
                 Text(stringResource(Res.string.lecture_action_cancel))
             }
         }

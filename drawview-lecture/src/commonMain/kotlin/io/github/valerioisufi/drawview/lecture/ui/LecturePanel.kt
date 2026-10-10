@@ -1,12 +1,11 @@
 package io.github.valerioisufi.drawview.lecture.ui
 
-import io.github.valerioisufi.drawview.ui.components.OutlineButton
-import io.github.valerioisufi.drawview.ui.components.TonalButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
@@ -24,40 +24,24 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Undo
-import androidx.compose.material.icons.automirrored.outlined.VolumeUp
-import androidx.compose.material.icons.outlined.ArrowDropDown
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.DoneAll
-import androidx.compose.material.icons.outlined.ErrorOutline
-import androidx.compose.material.icons.outlined.ExpandLess
-import androidx.compose.material.icons.outlined.ExpandMore
-import androidx.compose.material.icons.outlined.PostAdd
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.Slideshow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SecondaryScrollableTabRow
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -75,15 +59,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
@@ -114,19 +100,33 @@ import io.github.valerioisufi.drawview.lecture.generated.resources.*
 import io.github.valerioisufi.drawview.lecture.platform.isComputer
 import io.github.valerioisufi.drawview.lecture.platform.rememberFileOpener
 import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
-import io.github.valerioisufi.drawview.ui.command.HoverTooltip
+import io.github.valerioisufi.drawview.ui.command.DesignMenu
+import io.github.valerioisufi.drawview.ui.command.MenuDivider
+import io.github.valerioisufi.drawview.ui.command.MenuItem
+import io.github.valerioisufi.drawview.ui.components.BadgeTone
+import io.github.valerioisufi.drawview.ui.components.DesignIconButton
+import io.github.valerioisufi.drawview.ui.components.LabelBadge
+import io.github.valerioisufi.drawview.ui.components.OutlineButton
+import io.github.valerioisufi.drawview.ui.components.SegmentedChoice
+import io.github.valerioisufi.drawview.ui.components.TonalButton
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
+import io.github.valerioisufi.drawview.ui.generated.resources.Res as UiRes
+import io.github.valerioisufi.drawview.ui.generated.resources.date_months_short
 import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.session.EditorPanel
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
+import io.github.valerioisufi.drawview.ui.util.formatShortDateTime
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 import kotlinx.coroutines.delay
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
 /** Whether the settings of the assistant are shown: asked by the header of the panel and by its recording. */
 internal class LecturePanelState {
@@ -161,14 +161,15 @@ internal fun lecturePanel(
     title = { stringResource(Res.string.lecture_title) },
     isOpen = { assistant.isPanelOpen },
     onClose = { assistant.isPanelOpen = false },
+    icon = DrawViewIcons.Sparkles,
     actions = {
         // The settings of the models, where they are
-        val settings = stringResource(Res.string.lecture_action_settings)
-        HoverTooltip(settings) {
-            IconButton(onClick = { state.settingsShown = true }) {
-                Icon(Icons.Outlined.Settings, contentDescription = settings)
-            }
-        }
+        DesignIconButton(
+            icon = DrawViewIcons.Sliders,
+            label = stringResource(Res.string.lecture_action_settings),
+            onClick = { state.settingsShown = true },
+            tint = MaterialTheme.colorScheme.onSurface
+        )
     },
     content = { PanelContent(assistant, documentId, controller, state) }
 )
@@ -181,52 +182,244 @@ internal fun LectureSettings(assistant: LectureAssistant, state: LecturePanelSta
     }
 }
 
-/** What the panel shows under its header, beside the canvas or rising from the bottom. */
+/** The margins of the content of the panel. */
+private val PanelPadding = 20.dp
+
+/**
+ * What the panel shows under its header: what the assistant is doing (a lecture to record, the
+ * one shown with its menu, the recording, the notices), then the tabs of the lecture. The part
+ * above the tabs scrolls when it is long (a short window).
+ */
 @Composable
-private fun PanelContent(assistant: LectureAssistant, documentId: String, controller: DrawViewController, state: LecturePanelState) {
-    Column {
-        val lecture = assistant.shownLecture(documentId)
-        val recorder = assistant.recorderOf(documentId)
-        LectureSelector(assistant, documentId, lecture)
-        val chooseRecording = rememberFileOpener(stringResource(Res.string.lecture_import_title), importableExtensions()) { file ->
-            assistant.importRecording(documentId, controller, file)
-        }
-        RecordingSection(
-            assistant = assistant,
-            lecture = lecture,
-            recorder = recorder,
-            onImport = {
-                assistant.clearImportAndExportMessages()
-                chooseRecording()
-            },
-            onStart = {
-                // A key is needed only when something is sent to Gemini
-                val settings = assistant.settingsStore.settings
-                if (assistant.canGenerate && settings.sentToGoogle.isNotEmpty() && !assistant.settingsStore.hasApiKey) state.settingsShown = true
-                else assistant.record(documentId, controller)
-            },
-            onOpenSettings = { state.settingsShown = true }
-        )
-        if (lecture != null) PlayerBar(lecture)
-        HorizontalDivider()
-        if (lecture != null) {
-            ProfessorPageBanner(lecture, controller)
-            LectureTabs(assistant, lecture, controller)
+internal fun PanelContent(assistant: LectureAssistant, documentId: String, controller: DrawViewController, state: LecturePanelState) {
+    val lecture = assistant.shownLecture(documentId)
+    val recorder = assistant.recorderOf(documentId)
+    val chooseRecording = rememberFileOpener(stringResource(Res.string.lecture_import_title), importableExtensions()) { file ->
+        assistant.importRecording(documentId, controller, file)
+    }
+    val onImport = {
+        assistant.clearImportAndExportMessages()
+        chooseRecording()
+    }
+    val onStart = {
+        // A key is needed only when something is sent to Gemini
+        val settings = assistant.settingsStore.settings
+        if (assistant.canGenerate && settings.sentToGoogle.isNotEmpty() && !assistant.settingsStore.hasApiKey) state.settingsShown = true
+        else assistant.record(documentId, controller)
+    }
+    val onOpenSettings = { state.settingsShown = true }
+
+    BoxWithConstraints {
+        val maxTop = if (lecture == null) maxHeight else maxHeight * 0.55f
+        Column {
+            Column(
+                modifier = Modifier
+                    .heightIn(max = maxTop)
+                    .verticalScroll(rememberScrollState())
+                    .padding(start = PanelPadding, end = PanelPadding, bottom = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                if (lecture == null) {
+                    IdleSection(assistant, documentId, onStart = onStart, onImport = onImport)
+                } else {
+                    LectureHeader(assistant, documentId, lecture, recordingHere = recorder?.lecture === lecture && lecture.status == LectureStatus.RECORDING)
+                    RecordingSection(assistant, lecture, recorder, onStart = onStart, onImport = onImport)
+                    ProfessorPageBanner(lecture, controller)
+                }
+                Notices(assistant, lecture, recorder, onOpenSettings)
+            }
+            if (lecture != null) LectureTabs(assistant, lecture, controller)
         }
     }
 }
 
+// ==========================================================
+// Idle, the lectures
+// ==========================================================
+
 /**
- * The lectures of the document: the one shown, the others to choose from, and the deletion of
- * the shown one (with its audio).
+ * No lecture shown: what the assistant does and what leaves the device, record or import; the
+ * lectures of the notebook.
  */
+@Composable
+private fun IdleSection(assistant: LectureAssistant, documentId: String, onStart: () -> Unit, onImport: () -> Unit) {
+    if (!assistant.isRecordingSupported) {
+        LectureNotice(DrawViewIcons.Mic, stringResource(Res.string.lecture_unsupported), NoticeTone.Neutral)
+        return
+    }
+    val canStart = !assistant.isBusy
+    Text(
+        stringResource(if (assistant.canGenerate) Res.string.lecture_idle_description else Res.string.lecture_record_only_description),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    if (assistant.canGenerate) PrivacyNote(privacyNote(assistant.settingsStore.settings))
+    Button(onClick = onStart, enabled = canStart, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+        Icon(DrawViewIcons.Mic, contentDescription = null, modifier = Modifier.size(22.dp))
+        Spacer(Modifier.width(10.dp))
+        Text(stringResource(Res.string.lecture_action_record), style = MaterialTheme.typography.titleMedium)
+    }
+    if (assistant.canImportAndExport) {
+        OutlineButton(onClick = onImport, enabled = canStart, modifier = Modifier.fillMaxWidth().height(48.dp)) {
+            Icon(DrawViewIcons.Upload, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(Res.string.lecture_action_import))
+        }
+    }
+    GenerateHereCard(assistant)
+    LectureList(assistant, documentId)
+}
+
+/** What leaves the device, before recording: the shield, on the high container. */
+@Composable
+internal fun PrivacyNote(text: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(16.dp))
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Icon(DrawViewIcons.Shield, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+        Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/**
+ * Whether the notes are written on this device, where they may be and are not (a phone, a tablet
+ * recording only): "Write the notes on this device" and its switch.
+ */
+@Composable
+private fun GenerateHereCard(assistant: LectureAssistant) {
+    if (!assistant.mayGenerate || assistant.canGenerate) return
+    val store = assistant.settingsStore
+    PanelCard(
+        modifier = Modifier.toggleable(value = false, role = Role.Switch) { store.update(store.settings.copy(generateHere = it)) }
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(stringResource(Res.string.lecture_settings_generate_here), style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(Res.string.lecture_settings_generate_here_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Switch(checked = false, onCheckedChange = null)
+        }
+    }
+}
+
+/** The lectures of the notebook, shown with a tap; each with its menu (deleting it). */
+@Composable
+private fun LectureList(assistant: LectureAssistant, documentId: String) {
+    val lectures = assistant.lecturesOf(documentId)
+    if (lectures.isEmpty()) return
+    var confirmDelete by remember { mutableStateOf<LectureSummary?>(null) }
+    Text(
+        stringResource(Res.string.lecture_list_title),
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(top = 4.dp)
+    )
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        for (summary in lectures) {
+            LectureRow(summary, onClick = { assistant.show(documentId, summary) }, onDelete = { confirmDelete = summary }.takeIf { !summary.activeElsewhere })
+        }
+    }
+    confirmDelete?.let { summary ->
+        DeleteLectureDialog(summary, onConfirm = {
+            confirmDelete = null
+            assistant.delete(documentId, summary)
+        }, onDismiss = { confirmDelete = null })
+    }
+}
+
+/** A lecture of the list: its tile, when and how long, whether its review is ready, its menu. */
+@Composable
+private fun LectureRow(summary: LectureSummary, onClick: () -> Unit, onDelete: (() -> Unit)?) {
+    var menu by remember { mutableStateOf(false) }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            .clickable(onClick = onClick)
+            .padding(start = 12.dp, end = 4.dp, top = 10.dp, bottom = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        IconTile(DrawViewIcons.Mic, MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(lectureDate(summary.startedAt), style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                listOfNotNull(
+                    formatDuration(summary.durationMs),
+                    stringResource(Res.string.lecture_review_ready).takeIf { summary.hasReview },
+                    summary.recordedElsewhere?.let { stringResource(Res.string.lecture_recorded_on, it) }
+                ).joinToString(" · "),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        if (onDelete != null) {
+            Box {
+                DesignIconButton(DrawViewIcons.MoreVertical, stringResource(Res.string.lecture_delete), onClick = { menu = true }, selected = menu)
+                DesignMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                    MenuItem(
+                        text = stringResource(Res.string.lecture_delete),
+                        icon = rememberVectorPainter(DrawViewIcons.Trash),
+                        destructive = true,
+                        onClick = {
+                            menu = false
+                            onDelete()
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** "14 Sep · 10:15", the day and the hour of a lecture. */
+@Composable
+private fun lectureDate(epochMs: Long): String = formatShortDateTime(epochMs, stringArrayResource(UiRes.array.date_months_short))
+
+/** Deleting a lecture, asked first: what goes, what stays. */
+@Composable
+private fun DeleteLectureDialog(summary: LectureSummary, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(DrawViewIcons.Trash, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
+        title = { Text(stringResource(Res.string.lecture_delete_title), textAlign = TextAlign.Center) },
+        text = {
+            Text(
+                stringResource(Res.string.lecture_delete_message, lectureDate(summary.startedAt)),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError)
+            ) { Text(stringResource(Res.string.lecture_action_delete)) }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.lecture_action_cancel)) } }
+    )
+}
+
 /** The type of the exported recordings (m4a). */
 private const val RecordingExportType = "audio/mp4"
 
+/**
+ * The lecture shown, on a card opening its menu (not while it is recorded here): finished and how
+ * long, when, how many lectures the notebook has. The menu: the lectures to show, exporting the
+ * audio, transcribing it again, how the audio is shared, deleting it.
+ */
 @Composable
-private fun LectureSelector(assistant: LectureAssistant, documentId: String, lecture: Lecture?) {
+private fun LectureHeader(assistant: LectureAssistant, documentId: String, lecture: Lecture, recordingHere: Boolean) {
     val lectures = assistant.lecturesOf(documentId)
-    if (lectures.isEmpty() || lecture == null) return
+    if (lectures.isEmpty() || recordingHere) return
     var expanded by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf<LectureSummary?>(null) }
     val shown = lectures.firstOrNull { it.directory == lecture.directory }
@@ -236,43 +429,59 @@ private fun LectureSelector(assistant: LectureAssistant, documentId: String, lec
     val saveRecording = rememberFileSaver(stringResource(Res.string.lecture_export_title), RecordingExportType) { target ->
         exported[0]?.let { assistant.exportAudio(it, target) }
     }
+    val finished = lecture.status == LectureStatus.FINISHED
+    val date = lectureDate(lecture.startedAt)
+    val count = pluralStringResource(Res.plurals.lecture_count, lectures.size, lectures.size)
 
-    Box(modifier = Modifier.padding(horizontal = 8.dp)) {
-        TextButton(onClick = { expanded = true }) {
-            Text(
-                text = formatLectureDate(lecture.startedAt) + " · " + formatLectureTime(lecture.elapsedMs),
-                style = MaterialTheme.typography.labelLarge
+    Box {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                .clickable { expanded = true }
+                .padding(start = 14.dp, end = 10.dp, top = 12.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                if (finished) DrawViewIcons.CheckCircle else DrawViewIcons.Mic,
+                contentDescription = null,
+                tint = if (finished) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(22.dp)
             )
-            Icon(Icons.Outlined.ArrowDropDown, contentDescription = null, modifier = Modifier.size(18.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    if (finished) stringResource(Res.string.lecture_status_finished, formatDuration(lecture.elapsedMs)) else date,
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    if (finished) "$date · $count" else count,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Icon(if (expanded) DrawViewIcons.ChevronUp else DrawViewIcons.ChevronDown, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        DesignMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             for (summary in lectures) {
-                DropdownMenuItem(
-                    text = {
-                        Column {
-                            Text(
-                                formatLectureDate(summary.startedAt) + " · " + formatLectureTime(summary.durationMs) +
-                                    (if (summary.hasReview) " · ✓" else "")
-                            )
-                            summary.recordedElsewhere?.let {
-                                Text(
-                                    stringResource(Res.string.lecture_recorded_on, it),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    },
+                MenuItem(
+                    text = lectureDate(summary.startedAt) + " · " + formatDuration(summary.durationMs),
+                    icon = rememberVectorPainter(DrawViewIcons.Mic),
+                    checked = summary.directory == lecture.directory,
                     onClick = {
                         expanded = false
                         assistant.show(documentId, summary)
                     }
                 )
             }
-            if (shown != null && !isActive && assistant.canImportAndExport && lecture.status == LectureStatus.FINISHED && lecture.hasAudio) {
-                HorizontalDivider()
-                DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.lecture_export_audio)) },
+            if (shown != null && !isActive && assistant.canImportAndExport && finished && lecture.hasAudio) {
+                MenuDivider()
+                MenuItem(
+                    text = stringResource(Res.string.lecture_export_audio),
+                    icon = rememberVectorPainter(DrawViewIcons.Download),
                     onClick = {
                         expanded = false
                         assistant.clearImportAndExportMessages()
@@ -284,17 +493,18 @@ private fun LectureSelector(assistant: LectureAssistant, documentId: String, lec
             }
             // The recording transcribed again, by another model
             if (shown != null && !isActive && assistant.canRetranscribe(lecture)) {
-                HorizontalDivider()
-                DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.lecture_retranscribe_online, assistant.retranscriptionModel(ModelProvider.GEMINI))) },
+                MenuItem(
+                    text = stringResource(Res.string.lecture_retranscribe_online, assistant.retranscriptionModel(ModelProvider.GEMINI)),
+                    icon = rememberVectorPainter(DrawViewIcons.Globe),
                     onClick = {
                         expanded = false
                         assistant.retranscribe(lecture, ModelProvider.GEMINI)
                     }
                 )
                 if (assistant.canTranscribeHere) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(Res.string.lecture_retranscribe_local)) },
+                    MenuItem(
+                        text = stringResource(Res.string.lecture_retranscribe_local),
+                        icon = rememberVectorPainter(DrawViewIcons.Monitor),
                         onClick = {
                             expanded = false
                             assistant.retranscribe(lecture, ModelProvider.LOCAL)
@@ -305,9 +515,11 @@ private fun LectureSelector(assistant: LectureAssistant, documentId: String, lec
             SharingItems(assistant, documentId, lecture)
             // Not while it is recorded on another device
             if (shown != null && !isActive && !shown.activeElsewhere) {
-                HorizontalDivider()
-                DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.lecture_delete), color = MaterialTheme.colorScheme.error) },
+                MenuDivider()
+                MenuItem(
+                    text = stringResource(Res.string.lecture_delete),
+                    icon = rememberVectorPainter(DrawViewIcons.Trash),
+                    destructive = true,
                     onClick = {
                         expanded = false
                         confirmDelete = shown
@@ -318,107 +530,154 @@ private fun LectureSelector(assistant: LectureAssistant, documentId: String, lec
     }
 
     assistant.exportResult?.let { result ->
-        Text(
-            text = if (result.failure == null) stringResource(Res.string.lecture_export_done, result.fileName)
-            else stringResource(Res.string.lecture_export_failed, result.failure),
-            style = MaterialTheme.typography.bodySmall,
-            color = if (result.failure == null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
+        if (result.failure == null) {
+            LectureNotice(DrawViewIcons.Download, stringResource(Res.string.lecture_export_done, result.fileName), NoticeTone.Neutral)
+        } else {
+            LectureNotice(DrawViewIcons.TriangleAlert, stringResource(Res.string.lecture_export_failed, result.failure), NoticeTone.Error)
+        }
     }
 
     confirmDelete?.let { summary ->
-        AlertDialog(
-            onDismissRequest = { confirmDelete = null },
-            title = { Text(stringResource(Res.string.lecture_delete_title)) },
-            text = { Text(stringResource(Res.string.lecture_delete_message, formatLectureDate(summary.startedAt))) },
-            confirmButton = {
-                TextButton(onClick = {
-                    confirmDelete = null
-                    assistant.delete(documentId, summary)
-                }) {
-                    Text(stringResource(Res.string.lecture_action_delete), color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { confirmDelete = null }) { Text(stringResource(Res.string.lecture_action_cancel)) }
-            }
-        )
+        DeleteLectureDialog(summary, onConfirm = {
+            confirmDelete = null
+            assistant.delete(documentId, summary)
+        }, onDismiss = { confirmDelete = null })
     }
+}
+
+/** How the lectures of the notebook are shared: the audio of this one, of the new ones, of the others' (received at once or on request). */
+@Composable
+private fun SharingItems(assistant: LectureAssistant, documentId: String, lecture: Lecture) {
+    val sharing = assistant.sharingOf(documentId)
+    MenuDivider()
+    MenuItem(
+        text = stringResource(Res.string.lecture_share_audio_this),
+        checked = lecture.audioShared,
+        alignWithIcons = true,
+        onClick = { assistant.shareAudio(lecture, !lecture.audioShared) }
+    )
+    MenuItem(
+        text = stringResource(Res.string.lecture_share_audio_new),
+        checked = sharing.shareAudio,
+        alignWithIcons = true,
+        onClick = { assistant.changeSharing(documentId) { it.copy(shareAudio = !it.shareAudio) } }
+    )
+    MenuItem(
+        text = stringResource(Res.string.lecture_download_audio_automatically),
+        checked = sharing.downloadAudio == AudioDownload.AUTOMATIC,
+        alignWithIcons = true,
+        onClick = {
+            assistant.changeSharing(documentId) {
+                it.copy(downloadAudio = if (it.downloadAudio == AudioDownload.AUTOMATIC) AudioDownload.ON_REQUEST else AudioDownload.AUTOMATIC)
+            }
+        }
+    )
 }
 
 // ==========================================================
 // Recording
 // ==========================================================
 
+/**
+ * What happens to the lecture shown: recorded elsewhere, imported, recorded here (the card of the
+ * recording, "I missed something"), reviewed; finished, a new recording or an import.
+ */
 @Composable
 private fun RecordingSection(
     assistant: LectureAssistant,
-    lecture: Lecture?,
+    lecture: Lecture,
     recorder: LectureRecorder?,
-    onImport: () -> Unit,
     onStart: () -> Unit,
-    onOpenSettings: () -> Unit
+    onImport: () -> Unit
 ) {
-    // One lecture at a time: another document may be recording or importing
-    val recordingElsewhere = (assistant.activeRecorder?.takeIf { it !== recorder }?.lecture ?: assistant.importing)
-        ?.takeIf { it !== lecture }
     val canStart = !assistant.isBusy
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        when {
-            !assistant.isRecordingSupported -> MutedText(stringResource(Res.string.lecture_unsupported))
+    when {
+        // Being recorded, or transcribed, on another device
+        lecture.status != LectureStatus.FINISHED && recorder?.lecture !== lecture && assistant.importing !== lecture -> {
+            val now = rememberNow()
+            val silentMinutes = (now - lecture.recordingHeardAt) / 60_000
+            if (lecture.recordingHeardAt > 0 && now - lecture.recordingHeardAt > LectureRecorder.SILENT_ELSEWHERE_MS) {
+                // No news for long: the device may have stopped (it saves the lecture as finished when back)
+                LectureNotice(
+                    DrawViewIcons.TriangleAlert,
+                    stringResource(Res.string.lecture_status_silent_elsewhere, lecture.recordedOn, silentMinutes.toInt()),
+                    NoticeTone.Error
+                )
+            } else {
+                LectureNotice(
+                    DrawViewIcons.Users,
+                    if (lecture.status == LectureStatus.IMPORTING) stringResource(Res.string.lecture_status_processing_elsewhere)
+                    else stringResource(Res.string.lecture_status_recording_on, lecture.recordedOn, formatLectureTime(lecture.elapsedMs)),
+                    NoticeTone.Info
+                )
+                // Its notes written here as its audio arrives
+                if (lecture.followedHere) LectureNotice(DrawViewIcons.Monitor, stringResource(Res.string.lecture_followed_here), NoticeTone.Info)
+            }
+        }
 
-            lecture == null -> {
-                if (assistant.canGenerate) {
-                    Text(stringResource(Res.string.lecture_idle_description), style = MaterialTheme.typography.bodyMedium)
-                    MutedText(privacyNote(assistant.settingsStore.settings))
-                } else {
-                    Text(stringResource(Res.string.lecture_record_only_description), style = MaterialTheme.typography.bodyMedium)
+        lecture.status == LectureStatus.IMPORTING -> ImportCard(lecture)
+
+        lecture.status == LectureStatus.RECORDING && recorder != null -> {
+            val settings = assistant.settingsStore.settings
+            RecordingCard(
+                elapsed = formatLectureTime(lecture.elapsedMs),
+                level = lecture.level,
+                status = when {
+                    !assistant.canGenerate -> stringResource(Res.string.lecture_status_recording_only)
+                    lecture.pendingUpdates > 0 -> stringResource(Res.string.lecture_status_pending, lecture.pendingUpdates)
+                    lecture.transcript.isEmpty() -> stringResource(Res.string.lecture_status_listening, settings.chunkSeconds)
+                    else -> lecture.currentTopic.takeIf { it.isNotBlank() }?.let { stringResource(Res.string.lecture_current_topic, it) }
+                        ?: stringResource(Res.string.lecture_status_listening_short)
+                },
+                onStop = { recorder.stop() },
+                compact = !assistant.canGenerate
+            )
+            if (assistant.canGenerate) {
+                if (lecture.isAnalyzing) {
+                    Progress(stringResource(Res.string.lecture_status_analyzing, settings.task(LectureTask.LIVE_NOTES).model))
                 }
-                Button(onClick = onStart, enabled = canStart, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(Res.string.lecture_action_record))
+                OutlineButton(onClick = { recorder.catchUp() }, modifier = Modifier.fillMaxWidth().height(48.dp)) {
+                    Icon(DrawViewIcons.Zap, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(Res.string.lecture_action_catch_up), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            } else {
+                Text(stringResource(Res.string.lecture_record_only_description), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+
+        lecture.status == LectureStatus.FINALIZING -> Progress(stringResource(Res.string.lecture_status_finalizing))
+
+        else -> {
+            if (lecture.recordedElsewhere) AudioElsewhere(assistant, lecture)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlineButton(onClick = onStart, enabled = canStart, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 12.dp)) {
+                    Icon(DrawViewIcons.Mic, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(Res.string.lecture_action_new_recording), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 if (assistant.canImportAndExport) {
-                    OutlineButton(onClick = onImport, enabled = canStart, modifier = Modifier.fillMaxWidth()) {
-                        Text(stringResource(Res.string.lecture_action_import))
+                    OutlineButton(onClick = onImport, enabled = canStart, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 12.dp)) {
+                        Icon(DrawViewIcons.Upload, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(Res.string.lecture_action_import_short), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
             }
+            GenerateHereCard(assistant)
+        }
+    }
+}
 
-            // Being recorded, or transcribed, on another device
-            lecture.status != LectureStatus.FINISHED && recorder?.lecture !== lecture && assistant.importing !== lecture -> {
-                val now = rememberNow()
-                val silentMinutes = (now - lecture.recordingHeardAt) / 60_000
-                if (lecture.recordingHeardAt > 0 && now - lecture.recordingHeardAt > LectureRecorder.SILENT_ELSEWHERE_MS) {
-                    // No news for long: the device may have stopped (it saves the lecture as finished when back)
-                    Text(
-                        stringResource(Res.string.lecture_status_silent_elsewhere, lecture.recordedOn, silentMinutes.toInt()),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                } else {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                        Spacer(Modifier.width(12.dp))
-                        Text(
-                            text = if (lecture.status == LectureStatus.IMPORTING) stringResource(Res.string.lecture_status_processing_elsewhere)
-                            else stringResource(Res.string.lecture_status_recording_on, lecture.recordedOn, formatLectureTime(lecture.elapsedMs)),
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                    }
-                    // Its notes written here as its audio arrives
-                    if (lecture.followedHere) MutedText(stringResource(Res.string.lecture_followed_here))
-                }
-            }
-
-            lecture.status == LectureStatus.IMPORTING -> {
+/** A recording imported from elsewhere: converted, transcribed, reviewed, with its progress. */
+@Composable
+private fun ImportCard(lecture: Lecture) {
+    PanelCard {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            IconTile(DrawViewIcons.Upload, MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer)
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(
+                    stringResource(
                         when (lecture.importStep) {
                             ImportStep.TRANSCRIBING -> Res.string.lecture_import_transcribing
                             ImportStep.REVIEWING -> Res.string.lecture_status_finalizing
@@ -427,136 +686,100 @@ private fun RecordingSection(
                     ),
                     style = MaterialTheme.typography.titleSmall
                 )
-                val progress = lecture.importProgress
-                if (progress < 0f) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                else LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
-                if (lecture.elapsedMs > 0) MutedText(formatLectureTime(lecture.elapsedMs))
-            }
-
-            lecture.status == LectureStatus.RECORDING && recorder != null -> {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(10.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.error)
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(Res.string.lecture_status_recording, formatLectureTime(lecture.elapsedMs)),
-                        style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.weight(1f)
-                    )
-                    LinearProgressIndicator(
-                        progress = { lecture.level },
-                        modifier = Modifier.width(72.dp),
-                        drawStopIndicator = {}
-                    )
-                }
-                MutedText(
-                    when {
-                        !assistant.canGenerate -> stringResource(Res.string.lecture_status_recording_only)
-                        lecture.isAnalyzing ->
-                            stringResource(Res.string.lecture_status_analyzing, assistant.settingsStore.settings.task(LectureTask.LIVE_NOTES).model)
-                        lecture.pendingUpdates > 0 -> stringResource(Res.string.lecture_status_pending, lecture.pendingUpdates)
-                        lecture.transcript.isEmpty() ->
-                            stringResource(Res.string.lecture_status_listening, assistant.settingsStore.settings.chunkSeconds)
-                        else -> lecture.currentTopic.takeIf { it.isNotBlank() }
-                            ?.let { stringResource(Res.string.lecture_current_topic, it) } ?: ""
-                    }
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End), modifier = Modifier.fillMaxWidth()) {
-                    if (assistant.canGenerate) {
-                        OutlineButton(onClick = { recorder.catchUp() }, modifier = Modifier.weight(1f)) {
-                            Text(stringResource(Res.string.lecture_action_catch_up), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        }
-                    }
-                    Button(
-                        onClick = { recorder.stop() },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError
-                        )
-                    ) {
-                        Text(stringResource(Res.string.lecture_action_stop))
-                    }
-                }
-            }
-
-            lecture.status == LectureStatus.FINALIZING -> {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                    Spacer(Modifier.width(12.dp))
-                    Text(stringResource(Res.string.lecture_status_finalizing), style = MaterialTheme.typography.titleSmall)
-                }
-            }
-
-            else -> {
-                Text(
-                    text = stringResource(Res.string.lecture_status_finished, formatLectureTime(lecture.elapsedMs)),
-                    style = MaterialTheme.typography.titleSmall
-                )
-                if (lecture.recordedElsewhere) AudioElsewhere(assistant, lecture)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlineButton(onClick = onStart, enabled = canStart, modifier = Modifier.weight(1f)) {
-                        Text(stringResource(Res.string.lecture_action_new_recording), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }
-                    if (assistant.canImportAndExport) {
-                        OutlineButton(onClick = onImport, enabled = canStart, modifier = Modifier.weight(1f)) {
-                            Text(stringResource(Res.string.lecture_action_import_short), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        }
-                    }
+                if (lecture.elapsedMs > 0) {
+                    Text(formatLectureTime(lecture.elapsedMs), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
-
-        recordingElsewhere?.let {
-            MutedText(stringResource(Res.string.lecture_recording_elsewhere, it.documentTitle))
-        }
-
-        assistant.startError?.let {
-            ProblemBanner(stringResource(Res.string.lecture_problem_start, it))
-        }
-        if (assistant.microphoneDenied) {
-            ProblemBanner(stringResource(Res.string.lecture_microphone_denied))
-        }
-        if (lecture?.deletedElsewhere == true) {
-            ProblemBanner(stringResource(Res.string.lecture_deleted_elsewhere))
-        }
-        assistant.importError?.let {
-            ProblemBanner(stringResource(Res.string.lecture_import_failed, it))
-        }
-        if (lecture?.microphoneInterrupted == true && lecture.status == LectureStatus.RECORDING) {
-            ProblemBanner(stringResource(Res.string.lecture_microphone_interrupted))
-        }
-        if (lecture?.noAudioWarning == true && lecture.status == LectureStatus.RECORDING) {
-            ProblemBanner(stringResource(if (isComputer) Res.string.lecture_no_audio_warning else Res.string.lecture_no_audio_warning_device))
-        }
-        lecture?.problem?.let { problem ->
-            val message = when (problem) {
-                LectureProblem.MissingApiKey -> stringResource(Res.string.lecture_problem_no_api_key)
-                is LectureProblem.Authentication -> stringResource(Res.string.lecture_problem_authentication, problem.detail)
-                is LectureProblem.Retrying -> stringResource(Res.string.lecture_problem_retrying, problem.retryInSeconds, problem.detail)
-                is LectureProblem.Failed -> stringResource(Res.string.lecture_problem_failed, problem.detail)
-                is LectureProblem.LocalModelUnavailable -> stringResource(Res.string.lecture_problem_local_unavailable, problem.detail)
-                LectureProblem.NoTranscript -> stringResource(Res.string.lecture_problem_no_transcript)
-                is LectureProblem.TranscriptionUnavailable -> stringResource(Res.string.lecture_problem_transcription, problem.detail)
-                is LectureProblem.QuotaExhausted -> {
-                    val model = problem.model.ifEmpty { "Gemini" }
-                    val wait = problem.retryInMs?.let { formatWait(it) }
-                    when {
-                        problem.daily && wait != null -> stringResource(Res.string.lecture_problem_quota_day_in, model, wait)
-                        problem.daily -> stringResource(Res.string.lecture_problem_quota_day, model)
-                        else -> stringResource(Res.string.lecture_problem_quota, model)
-                    }
-                }
-            }
-            val needsSettings = problem is LectureProblem.MissingApiKey || problem is LectureProblem.Authentication ||
-                problem is LectureProblem.LocalModelUnavailable || problem is LectureProblem.TranscriptionUnavailable ||
-                problem is LectureProblem.QuotaExhausted
-            ProblemBanner(message, action = if (needsSettings) Res.string.lecture_action_settings to onOpenSettings else null)
-        }
+        Spacer(Modifier.height(12.dp))
+        val progress = lecture.importProgress
+        val track = MaterialTheme.colorScheme.surfaceContainerHighest
+        if (progress < 0f) LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), trackColor = track, gapSize = 0.dp)
+        else LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth(), trackColor = track, gapSize = 0.dp, drawStopIndicator = {})
     }
+}
+
+/** Something under way: a spinner and what it is. */
+@Composable
+private fun Progress(text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, trackColor = MaterialTheme.colorScheme.primaryContainer)
+        Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/**
+ * The notices of the assistant: one lecture at a time, the start, the microphone, the lecture
+ * deleted elsewhere, the import, the problems of the models (with the settings when they help).
+ */
+@Composable
+private fun Notices(assistant: LectureAssistant, lecture: Lecture?, recorder: LectureRecorder?, onOpenSettings: () -> Unit) {
+    // One lecture at a time: another document may be recording or importing
+    val recordingElsewhere = (assistant.activeRecorder?.takeIf { it !== recorder }?.lecture ?: assistant.importing)
+        ?.takeIf { it !== lecture }
+    val settings = stringResource(Res.string.lecture_action_settings)
+    recordingElsewhere?.let {
+        LectureNotice(DrawViewIcons.Mic, stringResource(Res.string.lecture_recording_elsewhere, it.documentTitle), NoticeTone.Neutral)
+    }
+    assistant.startError?.let {
+        LectureNotice(DrawViewIcons.TriangleAlert, stringResource(Res.string.lecture_problem_start, it), NoticeTone.Error)
+    }
+    if (assistant.microphoneDenied) {
+        LectureNotice(DrawViewIcons.Mic, stringResource(Res.string.lecture_microphone_denied), NoticeTone.Error)
+    }
+    if (lecture?.deletedElsewhere == true) {
+        LectureNotice(DrawViewIcons.Trash, stringResource(Res.string.lecture_deleted_elsewhere), NoticeTone.Neutral)
+    }
+    assistant.importError?.let {
+        LectureNotice(DrawViewIcons.Upload, stringResource(Res.string.lecture_import_failed, it), NoticeTone.Error)
+    }
+    if (lecture?.microphoneInterrupted == true && lecture.status == LectureStatus.RECORDING) {
+        LectureNotice(DrawViewIcons.Mic, stringResource(Res.string.lecture_microphone_interrupted), NoticeTone.Warning)
+    }
+    if (lecture?.noAudioWarning == true && lecture.status == LectureStatus.RECORDING) {
+        LectureNotice(
+            DrawViewIcons.Volume,
+            stringResource(if (isComputer) Res.string.lecture_no_audio_warning else Res.string.lecture_no_audio_warning_device),
+            NoticeTone.Warning
+        )
+    }
+    lecture?.problem?.let { problem ->
+        val (icon, tone) = when (problem) {
+            LectureProblem.MissingApiKey, is LectureProblem.Authentication -> DrawViewIcons.Key to NoticeTone.Error
+            is LectureProblem.Retrying -> DrawViewIcons.Refresh to NoticeTone.Warning
+            is LectureProblem.LocalModelUnavailable -> DrawViewIcons.Monitor to NoticeTone.Error
+            LectureProblem.NoTranscript -> DrawViewIcons.FileText to NoticeTone.Warning
+            else -> DrawViewIcons.TriangleAlert to NoticeTone.Error
+        }
+        val message = when (problem) {
+            LectureProblem.MissingApiKey -> stringResource(Res.string.lecture_problem_no_api_key)
+            is LectureProblem.Authentication -> stringResource(Res.string.lecture_problem_authentication, problem.detail)
+            is LectureProblem.Retrying -> stringResource(Res.string.lecture_problem_retrying, problem.retryInSeconds, problem.detail)
+            is LectureProblem.Failed -> stringResource(Res.string.lecture_problem_failed, problem.detail)
+            is LectureProblem.LocalModelUnavailable -> stringResource(Res.string.lecture_problem_local_unavailable, problem.detail)
+            LectureProblem.NoTranscript -> stringResource(Res.string.lecture_problem_no_transcript)
+            is LectureProblem.TranscriptionUnavailable -> stringResource(Res.string.lecture_problem_transcription, problem.detail)
+            is LectureProblem.QuotaExhausted -> {
+                val model = problem.model.ifEmpty { "Gemini" }
+                val wait = problem.retryInMs?.let { formatWait(it) }
+                when {
+                    problem.daily && wait != null -> stringResource(Res.string.lecture_problem_quota_day_in, model, wait)
+                    problem.daily -> stringResource(Res.string.lecture_problem_quota_day, model)
+                    else -> stringResource(Res.string.lecture_problem_quota, model)
+                }
+            }
+        }
+        val needsSettings = problem is LectureProblem.MissingApiKey || problem is LectureProblem.Authentication ||
+            problem is LectureProblem.LocalModelUnavailable || problem is LectureProblem.TranscriptionUnavailable ||
+            problem is LectureProblem.QuotaExhausted
+        LectureNotice(icon, message, tone, action = if (needsSettings) settings to onOpenSettings else null)
+    }
+}
+
+/** How long a lecture lasted: "1 h 28 min", "42 min". */
+internal fun formatDuration(ms: Long): String {
+    val minutes = (ms / 60_000).coerceAtLeast(0)
+    return if (minutes >= 60) "${minutes / 60} h ${minutes % 60} min" else "$minutes min"
 }
 
 /** A wait of the API: "7 h 39 min", "12 min", "1 min". */
@@ -565,26 +788,7 @@ private fun formatWait(ms: Long): String {
     return if (minutes >= 60) "${minutes / 60} h ${minutes % 60} min" else "$minutes min"
 }
 
-@Composable
-private fun ProblemBanner(message: String, action: Pair<StringResource, () -> Unit>? = null) {
-    Surface(
-        color = MaterialTheme.colorScheme.errorContainer,
-        contentColor = MaterialTheme.colorScheme.onErrorContainer,
-        shape = MaterialTheme.shapes.small,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(modifier = Modifier.padding(start = 12.dp, end = 4.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Outlined.ErrorOutline, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text(message, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
-            action?.let { (label, onClick) ->
-                TextButton(onClick = onClick) { Text(stringResource(label)) }
-            }
-        }
-    }
-}
-
-/** "The lecturer is on page N": shown when that page is not on screen. */
+/** "The lecturer is on page N" (and the topic), with Go: shown when that page is not on screen. */
 @Composable
 private fun ProfessorPageBanner(lecture: Lecture, controller: DrawViewController) {
     val page = lecture.professorPageIndex ?: return
@@ -597,18 +801,25 @@ private fun ProfessorPageBanner(lecture: Lecture, controller: DrawViewController
         }
     }
     if (page in visible || page !in controller.document.pages.indices) return
-    Surface(color = MaterialTheme.colorScheme.secondaryContainer, modifier = Modifier.fillMaxWidth()) {
-        Row(modifier = Modifier.padding(start = 16.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Outlined.Slideshow, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = stringResource(Res.string.lecture_professor_page, page + 1),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f)
-            )
-            TextButton(onClick = { controller.pageManager.jumpToPage(page) }) {
-                Text(stringResource(Res.string.lecture_action_go))
-            }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(16.dp))
+            .padding(start = 14.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Icon(DrawViewIcons.BookOpen, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+        Text(
+            text = listOfNotNull(
+                stringResource(Res.string.lecture_professor_page, page + 1),
+                lecture.currentTopic.takeIf { it.isNotBlank() }?.let { stringResource(Res.string.lecture_current_topic, it) }
+            ).joinToString(" · "),
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.weight(1f)
+        )
+        TonalButton(onClick = { controller.pageManager.jumpToPage(page) }) {
+            Text(stringResource(Res.string.lecture_action_go))
         }
     }
 }
@@ -617,12 +828,16 @@ private fun ProfessorPageBanner(lecture: Lecture, controller: DrawViewController
 // Tabs
 // ==========================================================
 
+/**
+ * The tabs of the lecture as a segmented choice (the notes with how many are new, the transcript,
+ * the outline, the review) and the one chosen; the player above the others while it plays.
+ */
 @Composable
 private fun LectureTabs(assistant: LectureAssistant, lecture: Lecture, controller: DrawViewController) {
     var tab by remember(lecture) { mutableIntStateOf(0) }
     val newCount = lecture.suggestions.count { it.status == SuggestionStatus.NEW }
     val labels = listOf(
-        stringResource(Res.string.lecture_tab_notes) + if (newCount > 0) " ($newCount)" else "",
+        stringResource(Res.string.lecture_tab_notes) + if (newCount > 0) " · $newCount" else "",
         stringResource(Res.string.lecture_tab_transcript),
         stringResource(Res.string.lecture_tab_outline),
         stringResource(Res.string.lecture_tab_review)
@@ -633,14 +848,17 @@ private fun LectureTabs(assistant: LectureAssistant, lecture: Lecture, controlle
         NoteInserter(ComposeTextTileAdapter(fontFamilyResolver, notesFonts))
     }
 
-    SecondaryScrollableTabRow(selectedTabIndex = tab, edgePadding = 0.dp) {
-        labels.forEachIndexed { index, label ->
-            Tab(
-                selected = tab == index,
-                onClick = { tab = index },
-                text = { Text(label, style = MaterialTheme.typography.labelMedium, maxLines = 1) }
-            )
-        }
+    SegmentedChoice(
+        options = labels.indices.toList(),
+        selected = tab,
+        label = { labels[it] },
+        onSelect = { tab = it },
+        textStyle = MaterialTheme.typography.labelMedium,
+        modifier = Modifier.padding(horizontal = PanelPadding).height(44.dp)
+    )
+    // Listening to a note from another tab: the player stays at hand
+    if (tab != 1 && lecture.player?.isPlaying == true) {
+        Box(modifier = Modifier.padding(start = PanelPadding, end = PanelPadding, top = 12.dp)) { PlayerCard(lecture) }
     }
     Box(modifier = Modifier.fillMaxSize()) {
         when (tab) {
@@ -652,6 +870,7 @@ private fun LectureTabs(assistant: LectureAssistant, lecture: Lecture, controlle
     }
 }
 
+/** The notes suggested: the new ones on their cards, those handled under them (folded). */
 @Composable
 private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, controller: DrawViewController, inserter: NoteInserter) {
     val newNotes = lecture.suggestions.filter { it.status == SuggestionStatus.NEW }.sortedByDescending { it.atMs }
@@ -659,8 +878,8 @@ private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, controller: 
     var showHandled by remember { mutableStateOf(false) }
 
     LazyColumn(
-        contentPadding = PaddingValues(12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = PanelPadding, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxSize()
     ) {
         if (newNotes.isEmpty()) {
@@ -687,8 +906,7 @@ private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, controller: 
                 onCancelPlacing = { controller.placementManager.cancel() },
                 onListen = { lecture.play(note) },
                 onAlreadyNoted = { lecture.updateSuggestion(note.id, SuggestionStatus.ALREADY_NOTED) },
-                onDismiss = { lecture.updateSuggestion(note.id, SuggestionStatus.DISMISSED) },
-                onGoToPage = { page -> controller.pageManager.jumpToPage(page) }
+                onDismiss = { lecture.updateSuggestion(note.id, SuggestionStatus.DISMISSED) }
             )
         }
         if (handled.isNotEmpty()) {
@@ -696,7 +914,7 @@ private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, controller: 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(MaterialTheme.shapes.small)
+                        .clip(RoundedCornerShape(12.dp))
                         .clickable { showHandled = !showHandled }
                         .padding(vertical = 8.dp, horizontal = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -704,22 +922,32 @@ private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, controller: 
                     Text(
                         text = stringResource(Res.string.lecture_notes_handled, handled.size),
                         style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f)
                     )
-                    Icon(if (showHandled) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore, contentDescription = null)
+                    Icon(
+                        if (showHandled) DrawViewIcons.ChevronUp else DrawViewIcons.ChevronDown,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
             if (showHandled) {
                 items(handled, key = { it.id }) { note ->
-                    HandledRow(note, onRestore = { lecture.updateSuggestion(note.id, SuggestionStatus.NEW) })
+                    HandledRow(note, pageIndex = note.resolvedPageIndex(controller.document), onRestore = { lecture.updateSuggestion(note.id, SuggestionStatus.NEW) })
                 }
             }
         }
     }
 }
 
+/**
+ * A suggested note on its card: its kind, whether it is important, when it was said; its title
+ * and its text; insert it (on its page), listen to it, already noted, dismiss.
+ */
 @Composable
-private fun SuggestionCard(
+internal fun SuggestionCard(
     note: NoteSuggestion,
     pageIndex: Int?,
     canListen: Boolean,
@@ -728,128 +956,145 @@ private fun SuggestionCard(
     onCancelPlacing: () -> Unit,
     onListen: () -> Unit,
     onAlreadyNoted: () -> Unit,
-    onDismiss: () -> Unit,
-    onGoToPage: (Int) -> Unit
+    onDismiss: () -> Unit
 ) {
-    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = 4.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                KindLabel(note.kind, important = note.importance >= 3)
-                Spacer(Modifier.weight(1f))
-                val time = formatLectureTime(note.atMs)
-                Text(
-                    text = if (note.fromFinalReview) stringResource(Res.string.lecture_note_from_review) else time,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                pageIndex?.let { page ->
+    PanelCard(outlined = true) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(28.dp).background(MaterialTheme.colorScheme.tertiaryContainer, CircleShape)
+            ) {
+                Icon(DrawViewIcons.Sparkles, contentDescription = null, tint = MaterialTheme.colorScheme.onTertiaryContainer, modifier = Modifier.size(16.dp))
+            }
+            Text(
+                kindLabel(note.kind).uppercase(),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.tertiary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
+            )
+            if (note.importance >= 3) LabelBadge(stringResource(Res.string.lecture_importance_high), BadgeTone.Yellow, icon = DrawViewIcons.Star)
+            TimeChip(if (note.fromFinalReview) stringResource(Res.string.lecture_note_from_review) else formatLectureTime(note.atMs))
+        }
+        if (note.title.isNotBlank()) {
+            Spacer(Modifier.height(10.dp))
+            Text(note.title, style = MaterialTheme.typography.titleMedium)
+        }
+        Spacer(Modifier.height(6.dp))
+        SelectionContainer {
+            MarkdownText(note.content, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        if (placing) {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = stringResource(Res.string.lecture_place_hint),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+        Spacer(Modifier.height(12.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (placing) {
+                OutlineButton(onClick = onCancelPlacing) { Text(stringResource(Res.string.lecture_action_cancel)) }
+            } else {
+                TonalButton(onClick = onInsert, contentPadding = PaddingValues(start = 16.dp, end = 20.dp)) {
+                    Icon(DrawViewIcons.Plus, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
                     Text(
-                        text = stringResource(Res.string.lecture_note_page, page + 1),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .clip(MaterialTheme.shapes.extraSmall)
-                            .clickable { onGoToPage(page) }
-                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                        pageIndex?.let { stringResource(Res.string.lecture_note_insert_page, it + 1) } ?: stringResource(Res.string.lecture_note_insert),
+                        maxLines = 1
                     )
                 }
             }
-            if (note.title.isNotBlank()) {
-                Spacer(Modifier.height(6.dp))
-                Text(note.title, style = MaterialTheme.typography.titleSmall)
+            Spacer(Modifier.weight(1f))
+            if (canListen && !note.fromFinalReview) {
+                DesignIconButton(DrawViewIcons.Volume, stringResource(Res.string.lecture_note_listen), onClick = onListen)
             }
-            Spacer(Modifier.height(4.dp))
-            SelectionContainer {
-                MarkdownText(note.content)
-            }
-            if (placing) {
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = stringResource(Res.string.lecture_place_hint),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (placing) {
-                    OutlineButton(onClick = onCancelPlacing, contentPadding = PaddingValues(horizontal = 12.dp)) {
-                        Text(stringResource(Res.string.lecture_action_cancel))
-                    }
-                } else {
-                    TonalButton(onClick = onInsert, contentPadding = PaddingValues(horizontal = 12.dp)) {
-                        Icon(Icons.Outlined.PostAdd, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text(stringResource(Res.string.lecture_note_insert))
-                    }
-                }
-                Spacer(Modifier.weight(1f))
-                if (canListen && !note.fromFinalReview) {
-                    IconButton(onClick = onListen) {
-                        Icon(Icons.AutoMirrored.Outlined.VolumeUp, contentDescription = stringResource(Res.string.lecture_note_listen))
-                    }
-                }
-                IconButton(onClick = onAlreadyNoted) {
-                    Icon(Icons.Outlined.DoneAll, contentDescription = stringResource(Res.string.lecture_note_have_it))
-                }
-                IconButton(onClick = onDismiss) {
-                    Icon(Icons.Outlined.Close, contentDescription = stringResource(Res.string.lecture_note_dismiss))
-                }
-            }
+            DesignIconButton(DrawViewIcons.CheckCircle, stringResource(Res.string.lecture_note_have_it), onClick = onAlreadyNoted)
+            DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.lecture_note_dismiss), onClick = onDismiss)
         }
     }
 }
 
+/** A time of the lecture on a chip: the high container, the primary color when it is the one playing. */
 @Composable
-private fun HandledRow(note: NoteSuggestion, onRestore: () -> Unit) {
-    Row(modifier = Modifier.fillMaxWidth().padding(start = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+private fun TimeChip(text: String, active: Boolean = false, onClick: (() -> Unit)? = null) {
+    Text(
+        text,
+        style = MaterialTheme.typography.labelSmall,
+        color = if (active) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        maxLines = 1,
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(horizontal = 8.dp, vertical = 3.dp)
+    )
+}
+
+/** A note handled: inserted, already noted or dismissed, restored from here. */
+@Composable
+private fun HandledRow(note: NoteSuggestion, pageIndex: Int?, onRestore: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest, RoundedCornerShape(16.dp))
+            .padding(start = 14.dp, end = 4.dp, top = 10.dp, bottom = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Icon(
+            when (note.status) {
+                SuggestionStatus.INSERTED -> DrawViewIcons.CheckCircle
+                SuggestionStatus.ALREADY_NOTED -> DrawViewIcons.Check
+                else -> DrawViewIcons.Close
+            },
+            contentDescription = null,
+            tint = if (note.status == SuggestionStatus.DISMISSED) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
+        )
         Column(modifier = Modifier.weight(1f)) {
-            Text(note.title.ifBlank { note.content }, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(note.title.ifBlank { note.content }, style = MaterialTheme.typography.labelLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Text(
-                text = when (note.status) {
-                    SuggestionStatus.INSERTED -> stringResource(Res.string.lecture_note_status_inserted)
-                    SuggestionStatus.ALREADY_NOTED -> stringResource(Res.string.lecture_note_status_already_noted)
-                    else -> stringResource(Res.string.lecture_note_status_dismissed)
-                },
-                style = MaterialTheme.typography.labelSmall,
+                text = listOfNotNull(
+                    stringResource(
+                        when (note.status) {
+                            SuggestionStatus.INSERTED -> Res.string.lecture_note_status_inserted
+                            SuggestionStatus.ALREADY_NOTED -> Res.string.lecture_note_status_already_noted
+                            else -> Res.string.lecture_note_status_dismissed
+                        }
+                    ),
+                    pageIndex?.takeIf { note.status == SuggestionStatus.INSERTED }?.let { stringResource(Res.string.lecture_note_page, it + 1) }
+                ).joinToString(" · "),
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        IconButton(onClick = onRestore) {
-            Icon(Icons.AutoMirrored.Outlined.Undo, contentDescription = stringResource(Res.string.lecture_note_restore))
-        }
+        TextButton(onClick = onRestore) { Text(stringResource(Res.string.lecture_note_restore)) }
     }
 }
 
+/** The name of the kind of a note. */
 @Composable
-private fun KindLabel(kind: NoteKind, important: Boolean) {
-    val label = stringResource(
-        when (kind) {
-            NoteKind.DEFINITION -> Res.string.lecture_kind_definition
-            NoteKind.FORMULA -> Res.string.lecture_kind_formula
-            NoteKind.THEOREM -> Res.string.lecture_kind_theorem
-            NoteKind.EXAMPLE -> Res.string.lecture_kind_example
-            NoteKind.EXPLANATION -> Res.string.lecture_kind_explanation
-            NoteKind.EXAM_HINT -> Res.string.lecture_kind_exam_hint
-            NoteKind.ANNOUNCEMENT -> Res.string.lecture_kind_announcement
-            NoteKind.REFERENCE -> Res.string.lecture_kind_reference
-            NoteKind.OTHER -> Res.string.lecture_kind_other
-        }
-    )
-    val highlighted = important || kind == NoteKind.EXAM_HINT || kind == NoteKind.ANNOUNCEMENT
-    Surface(
-        color = if (highlighted) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-        contentColor = if (highlighted) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-        shape = MaterialTheme.shapes.extraSmall
-    ) {
-        Text(
-            text = if (important) "$label · ${stringResource(Res.string.lecture_importance_high)}" else label,
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-        )
+private fun kindLabel(kind: NoteKind): String = stringResource(
+    when (kind) {
+        NoteKind.DEFINITION -> Res.string.lecture_kind_definition
+        NoteKind.FORMULA -> Res.string.lecture_kind_formula
+        NoteKind.THEOREM -> Res.string.lecture_kind_theorem
+        NoteKind.EXAMPLE -> Res.string.lecture_kind_example
+        NoteKind.EXPLANATION -> Res.string.lecture_kind_explanation
+        NoteKind.EXAM_HINT -> Res.string.lecture_kind_exam_hint
+        NoteKind.ANNOUNCEMENT -> Res.string.lecture_kind_announcement
+        NoteKind.REFERENCE -> Res.string.lecture_kind_reference
+        NoteKind.OTHER -> Res.string.lecture_kind_other
     }
-}
+)
 
+/**
+ * The transcript under the player: each time on its chip (playing the recording from there), the
+ * segment playing on the primary container, the words being said in italics.
+ */
 @Composable
 private fun TranscriptTab(lecture: Lecture) {
     val listState = rememberLazyListState()
@@ -866,70 +1111,86 @@ private fun TranscriptTab(lecture: Lecture) {
     LaunchedEffect(playing) {
         if (playing != null && player?.isPlaying == true) listState.animateScrollToItem(playing)
     }
-    if (items == 0) {
-        MutedText(stringResource(Res.string.lecture_transcript_empty), Modifier.padding(16.dp))
-        return
-    }
-    SelectionContainer {
-        LazyColumn(
-            state = listState,
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            itemsIndexed(lecture.transcript.toList()) { index, segment ->
-                val isPlaying = index == playing
-                Surface(
-                    color = if (isPlaying) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
-                    shape = MaterialTheme.shapes.small
-                ) {
-                    Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.padding(start = PanelPadding, end = PanelPadding, top = 14.dp)) { PlayerCard(lecture) }
+        if (items == 0) {
+            MutedText(stringResource(Res.string.lecture_transcript_empty), Modifier.padding(PanelPadding))
+            return@Column
+        }
+        SelectionContainer {
+            LazyColumn(
+                state = listState,
+                contentPadding = PaddingValues(horizontal = PanelPadding - 8.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                itemsIndexed(lecture.transcript.toList()) { index, segment ->
+                    val isPlaying = index == playing
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(if (isPlaying) MaterialTheme.colorScheme.primaryContainer else Color.Transparent, RoundedCornerShape(16.dp))
+                            .padding(horizontal = 8.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
                         // The time plays the recording from there
+                        TimeChip(formatLectureTime(segment.startMs), active = isPlaying, onClick = player?.let { { it.play(segment.startMs) } })
                         Text(
-                            text = (if (player != null) "▶ " else "") + formatLectureTime(segment.startMs),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = if (player != null) Modifier.clickable { player.play(segment.startMs) } else Modifier
+                            segment.text,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (isPlaying) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                         )
-                        Text(segment.text, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
-            }
-            if (interim != null) {
-                item(key = "interim") {
-                    Text(
-                        text = interim,
-                        style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 4.dp)
-                    )
+                if (interim != null) {
+                    item(key = "interim") {
+                        Text(
+                            text = interim,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                    }
                 }
             }
         }
     }
 }
 
+/** The course context of the notebook on its card, then the outline of the lecture. */
 @Composable
 private fun OutlineTab(assistant: LectureAssistant, lecture: Lecture) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(horizontal = PanelPadding, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         CourseContextCard(assistant, lecture.documentId)
+        Text(stringResource(Res.string.lecture_outline_title), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (lecture.outline.isBlank()) {
             MutedText(stringResource(Res.string.lecture_outline_empty))
         } else {
             SelectionContainer {
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     if (lecture.currentTopic.isNotBlank()) {
-                        Text(
-                            text = stringResource(Res.string.lecture_current_topic, lecture.currentTopic),
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                        Spacer(Modifier.height(8.dp))
+                        // Where the lecturer is now
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(12.dp))
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Box(modifier = Modifier.size(6.dp).background(MaterialTheme.colorScheme.onPrimaryContainer, CircleShape))
+                            Text(
+                                text = stringResource(Res.string.lecture_current_topic, lecture.currentTopic),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
                     }
                     MarkdownText(lecture.outline)
                 }
@@ -945,60 +1206,65 @@ private fun CourseContextCard(assistant: LectureAssistant, documentId: String) {
     val writing = assistant.isWritingContext(documentId)
     var editing by remember(documentId) { mutableStateOf(false) }
     var draft by remember(documentId) { mutableStateOf("") }
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        shape = MaterialTheme.shapes.medium,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    stringResource(Res.string.lecture_context_title),
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.weight(1f)
+    PanelCard(outlined = true) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Icon(DrawViewIcons.BookOpen, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(20.dp))
+            Text(stringResource(Res.string.lecture_context_title), style = MaterialTheme.typography.titleSmall)
+        }
+        Spacer(Modifier.height(10.dp))
+        when {
+            writing -> Progress(stringResource(Res.string.lecture_context_writing))
+            editing -> {
+                OutlinedTextField(
+                    value = draft,
+                    onValueChange = { draft = it },
+                    minLines = 3,
+                    maxLines = 8,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
                 )
-                if (!editing && !writing) {
+                Row(modifier = Modifier.align(Alignment.End)) {
+                    TextButton(onClick = { editing = false }) { Text(stringResource(Res.string.lecture_action_cancel)) }
                     TextButton(onClick = {
-                        draft = context?.text.orEmpty()
-                        editing = true
-                    }) { Text(stringResource(Res.string.lecture_context_edit)) }
-                    if (assistant.canWriteContext(documentId)) {
-                        TextButton(onClick = { assistant.writeContext(documentId) }) { Text(stringResource(Res.string.lecture_context_write)) }
-                    }
+                        assistant.editContext(documentId, draft)
+                        editing = false
+                    }) { Text(stringResource(Res.string.lecture_action_save)) }
                 }
             }
-            when {
-                writing -> Row(verticalAlignment = Alignment.CenterVertically) {
-                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+            context == null || context.text.isBlank() -> MutedText(stringResource(Res.string.lecture_context_empty))
+            else -> {
+                SelectionContainer { Text(context.text, style = MaterialTheme.typography.bodySmall) }
+                Spacer(Modifier.height(8.dp))
+                MutedText(stringResource(Res.string.lecture_context_hint))
+            }
+        }
+        if (!editing && !writing) {
+            Spacer(Modifier.height(4.dp))
+            Row {
+                TextButton(onClick = {
+                    draft = context?.text.orEmpty()
+                    editing = true
+                }) {
+                    Icon(DrawViewIcons.Pencil, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    MutedText(stringResource(Res.string.lecture_context_writing))
+                    Text(stringResource(Res.string.lecture_context_edit))
                 }
-                editing -> {
-                    OutlinedTextField(
-                        value = draft,
-                        onValueChange = { draft = it },
-                        minLines = 3,
-                        maxLines = 8,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Row(modifier = Modifier.align(Alignment.End)) {
-                        TextButton(onClick = { editing = false }) { Text(stringResource(Res.string.lecture_action_cancel)) }
-                        TextButton(onClick = {
-                            assistant.editContext(documentId, draft)
-                            editing = false
-                        }) { Text(stringResource(Res.string.lecture_action_save)) }
+                if (assistant.canWriteContext(documentId)) {
+                    TextButton(onClick = { assistant.writeContext(documentId) }) {
+                        Icon(DrawViewIcons.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(Res.string.lecture_context_write))
                     }
-                }
-                context == null || context.text.isBlank() -> MutedText(stringResource(Res.string.lecture_context_empty))
-                else -> {
-                    SelectionContainer { Text(context.text, style = MaterialTheme.typography.bodySmall) }
-                    MutedText(stringResource(Res.string.lecture_context_hint))
                 }
             }
         }
     }
 }
 
+/**
+ * The final review: being written (here or elsewhere), failed, or written (by which model, written
+ * again, its text, inserting it as pages); the requests of the lecture at the end.
+ */
 @Composable
 private fun ReviewTab(
     assistant: LectureAssistant,
@@ -1011,73 +1277,61 @@ private fun ReviewTab(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(horizontal = PanelPadding, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         val review = lecture.finalReview
-        // Without the transcript, the audio is transcribed first
         val now = rememberNow()
         val elsewhere = lecture.generatingElsewhere(now)
         // Without the transcript, the audio is transcribed first; not while another device writes them
         val canRegenerate = lecture.canGenerateReview && (lecture.transcript.isNotEmpty() || lecture.hasAudio) && elsewhere == null
-        elsewhere?.let { MutedText(stringResource(Res.string.lecture_generating_elsewhere, it.name)) }
+        elsewhere?.let { LectureNotice(DrawViewIcons.Users, stringResource(Res.string.lecture_generating_elsewhere, it.name), NoticeTone.Info) }
         when {
-            lecture.reviewStatus == ReviewStatus.RUNNING || lecture.status == LectureStatus.FINALIZING -> {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                    Spacer(Modifier.width(12.dp))
-                    MutedText(
-                        if (lecture.reviewProvider == ModelProvider.LOCAL && lecture.reviewStatus == ReviewStatus.RUNNING) {
-                            stringResource(Res.string.lecture_review_running_local, lecture.reviewModel.orEmpty(), lecture.reviewProgressTokens)
-                        } else {
-                            stringResource(Res.string.lecture_review_running, lecture.reviewModel ?: settings.task(LectureTask.FINAL_REVIEW).model)
-                        }
-                    )
-                }
-            }
+            lecture.reviewStatus == ReviewStatus.RUNNING || lecture.status == LectureStatus.FINALIZING -> LectureNotice(
+                DrawViewIcons.Sparkles,
+                if (lecture.reviewProvider == ModelProvider.LOCAL && lecture.reviewStatus == ReviewStatus.RUNNING) {
+                    stringResource(Res.string.lecture_review_running_local, lecture.reviewModel.orEmpty(), lecture.reviewProgressTokens)
+                } else {
+                    stringResource(Res.string.lecture_review_running, lecture.reviewModel ?: settings.task(LectureTask.FINAL_REVIEW).model)
+                },
+                NoticeTone.Neutral
+            )
             lecture.reviewStatus == ReviewStatus.FAILED -> {
-                MutedText(stringResource(Res.string.lecture_review_failed))
+                LectureNotice(DrawViewIcons.TriangleAlert, stringResource(Res.string.lecture_review_failed), NoticeTone.Error)
                 if (canRegenerate) RegenerateReviewButton(assistant, lecture)
             }
             review != null -> {
-                InsertPagesButton(controller) { afterPageIndex -> inserter.insertPages(controller, review, afterPageIndex) }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    MutedText(
+                    Text(
                         lecture.reviewModel?.let { stringResource(Res.string.lecture_review_by, it) }.orEmpty(),
-                        Modifier.weight(1f)
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.weight(1f)
                     )
                     if (canRegenerate) RegenerateReviewButton(assistant, lecture)
                 }
-                SelectionContainer { MarkdownText(review) }
+                PanelCard(outlined = true) { SelectionContainer { MarkdownText(review) } }
+                InsertPagesCard(controller) { afterPageIndex -> inserter.insertPages(controller, review, afterPageIndex) }
             }
             // Written by a device with the models
-            !lecture.generates -> MutedText(stringResource(Res.string.lecture_review_elsewhere))
+            !lecture.generates -> LectureNotice(DrawViewIcons.Monitor, stringResource(Res.string.lecture_review_elsewhere), NoticeTone.Info)
             lecture.status == LectureStatus.FINISHED -> {
                 // Recorded where the models are not, written on request, or interrupted before its review (e.g. the application was closed)
-                MutedText(
-                    if (lecture.recordedElsewhere && lecture.transcript.isEmpty()) stringResource(Res.string.lecture_review_received, lecture.recordedOn)
-                    else stringResource(Res.string.lecture_review_pending)
-                )
+                if (lecture.recordedElsewhere && lecture.transcript.isEmpty()) {
+                    LectureNotice(DrawViewIcons.Upload, stringResource(Res.string.lecture_review_received, lecture.recordedOn), NoticeTone.Info)
+                } else {
+                    BodyText(stringResource(Res.string.lecture_review_pending))
+                }
                 if (canRegenerate) RegenerateReviewButton(assistant, lecture, label = Res.string.lecture_review_generate)
             }
-            !settings.reviewAtTheEnd -> MutedText(stringResource(Res.string.lecture_review_on_request))
-            else -> MutedText(stringResource(Res.string.lecture_review_none, settings.task(LectureTask.FINAL_REVIEW).model))
+            !settings.reviewAtTheEnd -> BodyText(stringResource(Res.string.lecture_review_on_request))
+            else -> BodyText(stringResource(Res.string.lecture_review_none, settings.task(LectureTask.FINAL_REVIEW).model))
         }
 
-        UsageSummary(lecture.totalUsage)
-        // Who used them, when several devices did
-        if (lecture.otherUsage.isNotEmpty()) {
-            val mine = lecture.usage
-            val lines = (listOf(stringResource(Res.string.lecture_usage_this_device) to mine) + lecture.otherUsage.values.map { it.name to it.usage })
-                .filter { (_, usage) -> usage.requests > 0 || usage.localRequests > 0 }
-            for ((name, usage) in lines) {
-                MutedText(stringResource(Res.string.lecture_usage_device, name, usage.requests + usage.localRequests, compactNumber(usage.promptTokens + usage.outputTokens)))
-            }
-        }
+        UsageSummary(lecture)
     }
 }
 
-/** Writes the final review (again), online or by the local model. */
+/** Writes the final review (again), online or by the local model: a button opening the two. */
 @Composable
 private fun RegenerateReviewButton(
     assistant: LectureAssistant,
@@ -1088,19 +1342,22 @@ private fun RegenerateReviewButton(
     var expanded by remember { mutableStateOf(false) }
     Box {
         TextButton(onClick = { expanded = true }) {
+            Icon(DrawViewIcons.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
             Text(stringResource(label))
-            Icon(Icons.Outlined.ArrowDropDown, contentDescription = null, modifier = Modifier.size(18.dp))
         }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(
-                text = { Text(stringResource(Res.string.lecture_review_with_gemini, settings.task(LectureTask.FINAL_REVIEW).gemini)) },
+        DesignMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            MenuItem(
+                text = stringResource(Res.string.lecture_review_with_gemini, settings.task(LectureTask.FINAL_REVIEW).gemini),
+                icon = rememberVectorPainter(DrawViewIcons.Globe),
                 onClick = {
                     expanded = false
                     assistant.generate(lecture, ModelProvider.GEMINI)
                 }
             )
-            DropdownMenuItem(
-                text = { Text(stringResource(Res.string.lecture_review_with_local, settings.task(LectureTask.FINAL_REVIEW).local)) },
+            MenuItem(
+                text = stringResource(Res.string.lecture_review_with_local, settings.task(LectureTask.FINAL_REVIEW).local),
+                icon = rememberVectorPainter(DrawViewIcons.Monitor),
                 onClick = {
                     expanded = false
                     assistant.generate(lecture, ModelProvider.LOCAL)
@@ -1110,20 +1367,42 @@ private fun RegenerateReviewButton(
     }
 }
 
-/** The requests of the lecture and where the tokens of the online ones went. */
+/** The requests of the lecture and where the tokens of the online ones went; who used them, when several devices did. */
 @Composable
-private fun UsageSummary(usage: TokenUsage) {
+private fun UsageSummary(lecture: Lecture) {
+    val usage = lecture.totalUsage
     if (usage.requests == 0 && usage.localRequests == 0 && usage.skippedUpdates == 0) return
-    HorizontalDivider()
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(16.dp))
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        UsageLines(usage)
+        if (lecture.otherUsage.isNotEmpty()) {
+            val lines = (listOf(stringResource(Res.string.lecture_usage_this_device) to lecture.usage) + lecture.otherUsage.values.map { it.name to it.usage })
+                .filter { (_, used) -> used.requests > 0 || used.localRequests > 0 }
+            Spacer(Modifier.height(6.dp))
+            for ((name, used) in lines) {
+                MutedText(stringResource(Res.string.lecture_usage_device, name, used.requests + used.localRequests, compactNumber(used.promptTokens + used.outputTokens)))
+            }
+        }
+    }
+}
+
+@Composable
+private fun UsageLines(usage: TokenUsage) {
     if (usage.requests > 0) {
-        MutedText(
+        Text(
             stringResource(
                 Res.string.lecture_usage_tokens,
                 usage.requests,
                 compactNumber(usage.promptTokens),
                 compactNumber(usage.cachedTokens),
                 compactNumber(usage.outputTokens)
-            )
+            ),
+            style = MaterialTheme.typography.bodySmall
         )
     }
     if (usage.promptByModality.isNotEmpty()) {
@@ -1137,69 +1416,86 @@ private fun UsageSummary(usage: TokenUsage) {
             }
             "$label ${compactNumber(tokens)}"
         }
-        MutedText(stringResource(Res.string.lecture_usage_input, parts.joinToString(" · ")))
+        Text(stringResource(Res.string.lecture_usage_input, parts.joinToString(" · ")), style = MaterialTheme.typography.bodySmall)
     }
     if (usage.localRequests > 0) {
-        MutedText(stringResource(Res.string.lecture_usage_local, usage.localRequests))
+        Text(stringResource(Res.string.lecture_usage_local, usage.localRequests), style = MaterialTheme.typography.bodySmall)
     }
     if (usage.skippedUpdates > 0) {
         MutedText(stringResource(Res.string.lecture_usage_skipped, usage.skippedUpdates))
     }
 }
 
-/** What leaves this computer with the current settings, before recording. */
+/**
+ * "Insert as new pages" on its card: after the page the student is looking at, or at the end of
+ * the notebook, and Insert.
+ */
 @Composable
-private fun privacyNote(settings: AssistantSettings): String {
-    val shared = settings.sentToGoogle
-    if (shared.isEmpty()) return stringResource(Res.string.lecture_privacy_local)
-    val parts = SharedData.entries.filter { it in shared }.map { data ->
-        stringResource(
-            when (data) {
-                SharedData.AUDIO -> Res.string.lecture_privacy_audio
-                SharedData.TRANSCRIPT -> Res.string.lecture_privacy_transcript
-                SharedData.NOTEBOOK -> Res.string.lecture_privacy_notebook
-            }
-        )
+private fun InsertPagesCard(controller: DrawViewController, onInsert: (afterPageIndex: Int?) -> Unit) {
+    val currentPage by remember(controller) {
+        derivedStateOf {
+            controller.version
+            controller.cameraPhysics.moveCount
+            controller.mostVisiblePageIndex()
+        }
     }
-    return stringResource(Res.string.lecture_privacy_online, parts.joinToString(", "))
+    var atTheEnd by remember { mutableStateOf(false) }
+    val page = currentPage
+    PanelCard {
+        Text(stringResource(Res.string.lecture_review_insert), style = MaterialTheme.typography.titleSmall)
+        Spacer(Modifier.height(6.dp))
+        if (page != null) {
+            InsertChoice(stringResource(Res.string.lecture_review_insert_after, page + 1), selected = !atTheEnd) { atTheEnd = false }
+        }
+        InsertChoice(stringResource(Res.string.lecture_review_insert_end), selected = atTheEnd || page == null) { atTheEnd = true }
+        Spacer(Modifier.height(8.dp))
+        Button(onClick = { onInsert(if (atTheEnd) null else page) }) {
+            Icon(DrawViewIcons.FilePlus, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(Res.string.lecture_note_insert))
+        }
+    }
+}
+
+@Composable
+private fun InsertChoice(text: String, selected: Boolean, onSelect: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onSelect)
+            .padding(vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(selected = selected, onClick = null, modifier = Modifier.padding(horizontal = 4.dp, vertical = 10.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(text, style = MaterialTheme.typography.bodyMedium)
+    }
 }
 
 /**
- * "Insert as new pages", with the position of the pages: after the page the student is looking
- * at, or at the end of the notebook.
+ * The audio of a lecture recorded on another device: here, arriving (how much of it), asked for,
+ * or kept there (not shared).
  */
 @Composable
-private fun InsertPagesButton(controller: DrawViewController, onInsert: (afterPageIndex: Int?) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    var currentPage by remember { mutableStateOf<Int?>(null) }
-    Box {
-        TonalButton(onClick = {
-            currentPage = controller.mostVisiblePageIndex()
-            expanded = true
-        }) {
-            Icon(Icons.Outlined.PostAdd, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(6.dp))
-            Text(stringResource(Res.string.lecture_review_insert))
-            Icon(Icons.Outlined.ArrowDropDown, contentDescription = null, modifier = Modifier.size(18.dp))
+private fun AudioElsewhere(assistant: LectureAssistant, lecture: Lecture) {
+    val arriving by assistant.audioArriving.collectAsState()
+    val progress = arriving[lecture.directory]
+    val sharing = assistant.sharingOf(lecture.documentId)
+    when {
+        lecture.hasAudio -> LectureNotice(DrawViewIcons.Users, stringResource(Res.string.lecture_recorded_on, lecture.recordedOn), NoticeTone.Info)
+        !lecture.audioShared -> LectureNotice(DrawViewIcons.Users, stringResource(Res.string.lecture_audio_not_shared, lecture.recordedOn), NoticeTone.Neutral)
+        progress != null -> {
+            LectureNotice(DrawViewIcons.Download, stringResource(Res.string.lecture_audio_progress, lecture.recordedOn, (progress * 100).toInt()), NoticeTone.Info)
+            LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth(), gapSize = 0.dp, drawStopIndicator = {})
         }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            currentPage?.let { page ->
-                DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.lecture_review_insert_after, page + 1)) },
-                    onClick = {
-                        expanded = false
-                        onInsert(page)
-                    }
-                )
-            }
-            DropdownMenuItem(
-                text = { Text(stringResource(Res.string.lecture_review_insert_end)) },
-                onClick = {
-                    expanded = false
-                    onInsert(null)
-                }
-            )
-        }
+        sharing.downloadAudio == AudioDownload.ON_REQUEST && lecture.id !in sharing.requestedAudio -> LectureNotice(
+            DrawViewIcons.Download,
+            stringResource(Res.string.lecture_recorded_on, lecture.recordedOn),
+            NoticeTone.Info,
+            action = stringResource(Res.string.lecture_audio_download) to { assistant.requestAudio(lecture) }
+        )
+        else -> LectureNotice(DrawViewIcons.Download, stringResource(Res.string.lecture_audio_arriving, lecture.recordedOn), NoticeTone.Info)
     }
 }
 
@@ -1218,13 +1514,35 @@ private fun MutedText(text: String, modifier: Modifier = Modifier) {
     )
 }
 
+/** A sentence of the panel: what happens, what to do. */
+@Composable
+private fun BodyText(text: String) {
+    Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+}
+
+/** What leaves this computer with the current settings, before recording. */
+@Composable
+internal fun privacyNote(settings: AssistantSettings): String {
+    val shared = settings.sentToGoogle
+    if (shared.isEmpty()) return stringResource(Res.string.lecture_privacy_local)
+    val parts = SharedData.entries.filter { it in shared }.map { data ->
+        stringResource(
+            when (data) {
+                SharedData.AUDIO -> Res.string.lecture_privacy_audio
+                SharedData.TRANSCRIPT -> Res.string.lecture_privacy_transcript
+                SharedData.NOTEBOOK -> Res.string.lecture_privacy_notebook
+            }
+        )
+    }
+    return stringResource(Res.string.lecture_privacy_online, parts.joinToString(", "))
+}
+
 /**
  * Markdown of the notes, formatted as on the canvas: delimiters hidden and, once the LaTeX engine
  * is ready, the formulas rendered by MicroTeX inline.
  */
 @Composable
-private fun MarkdownText(markdown: String) {
-    val color = MaterialTheme.colorScheme.onSurface
+private fun MarkdownText(markdown: String, color: Color = MaterialTheme.colorScheme.onSurface) {
     val style = MaterialTheme.typography.bodyMedium
     val density = LocalDensity.current
     val latexReady by LatexEngine.isReady.collectAsState()
@@ -1324,54 +1642,4 @@ private fun rememberNow(): Long {
         }
     }
     return now
-}
-
-/**
- * The audio of a lecture recorded on another device: here, arriving (how much of it), asked for,
- * or kept there (not shared).
- */
-@Composable
-private fun AudioElsewhere(assistant: LectureAssistant, lecture: Lecture) {
-    val arriving by assistant.audioArriving.collectAsState()
-    val progress = arriving[lecture.directory]
-    val sharing = assistant.sharingOf(lecture.documentId)
-    when {
-        lecture.hasAudio -> MutedText(stringResource(Res.string.lecture_recorded_on, lecture.recordedOn))
-        !lecture.audioShared -> MutedText(stringResource(Res.string.lecture_audio_not_shared, lecture.recordedOn))
-        progress != null -> {
-            MutedText(stringResource(Res.string.lecture_audio_progress, lecture.recordedOn, (progress * 100).toInt()))
-            LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
-        }
-        sharing.downloadAudio == AudioDownload.ON_REQUEST && lecture.id !in sharing.requestedAudio -> {
-            MutedText(stringResource(Res.string.lecture_recorded_on, lecture.recordedOn))
-            OutlineButton(onClick = { assistant.requestAudio(lecture) }) { Text(stringResource(Res.string.lecture_audio_download)) }
-        }
-        else -> MutedText(stringResource(Res.string.lecture_audio_arriving, lecture.recordedOn))
-    }
-}
-
-/** How the lectures of the notebook are shared: the audio of this one, of the new ones, of the others' (received at once or on request). */
-@Composable
-private fun SharingItems(assistant: LectureAssistant, documentId: String, lecture: Lecture) {
-    val sharing = assistant.sharingOf(documentId)
-    HorizontalDivider()
-    DropdownMenuItem(
-        text = { Text(stringResource(Res.string.lecture_share_audio_this)) },
-        trailingIcon = { Checkbox(checked = lecture.audioShared, onCheckedChange = null) },
-        onClick = { assistant.shareAudio(lecture, !lecture.audioShared) }
-    )
-    DropdownMenuItem(
-        text = { Text(stringResource(Res.string.lecture_share_audio_new)) },
-        trailingIcon = { Checkbox(checked = sharing.shareAudio, onCheckedChange = null) },
-        onClick = { assistant.changeSharing(documentId) { it.copy(shareAudio = !it.shareAudio) } }
-    )
-    DropdownMenuItem(
-        text = { Text(stringResource(Res.string.lecture_download_audio_automatically)) },
-        trailingIcon = { Checkbox(checked = sharing.downloadAudio == AudioDownload.AUTOMATIC, onCheckedChange = null) },
-        onClick = {
-            assistant.changeSharing(documentId) {
-                it.copy(downloadAudio = if (it.downloadAudio == AudioDownload.AUTOMATIC) AudioDownload.ON_REQUEST else AudioDownload.AUTOMATIC)
-            }
-        }
-    )
 }

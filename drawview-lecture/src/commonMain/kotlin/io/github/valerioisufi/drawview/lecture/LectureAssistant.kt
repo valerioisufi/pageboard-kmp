@@ -85,6 +85,9 @@ class LectureAssistant(
     /** Whether the models follow the lectures here (see [AssistantSettings.generateHere]). */
     val canGenerate: Boolean get() = generationAllowed && settingsStore.settings.generateHere
 
+    /** Whether the models may follow the lectures here, when the student chooses it ([AssistantSettings.generateHere]). */
+    val mayGenerate: Boolean get() = generationAllowed
+
     private val backends = ModelBackends(
         gemini = GeminiBackend(client) { settingsStore.apiKey },
         local = OllamaBackend(localClient) { settingsStore.settings.localUrl }

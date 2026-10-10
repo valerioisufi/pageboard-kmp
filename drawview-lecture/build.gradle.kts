@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.roborazzi)
 }
 
 kotlin {
@@ -89,6 +90,10 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.ktor.client.okhttp)
         }
+        jvmTest.dependencies {
+            implementation(libs.compose.uiTest)
+            implementation(libs.roborazzi.composeDesktop)
+        }
         jvmMain {
             // The JNI bridge of whisper.cpp (native/scripts/build_desktop.sh)
             resources.srcDir(
@@ -103,4 +108,9 @@ kotlin {
 
 compose.resources {
     packageOfResClass = "io.github.valerioisufi.drawview.lecture.generated.resources"
+}
+
+// The reference images of the panel (see LecturePanelScreenshotTest)
+roborazzi {
+    outputDir.set(layout.projectDirectory.dir("screenshots"))
 }

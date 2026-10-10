@@ -31,6 +31,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
  * @param title its title, if any.
  * @param actions its buttons (e.g. cancel, save), at the end of its bottom.
  * @param maxWidth the widest the dialog is (a wider window).
+ * @param padded whether the dialog keeps its margins above and below the content (else the content
+ *   reaches its edges, e.g. a pane of navigation).
  * @param content what it shows; it scrolls its own content and gives it its margins.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,6 +42,7 @@ fun AdaptiveSheet(
     title: (@Composable () -> Unit)? = null,
     actions: (@Composable RowScope.() -> Unit)? = null,
     maxWidth: Dp = 560.dp,
+    padded: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
     if (currentAdaptiveInfo().window.isCompact) {
@@ -58,7 +61,7 @@ fun AdaptiveSheet(
                 shape = RoundedCornerShape(28.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
-                Column(modifier = Modifier.padding(vertical = 24.dp)) {
+                Column(modifier = Modifier.padding(vertical = if (padded) 24.dp else 0.dp)) {
                     SheetTitle(title)
                     Column(modifier = Modifier.weight(1f, fill = false)) { content() }
                     SheetActions(actions)

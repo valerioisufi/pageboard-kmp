@@ -110,7 +110,7 @@
     <string name="lecture_settings_gemini_model">Gemini model</string>
     <string name="lecture_settings_ollama_model">Ollama model</string>
     <string name="lecture_provider_online">Online</string>
-    <string name="lecture_provider_local">Local</string>
+    <string name="lecture_provider_local">This computer</string>
     <string name="lecture_task_transcription">Transcription</string>
     <string name="lecture_task_live_notes">Suggestions during the lecture</string>
     <string name="lecture_task_catch_up">I missed something</string>
@@ -232,4 +232,17 @@
     <string name="lecture_tag_filter">Lectures</string>
     <string name="lecture_indicator_recording">Recording lecture</string>
     <string name="lecture_indicator_reviewing_label">Reviewing the lecture</string>
+    <string name="lecture_list_title">Lectures of this notebook</string>
+    <string name="lecture_review_ready">review ready</string>
+    <string name="lecture_outline_title">Outline of the lecture</string>
+    <string name="lecture_note_insert_page">Insert · p. %1$d</string>
+    <string name="lecture_status_listening_short">Listening</string>
+    <plurals name="lecture_count">
+        <item quantity="one">%1$d lecture in this notebook</item>
+        <item quantity="other">%1$d lectures in this notebook</item>
+    </plurals>
+    <string name="lecture_settings_requests">Requests</string>
+    <string name="lecture_settings_requests_hint">Each request runs online (Gemini) or on this computer (whisper.cpp and Ollama, free, nothing leaves the computer).</string>
+    <string name="lecture_settings_api_key_title">API key</string>
+    <string name="lecture_settings_ollama">Ollama</string>
 </resources>

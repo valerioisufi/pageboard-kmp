@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -303,7 +304,8 @@ fun DesignSnackbar(data: SnackbarData, modifier: Modifier = Modifier) {
 
 /**
  * A choice among a few [options] as a segmented pill: the high container, the option chosen on the
- * lowest container (e.g. the pattern of a page), each with its [icon] if it has one.
+ * lowest container (e.g. the pattern of a page), each with its [icon] if it has one; the options
+ * not [enabled] dimmed.
  */
 @Composable
 fun <T> SegmentedChoice(
@@ -312,7 +314,9 @@ fun <T> SegmentedChoice(
     label: @Composable (T) -> String,
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
-    icon: (T) -> ImageVector? = { null }
+    icon: (T) -> ImageVector? = { null },
+    textStyle: TextStyle = MaterialTheme.typography.labelLarge,
+    enabled: (T) -> Boolean = { true }
 ) {
     val colors = MaterialTheme.colorScheme
     Row(
@@ -325,7 +329,8 @@ fun <T> SegmentedChoice(
     ) {
         for (option in options) {
             val chosen = option == selected
-            val color = if (chosen) colors.onSurface else colors.onSurfaceVariant
+            val possible = enabled(option)
+            val color = (if (chosen) colors.onSurface else colors.onSurfaceVariant).let { if (possible) it else it.copy(alpha = 0.38f) }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
@@ -334,11 +339,11 @@ fun <T> SegmentedChoice(
                     .fillMaxHeight()
                     .then(if (chosen) Modifier.elevation(DrawViewElevation.Level1, CircleShape) else Modifier)
                     .background(if (chosen) colors.surfaceContainerLowest else Color.Transparent, CircleShape)
-                    .clickable(role = Role.RadioButton) { onSelect(option) }
+                    .clickable(enabled = possible, role = Role.RadioButton) { onSelect(option) }
                     .padding(horizontal = 10.dp)
             ) {
                 icon(option)?.let { Icon(it, contentDescription = null, tint = color, modifier = Modifier.size(16.dp)) }
-                Text(label(option), style = MaterialTheme.typography.labelLarge, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(label(option), style = textStyle, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
     }

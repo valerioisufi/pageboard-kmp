@@ -110,7 +110,7 @@ pencilnotes        the brand (mark and wordmark), the tag of the lectures
 | 5. Texts and selection | The format bar, the selection bar, the bar of the marks of the PDFs, the context menu, the messages | done |
 | 6. Pages | The page grid, the configurator (dialog and sheet), "Apply to all pages?", the information of the document, the tooltips | done |
 | 7. Export and sharing | The export dialog and sheet with their states; the sharing dialog (owner, participant), joining, the requests, the people on the page, read only | done |
-| 8. Lecture assistant | The panel (recording, tabs, notes, transcript and player, outline, review), the notices, the settings, the recording pill, the phone recording only | |
+| 8. Lecture assistant | The panel (recording, tabs, notes, transcript and player, outline, review), the notices, the settings, the recording pill, the phone recording only | done |
 
 Each phase ends with the screenshot tests recorded again (`recordRoborazziJvm`) and compared with
 the frames of the file.
@@ -280,3 +280,54 @@ the frames of the file.
 * Screenshots: the export states (light, dark) in drawview-export; the sharing of the owner (light,
   dark), of a member on a phone, before sharing, joining and the avatars in drawview-sync-ui (new
   screenshot tests, as the dialogs open in their windows); "Read only" in drawview-ui.
+
+### Phase 8 results
+
+* **Panel** (`lecturePanel`, `PanelContent`): the sparkles of the assistant before its title (the
+  icon of `EditorPanel`, on the tertiary container) and the settings as sliders; above the tabs
+  what the assistant is doing, scrolled when it is long (at most a little more than half of the
+  panel).
+* **Before recording**: what it does, what leaves the device on the high container with the shield,
+  "Record the lecture" large with the microphone, "Import a recording" outlined; the lectures of
+  the notebook as rows with their tile, when, how long, the review ready, their menu (delete);
+  "Write the notes on this device" with its switch where the notes may be written and are not (a
+  phone, a tablet recording only; not while recording).
+* **A lecture shown**: on a card opening its menu, finished and how long ("1 h 28 min"), when, how
+  many lectures; the menu with the lectures, exporting the audio, transcribing again, how the
+  audio is shared, deleting it (asked first: the trash, the button in the color of the errors).
+* **Recording** (`RecordingCard`): the inverse surface rounded 24, the live dot, "Recording
+  lecture", the time, the waveform of the microphone (its level in the last seconds), what the
+  assistant is doing and stop; analyzing under it with a spinner, "The lecturer is on page 4 ·
+  Topic" with Go, "I missed something" outlined with the lightning. Recording only: one dark line
+  (what it records, the time, stop) and what happens to the lecture. There is no pause: the
+  recorder has none.
+* **Import**: a card with its tile, the step and the progress.
+* **Notices** (`LectureNotice`): the problems in the container of the errors (the key, the quotas,
+  the local model, the start, the microphone denied) with Settings where it helps, the warnings in
+  the yellow one (retrying, the microphone taken or silent), what happens elsewhere in the blue
+  one (recorded or followed on another device, the audio arriving or to download, recorded
+  without the models), the facts in the high container (one lecture at a time, deleted elsewhere,
+  the local review writing).
+* **Tabs**: a segmented choice ("Notes · 2", Transcript, Outline, Review). The notes on outlined
+  cards: the sparkles, the kind, "Important", the time on a chip, the title, the text, "Insert ·
+  p. 3" tonal, listen, already noted, dismiss; those handled on their rows with Restore. The
+  transcript under the player card (the position, the speed, 10 s back and forward, play as a
+  round filled button), each time on its chip playing from there, the segment playing on the
+  primary container; the player stays above the other tabs while it plays. The outline: the
+  course context on its card (Edit, Write again with their icons), the topic of now on the
+  primary container, the outline. The review: by which model with Regenerate, its text on a card,
+  "Insert as new pages" with the two places as a choice and Insert, the requests on the high
+  container. The outline stays the Markdown of the model (not a list with the times as in the
+  file); the notes have no quote (the model writes none).
+* **Placing a note**: the inverse pill with the plus, "Go to p. 3" on the inverse primary color,
+  "Esc" where there is a keyboard (Cancel elsewhere).
+* **Settings** (`AssistantSettingsDialog`, `AssistantSettingsContent`): a pane of the sections
+  (Requests, Gemini, On this computer, Lecture, Advanced) beside them in a dialog 940 dp wide,
+  chips above them in the sheet of a phone; each group on a card: the requests with online or this
+  computer (a segmented choice with icons, the one not possible dimmed) beside the model, the
+  language spoken, the review at the end as a switch, what is sent to Google; the key and the
+  reasoning; Ollama with its models (reads images, recommended) and the speech recognition; the
+  language of the notes, the updates, the lectures received; the address of Ollama and a model
+  file. The updates keep their slider (every 15 s), not three choices.
+* Screenshots (drawview-lecture, new): the panel before recording, a finished lecture in its four
+  tabs, the recording cards and the notices, the settings.
