@@ -96,7 +96,7 @@ class ConvergenceTest {
     /** A device: its copy of the document, its history and the operations it made. */
     private class Device(val name: String, pages: List<PageData>) {
         val document = DrawDocument(id = "document", addInitialPage = false).also { document ->
-            pages.forEach { document.pages.add(it.toPage(document)) }
+            pages.forEach { document.appendPage(it.toPage(document)) }
             document.reindexPages()
         }
         val session = DocumentSession(document, name)

@@ -18,7 +18,6 @@ import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
-import io.github.valerioisufi.drawview.core.model.readSnapshot
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.syncLock
@@ -703,7 +702,7 @@ class TileManager(
      * Drops the tiles of pages that are no longer part of [document].
      */
     fun retainDocumentPages(document: DrawDocument) {
-        val live = readSnapshot { document.pages.map { it.renderKey }.toSet() }
+        val live = document.pages.map { it.renderKey }.toSet()
         tileCache.retainPages(live)
         syncLock(lock) {
             recentBakes.keys.retainAll(live)

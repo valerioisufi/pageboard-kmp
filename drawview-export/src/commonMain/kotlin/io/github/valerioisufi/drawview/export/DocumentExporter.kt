@@ -3,7 +3,6 @@ package io.github.valerioisufi.drawview.export
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.PageContentSnapshot
-import io.github.valerioisufi.drawview.core.model.readSnapshot
 
 /**
  * A format the documents are exported in (see `docs/export.md`): [PdfExporter],
@@ -56,12 +55,12 @@ class DocumentContent(
          * The content of [document]: the pages [pageIds] (all of them when `null`) in their order.
          * Called on the thread of the document (see `OpenDocument.edit`).
          */
-        fun of(document: DrawDocument, pageIds: Set<String>? = null): DocumentContent = readSnapshot {
-            val pages = document.pages.toList().filter { pageIds == null || it.id in pageIds }
-            DocumentContent(
+        fun of(document: DrawDocument, pageIds: Set<String>? = null): DocumentContent {
+            val pages = document.pages.filter { pageIds == null || it.id in pageIds }
+            return DocumentContent(
                 title = document.title,
                 pages = pages.map { it.snapshotContent().detached() },
-                resources = document.resources.toList().associate { it.id to DrawResource(it.id, it.type, it.path, it.hash) }
+                resources = document.resources.associate { it.id to DrawResource(it.id, it.type, it.path, it.hash) }
             )
         }
     }

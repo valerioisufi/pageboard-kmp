@@ -49,8 +49,8 @@ data class DocumentSnapshot(
         )
         document.defaultsVersion = defaultsVersion
         document.titleVersion = titleVersion
-        for (resource in resources) document.resources.add(DrawResource(resource.id, resource.type, "", resource.hash))
-        pages.forEach { document.pages.add(it.toPage(document)) }
+        for (resource in resources) document.addResource(DrawResource(resource.id, resource.type, "", resource.hash))
+        pages.forEach { document.appendPage(it.toPage(document)) }
         removedPages.forEach { snapshot -> snapshot.toPage(document).let { document.removedPages[it.id] = it } }
         document.reindexPages()
         return document

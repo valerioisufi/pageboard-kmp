@@ -251,8 +251,7 @@ private fun ChangeContext.contentChanged(page: DrawPage, inverse: DocumentChange
 private fun ChangeContext.showAsRemoved(page: DrawPage) {
     val shown = document.isShown(page)
     if (page.isHidden && shown) {
-        document.pages.remove(page)
-        document.reindexPages()
+        document.removeShownPage(page)
         document.removedPages[page.id] = page
         effects.pageRemoved(page)
     } else if (!page.isHidden && !shown) {
@@ -701,7 +700,7 @@ data class AddResource(val resource: ResourceData) : DocumentChange {
         val document = context.document
         if (document.findResource(resource.id) != null) return null
         val added = DrawResource(resource.id, resource.type, path, resource.hash)
-        document.resources.add(added)
+        document.addResource(added)
         context.effects.resourceAdded(added)
         return NoChange
     }

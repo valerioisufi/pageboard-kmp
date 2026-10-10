@@ -158,10 +158,13 @@ class DrawViewController(
     private var drawingModeChosen by mutableStateOf(true)
 
     /** Drawing (the tools change the document) or reading; never drawing on a document only read here. */
-    val isDrawingMode: Boolean get() = drawingModeChosen && !session.isReadOnly
+    val isDrawingMode: Boolean get() = drawingModeChosen && !isReadOnly
 
-    /** The document may only be read here (see [DocumentSession.isReadOnly]). */
-    val isReadOnly: Boolean get() = session.isReadOnly
+    /** The document may only be read here (see [DocumentSession.isReadOnly]), as Compose state. */
+    var isReadOnly: Boolean by mutableStateOf(session.isReadOnly)
+        private set
+
+    private val readOnlyWatch: Job = coroutineScope.launch { session.readOnly.collect { isReadOnly = it } }
 
     var isStylusOnlyMode by mutableStateOf(false)
         private set
@@ -849,6 +852,7 @@ class DrawViewController(
      */
     fun dispose() {
         formulasWatch?.cancel()
+        readOnlyWatch.cancel()
         // The session may go on without the editor (e.g. synchronized with other devices)
         session.removeObserver(changeObserver)
         historyManager.dispose()

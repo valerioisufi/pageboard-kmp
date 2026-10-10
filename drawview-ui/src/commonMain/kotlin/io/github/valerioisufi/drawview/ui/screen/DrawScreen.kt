@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.zIndex
 import io.github.valerioisufi.drawview.core.canvas.DrawCanvas
+import io.github.valerioisufi.drawview.core.canvas.observeChanges
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.geometry.Dimension
@@ -131,6 +132,8 @@ private fun DrawScreenContent(
     location: String?,
     readOnlyNote: @Composable () -> String?
 ) {
+    // The pages of the document (whether some hold PDF pages, the formats of the dialogs) as they change
+    controller.document.observeChanges()
     // Immersive editor (Android), as in the original app
     HideSystemBarsEffect()
 

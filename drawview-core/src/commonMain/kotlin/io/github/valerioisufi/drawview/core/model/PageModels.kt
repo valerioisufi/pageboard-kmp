@@ -1,14 +1,5 @@
 package io.github.valerioisufi.drawview.core.model
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.Snapshot
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.ElementOrder
 import io.github.valerioisufi.drawview.model.FractionalIndex
@@ -33,6 +24,10 @@ import kotlin.math.sin
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -331,9 +326,9 @@ class DrawPage(
      */
     val removedElements: MutableList<DrawElement> = mutableListOf()
 
-    var widthMm: Float by mutableFloatStateOf(widthMm)
-    var heightMm: Float by mutableFloatStateOf(heightMm)
-    var background: PageBackground by mutableStateOf(background)
+    @Volatile var widthMm: Float = widthMm
+    @Volatile var heightMm: Float = heightMm
+    @Volatile var background: PageBackground = background
 
     /**
      * Whether [background] has been customized for this page. Pages without a custom background
@@ -341,16 +336,25 @@ class DrawPage(
      */
     var hasCustomBackground: Boolean = false
 
-    val strokes: SnapshotStateList<DrawStroke> = mutableStateListOf()
-    val texts: SnapshotStateList<DrawText> = mutableStateListOf()
-    val images: SnapshotStateList<DrawImage> = mutableStateListOf()
-    val pdfs: SnapshotStateList<DrawPdf> = mutableStateListOf()
+    /**
+     * The elements shown, replaced as a whole by every change: read on any thread (e.g. by the
+     * workers drawing the tiles) while the thread of the document changes them, a page is always
+     * read whole.
+     */
+    @Volatile
+    private var content: PageElements = PageElements()
+
+    val strokes: List<DrawStroke> get() = content.strokes
+    val texts: List<DrawText> get() = content.texts
+    val images: List<DrawImage> get() = content.images
+    val pdfs: List<DrawPdf> get() = content.pdfs
 
     /** Highlights, underlines and strikeouts of the text of [pdfs]. */
-    val markups: SnapshotStateList<DrawTextMarkup> = mutableStateListOf()
+    val markups: List<DrawTextMarkup> get() = content.markups
 
     /** Incremented on every content change (used by thumbnails and caches). */
-    var contentVersion: Int by mutableIntStateOf(0)
+    @Volatile var contentVersion: Int = 0
+        private set
 
     val dimension: Dimension
         get() = Dimension(widthMm.mm, heightMm.mm)
@@ -366,17 +370,15 @@ class DrawPage(
     // ==========================================================
 
     /** Every element of the page: PDF pages, images, strokes, texts and marks, each kind in order. */
-    fun elements(): List<DrawElement> = readSnapshot { pdfs.toList() + images.toList() + strokes.toList() + texts.toList() + markups.toList() }
+    fun elements(): List<DrawElement> = content.let { it.pdfs + it.images + it.strokes + it.texts + it.markups }
 
     /** The removed element [id] of this page (see [removedElements]), or `null`. */
     fun findRemoved(id: String): DrawElement? = removedElements.firstOrNull { it.id == id }
 
     /** The element [id] of this page, or `null`. */
-    fun find(id: String): DrawElement? = readSnapshot {
-        // Each list read once (its elements read one at a time through the snapshot cost much more)
-        strokes.toList().firstOrNull { it.id == id } ?: texts.toList().firstOrNull { it.id == id }
-            ?: images.toList().firstOrNull { it.id == id } ?: markups.toList().firstOrNull { it.id == id }
-            ?: pdfs.toList().firstOrNull { it.id == id }
+    fun find(id: String): DrawElement? = content.let { c ->
+        c.strokes.firstOrNull { it.id == id } ?: c.texts.firstOrNull { it.id == id } ?: c.images.firstOrNull { it.id == id }
+            ?: c.markups.firstOrNull { it.id == id } ?: c.pdfs.firstOrNull { it.id == id }
     }
 
     /**
@@ -385,33 +387,44 @@ class DrawPage(
      * gets the next order of the elements built so, below the ones of the changes.
      */
     fun add(element: DrawElement) {
-        fun <T : DrawElement> SnapshotStateList<T>.insert(item: T) {
+        fun <T : DrawElement> List<T>.inserted(item: T): List<T> {
             if (item.order == ElementOrder.UNASSIGNED) {
                 item.order = ElementOrder(Stamp.ZERO, count { it.order.stamp == Stamp.ZERO })
             }
             var position = size
             while (position > 0 && this[position - 1].order > item.order) position--
-            add(position, item)
+            return toMutableList().apply { add(position, item) }
         }
-        when (element) {
-            is DrawStroke -> strokes.insert(element)
-            is DrawText -> texts.insert(element)
-            is DrawImage -> images.insert(element)
-            is DrawPdf -> pdfs.insert(element)
-            is DrawTextMarkup -> markups.insert(element)
+        val c = content
+        content = when (element) {
+            is DrawStroke -> c.copy(strokes = c.strokes.inserted(element))
+            is DrawText -> c.copy(texts = c.texts.inserted(element))
+            is DrawImage -> c.copy(images = c.images.inserted(element))
+            is DrawPdf -> c.copy(pdfs = c.pdfs.inserted(element))
+            is DrawTextMarkup -> c.copy(markups = c.markups.inserted(element))
         }
     }
 
     /** Removes [element]; returns its position among the elements of its kind, or -1. */
     fun remove(element: DrawElement): Int {
-        fun <T : DrawElement> SnapshotStateList<T>.delete(item: T): Int = indexOf(item).also { if (it >= 0) removeAt(it) }
-        return when (element) {
-            is DrawStroke -> strokes.delete(element)
-            is DrawText -> texts.delete(element)
-            is DrawImage -> images.delete(element)
-            is DrawPdf -> pdfs.delete(element)
-            is DrawTextMarkup -> markups.delete(element)
+        fun <T : DrawElement> List<T>.without(item: T): List<T> = toMutableList().apply { remove(item) }
+        val c = content
+        val position = when (element) {
+            is DrawStroke -> c.strokes.indexOf(element)
+            is DrawText -> c.texts.indexOf(element)
+            is DrawImage -> c.images.indexOf(element)
+            is DrawPdf -> c.pdfs.indexOf(element)
+            is DrawTextMarkup -> c.markups.indexOf(element)
         }
+        if (position < 0) return -1
+        content = when (element) {
+            is DrawStroke -> c.copy(strokes = c.strokes.without(element))
+            is DrawText -> c.copy(texts = c.texts.without(element))
+            is DrawImage -> c.copy(images = c.images.without(element))
+            is DrawPdf -> c.copy(pdfs = c.pdfs.without(element))
+            is DrawTextMarkup -> c.copy(markups = c.markups.without(element))
+        }
+        return position
     }
 
     /**
@@ -427,22 +440,32 @@ class DrawPage(
     }
 
     /**
-     * Captures a consistent, immutable copy of the page content. Safe to call from background
-     * threads (tile rasterization) while the UI thread keeps editing the page.
+     * The content of the page as it is now, which stays as it is. Safe to call from background
+     * threads (tile rasterization) while the thread of the document keeps changing the page.
      */
-    fun snapshotContent(): PageContentSnapshot = readSnapshot {
-        PageContentSnapshot(
-            strokes = strokes.toList(),
-            texts = texts.toList(),
-            images = images.toList(),
-            pdfs = pdfs.toList(),
+    fun snapshotContent(): PageContentSnapshot {
+        val c = content
+        return PageContentSnapshot(
+            strokes = c.strokes,
+            texts = c.texts,
+            images = c.images,
+            pdfs = c.pdfs,
             background = background,
             widthMm = widthMm,
             heightMm = heightMm,
-            markups = markups.toList()
+            markups = c.markups
         )
     }
 }
+
+/** The elements shown on a page, by kind, each kind in its stacking order (see [DrawPage]). */
+private data class PageElements(
+    val strokes: List<DrawStroke> = emptyList(),
+    val texts: List<DrawText> = emptyList(),
+    val images: List<DrawImage> = emptyList(),
+    val pdfs: List<DrawPdf> = emptyList(),
+    val markups: List<DrawTextMarkup> = emptyList()
+)
 
 /**
  * Immutable view of the content of a [DrawPage].
@@ -509,7 +532,25 @@ class DrawDocument(
     addInitialPage: Boolean = true,
     val strokeModeller: StrokeModeller = KotlinStrokeModeller
 ) {
-    var title: String by mutableStateOf(title)
+    private val revisionState = MutableStateFlow(0L)
+
+    /**
+     * Increased by every change of the document: its pages (added, removed, moved, formatted,
+     * their content), its title, its defaults, its files. What shows the document follows it (in
+     * Compose: collected as state) and reads the document again.
+     */
+    val revision: StateFlow<Long> = revisionState.asStateFlow()
+
+    /** Tells the followers of [revision] that the document changed. */
+    fun markChanged() {
+        revisionState.update { it + 1 }
+    }
+
+    @Volatile var title: String = title
+        set(value) {
+            field = value
+            markChanged()
+        }
 
     var name: String
         get() = title
@@ -517,16 +558,23 @@ class DrawDocument(
             title = value
         }
 
-    var modifiedAt: Long by mutableLongStateOf(modifiedAt)
+    @Volatile var modifiedAt: Long = modifiedAt
     var lastOpenedAt: Long? = null
 
-    var defaultWidthMm: Float by mutableStateOf(defaultWidthMm)
-    var defaultHeightMm: Float by mutableStateOf(defaultHeightMm)
-    var defaultBackground: PageBackground by mutableStateOf(defaultBackground)
+    @Volatile var defaultWidthMm: Float = defaultWidthMm
+    @Volatile var defaultHeightMm: Float = defaultHeightMm
+    @Volatile var defaultBackground: PageBackground = defaultBackground
 
-    /** The pages, ordered by [DrawPage.orderKey] (then by [DrawPage.id]). */
-    val pages: SnapshotStateList<DrawPage> = mutableStateListOf()
-    val resources: SnapshotStateList<DrawResource> = mutableStateListOf()
+    /**
+     * The pages shown, ordered by [DrawPage.orderKey] (then by [DrawPage.id]): replaced as a whole
+     * by every change, readable on any thread.
+     */
+    @Volatile var pages: List<DrawPage> = emptyList()
+        private set
+
+    /** The files of the document (imported images and PDFs), readable on any thread. */
+    @Volatile var resources: List<DrawResource> = emptyList()
+        private set
 
     /** Stamp of the last change of the default format and background. */
     var defaultsVersion: Stamp = Stamp.ZERO
@@ -576,22 +624,61 @@ class DrawDocument(
             background = bg,
             orderKey = FractionalIndex.between(pages.lastOrNull()?.orderKey, null)
         )
-        pages.add(newPage)
+        appendPage(newPage)
         return newPage
+    }
+
+    /** Appends [page] after the others (building a document whose pages are in their order). */
+    fun appendPage(page: DrawPage) {
+        pages = pages + page
+        reindexPages()
     }
 
     /** Inserts [page] at the position of its [DrawPage.orderKey]. */
     fun insertPage(page: DrawPage) {
-        var position = pages.size
-        while (position > 0 && pageOrder.compare(pages[position - 1], page) > 0) position--
-        pages.add(position, page)
+        val list = pages
+        var position = list.size
+        while (position > 0 && pageOrder.compare(list[position - 1], page) > 0) position--
+        pages = list.toMutableList().apply { add(position, page) }
         reindexPages()
+    }
+
+    /** Takes [page] out of the pages shown; whether it was shown. */
+    fun removeShownPage(page: DrawPage): Boolean {
+        if (page !in pages) return false
+        pages = pages - page
+        reindexPages()
+        return true
     }
 
     /** Moves [page] to the position of its [DrawPage.orderKey]. */
     fun repositionPage(page: DrawPage) {
-        if (!pages.remove(page)) return
+        if (!removeShownPage(page)) return
         insertPage(page)
+    }
+
+    /**
+     * Moves the page at [from] to [to] without a change of the document (the pages being
+     * reordered by hand, recorded as one change at the end, see [restorePageOrder]).
+     */
+    fun movePage(from: Int, to: Int) {
+        val list = pages.toMutableList()
+        if (from !in list.indices || to !in list.indices) return
+        list.add(to, list.removeAt(from))
+        pages = list
+        reindexPages()
+    }
+
+    /** Shows [order] as the pages again (the order before a [movePage]). */
+    fun restorePageOrder(order: List<DrawPage>) {
+        pages = order.toList()
+        reindexPages()
+    }
+
+    /** Adds the file [resource] to the document. */
+    fun addResource(resource: DrawResource) {
+        resources = resources + resource
+        markChanged()
     }
 
     /** A key between the pages at [index] - 1 and [index] (inserting a page at [index]). */
@@ -603,7 +690,7 @@ class DrawDocument(
     }
 
     /** The most recent stamp of the document (what its clock must stay after). */
-    fun latestStamp(): Stamp = readSnapshot {
+    fun latestStamp(): Stamp {
         val stamps = sequenceOf(defaultsVersion) +
             allPages().asSequence().flatMap { page ->
                 sequenceOf(page.added, page.removed ?: Stamp.ZERO, page.orderVersion, page.formatVersion) +
@@ -613,20 +700,19 @@ class DrawDocument(
                             ((it as? DrawText)?.contentVersions?.stamps?.values ?: emptyList())
                     }
             }
-        stamps.maxOrNull() ?: Stamp.ZERO
+        return stamps.maxOrNull() ?: Stamp.ZERO
     }
 
     /** Re-assigns the [DrawPage.index] of every page after a structural change. */
     fun reindexPages() {
         pages.forEachIndexed { i, p -> p.index = i }
+        markChanged()
     }
 
-    fun pageById(id: String): DrawPage? = readSnapshot {
-        pages.firstOrNull { it.id == id }
-    }
+    fun pageById(id: String): DrawPage? = pages.firstOrNull { it.id == id }
 
     /** Every page, shown or removed (see [removedPages]). */
-    fun allPages(): List<DrawPage> = readSnapshot { pages.toList() } + removedPages.values
+    fun allPages(): List<DrawPage> = pages + removedPages.values
 
     /** The page [id], shown or removed (see [removedPages]), or `null`. */
     fun anyPage(id: String): DrawPage? = pageById(id) ?: removedPages[id]
@@ -653,29 +739,12 @@ class DrawDocument(
         return null
     }
 
-    fun findResource(resourceId: String): DrawResource? = readSnapshot {
-        resources.firstOrNull { it.id == resourceId }
-    }
+    fun findResource(resourceId: String): DrawResource? = resources.firstOrNull { it.id == resourceId }
 
-    fun pageByRenderKey(renderKey: Long): DrawPage? = readSnapshot {
-        pages.firstOrNull { it.renderKey == renderKey }
-    }
+    fun pageByRenderKey(renderKey: Long): DrawPage? = pages.firstOrNull { it.renderKey == renderKey }
 
     private companion object {
         val pageOrder: Comparator<DrawPage> = compareBy<DrawPage>({ it.orderKey }, { it.id })
-    }
-}
-
-/**
- * Runs [block] in a read-only snapshot, giving a consistent view of snapshot state objects even
- * when they are concurrently modified by the UI thread.
- */
-inline fun <T> readSnapshot(block: () -> T): T {
-    val snapshot = Snapshot.takeSnapshot()
-    try {
-        return snapshot.enter(block)
-    } finally {
-        snapshot.dispose()
     }
 }
 

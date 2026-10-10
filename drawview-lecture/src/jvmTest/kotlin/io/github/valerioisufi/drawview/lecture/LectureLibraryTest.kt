@@ -119,7 +119,7 @@ class LectureLibraryTest {
         assertEquals(0, suggestion.resolvedPageIndex(document))
 
         // The first page moved to the end
-        document.pages.add(document.pages.removeAt(0))
+        document.movePage(0, document.pages.lastIndex)
         assertEquals(2, suggestion.resolvedPageIndex(document))
         // Unknown page: the saved index
         assertEquals(0, suggestion.copy(pageId = "unknown").resolvedPageIndex(document))

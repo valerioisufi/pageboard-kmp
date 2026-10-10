@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.zIndex
+import io.github.valerioisufi.drawview.core.canvas.observeChanges
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.TextFormatTarget
 import io.github.valerioisufi.drawview.core.model.LassoMode
@@ -234,6 +235,7 @@ internal fun EditorTopBar(
 /** "Analysis · 12 pages" beside the tools, "Page 3 of 12" on a phone (the page looked at). */
 @Composable
 private fun documentSubtitle(controller: DrawViewController, location: String?, pageOnly: Boolean): String {
+    controller.document.observeChanges()
     val total = controller.document.pages.size
     if (pageOnly) {
         val page by remember(controller) {
@@ -346,6 +348,8 @@ private fun MoreMenu(commands: EditorCommands, arrangement: ToolbarArrangement, 
  */
 @Composable
 internal fun RowScope.EditorTools(controller: DrawViewController, commands: EditorCommands, withImports: Boolean) {
+    // Whether the document has PDF pages, as it changes
+    controller.document.observeChanges()
     val pdfImportAvailable = controller.tileManager.tileRenderer.pdfAdapter != null
     // The tool whose settings are open (null = none)
     var openSettings by remember { mutableStateOf<Tool?>(null) }

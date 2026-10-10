@@ -345,7 +345,7 @@ class DocumentChangeTest {
     fun aDeserializedOperationIsAppliedToAnotherCopyOfTheDocument() {
         val document = documentWithContent()
         val copy = DrawDocument(id = document.id, addInitialPage = false)
-        for (page in document.pages) copy.pages.add(page.toData().toPage(copy))
+        for (page in document.pages) copy.appendPage(page.toData().toPage(copy))
         copy.reindexPages()
 
         val session = DocumentSession(document, "device")

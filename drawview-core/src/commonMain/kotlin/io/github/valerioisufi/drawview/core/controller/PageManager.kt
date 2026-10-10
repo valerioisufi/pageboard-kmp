@@ -131,9 +131,7 @@ class PageManager(private val controller: DrawViewController) {
         val from = draggedPageIndex
         if (from < 0) return
         val target = controller.visiblePages().firstOrNull { it.index != from && it.rect.contains(floating.center) } ?: return
-        val page = document.pages.removeAt(from)
-        document.pages.add(target.index, page)
-        document.reindexPages()
+        document.movePage(from, target.index)
         draggedPageIndex = target.index
         controller.updatePageLayout()
     }
@@ -145,9 +143,7 @@ class PageManager(private val controller: DrawViewController) {
     fun movePageDuringReorder(fromIndex: Int, toIndex: Int) {
         if (!isReorderingPages) return movePage(fromIndex, toIndex)
         if (fromIndex !in document.pages.indices || toIndex !in document.pages.indices || fromIndex == toIndex) return
-        val page = document.pages.removeAt(fromIndex)
-        document.pages.add(toIndex, page)
-        document.reindexPages()
+        document.movePage(fromIndex, toIndex)
         controller.updatePageLayout()
         controller.requestRedraw()
     }
@@ -166,9 +162,7 @@ class PageManager(private val controller: DrawViewController) {
         val newOrder = document.pages.map { it.id }
         if (oldOrder != null) {
             // The pages were moved live: back to where the change starts from (its undo)
-            document.pages.clear()
-            document.pages.addAll(oldOrder)
-            document.reindexPages()
+            document.restorePageOrder(oldOrder)
             MovePages.toOrder(document, newOrder)?.let { controller.session.submit(it) }
         }
         controller.markLayoutNeedsUpdate()

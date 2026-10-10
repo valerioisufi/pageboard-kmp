@@ -8,7 +8,6 @@ import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.PageContentSnapshot
-import io.github.valerioisufi.drawview.core.model.readSnapshot
 import io.github.valerioisufi.drawview.core.render.tile.TileRenderer
 import io.github.valerioisufi.drawview.lecture.handwriting.InkBlock
 import io.github.valerioisufi.drawview.lecture.handwriting.blockKey
@@ -137,7 +136,7 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
     override val documentTitle: String get() = controller.document.title
 
     override suspend fun strokeIds(): Set<String> = withContext(Dispatchers.Default) {
-        readSnapshot { controller.document.pages.toList() }
+        controller.document.pages
             .flatMapTo(mutableSetOf()) { page -> page.snapshotContent().strokes.map { it.id } }
     }
 

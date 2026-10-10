@@ -391,7 +391,7 @@ class PdfExporterTest {
     private fun resource(document: DrawDocument, extension: String, type: DrawResource.ResourceType, bytes: ByteArray): String {
         val file = tempFile("resource", ".$extension").apply { writeBytes(bytes) }
         val resource = DrawResource(id = "$extension-${document.resources.size}", type = type, path = file.path)
-        document.resources.add(resource)
+        document.addResource(resource)
         return resource.id
     }
 

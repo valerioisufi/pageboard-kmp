@@ -49,7 +49,7 @@ class KeyValueDocumentStoreTest {
         val page = document.pages.single()
 
         val strokes = listOf(stroke(0f), stroke(30f))
-        page.strokes.addAll(strokes)
+        strokes.forEach(page::add)
         store.saveStrokes(page, strokes)
         val text = DrawText().apply {
             this.text = "**Hello** \$x^2\$"
@@ -61,7 +61,7 @@ class KeyValueDocumentStoreTest {
             alignment = TextAlignment.CENTER
             autoWidth = true
         }
-        page.texts.add(text)
+        page.add(text)
         store.saveText(page, text)
         val markup = DrawTextMarkup(
             resourceId = "pdf",
@@ -75,12 +75,12 @@ class KeyValueDocumentStoreTest {
             kind = TextMarkupKind.STRIKEOUT,
             color = 0xFF000000.toInt()
         )
-        page.markups.add(markup)
+        page.add(markup)
         store.saveTextMarkup(page, markup)
 
         val second = DrawPage(index = 1, widthMm = 297f, heightMm = 210f, background = PageBackground.Dotted())
         second.hasCustomBackground = true
-        document.pages.add(second)
+        document.appendPage(second)
         store.savePage(document, second)
         store.touchDocument(document, 1234L)
         store.flush()

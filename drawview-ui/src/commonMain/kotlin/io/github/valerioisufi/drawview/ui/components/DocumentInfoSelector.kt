@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import io.github.valerioisufi.drawview.core.canvas.observeChanges
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.ui.generated.resources.*
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
@@ -81,6 +82,7 @@ fun DocumentInfoSelector(
 /** The information of [document]: its title and folder, its dates, pages, format and elements. */
 @Composable
 private fun DocumentInfo(document: DrawDocument, location: String?) {
+    document.observeChanges()
     val monthNames = stringArrayResource(Res.array.date_months_short)
     val firstPage = document.pages.firstOrNull()
     val notAvailable = stringResource(Res.string.common_label_not_available)

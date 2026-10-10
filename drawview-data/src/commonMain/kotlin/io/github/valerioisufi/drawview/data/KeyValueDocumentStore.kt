@@ -16,7 +16,6 @@ import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.model.newElementId
-import io.github.valerioisufi.drawview.core.model.readSnapshot
 import io.github.valerioisufi.drawview.data.db.BrushSettingsData
 import io.github.valerioisufi.drawview.data.db.currentTimeMillis
 import io.github.valerioisufi.drawview.ink.InkStrokeModeller
@@ -213,11 +212,11 @@ class KeyValueDocumentStore(
                 val type = DrawResource.ResourceType.entries.firstOrNull { it.name == resource.type }
                     ?: DrawResource.ResourceType.IMAGE
                 restoreResourceFile(resource.uri)
-                document.resources.add(DrawResource(resource.id, type, resource.uri, resource.hash))
+                document.addResource(DrawResource(resource.id, type, resource.uri, resource.hash))
             }
             document.defaultsVersion = stored?.defaultsVersion ?: Stamp.ZERO
             document.titleVersion = stored?.titleVersion ?: Stamp.ZERO
-            stored?.pages?.forEach { storedPage -> document.pages.add(storedPage.toPage(document)) }
+            stored?.pages?.forEach { storedPage -> document.appendPage(storedPage.toPage(document)) }
             stored?.removedPages?.forEach { storedPage -> storedPage.toPage(document).let { document.removedPages[it.id] = it } }
             document.reindexPages()
             openDocuments[documentId] = document
@@ -519,7 +518,7 @@ class KeyValueDocumentStore(
 
     private fun markPageModified(page: DrawPage) {
         val owner = syncLock(lock) {
-            openDocuments.values.firstOrNull { doc -> readSnapshot { doc.pages.any { it === page } } }
+            openDocuments.values.firstOrNull { doc -> doc.pages.any { it === page } }
         }
         if (owner != null) markDocumentModified(owner) else markAllOpenModified()
     }
@@ -606,9 +605,9 @@ class KeyValueDocumentStore(
     }
 
     private fun writeDocumentLocked(document: DrawDocument) {
-        val (stored, pageCount, hasPdf) = readSnapshot {
-            Triple(document.toStored(), document.pages.size, document.pages.any { it.pdfs.isNotEmpty() })
-        }
+        val stored = document.toStored()
+        val pageCount = document.pages.size
+        val hasPdf = document.pages.any { it.pdfs.isNotEmpty() }
         // What the library tells of the content (published with the next summaries)
         updateSummaryLocked(document.id) { it.copy(pageCount = pageCount, hasPdf = hasPdf) }
         val written = storage.set(documentKey(document.id), json.encodeToString(StoredDocument.serializer(), stored))

@@ -11,9 +11,6 @@ import androidx.compose.ui.platform.LocalFontFamilyResolver
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.PageContentSnapshot
-import io.github.valerioisufi.drawview.core.model.readSnapshot
-import io.github.valerioisufi.drawview.platform.PlatformFiles
-import io.github.valerioisufi.drawview.platform.dataDirectory
 import io.github.valerioisufi.drawview.core.platform.decodeImageBitmap
 import io.github.valerioisufi.drawview.core.platform.encodePng
 import io.github.valerioisufi.drawview.core.render.DrawViewEngines
@@ -21,6 +18,8 @@ import io.github.valerioisufi.drawview.core.render.tile.PdfTileAdapter
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.core.render.tile.TileRenderer
 import io.github.valerioisufi.drawview.data.OpenDocuments
+import io.github.valerioisufi.drawview.platform.PlatformFiles
+import io.github.valerioisufi.drawview.platform.dataDirectory
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.render.LocalDrawViewEngines
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
@@ -124,10 +123,8 @@ class DocumentThumbnails(
         // The first page and the files of its resources, copied on the thread of the document
         val copy = try {
             open.edit { session ->
-                readSnapshot {
-                    val page = session.document.pages.firstOrNull() ?: return@readSnapshot null
-                    page.snapshotContent().detached() to session.document.resources.map { DrawResource(it.id, it.type, it.path, it.hash) }
-                }
+                val page = session.document.pages.firstOrNull() ?: return@edit null
+                page.snapshotContent().detached() to session.document.resources.map { DrawResource(it.id, it.type, it.path, it.hash) }
             }
         } finally {
             documents.close(open)
@@ -146,7 +143,8 @@ class DocumentThumbnails(
 
     private fun drawPage(page: PageContentSnapshot, resources: List<DrawResource>, widthPx: Int): ImageBitmap {
         // The renderer finds the files of the resources in a document
-        val document = DrawDocument(addInitialPage = false).apply { this.resources.addAll(resources) }
+        val document = DrawDocument(addInitialPage = false)
+        resources.forEach(document::addResource)
         val pdfAdapter = pdfTiles()
         return try {
             TileRenderer(pdfAdapter, textAdapter).renderThumbnail(document, page, widthPx)

@@ -1,11 +1,11 @@
 package io.github.valerioisufi.drawview.core.change
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /** Where a change of a document comes from. */
 enum class ChangeOrigin {
@@ -77,11 +77,20 @@ class DocumentSession(
         clock.observe(document.latestStamp())
     }
 
+    private val readOnlyState = MutableStateFlow(false)
+
     /**
      * The document may only be read here (e.g. shared with this device as a reader): the changes
      * made here are refused, the ones of the other devices are received.
      */
-    var isReadOnly by mutableStateOf(false)
+    var isReadOnly: Boolean
+        get() = readOnlyState.value
+        set(value) {
+            readOnlyState.value = value
+        }
+
+    /** [isReadOnly] as it changes. */
+    val readOnly: StateFlow<Boolean> = readOnlyState.asStateFlow()
 
     /** The last operation applied of every replica. */
     val versionVector: Map<String, Long> get() = applied.toMap()
@@ -147,7 +156,10 @@ class DocumentSession(
     }
 
     private fun notify(committed: CommittedChange) {
-        if (!committed.effects.isEmpty) document.modifiedAt = currentTimeMillis()
+        if (!committed.effects.isEmpty) {
+            document.modifiedAt = currentTimeMillis()
+            document.markChanged()
+        }
         for (observer in observers.toList()) observer.onChange(committed)
     }
 }

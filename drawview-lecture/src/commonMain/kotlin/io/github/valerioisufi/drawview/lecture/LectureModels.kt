@@ -1,7 +1,6 @@
 package io.github.valerioisufi.drawview.lecture
 
 import io.github.valerioisufi.drawview.core.model.DrawDocument
-import io.github.valerioisufi.drawview.core.model.readSnapshot
 import kotlinx.serialization.Serializable
 
 /** Kind of content suggested by the assistant. */
@@ -48,7 +47,7 @@ data class NoteSuggestion(
 /** The page of [document] where the suggestion belongs: by identifier, or by index. */
 fun NoteSuggestion.resolvedPageIndex(document: DrawDocument): Int? {
     if (pageId.isNotEmpty()) {
-        val index = readSnapshot { document.pages.indexOfFirst { it.id == pageId } }
+        val index = document.pages.indexOfFirst { it.id == pageId }
         if (index >= 0) return index
     }
     return pageIndex?.takeIf { it in 0 until document.pages.size }

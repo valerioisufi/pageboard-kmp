@@ -52,6 +52,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import io.github.valerioisufi.drawview.core.canvas.observeChanges
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.model.PageBackground
@@ -82,6 +83,8 @@ fun PageGridOverlay(
     onEditPageBackground: (Int) -> Unit = {}
 ) {
     val document = controller.document
+    // The pages, their formats and their content as they change
+    document.observeChanges()
     val pageManager = controller.pageManager
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -340,6 +343,7 @@ fun PageGridOverlay(
  */
 @Composable
 private fun rememberPageThumbnail(controller: DrawViewController, page: DrawPage, widthPx: Int): ImageBitmap? {
+    controller.document.observeChanges()
     var thumbnail by remember(page.id) { mutableStateOf<ImageBitmap?>(null) }
     val contentVersion = page.contentVersion
     val format = page.widthMm to page.heightMm

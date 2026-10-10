@@ -116,7 +116,7 @@ class DrawDocumentRepository(
             for (resource in resources) {
                 val type = DrawResource.ResourceType.entries.firstOrNull { it.name.equals(resource.type, ignoreCase = true) }
                     ?: DrawResource.ResourceType.COLOR
-                doc.resources.add(DrawResource(resource.id, type, resource.uri, resource.contentHash))
+                doc.addResource(DrawResource(resource.id, type, resource.uri, resource.contentHash))
             }
 
             val sortedPages = docWithPages.pages.sortedWith(compareBy({ it.page.orderKey }, { it.page.id }))
@@ -146,7 +146,7 @@ class DrawDocumentRepository(
                 for (element in elements.sortedBy { it.order }) {
                     if (element.removed != null) page.removedElements.add(element) else page.add(element)
                 }
-                if (page.isHidden) doc.removedPages[page.id] = page else doc.pages.add(page)
+                if (page.isHidden) doc.removedPages[page.id] = page else doc.appendPage(page)
             }
             doc.reindexPages()
             doc

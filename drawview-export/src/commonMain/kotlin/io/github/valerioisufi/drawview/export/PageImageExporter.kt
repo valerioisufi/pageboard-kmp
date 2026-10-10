@@ -41,7 +41,7 @@ class PageImageExporter(
             val height = ceil(page.heightMm * scale).toInt().coerceAtLeast(1)
             val bitmap = ImageBitmap(width, height)
             // The renderer finds the files of the resources in a document
-            val document = DrawDocument(title = content.title, addInitialPage = false).apply { resources.addAll(content.resources.values) }
+            val document = DrawDocument(title = content.title, addInitialPage = false).apply { content.resources.values.forEach(::addResource) }
             val pdfAdapter = pdfTiles()
             try {
                 TileRenderer(pdfAdapter, textAdapter).renderPageContent(
