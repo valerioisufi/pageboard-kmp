@@ -1,5 +1,10 @@
 package io.github.valerioisufi.drawview.ui.command
 
+import androidx.compose.ui.unit.dp
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.PlainTooltip
@@ -49,7 +54,20 @@ fun HoverTooltip(text: String, modifier: Modifier = Modifier, shortcut: String? 
     val scope = rememberCoroutineScope()
     TooltipBox(
         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Below),
-        tooltip = { PlainTooltip { Text(if (shortcut != null) "$text   $shortcut" else text) } },
+        tooltip = {
+            PlainTooltip(
+                shape = RoundedCornerShape(8.dp),
+                containerColor = MaterialTheme.colorScheme.inverseSurface,
+                contentColor = MaterialTheme.colorScheme.inverseOnSurface
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(text, style = MaterialTheme.typography.labelMedium)
+                    if (shortcut != null) {
+                        Text(shortcut, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.7f))
+                    }
+                }
+            }
+        },
         state = state,
         enableUserInput = false,
         modifier = modifier

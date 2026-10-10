@@ -160,4 +160,6 @@
     <plurals name="editor_pages_count">
         <item quantity="other">%1$d ページ</item>
     </plurals>
+    <string name="page_config_subtitle_page">「%2$s」の %1$d ページ</string>
+    <string name="page_config_subtitle_document">「%1$s」のページ</string>
 </resources>

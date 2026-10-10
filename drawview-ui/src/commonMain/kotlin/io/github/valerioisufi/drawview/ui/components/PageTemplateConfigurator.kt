@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,26 +14,18 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -45,20 +38,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.core.geometry.Dimension
 import io.github.valerioisufi.drawview.core.geometry.mm
 import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.ui.command.DesignMenu
+import io.github.valerioisufi.drawview.ui.command.MenuItem
 import io.github.valerioisufi.drawview.ui.generated.resources.*
+import io.github.valerioisufi.drawview.ui.theme.DrawViewElevation
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
+import io.github.valerioisufi.drawview.ui.theme.elevation
 import io.github.valerioisufi.drawview.ui.util.formatDecimal
+import kotlin.math.roundToInt
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import kotlin.math.roundToInt
 
 /**
  * Defines the minimum allowed size for a page dimension in millimeters to ensure render stability.
@@ -98,6 +95,7 @@ private enum class PageFormat(val id: String, val labelRes: StringResource?) {
  * @param initialBackground The starting background pattern and styling configuration of the page. Defaults to a solid background.
  * @param onApply Callback invoked when the user confirms their configuration. Passes the validated [Dimension] and [PageBackground].
  * @param onCancel Callback invoked when the user aborts the configuration process.
+ * @param subtitle what is configured (a page of a document, its pages), under the title.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -106,7 +104,8 @@ fun PageTemplateConfigurator(
     initialDimension: Dimension = Dimension.A4(),
     initialBackground: PageBackground = PageBackground.Solid(),
     onApply: (Dimension, PageBackground) -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
+    subtitle: String? = null
 ) {
     var customWidth by remember { mutableStateOf(formatMillimeters(initialDimension.width.mm)) }
     var customHeight by remember { mutableStateOf(formatMillimeters(initialDimension.height.mm)) }
@@ -192,234 +191,192 @@ fun PageTemplateConfigurator(
 
     val isDimensionInvalid = isWidthError || isHeightError || isAreaError
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-        Text(stringResource(Res.string.page_config_title), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+    val apply = {
+        val bgInt = paperColor.toArgb()
+        val lineInt = lineColor.copy(alpha = 0.4f).toArgb()
+        val finalBackground = when (selectedType) {
+            BgType.SOLID -> PageBackground.Solid(bgInt)
+            BgType.RULED -> PageBackground.Ruled(bgInt, lineInt, spacingMm, thicknessMm)
+            BgType.GRID -> PageBackground.Grid(bgInt, lineInt, spacingMm, thicknessMm)
+            BgType.DOTTED -> PageBackground.Dotted(bgInt, lineInt, spacingMm, thicknessMm)
+        }
+        onApply(Dimension(wValue.mm, hValue.mm), finalBackground)
+    }
+    val preview: @Composable () -> Unit = {
+        if (isDimensionInvalid) {
+            Text(stringResource(Res.string.page_config_preview_invalid_size), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        } else {
+            PagePreview(
+                widthMm = wValue,
+                heightMm = hValue,
+                bgType = selectedType,
+                paperColor = paperColor,
+                lineColor = lineColor.copy(alpha = 0.4f),
+                spacingMm = spacingMm,
+                thicknessMm = thicknessMm
+            )
+        }
+    }
+    val formatText: @Composable (PageFormat) -> String = { format ->
+        if (format == PageFormat.CUSTOM) getFormatLabel(format) else "${getFormatLabel(format)} · ${customWidth} × ${customHeight} mm"
+    }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.Top
-        ) {
-            Column(
-                modifier = Modifier.weight(1.5f),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                ExposedDropdownMenuBox(
-                    expanded = formatExpanded,
-                    onExpandedChange = { formatExpanded = !formatExpanded }
-                ) {
-                    OutlinedTextField(
-                        value = getFormatLabel(selectedFormat), // <--- Usa l'helper
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text(stringResource(Res.string.page_config_label_format)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = formatExpanded) },
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val wide = maxWidth >= 600.dp
+        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            // The title, what it changes and (narrow) the preview beside it
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(stringResource(Res.string.page_config_title), style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
+                    if (subtitle != null) {
+                        Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                if (wide) {
+                    DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.common_button_cancel), onCancel, tint = MaterialTheme.colorScheme.onSurface)
+                } else if (!isDimensionInvalid) {
+                    Box(modifier = Modifier.height(48.dp).aspectRatio(0.72f), contentAlignment = Alignment.Center) { preview() }
+                }
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
+                if (wide) {
+                    Box(
+                        contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .menuAnchor(
-                                type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
-                                enabled = true
-                            )
-                            .fillMaxWidth()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = formatExpanded,
-                        onDismissRequest = { formatExpanded = false }
-                    ) {
-                        PageFormat.entries.forEach { formatOption -> // <--- Itera sull'Enum
-                            DropdownMenuItem(
-                                text = { Text(getFormatLabel(formatOption)) },
-                                onClick = {
-                                    selectedFormat = formatOption
-                                    formatExpanded = false
-                                    // Aggiorna le dimensioni solo se scegliamo un preset
-                                    when (formatOption) {
-                                        PageFormat.A4 -> { customWidth = "210"; customHeight = "297" }
-                                        PageFormat.A3 -> { customWidth = "297"; customHeight = "420" }
-                                        PageFormat.A5 -> { customWidth = "148"; customHeight = "210" }
-                                        PageFormat.CUSTOM -> { /* Non sovrascrivere se clicca Custom */ }
-                                    }
+                            .width(260.dp)
+                            .height(360.dp)
+                            .background(MaterialTheme.colorScheme.surfaceDim.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+                            .padding(24.dp)
+                    ) { preview() }
+                }
+                Column(
+                    modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Format
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        SettingLabel(stringResource(Res.string.page_config_label_format).trimEnd(':', '：'))
+                        Box {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(52.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
+                                    .clickable { formatExpanded = true }
+                                    .padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(formatText(selectedFormat), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+                                Icon(DrawViewIcons.ChevronDown, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                            }
+                            DesignMenu(expanded = formatExpanded, onDismissRequest = { formatExpanded = false }) {
+                                PageFormat.entries.forEach { formatOption ->
+                                    MenuItem(
+                                        text = getFormatLabel(formatOption),
+                                        selected = formatOption == selectedFormat,
+                                        onClick = {
+                                            selectedFormat = formatOption
+                                            formatExpanded = false
+                                            // The sizes change only with a format
+                                            when (formatOption) {
+                                                PageFormat.A4 -> { customWidth = "210"; customHeight = "297" }
+                                                PageFormat.A3 -> { customWidth = "297"; customHeight = "420" }
+                                                PageFormat.A5 -> { customWidth = "148"; customHeight = "210" }
+                                                PageFormat.CUSTOM -> Unit
+                                            }
+                                        }
+                                    )
                                 }
-                            )
+                            }
+                        }
+                        if (selectedFormat == PageFormat.CUSTOM) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                OutlinedTextField(
+                                    value = customWidth,
+                                    onValueChange = { if (it.length <= 5) customWidth = it },
+                                    label = { Text(stringResource(Res.string.page_config_label_width)) },
+                                    isError = isWidthError || isAreaError,
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier.weight(1f),
+                                    singleLine = true
+                                )
+                                OutlinedTextField(
+                                    value = customHeight,
+                                    onValueChange = { if (it.length <= 5) customHeight = it },
+                                    label = { Text(stringResource(Res.string.page_config_label_height)) },
+                                    isError = isHeightError || isAreaError,
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier.weight(1f),
+                                    singleLine = true
+                                )
+                            }
+                            if (isWidthError || isHeightError) {
+                                Text(
+                                    text = stringResource(Res.string.page_config_error_min_size, formatDecimal(MIN_PAGE_SIZE, 0)),
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.End
+                                )
+                            } else if (isAreaError) {
+                                Text(
+                                    text = stringResource(Res.string.page_config_error_max_area),
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.End
+                                )
+                            }
+                        }
+                    }
+                    // Pattern
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        SettingLabel(stringResource(Res.string.page_config_label_bg_pattern).trimEnd(':', '：'))
+                        SegmentedChoice(BgType.entries, selectedType, label = { stringResource(it.labelRes) }, onSelect = { selectedType = it })
+                    }
+                    // Colors
+                    ColorRow(stringResource(Res.string.page_config_label_paper_color).trimEnd(':', '：'), paperColors, paperColor, { paperColor = it }) { showColorPickerFor = "PAPER" }
+                    if (selectedType != BgType.SOLID) {
+                        ColorRow(stringResource(Res.string.page_config_label_line_color).trimEnd(':', '：'), lineColors, lineColor, { lineColor = it }) { showColorPickerFor = "LINE" }
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            SettingLabel(stringResource(Res.string.page_config_label_spacing).trimEnd(':', '：'), value = stringResource(Res.string.page_config_value_spacing, spacingMm.roundToInt()))
+                            DesignSlider(value = spacingMm, onValueChange = { spacingMm = it }, valueRange = 4f..20f, steps = 15)
+                        }
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            SettingLabel(stringResource(Res.string.page_config_label_thickness).trimEnd(':', '：'), value = stringResource(Res.string.page_config_value_thickness, formatDecimal(thicknessMm, 1)))
+                            DesignSlider(value = thicknessMm, onValueChange = { thicknessMm = it }, valueRange = 0.1f..1.5f, steps = 13)
+                        }
+                    }
+                    // The buttons: at the end of the controls wide, the whole width on a phone
+                    if (wide) {
+                        Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)) {
+                            TextButton(onClick = onCancel) { Text(stringResource(Res.string.common_button_cancel)) }
+                            Button(enabled = !isDimensionInvalid, onClick = apply) { Text(stringResource(Res.string.common_button_apply)) }
+                        }
+                    } else {
+                        Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            OutlineButton(onClick = onCancel, modifier = Modifier.weight(1f).height(52.dp)) { Text(stringResource(Res.string.common_button_cancel)) }
+                            Button(enabled = !isDimensionInvalid, onClick = apply, modifier = Modifier.weight(1f).height(52.dp)) { Text(stringResource(Res.string.common_button_apply)) }
                         }
                     }
                 }
-
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = customWidth,
-                        onValueChange = {
-                            if (it.length <= 5) {
-                                customWidth = it
-                                selectedFormat = PageFormat.CUSTOM // <--- Setta l'Enum, non la stringa
-                            }
-                        },
-                        label = { Text(stringResource(Res.string.page_config_label_width)) },
-                        isError = isWidthError,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.weight(1f),
-                        singleLine = true
-                    )
-                    OutlinedTextField(
-                        value = customHeight,
-                        onValueChange = {
-                            if (it.length <= 5) {
-                                customHeight = it
-                                selectedFormat = PageFormat.CUSTOM // <--- Setta l'Enum, non la stringa
-                            }
-                        },
-                        label = { Text(stringResource(Res.string.page_config_label_height)) },
-                        isError = isHeightError,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.weight(1f),
-                        singleLine = true
-                    )
-                }
-                if (isWidthError || isHeightError) {
-                    Text(
-                        text = stringResource(Res.string.page_config_error_min_size, formatDecimal(MIN_PAGE_SIZE, 0)),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                } else if (isAreaError) {
-                    Text(
-                        text = stringResource(Res.string.page_config_error_max_area),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-            }
-
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .heightIn(min = 120.dp, max = 160.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                if (isDimensionInvalid) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.LightGray.copy(alpha = 0.3f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(stringResource(Res.string.page_config_preview_invalid_size), color = Color.Gray)
-                    }
-                } else {
-                    PagePreview(
-                        widthMm = wValue,
-                        heightMm = hValue,
-                        bgType = selectedType,
-                        paperColor = paperColor,
-                        lineColor = lineColor.copy(alpha = 0.4f),
-                        spacingMm = spacingMm,
-                        thicknessMm = thicknessMm
-                    )
-                }
-            }
-        }
-
-        HorizontalDivider()
-
-        Text(stringResource(Res.string.page_config_label_bg_pattern), style = MaterialTheme.typography.bodyLarge)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            BgType.entries.forEach { type ->
-                FilterChip(
-                    selected = selectedType == type,
-                    onClick = { selectedType = type },
-                    label = { Text(stringResource(type.labelRes)) },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(Res.string.page_config_label_paper_color), modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                paperColors.forEach { color ->
-                    ColorDot(color = color, isSelected = paperColor == color) { paperColor = color }
-                }
-                CustomColorDot { showColorPickerFor = "PAPER" }
-            }
-        }
-
-        if (selectedType != BgType.SOLID) {
-            HorizontalDivider()
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(Res.string.page_config_label_line_color), modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    lineColors.forEach { color ->
-                        ColorDot(color = color, isSelected = lineColor == color) { lineColor = color }
-                    }
-                    CustomColorDot { showColorPickerFor = "LINE" }
-                }
-            }
-
-            Column {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(stringResource(Res.string.page_config_label_spacing), style = MaterialTheme.typography.bodyLarge)
-                    Text(stringResource(Res.string.page_config_value_spacing, spacingMm.roundToInt()), fontWeight = FontWeight.Bold)
-                }
-                Slider(value = spacingMm, onValueChange = { spacingMm = it }, valueRange = 4f..20f, steps = 15)
-            }
-
-            Column {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(stringResource(Res.string.page_config_label_thickness), style = MaterialTheme.typography.bodyLarge)
-                    Text(stringResource(Res.string.page_config_value_thickness, formatDecimal(thicknessMm, 1)), fontWeight = FontWeight.Bold)
-                }
-                Slider(value = thicknessMm, onValueChange = { thicknessMm = it }, valueRange = 0.1f..1.5f, steps = 14)
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextButton(onClick = onCancel) { Text(stringResource(Res.string.common_button_cancel)) }
-            Spacer(modifier = Modifier.width(8.dp))
-            Button(
-                enabled = !isDimensionInvalid,
-                onClick = {
-                    val finalDimension = Dimension(wValue.mm, hValue.mm)
-
-                    val bgInt = paperColor.toArgb()
-                    val lineInt = lineColor.copy(alpha = 0.4f).toArgb()
-
-                    val finalBackground = when (selectedType) {
-                        BgType.SOLID -> PageBackground.Solid(bgInt)
-                        BgType.RULED -> PageBackground.Ruled(bgInt, lineInt, spacingMm, thicknessMm)
-                        BgType.GRID -> PageBackground.Grid(bgInt, lineInt, spacingMm, thicknessMm)
-                        BgType.DOTTED -> PageBackground.Dotted(bgInt, lineInt, spacingMm, thicknessMm)
-                    }
-
-                    onApply(finalDimension, finalBackground)
-                }
-            ) {
-                Text(stringResource(Res.string.common_button_apply))
             }
         }
     }
 
     if (showColorPickerFor != null) {
         val initialColor = if (showColorPickerFor == "PAPER") paperColor else lineColor
-        CustomColorPickerDialog(
+        TextColorPickerDialog(
             initialColor = initialColor,
-            onColorSelected = { color ->
+            onColorConfirmed = { color ->
                 if (showColorPickerFor == "PAPER") paperColor = color else lineColor = color
-                showColorPickerFor = null
             },
-            onDismiss = { showColorPickerFor = null }
+            onDismissRequest = { showColorPickerFor = null }
         )
     }
 }
@@ -454,14 +411,12 @@ private fun PagePreview(
         modifier = Modifier
             .aspectRatio(ratio.coerceIn(0.1f, 10f))
             .fillMaxSize()
-            .background(Color.Transparent)
+            .elevation(DrawViewElevation.Level1, RoundedCornerShape(2.dp))
     ) {
         val w = size.width
         val h = size.height
 
-        drawRect(color = Color.Black.copy(alpha = 0.1f), topLeft = Offset(4f, 4f), size = size)
         drawRect(color = paperColor, size = size)
-        drawRect(color = Color.LightGray, size = size, style = androidx.compose.ui.graphics.drawscope.Stroke(1f))
 
         if (bgType == BgType.SOLID) return@Canvas
 
@@ -506,105 +461,13 @@ private fun PagePreview(
     }
 }
 
-/**
- * A standard Compose UI component functioning as a selectable circular color swatch.
- *
- * @param color The graphical color applied to the swatch fill.
- * @param isSelected A boolean state indicating whether the swatch should render an emphasized selection border.
- * @param onClick The callback triggered upon user interaction with the component.
- */
+/** A color of the page: its [label], the swatches of [colors] and the color wheel. */
 @Composable
-private fun ColorDot(color: Color, isSelected: Boolean, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .size(36.dp)
-            .clip(CircleShape)
-            .background(color)
-            .border(
-                width = if (isSelected) 3.dp else 1.dp,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray,
-                shape = CircleShape
-            )
-            .clickable { onClick() }
-    )
-}
-
-/**
- * A stylized Compose UI button indicating the entry point for custom color selection, utilizing a spectral gradient.
- *
- * @param onClick The callback triggered when the component is pressed, typically opening a dedicated color picker.
- */
-@Composable
-private fun CustomColorDot(onClick: () -> Unit) {
-    val rainbowColors = listOf(Color.Red, Color.Magenta, Color.Blue, Color.Cyan, Color.Green, Color.Yellow, Color.Red)
-    Box(
-        modifier = Modifier
-            .size(36.dp)
-            .clip(CircleShape)
-            .background(Brush.sweepGradient(rainbowColors))
-            .border(1.dp, Color.Gray, CircleShape)
-            .clickable { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        Box(modifier = Modifier
-            .size(14.dp)
-            .clip(CircleShape)
-            .background(Color.White))
+private fun ColorRow(label: String, colors: List<Color>, selected: Color, onSelect: (Color) -> Unit, onCustom: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+        ColorSwatches(colors = colors, selected = selected, onSelect = onSelect, onCustom = onCustom)
     }
-}
-
-/**
- * A Compose dialog encapsulating an advanced color selection interface.
- * It provides a graphical color wheel and reflects color modifications internally before confirming an application state.
- *
- * @param initialColor The default or existing color injected into the dialog state on load.
- * @param onColorSelected The callback returning the finalized [Color] selection back to the invoker.
- * @param onDismiss The callback invoked to dismiss the dialog instance without applying any changes.
- */
-@Composable
-fun CustomColorPickerDialog(
-    initialColor: Color,
-    onColorSelected: (Color) -> Unit,
-    onDismiss: () -> Unit
-) {
-    var currentColor by remember { mutableStateOf(initialColor) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(Res.string.color_picker_title)) },
-        text = {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Box(
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape)
-                        .background(currentColor)
-                        .border(1.dp, Color.LightGray, CircleShape)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                ColorWheel(
-                    modifier = Modifier.width(300.dp),
-                    color = currentColor,
-                    onColorChanged = { newColor ->
-                        currentColor = newColor
-                    },
-                    showAlphaSlider = false
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = { onColorSelected(currentColor) }) {
-                Text(stringResource(Res.string.common_button_apply))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(Res.string.common_button_cancel))
-            }
-        }
-    )
 }
 
 /**

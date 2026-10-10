@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.ui.components
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -12,32 +13,23 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,23 +40,32 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
+import io.github.valerioisufi.drawview.ui.command.DesignMenu
+import io.github.valerioisufi.drawview.ui.command.MenuDivider
+import io.github.valerioisufi.drawview.ui.command.MenuItem
 import io.github.valerioisufi.drawview.ui.generated.resources.*
+import io.github.valerioisufi.drawview.ui.theme.DrawViewElevation
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
+import io.github.valerioisufi.drawview.ui.theme.elevation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -87,7 +88,7 @@ fun PageGridOverlay(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
+            .background(MaterialTheme.colorScheme.background)
             // Absorbs the taps that fall between the cards
             .clickable(
                 interactionSource = interactionSource,
@@ -96,40 +97,55 @@ fun PageGridOverlay(
             )
             .windowInsetsPadding(WindowInsets.safeDrawing)
     ) {
-        // --- Top bar of the grid ---
+        // --- Top bar of the grid: close, the title with the document and its pages, adding a page ---
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(start = 12.dp, end = 24.dp, top = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = stringResource(Res.string.page_grid_title),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            IconButton(onClick = { controller.togglePageGrid() }) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = stringResource(Res.string.page_grid_action_close),
-                    tint = MaterialTheme.colorScheme.onSurface
+            DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.page_grid_action_close), { controller.togglePageGrid() }, tint = MaterialTheme.colorScheme.onSurface)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(Res.string.page_grid_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1
                 )
+                Text(
+                    text = document.name + " · " + pluralStringResource(Res.plurals.editor_pages_count, document.pages.size, document.pages.size),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            if (!controller.isReadOnly) {
+                val addPage: () -> Unit = { pageManager.addNewPageAfter(document.pages.lastIndex) }
+                if (currentAdaptiveInfo().window.isCompact) {
+                    DesignIconButton(DrawViewIcons.FilePlus2, stringResource(Res.string.context_menu_action_add_page), addPage, selected = true)
+                } else {
+                    TonalButton(onClick = addPage) {
+                        Icon(DrawViewIcons.FilePlus2, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(Res.string.context_menu_action_add_page))
+                    }
+                }
             }
         }
 
-        HorizontalDivider()
-
         // --- Drag & drop state ---
         val gridState = rememberLazyGridState()
+        // The page looked at when the grid was opened
+        val currentPage = remember { controller.mostVisiblePageIndex() ?: 0 }
         var draggedIndex by remember { mutableStateOf<Int?>(null) }
         var dragOffset by remember { mutableStateOf(Offset.Zero) }
 
         LazyVerticalGrid(
             state = gridState,
             columns = GridCells.Adaptive(minSize = 160.dp),
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(start = 32.dp, end = 32.dp, top = 8.dp, bottom = 32.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
@@ -203,10 +219,10 @@ fun PageGridOverlay(
                 // Exact proportions of the sheet
                 val aspectRatio = if (page.heightMm > 0f) page.widthMm / page.heightMm else (1f / 1.414f)
 
-                ElevatedCard(
-                    onClick = { pageManager.jumpToPage(index) },
-                    shape = RoundedCornerShape(8.dp),
-                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = if (isDragged) 16.dp else 6.dp),
+                val current = index == currentPage
+                val colors = MaterialTheme.colorScheme
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .zIndex(if (isDragged) 1f else 0f)
@@ -216,107 +232,99 @@ fun PageGridOverlay(
                                 translationY = dragOffset.y
                                 scaleX = 1.05f
                                 scaleY = 1.05f
-                                alpha = 0.9f
+                                rotationZ = -4f
                             }
                         }
                         .then(if (isDragged) Modifier else Modifier.animateItem())
                 ) {
-                    BoxWithConstraints(
+                    // The page in its well, ringed when it is the one looked at
+                    val wellShape = RoundedCornerShape(20.dp)
+                    Box(
+                        contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .aspectRatio(aspectRatio)
-                            .background(Color.White),
-                        contentAlignment = Alignment.Center
+                            .aspectRatio(0.8f)
+                            .then(if (isDragged) Modifier.elevation(DrawViewElevation.Level3, wellShape) else Modifier)
+                            .clip(wellShape)
+                            .background(if (isDragged) colors.surfaceContainerLowest else colors.surfaceContainer)
+                            .then(if (current) Modifier.border(2.dp, colors.primary, wellShape) else Modifier)
+                            .clickable(onClickLabel = stringResource(Res.string.page_grid_content_desc_page, index + 1)) { pageManager.jumpToPage(index) }
+                            .padding(16.dp)
                     ) {
-                        val widthPx = with(LocalDensity.current) { maxWidth.toPx() }.toInt().coerceIn(1, MAX_THUMBNAIL_WIDTH_PX)
-                        val thumbnail = rememberPageThumbnail(controller, page, widthPx)
-
-                        // Background of the sheet (shown while the thumbnail is rendered)
-                        PageThumbnailBackground(page = page)
-
-                        if (thumbnail != null) {
-                            Image(
-                                bitmap = thumbnail,
-                                contentDescription = stringResource(Res.string.page_grid_content_desc_page, index + 1),
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Fit
-                            )
-                        } else {
-                            Text(stringResource(Res.string.common_state_loading), color = Color.Gray)
-                        }
-
-                        // Page number badge
-                        Box(
+                        BoxWithConstraints(
                             modifier = Modifier
-                                .align(Alignment.BottomStart)
-                                .padding(8.dp)
-                                .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                .aspectRatio(aspectRatio)
+                                .elevation(DrawViewElevation.Level1, RoundedCornerShape(4.dp))
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color.White),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "${index + 1}",
-                                color = Color.White,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                            val widthPx = with(LocalDensity.current) { maxWidth.toPx() }.toInt().coerceIn(1, MAX_THUMBNAIL_WIDTH_PX)
+                            val thumbnail = rememberPageThumbnail(controller, page, widthPx)
 
-                        // Page options
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(4.dp)
-                        ) {
-                            IconButton(
-                                onClick = { menuExpanded = true },
-                                modifier = Modifier.background(Color.Black.copy(alpha = 0.3f), shape = CircleShape)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.MoreVert,
-                                    contentDescription = stringResource(Res.string.page_grid_content_desc_options),
-                                    tint = Color.White
+                            // Background of the sheet (shown while the thumbnail is rendered)
+                            PageThumbnailBackground(page = page)
+
+                            if (thumbnail != null) {
+                                Image(
+                                    bitmap = thumbnail,
+                                    contentDescription = stringResource(Res.string.page_grid_content_desc_page, index + 1),
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Fit
                                 )
                             }
-
-                            DropdownMenu(
-                                expanded = menuExpanded,
-                                onDismissRequest = { menuExpanded = false }
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(Res.string.context_menu_action_add_page_after)) },
-                                    leadingIcon = { Icon(Icons.Default.Add, contentDescription = null) },
-                                    onClick = {
-                                        menuExpanded = false
-                                        pageManager.contextMenuTargetPageIndex = index
-                                        pageManager.addNewPageAfter(index)
-                                    }
+                        }
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 6.dp)) {
+                        Text(
+                            text = stringResource(Res.string.page_grid_content_desc_page, index + 1),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = if (current) colors.primary else colors.onSurface,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (!controller.isReadOnly) {
+                            Box {
+                                DesignIconButton(
+                                    icon = DrawViewIcons.MoreVertical,
+                                    label = stringResource(Res.string.page_grid_content_desc_options),
+                                    onClick = { menuExpanded = true },
+                                    iconSize = 20.dp
                                 )
-
-                                if (document.pages.size > 1) {
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(Res.string.context_menu_action_delete_page), color = MaterialTheme.colorScheme.error) },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-                                        },
+                                DesignMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+                                    MenuItem(
+                                        text = stringResource(Res.string.context_menu_action_add_page_after),
+                                        icon = rememberVectorPainter(DrawViewIcons.FilePlus2),
                                         onClick = {
                                             menuExpanded = false
                                             pageManager.contextMenuTargetPageIndex = index
-                                            pageManager.deletePage(index)
+                                            pageManager.addNewPageAfter(index)
                                         }
                                     )
-                                }
-
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(Res.string.context_menu_action_edit_background)) },
-                                    leadingIcon = { Icon(Icons.Default.Palette, contentDescription = null) },
-                                    onClick = {
-                                        menuExpanded = false
-                                        pageManager.contextMenuTargetPageIndex = index
-                                        // The grid is closed to show the configurator
-                                        controller.togglePageGrid()
-                                        onEditPageBackground(index)
+                                    MenuItem(
+                                        text = stringResource(Res.string.context_menu_action_edit_background),
+                                        icon = rememberVectorPainter(DrawViewIcons.Grid),
+                                        onClick = {
+                                            menuExpanded = false
+                                            pageManager.contextMenuTargetPageIndex = index
+                                            // The grid is closed to show the configurator
+                                            controller.togglePageGrid()
+                                            onEditPageBackground(index)
+                                        }
+                                    )
+                                    if (document.pages.size > 1) {
+                                        MenuDivider()
+                                        MenuItem(
+                                            text = stringResource(Res.string.context_menu_action_delete_page),
+                                            icon = rememberVectorPainter(DrawViewIcons.Trash),
+                                            destructive = true,
+                                            onClick = {
+                                                menuExpanded = false
+                                                pageManager.contextMenuTargetPageIndex = index
+                                                pageManager.deletePage(index)
+                                            }
+                                        )
                                     }
-                                )
+                                }
                             }
                         }
                     }

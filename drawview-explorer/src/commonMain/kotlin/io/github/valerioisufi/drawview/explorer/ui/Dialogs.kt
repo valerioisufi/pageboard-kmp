@@ -29,7 +29,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -51,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.data.FolderSummary
+import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_cancel
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_confirm
@@ -69,16 +69,16 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_pap
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_paper_lined
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_root_folder
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_untitled_note
-import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.command.DesignMenu
 import io.github.valerioisufi.drawview.ui.command.MenuItem
 import io.github.valerioisufi.drawview.ui.components.DesignIconButton
+import io.github.valerioisufi.drawview.ui.components.OutlineButton
+import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 import io.github.valerioisufi.drawview.ui.generated.resources.common_action_close
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 
 /**
  * Asks the name of a new item (or the new name of an item), under its [icon]. [isAllowedInput]
@@ -370,14 +370,14 @@ internal fun NewNoteDialog(
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     if (onImportPdf != null) {
-                        OutlinedButton(onClick = { onDismiss(); onImportPdf() }, border = OutlineBorder, modifier = Modifier.weight(1f)) {
+                        OutlineButton(onClick = { onDismiss(); onImportPdf() }, modifier = Modifier.weight(1f)) {
                             Icon(DrawViewIcons.FileText, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(stringResource(Res.string.explorer_import_pdf_short), maxLines = 1)
                         }
                     }
                     if (onImportImage != null) {
-                        OutlinedButton(onClick = { onDismiss(); onImportImage() }, border = OutlineBorder, modifier = Modifier.weight(1f)) {
+                        OutlineButton(onClick = { onDismiss(); onImportImage() }, modifier = Modifier.weight(1f)) {
                             Icon(DrawViewIcons.Image, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(stringResource(Res.string.explorer_import_image), maxLines = 1)

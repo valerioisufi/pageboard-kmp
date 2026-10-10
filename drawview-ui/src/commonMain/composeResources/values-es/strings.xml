@@ -161,4 +161,6 @@
         <item quantity="one">%1$d página</item>
         <item quantity="other">%1$d páginas</item>
     </plurals>
+    <string name="page_config_subtitle_page">Página %1$d de «%2$s»</string>
+    <string name="page_config_subtitle_document">Las páginas de «%1$s»</string>
 </resources>

@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,6 +38,7 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sec
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_section_shared
 import io.github.valerioisufi.drawview.ui.components.DesignIconButton
 import io.github.valerioisufi.drawview.ui.components.NavigationItem
+import io.github.valerioisufi.drawview.ui.components.TonalButton
 import io.github.valerioisufi.drawview.ui.session.LibraryAction
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import org.jetbrains.compose.resources.stringResource
@@ -160,7 +160,7 @@ internal fun LibraryNavigationPane(
         }
         val (prominent, others) = actions.partition { it.prominent }
         for (action in prominent) {
-            FilledTonalButton(onClick = { onAction(action) }, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+            TonalButton(onClick = { onAction(action) }, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
                 Icon(action.icon, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(action.label(), maxLines = 1)

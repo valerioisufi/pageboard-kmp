@@ -113,6 +113,20 @@ class AdaptiveScreenshotTest {
         runOnIdle { viewModels.controller().contextMenuPosition = Offset(760f, 420f) }
     }
 
+    /** The grid of the pages: the one looked at ringed, adding a page. */
+    @Test
+    fun editorPageGrid() = listOf(ReferenceWindow.TABLET_LANDSCAPE, ReferenceWindow.PHONE).forEach { window ->
+        capture("editor-page-grid", window, dark = false) { viewModels ->
+            openNote(viewModels)
+            runOnIdle {
+                val controller = viewModels.controller()
+                controller.pageManager.addNewPageAfter(0)
+                controller.pageManager.addNewPageAfter(1)
+                controller.togglePageGrid()
+            }
+        }
+    }
+
     /** A search without results: why, under the field. */
     @Test
     fun librarySearch() = capture("library-search", ReferenceWindow.PHONE, dark = false) {

@@ -27,6 +27,10 @@ import io.github.valerioisufi.drawview.ui.command.MenuDivider
 import io.github.valerioisufi.drawview.ui.command.MenuItem
 import io.github.valerioisufi.drawview.ui.command.MenuLabel
 import io.github.valerioisufi.drawview.ui.components.HybridScale
+import io.github.valerioisufi.drawview.ui.components.PageTemplateConfigurator
+import io.github.valerioisufi.drawview.core.geometry.Dimension
+import io.github.valerioisufi.drawview.core.geometry.mm
+import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.ui.screen.EraserSettings
 import io.github.valerioisufi.drawview.ui.screen.InkSettings
 import io.github.valerioisufi.drawview.ui.screen.LassoSettings
@@ -86,6 +90,26 @@ class ComponentScreenshotTest {
                     Popover { MarkupSettings(controller) }
                     Menu()
                 }
+            }
+        }
+    }
+
+    /** The configurator of a page: a dialog with the preview beside the controls, a sheet on a phone (a custom size too small). */
+    @Test
+    fun pageConfigurator() {
+        capture("page-configurator-dialog", width = 808, height = 640) {
+            Box(modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(28.dp)).padding(vertical = 24.dp)) {
+                PageTemplateConfigurator(subtitle = "Page 3 of “Lecture 1 — Limits”", initialBackground = PageBackground.Ruled(lineColor = 0x6664B5F6), onApply = { _, _ -> }, onCancel = {})
+            }
+        }
+        capture("page-configurator-sheet", width = 411, height = 900) {
+            Box(modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(28.dp)).padding(vertical = 24.dp)) {
+                PageTemplateConfigurator(
+                    initialDimension = Dimension(160f.mm, 40f.mm),
+                    initialBackground = PageBackground.Ruled(lineColor = 0x6664B5F6),
+                    onApply = { _, _ -> },
+                    onCancel = {}
+                )
             }
         }
     }

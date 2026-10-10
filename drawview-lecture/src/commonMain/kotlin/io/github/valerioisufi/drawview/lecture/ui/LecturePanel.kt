@@ -1,5 +1,7 @@
 package io.github.valerioisufi.drawview.lecture.ui
 
+import io.github.valerioisufi.drawview.ui.components.OutlineButton
+import io.github.valerioisufi.drawview.ui.components.TonalButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,13 +48,11 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SecondaryScrollableTabRow
@@ -384,7 +384,7 @@ private fun RecordingSection(
                     Text(stringResource(Res.string.lecture_action_record))
                 }
                 if (assistant.canImportAndExport) {
-                    OutlinedButton(onClick = onImport, enabled = canStart, modifier = Modifier.fillMaxWidth()) {
+                    OutlineButton(onClick = onImport, enabled = canStart, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(Res.string.lecture_action_import))
                     }
                 }
@@ -467,7 +467,7 @@ private fun RecordingSection(
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End), modifier = Modifier.fillMaxWidth()) {
                     if (assistant.canGenerate) {
-                        OutlinedButton(onClick = { recorder.catchUp() }, modifier = Modifier.weight(1f)) {
+                        OutlineButton(onClick = { recorder.catchUp() }, modifier = Modifier.weight(1f)) {
                             Text(stringResource(Res.string.lecture_action_catch_up), maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                     }
@@ -498,11 +498,11 @@ private fun RecordingSection(
                 )
                 if (lecture.recordedElsewhere) AudioElsewhere(assistant, lecture)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = onStart, enabled = canStart, modifier = Modifier.weight(1f)) {
+                    OutlineButton(onClick = onStart, enabled = canStart, modifier = Modifier.weight(1f)) {
                         Text(stringResource(Res.string.lecture_action_new_recording), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     if (assistant.canImportAndExport) {
-                        OutlinedButton(onClick = onImport, enabled = canStart, modifier = Modifier.weight(1f)) {
+                        OutlineButton(onClick = onImport, enabled = canStart, modifier = Modifier.weight(1f)) {
                             Text(stringResource(Res.string.lecture_action_import_short), maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                     }
@@ -772,11 +772,11 @@ private fun SuggestionCard(
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (placing) {
-                    OutlinedButton(onClick = onCancelPlacing, contentPadding = PaddingValues(horizontal = 12.dp)) {
+                    OutlineButton(onClick = onCancelPlacing, contentPadding = PaddingValues(horizontal = 12.dp)) {
                         Text(stringResource(Res.string.lecture_action_cancel))
                     }
                 } else {
-                    FilledTonalButton(onClick = onInsert, contentPadding = PaddingValues(horizontal = 12.dp)) {
+                    TonalButton(onClick = onInsert, contentPadding = PaddingValues(horizontal = 12.dp)) {
                         Icon(Icons.Outlined.PostAdd, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(6.dp))
                         Text(stringResource(Res.string.lecture_note_insert))
@@ -1173,7 +1173,7 @@ private fun InsertPagesButton(controller: DrawViewController, onInsert: (afterPa
     var expanded by remember { mutableStateOf(false) }
     var currentPage by remember { mutableStateOf<Int?>(null) }
     Box {
-        FilledTonalButton(onClick = {
+        TonalButton(onClick = {
             currentPage = controller.mostVisiblePageIndex()
             expanded = true
         }) {
@@ -1344,7 +1344,7 @@ private fun AudioElsewhere(assistant: LectureAssistant, lecture: Lecture) {
         }
         sharing.downloadAudio == AudioDownload.ON_REQUEST && lecture.id !in sharing.requestedAudio -> {
             MutedText(stringResource(Res.string.lecture_recorded_on, lecture.recordedOn))
-            OutlinedButton(onClick = { assistant.requestAudio(lecture) }) { Text(stringResource(Res.string.lecture_audio_download)) }
+            OutlineButton(onClick = { assistant.requestAudio(lecture) }) { Text(stringResource(Res.string.lecture_audio_download)) }
         }
         else -> MutedText(stringResource(Res.string.lecture_audio_arriving, lecture.recordedOn))
     }

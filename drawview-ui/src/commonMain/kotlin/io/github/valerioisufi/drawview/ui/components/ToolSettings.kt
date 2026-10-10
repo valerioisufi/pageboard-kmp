@@ -112,12 +112,20 @@ fun SizeSetting(label: String, value: Float, unit: String, scale: HybridScale, o
 /** A slider of the design: a thin track of the outline, filled in the primary color, a round thumb. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DesignSlider(value: Float, onValueChange: (Float) -> Unit, modifier: Modifier = Modifier) {
+fun DesignSlider(
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    modifier: Modifier = Modifier,
+    valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
+    steps: Int = 0
+) {
     val colors = MaterialTheme.colorScheme
     Slider(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier.height(24.dp),
+        valueRange = valueRange,
+        steps = steps,
         thumb = {
             Box(
                 modifier = Modifier

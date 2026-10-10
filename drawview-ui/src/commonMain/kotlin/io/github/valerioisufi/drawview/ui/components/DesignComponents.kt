@@ -1,5 +1,11 @@
 package io.github.valerioisufi.drawview.ui.components
 
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.ButtonDefaults
+import io.github.valerioisufi.drawview.ui.theme.elevation
+import io.github.valerioisufi.drawview.ui.theme.DrawViewElevation
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -292,5 +298,81 @@ fun DesignSnackbar(data: SnackbarData, modifier: Modifier = Modifier) {
         containerColor = MaterialTheme.colorScheme.inverseSurface,
         contentColor = MaterialTheme.colorScheme.inverseOnSurface,
         actionColor = MaterialTheme.colorScheme.inversePrimary
+    )
+}
+
+/**
+ * A choice among a few [options] as a segmented pill: the high container, the option chosen on the
+ * lowest container (e.g. the pattern of a page).
+ */
+@Composable
+fun <T> SegmentedChoice(options: List<T>, selected: T, label: @Composable (T) -> String, onSelect: (T) -> Unit, modifier: Modifier = Modifier) {
+    val colors = MaterialTheme.colorScheme
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(40.dp)
+            .background(colors.surfaceContainerHigh, CircleShape)
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        for (option in options) {
+            val chosen = option == selected
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .then(if (chosen) Modifier.elevation(DrawViewElevation.Level1, CircleShape) else Modifier)
+                    .background(if (chosen) colors.surfaceContainerLowest else Color.Transparent, CircleShape)
+                    .clickable(role = Role.RadioButton) { onSelect(option) }
+            ) {
+                Text(label(option), style = MaterialTheme.typography.labelLarge, color = if (chosen) colors.onSurface else colors.onSurfaceVariant, maxLines = 1)
+            }
+        }
+    }
+}
+
+/** A tonal button of the design: the primary container (Material's tonal button takes the secondary one). */
+@Composable
+fun TonalButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    content: @Composable RowScope.() -> Unit
+) {
+    FilledTonalButton(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        contentPadding = contentPadding,
+        colors = ButtonDefaults.filledTonalButtonColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        ),
+        content = content
+    )
+}
+
+/** An outlined button of the design: the outline, its label in the primary color (or [contentColor]). */
+@Composable
+fun OutlineButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    contentColor: Color = MaterialTheme.colorScheme.primary,
+    borderColor: Color = MaterialTheme.colorScheme.outline,
+    content: @Composable RowScope.() -> Unit
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        contentPadding = contentPadding,
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = contentColor),
+        border = BorderStroke(1.dp, if (enabled) borderColor else borderColor.copy(alpha = 0.38f)),
+        content = content
     )
 }

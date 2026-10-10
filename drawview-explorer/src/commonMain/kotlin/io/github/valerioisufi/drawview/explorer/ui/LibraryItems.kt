@@ -1,6 +1,5 @@
 package io.github.valerioisufi.drawview.explorer.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -50,6 +49,7 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_not
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.components.DesignIconButton
 import io.github.valerioisufi.drawview.ui.components.LabelBadge
+import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 import io.github.valerioisufi.drawview.ui.generated.resources.date_months_short
 import io.github.valerioisufi.drawview.ui.theme.DrawViewElevation
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
@@ -58,7 +58,6 @@ import io.github.valerioisufi.drawview.ui.util.formatShortDateTime
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
-import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 
 /** Thumbnails drawn at widths multiple of this (in pixels), so that close sizes share them. */
 private const val ThumbnailWidthStep = 120
@@ -317,9 +316,6 @@ internal fun DocumentThumbnail(item: FileItem, thumbnails: DocumentThumbnails?, 
         }
     }
 }
-
-/** An outlined button of the shape of the design, for the secondary actions of a pane or a sheet. */
-internal val OutlineBorder: BorderStroke @Composable get() = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
 
 /** A surface of the selected items while dragged (see [LibraryDragShadow]). */
 @Composable

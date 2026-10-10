@@ -106,7 +106,7 @@ pencilnotes        the brand (mark and wordmark), the tag of the lectures
 | 3. Library flows | The new item menu, the sheets of an item and of its details, the selection bar, the dialogs (new folder, rename, move, delete), the path inside a folder, the empty states, About | done |
 | 4. Editor | The top bar (title and its line, the tool group, the actions), the tool button with its ink, the floating tools, the page indicator, desk and paper, the popovers of the tools, the "more" menu | done |
 | 5. Texts and selection | The format bar, the selection bar, the bar of the marks of the PDFs, the context menu, the messages | done |
-| 6. Pages | The page grid, the configurator (dialog and sheet), "Apply to all pages?", the information of the document, the tooltips | |
+| 6. Pages | The page grid, the configurator (dialog and sheet), "Apply to all pages?", the information of the document, the tooltips | done |
 | 7. Export and sharing | The export dialog and sheet with their states; the sharing dialog (owner, participant), joining, the requests, the people on the page, read only | |
 | 8. Lecture assistant | The panel (recording, tabs, notes, transcript and player, outline, review), the notices, the settings, the recording pill, the phone recording only | |
 
@@ -220,3 +220,25 @@ the frames of the file.
 * **Messages**: `DesignSnackbar`, the inverse surface rounded 12 dp, the action in the inverse
   primary.
 * Screenshot of the context menu of a page.
+
+### Phase 6 results
+
+* **Page grid**: its header (close, "Document Pages" with the document and its pages, adding a page:
+  a tonal button, an icon on a phone), the pages as the cards of the library (the sheet in a well
+  rounded 20, the one looked at when the grid opened ringed in the primary color, its name in the
+  primary color), the menu of a page (add after, background, delete), the page dragged lifted and
+  turned.
+* **Configurator** (`PageTemplateConfigurator`): wider than 600 dp a dialog 760 dp wide with the
+  preview in a well beside the controls and the button closing it; narrower a sheet with a small
+  preview beside the title and the buttons the whole width. What it changes under the title (a
+  page of a document, its pages); the format in a field of the design opening a menu, the custom
+  size only for "Custom", the error under the fields; the pattern as a segmented choice
+  (`SegmentedChoice`); the colors as the swatches of the tools; the sliders of the design (with
+  steps, `DesignSlider`).
+* **Apply to all pages?**: the icon of the layers, "Overwrite All" tonal.
+* **Tooltips**: the inverse surface rounded 8, the shortcut lighter after the label.
+* **Buttons**: `TonalButton` (the primary container, as the file; Material's tonal button takes the
+  secondary one, the yellow of the floating button) and `OutlineButton` (the label in the primary
+  color) for every module; `AdaptiveSheet` takes a wider dialog (`maxWidth`) and the containers of
+  the design.
+* Screenshots: the page grid (tablet, phone), the configurator as a dialog and as a sheet.

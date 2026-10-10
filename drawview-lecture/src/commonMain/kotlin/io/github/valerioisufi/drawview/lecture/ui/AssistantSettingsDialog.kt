@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.lecture.ui
 
+import io.github.valerioisufi.drawview.ui.components.TonalButton
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,7 +22,6 @@ import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -377,7 +377,7 @@ private fun OllamaModelPicker(selected: String, recommended: String, localModels
             error != null -> Hint(stringResource(Res.string.lecture_local_download_failed, error))
             installed != null && !installed.readsImages -> Hint(stringResource(Res.string.lecture_local_no_images))
             installed == null && selected.isNotBlank() && localModels.ollamaState == LocalModels.OllamaState.RUNNING ->
-                FilledTonalButton(onClick = { localModels.pull(selected) }) {
+                TonalButton(onClick = { localModels.pull(selected) }) {
                     Text(stringResource(Res.string.lecture_local_download, selected))
                 }
         }
@@ -453,7 +453,7 @@ private fun TranscriptionSetup(settings: AssistantSettings, localModels: LocalMo
         chosen in localModels.whisperModels -> Hint("✓ " + stringResource(Res.string.lecture_whisper_ready))
         else -> {
             error?.let { Hint(stringResource(Res.string.lecture_local_download_failed, it)) }
-            FilledTonalButton(onClick = { localModels.downloadWhisper(chosen) }) {
+            TonalButton(onClick = { localModels.downloadWhisper(chosen) }) {
                 Text(stringResource(Res.string.lecture_local_download, formatSize(chosen.sizeBytes)))
             }
         }
@@ -483,7 +483,7 @@ private fun OllamaStatus(localModels: LocalModels) {
             Text(stringResource(Res.string.lecture_local_ollama_missing), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (isComputer) {
-                    FilledTonalButton(onClick = { uriHandler.openUri(OLLAMA_DOWNLOAD_URL) }) {
+                    TonalButton(onClick = { uriHandler.openUri(OLLAMA_DOWNLOAD_URL) }) {
                         Text(stringResource(Res.string.lecture_local_ollama_install))
                     }
                 }
@@ -510,7 +510,7 @@ private fun OllamaOnTheNetwork(url: String, localModels: LocalModels, onUrl: (St
         modifier = Modifier.fillMaxWidth()
     )
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        FilledTonalButton(onClick = { localModels.findOnNetwork() }, enabled = !localModels.isSearching) {
+        TonalButton(onClick = { localModels.findOnNetwork() }, enabled = !localModels.isSearching) {
             Text(stringResource(Res.string.lecture_local_find))
         }
         if (localModels.isSearching) CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -19,7 +18,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 /**
  * A sheet of the application (a configurator, the details of a file, settings): a bottom sheet in
@@ -28,6 +30,7 @@ import androidx.compose.ui.unit.dp
  *
  * @param title its title, if any.
  * @param actions its buttons (e.g. cancel, save), at the end of its bottom.
+ * @param maxWidth the widest the dialog is (a wider window).
  * @param content what it shows; it scrolls its own content and gives it its margins.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,20 +39,24 @@ fun AdaptiveSheet(
     onDismissRequest: () -> Unit,
     title: (@Composable () -> Unit)? = null,
     actions: (@Composable RowScope.() -> Unit)? = null,
+    maxWidth: Dp = 560.dp,
     content: @Composable ColumnScope.() -> Unit
 ) {
     if (currentAdaptiveInfo().window.isCompact) {
-        ModalBottomSheet(onDismissRequest = onDismissRequest) {
+        ModalBottomSheet(onDismissRequest = onDismissRequest, containerColor = MaterialTheme.colorScheme.surfaceContainerLow) {
             SheetTitle(title)
             Column(modifier = Modifier.weight(1f, fill = false)) { content() }
             SheetActions(actions, Modifier.padding(bottom = 16.dp))
         }
     } else {
-        BasicAlertDialog(onDismissRequest = onDismissRequest, modifier = Modifier.widthIn(max = 560.dp)) {
+        BasicAlertDialog(
+            onDismissRequest = onDismissRequest,
+            modifier = Modifier.widthIn(max = maxWidth),
+            properties = DialogProperties(usePlatformDefaultWidth = maxWidth <= 560.dp)
+        ) {
             Surface(
-                shape = AlertDialogDefaults.shape,
-                color = AlertDialogDefaults.containerColor,
-                tonalElevation = AlertDialogDefaults.TonalElevation
+                shape = RoundedCornerShape(28.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
                 Column(modifier = Modifier.padding(vertical = 24.dp)) {
                     SheetTitle(title)

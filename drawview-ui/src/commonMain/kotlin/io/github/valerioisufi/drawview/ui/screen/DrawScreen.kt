@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.ui.screen
 
+import io.github.valerioisufi.drawview.ui.components.TonalButton
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
@@ -72,6 +74,7 @@ import io.github.valerioisufi.drawview.ui.platform.fileDropTarget
 import io.github.valerioisufi.drawview.ui.platform.rememberFilePicker
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.session.EditorPanel
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.LocalCanvasColors
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import org.jetbrains.compose.resources.getString
@@ -350,8 +353,9 @@ fun DrawScreen(
         val targetIndex = controller.pageManager.contextMenuTargetPageIndex
         val targetPage = controller.document.pages.getOrNull(targetIndex)
 
-        AdaptiveSheet(onDismissRequest = { showSinglePageConfigurator = false }) {
+        AdaptiveSheet(onDismissRequest = { showSinglePageConfigurator = false }, maxWidth = 760.dp) {
             PageTemplateConfigurator(
+                subtitle = stringResource(Res.string.page_config_subtitle_page, targetIndex + 1, controller.document.name),
                 initialDimension = targetPage?.dimension ?: Dimension.A4(),
                 initialBackground = targetPage?.background ?: PageBackground.Solid(),
                 onApply = { newDimension, newBackground ->
@@ -366,8 +370,9 @@ fun DrawScreen(
     // 2. Whole document
     if (showDocumentConfigurator) {
         val document = controller.document
-        AdaptiveSheet(onDismissRequest = { showDocumentConfigurator = false }) {
+        AdaptiveSheet(onDismissRequest = { showDocumentConfigurator = false }, maxWidth = 760.dp) {
             PageTemplateConfigurator(
+                subtitle = stringResource(Res.string.page_config_subtitle_document, document.name),
                 initialDimension = Dimension(document.defaultWidthMm.mm, document.defaultHeightMm.mm),
                 initialBackground = document.defaultBackground,
                 onApply = { newDimension, newBackground ->
@@ -383,10 +388,11 @@ fun DrawScreen(
     pendingDocumentTemplate?.let { (dimension, background) ->
         AlertDialog(
             onDismissRequest = { pendingDocumentTemplate = null },
+            icon = { Icon(DrawViewIcons.Layers, contentDescription = null, tint = MaterialTheme.colorScheme.secondary) },
             title = { Text(stringResource(Res.string.dialog_override_bg_title)) },
             text = { Text(stringResource(Res.string.dialog_override_bg_message)) },
             confirmButton = {
-                TextButton(onClick = {
+                TonalButton(onClick = {
                     controller.pageManager.applyDocumentTemplateChange(dimension, background, overrideAll = true)
                     pendingDocumentTemplate = null
                 }) {
@@ -400,7 +406,8 @@ fun DrawScreen(
                 }) {
                     Text(stringResource(Res.string.dialog_override_bg_dismiss))
                 }
-            }
+            },
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         )
     }
 

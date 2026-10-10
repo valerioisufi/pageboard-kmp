@@ -21,11 +21,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,7 +37,6 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileItem
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
@@ -65,6 +62,9 @@ import io.github.valerioisufi.drawview.ui.command.CommandMenu
 import io.github.valerioisufi.drawview.ui.components.DesignIconButton
 import io.github.valerioisufi.drawview.ui.components.IconButtonStyle
 import io.github.valerioisufi.drawview.ui.components.LabelBadge
+import io.github.valerioisufi.drawview.ui.components.OutlineButton
+import io.github.valerioisufi.drawview.ui.components.TonalButton
+import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 import io.github.valerioisufi.drawview.ui.generated.resources.common_action_close
 import io.github.valerioisufi.drawview.ui.generated.resources.date_months_short
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
@@ -73,7 +73,6 @@ import io.github.valerioisufi.drawview.ui.util.formatDateTime
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
-import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 
 /** The commands of an item that open it ([LibraryCommands.forItem]). */
 private const val OpenCommand = "open"
@@ -192,7 +191,7 @@ private fun PaneActions(item: FileItem, itemCommands: List<Command>) {
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             for (command in applicationActions) {
-                FilledTonalButton(onClick = { command.performIfEnabled() }, contentPadding = ButtonDefaults.ButtonWithIconContentPadding) {
+                TonalButton(onClick = { command.performIfEnabled() }, contentPadding = ButtonDefaults.ButtonWithIconContentPadding) {
                     command.icon?.let { Icon(it(), contentDescription = null, modifier = Modifier.size(18.dp)) }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(command.label().removeSuffix("…"), maxLines = 1)
@@ -256,15 +255,15 @@ private fun SelectionSummary(actions: ItemActions, commands: LibraryCommands) {
         )
         Spacer(modifier = Modifier.height(20.dp))
         Column(modifier = Modifier.width(220.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilledTonalButton(onClick = { commands.move.performIfEnabled() }, modifier = Modifier.fillMaxWidth()) {
+            TonalButton(onClick = { commands.move.performIfEnabled() }, modifier = Modifier.fillMaxWidth()) {
                 Icon(DrawViewIcons.FolderInput, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(commands.move.label())
             }
-            OutlinedButton(
+            OutlineButton(
                 onClick = { commands.delete.performIfEnabled() },
-                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                contentColor = MaterialTheme.colorScheme.error,
+                borderColor = MaterialTheme.colorScheme.error,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(DrawViewIcons.Trash, contentDescription = null, modifier = Modifier.size(18.dp))

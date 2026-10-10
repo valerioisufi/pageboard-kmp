@@ -28,7 +28,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -61,6 +60,7 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_no_
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_no_results_title
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_section_folders
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_section_notes
+import io.github.valerioisufi.drawview.ui.components.OutlineButton
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.InkPalette
 import org.jetbrains.compose.resources.stringResource
@@ -242,7 +242,7 @@ private fun EmptyLibrary(viewModel: FileExplorerViewModel, onNewNote: () -> Unit
             }
             if (onImportPdf != null) {
                 Spacer(modifier = Modifier.height(12.dp))
-                OutlinedButton(onClick = onImportPdf, border = OutlineBorder) {
+                OutlineButton(onClick = onImportPdf) {
                     Icon(DrawViewIcons.FileText, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(stringResource(Res.string.explorer_import_pdf))
