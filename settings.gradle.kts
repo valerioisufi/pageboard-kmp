@@ -1,6 +1,8 @@
 rootProject.name = "DrawView-KMP"
 
 pluginManagement {
+    // Convention plugins of the libraries (drawview.kmp.library, drawview.compose.library, drawview.publish)
+    includeBuild("build-logic")
     repositories {
         google {
             mavenContent {

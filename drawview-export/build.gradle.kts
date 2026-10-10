@@ -1,13 +1,11 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidMultiplatformLibrary)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
+    id("drawview.compose.library")
     alias(libs.plugins.roborazzi)
 }
+
+description = "Export of DrawView documents as PDF files and images"
 
 kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -21,27 +19,11 @@ kotlin {
         }
     }
 
-    iosArm64()
-    iosSimulatorArm64()
-
-    jvm()
-
     android {
-        namespace = "io.github.valerioisufi.drawview.export"
-        compileSdk = libs.versions.android.compileSdk.get().toInt()
-        minSdk = libs.versions.android.minSdk.get().toInt()
-
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_11
-        }
         // Strings are Compose resources (packaged as assets)
         androidResources {
             enable = true
         }
-    }
-
-    compilerOptions {
-        freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
     sourceSets {
@@ -61,10 +43,8 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
         }
-        jvmMain.dependencies {
-            implementation(compose.desktop.currentOs)
-        }
         jvmTest.dependencies {
+            implementation(compose.desktop.currentOs)
             implementation(project(":drawview-latex"))
             implementation(libs.compose.uiTest)
             implementation(libs.roborazzi.composeDesktop)

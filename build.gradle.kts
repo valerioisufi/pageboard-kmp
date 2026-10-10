@@ -21,6 +21,7 @@ plugins {
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.roborazzi) apply false
     alias(libs.plugins.kotlinSerialization) apply false
+    alias(libs.plugins.mavenPublish) apply false
 }
 // =====================================================================================
 // iOS native engines (Google Ink, MicroTeX, PDFium bridge), linked statically through cinterop.

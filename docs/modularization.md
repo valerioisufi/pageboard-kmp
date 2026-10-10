@@ -205,10 +205,18 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 
 ### Engines as instances
 
-* `PdfiumEngine` and `LatexEngine` become instances (`Pdfium.create()`, `Latex.create(fonts)`)
-  implementing the ports of the canvas. The application builds a `DrawViewEngines` and gives it
-  to the editor and the library; `drawview-ui` and `drawview-explorer` no longer depend on
-  `drawview-pdf` and `drawview-latex`.
+* A native engine is global to its process (one MicroTeX, one PDFium): `PdfiumEngine` and
+  `LatexEngine` stay the facades of their engine, but no other library reaches them. They give the
+  implementations of the ports of the canvas (`PdfiumEngine.createTileAdapter`,
+  `LatexEngine.formulaRenderer`); the application builds a `DrawViewEngines` with them and gives
+  it to the editor and the library; `drawview-ui`, `drawview-explorer` and `drawview-lecture` no
+  longer depend on `drawview-pdf` and `drawview-latex`. Only `drawview-export` uses them directly
+  (it writes PDFs and the formulas as vectors).
+* The controller receives the engines: it creates the PDF adapter of its renderer (Creator) and
+  draws the texts again when the formula renderer becomes ready (Information Expert), so that
+  `DrawScreen` no longer reaches into the renderer.
+* The formula renderer is prepared with the fonts of the text of the formulas (`\text{}` in the
+  font of the notes) by whoever shows the editor (`DocumentLibrary`), through the port.
 * Without a formula renderer the formulas stay as their LaTeX source; without a PDF renderer a
   PDF page is a blank page with its frame.
 
@@ -266,7 +274,7 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 
 | Phase | Content | Status |
 |---|---|---|
-| 0. Build foundation | `build-logic` convention plugins applied to every library; publishing skeleton (`publishToMavenLocal` of every library); explicit API in warning mode; `currentOs` out of the libraries; no iOS framework in the libraries; `material3` out of the core | |
+| 0. Build foundation | `build-logic` convention plugins applied to every library; publishing skeleton (`publishToMavenLocal` of every library); explicit API measurable (`-Pdrawview.explicitApi=warning`, strict module by module in phase 5); `currentOs` out of the libraries; no iOS framework in the libraries; `material3` out of the core | Done |
 | 1. Native per engine | `drawview-native` split into `drawview-native-ink`, `-tex`, `-pdfium`, `-audio`; `pdfium.def` without absolute paths in the published klib; check of the desktop platforms when publishing a release | |
 | 2. Engines as instances | ports `FormulaRenderer` and `PdfTileAdapter`, `DrawViewEngines`; `Pdfium` and `Latex` instances; `drawview-ui` and `drawview-explorer` without `drawview-pdf` / `drawview-latex`; the text adapter clears its own caches; dead `LatexTileAdapter` removed | |
 | 3a. Model values | `drawview-platform` and `drawview-model` created; geometry and color values; the pure packages moved (clock, stamps, versions, fractional index, transforms, backgrounds, text parsing, stroke points) | |

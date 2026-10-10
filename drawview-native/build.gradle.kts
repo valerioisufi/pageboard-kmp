@@ -3,7 +3,10 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidLibrary)
+    id("drawview.publish")
 }
+
+description = "Native engines of DrawView for Android: Google Ink, MicroTeX, PDFium bridge, audio codecs"
 
 /** The version of the source of an audio codec (native/<name>/<name>.properties). */
 fun codecVersion(name: String): String = Properties().apply {

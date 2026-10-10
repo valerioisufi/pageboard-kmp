@@ -1,27 +1,12 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidMultiplatformLibrary)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
+    id("drawview.compose.library")
     alias(libs.plugins.roborazzi)
 }
 
+description = "Collaboration in the DrawView editor: sharing, invitations, people on the document"
+
 kotlin {
-    iosArm64()
-    iosSimulatorArm64()
-
-    jvm()
-
     android {
-        namespace = "io.github.valerioisufi.drawview.sync.ui"
-        compileSdk = libs.versions.android.compileSdk.get().toInt()
-        minSdk = libs.versions.android.minSdk.get().toInt()
-
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_11
-        }
         // Strings are Compose resources (packaged as assets)
         androidResources {
             enable = true

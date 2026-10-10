@@ -1,13 +1,10 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidMultiplatformLibrary)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
+    id("drawview.compose.library")
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.roborazzi)
 }
+
+description = "The DrawView lecture assistant: recording, transcription, notes placed in the notebook"
 
 kotlin {
     applyDefaultHierarchyTemplate {
@@ -36,24 +33,11 @@ kotlin {
         }
     }
 
-    jvm()
-
     android {
-        namespace = "io.github.valerioisufi.drawview.lecture"
-        compileSdk = libs.versions.android.compileSdk.get().toInt()
-        minSdk = libs.versions.android.minSdk.get().toInt()
-
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_11
-        }
         // Strings are Compose resources (packaged as assets)
         androidResources {
             enable = true
         }
-    }
-
-    compilerOptions {
-        freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
     sourceSets {
@@ -87,18 +71,18 @@ kotlin {
             implementation(libs.androidx.activity.compose)
         }
         jvmMain.dependencies {
-            implementation(compose.desktop.currentOs)
             implementation(libs.ktor.client.okhttp)
-        }
-        jvmTest.dependencies {
-            implementation(libs.compose.uiTest)
-            implementation(libs.roborazzi.composeDesktop)
         }
         jvmMain {
             // The JNI bridge of whisper.cpp (native/scripts/build_desktop.sh)
             resources.srcDir(
                 files(rootProject.layout.buildDirectory.dir("nativeLibs/jvm/drawview-lecture")).builtBy(":buildDesktopNativeLibs")
             )
+        }
+        jvmTest.dependencies {
+            implementation(compose.desktop.currentOs)
+            implementation(libs.compose.uiTest)
+            implementation(libs.roborazzi.composeDesktop)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
