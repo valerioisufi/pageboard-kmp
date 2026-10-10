@@ -99,6 +99,13 @@ interface FolderDao {
     suspend fun moveFolder(id: String, newParentId: String?, timestamp: Long = currentTimeMillis())
 }
 
+/** A document with what the library tells of its content: its pages and whether it holds a PDF. */
+data class DocumentWithContent(
+    @Embedded val document: DocumentEntity,
+    val pageCount: Int,
+    val hasPdf: Boolean
+)
+
 /**
  * Data Access Object for document-level operations.
  */
@@ -134,6 +141,20 @@ interface DocumentDao {
 
     @Query("SELECT * FROM documents ORDER BY modifiedAt DESC")
     fun getAllDocumentsFlow(): Flow<List<DocumentEntity>>
+
+    /** Every document with the number of its pages and whether one of them holds a PDF. */
+    @Query(
+        """
+        SELECT documents.*,
+            (SELECT COUNT(*) FROM pages WHERE pages.documentId = documents.id AND pages.removed IS NULL) AS pageCount,
+            EXISTS (
+                SELECT 1 FROM pdfs JOIN pages ON pdfs.pageId = pages.id
+                WHERE pages.documentId = documents.id AND pages.removed IS NULL AND pdfs.removed IS NULL
+            ) AS hasPdf
+        FROM documents ORDER BY modifiedAt DESC
+        """
+    )
+    fun getAllDocumentsWithContentFlow(): Flow<List<DocumentWithContent>>
 
     @Query("UPDATE documents SET modifiedAt = :timestamp WHERE id = :documentId")
     suspend fun touchDocument(documentId: String, timestamp: Long = currentTimeMillis())

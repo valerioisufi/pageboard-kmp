@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="explorer_fab_item_note">Fichier</string>
+    <string name="explorer_fab_item_note">Note</string>
     <string name="explorer_fab_item_folder">Dossier</string>
     <string name="explorer_fab_state_expanded">Développé</string>
     <string name="explorer_fab_state_collapsed">Réduit</string>
@@ -40,4 +40,81 @@
     <string name="explorer_shared">Partagé avec d’autres appareils</string>
     <string name="explorer_action_open">Ouvrir</string>
     <string name="explorer_command_sort_by">Trier par : %1$s</string>
+    <string name="explorer_section_recent">Récentes</string>
+    <string name="explorer_section_shared">Partagées</string>
+    <string name="explorer_section_folders">Dossiers</string>
+    <string name="explorer_section_notes">Notes</string>
+    <string name="explorer_search_placeholder">Rechercher des notes</string>
+    <string name="explorer_search_clear">Effacer la recherche</string>
+    <string name="explorer_command_search">Rechercher</string>
+    <string name="explorer_filter_all">Toutes</string>
+    <string name="explorer_filter_notes">Notes</string>
+    <string name="explorer_tag_pdf">PDF</string>
+    <string name="explorer_tag_pdfs">PDF</string>
+    <string name="explorer_tag_shared">Partagée</string>
+    <string name="explorer_sorted_by_name">triées par nom</string>
+    <string name="explorer_sorted_by_date_created">triées par date de création</string>
+    <string name="explorer_sorted_by_last_modified">triées par dernière modification</string>
+    <string name="explorer_sorted_by_last_opened">triées par dernière ouverture</string>
+    <string name="explorer_view_grid">Grille</string>
+    <string name="explorer_view_list">Liste</string>
+    <string name="explorer_sort">Trier</string>
+    <string name="explorer_sort_by">Trier par</string>
+    <string name="explorer_details_title">Détails</string>
+    <string name="explorer_details_modified">Modifiée</string>
+    <string name="explorer_details_created">Créée</string>
+    <string name="explorer_details_pages">Pages</string>
+    <string name="explorer_details_folder">Dossier</string>
+    <string name="explorer_details_notes">Notes</string>
+    <string name="explorer_open_note">Ouvrir la note</string>
+    <string name="explorer_open_folder">Ouvrir le dossier</string>
+    <string name="explorer_more_actions">Plus d’actions</string>
+    <string name="explorer_selection_hint">%1$s + clic ajoute un élément, Maj + clic étend jusqu’à lui</string>
+    <string name="explorer_empty_library_subtitle">Aucune note pour l’instant</string>
+    <string name="explorer_empty_library_title">Vos notes vivront ici</string>
+    <string name="explorer_empty_library_body">Écrivez au stylet, tapez ou importez le PDF des diapositives.</string>
+    <string name="explorer_import_pdf">Importer un PDF</string>
+    <string name="explorer_empty_folder_title">Ce dossier est vide</string>
+    <string name="explorer_empty_folder_body">Créez une note ici ou déplacez-y des notes.</string>
+    <string name="explorer_no_results_title">Aucune note ne correspond à « %1$s »</string>
+    <string name="explorer_no_results_body">La recherche porte sur les noms des notes et des dossiers. Vérifiez l’orthographe.</string>
+    <string name="explorer_empty_recent_title">Aucune note ouverte pour l’instant</string>
+    <string name="explorer_empty_recent_body">Les notes que vous ouvrez apparaissent ici, la dernière en premier.</string>
+    <string name="explorer_empty_shared_title">Aucune note partagée</string>
+    <string name="explorer_empty_shared_body">Les notes partagées avec d’autres appareils apparaissent ici.</string>
+    <string name="explorer_move_subtitle">%1$s · depuis %2$s</string>
+    <string name="explorer_delete_title_one">Supprimer « %1$s » ?</string>
+    <string name="explorer_delete_shared">« %1$s » est partagée : les autres gardent leur copie.</string>
+    <string name="explorer_drop_title">Déposez pour en faire une note</string>
+    <string name="explorer_drop_body">Un PDF ou une image devient une note de %1$s, nommée d’après le fichier</string>
+    <string name="explorer_drag_move_to">Déplacer vers %1$s</string>
+    <string name="explorer_new_note_paper">Papier</string>
+    <string name="explorer_paper_blank">Vierge</string>
+    <string name="explorer_paper_lined">Lignée</string>
+    <string name="explorer_paper_grid">Quadrillée</string>
+    <string name="explorer_paper_dotted">Pointillée</string>
+    <string name="explorer_input_name_short">Nom</string>
+    <string name="explorer_new_item">Nouveau</string>
+    <plurals name="explorer_notes_count">
+        <item quantity="one">%1$d note</item>
+        <item quantity="other">%1$d notes</item>
+    </plurals>
+    <plurals name="explorer_folders_count">
+        <item quantity="one">%1$d dossier</item>
+        <item quantity="other">%1$d dossiers</item>
+    </plurals>
+    <plurals name="explorer_items_count">
+        <item quantity="one">%1$d élément</item>
+        <item quantity="other">%1$d éléments</item>
+    </plurals>
+    <plurals name="explorer_selection_summary">
+        <item quantity="one">%1$d élément sélectionné</item>
+        <item quantity="other">%1$d éléments sélectionnés</item>
+    </plurals>
+    <string name="explorer_new_folder">Nouveau dossier</string>
+    <string name="explorer_untitled_note">Note sans titre</string>
+    <string name="explorer_create_note">Créer la note</string>
+    <string name="explorer_import_pdf_short">Importer un PDF</string>
+    <string name="explorer_import_image">Importer une image</string>
+    <string name="explorer_delete_confirm">Supprimer</string>
 </resources>

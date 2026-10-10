@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.data.repository
 import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.core.platform.PlatformFiles
 import io.github.valerioisufi.drawview.data.db.DocumentEntity
+import io.github.valerioisufi.drawview.data.db.DocumentWithContent
 import io.github.valerioisufi.drawview.data.db.DrawDatabase
 import io.github.valerioisufi.drawview.data.db.FolderEntity
 import kotlinx.coroutines.Dispatchers
@@ -103,6 +104,9 @@ class FileRepository(
 
     /** Every document, most recently modified first (updated on every database change). */
     fun getAllDocumentsFlow(): Flow<List<DocumentEntity>> = documentDao.getAllDocumentsFlow()
+
+    /** Every document with its number of pages and its PDFs (updated on every database change). */
+    fun getAllDocumentsWithContentFlow(): Flow<List<DocumentWithContent>> = documentDao.getAllDocumentsWithContentFlow()
 
     /** Every folder, at any depth (updated on every database change). */
     fun getAllFoldersFlow(): Flow<List<FolderEntity>> = folderDao.getAllFoldersFlow()

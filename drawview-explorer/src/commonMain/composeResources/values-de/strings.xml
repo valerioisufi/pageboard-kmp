@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="explorer_fab_item_note">Datei</string>
+    <string name="explorer_fab_item_note">Notiz</string>
     <string name="explorer_fab_item_folder">Ordner</string>
     <string name="explorer_fab_state_expanded">Erweitert</string>
     <string name="explorer_fab_state_collapsed">Zugeklappt</string>
@@ -40,4 +40,81 @@
     <string name="explorer_shared">Mit anderen Geräten geteilt</string>
     <string name="explorer_action_open">Öffnen</string>
     <string name="explorer_command_sort_by">Sortieren nach: %1$s</string>
+    <string name="explorer_section_recent">Zuletzt geöffnet</string>
+    <string name="explorer_section_shared">Geteilt</string>
+    <string name="explorer_section_folders">Ordner</string>
+    <string name="explorer_section_notes">Notizen</string>
+    <string name="explorer_search_placeholder">Notizen suchen</string>
+    <string name="explorer_search_clear">Suche löschen</string>
+    <string name="explorer_command_search">Suchen</string>
+    <string name="explorer_filter_all">Alle</string>
+    <string name="explorer_filter_notes">Notizen</string>
+    <string name="explorer_tag_pdf">PDF</string>
+    <string name="explorer_tag_pdfs">PDFs</string>
+    <string name="explorer_tag_shared">Geteilt</string>
+    <string name="explorer_sorted_by_name">nach Name sortiert</string>
+    <string name="explorer_sorted_by_date_created">nach Erstellungsdatum sortiert</string>
+    <string name="explorer_sorted_by_last_modified">nach letzter Änderung sortiert</string>
+    <string name="explorer_sorted_by_last_opened">nach letzter Öffnung sortiert</string>
+    <string name="explorer_view_grid">Raster</string>
+    <string name="explorer_view_list">Liste</string>
+    <string name="explorer_sort">Sortieren</string>
+    <string name="explorer_sort_by">Sortieren nach</string>
+    <string name="explorer_details_title">Details</string>
+    <string name="explorer_details_modified">Geändert</string>
+    <string name="explorer_details_created">Erstellt</string>
+    <string name="explorer_details_pages">Seiten</string>
+    <string name="explorer_details_folder">Ordner</string>
+    <string name="explorer_details_notes">Notizen</string>
+    <string name="explorer_open_note">Notiz öffnen</string>
+    <string name="explorer_open_folder">Ordner öffnen</string>
+    <string name="explorer_more_actions">Weitere Aktionen</string>
+    <string name="explorer_selection_hint">%1$s-Klick fügt ein Element hinzu, Umschalt-Klick erweitert bis dorthin</string>
+    <string name="explorer_empty_library_subtitle">Noch keine Notizen</string>
+    <string name="explorer_empty_library_title">Hier wohnen deine Notizen</string>
+    <string name="explorer_empty_library_body">Schreibe mit dem Stift, tippe oder importiere das PDF der Folien.</string>
+    <string name="explorer_import_pdf">PDF importieren</string>
+    <string name="explorer_empty_folder_title">Dieser Ordner ist leer</string>
+    <string name="explorer_empty_folder_body">Erstelle hier eine Notiz oder verschiebe Notizen hierher.</string>
+    <string name="explorer_no_results_title">Keine Notiz passt zu „%1$s“</string>
+    <string name="explorer_no_results_body">Die Suche durchsucht die Namen der Notizen und Ordner. Prüfe die Schreibweise.</string>
+    <string name="explorer_empty_recent_title">Noch keine Notiz geöffnet</string>
+    <string name="explorer_empty_recent_body">Die geöffneten Notizen erscheinen hier, die letzte zuerst.</string>
+    <string name="explorer_empty_shared_title">Keine geteilten Notizen</string>
+    <string name="explorer_empty_shared_body">Mit anderen Geräten geteilte Notizen erscheinen hier.</string>
+    <string name="explorer_move_subtitle">%1$s · aus %2$s</string>
+    <string name="explorer_delete_title_one">„%1$s“ löschen?</string>
+    <string name="explorer_delete_shared">„%1$s“ ist geteilt: Die anderen behalten ihre Kopie.</string>
+    <string name="explorer_drop_title">Ablegen, um eine Notiz daraus zu machen</string>
+    <string name="explorer_drop_body">Ein PDF oder Bild wird zu einer Notiz in %1$s, benannt nach der Datei</string>
+    <string name="explorer_drag_move_to">Nach %1$s verschieben</string>
+    <string name="explorer_new_note_paper">Papier</string>
+    <string name="explorer_paper_blank">Leer</string>
+    <string name="explorer_paper_lined">Liniert</string>
+    <string name="explorer_paper_grid">Kariert</string>
+    <string name="explorer_paper_dotted">Gepunktet</string>
+    <string name="explorer_input_name_short">Name</string>
+    <string name="explorer_new_item">Neu</string>
+    <plurals name="explorer_notes_count">
+        <item quantity="one">%1$d Notiz</item>
+        <item quantity="other">%1$d Notizen</item>
+    </plurals>
+    <plurals name="explorer_folders_count">
+        <item quantity="one">%1$d Ordner</item>
+        <item quantity="other">%1$d Ordner</item>
+    </plurals>
+    <plurals name="explorer_items_count">
+        <item quantity="one">%1$d Element</item>
+        <item quantity="other">%1$d Elemente</item>
+    </plurals>
+    <plurals name="explorer_selection_summary">
+        <item quantity="one">%1$d Element ausgewählt</item>
+        <item quantity="other">%1$d Elemente ausgewählt</item>
+    </plurals>
+    <string name="explorer_new_folder">Neuer Ordner</string>
+    <string name="explorer_untitled_note">Unbenannte Notiz</string>
+    <string name="explorer_create_note">Notiz erstellen</string>
+    <string name="explorer_import_pdf_short">PDF importieren</string>
+    <string name="explorer_import_image">Bild importieren</string>
+    <string name="explorer_delete_confirm">Löschen</string>
 </resources>

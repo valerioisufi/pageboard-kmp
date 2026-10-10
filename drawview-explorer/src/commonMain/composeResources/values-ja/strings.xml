@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="explorer_fab_item_note">ファイル</string>
+    <string name="explorer_fab_item_note">ノート</string>
     <string name="explorer_fab_item_folder">フォルダ</string>
     <string name="explorer_fab_state_expanded">展開済み</string>
     <string name="explorer_fab_state_collapsed">折りたたみ済み</string>
@@ -40,4 +40,77 @@
     <string name="explorer_shared">他のデバイスと共有中</string>
     <string name="explorer_action_open">開く</string>
     <string name="explorer_command_sort_by">並べ替え: %1$s</string>
+    <string name="explorer_section_recent">最近</string>
+    <string name="explorer_section_shared">共有</string>
+    <string name="explorer_section_folders">フォルダ</string>
+    <string name="explorer_section_notes">ノート</string>
+    <string name="explorer_search_placeholder">ノートを検索</string>
+    <string name="explorer_search_clear">検索をクリア</string>
+    <string name="explorer_command_search">検索</string>
+    <string name="explorer_filter_all">すべて</string>
+    <string name="explorer_filter_notes">ノート</string>
+    <string name="explorer_tag_pdf">PDF</string>
+    <string name="explorer_tag_pdfs">PDF</string>
+    <string name="explorer_tag_shared">共有</string>
+    <string name="explorer_sorted_by_name">名前順</string>
+    <string name="explorer_sorted_by_date_created">作成日順</string>
+    <string name="explorer_sorted_by_last_modified">更新日順</string>
+    <string name="explorer_sorted_by_last_opened">最終オープン順</string>
+    <string name="explorer_view_grid">グリッド</string>
+    <string name="explorer_view_list">リスト</string>
+    <string name="explorer_sort">並べ替え</string>
+    <string name="explorer_sort_by">並べ替え</string>
+    <string name="explorer_details_title">詳細</string>
+    <string name="explorer_details_modified">更新日</string>
+    <string name="explorer_details_created">作成日</string>
+    <string name="explorer_details_pages">ページ</string>
+    <string name="explorer_details_folder">フォルダ</string>
+    <string name="explorer_details_notes">ノート</string>
+    <string name="explorer_open_note">ノートを開く</string>
+    <string name="explorer_open_folder">フォルダを開く</string>
+    <string name="explorer_more_actions">その他の操作</string>
+    <string name="explorer_selection_hint">%1$s+クリックで追加、Shift+クリックでそこまで選択</string>
+    <string name="explorer_empty_library_subtitle">まだノートはありません</string>
+    <string name="explorer_empty_library_title">ここにノートが並びます</string>
+    <string name="explorer_empty_library_body">ペンで書いたり、入力したり、スライドの PDF を読み込んだりできます。</string>
+    <string name="explorer_import_pdf">PDF を読み込む</string>
+    <string name="explorer_empty_folder_title">このフォルダは空です</string>
+    <string name="explorer_empty_folder_body">ここにノートを作成するか、ノートを移動してください。</string>
+    <string name="explorer_no_results_title">「%1$s」に一致するノートはありません</string>
+    <string name="explorer_no_results_body">検索はノートとフォルダの名前を対象にします。綴りを確認してください。</string>
+    <string name="explorer_empty_recent_title">まだ開いたノートはありません</string>
+    <string name="explorer_empty_recent_body">開いたノートが新しい順にここに表示されます。</string>
+    <string name="explorer_empty_shared_title">共有ノートはありません</string>
+    <string name="explorer_empty_shared_body">他のデバイスと共有したノートがここに表示されます。</string>
+    <string name="explorer_move_subtitle">%1$s · %2$s から</string>
+    <string name="explorer_delete_title_one">「%1$s」を削除しますか？</string>
+    <string name="explorer_delete_shared">「%1$s」は共有されています。他の人のコピーは残ります。</string>
+    <string name="explorer_drop_title">ドロップしてノートにする</string>
+    <string name="explorer_drop_body">PDF や画像が %1$s のノートになり、ファイル名が付きます</string>
+    <string name="explorer_drag_move_to">%1$s に移動</string>
+    <string name="explorer_new_note_paper">用紙</string>
+    <string name="explorer_paper_blank">無地</string>
+    <string name="explorer_paper_lined">罫線</string>
+    <string name="explorer_paper_grid">方眼</string>
+    <string name="explorer_paper_dotted">ドット</string>
+    <string name="explorer_input_name_short">名前</string>
+    <string name="explorer_new_item">新規</string>
+    <plurals name="explorer_notes_count">
+        <item quantity="other">%1$d 件のノート</item>
+    </plurals>
+    <plurals name="explorer_folders_count">
+        <item quantity="other">%1$d 個のフォルダ</item>
+    </plurals>
+    <plurals name="explorer_items_count">
+        <item quantity="other">%1$d 項目</item>
+    </plurals>
+    <plurals name="explorer_selection_summary">
+        <item quantity="other">%1$d 項目を選択</item>
+    </plurals>
+    <string name="explorer_new_folder">新規フォルダ</string>
+    <string name="explorer_untitled_note">無題のノート</string>
+    <string name="explorer_create_note">ノートを作成</string>
+    <string name="explorer_import_pdf_short">PDF を読み込む</string>
+    <string name="explorer_import_image">画像を読み込む</string>
+    <string name="explorer_delete_confirm">削除</string>
 </resources>

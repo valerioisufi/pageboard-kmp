@@ -65,7 +65,13 @@ import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.components.ToolButton
+import io.github.valerioisufi.drawview.ui.components.BadgeTone
+import io.github.valerioisufi.drawview.ui.session.DocumentTag
 import io.github.valerioisufi.drawview.ui.session.EditorExtension
+import io.github.valerioisufi.drawview.ui.theme.DrawViewElevation
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
+import io.github.valerioisufi.drawview.ui.theme.elevation
+import androidx.compose.foundation.layout.Column
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -192,51 +198,68 @@ private class LectureAssistantHolder : ViewModel() {
 fun LectureRecordingIndicator(assistant: LectureAssistant, onOpenDocument: (String) -> Unit, modifier: Modifier = Modifier) {
     val recorder = assistant.activeRecorder ?: return
     val lecture = recorder.lecture
-    val actionColors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.inversePrimary)
+    val recording = lecture.status == LectureStatus.RECORDING
+    val shape = RoundedCornerShape(50)
     Surface(
+        onClick = { onOpenDocument(lecture.documentId) },
         color = MaterialTheme.colorScheme.inverseSurface,
         contentColor = MaterialTheme.colorScheme.inverseOnSurface,
-        shape = RoundedCornerShape(24.dp),
-        shadowElevation = 6.dp,
-        modifier = modifier
+        shape = shape,
+        modifier = modifier.elevation(DrawViewElevation.Level2, shape)
     ) {
-        Row(modifier = Modifier.padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            if (lecture.status == LectureStatus.RECORDING) {
-                Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.error)
-                )
-                Spacer(Modifier.width(10.dp))
-                Text(
-                    text = formatLectureTime(lecture.elapsedMs) + " · " + lecture.documentTitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.widthIn(max = 280.dp)
-                )
-            } else {
-                Text(
-                    text = stringResource(Res.string.lecture_indicator_reviewing, lecture.documentTitle),
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.widthIn(max = 320.dp)
-                )
-            }
-            Spacer(Modifier.width(4.dp))
-            TextButton(onClick = { onOpenDocument(lecture.documentId) }, colors = actionColors) {
-                Text(stringResource(Res.string.lecture_indicator_open))
-            }
-            if (lecture.status == LectureStatus.RECORDING) {
-                TextButton(onClick = { recorder.stop() }, colors = actionColors) {
-                    Text(stringResource(Res.string.lecture_action_stop))
+        Row(
+            modifier = Modifier.height(52.dp).padding(start = 16.dp, end = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            if (recording) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(20.dp)) {
+                    Box(modifier = Modifier.size(20.dp).background(MaterialTheme.colorScheme.error.copy(alpha = 0.28f), CircleShape))
+                    Box(modifier = Modifier.size(10.dp).background(MaterialTheme.colorScheme.error, CircleShape))
                 }
+            }
+            Column(modifier = Modifier.widthIn(max = 260.dp)) {
+                Text(
+                    text = stringResource(if (recording) Res.string.lecture_indicator_recording else Res.string.lecture_indicator_reviewing_label).uppercase(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.7f),
+                    maxLines = 1
+                )
+                Text(
+                    text = if (recording) lecture.documentTitle + " · " + formatLectureTime(lecture.elapsedMs) else lecture.documentTitle,
+                    style = MaterialTheme.typography.labelLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            if (recording) {
+                val stop = stringResource(Res.string.lecture_action_stop)
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.inverseOnSurface)
+                        .clickable(onClickLabel = stop) { recorder.stop() }
+                ) {
+                    Icon(DrawViewIcons.Stop, contentDescription = stop, tint = MaterialTheme.colorScheme.inverseSurface, modifier = Modifier.size(16.dp))
+                }
+            } else {
+                Spacer(Modifier.width(8.dp))
             }
         }
     }
 }
+
+/** The tag of the documents with a lecture: their badge and the filter of the library. */
+fun LectureAssistant.documentTag(): DocumentTag = DocumentTag(
+    id = "lecture",
+    label = { stringResource(Res.string.lecture_tag) },
+    filterLabel = { stringResource(Res.string.lecture_tag_filter) },
+    icon = DrawViewIcons.Mic,
+    tone = BadgeTone.Blue,
+    documents = { documentsWithLectures }
+)
 
 /**
  * Asks to stop the recording before the application exits ([LectureRecordings.isRecording]).

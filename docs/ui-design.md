@@ -77,7 +77,8 @@ Variations).
 | The icons | `DrawViewIcons` (ui) | Pure Fabrication, Low Coupling (no Material icons in the screens) |
 | The number of pages and the PDFs of a document | `DocumentSummary` (data), from the store | Information Expert: the store has the pages |
 | What the library shows: the section (home, recent, shared), the search, the filter, the counts | `FileExplorerViewModel` (explorer) | Information Expert, Controller |
-| What an application says of a document (e.g. it has a lecture) | `DocumentTag` (explorer), given by `DocumentLibrary(tags = …)` | Polymorphism, Protected Variations: the library does not know the lectures |
+| What a module says of a document (e.g. it has a lecture) | `DocumentTag` (ui), given by `DocumentLibrary(tags = …)` | Polymorphism, Protected Variations: the library does not know the lectures |
+| The actions of the application in the library (join a shared document, about) | `LibraryAction` (ui), placed by the library | Polymorphism, Low Coupling: a button of the bar or of the pane |
 | The brand of the application in the library | `title` of `DocumentLibrary` | Low Coupling: PencilNotes draws its mark and wordmark |
 | The look of each screen | the composables of each module | High Cohesion: each module draws its own screens with the components of `drawview-ui` |
 
@@ -101,8 +102,8 @@ pencilnotes        the brand (mark and wordmark), the tag of the lectures
 | Phase | Content | Status |
 |---|---|---|
 | 1. Foundations | Plus Jakarta Sans, the type scale, the shapes, the elevation, `CanvasColors`, `InkPalette`, `DrawViewIcons`; the palette of the design as the default of DrawView; PencilNotes on `DrawViewTheme` | done |
-| 2. Library | Page count and PDFs in the summaries; header, search, filters, folders, note cards, rows, navigation with counts and brand, details pane, FAB; `DocumentTag` and the tag of the lectures; recording pill | |
-| 3. Library flows | The new item menu, the sheets of an item and of its details, the selection bar, the dialogs (new folder, rename, move, delete), the path inside a folder, the empty states, About | |
+| 2. Library | Page count and PDFs in the summaries; header, search, filters, folders, note cards, rows, navigation with counts and brand, details pane, FAB; `DocumentTag` and the tag of the lectures; recording pill | done |
+| 3. Library flows | The new item menu, the sheets of an item and of its details, the selection bar, the dialogs (new folder, rename, move, delete), the path inside a folder, the empty states, About | done |
 | 4. Editor | The top bar (title and its line, the tool group, the actions), the tool button with its ink, the floating tools, the page indicator, desk and paper, the popovers of the tools, the "more" menu | |
 | 5. Texts and selection | The format bar, the selection bar, the bar of the marks of the PDFs, the context menu, the messages | |
 | 6. Pages | The page grid, the configurator (dialog and sheet), "Apply to all pages?", the information of the document, the tooltips | |
@@ -127,3 +128,43 @@ the frames of the file.
 * **Icons**: `DrawViewIcons`, 143 Lucide icons as `ImageVector`s: the 98 of the file, exported
   from its components, and 45 more of Lucide for the actions the file does not draw.
 * Licenses: Plus Jakarta Sans and Lucide added, Nunito removed.
+
+### Phases 2 and 3 results
+
+* **Data**: `DocumentSummary.pageCount` and `hasPdf`, counted by the store (a query of Room over
+  the pages and the PDFs not removed; the key-value store when it writes a document).
+* **What the library shows** (`FileExplorerViewModel`): the sections (`Section`: the folders from
+  the root, the notes opened last, the shared ones) with their counts, the search in the names of
+  the whole library, the filters (`LibraryFilter`: all, the notes written, a tag), the view of the
+  notes (`ViewMode`: cards or rows), the notes of each folder at any depth, the path of the folder
+  shown, the notes made on a paper in a folder (`createNote`).
+* **Tags** (`DocumentTag`, drawview-ui): the PDFs and the shared documents are tags of the
+  library, the lectures a tag of `drawview-lecture` (`LectureAssistant.documentTag()`, from
+  `documentsWithLectures`): the badge of a card and a filter, the library not knowing them.
+* **Actions of the application** (`LibraryAction`, drawview-ui): `actions` of `DocumentLibrary`
+  are no longer a row of buttons but actions the library places: icons of its bar, or wide
+  buttons of its pane (`prominent`, joining a shared document: `Collaboration.joinAction()`).
+  `aboutLibraryAction()` is the default.
+* **Screen**: a phone (the brand and the actions, the title with what it holds, the search, the
+  filters, the folders in a row, the notes in rows), a tablet (the search in the bar, the views
+  and the order beside the title, the folders and the notes as cards), a wide window (the pane of
+  navigation with the brand, the sections and the folders with their counts, making a folder and
+  the actions of the application; the header with the search, the views and the order; the
+  details of the selection beside: an item, or how many with moving and deleting). The floating
+  button makes a note beside the pane, opens the choice of a note or a folder elsewhere.
+* **Flows**: the sheet of an item (its commands, "Info" showing its details), the selection bar,
+  the dialogs (new folder, rename, move with the path, delete with the shared notes said), the
+  sheet of a new note (its name, its paper, its folder, importing a PDF or an image; the note made
+  is opened), the empty states (no note, an empty folder or section, a search or a filter without
+  results), the label of the items dragged ("Move to Physics"), About & Licenses (the mark and the
+  wordmark of the application, `AboutAppInfo.mark` and `nameFontFamily`).
+* **Menus** (`DesignMenu`, `MenuItem`, `CommandMenu`): the container of the surfaces rounded
+  16 dp, the items 40 dp rounded 12 dp, the shortcuts at the end, `Command.destructive` in the
+  color of the errors.
+* **Not as the file**: the search looks at the names only (the file says the typed text and the
+  text of the PDFs too); the empty library does not mention the lectures (the library does not
+  know them); "Share…" is not among the actions of a note of the library (the sharing starts from
+  the editor).
+* Tests: the search, the filters by kind and by tag, the sections and their counts, the notes
+  made on a paper in a folder (`LibraryViewTest`); the pages and the PDFs of the summaries; the
+  screenshots of a search without results and of a folder.

@@ -371,8 +371,16 @@ class LectureAssistant(
         }
     }
 
+    /** The documents with a lecture (the badge and the filter of the library, see [documentTag]). */
+    var documentsWithLectures: Set<String> by mutableStateOf(emptySet())
+        private set
+
     init {
         LectureRecordings.register(this)
+        scope.launch {
+            val documents = withContext(Dispatchers.Default) { library.documentsWithLectures() }
+            withContext(stateContext) { documentsWithLectures = documentsWithLectures + documents }
+        }
     }
 
     /** The lectures of [documentId] (loaded by [refresh]), the most recent first. */
@@ -488,6 +496,7 @@ class LectureAssistant(
             sharingSettings[documentId] = sharing
             if (context != null && contexts[documentId] == null) contexts[documentId] = context
             lectureLists[documentId] = lectures
+            documentsWithLectures = if (lectures.isEmpty()) documentsWithLectures - documentId else documentsWithLectures + documentId
             if (shownLectures[documentId] == null) lectures.firstOrNull()?.let { show(documentId, it) }
         }
     }

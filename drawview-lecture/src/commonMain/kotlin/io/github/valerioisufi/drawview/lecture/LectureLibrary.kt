@@ -102,6 +102,19 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
         Lecture.recordJson.encodeToString(CourseContext.serializer(), context).encodeToByteArray()
     )
 
+    /** The documents with a lecture (not deleted): the folders of their lectures, without reading them. */
+    fun documentsWithLectures(): Set<String> {
+        val rootPath = Path(root)
+        if (!SystemFileSystem.exists(rootPath)) return emptySet()
+        return SystemFileSystem.list(rootPath).mapNotNullTo(mutableSetOf()) { path ->
+            val documentId = path.name.takeIf { it.startsWith("doc-") }?.removePrefix("doc-") ?: return@mapNotNullTo null
+            val deleted = deletedLectures(documentId)
+            documentId.takeIf {
+                SystemFileSystem.list(path).any { lecture -> lecture.name !in deleted && SystemFileSystem.exists(Path(lecture, "lecture.json")) }
+            }
+        }
+    }
+
     /** The lectures of [documentId], the most recent first. */
     fun list(documentId: String): List<LectureSummary> {
         val documentPath = Path(documentDirectory(documentId))

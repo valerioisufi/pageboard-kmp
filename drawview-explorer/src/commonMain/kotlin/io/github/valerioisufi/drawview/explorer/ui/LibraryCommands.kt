@@ -1,10 +1,5 @@
 package io.github.valerioisufi.drawview.explorer.ui
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.DriveFileMove
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DriveFileRenameOutline
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -23,6 +18,7 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_act
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_open
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_rename
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_select_all
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_command_search
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_command_sort_by
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_dialog_new_folder
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_dialog_new_note
@@ -37,6 +33,7 @@ import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.command.Shortcut
 import io.github.valerioisufi.drawview.ui.generated.resources.about_dialog_title
 import io.github.valerioisufi.drawview.ui.session.DocumentAction
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
@@ -62,7 +59,8 @@ class LibraryCommands internal constructor(
     private val openDocument: (String) -> Unit,
     private val documentActions: List<DocumentAction>,
     private val showDialog: (LibraryDialog) -> Unit,
-    private val chooseAction: (DocumentAction, FileItem) -> Unit
+    private val chooseAction: (DocumentAction, FileItem) -> Unit,
+    private val focusSearch: () -> Unit
 ) {
     private val selection: List<FileItem> get() = viewModel.selectedItems.toList()
 
@@ -70,18 +68,27 @@ class LibraryCommands internal constructor(
 
     val newNote = Command(
         "new-note", label(Res.string.explorer_dialog_new_note), CommandGroup.FILE,
+        icon = { rememberVectorPainter(DrawViewIcons.FilePlus) },
         shortcuts = listOf(Shortcut(Key.N, primary = true))
     ) { showDialog(LibraryDialog.NewItem(FileType.FILE)) }
 
     val newFolder = Command(
         "new-folder", label(Res.string.explorer_dialog_new_folder), CommandGroup.FILE,
+        icon = { rememberVectorPainter(DrawViewIcons.FolderPlus) },
         shortcuts = listOf(Shortcut(Key.N, primary = true, shift = true))
     ) { showDialog(LibraryDialog.NewItem(FileType.FOLDER)) }
+
+    /** Moves the focus to the search of the library. */
+    val search = Command(
+        "search", label(Res.string.explorer_command_search), CommandGroup.EDIT, section = 2,
+        icon = { rememberVectorPainter(DrawViewIcons.Search) },
+        shortcuts = listOf(Shortcut(Key.K, primary = true), Shortcut(Key.F, primary = true))
+    ) { focusSearch() }
 
     /** The actions of the application on the document selected alone (e.g. "Export…"). */
     val documentActionCommands: List<Command> = documentActions.mapIndexed { index, action ->
         Command(
-            "document-action-$index", action.label, CommandGroup.FILE, section = 1,
+            DocumentActionPrefix + index, action.label, CommandGroup.FILE, section = 1,
             icon = { rememberVectorPainter(action.icon) },
             isEnabled = { selectedDocument != null }
         ) { selectedDocument?.let { chooseAction(action, it) } }
@@ -99,21 +106,22 @@ class LibraryCommands internal constructor(
 
     val rename = Command(
         "rename", label(Res.string.explorer_action_rename), CommandGroup.EDIT, section = 1,
-        icon = { rememberVectorPainter(Icons.Default.DriveFileRenameOutline) },
+        icon = { rememberVectorPainter(DrawViewIcons.Pencil) },
         isEnabled = { selection.size == 1 }
     ) { selection.singleOrNull()?.let { showDialog(LibraryDialog.Rename(it)) } }
 
     val move = Command(
         "move", label(Res.string.explorer_action_move_to), CommandGroup.EDIT, section = 1,
-        icon = { rememberVectorPainter(Icons.AutoMirrored.Filled.DriveFileMove) },
+        icon = { rememberVectorPainter(DrawViewIcons.FolderInput) },
         isEnabled = { selection.isNotEmpty() }
     ) { showDialog(LibraryDialog.Move(selection)) }
 
     val delete = Command(
         "delete", label(Res.string.explorer_action_delete), CommandGroup.EDIT, section = 1,
-        icon = { rememberVectorPainter(Icons.Default.Delete) },
+        icon = { rememberVectorPainter(DrawViewIcons.Trash) },
         shortcuts = listOf(Shortcut(Key.Backspace), Shortcut(Key.Delete)),
-        isEnabled = { selection.isNotEmpty() }
+        isEnabled = { selection.isNotEmpty() },
+        destructive = true
     ) { showDialog(LibraryDialog.Delete(selection)) }
 
     // ----- View -----
@@ -156,13 +164,16 @@ class LibraryCommands internal constructor(
 
     /** The commands of the folder shown and of the selection, in the order of the menus. */
     val all: List<Command> = listOf(newNote, newFolder) + documentActionCommands +
-        listOf(selectAll, rename, move, delete, enclosingFolder) + sortBy + listOf(invertOrder, foldersOnTop, about)
+        listOf(selectAll, rename, move, delete, search, enclosingFolder) + sortBy + listOf(invertOrder, foldersOnTop, about)
 
-    /** The commands of [item] (its context menu, its sheet): open, rename, move, delete, the actions of the application. */
+    /**
+     * The commands of [item] (its context menu, its sheet): open, rename, move, the actions of the
+     * application, delete.
+     */
     fun forItem(item: FileItem): List<Command> = listOf(
         Command(
             "open", label(Res.string.explorer_action_open), CommandGroup.FILE,
-            icon = { rememberVectorPainter(Icons.AutoMirrored.Filled.OpenInNew) }
+            icon = { rememberVectorPainter(if (item.type == FileType.FILE) DrawViewIcons.FileText else DrawViewIcons.FolderOpen) }
         ) {
             when (item.type) {
                 FileType.FILE -> openDocument(item.id)
@@ -174,18 +185,17 @@ class LibraryCommands internal constructor(
         },
         Command("move", move.label, CommandGroup.EDIT, section = 1, icon = move.icon) {
             showDialog(LibraryDialog.Move(listOf(item)))
-        },
-        Command("delete", delete.label, CommandGroup.EDIT, section = 1, icon = delete.icon) {
-            showDialog(LibraryDialog.Delete(listOf(item)))
         }
-    ) + if (item.type == FileType.FILE) {
+    ) + (if (item.type == FileType.FILE) {
         documentActions.mapIndexed { index, action ->
-            Command("document-action-$index", action.label, CommandGroup.FILE, section = 2, icon = { rememberVectorPainter(action.icon) }) {
+            Command(DocumentActionPrefix + index, action.label, CommandGroup.FILE, section = 2, icon = { rememberVectorPainter(action.icon) }) {
                 chooseAction(action, item)
             }
         }
     } else {
         emptyList()
+    }) + Command("delete", delete.label, CommandGroup.EDIT, section = 3, icon = delete.icon, destructive = true) {
+        showDialog(LibraryDialog.Delete(listOf(item)))
     }
 }
 
@@ -198,18 +208,21 @@ internal fun rememberLibraryCommands(
     documentActions: List<DocumentAction>,
     onOpenDocument: (String) -> Unit,
     onShowDialog: (LibraryDialog) -> Unit,
-    onChooseAction: (DocumentAction, FileItem) -> Unit
+    onChooseAction: (DocumentAction, FileItem) -> Unit,
+    onFocusSearch: () -> Unit
 ): LibraryCommands {
     val open by rememberUpdatedState(onOpenDocument)
     val show by rememberUpdatedState(onShowDialog)
     val choose by rememberUpdatedState(onChooseAction)
+    val focus by rememberUpdatedState(onFocusSearch)
     return remember(viewModel, documentActions) {
         LibraryCommands(
             viewModel = viewModel,
             openDocument = { open(it) },
             documentActions = documentActions,
             showDialog = { show(it) },
-            chooseAction = { action, item -> choose(action, item) }
+            chooseAction = { action, item -> choose(action, item) },
+            focusSearch = { focus() }
         )
     }
 }

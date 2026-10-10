@@ -228,4 +228,8 @@
     <string name="lecture_problem_quota_day_in">Il tuo piano Gemini non permette altre richieste a %1$s per oggi: tornano tra %2$s. Nel frattempo puoi trascrivere su questo computer (Impostazioni). Ciò che è stato trascritto resta.</string>
     <string name="lecture_problem_quota_day">Il tuo piano Gemini non permette altre richieste a %1$s per oggi. Nel frattempo puoi trascrivere su questo computer (Impostazioni). Ciò che è stato trascritto resta.</string>
     <string name="lecture_problem_quota">Troppe richieste a %1$s per il tuo piano Gemini: riprova tra qualche minuto.</string>
+    <string name="lecture_tag">Lezione</string>
+    <string name="lecture_tag_filter">Lezioni</string>
+    <string name="lecture_indicator_recording">Registrazione della lezione</string>
+    <string name="lecture_indicator_reviewing_label">Revisione della lezione</string>
 </resources>

@@ -60,7 +60,8 @@ class ShortcutsTest {
     fun theLibraryCreatesANoteWithItsShortcut() = library { _, _ ->
         onRoot().performKeyInput { pressPrimary(Key.N) }
         waitForIdle()
-        onNodeWithText("New note").assertExists()
+        // The sheet of a new note (the floating button says "New note" too)
+        onNodeWithText("Create note").assertExists()
     }
 
     @Test

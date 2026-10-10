@@ -228,4 +228,8 @@
     <string name="lecture_problem_quota_day_in">Your Gemini plan allows no more requests to %1$s today: they come back in %2$s. Meanwhile you can transcribe on this computer (Settings). What was transcribed is kept.</string>
     <string name="lecture_problem_quota_day">Your Gemini plan allows no more requests to %1$s today. Meanwhile you can transcribe on this computer (Settings). What was transcribed is kept.</string>
     <string name="lecture_problem_quota">Too many requests to %1$s for your Gemini plan: try again in a few minutes.</string>
+    <string name="lecture_tag">Lecture</string>
+    <string name="lecture_tag_filter">Lectures</string>
+    <string name="lecture_indicator_recording">Recording lecture</string>
+    <string name="lecture_indicator_reviewing_label">Reviewing the lecture</string>
 </resources>

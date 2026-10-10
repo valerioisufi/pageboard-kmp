@@ -2,7 +2,6 @@ package io.github.valerioisufi.drawview.explorer
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -15,13 +14,18 @@ import io.github.valerioisufi.drawview.data.DocumentStore
 import io.github.valerioisufi.drawview.data.DrawViewStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.explorer.platform.SystemBarsHidden
-import io.github.valerioisufi.drawview.explorer.ui.AboutLicensesButton
 import io.github.valerioisufi.drawview.explorer.ui.ExplorerScreen
+import io.github.valerioisufi.drawview.explorer.ui.aboutLibraryAction
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.latex.TexFont
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.command.CommandRoot
+import io.github.valerioisufi.drawview.ui.platform.PickedFile
+import io.github.valerioisufi.drawview.ui.platform.PickerType
+import io.github.valerioisufi.drawview.ui.platform.rememberFilePicker
 import io.github.valerioisufi.drawview.ui.session.DocumentAction
+import io.github.valerioisufi.drawview.ui.session.DocumentTag
+import io.github.valerioisufi.drawview.ui.session.LibraryAction
 import io.github.valerioisufi.drawview.ui.session.DocumentEditorViewModel
 import io.github.valerioisufi.drawview.ui.session.EditorExtension
 import io.github.valerioisufi.drawview.ui.session.EditorSessionScreen
@@ -33,16 +37,20 @@ import kotlinx.coroutines.withContext
  * A complete note-taking application: the document library ([ExplorerScreen]) and the DrawView
  * editor of the open document ([EditorSessionScreen]). The theme is the one of the caller.
  *
- * @param title title shown in the root folder of the library (typically the application name).
+ * @param title the brand of the application (its mark and its name, or its name), at the top of
+ *   the library.
  * @param documents the documents of [store] being changed, shared with the synchronization with
  *   the other devices (see `drawview-sync`).
- * @param actions actions of the title bar of the root folder: the About & Licenses dialog by default.
+ * @param actions actions of the application in the library (its bar or its navigation pane): the
+ *   About & Licenses dialog by default.
  * @param fullScreenEditor hides the system bars while a document is open (Android).
  * @param editorExtension content contributed to the editor (top bar actions, side panel).
  * @param libraryOverlay content drawn over the library (e.g. a recording in progress), given the
  *   function opening a document.
  * @param documentActions actions of the application on a document of the library (e.g. its
  *   export), in the bar of the selection.
+ * @param tags what the application says of the documents (e.g. that they have a lecture): their
+ *   badges and the filters of the library.
  * @param thumbnails the thumbnails of the documents (the first pages of the grid of a wider
  *   window), kept in the data directory for the documents of `DrawViewStore`, in memory for the
  *   others.
@@ -53,11 +61,12 @@ fun DocumentLibrary(
     modifier: Modifier = Modifier,
     store: DocumentStore = DrawViewStore.default,
     documents: OpenDocuments = if (store === DrawViewStore.default) DrawViewStore.documents else remember(store) { OpenDocuments(store) },
-    actions: @Composable RowScope.() -> Unit = { AboutLicensesButton() },
+    actions: List<LibraryAction> = listOf(aboutLibraryAction()),
     fullScreenEditor: Boolean = false,
     editorExtension: EditorExtension? = null,
     libraryOverlay: @Composable BoxScope.(openDocument: (String) -> Unit) -> Unit = {},
     documentActions: List<DocumentAction> = emptyList(),
+    tags: List<DocumentTag> = emptyList(),
     thumbnails: DocumentThumbnails = rememberDocumentThumbnails(
         documents,
         directory = if (store === DrawViewStore.default) DocumentThumbnails.defaultDirectory() else null
@@ -89,6 +98,20 @@ fun DocumentLibrary(
     AdaptiveRoot(modifier = modifier) {
         CommandRoot {
             if (session == null) {
+                // A PDF or an image dropped from the system or picked: a note of it, in the folder shown
+                val importFiles: (List<PickedFile>) -> Boolean = { files ->
+                    val imported = files.filter { it.extension in MediaManager.IMPORTED_EXTENSIONS }
+                    val first = imported.firstOrNull()
+                    if (first != null) {
+                        val name = fileExplorerViewModel.availableName(first.name.substringBeforeLast('.'))
+                        editorViewModel.createAndOpenDocument(name, fileExplorerViewModel.currentFolder?.id) { controller ->
+                            for (file in imported) controller.mediaManager.importFile(file.bytes, file.extension)
+                        }
+                    }
+                    first != null
+                }
+                val pdfPicker = rememberFilePicker(PickerType.PDF) { file -> importFiles(listOf(file)) }
+                val imagePicker = rememberFilePicker(PickerType.IMAGE) { file -> importFiles(listOf(file)) }
                 Box {
                     ExplorerScreen(
                         fileExplorerViewModel = fileExplorerViewModel,
@@ -96,19 +119,11 @@ fun DocumentLibrary(
                         title = title,
                         actions = actions,
                         documentActions = documentActions,
+                        tags = tags,
                         thumbnails = thumbnails,
-                        // A PDF or an image dropped from the system: a note of it, in the folder shown
-                        onFilesDropped = { files ->
-                            val imported = files.filter { it.extension in MediaManager.IMPORTED_EXTENSIONS }
-                            val first = imported.firstOrNull()
-                            if (first != null) {
-                                val name = fileExplorerViewModel.availableName(first.name.substringBeforeLast('.'))
-                                editorViewModel.createAndOpenDocument(name, fileExplorerViewModel.currentFolder?.id) { controller ->
-                                    for (file in imported) controller.mediaManager.importFile(file.bytes, file.extension)
-                                }
-                            }
-                            first != null
-                        },
+                        onFilesDropped = importFiles,
+                        onImportPdf = pdfPicker,
+                        onImportImage = imagePicker,
                         modifier = Modifier.fillMaxSize()
                     )
                     libraryOverlay { documentId -> editorViewModel.openDocument(documentId) }

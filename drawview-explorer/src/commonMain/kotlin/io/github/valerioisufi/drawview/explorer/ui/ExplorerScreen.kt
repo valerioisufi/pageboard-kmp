@@ -1,110 +1,93 @@
 package io.github.valerioisufi.drawview.explorer.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material3.VerticalDivider
-import androidx.compose.runtime.CompositionLocalProvider
-import io.github.valerioisufi.drawview.explorer.DocumentThumbnails
-import io.github.valerioisufi.drawview.ui.platform.PickedFile
-import io.github.valerioisufi.drawview.ui.platform.fileDropTarget
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Article
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.SelectAll
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButtonMenu
-import androidx.compose.material3.FloatingActionButtonMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.ToggleFloatingActionButton
-import androidx.compose.material3.ToggleFloatingActionButtonDefaults.animateIcon
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.animateFloatingActionButton
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.semantics.CustomAccessibilityAction
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.customActions
-import androidx.compose.ui.semantics.isTraversalGroup
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.semantics.traversalIndex
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.unit.dp
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import io.github.valerioisufi.drawview.explorer.DocumentThumbnails
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_back
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_clear_selection
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_confirm
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_delete
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_rename
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_root_folder
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_delete_shared
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_delete_confirm
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_delete_title_one
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_items_count
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_move_subtitle
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_move_to
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_dialog_delete_description
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_dialog_delete_multiple_description
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_rename
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_dialog_new_folder
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_dialog_new_note
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_fab_close_menu
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_fab_item_folder
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_fab_item_note
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_fab_state_collapsed
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_fab_state_expanded
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_fab_toggle_menu
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_input_name
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_selected_count
-import io.github.valerioisufi.drawview.ui.components.AboutLicensesDialog
-import io.github.valerioisufi.drawview.ui.command.Command
-import io.github.valerioisufi.drawview.ui.command.CommandTooltip
-import io.github.valerioisufi.drawview.ui.command.HoverTooltip
 import io.github.valerioisufi.drawview.ui.command.RegisterCommands
-import io.github.valerioisufi.drawview.ui.session.DocumentAction
+import io.github.valerioisufi.drawview.ui.components.AboutLicensesDialog
+import io.github.valerioisufi.drawview.ui.components.DesignIconButton
 import io.github.valerioisufi.drawview.ui.generated.resources.about_dialog_title
+import io.github.valerioisufi.drawview.ui.platform.PickedFile
+import io.github.valerioisufi.drawview.ui.platform.fileDropTarget
+import io.github.valerioisufi.drawview.ui.session.DocumentAction
+import io.github.valerioisufi.drawview.ui.session.DocumentTag
+import io.github.valerioisufi.drawview.ui.session.LibraryAction
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 
 /**
- * The document library: the content of the current folder, the actions on the selected items
- * and the menu that creates notes and folders.
+ * The document library: the sections and the folders, the search and the filters, the notes as
+ * cards or rows, the details of the selection, the button making notes and folders; laid out by
+ * the width it has (see [LibraryLayout]) as in the design (docs/ui-design.md).
  *
- * @param title title shown in the root folder (typically the name of the application).
- * @param actions actions of the title bar of the root folder: the About & Licenses dialog by default.
+ * @param title the brand of the application (its mark and its name), at the top of the library.
+ * @param actions actions of the application in the library (e.g. joining a shared document, its
+ *   information): its bar, or its navigation pane.
  * @param documentActions actions of the application on a selected document (e.g. its export).
- * @param thumbnails draws the first pages of the documents for the grid of a wider window;
- *   without them the library is a list.
+ * @param tags what the application says of the documents (e.g. that they have a lecture): their
+ *   badges and the filters of the library.
+ * @param thumbnails draws the first pages of the documents; without them the library is a list.
  * @param onFilesDropped takes the files dropped from the system onto the library (e.g. makes a
  *   note of a PDF); whether it took them.
+ * @param onImportPdf imports a PDF chosen by the user as a note, if the application can.
+ * @param onImportImage imports an image chosen by the user as a note, if the application can.
  */
 @Composable
 fun ExplorerScreen(
@@ -112,132 +95,211 @@ fun ExplorerScreen(
     onOpenDocument: (String) -> Unit,
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    actions: @Composable RowScope.() -> Unit = { AboutLicensesButton() },
+    actions: List<LibraryAction> = listOf(aboutLibraryAction()),
     documentActions: List<DocumentAction> = emptyList(),
+    tags: List<DocumentTag> = emptyList(),
     thumbnails: DocumentThumbnails? = null,
-    onFilesDropped: ((List<PickedFile>) -> Boolean)? = null
+    onFilesDropped: ((List<PickedFile>) -> Boolean)? = null,
+    onImportPdf: (() -> Unit)? = null,
+    onImportImage: (() -> Unit)? = null
 ) {
-    val listState = rememberLazyListState()
+    val viewModel = fileExplorerViewModel
+    LaunchedEffect(viewModel, tags) { viewModel.tags = tags }
     val gridState = rememberLazyGridState()
-    // The floating button hides while the content is scrolled
-    val atTop by remember { derivedStateOf { listState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemIndex == 0 } }
+    val searchFocus = remember { FocusRequester() }
     // The items dragged with a mouse onto a folder
     val drag = remember { LibraryDrag() }
     // The action chosen on a document, shown until it is done (the selection is cleared meanwhile)
     var chosenAction by remember { mutableStateOf<Pair<DocumentAction, FileExplorerViewModel.FileItem>?>(null) }
     chosenAction?.let { (action, item) -> action.content(item.id, item.name) { chosenAction = null } }
+    // The action of the application chosen in the library, shown until it is done
+    var libraryAction by remember { mutableStateOf<LibraryAction?>(null) }
+    libraryAction?.let { action -> action.content { libraryAction = null } }
     // The dialog opened by a command (new item, rename, move, delete, about)
     var dialog by remember { mutableStateOf<LibraryDialog?>(null) }
-    dialog?.let { LibraryDialogHost(it, fileExplorerViewModel, onDismiss = { dialog = null }) }
+    dialog?.let { LibraryDialogHost(it, viewModel, onOpenDocument, onImportPdf, onImportImage, onDismiss = { dialog = null }) }
     // The commands of the library: its bars and menus, the menu bar of the window, the shortcuts
     val commands = rememberLibraryCommands(
-        viewModel = fileExplorerViewModel,
+        viewModel = viewModel,
         documentActions = documentActions,
         onOpenDocument = onOpenDocument,
         onShowDialog = { dialog = it },
         onChooseAction = { action, item ->
             chosenAction = action to item
-            fileExplorerViewModel.clearSelection()
-        }
+            viewModel.clearSelection()
+        },
+        onFocusSearch = { runCatching { searchFocus.requestFocus() } }
     )
     RegisterCommands(commands.all)
     var fabMenuExpanded by rememberSaveable { mutableStateOf(false) }
     // The menu is hidden together with its button while items are selected
-    LaunchedEffect(fileExplorerViewModel.selectionMode) {
-        if (fileExplorerViewModel.selectionMode) fabMenuExpanded = false
+    LaunchedEffect(viewModel.selectionMode) {
+        if (viewModel.selectionMode) fabMenuExpanded = false
     }
 
     ExplorerBackHandler(
-        enabled = fabMenuExpanded || fileExplorerViewModel.canNavigateBack,
+        enabled = fabMenuExpanded || viewModel.canNavigateBack,
         onBack = {
-            if (fabMenuExpanded) fabMenuExpanded = false else fileExplorerViewModel.navigateBack()
+            if (fabMenuExpanded) fabMenuExpanded = false else viewModel.navigateBack()
         }
     )
 
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            if (fileExplorerViewModel.selectionMode) {
-                SelectionTopBar(fileExplorerViewModel, commands)
-            } else {
-                FolderTopBar(fileExplorerViewModel, commands, title, actions)
-            }
-        },
-        floatingActionButton = {
-            if (!fileExplorerViewModel.selectionMode) {
-                NewItemMenu(
-                    commands = commands,
-                    atTop = atTop,
-                    expanded = fabMenuExpanded,
-                    onExpandedChange = { fabMenuExpanded = it }
-                )
-            }
-        },
-        floatingActionButtonPosition = FabPosition.End,
-    ) { innerPadding ->
-        CompositionLocalProvider(LocalLibraryDrag provides drag) {
-            BoxWithConstraints(
-                modifier = Modifier
-                    .consumeWindowInsets(innerPadding)
-                    .padding(innerPadding)
-                    .then(if (onFilesDropped != null) Modifier.fileDropTarget(onFilesDropped) else Modifier)
-            ) {
-                // A list on a phone, a grid of the first pages wider, beside the folders and the
-                // details of the item selected on the widest (or without thumbnails, a list)
-                val layout = if (thumbnails == null) LibraryLayout.LIST else LibraryLayout.of(maxWidth)
-                val files = fileExplorerViewModel.currentDirectoryFiles
-                val showDetails: ((FileExplorerViewModel.FileItem) -> Unit)? =
-                    if (layout == LibraryLayout.PANES) { item -> fileExplorerViewModel.selectOnly(item) } else null
-                Row {
-                    if (layout == LibraryLayout.PANES) {
-                        LibraryNavigationPane(fileExplorerViewModel, onOpenDocument)
-                        VerticalDivider()
-                    }
-                    Surface(modifier = Modifier.weight(1f)) {
-                        if (layout == LibraryLayout.LIST || thumbnails == null) {
-                            FileList(
-                                directoryFiles = files,
-                                fileExplorerViewModel = fileExplorerViewModel,
-                                onOpenDocument = onOpenDocument,
-                                listState = listState,
-                                commands = commands
-                            )
+    CompositionLocalProvider(LocalLibraryDrag provides drag, LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
+        BoxWithConstraints(
+            modifier = modifier
+                .background(MaterialTheme.colorScheme.background)
+                .then(if (onFilesDropped != null) Modifier.fileDropTarget(onFilesDropped) else Modifier)
+        ) {
+            // A list on a phone, a grid of the first pages wider, beside the navigation and the
+            // details of the selection on the widest (or without thumbnails, a list)
+            val layout = if (thumbnails == null) LibraryLayout.LIST else LibraryLayout.of(maxWidth)
+            val compact = layout == LibraryLayout.LIST
+            val itemActions = ItemActions(
+                viewModel = viewModel,
+                onOpenDocument = onOpenDocument,
+                thumbnails = thumbnails,
+                commands = commands,
+                onShowDetails = if (layout == LibraryLayout.PANES) { item -> viewModel.selectOnly(item) } else null
+            )
+            val newNote = { commands.newNote.perform() }
+            Row(modifier = Modifier.fillMaxSize()) {
+                if (layout == LibraryLayout.PANES) {
+                    LibraryNavigationPane(viewModel, commands, title, actions, onAction = { libraryAction = it })
+                }
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + if (layout == LibraryLayout.PANES) WindowInsetsSides.End else WindowInsetsSides.Horizontal))
+                ) {
+                    when (layout) {
+                        LibraryLayout.LIST -> if (viewModel.selectionMode) {
+                            SelectionBar(viewModel, commands, withActions = true, modifier = Modifier.padding(horizontal = 4.dp))
                         } else {
-                            FileGrid(
-                                directoryFiles = files,
-                                fileExplorerViewModel = fileExplorerViewModel,
-                                onOpenDocument = onOpenDocument,
-                                thumbnails = thumbnails,
-                                gridState = gridState,
-                                commands = commands,
-                                onShowDetails = showDetails
-                            )
+                            LibraryAppBar(title, actions, onAction = { libraryAction = it }, modifier = Modifier.padding(start = 16.dp, end = 8.dp))
                         }
+                        LibraryLayout.GRID -> LibraryAppBar(
+                            brand = title,
+                            actions = actions,
+                            onAction = { libraryAction = it },
+                            modifier = Modifier.padding(start = 28.dp, end = 20.dp, top = 8.dp),
+                            search = { LibrarySearchField(viewModel, commands, searchFocus, modifier = Modifier.width(260.dp).padding(end = 8.dp)) }
+                        )
+                        LibraryLayout.PANES -> Unit
                     }
-                    val selected = fileExplorerViewModel.selectedItems.singleOrNull()
-                    if (layout == LibraryLayout.PANES && selected != null) {
-                        VerticalDivider()
-                        LibraryDetailsPane(selected, commands, onClose = { fileExplorerViewModel.clearSelection() })
+                    LibraryContent(
+                        actions = itemActions,
+                        compact = compact,
+                        gridState = gridState,
+                        onNewNote = newNote,
+                        onImportPdf = onImportPdf,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        libraryHeader(layout, viewModel, commands, searchFocus)
                     }
                 }
-                LibraryDragShadow(drag)
+                if (layout == LibraryLayout.PANES && viewModel.selectedItems.isNotEmpty()) {
+                    VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    LibraryDetailsPane(itemActions, commands, onClose = { viewModel.clearSelection() })
+                }
+            }
+            NewItemScrim(fabMenuExpanded, onDismiss = { fabMenuExpanded = false })
+            if (!viewModel.selectionMode || layout == LibraryLayout.PANES) {
+                NewItemButton(
+                    commands = commands,
+                    extended = !compact,
+                    withMenu = layout != LibraryLayout.PANES,
+                    expanded = fabMenuExpanded,
+                    onExpandedChange = { fabMenuExpanded = it },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.End))
+                        .padding(
+                            end = if (layout == LibraryLayout.PANES && viewModel.selectedItems.isNotEmpty()) LibraryLayout.DetailsWidth + 28.dp else if (compact) 16.dp else 24.dp,
+                            bottom = if (compact) 16.dp else 24.dp
+                        )
+                )
+            }
+            LibraryDragShadow(drag, viewModel)
+        }
+    }
+}
+
+/**
+ * The header of the content: the title (or the selection, beside the navigation), the search and
+ * the views where there is room; the search under the title on a phone; the filters.
+ */
+private fun LazyGridScope.libraryHeader(
+    layout: LibraryLayout,
+    viewModel: FileExplorerViewModel,
+    commands: LibraryCommands,
+    searchFocus: FocusRequester
+) {
+    item(key = "header", span = { GridItemSpan(maxLineSpan) }) {
+        Column(
+            modifier = Modifier.padding(
+                start = if (layout == LibraryLayout.LIST) 16.dp else 0.dp,
+                end = if (layout == LibraryLayout.LIST) 16.dp else 0.dp,
+                top = when (layout) {
+                    LibraryLayout.LIST -> 4.dp
+                    LibraryLayout.GRID -> 20.dp
+                    LibraryLayout.PANES -> 24.dp
+                },
+                bottom = 6.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(if (layout == LibraryLayout.LIST) 14.dp else 20.dp)
+        ) {
+            when (layout) {
+                LibraryLayout.LIST -> {
+                    LibraryTitle(viewModel, commands, compact = true)
+                    LibrarySearchField(viewModel, commands, searchFocus, modifier = Modifier.fillMaxWidth())
+                }
+                LibraryLayout.GRID -> if (viewModel.selectionMode) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        SelectionBar(viewModel, commands, withActions = true, modifier = Modifier.weight(1f))
+                    }
+                } else {
+                    LibraryTitle(viewModel, commands, compact = false) {
+                        LibraryViewControls(viewModel, showViews = true)
+                    }
+                }
+                LibraryLayout.PANES -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        if (viewModel.selectionMode) {
+                            SelectionBar(viewModel, commands, withActions = false)
+                        } else {
+                            LibraryTitle(viewModel, commands, compact = false)
+                        }
+                    }
+                    LibrarySearchField(viewModel, commands, searchFocus, modifier = Modifier.width(280.dp))
+                    LibraryViewControls(viewModel, showViews = true)
+                }
             }
         }
     }
+    item(key = "filters", span = { GridItemSpan(maxLineSpan) }) {
+        LibraryFilterChips(
+            viewModel,
+            contentPadding = if (layout == LibraryLayout.LIST) PaddingValues(horizontal = 16.dp) else PaddingValues(),
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+    }
+}
+
+/** The About & Licenses dialog of the application (see `LocalAboutAppInfo`), as an action of the library. */
+@Composable
+fun aboutLibraryAction(): LibraryAction = remember {
+    LibraryAction(
+        icon = DrawViewIcons.Info,
+        label = { stringResource(DrawViewRes.string.about_dialog_title) }
+    ) { onDone -> AboutLicensesDialog(onDismiss = onDone) }
 }
 
 /** Opens the About & Licenses dialog of the application (see `LocalAboutAppInfo`). */
 @Composable
 fun AboutLicensesButton() {
     var showAboutDialog by remember { mutableStateOf(false) }
-    HoverTooltip(stringResource(DrawViewRes.string.about_dialog_title)) {
-        IconButton(onClick = { showAboutDialog = true }) {
-            Icon(
-                imageVector = Icons.Outlined.Info,
-                contentDescription = stringResource(DrawViewRes.string.about_dialog_title)
-            )
-        }
-    }
+    DesignIconButton(DrawViewIcons.Info, stringResource(DrawViewRes.string.about_dialog_title), { showAboutDialog = true })
     if (showAboutDialog) {
         AboutLicensesDialog(onDismiss = { showAboutDialog = false })
     }
@@ -258,191 +320,12 @@ private fun ExplorerBackHandler(enabled: Boolean, onBack: () -> Unit) {
     )
 }
 
-/**
- * Title bar of the selection mode, with the commands on the selected items: those of the
- * application (e.g. "Export") when a single document is selected.
- */
-@OptIn(ExperimentalMaterial3Api::class)
+/** Asks the name of a new folder and creates it in the current folder. */
 @Composable
-private fun SelectionTopBar(fileExplorerViewModel: FileExplorerViewModel, commands: LibraryCommands) {
-    val selectedItems = fileExplorerViewModel.selectedItems
-    TopAppBar(
-        title = {
-            Text(
-                text = stringResource(Res.string.explorer_selected_count, selectedItems.size),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        },
-        navigationIcon = {
-            HoverTooltip(stringResource(Res.string.explorer_action_clear_selection)) {
-                IconButton(onClick = { fileExplorerViewModel.clearSelection() }) {
-                    Icon(
-                        imageVector = Icons.Filled.Close,
-                        contentDescription = stringResource(Res.string.explorer_action_clear_selection)
-                    )
-                }
-            }
-        },
-        actions = {
-            for (command in commands.documentActionCommands) {
-                if (command.isEnabled()) CommandIconButton(command)
-            }
-            CommandIconButton(commands.move)
-            CommandIconButton(commands.delete)
-            CommandIconButton(commands.selectAll, icon = Icons.Filled.SelectAll)
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-        )
-    )
-}
-
-/** The icon button of [command] (its own icon, or [icon]), with its tooltip. */
-@Composable
-private fun CommandIconButton(command: Command, icon: ImageVector? = null) {
-    CommandTooltip(command) {
-        IconButton(onClick = { command.performIfEnabled() }, enabled = command.isEnabled()) {
-            val painter = if (icon != null) rememberVectorPainter(icon) else command.icon?.invoke()
-            if (painter != null) Icon(painter, contentDescription = command.label())
-        }
-    }
-}
-
-/** Title bar of the root ([title] and [actions]) or of a folder (its name and the back button). */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun FolderTopBar(
-    fileExplorerViewModel: FileExplorerViewModel,
-    commands: LibraryCommands,
-    title: @Composable () -> Unit,
-    actions: @Composable RowScope.() -> Unit
-) {
-    AnimatedContent(targetState = fileExplorerViewModel.currentFolder) { folder ->
-        if (folder == null) {
-            CenterAlignedTopAppBar(title = title, actions = actions)
-        } else {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = folder.name,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                },
-                navigationIcon = {
-                    CommandTooltip(commands.enclosingFolder) {
-                        IconButton(onClick = { commands.enclosingFolder.performIfEnabled() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(Res.string.explorer_action_back)
-                            )
-                        }
-                    }
-                }
-            )
-        }
-    }
-}
-
-/** The floating button whose menu creates a new note or a new folder in the current folder ([commands]). */
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-private fun NewItemMenu(
-    commands: LibraryCommands,
-    atTop: Boolean,
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit
-) {
-    val fabVisible = atTop
-
-    val items = listOf(
-        Icons.AutoMirrored.Filled.Article to stringResource(Res.string.explorer_fab_item_note),
-        Icons.Filled.Folder to stringResource(Res.string.explorer_fab_item_folder),
-    )
-
-    val stateExpandedStr = stringResource(Res.string.explorer_fab_state_expanded)
-    val stateCollapsedStr = stringResource(Res.string.explorer_fab_state_collapsed)
-    val toggleMenuStr = stringResource(Res.string.explorer_fab_toggle_menu)
-    val closeMenuStr = stringResource(Res.string.explorer_fab_close_menu)
-
-    FloatingActionButtonMenu(
-        expanded = expanded,
-        button = {
-            ToggleFloatingActionButton(
-                modifier = Modifier
-                    .semantics {
-                        traversalIndex = -1f
-                        stateDescription = if (expanded) stateExpandedStr else stateCollapsedStr
-                        contentDescription = toggleMenuStr
-                    }
-                    .animateFloatingActionButton(
-                        visible = fabVisible || expanded,
-                        alignment = Alignment.BottomEnd,
-                    ),
-                checked = expanded,
-                onCheckedChange = { onExpandedChange(!expanded) },
-            ) {
-                val imageVector by remember {
-                    derivedStateOf {
-                        if (checkedProgress > 0.5f) Icons.Filled.Close else Icons.Filled.Add
-                    }
-                }
-                Icon(
-                    painter = rememberVectorPainter(imageVector),
-                    contentDescription = null,
-                    modifier = Modifier.animateIcon({ checkedProgress }),
-                )
-            }
-        }
-    ) {
-        items.forEachIndexed { i, item ->
-            FloatingActionButtonMenuItem(
-                modifier = Modifier.semantics {
-                    isTraversalGroup = true
-                    // Add a custom a11y action to allow closing the menu when focusing
-                    // the last menu item, since the close button comes before the first
-                    // menu item in the traversal order.
-                    if (i == items.size - 1) {
-                        customActions = listOf(
-                            CustomAccessibilityAction(
-                                label = closeMenuStr,
-                                action = {
-                                    onExpandedChange(false)
-                                    true
-                                },
-                            )
-                        )
-                    }
-                },
-                onClick = {
-                    onExpandedChange(false)
-                    when (i) {
-                        0 -> commands.newNote.perform()
-                        1 -> commands.newFolder.perform()
-                    }
-                },
-                icon = { Icon(item.first, contentDescription = null) },
-                text = { Text(text = item.second) }
-            )
-        }
-    }
-}
-
-/** Asks the name of a new note or folder and creates it in the current folder. */
-@Composable
-private fun NewItemDialog(
-    type: FileType,
-    title: String,
-    fileExplorerViewModel: FileExplorerViewModel,
-    onDismissRequest: () -> Unit
-) {
+private fun NewFolderDialog(fileExplorerViewModel: FileExplorerViewModel, onDismissRequest: () -> Unit) {
     var creationError by remember { mutableStateOf<StringResource?>(null) }
     RequestNameDialog(
-        title = title,
+        title = stringResource(Res.string.explorer_dialog_new_folder),
         labelTextField = stringResource(Res.string.explorer_input_name),
         textConfirmButton = stringResource(Res.string.explorer_action_confirm),
         onDismissRequest = onDismissRequest,
@@ -453,7 +336,7 @@ private fun NewItemDialog(
         error = creationError,
         onConfirm = { text ->
             fileExplorerViewModel.createFile(
-                type, text,
+                FileType.FOLDER, text,
                 onSuccess = onDismissRequest,
                 onError = { creationError = it }
             )
@@ -463,16 +346,20 @@ private fun NewItemDialog(
 
 /** Shows [dialog], opened by a command of the library, until it is done or dismissed. */
 @Composable
-private fun LibraryDialogHost(dialog: LibraryDialog, viewModel: FileExplorerViewModel, onDismiss: () -> Unit) {
+private fun LibraryDialogHost(
+    dialog: LibraryDialog,
+    viewModel: FileExplorerViewModel,
+    onOpenDocument: (String) -> Unit,
+    onImportPdf: (() -> Unit)?,
+    onImportImage: (() -> Unit)?,
+    onDismiss: () -> Unit
+) {
     when (dialog) {
-        is LibraryDialog.NewItem -> NewItemDialog(
-            type = dialog.type,
-            title = stringResource(
-                if (dialog.type == FileType.FILE) Res.string.explorer_dialog_new_note else Res.string.explorer_dialog_new_folder
-            ),
-            fileExplorerViewModel = viewModel,
-            onDismissRequest = onDismiss
-        )
+        is LibraryDialog.NewItem -> if (dialog.type == FileType.FILE) {
+            NewNoteDialog(viewModel, onOpenDocument, onImportPdf, onImportImage, onDismiss)
+        } else {
+            NewFolderDialog(viewModel, onDismissRequest = onDismiss)
+        }
         is LibraryDialog.Rename -> RequestNameDialog(
             title = stringResource(Res.string.explorer_action_rename),
             labelTextField = stringResource(Res.string.explorer_input_name),
@@ -483,32 +370,44 @@ private fun LibraryDialogHost(dialog: LibraryDialog, viewModel: FileExplorerView
             onConfirm = { text ->
                 viewModel.renameFile(dialog.item, text)
                 onDismiss()
-            }
-        )
-        is LibraryDialog.Move -> MoveFileDialog(
-            onDismissRequest = onDismiss,
-            getSubFolders = { folderId -> viewModel.getSubFolders(folderId) },
-            isFolderSelected = { folderId -> dialog.items.any { it.id == folderId && it.type == FileType.FOLDER } },
-            isValidMove = { targetId -> viewModel.isValidMove(targetId, dialog.items) },
-            onConfirm = { targetFolderId ->
-                viewModel.moveFiles(dialog.items, targetFolderId)
-                onDismiss()
-            }
-        )
-        is LibraryDialog.Delete -> ConfirmActionDialog(
-            title = stringResource(Res.string.explorer_action_delete),
-            textDescription = if (dialog.items.size == 1) {
-                stringResource(Res.string.explorer_dialog_delete_description)
-            } else {
-                stringResource(Res.string.explorer_dialog_delete_multiple_description, dialog.items.size)
             },
-            textConfirmButton = stringResource(Res.string.explorer_action_confirm),
-            onDismissRequest = onDismiss,
-            onConfirm = {
-                viewModel.deleteFiles(dialog.items)
-                onDismiss()
-            }
+            icon = DrawViewIcons.Pencil
         )
+        is LibraryDialog.Move -> {
+            val from = viewModel.folderName(dialog.items.firstOrNull()?.folderId) ?: stringResource(Res.string.explorer_root_folder)
+            MoveFileDialog(
+                onDismissRequest = onDismiss,
+                getSubFolders = { folderId -> viewModel.getSubFolders(folderId) },
+                isFolderSelected = { folderId -> dialog.items.any { it.id == folderId && it.type == FileType.FOLDER } },
+                isValidMove = { targetId -> viewModel.isValidMove(targetId, dialog.items) && dialog.items.none { it.folderId == targetId } },
+                onConfirm = { targetFolderId ->
+                    viewModel.moveFiles(dialog.items, targetFolderId)
+                    onDismiss()
+                },
+                title = stringResource(Res.string.explorer_action_move_to),
+                subtitle = stringResource(Res.string.explorer_move_subtitle, pluralStringResource(Res.plurals.explorer_items_count, dialog.items.size, dialog.items.size), from)
+            )
+        }
+        is LibraryDialog.Delete -> {
+            val single = dialog.items.singleOrNull()
+            val shared = dialog.items.firstOrNull { it.isShared }
+            ConfirmActionDialog(
+                title = if (single != null) stringResource(Res.string.explorer_delete_title_one, single.name) else stringResource(Res.string.explorer_action_delete),
+                textDescription = if (single != null) {
+                    stringResource(Res.string.explorer_dialog_delete_description)
+                } else {
+                    stringResource(Res.string.explorer_dialog_delete_multiple_description, dialog.items.size) + " " +
+                        stringResource(Res.string.explorer_dialog_delete_description)
+                },
+                textConfirmButton = stringResource(Res.string.explorer_delete_confirm),
+                onDismissRequest = onDismiss,
+                onConfirm = {
+                    viewModel.deleteFiles(dialog.items)
+                    onDismiss()
+                },
+                note = shared?.let { stringResource(Res.string.explorer_delete_shared, it.name) }
+            )
+        }
         LibraryDialog.About -> AboutLicensesDialog(onDismiss = onDismiss)
     }
 }

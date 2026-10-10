@@ -42,6 +42,7 @@ class LibraryCommandsTest {
         var dialog: LibraryDialog? = null
         var opened: String? = null
         var action: Pair<DocumentAction, FileItem>? = null
+        var searchFocused = false
     }
 
     private val export = DocumentAction(Icons.Outlined.IosShare, { "Export" }, { _, _, _ -> })
@@ -54,7 +55,8 @@ class LibraryCommandsTest {
             openDocument = { shown.opened = it },
             documentActions = listOf(export),
             showDialog = { shown.dialog = it },
-            chooseAction = { action, item -> shown.action = action to item }
+            chooseAction = { action, item -> shown.action = action to item },
+            focusSearch = { shown.searchFocused = true }
         )
         return viewModel to (commands to shown)
     }

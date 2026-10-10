@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="explorer_fab_item_note">Archivo</string>
+    <string name="explorer_fab_item_note">Nota</string>
     <string name="explorer_fab_item_folder">Carpeta</string>
     <string name="explorer_fab_state_expanded">Expandido</string>
     <string name="explorer_fab_state_collapsed">Contraído</string>
@@ -40,4 +40,81 @@
     <string name="explorer_shared">Compartido con otros dispositivos</string>
     <string name="explorer_action_open">Abrir</string>
     <string name="explorer_command_sort_by">Ordenar por: %1$s</string>
+    <string name="explorer_section_recent">Recientes</string>
+    <string name="explorer_section_shared">Compartidas</string>
+    <string name="explorer_section_folders">Carpetas</string>
+    <string name="explorer_section_notes">Notas</string>
+    <string name="explorer_search_placeholder">Buscar notas</string>
+    <string name="explorer_search_clear">Borrar la búsqueda</string>
+    <string name="explorer_command_search">Buscar</string>
+    <string name="explorer_filter_all">Todas</string>
+    <string name="explorer_filter_notes">Notas</string>
+    <string name="explorer_tag_pdf">PDF</string>
+    <string name="explorer_tag_pdfs">PDF</string>
+    <string name="explorer_tag_shared">Compartida</string>
+    <string name="explorer_sorted_by_name">ordenadas por nombre</string>
+    <string name="explorer_sorted_by_date_created">ordenadas por fecha de creación</string>
+    <string name="explorer_sorted_by_last_modified">ordenadas por última modificación</string>
+    <string name="explorer_sorted_by_last_opened">ordenadas por última apertura</string>
+    <string name="explorer_view_grid">Cuadrícula</string>
+    <string name="explorer_view_list">Lista</string>
+    <string name="explorer_sort">Ordenar</string>
+    <string name="explorer_sort_by">Ordenar por</string>
+    <string name="explorer_details_title">Detalles</string>
+    <string name="explorer_details_modified">Modificada</string>
+    <string name="explorer_details_created">Creada</string>
+    <string name="explorer_details_pages">Páginas</string>
+    <string name="explorer_details_folder">Carpeta</string>
+    <string name="explorer_details_notes">Notas</string>
+    <string name="explorer_open_note">Abrir nota</string>
+    <string name="explorer_open_folder">Abrir carpeta</string>
+    <string name="explorer_more_actions">Más acciones</string>
+    <string name="explorer_selection_hint">%1$s + clic añade un elemento, Mayús + clic extiende hasta él</string>
+    <string name="explorer_empty_library_subtitle">Aún no hay notas</string>
+    <string name="explorer_empty_library_title">Tus notas vivirán aquí</string>
+    <string name="explorer_empty_library_body">Escribe con el lápiz, teclea o importa el PDF de las diapositivas.</string>
+    <string name="explorer_import_pdf">Importar un PDF</string>
+    <string name="explorer_empty_folder_title">Esta carpeta está vacía</string>
+    <string name="explorer_empty_folder_body">Crea aquí una nota o mueve notas a ella.</string>
+    <string name="explorer_no_results_title">Ninguna nota coincide con «%1$s»</string>
+    <string name="explorer_no_results_body">La búsqueda mira los nombres de las notas y de las carpetas. Revisa la ortografía.</string>
+    <string name="explorer_empty_recent_title">Aún no has abierto ninguna nota</string>
+    <string name="explorer_empty_recent_body">Las notas que abres aparecen aquí, la última primero.</string>
+    <string name="explorer_empty_shared_title">No hay notas compartidas</string>
+    <string name="explorer_empty_shared_body">Las notas compartidas con otros dispositivos aparecen aquí.</string>
+    <string name="explorer_move_subtitle">%1$s · desde %2$s</string>
+    <string name="explorer_delete_title_one">¿Eliminar «%1$s»?</string>
+    <string name="explorer_delete_shared">«%1$s» está compartida: los demás conservan su copia.</string>
+    <string name="explorer_drop_title">Suelta para crear una nota</string>
+    <string name="explorer_drop_body">Un PDF o una imagen se convierte en una nota de %1$s, con el nombre del archivo</string>
+    <string name="explorer_drag_move_to">Mover a %1$s</string>
+    <string name="explorer_new_note_paper">Papel</string>
+    <string name="explorer_paper_blank">En blanco</string>
+    <string name="explorer_paper_lined">Rayada</string>
+    <string name="explorer_paper_grid">Cuadriculada</string>
+    <string name="explorer_paper_dotted">Punteada</string>
+    <string name="explorer_input_name_short">Nombre</string>
+    <string name="explorer_new_item">Nuevo</string>
+    <plurals name="explorer_notes_count">
+        <item quantity="one">%1$d nota</item>
+        <item quantity="other">%1$d notas</item>
+    </plurals>
+    <plurals name="explorer_folders_count">
+        <item quantity="one">%1$d carpeta</item>
+        <item quantity="other">%1$d carpetas</item>
+    </plurals>
+    <plurals name="explorer_items_count">
+        <item quantity="one">%1$d elemento</item>
+        <item quantity="other">%1$d elementos</item>
+    </plurals>
+    <plurals name="explorer_selection_summary">
+        <item quantity="one">%1$d elemento seleccionado</item>
+        <item quantity="other">%1$d elementos seleccionados</item>
+    </plurals>
+    <string name="explorer_new_folder">Nueva carpeta</string>
+    <string name="explorer_untitled_note">Nota sin título</string>
+    <string name="explorer_create_note">Crear nota</string>
+    <string name="explorer_import_pdf_short">Importar PDF</string>
+    <string name="explorer_import_image">Importar imagen</string>
+    <string name="explorer_delete_confirm">Eliminar</string>
 </resources>

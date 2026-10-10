@@ -24,6 +24,7 @@ enum class CommandGroup { FILE, EDIT, VIEW, INSERT, FORMAT, TOOLS, HELP }
  * @param shortcuts the keys running it; the first is the one shown.
  * @param isChecked whether it is on, for a command that is a state (a tool, a toggle); `null` for
  *   an action.
+ * @param destructive it deletes something (the menus write it in the color of the errors).
  */
 @Stable
 class Command(
@@ -35,6 +36,7 @@ class Command(
     val shortcuts: List<Shortcut> = emptyList(),
     val isEnabled: () -> Boolean = { true },
     val isChecked: (() -> Boolean)? = null,
+    val destructive: Boolean = false,
     val perform: () -> Unit
 ) {
     /** The shortcut shown beside the command, as the platform writes it. */

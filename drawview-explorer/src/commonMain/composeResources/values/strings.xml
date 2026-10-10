@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="explorer_fab_item_note">File</string>
+    <string name="explorer_fab_item_note">Note</string>
     <string name="explorer_fab_item_folder">Folder</string>
     <string name="explorer_fab_state_expanded">Expanded</string>
     <string name="explorer_fab_state_collapsed">Collapsed</string>
@@ -40,4 +40,81 @@
     <string name="explorer_shared">Shared with other devices</string>
     <string name="explorer_action_open">Open</string>
     <string name="explorer_command_sort_by">Sort by %1$s</string>
+    <string name="explorer_section_recent">Recent</string>
+    <string name="explorer_section_shared">Shared</string>
+    <string name="explorer_section_folders">Folders</string>
+    <string name="explorer_section_notes">Notes</string>
+    <string name="explorer_search_placeholder">Search notes</string>
+    <string name="explorer_search_clear">Clear the search</string>
+    <string name="explorer_command_search">Search</string>
+    <string name="explorer_filter_all">All</string>
+    <string name="explorer_filter_notes">Notes</string>
+    <string name="explorer_tag_pdf">PDF</string>
+    <string name="explorer_tag_pdfs">PDFs</string>
+    <string name="explorer_tag_shared">Shared</string>
+    <string name="explorer_sorted_by_name">sorted by name</string>
+    <string name="explorer_sorted_by_date_created">sorted by date created</string>
+    <string name="explorer_sorted_by_last_modified">sorted by last modified</string>
+    <string name="explorer_sorted_by_last_opened">sorted by last open</string>
+    <string name="explorer_view_grid">Grid</string>
+    <string name="explorer_view_list">List</string>
+    <string name="explorer_sort">Sort</string>
+    <string name="explorer_sort_by">Sort by</string>
+    <string name="explorer_details_title">Details</string>
+    <string name="explorer_details_modified">Modified</string>
+    <string name="explorer_details_created">Created</string>
+    <string name="explorer_details_pages">Pages</string>
+    <string name="explorer_details_folder">Folder</string>
+    <string name="explorer_details_notes">Notes</string>
+    <string name="explorer_open_note">Open note</string>
+    <string name="explorer_open_folder">Open folder</string>
+    <string name="explorer_more_actions">More actions</string>
+    <string name="explorer_selection_hint">%1$s click adds an item, Shift click extends to it</string>
+    <string name="explorer_empty_library_subtitle">No notes yet</string>
+    <string name="explorer_empty_library_title">Your notes will live here</string>
+    <string name="explorer_empty_library_body">Write with the pencil, type, or import the PDF of the slides.</string>
+    <string name="explorer_import_pdf">Import a PDF</string>
+    <string name="explorer_empty_folder_title">This folder is empty</string>
+    <string name="explorer_empty_folder_body">Make a note here, or move notes into it.</string>
+    <string name="explorer_no_results_title">No notes match “%1$s”</string>
+    <string name="explorer_no_results_body">The search looks at the names of the notes and of the folders. Check the spelling.</string>
+    <string name="explorer_empty_recent_title">No notes opened yet</string>
+    <string name="explorer_empty_recent_body">The notes you open appear here, the last first.</string>
+    <string name="explorer_empty_shared_title">No shared notes</string>
+    <string name="explorer_empty_shared_body">The notes shared with other devices appear here.</string>
+    <string name="explorer_move_subtitle">%1$s · from %2$s</string>
+    <string name="explorer_delete_title_one">Delete “%1$s”?</string>
+    <string name="explorer_delete_shared">“%1$s” is shared: the others keep their copy.</string>
+    <string name="explorer_drop_title">Drop to make a note of it</string>
+    <string name="explorer_drop_body">A PDF or an image becomes a note of %1$s, named after the file</string>
+    <string name="explorer_drag_move_to">Move to %1$s</string>
+    <string name="explorer_new_note_paper">Paper</string>
+    <string name="explorer_paper_blank">Blank</string>
+    <string name="explorer_paper_lined">Lined</string>
+    <string name="explorer_paper_grid">Grid</string>
+    <string name="explorer_paper_dotted">Dotted</string>
+    <string name="explorer_input_name_short">Name</string>
+    <string name="explorer_new_item">New</string>
+    <plurals name="explorer_notes_count">
+        <item quantity="one">%1$d note</item>
+        <item quantity="other">%1$d notes</item>
+    </plurals>
+    <plurals name="explorer_folders_count">
+        <item quantity="one">%1$d folder</item>
+        <item quantity="other">%1$d folders</item>
+    </plurals>
+    <plurals name="explorer_items_count">
+        <item quantity="one">%1$d item</item>
+        <item quantity="other">%1$d items</item>
+    </plurals>
+    <plurals name="explorer_selection_summary">
+        <item quantity="one">%1$d item selected</item>
+        <item quantity="other">%1$d items selected</item>
+    </plurals>
+    <string name="explorer_new_folder">New folder</string>
+    <string name="explorer_untitled_note">Untitled note</string>
+    <string name="explorer_create_note">Create note</string>
+    <string name="explorer_import_pdf_short">Import PDF</string>
+    <string name="explorer_import_image">Import image</string>
+    <string name="explorer_delete_confirm">Delete</string>
 </resources>

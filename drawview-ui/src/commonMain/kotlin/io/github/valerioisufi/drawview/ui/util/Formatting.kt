@@ -37,3 +37,21 @@ fun formatDateTime(epochMs: Long, monthNames: List<String>): String {
     val minute = dateTime.minute.toString().padStart(2, '0')
     return "$day $month ${dateTime.year}, $hour:$minute"
 }
+
+/** Formats an epoch timestamp as "d MMM · HH:mm" in the local time zone (the cards of the library). */
+@OptIn(ExperimentalTime::class)
+fun formatShortDateTime(epochMs: Long, monthNames: List<String>): String {
+    val dateTime = Instant.fromEpochMilliseconds(epochMs).toLocalDateTime(TimeZone.currentSystemDefault())
+    val month = monthNames.getOrNull(dateTime.month.ordinal) ?: (dateTime.month.ordinal + 1).toString()
+    val hour = dateTime.hour.toString().padStart(2, '0')
+    val minute = dateTime.minute.toString().padStart(2, '0')
+    return "${dateTime.day} $month · $hour:$minute"
+}
+
+/** Formats an epoch timestamp as "d MMM yyyy" in the local time zone. */
+@OptIn(ExperimentalTime::class)
+fun formatDate(epochMs: Long, monthNames: List<String>): String {
+    val dateTime = Instant.fromEpochMilliseconds(epochMs).toLocalDateTime(TimeZone.currentSystemDefault())
+    val month = monthNames.getOrNull(dateTime.month.ordinal) ?: (dateTime.month.ordinal + 1).toString()
+    return "${dateTime.day} $month ${dateTime.year}"
+}

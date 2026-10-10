@@ -25,18 +25,20 @@ import io.github.valerioisufi.drawview.sync.JoinRequest
 import io.github.valerioisufi.drawview.sync.JoinStatus
 import io.github.valerioisufi.drawview.sync.Role
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.*
+import io.github.valerioisufi.drawview.ui.session.LibraryAction
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
-/** The action of the library joining a document shared by another device (by its invitation). */
-@Composable
-fun JoinSharedDocumentButton(collaboration: Collaboration) {
-    var dialog by remember { mutableStateOf(false) }
-    IconButton(onClick = { dialog = true }) {
-        Icon(imageVector = Icons.Outlined.GroupAdd, contentDescription = stringResource(Res.string.sync_join))
-    }
-    if (dialog) JoinDialog(collaboration, link = "", onDismiss = { dialog = false })
-}
+/**
+ * The action of the library joining a document shared by another device (by its invitation): a
+ * wide button of the navigation pane where there is one.
+ */
+fun Collaboration.joinAction(): LibraryAction = LibraryAction(
+    icon = DrawViewIcons.Link,
+    label = { stringResource(Res.string.sync_join) },
+    prominent = true
+) { onDone -> JoinDialog(this, link = "", onDismiss = onDone) }
 
 /**
  * The dialogs of the collaboration shown wherever the application is: joining the invitations

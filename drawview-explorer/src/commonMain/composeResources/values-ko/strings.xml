@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="explorer_fab_item_note">파일</string>
+    <string name="explorer_fab_item_note">노트</string>
     <string name="explorer_fab_item_folder">폴더</string>
     <string name="explorer_fab_state_expanded">확장됨</string>
     <string name="explorer_fab_state_collapsed">축소됨</string>
@@ -40,4 +40,77 @@
     <string name="explorer_shared">다른 기기와 공유됨</string>
     <string name="explorer_action_open">열기</string>
     <string name="explorer_command_sort_by">정렬 기준: %1$s</string>
+    <string name="explorer_section_recent">최근</string>
+    <string name="explorer_section_shared">공유됨</string>
+    <string name="explorer_section_folders">폴더</string>
+    <string name="explorer_section_notes">노트</string>
+    <string name="explorer_search_placeholder">노트 검색</string>
+    <string name="explorer_search_clear">검색 지우기</string>
+    <string name="explorer_command_search">검색</string>
+    <string name="explorer_filter_all">전체</string>
+    <string name="explorer_filter_notes">노트</string>
+    <string name="explorer_tag_pdf">PDF</string>
+    <string name="explorer_tag_pdfs">PDF</string>
+    <string name="explorer_tag_shared">공유됨</string>
+    <string name="explorer_sorted_by_name">이름순</string>
+    <string name="explorer_sorted_by_date_created">만든 날짜순</string>
+    <string name="explorer_sorted_by_last_modified">수정한 날짜순</string>
+    <string name="explorer_sorted_by_last_opened">마지막으로 연 날짜순</string>
+    <string name="explorer_view_grid">그리드</string>
+    <string name="explorer_view_list">목록</string>
+    <string name="explorer_sort">정렬</string>
+    <string name="explorer_sort_by">정렬 기준</string>
+    <string name="explorer_details_title">세부 정보</string>
+    <string name="explorer_details_modified">수정한 날짜</string>
+    <string name="explorer_details_created">만든 날짜</string>
+    <string name="explorer_details_pages">페이지</string>
+    <string name="explorer_details_folder">폴더</string>
+    <string name="explorer_details_notes">노트</string>
+    <string name="explorer_open_note">노트 열기</string>
+    <string name="explorer_open_folder">폴더 열기</string>
+    <string name="explorer_more_actions">추가 작업</string>
+    <string name="explorer_selection_hint">%1$s+클릭으로 추가, Shift+클릭으로 범위 선택</string>
+    <string name="explorer_empty_library_subtitle">아직 노트가 없습니다</string>
+    <string name="explorer_empty_library_title">여기에 노트가 모입니다</string>
+    <string name="explorer_empty_library_body">펜으로 쓰거나 입력하거나 슬라이드 PDF를 가져오세요.</string>
+    <string name="explorer_import_pdf">PDF 가져오기</string>
+    <string name="explorer_empty_folder_title">이 폴더는 비어 있습니다</string>
+    <string name="explorer_empty_folder_body">여기에 노트를 만들거나 노트를 옮기세요.</string>
+    <string name="explorer_no_results_title">“%1$s”와(과) 일치하는 노트가 없습니다</string>
+    <string name="explorer_no_results_body">검색은 노트와 폴더의 이름을 찾습니다. 철자를 확인하세요.</string>
+    <string name="explorer_empty_recent_title">아직 연 노트가 없습니다</string>
+    <string name="explorer_empty_recent_body">연 노트가 최근 순서로 여기에 표시됩니다.</string>
+    <string name="explorer_empty_shared_title">공유된 노트가 없습니다</string>
+    <string name="explorer_empty_shared_body">다른 기기와 공유한 노트가 여기에 표시됩니다.</string>
+    <string name="explorer_move_subtitle">%1$s · %2$s에서</string>
+    <string name="explorer_delete_title_one">“%1$s”을(를) 삭제할까요?</string>
+    <string name="explorer_delete_shared">“%1$s”은(는) 공유되어 있습니다. 다른 사람의 사본은 유지됩니다.</string>
+    <string name="explorer_drop_title">놓아서 노트로 만들기</string>
+    <string name="explorer_drop_body">PDF나 이미지가 파일 이름으로 %1$s의 노트가 됩니다</string>
+    <string name="explorer_drag_move_to">%1$s(으)로 이동</string>
+    <string name="explorer_new_note_paper">용지</string>
+    <string name="explorer_paper_blank">빈 용지</string>
+    <string name="explorer_paper_lined">줄</string>
+    <string name="explorer_paper_grid">모눈</string>
+    <string name="explorer_paper_dotted">점선</string>
+    <string name="explorer_input_name_short">이름</string>
+    <string name="explorer_new_item">새로 만들기</string>
+    <plurals name="explorer_notes_count">
+        <item quantity="other">노트 %1$d개</item>
+    </plurals>
+    <plurals name="explorer_folders_count">
+        <item quantity="other">폴더 %1$d개</item>
+    </plurals>
+    <plurals name="explorer_items_count">
+        <item quantity="other">%1$d개 항목</item>
+    </plurals>
+    <plurals name="explorer_selection_summary">
+        <item quantity="other">%1$d개 항목 선택됨</item>
+    </plurals>
+    <string name="explorer_new_folder">새 폴더</string>
+    <string name="explorer_untitled_note">제목 없는 노트</string>
+    <string name="explorer_create_note">노트 만들기</string>
+    <string name="explorer_import_pdf_short">PDF 가져오기</string>
+    <string name="explorer_import_image">이미지 가져오기</string>
+    <string name="explorer_delete_confirm">삭제</string>
 </resources>

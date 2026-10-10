@@ -35,6 +35,8 @@ import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileItem
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_selected_count
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_drag_move_to
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_root_folder
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 
@@ -168,27 +170,22 @@ internal fun Modifier.dropTarget(viewModel: FileExplorerViewModel, folderId: Str
 }
 
 /**
- * What follows the pointer while items are dragged: their name or their number. Put it over the
- * whole library.
+ * What follows the pointer while items are dragged: their name or their number, and the folder
+ * they would go to. Put it over the whole library.
  */
 @Composable
-internal fun LibraryDragShadow(drag: LibraryDrag) {
+internal fun LibraryDragShadow(drag: LibraryDrag, viewModel: FileExplorerViewModel) {
     if (!drag.isDragging) return
     val origin = remember { Coordinates() }
     Box(modifier = Modifier.onGloballyPositioned { origin.value = it }) {
         val offset = drag.position - (origin.value?.takeIf { it.isAttached }?.positionInRoot() ?: Offset.Zero)
-        Surface(
-            shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colorScheme.secondaryContainer,
-            shadowElevation = 6.dp,
-            modifier = Modifier.offset { IntOffset(offset.x.roundToInt() + 12, offset.y.roundToInt() + 12) }
-        ) {
-            val items = drag.items
-            Text(
-                text = items.singleOrNull()?.name ?: stringResource(Res.string.explorer_selected_count, items.size),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-            )
+        val items = drag.items
+        val what = items.singleOrNull()?.name ?: stringResource(Res.string.explorer_selected_count, items.size)
+        val target = drag.hovered?.let { viewModel.folderName(it) }
+            ?: if (drag.hoveredRoot) stringResource(Res.string.explorer_root_folder) else null
+        val valid = (drag.hovered != null || drag.hoveredRoot) && drag.isValidDrop(viewModel, drag.hovered)
+        Box(modifier = Modifier.offset { IntOffset(offset.x.roundToInt() + 12, offset.y.roundToInt() + 12) }) {
+            DragLabel(if (valid && target != null) stringResource(Res.string.explorer_drag_move_to, target) else what)
         }
     }
 }

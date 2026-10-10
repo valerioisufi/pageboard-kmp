@@ -217,6 +217,10 @@ class DrawDatabaseTest {
 
         val loaded = assertNotNull(repository.loadDocument(doc.id))
         assertEquals(2, loaded.pages.size)
+        // What the library tells of the content: the pages, no PDF
+        val summary = FileRepository(database).getAllDocumentsWithContentFlow().first().single { it.document.id == doc.id }
+        assertEquals(2, summary.pageCount)
+        assertFalse(summary.hasPdf)
         assertFalse(loaded.pages[0].hasCustomBackground)
         assertTrue(loaded.pages[0].background is PageBackground.Ruled)
         assertTrue(loaded.pages[1].hasCustomBackground)

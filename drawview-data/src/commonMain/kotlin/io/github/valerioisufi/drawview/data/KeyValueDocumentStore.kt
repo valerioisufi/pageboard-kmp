@@ -335,6 +335,7 @@ class KeyValueDocumentStore(
             openDocuments.remove(documentId)
             writeIndexLocked()
         }
+        publishSummaries()
     }
 
     /**
@@ -350,6 +351,7 @@ class KeyValueDocumentStore(
             dirtyDocuments.clear()
             writeIndexLocked()
         }
+        publishSummaries()
     }
 
     // ==========================================================
@@ -599,7 +601,11 @@ class KeyValueDocumentStore(
     }
 
     private fun writeDocumentLocked(document: DrawDocument) {
-        val stored = readSnapshot { document.toStored() }
+        val (stored, pageCount, hasPdf) = readSnapshot {
+            Triple(document.toStored(), document.pages.size, document.pages.any { it.pdfs.isNotEmpty() })
+        }
+        // What the library tells of the content (published with the next summaries)
+        updateSummaryLocked(document.id) { it.copy(pageCount = pageCount, hasPdf = hasPdf) }
         val written = storage.set(documentKey(document.id), json.encodeToString(StoredDocument.serializer(), stored))
         if (!written) {
             lastWriteSucceeded = false
@@ -690,7 +696,9 @@ internal data class StoredSummary(
     val lastOpenedAt: Long,
     val defaultWidth: Float = 210f,
     val defaultHeight: Float = 297f,
-    val defaultBackground: PageBackground = PageBackground.Solid()
+    val defaultBackground: PageBackground = PageBackground.Solid(),
+    val pageCount: Int = 1,
+    val hasPdf: Boolean = false
 ) {
     fun toSummary(isShared: Boolean) = DocumentSummary(
         id = id,
@@ -702,7 +710,9 @@ internal data class StoredSummary(
         defaultWidthMm = defaultWidth,
         defaultHeightMm = defaultHeight,
         defaultBackground = defaultBackground,
-        isShared = isShared
+        isShared = isShared,
+        pageCount = pageCount,
+        hasPdf = hasPdf
     )
 }
 

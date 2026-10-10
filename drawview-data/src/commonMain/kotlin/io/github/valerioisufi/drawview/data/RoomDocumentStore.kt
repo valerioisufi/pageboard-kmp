@@ -31,9 +31,9 @@ class RoomDocumentStore(val database: DrawDatabase) : DocumentStore {
     private val sharedDocuments = database.sharedDocumentDao()
 
     override val documents: Flow<List<DocumentSummary>> =
-        combine(fileRepository.getAllDocumentsFlow(), sharedDocuments.getIdsFlow()) { list, shared ->
+        combine(fileRepository.getAllDocumentsWithContentFlow(), sharedDocuments.getIdsFlow()) { list, shared ->
             val sharedIds = shared.toSet()
-            list.map { it.toSummary(isShared = it.id in sharedIds) }
+            list.map { it.document.toSummary(isShared = it.document.id in sharedIds, pageCount = it.pageCount, hasPdf = it.hasPdf) }
         }
 
     override val folders: Flow<List<FolderSummary>> =
@@ -99,7 +99,7 @@ class RoomDocumentStore(val database: DrawDatabase) : DocumentStore {
     override suspend fun moveFolder(folderId: String, parentId: String?): Boolean = fileRepository.moveFolder(folderId, parentId)
 }
 
-internal fun DocumentEntity.toSummary(isShared: Boolean = false) = DocumentSummary(
+internal fun DocumentEntity.toSummary(isShared: Boolean = false, pageCount: Int = 1, hasPdf: Boolean = false) = DocumentSummary(
     id = id,
     name = name,
     folderId = folderId,
@@ -109,7 +109,9 @@ internal fun DocumentEntity.toSummary(isShared: Boolean = false) = DocumentSumma
     defaultWidthMm = defaultWidth,
     defaultHeightMm = defaultHeight,
     defaultBackground = defaultBackground,
-    isShared = isShared
+    isShared = isShared,
+    pageCount = pageCount,
+    hasPdf = hasPdf
 )
 
 internal fun FolderEntity.toSummary() = FolderSummary(

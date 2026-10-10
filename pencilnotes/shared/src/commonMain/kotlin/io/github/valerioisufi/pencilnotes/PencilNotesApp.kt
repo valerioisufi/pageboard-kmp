@@ -1,7 +1,14 @@
 package io.github.valerioisufi.pencilnotes
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -11,18 +18,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.data.DrawViewStore
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
-import io.github.valerioisufi.drawview.explorer.ui.AboutLicensesButton
+import io.github.valerioisufi.drawview.explorer.ui.aboutLibraryAction
 import io.github.valerioisufi.drawview.export.ui.rememberDocumentExportUi
 import io.github.valerioisufi.drawview.lecture.ui.LectureDialogs
 import io.github.valerioisufi.drawview.lecture.ui.LectureRecordingIndicator
+import io.github.valerioisufi.drawview.lecture.ui.documentTag
 import io.github.valerioisufi.drawview.lecture.ui.editorExtension
 import io.github.valerioisufi.drawview.lecture.ui.rememberLectureAssistant
 import io.github.valerioisufi.drawview.sync.ui.CollaborationDialogs
 import io.github.valerioisufi.drawview.sync.ui.InvitationLinks
-import io.github.valerioisufi.drawview.sync.ui.JoinSharedDocumentButton
+import io.github.valerioisufi.drawview.sync.ui.joinAction
 import io.github.valerioisufi.drawview.sync.ui.editorExtension
 import io.github.valerioisufi.drawview.sync.ui.rememberCollaboration
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
@@ -52,7 +63,9 @@ fun PencilNotesApp(commandHost: CommandHost = remember { CommandHost() }) {
             name = stringResource(Res.string.app_name),
             version = stringResource(Res.string.about_version),
             description = stringResource(Res.string.about_description),
-            additionalLicenses = listOf(CherryBombOneLicense)
+            additionalLicenses = listOf(CherryBombOneLicense),
+            mark = { PencilNotesMark(size = 64.dp) },
+            nameFontFamily = cherryBombOneFontFamily()
         )
         // Lecture recording, followed by Gemini or a local model: it goes on in the background
         val lectureAssistant = rememberLectureAssistant()
@@ -62,6 +75,8 @@ fun PencilNotesApp(commandHost: CommandHost = remember { CommandHost() }) {
         LaunchedEffect(lectureAssistant, collaboration) { lectureAssistant.localModels.nearbyHosts = collaboration::nearbyHosts }
         // The documents exported as PDF or as the image of a page
         val export = rememberDocumentExportUi(appName = "PencilNotes")
+        // The documents with a lecture: their badge and a filter of the library
+        val lectureTag = remember(lectureAssistant) { lectureAssistant.documentTag() }
         val editorExtension = remember(lectureAssistant, collaboration, export) {
             lectureAssistant.editorExtension() + collaboration.editorExtension() + export.editorExtension
         }
@@ -82,23 +97,12 @@ fun PencilNotesApp(commandHost: CommandHost = remember { CommandHost() }) {
                     CollaborationDialogs(collaboration)
                     LectureDialogs(lectureAssistant)
                     DocumentLibrary(
-                        title = {
-                            Text(
-                                text = stringResource(Res.string.app_name),
-                                modifier = Modifier.padding(start = 16.dp, end = 24.dp),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                style = MaterialTheme.typography.titleLarge,
-                                fontFamily = cherryBombOneFontFamily()
-                            )
-                        },
-                        actions = {
-                            JoinSharedDocumentButton(collaboration)
-                            AboutLicensesButton()
-                        },
+                        title = { PencilNotesBrand() },
+                        actions = listOf(collaboration.joinAction(), aboutLibraryAction()),
                         fullScreenEditor = true,
                         editorExtension = editorExtension,
                         documentActions = listOf(export.documentAction),
+                        tags = listOf(lectureTag),
                         libraryOverlay = { openDocument ->
                             LectureRecordingIndicator(
                                 assistant = lectureAssistant,
@@ -113,6 +117,36 @@ fun PencilNotesApp(commandHost: CommandHost = remember { CommandHost() }) {
                 }
             }
         }
+    }
+}
+
+/** The mark (a pencil on the primary color) and the wordmark of PencilNotes, in Cherry Bomb One. */
+@Composable
+private fun PencilNotesBrand() {
+    val name = stringResource(Res.string.app_name)
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        PencilNotesMark(size = 40.dp)
+        Text(
+            text = name,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            style = MaterialTheme.typography.titleLarge.copy(fontSize = 28.sp, lineHeight = 34.sp),
+            fontFamily = cherryBombOneFontFamily(),
+            color = MaterialTheme.colorScheme.primary
+        )
+    }
+}
+
+/** The mark of PencilNotes: a pencil on the primary color. */
+@Composable
+private fun PencilNotesMark(size: Dp) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(size)
+            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(size * 14 / 40))
+    ) {
+        Icon(DrawViewIcons.Pencil, contentDescription = null, tint = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(size * 22 / 40))
     }
 }
 

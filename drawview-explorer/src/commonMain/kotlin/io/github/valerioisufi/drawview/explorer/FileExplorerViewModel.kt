@@ -11,11 +11,13 @@ import io.github.valerioisufi.drawview.data.DocumentStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.data.DocumentSummary
 import io.github.valerioisufi.drawview.data.FolderSummary
+import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_create_failed
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_empty
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_exists
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_invalid_chars
+import io.github.valerioisufi.drawview.ui.session.DocumentTag
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 
@@ -32,7 +34,15 @@ class FileExplorerViewModel(
 
     enum class FileType { FILE, FOLDER }
 
-    /** A document or a folder of the library ([isShared]: a document shared with other devices). */
+    /**
+     * A document or a folder of the library.
+     *
+     * @param folderId the folder holding it, `null` in the root.
+     * @param isShared a document shared with other devices.
+     * @param pageCount the pages of a document.
+     * @param hasPdf a document one of whose pages holds a PDF.
+     * @param noteCount the documents of a folder, at any depth.
+     */
     data class FileItem(
         val type: FileType,
         val id: String,
@@ -40,7 +50,11 @@ class FileExplorerViewModel(
         val createdAt: Long,
         val modifiedAt: Long,
         val lastOpenedAt: Long? = null,
-        val isShared: Boolean = false
+        val isShared: Boolean = false,
+        val folderId: String? = null,
+        val pageCount: Int = 0,
+        val hasPdf: Boolean = false,
+        val noteCount: Int = 0
     ) {
         /** Identity of the item, stable across renames and moves. */
         val key: String get() = "${type.name}:$id"
@@ -49,6 +63,12 @@ class FileExplorerViewModel(
     enum class SortOption {
         NAME, DATE_CREATED, DATE_MODIFIED, LAST_OPENED
     }
+
+    /** What the library shows: the folders from the root, the notes opened last, the shared ones. */
+    enum class Section { HOME, RECENT, SHARED }
+
+    /** How the notes are shown where there is room for both: cards with their first page, or rows. */
+    enum class ViewMode { GRID, LIST }
 
     private var documents by mutableStateOf(emptyList<DocumentSummary>())
     private var folders by mutableStateOf(emptyList<FolderSummary>())
@@ -70,6 +90,30 @@ class FileExplorerViewModel(
         directoryIdSequence.lastOrNull()?.let { id -> folders.firstOrNull { it.id == id } }
     }
 
+    /** The documents of each folder, at any depth. */
+    private val noteCounts: Map<String, Int> by derivedStateOf {
+        val parents = folders.associate { it.id to it.parentId }
+        val counts = mutableMapOf<String, Int>()
+        for (document in documents) {
+            var folder = document.folderId
+            while (folder != null) {
+                counts[folder] = (counts[folder] ?: 0) + 1
+                folder = parents[folder]
+            }
+        }
+        counts
+    }
+
+    private fun FolderSummary.toFileItem() = FileItem(
+        type = FileType.FOLDER,
+        id = id,
+        name = name,
+        createdAt = createdAt,
+        modifiedAt = modifiedAt,
+        folderId = parentId,
+        noteCount = noteCounts[id] ?: 0
+    )
+
     /** Content of the current folder, in the chosen order. */
     val currentDirectoryFiles: List<FileItem> by derivedStateOf {
         val folderId = directoryIdSequence.lastOrNull()
@@ -81,6 +125,104 @@ class FileExplorerViewModel(
     /** The folders of the root, by name (the navigation pane of a wide library). */
     val rootFolders: List<FileItem> by derivedStateOf {
         folders.filter { it.parentId == null }.sortedBy { it.name }.map { it.toFileItem() }
+    }
+
+    /** The section shown (the folders from the root, the recent notes, the shared ones). */
+    var section by mutableStateOf(Section.HOME)
+        private set
+
+    /** The text searched in the names of the notes and of the folders of the whole library. */
+    var searchQuery by mutableStateOf("")
+        private set
+
+    /** The notes shown: all of them, or those of a kind (see [LibraryFilter]). */
+    var filter by mutableStateOf<LibraryFilter>(LibraryFilter.All)
+        private set
+
+    /** How the notes are shown where there is room for both (cards or rows). */
+    var viewMode by mutableStateOf(ViewMode.GRID)
+
+    /** What the application says of the documents (e.g. that they have a lecture), besides the built-in tags. */
+    var tags by mutableStateOf(emptyList<DocumentTag>())
+
+    private val pdfDocuments: Set<String> by derivedStateOf { documents.filter { it.hasPdf }.mapTo(mutableSetOf()) { it.id } }
+    private val sharedDocuments: Set<String> by derivedStateOf { documents.filter { it.isShared }.mapTo(mutableSetOf()) { it.id } }
+    private val builtInTags = pdfTag { pdfDocuments } to sharedTag { sharedDocuments }
+
+    /** The tags of the library: the PDFs, those of the application, the shared documents. */
+    val allTags: List<DocumentTag> by derivedStateOf { listOf(builtInTags.first) + tags + listOf(builtInTags.second) }
+
+    /** The tags of the document [item], in the order of [allTags]. */
+    fun tagsOf(item: FileItem): List<DocumentTag> =
+        if (item.type == FileType.FOLDER) emptyList() else allTags.filter { it.contains(item.id) }
+
+    /** Whether a search, a filter or a section other than the folders changes what is shown. */
+    val isNarrowed: Boolean get() = searchQuery.isNotBlank() || filter != LibraryFilter.All || section != Section.HOME
+
+    /**
+     * What the library shows, in the chosen order: the content of the current folder, the notes
+     * opened last or the shared ones, the items of the whole library whose name holds the text
+     * searched; only the notes of the filter (no folder).
+     */
+    val shownFiles: List<FileItem> by derivedStateOf {
+        val query = searchQuery.trim()
+        val candidates = when {
+            query.isNotEmpty() -> (folders.map { it.toFileItem() } + documents.map { it.toFileItem() })
+                .filter { it.name.contains(query, ignoreCase = true) }
+            section == Section.RECENT -> return@derivedStateOf recentDocuments.filterBy(filter)
+            section == Section.SHARED -> documents.filter { it.isShared }.map { it.toFileItem() }
+            else -> currentDirectoryFiles
+        }
+        sortFiles(candidates.filterBy(filter), sortOption, sortAscending, keepFoldersOnTop)
+    }
+
+    private fun List<FileItem>.filterBy(filter: LibraryFilter): List<FileItem> = when (filter) {
+        LibraryFilter.All -> this
+        LibraryFilter.Notes -> filter { it.type == FileType.FILE && !it.hasPdf }
+        is LibraryFilter.Tagged -> {
+            val tag = allTags.firstOrNull { it.id == filter.tagId }
+            filter { item -> item.type == FileType.FILE && tag != null && tag.contains(item.id) }
+        }
+    }
+
+    /** The notes opened since they were made (a note is opened when it is made), the last first. */
+    private val recentDocuments: List<FileItem> by derivedStateOf {
+        documents.filter { it.lastOpenedAt > it.createdAt }.sortedByDescending { it.lastOpenedAt }
+            .take(RECENT_SECTION_LIMIT).map { it.toFileItem() }
+    }
+
+    /** The notes of the root ([Section.HOME] in the navigation). */
+    val homeNoteCount: Int by derivedStateOf { documents.count { it.folderId == null } }
+
+    /** The notes of [Section.RECENT]. */
+    val recentNoteCount: Int by derivedStateOf { recentDocuments.size }
+
+    /** The notes of [Section.SHARED]. */
+    val sharedNoteCount: Int by derivedStateOf { documents.count { it.isShared } }
+
+    /** The folders from the root to the current one (the path shown inside a folder). */
+    val currentPath: List<FolderSummary> by derivedStateOf {
+        directoryIdSequence.mapNotNull { id -> folders.firstOrNull { it.id == id } }
+    }
+
+    /** The name of the folder [folderId], `null` for the root or an unknown folder. */
+    fun folderName(folderId: String?): String? = folderId?.let { id -> folders.firstOrNull { it.id == id }?.name }
+
+    /** Shows [section]; the folders start again from the root. */
+    fun showSection(section: Section) {
+        directoryIdSequence.clear()
+        this.section = section
+        clearSelection()
+    }
+
+    /** Searches [query] in the names of the whole library (empty: back to what was shown). */
+    fun search(query: String) {
+        searchQuery = query
+    }
+
+    /** Shows the notes of [filter]. */
+    fun selectFilter(filter: LibraryFilter) {
+        this.filter = filter
     }
 
     /** The identifier of the folder of the root holding the current one, `null` in the root. */
@@ -131,8 +273,12 @@ class FileExplorerViewModel(
     /**
      * NAVIGATION
      */
+    /** Enters [folder]: one found by a search or shown in another section is shown in its place. */
     fun enterFolder(folder: FileItem) {
-        if (folder.type == FileType.FOLDER) {
+        if (folder.type != FileType.FOLDER) return
+        if (searchQuery.isNotBlank() || section != Section.HOME || folder.folderId != currentFolderId) {
+            showFolder(folder.id)
+        } else {
             directoryIdSequence.add(folder.id)
         }
     }
@@ -142,16 +288,26 @@ class FileExplorerViewModel(
         val path = generateSequence(folderId) { id -> folders.firstOrNull { it.id == id }?.parentId }.toList().asReversed()
         directoryIdSequence.clear()
         directoryIdSequence.addAll(path)
+        section = Section.HOME
+        searchQuery = ""
     }
 
     /** Goes back to the parent folder; `false` in the root. */
     fun backFolder(): Boolean = directoryIdSequence.removeLastOrNull() != null
 
-    /** Whether the system back has something to do: clear the selection or leave a folder. */
-    val canNavigateBack: Boolean get() = selectionMode || directoryIdSequence.isNotEmpty()
+    /**
+     * Whether the system back has something to do: clear the selection or the search, leave a
+     * folder or a section.
+     */
+    val canNavigateBack: Boolean get() = selectionMode || searchQuery.isNotEmpty() || directoryIdSequence.isNotEmpty() || section != Section.HOME
 
     fun navigateBack() {
-        if (selectionMode) clearSelection() else backFolder()
+        when {
+            selectionMode -> clearSelection()
+            searchQuery.isNotEmpty() -> searchQuery = ""
+            directoryIdSequence.isNotEmpty() -> backFolder()
+            else -> section = Section.HOME
+        }
     }
 
     /** The sub-folders of [parentId] (`null`: the root), by name. */
@@ -204,6 +360,54 @@ class FileExplorerViewModel(
             if (created) onSuccess() else onError(Res.string.explorer_error_create_failed)
         }
     }
+
+    /** The error of [name] for a new note in [folderId] (`null`: the root), `null` when valid. */
+    fun validateNoteName(name: String, folderId: String?): StringResource? {
+        if (name.isBlank()) return Res.string.explorer_error_name_empty
+        if (name.contains("/") || name.contains("\\")) return Res.string.explorer_error_name_invalid_chars
+        if (documents.any { it.folderId == folderId && it.name == name }) return Res.string.explorer_error_name_exists
+        return null
+    }
+
+    /** [name], or the first of "name (2)", "name (3)"… free for a note of [folderId]. */
+    fun availableNoteName(name: String, folderId: String?): String {
+        if (documents.none { it.folderId == folderId && it.name == name }) return name
+        return generateSequence(2) { it + 1 }.map { "$name ($it)" }.first { candidate -> documents.none { it.folderId == folderId && it.name == candidate } }
+    }
+
+    /**
+     * Makes the note [name] on the paper [background] in [folderId] (`null`: the root), then calls
+     * [onCreated] with it (to open it).
+     */
+    fun createNote(
+        name: String,
+        background: PageBackground,
+        folderId: String?,
+        onCreated: (String) -> Unit = {},
+        onError: (StringResource) -> Unit = {}
+    ) {
+        validateNoteName(name, folderId)?.let { error ->
+            onError(error)
+            return
+        }
+        viewModelScope.launch {
+            val document = store.createDocument(name, background = background, folderId = folderId)
+            // Opened by the editor, which loads it again
+            store.closeDocument(document.id)
+            onCreated(document.id)
+        }
+    }
+
+    /** Every folder with its path from the root ("Analysis › Limits"), by path (where a note can go). */
+    val folderPaths: List<Pair<String, String>> by derivedStateOf {
+        val byId = folders.associateBy { it.id }
+        folders.map { folder ->
+            folder.id to generateSequence(folder) { byId[it.parentId ?: return@generateSequence null] }.toList().asReversed().joinToString(" › ") { it.name }
+        }.sortedBy { it.second.lowercase() }
+    }
+
+    /** The folder shown (`null`: the root), where a new note goes by default. */
+    val currentFolderIdOrNull: String? get() = currentFolderId.takeIf { section == Section.HOME }
 
     fun renameFile(file: FileItem, newName: String) {
         viewModelScope.launch {
@@ -272,7 +476,7 @@ class FileExplorerViewModel(
      * order of the folder; without one, selects [file].
      */
     fun extendSelection(file: FileItem) {
-        val items = currentDirectoryFiles
+        val items = shownFiles
         val from = selectionAnchor?.let { anchor -> items.indexOfFirst { it.key == anchor.key } }?.takeIf { it >= 0 }
         val to = items.indexOfFirst { it.key == file.key }
         if (from == null || to < 0) {
@@ -293,7 +497,7 @@ class FileExplorerViewModel(
 
     fun selectAll() {
         selectedItems.clear()
-        selectedItems.addAll(currentDirectoryFiles)
+        selectedItems.addAll(shownFiles)
         selectionMode = true
     }
 
@@ -325,6 +529,9 @@ class FileExplorerViewModel(
 
     private companion object {
         const val RECENT_FILES_LIMIT = 10
+
+        /** The notes of the section of the recent ones. */
+        const val RECENT_SECTION_LIMIT = 30
     }
 }
 
@@ -348,14 +555,6 @@ internal fun sortFiles(
     return if (foldersOnTop) sorted.sortedBy { it.type != FileExplorerViewModel.FileType.FOLDER } else sorted
 }
 
-private fun FolderSummary.toFileItem() = FileExplorerViewModel.FileItem(
-    type = FileExplorerViewModel.FileType.FOLDER,
-    id = id,
-    name = name,
-    createdAt = createdAt,
-    modifiedAt = modifiedAt
-)
-
 private fun DocumentSummary.toFileItem() = FileExplorerViewModel.FileItem(
     type = FileExplorerViewModel.FileType.FILE,
     id = id,
@@ -363,5 +562,8 @@ private fun DocumentSummary.toFileItem() = FileExplorerViewModel.FileItem(
     createdAt = createdAt,
     modifiedAt = modifiedAt,
     lastOpenedAt = lastOpenedAt,
-    isShared = isShared
+    isShared = isShared,
+    folderId = folderId,
+    pageCount = pageCount,
+    hasPdf = hasPdf
 )

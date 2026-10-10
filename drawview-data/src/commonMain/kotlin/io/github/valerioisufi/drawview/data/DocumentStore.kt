@@ -10,7 +10,8 @@ import kotlinx.coroutines.flow.Flow
 
 /**
  * A document as shown by the document list ([id]: [DrawDocument.id], the same on every device;
- * [isShared]: shared with other devices, see [DocumentStore.sharingSecrets]).
+ * [isShared]: shared with other devices, see [DocumentStore.sharingSecrets]; [pageCount]: its
+ * pages; [hasPdf]: one of its pages holds a PDF).
  */
 data class DocumentSummary(
     val id: String,
@@ -22,7 +23,9 @@ data class DocumentSummary(
     val defaultWidthMm: Float = 210f,
     val defaultHeightMm: Float = 297f,
     val defaultBackground: PageBackground = PageBackground.Solid(),
-    val isShared: Boolean = false
+    val isShared: Boolean = false,
+    val pageCount: Int = 1,
+    val hasPdf: Boolean = false
 )
 
 /**

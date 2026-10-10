@@ -92,6 +92,9 @@ class KeyValueDocumentStoreTest {
         assertEquals("Notes", summary.name)
         assertEquals(1234L, summary.modifiedAt)
         assertEquals(PageBackground.Grid(), summary.defaultBackground)
+        // What the library tells of the content: the pages, no PDF placed (a mark only)
+        assertEquals(2, summary.pageCount)
+        assertFalse(summary.hasPdf)
 
         val loaded = assertNotNull(reloaded.loadDocument(summary.id))
         assertEquals(2, loaded.pages.size)

@@ -7,11 +7,14 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performMouseInput
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.rightClick
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.ui.adaptive.ReferenceWindow
@@ -98,8 +101,21 @@ class AdaptiveScreenshotTest {
     @Test
     fun libraryDetails() = listOf(ReferenceWindow.PHONE, ReferenceWindow.DESKTOP).forEach { window ->
         capture("library-details", window, dark = false) {
-            onAllNodesWithContentDescription("Info")[4].performClick()
+            // The last note: "Lecture 1 — Limits"
+            onAllNodesWithContentDescription("Info").onLast().performClick()
         }
+    }
+
+    /** A search without results: why, under the field. */
+    @Test
+    fun librarySearch() = capture("library-search", ReferenceWindow.PHONE, dark = false) {
+        onNode(hasSetTextAction()).performTextInput("derivata")
+    }
+
+    /** Inside a folder: going up, the path, the empty folder. */
+    @Test
+    fun libraryFolder() = capture("library-folder", ReferenceWindow.TABLET_PORTRAIT, dark = false) {
+        onNodeWithText("Analysis").performClick()
     }
 
     /** An extension with a panel named after each of [titles], open, listing a few notes. */
