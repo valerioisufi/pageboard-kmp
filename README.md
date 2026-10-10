@@ -60,7 +60,7 @@ The text of the PDF pages can be selected, highlighted, underlined and struck ou
 No native binary is versioned: Gradle builds or downloads them on demand.
 
 * **Google Ink & MicroTeX** are built from the sources in [`/native`](./native) with CMake:
-  * Android: by the NDK (`:drawview-native`), for `arm64-v8a`, `armeabi-v7a` and `x86_64`.
+  * Android: by the NDK, one Android library per engine (`:drawview-native-ink`, `-tex`, `-pdfium`, `-audio`, each a dependency of the module using it), for `arm64-v8a`, `armeabi-v7a` and `x86_64`.
   * iOS: `./gradlew buildIosNativeLibs-<iphoneos|iphonesimulator>` (static libraries linked through cinterop, macOS only).
   * Desktop JVM: `./gradlew buildDesktopNativeLibs` (JNI libraries of the host platform, bundled in the jvm jars; `-Pdrawview.desktop.platform=darwin-x86_64` cross-builds the Intel macOS libraries on Apple silicon). Windows hosts need Git Bash and Visual Studio with the C++ Clang tools.
 * **PDFium** is the prebuilt [pdfium-binaries](https://github.com/bblanchon/pdfium-binaries) release set in [`native/pdfium/pdfium.properties`](./native/pdfium/pdfium.properties), downloaded and verified against its SHA-256 checksums. On iOS it is `build/pdfium/PDFium.xcframework`, linked and embedded by the Xcode project.

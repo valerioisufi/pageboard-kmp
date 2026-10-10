@@ -8,7 +8,8 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # ==============================================================================
 # Target platform
 # ==============================================================================
-# - Android (NDK, driven by the :drawview-native Gradle module): JNI shared libraries.
+# - Android (NDK, driven by the :drawview-native-<engine> Gradle modules, one target each): JNI
+#   shared libraries.
 # - Desktop JVM (macOS / Linux / Windows with clang-cl, driven by scripts/build_desktop.sh): JNI
 #   shared libraries bundled as jvmMain resources.
 # - iOS (driven by scripts/build_ios.sh): static libraries exposing the plain C API,

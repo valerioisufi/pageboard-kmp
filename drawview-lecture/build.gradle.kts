@@ -1,5 +1,7 @@
 plugins {
     id("drawview.compose.library")
+    // The JNI bridges of whisper.cpp and of the audio codecs in the desktop jar
+    id("drawview.jvm.natives")
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.roborazzi)
 }
@@ -66,18 +68,12 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             // The audio codecs (libaudio_bridge.so)
-            implementation(project(":drawview-native"))
+            implementation(project(":drawview-native-audio"))
             // The permission of the microphone
             implementation(libs.androidx.activity.compose)
         }
         jvmMain.dependencies {
             implementation(libs.ktor.client.okhttp)
-        }
-        jvmMain {
-            // The JNI bridge of whisper.cpp (native/scripts/build_desktop.sh)
-            resources.srcDir(
-                files(rootProject.layout.buildDirectory.dir("nativeLibs/jvm/drawview-lecture")).builtBy(":buildDesktopNativeLibs")
-            )
         }
         jvmTest.dependencies {
             implementation(compose.desktop.currentOs)

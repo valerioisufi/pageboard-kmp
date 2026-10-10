@@ -2,6 +2,8 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
     id("drawview.compose.library")
+    // The JNI library of Google Ink in the desktop jar
+    id("drawview.jvm.natives")
     alias(libs.plugins.kotlinSerialization)
 }
 
@@ -51,13 +53,7 @@ kotlin {
         }
         androidMain.dependencies {
             // libink_bridge.so built with the NDK
-            implementation(project(":drawview-native"))
-        }
-        jvmMain {
-            // JNI library of Google Ink (native/scripts/build_desktop.sh)
-            resources.srcDir(
-                files(rootProject.layout.buildDirectory.dir("nativeLibs/jvm/drawview-core")).builtBy(":buildDesktopNativeLibs")
-            )
+            implementation(project(":drawview-native-ink"))
         }
         jvmTest.dependencies {
             implementation(compose.desktop.currentOs)

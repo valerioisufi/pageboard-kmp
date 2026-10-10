@@ -9,6 +9,9 @@ import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
+import org.jetbrains.kotlin.konan.target.KonanTarget
 
 /**
  * A Kotlin Multiplatform library of DrawView, published: Android, desktop JVM, iOS (device and
@@ -43,6 +46,15 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
                 freeCompilerArgs.add("-Xexpect-actual-classes")
             }
 
+            // PDFium is a dynamic framework the applications embed (drawview-pdf links it without a
+            // path): the iOS tests linked by Gradle find it in the slice of build/pdfium/PDFium.xcframework
+            targets.withType(KotlinNativeTarget::class.java).configureEach {
+                val slice = if (konanTarget == KonanTarget.IOS_ARM64) "ios-arm64" else "ios-arm64-simulator"
+                val pdfium = rootProject.layout.buildDirectory.dir("pdfium/PDFium.xcframework/$slice").get().asFile.absolutePath
+                binaries.withType(TestExecutable::class.java).configureEach {
+                    linkerOpts("-F$pdfium", "-rpath", pdfium)
+                }
+            }
 
             when (providers.gradleProperty("drawview.explicitApi").orNull) {
                 "warning" -> explicitApi = ExplicitApiMode.Warning

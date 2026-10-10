@@ -33,7 +33,10 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-include(":drawview-native")
+include(":drawview-native-ink")
+include(":drawview-native-tex")
+include(":drawview-native-pdfium")
+include(":drawview-native-audio")
 include(":drawview-core")
 include(":drawview-data")
 include(":drawview-latex")

@@ -2,4 +2,6 @@ package = io.github.valerioisufi.drawview.pdf.cinterop
 headers = pdfium_bridge.h
 headerFilter = pdfium_bridge.h
 staticLibraries = libdrawview_pdf.a
-# linkerOpts (with the absolute path of PDFium.framework) are appended by Gradle: see build.gradle.kts
+# PDFium itself is a dynamic framework (PDFium.xcframework): the application embeds it and gives
+# its framework search path; the executables linked by Gradle (tests) get it from build-logic
+linkerOpts = -lc++ -framework PDFium

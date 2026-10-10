@@ -19,6 +19,14 @@ gradlePlugin {
             id = "drawview.compose.library"
             implementationClass = "ComposeLibraryConventionPlugin"
         }
+        register("androidNative") {
+            id = "drawview.android.native"
+            implementationClass = "AndroidNativeConventionPlugin"
+        }
+        register("jvmNatives") {
+            id = "drawview.jvm.natives"
+            implementationClass = "JvmNativesConventionPlugin"
+        }
         register("publish") {
             id = "drawview.publish"
             implementationClass = "PublishConventionPlugin"
