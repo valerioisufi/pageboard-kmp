@@ -17,4 +17,6 @@
     <string name="export_skipped">Elementi lasciati fuori perché manca il loro file: %1$d</string>
     <string name="export_failed">Non è stato possibile esportare il documento.</string>
     <string name="export_save_title">Esporta il documento</string>
+    <string name="export_format_pdf_hint">Ogni pagina, con il testo dei PDF e delle note ricercabile</string>
+    <string name="export_format_png_hint">Come la disegna l’editor, a 200 dpi</string>
 </resources>

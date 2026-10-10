@@ -94,6 +94,7 @@ import org.jetbrains.compose.resources.stringResource
  * @param extraCommands commands contributed to the editor (e.g. by its extensions), registered
  *   with those of the editor for the menu bar and the shortcuts.
  * @param location where the document is (its folder), shown under its title.
+ * @param readOnlyNote why the document may only be read (e.g. who decides who edits), if known.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -106,7 +107,8 @@ fun DrawScreen(
     panels: List<EditorPanel> = emptyList(),
     canvasOverlay: @Composable BoxScope.() -> Unit = {},
     extraCommands: List<Command> = emptyList(),
-    location: String? = null
+    location: String? = null,
+    readOnlyNote: @Composable () -> String? = { null }
 ) {
     // Immersive editor (Android), as in the original app
     HideSystemBarsEffect()
@@ -225,7 +227,8 @@ fun DrawScreen(
                                 toolsMaxWidth = toolsMaxWidth,
                                 toolbarActions = toolbarActions,
                                 onExtensionsWidth = { extensionsWidth = it },
-                                location = location
+                                location = location,
+                                readOnlyNote = readOnlyNote
                             )
 
                             // The group of the tools in a bar under the top one
@@ -302,6 +305,10 @@ fun DrawScreen(
                         ) {
                             if (!isLoading && bottomInset == 0.dp && !controller.textEditorManager.isEditing) {
                                 PageIndicator(controller, withZoom = arrangement != ToolbarArrangement.FLOATING_TOOLS)
+                            }
+                            // Where the tools would be, why there are none
+                            if (arrangement == ToolbarArrangement.FLOATING_TOOLS && controller.isReadOnly && !isLoading) {
+                                ReadOnlyBadge(readOnlyNote(), floating = true)
                             }
                             // Not the one of the column of the screen, around
                             androidx.compose.animation.AnimatedVisibility(

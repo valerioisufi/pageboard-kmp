@@ -35,6 +35,7 @@ import io.github.valerioisufi.drawview.ui.screen.EraserSettings
 import io.github.valerioisufi.drawview.ui.screen.InkSettings
 import io.github.valerioisufi.drawview.ui.screen.LassoSettings
 import io.github.valerioisufi.drawview.ui.screen.MarkupSettings
+import io.github.valerioisufi.drawview.ui.screen.ReadOnlyBadge
 import io.github.valerioisufi.drawview.ui.screen.TextToolSettings
 import io.github.valerioisufi.drawview.ui.theme.DrawViewElevation
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
@@ -111,6 +112,17 @@ class ComponentScreenshotTest {
                     onCancel = {}
                 )
             }
+        }
+    }
+
+    /** A document read only: why there are no tools, in the top bar and floating on a phone. */
+    @Test
+    fun readOnly() = capture("read-only", width = 560, height = 180) {
+        Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+            Box(modifier = Modifier.background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp)).padding(8.dp)) {
+                ReadOnlyBadge("Valerio’s Mac decides who edits", floating = false)
+            }
+            ReadOnlyBadge("Valerio’s Mac decides who edits", floating = true)
         }
     }
 

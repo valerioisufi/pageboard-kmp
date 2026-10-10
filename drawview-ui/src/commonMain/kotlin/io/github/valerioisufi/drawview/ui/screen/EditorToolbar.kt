@@ -42,6 +42,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
@@ -164,6 +165,7 @@ internal object ToolbarLayout {
  *
  * @param location where the document is (its folder), shown under its title.
  * @param onExtensionsWidth the width the actions of the extensions take, measured.
+ * @param readOnlyNote why the document may only be read, beside "Read only" where the tools would be.
  */
 @Composable
 internal fun EditorTopBar(
@@ -175,7 +177,8 @@ internal fun EditorTopBar(
     toolsMaxWidth: Dp,
     toolbarActions: @Composable RowScope.() -> Unit,
     onExtensionsWidth: (Dp) -> Unit,
-    location: String? = null
+    location: String? = null,
+    readOnlyNote: @Composable () -> String? = { null }
 ) {
     val density = LocalDensity.current
     val compact = arrangement == ToolbarArrangement.FLOATING_TOOLS
@@ -195,11 +198,13 @@ internal fun EditorTopBar(
 
         val subtitle = documentSubtitle(controller, location, pageOnly = compact)
         val toolsInBar = arrangement == ToolbarArrangement.ONE_BAR && controller.isDrawingMode
+        // A document read only: why there are no tools, where they would be
+        val readOnlyInBar = !compact && controller.isReadOnly && !isLoading
         DocumentInfoSelector(
             document = if (isLoading) null else controller.document,
             subtitle = subtitle,
             location = location,
-            modifier = if (toolsInBar) Modifier.widthIn(max = ToolbarLayout.TitleMaxWidth) else Modifier.weight(1f)
+            modifier = if (toolsInBar || readOnlyInBar) Modifier.widthIn(max = ToolbarLayout.TitleMaxWidth) else Modifier.weight(1f)
         )
 
         if (toolsInBar) {
@@ -207,6 +212,10 @@ internal fun EditorTopBar(
             ToolGroup(modifier = Modifier.widthIn(max = toolsMaxWidth)) {
                 EditorTools(controller, commands, withImports = true)
             }
+            Spacer(modifier = Modifier.weight(1f))
+        } else if (readOnlyInBar) {
+            Spacer(modifier = Modifier.weight(1f))
+            ReadOnlyBadge(readOnlyNote(), floating = false, modifier = Modifier.widthIn(max = toolsMaxWidth))
             Spacer(modifier = Modifier.weight(1f))
         }
 
@@ -216,16 +225,6 @@ internal fun EditorTopBar(
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             toolbarActions()
-        }
-
-        if (controller.isReadOnly) {
-            // Shared with this device to be read only
-            Icon(
-                imageVector = DrawViewIcons.Lock,
-                contentDescription = stringResource(Res.string.draw_read_only),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 10.dp).size(20.dp)
-            )
         }
 
         MoreMenu(commands, arrangement, showPageGrid)
@@ -276,6 +275,33 @@ internal fun ToolGroup(modifier: Modifier = Modifier, content: @Composable RowSc
         horizontalArrangement = Arrangement.spacedBy(2.dp),
         content = content
     )
+}
+
+/**
+ * A document that may only be read, where the tools would be: "Read only" and why ([note], e.g.
+ * who decides who edits); in the top bar on the container of the tools, else [floating] at the
+ * bottom of the canvas.
+ */
+@Composable
+internal fun ReadOnlyBadge(note: String?, floating: Boolean, modifier: Modifier = Modifier) {
+    val shape = RoundedCornerShape(22.dp)
+    val color = MaterialTheme.colorScheme.onSurfaceVariant
+    Row(
+        modifier = modifier
+            .then(if (floating) Modifier.elevation(DrawViewElevation.Level2, shape) else Modifier)
+            .background(if (floating) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceContainer, shape)
+            .height(if (floating) 44.dp else 48.dp)
+            .padding(start = 14.dp, end = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Icon(DrawViewIcons.Eye, contentDescription = null, tint = color, modifier = Modifier.size(18.dp))
+        Text(stringResource(Res.string.draw_read_only), style = MaterialTheme.typography.labelLarge, color = color, maxLines = 1)
+        if (note != null) {
+            Box(modifier = Modifier.width(1.dp).height(20.dp).background(MaterialTheme.colorScheme.outlineVariant))
+            Text(note, style = MaterialTheme.typography.bodySmall, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+    }
 }
 
 /** The line between two groups of tools. */

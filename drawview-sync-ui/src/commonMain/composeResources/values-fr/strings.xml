@@ -8,7 +8,6 @@
     <string name="sync_link_copied">Lien copié</string>
     <string name="sync_participants">Sur le document</string>
     <string name="sync_nobody">Personne d’autre pour l’instant</string>
-    <string name="sync_stop_sharing">Arrêter le partage</string>
     <string name="sync_close">Fermer</string>
     <string name="sync_cancel">Annuler</string>
     <string name="sync_join">Rejoindre un document partagé</string>
@@ -30,7 +29,6 @@
     <string name="sync_revoke_invitation">Révoquer</string>
     <string name="sync_qr_code">Code QR de l\'invitation</string>
     <string name="sync_scan_hint">Scannez-le avec l\'appareil photo de l\'autre appareil, ou envoyez-lui le lien.</string>
-    <string name="sync_invitation_role">Rejoint en tant que : %1$s</string>
     <string name="sync_invite_owner_only">Seul le propriétaire (%1$s) invite d\'autres appareils.</string>
     <string name="sync_you">%1$s (vous)</string>
     <string name="sync_make_reader">Lecture seule</string>
@@ -48,4 +46,7 @@
     <string name="sync_join_waiting_approval">En attente que le propriétaire vous accepte dans « %1$s ».</string>
     <string name="sync_join_admitted">Vous y êtes : « %1$s » arrive dans le dossier Partagés.</string>
     <string name="sync_join_refused">Le propriétaire ne vous a pas accepté dans « %1$s ».</string>
+    <string name="sync_joining_as">Rejoint en tant que</string>
+    <string name="sync_no_invitation">Personne ne rejoint sans invitation : une nouvelle a un nouveau lien.</string>
+    <string name="sync_read_only_note">%1$s décide qui modifie</string>
 </resources>

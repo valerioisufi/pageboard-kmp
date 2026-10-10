@@ -18,6 +18,8 @@ import io.github.valerioisufi.drawview.ui.command.Command
  *   "Export…"): the same as its toolbar buttons, which can show them (the `command` of a `ToolButton`).
  * @param panels the panels of the extension (e.g. the lecture assistant): the editor places them
  *   beside the canvas or over it, by the space it has.
+ * @param readOnlyNote why the document may only be read, when the extension knows (e.g. "Valerio’s
+ *   Mac decides who edits"): shown by the editor beside "Read only".
  *
  * Several extensions are combined with `+` (e.g. an assistant and the collaboration).
  */
@@ -25,11 +27,13 @@ class EditorExtension(
     val toolbarActions: @Composable RowScope.(session: EditorSession, controller: DrawViewController) -> Unit = { _, _ -> },
     val canvasOverlay: @Composable BoxScope.(session: EditorSession, controller: DrawViewController) -> Unit = { _, _ -> },
     val commands: (session: EditorSession, controller: DrawViewController) -> List<Command> = { _, _ -> emptyList() },
-    val panels: (session: EditorSession, controller: DrawViewController) -> List<EditorPanel> = { _, _ -> emptyList() }
+    val panels: (session: EditorSession, controller: DrawViewController) -> List<EditorPanel> = { _, _ -> emptyList() },
+    val readOnlyNote: @Composable (session: EditorSession, controller: DrawViewController) -> String? = { _, _ -> null }
 ) {
     /**
      * The contributions of this extension followed by those of [other]: toolbar actions, commands
-     * and panels in this order, [other]'s overlay drawn over this one.
+     * and panels in this order, [other]'s overlay drawn over this one, the note of the read only
+     * documents of this one if it has one.
      */
     operator fun plus(other: EditorExtension): EditorExtension {
         val first = this
@@ -43,7 +47,8 @@ class EditorExtension(
                 other.canvasOverlay(this, session, controller)
             },
             commands = { session, controller -> first.commands(session, controller) + other.commands(session, controller) },
-            panels = { session, controller -> first.panels(session, controller) + other.panels(session, controller) }
+            panels = { session, controller -> first.panels(session, controller) + other.panels(session, controller) },
+            readOnlyNote = { session, controller -> first.readOnlyNote(session, controller) ?: other.readOnlyNote(session, controller) }
         )
     }
 }

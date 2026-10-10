@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.roborazzi)
 }
 
 kotlin {
@@ -65,8 +66,15 @@ kotlin {
         }
         jvmTest.dependencies {
             implementation(project(":drawview-latex"))
+            implementation(libs.compose.uiTest)
+            implementation(libs.roborazzi.composeDesktop)
         }
     }
+}
+
+// The reference images of the export (see ExportScreenshotTest)
+roborazzi {
+    outputDir.set(layout.projectDirectory.dir("screenshots"))
 }
 
 compose.resources {

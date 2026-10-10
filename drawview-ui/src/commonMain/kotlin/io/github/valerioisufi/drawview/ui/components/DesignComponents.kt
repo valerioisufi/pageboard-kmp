@@ -303,10 +303,17 @@ fun DesignSnackbar(data: SnackbarData, modifier: Modifier = Modifier) {
 
 /**
  * A choice among a few [options] as a segmented pill: the high container, the option chosen on the
- * lowest container (e.g. the pattern of a page).
+ * lowest container (e.g. the pattern of a page), each with its [icon] if it has one.
  */
 @Composable
-fun <T> SegmentedChoice(options: List<T>, selected: T, label: @Composable (T) -> String, onSelect: (T) -> Unit, modifier: Modifier = Modifier) {
+fun <T> SegmentedChoice(
+    options: List<T>,
+    selected: T,
+    label: @Composable (T) -> String,
+    onSelect: (T) -> Unit,
+    modifier: Modifier = Modifier,
+    icon: (T) -> ImageVector? = { null }
+) {
     val colors = MaterialTheme.colorScheme
     Row(
         modifier = modifier
@@ -318,16 +325,20 @@ fun <T> SegmentedChoice(options: List<T>, selected: T, label: @Composable (T) ->
     ) {
         for (option in options) {
             val chosen = option == selected
-            Box(
-                contentAlignment = Alignment.Center,
+            val color = if (chosen) colors.onSurface else colors.onSurfaceVariant
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
                     .then(if (chosen) Modifier.elevation(DrawViewElevation.Level1, CircleShape) else Modifier)
                     .background(if (chosen) colors.surfaceContainerLowest else Color.Transparent, CircleShape)
                     .clickable(role = Role.RadioButton) { onSelect(option) }
+                    .padding(horizontal = 10.dp)
             ) {
-                Text(label(option), style = MaterialTheme.typography.labelLarge, color = if (chosen) colors.onSurface else colors.onSurfaceVariant, maxLines = 1)
+                icon(option)?.let { Icon(it, contentDescription = null, tint = color, modifier = Modifier.size(16.dp)) }
+                Text(label(option), style = MaterialTheme.typography.labelLarge, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
     }

@@ -8,7 +8,6 @@
     <string name="sync_link_copied">Enlace copiado</string>
     <string name="sync_participants">En el documento</string>
     <string name="sync_nobody">Nadie más todavía</string>
-    <string name="sync_stop_sharing">Dejar de compartir</string>
     <string name="sync_close">Cerrar</string>
     <string name="sync_cancel">Cancelar</string>
     <string name="sync_join">Unirse a un documento compartido</string>
@@ -30,7 +29,6 @@
     <string name="sync_revoke_invitation">Revocar</string>
     <string name="sync_qr_code">Código QR de la invitación</string>
     <string name="sync_scan_hint">Escanéalo con la cámara del otro dispositivo o envíale el enlace.</string>
-    <string name="sync_invitation_role">Entra como: %1$s</string>
     <string name="sync_invite_owner_only">Solo el propietario (%1$s) invita a otros dispositivos.</string>
     <string name="sync_you">%1$s (tú)</string>
     <string name="sync_make_reader">Solo lectura</string>
@@ -48,4 +46,7 @@
     <string name="sync_join_waiting_approval">Esperando a que el propietario te deje entrar en «%1$s».</string>
     <string name="sync_join_admitted">Ya estás dentro: «%1$s» llega a la carpeta Compartidos.</string>
     <string name="sync_join_refused">El propietario no te dejó entrar en «%1$s».</string>
+    <string name="sync_joining_as">Entra como</string>
+    <string name="sync_no_invitation">Sin invitación no se une nadie: una nueva tiene un enlace nuevo.</string>
+    <string name="sync_read_only_note">%1$s decide quién edita</string>
 </resources>

@@ -80,6 +80,8 @@ Variations).
 | What a module says of a document (e.g. it has a lecture) | `DocumentTag` (ui), given by `DocumentLibrary(tags = …)` | Polymorphism, Protected Variations: the library does not know the lectures |
 | The actions of the application in the library (join a shared document, about) | `LibraryAction` (ui), placed by the library | Polymorphism, Low Coupling: a button of the bar or of the pane |
 | The brand of the application in the library | `title` of `DocumentLibrary` | Low Coupling: PencilNotes draws its mark and wordmark |
+| Why a document may only be read ("Valerio’s Mac decides who edits") | `EditorExtension.readOnlyNote` (ui), given by the collaboration | Protected Variations: the editor shows "Read only" without knowing the sharing |
+| What the sharing dialog shows and what the user does there | `SharingState`, `SharingActions` (sync-ui), drawn by `ShareContent` | Pure Fabrication: the dialog gathers them from `Collaboration`; the content is drawn without it (the screenshots) |
 | The look of each screen | the composables of each module | High Cohesion: each module draws its own screens with the components of `drawview-ui` |
 
 ### Modules
@@ -107,7 +109,7 @@ pencilnotes        the brand (mark and wordmark), the tag of the lectures
 | 4. Editor | The top bar (title and its line, the tool group, the actions), the tool button with its ink, the floating tools, the page indicator, desk and paper, the popovers of the tools, the "more" menu | done |
 | 5. Texts and selection | The format bar, the selection bar, the bar of the marks of the PDFs, the context menu, the messages | done |
 | 6. Pages | The page grid, the configurator (dialog and sheet), "Apply to all pages?", the information of the document, the tooltips | done |
-| 7. Export and sharing | The export dialog and sheet with their states; the sharing dialog (owner, participant), joining, the requests, the people on the page, read only | |
+| 7. Export and sharing | The export dialog and sheet with their states; the sharing dialog (owner, participant), joining, the requests, the people on the page, read only | done |
 | 8. Lecture assistant | The panel (recording, tabs, notes, transcript and player, outline, review), the notices, the settings, the recording pill, the phone recording only | |
 
 Each phase ends with the screenshot tests recorded again (`recordRoborazziJvm`) and compared with
@@ -242,3 +244,39 @@ the frames of the file.
   color) for every module; `AdaptiveSheet` takes a wider dialog (`maxWidth`) and the containers of
   the design.
 * Screenshots: the page grid (tablet, phone), the configurator as a dialog and as a sheet.
+
+### Phase 7 results
+
+* **Export** (`ExportDialog`, `ExportBody`): an `AdaptiveSheet` (a dialog, a sheet on a phone); the
+  format and the pages as rows of a choice with their hints (the one chosen on the primary
+  container, the pages of an image disabled), the pattern of the backgrounds as a switch with its
+  check; exporting with its bar; done (with what was left out in a yellow box), failed; "Export"
+  with the icon of the download. The progress gives no "Page 7 of 12" (the exporters give a
+  fraction).
+* **Sharing** (`ShareContent`): "Share the document" with what it does and the close button; where
+  it is wide the invitation on its card (the QR code on white in both themes with its hint, the
+  link in its field with copy, "Joining as" segmented with icons, "Approve who joins" a switch,
+  "Copy the link" tonal and "Revoke"; revoked, the options and "New invitation") beside who asks to
+  join (a banner of the tertiary container with Refuse and Let in), who is on the document (their
+  avatars with the initials in their colors, the crown of the owner, for the owner the menu "Only
+  reading" / "Can edit" and "Remove from the document") and "Your name"; at the bottom "End
+  sharing" in red and Close. On a phone, or for a member who is not the owner, one column: the
+  notices (only the owner invites, no local network, another version) in their boxes, the people,
+  "Leave the document" outlined in red beside Close. A new role or approval gives a new invitation
+  in place of the current one (the old link stops working, the devices joined stay). Before
+  sharing, the options of the first invitation, Cancel and Share.
+* **Confirmations**: End sharing and Leave the document with the icon in the color of the errors
+  and the button in that color.
+* **Requests** (`JoinRequestDialog`): the icon in the tertiary color, the device on a card with its
+  avatar and the role it asks, Refuse and Let in.
+* **Joining** (`JoinDialog`, `JoinProgress`): the link of the invitation and its error; waiting
+  with a spinner, in (a check, Close filled), refused (an X), without the local network a yellow
+  box and where the document will appear.
+* **Working together**: the avatars of who is on the document beside Share (not on a phone, they
+  open the sharing), their number on the primary color; "… is writing this text" with a lock; the
+  devices in the inks of the design.
+* **Read only** (`ReadOnlyBadge`): where the tools would be, "Read only" and who decides who edits
+  (`EditorExtension.readOnlyNote`); floating at the bottom on a phone; the lock of the bar removed.
+* Screenshots: the export states (light, dark) in drawview-export; the sharing of the owner (light,
+  dark), of a member on a phone, before sharing, joining and the avatars in drawview-sync-ui (new
+  screenshot tests, as the dialogs open in their windows); "Read only" in drawview-ui.

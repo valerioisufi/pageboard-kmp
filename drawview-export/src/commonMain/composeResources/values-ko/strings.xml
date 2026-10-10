@@ -17,4 +17,6 @@
     <string name="export_skipped">파일이 없어 제외된 요소: %1$d</string>
     <string name="export_failed">문서를 내보낼 수 없습니다.</string>
     <string name="export_save_title">문서 내보내기</string>
+    <string name="export_format_pdf_hint">모든 페이지, PDF와 노트의 텍스트 검색 가능</string>
+    <string name="export_format_png_hint">편집기에 그려진 그대로, 200dpi</string>
 </resources>

@@ -79,7 +79,8 @@ fun EditorSessionScreen(
                     toolbarActions = { extension?.toolbarActions?.invoke(this, session, controller) },
                     panels = extensionPanels,
                     canvasOverlay = { extension?.canvasOverlay?.invoke(this, session, controller) },
-                    extraCommands = extensionCommands
+                    extraCommands = extensionCommands,
+                    readOnlyNote = { extension?.readOnlyNote?.invoke(session, controller) }
                 )
             }
         }

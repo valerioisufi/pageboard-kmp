@@ -8,7 +8,6 @@
     <string name="sync_link_copied">Link copied</string>
     <string name="sync_participants">On the document</string>
     <string name="sync_nobody">Nobody else yet</string>
-    <string name="sync_stop_sharing">Stop sharing</string>
     <string name="sync_close">Close</string>
     <string name="sync_cancel">Cancel</string>
     <string name="sync_join">Join a shared document</string>
@@ -30,7 +29,6 @@
     <string name="sync_revoke_invitation">Revoke</string>
     <string name="sync_qr_code">QR code of the invitation</string>
     <string name="sync_scan_hint">Frame it with the camera of the other device, or send it the link.</string>
-    <string name="sync_invitation_role">Joining as: %1$s</string>
     <string name="sync_invite_owner_only">Only the owner (%1$s) invites other devices.</string>
     <string name="sync_you">%1$s (you)</string>
     <string name="sync_make_reader">Only reading</string>
@@ -48,4 +46,7 @@
     <string name="sync_join_waiting_approval">Waiting for the owner to let you in “%1$s”.</string>
     <string name="sync_join_admitted">You are in: “%1$s” arrives in the Shared folder.</string>
     <string name="sync_join_refused">The owner did not let you in “%1$s”.</string>
+    <string name="sync_joining_as">Joining as</string>
+    <string name="sync_no_invitation">Nobody joins without an invitation: a new one has a new link.</string>
+    <string name="sync_read_only_note">%1$s decides who edits</string>
 </resources>

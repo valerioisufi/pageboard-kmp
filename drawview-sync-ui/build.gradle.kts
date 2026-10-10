@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.roborazzi)
 }
 
 kotlin {
@@ -46,7 +47,18 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
         }
+        jvmTest.dependencies {
+            implementation(compose.desktop.currentOs)
+            implementation(libs.kotlin.test)
+            implementation(libs.compose.uiTest)
+            implementation(libs.roborazzi.composeDesktop)
+        }
     }
+}
+
+// The reference images of the sharing (see SharingScreenshotTest)
+roborazzi {
+    outputDir.set(layout.projectDirectory.dir("screenshots"))
 }
 
 compose.resources {
