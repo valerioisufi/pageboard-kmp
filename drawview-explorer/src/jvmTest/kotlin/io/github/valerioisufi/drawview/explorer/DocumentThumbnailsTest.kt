@@ -1,11 +1,9 @@
 package io.github.valerioisufi.drawview.explorer
 
-import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.test.runTest
+import io.github.valerioisufi.drawview.model.PageBackground
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.Test
@@ -14,6 +12,8 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.test.runTest
 
 class DocumentThumbnailsTest {
 

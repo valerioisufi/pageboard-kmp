@@ -4,27 +4,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.ChangeEffects
 import io.github.valerioisufi.drawview.core.change.MarkupStyle
 import io.github.valerioisufi.drawview.core.change.RemoveElements
 import io.github.valerioisufi.drawview.core.change.RestyleMarkups
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import io.github.valerioisufi.drawview.core.geometry.toModel
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawPdf
 import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
-import io.github.valerioisufi.drawview.core.model.PdfTextLayout
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.model.pdfPointsToPageMm
+import io.github.valerioisufi.drawview.model.PdfTextLayout
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.syncLock
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.min
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * Selection and marking (highlights, underlines, strikeouts) of the text of the PDF pages.
@@ -221,7 +222,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
         val page = controller.document.pages.getOrNull(pageIndex) ?: return false
         val mm = controller.screenToPageMm(pageIndex, screen) ?: return false
         val toleranceMm = tolerancePx / controller.pixelsPerMm(pageIndex).coerceAtLeast(0.01f)
-        val markup = page.markups.lastOrNull { it.containsPoint(page, mm, toleranceMm) } ?: return false
+        val markup = page.markups.lastOrNull { it.containsPoint(page, mm.toModel(), toleranceMm) } ?: return false
         controller.selectionManager.clearSelection()
         textSelection = null
         selectedMarkup = SelectedMarkup(page, markup)

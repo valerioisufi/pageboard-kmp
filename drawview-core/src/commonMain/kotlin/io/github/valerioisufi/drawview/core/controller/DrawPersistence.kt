@@ -11,7 +11,7 @@ import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.PurgedContent
 import io.github.valerioisufi.drawview.core.model.Tool
-import io.github.valerioisufi.drawview.core.text.TextDefaults
+import io.github.valerioisufi.drawview.model.text.TextDefaults
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch

@@ -10,20 +10,20 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.model.DrawDocument
-import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.ui.adaptive.PlatformConventions
 import io.github.valerioisufi.drawview.ui.adaptive.ShortcutModifier
 import io.github.valerioisufi.drawview.ui.platform.PencilAction
 import io.github.valerioisufi.drawview.ui.screen.EditorCommands
 import io.github.valerioisufi.drawview.ui.screen.EditorScreenActions
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 // The key events of the tests are built as the desktop builds them
 @OptIn(InternalComposeUiApi::class)

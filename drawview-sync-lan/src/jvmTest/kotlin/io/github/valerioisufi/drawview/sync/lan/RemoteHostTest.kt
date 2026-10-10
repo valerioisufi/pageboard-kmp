@@ -1,19 +1,21 @@
 package io.github.valerioisufi.drawview.sync.lan
 
-import androidx.compose.ui.graphics.Color
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
-import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawStroke
-import io.github.valerioisufi.drawview.core.model.InputToolType
-import io.github.valerioisufi.drawview.core.model.StrokePoint
-import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokeTool
 import io.github.valerioisufi.drawview.sync.InMemorySharedDocuments
 import io.github.valerioisufi.drawview.sync.ResourceFiles
 import io.github.valerioisufi.drawview.sync.SyncEngine
+import kotlin.math.cos
+import kotlin.test.Test
+import kotlin.test.assertNotNull
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -21,9 +23,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlin.math.cos
-import kotlin.test.Test
-import kotlin.test.assertNotNull
 
 /**
  * This machine sharing a document with another device (e.g. an application on a simulator): run
@@ -53,7 +52,7 @@ class RemoteHostTest {
                 val document = store.createDocument("Appunti dal Mac")
                 val open = assertNotNull(documents.open(document.id))
                 val points = (0..60).map { i -> StrokePoint(30f + i * 2.5f, 100f + 25f * cos(i / 5f), 0.6f, i * 8L) }
-                val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1.2f, color = Color(0xFFE53935))
+                val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1.2f, color = 0xFFE53935.toInt())
                 val mesh = assertNotNull(InkStrokeEngine.buildMesh(points, brush, InputToolType.STYLUS))
                 open.edit { session -> session.submit(AddElements.of(session.document.pages[0], listOf(DrawStroke(mesh = mesh, brushConfig = brush)))) }
                 documents.close(open)

@@ -1,10 +1,6 @@
 package io.github.valerioisufi.drawview.core.change
 
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
-import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawElement
 import io.github.valerioisufi.drawview.core.model.DrawImage
@@ -14,16 +10,18 @@ import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
-import io.github.valerioisufi.drawview.core.model.ElementOrder
-import io.github.valerioisufi.drawview.core.model.InputToolType
-import io.github.valerioisufi.drawview.core.model.PageBackground
-import io.github.valerioisufi.drawview.core.model.StrokeMesh
-import io.github.valerioisufi.drawview.core.model.StrokePoint
-import io.github.valerioisufi.drawview.core.model.StrokeTool
-import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
-import io.github.valerioisufi.drawview.core.model.Versions
-import io.github.valerioisufi.drawview.core.model.remodelingBrush
+import io.github.valerioisufi.drawview.model.ElementOrder
+import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.Versions
+import io.github.valerioisufi.drawview.model.geometry.AffineTransform
+import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.model.remodelingBrush
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -65,7 +63,7 @@ data class StrokeData(
 ) : ElementData {
     /** The stroke, modeled again from its inputs by the stroke engine. */
     override fun toElement(): DrawStroke {
-        val brush = remodelingBrush(tool, size, Color(color))
+        val brush = remodelingBrush(tool, size, color)
         // The inputs are kept as they are (the modeller may adjust what it records)
         val mesh = InkStrokeEngine.buildMesh(points, brush, inputToolType)?.withPoints(points) ?: StrokeMesh(
             positions = floatArrayOf(),
@@ -239,7 +237,7 @@ fun DrawStroke.toData() = StrokeData(
     points = baseMesh.points,
     tool = baseBrush.tool,
     size = baseBrush.size,
-    color = baseBrush.color.toArgb(),
+    color = baseBrush.color,
     inputToolType = baseMesh.inputToolType,
     transform = transform,
     order = dataOrder

@@ -13,13 +13,13 @@ import io.github.valerioisufi.drawview.core.controller.Collaborator
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.EditorActivity
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
-import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.model.DrawElement
 import io.github.valerioisufi.drawview.core.model.DrawText
-import io.github.valerioisufi.drawview.core.model.InputToolType
-import io.github.valerioisufi.drawview.core.model.StrokeMesh
-import io.github.valerioisufi.drawview.core.model.StrokeTool
-import io.github.valerioisufi.drawview.core.model.remodelingBrush
+import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.geometry.AffineTransform
+import io.github.valerioisufi.drawview.model.remodelingBrush
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.sync.Presence
 import kotlin.math.abs
@@ -114,7 +114,7 @@ private fun EditorActivity?.toPresence(documentId: String): Presence {
         stroke = stroke,
         ink = values,
         inkTool = brush.tool.name,
-        inkColor = brush.color.toArgb(),
+        inkColor = brush.color,
         inkSize = brush.size,
         inkInput = inputType.name
     )
@@ -261,7 +261,7 @@ private class CollaboratorsDrawing(private val controller: DrawViewController, p
         val engine = peer.engine ?: InkStrokeEngine().also { peer.engine = it }
         if (presence.stroke != peer.stroke || inputs < peer.fed) {
             val tool = StrokeTool.fromName(presence.inkTool) ?: StrokeTool.PRESSURE_PEN
-            engine.startStroke(remodelingBrush(tool, presence.inkSize, Color(presence.inkColor)))
+            engine.startStroke(remodelingBrush(tool, presence.inkSize, presence.inkColor))
             peer.stroke = presence.stroke
             peer.fed = 0
             peer.inkPageId = presence.pageId

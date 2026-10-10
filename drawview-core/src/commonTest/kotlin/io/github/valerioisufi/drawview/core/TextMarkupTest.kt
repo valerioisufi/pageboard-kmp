@@ -1,18 +1,20 @@
 package io.github.valerioisufi.drawview.core
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Rect as ComposeRect
 import androidx.compose.ui.graphics.Canvas
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.TextMarkupManager
+import io.github.valerioisufi.drawview.core.geometry.toCompose
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawPdf
 import io.github.valerioisufi.drawview.core.model.DrawResource
-import io.github.valerioisufi.drawview.core.model.PdfTextLayout
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.model.pdfPointsToPageMm
 import io.github.valerioisufi.drawview.core.render.tile.PdfTileAdapter
+import io.github.valerioisufi.drawview.model.PdfTextLayout
+import io.github.valerioisufi.drawview.model.geometry.Rect
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -103,7 +105,7 @@ class TextMarkupTest {
     // --- Editor ---
 
     private class FakePdfAdapter(private val layout: PdfTextLayout?) : PdfTileAdapter {
-        override fun renderPdfPage(canvas: Canvas, resourcePath: String, pdfPageIndex: Int, pageRect: Rect, clipRect: Rect) {}
+        override fun renderPdfPage(canvas: Canvas, resourcePath: String, pdfPageIndex: Int, pageRect: ComposeRect, clipRect: ComposeRect) {}
         override fun getPageSizesMm(resourcePath: String): List<Pair<Float, Float>> = listOf(210f to 297f)
         override fun getTextLayout(resourcePath: String, pdfPageIndex: Int): PdfTextLayout? = layout
     }
@@ -123,7 +125,7 @@ class TextMarkupTest {
         val page = document.pages[0]
         val toScreen = pdfPointsToPageMm(A4_WIDTH_PT, A4_HEIGHT_PT, page.widthMm, page.heightMm)
             .postConcat(assertNotNull(pageMmToScreen(0)))
-        return toScreen.mapPoint(x, y)
+        return toScreen.mapPoint(x, y).toCompose()
     }
 
     @Test

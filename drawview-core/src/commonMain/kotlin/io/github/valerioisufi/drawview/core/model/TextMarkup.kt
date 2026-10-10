@@ -1,9 +1,11 @@
 package io.github.valerioisufi.drawview.core.model
 
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
-import io.github.valerioisufi.drawview.core.render.tile.fitPdfPage
+import io.github.valerioisufi.drawview.model.ElementOrder
+import io.github.valerioisufi.drawview.model.Stamp
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Point
+import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.model.geometry.fitPdfPage
 import kotlin.concurrent.Volatile
 import kotlin.math.max
 import kotlin.math.min
@@ -75,7 +77,7 @@ class DrawTextMarkup(
     fun boundsMm(page: DrawPage): Rect = boundsMm(page.widthMm, page.heightMm)
 
     /** Whether [pointMm] (millimeters of [page]) is on a line of the passage, or at most [toleranceMm] away. */
-    fun containsPoint(page: DrawPage, pointMm: Offset, toleranceMm: Float = 0f): Boolean {
+    fun containsPoint(page: DrawPage, pointMm: Point, toleranceMm: Float = 0f): Boolean {
         val toPage = pointsToPageMm(page)
         return rects.any { toPage.mapRect(it).inflate(toleranceMm).contains(pointMm) }
     }

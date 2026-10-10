@@ -1,10 +1,10 @@
 package io.github.valerioisufi.drawview.core.engine
 
-import io.github.valerioisufi.drawview.core.model.BrushConfig
-import io.github.valerioisufi.drawview.core.model.InputToolType
-import io.github.valerioisufi.drawview.core.model.StrokeMesh
-import io.github.valerioisufi.drawview.core.model.StrokeOutline
-import io.github.valerioisufi.drawview.core.model.StrokePoint
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokeOutline
+import io.github.valerioisufi.drawview.model.StrokePoint
 
 /**
  * Low level binding of the C API declared in `native/bridge/ink_bridge.h`. Handles are opaque
@@ -47,10 +47,10 @@ class NativeStrokeEngineDelegate(private val api: InkNativeApi) : StrokeEngineDe
             brushHandle = api.createBrush(
                 brush.tool.brushFamily.nativeId,
                 brush.size,
-                brush.color.red,
-                brush.color.green,
-                brush.color.blue,
-                brush.color.alpha,
+                ((brush.color ushr 16) and 0xFF) / 255f,
+                ((brush.color ushr 8) and 0xFF) / 255f,
+                (brush.color and 0xFF) / 255f,
+                ((brush.color ushr 24) and 0xFF) / 255f,
                 brush.epsilon
             )
             brushKey = brush

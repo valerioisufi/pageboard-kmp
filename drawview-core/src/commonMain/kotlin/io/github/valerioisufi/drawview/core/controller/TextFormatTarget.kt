@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.core.controller
 
-import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.text.RichTextEditing
+import io.github.valerioisufi.drawview.model.TextAlignment
 
 /**
  * What the formatting of the texts applies to: the text being written (see [TextEditorManager]) or

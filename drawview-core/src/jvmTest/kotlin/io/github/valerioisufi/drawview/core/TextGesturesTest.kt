@@ -13,19 +13,20 @@ import androidx.compose.ui.unit.Density
 import io.github.valerioisufi.drawview.core.canvas.DrawCanvas
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.core.geometry.toCompose
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.Tool
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 
 /**
  * The gestures of the text tool sent to a [DrawCanvas]: a box drawn with a mouse, a tap on another
@@ -101,12 +102,12 @@ class TextGesturesTest {
         editor.updateValue(TextFieldValue("First", TextRange(5)))
 
         // A tap on the other text: the first one saved, the other one opened
-        scene.click(assertNotNull(controller.pageMmToScreen(0)).mapPoint(40f, 125f))
+        scene.click(assertNotNull(controller.pageMmToScreen(0)).mapPoint(40f, 125f).toCompose())
         assertEquals(listOf("Other", "First"), page.texts.map { it.text })
         assertSame(other, editor.activeTextItem)
 
         // A tap on an empty spot: saved, nothing opened
-        scene.click(assertNotNull(controller.pageMmToScreen(0)).mapPoint(150f, 250f))
+        scene.click(assertNotNull(controller.pageMmToScreen(0)).mapPoint(150f, 250f).toCompose())
         assertFalse(editor.isEditing)
     }
 }

@@ -1,10 +1,10 @@
 package io.github.valerioisufi.drawview.core.engine
 
-import io.github.valerioisufi.drawview.core.model.BrushConfig
-import io.github.valerioisufi.drawview.core.model.InputToolType
-import io.github.valerioisufi.drawview.core.model.StrokeMesh
-import io.github.valerioisufi.drawview.core.model.StrokePoint
-import io.github.valerioisufi.drawview.core.model.StrokeTool
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokeTool
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.ceil

@@ -6,7 +6,8 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
-import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.core.geometry.toModel
+import io.github.valerioisufi.drawview.model.PageBackground
 import kotlin.math.max
 import kotlin.math.min
 
@@ -66,7 +67,7 @@ class PageBackgroundRenderer {
             min(pageRect.height, targetHeight - pageRect.top) / pixelsPerMm
         )
         if (visible.left >= visible.right || visible.top >= visible.bottom) return
-        val pattern = background.pattern(pageWidthMm, pageHeightMm, visible) ?: return
+        val pattern = background.pattern(pageWidthMm, pageHeightMm, visible.toModel()) ?: return
         // Too dense at this zoom level: not drawn
         val spacingPx = pattern.spacingMm * pixelsPerMm
         if (spacingPx < if (pattern.dots) 4f else 3f) return

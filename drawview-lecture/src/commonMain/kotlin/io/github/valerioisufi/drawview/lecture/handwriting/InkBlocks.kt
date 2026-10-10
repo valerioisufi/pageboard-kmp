@@ -1,6 +1,6 @@
 package io.github.valerioisufi.drawview.lecture.handwriting
 
-import androidx.compose.ui.geometry.Rect
+import io.github.valerioisufi.drawview.model.geometry.Rect
 import kotlin.math.max
 import kotlin.math.min
 

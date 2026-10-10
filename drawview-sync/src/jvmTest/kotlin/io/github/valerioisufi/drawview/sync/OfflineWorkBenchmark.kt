@@ -1,6 +1,5 @@
 package io.github.valerioisufi.drawview.sync
 
-import androidx.compose.ui.graphics.Color
 import androidx.room.Room
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.AddPage
@@ -9,18 +8,18 @@ import io.github.valerioisufi.drawview.core.change.RemoveElements
 import io.github.valerioisufi.drawview.core.change.StrokePlacement
 import io.github.valerioisufi.drawview.core.change.snapshot
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
-import io.github.valerioisufi.drawview.core.geometry.AffineTransform
-import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawStroke
-import io.github.valerioisufi.drawview.core.model.InputToolType
-import io.github.valerioisufi.drawview.core.model.StrokePoint
-import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.data.RoomDocumentStore
 import io.github.valerioisufi.drawview.data.db.DrawDatabase
 import io.github.valerioisufi.drawview.data.db.createDrawDatabase
 import io.github.valerioisufi.drawview.data.db.getInMemoryDatabaseBuilder
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import java.io.File
 import kotlin.math.sin
 import kotlin.random.Random
@@ -148,7 +147,7 @@ class OfflineWorkBenchmark {
 
     /** A stroke as drawn by hand: 150 inputs. */
     private fun stroke(x: Float, y: Float): DrawStroke {
-        val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1f, color = Color.Black)
+        val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1f, color = 0xFF000000.toInt())
         val points = (0 until 150).map { i -> StrokePoint(x + i * 0.2f, y + 3f * sin(i / 10f), 0.5f, i * 8L) }
         return DrawStroke(mesh = InkStrokeEngine.buildMesh(points, brush, InputToolType.STYLUS)!!, brushConfig = brush)
     }

@@ -20,11 +20,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.core.controller.Collaborator
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import io.github.valerioisufi.drawview.core.geometry.toCompose
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.render.tile.TileRenderer
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 
 /**
  * Draws what the other devices are doing on the document (see
@@ -69,7 +70,7 @@ internal class CollaboratorsOverlay {
         for (collaborator in controller.collaborators) {
             if (collaborator.text != null) continue
             val mmToScreen = controller.pageMmToScreen(pageIndexOf(controller, collaborator.pageId)) ?: continue
-            val point = mmToScreen.mapPoint(collaborator.position.x, collaborator.position.y)
+            val point = mmToScreen.mapPoint(collaborator.position.x, collaborator.position.y).toCompose()
             scope.drawCircle(Color.White, radius = with(scope) { 7.dp.toPx() }, center = point)
             scope.drawCircle(collaborator.color, radius = with(scope) { 5.dp.toPx() }, center = point)
             scope.drawName(collaborator, point + with(scope) { Offset(9.dp.toPx(), 7.dp.toPx()) }, labels)

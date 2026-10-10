@@ -1,6 +1,6 @@
 package io.github.valerioisufi.drawview.core.change
 
-import io.github.valerioisufi.drawview.core.model.Stamp
+import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import kotlinx.serialization.Serializable
 

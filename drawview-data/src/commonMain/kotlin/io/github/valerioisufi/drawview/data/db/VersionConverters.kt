@@ -1,9 +1,9 @@
 package io.github.valerioisufi.drawview.data.db
 
 import androidx.room.TypeConverter
-import io.github.valerioisufi.drawview.core.model.ElementOrder
-import io.github.valerioisufi.drawview.core.model.Stamp
-import io.github.valerioisufi.drawview.core.model.Versions
+import io.github.valerioisufi.drawview.model.ElementOrder
+import io.github.valerioisufi.drawview.model.Stamp
+import io.github.valerioisufi.drawview.model.Versions
 
 /**
  * Stores the [Stamp]s, the [ElementOrder]s and the [Versions] as their text (whose order is the

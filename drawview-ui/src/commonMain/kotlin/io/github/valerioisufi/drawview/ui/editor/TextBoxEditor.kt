@@ -47,19 +47,19 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.text.TextSizes.PT_TO_MM
+import io.github.valerioisufi.drawview.model.text.TextSizes.PT_TO_MM
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_formula_invalid
 import io.github.valerioisufi.drawview.ui.render.FormulaImages
 import io.github.valerioisufi.drawview.ui.render.toTextAlign
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
-import org.jetbrains.compose.resources.stringResource
 import kotlin.math.ceil
 import kotlin.math.ln
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The field of the text being written, over the canvas where the text is on its page, as the page

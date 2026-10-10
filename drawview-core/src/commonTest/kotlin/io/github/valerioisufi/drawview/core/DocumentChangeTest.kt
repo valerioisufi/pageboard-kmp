@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.core
 
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.AddPage
 import io.github.valerioisufi.drawview.core.change.AddResource
@@ -26,9 +26,7 @@ import io.github.valerioisufi.drawview.core.change.UpdateTexts
 import io.github.valerioisufi.drawview.core.change.toData
 import io.github.valerioisufi.drawview.core.controller.ChangePersister
 import io.github.valerioisufi.drawview.core.controller.DrawPersistence
-import io.github.valerioisufi.drawview.core.geometry.AffineTransform
 import io.github.valerioisufi.drawview.core.history.HistoryManager
-import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawElement
 import io.github.valerioisufi.drawview.core.model.DrawImage
@@ -38,13 +36,16 @@ import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
-import io.github.valerioisufi.drawview.core.model.PageBackground
-import io.github.valerioisufi.drawview.core.model.StrokeMesh
-import io.github.valerioisufi.drawview.core.model.StrokePoint
-import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
-import io.github.valerioisufi.drawview.core.model.Versions
 import io.github.valerioisufi.drawview.core.model.newElementId
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.Versions
+import io.github.valerioisufi.drawview.model.geometry.AffineTransform
+import io.github.valerioisufi.drawview.model.geometry.Rect
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -62,7 +63,7 @@ class DocumentChangeTest {
         val mesh = StrokeMesh(
             positions = floatArrayOf(x, y, x + 5f, y, x + 5f, y + 5f, x, y + 5f),
             indices = shortArrayOf(0, 1, 2, 0, 2, 3),
-            color = Color.Black,
+            color = Color.Black.toArgb(),
             tool = StrokeTool.MARKER,
             size = 1f,
             points = listOf(StrokePoint(x, y, 0.5f, 0L), StrokePoint(x + 5f, y + 5f, 0.5f, 16L))

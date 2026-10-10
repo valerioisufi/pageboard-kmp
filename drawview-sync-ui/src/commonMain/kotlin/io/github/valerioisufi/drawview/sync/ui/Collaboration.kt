@@ -6,11 +6,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.valerioisufi.drawview.core.attachment.DocumentAttachments
-import io.github.valerioisufi.drawview.platform.DeviceProfile
 import io.github.valerioisufi.drawview.data.DocumentStore
 import io.github.valerioisufi.drawview.data.DrawViewStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
+import io.github.valerioisufi.drawview.model.DocumentAttachments
+import io.github.valerioisufi.drawview.platform.DeviceProfile
 import io.github.valerioisufi.drawview.sync.DeviceIdentity
 import io.github.valerioisufi.drawview.sync.Invitation
 import io.github.valerioisufi.drawview.sync.InvitationGrant
@@ -35,8 +35,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex

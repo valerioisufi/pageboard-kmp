@@ -4,8 +4,8 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.skiaCanvas
 import androidx.compose.ui.graphics.toArgb
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
-import io.github.valerioisufi.drawview.core.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import org.jetbrains.skia.BlendMode
 import org.jetbrains.skia.Matrix33
 import org.jetbrains.skia.Paint
@@ -19,7 +19,7 @@ actual class StrokeMeshPainter actual constructor() {
     actual fun draw(canvas: Canvas, mesh: StrokeMesh, transform: Matrix2D?, colorOverride: Color?) {
         if (mesh.isEmpty) return
         val skiaCanvas = canvas.skiaCanvas
-        val color = colorOverride ?: mesh.color
+        val color = colorOverride ?: Color(mesh.color)
         val translucent = color.alpha < 0.999f
 
         skiaCanvas.save()

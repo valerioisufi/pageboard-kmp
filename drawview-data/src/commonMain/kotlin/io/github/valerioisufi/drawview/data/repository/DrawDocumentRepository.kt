@@ -19,17 +19,10 @@ import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
-import io.github.valerioisufi.drawview.core.model.ElementOrder
-import io.github.valerioisufi.drawview.core.model.InputToolType
-import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.model.PurgedContent
-import io.github.valerioisufi.drawview.core.model.Stamp
-import io.github.valerioisufi.drawview.core.model.StrokeTool
-import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.model.newElementId
-import io.github.valerioisufi.drawview.core.text.TextDefaults
 import io.github.valerioisufi.drawview.data.buildDrawPreferences
 import io.github.valerioisufi.drawview.data.db.DocumentEntity
 import io.github.valerioisufi.drawview.data.db.DrawDatabase
@@ -47,6 +40,13 @@ import io.github.valerioisufi.drawview.data.db.TextMarkupEntity
 import io.github.valerioisufi.drawview.data.db.UserPreferencesEntity
 import io.github.valerioisufi.drawview.data.db.currentTimeMillis
 import io.github.valerioisufi.drawview.data.toBrushSettings
+import io.github.valerioisufi.drawview.model.ElementOrder
+import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.Stamp
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.text.TextDefaults
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
@@ -377,7 +377,7 @@ class DrawDocumentRepository(
         id = id,
         pageId = pageId,
         orderKey = order,
-        color = baseBrush.color.toArgb(),
+        color = baseBrush.color,
         size = baseBrush.size,
         toolType = baseMesh.inputToolType.name,
         brushFamily = baseBrush.tool.name,

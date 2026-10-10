@@ -8,15 +8,15 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.valerioisufi.drawview.data.DocumentStore
-import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.data.DocumentSummary
 import io.github.valerioisufi.drawview.data.FolderSummary
-import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_create_failed
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_empty
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_exists
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_invalid_chars
+import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.ui.session.DocumentTag
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource

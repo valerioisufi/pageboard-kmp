@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.pdf
 
-import androidx.compose.ui.geometry.Rect
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Rect
 import kotlin.math.abs
 import kotlin.math.roundToLong
 

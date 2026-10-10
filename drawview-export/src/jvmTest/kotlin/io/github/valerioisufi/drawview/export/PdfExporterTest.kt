@@ -1,24 +1,16 @@
 package io.github.valerioisufi.drawview.export
 
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Rect as ComposeRect
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Canvas as ComposeCanvas
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.createFontFamilyResolver
 import androidx.compose.ui.text.platform.Font as PlatformFont
-import io.github.valerioisufi.drawview.core.render.tile.TextFace
-import io.github.valerioisufi.drawview.core.render.tile.TileRenderer
-import io.github.valerioisufi.drawview.latex.LatexEngine
-import io.github.valerioisufi.drawview.latex.TexFont
-import io.github.valerioisufi.drawview.pdf.PdfFont
-import io.github.valerioisufi.drawview.ui.theme.NotesFonts
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
-import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPdf
@@ -26,14 +18,22 @@ import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
-import io.github.valerioisufi.drawview.core.model.PageBackground
-import io.github.valerioisufi.drawview.core.model.StrokePoint
-import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.platform.decodeImageBitmap
+import io.github.valerioisufi.drawview.core.render.tile.TextFace
+import io.github.valerioisufi.drawview.core.render.tile.TileRenderer
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
+import io.github.valerioisufi.drawview.latex.LatexEngine
+import io.github.valerioisufi.drawview.latex.TexFont
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.pdf.PdfFont
 import io.github.valerioisufi.drawview.pdf.PdfImportedPage
 import io.github.valerioisufi.drawview.pdf.PdfInfo
 import io.github.valerioisufi.drawview.pdf.PdfMarkupKind
@@ -43,6 +43,7 @@ import io.github.valerioisufi.drawview.pdf.PdfWriter
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import io.github.valerioisufi.drawview.ui.platform.FileTarget
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
+import io.github.valerioisufi.drawview.ui.theme.NotesFonts
 import java.io.ByteArrayOutputStream
 import java.io.File
 import kotlin.math.abs
@@ -184,7 +185,7 @@ class PdfExporterTest {
         for (index in listOf(0, 1, 2, 0)) {
             document.addPage(width = 300f / PT_PER_MM, height = 200f / PT_PER_MM).add(DrawPdf(index).apply { resourceId = pdf })
         }
-        val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1.5f, color = Color.Black, epsilon = 0.05f)
+        val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1.5f, color = Color.Black.toArgb(), epsilon = 0.05f)
         val points = (0..30).map { StrokePoint(10f + it * 2f, 10f, 0.6f, 16L * (it + 1)) }
         document.pages[1].add(DrawStroke(mesh = InkStrokeEngine.buildMesh(points, brush)!!.withPoints(points), brushConfig = brush))
 
@@ -311,7 +312,7 @@ class PdfExporterTest {
     private fun notebook(): DrawDocument {
         val document = DrawDocument(title = "Lezione 3: hash", defaultBackground = PageBackground.Grid(lineColor = 0x660000FF))
         val page = document.pages[0]
-        val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1.5f, color = Color.Black, epsilon = 0.05f)
+        val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1.5f, color = Color.Black.toArgb(), epsilon = 0.05f)
         val points = (0..30).map { StrokePoint(20f + it * 3f, 40f + sin(it / 5f) * 5f, 0.6f, 16L * (it + 1)) }
         page.add(DrawStroke(mesh = InkStrokeEngine.buildMesh(points, brush)!!.withPoints(points), brushConfig = brush))
         page.add(DrawText().apply {

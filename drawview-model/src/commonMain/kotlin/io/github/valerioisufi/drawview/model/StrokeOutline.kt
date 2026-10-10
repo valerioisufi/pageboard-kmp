@@ -1,6 +1,6 @@
-package io.github.valerioisufi.drawview.core.model
+package io.github.valerioisufi.drawview.model
 
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 
 /**
  * Outline of a stroke: closed polygons (x, y pairs, in stroke units: page millimeters for the

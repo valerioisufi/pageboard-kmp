@@ -1,12 +1,7 @@
 package io.github.valerioisufi.drawview.pdf
 
-import androidx.compose.ui.geometry.Rect
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
-import org.jetbrains.skia.Bitmap
-import org.jetbrains.skia.ColorAlphaType
-import org.jetbrains.skia.EncodedImageFormat
-import org.jetbrains.skia.Image
-import org.jetbrains.skia.ImageInfo
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Rect
 import java.io.ByteArrayOutputStream
 import java.io.File
 import kotlin.math.abs
@@ -18,6 +13,11 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.jetbrains.skia.Bitmap
+import org.jetbrains.skia.ColorAlphaType
+import org.jetbrains.skia.EncodedImageFormat
+import org.jetbrains.skia.Image
+import org.jetbrains.skia.ImageInfo
 
 class PdfWriterTest {
 

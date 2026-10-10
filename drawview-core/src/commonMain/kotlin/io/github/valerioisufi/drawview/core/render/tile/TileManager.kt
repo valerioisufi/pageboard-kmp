@@ -10,14 +10,20 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import io.github.valerioisufi.drawview.core.canvas.StrokeMeshPainter
 import io.github.valerioisufi.drawview.core.canvas.TextMarkupPainter
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import io.github.valerioisufi.drawview.core.geometry.mapRect
+import io.github.valerioisufi.drawview.core.geometry.setRectToRect
+import io.github.valerioisufi.drawview.core.geometry.toCompose
+import io.github.valerioisufi.drawview.core.geometry.toComposeMatrix
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.readSnapshot
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.syncLock
+import kotlin.math.max
+import kotlin.math.min
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -26,8 +32,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlin.math.max
-import kotlin.math.min
 
 /**
  * Manages the multi-scale, background-rasterized tile grid for low-latency rendering.
@@ -494,7 +498,7 @@ class TileManager(
             val renderedMarkups = if (candidates.isEmpty()) emptySet() else content.markups.toHashSet()
             val pending = candidates.filter { it.stroke !in renderedStrokes && it.markup !in renderedMarkups }
             if (pending.isNotEmpty()) {
-                val mmToTile = TilePyramid.getMmToTileMatrix(key, content.rect(), pageWorldRect)
+                val mmToTile = TilePyramid.getMmToTileMatrix(key, content.rect().toCompose(), pageWorldRect)
                 val tileCanvas = Canvas(bitmap)
                 val painter = StrokeMeshPainter()
                 for (element in pending) {
@@ -538,7 +542,7 @@ class TileManager(
             for ((pageIndex, pageStrokes) in strokesByPage) {
                 val page = document.pages.getOrNull(pageIndex) ?: continue
                 val pageWorldRect = pageRects.getOrNull(pageIndex) ?: continue
-                val pageRectMm = page.rect()
+                val pageRectMm = page.rect().toCompose()
 
                 val bakes = recentBakes.getOrPut(page.renderKey) { mutableListOf() }
                 for (stroke in pageStrokes) {
@@ -600,7 +604,7 @@ class TileManager(
             }
             if (bakes.size > 256) bakes.subList(0, bakes.size - 256).clear()
 
-            val pageRectMm = page.rect()
+            val pageRectMm = page.rect().toCompose()
             val scaleX = if (page.widthMm > 0f) pageWorldRect.width / page.widthMm else 1f
             val scaleY = if (page.heightMm > 0f) pageWorldRect.height / page.heightMm else 1f
             for (lod in TilePyramid.MIN_LOD..TilePyramid.MAX_LOD) {
@@ -629,7 +633,7 @@ class TileManager(
                 }
             }
         }
-        val dirty = markups.map { it.boundsMm(page) }.reduceOrNull { a, b ->
+        val dirty = markups.map { it.boundsMm(page).toCompose() }.reduceOrNull { a, b ->
             Rect(min(a.left, b.left), min(a.top, b.top), max(a.right, b.right), max(a.bottom, b.bottom))
         }
         if (dirty != null) invalidatePageRegion(page, dirty, pageWorldRect)

@@ -5,8 +5,8 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
-import io.github.valerioisufi.drawview.core.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 
 actual class StrokeMeshPainter actual constructor() {
     private val paint = Paint().apply { isAntiAlias = true }
@@ -16,7 +16,7 @@ actual class StrokeMeshPainter actual constructor() {
     actual fun draw(canvas: Canvas, mesh: StrokeMesh, transform: Matrix2D?, colorOverride: Color?) {
         if (mesh.isEmpty) return
         val androidCanvas = canvas.nativeCanvas
-        val color = colorOverride ?: mesh.color
+        val color = colorOverride ?: Color(mesh.color)
         val translucent = color.alpha < 0.999f
 
         val saveCount = androidCanvas.save()

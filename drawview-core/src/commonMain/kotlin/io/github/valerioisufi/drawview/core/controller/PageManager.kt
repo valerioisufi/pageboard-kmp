@@ -8,13 +8,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.core.change.AddPage
 import io.github.valerioisufi.drawview.core.change.CompositeChange
+import io.github.valerioisufi.drawview.core.change.MovePages
 import io.github.valerioisufi.drawview.core.change.RemovePage
 import io.github.valerioisufi.drawview.core.change.SetDocumentDefaults
 import io.github.valerioisufi.drawview.core.change.SetPageFormat
-import io.github.valerioisufi.drawview.core.change.MovePages
-import io.github.valerioisufi.drawview.core.geometry.Dimension
 import io.github.valerioisufi.drawview.core.model.DrawPage
-import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.geometry.Dimension
 
 /**
  * Page management: insertion, deletion, reordering (drag & drop on the canvas or in the page

@@ -1,6 +1,6 @@
-package io.github.valerioisufi.drawview.core.text
+package io.github.valerioisufi.drawview.model.text
 
-import io.github.valerioisufi.drawview.core.model.TextAlignment
+import io.github.valerioisufi.drawview.model.TextAlignment
 
 /**
  * The sizes of the texts: typographic points, converted to the millimeters of the pages, from

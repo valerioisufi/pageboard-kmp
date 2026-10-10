@@ -1,22 +1,23 @@
 package io.github.valerioisufi.drawview.core
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import io.github.valerioisufi.drawview.core.geometry.toCompose
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawText
-import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.core.render.tile.TextBlockSize
 import io.github.valerioisufi.drawview.core.render.tile.TextLineMetrics
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.core.snap.SnapEngine
 import io.github.valerioisufi.drawview.core.snap.SnapLine
 import io.github.valerioisufi.drawview.core.snap.SnapTargets
+import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Rect
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -142,7 +143,7 @@ class SnapTest {
         val anchor = DrawText().apply { text = "Anchor"; x = 30f; y = 20f; width = 100f; height = 8f }
         controller.session.submit(AddElements.of(page, listOf(anchor)))
         val editor = controller.textEditorManager
-        editor.startDrawnText(0, Rect(30f, 60f, 90f, 70f))
+        editor.startDrawnText(0, Rect(30f, 60f, 90f, 70f).toCompose())
 
         // Its right edge brought 0.4 mm from the one of the anchor: aligned
         editor.resizeTo(129.6f, leftEdge = false)

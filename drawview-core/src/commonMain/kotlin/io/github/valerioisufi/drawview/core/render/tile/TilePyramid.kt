@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.core.render.tile
 
 import androidx.compose.ui.geometry.Rect
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import kotlin.math.floor
 import kotlin.math.ln
 import kotlin.math.pow

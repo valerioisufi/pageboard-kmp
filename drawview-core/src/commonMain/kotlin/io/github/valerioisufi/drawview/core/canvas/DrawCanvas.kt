@@ -29,9 +29,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.rememberTextMeasurer
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import io.github.valerioisufi.drawview.core.geometry.mapRect
+import io.github.valerioisufi.drawview.core.geometry.toCompose
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import kotlinx.coroutines.flow.first
 
 /**
@@ -174,8 +176,8 @@ fun DrawCanvas(
         if (snaps.guides.isNotEmpty()) {
             controller.pageMmToScreen(snaps.guidesPageIndex)?.let { mmToScreen ->
                 for (guide in snaps.guides) {
-                    val start = if (guide.vertical) mmToScreen.mapPoint(guide.position, guide.from) else mmToScreen.mapPoint(guide.from, guide.position)
-                    val end = if (guide.vertical) mmToScreen.mapPoint(guide.position, guide.to) else mmToScreen.mapPoint(guide.to, guide.position)
+                    val start = if (guide.vertical) mmToScreen.mapPoint(guide.position, guide.from).toCompose() else mmToScreen.mapPoint(guide.from, guide.position).toCompose()
+                    val end = if (guide.vertical) mmToScreen.mapPoint(guide.position, guide.to).toCompose() else mmToScreen.mapPoint(guide.to, guide.position).toCompose()
                     drawLine(Color(FrameStyle.GUIDE_COLOR), start, end, strokeWidth = FrameStyle.GUIDE_STROKE_DP * controller.density)
                 }
             }

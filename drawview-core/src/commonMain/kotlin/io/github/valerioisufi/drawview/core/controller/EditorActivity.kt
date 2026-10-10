@@ -3,13 +3,13 @@ package io.github.valerioisufi.drawview.core.controller
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import io.github.valerioisufi.drawview.core.change.TextData
-import io.github.valerioisufi.drawview.core.geometry.AffineTransform
-import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawElement
 import io.github.valerioisufi.drawview.core.model.DrawText
-import io.github.valerioisufi.drawview.core.model.InputToolType
-import io.github.valerioisufi.drawview.core.model.StrokeMesh
-import io.github.valerioisufi.drawview.core.model.StrokePoint
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import kotlinx.serialization.Serializable
 
 /**

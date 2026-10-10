@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.core
 
-import io.github.valerioisufi.drawview.core.text.RichTextParser
-import io.github.valerioisufi.drawview.core.text.RichTextParser.Kind
+import io.github.valerioisufi.drawview.model.text.RichTextParser
+import io.github.valerioisufi.drawview.model.text.RichTextParser.Kind
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

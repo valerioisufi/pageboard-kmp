@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.core
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.core.change.ChangeOrigin
 import io.github.valerioisufi.drawview.core.change.DocumentChange
 import io.github.valerioisufi.drawview.core.change.DocumentSession
@@ -14,19 +15,21 @@ import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.PersistenceQueue
 import io.github.valerioisufi.drawview.core.controller.PlacementRequest
 import io.github.valerioisufi.drawview.core.engine.KotlinStrokeEngineDelegate
-import io.github.valerioisufi.drawview.core.geometry.HitTesting
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
-import io.github.valerioisufi.drawview.core.model.BrushConfig
+import io.github.valerioisufi.drawview.core.geometry.toCompose
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
-import io.github.valerioisufi.drawview.core.model.InputToolType
-import io.github.valerioisufi.drawview.core.model.Stamp
-import io.github.valerioisufi.drawview.core.model.StrokeMesh
-import io.github.valerioisufi.drawview.core.model.StrokePoint
-import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.Stamp
+import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.geometry.HitTesting
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Rect as MmRect
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import kotlin.math.abs
 import kotlin.test.Test
@@ -47,7 +50,7 @@ class EditorCoreTest {
     private fun squareMesh(left: Float, top: Float, size: Float): StrokeMesh = StrokeMesh(
         positions = floatArrayOf(left, top, left + size, top, left + size, top + size, left, top + size),
         indices = shortArrayOf(0, 1, 2, 0, 2, 3),
-        color = Color.Black,
+        color = Color.Black.toArgb(),
         tool = StrokeTool.MARKER,
         size = 1f,
         points = listOf(StrokePoint(left, top), StrokePoint(left + size, top + size))
@@ -60,7 +63,7 @@ class EditorCoreTest {
     @Test
     fun kotlinTessellatorProducesClosedStrokeMesh() {
         val delegate = KotlinStrokeEngineDelegate()
-        val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1f, color = Color.Black, epsilon = 0.01f)
+        val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1f, color = Color.Black.toArgb(), epsilon = 0.01f)
         delegate.start(brush, 0.1f)
         for (i in 0..20) delegate.addInput(10f + i, 10f + i * 0.5f, 0.5f, i * 16L, InputToolType.STYLUS)
         val mesh = assertNotNull(delegate.currentMesh(brush, emptyList(), InputToolType.STYLUS))
@@ -73,7 +76,7 @@ class EditorCoreTest {
     @Test
     fun kotlinTessellatorDashesTheLasso() {
         val delegate = KotlinStrokeEngineDelegate()
-        val brush = BrushConfig(tool = StrokeTool.LASSO, size = 0.5f, color = Color.Gray, epsilon = 0.01f)
+        val brush = BrushConfig(tool = StrokeTool.LASSO, size = 0.5f, color = Color.Gray.toArgb(), epsilon = 0.01f)
         delegate.start(brush, 0.1f)
         for (i in 0..200) delegate.addInput(i * 0.5f, 0f, -1f, i * 8L, InputToolType.MOUSE)
         val mesh = assertNotNull(delegate.currentMesh(brush, emptyList(), InputToolType.MOUSE))
@@ -91,7 +94,7 @@ class EditorCoreTest {
             val t = i / 3
             t + i % 3
         }
-        val mesh = StrokeMesh.fromIndexedMesh(positions, indices, Color.Black, StrokeTool.MARKER, 1f, emptyList(), InputToolType.UNKNOWN)
+        val mesh = StrokeMesh.fromIndexedMesh(positions, indices, Color.Black.toArgb(), StrokeTool.MARKER, 1f, emptyList(), InputToolType.UNKNOWN)
         assertTrue(mesh.partitions.size >= 2)
         assertEquals(vertexCount - 2, mesh.triangleCount)
         for (partition in mesh.partitions) {
@@ -107,20 +110,20 @@ class EditorCoreTest {
     @Test
     fun matrixRotationAndRectMapping() {
         val m = Matrix2D().postRotate(90f, 10f, 10f)
-        val p = m.mapPoint(20f, 10f)
+        val p = m.mapPoint(20f, 10f).toCompose()
         assertEquals(10f, p.x, 1e-4f)
         assertEquals(20f, p.y, 1e-4f)
         assertEquals(90f, m.rotationDegrees, 1e-3f)
 
-        val r = Matrix2D().setRectToRect(Rect(0f, 0f, 210f, 297f), Rect(100f, 50f, 520f, 644f))
-        val corner = r.mapPoint(210f, 297f)
+        val r = Matrix2D().setRectToRect(MmRect(0f, 0f, 210f, 297f), MmRect(100f, 50f, 520f, 644f))
+        val corner = r.mapPoint(210f, 297f).toCompose()
         assertEquals(520f, corner.x, 1e-3f)
         assertEquals(644f, corner.y, 1e-3f)
 
         val a = Matrix2D().postScale(2f, 2f)
         val b = Matrix2D().postTranslate(5f, 0f)
         val pre = Matrix2D(a).preConcat(b) // a * b: translate first, then scale
-        assertEquals(10f, pre.mapPoint(0f, 0f).x, 1e-4f)
+        assertEquals(10f, pre.mapPoint(0f, 0f).toCompose().x, 1e-4f)
     }
 
     @Test
@@ -223,7 +226,7 @@ class EditorCoreTest {
         val mesh = StrokeMesh(
             positions = floatArrayOf(100f, 290f, 101f, 290f, 101f, 310f, 100f, 310f),
             indices = shortArrayOf(0, 1, 2, 0, 2, 3),
-            color = Color.Black,
+            color = Color.Black.toArgb(),
             tool = StrokeTool.PRESSURE_PEN,
             size = 1f,
             points = listOf(StrokePoint(100.5f, 290f), StrokePoint(100.5f, 310f))
@@ -252,8 +255,8 @@ class EditorCoreTest {
         page.add(miss)
 
         val mmToScreen = assertNotNull(controller.pageMmToScreen(0))
-        val from = mmToScreen.mapPoint(40f, 52f)
-        val to = mmToScreen.mapPoint(70f, 52f)
+        val from = mmToScreen.mapPoint(40f, 52f).toCompose()
+        val to = mmToScreen.mapPoint(70f, 52f).toCompose()
         val erased = controller.eraserManager.eraseAlongSegment(from, to)
         controller.eraserManager.commitGesture()
 
@@ -282,7 +285,7 @@ class EditorCoreTest {
         assertTrue(placement.isActive)
         val mmToScreen = assertNotNull(controller.pageMmToScreen(0))
         // Near the bottom-right corner of the A4 page: the element stays inside it
-        val (pageIndex, topLeft) = assertNotNull(placement.targetAt(mmToScreen.mapPoint(200f, 290f)))
+        val (pageIndex, topLeft) = assertNotNull(placement.targetAt(mmToScreen.mapPoint(200f, 290f).toCompose()))
         assertEquals(0, pageIndex)
         assertEquals(160f, topLeft.x, 0.01f)
         assertEquals(277f, topLeft.y, 0.01f)
@@ -291,7 +294,7 @@ class EditorCoreTest {
         assertFalse(placement.placeAt(Offset(-50f, -50f)))
         assertTrue(placement.isActive)
 
-        assertTrue(placement.placeAt(mmToScreen.mapPoint(20f, 30f)))
+        assertTrue(placement.placeAt(mmToScreen.mapPoint(20f, 30f).toCompose()))
         val (placedPage, x, y) = placed.single()
         assertEquals(0, placedPage)
         assertEquals(20f, x, 0.01f)
@@ -359,13 +362,13 @@ class EditorCoreTest {
     @Test
     fun screenAndPageCoordinatesRoundTrip() = runTest(UnconfinedTestDispatcher()) {
         val controller = controllerWith(2, backgroundScope)
-        val screen = assertNotNull(controller.pageMmToScreen(1)).mapPoint(105f, 148.5f)
+        val screen = assertNotNull(controller.pageMmToScreen(1)).mapPoint(105f, 148.5f).toCompose()
         assertEquals(1, controller.findPageIndexAtScreen(screen) ?: controller.findPageIndexAtWorld(controller.screenToWorld(screen)))
         val back = assertNotNull(controller.screenToPageMm(1, screen))
         assertEquals(105f, back.x, 1e-2f)
         assertEquals(148.5f, back.y, 1e-2f)
         assertTrue(controller.pixelsPerMm(0) > 0f)
-        assertEquals(Offset(0f, 0f), controller.screenToPageMm(0, controller.pageMmToScreen(0)!!.mapPoint(0f, 0f))!!.let {
+        assertEquals(Offset(0f, 0f), controller.screenToPageMm(0, controller.pageMmToScreen(0)!!.mapPoint(0f, 0f).toCompose())!!.let {
             Offset(if (abs(it.x) < 1e-3f) 0f else it.x, if (abs(it.y) < 1e-3f) 0f else it.y)
         })
     }

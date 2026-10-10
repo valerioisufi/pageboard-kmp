@@ -1,31 +1,32 @@
 package io.github.valerioisufi.drawview.lecture
 
-import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Rect as ComposeRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
-import io.github.valerioisufi.drawview.core.model.PageBackground
-import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.PageContentSnapshot
 import io.github.valerioisufi.drawview.core.model.readSnapshot
 import io.github.valerioisufi.drawview.core.render.tile.TileRenderer
-import io.github.valerioisufi.drawview.platform.SyncLock
-import io.github.valerioisufi.drawview.platform.syncLock
 import io.github.valerioisufi.drawview.lecture.handwriting.InkBlock
 import io.github.valerioisufi.drawview.lecture.handwriting.blockKey
 import io.github.valerioisufi.drawview.lecture.handwriting.groupStrokes
 import io.github.valerioisufi.drawview.lecture.handwriting.unionOf
 import io.github.valerioisufi.drawview.lecture.platform.encodeJpeg
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
+import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.platform.SyncLock
+import io.github.valerioisufi.drawview.platform.syncLock
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 
 /**
  * An image of a page of the notebook sent to the model.
@@ -281,7 +282,7 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
         return try {
             val bitmap = ImageBitmap(w, h)
             val matrix = Matrix2D().postTranslate(-area.left, -area.top).postScale(scale, scale)
-            renderer.renderPageContent(Canvas(bitmap), document, content, matrix, Rect(0f, 0f, w.toFloat(), h.toFloat()))
+            renderer.renderPageContent(Canvas(bitmap), document, content, matrix, ComposeRect(0f, 0f, w.toFloat(), h.toFloat()))
             encodeJpeg(bitmap)?.let { PageImage(pageIndex, it, isCrop = true) }
         } catch (_: Throwable) {
             // A page that cannot be rendered is not sent

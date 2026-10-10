@@ -1,8 +1,5 @@
-package io.github.valerioisufi.drawview.core.geometry
+package io.github.valerioisufi.drawview.model.geometry
 
-import androidx.compose.runtime.Immutable
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -185,8 +182,8 @@ class Matrix2D(
     /**
      * Maps a 2D point (x, y) through this transformation matrix.
      */
-    fun mapPoint(x: Float, y: Float): Offset {
-        return Offset(
+    fun mapPoint(x: Float, y: Float): Point {
+        return Point(
             x = a * x + c * y + tx,
             y = b * x + d * y + ty
         )
@@ -253,22 +250,6 @@ class Matrix2D(
         out.c = newC; out.d = newD
         out.tx = newTx; out.ty = newTy
         return true
-    }
-
-    /**
-     * Converts this 2D Matrix to Compose's 4x4 [androidx.compose.ui.graphics.Matrix].
-     */
-    fun toComposeMatrix(out: androidx.compose.ui.graphics.Matrix = androidx.compose.ui.graphics.Matrix()): androidx.compose.ui.graphics.Matrix {
-        out.reset()
-        // Compose Matrix is column-major float array of 16 values
-        val values = out.values
-        values[0] = a
-        values[1] = b
-        values[4] = c
-        values[5] = d
-        values[12] = tx
-        values[13] = ty
-        return out
     }
 
     override fun toString(): String {

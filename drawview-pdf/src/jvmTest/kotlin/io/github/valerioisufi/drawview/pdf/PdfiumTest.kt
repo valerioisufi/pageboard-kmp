@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.pdf
 
 import androidx.compose.ui.geometry.Offset
+import io.github.valerioisufi.drawview.model.geometry.Point
 import java.io.File
 import kotlin.math.roundToInt
 import kotlin.test.Test
@@ -68,7 +69,7 @@ class PdfiumTest {
                 // Every pixel of ink is in the box of a character (one pixel of tolerance)
                 val boxes = (0 until layout.charCount).filter { layout.hasBox(it) }.map { layout.boxOf(it).inflate(1f) }
                 val covered = (0 until height).sumOf { y ->
-                    (0 until width).count { x -> isInk(x, y) && boxes.any { it.contains(Offset(x + 0.5f, y + 0.5f)) } }
+                    (0 until width).count { x -> isInk(x, y) && boxes.any { it.contains(Point(x + 0.5f, y + 0.5f)) } }
                 }
                 assertEquals(ink, covered)
                 // ... and the "H" has ink

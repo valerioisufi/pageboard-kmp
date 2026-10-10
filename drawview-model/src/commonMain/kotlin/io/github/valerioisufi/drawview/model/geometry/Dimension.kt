@@ -1,8 +1,5 @@
-package io.github.valerioisufi.drawview.core.geometry
+package io.github.valerioisufi.drawview.model.geometry
 
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
-import androidx.compose.ui.geometry.Rect
 
 /**
  * Represents a physical measurement strictly independent of device screen pixel density.
@@ -11,8 +8,6 @@ import androidx.compose.ui.geometry.Rect
  * maintain their true physical scale regardless of display metrics. It eagerly computes
  * and stores the measurement across multiple standard physical units upon instantiation.
  */
-@Stable
-@Immutable
 class Measure(size: Float, type: Unit) {
     /**
      * Enumeration of supported physical units of measurement.
@@ -71,28 +66,28 @@ class Measure(size: Float, type: Unit) {
 }
 
 /** Converts an [Int] value into a [Measure] instance representing millimeters. */
-@Stable inline val Int.mm: Measure get() = Measure(size = this.toFloat(), type = Measure.Unit.MM)
+inline val Int.mm: Measure get() = Measure(size = this.toFloat(), type = Measure.Unit.MM)
 
 /** Converts an [Int] value into a [Measure] instance representing centimeters. */
-@Stable inline val Int.cm: Measure get() = Measure(size = this.toFloat(), type = Measure.Unit.CM)
+inline val Int.cm: Measure get() = Measure(size = this.toFloat(), type = Measure.Unit.CM)
 
 /** Converts an [Int] value into a [Measure] instance representing typographical points. */
-@Stable inline val Int.pt: Measure get() = Measure(size = this.toFloat(), type = Measure.Unit.DOT)
+inline val Int.pt: Measure get() = Measure(size = this.toFloat(), type = Measure.Unit.DOT)
 
 /** Converts an [Int] value into a [Measure] instance representing inches. */
-@Stable inline val Int.inch: Measure get() = Measure(size = this.toFloat(), type = Measure.Unit.INCH)
+inline val Int.inch: Measure get() = Measure(size = this.toFloat(), type = Measure.Unit.INCH)
 
 /** Converts a [Float] value into a [Measure] instance representing millimeters. */
-@Stable inline val Float.mm: Measure get() = Measure(size = this, type = Measure.Unit.MM)
+inline val Float.mm: Measure get() = Measure(size = this, type = Measure.Unit.MM)
 
 /** Converts a [Float] value into a [Measure] instance representing centimeters. */
-@Stable inline val Float.cm: Measure get() = Measure(size = this, type = Measure.Unit.CM)
+inline val Float.cm: Measure get() = Measure(size = this, type = Measure.Unit.CM)
 
 /** Converts a [Float] value into a [Measure] instance representing typographical points. */
-@Stable inline val Float.pt: Measure get() = Measure(size = this, type = Measure.Unit.DOT)
+inline val Float.pt: Measure get() = Measure(size = this, type = Measure.Unit.DOT)
 
 /** Converts a [Float] value into a [Measure] instance representing inches. */
-@Stable inline val Float.inch: Measure get() = Measure(size = this, type = Measure.Unit.INCH)
+inline val Float.inch: Measure get() = Measure(size = this, type = Measure.Unit.INCH)
 
 /**
  * A strongly-typed wrapper class representing an exact pixel value on the screen.
@@ -102,15 +97,13 @@ class Measure(size: Float, type: Unit) {
  *
  * @property px The precise float representation of screen pixels.
  */
-@Stable
-@Immutable
 data class Px(val px: Float)
 
 /** Wraps an [Int] pixel value into a typed [Px] instance. */
-@Stable inline val Int.px: Px get() = Px(this.toFloat())
+inline val Int.px: Px get() = Px(this.toFloat())
 
 /** Wraps a [Float] pixel value into a typed [Px] instance. */
-@Stable inline val Float.px: Px get() = Px(this)
+inline val Float.px: Px get() = Px(this)
 
 /**
  * Represents the absolute physical boundaries (width and height) of a document page.
@@ -122,8 +115,6 @@ data class Px(val px: Float)
  * @property width The physical width of the page boundary as a [Measure].
  * @property height The physical height of the page boundary as a [Measure].
  */
-@Stable
-@Immutable
 class Dimension(val width: Measure, val height: Measure) {
 
     companion object {

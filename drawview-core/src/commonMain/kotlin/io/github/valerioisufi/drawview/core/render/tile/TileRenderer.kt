@@ -10,7 +10,9 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import io.github.valerioisufi.drawview.core.canvas.StrokeMeshPainter
 import io.github.valerioisufi.drawview.core.canvas.TextMarkupPainter
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import io.github.valerioisufi.drawview.core.geometry.toCompose
+import io.github.valerioisufi.drawview.core.geometry.toComposeMatrix
+import io.github.valerioisufi.drawview.core.geometry.toModel
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPage
@@ -21,6 +23,7 @@ import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.PageContentSnapshot
 import io.github.valerioisufi.drawview.core.platform.decodeImageFile
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
@@ -70,7 +73,7 @@ class TileRenderer(
         // Clear previous pixels
         canvas.drawRect(tilePixelBounds, Paint().apply { blendMode = BlendMode.Clear })
 
-        val mmToTileMatrix = TilePyramid.getMmToTileMatrix(tileKey, content.rect(), pageWorldRect)
+        val mmToTileMatrix = TilePyramid.getMmToTileMatrix(tileKey, content.rect().toCompose(), pageWorldRect)
         renderPageContent(canvas, document, content, mmToTileMatrix, tilePixelBounds)
     }
 
@@ -108,16 +111,15 @@ class TileRenderer(
         mmToCanvas: Matrix2D,
         clipBounds: Rect
     ) {
-        val pageCanvasRect = mmToCanvas.mapRect(content.rect())
+        val pageCanvasRect = mmToCanvas.mapRect(content.rect()).toCompose()
         val visibleRect = pageCanvasRect.intersectOrZero(clipBounds)
         if (visibleRect.isEmpty) return
 
         val canvasToMm = Matrix2D()
+        // In page millimeters, as the bounds of the elements
         val visibleMmBounds = if (mmToCanvas.invert(canvasToMm)) {
-            val mapped = canvasToMm.mapRect(visibleRect)
             // Small margin: anti-aliasing fringes of the elements crossing the border
-            val margin = 2f / max(mmToCanvas.scaleFactor, 1e-3f)
-            Rect(mapped.left - margin, mapped.top - margin, mapped.right + margin, mapped.bottom + margin)
+            canvasToMm.mapRect(visibleRect.toModel()).inflate(2f / max(mmToCanvas.scaleFactor, 1e-3f))
         } else {
             content.rect()
         }

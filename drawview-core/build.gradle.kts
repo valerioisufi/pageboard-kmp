@@ -39,7 +39,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(project(":drawview-platform"))
+            api(project(":drawview-model"))
             api(libs.compose.runtime)
             api(libs.compose.foundation)
             api(libs.compose.ui)

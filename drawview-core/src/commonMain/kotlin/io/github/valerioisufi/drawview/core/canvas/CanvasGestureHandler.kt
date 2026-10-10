@@ -27,10 +27,11 @@ import androidx.compose.ui.input.pointer.util.VelocityTracker
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.EditorActivity
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
-import io.github.valerioisufi.drawview.core.model.BrushConfig
-import io.github.valerioisufi.drawview.core.model.InputToolType
-import io.github.valerioisufi.drawview.core.model.StrokeMesh
+import io.github.valerioisufi.drawview.core.geometry.toCompose
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.StrokeMesh
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.exp
@@ -858,7 +859,7 @@ internal class CanvasGestureHandler(
         val mm = controller.screenToPageMm(pageIndex, position) ?: return false
         val edited = controller.textEditorManager.activeTextItem
         val text = page.texts.lastOrNull { it !== edited && it.containsPoint(mm.x, mm.y) } ?: return false
-        controller.textEditorManager.startEditing(text, pageIndex, caretAt = text.toLocal(mm.x, mm.y))
+        controller.textEditorManager.startEditing(text, pageIndex, caretAt = text.toLocal(mm.x, mm.y).toCompose())
         return true
     }
 

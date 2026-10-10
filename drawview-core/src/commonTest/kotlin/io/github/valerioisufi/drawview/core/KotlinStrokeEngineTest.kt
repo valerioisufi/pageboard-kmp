@@ -1,10 +1,11 @@
 package io.github.valerioisufi.drawview.core
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.core.engine.KotlinStrokeEngineDelegate
-import io.github.valerioisufi.drawview.core.model.BrushConfig
-import io.github.valerioisufi.drawview.core.model.InputToolType
-import io.github.valerioisufi.drawview.core.model.StrokeTool
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.StrokeTool
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -13,7 +14,7 @@ class KotlinStrokeEngineTest {
 
     @Test
     fun strokeEndsOnTheLastInput() {
-        val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1f, color = Color.Black, epsilon = 0.01f)
+        val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1f, color = Color.Black.toArgb(), epsilon = 0.01f)
         val delegate = KotlinStrokeEngineDelegate()
         delegate.start(brush, 1f)
         // Few, far apart samples (e.g. a fast mouse drag): the smoothing lags behind them

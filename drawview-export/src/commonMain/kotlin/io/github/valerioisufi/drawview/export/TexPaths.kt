@@ -1,9 +1,9 @@
 package io.github.valerioisufi.drawview.export
 
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.latex.TexDrawing
 import io.github.valerioisufi.drawview.latex.TexFont
 import io.github.valerioisufi.drawview.latex.TexOp
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.pdf.PdfPath
 import io.github.valerioisufi.drawview.pdf.TrueTypeFont
 import kotlin.math.PI

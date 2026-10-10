@@ -1,21 +1,22 @@
 package io.github.valerioisufi.drawview.core
 
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
-import io.github.valerioisufi.drawview.core.model.BrushConfig
+import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawPdf
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
-import io.github.valerioisufi.drawview.core.model.PageBackground
-import io.github.valerioisufi.drawview.core.model.StrokeMesh
-import io.github.valerioisufi.drawview.core.model.StrokeOutline
-import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
-import io.github.valerioisufi.drawview.core.model.triangleOutline
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokeOutline
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.model.triangleOutline
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -73,7 +74,7 @@ class PageGeometryTest {
         val mesh = StrokeMesh(
             positions = floatArrayOf(0f, 0f, 10f, 0f, 0f, 10f, 10f, 10f, 20f, 20f),
             indices = shortArrayOf(0, 1, 2, 1, 2, 3, 0, 3, 4),
-            color = Color.Black,
+            color = Color.Black.toArgb(),
             tool = StrokeTool.PRESSURE_PEN,
             size = 1f
         )
@@ -100,7 +101,7 @@ class PageGeometryTest {
     private fun triangle() = StrokeMesh(
         positions = floatArrayOf(0f, 0f, 1f, 0f, 0f, 1f),
         indices = shortArrayOf(0, 1, 2),
-        color = Color.Black,
+        color = Color.Black.toArgb(),
         tool = StrokeTool.PRESSURE_PEN,
         size = 1f
     )

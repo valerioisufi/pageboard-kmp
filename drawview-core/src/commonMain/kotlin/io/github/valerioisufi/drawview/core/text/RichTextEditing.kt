@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.core.text
 
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import io.github.valerioisufi.drawview.model.text.RichTextParser
 import kotlin.math.max
 import kotlin.math.min
 

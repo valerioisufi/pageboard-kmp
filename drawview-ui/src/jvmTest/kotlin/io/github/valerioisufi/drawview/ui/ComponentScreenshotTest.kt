@@ -23,14 +23,14 @@ import io.github.takahirom.roborazzi.captureRoboImage
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.geometry.Dimension
+import io.github.valerioisufi.drawview.model.geometry.mm
 import io.github.valerioisufi.drawview.ui.command.MenuDivider
 import io.github.valerioisufi.drawview.ui.command.MenuItem
 import io.github.valerioisufi.drawview.ui.command.MenuLabel
 import io.github.valerioisufi.drawview.ui.components.HybridScale
 import io.github.valerioisufi.drawview.ui.components.PageTemplateConfigurator
-import io.github.valerioisufi.drawview.core.geometry.Dimension
-import io.github.valerioisufi.drawview.core.geometry.mm
-import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.ui.screen.EraserSettings
 import io.github.valerioisufi.drawview.ui.screen.InkSettings
 import io.github.valerioisufi.drawview.ui.screen.LassoSettings
@@ -43,11 +43,11 @@ import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import io.github.valerioisufi.drawview.ui.theme.InkPalette
 import io.github.valerioisufi.drawview.ui.theme.LocalCanvasColors
 import io.github.valerioisufi.drawview.ui.theme.elevation
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import java.util.Locale
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 /**
  * Screenshots of the components that open over the screens (the popovers of the tools, the

@@ -1,10 +1,10 @@
 package io.github.valerioisufi.drawview.core.change
 
-import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawElement
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawResource
+import io.github.valerioisufi.drawview.model.geometry.Rect
 import kotlin.math.max
 import kotlin.math.min
 

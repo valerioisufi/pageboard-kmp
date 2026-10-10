@@ -43,9 +43,9 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.drawview.core.geometry.Dimension
-import io.github.valerioisufi.drawview.core.geometry.mm
-import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.geometry.Dimension
+import io.github.valerioisufi.drawview.model.geometry.mm
 import io.github.valerioisufi.drawview.ui.command.DesignMenu
 import io.github.valerioisufi.drawview.ui.command.MenuItem
 import io.github.valerioisufi.drawview.ui.generated.resources.*

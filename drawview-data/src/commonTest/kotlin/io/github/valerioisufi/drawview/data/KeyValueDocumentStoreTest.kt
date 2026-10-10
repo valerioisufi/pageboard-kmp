@@ -1,33 +1,32 @@
 package io.github.valerioisufi.drawview.data
 
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
 import io.github.valerioisufi.drawview.core.controller.ToolPreset
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
-import io.github.valerioisufi.drawview.core.geometry.AffineTransform
-import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
-import io.github.valerioisufi.drawview.core.model.InputToolType
-import io.github.valerioisufi.drawview.core.model.PageBackground
-import io.github.valerioisufi.drawview.core.model.Stamp
-import io.github.valerioisufi.drawview.core.model.StrokePoint
-import io.github.valerioisufi.drawview.core.model.StrokeTool
-import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
-import io.github.valerioisufi.drawview.core.text.TextDefaults
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.runTest
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.Stamp
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.geometry.AffineTransform
+import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.model.text.TextDefaults
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runTest
 
 class KeyValueDocumentStoreTest {
 
@@ -35,7 +34,7 @@ class KeyValueDocumentStoreTest {
         val points = (0 until 10).map { i ->
             StrokePoint(x = 10f + offset + i * 2f, y = 20f + i, pressure = 0.5f, timestampMs = i * 8L)
         }
-        val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 0.5f, color = Color(0xFF0000FF))
+        val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 0.5f, color = 0xFF0000FF.toInt())
         val mesh = assertNotNull(InkStrokeEngine.buildMesh(points, brush, InputToolType.STYLUS))
         return DrawStroke(mesh = mesh, brushConfig = brush, transform = AffineTransform(tx = offset))
     }
@@ -102,7 +101,7 @@ class KeyValueDocumentStoreTest {
         assertEquals(2, firstPage.strokes.size)
         assertEquals(strokes[0].mesh.points, firstPage.strokes[0].mesh.points)
         assertTrue(firstPage.strokes[0].mesh.positions.isNotEmpty(), "the mesh is rebuilt on load")
-        assertEquals(Color(0xFF0000FF), firstPage.strokes[1].brushConfig.color)
+        assertEquals(0xFF0000FF.toInt(), firstPage.strokes[1].brushConfig.color)
         assertEquals(strokes[1].transform, firstPage.strokes[1].transform)
         assertEquals(strokes[1].mesh.points, firstPage.strokes[1].mesh.points)
         assertEquals(PageBackground.Grid(), firstPage.background)

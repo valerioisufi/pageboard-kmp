@@ -1,8 +1,7 @@
-package io.github.valerioisufi.drawview.core.model
+package io.github.valerioisufi.drawview.model
 
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Rect
 import kotlin.random.Random
 
 /**
@@ -28,7 +27,7 @@ class StrokeMesh(
     val id: String = generateId(),
     val positions: FloatArray,
     val indices: ShortArray,
-    val color: Color,
+    val color: Int,
     val tool: StrokeTool,
     val size: Float,
     val points: List<StrokePoint> = emptyList(),
@@ -143,7 +142,7 @@ class StrokeMesh(
         fun fromIndexedMesh(
             positions: FloatArray,
             indices: IntArray,
-            color: Color,
+            color: Int,
             tool: StrokeTool,
             size: Float,
             points: List<StrokePoint>,

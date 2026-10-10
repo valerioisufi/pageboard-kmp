@@ -49,12 +49,12 @@ import androidx.compose.ui.unit.max
 import androidx.compose.ui.zIndex
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.TextFormatTarget
-import io.github.valerioisufi.drawview.core.geometry.mm
-import io.github.valerioisufi.drawview.core.geometry.pt
 import io.github.valerioisufi.drawview.core.model.LassoMode
-import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.geometry.mm
+import io.github.valerioisufi.drawview.model.geometry.pt
 import io.github.valerioisufi.drawview.ui.adaptive.HeightClass
 import io.github.valerioisufi.drawview.ui.adaptive.WindowLayout
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo

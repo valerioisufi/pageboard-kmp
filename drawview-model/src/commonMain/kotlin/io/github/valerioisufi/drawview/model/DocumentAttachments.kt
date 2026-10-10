@@ -1,4 +1,4 @@
-package io.github.valerioisufi.drawview.core.attachment
+package io.github.valerioisufi.drawview.model
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow

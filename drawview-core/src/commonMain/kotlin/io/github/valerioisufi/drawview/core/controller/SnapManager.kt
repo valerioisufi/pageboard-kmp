@@ -4,8 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.core.model.DrawElement
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.snap.SnapEngine
@@ -13,6 +11,8 @@ import io.github.valerioisufi.drawview.core.snap.SnapGuide
 import io.github.valerioisufi.drawview.core.snap.SnapLine
 import io.github.valerioisufi.drawview.core.snap.SnapTargets
 import io.github.valerioisufi.drawview.core.snap.Snapped
+import io.github.valerioisufi.drawview.model.geometry.Point
+import io.github.valerioisufi.drawview.model.geometry.Rect
 
 /**
  * Snapping of the boxes being moved, resized or created: what they can be aligned with on their
@@ -48,10 +48,10 @@ class SnapManager(private val controller: DrawViewController) {
      * elements of its page except [moved], and the middle of the page; [baseline] (a y of the
      * box) sits on the rows of the paper. Nothing when snapping is off or the gesture is [free].
      */
-    fun snapBox(pageIndex: Int, box: Rect, moved: Collection<DrawElement>, baseline: Float? = null, free: Boolean = false): Offset {
+    fun snapBox(pageIndex: Int, box: Rect, moved: Collection<DrawElement>, baseline: Float? = null, free: Boolean = false): Point {
         val snapped = snap(pageIndex, moved, free) { targets, tolerance -> SnapEngine.snapBox(box, targets, tolerance, baseline) }
-            ?: return Offset.Zero
-        return Offset(snapped.dx, snapped.dy)
+            ?: return Point.Zero
+        return Point(snapped.dx, snapped.dy)
     }
 
     /**

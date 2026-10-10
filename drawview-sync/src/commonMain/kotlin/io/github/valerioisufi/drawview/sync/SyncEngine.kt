@@ -1,9 +1,6 @@
 package io.github.valerioisufi.drawview.sync
 
 import dev.whyoleg.cryptography.random.CryptographyRandom
-import io.github.valerioisufi.drawview.core.attachment.AttachmentChange
-import io.github.valerioisufi.drawview.core.attachment.AttachmentReceiver
-import io.github.valerioisufi.drawview.core.attachment.DocumentAttachments
 import io.github.valerioisufi.drawview.core.change.ChangeObserver
 import io.github.valerioisufi.drawview.core.change.ChangeOrigin
 import io.github.valerioisufi.drawview.core.change.DocumentSession
@@ -11,9 +8,13 @@ import io.github.valerioisufi.drawview.core.change.DocumentSnapshot
 import io.github.valerioisufi.drawview.core.change.Operation
 import io.github.valerioisufi.drawview.core.change.TextData
 import io.github.valerioisufi.drawview.core.change.snapshot
-import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.data.OpenDocument
 import io.github.valerioisufi.drawview.data.OpenDocuments
+import io.github.valerioisufi.drawview.model.AttachmentChange
+import io.github.valerioisufi.drawview.model.AttachmentReceiver
+import io.github.valerioisufi.drawview.model.DocumentAttachments
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
+import kotlin.math.min
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -32,7 +33,6 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlin.math.min
 
 /** A device working on the document [documentId] with this one ([device]: its identity, see [DeviceIdentity]). */
 data class Peer(val documentId: String, val replica: String, val name: String, val device: String = "")

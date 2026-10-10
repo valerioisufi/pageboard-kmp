@@ -1,6 +1,5 @@
 package io.github.valerioisufi.drawview.lecture
 
-import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.lecture.audio.CaptureEvent
 import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
@@ -19,6 +18,7 @@ import io.github.valerioisufi.drawview.lecture.transcription.StreamingTranscribe
 import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
 import io.github.valerioisufi.drawview.lecture.transcription.Transcribers
 import io.github.valerioisufi.drawview.lecture.transcription.Transcription
+import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -26,6 +26,17 @@ import io.ktor.client.engine.mock.toByteArray
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
+import java.io.File
+import java.nio.file.Files
+import java.util.Collections
+import kotlin.random.Random
+import kotlin.test.AfterTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -40,17 +51,6 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import java.io.File
-import java.nio.file.Files
-import java.util.Collections
-import kotlin.random.Random
-import kotlin.test.AfterTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 /**
  * Whole lectures against fake model servers: microphone -> chunks -> live analysis -> final

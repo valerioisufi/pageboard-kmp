@@ -17,10 +17,10 @@ import io.github.valerioisufi.drawview.core.change.CompositeChange
 import io.github.valerioisufi.drawview.core.change.DocumentChange
 import io.github.valerioisufi.drawview.core.change.DocumentSession
 import io.github.valerioisufi.drawview.core.change.TextData
-import io.github.valerioisufi.drawview.core.geometry.AffineTransform
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import io.github.valerioisufi.drawview.core.geometry.mapOffset
+import io.github.valerioisufi.drawview.core.geometry.toCompose
+import io.github.valerioisufi.drawview.core.geometry.toModel
 import io.github.valerioisufi.drawview.core.history.HistoryManager
-import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawElement
 import io.github.valerioisufi.drawview.core.model.DrawImage
@@ -30,15 +30,19 @@ import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawThemeColors
 import io.github.valerioisufi.drawview.core.model.LassoMode
-import io.github.valerioisufi.drawview.core.model.StrokeMesh
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.render.DrawViewEngines
 import io.github.valerioisufi.drawview.core.render.tile.TextBlockSize
 import io.github.valerioisufi.drawview.core.render.tile.TextLineMetrics
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.core.render.tile.TileManager
-import io.github.valerioisufi.drawview.core.text.TextDefaults
-import io.github.valerioisufi.drawview.core.text.TextSizes
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.geometry.AffineTransform
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Rect as MmRect
+import io.github.valerioisufi.drawview.model.text.TextDefaults
+import io.github.valerioisufi.drawview.model.text.TextSizes
 import kotlin.math.hypot
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineScope
@@ -344,10 +348,10 @@ class DrawViewController(
         requestRedraw()
     }
 
-    fun invalidatePageContent(page: DrawPage, mmRect: Rect?) {
+    fun invalidatePageContent(page: DrawPage, mmRect: MmRect?) {
         val pageWorldRect = calcPage.pagesRectOnWindow.getOrNull(document.pages.indexOf(page))
         if (mmRect == null) tileManager.invalidatePage(page.renderKey)
-        else tileManager.invalidatePageRegion(page, mmRect, pageWorldRect)
+        else tileManager.invalidatePageRegion(page, mmRect.toCompose(), pageWorldRect)
         requestRedraw()
     }
 
@@ -619,19 +623,19 @@ class DrawViewController(
 
     fun screenToWorld(screenPoint: Offset): Offset {
         val inverse = getInverseMatrix(Matrix2D())
-        return inverse.mapPoint(screenPoint.x, screenPoint.y)
+        return inverse.mapOffset(screenPoint)
     }
 
     fun worldToScreen(worldPoint: Offset): Offset {
         val render = cameraPhysics.getRenderMatrix(Matrix2D())
-        return render.mapPoint(worldPoint.x, worldPoint.y)
+        return render.mapOffset(worldPoint)
     }
 
     /** Matrix mapping the millimeters of page [pageIndex] to world space. */
     fun pageMmToWorld(pageIndex: Int): Matrix2D? {
         val page = document.pages.getOrNull(pageIndex) ?: return null
         val worldRect = calcPage.pagesRectOnWindow.getOrNull(pageIndex) ?: return null
-        return Matrix2D().setRectToRect(page.rect(), worldRect)
+        return Matrix2D().setRectToRect(page.rect(), worldRect.toModel())
     }
 
     /** Matrix mapping the millimeters of page [pageIndex] to screen pixels. */
@@ -645,7 +649,7 @@ class DrawViewController(
         val mmToScreen = pageMmToScreen(pageIndex) ?: return null
         val inverse = Matrix2D()
         if (!mmToScreen.invert(inverse)) return null
-        return inverse.mapPoint(screenPoint.x, screenPoint.y)
+        return inverse.mapOffset(screenPoint)
     }
 
     /** Current screen pixels per millimeter of page [pageIndex]. */
@@ -716,7 +720,7 @@ class DrawViewController(
 
         val strokesByPage = LinkedHashMap<Int, MutableList<DrawStroke>>()
         val originToWorld = pageMmToWorld(originPageIndex)
-        val worldBounds = originToWorld?.mapRect(bounds)
+        val worldBounds = originToWorld?.mapRect(bounds)?.toCompose()
 
         val targetIndexes = if (worldBounds != null) {
             calcPage.pagesRectOnWindow.indices.filter { calcPage.pagesRectOnWindow[it].overlaps(worldBounds) }

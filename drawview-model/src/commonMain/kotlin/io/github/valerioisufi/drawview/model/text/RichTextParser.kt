@@ -1,4 +1,4 @@
-package io.github.valerioisufi.drawview.core.text
+package io.github.valerioisufi.drawview.model.text
 
 /**
  * The notation of the texts: Markdown (bold, italic, strikethrough, code, headings) with formulas,

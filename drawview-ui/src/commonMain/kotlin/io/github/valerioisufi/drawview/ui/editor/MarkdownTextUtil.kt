@@ -13,9 +13,9 @@ import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
-import io.github.valerioisufi.drawview.core.text.RichTextParser
-import io.github.valerioisufi.drawview.core.text.RichTextParser.Kind
-import io.github.valerioisufi.drawview.core.text.RichTextParser.Span
+import io.github.valerioisufi.drawview.model.text.RichTextParser
+import io.github.valerioisufi.drawview.model.text.RichTextParser.Kind
+import io.github.valerioisufi.drawview.model.text.RichTextParser.Span
 import kotlin.math.max
 import kotlin.math.min
 

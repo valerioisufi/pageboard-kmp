@@ -1,7 +1,5 @@
 package io.github.valerioisufi.drawview.data
 
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.AddPage
 import io.github.valerioisufi.drawview.core.change.DocumentSession
@@ -15,8 +13,6 @@ import io.github.valerioisufi.drawview.core.change.toData
 import io.github.valerioisufi.drawview.core.controller.ToolManager
 import io.github.valerioisufi.drawview.core.controller.ToolPreset
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
-import io.github.valerioisufi.drawview.core.geometry.AffineTransform
-import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPage
@@ -24,26 +20,29 @@ import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
-import io.github.valerioisufi.drawview.core.model.ElementOrder
-import io.github.valerioisufi.drawview.core.model.InputToolType
-import io.github.valerioisufi.drawview.core.model.PageBackground
-import io.github.valerioisufi.drawview.core.model.Stamp
-import io.github.valerioisufi.drawview.core.model.StrokePoint
-import io.github.valerioisufi.drawview.core.model.StrokeTool
-import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
-import io.github.valerioisufi.drawview.core.model.Versions
 import io.github.valerioisufi.drawview.core.model.newElementId
-import io.github.valerioisufi.drawview.core.text.TextDefaults
-import io.github.valerioisufi.drawview.core.util.FractionalIndex
 import io.github.valerioisufi.drawview.data.db.*
 import io.github.valerioisufi.drawview.data.repository.DrawDocumentRepository
 import io.github.valerioisufi.drawview.data.repository.FileRepository
 import io.github.valerioisufi.drawview.data.repository.toDrawPreferences
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.ElementOrder
+import io.github.valerioisufi.drawview.model.FractionalIndex
+import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.Stamp
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.Versions
+import io.github.valerioisufi.drawview.model.geometry.AffineTransform
+import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.model.text.TextDefaults
+import kotlin.test.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
 
 class DrawDatabaseTest {
 
@@ -181,7 +180,7 @@ class DrawDatabaseTest {
 
         // Stroke saved through the editor port (page millimeters)
         val points = (0..10).map { StrokePoint(10f + it * 3f, 20f + it, 0.5f, 1000L + it * 16L) }
-        val brush = BrushConfig(tool = StrokeTool.HIGHLIGHTER, size = 4f, color = Color(0x40FFFF00), epsilon = 0.02f)
+        val brush = BrushConfig(tool = StrokeTool.HIGHLIGHTER, size = 4f, color = 0x40FFFF00, epsilon = 0.02f)
         val mesh = assertNotNull(InkStrokeEngine.buildMesh(points, brush, InputToolType.STYLUS))
         // Placed by a transformation (moved and scaled with the lasso)
         val transform = AffineTransform(a = 2f, d = 2f, tx = 5f, ty = -3f)
@@ -234,7 +233,7 @@ class DrawDatabaseTest {
         assertEquals(8f, loadedStroke.brushConfig.size)
         assertEquals(4f, loadedStroke.baseBrush.size)
         assertEquals(InputToolType.STYLUS, loadedStroke.mesh.inputToolType)
-        assertEquals(0x40FFFF00, loadedStroke.brushConfig.color.value.toLong().let { (it ushr 32).toInt() })
+        assertEquals(0x40FFFF00, loadedStroke.brushConfig.color)
 
         val loadedText = loaded.pages[0].texts.single()
         assertEquals(text.text, loadedText.text)
@@ -284,7 +283,7 @@ class DrawDatabaseTest {
         val session = DocumentSession(document, "other-device")
         val strokes = List(3) { i ->
             val points = (0 until 6).map { StrokePoint(10f + i * 20f + it, 20f + it, 0.5f, it * 8L) }
-            val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 0.5f, color = Color.Black)
+            val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 0.5f, color = 0xFF000000.toInt())
             DrawStroke(mesh = assertNotNull(InkStrokeEngine.buildMesh(points, brush, InputToolType.STYLUS)), brushConfig = brush)
         }
         val page = document.pages[0]

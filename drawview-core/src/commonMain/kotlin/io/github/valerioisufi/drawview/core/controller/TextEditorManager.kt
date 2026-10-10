@@ -15,13 +15,15 @@ import io.github.valerioisufi.drawview.core.change.RemoveElements
 import io.github.valerioisufi.drawview.core.change.TextData
 import io.github.valerioisufi.drawview.core.change.UpdateTexts
 import io.github.valerioisufi.drawview.core.change.toData
+import io.github.valerioisufi.drawview.core.geometry.toModel
 import io.github.valerioisufi.drawview.core.model.DrawText
-import io.github.valerioisufi.drawview.core.model.TextAlignment
-import io.github.valerioisufi.drawview.core.model.Versions
 import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.core.text.RichTextEditing
-import io.github.valerioisufi.drawview.core.text.TextDefaults
-import io.github.valerioisufi.drawview.core.text.TextSizes
+import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.Versions
+import io.github.valerioisufi.drawview.model.geometry.Point
+import io.github.valerioisufi.drawview.model.text.TextDefaults
+import io.github.valerioisufi.drawview.model.text.TextSizes
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -380,9 +382,9 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
         val baseline = if (rotation == 0f) controller.textLineMetrics(fontSize)?.let { yMm + it.baseline } else null
         val snap = if (free) {
             controller.snapManager.clearGuides()
-            Offset.Zero
+            Point.Zero
         } else {
-            controller.snapManager.snapBox(activeTextPageIndex, box, listOfNotNull(activeTextItem), baseline)
+            controller.snapManager.snapBox(activeTextPageIndex, box.toModel(), listOfNotNull(activeTextItem), baseline)
         }
         boxX = (xMm + snap.x).coerceIn(MIN_VISIBLE_MM - boxWidth, page.widthMm - MIN_VISIBLE_MM)
         boxY = (yMm + snap.y).coerceIn(MIN_VISIBLE_MM - boxHeight, page.heightMm - MIN_VISIBLE_MM)

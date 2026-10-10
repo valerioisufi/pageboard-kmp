@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.pdf
 
 import androidx.compose.ui.graphics.ImageBitmap
-import io.github.valerioisufi.drawview.core.model.PdfTextLayout
+import io.github.valerioisufi.drawview.model.PdfTextLayout
 
 /**
  * Native PDFium entry points (native/bridge/pdfium_bridge.h): JNI on the desktop JVM and on

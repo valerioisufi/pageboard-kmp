@@ -1,6 +1,6 @@
-package io.github.valerioisufi.drawview.core.model
+package io.github.valerioisufi.drawview.model
 
-import androidx.compose.ui.geometry.Rect
+import io.github.valerioisufi.drawview.model.geometry.Rect
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

@@ -5,11 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import io.github.valerioisufi.drawview.core.attachment.DocumentAttachments
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.platform.SyncLock
-import io.github.valerioisufi.drawview.platform.currentTimeMillis
-import io.github.valerioisufi.drawview.platform.syncLock
 import io.github.valerioisufi.drawview.lecture.audio.AudioCapture
 import io.github.valerioisufi.drawview.lecture.audio.AudioOutput
 import io.github.valerioisufi.drawview.lecture.audio.FollowedRecording
@@ -30,7 +26,12 @@ import io.github.valerioisufi.drawview.lecture.platform.showNotification
 import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
 import io.github.valerioisufi.drawview.lecture.transcription.Transcribers
 import io.github.valerioisufi.drawview.lecture.transcription.WhisperTranscriber
+import io.github.valerioisufi.drawview.model.DocumentAttachments
+import io.github.valerioisufi.drawview.platform.SyncLock
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
+import io.github.valerioisufi.drawview.platform.syncLock
 import io.github.valerioisufi.drawview.ui.platform.FileTarget
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -46,7 +47,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import org.jetbrains.compose.resources.getString
-import kotlin.coroutines.CoroutineContext
 
 /**
  * The lecture assistant of an application.

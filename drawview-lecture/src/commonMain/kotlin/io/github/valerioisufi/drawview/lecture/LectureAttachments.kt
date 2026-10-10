@@ -1,12 +1,12 @@
 package io.github.valerioisufi.drawview.lecture
 
-import io.github.valerioisufi.drawview.core.attachment.AttachmentChange
-import io.github.valerioisufi.drawview.core.attachment.AttachmentReceiver
-import io.github.valerioisufi.drawview.core.attachment.AttachmentSource
-import io.github.valerioisufi.drawview.core.attachment.DocumentAttachments
-import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
+import io.github.valerioisufi.drawview.model.AttachmentChange
+import io.github.valerioisufi.drawview.model.AttachmentReceiver
+import io.github.valerioisufi.drawview.model.AttachmentSource
+import io.github.valerioisufi.drawview.model.DocumentAttachments
+import io.github.valerioisufi.drawview.platform.PlatformFiles
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.update
 import kotlinx.coroutines.CoroutineScope

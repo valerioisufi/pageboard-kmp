@@ -1,4 +1,4 @@
-package io.github.valerioisufi.drawview.core.model
+package io.github.valerioisufi.drawview.model
 
 import kotlinx.serialization.Serializable
 

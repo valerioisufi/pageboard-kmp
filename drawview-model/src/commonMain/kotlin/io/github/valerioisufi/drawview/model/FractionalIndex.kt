@@ -1,4 +1,4 @@
-package io.github.valerioisufi.drawview.core.util
+package io.github.valerioisufi.drawview.model
 
 /**
  * Keys ordering items by their text order, a key can always be made between two others: an item

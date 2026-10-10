@@ -1,6 +1,6 @@
 package io.github.valerioisufi.drawview.data.db
 
-import io.github.valerioisufi.drawview.core.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokePoint
 
 /**
  * Binary serializer/deserializer for vector stroke input points.

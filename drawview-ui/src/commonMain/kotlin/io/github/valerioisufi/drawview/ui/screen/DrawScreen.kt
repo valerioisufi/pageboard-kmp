@@ -1,6 +1,5 @@
 package io.github.valerioisufi.drawview.ui.screen
 
-import io.github.valerioisufi.drawview.ui.components.TonalButton
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -50,9 +49,9 @@ import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.zIndex
 import io.github.valerioisufi.drawview.core.canvas.DrawCanvas
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.geometry.Dimension
-import io.github.valerioisufi.drawview.core.geometry.mm
-import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.geometry.Dimension
+import io.github.valerioisufi.drawview.model.geometry.mm
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.Command
@@ -61,6 +60,7 @@ import io.github.valerioisufi.drawview.ui.components.AboutLicensesDialog
 import io.github.valerioisufi.drawview.ui.components.DesignSnackbar
 import io.github.valerioisufi.drawview.ui.components.PageGridOverlay
 import io.github.valerioisufi.drawview.ui.components.PageTemplateConfigurator
+import io.github.valerioisufi.drawview.ui.components.TonalButton
 import io.github.valerioisufi.drawview.ui.editor.CanvasContextMenu
 import io.github.valerioisufi.drawview.ui.editor.SelectionActionBar
 import io.github.valerioisufi.drawview.ui.editor.TextEditorOverlay

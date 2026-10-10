@@ -1,18 +1,12 @@
 package io.github.valerioisufi.drawview.lecture
 
-import io.github.valerioisufi.drawview.core.attachment.DocumentAttachments
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
+import io.github.valerioisufi.drawview.model.DocumentAttachments
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.engine.mock.toByteArray
 import io.ktor.http.HttpStatusCode
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.newSingleThreadContext
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import java.io.File
 import java.nio.file.Files
 import java.util.Collections
@@ -26,6 +20,12 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 
 /**
  * A lecture recorded on a tablet (without the models) and shared with a computer, which

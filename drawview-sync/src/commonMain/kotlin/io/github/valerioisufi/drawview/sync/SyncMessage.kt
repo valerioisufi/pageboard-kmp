@@ -152,7 +152,7 @@ internal data class PresenceMessage(
 ) : SyncMessage
 
 /**
- * The items beside the document this device has ([io.github.valerioisufi.drawview.core.attachment.DocumentAttachments]),
+ * The items beside the document this device has ([io.github.valerioisufi.drawview.model.DocumentAttachments]),
  * with their versions: all of them once the operations are exchanged, then each one as it changes.
  */
 @Serializable

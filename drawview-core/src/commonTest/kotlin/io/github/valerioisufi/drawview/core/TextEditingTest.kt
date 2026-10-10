@@ -10,17 +10,18 @@ import io.github.valerioisufi.drawview.core.canvas.FrameStyle
 import io.github.valerioisufi.drawview.core.canvas.SelectionFrame
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.TextEditorManager
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import io.github.valerioisufi.drawview.core.geometry.toCompose
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawText
-import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.Tool
 import io.github.valerioisufi.drawview.core.render.tile.TextBlockSize
 import io.github.valerioisufi.drawview.core.render.tile.TextLineMetrics
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.core.text.RichTextEditing
-import io.github.valerioisufi.drawview.core.text.TextDefaults
-import io.github.valerioisufi.drawview.core.text.TextSizes
+import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.text.TextDefaults
+import io.github.valerioisufi.drawview.model.text.TextSizes
 import kotlin.math.ceil
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -82,7 +83,7 @@ class TextEditingTest {
         val editor = controller.textEditorManager
         val text = DrawText().apply { x = 10f; y = 20f; width = 40f; height = 10f; this.text = "Hello" }
 
-        editor.startEditing(text, 0, caretAt = text.toLocal(25f, 24f))
+        editor.startEditing(text, 0, caretAt = text.toLocal(25f, 24f).toCompose())
         assertEquals("Hello", editor.value.text)
         assertEquals(Offset(15f, 4f), editor.takeCaretRequest())
         assertNull(editor.takeCaretRequest(), "given once")

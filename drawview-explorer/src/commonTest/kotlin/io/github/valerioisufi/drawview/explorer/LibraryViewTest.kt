@@ -2,13 +2,19 @@ package io.github.valerioisufi.drawview.explorer
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Mic
-import io.github.valerioisufi.drawview.core.model.PageBackground
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.Section
+import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.ui.components.BadgeTone
 import io.github.valerioisufi.drawview.ui.session.DocumentTag
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
@@ -16,12 +22,6 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 /** What the library shows (docs/ui-design.md): the sections, the search, the filters, the counts, the notes made. */
 @OptIn(ExperimentalCoroutinesApi::class)

@@ -18,8 +18,9 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.input.pointer.PointerType
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.SelectionGroup
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import io.github.valerioisufi.drawview.core.geometry.toCompose
 import io.github.valerioisufi.drawview.core.render.tile.TileRenderer
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.hypot
@@ -120,7 +121,7 @@ class SelectionFrame(
         fun compute(controller: DrawViewController, selection: SelectionGroup): SelectionFrame? {
             val pageToScreen = controller.pageMmToScreen(selection.pageIndex) ?: return null
             val mmToScreen = Matrix2D(selection.transform).postConcat(pageToScreen)
-            return of(mmToScreen, selection.boundingBox, selection.baseRotation, controller.density, sideHandles = selection.isSingleText, transformable = true)
+            return of(mmToScreen, selection.boundingBox.toCompose(), selection.baseRotation, controller.density, sideHandles = selection.isSingleText, transformable = true)
         }
 
         /**

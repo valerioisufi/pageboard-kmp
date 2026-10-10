@@ -1,9 +1,10 @@
 package io.github.valerioisufi.drawview
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
-import io.github.valerioisufi.drawview.core.model.BrushConfig
-import io.github.valerioisufi.drawview.core.model.StrokeTool
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.StrokeTool
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -25,7 +26,7 @@ class SharedLogicDesktopTest {
             val brush = BrushConfig(
                 tool = tool,
                 size = 16f,
-                color = Color.Red,
+                color = Color.Red.toArgb(),
                 epsilon = 0.1f
             )
 

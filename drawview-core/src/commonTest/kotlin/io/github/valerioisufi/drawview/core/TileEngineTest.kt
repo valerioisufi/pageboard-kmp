@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toPixelMap
 import io.github.valerioisufi.drawview.core.model.*
 import io.github.valerioisufi.drawview.core.render.tile.*
+import io.github.valerioisufi.drawview.model.*
 import kotlin.test.*
 
 class TileEngineTest {
@@ -118,7 +119,7 @@ class TileEngineTest {
         val mesh = StrokeMesh(
             positions = floatArrayOf(50f, 50f, 60f, 60f, 70f, 50f),
             indices = shortArrayOf(0, 1, 2),
-            color = Color.Black,
+            color = 0xFF000000.toInt(),
             tool = StrokeTool.PRESSURE_PEN,
             size = 2f,
             points = emptyList()
@@ -146,7 +147,7 @@ class TileEngineTest {
         val doc = DrawDocument("test_doc", "Test Document")
         val page = doc.pages[0]
         val canvas = androidx.compose.ui.graphics.Canvas(ImageBitmap(100, 100))
-        val camera = io.github.valerioisufi.drawview.core.geometry.Matrix2D()
+        val camera = io.github.valerioisufi.drawview.model.geometry.Matrix2D()
         // Viewport far from the page: no background rasterization interferes with the test
         val viewport = Rect(5000f, 5000f, 5100f, 5100f)
 
@@ -171,7 +172,7 @@ class TileEngineTest {
         val manager = TileManager()
         val doc = DrawDocument("test_doc", "Test Document")
         val page = doc.pages[0]
-        val camera = io.github.valerioisufi.drawview.core.geometry.Matrix2D()
+        val camera = io.github.valerioisufi.drawview.model.geometry.Matrix2D()
         val viewport = Rect(0f, 0f, 200f, 200f)
 
         val key = TileKey(pageKey = page.renderKey, lod = 0, col = 0, row = 0)

@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.core.canvas.FrameStyle
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.BoxPlacement
@@ -17,17 +16,19 @@ import io.github.valerioisufi.drawview.core.change.StrokePlacement
 import io.github.valerioisufi.drawview.core.change.UpdateTexts
 import io.github.valerioisufi.drawview.core.change.placementOf
 import io.github.valerioisufi.drawview.core.change.toData
-import io.github.valerioisufi.drawview.core.geometry.AffineTransform
-import io.github.valerioisufi.drawview.core.geometry.HitTesting
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import io.github.valerioisufi.drawview.core.geometry.toCompose
 import io.github.valerioisufi.drawview.core.model.DrawElement
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.model.LassoMode
-import io.github.valerioisufi.drawview.core.model.TextAlignment
-import io.github.valerioisufi.drawview.core.text.TextSizes
+import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.geometry.AffineTransform
+import io.github.valerioisufi.drawview.model.geometry.HitTesting
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.model.text.TextSizes
 import kotlin.math.max
 import kotlin.math.min
 
@@ -386,7 +387,7 @@ class SelectionManager(private val controller: DrawViewController) {
         val center = transform.mapPoint(selection.boundingBox.center.x, selection.boundingBox.center.y)
         val oldMmToWorld = controller.pageMmToWorld(selection.pageIndex) ?: return
         val worldCenter = oldMmToWorld.mapPoint(center.x, center.y)
-        val targetIndex = controller.findPageIndexAtWorld(worldCenter, nearest = true)
+        val targetIndex = controller.findPageIndexAtWorld(worldCenter.toCompose(), nearest = true)
         val newPage = doc.pages.getOrNull(targetIndex) ?: oldPage
 
         val finalTransform = Matrix2D(transform)

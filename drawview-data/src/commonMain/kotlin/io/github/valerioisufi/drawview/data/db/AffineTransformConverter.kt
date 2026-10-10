@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.data.db
 
 import androidx.room.TypeConverter
-import io.github.valerioisufi.drawview.core.geometry.AffineTransform
+import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 
 /**
  * Stores an [AffineTransform] as its six values ("a,b,c,d,tx,ty").

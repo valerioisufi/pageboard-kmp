@@ -1,14 +1,15 @@
 package io.github.valerioisufi.drawview.core
 
-import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Rect as ComposeRect
 import io.github.valerioisufi.drawview.core.camera.CalcPage
 import io.github.valerioisufi.drawview.core.camera.CameraPhysicsEngine
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.DocumentSession
 import io.github.valerioisufi.drawview.core.change.RemoveElements
-import io.github.valerioisufi.drawview.core.geometry.*
 import io.github.valerioisufi.drawview.core.history.*
 import io.github.valerioisufi.drawview.core.model.*
+import io.github.valerioisufi.drawview.model.*
+import io.github.valerioisufi.drawview.model.geometry.*
 import kotlin.test.*
 
 class GeometryAndPhysicsTest {
@@ -90,7 +91,7 @@ class GeometryAndPhysicsTest {
 
         assertEquals(3, doc.pages.size)
 
-        val windowRect = Rect(0f, 0f, 800f, 1200f)
+        val windowRect = ComposeRect(0f, 0f, 800f, 1200f)
         calcPage.calcPagesRectOnWindow(doc.pages, windowRect)
 
         assertEquals(3, calcPage.pagesRectOnWindow.size)
@@ -107,7 +108,7 @@ class GeometryAndPhysicsTest {
 
     @Test
     fun testCameraPhysicsEngine() {
-        var content = Rect(0f, 0f, 800f, 2000f)
+        var content = ComposeRect(0f, 0f, 800f, 2000f)
         val engine = CameraPhysicsEngine(density = 1f, getContentRect = { content })
         engine.setViewport(800f, 1000f)
 
@@ -131,7 +132,7 @@ class GeometryAndPhysicsTest {
 
     @Test
     fun testCameraPinchBeyondTheZoomLimits() {
-        val engine = CameraPhysicsEngine(density = 1f, getContentRect = { Rect(0f, 0f, 800f, 2000f) })
+        val engine = CameraPhysicsEngine(density = 1f, getContentRect = { ComposeRect(0f, 0f, 800f, 2000f) })
         engine.setViewport(800f, 1000f)
 
         // A zoom apart from a gesture (zoom buttons, wheel) stops at the limit
@@ -157,7 +158,7 @@ class GeometryAndPhysicsTest {
 
     @Test
     fun testCameraTellsWhenAnAnimationStarts() {
-        val engine = CameraPhysicsEngine(density = 1f, getContentRect = { Rect(0f, 0f, 800f, 2000f) })
+        val engine = CameraPhysicsEngine(density = 1f, getContentRect = { ComposeRect(0f, 0f, 800f, 2000f) })
         engine.setViewport(800f, 1000f)
 
         // Released at rest, inside the edges: nothing moves by itself, the canvas asks for no frame
@@ -174,7 +175,7 @@ class GeometryAndPhysicsTest {
         assertEquals(1, engine.animationStarts)
 
         // Beyond the edges, the bounce back starts one too
-        val pulled = CameraPhysicsEngine(density = 1f, getContentRect = { Rect(0f, 0f, 800f, 2000f) })
+        val pulled = CameraPhysicsEngine(density = 1f, getContentRect = { ComposeRect(0f, 0f, 800f, 2000f) })
         pulled.setViewport(800f, 1000f)
         pulled.onDragStart()
         pulled.onDrag(dx = 0f, dy = 200f, scaleFactor = 1f, focusX = 400f, focusY = 500f)
@@ -194,7 +195,7 @@ class GeometryAndPhysicsTest {
         val dummyMesh = StrokeMesh(
             positions = floatArrayOf(0f, 0f, 10f, 10f),
             indices = shortArrayOf(0, 1, 2),
-            color = androidx.compose.ui.graphics.Color.Black,
+            color = 0xFF000000.toInt(),
             tool = StrokeTool.PRESSURE_PEN,
             size = 5f
         )

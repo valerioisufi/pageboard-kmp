@@ -1,6 +1,6 @@
 package io.github.valerioisufi.drawview.export
 
-import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Rect as ComposeRect
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
@@ -8,7 +8,6 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.core.canvas.TextMarkupPainter
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPdf
 import io.github.valerioisufi.drawview.core.model.DrawResource
@@ -18,7 +17,6 @@ import io.github.valerioisufi.drawview.core.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.core.model.PageContentSnapshot
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.pdfPointsToPageMm
-import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.core.platform.decodeImageBitmap
 import io.github.valerioisufi.drawview.core.platform.exifOrientation
 import io.github.valerioisufi.drawview.core.platform.isJpeg
@@ -28,6 +26,8 @@ import io.github.valerioisufi.drawview.core.render.tile.TextFace
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.core.render.tile.TextWord
 import io.github.valerioisufi.drawview.latex.LatexEngine
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.pdf.PdfFont
 import io.github.valerioisufi.drawview.pdf.PdfImportedPage
 import io.github.valerioisufi.drawview.pdf.PdfInfo
@@ -36,6 +36,7 @@ import io.github.valerioisufi.drawview.pdf.PdfPath
 import io.github.valerioisufi.drawview.pdf.PdfWriter
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import io.github.valerioisufi.drawview.pdf.TrueTypeFont
+import io.github.valerioisufi.drawview.platform.PlatformFiles
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.max
@@ -268,7 +269,7 @@ class PdfExporter(
                 height = ceil(blockHeight * scale).toInt().coerceAtLeast(1)
                 val bitmap = ImageBitmap(width, height)
                 val canvas = Canvas(bitmap)
-                canvas.drawRect(Rect(0f, 0f, width.toFloat(), height.toFloat()), Paint().apply { blendMode = BlendMode.Clear })
+                canvas.drawRect(ComposeRect(0f, 0f, width.toFloat(), height.toFloat()), Paint().apply { blendMode = BlendMode.Clear })
                 val toBitmap = Matrix2D()
                     .postRotate(-text.rotation, text.x + text.width / 2f, text.y + text.height / 2f)
                     .postTranslate(-text.x, -text.y)
@@ -394,7 +395,7 @@ class PdfExporter(
             for (polygon in outline.polygons) {
                 path.addPolygon(polygon.copyOf().also(mmToPt::mapPoints))
             }
-            return path.isEmpty || writer.fillPath(path, stroke.mesh.color.toArgb())
+            return path.isEmpty || writer.fillPath(path, stroke.mesh.color)
         }
 
         /**

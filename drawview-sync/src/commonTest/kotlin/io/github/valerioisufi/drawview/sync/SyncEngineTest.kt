@@ -1,9 +1,5 @@
 package io.github.valerioisufi.drawview.sync
 
-import io.github.valerioisufi.drawview.core.attachment.AttachmentChange
-import io.github.valerioisufi.drawview.core.attachment.AttachmentReceiver
-import io.github.valerioisufi.drawview.core.attachment.AttachmentSource
-import io.github.valerioisufi.drawview.core.attachment.DocumentAttachments
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.AddPage
 import io.github.valerioisufi.drawview.core.change.AddResource
@@ -23,20 +19,24 @@ import io.github.valerioisufi.drawview.core.change.UpdateTexts
 import io.github.valerioisufi.drawview.core.change.snapshot
 import io.github.valerioisufi.drawview.core.change.toData
 import io.github.valerioisufi.drawview.core.controller.SelectionActivity
-import io.github.valerioisufi.drawview.core.geometry.AffineTransform
-import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawImage
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawResource
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
-import io.github.valerioisufi.drawview.core.model.StrokeMesh
-import io.github.valerioisufi.drawview.core.model.StrokePoint
-import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
+import io.github.valerioisufi.drawview.model.AttachmentChange
+import io.github.valerioisufi.drawview.model.AttachmentReceiver
+import io.github.valerioisufi.drawview.model.AttachmentSource
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.DocumentAttachments
+import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -47,7 +47,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
-import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -275,7 +274,7 @@ class SyncEngineTest {
         val mesh = StrokeMesh(
             positions = floatArrayOf(x, y, x + 5f, y, x + 5f, y + 5f, x, y + 5f),
             indices = shortArrayOf(0, 1, 2, 0, 2, 3),
-            color = Color.Black,
+            color = 0xFF000000.toInt(),
             tool = StrokeTool.MARKER,
             size = 1f,
             points = listOf(StrokePoint(x, y, 0.5f, 0L), StrokePoint(x + 5f, y + 5f, 0.5f, 16L))

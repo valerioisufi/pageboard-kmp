@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.core.geometry.toCompose
 
 /**
  * Live layer of the text of the PDFs: the passage being marked with the tool, the selected text
@@ -31,7 +32,7 @@ internal object TextMarkupOverlay {
             val toScreen = manager.pointsToScreen(selected.page, selected.markup.pointsToPageMm(selected.page)) ?: return@let
             val inset = 2f * density
             for (rect in selected.markup.rects) {
-                val r = toScreen.mapRect(rect).inflate(inset)
+                val r = toScreen.mapRect(rect).inflate(inset).toCompose()
                 drawRect(primary.copy(alpha = 0.12f), topLeft = r.topLeft, size = r.size)
                 drawRect(primary, topLeft = r.topLeft, size = r.size, style = Stroke(width = 1.5f * density))
             }
@@ -39,7 +40,7 @@ internal object TextMarkupOverlay {
 
         manager.textSelection?.let { selection ->
             val toScreen = manager.pointsToScreen(selection.page, selection.pointsToPageMm()) ?: return@let
-            val lines = selection.rects.map { toScreen.mapRect(it) }
+            val lines = selection.rects.map { toScreen.mapRect(it).toCompose() }
             if (lines.isEmpty()) return@let
             for (line in lines) {
                 drawRect(primary.copy(alpha = 0.25f), topLeft = line.topLeft, size = line.size)

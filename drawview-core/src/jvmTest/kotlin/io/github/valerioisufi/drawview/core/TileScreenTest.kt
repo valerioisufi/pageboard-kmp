@@ -6,13 +6,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.toPixelMap
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.render.tile.Tile
 import io.github.valerioisufi.drawview.core.render.tile.TileKey
 import io.github.valerioisufi.drawview.core.render.tile.TileManager
 import io.github.valerioisufi.drawview.core.render.tile.TilePyramid
 import io.github.valerioisufi.drawview.core.render.tile.TileState
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals

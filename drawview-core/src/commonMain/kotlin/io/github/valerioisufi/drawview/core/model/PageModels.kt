@@ -9,13 +9,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.ImageBitmap
-import io.github.valerioisufi.drawview.core.geometry.AffineTransform
-import io.github.valerioisufi.drawview.core.geometry.Dimension
-import io.github.valerioisufi.drawview.core.geometry.mm
-import io.github.valerioisufi.drawview.core.util.FractionalIndex
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.ElementOrder
+import io.github.valerioisufi.drawview.model.FractionalIndex
+import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.Stamp
+import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.Versions
+import io.github.valerioisufi.drawview.model.geometry.AffineTransform
+import io.github.valerioisufi.drawview.model.geometry.Dimension
+import io.github.valerioisufi.drawview.model.geometry.Point
+import io.github.valerioisufi.drawview.model.geometry.Rect
+import io.github.valerioisufi.drawview.model.geometry.mm
 import kotlin.concurrent.Volatile
 import kotlin.math.PI
 import kotlin.math.abs
@@ -27,90 +34,6 @@ import kotlin.uuid.Uuid
 import kotlinx.atomicfu.atomic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-
-/**
- * Styling definition for page background rendering.
- */
-@Serializable
-sealed class PageBackground {
-    abstract val backgroundColor: Int
-
-    /**
-     * The lines or the dots drawn over [backgroundColor] on a page of [widthMm] x [heightMm], those
-     * of [area] only (page millimeters; the whole page by default), or `null` for a solid color.
-     */
-    fun pattern(widthMm: Float, heightMm: Float, area: Rect = Rect(0f, 0f, widthMm, heightMm)): BackgroundPattern? {
-        fun positions(spacingMm: Float, lengthMm: Float, from: Float, to: Float): FloatArray {
-            if (spacingMm <= 0f) return FloatArray(0)
-            val end = minOf(to, lengthMm)
-            val positions = ArrayList<Float>()
-            // Every spacing after the edge, from the one before the area (a line crossing its edge)
-            var k = maxOf(floor(from / spacingMm).toInt(), 1)
-            while (k * spacingMm < end) positions.add(k++ * spacingMm)
-            return positions.toFloatArray()
-        }
-        val rows = { spacing: Float -> positions(spacing, heightMm, area.top, area.bottom) }
-        val columns = { spacing: Float -> positions(spacing, widthMm, area.left, area.right) }
-        return when (this) {
-            is Solid -> null
-            is Ruled -> BackgroundPattern(lineColor, spacingMm, thicknessMm, dots = false, rows(spacingMm), FloatArray(0), widthMm, heightMm)
-            is Grid -> BackgroundPattern(lineColor, spacingMm, thicknessMm, dots = false, rows(spacingMm), columns(spacingMm), widthMm, heightMm)
-            is Dotted -> BackgroundPattern(dotColor, spacingMm, dotRadiusMm, dots = true, rows(spacingMm), columns(spacingMm), widthMm, heightMm)
-        }
-    }
-
-    @Serializable
-    @SerialName("Solid")
-    data class Solid(
-        override val backgroundColor: Int = 0xFFFFFFFF.toInt()
-    ) : PageBackground()
-
-    @Serializable
-    @SerialName("Ruled")
-    data class Ruled(
-        override val backgroundColor: Int = 0xFFFFFFFF.toInt(),
-        val lineColor: Int = 0x330000FF.toInt(),
-        val spacingMm: Float = 8f,
-        val thicknessMm: Float = 0.5f
-    ) : PageBackground()
-
-    @Serializable
-    @SerialName("Grid")
-    data class Grid(
-        override val backgroundColor: Int = 0xFFFFFFFF.toInt(),
-        val lineColor: Int = 0x330000FF.toInt(),
-        val spacingMm: Float = 5f,
-        val thicknessMm: Float = 0.5f
-    ) : PageBackground()
-
-    @Serializable
-    @SerialName("Dotted")
-    data class Dotted(
-        override val backgroundColor: Int = 0xFFFFFFFF.toInt(),
-        val dotColor: Int = 0x50000000.toInt(),
-        val spacingMm: Float = 5f,
-        val dotRadiusMm: Float = 0.5f
-    ) : PageBackground()
-}
-
-/**
- * The pattern of a [PageBackground] on a page of [widthMm] x [heightMm], in page millimeters:
- * horizontal lines at [rows] and vertical lines at [columns] across the page, or ([dots]) a dot at
- * every row and column.
- *
- * @param spacingMm distance between two lines or two dots.
- * @param sizeMm thickness of the lines, or radius of the dots.
- */
-class BackgroundPattern(
-    val color: Int,
-    val spacingMm: Float,
-    val sizeMm: Float,
-    val dots: Boolean,
-    val rows: FloatArray,
-    val columns: FloatArray,
-    val widthMm: Float,
-    val heightMm: Float
-)
 
 /**
  * An element of a page: a stroke, a text block, an image, a PDF page or a mark of its text.
@@ -248,26 +171,14 @@ interface RotatableItem {
      * The point ([px], [py]) of the page in millimeters from the top-left corner of the item
      * before its rotation (inside the item from (0, 0) to ([width], [height])).
      */
-    fun toLocal(px: Float, py: Float): Offset {
-        if (rotation == 0f) return Offset(px - x, py - y)
+    fun toLocal(px: Float, py: Float): Point {
+        if (rotation == 0f) return Point(px - x, py - y)
         val rad = rotation * PI.toFloat() / 180f
         val c = cos(rad)
         val s = sin(rad)
         val dx = px - centerX
         val dy = py - centerY
-        return Offset(dx * c + dy * s + width / 2f, -dx * s + dy * c + height / 2f)
-    }
-}
-
-/** Where the lines of a text go in the width of its box. */
-@Serializable
-enum class TextAlignment {
-    START,
-    CENTER,
-    END;
-
-    companion object {
-        fun fromName(name: String?): TextAlignment? = entries.firstOrNull { it.name == name }
+        return Point(dx * c + dy * s + width / 2f, -dx * s + dy * c + height / 2f)
     }
 }
 

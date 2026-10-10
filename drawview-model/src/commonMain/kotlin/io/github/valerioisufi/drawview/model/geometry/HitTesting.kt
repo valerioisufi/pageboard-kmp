@@ -1,7 +1,6 @@
-package io.github.valerioisufi.drawview.core.geometry
+package io.github.valerioisufi.drawview.model.geometry
 
-import androidx.compose.ui.geometry.Rect
-import io.github.valerioisufi.drawview.core.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokeMesh
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt

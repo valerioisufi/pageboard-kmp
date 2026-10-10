@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.pdf
 
 import androidx.compose.ui.graphics.ImageBitmap
-import io.github.valerioisufi.drawview.core.model.PdfTextLayout
+import io.github.valerioisufi.drawview.model.PdfTextLayout
 
 /**
  * Handle to an open PDF document for page inspection and rasterization.

@@ -1,12 +1,13 @@
 package io.github.valerioisufi.drawview.core.canvas
 
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import io.github.valerioisufi.drawview.core.geometry.toCompose
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Rect
 import kotlin.math.max
 
 /**
@@ -25,7 +26,7 @@ object TextMarkupPainter {
         paint.isAntiAlias = true
         paint.blendMode = if (kind == TextMarkupKind.HIGHLIGHT) BlendMode.Multiply else BlendMode.SrcOver
         for (rect in rects) {
-            canvas.drawRect(pointsToCanvas.mapRect(markRect(rect, kind)), paint)
+            canvas.drawRect(pointsToCanvas.mapRect(markRect(rect, kind)).toCompose(), paint)
         }
         paint.blendMode = BlendMode.SrcOver
     }

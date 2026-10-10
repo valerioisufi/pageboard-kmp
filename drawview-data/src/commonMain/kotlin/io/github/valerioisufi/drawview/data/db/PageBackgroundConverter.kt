@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.data.db
 
 import androidx.room.TypeConverter
-import io.github.valerioisufi.drawview.core.model.PageBackground
+import io.github.valerioisufi.drawview.model.PageBackground
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 

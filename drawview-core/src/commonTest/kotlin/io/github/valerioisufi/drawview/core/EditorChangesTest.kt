@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.core
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.core.change.CommittedChange
@@ -9,17 +10,18 @@ import io.github.valerioisufi.drawview.core.change.RemoveElements
 import io.github.valerioisufi.drawview.core.controller.Collaborator
 import io.github.valerioisufi.drawview.core.controller.DrawViewController
 import io.github.valerioisufi.drawview.core.controller.TextEditorManager
-import io.github.valerioisufi.drawview.core.geometry.Dimension
-import io.github.valerioisufi.drawview.core.geometry.mm
-import io.github.valerioisufi.drawview.core.model.BrushConfig
+import io.github.valerioisufi.drawview.core.geometry.toCompose
 import io.github.valerioisufi.drawview.core.model.DrawDocument
 import io.github.valerioisufi.drawview.core.model.DrawStroke
 import io.github.valerioisufi.drawview.core.model.DrawText
-import io.github.valerioisufi.drawview.core.model.PageBackground
-import io.github.valerioisufi.drawview.core.model.StrokeMesh
-import io.github.valerioisufi.drawview.core.model.StrokePoint
-import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.geometry.Dimension
+import io.github.valerioisufi.drawview.model.geometry.mm
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -42,7 +44,7 @@ class EditorChangesTest {
         val mesh = StrokeMesh(
             positions = floatArrayOf(left, top, left + size, top, left + size, top + size, left, top + size),
             indices = shortArrayOf(0, 1, 2, 0, 2, 3),
-            color = Color.Black,
+            color = Color.Black.toArgb(),
             tool = StrokeTool.MARKER,
             size = 1f,
             points = listOf(StrokePoint(left, top), StrokePoint(left + size, top + size))
@@ -74,9 +76,9 @@ class EditorChangesTest {
 
         val mmToScreen = assertNotNull(controller.pageMmToScreen(0))
         // Two segments of one gesture, each erasing as soon as it touches
-        controller.eraserManager.eraseAlongSegment(mmToScreen.mapPoint(15f, 52f), mmToScreen.mapPoint(65f, 52f))
+        controller.eraserManager.eraseAlongSegment(mmToScreen.mapPoint(15f, 52f).toCompose(), mmToScreen.mapPoint(65f, 52f).toCompose())
         assertEquals(listOf(strokes[2], strokes[3]), page.strokes.toList())
-        controller.eraserManager.eraseAlongSegment(mmToScreen.mapPoint(65f, 52f), mmToScreen.mapPoint(110f, 52f))
+        controller.eraserManager.eraseAlongSegment(mmToScreen.mapPoint(65f, 52f).toCompose(), mmToScreen.mapPoint(110f, 52f).toCompose())
         controller.eraserManager.commitGesture()
         assertEquals(listOf(strokes[3]), page.strokes.toList())
         assertEquals(2, changes.size, "every segment is applied (and sent) at once")

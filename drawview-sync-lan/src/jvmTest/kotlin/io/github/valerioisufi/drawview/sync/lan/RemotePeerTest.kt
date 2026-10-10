@@ -1,23 +1,21 @@
 package io.github.valerioisufi.drawview.sync.lan
 
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.core.change.AddElements
 import io.github.valerioisufi.drawview.core.change.PlaceElements
 import io.github.valerioisufi.drawview.core.change.StrokePlacement
 import io.github.valerioisufi.drawview.core.change.TextData
 import io.github.valerioisufi.drawview.core.controller.SelectionActivity
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
-import io.github.valerioisufi.drawview.core.geometry.AffineTransform
-import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawStroke
-import io.github.valerioisufi.drawview.core.model.InputToolType
-import io.github.valerioisufi.drawview.core.model.StrokePoint
-import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.newElementId
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import io.github.valerioisufi.drawview.sync.InMemorySharedDocuments
 import io.github.valerioisufi.drawview.sync.Invitation
 import io.github.valerioisufi.drawview.sync.Presence
@@ -80,7 +78,7 @@ class RemotePeerTest {
                 val points = (0..150).map { i ->
                     StrokePoint(20f + i * 1.1f, waveY + 20f * sin(i / 12f), 0.3f + 0.5f * abs(sin(i / 25f)), i * 16L)
                 }
-                val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1f, color = Color(0xFF1E88E5))
+                val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1f, color = 0xFF1E88E5.toInt())
                 val pageId = open.edit { session -> session.document.pages[0].id }
                 println("PEER drawing")
                 for (n in 1..points.size) {
@@ -89,7 +87,7 @@ class RemotePeerTest {
                     engine.updatePresence(
                         Presence(
                             invitation.documentId, pageId, last.x, last.y,
-                            stroke = 1, ink = ink, inkTool = brush.tool.name, inkColor = brush.color.toArgb(), inkSize = brush.size, inkInput = "STYLUS"
+                            stroke = 1, ink = ink, inkTool = brush.tool.name, inkColor = brush.color, inkSize = brush.size, inkInput = "STYLUS"
                         )
                     )
                     delay(32)

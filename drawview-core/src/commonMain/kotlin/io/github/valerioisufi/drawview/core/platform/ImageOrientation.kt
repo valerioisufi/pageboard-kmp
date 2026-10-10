@@ -1,6 +1,6 @@
 package io.github.valerioisufi.drawview.core.platform
 
-import io.github.valerioisufi.drawview.core.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 
 /** Whether [data] starts like a JPEG file. */
 fun isJpeg(data: ByteArray): Boolean =

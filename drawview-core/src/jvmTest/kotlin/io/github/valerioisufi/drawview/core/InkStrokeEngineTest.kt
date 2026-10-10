@@ -1,12 +1,13 @@
 package io.github.valerioisufi.drawview.core
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
-import io.github.valerioisufi.drawview.core.geometry.AffineTransform
-import io.github.valerioisufi.drawview.core.model.BrushConfig
 import io.github.valerioisufi.drawview.core.model.DrawStroke
-import io.github.valerioisufi.drawview.core.model.StrokePoint
-import io.github.valerioisufi.drawview.core.model.StrokeTool
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -22,7 +23,7 @@ class InkStrokeEngineTest {
         val brush = BrushConfig(
             tool = StrokeTool.PRESSURE_PEN,
             size = 14f,
-            color = Color.Blue,
+            color = Color.Blue.toArgb(),
             epsilon = 0.1f
         )
 
@@ -48,7 +49,7 @@ class InkStrokeEngineTest {
         assertNotNull(completedStroke, "Completed stroke should not be null")
         assertTrue(completedStroke.vertexCount > 0, "Completed stroke should have vertices")
         assertTrue(completedStroke.triangleCount > 0, "Completed stroke should have triangles")
-        assertTrue(completedStroke.color == Color.Blue)
+        assertTrue(completedStroke.color == Color.Blue.toArgb())
 
         println("Unit Test Verified: Google Ink generated ${completedStroke.vertexCount} vertices and ${completedStroke.triangleCount} triangles for stroke!")
         engine.release()
@@ -56,7 +57,7 @@ class InkStrokeEngineTest {
 
     @Test
     fun theOutlineOfAStrokeFollowsItsMesh() {
-        val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 2f, color = Color.Blue, epsilon = 0.05f)
+        val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 2f, color = Color.Blue.toArgb(), epsilon = 0.05f)
         val points = (0..20).map { i -> StrokePoint(10f + i * 3f, 20f + (i * i) * 0.2f, 0.5f, 16L * (i + 1)) }
         val mesh = assertNotNull(InkStrokeEngine.buildMesh(points, brush))
         val outline = assertNotNull(InkStrokeEngine.buildOutline(points, brush), "Ink gives the outline of the stroke")

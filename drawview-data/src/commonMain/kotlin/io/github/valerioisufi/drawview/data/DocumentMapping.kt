@@ -3,12 +3,12 @@ package io.github.valerioisufi.drawview.data
 import io.github.valerioisufi.drawview.core.controller.DrawPreferences
 import io.github.valerioisufi.drawview.core.controller.ToolManager
 import io.github.valerioisufi.drawview.core.controller.ToolPreset
-import io.github.valerioisufi.drawview.core.model.StrokeTool
-import io.github.valerioisufi.drawview.core.model.TextAlignment
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
-import io.github.valerioisufi.drawview.core.text.TextDefaults
 import io.github.valerioisufi.drawview.data.db.BrushSettingsData
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.text.TextDefaults
 
 /**
  * Persisted form of the presets of [tool]: the family of a preset of the text markup tool is the

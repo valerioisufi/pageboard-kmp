@@ -6,9 +6,9 @@ import io.github.valerioisufi.drawview.core.controller.PlacementRequest
 import io.github.valerioisufi.drawview.core.model.DrawPage
 import io.github.valerioisufi.drawview.core.model.DrawText
 import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
-import io.github.valerioisufi.drawview.core.text.TextSizes
 import io.github.valerioisufi.drawview.lecture.NoteSuggestion
 import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
+import io.github.valerioisufi.drawview.model.text.TextSizes
 import kotlin.math.max
 import kotlin.math.min
 

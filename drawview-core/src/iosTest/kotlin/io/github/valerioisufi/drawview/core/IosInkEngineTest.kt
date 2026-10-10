@@ -2,9 +2,9 @@ package io.github.valerioisufi.drawview.core
 
 import androidx.compose.ui.graphics.Color
 import io.github.valerioisufi.drawview.core.engine.InkStrokeEngine
-import io.github.valerioisufi.drawview.core.model.BrushConfig
-import io.github.valerioisufi.drawview.core.model.InputToolType
-import io.github.valerioisufi.drawview.core.model.StrokeTool
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.StrokeTool
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue

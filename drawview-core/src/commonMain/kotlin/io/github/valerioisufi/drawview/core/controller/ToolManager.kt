@@ -7,11 +7,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.Color
-import io.github.valerioisufi.drawview.core.model.BrushConfig
-import io.github.valerioisufi.drawview.core.model.StrokeTool
 import io.github.valerioisufi.drawview.core.model.TextMarkupKind
 import io.github.valerioisufi.drawview.core.model.Tool
-import io.github.valerioisufi.drawview.core.text.TextDefaults
+import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.text.TextDefaults
 
 /**
  * A preset of a drawing tool.
@@ -147,7 +147,7 @@ class ToolManager(
         return BrushConfig(
             tool = family,
             size = preset.sizeMm.coerceAtLeast(epsilon * 2f),
-            color = Color(preset.color),
+            color = preset.color,
             epsilon = epsilon
         )
     }
