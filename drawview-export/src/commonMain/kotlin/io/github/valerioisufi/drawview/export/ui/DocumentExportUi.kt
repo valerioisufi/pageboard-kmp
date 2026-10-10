@@ -40,7 +40,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.data.DrawViewStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.export.DocumentExport
@@ -57,9 +57,9 @@ import io.github.valerioisufi.drawview.export.generated.resources.export_done
 import io.github.valerioisufi.drawview.export.generated.resources.export_failed
 import io.github.valerioisufi.drawview.export.generated.resources.export_format
 import io.github.valerioisufi.drawview.export.generated.resources.export_format_pdf
+import io.github.valerioisufi.drawview.export.generated.resources.export_format_pdf_hint
 import io.github.valerioisufi.drawview.export.generated.resources.export_format_png
 import io.github.valerioisufi.drawview.export.generated.resources.export_format_png_hint
-import io.github.valerioisufi.drawview.export.generated.resources.export_format_pdf_hint
 import io.github.valerioisufi.drawview.export.generated.resources.export_in_progress
 import io.github.valerioisufi.drawview.export.generated.resources.export_pages
 import io.github.valerioisufi.drawview.export.generated.resources.export_pages_all

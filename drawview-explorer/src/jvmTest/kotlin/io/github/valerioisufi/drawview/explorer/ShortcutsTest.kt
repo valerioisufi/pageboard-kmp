@@ -19,7 +19,7 @@ import androidx.compose.ui.test.withKeyDown
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
@@ -33,11 +33,11 @@ import io.github.valerioisufi.drawview.ui.command.CommandRoot
 import io.github.valerioisufi.drawview.ui.session.DocumentEditorViewModel
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import java.util.Locale
-import kotlinx.coroutines.Dispatchers
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlinx.coroutines.Dispatchers
 
 /**
  * The keyboard shortcuts of the library and of the editor, pressed on the interface: the root of

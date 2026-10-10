@@ -4,7 +4,7 @@ import io.github.valerioisufi.drawview.ink.InkNativeApi
 
 /**
  * JNI binding of `native/bridge/ink_bridge_jni.cpp`
- * (symbols `Java_io_github_valerioisufi_drawview_core_ink_InkNative_*`).
+ * (symbols `Java_io_github_valerioisufi_drawview_ink_InkNative_*`).
  */
 internal object InkNative {
 

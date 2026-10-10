@@ -4,8 +4,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Paint
-import io.github.valerioisufi.drawview.core.render.tile.PdfTileAdapter
-import io.github.valerioisufi.drawview.core.render.tile.fitPdfPage
+import io.github.valerioisufi.drawview.canvas.render.tile.PdfTileAdapter
+import io.github.valerioisufi.drawview.canvas.render.tile.fitPdfPage
 import io.github.valerioisufi.drawview.model.PdfTextLayout
 import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.syncLock

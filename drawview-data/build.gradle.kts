@@ -10,7 +10,7 @@ description = "Storage of DrawView documents and folders: store port, open docum
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            api(project(":drawview-core"))
+            api(project(":drawview-canvas"))
             // The strokes loaded modeled as the editor draws them
             implementation(project(":drawview-ink"))
             implementation(libs.compose.runtime)

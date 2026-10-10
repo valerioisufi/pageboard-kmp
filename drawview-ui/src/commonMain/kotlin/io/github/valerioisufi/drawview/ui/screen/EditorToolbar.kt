@@ -47,11 +47,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.zIndex
-import io.github.valerioisufi.drawview.core.canvas.observeChanges
-import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.controller.TextFormatTarget
-import io.github.valerioisufi.drawview.core.model.LassoMode
-import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.controller.TextFormatTarget
+import io.github.valerioisufi.drawview.canvas.observeChanges
+import io.github.valerioisufi.drawview.canvas.tool.LassoMode
+import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.TextMarkupKind
 import io.github.valerioisufi.drawview.model.geometry.mm
@@ -463,7 +463,7 @@ internal fun ColumnScope.InkSettings(controller: DrawViewController, tool: Tool,
     val active = toolManager.activePreset(tool) ?: return
     val color = Color(active.color)
     var wheelOpen by remember { mutableStateOf(false) }
-    fun update(transform: (io.github.valerioisufi.drawview.core.controller.ToolPreset) -> io.github.valerioisufi.drawview.core.controller.ToolPreset) {
+    fun update(transform: (io.github.valerioisufi.drawview.canvas.controller.ToolPreset) -> io.github.valerioisufi.drawview.canvas.controller.ToolPreset) {
         toolManager.presetsOf(tool).getOrNull(index)?.let { toolManager.updatePreset(tool, index, transform(it)) }
     }
     val sizePt = active.sizeMm.mm.pt

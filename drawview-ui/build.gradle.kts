@@ -17,7 +17,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(project(":drawview-core"))
+            api(project(":drawview-canvas"))
             api(project(":drawview-data"))
             api(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.navigationevent.compose)

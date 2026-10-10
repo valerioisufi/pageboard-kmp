@@ -114,7 +114,7 @@ install_lib() {
 
 install_lib ink_bridge drawview-ink
 if [[ "$PLATFORM" == darwin-* ]]; then
-    install_lib trackpad_bridge drawview-core
+    install_lib trackpad_bridge drawview-canvas
 fi
 cp "$NATIVE_DIR/ink/LICENSE" "$OUT_DIR/drawview-ink/native/$PLATFORM/INK_LICENSE.txt"
 install_lib tex drawview-latex

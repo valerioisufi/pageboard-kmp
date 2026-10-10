@@ -38,7 +38,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(project(":drawview-core"))
+            api(project(":drawview-canvas"))
             api(project(":drawview-data"))
             api(project(":drawview-ui"))
             implementation(project(":drawview-explorer"))

@@ -3,9 +3,9 @@ package io.github.valerioisufi.drawview.latex
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toArgb
-import io.github.valerioisufi.drawview.core.render.tile.FormulaImage
-import io.github.valerioisufi.drawview.core.render.tile.FormulaRenderer
-import io.github.valerioisufi.drawview.core.render.tile.TextFace
+import io.github.valerioisufi.drawview.canvas.render.tile.FormulaImage
+import io.github.valerioisufi.drawview.canvas.render.tile.FormulaRenderer
+import io.github.valerioisufi.drawview.canvas.render.tile.TextFace
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

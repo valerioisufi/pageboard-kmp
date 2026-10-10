@@ -1,8 +1,8 @@
 package io.github.valerioisufi.drawview.lecture.ui
 
-import io.github.valerioisufi.drawview.core.controller.DrawViewController
-import io.github.valerioisufi.drawview.core.controller.PlacementRequest
-import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
+import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.controller.PlacementRequest
+import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.lecture.NoteSuggestion
 import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.model.DrawPage
@@ -22,7 +22,7 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
 
     /**
      * Lets the student place [suggestion]: the next tap on a page puts the note there (see
-     * [io.github.valerioisufi.drawview.core.controller.PlacementManager]), selected so that it can
+     * [io.github.valerioisufi.drawview.canvas.controller.PlacementManager]), selected so that it can
      * be moved or resized. The canvas can still be moved to reach any page.
      *
      * @param onInserted called once the note is in the notebook.

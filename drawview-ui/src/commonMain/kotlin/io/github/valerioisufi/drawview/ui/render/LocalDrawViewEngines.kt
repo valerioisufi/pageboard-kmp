@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.ui.render
 
 import androidx.compose.runtime.staticCompositionLocalOf
-import io.github.valerioisufi.drawview.core.render.DrawViewEngines
+import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 
 /**
  * The engines drawing the PDF pages and the formulas, for what draws documents without an editor

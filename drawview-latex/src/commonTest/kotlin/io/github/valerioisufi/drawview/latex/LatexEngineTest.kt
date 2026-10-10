@@ -2,11 +2,11 @@ package io.github.valerioisufi.drawview.latex
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.test.runTest
 
 class LatexEngineTest {
 
@@ -50,7 +50,7 @@ class LatexEngineTest {
         assertTrue(errorBadge.width > 0)
         assertTrue(errorBadge.height > 0)
 
-        // The formula renderer of the editors (the port of drawview-core), formulas as written in a text
+        // The formula renderer of the editors (the port of drawview-canvas), formulas as written in a text
         val renderer = LatexEngine.formulaRenderer
         assertTrue(renderer.isReady.value)
         val image = renderer.render(renderer.sanitize("\$\\sum_{n=1}^\\infty \\frac{1}{n^2}\$"), 24f, Color.Blue.toArgb())

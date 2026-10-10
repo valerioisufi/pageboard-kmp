@@ -16,7 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.drawview.core.controller.TextFormatTarget
+import io.github.valerioisufi.drawview.canvas.controller.TextFormatTarget
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_save
 import io.github.valerioisufi.drawview.ui.screen.EditorCommands

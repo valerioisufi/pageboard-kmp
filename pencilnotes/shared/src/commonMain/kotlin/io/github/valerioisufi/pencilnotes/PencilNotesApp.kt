@@ -21,8 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
-import io.github.valerioisufi.drawview.core.render.DrawViewEngines
+import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.data.DrawViewStore
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
 import io.github.valerioisufi.drawview.explorer.ui.aboutLibraryAction
@@ -36,8 +35,8 @@ import io.github.valerioisufi.drawview.lecture.ui.rememberLectureAssistant
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import io.github.valerioisufi.drawview.sync.ui.CollaborationDialogs
 import io.github.valerioisufi.drawview.sync.ui.InvitationLinks
-import io.github.valerioisufi.drawview.sync.ui.joinAction
 import io.github.valerioisufi.drawview.sync.ui.editorExtension
+import io.github.valerioisufi.drawview.sync.ui.joinAction
 import io.github.valerioisufi.drawview.sync.ui.rememberCollaboration
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.command.CommandHost
@@ -45,6 +44,7 @@ import io.github.valerioisufi.drawview.ui.command.CommandRoot
 import io.github.valerioisufi.drawview.ui.components.AboutAppInfo
 import io.github.valerioisufi.drawview.ui.components.LocalAboutAppInfo
 import io.github.valerioisufi.drawview.ui.components.ThirdPartyLicense
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.pencilnotes.generated.resources.Res
 import io.github.valerioisufi.pencilnotes.generated.resources.about_description
 import io.github.valerioisufi.pencilnotes.generated.resources.about_version

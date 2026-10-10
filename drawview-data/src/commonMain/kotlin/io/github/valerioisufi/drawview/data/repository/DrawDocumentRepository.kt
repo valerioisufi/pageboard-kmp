@@ -1,10 +1,10 @@
 package io.github.valerioisufi.drawview.data.repository
 
 import androidx.compose.ui.graphics.toArgb
-import io.github.valerioisufi.drawview.core.controller.DrawPersistence
-import io.github.valerioisufi.drawview.core.controller.DrawPreferences
-import io.github.valerioisufi.drawview.core.controller.ToolPreset
-import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.canvas.controller.DrawPersistence
+import io.github.valerioisufi.drawview.canvas.controller.DrawPreferences
+import io.github.valerioisufi.drawview.canvas.controller.ToolPreset
+import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.data.buildDrawPreferences
 import io.github.valerioisufi.drawview.data.db.DocumentEntity
 import io.github.valerioisufi.drawview.data.db.DrawDatabase
@@ -58,7 +58,7 @@ import kotlinx.serialization.json.Json
 
 /**
  * Single source of truth of the documents: maps the Room entities to the in-memory model of
- * `:drawview-core` and implements the [DrawPersistence] port used by the editor.
+ * `:drawview-canvas` and implements the [DrawPersistence] port used by the editor.
  *
  * Every row has the identifier of its element in the model, with its order and the stamps of its
  * last changes. All the content coordinates are stored in page millimeters.

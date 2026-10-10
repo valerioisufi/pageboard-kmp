@@ -8,7 +8,7 @@ plugins {
 
 dependencies {
     implementation(project(":pencilnotes-shared"))
-    implementation(project(":drawview-core"))
+    implementation(project(":drawview-canvas"))
     implementation(project(":drawview-ui"))
     implementation(project(":drawview-lecture"))
 

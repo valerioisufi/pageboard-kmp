@@ -28,7 +28,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.drawview.core.controller.TextFormatTarget
+import io.github.valerioisufi.drawview.canvas.controller.TextFormatTarget
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandTooltip

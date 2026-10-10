@@ -47,9 +47,9 @@ import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.zIndex
-import io.github.valerioisufi.drawview.core.canvas.DrawCanvas
-import io.github.valerioisufi.drawview.core.canvas.observeChanges
-import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.DrawCanvas
+import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.observeChanges
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.geometry.Dimension
 import io.github.valerioisufi.drawview.model.geometry.mm
@@ -141,7 +141,7 @@ private fun DrawScreenContent(
     val colorScheme = MaterialTheme.colorScheme
     val canvasColors = LocalCanvasColors.current
     LaunchedEffect(colorScheme, canvasColors) {
-        controller.themeColors = io.github.valerioisufi.drawview.core.model.DrawThemeColors(
+        controller.themeColors = io.github.valerioisufi.drawview.canvas.DrawThemeColors(
             backgroundColor = canvasColors.desk.toArgb(),
             surfaceColor = colorScheme.surface.toArgb(),
             primaryColor = colorScheme.primary.toArgb(),

@@ -8,7 +8,7 @@ The repository also contains a [sample application](./sample) showing how to bui
 
 ## Modules
 
-* [`/drawview-core`](./drawview-core) handles drawing logic, strokes, brushes, and rendering abstractions. Every change of a document is a serializable `DocumentChange` submitted to the `DocumentSession` of the document (see [docs/collaboration.md](./docs/collaboration.md)).
+* [`/drawview-model`](./drawview-model) is the document without Compose (pages, elements, changes, clock, geometry), [`/drawview-ink`](./drawview-ink) models the strokes with Google Ink, [`/drawview-canvas`](./drawview-canvas) is the editor of a document and its tiled rendering. Every change of a document is a serializable `DocumentChange` submitted to the `DocumentSession` of the document (see [docs/collaboration.md](./docs/collaboration.md)).
 * [`/drawview-data`](./drawview-data) handles persistence (Room / SQLite): documents, folders and preferences.
 * [`/drawview-ui`](./drawview-ui) contains the editor user interface (`DrawScreen`, `EditorSessionScreen`) and its components.
 * [`/drawview-explorer`](./drawview-explorer) provides the document library: folders and notes (create, rename, move, delete, multiple selection), sorting, recent documents, and `DocumentLibrary`, a complete note-taking application (library + editor) themed by the caller.
@@ -31,7 +31,7 @@ fun App() {
 
 ### Trackpad
 
-On the canvas, two fingers on a trackpad move the pages like a finger on a touch screen (beyond the edges with a rubber band, with inertia when they are lifted) and the pinch zooms around the pointer, beyond the zoom limits with a rubber band too. The wheel with Ctrl / Cmd zooms as well (the pinch of the Windows precision touchpads arrives this way). On macOS, the phases of the scroll and the pinch, which AWT does not deliver, come from `libtrackpad_bridge` (an event monitor of the application, bundled in the `drawview-core` jar).
+On the canvas, two fingers on a trackpad move the pages like a finger on a touch screen (beyond the edges with a rubber band, with inertia when they are lifted) and the pinch zooms around the pointer, beyond the zoom limits with a rubber band too. The wheel with Ctrl / Cmd zooms as well (the pinch of the Windows precision touchpads arrives this way). On macOS, the phases of the scroll and the pinch, which AWT does not deliver, come from `libtrackpad_bridge` (an event monitor of the application, bundled in the `drawview-canvas` jar).
 
 ### Keyboard and menus
 

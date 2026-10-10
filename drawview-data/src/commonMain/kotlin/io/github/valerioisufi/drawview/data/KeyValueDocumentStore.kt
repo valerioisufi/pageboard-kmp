@@ -1,9 +1,9 @@
 package io.github.valerioisufi.drawview.data
 
-import io.github.valerioisufi.drawview.core.controller.DrawPersistence
-import io.github.valerioisufi.drawview.core.controller.DrawPreferences
-import io.github.valerioisufi.drawview.core.controller.ToolPreset
-import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.canvas.controller.DrawPersistence
+import io.github.valerioisufi.drawview.canvas.controller.DrawPreferences
+import io.github.valerioisufi.drawview.canvas.controller.ToolPreset
+import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.data.db.BrushSettingsData
 import io.github.valerioisufi.drawview.data.db.currentTimeMillis
 import io.github.valerioisufi.drawview.ink.InkStrokeModeller

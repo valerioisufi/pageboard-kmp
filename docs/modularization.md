@@ -191,15 +191,18 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 * **Values.** `Rect`, `Offset` and `Color` of Compose leave the model for value types of
   `drawview-model` (colors as ARGB `Int`, as the texts already store them); the canvas converts
   at its border.
-* **State.** The content of a page becomes immutable lists replaced by each change
-  (copy-on-write): a tile worker reads the current lists without a snapshot. The document and the
-  pages expose what the UI shows (pages, title, formats, content revisions, read only) as
-  `StateFlow`s; the Compose layer collects them. The decoded images move to `ImageCache`, the
-  flags of the editor (`isDragging`, `isShownByCollaborator`) to the canvas.
+* **State.** The content of a page is one immutable value replaced by each change: a tile worker
+  reads a page whole without a snapshot. The pages and the files of a document are copy-on-write
+  lists, changed by the document only (`appendPage`, `movePage`, `addResource`...). The document
+  tells its changes by its `revision` (`StateFlow`, advanced by every change the session applies),
+  the session its read only: a composable showing the document calls `observeChanges()`. The
+  decoded images move to `ImageCache`, the flags of the editor (`isDragging`,
+  `isShownByCollaborator`) to `HiddenElements` of the canvas.
 * **Strokes.** `StrokeData.toElement` models the stroke through the `StrokeModeller` of the
-  registry (the stroke type), not through a global engine: the Kotlin modeller in the model, Google
-  Ink when `drawview-ink` is installed. The meshes are local (the inputs are what is synced), so
-  two modellers never break the convergence.
+  document (`DrawDocument.strokeModeller`), not through a global engine: `KotlinStrokeModeller` in
+  the model, `InkStrokeModeller` of `drawview-ink` given by the stores (they depend on it). The
+  meshes are local (the inputs are what is synced), so two modellers never break the
+  convergence.
 * **Order of the work.** `drawview-model` is created empty; each package moves into it once it
   compiles without Compose, so that the compiler enforces the rule.
 
@@ -278,7 +281,7 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 | 1. Native per engine | `drawview-native` split into `drawview-native-ink`, `-tex`, `-pdfium`, `-audio`; `pdfium.def` without absolute paths in the published klib; check of the desktop platforms when publishing a release | Done |
 | 2. Engines as ports | ports `FormulaRenderer` and `PdfTileAdapter`, `DrawViewEngines` (given to the controller, the library, the thumbnails; `LocalDrawViewEngines`); `drawview-ui`, `drawview-explorer` and `drawview-lecture` without `drawview-pdf` / `drawview-latex`; the text adapter clears its own caches; dead `LatexTileAdapter` removed | Done |
 | 3a. Model values | `drawview-platform` (files, native libraries, secure store, device, locks, time, SHA-256) and `drawview-model` created; `Point`, `Rect` and ARGB colors in the model, converted at the border of the canvas (`ComposeGeometry`); moved: stamps, versions, element order, fractional index, `Matrix2D`, `AffineTransform`, measures, hit testing, PDF page fit, stroke points, tools, meshes, outlines, brushes, PDF text layout, rich text parsing, text sizes, backgrounds, alignment, attachments | Done |
-| 3b. Headless state | copy-on-write content, `StateFlow`s, `ImageCache`, editor flags out of the elements, `StrokeModeller` port and `drawview-ink`; model, changes and session moved; `drawview-core` renamed `drawview-canvas` | |
+| 3b. Headless state | `drawview-ink` (Google Ink, its bridges) and the `StrokeModeller` of the document (Kotlin in the model, Ink in the stores); `HiddenElements` and `ImageCache` in the canvas instead of flags and pixels in the elements; the content of a page one immutable value, copy-on-write pages and files, `DrawDocument.revision` and the read only of the session as `StateFlow`s (`observeChanges` in the composables); document, changes and session moved; `drawview-core` renamed `drawview-canvas` | Done |
 | 3c. Open element types | `ElementType`, `ElementTypes`, `CustomElementData`, `UpdateElementContent`, unknown elements; `ElementRenderer` registry used by the tiles, the overlays, the selection, the snapping and the eraser; a sample element type in `sample` | |
 | 4. Storage and session | `drawview-store` / `drawview-store-room`; segregated ports; element persistence for every type; `EditorContext`; `drawview-session`; no global store | |
 | 5. Controller and API | `Viewport`, `CollaboratorPresence`, `EditorHost`, internal managers; explicit API strict and KDoc on every module; ABI dumps | |

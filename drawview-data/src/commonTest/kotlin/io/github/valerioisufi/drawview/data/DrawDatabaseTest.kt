@@ -1,8 +1,8 @@
 package io.github.valerioisufi.drawview.data
 
-import io.github.valerioisufi.drawview.core.controller.ToolManager
-import io.github.valerioisufi.drawview.core.controller.ToolPreset
-import io.github.valerioisufi.drawview.core.model.Tool
+import io.github.valerioisufi.drawview.canvas.controller.ToolManager
+import io.github.valerioisufi.drawview.canvas.controller.ToolPreset
+import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.data.db.*
 import io.github.valerioisufi.drawview.data.repository.DrawDocumentRepository
 import io.github.valerioisufi.drawview.data.repository.FileRepository

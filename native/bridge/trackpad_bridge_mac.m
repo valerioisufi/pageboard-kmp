@@ -1,7 +1,7 @@
 // Trackpad gestures of macOS that AWT does not deliver to Java: the phases of the scroll (fingers
 // put down or lifted, inertia of the system), which the mouse wheel events do not carry, and the
 // pinch. An event monitor of the application reports them to
-// io.github.valerioisufi.drawview.core.canvas.MacTrackpad (desktop JVM, macOS only).
+// io.github.valerioisufi.drawview.canvas.MacTrackpad (desktop JVM, macOS only).
 
 #import <AppKit/AppKit.h>
 
@@ -54,7 +54,7 @@ static void reportMagnify(NSEvent *event) {
     clearException(env);
 }
 
-JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_core_canvas_MacTrackpad_nativeInstall(
+JNIEXPORT void JNICALL Java_io_github_valerioisufi_drawview_canvas_MacTrackpad_nativeInstall(
     JNIEnv *env, jclass clazz
 ) {
     if (trackpadClass != NULL) return;

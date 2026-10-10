@@ -9,9 +9,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.valerioisufi.drawview.core.controller.MediaManager
-import io.github.valerioisufi.drawview.core.render.DrawViewEngines
-import io.github.valerioisufi.drawview.core.render.tile.TextFace
+import io.github.valerioisufi.drawview.canvas.controller.MediaManager
+import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
+import io.github.valerioisufi.drawview.canvas.render.tile.TextFace
 import io.github.valerioisufi.drawview.data.DocumentStore
 import io.github.valerioisufi.drawview.data.DrawViewStore
 import io.github.valerioisufi.drawview.data.OpenDocuments
@@ -25,11 +25,11 @@ import io.github.valerioisufi.drawview.ui.platform.PickerType
 import io.github.valerioisufi.drawview.ui.platform.rememberFilePicker
 import io.github.valerioisufi.drawview.ui.render.LocalDrawViewEngines
 import io.github.valerioisufi.drawview.ui.session.DocumentAction
-import io.github.valerioisufi.drawview.ui.session.DocumentTag
-import io.github.valerioisufi.drawview.ui.session.LibraryAction
 import io.github.valerioisufi.drawview.ui.session.DocumentEditorViewModel
+import io.github.valerioisufi.drawview.ui.session.DocumentTag
 import io.github.valerioisufi.drawview.ui.session.EditorExtension
 import io.github.valerioisufi.drawview.ui.session.EditorSessionScreen
+import io.github.valerioisufi.drawview.ui.session.LibraryAction
 import io.github.valerioisufi.drawview.ui.theme.NotesFontFiles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

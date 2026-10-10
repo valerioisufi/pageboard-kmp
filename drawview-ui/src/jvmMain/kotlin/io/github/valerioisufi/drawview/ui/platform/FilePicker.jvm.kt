@@ -1,11 +1,11 @@
 package io.github.valerioisufi.drawview.ui.platform
 
-import io.github.valerioisufi.drawview.core.controller.MediaManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import io.github.valerioisufi.drawview.canvas.controller.MediaManager
 import java.awt.FileDialog
 import java.awt.Frame
 import java.io.File

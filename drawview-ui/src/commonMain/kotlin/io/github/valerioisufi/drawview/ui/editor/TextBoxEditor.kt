@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.valerioisufi.drawview.core.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.model.text.TextSizes.PT_TO_MM
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_formula_invalid
@@ -68,7 +68,7 @@ import org.jetbrains.compose.resources.stringResource
  * caret are drawn (see [MarkdownTextUtil.toEditorText]); the formula under the caret shows its
  * source, rendered above it.
  *
- * It shows and changes the state of the [io.github.valerioisufi.drawview.core.controller.TextEditorManager]
+ * It shows and changes the state of the [io.github.valerioisufi.drawview.canvas.controller.TextEditorManager]
  * of [controller]; the height it lays the text out is reported to it. Its frame is the one of a
  * selection, drawn by the canvas (see `SelectionFrame.ofEditedText`).
  *

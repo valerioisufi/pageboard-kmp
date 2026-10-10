@@ -3,10 +3,10 @@ package io.github.valerioisufi.drawview.export
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
-import io.github.valerioisufi.drawview.core.platform.encodePng
-import io.github.valerioisufi.drawview.core.render.tile.PdfTileAdapter
-import io.github.valerioisufi.drawview.core.render.tile.TextTileAdapter
-import io.github.valerioisufi.drawview.core.render.tile.TileRenderer
+import io.github.valerioisufi.drawview.canvas.platform.encodePng
+import io.github.valerioisufi.drawview.canvas.render.tile.PdfTileAdapter
+import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
+import io.github.valerioisufi.drawview.canvas.render.tile.TileRenderer
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.PageContentSnapshot

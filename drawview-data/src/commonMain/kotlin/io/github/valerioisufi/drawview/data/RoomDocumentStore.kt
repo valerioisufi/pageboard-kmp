@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.data
 
-import io.github.valerioisufi.drawview.core.controller.DrawPersistence
-import io.github.valerioisufi.drawview.core.controller.DrawPreferences
+import io.github.valerioisufi.drawview.canvas.controller.DrawPersistence
+import io.github.valerioisufi.drawview.canvas.controller.DrawPreferences
 import io.github.valerioisufi.drawview.data.db.DocumentEntity
 import io.github.valerioisufi.drawview.data.db.DrawDatabase
 import io.github.valerioisufi.drawview.data.db.DrawViewDatabase
