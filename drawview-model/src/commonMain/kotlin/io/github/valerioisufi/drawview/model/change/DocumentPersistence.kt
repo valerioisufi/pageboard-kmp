@@ -1,6 +1,5 @@
-package io.github.valerioisufi.drawview.canvas.controller
+package io.github.valerioisufi.drawview.model.change
 
-import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawImage
@@ -11,15 +10,13 @@ import io.github.valerioisufi.drawview.model.DrawStroke
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.model.PurgedContent
-import io.github.valerioisufi.drawview.model.change.Operation
-import io.github.valerioisufi.drawview.model.text.TextDefaults
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 
 /**
- * Persistence port of the editor. Implemented by `:drawview-data` on top of Room; the default
- * [NoOpDrawPersistence] keeps documents in memory only.
+ * Persistence port of the documents: implemented by the stores (see `drawview-store`); the
+ * default [NoOpDocumentPersistence] keeps the documents in memory only.
  *
  * The documents, pages and elements are identified by their `id` (the same on every device): the
  * save operations insert the element or update the stored one with the same identifier. Nothing
@@ -27,7 +24,7 @@ import kotlinx.coroutines.launch
  * [io.github.valerioisufi.drawview.model.DrawElement.removed]). The changes of an open
  * document reach it through a [ChangePersister].
  */
-interface DrawPersistence {
+interface DocumentPersistence {
     suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) {}
     suspend fun saveText(page: DrawPage, text: DrawText) {}
     suspend fun saveImage(page: DrawPage, image: DrawImage) {}
@@ -60,19 +57,12 @@ interface DrawPersistence {
 
     /** Appends [operation] to the log of the operations of [document] (see `DocumentStore`). */
     suspend fun appendOperation(document: DrawDocument, operation: Operation) {}
-
-    // --- Global user preferences ---
-    suspend fun savePresets(tool: Tool, presets: List<ToolPreset>) {}
-    suspend fun saveStylusOnlyMode(enabled: Boolean) {}
-    suspend fun saveLastSelectedTool(tool: Tool) {}
-    suspend fun saveTextDefaults(defaults: TextDefaults) {}
-    suspend fun saveSnapEnabled(enabled: Boolean) {}
 }
 
 /**
  * In-memory persistence: nothing is stored.
  */
-object NoOpDrawPersistence : DrawPersistence
+object NoOpDocumentPersistence : DocumentPersistence
 
 /**
  * Serializes the persistence operations of an editing session: operations are executed in
@@ -80,9 +70,9 @@ object NoOpDrawPersistence : DrawPersistence
  */
 class PersistenceQueue(
     scope: CoroutineScope,
-    private val persistence: DrawPersistence
+    private val persistence: DocumentPersistence
 ) {
-    private val channel = Channel<suspend DrawPersistence.() -> Unit>(Channel.UNLIMITED)
+    private val channel = Channel<suspend DocumentPersistence.() -> Unit>(Channel.UNLIMITED)
 
     init {
         scope.launch {
@@ -97,7 +87,7 @@ class PersistenceQueue(
         }
     }
 
-    fun enqueue(operation: suspend DrawPersistence.() -> Unit) {
+    fun enqueue(operation: suspend DocumentPersistence.() -> Unit) {
         channel.trySend(operation)
     }
 

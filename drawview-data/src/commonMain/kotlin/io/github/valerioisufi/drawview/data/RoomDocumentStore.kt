@@ -1,13 +1,10 @@
 package io.github.valerioisufi.drawview.data
 
-import io.github.valerioisufi.drawview.canvas.controller.DrawPersistence
-import io.github.valerioisufi.drawview.canvas.controller.DrawPreferences
 import io.github.valerioisufi.drawview.data.db.DocumentEntity
 import io.github.valerioisufi.drawview.data.db.DrawDatabase
 import io.github.valerioisufi.drawview.data.db.DrawViewDatabase
 import io.github.valerioisufi.drawview.data.db.FolderEntity
 import io.github.valerioisufi.drawview.data.db.SharedDocumentEntity
-import io.github.valerioisufi.drawview.data.db.currentTimeMillis
 import io.github.valerioisufi.drawview.data.repository.DrawDocumentRepository
 import io.github.valerioisufi.drawview.data.repository.FileRepository
 import io.github.valerioisufi.drawview.ink.InkStrokeModeller
@@ -15,7 +12,9 @@ import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.StrokeModeller
+import io.github.valerioisufi.drawview.model.change.DocumentPersistence
 import io.github.valerioisufi.drawview.model.change.Operation
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
@@ -29,7 +28,7 @@ import kotlinx.coroutines.withContext
 class RoomDocumentStore(
     val database: DrawDatabase,
     override val strokeModeller: StrokeModeller = InkStrokeModeller
-) : DocumentStore {
+) : DocumentStore, PreferenceStore {
     val repository = DrawDocumentRepository(database, strokeModeller)
     val fileRepository = FileRepository(database)
 
@@ -44,9 +43,12 @@ class RoomDocumentStore(
     override val folders: Flow<List<FolderSummary>> =
         fileRepository.getAllFoldersFlow().map { list -> list.map { it.toSummary() } }
 
-    override val preferences: Flow<DrawPreferences> = repository.drawPreferencesFlow
 
-    override val persistence: DrawPersistence get() = repository
+    override val persistence: DocumentPersistence get() = repository
+
+    override suspend fun preference(key: String): String? = repository.preference(key)
+
+    override suspend fun setPreference(key: String, value: String?) = repository.setPreference(key, value)
 
     override suspend fun createDocument(
         name: String,

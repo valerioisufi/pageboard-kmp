@@ -1,4 +1,4 @@
-package io.github.valerioisufi.drawview.canvas.controller
+package io.github.valerioisufi.drawview.model.change
 
 import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawElement
@@ -8,15 +8,13 @@ import io.github.valerioisufi.drawview.model.DrawPdf
 import io.github.valerioisufi.drawview.model.DrawStroke
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.DrawTextMarkup
-import io.github.valerioisufi.drawview.model.change.ChangeObserver
-import io.github.valerioisufi.drawview.model.change.CommittedChange
 
 /**
  * Writes the effects of the changes of a document through [persist] (a [PersistenceQueue]):
  * the persistence knows nothing of the kinds of change.
  */
 class ChangePersister(
-    private val persist: (operation: suspend DrawPersistence.() -> Unit) -> Unit
+    private val persist: (operation: suspend DocumentPersistence.() -> Unit) -> Unit
 ) : ChangeObserver {
 
     override fun onChange(committed: CommittedChange) {
@@ -57,7 +55,7 @@ class ChangePersister(
         }
     }
 
-    private suspend fun DrawPersistence.saveElements(page: DrawPage, elements: List<DrawElement>) {
+    private suspend fun DocumentPersistence.saveElements(page: DrawPage, elements: List<DrawElement>) {
         val strokes = elements.filterIsInstance<DrawStroke>()
         if (strokes.isNotEmpty()) saveStrokes(page, strokes)
         for (element in elements) {

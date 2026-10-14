@@ -1,11 +1,6 @@
 package io.github.valerioisufi.drawview.data.repository
 
 import androidx.compose.ui.graphics.toArgb
-import io.github.valerioisufi.drawview.canvas.controller.DrawPersistence
-import io.github.valerioisufi.drawview.canvas.controller.DrawPreferences
-import io.github.valerioisufi.drawview.canvas.controller.ToolPreset
-import io.github.valerioisufi.drawview.canvas.tool.Tool
-import io.github.valerioisufi.drawview.data.buildDrawPreferences
 import io.github.valerioisufi.drawview.data.db.CustomElementEntity
 import io.github.valerioisufi.drawview.data.db.DocumentEntity
 import io.github.valerioisufi.drawview.data.db.DrawDatabase
@@ -14,15 +9,13 @@ import io.github.valerioisufi.drawview.data.db.OperationBaseEntity
 import io.github.valerioisufi.drawview.data.db.OperationEntity
 import io.github.valerioisufi.drawview.data.db.PageEntity
 import io.github.valerioisufi.drawview.data.db.PdfEntity
+import io.github.valerioisufi.drawview.data.db.PreferenceEntity
 import io.github.valerioisufi.drawview.data.db.ReplicaEntity
 import io.github.valerioisufi.drawview.data.db.ResourceEntity
 import io.github.valerioisufi.drawview.data.db.StrokeEntity
 import io.github.valerioisufi.drawview.data.db.StrokeInputCodec
 import io.github.valerioisufi.drawview.data.db.TextEntity
 import io.github.valerioisufi.drawview.data.db.TextMarkupEntity
-import io.github.valerioisufi.drawview.data.db.UserPreferencesEntity
-import io.github.valerioisufi.drawview.data.db.currentTimeMillis
-import io.github.valerioisufi.drawview.data.toBrushSettings
 import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
@@ -44,13 +37,14 @@ import io.github.valerioisufi.drawview.model.StrokeTool
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.TextMarkupKind
 import io.github.valerioisufi.drawview.model.change.DocumentChange
+import io.github.valerioisufi.drawview.model.change.DocumentPersistence
 import io.github.valerioisufi.drawview.model.change.Operation
 import io.github.valerioisufi.drawview.model.change.OperationId
 import io.github.valerioisufi.drawview.model.change.StrokeData
 import io.github.valerioisufi.drawview.model.change.TextMarkupData
 import io.github.valerioisufi.drawview.model.change.toData
 import io.github.valerioisufi.drawview.model.newElementId
-import io.github.valerioisufi.drawview.model.text.TextDefaults
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
@@ -60,7 +54,7 @@ import kotlinx.serialization.json.Json
 
 /**
  * Single source of truth of the documents: maps the Room entities to the in-memory model of
- * `:drawview-canvas` and implements the [DrawPersistence] port used by the editor.
+ * `:drawview-canvas` and implements the [DocumentPersistence] port used by the editor.
  *
  * Every row has the identifier of its element in the model, with its order and the stamps of its
  * last changes. All the content coordinates are stored in page millimeters.
@@ -69,7 +63,7 @@ class DrawDocumentRepository(
     val database: DrawDatabase,
     /** Models the strokes loaded from their inputs. */
     private val strokeModeller: StrokeModeller = InkStrokeModeller
-) : DrawPersistence {
+) : DocumentPersistence {
 
     private val documentDao = database.documentDao()
     private val pageDao = database.pageDao()
@@ -86,9 +80,6 @@ class DrawDocumentRepository(
     private val preferencesDao = database.preferencesDao()
     private val json = Json
 
-    /** User preferences mapped to the editor model (defaults when nothing is stored yet). */
-    val drawPreferencesFlow: Flow<DrawPreferences>
-        get() = preferencesDao.getPreferencesFlow().map { (it ?: UserPreferencesEntity()).toDrawPreferences() }
 
     // ==========================================================
     // Loading
@@ -385,13 +376,16 @@ class DrawDocumentRepository(
     // Preferences
     // ==========================================================
 
-    private suspend fun updatePreferences(transform: (UserPreferencesEntity) -> UserPreferencesEntity) = withContext(Dispatchers.IO) {
-        val current = preferencesDao.getPreferences() ?: UserPreferencesEntity()
-        preferencesDao.insertOrUpdate(transform(current))
+    /** The preference [key] (see `PreferenceStore`). */
+    suspend fun preference(key: String): String? = withContext(Dispatchers.IO) { preferencesDao.get(key) }
+
+    /** Keeps [value] as the preference [key] (`null`: forgets it). */
+    suspend fun setPreference(key: String, value: String?) = withContext(Dispatchers.IO) {
+        if (value == null) preferencesDao.delete(key) else preferencesDao.upsert(PreferenceEntity(key, value))
     }
 
     // ==========================================================
-    // DrawPersistence (editor port)
+    // DocumentPersistence (the port of the documents)
     // ==========================================================
 
     // The stroke as it was drawn, and its placement
@@ -574,43 +568,4 @@ class DrawDocumentRepository(
             )
         )
     }
-
-    override suspend fun savePresets(tool: Tool, presets: List<ToolPreset>) {
-        val data = presets.toBrushSettings(tool)
-        when (tool) {
-            Tool.INK_PEN -> updatePreferences { it.copy(penPresets = data) }
-            Tool.INK_HIGHLIGHTER -> updatePreferences { it.copy(highlighterPresets = data) }
-            Tool.TEXT_MARKUP -> updatePreferences { it.copy(markupPresets = data) }
-            Tool.ERASER -> updatePreferences { it.copy(eraserPresets = data) }
-            Tool.LAZO -> updatePreferences { it.copy(lazoPresets = data) }
-            else -> {}
-        }
-    }
-
-    override suspend fun saveStylusOnlyMode(enabled: Boolean) = updatePreferences { it.copy(isStylusOnlyMode = enabled) }
-
-    override suspend fun saveLastSelectedTool(tool: Tool) = updatePreferences { it.copy(lastSelectedTool = tool.name) }
-
-    override suspend fun saveSnapEnabled(enabled: Boolean) = updatePreferences { it.copy(isSnapEnabled = enabled) }
-
-    override suspend fun saveTextDefaults(defaults: TextDefaults) = updatePreferences {
-        it.copy(defaultTextFontSize = defaults.fontSize, defaultTextColor = defaults.color, defaultTextAlignment = defaults.alignment.name)
-    }
 }
-
-/**
- * Maps the stored preferences to the editor model.
- */
-fun UserPreferencesEntity.toDrawPreferences(): DrawPreferences = buildDrawPreferences(
-    isStylusOnlyMode = isStylusOnlyMode,
-    lastSelectedTool = lastSelectedTool,
-    defaultTextFontSize = defaultTextFontSize,
-    defaultTextColor = defaultTextColor,
-    defaultTextAlignment = defaultTextAlignment,
-    isSnapEnabled = isSnapEnabled,
-    penPresets = penPresets,
-    highlighterPresets = highlighterPresets,
-    eraserPresets = eraserPresets,
-    lazoPresets = lazoPresets,
-    markupPresets = markupPresets
-)

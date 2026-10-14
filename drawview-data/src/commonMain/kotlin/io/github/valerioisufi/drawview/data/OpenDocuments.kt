@@ -1,12 +1,12 @@
 package io.github.valerioisufi.drawview.data
 
-import io.github.valerioisufi.drawview.canvas.controller.ChangePersister
-import io.github.valerioisufi.drawview.canvas.controller.PersistenceQueue
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawResource
 import io.github.valerioisufi.drawview.model.StrokeModeller
+import io.github.valerioisufi.drawview.model.change.ChangePersister
 import io.github.valerioisufi.drawview.model.change.DocumentSession
 import io.github.valerioisufi.drawview.model.change.Operation
+import io.github.valerioisufi.drawview.model.change.PersistenceQueue
 import io.github.valerioisufi.drawview.model.change.RenameDocument
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope

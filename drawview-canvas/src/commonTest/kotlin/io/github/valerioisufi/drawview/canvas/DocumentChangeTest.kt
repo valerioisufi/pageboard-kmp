@@ -2,8 +2,6 @@ package io.github.valerioisufi.drawview.canvas
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import io.github.valerioisufi.drawview.canvas.controller.ChangePersister
-import io.github.valerioisufi.drawview.canvas.controller.DrawPersistence
 import io.github.valerioisufi.drawview.canvas.history.HistoryManager
 import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.DrawDocument
@@ -26,8 +24,10 @@ import io.github.valerioisufi.drawview.model.change.AddPage
 import io.github.valerioisufi.drawview.model.change.AddResource
 import io.github.valerioisufi.drawview.model.change.BoxPlacement
 import io.github.valerioisufi.drawview.model.change.ChangeOrigin
+import io.github.valerioisufi.drawview.model.change.ChangePersister
 import io.github.valerioisufi.drawview.model.change.CompositeChange
 import io.github.valerioisufi.drawview.model.change.DocumentChange
+import io.github.valerioisufi.drawview.model.change.DocumentPersistence
 import io.github.valerioisufi.drawview.model.change.DocumentSession
 import io.github.valerioisufi.drawview.model.change.MarkupStyle
 import io.github.valerioisufi.drawview.model.change.MovePages
@@ -367,7 +367,7 @@ class DocumentChangeTest {
         val document = DrawDocument()
         val session = DocumentSession(document)
         val calls = mutableListOf<String>()
-        val persistence = object : DrawPersistence {
+        val persistence = object : DocumentPersistence {
             override suspend fun savePage(document: DrawDocument, page: DrawPage) {
                 calls.add(if (page.removed != null) "page ${page.id} removed=true" else "page ${page.id} ${page.orderKey}")
             }
@@ -380,7 +380,7 @@ class DocumentChangeTest {
                 calls.add("touch")
             }
         }
-        val operations = mutableListOf<suspend DrawPersistence.() -> Unit>()
+        val operations = mutableListOf<suspend DocumentPersistence.() -> Unit>()
         session.addObserver(ChangePersister { operations.add(it) })
 
         val stroke = stroke(1f, 1f)

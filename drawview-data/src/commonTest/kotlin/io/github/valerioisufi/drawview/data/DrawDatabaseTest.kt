@@ -1,12 +1,8 @@
 package io.github.valerioisufi.drawview.data
 
-import io.github.valerioisufi.drawview.canvas.controller.ToolManager
-import io.github.valerioisufi.drawview.canvas.controller.ToolPreset
-import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.data.db.*
 import io.github.valerioisufi.drawview.data.repository.DrawDocumentRepository
 import io.github.valerioisufi.drawview.data.repository.FileRepository
-import io.github.valerioisufi.drawview.data.repository.toDrawPreferences
 import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.DrawCustomElement
@@ -40,7 +36,6 @@ import io.github.valerioisufi.drawview.model.change.toData
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.model.newElementId
-import io.github.valerioisufi.drawview.model.text.TextDefaults
 import kotlin.test.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -357,41 +352,17 @@ class DrawDatabaseTest {
     }
 
     @Test
-    fun testTextMarkupPresets() = runTest {
-        // The default presets until the user changes them
-        assertEquals(ToolManager.defaultPresets()[Tool.TEXT_MARKUP], repository.drawPreferencesFlow.first().presets[Tool.TEXT_MARKUP])
-
-        val presets = listOf(
-            ToolPreset(0f, 0xFFE53935.toInt(), StrokeTool.HIGHLIGHTER, TextMarkupKind.STRIKEOUT),
-            ToolPreset(0f, 0xFF90CAF9.toInt(), StrokeTool.HIGHLIGHTER, TextMarkupKind.HIGHLIGHT)
-        )
-        repository.savePresets(Tool.TEXT_MARKUP, presets)
-        assertEquals(presets, repository.drawPreferencesFlow.first().presets[Tool.TEXT_MARKUP])
-    }
-
-    @Test
-    fun testUserPreferences() = runTest {
-        repository.saveStylusOnlyMode(true)
-        repository.saveLastSelectedTool(Tool.INK_HIGHLIGHTER)
-        repository.saveTextDefaults(TextDefaults(fontSize = 18f, color = 0xFF00FF00.toInt(), alignment = TextAlignment.END))
-
-        val prefs = database.preferencesDao().getPreferences()
-        assertNotNull(prefs)
-        assertTrue(prefs.isStylusOnlyMode)
-        assertEquals("INK_HIGHLIGHTER", prefs.lastSelectedTool)
-        assertEquals(TextDefaults(18f, 0xFF00FF00.toInt(), TextAlignment.END), prefs.toDrawPreferences().textDefaults)
-    }
-
-    @Test
-    fun testEditorPreferencesMapping() = runTest {
-        repository.savePresets(Tool.INK_PEN, listOf(ToolPreset(0.7f, 0xFF123456.toInt(), StrokeTool.PRESSURE_PEN)))
-        repository.saveLastSelectedTool(Tool.LAZO)
-        val prefs = repository.drawPreferencesFlow.first()
-        assertEquals(Tool.LAZO, prefs.lastSelectedTool)
-        assertEquals(listOf(ToolPreset(0.7f, 0xFF123456.toInt(), StrokeTool.PRESSURE_PEN)), prefs.presets[Tool.INK_PEN])
-        // The tools without saved presets have the default ones
-        assertEquals(StrokeTool.ERASER, prefs.presets.getValue(Tool.ERASER).first().family)
-        assertEquals(StrokeTool.LASSO, prefs.presets.getValue(Tool.LAZO).first().family)
+    fun thePreferencesAreKeptAsTextByKey() = runTest {
+        val store = RoomDocumentStore(database)
+        assertNull(store.preference("drawview.editor"))
+        store.setPreference("drawview.editor", "{\"isStylusOnlyMode\":true}")
+        store.setPreference("other", "1")
+        assertEquals("{\"isStylusOnlyMode\":true}", store.preference("drawview.editor"))
+        store.setPreference("drawview.editor", "{}")
+        assertEquals("{}", store.preference("drawview.editor"))
+        store.setPreference("drawview.editor", null)
+        assertNull(store.preference("drawview.editor"))
+        assertEquals("1", store.preference("other"))
     }
 
     @Test

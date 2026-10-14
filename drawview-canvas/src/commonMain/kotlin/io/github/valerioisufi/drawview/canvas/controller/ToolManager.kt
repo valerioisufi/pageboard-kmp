@@ -12,6 +12,8 @@ import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.StrokeTool
 import io.github.valerioisufi.drawview.model.TextMarkupKind
 import io.github.valerioisufi.drawview.model.text.TextDefaults
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 /**
  * A preset of a drawing tool.
@@ -20,6 +22,7 @@ import io.github.valerioisufi.drawview.model.text.TextDefaults
  * @property color ARGB color.
  * @property markup how the text is marked ([Tool.TEXT_MARKUP] only).
  */
+@Serializable
 data class ToolPreset(
     val sizeMm: Float,
     val color: Int,
@@ -28,8 +31,10 @@ data class ToolPreset(
 )
 
 /**
- * Global user preferences relevant to the editor.
+ * The preferences of the user the editor keeps (see [DrawViewController.preferences]): written as
+ * text ([encode]) by whoever stores them.
  */
+@Serializable
 data class DrawPreferences(
     val isStylusOnlyMode: Boolean = false,
     val lastSelectedTool: Tool = Tool.INK_PEN,
@@ -37,7 +42,21 @@ data class DrawPreferences(
     /** Whether the boxes snap to what is around them (see `SnapManager`). */
     val isSnapEnabled: Boolean = true,
     val presets: Map<Tool, List<ToolPreset>> = ToolManager.defaultPresets()
-)
+) {
+    /** These preferences as text (JSON), read again by [decode]. */
+    fun encode(): String = json.encodeToString(serializer(), this)
+
+    companion object {
+        private val json = Json { ignoreUnknownKeys = true }
+
+        /** The preferences written by [encode], or `null` when [text] cannot be read. */
+        fun decode(text: String): DrawPreferences? = try {
+            json.decodeFromString(serializer(), text)
+        } catch (_: Exception) {
+            null
+        }
+    }
+}
 
 /**
  * Manages the active tool and the presets (size, color, brush family) of every drawing tool.

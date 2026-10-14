@@ -4,9 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import io.github.valerioisufi.drawview.canvas.controller.DrawPersistence
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
-import io.github.valerioisufi.drawview.canvas.controller.PersistenceQueue
 import io.github.valerioisufi.drawview.canvas.controller.PlacementRequest
 import io.github.valerioisufi.drawview.canvas.geometry.toCompose
 import io.github.valerioisufi.drawview.canvas.tool.Tool
@@ -23,9 +21,11 @@ import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.StrokeTool
 import io.github.valerioisufi.drawview.model.change.ChangeOrigin
 import io.github.valerioisufi.drawview.model.change.DocumentChange
+import io.github.valerioisufi.drawview.model.change.DocumentPersistence
 import io.github.valerioisufi.drawview.model.change.DocumentSession
 import io.github.valerioisufi.drawview.model.change.Operation
 import io.github.valerioisufi.drawview.model.change.OperationId
+import io.github.valerioisufi.drawview.model.change.PersistenceQueue
 import io.github.valerioisufi.drawview.model.change.RemoveElements
 import io.github.valerioisufi.drawview.model.geometry.HitTesting
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
@@ -164,7 +164,7 @@ class EditorCoreTest {
     @Test
     fun persistenceOperationsRunInSubmissionOrder() = runTest(UnconfinedTestDispatcher()) {
         val calls = mutableListOf<String>()
-        val persistence = object : DrawPersistence {
+        val persistence = object : DocumentPersistence {
             override suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) {
                 yield()
                 calls.add("save:${strokes.first().id}")

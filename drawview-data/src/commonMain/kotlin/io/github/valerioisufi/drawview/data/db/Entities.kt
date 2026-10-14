@@ -9,6 +9,7 @@ import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.Versions
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
 
 /*
  * Every row is identified by the identifier of the model (a UUID, see `newElementId`), the same
@@ -402,32 +403,9 @@ data class ReplicaEntity(
     val replicaId: String
 )
 
-/**
- * Single table for global user preferences.
- * ID is forced to 1 to ensure a single-row configuration.
- *
- * Empty lists of presets: the default presets of the tools (see `ToolManager.defaultPresets`).
- */
-@Entity(tableName = "user_preferences")
-data class UserPreferencesEntity(
-    @PrimaryKey val id: Int = 1,
-
-    // --- Global Preferences ---
-    val isStylusOnlyMode: Boolean = false,
-    val lastSelectedTool: String = "INK_PEN",
-
-    // --- Text Preferences ---
-    val defaultTextFontSize: Float = 16f,
-    val defaultTextColor: Int = 0xFF000000.toInt(),
-    /** The name of the `TextAlignment` of a new text. */
-    val defaultTextAlignment: String = "START",
-    val isSnapEnabled: Boolean = true,
-
-    // --- Tool Configurations ---
-    val penPresets: List<BrushSettingsData> = emptyList(),
-    val highlighterPresets: List<BrushSettingsData> = emptyList(),
-    val eraserPresets: List<BrushSettingsData> = emptyList(),
-    val lazoPresets: List<BrushSettingsData> = emptyList(),
-    /** Presets of the text markup tool, the kind of the marks as family. */
-    val markupPresets: List<BrushSettingsData> = emptyList()
+/** A preference of the applications: text by key (see `PreferenceStore`). */
+@Entity(tableName = "preferences")
+data class PreferenceEntity(
+    @PrimaryKey val key: String,
+    val value: String
 )

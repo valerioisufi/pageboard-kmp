@@ -22,14 +22,13 @@ import androidx.room.TypeConverters
         OperationBaseEntity::class,
         SharedDocumentEntity::class,
         ReplicaEntity::class,
-        UserPreferencesEntity::class
+        PreferenceEntity::class
     ],
     // No migrations before the first release: an older database is recreated (see createDrawDatabase)
-    version = 17
+    version = 18
 )
 @TypeConverters(
     PageBackgroundConverter::class,
-    BrushPresetListConverter::class,
     AffineTransformConverter::class,
     VersionConverters::class
 )

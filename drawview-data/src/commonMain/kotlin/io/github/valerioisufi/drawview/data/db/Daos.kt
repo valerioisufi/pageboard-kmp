@@ -10,6 +10,7 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.Stamp
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import kotlinx.coroutines.flow.Flow
 
 /*

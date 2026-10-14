@@ -1,11 +1,10 @@
 package io.github.valerioisufi.drawview.data
 
-import io.github.valerioisufi.drawview.canvas.controller.DrawPersistence
-import io.github.valerioisufi.drawview.canvas.controller.DrawPreferences
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.StrokeModeller
+import io.github.valerioisufi.drawview.model.change.DocumentPersistence
 import io.github.valerioisufi.drawview.model.change.Operation
 import kotlinx.coroutines.flow.Flow
 
@@ -41,8 +40,8 @@ data class FolderSummary(
 )
 
 /**
- * Storage of the documents, of their folders and of the user preferences used by the
- * applications.
+ * Storage of the documents and of their folders (the preferences of the applications: see
+ * [PreferenceStore], which the stores of DrawView implement too).
  *
  * Backed by Room (SQLite): see [RoomDocumentStore].
  */
@@ -53,11 +52,8 @@ interface DocumentStore {
     /** Every folder, at any depth (updated on every change). */
     val folders: Flow<List<FolderSummary>>
 
-    /** Global user preferences of the editor (defaults when nothing is stored yet). */
-    val preferences: Flow<DrawPreferences>
-
-    /** Persistence port of the editor: saves every change of the open documents. */
-    val persistence: DrawPersistence
+    /** Persistence port of the documents: saves every change of the open documents. */
+    val persistence: DocumentPersistence
 
     /** Models the strokes of the documents loaded or received (see [DrawDocument.strokeModeller]). */
     val strokeModeller: StrokeModeller

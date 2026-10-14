@@ -35,10 +35,14 @@ import io.github.valerioisufi.drawview.model.StrokeMesh
 import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.ChangeObserver
 import io.github.valerioisufi.drawview.model.change.ChangeOrigin
+import io.github.valerioisufi.drawview.model.change.ChangePersister
 import io.github.valerioisufi.drawview.model.change.CommittedChange
 import io.github.valerioisufi.drawview.model.change.CompositeChange
 import io.github.valerioisufi.drawview.model.change.DocumentChange
+import io.github.valerioisufi.drawview.model.change.DocumentPersistence
 import io.github.valerioisufi.drawview.model.change.DocumentSession
+import io.github.valerioisufi.drawview.model.change.NoOpDocumentPersistence
+import io.github.valerioisufi.drawview.model.change.PersistenceQueue
 import io.github.valerioisufi.drawview.model.change.TextData
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
@@ -76,7 +80,7 @@ class DrawViewController(
     val document: DrawDocument = DrawDocument(),
     val coroutineScope: CoroutineScope,
     density: Float = 1f,
-    persistence: DrawPersistence = NoOpDrawPersistence,
+    persistence: DocumentPersistence = NoOpDocumentPersistence,
     persistenceScope: CoroutineScope = coroutineScope,
     /**
      * Every change of the document goes through the session (the managers create the changes):
@@ -92,7 +96,7 @@ class DrawViewController(
     private val storesChanges = sharedSession == null
 
     /** Persistence used by this session (Room in the apps, no-op for in-memory documents). */
-    val persistence: DrawPersistence = persistence
+    val persistence: DocumentPersistence = persistence
 
     /**
      * Ordered queue of the persistence operations. It may run on its own [persistenceScope] (e.g.
@@ -126,8 +130,8 @@ class DrawViewController(
     val hiddenElements = HiddenElements()
 
     val toolManager = ToolManager(
-        onPresetsChanged = { tool, presets -> persist { savePresets(tool, presets) } },
-        onToolSelected = { tool -> persist { saveLastSelectedTool(tool) } }
+        onPresetsChanged = { _, _ -> preferencesChanged() },
+        onToolSelected = { preferencesChanged() }
     )
 
     val selectionManager = SelectionManager(this)
@@ -271,7 +275,7 @@ class DrawViewController(
     fun updateStylusOnlyMode(enabled: Boolean) {
         if (isStylusOnlyMode == enabled) return
         isStylusOnlyMode = enabled
-        persist { saveStylusOnlyMode(enabled) }
+        preferencesChanged()
     }
 
     /**
@@ -296,18 +300,39 @@ class DrawViewController(
         val clamped = defaults.copy(fontSize = TextSizes.clamp(defaults.fontSize))
         if (textDefaults == clamped) return
         textDefaults = clamped
-        persist { saveTextDefaults(clamped) }
+        preferencesChanged()
     }
 
+    private val preferencesState = MutableStateFlow(DrawPreferences())
+
     /**
-     * Applies the global preferences loaded from the persistence layer.
+     * The preferences of the user, as they change (the presets of the tools, the stylus only
+     * mode, the last tool, the defaults of the texts, the snapping): whoever keeps them collects
+     * them and gives them back with [applyPreferences].
      */
+    val preferences: StateFlow<DrawPreferences> = preferencesState.asStateFlow()
+
+    /** Applies the preferences of the user kept (e.g. when the editor opens). */
     fun applyPreferences(preferences: DrawPreferences) {
         isStylusOnlyMode = preferences.isStylusOnlyMode
         textDefaults = preferences.textDefaults
         snapManager.applyPreferences(preferences)
         toolManager.applyPreferences(preferences)
+        preferencesState.value = currentPreferences()
     }
+
+    /** A preference of the user changed: [preferences] tells it. */
+    internal fun preferencesChanged() {
+        preferencesState.value = currentPreferences()
+    }
+
+    private fun currentPreferences() = DrawPreferences(
+        isStylusOnlyMode = isStylusOnlyMode,
+        lastSelectedTool = toolManager.selectedTool,
+        textDefaults = textDefaults,
+        isSnapEnabled = snapManager.isEnabled,
+        presets = ToolManager.PRESET_TOOLS.associateWith { toolManager.presetsOf(it).toList() }
+    )
 
     // ==========================================================
     // Rendering requests
@@ -326,7 +351,7 @@ class DrawViewController(
         }
     }
 
-    fun persist(operation: suspend DrawPersistence.() -> Unit) {
+    fun persist(operation: suspend DocumentPersistence.() -> Unit) {
         persistenceQueue.enqueue(operation)
     }
 

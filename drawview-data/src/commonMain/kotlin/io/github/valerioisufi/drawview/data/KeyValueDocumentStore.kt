@@ -1,11 +1,5 @@
 package io.github.valerioisufi.drawview.data
 
-import io.github.valerioisufi.drawview.canvas.controller.DrawPersistence
-import io.github.valerioisufi.drawview.canvas.controller.DrawPreferences
-import io.github.valerioisufi.drawview.canvas.controller.ToolPreset
-import io.github.valerioisufi.drawview.canvas.tool.Tool
-import io.github.valerioisufi.drawview.data.db.BrushSettingsData
-import io.github.valerioisufi.drawview.data.db.currentTimeMillis
 import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
@@ -19,13 +13,14 @@ import io.github.valerioisufi.drawview.model.DrawTextMarkup
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.StrokeModeller
+import io.github.valerioisufi.drawview.model.change.DocumentPersistence
 import io.github.valerioisufi.drawview.model.change.Operation
 import io.github.valerioisufi.drawview.model.change.PageSnapshot
 import io.github.valerioisufi.drawview.model.change.snapshot
 import io.github.valerioisufi.drawview.model.newElementId
-import io.github.valerioisufi.drawview.model.text.TextDefaults
 import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.platform.SyncLock
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.platform.syncLock
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
@@ -94,7 +89,7 @@ class KeyValueDocumentStore(
     private val saveDelayMs: Long = 400L,
     private val clock: () -> Long = ::currentTimeMillis,
     override val strokeModeller: StrokeModeller = InkStrokeModeller
-) : DocumentStore, DrawPersistence {
+) : DocumentStore, DocumentPersistence, PreferenceStore {
 
     private val json = Json {
         ignoreUnknownKeys = true
@@ -113,11 +108,7 @@ class KeyValueDocumentStore(
     private val _folders = MutableStateFlow(folderSummaries(index))
     override val folders: StateFlow<List<FolderSummary>> = _folders.asStateFlow()
 
-    private var storedPreferences: StoredPreferences = readPreferences()
-    private val _preferences = MutableStateFlow(storedPreferences.toDrawPreferences())
-    override val preferences: StateFlow<DrawPreferences> = _preferences.asStateFlow()
-
-    override val persistence: DrawPersistence get() = this
+    override val persistence: DocumentPersistence get() = this
 
     /** `false` after a write has been rejected by the storage (e.g. quota exceeded). */
     var lastWriteSucceeded: Boolean = true
@@ -360,7 +351,7 @@ class KeyValueDocumentStore(
     }
 
     // ==========================================================
-    // DrawPersistence: every change rewrites the owning document
+    // DocumentPersistence: every change rewrites the owning document
     // ==========================================================
 
     override suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) = markPageModified(page)
@@ -493,26 +484,11 @@ class KeyValueDocumentStore(
         publishSummaries()
     }
 
-    override suspend fun savePresets(tool: Tool, presets: List<ToolPreset>) = updatePreferences {
-        val data = presets.toBrushSettings(tool)
-        when (tool) {
-            Tool.INK_PEN -> it.copy(penPresets = data)
-            Tool.INK_HIGHLIGHTER -> it.copy(highlighterPresets = data)
-            Tool.TEXT_MARKUP -> it.copy(markupPresets = data)
-            Tool.ERASER -> it.copy(eraserPresets = data)
-            Tool.LAZO -> it.copy(lazoPresets = data)
-            else -> it
-        }
-    }
+    override suspend fun preference(key: String): String? = storage.get(PREFERENCE_PREFIX + key)
 
-    override suspend fun saveStylusOnlyMode(enabled: Boolean) = updatePreferences { it.copy(isStylusOnlyMode = enabled) }
-
-    override suspend fun saveLastSelectedTool(tool: Tool) = updatePreferences { it.copy(lastSelectedTool = tool.name) }
-
-    override suspend fun saveSnapEnabled(enabled: Boolean) = updatePreferences { it.copy(isSnapEnabled = enabled) }
-
-    override suspend fun saveTextDefaults(defaults: TextDefaults) = updatePreferences {
-        it.copy(defaultTextFontSize = defaults.fontSize, defaultTextColor = defaults.color, defaultTextAlignment = defaults.alignment.name)
+    override suspend fun setPreference(key: String, value: String?) {
+        if (value == null) storage.remove(PREFERENCE_PREFIX + key)
+        else if (!storage.set(PREFERENCE_PREFIX + key, value)) lastWriteSucceeded = false
     }
 
     // ==========================================================
@@ -550,17 +526,6 @@ class KeyValueDocumentStore(
                 flushNow()
             }
         }
-    }
-
-    private fun updatePreferences(transform: (StoredPreferences) -> StoredPreferences) {
-        val updated = syncLock(lock) {
-            storedPreferences = transform(storedPreferences)
-            if (!storage.set(PREFERENCES_KEY, json.encodeToString(StoredPreferences.serializer(), storedPreferences))) {
-                lastWriteSucceeded = false
-            }
-            storedPreferences
-        }
-        _preferences.value = updated.toDrawPreferences()
     }
 
     private inline fun updateSummaryLocked(documentId: String, transform: (StoredSummary) -> StoredSummary) {
@@ -636,8 +601,6 @@ class KeyValueDocumentStore(
     private fun readIndex(): StoredIndex =
         storage.get(INDEX_KEY)?.let { decodeOrNull<StoredIndex>(it) } ?: StoredIndex()
 
-    private fun readPreferences(): StoredPreferences =
-        storage.get(PREFERENCES_KEY)?.let { decodeOrNull<StoredPreferences>(it) } ?: StoredPreferences()
 
     private inline fun <reified T> decodeOrNull(value: String): T? = try {
         json.decodeFromString<T>(value)
@@ -655,7 +618,7 @@ class KeyValueDocumentStore(
     companion object {
         private const val PREFIX = "drawview."
         private const val INDEX_KEY = PREFIX + "index"
-        private const val PREFERENCES_KEY = PREFIX + "preferences"
+        private const val PREFERENCE_PREFIX = PREFIX + "preference."
 
         private fun documentKey(id: String) = PREFIX + "document." + id
         private fun operationsKey(id: String) = PREFIX + "operations." + id
@@ -735,34 +698,6 @@ internal data class StoredDocument(
 @Serializable
 internal data class StoredResource(val id: String, val type: String, val uri: String, val hash: String = "")
 
-@Serializable
-internal data class StoredPreferences(
-    val isStylusOnlyMode: Boolean = false,
-    val lastSelectedTool: String = Tool.INK_PEN.name,
-    val defaultTextFontSize: Float = 16f,
-    val defaultTextColor: Int = 0xFF000000.toInt(),
-    val defaultTextAlignment: String = "START",
-    val isSnapEnabled: Boolean = true,
-    val penPresets: List<BrushSettingsData> = emptyList(),
-    val highlighterPresets: List<BrushSettingsData> = emptyList(),
-    val eraserPresets: List<BrushSettingsData> = emptyList(),
-    val lazoPresets: List<BrushSettingsData> = emptyList(),
-    val markupPresets: List<BrushSettingsData> = emptyList()
-) {
-    fun toDrawPreferences(): DrawPreferences = buildDrawPreferences(
-        isStylusOnlyMode = isStylusOnlyMode,
-        lastSelectedTool = lastSelectedTool,
-        defaultTextFontSize = defaultTextFontSize,
-        defaultTextColor = defaultTextColor,
-        defaultTextAlignment = defaultTextAlignment,
-        isSnapEnabled = isSnapEnabled,
-        penPresets = penPresets,
-        highlighterPresets = highlighterPresets,
-        eraserPresets = eraserPresets,
-        lazoPresets = lazoPresets,
-        markupPresets = markupPresets
-    )
-}
 
 private fun DrawDocument.toStored(): StoredDocument = StoredDocument(
     pages = pages.map { it.snapshot() },

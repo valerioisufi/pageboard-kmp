@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.model.text
 
 import io.github.valerioisufi.drawview.model.TextAlignment
+import kotlinx.serialization.Serializable
 
 /**
  * The sizes of the texts: typographic points, converted to the millimeters of the pages, from
@@ -35,6 +36,7 @@ object TextSizes {
 }
 
 /** The style of a new text: the one of the text written last. */
+@Serializable
 data class TextDefaults(
     val fontSize: Float = 16f,
     // The black ink of the design

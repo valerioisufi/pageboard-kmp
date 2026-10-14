@@ -5,11 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.valerioisufi.drawview.canvas.controller.DrawPreferences
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.data.DocumentStore
 import io.github.valerioisufi.drawview.data.OpenDocument
 import io.github.valerioisufi.drawview.data.OpenDocuments
+import io.github.valerioisufi.drawview.data.PreferenceStore
 import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.syncLock
 import kotlinx.coroutines.CoroutineScope
@@ -18,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -60,7 +63,9 @@ class DocumentEditorViewModel(
     val store: DocumentStore,
     val documents: OpenDocuments = OpenDocuments(store),
     /** The engines of the editors (PDF pages, formulas). */
-    val engines: DrawViewEngines = DrawViewEngines.None
+    val engines: DrawViewEngines = DrawViewEngines.None,
+    /** Where the preferences of the user are kept (by default, in the store when it keeps them). */
+    val preferences: PreferenceStore? = store as? PreferenceStore
 ) : ViewModel() {
 
     var session: EditorSession? by mutableStateOf(null)
@@ -111,7 +116,7 @@ class DocumentEditorViewModel(
             return
         }
         store.updateLastOpened(session.documentId)
-        val preferences = store.preferences.first()
+        val kept = preferences?.preference(EDITOR_PREFERENCES)?.let(DrawPreferences::decode)
         if (this.session !== session) return
         val controller = DrawViewController(
             document = open.document,
@@ -121,9 +126,15 @@ class DocumentEditorViewModel(
             sharedSession = open.session,
             engines = engines
         ).apply {
-            applyPreferences(preferences)
+            kept?.let(::applyPreferences)
         }
         session.controller = controller
+        // The preferences of the user kept as they change
+        preferences?.let { store ->
+            viewModelScope.launch {
+                controller.preferences.drop(1).collect { store.setPreference(EDITOR_PREFERENCES, it.encode()) }
+            }
+        }
         // The files arriving from the other devices are drawn
         viewModelScope.launch {
             open.resourcesReceived.collect { if (session.controller === controller) controller.onResourceAvailable(it) }
@@ -190,3 +201,6 @@ object DrawViewSessions {
         jobs.forEach { it.join() }
     }
 }
+
+/** The key of the preferences of the editor in a [PreferenceStore]. */
+private const val EDITOR_PREFERENCES = "drawview.editor"

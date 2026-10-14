@@ -1,7 +1,5 @@
 package io.github.valerioisufi.drawview.data
 
-import io.github.valerioisufi.drawview.canvas.controller.ToolPreset
-import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.DrawPage
@@ -17,7 +15,6 @@ import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.TextMarkupKind
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import io.github.valerioisufi.drawview.model.geometry.Rect
-import io.github.valerioisufi.drawview.model.text.TextDefaults
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -211,20 +208,12 @@ class KeyValueDocumentStoreTest {
     fun preferencesArePersisted() = runTest {
         val storage = InMemoryKeyValueStorage()
         val store = KeyValueDocumentStore(storage, scope = backgroundScope)
-        val presets = listOf(ToolPreset(1.5f, 0xFF00FF00.toInt(), StrokeTool.PRESSURE_PEN))
-        store.savePresets(Tool.INK_PEN, presets)
-        store.saveStylusOnlyMode(true)
-        store.saveLastSelectedTool(Tool.TEXT)
-        store.saveTextDefaults(TextDefaults(24f, 0xFFFF0000.toInt(), TextAlignment.CENTER))
-        store.saveSnapEnabled(false)
+        store.setPreference("drawview.editor", "{\"isStylusOnlyMode\":true}")
+        store.setPreference("other", "1")
+        store.setPreference("other", null)
 
-        val preferences = KeyValueDocumentStore(storage, scope = backgroundScope).preferences.first()
-        assertEquals(presets, preferences.presets.getValue(Tool.INK_PEN))
-        assertTrue(preferences.isStylusOnlyMode)
-        assertEquals(Tool.TEXT, preferences.lastSelectedTool)
-        assertEquals(TextDefaults(24f, 0xFFFF0000.toInt(), TextAlignment.CENTER), preferences.textDefaults)
-        assertFalse(preferences.isSnapEnabled)
-        // Tools without stored presets use the defaults
-        assertTrue(preferences.presets.getValue(Tool.INK_HIGHLIGHTER).isNotEmpty())
+        val reloaded = KeyValueDocumentStore(storage, scope = backgroundScope)
+        assertEquals("{\"isStylusOnlyMode\":true}", reloaded.preference("drawview.editor"))
+        assertNull(reloaded.preference("other"))
     }
 }

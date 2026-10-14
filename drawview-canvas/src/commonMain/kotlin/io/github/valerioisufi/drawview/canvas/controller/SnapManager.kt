@@ -36,7 +36,7 @@ class SnapManager(private val controller: DrawViewController) {
     fun updateEnabled(enabled: Boolean) {
         if (isEnabled == enabled) return
         isEnabled = enabled
-        controller.persist { saveSnapEnabled(enabled) }
+        controller.preferencesChanged()
     }
 
     internal fun applyPreferences(preferences: DrawPreferences) {
