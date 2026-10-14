@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.model.change
 
+import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawElement
 import io.github.valerioisufi.drawview.model.DrawImage
@@ -195,6 +196,51 @@ data class TextMarkupData(
     ).withOrder(order)
 }
 
+/**
+ * An element of a kind added by an application (see [DrawCustomElement]): its type, the format
+ * and the bytes of its value, its box.
+ */
+@Serializable
+@SerialName("custom")
+class CustomElementData(
+    override val id: String,
+    /** The identifier of its type (named so not to be the discriminator of the kinds of data). */
+    @SerialName("elementType") val type: String,
+    val version: Int,
+    val payload: ByteArray,
+    val x: Float,
+    val y: Float,
+    val width: Float,
+    val height: Float,
+    val rotation: Float = 0f,
+    override val order: ElementOrder? = null
+) : ElementData {
+    override fun toElement(modeller: StrokeModeller): DrawCustomElement = DrawCustomElement(type, id).withOrder(order).also {
+        it.version = version
+        it.payload = payload
+        it.x = x
+        it.y = y
+        it.width = width
+        it.height = height
+        it.rotation = rotation
+    }
+
+    fun copy(
+        id: String = this.id,
+        x: Float = this.x,
+        y: Float = this.y,
+        order: ElementOrder? = this.order
+    ) = CustomElementData(id, type, version, payload, x, y, width, height, rotation, order)
+
+    override fun equals(other: Any?): Boolean = other is CustomElementData && id == other.id && type == other.type &&
+        version == other.version && payload.contentEquals(other.payload) && x == other.x && y == other.y &&
+        width == other.width && height == other.height && rotation == other.rotation && order == other.order
+
+    override fun hashCode(): Int = id.hashCode() * 31 + payload.contentHashCode()
+
+    override fun toString(): String = "CustomElementData(id=$id, type=$type, version=$version, ${payload.size} bytes)"
+}
+
 private fun <T : DrawElement> T.withOrder(order: ElementOrder?): T = apply { this.order = order ?: ElementOrder.UNASSIGNED }
 
 /** The order of [this] as data: `null` when it has none yet. */
@@ -282,12 +328,15 @@ fun DrawTextMarkup.toData() = TextMarkupData(
     order = dataOrder
 )
 
+fun DrawCustomElement.toData() = CustomElementData(id, type, version, payload, x, y, width, height, rotation, dataOrder)
+
 fun DrawElement.toData(): ElementData = when (this) {
     is DrawStroke -> toData()
     is DrawText -> toData()
     is DrawImage -> toData()
     is DrawPdf -> toData()
     is DrawTextMarkup -> toData()
+    is DrawCustomElement -> toData()
 }
 
 /** The page with its content, the elements of every kind in their stacking order. */
@@ -308,6 +357,7 @@ fun ElementData.placement(): Placement? = when (this) {
     is StrokeData -> StrokePlacement(id, transform, order)
     is TextData -> BoxPlacement(id, x, y, width, height, rotation, fontSize, order, autoWidth)
     is ImageData -> BoxPlacement(id, x, y, width, height, rotation, order = order)
+    is CustomElementData -> BoxPlacement(id, x, y, width, height, rotation, order = order)
     is PdfData, is TextMarkupData -> null
 }
 
@@ -326,6 +376,10 @@ internal fun writeContent(element: DrawElement, data: ElementData) {
         element is DrawTextMarkup && data is TextMarkupData -> {
             element.kind = data.kind
             element.color = data.color
+        }
+        element is DrawCustomElement && data is CustomElementData -> {
+            element.version = data.version
+            element.payload = data.payload
         }
         else -> Unit
     }

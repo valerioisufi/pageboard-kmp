@@ -7,6 +7,7 @@ import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.data.db.BrushSettingsData
 import io.github.valerioisufi.drawview.data.db.currentTimeMillis
 import io.github.valerioisufi.drawview.ink.InkStrokeModeller
+import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawImage
 import io.github.valerioisufi.drawview.model.DrawPage
@@ -371,6 +372,8 @@ class KeyValueDocumentStore(
     override suspend fun savePdf(page: DrawPage, pdf: DrawPdf) = markPageModified(page)
 
     override suspend fun saveTextMarkup(page: DrawPage, markup: DrawTextMarkup) = markPageModified(page)
+
+    override suspend fun saveCustomElement(page: DrawPage, element: DrawCustomElement) = markPageModified(page)
 
     @OptIn(ExperimentalEncodingApi::class)
     override suspend fun saveResource(document: DrawDocument, resource: DrawResource) {

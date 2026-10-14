@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.canvas.controller
 
+import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawElement
 import io.github.valerioisufi.drawview.model.DrawImage
 import io.github.valerioisufi.drawview.model.DrawPage
@@ -66,6 +67,7 @@ class ChangePersister(
                 is DrawImage -> saveImage(page, element)
                 is DrawPdf -> savePdf(page, element)
                 is DrawTextMarkup -> saveTextMarkup(page, element)
+                is DrawCustomElement -> saveCustomElement(page, element)
             }
         }
     }

@@ -52,7 +52,13 @@ data class PageWithContent(
         parentColumn = "id",
         entityColumn = "pageId"
     )
-    val markups: List<TextMarkupEntity>
+    val markups: List<TextMarkupEntity>,
+
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "pageId"
+    )
+    val customs: List<CustomElementEntity>
 )
 
 /**
@@ -203,6 +209,15 @@ interface ImageDao {
 }
 
 /**
+ * Data Access Object for managing the elements of the types of the applications.
+ */
+@Dao
+interface CustomElementDao {
+    @Upsert
+    suspend fun upsert(element: CustomElementEntity)
+}
+
+/**
  * Data Access Object for managing PDF elements.
  */
 @Dao
@@ -310,6 +325,9 @@ interface PurgeDao {
 
     @Query("DELETE FROM images WHERE id IN (:ids)")
     suspend fun deleteImages(ids: List<String>)
+
+    @Query("DELETE FROM custom_elements WHERE id IN (:ids)")
+    suspend fun deleteCustomElements(ids: List<String>)
 
     @Query("DELETE FROM pdfs WHERE id IN (:ids)")
     suspend fun deletePdfs(ids: List<String>)

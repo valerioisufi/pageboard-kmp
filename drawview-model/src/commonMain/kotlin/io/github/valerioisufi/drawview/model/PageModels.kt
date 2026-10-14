@@ -255,6 +255,51 @@ class DrawImage(override val id: String = newElementId()) : RotatableItem, DrawE
 }
 
 /**
+ * An element of a kind added by an application or a library ([ElementType]: a table, a shape, a
+ * recording...). Its envelope is the model's: its identifier, its order, its stamps, its presence
+ * and its (rotated) box in page millimeters, so that it is moved, rotated, resized, selected,
+ * undone, stored and synchronized like the other elements. Its content is its type's: [payload],
+ * the value of its type in CBOR, of format [version].
+ *
+ * The model never reads the payload: a device without the type [type] keeps the element as it
+ * is, synchronizes it and draws a placeholder in its box.
+ */
+class DrawCustomElement(
+    /** The identifier of its type ([ElementType.id]). */
+    val type: String,
+    override val id: String = newElementId()
+) : RotatableItem, DrawElement {
+    override var order: ElementOrder = ElementOrder.UNASSIGNED
+    override var added: Stamp = Stamp.ZERO
+    override var removed: Stamp? = null
+    override var placed: Stamp = Stamp.ZERO
+    override var updated: Stamp = Stamp.ZERO
+
+    /** The format of [payload] ([ElementType.version] when it was written). */
+    @Volatile var version: Int = 1
+
+    /** The value of the element: CBOR of its type, replaced as a whole by every change of it. */
+    @Volatile var payload: ByteArray = ByteArray(0)
+
+    @Volatile override var x: Float = 0f
+    @Volatile override var y: Float = 0f
+    @Volatile override var width: Float = 0f
+    @Volatile override var height: Float = 0f
+    @Volatile override var rotation: Float = 0f
+
+    /** A copy of this element, the same on every device (e.g. a page copied while it is exported). */
+    fun copy(): DrawCustomElement = DrawCustomElement(type, id).also {
+        it.version = version
+        it.payload = payload
+        it.x = x
+        it.y = y
+        it.width = width
+        it.height = height
+        it.rotation = rotation
+    }
+}
+
+/**
  * A page of an imported PDF document rendered as the page background (its text can be marked,
  * see [DrawTextMarkup]).
  *
@@ -356,6 +401,9 @@ class DrawPage(
     /** Highlights, underlines and strikeouts of the text of [pdfs]. */
     val markups: List<DrawTextMarkup> get() = content.markups
 
+    /** The elements of the kinds added by the applications ([ElementType]). */
+    val customElements: List<DrawCustomElement> get() = content.customs
+
     /** Incremented on every content change (used by thumbnails and caches). */
     @Volatile var contentVersion: Int = 0
         private set
@@ -373,8 +421,11 @@ class DrawPage(
     // Elements (the changes of the document go through these)
     // ==========================================================
 
-    /** Every element of the page: PDF pages, images, strokes, texts and marks, each kind in order. */
-    fun elements(): List<DrawElement> = content.let { it.pdfs + it.images + it.strokes + it.texts + it.markups }
+    /**
+     * Every element of the page: PDF pages, images, strokes, texts, marks and the elements of the
+     * applications, each kind in order.
+     */
+    fun elements(): List<DrawElement> = content.let { it.pdfs + it.images + it.strokes + it.texts + it.markups + it.customs }
 
     /** The removed element [id] of this page (see [removedElements]), or `null`. */
     fun findRemoved(id: String): DrawElement? = removedElements.firstOrNull { it.id == id }
@@ -382,7 +433,7 @@ class DrawPage(
     /** The element [id] of this page, or `null`. */
     fun find(id: String): DrawElement? = content.let { c ->
         c.strokes.firstOrNull { it.id == id } ?: c.texts.firstOrNull { it.id == id } ?: c.images.firstOrNull { it.id == id }
-            ?: c.markups.firstOrNull { it.id == id } ?: c.pdfs.firstOrNull { it.id == id }
+            ?: c.markups.firstOrNull { it.id == id } ?: c.pdfs.firstOrNull { it.id == id } ?: c.customs.firstOrNull { it.id == id }
     }
 
     /**
@@ -406,6 +457,7 @@ class DrawPage(
             is DrawImage -> c.copy(images = c.images.inserted(element))
             is DrawPdf -> c.copy(pdfs = c.pdfs.inserted(element))
             is DrawTextMarkup -> c.copy(markups = c.markups.inserted(element))
+            is DrawCustomElement -> c.copy(customs = c.customs.inserted(element))
         }
     }
 
@@ -419,6 +471,7 @@ class DrawPage(
             is DrawImage -> c.images.indexOf(element)
             is DrawPdf -> c.pdfs.indexOf(element)
             is DrawTextMarkup -> c.markups.indexOf(element)
+            is DrawCustomElement -> c.customs.indexOf(element)
         }
         if (position < 0) return -1
         content = when (element) {
@@ -427,6 +480,7 @@ class DrawPage(
             is DrawImage -> c.copy(images = c.images.without(element))
             is DrawPdf -> c.copy(pdfs = c.pdfs.without(element))
             is DrawTextMarkup -> c.copy(markups = c.markups.without(element))
+            is DrawCustomElement -> c.copy(customs = c.customs.without(element))
         }
         return position
     }
@@ -441,6 +495,7 @@ class DrawPage(
         is DrawImage -> element.getRotatedBounds()
         is DrawPdf -> null
         is DrawTextMarkup -> element.boundsMm(this)
+        is DrawCustomElement -> element.getRotatedBounds()
     }
 
     /**
@@ -457,7 +512,8 @@ class DrawPage(
             background = background,
             widthMm = widthMm,
             heightMm = heightMm,
-            markups = c.markups
+            markups = c.markups,
+            customs = c.customs
         )
     }
 }
@@ -468,7 +524,8 @@ private data class PageElements(
     val texts: List<DrawText> = emptyList(),
     val images: List<DrawImage> = emptyList(),
     val pdfs: List<DrawPdf> = emptyList(),
-    val markups: List<DrawTextMarkup> = emptyList()
+    val markups: List<DrawTextMarkup> = emptyList(),
+    val customs: List<DrawCustomElement> = emptyList()
 )
 
 /**
@@ -482,15 +539,18 @@ class PageContentSnapshot(
     val background: PageBackground,
     val widthMm: Float,
     val heightMm: Float,
-    val markups: List<DrawTextMarkup> = emptyList()
+    val markups: List<DrawTextMarkup> = emptyList(),
+    /** The elements of the kinds added by the applications. */
+    val customs: List<DrawCustomElement> = emptyList()
 ) {
     fun rect(): Rect = Rect(0f, 0f, widthMm, heightMm)
 
     /**
      * The elements in the order they are painted, from the bottom: the PDF pages, the marks of
-     * their text, the images, the texts and the strokes, each kind in its stacking order.
+     * their text, the images, the elements of the applications, the texts and the strokes (the
+     * writing over everything else), each kind in its stacking order.
      */
-    val paintOrder: List<DrawElement> get() = pdfs + markups + images + texts + strokes
+    val paintOrder: List<DrawElement> get() = pdfs + markups + images + customs + texts + strokes
 
     /**
      * A copy of this content whose elements are copies too: the elements of a page are changed in
@@ -515,7 +575,8 @@ class PageContentSnapshot(
         heightMm = heightMm,
         markups = markups.map {
             DrawTextMarkup(it.id, it.resourceId, it.pdfPageIndex, it.pdfWidthPt, it.pdfHeightPt, it.startIndex, it.endIndex, it.text, it.rects, it.kind, it.color)
-        }
+        },
+        customs = customs.map { it.copy() }
     )
 }
 

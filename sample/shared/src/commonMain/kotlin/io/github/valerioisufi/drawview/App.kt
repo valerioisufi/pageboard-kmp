@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
+import io.github.valerioisufi.drawview.canvas.render.ElementRenderers
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
@@ -19,20 +20,28 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * DrawView sample application: the document library and the editor of the open document, with
- * the DrawView theme.
+ * the DrawView theme, and an element type of its own (the shapes, see [ShapeType]).
  *
  * @param commandHost the commands of the screen shown: the desktop gives them to the menu bar and
  *   to the shortcuts of its window.
  */
 @Composable
 fun App(commandHost: CommandHost = remember { CommandHost() }) {
-    // The PDF pages drawn by PDFium, the formulas by MicroTeX
-    val engines = remember { DrawViewEngines(pdfTiles = PdfiumEngine::createTileAdapter, formulas = LatexEngine.formulaRenderer) }
+    // The PDF pages drawn by PDFium, the formulas by MicroTeX, the shapes of the sample by their renderer
+    val engines = remember {
+        DrawViewEngines(
+            pdfTiles = PdfiumEngine::createTileAdapter,
+            formulas = LatexEngine.formulaRenderer,
+            elements = ElementRenderers(listOf(ShapeRenderer))
+        )
+    }
+    val shapes = remember { shapesExtension() }
     DrawViewTheme {
         CommandRoot(host = commandHost) {
             DocumentLibrary(
                 title = { Text(stringResource(Res.string.app_name), style = MaterialTheme.typography.titleLarge) },
                 engines = engines,
+                editorExtension = shapes,
                 modifier = Modifier.fillMaxSize()
             )
         }

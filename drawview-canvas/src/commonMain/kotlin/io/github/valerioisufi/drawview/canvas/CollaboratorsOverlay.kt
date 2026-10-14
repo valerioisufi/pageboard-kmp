@@ -22,6 +22,7 @@ import io.github.valerioisufi.drawview.canvas.controller.Collaborator
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.geometry.toCompose
 import io.github.valerioisufi.drawview.canvas.render.tile.TileRenderer
+import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawImage
 import io.github.valerioisufi.drawview.model.DrawStroke
 import io.github.valerioisufi.drawview.model.DrawText
@@ -101,6 +102,7 @@ internal class CollaboratorsOverlay {
                         }
                         is DrawText -> controller.tileManager.tileRenderer.textAdapter?.drawText(canvas, element, mmToScreen)
                         is DrawStroke -> painter.draw(canvas, element.mesh, mmToScreen)
+                        is DrawCustomElement -> controller.tileManager.tileRenderer.elements.draw(canvas, element, mmToScreen)
                         else -> Unit
                     }
                 }

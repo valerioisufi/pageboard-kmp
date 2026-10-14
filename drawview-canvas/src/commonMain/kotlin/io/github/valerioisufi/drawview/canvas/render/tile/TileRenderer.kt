@@ -13,7 +13,9 @@ import io.github.valerioisufi.drawview.canvas.TextMarkupPainter
 import io.github.valerioisufi.drawview.canvas.geometry.toCompose
 import io.github.valerioisufi.drawview.canvas.geometry.toComposeMatrix
 import io.github.valerioisufi.drawview.canvas.geometry.toModel
+import io.github.valerioisufi.drawview.canvas.render.ElementRenderers
 import io.github.valerioisufi.drawview.canvas.render.ImageCache
+import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawImage
 import io.github.valerioisufi.drawview.model.DrawPage
@@ -46,6 +48,9 @@ class TileRenderer(
 ) {
     /** Whether the element of an identifier is left out (drawn over the tiles by the editor, see [HiddenElements]). */
     var isHidden: (String) -> Boolean = { false }
+
+    /** Draws the elements of the types of the application (placeholders for the others). */
+    var elements: ElementRenderers = ElementRenderers.None
 
     /**
      * Renders the content of [page] for [tileKey] into [targetBitmap].
@@ -191,6 +196,12 @@ class TileRenderer(
                         text.drawText(canvas, element, mmToCanvas)
                     } catch (_: Throwable) {
                     }
+                }
+
+                is DrawCustomElement -> {
+                    if (isHidden(element.id)) continue
+                    if (!element.getRotatedBounds().overlaps(visibleMmBounds)) continue
+                    elements.draw(canvas, element, mmToCanvas)
                 }
 
                 is DrawStroke -> {

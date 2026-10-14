@@ -23,6 +23,7 @@ import io.github.valerioisufi.drawview.canvas.render.tile.TileManager
 import io.github.valerioisufi.drawview.canvas.tool.LassoMode
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawElement
 import io.github.valerioisufi.drawview.model.DrawImage
@@ -138,6 +139,9 @@ class DrawViewController(
     val textMarkupManager = TextMarkupManager(this)
     val snapManager = SnapManager(this)
 
+    /** The elements of the types added by the application. */
+    val customElementManager = CustomElementManager(this)
+
     // ==========================================================
     // Observable state
     // ==========================================================
@@ -221,6 +225,7 @@ class DrawViewController(
         require(session.document === document) { "The session of another document" }
         tileManager.tileRenderer.pdfAdapter = engines.pdfTiles()
         tileManager.tileRenderer.isHidden = hiddenElements::isHidden
+        tileManager.tileRenderer.elements = engines.elements
         if (storesChanges) session.addObserver(ChangePersister(::persist))
         session.addObserver(changeObserver)
         updatePageLayout()
@@ -464,7 +469,7 @@ class DrawViewController(
 
     private fun setShownByCollaborator(id: String, shown: Boolean) {
         val (page, element) = document.findElement(id) ?: return
-        if (element !is DrawStroke && element !is DrawText && element !is DrawImage) return
+        if (element !is DrawStroke && element !is DrawText && element !is DrawImage && element !is DrawCustomElement) return
         hiddenElements.setShownByCollaborator(id, shown)
         invalidatePageContent(page, page.boundsOf(element))
     }

@@ -9,6 +9,7 @@ import io.github.valerioisufi.drawview.data.repository.FileRepository
 import io.github.valerioisufi.drawview.data.repository.toDrawPreferences
 import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawImage
 import io.github.valerioisufi.drawview.model.DrawPage
@@ -410,5 +411,31 @@ class DrawDatabaseTest {
     @Test
     fun testFolderOperations() = runTest {
         checkFolderOperations(RoomDocumentStore(database))
+    }
+
+    @Test
+    fun anElementOfAnApplicationIsStoredWithItsBytes() = runTest {
+        val doc = repository.createDocument("Shapes", 210f, 297f, PageBackground.Solid())
+        val page = doc.pages[0]
+        val element = DrawCustomElement("com.example.shape").apply {
+            version = 2
+            payload = byteArrayOf(9, 8, 7)
+            x = 10f
+            y = 20f
+            width = 30f
+            height = 40f
+            rotation = 15f
+        }
+        page.add(element)
+        repository.saveCustomElement(page, element)
+
+        // Stored as it is: the store never reads the value
+        val loaded = assertNotNull(repository.loadDocument(doc.id)).pages[0].customElements.single()
+        assertEquals("com.example.shape", loaded.type)
+        assertEquals(2, loaded.version)
+        assertContentEquals(byteArrayOf(9, 8, 7), loaded.payload)
+        assertEquals(Rect(10f, 20f, 40f, 60f), Rect(loaded.x, loaded.y, loaded.x + loaded.width, loaded.y + loaded.height))
+        assertEquals(15f, loaded.rotation)
+        assertEquals(element.order, loaded.order)
     }
 }

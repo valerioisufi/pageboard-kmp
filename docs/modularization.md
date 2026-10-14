@@ -128,7 +128,9 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 | Responsibility | Class (module) | GRASP |
 |---|---|---|
 | The data of a kind of element: identifier, format version, serializer, migration | `ElementType<T>` (`drawview-model`) | Polymorphism, Protected Variations |
-| The element types a document knows | `ElementTypes` registry, given to `DocumentSession` and to the stores | Pure Fabrication, Indirection |
+| Reading the value of an element of a type | `ElementType.decode` (`drawview-model`): the model and the stores never read the payloads | Information Expert, Protected Variations |
+| The element types an application draws | `ElementRenderers` (`drawview-canvas`), given by `DrawViewEngines.elements` to the editors, the thumbnails and the export | Pure Fabrication, Indirection |
+| Adding an element of a type, replacing its value | `CustomElementManager` of the controller (`AddElements`, `UpdateElementContent`) | Creator, Controller |
 | An element whose type is not installed: kept, synced, undone, drawn as a placeholder | `CustomElementData` with an opaque payload, decoded when its type is registered | Protected Variations |
 | What every element has (identifier, page, order, stamps, presence, rotated box) | the element envelope (`DrawElement`, `RotatableItem`) | Information Expert |
 | Placing, selecting, snapping, erasing, moving between pages any element | the editor through the envelope (`PlaceElements`, `BoxPlacement`, selection of elements) | Information Expert, Polymorphism |
@@ -176,10 +178,14 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 * **Unknown types.** A device without the type keeps the element (stored, synced, undone, moved
   with a page), draws a placeholder in its box and does not let it be edited: it never destroys
   the elements of a device that has the type.
-* **Behaviours by layer.** `ElementRenderer` (draw in the box, bounds, hit test) in the canvas;
-  the tool creating an element and its editor through `EditorExtension`; `ElementExporter` in the
-  export. The built-in kinds get their renderers through the same registry, so `TileRenderer`,
-  `CollaboratorsOverlay`, the selection and the export stop switching on the kind.
+* **Behaviours by layer.** `ElementRenderer` (draw in the box, hit test) in the canvas, registered
+  in `ElementRenderers` (`DrawViewEngines.elements`); the tool creating an element and its editor
+  through `EditorExtension` and `CustomElementManager`; in the PDF export, the element drawn by its
+  renderer at 300 dpi. The model needs no registry: it never reads a payload.
+* **What the editor does with them.** Like the images: selected by a long press and by the lasso,
+  moved, rotated and resized by their box, snapped and snapped to, copied, pasted, removed, drawn
+  over the tiles while selected or moved by another device; the eraser leaves them (as it leaves
+  the images).
 * **What the built-in kinds keep.** Their data stays typed in the changes (`StrokeData`,
   `TextData`...): the texts merge contents made apart (`UpdateTexts`, content versions), the
   strokes are modelled again from their inputs, the marks follow the text of a PDF page; an
@@ -282,7 +288,7 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 | 2. Engines as ports | ports `FormulaRenderer` and `PdfTileAdapter`, `DrawViewEngines` (given to the controller, the library, the thumbnails; `LocalDrawViewEngines`); `drawview-ui`, `drawview-explorer` and `drawview-lecture` without `drawview-pdf` / `drawview-latex`; the text adapter clears its own caches; dead `LatexTileAdapter` removed | Done |
 | 3a. Model values | `drawview-platform` (files, native libraries, secure store, device, locks, time, SHA-256) and `drawview-model` created; `Point`, `Rect` and ARGB colors in the model, converted at the border of the canvas (`ComposeGeometry`); moved: stamps, versions, element order, fractional index, `Matrix2D`, `AffineTransform`, measures, hit testing, PDF page fit, stroke points, tools, meshes, outlines, brushes, PDF text layout, rich text parsing, text sizes, backgrounds, alignment, attachments | Done |
 | 3b. Headless state | `drawview-ink` (Google Ink, its bridges) and the `StrokeModeller` of the document (Kotlin in the model, Ink in the stores); `HiddenElements` and `ImageCache` in the canvas instead of flags and pixels in the elements; the content of a page one immutable value, copy-on-write pages and files, `DrawDocument.revision` and the read only of the session as `StateFlow`s (`observeChanges` in the composables); document, changes and session moved; `drawview-core` renamed `drawview-canvas` | Done |
-| 3c. Open element types | `ElementType`, `ElementTypes`, `CustomElementData`, `UpdateElementContent`, unknown elements; `ElementRenderer` registry used by the tiles, the overlays, the selection, the snapping and the eraser; a sample element type in `sample` | |
+| 3c. Open element types | `ElementType` (CBOR payloads, versions, migration), `DrawCustomElement`, `CustomElementData`, `UpdateElementContent`, unknown types kept as bytes; `ElementRenderer` / `ElementRenderers` (placeholders for the unknown types) in the tiles, the overlays, the selection, the snapping, the thumbnails, the image and PDF export; `CustomElementManager`; Room table `custom_elements`; the shapes of `sample` | Done |
 | 4. Storage and session | `drawview-store` / `drawview-store-room`; segregated ports; element persistence for every type; `EditorContext`; `drawview-session`; no global store | |
 | 5. Controller and API | `Viewport`, `CollaboratorPresence`, `EditorHost`, internal managers; explicit API strict and KDoc on every module; ABI dumps | |
 | 6. Sync and relay protocol | `drawview-sync-protocol`; sealed operations with their identity in clear | |
@@ -310,6 +316,11 @@ the sample running, and the modules it touches published to `mavenLocal()`.
 * The routing header of the protocol shows who writes a document and when to a relay.
 
 ## Left for later
+
+* The built-in kinds drawn through `ElementRenderer` too: they need what a box cannot express
+  (meshes, PDF pages, laid-out texts), so they keep their code in `TileRenderer` and the exporter.
+* `ElementExporter` (an element type written in a PDF as vectors): its elements are images at
+  300 dpi meanwhile.
 
 * The relay server and `RelayTransport`.
 * Running the CI workflow (the repository has no remote yet) and the first publication on Maven

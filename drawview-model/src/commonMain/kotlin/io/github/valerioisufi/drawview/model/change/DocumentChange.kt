@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.model.change
 
+import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawElement
 import io.github.valerioisufi.drawview.model.DrawImage
@@ -368,6 +369,11 @@ data class BoxPlacement(
                 element.width = width; element.height = height
                 element.rotation = rotation
             }
+            is DrawCustomElement -> {
+                element.x = x; element.y = y
+                element.width = width; element.height = height
+                element.rotation = rotation
+            }
             else -> Unit
         }
     }
@@ -378,6 +384,7 @@ fun placementOf(element: DrawElement): Placement? = when (element) {
     is DrawStroke -> StrokePlacement(element.id, element.transform, element.order)
     is DrawText -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation, element.fontSize, element.order, element.autoWidth)
     is DrawImage -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation, order = element.order)
+    is DrawCustomElement -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation, order = element.order)
     else -> null
 }
 
@@ -490,6 +497,36 @@ data class RestyleMarkups(val pageId: String, val styles: List<MarkupStyle>) : D
         hint?.let { context.contentChanged(it, inverse) }
         return inverse
     }
+}
+
+/**
+ * Replaces the value of the element [id] of a kind added by an application (see
+ * [DrawCustomElement]; of the page [pageId], or of the page another device moved it to) with
+ * [payload] of format [version]: the most recent value wins on every device.
+ */
+@Serializable
+@SerialName("updateContent")
+class UpdateElementContent(val pageId: String, val id: String, val version: Int, val payload: ByteArray) : DocumentChange {
+    override fun applyTo(context: ChangeContext): DocumentChange? {
+        val hint = context.document.anyPage(pageId)
+        val (page, element) = context.document.findAnyElement(id, hint) ?: return null
+        val custom = element as? DrawCustomElement ?: return null
+        if (custom.updated >= context.stamp) return null
+        val previous = UpdateElementContent(page.id, id, custom.version, custom.payload)
+        custom.version = version
+        custom.payload = payload
+        custom.updated = context.stamp
+        context.effects.saved(page, custom)
+        context.contentChanged(page, previous)
+        return previous
+    }
+
+    override fun equals(other: Any?): Boolean =
+        other is UpdateElementContent && pageId == other.pageId && id == other.id && version == other.version && payload.contentEquals(other.payload)
+
+    override fun hashCode(): Int = id.hashCode() * 31 + payload.contentHashCode()
+
+    override fun toString(): String = "UpdateElementContent(pageId=$pageId, id=$id, version=$version, ${payload.size} bytes)"
 }
 
 /**

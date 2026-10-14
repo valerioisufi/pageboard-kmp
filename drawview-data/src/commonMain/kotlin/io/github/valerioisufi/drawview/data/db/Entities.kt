@@ -206,6 +206,40 @@ data class ImageEntity(
     val updated: Stamp
 )
 
+/**
+ * An element of a type added by an application (see `DrawCustomElement`): its type, the format and
+ * the bytes of its value (CBOR, never read by the store), its box.
+ */
+@Entity(
+    tableName = "custom_elements",
+    foreignKeys = [
+        ForeignKey(
+            entity = PageEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["pageId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index("pageId")]
+)
+class CustomElementEntity(
+    @PrimaryKey val id: String,
+    val pageId: String,
+    val orderKey: ElementOrder,
+    val type: String,
+    val version: Int,
+    val payload: ByteArray,
+    val x: Float, // mm
+    val y: Float, // mm
+    val width: Float, // mm
+    val height: Float, // mm
+    val rotation: Float, // degrees
+    val added: Stamp,
+    val removed: Stamp?,
+    val placed: Stamp,
+    val updated: Stamp
+)
+
 @Entity(
     tableName = "pdfs",
     foreignKeys = [

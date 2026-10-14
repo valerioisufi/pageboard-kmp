@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    // The values of the shapes (an element type of the sample)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {

@@ -822,8 +822,14 @@ internal class CanvasGestureHandler(
         val page = controller.document.pages.getOrNull(pageIndex)
         val mm = controller.screenToPageMm(pageIndex, position)
         if (page != null && mm != null) {
-            val image = page.images.lastOrNull { it.containsPoint(mm.x, mm.y) }
-            if (image != null) controller.selectionManager.selectImage(pageIndex, image)
+            // The elements of the applications are painted over the images: looked for first
+            val elements = controller.engines.elements
+            val custom = page.customElements.lastOrNull { elements.hits(it, mm.x, mm.y) }
+            val image = if (custom == null) page.images.lastOrNull { it.containsPoint(mm.x, mm.y) } else null
+            when {
+                custom != null -> controller.selectionManager.selectCustomElement(pageIndex, custom)
+                image != null -> controller.selectionManager.selectImage(pageIndex, image)
+            }
         }
         controller.contextMenuPosition = position
         controller.cameraPhysics.stopAllAnimations()

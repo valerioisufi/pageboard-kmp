@@ -184,8 +184,8 @@ internal fun ExportDialog(
     val scope = rememberCoroutineScope()
 
     val exporter = when (format) {
-        ExportFormat.PDF -> PdfExporter(textAdapter, NotesFontFiles::bytes, creator = appName)
-        ExportFormat.PNG -> PageImageExporter(textAdapter, pdfTiles = engines.pdfTiles)
+        ExportFormat.PDF -> PdfExporter(textAdapter, NotesFontFiles::bytes, creator = appName, elements = engines.elements)
+        ExportFormat.PNG -> PageImageExporter(textAdapter, pdfTiles = engines.pdfTiles, elements = engines.elements)
     }
     val pages = if (pageOnScreen != null && (onlyPageOnScreen || format == ExportFormat.PNG)) setOf(pageOnScreen) else null
     val save = rememberFileSaver(stringResource(Res.string.export_save_title), exporter.mimeType) { target ->

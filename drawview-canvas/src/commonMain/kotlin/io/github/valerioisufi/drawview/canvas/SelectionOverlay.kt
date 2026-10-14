@@ -194,6 +194,9 @@ internal object SelectionOverlay {
                 val bitmap = renderer.imageOf(document, image) ?: continue
                 TileRenderer.drawImage(canvas, image, bitmap, frame.mmToScreen, imagePaint)
             }
+            for (element in selection.customs) {
+                renderer.elements.draw(canvas, element, frame.mmToScreen)
+            }
             val textAdapter = renderer.textAdapter
             if (textAdapter != null) {
                 for (text in selection.texts) {

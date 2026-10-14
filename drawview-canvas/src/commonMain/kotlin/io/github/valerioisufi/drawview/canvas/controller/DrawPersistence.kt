@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.canvas.controller
 
 import io.github.valerioisufi.drawview.canvas.tool.Tool
+import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawImage
 import io.github.valerioisufi.drawview.model.DrawPage
@@ -32,6 +33,9 @@ interface DrawPersistence {
     suspend fun saveImage(page: DrawPage, image: DrawImage) {}
     suspend fun savePdf(page: DrawPage, pdf: DrawPdf) {}
     suspend fun saveTextMarkup(page: DrawPage, markup: DrawTextMarkup) {}
+
+    /** Inserts or updates [element], of a kind added by an application, with its value. */
+    suspend fun saveCustomElement(page: DrawPage, element: DrawCustomElement) {}
 
     /** Registers [resource], a file owned by [document]. */
     suspend fun saveResource(document: DrawDocument, resource: DrawResource) {}

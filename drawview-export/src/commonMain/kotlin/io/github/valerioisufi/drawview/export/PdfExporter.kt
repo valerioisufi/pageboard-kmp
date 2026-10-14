@@ -11,12 +11,14 @@ import io.github.valerioisufi.drawview.canvas.platform.decodeImageBitmap
 import io.github.valerioisufi.drawview.canvas.platform.exifOrientation
 import io.github.valerioisufi.drawview.canvas.platform.isJpeg
 import io.github.valerioisufi.drawview.canvas.platform.jpegOrientation
+import io.github.valerioisufi.drawview.canvas.render.ElementRenderers
 import io.github.valerioisufi.drawview.canvas.render.tile.TextBlockLayout
 import io.github.valerioisufi.drawview.canvas.render.tile.TextFace
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.canvas.render.tile.TextWord
 import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.latex.LatexEngine
+import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawImage
 import io.github.valerioisufi.drawview.model.DrawPdf
 import io.github.valerioisufi.drawview.model.DrawResource
@@ -60,12 +62,15 @@ import kotlinx.coroutines.withContext
  *   (`NotesFontFiles`), or `null`: the texts are then images of them.
  * @param creator the name of the application making the PDF, written in it with the title of
  *   the document.
+ * @param elements draws the elements of the types of the application, written as images at
+ *   300 dpi (placeholders for the types it does not know).
  * @param createWriter the PDF written.
  */
 class PdfExporter(
     private val textAdapter: TextTileAdapter?,
     private val fontFiles: (suspend (TextFace) -> ByteArray?)? = null,
     private val creator: String? = null,
+    private val elements: ElementRenderers = ElementRenderers.None,
     private val createWriter: () -> PdfWriter = PdfiumEngine::create
 ) : DocumentExporter {
     override val extension: String get() = "pdf"
@@ -312,6 +317,7 @@ class PdfExporter(
                     is DrawPdf -> writePdfPage(element)
                     is DrawTextMarkup -> writeMarkup(element)
                     is DrawImage -> writeImage(element)
+                    is DrawCustomElement -> writeCustomElement(element)
                     is DrawText -> writeText(element)
                     is DrawStroke -> writeStroke(element)
                 }
@@ -374,6 +380,20 @@ class PdfExporter(
                 markup.rects.map { toPage.mapRect(TextMarkupPainter.markRect(it, markup.kind)) }
             }
             return writer.addMarkup(kind, markup.rects.map(toPage::mapRect), markup.color, drawn)
+        }
+
+        /** [element] drawn by its renderer at 300 dpi, without its rotation, then placed. */
+        private fun writeCustomElement(element: DrawCustomElement): Boolean {
+            if (element.width <= 0f || element.height <= 0f) return true
+            val scale = minOf(TEXT_PX_PER_MM, MAX_TEXT_SIDE / max(element.width, element.height))
+            val width = ceil(element.width * scale).toInt().coerceAtLeast(1)
+            val height = ceil(element.height * scale).toInt().coerceAtLeast(1)
+            val bitmap = ImageBitmap(width, height)
+            val upright = element.copy().apply { x = 0f; y = 0f; rotation = 0f }
+            elements.draw(Canvas(bitmap), upright, Matrix2D().postScale(scale, scale))
+            val pixels = IntArray(width * height).also { bitmap.readPixels(it) }
+            if (pixels.all { it ushr 24 == 0 }) return true
+            return writer.drawImage(pixels, width, height, boxToPage(element.x, element.y, element.width, element.height, element.rotation))
         }
 
         private fun writeImage(image: DrawImage): Boolean {

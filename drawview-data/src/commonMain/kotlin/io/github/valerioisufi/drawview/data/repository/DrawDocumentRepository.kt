@@ -6,6 +6,7 @@ import io.github.valerioisufi.drawview.canvas.controller.DrawPreferences
 import io.github.valerioisufi.drawview.canvas.controller.ToolPreset
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.data.buildDrawPreferences
+import io.github.valerioisufi.drawview.data.db.CustomElementEntity
 import io.github.valerioisufi.drawview.data.db.DocumentEntity
 import io.github.valerioisufi.drawview.data.db.DrawDatabase
 import io.github.valerioisufi.drawview.data.db.ImageEntity
@@ -23,6 +24,7 @@ import io.github.valerioisufi.drawview.data.db.UserPreferencesEntity
 import io.github.valerioisufi.drawview.data.db.currentTimeMillis
 import io.github.valerioisufi.drawview.data.toBrushSettings
 import io.github.valerioisufi.drawview.ink.InkStrokeModeller
+import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawElement
 import io.github.valerioisufi.drawview.model.DrawImage
@@ -74,6 +76,7 @@ class DrawDocumentRepository(
     private val strokeDao = database.strokeDao()
     private val textDao = database.textDao()
     private val imageDao = database.imageDao()
+    private val customElementDao = database.customElementDao()
     private val pdfDao = database.pdfDao()
     private val textMarkupDao = database.textMarkupDao()
     private val resourceDao = database.resourceDao()
@@ -141,7 +144,8 @@ class DrawDocumentRepository(
                     pageWithContent.texts.map { e -> mapText(e).stored(e.orderKey, e.added, e.removed, e.placed, e.updated) } +
                     pageWithContent.images.map { e -> mapImage(e).stored(e.orderKey, e.added, e.removed, e.placed, e.updated) } +
                     pageWithContent.pdfs.map { e -> mapPdf(e).stored(e.orderKey, e.added, e.removed, e.placed, e.updated) } +
-                    pageWithContent.markups.mapNotNull { e -> mapTextMarkup(e)?.stored(e.orderKey, e.added, e.removed, e.placed, e.updated) }
+                    pageWithContent.markups.mapNotNull { e -> mapTextMarkup(e)?.stored(e.orderKey, e.added, e.removed, e.placed, e.updated) } +
+                    pageWithContent.customs.map { e -> mapCustomElement(e).stored(e.orderKey, e.added, e.removed, e.placed, e.updated) }
                 // The removed elements are kept, hidden
                 for (element in elements.sortedBy { it.order }) {
                     if (element.removed != null) page.removedElements.add(element) else page.add(element)
@@ -205,6 +209,16 @@ class DrawDocumentRepository(
         color = entity.color
         fontSize = entity.fontSize
         contentVersions = entity.contentVersions
+    }
+
+    private fun mapCustomElement(entity: CustomElementEntity) = DrawCustomElement(entity.type, entity.id).apply {
+        version = entity.version
+        payload = entity.payload
+        x = entity.x
+        y = entity.y
+        width = entity.width
+        height = entity.height
+        rotation = entity.rotation
     }
 
     private fun mapImage(entity: ImageEntity) = DrawImage(entity.id).apply {
@@ -301,6 +315,7 @@ class DrawDocumentRepository(
                     is DrawImage -> saveImage(page, element)
                     is DrawPdf -> savePdf(page, element)
                     is DrawTextMarkup -> saveTextMarkup(page, element)
+                    is DrawCustomElement -> saveCustomElement(page, element)
                 }
             }
         }
@@ -351,6 +366,7 @@ class DrawDocumentRepository(
         purgeDao.deleteStrokes(elements.filterIsInstance<DrawStroke>().map { it.id })
         purgeDao.deleteTexts(elements.filterIsInstance<DrawText>().map { it.id })
         purgeDao.deleteImages(elements.filterIsInstance<DrawImage>().map { it.id })
+        purgeDao.deleteCustomElements(elements.filterIsInstance<DrawCustomElement>().map { it.id })
         purgeDao.deletePdfs(elements.filterIsInstance<DrawPdf>().map { it.id })
         purgeDao.deleteTextMarkups(elements.filterIsInstance<DrawTextMarkup>().map { it.id })
     }
@@ -441,6 +457,28 @@ class DrawDocumentRepository(
                 removed = image.removed,
                 placed = image.placed,
                 updated = image.updated
+            )
+        )
+    }
+
+    override suspend fun saveCustomElement(page: DrawPage, element: DrawCustomElement) = withContext(Dispatchers.IO) {
+        customElementDao.upsert(
+            CustomElementEntity(
+                id = element.id,
+                pageId = page.id,
+                orderKey = element.order,
+                type = element.type,
+                version = element.version,
+                payload = element.payload,
+                x = element.x,
+                y = element.y,
+                width = element.width,
+                height = element.height,
+                rotation = element.rotation,
+                added = element.added,
+                removed = element.removed,
+                placed = element.placed,
+                updated = element.updated
             )
         )
     }

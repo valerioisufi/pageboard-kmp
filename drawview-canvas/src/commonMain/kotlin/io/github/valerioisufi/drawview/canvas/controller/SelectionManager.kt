@@ -9,6 +9,7 @@ import io.github.valerioisufi.drawview.canvas.FrameStyle
 import io.github.valerioisufi.drawview.canvas.geometry.toCompose
 import io.github.valerioisufi.drawview.canvas.render.HiddenElements
 import io.github.valerioisufi.drawview.canvas.tool.LassoMode
+import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawElement
 import io.github.valerioisufi.drawview.model.DrawImage
 import io.github.valerioisufi.drawview.model.DrawPage
@@ -45,7 +46,9 @@ class SelectionGroup(
     val texts: MutableList<DrawText> = mutableListOf(),
     val images: MutableList<DrawImage> = mutableListOf(),
     var boundingBox: Rect = Rect.Zero,
-    var pageIndex: Int = -1
+    var pageIndex: Int = -1,
+    /** The elements of the types of the applications, placed by their box like the images. */
+    val customs: MutableList<DrawCustomElement> = mutableListOf()
 ) {
     /** Live transformation (page millimeters of the source page). */
     val transform = Matrix2D()
@@ -53,10 +56,11 @@ class SelectionGroup(
     /** Rotation of the selection frame (single rotated text/image). */
     var baseRotation: Float = 0f
 
-    fun isEmpty(): Boolean = images.isEmpty() && strokes.isEmpty() && texts.isEmpty()
+    fun isEmpty(): Boolean = images.isEmpty() && strokes.isEmpty() && texts.isEmpty() && customs.isEmpty()
 
-    val isSingleText: Boolean get() = texts.size == 1 && images.isEmpty() && strokes.isEmpty()
-    val isSingleImage: Boolean get() = images.size == 1 && texts.isEmpty() && strokes.isEmpty()
+    val isSingleText: Boolean get() = texts.size == 1 && images.isEmpty() && strokes.isEmpty() && customs.isEmpty()
+    val isSingleImage: Boolean get() = images.size == 1 && texts.isEmpty() && strokes.isEmpty() && customs.isEmpty()
+    val isSingleCustom: Boolean get() = customs.size == 1 && images.isEmpty() && texts.isEmpty() && strokes.isEmpty()
 
     /**
      * AABB in millimeters of the whole selection, accounting for [baseRotation].
@@ -74,7 +78,7 @@ class SelectionGroup(
         originalPlacements = elements().mapNotNull { placementOf(it) }.associateBy { it.id }
     }
 
-    fun elements(): List<DrawElement> = strokes + texts + images
+    fun elements(): List<DrawElement> = strokes + texts + images + customs
 
     /** Leaves the elements of the selection out of the tiles of [hidden] while [dragging]. */
     fun setDragging(hidden: HiddenElements, dragging: Boolean) {
@@ -170,6 +174,12 @@ class SelectionManager(private val controller: DrawViewController) {
                 include(image.getRotatedBounds())
             }
         }
+        for (element in page.customElements) {
+            if (isItemInsideLasso(element.centerX, element.centerY, element.getRotatedBounds(), lasso, lassoBox)) {
+                selection.customs.add(element)
+                include(element.getRotatedBounds())
+            }
+        }
 
         if (selection.isEmpty()) return
         when {
@@ -182,6 +192,11 @@ class SelectionManager(private val controller: DrawViewController) {
                 val i = selection.images[0]
                 selection.boundingBox = Rect(i.x, i.y, i.x + i.width, i.y + i.height)
                 selection.baseRotation = i.rotation
+            }
+            selection.isSingleCustom -> {
+                val e = selection.customs[0]
+                selection.boundingBox = Rect(e.x, e.y, e.x + e.width, e.y + e.height)
+                selection.baseRotation = e.rotation
             }
             else -> selection.boundingBox = Rect(left, top, right, bottom)
         }
@@ -205,6 +220,20 @@ class SelectionManager(private val controller: DrawViewController) {
             boundingBox = Rect(image.x, image.y, image.x + image.width, image.y + image.height),
             pageIndex = pageIndex
         ).apply { baseRotation = image.rotation }
+        setSelection(selection, page)
+    }
+
+    /**
+     * Selects a single element of a type of the application (a tap on it).
+     */
+    fun selectCustomElement(pageIndex: Int, element: DrawCustomElement) {
+        clearSelection()
+        val page = controller.document.pages.getOrNull(pageIndex) ?: return
+        val selection = SelectionGroup(
+            customs = mutableListOf(element),
+            boundingBox = Rect(element.x, element.y, element.x + element.width, element.y + element.height),
+            pageIndex = pageIndex
+        ).apply { baseRotation = element.rotation }
         setSelection(selection, page)
     }
 
@@ -418,11 +447,11 @@ class SelectionManager(private val controller: DrawViewController) {
                 )
             )
         }
-        for (image in selection.images) {
-            val c = finalTransform.mapPoint(image.centerX, image.centerY)
-            val width = image.width * scale
-            val height = image.height * scale
-            placements.add(BoxPlacement(image.id, c.x - width / 2f, c.y - height / 2f, width, height, (image.rotation + angle) % 360f, order = orderOf(image)))
+        for (item in selection.images + selection.customs) {
+            val c = finalTransform.mapPoint(item.centerX, item.centerY)
+            val width = item.width * scale
+            val height = item.height * scale
+            placements.add(BoxPlacement(item.id, c.x - width / 2f, c.y - height / 2f, width, height, (item.rotation + angle) % 360f, order = orderOf(item as DrawElement)))
         }
         // A text resized live goes back to where the change starts from (its undo)
         if (textResized) {
@@ -446,9 +475,15 @@ class SelectionManager(private val controller: DrawViewController) {
                 selection.boundingBox = Rect(i.x, i.y, i.x + i.width, i.y + i.height)
                 selection.baseRotation = i.rotation
             }
+            selection.isSingleCustom -> {
+                val e = selection.customs[0]
+                selection.boundingBox = Rect(e.x, e.y, e.x + e.width, e.y + e.height)
+                selection.baseRotation = e.rotation
+            }
             else -> {
                 selection.baseRotation = 0f
                 val rects = selection.images.map { it.getRotatedBounds() } +
+                        selection.customs.map { it.getRotatedBounds() } +
                         selection.texts.map { it.getRotatedBounds() } +
                         selection.strokes.map { it.bounds }
                 selection.boundingBox = Rect(
@@ -481,7 +516,8 @@ class SelectionManager(private val controller: DrawViewController) {
             texts = selection.texts.toMutableList(),
             images = selection.images.toMutableList(),
             boundingBox = selection.boundingBox,
-            pageIndex = selection.pageIndex
+            pageIndex = selection.pageIndex,
+            customs = selection.customs.toMutableList()
         ).apply { baseRotation = selection.baseRotation }
         clearSelection()
     }
@@ -493,7 +529,8 @@ class SelectionManager(private val controller: DrawViewController) {
             texts = selection.texts.toMutableList(),
             images = selection.images.toMutableList(),
             boundingBox = selection.boundingBox,
-            pageIndex = selection.pageIndex
+            pageIndex = selection.pageIndex,
+            customs = selection.customs.toMutableList()
         ).apply { baseRotation = selection.baseRotation }
         deleteSelection()
     }
@@ -547,14 +584,27 @@ class SelectionManager(private val controller: DrawViewController) {
             }
         }
 
-        controller.session.submit(AddElements.of(targetPage, pastedStrokes + pastedTexts + pastedImages))
+        val pastedCustoms = copied.customs.map { original ->
+            DrawCustomElement(original.type).apply {
+                version = original.version
+                payload = original.payload
+                x = original.x + offsetX
+                y = original.y + offsetY
+                width = original.width
+                height = original.height
+                rotation = original.rotation
+            }
+        }
+
+        controller.session.submit(AddElements.of(targetPage, pastedStrokes + pastedTexts + pastedImages + pastedCustoms))
 
         val selection = SelectionGroup(
             strokes = pastedStrokes.toMutableList(),
             texts = pastedTexts.toMutableList(),
             images = pastedImages.toMutableList(),
             boundingBox = copied.boundingBox.translate(offsetX, offsetY),
-            pageIndex = targetIndex
+            pageIndex = targetIndex,
+            customs = pastedCustoms.toMutableList()
         ).apply { baseRotation = copied.baseRotation }
         setSelection(selection, targetPage)
     }
