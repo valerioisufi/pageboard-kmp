@@ -54,20 +54,20 @@ final class io.github.valerioisufi.drawview.sync.lan/LanSync { // io.github.vale
     constructor <init>(io.github.valerioisufi.drawview.sync/SyncEngine, io.github.valerioisufi.drawview.sync.lan/LanDiscovery, kotlinx.coroutines/CoroutineScope, kotlin/String, kotlin/Function0<kotlin/String>, io.github.valerioisufi.drawview.sync.lan/LanTransport = ..., kotlin/Long = ..., kotlin/Long = ...) // io.github.valerioisufi.drawview.sync.lan/LanSync.<init>|<init>(io.github.valerioisufi.drawview.sync.SyncEngine;io.github.valerioisufi.drawview.sync.lan.LanDiscovery;kotlinx.coroutines.CoroutineScope;kotlin.String;kotlin.Function0<kotlin.String>;io.github.valerioisufi.drawview.sync.lan.LanTransport;kotlin.Long;kotlin.Long){}[0]
 
     final suspend fun announce() // io.github.valerioisufi.drawview.sync.lan/LanSync.announce|announce(){}[0]
-    final suspend fun join(io.github.valerioisufi.drawview.sync/Invitation) // io.github.valerioisufi.drawview.sync.lan/LanSync.join|join(io.github.valerioisufi.drawview.sync.Invitation){}[0]
+    final suspend fun join(io.github.valerioisufi.drawview.sync.protocol/Invitation) // io.github.valerioisufi.drawview.sync.lan/LanSync.join|join(io.github.valerioisufi.drawview.sync.protocol.Invitation){}[0]
     final suspend fun refresh(kotlin/Boolean = ...) // io.github.valerioisufi.drawview.sync.lan/LanSync.refresh|refresh(kotlin.Boolean){}[0]
     final suspend fun start() // io.github.valerioisufi.drawview.sync.lan/LanSync.start|start(){}[0]
     final suspend fun stop() // io.github.valerioisufi.drawview.sync.lan/LanSync.stop|stop(){}[0]
 }
 
-final class io.github.valerioisufi.drawview.sync.lan/LanTransport : io.github.valerioisufi.drawview.sync/SyncTransport { // io.github.valerioisufi.drawview.sync.lan/LanTransport|null[0]
+final class io.github.valerioisufi.drawview.sync.lan/LanTransport : io.github.valerioisufi.drawview.sync.protocol/SyncTransport { // io.github.valerioisufi.drawview.sync.lan/LanTransport|null[0]
     constructor <init>(kotlinx.coroutines/CoroutineScope, kotlin/Int = ...) // io.github.valerioisufi.drawview.sync.lan/LanTransport.<init>|<init>(kotlinx.coroutines.CoroutineScope;kotlin.Int){}[0]
 
     final val incoming // io.github.valerioisufi.drawview.sync.lan/LanTransport.incoming|{}incoming[0]
-        final fun <get-incoming>(): kotlinx.coroutines.flow/Flow<io.github.valerioisufi.drawview.sync/SyncChannel> // io.github.valerioisufi.drawview.sync.lan/LanTransport.incoming.<get-incoming>|<get-incoming>(){}[0]
+        final fun <get-incoming>(): kotlinx.coroutines.flow/Flow<io.github.valerioisufi.drawview.sync.protocol/SyncChannel> // io.github.valerioisufi.drawview.sync.lan/LanTransport.incoming.<get-incoming>|<get-incoming>(){}[0]
 
     final fun close() // io.github.valerioisufi.drawview.sync.lan/LanTransport.close|close(){}[0]
-    final suspend fun connect(kotlin/String): io.github.valerioisufi.drawview.sync/SyncChannel // io.github.valerioisufi.drawview.sync.lan/LanTransport.connect|connect(kotlin.String){}[0]
+    final suspend fun connect(kotlin/String): io.github.valerioisufi.drawview.sync.protocol/SyncChannel // io.github.valerioisufi.drawview.sync.lan/LanTransport.connect|connect(kotlin.String){}[0]
     final suspend fun start(): kotlin/Int // io.github.valerioisufi.drawview.sync.lan/LanTransport.start|start(){}[0]
 
     final object Companion // io.github.valerioisufi.drawview.sync.lan/LanTransport.Companion|null[0]

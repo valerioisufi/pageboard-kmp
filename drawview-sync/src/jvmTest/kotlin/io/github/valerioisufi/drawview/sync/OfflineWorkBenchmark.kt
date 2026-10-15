@@ -20,6 +20,7 @@ import io.github.valerioisufi.drawview.store.room.RoomDocumentStore
 import io.github.valerioisufi.drawview.store.room.db.DrawDatabase
 import io.github.valerioisufi.drawview.store.room.db.createDrawDatabase
 import io.github.valerioisufi.drawview.store.room.db.getInMemoryDatabaseBuilder
+import io.github.valerioisufi.drawview.sync.protocol.InMemoryNetwork
 import java.io.File
 import kotlin.math.sin
 import kotlin.random.Random

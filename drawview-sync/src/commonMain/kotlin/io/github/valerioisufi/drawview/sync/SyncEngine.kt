@@ -14,6 +14,21 @@ import io.github.valerioisufi.drawview.model.change.snapshot
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.store.OpenDocument
 import io.github.valerioisufi.drawview.store.OpenDocuments
+import io.github.valerioisufi.drawview.sync.protocol.DeviceIdentity
+import io.github.valerioisufi.drawview.sync.protocol.DocumentKey
+import io.github.valerioisufi.drawview.sync.protocol.Invitation
+import io.github.valerioisufi.drawview.sync.protocol.Member
+import io.github.valerioisufi.drawview.sync.protocol.Membership
+import io.github.valerioisufi.drawview.sync.protocol.OpenFrame
+import io.github.valerioisufi.drawview.sync.protocol.OperationSeal
+import io.github.valerioisufi.drawview.sync.protocol.PROTOCOL_VERSION
+import io.github.valerioisufi.drawview.sync.protocol.Role
+import io.github.valerioisufi.drawview.sync.protocol.SealedOperation
+import io.github.valerioisufi.drawview.sync.protocol.SecureChannel
+import io.github.valerioisufi.drawview.sync.protocol.SignedMembership
+import io.github.valerioisufi.drawview.sync.protocol.SyncChannel
+import io.github.valerioisufi.drawview.sync.protocol.SyncException
+import io.github.valerioisufi.drawview.sync.protocol.SyncTransport
 import kotlin.math.min
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -196,7 +211,7 @@ public class SyncEngine(
             )
             PresenceMessage(part, from, textKept, selectionKept) to links.filter { it.documentId == presence.documentId && it.authorized }
         }
-        targets.forEach { it.outbox.trySend(message) }
+        targets.forEach { it.trySend(message) }
     }
 
     // ==========================================================
@@ -268,7 +283,7 @@ public class SyncEngine(
         if (state?.owner == device && state.members != null) {
             sharing.end(documentId)?.let { onMembershipChanged(documentId, it, from = null) }
         } else {
-            linksOf(documentId).filter { it.authorized }.forEach { it.outbox.trySend(Leave) }
+            linksOf(documentId).filter { it.authorized }.forEach { it.trySend(Leave) }
         }
         sharing.forget(documentId)
         joinStates.update { it - documentId }
@@ -308,7 +323,7 @@ public class SyncEngine(
     /** Serves a channel another device opened to this one (see [SyncTransport.incoming]). */
     public fun accept(channel: SyncChannel): Job = scope.launch {
         try {
-            val open = channel.receive()?.let(SyncCodec::decodeOpen) ?: return@launch
+            val open = channel.receive()?.let(OpenFrame::decode) ?: return@launch
             if (open.protocol != PROTOCOL_VERSION) {
                 otherVersion.value = true
                 return@launch
@@ -332,7 +347,7 @@ public class SyncEngine(
     public fun connect(channel: SyncChannel, documentId: String, key: DocumentKey): Job = scope.launch {
         try {
             val match = sharing.match(key.tag)?.takeIf { it.documentId == documentId } ?: return@launch
-            channel.send(SyncCodec.encodeOpen(OpenFrame(PROTOCOL_VERSION, key.tag)))
+            channel.send(OpenFrame(PROTOCOL_VERSION, key.tag).encode())
             val secure = SecureChannel.of(channel, key)
             run(Link(secure, match, opened = true), acquire(documentId))
         } catch (_: SyncException) {
@@ -429,8 +444,15 @@ public class SyncEngine(
         /** When the last frame came (it says the connection is alive). */
         var receivedAt = currentTimeMillis()
 
-        /** The messages to send, in order. */
-        val outbox = Channel<SyncMessage>(Channel.UNLIMITED)
+        /** What to send, in order. */
+        val outbox = Channel<Outgoing>(Channel.UNLIMITED)
+
+        /** Seals and opens the operations with the key of this connection. */
+        val seal = OperationSeal(match.key)
+
+        suspend fun send(message: SyncMessage) = outbox.send(OutgoingMessage(message))
+
+        fun trySend(message: SyncMessage) = outbox.trySend(OutgoingMessage(message))
 
         /** The last operation of every replica the other device has (sent, or it had them). */
         val sent = mutableMapOf<String, Long>()
@@ -463,9 +485,16 @@ public class SyncEngine(
 
         /** [operation] was applied to the document (on its thread). */
         fun offer(operation: Operation) {
-            if (caughtUp) outbox.trySend(Operations(listOf(operation))) else waiting.add(operation)
+            if (caughtUp) outbox.trySend(OutgoingOperations(listOf(operation))) else waiting.add(operation)
         }
     }
+
+    /** What a connection sends: a message, or operations applied here (sealed when they are sent). */
+    private sealed interface Outgoing
+
+    private class OutgoingMessage(val message: SyncMessage) : Outgoing
+
+    private class OutgoingOperations(val operations: List<Operation>) : Outgoing
 
     /** A download of the file of a resource: [received] of its bytes (it goes on over another connection). */
     private class Download(val bytes: ByteArray) {
@@ -484,7 +513,7 @@ public class SyncEngine(
         val transfers = attachments?.let { scope.launch { for (ask in link.attachmentRequests) sendAttachment(link, ask) } }
         try {
             if (link.match is TagMatch.Joining) joinStates.update { it + (link.documentId to JoinStatus.LOOKING_FOR_OWNER) }
-            link.outbox.send(Challenge(link.nonce))
+            link.send(Challenge(link.nonce))
             while (true) {
                 // Closed, or silent for too long: lost
                 val frame = (if (keepAliveMs > 0) withTimeoutOrNull(keepAliveMs * 3) { link.channel.receive() } else link.channel.receive()) ?: break
@@ -531,34 +560,35 @@ public class SyncEngine(
     /** Sends the messages of [link], the operations the other device has not got only. */
     private suspend fun send(link: Link) {
         try {
-            var held: SyncMessage? = null
+            var held: Outgoing? = null
             while (true) {
-                val message: SyncMessage = held ?: if (keepAliveMs > 0) {
+                val item: Outgoing = held ?: if (keepAliveMs > 0) {
                     // Nothing to send for a while: still there
                     val received = withTimeoutOrNull(keepAliveMs) { link.outbox.receiveCatching() }
-                    if (received == null) Ping else received.getOrNull() ?: break
+                    if (received == null) OutgoingMessage(Ping) else received.getOrNull() ?: break
                 } else {
                     link.outbox.receiveCatching().getOrNull() ?: break
                 }
                 held = null
-                val frame = if (message is Operations) {
-                    // With the operations waiting after them
-                    val batch = message.operations.toMutableList()
-                    while (batch.size < MAX_BATCH) {
-                        val next = link.outbox.tryReceive().getOrNull() ?: break
-                        if (next is Operations) batch += next.operations else {
-                            held = next
-                            break
+                val frame = when (item) {
+                    is OutgoingOperations -> {
+                        // With the operations waiting after them
+                        val batch = item.operations.toMutableList()
+                        while (batch.size < MAX_BATCH) {
+                            val next = link.outbox.tryReceive().getOrNull() ?: break
+                            if (next is OutgoingOperations) batch += next.operations else {
+                                held = next
+                                break
+                            }
                         }
+                        val missing = batch.filter { operation ->
+                            val id = operation.id
+                            (id.sequence > (link.sent[id.replica] ?: 0L)).also { if (it) link.sent[id.replica] = id.sequence }
+                        }
+                        if (missing.isEmpty()) continue
+                        Operations(missing.map { link.seal.seal(it.id.replica, it.id.sequence, SyncCodec.encodeOperation(it)) })
                     }
-                    val missing = batch.filter { operation ->
-                        val id = operation.id
-                        (id.sequence > (link.sent[id.replica] ?: 0L)).also { if (it) link.sent[id.replica] = id.sequence }
-                    }
-                    if (missing.isEmpty()) continue
-                    Operations(missing)
-                } else {
-                    message
+                    is OutgoingMessage -> item.message
                 }
                 link.channel.send(SyncCodec.encode(frame))
                 if (frame is AttachmentPart) link.attachmentParts.release()
@@ -584,7 +614,7 @@ public class SyncEngine(
             Leave -> onLeave(link)
             is KnownVersions -> onKnownVersions(link, message.versions)
             is Snapshot -> onSnapshot(link, message.snapshot, message.base)
-            is Operations -> onOperations(link, message.operations)
+            is Operations -> onOperations(link, message.operations.map { open(link, it) })
             is ResourceRequest -> onResourceRequest(link, message.asks)
             is ResourceChunk -> onResourceChunk(link, message)
             is ResourceMissing -> link.requested.remove(message.id)
@@ -606,7 +636,7 @@ public class SyncEngine(
         val state = sharing.stateOf(link.documentId)
         val vector = link.sync?.open?.edit { it.versionVector }
         val proof = identity.sign(helloProof(peerNonce, link.tag, replica, device))
-        link.outbox.send(
+        link.send(
             Hello(
                 replica = replica,
                 name = deviceName(),
@@ -635,7 +665,7 @@ public class SyncEngine(
             is TagMatch.Member -> {
                 val membership = sharing.membershipOf(link.documentId)
                 val mine = membership?.version ?: 0
-                sharing.stateOf(link.documentId)?.membership?.takeIf { mine > hello.membershipVersion }?.let { link.outbox.send(MembershipMessage(it)) }
+                sharing.stateOf(link.documentId)?.membership?.takeIf { mine > hello.membershipVersion }?.let { link.send(MembershipMessage(it)) }
                 if (hello.membershipVersion > mine) link.waitingMembership = true else authorize(link)
             }
         }
@@ -653,7 +683,7 @@ public class SyncEngine(
         }
         link.authorized = true
         // Still on an older key: the current one
-        if (hello.epoch < state.epoch) state.key?.let { link.outbox.send(KeyUpdate(state.epoch, it.encode())) }
+        if (hello.epoch < state.epoch) state.key?.let { link.send(KeyUpdate(state.epoch, it.encode())) }
         if (hello.hasDocument) sharing.recordVersions(link.documentId, mapOf(hello.device to hello.versionVector))
         workWith(link, hello)
     }
@@ -715,7 +745,7 @@ public class SyncEngine(
     /** The other device has an older membership than this one: the more recent one. */
     private suspend fun onMembershipQuery(link: Link, version: Long) {
         val state = sharing.stateOf(link.documentId) ?: return
-        if ((state.members?.version ?: 0) > version) state.membership?.let { link.outbox.send(MembershipMessage(it)) }
+        if ((state.members?.version ?: 0) > version) state.membership?.let { link.send(MembershipMessage(it)) }
     }
 
     /**
@@ -727,7 +757,7 @@ public class SyncEngine(
         val membership = state.members ?: return
         val signed = state.membership ?: return
         val targets = linksOf(documentId).filter { it.authorized && it !== from }
-        targets.forEach { it.outbox.send(MembershipMessage(signed)) }
+        targets.forEach { it.send(MembershipMessage(signed)) }
         // Who no longer works on it
         for (link in linksOf(documentId)) {
             val device = link.peerHello?.device ?: continue
@@ -740,7 +770,7 @@ public class SyncEngine(
             return
         }
         // The new key to the members still on the older one (this device the owner, or relaying it)
-        state.key?.let { key -> targets.forEach { it.outbox.send(KeyUpdate(state.epoch, key.encode())) } }
+        state.key?.let { key -> targets.forEach { it.send(KeyUpdate(state.epoch, key.encode())) } }
     }
 
     /** Closes [link] once its last messages are sent. */
@@ -754,7 +784,7 @@ public class SyncEngine(
     private suspend fun onKeyUpdate(link: Link, update: KeyUpdate) {
         if (!sharing.adoptKey(link.documentId, update.epoch, update.key)) return
         // To the members connected to this device only
-        linksOf(link.documentId).filter { it !== link && it.authorized }.forEach { it.outbox.send(update) }
+        linksOf(link.documentId).filter { it !== link && it.authorized }.forEach { it.send(update) }
     }
 
     /** A member leaves: the owner removes it. */
@@ -789,7 +819,7 @@ public class SyncEngine(
             val approved = request.decision.await()
             requests.update { it - request }
             if (!approved) {
-                link.outbox.send(JoinRefused)
+                link.send(JoinRefused)
                 closeSoon(link)
                 return@launch
             }
@@ -806,7 +836,7 @@ public class SyncEngine(
         val state = sharing.stateOf(link.documentId) ?: admitted
         val key = state.key ?: return
         val signed = state.membership ?: return
-        link.outbox.send(Admission(state.epoch, key.encode(), signed))
+        link.send(Admission(state.epoch, key.encode(), signed))
         link.authorized = true
         workWith(link, hello)
     }
@@ -860,21 +890,30 @@ public class SyncEngine(
         } else {
             // With the operations no longer in the log (in the snapshot): the others follow
             val base = sync.open.compactedOperations()
-            link.outbox.send(Snapshot(sync.open.edit { it.document.snapshot() }, base))
+            link.send(Snapshot(sync.open.edit { it.document.snapshot() }, base))
             base
         }
-        sync.open.operationsAfter(known).chunked(MAX_BATCH).forEach { link.outbox.send(Operations(it)) }
+        sync.open.operationsAfter(known).chunked(MAX_BATCH).forEach { link.outbox.send(OutgoingOperations(it)) }
         sync.open.edit {
             link.caughtUp = true
-            for (operation in link.waiting) link.outbox.trySend(Operations(listOf(operation)))
+            for (operation in link.waiting) link.outbox.trySend(OutgoingOperations(listOf(operation)))
             link.waiting.clear()
         }
         requestResources(link, sync)
         // What the members have, for the compaction of the log
         val state = sharing.stateOf(link.documentId)
-        link.outbox.send(KnownVersions(state?.versions.orEmpty() + (device to sync.open.edit { it.versionVector })))
+        link.send(KnownVersions(state?.versions.orEmpty() + (device to sync.open.edit { it.versionVector })))
         // Then the items beside the document
-        attachments?.let { link.outbox.send(AttachmentVersions(it.versions(link.documentId))) }
+        attachments?.let { link.send(AttachmentVersions(it.versions(link.documentId))) }
+    }
+
+    /** The operation of [sealed], opened with the key of [link]: the same as its identity in clear. */
+    private fun open(link: Link, sealed: SealedOperation): Operation {
+        val operation = SyncCodec.decodeOperation(link.seal.open(sealed))
+        if (operation.id.replica != sealed.replica || operation.id.sequence != sealed.sequence) {
+            throw SyncException("An operation sealed under another identity")
+        }
+        return operation
     }
 
     private suspend fun onOperations(link: Link, operations: List<Operation>) {
@@ -885,7 +924,7 @@ public class SyncEngine(
         val (known, unknown) = operations.partition { membership.knows(it.id.replica) }
         if (unknown.isNotEmpty()) {
             link.deferred.addAll(unknown)
-            link.outbox.send(MembershipQuery(membership.version))
+            link.send(MembershipQuery(membership.version))
         }
         val accepted = known.filter { membership.mayWrite(it.id.replica, it.id.sequence) }
         if (accepted.isEmpty()) return
@@ -972,7 +1011,7 @@ public class SyncEngine(
             val from = downloadsMutex.withLock { downloads[link.documentId to id]?.received ?: 0 }
             asks.add(ResourceAsk(id, from.toLong()))
         }
-        if (asks.isNotEmpty()) link.outbox.send(ResourceRequest(asks))
+        if (asks.isNotEmpty()) link.send(ResourceRequest(asks))
     }
 
     private suspend fun onResourceRequest(link: Link, asks: List<ResourceAsk>) {
@@ -981,14 +1020,14 @@ public class SyncEngine(
             val path = sync.open.edit { it.document.findResource(ask.id)?.path }
             val bytes = path?.let { files.read(it) }
             if (path == null || bytes == null) {
-                link.outbox.send(ResourceMissing(ask.id))
+                link.send(ResourceMissing(ask.id))
                 continue
             }
             val extension = path.substringAfterLast('/').substringAfterLast('.', "")
             var offset = ask.from.coerceIn(0, bytes.size.toLong()).toInt()
             do {
                 val end = min(offset + CHUNK_SIZE, bytes.size)
-                link.outbox.send(ResourceChunk(ask.id, extension, offset.toLong(), bytes.size.toLong(), bytes.copyOfRange(offset, end)))
+                link.send(ResourceChunk(ask.id, extension, offset.toLong(), bytes.size.toLong(), bytes.copyOfRange(offset, end)))
                 offset = end
             } while (offset < bytes.size)
         }
@@ -1047,7 +1086,7 @@ public class SyncEngine(
             link.asked += wanted.keys
             wanted.map { (key, version) -> AttachmentAsk(key, version, attachments.received(link.documentId, key, version)) }
         }
-        if (asks.isNotEmpty()) link.outbox.send(AttachmentRequest(asks))
+        if (asks.isNotEmpty()) link.send(AttachmentRequest(asks))
     }
 
     /** Sends the item asked for by [ask], in parts (from where the other device has it, at the same version). */
@@ -1058,7 +1097,7 @@ public class SyncEngine(
             do {
                 val bytes = source.read(offset, min(CHUNK_SIZE.toLong(), source.size - offset).toInt()) ?: return
                 link.attachmentParts.acquire()
-                link.outbox.send(AttachmentPart(ask.key, source.version, offset, source.size, bytes))
+                link.send(AttachmentPart(ask.key, source.version, offset, source.size, bytes))
                 offset += bytes.size
             } while (offset < source.size && bytes.isNotEmpty())
         } finally {
@@ -1104,14 +1143,14 @@ public class SyncEngine(
         }
         // Kept otherwise (e.g. merged with the one here): it goes back
         val kept = attachments.version(link.documentId, part.key)
-        if (kept != null && kept != part.version) link.outbox.send(AttachmentVersions(mapOf(part.key to kept)))
+        if (kept != null && kept != part.version) link.send(AttachmentVersions(mapOf(part.key to kept)))
         askForOffered(link)
     }
 
     /** An item beside the document [AttachmentChange.documentId] changed here: the others are told. */
     private suspend fun onAttachmentChanged(change: AttachmentChange) {
         val targets = mutex.withLock { links.filter { it.documentId == change.documentId && it.authorized && it.sync != null } }
-        for (link in targets) link.outbox.send(AttachmentVersions(mapOf(change.key to change.version)))
+        for (link in targets) link.send(AttachmentVersions(mapOf(change.key to change.version)))
     }
 
     // ==========================================================
@@ -1151,7 +1190,7 @@ public class SyncEngine(
             link.peer = renamed
             connected.update { peers -> peers.map { if (it === old) renamed else it } }
         }
-        targets.forEach { it.outbox.trySend(message) }
+        targets.forEach { it.trySend(message) }
     }
 
     private companion object {

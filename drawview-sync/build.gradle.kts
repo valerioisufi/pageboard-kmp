@@ -3,12 +3,13 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
-description = "Synchronization of DrawView documents between devices: protocol, end-to-end encryption, sync engine"
+description = "Synchronization of DrawView documents between devices: the sync engine, its messages, the presence of the devices"
 
 kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":drawview-store"))
+            api(project(":drawview-sync-protocol"))
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.cbor)
             implementation(libs.kotlinx.serialization.json)

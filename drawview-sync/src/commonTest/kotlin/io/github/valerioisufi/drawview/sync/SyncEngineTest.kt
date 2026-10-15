@@ -37,6 +37,18 @@ import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
+import io.github.valerioisufi.drawview.sync.protocol.DeviceIdentity
+import io.github.valerioisufi.drawview.sync.protocol.DocumentKey
+import io.github.valerioisufi.drawview.sync.protocol.InMemoryChannel
+import io.github.valerioisufi.drawview.sync.protocol.InMemoryNetwork
+import io.github.valerioisufi.drawview.sync.protocol.Invitation
+import io.github.valerioisufi.drawview.sync.protocol.OpenFrame
+import io.github.valerioisufi.drawview.sync.protocol.OperationSeal
+import io.github.valerioisufi.drawview.sync.protocol.PROTOCOL_VERSION
+import io.github.valerioisufi.drawview.sync.protocol.Role
+import io.github.valerioisufi.drawview.sync.protocol.SecureChannel
+import io.github.valerioisufi.drawview.sync.protocol.SyncChannel
+import io.github.valerioisufi.drawview.sync.protocol.SyncException
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -106,7 +118,7 @@ class SyncEngineTest {
         val messages = listOf(
             Hello("ada", "Ada", mapOf("ada" to 3L), hasDocument = true, device = "key", proof = byteArrayOf(1, 2), membershipVersion = 3, epoch = 2),
             Snapshot(document.snapshot(), mapOf("bob" to 4L)),
-            Operations(listOf(operation)),
+            Operations(listOf(OperationSeal(DocumentKey.generate()).seal("ada", 1, SyncCodec.encodeOperation(operation)))),
             ResourceRequest(listOf(ResourceAsk("photo", 1024))),
             AttachmentRequest(listOf(AttachmentAsk("audio", "a1", 5)))
         )
@@ -420,7 +432,7 @@ class SyncEngineTest {
         val ada = Device("ada", work, this, network)
         val document = ada.store.createDocument("Notes")
         val invitation = ada.share(document.id, "Notes")
-        network.transport("older").connect("ada").send(SyncCodec.encodeOpen(OpenFrame(PROTOCOL_VERSION + 1, invitation.key.tag)))
+        network.transport("older").connect("ada").send(OpenFrame(PROTOCOL_VERSION + 1, invitation.key.tag).encode())
         advanceUntilIdle()
         assertTrue(ada.engine.otherVersionMet.value)
         assertTrue(ada.engine.peers.value.isEmpty())
@@ -433,7 +445,7 @@ class SyncEngineTest {
         val document = ada.store.createDocument("Notes")
         val invitation = ada.share(document.id, "Notes")
         val channel = network.transport("newer").connect("ada")
-        channel.send(SyncCodec.encodeOpen(OpenFrame(PROTOCOL_VERSION, invitation.key.tag)))
+        channel.send(OpenFrame(PROTOCOL_VERSION, invitation.key.tag).encode())
         val newer = SecureChannel.of(channel, invitation.key)
         newer.send(SyncCodec.encode(Challenge(ByteArray(16))))
         advanceUntilIdle()

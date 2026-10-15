@@ -1,4 +1,4 @@
-package io.github.valerioisufi.drawview.sync
+package io.github.valerioisufi.drawview.sync.protocol
 
 import dev.whyoleg.cryptography.CryptographyProvider
 import dev.whyoleg.cryptography.algorithms.EC
@@ -14,7 +14,7 @@ import kotlin.io.encoding.Base64
  * device removed from a document cannot pass for another one). [publicKey] names it in the
  * memberships of the documents (see [Membership]).
  */
-public class DeviceIdentity private constructor(private val privateKey: ECDSA.PrivateKey, internal val publicKey: String) {
+public class DeviceIdentity private constructor(private val privateKey: ECDSA.PrivateKey, public val publicKey: String) {
 
     /** The signature of [bytes] by this device. */
     public fun sign(bytes: ByteArray): ByteArray = privateKey.signatureGenerator(SHA256, ECDSA.SignatureFormat.RAW).generateSignatureBlocking(bytes)

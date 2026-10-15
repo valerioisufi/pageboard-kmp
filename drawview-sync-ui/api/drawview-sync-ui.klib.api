@@ -7,7 +7,7 @@
 
 // Library unique name: <DrawView-KMP:drawview-sync-ui>
 final class io.github.valerioisufi.drawview.sync.ui/Collaboration { // io.github.valerioisufi.drawview.sync.ui/Collaboration|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.store/OpenDocuments, io.github.valerioisufi.drawview.sync.lan/LanDiscovery, kotlin/String, kotlinx.coroutines/CoroutineScope, io.github.valerioisufi.drawview.model/DocumentAttachments? = ..., io.github.valerioisufi.drawview.sync/DeviceIdentity = ...) // io.github.valerioisufi.drawview.sync.ui/Collaboration.<init>|<init>(io.github.valerioisufi.drawview.store.OpenDocuments;io.github.valerioisufi.drawview.sync.lan.LanDiscovery;kotlin.String;kotlinx.coroutines.CoroutineScope;io.github.valerioisufi.drawview.model.DocumentAttachments?;io.github.valerioisufi.drawview.sync.DeviceIdentity){}[0]
+    constructor <init>(io.github.valerioisufi.drawview.store/OpenDocuments, io.github.valerioisufi.drawview.sync.lan/LanDiscovery, kotlin/String, kotlinx.coroutines/CoroutineScope, io.github.valerioisufi.drawview.model/DocumentAttachments? = ..., io.github.valerioisufi.drawview.sync.protocol/DeviceIdentity = ...) // io.github.valerioisufi.drawview.sync.ui/Collaboration.<init>|<init>(io.github.valerioisufi.drawview.store.OpenDocuments;io.github.valerioisufi.drawview.sync.lan.LanDiscovery;kotlin.String;kotlinx.coroutines.CoroutineScope;io.github.valerioisufi.drawview.model.DocumentAttachments?;io.github.valerioisufi.drawview.sync.protocol.DeviceIdentity){}[0]
 
     final val device // io.github.valerioisufi.drawview.sync.ui/Collaboration.device|{}device[0]
         final fun <get-device>(): kotlin/String // io.github.valerioisufi.drawview.sync.ui/Collaboration.device.<get-device>|<get-device>(){}[0]
@@ -18,7 +18,7 @@ final class io.github.valerioisufi.drawview.sync.ui/Collaboration { // io.github
     final val joining // io.github.valerioisufi.drawview.sync.ui/Collaboration.joining|{}joining[0]
         final fun <get-joining>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/Map<kotlin/String, io.github.valerioisufi.drawview.sync/JoinStatus>> // io.github.valerioisufi.drawview.sync.ui/Collaboration.joining.<get-joining>|<get-joining>(){}[0]
     final val memberships // io.github.valerioisufi.drawview.sync.ui/Collaboration.memberships|{}memberships[0]
-        final fun <get-memberships>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/Map<kotlin/String, io.github.valerioisufi.drawview.sync/Membership>> // io.github.valerioisufi.drawview.sync.ui/Collaboration.memberships.<get-memberships>|<get-memberships>(){}[0]
+        final fun <get-memberships>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/Map<kotlin/String, io.github.valerioisufi.drawview.sync.protocol/Membership>> // io.github.valerioisufi.drawview.sync.ui/Collaboration.memberships.<get-memberships>|<get-memberships>(){}[0]
     final val otherVersionMet // io.github.valerioisufi.drawview.sync.ui/Collaboration.otherVersionMet|{}otherVersionMet[0]
         final fun <get-otherVersionMet>(): kotlinx.coroutines.flow/StateFlow<kotlin/Boolean> // io.github.valerioisufi.drawview.sync.ui/Collaboration.otherVersionMet.<get-otherVersionMet>|<get-otherVersionMet>(){}[0]
     final val peers // io.github.valerioisufi.drawview.sync.ui/Collaboration.peers|{}peers[0]
@@ -27,15 +27,15 @@ final class io.github.valerioisufi.drawview.sync.ui/Collaboration { // io.github
         final fun <get-presences>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/List<io.github.valerioisufi.drawview.sync/Presence>> // io.github.valerioisufi.drawview.sync.ui/Collaboration.presences.<get-presences>|<get-presences>(){}[0]
 
     final fun answer(io.github.valerioisufi.drawview.sync/JoinRequest, kotlin/Boolean) // io.github.valerioisufi.drawview.sync.ui/Collaboration.answer|answer(io.github.valerioisufi.drawview.sync.JoinRequest;kotlin.Boolean){}[0]
-    final suspend fun invitationsOf(kotlin/String, kotlin/String): kotlin.collections/List<kotlin/Pair<io.github.valerioisufi.drawview.sync/InvitationGrant, io.github.valerioisufi.drawview.sync/Invitation>> // io.github.valerioisufi.drawview.sync.ui/Collaboration.invitationsOf|invitationsOf(kotlin.String;kotlin.String){}[0]
-    final suspend fun join(kotlin/String): io.github.valerioisufi.drawview.sync/Invitation? // io.github.valerioisufi.drawview.sync.ui/Collaboration.join|join(kotlin.String){}[0]
+    final suspend fun invitationsOf(kotlin/String, kotlin/String): kotlin.collections/List<kotlin/Pair<io.github.valerioisufi.drawview.sync/InvitationGrant, io.github.valerioisufi.drawview.sync.protocol/Invitation>> // io.github.valerioisufi.drawview.sync.ui/Collaboration.invitationsOf|invitationsOf(kotlin.String;kotlin.String){}[0]
+    final suspend fun join(kotlin/String): io.github.valerioisufi.drawview.sync.protocol/Invitation? // io.github.valerioisufi.drawview.sync.ui/Collaboration.join|join(kotlin.String){}[0]
     final suspend fun nearbyHosts(kotlin/Long = ...): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.sync.ui/Collaboration.nearbyHosts|nearbyHosts(kotlin.Long){}[0]
     final suspend fun refresh() // io.github.valerioisufi.drawview.sync.ui/Collaboration.refresh|refresh(){}[0]
     final suspend fun removeMember(kotlin/String, kotlin/String) // io.github.valerioisufi.drawview.sync.ui/Collaboration.removeMember|removeMember(kotlin.String;kotlin.String){}[0]
     final suspend fun rename(kotlin/String?) // io.github.valerioisufi.drawview.sync.ui/Collaboration.rename|rename(kotlin.String?){}[0]
     final suspend fun revokeInvitation(kotlin/String, io.github.valerioisufi.drawview.sync/InvitationGrant) // io.github.valerioisufi.drawview.sync.ui/Collaboration.revokeInvitation|revokeInvitation(kotlin.String;io.github.valerioisufi.drawview.sync.InvitationGrant){}[0]
-    final suspend fun setRole(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.sync/Role) // io.github.valerioisufi.drawview.sync.ui/Collaboration.setRole|setRole(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.sync.Role){}[0]
-    final suspend fun share(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.sync/Role = ..., kotlin/Boolean = ...): io.github.valerioisufi.drawview.sync/Invitation? // io.github.valerioisufi.drawview.sync.ui/Collaboration.share|share(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.sync.Role;kotlin.Boolean){}[0]
+    final suspend fun setRole(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.sync.protocol/Role) // io.github.valerioisufi.drawview.sync.ui/Collaboration.setRole|setRole(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.sync.protocol.Role){}[0]
+    final suspend fun share(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.sync.protocol/Role = ..., kotlin/Boolean = ...): io.github.valerioisufi.drawview.sync.protocol/Invitation? // io.github.valerioisufi.drawview.sync.ui/Collaboration.share|share(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.sync.protocol.Role;kotlin.Boolean){}[0]
     final suspend fun start(): kotlin/Boolean // io.github.valerioisufi.drawview.sync.ui/Collaboration.start|start(){}[0]
     final suspend fun stop() // io.github.valerioisufi.drawview.sync.ui/Collaboration.stop|stop(){}[0]
 }

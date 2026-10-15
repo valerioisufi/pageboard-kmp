@@ -1,9 +1,9 @@
 package io.github.valerioisufi.drawview.sync.lan
 
-import io.github.valerioisufi.drawview.sync.DocumentKey
-import io.github.valerioisufi.drawview.sync.Invitation
 import io.github.valerioisufi.drawview.sync.SyncEngine
-import io.github.valerioisufi.drawview.sync.SyncException
+import io.github.valerioisufi.drawview.sync.protocol.DocumentKey
+import io.github.valerioisufi.drawview.sync.protocol.Invitation
+import io.github.valerioisufi.drawview.sync.protocol.SyncException
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource

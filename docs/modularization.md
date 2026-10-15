@@ -286,14 +286,25 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 
 ### Sync and relay
 
-* `drawview-sync-protocol` holds what a relay needs: the frames, the clear first frame (protocol
-  version, document tag), the encryption, the identities, the invitations and the transport
-  ports, without the model or a store. `drawview-sync` keeps the engine and the messages.
+* `drawview-sync-protocol` holds what a relay needs, without the model or a store (it depends on
+  `drawview-platform` only): the clear first frame (`OpenFrame`: protocol version, document tag),
+  the encryption of the frames (`SecureChannel`, `DocumentKey`), the sealed operations, the
+  identities of the devices (`DeviceIdentity`), the invitations, the membership signed by the
+  owner (`Role`, `Member`, `Membership`, `SignedMembership`: what a relay would check), the
+  transports (`SyncChannel`, `SyncTransport`, the in-memory one of the tests). `drawview-sync`
+  keeps the engine, its messages and what a device keeps of its shared documents
+  (`SharingState`).
 * **Store and forward.** A relay should also hand the operations to a device that comes online
   later (editing at home, opening the notebook at the university): every operation travels as a
   sealed operation, its identity in clear (replica, sequence number) and its content encrypted, so
   that a relay can store the operations of a document and send a device the ones after its version
   vector without reading them. The cost: a relay sees how many devices write a document and when.
+  `SealedOperation` (replica, sequence, content) and `OperationSeal` (AES-256-GCM with the key of
+  the document, a random nonce each; the protocol version, the tag of the document and the
+  identity authenticated with the content, so that a relay can neither read nor relabel them);
+  the engine seals the operations as it sends them (not on the thread of the document) and checks
+  that the identity inside is the one in clear. The format record of the protocol describes the
+  operations as well (their content is part of it).
 * The relay server (`drawview-sync-relay`, a self-hostable Ktor server, and `RelayTransport`) is
   left for later; whether a public relay is offered for PencilNotes is a product decision.
 
@@ -330,7 +341,7 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 | 4b. Stores | `drawview-store` / `drawview-store-room` / `drawview-store-testing`; segregated ports; no global store in the libraries; the Room migrations from version 16 (no destructive fallback); `SelectionActivity` in the model (the synchronization without the canvas) | Done |
 | 4c. Editor session | `EditorContext` given to the extensions; `EditorScreen` in `drawview-ui`; `drawview-session` (`EditorSession`, `DocumentEditorViewModel`, `EditorSessionScreen`, `DrawViewSessions`); `drawview-ui` without any store; the extension points in `ui.extension` | Done |
 | 5. Controller and API | `Viewport`, `CollaboratorPresence`; no `EditorHost` (see Controller); explicit API strict in every library, the internals by their use; KDoc on every top-level public declaration; ABI dumps (`api/`, checked by `check`) | Done |
-| 6. Sync and relay protocol | `drawview-sync-protocol`; sealed operations with their identity in clear | |
+| 6. Sync and relay protocol | `drawview-sync-protocol` (frames, encryption, identities, invitations, membership, transports; on `drawview-platform` only); sealed operations with their identity in clear | Done |
 | 7. Feature modules | `drawview-lecture` / `drawview-lecture-ui`, `drawview-export` / `drawview-export-ui` (`ElementExporter`, export writing to a sink instead of `FileTarget`) | |
 | 8. Release readiness | consumer checks; licenses per artifact; Dokka; CI workflow for the native matrix and the publication (written, run once a remote exists); README of the modules | |
 

@@ -1,4 +1,4 @@
-package io.github.valerioisufi.drawview.sync
+package io.github.valerioisufi.drawview.sync.protocol
 
 import dev.whyoleg.cryptography.CryptographyProvider
 import dev.whyoleg.cryptography.algorithms.HMAC

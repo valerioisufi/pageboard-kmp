@@ -39,14 +39,14 @@ public final class io/github/valerioisufi/drawview/sync/lan/LanSync {
 	public fun <init> (Lio/github/valerioisufi/drawview/sync/SyncEngine;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/sync/lan/LanTransport;JJ)V
 	public synthetic fun <init> (Lio/github/valerioisufi/drawview/sync/SyncEngine;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/sync/lan/LanTransport;JJILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun announce (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun join (Lio/github/valerioisufi/drawview/sync/Invitation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun join (Lio/github/valerioisufi/drawview/sync/protocol/Invitation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun refresh (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun refresh$default (Lio/github/valerioisufi/drawview/sync/lan/LanSync;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun start (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun stop (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class io/github/valerioisufi/drawview/sync/lan/LanTransport : io/github/valerioisufi/drawview/sync/SyncTransport {
+public final class io/github/valerioisufi/drawview/sync/lan/LanTransport : io/github/valerioisufi/drawview/sync/protocol/SyncTransport {
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/lan/LanTransport$Companion;
 	public fun <init> (Lkotlinx/coroutines/CoroutineScope;I)V
 	public synthetic fun <init> (Lkotlinx/coroutines/CoroutineScope;IILkotlin/jvm/internal/DefaultConstructorMarker;)V

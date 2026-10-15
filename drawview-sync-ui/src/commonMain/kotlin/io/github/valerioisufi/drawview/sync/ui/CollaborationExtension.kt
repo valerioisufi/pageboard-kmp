@@ -36,9 +36,9 @@ import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.canvas.controller.Collaborator
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.platform.DeviceProfile
-import io.github.valerioisufi.drawview.sync.Invitation
 import io.github.valerioisufi.drawview.sync.InvitationGrant
-import io.github.valerioisufi.drawview.sync.Role
+import io.github.valerioisufi.drawview.sync.protocol.Invitation
+import io.github.valerioisufi.drawview.sync.protocol.Role
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.*
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo

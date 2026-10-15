@@ -1,4 +1,4 @@
-package io.github.valerioisufi.drawview.sync
+package io.github.valerioisufi.drawview.sync.protocol
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -30,7 +30,7 @@ public data class Member(
     val writesUpTo: Long? = null
 ) {
     /** Whether its operation number [sequence] is accepted. */
-    internal fun mayWrite(sequence: Long): Boolean = writesUpTo?.let { sequence <= it } ?: (role != Role.READER)
+    public fun mayWrite(sequence: Long): Boolean = writesUpTo?.let { sequence <= it } ?: (role != Role.READER)
 }
 
 /**
@@ -55,7 +55,7 @@ public data class Membership(
     public fun memberOf(device: String): Member? = members.firstOrNull { it.device == device }
 
     /** Whether the operation [sequence] of [replica] is accepted (the replicas never members: refused). */
-    internal fun mayWrite(replica: String, sequence: Long): Boolean {
+    public fun mayWrite(replica: String, sequence: Long): Boolean {
         members.firstOrNull { it.replica == replica }?.let { return it.mayWrite(sequence) }
         return removed.lastOrNull { it.replica == replica }?.let { sequence <= (it.writesUpTo ?: 0L) } ?: false
     }
@@ -66,7 +66,7 @@ public data class Membership(
     public fun encode(): ByteArray = json.encodeToString(serializer(), this).encodeToByteArray()
 
     /** This membership signed by the owner [identity]. */
-    internal fun signedBy(identity: DeviceIdentity): SignedMembership {
+    public fun signedBy(identity: DeviceIdentity): SignedMembership {
         require(identity.publicKey == owner) { "Only the owner signs the membership" }
         val bytes = encode()
         return SignedMembership(bytes, identity.sign(bytes))
@@ -95,60 +95,5 @@ public class SignedMembership(public val bytes: ByteArray, internal val signatur
         Membership.json.decodeFromString(Membership.serializer(), bytes.decodeToString())
     } catch (_: Exception) {
         null
-    }
-}
-
-/**
- * An invitation to a document given by its owner: the secret of the link ([key], see
- * [Invitation]), the role of the devices joining with it and whether the owner approves each of
- * them first ([approval]). The owner forgets it to revoke it.
- */
-@Serializable
-public data class InvitationGrant(val id: String, val key: String, val role: Role, val approval: Boolean, val createdAt: Long)
-
-/** A key of a document and its epoch (see [Membership.epoch]). */
-@Serializable
-public data class EpochKey(val epoch: Int, val key: String) {
-    val documentKey: DocumentKey? get() = DocumentKey.decode(key)
-}
-
-/**
- * What this device knows of a shared document (kept by [SharedDocuments]): its keys (the current
- * one and the previous ones, to give the new one to the devices still on them), its owner, the
- * last membership signed by it, the invitations (the owner's), the operations every device has
- * (for the compaction of the log, see [SyncEngine]).
- *
- * A device joining a document has its [joining] invitation only, until the owner admits it.
- */
-@Serializable
-public data class SharingState(
-    val keys: List<EpochKey> = emptyList(),
-    val owner: String = "",
-    val membership: SignedMembership? = null,
-    val invitations: List<InvitationGrant> = emptyList(),
-    val joining: String? = null,
-    val versions: Map<String, Map<String, Long>> = emptyMap(),
-    /** This device was removed, or the owner stopped sharing the document. */
-    val closed: Boolean = false
-) {
-    /** The current key. */
-    val key: DocumentKey? get() = keys.maxByOrNull { it.epoch }?.documentKey
-
-    val epoch: Int get() = keys.maxOfOrNull { it.epoch } ?: 0
-
-    /** The membership signed by the owner. */
-    val members: Membership? get() = membership?.open(owner)
-
-    /** The role of the device [device]. */
-    internal fun roleOf(device: String): Role? = members?.memberOf(device)?.role
-
-    public fun encode(): String = Membership.json.encodeToString(serializer(), this)
-
-    public companion object {
-        public fun decode(text: String): SharingState? = try {
-            Membership.json.decodeFromString(serializer(), text)
-        } catch (_: Exception) {
-            null
-        }
     }
 }

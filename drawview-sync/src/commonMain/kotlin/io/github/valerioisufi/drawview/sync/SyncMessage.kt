@@ -2,22 +2,16 @@ package io.github.valerioisufi.drawview.sync
 
 import io.github.valerioisufi.drawview.model.change.DocumentSnapshot
 import io.github.valerioisufi.drawview.model.change.Operation
+import io.github.valerioisufi.drawview.sync.protocol.DeviceIdentity
+import io.github.valerioisufi.drawview.sync.protocol.Membership
+import io.github.valerioisufi.drawview.sync.protocol.SealedOperation
+import io.github.valerioisufi.drawview.sync.protocol.SignedMembership
+import io.github.valerioisufi.drawview.sync.protocol.SyncException
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.cbor.Cbor
-
-/** The version of the protocol of the synchronization. */
-internal const val PROTOCOL_VERSION = 1
-
-/**
- * The first frame of a connection, in clear: the version of the protocol and the document the
- * connection is about (see [DocumentKey.tag]). Everything else is encrypted with the key of the
- * document (see [SecureChannel]).
- */
-@Serializable
-internal data class OpenFrame(val protocol: Int, val tag: String)
 
 /**
  * The messages the devices exchange about a document. Each side first challenges the other one
@@ -104,10 +98,13 @@ internal data class KnownVersions(val versions: Map<String, Map<String, Long>>) 
 @SerialName("snapshot")
 internal data class Snapshot(val snapshot: DocumentSnapshot, val base: Map<String, Long> = emptyMap()) : SyncMessage
 
-/** Operations, in the order they are to be applied (the order of their stamps). */
+/**
+ * Operations, in the order they are to be applied (the order of their stamps), sealed with the key
+ * of the document: what a relay could keep without reading it (see [SealedOperation]).
+ */
 @Serializable
 @SerialName("operations")
-internal data class Operations(val operations: List<Operation>) : SyncMessage
+internal class Operations(val operations: List<SealedOperation>) : SyncMessage
 
 /** Asks for the file of the resource [id], from its byte [from] (a transfer interrupted goes on). */
 @Serializable
@@ -202,13 +199,14 @@ internal object SyncCodec {
 
     fun decodeOrThrow(frame: ByteArray): SyncMessage = cbor.decodeFromByteArray(SyncMessage.serializer(), frame)
 
-    fun encodeOpen(frame: OpenFrame): ByteArray = cbor.encodeToByteArray(OpenFrame.serializer(), frame)
+    /** The content of a [SealedOperation]. */
+    fun encodeOperation(operation: Operation): ByteArray = cbor.encodeToByteArray(Operation.serializer(), operation)
 
-    fun decodeOpen(frame: ByteArray): OpenFrame? = try {
-        cbor.decodeFromByteArray(OpenFrame.serializer(), frame)
-    } catch (_: SerializationException) {
-        null
-    } catch (_: IllegalArgumentException) {
-        null
+    fun decodeOperation(bytes: ByteArray): Operation = try {
+        cbor.decodeFromByteArray(Operation.serializer(), bytes)
+    } catch (e: SerializationException) {
+        throw SyncException("An operation not understood", e)
+    } catch (e: IllegalArgumentException) {
+        throw SyncException("An operation not understood", e)
     }
 }

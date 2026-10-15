@@ -1,7 +1,7 @@
 public final class io/github/valerioisufi/drawview/sync/ui/Collaboration {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Ljava/lang/String;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/DeviceIdentity;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Ljava/lang/String;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/DeviceIdentity;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Ljava/lang/String;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Ljava/lang/String;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun answer (Lio/github/valerioisufi/drawview/sync/JoinRequest;Z)V
 	public final fun getDevice ()Ljava/lang/String;
 	public final fun getEngine ()Lio/github/valerioisufi/drawview/sync/SyncEngine;
@@ -19,9 +19,9 @@ public final class io/github/valerioisufi/drawview/sync/ui/Collaboration {
 	public final fun removeMember (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun rename (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun revokeInvitation (Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/InvitationGrant;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun setRole (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/Role;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun share (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/Role;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun share$default (Lio/github/valerioisufi/drawview/sync/ui/Collaboration;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/Role;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun setRole (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun share (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun share$default (Lio/github/valerioisufi/drawview/sync/ui/Collaboration;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun start (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun stop (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }

@@ -1,4 +1,4 @@
-package io.github.valerioisufi.drawview.sync
+package io.github.valerioisufi.drawview.sync.protocol
 
 import kotlinx.coroutines.flow.Flow
 

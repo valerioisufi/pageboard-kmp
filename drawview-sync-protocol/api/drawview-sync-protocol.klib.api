@@ -1,0 +1,313 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <DrawView-KMP:drawview-sync-protocol>
+final enum class io.github.valerioisufi.drawview.sync.protocol/Role : kotlin/Enum<io.github.valerioisufi.drawview.sync.protocol/Role> { // io.github.valerioisufi.drawview.sync.protocol/Role|null[0]
+    enum entry EDITOR // io.github.valerioisufi.drawview.sync.protocol/Role.EDITOR|null[0]
+    enum entry OWNER // io.github.valerioisufi.drawview.sync.protocol/Role.OWNER|null[0]
+    enum entry READER // io.github.valerioisufi.drawview.sync.protocol/Role.READER|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.sync.protocol/Role.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.sync.protocol/Role> // io.github.valerioisufi.drawview.sync.protocol/Role.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.sync.protocol/Role // io.github.valerioisufi.drawview.sync.protocol/Role.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.sync.protocol/Role> // io.github.valerioisufi.drawview.sync.protocol/Role.values|values#static(){}[0]
+
+    final object Companion : kotlinx.serialization.internal/SerializerFactory { // io.github.valerioisufi.drawview.sync.protocol/Role.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.sync.protocol/Role> // io.github.valerioisufi.drawview.sync.protocol/Role.Companion.serializer|serializer(){}[0]
+        final fun serializer(kotlin/Array<out kotlinx.serialization/KSerializer<*>>...): kotlinx.serialization/KSerializer<*> // io.github.valerioisufi.drawview.sync.protocol/Role.Companion.serializer|serializer(kotlin.Array<out|kotlinx.serialization.KSerializer<*>>...){}[0]
+    }
+}
+
+abstract interface io.github.valerioisufi.drawview.sync.protocol/SyncChannel { // io.github.valerioisufi.drawview.sync.protocol/SyncChannel|null[0]
+    abstract fun close() // io.github.valerioisufi.drawview.sync.protocol/SyncChannel.close|close(){}[0]
+    abstract suspend fun receive(): kotlin/ByteArray? // io.github.valerioisufi.drawview.sync.protocol/SyncChannel.receive|receive(){}[0]
+    abstract suspend fun send(kotlin/ByteArray) // io.github.valerioisufi.drawview.sync.protocol/SyncChannel.send|send(kotlin.ByteArray){}[0]
+}
+
+abstract interface io.github.valerioisufi.drawview.sync.protocol/SyncTransport { // io.github.valerioisufi.drawview.sync.protocol/SyncTransport|null[0]
+    abstract val incoming // io.github.valerioisufi.drawview.sync.protocol/SyncTransport.incoming|{}incoming[0]
+        abstract fun <get-incoming>(): kotlinx.coroutines.flow/Flow<io.github.valerioisufi.drawview.sync.protocol/SyncChannel> // io.github.valerioisufi.drawview.sync.protocol/SyncTransport.incoming.<get-incoming>|<get-incoming>(){}[0]
+
+    abstract fun close() // io.github.valerioisufi.drawview.sync.protocol/SyncTransport.close|close(){}[0]
+    abstract suspend fun connect(kotlin/String): io.github.valerioisufi.drawview.sync.protocol/SyncChannel // io.github.valerioisufi.drawview.sync.protocol/SyncTransport.connect|connect(kotlin.String){}[0]
+}
+
+final class io.github.valerioisufi.drawview.sync.protocol/DeviceIdentity { // io.github.valerioisufi.drawview.sync.protocol/DeviceIdentity|null[0]
+    final val publicKey // io.github.valerioisufi.drawview.sync.protocol/DeviceIdentity.publicKey|{}publicKey[0]
+        final fun <get-publicKey>(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/DeviceIdentity.publicKey.<get-publicKey>|<get-publicKey>(){}[0]
+
+    final fun sign(kotlin/ByteArray): kotlin/ByteArray // io.github.valerioisufi.drawview.sync.protocol/DeviceIdentity.sign|sign(kotlin.ByteArray){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/DeviceIdentity.toString|toString(){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.sync.protocol/DeviceIdentity.Companion|null[0]
+        final fun fingerprint(kotlin/String): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/DeviceIdentity.Companion.fingerprint|fingerprint(kotlin.String){}[0]
+        final fun generate(): io.github.valerioisufi.drawview.sync.protocol/DeviceIdentity // io.github.valerioisufi.drawview.sync.protocol/DeviceIdentity.Companion.generate|generate(){}[0]
+        final fun ofThisDevice(): io.github.valerioisufi.drawview.sync.protocol/DeviceIdentity // io.github.valerioisufi.drawview.sync.protocol/DeviceIdentity.Companion.ofThisDevice|ofThisDevice(){}[0]
+        final fun verify(kotlin/String, kotlin/ByteArray, kotlin/ByteArray): kotlin/Boolean // io.github.valerioisufi.drawview.sync.protocol/DeviceIdentity.Companion.verify|verify(kotlin.String;kotlin.ByteArray;kotlin.ByteArray){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.sync.protocol/DocumentKey { // io.github.valerioisufi.drawview.sync.protocol/DocumentKey|null[0]
+    final val tag // io.github.valerioisufi.drawview.sync.protocol/DocumentKey.tag|{}tag[0]
+        final fun <get-tag>(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/DocumentKey.tag.<get-tag>|<get-tag>(){}[0]
+
+    final fun encode(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/DocumentKey.encode|encode(){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.sync.protocol/DocumentKey.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.sync.protocol/DocumentKey.hashCode|hashCode(){}[0]
+    final fun toByteArray(): kotlin/ByteArray // io.github.valerioisufi.drawview.sync.protocol/DocumentKey.toByteArray|toByteArray(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/DocumentKey.toString|toString(){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.sync.protocol/DocumentKey.Companion|null[0]
+        final fun decode(kotlin/String): io.github.valerioisufi.drawview.sync.protocol/DocumentKey? // io.github.valerioisufi.drawview.sync.protocol/DocumentKey.Companion.decode|decode(kotlin.String){}[0]
+        final fun generate(): io.github.valerioisufi.drawview.sync.protocol/DocumentKey // io.github.valerioisufi.drawview.sync.protocol/DocumentKey.Companion.generate|generate(){}[0]
+        final fun of(kotlin/ByteArray): io.github.valerioisufi.drawview.sync.protocol/DocumentKey? // io.github.valerioisufi.drawview.sync.protocol/DocumentKey.Companion.of|of(kotlin.ByteArray){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.sync.protocol/InMemoryChannel : io.github.valerioisufi.drawview.sync.protocol/SyncChannel { // io.github.valerioisufi.drawview.sync.protocol/InMemoryChannel|null[0]
+    final fun close() // io.github.valerioisufi.drawview.sync.protocol/InMemoryChannel.close|close(){}[0]
+    final suspend fun receive(): kotlin/ByteArray? // io.github.valerioisufi.drawview.sync.protocol/InMemoryChannel.receive|receive(){}[0]
+    final suspend fun send(kotlin/ByteArray) // io.github.valerioisufi.drawview.sync.protocol/InMemoryChannel.send|send(kotlin.ByteArray){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.sync.protocol/InMemoryChannel.Companion|null[0]
+        final fun pair(): kotlin/Pair<io.github.valerioisufi.drawview.sync.protocol/InMemoryChannel, io.github.valerioisufi.drawview.sync.protocol/InMemoryChannel> // io.github.valerioisufi.drawview.sync.protocol/InMemoryChannel.Companion.pair|pair(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.sync.protocol/InMemoryNetwork { // io.github.valerioisufi.drawview.sync.protocol/InMemoryNetwork|null[0]
+    constructor <init>() // io.github.valerioisufi.drawview.sync.protocol/InMemoryNetwork.<init>|<init>(){}[0]
+
+    final fun transport(kotlin/String): io.github.valerioisufi.drawview.sync.protocol/InMemoryTransport // io.github.valerioisufi.drawview.sync.protocol/InMemoryNetwork.transport|transport(kotlin.String){}[0]
+}
+
+final class io.github.valerioisufi.drawview.sync.protocol/InMemoryTransport : io.github.valerioisufi.drawview.sync.protocol/SyncTransport { // io.github.valerioisufi.drawview.sync.protocol/InMemoryTransport|null[0]
+    final val address // io.github.valerioisufi.drawview.sync.protocol/InMemoryTransport.address|{}address[0]
+        final fun <get-address>(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/InMemoryTransport.address.<get-address>|<get-address>(){}[0]
+    final val incoming // io.github.valerioisufi.drawview.sync.protocol/InMemoryTransport.incoming|{}incoming[0]
+        final fun <get-incoming>(): kotlinx.coroutines.flow/Flow<io.github.valerioisufi.drawview.sync.protocol/SyncChannel> // io.github.valerioisufi.drawview.sync.protocol/InMemoryTransport.incoming.<get-incoming>|<get-incoming>(){}[0]
+
+    final fun close() // io.github.valerioisufi.drawview.sync.protocol/InMemoryTransport.close|close(){}[0]
+    final suspend fun connect(kotlin/String): io.github.valerioisufi.drawview.sync.protocol/SyncChannel // io.github.valerioisufi.drawview.sync.protocol/InMemoryTransport.connect|connect(kotlin.String){}[0]
+}
+
+final class io.github.valerioisufi.drawview.sync.protocol/Invitation { // io.github.valerioisufi.drawview.sync.protocol/Invitation|null[0]
+    constructor <init>(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.sync.protocol/DocumentKey, kotlin/String, kotlin/String? = ...) // io.github.valerioisufi.drawview.sync.protocol/Invitation.<init>|<init>(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.sync.protocol.DocumentKey;kotlin.String;kotlin.String?){}[0]
+
+    final val address // io.github.valerioisufi.drawview.sync.protocol/Invitation.address|{}address[0]
+        final fun <get-address>(): kotlin/String? // io.github.valerioisufi.drawview.sync.protocol/Invitation.address.<get-address>|<get-address>(){}[0]
+    final val documentId // io.github.valerioisufi.drawview.sync.protocol/Invitation.documentId|{}documentId[0]
+        final fun <get-documentId>(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Invitation.documentId.<get-documentId>|<get-documentId>(){}[0]
+    final val key // io.github.valerioisufi.drawview.sync.protocol/Invitation.key|{}key[0]
+        final fun <get-key>(): io.github.valerioisufi.drawview.sync.protocol/DocumentKey // io.github.valerioisufi.drawview.sync.protocol/Invitation.key.<get-key>|<get-key>(){}[0]
+    final val owner // io.github.valerioisufi.drawview.sync.protocol/Invitation.owner|{}owner[0]
+        final fun <get-owner>(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Invitation.owner.<get-owner>|<get-owner>(){}[0]
+    final val title // io.github.valerioisufi.drawview.sync.protocol/Invitation.title|{}title[0]
+        final fun <get-title>(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Invitation.title.<get-title>|<get-title>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Invitation.component1|component1(){}[0]
+    final fun component2(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Invitation.component2|component2(){}[0]
+    final fun component3(): io.github.valerioisufi.drawview.sync.protocol/DocumentKey // io.github.valerioisufi.drawview.sync.protocol/Invitation.component3|component3(){}[0]
+    final fun component4(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Invitation.component4|component4(){}[0]
+    final fun component5(): kotlin/String? // io.github.valerioisufi.drawview.sync.protocol/Invitation.component5|component5(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., io.github.valerioisufi.drawview.sync.protocol/DocumentKey = ..., kotlin/String = ..., kotlin/String? = ...): io.github.valerioisufi.drawview.sync.protocol/Invitation // io.github.valerioisufi.drawview.sync.protocol/Invitation.copy|copy(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.sync.protocol.DocumentKey;kotlin.String;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.sync.protocol/Invitation.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.sync.protocol/Invitation.hashCode|hashCode(){}[0]
+    final fun toLink(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Invitation.toLink|toLink(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Invitation.toString|toString(){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.sync.protocol/Invitation.Companion|null[0]
+        final fun parse(kotlin/String): io.github.valerioisufi.drawview.sync.protocol/Invitation? // io.github.valerioisufi.drawview.sync.protocol/Invitation.Companion.parse|parse(kotlin.String){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.sync.protocol/Member { // io.github.valerioisufi.drawview.sync.protocol/Member|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String, io.github.valerioisufi.drawview.sync.protocol/Role, kotlin/Long? = ...) // io.github.valerioisufi.drawview.sync.protocol/Member.<init>|<init>(kotlin.String;kotlin.String;kotlin.String;io.github.valerioisufi.drawview.sync.protocol.Role;kotlin.Long?){}[0]
+
+    final val device // io.github.valerioisufi.drawview.sync.protocol/Member.device|{}device[0]
+        final fun <get-device>(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Member.device.<get-device>|<get-device>(){}[0]
+    final val name // io.github.valerioisufi.drawview.sync.protocol/Member.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Member.name.<get-name>|<get-name>(){}[0]
+    final val replica // io.github.valerioisufi.drawview.sync.protocol/Member.replica|{}replica[0]
+        final fun <get-replica>(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Member.replica.<get-replica>|<get-replica>(){}[0]
+    final val role // io.github.valerioisufi.drawview.sync.protocol/Member.role|{}role[0]
+        final fun <get-role>(): io.github.valerioisufi.drawview.sync.protocol/Role // io.github.valerioisufi.drawview.sync.protocol/Member.role.<get-role>|<get-role>(){}[0]
+    final val writesUpTo // io.github.valerioisufi.drawview.sync.protocol/Member.writesUpTo|{}writesUpTo[0]
+        final fun <get-writesUpTo>(): kotlin/Long? // io.github.valerioisufi.drawview.sync.protocol/Member.writesUpTo.<get-writesUpTo>|<get-writesUpTo>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Member.component1|component1(){}[0]
+    final fun component2(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Member.component2|component2(){}[0]
+    final fun component3(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Member.component3|component3(){}[0]
+    final fun component4(): io.github.valerioisufi.drawview.sync.protocol/Role // io.github.valerioisufi.drawview.sync.protocol/Member.component4|component4(){}[0]
+    final fun component5(): kotlin/Long? // io.github.valerioisufi.drawview.sync.protocol/Member.component5|component5(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String = ..., io.github.valerioisufi.drawview.sync.protocol/Role = ..., kotlin/Long? = ...): io.github.valerioisufi.drawview.sync.protocol/Member // io.github.valerioisufi.drawview.sync.protocol/Member.copy|copy(kotlin.String;kotlin.String;kotlin.String;io.github.valerioisufi.drawview.sync.protocol.Role;kotlin.Long?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.sync.protocol/Member.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.sync.protocol/Member.hashCode|hashCode(){}[0]
+    final fun mayWrite(kotlin/Long): kotlin/Boolean // io.github.valerioisufi.drawview.sync.protocol/Member.mayWrite|mayWrite(kotlin.Long){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Member.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.sync.protocol/Member> { // io.github.valerioisufi.drawview.sync.protocol/Member.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.sync.protocol/Member.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.sync.protocol/Member.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.sync.protocol/Member.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.sync.protocol/Member // io.github.valerioisufi.drawview.sync.protocol/Member.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.sync.protocol/Member) // io.github.valerioisufi.drawview.sync.protocol/Member.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.sync.protocol.Member){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.sync.protocol/Member.Companion|null[0]
+        final val $childSerializers // io.github.valerioisufi.drawview.sync.protocol/Member.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.sync.protocol/Member> // io.github.valerioisufi.drawview.sync.protocol/Member.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.sync.protocol/Membership { // io.github.valerioisufi.drawview.sync.protocol/Membership|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/Long = ..., kotlin/Int = ..., kotlin.collections/List<io.github.valerioisufi.drawview.sync.protocol/Member> = ..., kotlin.collections/List<io.github.valerioisufi.drawview.sync.protocol/Member> = ..., kotlin/Boolean = ...) // io.github.valerioisufi.drawview.sync.protocol/Membership.<init>|<init>(kotlin.String;kotlin.String;kotlin.Long;kotlin.Int;kotlin.collections.List<io.github.valerioisufi.drawview.sync.protocol.Member>;kotlin.collections.List<io.github.valerioisufi.drawview.sync.protocol.Member>;kotlin.Boolean){}[0]
+
+    final val documentId // io.github.valerioisufi.drawview.sync.protocol/Membership.documentId|{}documentId[0]
+        final fun <get-documentId>(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Membership.documentId.<get-documentId>|<get-documentId>(){}[0]
+    final val ended // io.github.valerioisufi.drawview.sync.protocol/Membership.ended|{}ended[0]
+        final fun <get-ended>(): kotlin/Boolean // io.github.valerioisufi.drawview.sync.protocol/Membership.ended.<get-ended>|<get-ended>(){}[0]
+    final val epoch // io.github.valerioisufi.drawview.sync.protocol/Membership.epoch|{}epoch[0]
+        final fun <get-epoch>(): kotlin/Int // io.github.valerioisufi.drawview.sync.protocol/Membership.epoch.<get-epoch>|<get-epoch>(){}[0]
+    final val members // io.github.valerioisufi.drawview.sync.protocol/Membership.members|{}members[0]
+        final fun <get-members>(): kotlin.collections/List<io.github.valerioisufi.drawview.sync.protocol/Member> // io.github.valerioisufi.drawview.sync.protocol/Membership.members.<get-members>|<get-members>(){}[0]
+    final val owner // io.github.valerioisufi.drawview.sync.protocol/Membership.owner|{}owner[0]
+        final fun <get-owner>(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Membership.owner.<get-owner>|<get-owner>(){}[0]
+    final val removed // io.github.valerioisufi.drawview.sync.protocol/Membership.removed|{}removed[0]
+        final fun <get-removed>(): kotlin.collections/List<io.github.valerioisufi.drawview.sync.protocol/Member> // io.github.valerioisufi.drawview.sync.protocol/Membership.removed.<get-removed>|<get-removed>(){}[0]
+    final val version // io.github.valerioisufi.drawview.sync.protocol/Membership.version|{}version[0]
+        final fun <get-version>(): kotlin/Long // io.github.valerioisufi.drawview.sync.protocol/Membership.version.<get-version>|<get-version>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Membership.component1|component1(){}[0]
+    final fun component2(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Membership.component2|component2(){}[0]
+    final fun component3(): kotlin/Long // io.github.valerioisufi.drawview.sync.protocol/Membership.component3|component3(){}[0]
+    final fun component4(): kotlin/Int // io.github.valerioisufi.drawview.sync.protocol/Membership.component4|component4(){}[0]
+    final fun component5(): kotlin.collections/List<io.github.valerioisufi.drawview.sync.protocol/Member> // io.github.valerioisufi.drawview.sync.protocol/Membership.component5|component5(){}[0]
+    final fun component6(): kotlin.collections/List<io.github.valerioisufi.drawview.sync.protocol/Member> // io.github.valerioisufi.drawview.sync.protocol/Membership.component6|component6(){}[0]
+    final fun component7(): kotlin/Boolean // io.github.valerioisufi.drawview.sync.protocol/Membership.component7|component7(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/Long = ..., kotlin/Int = ..., kotlin.collections/List<io.github.valerioisufi.drawview.sync.protocol/Member> = ..., kotlin.collections/List<io.github.valerioisufi.drawview.sync.protocol/Member> = ..., kotlin/Boolean = ...): io.github.valerioisufi.drawview.sync.protocol/Membership // io.github.valerioisufi.drawview.sync.protocol/Membership.copy|copy(kotlin.String;kotlin.String;kotlin.Long;kotlin.Int;kotlin.collections.List<io.github.valerioisufi.drawview.sync.protocol.Member>;kotlin.collections.List<io.github.valerioisufi.drawview.sync.protocol.Member>;kotlin.Boolean){}[0]
+    final fun encode(): kotlin/ByteArray // io.github.valerioisufi.drawview.sync.protocol/Membership.encode|encode(){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.sync.protocol/Membership.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.sync.protocol/Membership.hashCode|hashCode(){}[0]
+    final fun knows(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.sync.protocol/Membership.knows|knows(kotlin.String){}[0]
+    final fun mayWrite(kotlin/String, kotlin/Long): kotlin/Boolean // io.github.valerioisufi.drawview.sync.protocol/Membership.mayWrite|mayWrite(kotlin.String;kotlin.Long){}[0]
+    final fun memberOf(kotlin/String): io.github.valerioisufi.drawview.sync.protocol/Member? // io.github.valerioisufi.drawview.sync.protocol/Membership.memberOf|memberOf(kotlin.String){}[0]
+    final fun signedBy(io.github.valerioisufi.drawview.sync.protocol/DeviceIdentity): io.github.valerioisufi.drawview.sync.protocol/SignedMembership // io.github.valerioisufi.drawview.sync.protocol/Membership.signedBy|signedBy(io.github.valerioisufi.drawview.sync.protocol.DeviceIdentity){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/Membership.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.sync.protocol/Membership> { // io.github.valerioisufi.drawview.sync.protocol/Membership.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.sync.protocol/Membership.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.sync.protocol/Membership.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.sync.protocol/Membership.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.sync.protocol/Membership // io.github.valerioisufi.drawview.sync.protocol/Membership.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.sync.protocol/Membership) // io.github.valerioisufi.drawview.sync.protocol/Membership.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.sync.protocol.Membership){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.sync.protocol/OpenFrame { // io.github.valerioisufi.drawview.sync.protocol/OpenFrame|null[0]
+    constructor <init>(kotlin/Int, kotlin/String) // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.<init>|<init>(kotlin.Int;kotlin.String){}[0]
+
+    final val protocol // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.protocol|{}protocol[0]
+        final fun <get-protocol>(): kotlin/Int // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.protocol.<get-protocol>|<get-protocol>(){}[0]
+    final val tag // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.tag|{}tag[0]
+        final fun <get-tag>(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.tag.<get-tag>|<get-tag>(){}[0]
+
+    final fun component1(): kotlin/Int // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.component1|component1(){}[0]
+    final fun component2(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.component2|component2(){}[0]
+    final fun copy(kotlin/Int = ..., kotlin/String = ...): io.github.valerioisufi.drawview.sync.protocol/OpenFrame // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.copy|copy(kotlin.Int;kotlin.String){}[0]
+    final fun encode(): kotlin/ByteArray // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.encode|encode(){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.sync.protocol/OpenFrame> { // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.sync.protocol/OpenFrame // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.sync.protocol/OpenFrame) // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.sync.protocol.OpenFrame){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.Companion|null[0]
+        final fun decode(kotlin/ByteArray): io.github.valerioisufi.drawview.sync.protocol/OpenFrame? // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.Companion.decode|decode(kotlin.ByteArray){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.sync.protocol/OpenFrame> // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.sync.protocol/OperationSeal { // io.github.valerioisufi.drawview.sync.protocol/OperationSeal|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.sync.protocol/DocumentKey) // io.github.valerioisufi.drawview.sync.protocol/OperationSeal.<init>|<init>(io.github.valerioisufi.drawview.sync.protocol.DocumentKey){}[0]
+
+    final fun open(io.github.valerioisufi.drawview.sync.protocol/SealedOperation): kotlin/ByteArray // io.github.valerioisufi.drawview.sync.protocol/OperationSeal.open|open(io.github.valerioisufi.drawview.sync.protocol.SealedOperation){}[0]
+    final fun seal(kotlin/String, kotlin/Long, kotlin/ByteArray): io.github.valerioisufi.drawview.sync.protocol/SealedOperation // io.github.valerioisufi.drawview.sync.protocol/OperationSeal.seal|seal(kotlin.String;kotlin.Long;kotlin.ByteArray){}[0]
+}
+
+final class io.github.valerioisufi.drawview.sync.protocol/SealedOperation { // io.github.valerioisufi.drawview.sync.protocol/SealedOperation|null[0]
+    constructor <init>(kotlin/String, kotlin/Long, kotlin/ByteArray) // io.github.valerioisufi.drawview.sync.protocol/SealedOperation.<init>|<init>(kotlin.String;kotlin.Long;kotlin.ByteArray){}[0]
+
+    final val content // io.github.valerioisufi.drawview.sync.protocol/SealedOperation.content|{}content[0]
+        final fun <get-content>(): kotlin/ByteArray // io.github.valerioisufi.drawview.sync.protocol/SealedOperation.content.<get-content>|<get-content>(){}[0]
+    final val replica // io.github.valerioisufi.drawview.sync.protocol/SealedOperation.replica|{}replica[0]
+        final fun <get-replica>(): kotlin/String // io.github.valerioisufi.drawview.sync.protocol/SealedOperation.replica.<get-replica>|<get-replica>(){}[0]
+    final val sequence // io.github.valerioisufi.drawview.sync.protocol/SealedOperation.sequence|{}sequence[0]
+        final fun <get-sequence>(): kotlin/Long // io.github.valerioisufi.drawview.sync.protocol/SealedOperation.sequence.<get-sequence>|<get-sequence>(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.sync.protocol/SealedOperation> { // io.github.valerioisufi.drawview.sync.protocol/SealedOperation.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.sync.protocol/SealedOperation.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.sync.protocol/SealedOperation.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.sync.protocol/SealedOperation.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.sync.protocol/SealedOperation // io.github.valerioisufi.drawview.sync.protocol/SealedOperation.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.sync.protocol/SealedOperation) // io.github.valerioisufi.drawview.sync.protocol/SealedOperation.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.sync.protocol.SealedOperation){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.sync.protocol/SealedOperation.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.sync.protocol/SealedOperation> // io.github.valerioisufi.drawview.sync.protocol/SealedOperation.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.sync.protocol/SecureChannel : io.github.valerioisufi.drawview.sync.protocol/SyncChannel { // io.github.valerioisufi.drawview.sync.protocol/SecureChannel|null[0]
+    final fun close() // io.github.valerioisufi.drawview.sync.protocol/SecureChannel.close|close(){}[0]
+    final suspend fun receive(): kotlin/ByteArray? // io.github.valerioisufi.drawview.sync.protocol/SecureChannel.receive|receive(){}[0]
+    final suspend fun send(kotlin/ByteArray) // io.github.valerioisufi.drawview.sync.protocol/SecureChannel.send|send(kotlin.ByteArray){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.sync.protocol/SecureChannel.Companion|null[0]
+        final fun of(io.github.valerioisufi.drawview.sync.protocol/SyncChannel, io.github.valerioisufi.drawview.sync.protocol/DocumentKey): io.github.valerioisufi.drawview.sync.protocol/SecureChannel // io.github.valerioisufi.drawview.sync.protocol/SecureChannel.Companion.of|of(io.github.valerioisufi.drawview.sync.protocol.SyncChannel;io.github.valerioisufi.drawview.sync.protocol.DocumentKey){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.sync.protocol/SignedMembership { // io.github.valerioisufi.drawview.sync.protocol/SignedMembership|null[0]
+    constructor <init>(kotlin/ByteArray, kotlin/ByteArray) // io.github.valerioisufi.drawview.sync.protocol/SignedMembership.<init>|<init>(kotlin.ByteArray;kotlin.ByteArray){}[0]
+
+    final val bytes // io.github.valerioisufi.drawview.sync.protocol/SignedMembership.bytes|{}bytes[0]
+        final fun <get-bytes>(): kotlin/ByteArray // io.github.valerioisufi.drawview.sync.protocol/SignedMembership.bytes.<get-bytes>|<get-bytes>(){}[0]
+
+    final fun open(kotlin/String): io.github.valerioisufi.drawview.sync.protocol/Membership? // io.github.valerioisufi.drawview.sync.protocol/SignedMembership.open|open(kotlin.String){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.sync.protocol/SignedMembership> { // io.github.valerioisufi.drawview.sync.protocol/SignedMembership.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.sync.protocol/SignedMembership.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.sync.protocol/SignedMembership.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.sync.protocol/SignedMembership.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.sync.protocol/SignedMembership // io.github.valerioisufi.drawview.sync.protocol/SignedMembership.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.sync.protocol/SignedMembership) // io.github.valerioisufi.drawview.sync.protocol/SignedMembership.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.sync.protocol.SignedMembership){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.sync.protocol/SignedMembership.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.sync.protocol/SignedMembership> // io.github.valerioisufi.drawview.sync.protocol/SignedMembership.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.sync.protocol/SyncException : kotlin/Exception { // io.github.valerioisufi.drawview.sync.protocol/SyncException|null[0]
+    constructor <init>(kotlin/String, kotlin/Throwable? = ...) // io.github.valerioisufi.drawview.sync.protocol/SyncException.<init>|<init>(kotlin.String;kotlin.Throwable?){}[0]
+}
+
+final const val io.github.valerioisufi.drawview.sync.protocol/PROTOCOL_VERSION // io.github.valerioisufi.drawview.sync.protocol/PROTOCOL_VERSION|{}PROTOCOL_VERSION[0]
+    final fun <get-PROTOCOL_VERSION>(): kotlin/Int // io.github.valerioisufi.drawview.sync.protocol/PROTOCOL_VERSION.<get-PROTOCOL_VERSION>|<get-PROTOCOL_VERSION>(){}[0]

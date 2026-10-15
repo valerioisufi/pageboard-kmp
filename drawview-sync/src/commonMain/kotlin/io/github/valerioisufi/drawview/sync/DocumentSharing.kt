@@ -1,6 +1,14 @@
 package io.github.valerioisufi.drawview.sync
 
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
+import io.github.valerioisufi.drawview.sync.protocol.DeviceIdentity
+import io.github.valerioisufi.drawview.sync.protocol.DocumentKey
+import io.github.valerioisufi.drawview.sync.protocol.Invitation
+import io.github.valerioisufi.drawview.sync.protocol.Member
+import io.github.valerioisufi.drawview.sync.protocol.Membership
+import io.github.valerioisufi.drawview.sync.protocol.Role
+import io.github.valerioisufi.drawview.sync.protocol.SignedMembership
+import kotlin.random.Random
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -8,7 +16,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlin.random.Random
 
 /** What a connection is about, found by the tag of its first frame (see [DocumentSharing.match]). */
 internal sealed interface TagMatch {

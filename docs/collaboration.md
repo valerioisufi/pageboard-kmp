@@ -142,7 +142,9 @@ The origin of a change decides what the observers do:
 drawview-core      DocumentChange, DocumentSession, HybridClock, Operation, DocumentSnapshot,
                    DocumentAttachments
 drawview-store     persistent identifiers, operations log, OpenDocuments (Room: drawview-store-room)
-drawview-sync      SyncEngine, protocol, encryption, presence, InMemoryTransport
+drawview-sync-protocol  frames, encryption, sealed operations, identities, invitations,
+                   membership, transports (InMemoryTransport)
+drawview-sync      SyncEngine, messages, presence, SharingState
 drawview-sync-lan  LanTransport (TCP), LanDiscovery (JmDNS / NsdManager / Bonjour), LanSync
 drawview-sync-ui   Collaboration, editor extension, join dialog (Compose)
 drawview-sync-relay (later)

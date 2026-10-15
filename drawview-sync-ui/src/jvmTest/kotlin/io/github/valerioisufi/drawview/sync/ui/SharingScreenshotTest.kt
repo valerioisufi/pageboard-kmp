@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.takahirom.roborazzi.captureRoboImage
 import io.github.valerioisufi.drawview.sync.JoinStatus
-import io.github.valerioisufi.drawview.sync.Role
+import io.github.valerioisufi.drawview.sync.protocol.Role
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import io.github.valerioisufi.drawview.ui.theme.InkPalette
 import io.github.valerioisufi.drawview.ui.theme.LocalCanvasColors

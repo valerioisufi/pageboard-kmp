@@ -1,6 +1,8 @@
 package io.github.valerioisufi.drawview.sync
 
 import io.github.valerioisufi.drawview.model.SelectionActivity
+import io.github.valerioisufi.drawview.sync.protocol.OpenFrame
+import io.github.valerioisufi.drawview.sync.protocol.SignedMembership
 
 /**
  * The format of the messages of every version of the protocol (see [ProtocolFormatTest]): every
@@ -18,7 +20,7 @@ internal val PROTOCOL_FORMATS: Map<Int, String> = mapOf(
         addElements CLASS(pageId: kotlin.String, elements: List<io.github.valerioisufi.drawview.model.change.ElementData>, lostVersions?: kotlin.Boolean)
         addPage CLASS(page: io.github.valerioisufi.drawview.model.change.PageData)
         addResource CLASS(resource: io.github.valerioisufi.drawview.model.change.ResourceData)
-        admission CLASS(epoch: kotlin.Int, key: kotlin.String, membership: io.github.valerioisufi.drawview.sync.SignedMembership)
+        admission CLASS(epoch: kotlin.Int, key: kotlin.String, membership: io.github.valerioisufi.drawview.sync.protocol.SignedMembership)
         attachmentPart CLASS(key: kotlin.String, version: kotlin.String, offset: kotlin.Long, size: kotlin.Long, bytes: List<kotlin.Byte>)
         attachmentRequest CLASS(asks: List<io.github.valerioisufi.drawview.sync.AttachmentAsk>)
         attachments CLASS(versions: Map<kotlin.String, kotlin.String>)
@@ -50,11 +52,12 @@ internal val PROTOCOL_FORMATS: Map<Int, String> = mapOf(
         io.github.valerioisufi.drawview.model.change.ResourceData CLASS(id: kotlin.String, type: io.github.valerioisufi.drawview.model.DrawResource.ResourceType, hash?: kotlin.String)
         io.github.valerioisufi.drawview.model.geometry.AffineTransform CLASS(a?: kotlin.Float, b?: kotlin.Float, c?: kotlin.Float, d?: kotlin.Float, tx?: kotlin.Float, ty?: kotlin.Float)
         io.github.valerioisufi.drawview.sync.AttachmentAsk CLASS(key: kotlin.String, version: kotlin.String, from?: kotlin.Long)
-        io.github.valerioisufi.drawview.sync.OpenFrame CLASS(protocol: kotlin.Int, tag: kotlin.String)
         io.github.valerioisufi.drawview.sync.Presence CLASS(documentId: kotlin.String, pageId?: kotlin.String?, x?: kotlin.Float, y?: kotlin.Float, stroke?: kotlin.Long, ink?: List<kotlin.Float>, inkTool?: kotlin.String, inkColor?: kotlin.Int, inkSize?: kotlin.Float, inkInput?: kotlin.String, inkCancelled?: kotlin.Boolean, text?: text?, textPageId?: kotlin.String?, selection?: io.github.valerioisufi.drawview.model.SelectionActivity?, replica?: kotlin.String, name?: kotlin.String, sequence?: kotlin.Long)
         io.github.valerioisufi.drawview.sync.ResourceAsk CLASS(id: kotlin.String, from?: kotlin.Long)
-        io.github.valerioisufi.drawview.sync.SignedMembership CLASS(bytes: List<kotlin.Byte>, signature: List<kotlin.Byte>)
         io.github.valerioisufi.drawview.sync.SyncMessage SEALED(type: kotlin.String, value: kotlinx.serialization.Sealed<SyncMessage>)
+        io.github.valerioisufi.drawview.sync.protocol.OpenFrame CLASS(protocol: kotlin.Int, tag: kotlin.String)
+        io.github.valerioisufi.drawview.sync.protocol.SealedOperation CLASS(replica: kotlin.String, sequence: kotlin.Long, content: List<kotlin.Byte>)
+        io.github.valerioisufi.drawview.sync.protocol.SignedMembership CLASS(bytes: List<kotlin.Byte>, signature: List<kotlin.Byte>)
         joinRefused OBJECT()
         key CLASS(epoch: kotlin.Int, key: kotlin.String)
         kotlin.Boolean BOOLEAN()
@@ -69,11 +72,11 @@ internal val PROTOCOL_FORMATS: Map<Int, String> = mapOf(
         kotlinx.serialization.Sealed<Placement> CONTEXTUAL(box: box, stroke: stroke)
         kotlinx.serialization.Sealed<SyncMessage> CONTEXTUAL(admission: admission, attachmentPart: attachmentPart, attachmentRequest: attachmentRequest, attachments: attachments, challenge: challenge, hello: hello, joinRefused: joinRefused, key: key, versions: versions, leave: leave, membership: membership, membershipQuery: membershipQuery, operations: operations, ping: ping, presence: presence, resourceChunk: resourceChunk, resourceMissing: resourceMissing, resourceRequest: resourceRequest, snapshot: snapshot)
         leave OBJECT()
-        membership CLASS(membership: io.github.valerioisufi.drawview.sync.SignedMembership)
+        membership CLASS(membership: io.github.valerioisufi.drawview.sync.protocol.SignedMembership)
         membershipQuery CLASS(version: kotlin.Long)
         movePages CLASS(moves: List<io.github.valerioisufi.drawview.model.change.PageMove>)
         none OBJECT()
-        operations CLASS(operations: List<io.github.valerioisufi.drawview.model.change.Operation>)
+        operations CLASS(operations: List<io.github.valerioisufi.drawview.sync.protocol.SealedOperation>)
         pdf CLASS(id: kotlin.String, resourceId: kotlin.String, pdfPageIndex: kotlin.Int, order?: ElementOrder?)
         ping OBJECT()
         placeElements CLASS(pageId: kotlin.String, placements: List<io.github.valerioisufi.drawview.model.change.Placement>, toPageId?: kotlin.String)

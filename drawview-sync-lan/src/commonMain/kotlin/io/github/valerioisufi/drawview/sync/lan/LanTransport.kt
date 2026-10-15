@@ -1,8 +1,8 @@
 package io.github.valerioisufi.drawview.sync.lan
 
-import io.github.valerioisufi.drawview.sync.SyncChannel
-import io.github.valerioisufi.drawview.sync.SyncException
-import io.github.valerioisufi.drawview.sync.SyncTransport
+import io.github.valerioisufi.drawview.sync.protocol.SyncChannel
+import io.github.valerioisufi.drawview.sync.protocol.SyncException
+import io.github.valerioisufi.drawview.sync.protocol.SyncTransport
 import io.ktor.network.selector.SelectorManager
 import io.ktor.network.sockets.ServerSocket
 import io.ktor.network.sockets.Socket

@@ -1,4 +1,4 @@
-package io.github.valerioisufi.drawview.sync
+package io.github.valerioisufi.drawview.sync.protocol
 
 /**
  * What a device needs to join a shared document: its identifier, its title, the secret of the

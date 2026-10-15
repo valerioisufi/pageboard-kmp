@@ -17,10 +17,10 @@ import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.sync.InMemorySharedDocuments
-import io.github.valerioisufi.drawview.sync.Invitation
 import io.github.valerioisufi.drawview.sync.Presence
 import io.github.valerioisufi.drawview.sync.ResourceFiles
 import io.github.valerioisufi.drawview.sync.SyncEngine
+import io.github.valerioisufi.drawview.sync.protocol.Invitation
 import kotlin.math.abs
 import kotlin.math.sin
 import kotlin.test.Test

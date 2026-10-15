@@ -1,12 +1,15 @@
 package io.github.valerioisufi.drawview.sync
 
+import io.github.valerioisufi.drawview.model.change.Operation
+import io.github.valerioisufi.drawview.sync.protocol.OpenFrame
+import io.github.valerioisufi.drawview.sync.protocol.PROTOCOL_VERSION
+import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.descriptors.elementDescriptors
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 /**
  * The messages of the protocol have the format recorded for its version ([PROTOCOL_FORMATS]): a
@@ -19,7 +22,8 @@ class ProtocolFormatTest {
 
     @Test
     fun theMessagesHaveTheFormatRecordedForTheVersionOfTheProtocol() {
-        val format = describe(OpenFrame.serializer().descriptor, SyncMessage.serializer().descriptor)
+        // The operations travel sealed: their content (the changes) is part of the format too
+        val format = describe(OpenFrame.serializer().descriptor, SyncMessage.serializer().descriptor, Operation.serializer().descriptor)
         assertEquals(
             PROTOCOL_FORMATS[PROTOCOL_VERSION],
             format,
