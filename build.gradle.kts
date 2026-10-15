@@ -287,6 +287,20 @@ val desktopPdfiumPackage: String = pdfiumDesktopPlatforms.entries.firstOrNull { 
     ?: throw GradleException("Unknown desktop platform '$desktopPlatform': one of ${pdfiumDesktopPlatforms.values}")
 val nativeLibsPrebuilt = providers.gradleProperty("drawview.native.prebuilt").orNull == "true"
 
+/**
+ * The bash that runs build_desktop.sh. On Windows it is the one of Git for Windows, found next to
+ * the `git` of the PATH: the `bash` Windows finds first is the WSL launcher of System32, which
+ * would run the script in Linux.
+ */
+val desktopBash: String = if (!System.getProperty("os.name").lowercase().startsWith("windows")) "bash" else {
+    System.getenv("PATH").orEmpty().split(File.pathSeparator)
+        .map { File(it, "git.exe") }
+        .firstOrNull { it.isFile }
+        ?.let { git -> generateSequence(git.parentFile) { it.parentFile }.take(3).map { File(it, "bin/bash.exe") }.firstOrNull { it.isFile } }
+        ?.absolutePath
+        ?: "bash"
+}
+
 tasks.register<Exec>("buildDesktopNativeLibs") {
     group = "native"
     description = "Builds the Google Ink, MicroTeX, PDFium, whisper.cpp and trackpad (macOS) bridge JNI libraries for $desktopPlatform"
@@ -314,7 +328,7 @@ tasks.register<Exec>("buildDesktopNativeLibs") {
     // JNI headers of the JDK running Gradle
     environment("JAVA_HOME", System.getProperty("java.home"))
     workingDir(nativeSourcesDir)
-    commandLine("bash", "scripts/build_desktop.sh", desktopPlatform)
+    commandLine(desktopBash, "scripts/build_desktop.sh", desktopPlatform)
 }
 
 tasks.register("preparePdfiumAndroid") {

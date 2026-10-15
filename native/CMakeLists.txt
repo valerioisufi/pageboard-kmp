@@ -37,7 +37,7 @@ add_compile_definitions(NDEBUG)
 # Windows (clang-cl): static C/C++ runtime, so that the JNI libraries do not depend on the
 # Visual C++ redistributable; M_PI & co. from <cmath>; no min/max macros from <windows.h>.
 if(MSVC)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 if(WIN32)
     add_compile_definitions(_USE_MATH_DEFINES NOMINMAX)
@@ -49,6 +49,7 @@ endif()
 set(ABSL_PROPAGATE_CXX_STD ON CACHE BOOL "" FORCE)
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 set(ABSL_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
+set(ABSL_MSVC_STATIC_RUNTIME ON CACHE BOOL "" FORCE)
 add_subdirectory(external/abseil-cpp EXCLUDE_FROM_ALL)
 
 # ==============================================================================
@@ -362,7 +363,16 @@ if(EXISTS "${DRAWVIEW_OPUS_DIR}/include/opus.h" AND EXISTS "${DRAWVIEW_AAC_DIR}/
     set(OPUS_BUILD_PROGRAMS OFF CACHE BOOL "" FORCE)
     set(OPUS_INSTALL_PKG_CONFIG_MODULE OFF CACHE BOOL "" FORCE)
     set(OPUS_INSTALL_CMAKE_CONFIG_MODULE OFF CACHE BOOL "" FORCE)
+    set(OPUS_STATIC_RUNTIME ON CACHE BOOL "" FORCE)
     add_subdirectory("${DRAWVIEW_OPUS_DIR}" opus EXCLUDE_FROM_ALL)
+    # clang-cl defines MSVC, so opus gives its SSE4.1 sources no -msse4.1 and clang refuses their
+    # intrinsics. The flag goes to those sources only: the rest of opus keeps the runtime check.
+    if(MSVC AND CMAKE_C_COMPILER_ID STREQUAL "Clang")
+        get_target_property(OPUS_SOURCES opus SOURCES)
+        list(FILTER OPUS_SOURCES INCLUDE REGEX "_sse4_1\\.c$")
+        list(TRANSFORM OPUS_SOURCES PREPEND "${DRAWVIEW_OPUS_DIR}/")
+        set_source_files_properties(${OPUS_SOURCES} TARGET_DIRECTORY opus PROPERTIES COMPILE_OPTIONS -msse4.1)
+    endif()
 
     set(AAC_SRC "${DRAWVIEW_AAC_DIR}/aacenc/src")
     add_library(vo_aacenc STATIC
@@ -384,6 +394,9 @@ if(EXISTS "${DRAWVIEW_OPUS_DIR}/include/opus.h" AND EXISTS "${DRAWVIEW_AAC_DIR}/
     )
     if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
         target_compile_options(vo_aacenc PRIVATE -w)
+    endif()
+    if(MSVC)
+        target_compile_options(vo_aacenc PRIVATE /FIstdint.h)
     endif()
 
     if(DRAWVIEW_BUILD_JNI)
