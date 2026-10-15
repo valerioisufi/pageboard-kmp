@@ -20,47 +20,47 @@ import kotlin.math.sign
  * @param density Screen pixel density (used for dp to px scale bounds).
  * @param getContentRect Lambda returning the unscaled bounding box of document pages.
  */
-class CameraPhysicsEngine(
-    var density: Float = 1f,
+public class CameraPhysicsEngine(
+    public var density: Float = 1f,
     private val getContentRect: () -> Rect
 ) {
     /** Friction coefficient applied during fling gesture deceleration. */
-    var friction: Float = 3.5f
+    internal var friction: Float = 3.5f
 
     /** Stiffness of the spring for elastic bounce-back when viewport exceeds boundaries. */
-    var springStiffness: Float = 250f
+    internal var springStiffness: Float = 250f
 
     /** Damping factor of the spring to prevent infinite oscillations during bounce. */
-    var springDamping: Float = 25f
+    internal var springDamping: Float = 25f
 
     /** Visual tension resistance applied when dragging outside boundaries (rubber-banding). */
-    var rubberBandTension: Float = 0.55f
+    internal var rubberBandTension: Float = 0.55f
 
     /** How far a pinch can zoom beyond the scale limits (rubber-banding), as a ratio of the limit. */
-    var maxScaleOverscroll: Float = 1.5f
+    internal var maxScaleOverscroll: Float = 1.5f
 
     /** Minimum allowed ratio of screen dp per mm of document (maximum zoom out). */
-    var minDpPerMm: Float = 0.2f
+    internal var minDpPerMm: Float = 0.2f
 
     /** Maximum allowed ratio of screen dp per mm of document (maximum zoom in). */
-    var maxDpPerMm: Float = 50f
+    internal var maxDpPerMm: Float = 50f
 
     /** Dynamic minimum scale factor. */
-    val minScale: Float
+    internal val minScale: Float
         get() = minDpPerMm * density
 
     /** Dynamic maximum scale factor. */
-    val maxScale: Float
+    internal val maxScale: Float
         get() = maxDpPerMm * density
 
     /** Horizontal padding around document content in pixels. */
-    var horizontalPaddingPx: Float = 40f
+    internal var horizontalPaddingPx: Float = 40f
 
     /** Top padding around document content in pixels. */
-    var topPaddingPx: Float = 40f
+    internal var topPaddingPx: Float = 40f
 
     /** Bottom padding around document content in pixels. */
-    var bottomPaddingPx: Float = 40f
+    internal var bottomPaddingPx: Float = 40f
 
     private val axisX = AxisPhysics1D()
     private val axisY = AxisPhysics1D()
@@ -70,14 +70,14 @@ class CameraPhysicsEngine(
      * Incremented whenever the camera moves (gestures, fling, bounce): observable, so that what is
      * anchored to the pages follows the camera in the same frame as the canvas.
      */
-    var moveCount by mutableIntStateOf(0)
+    public var moveCount: Int by mutableIntStateOf(0)
         private set
 
     /**
      * Incremented when an animation starts (fling, bounce): observable, so that the canvas asks
      * for frames only while the camera animates and lets the device sleep at rest.
      */
-    var animationStarts by mutableIntStateOf(0)
+    internal var animationStarts by mutableIntStateOf(0)
         private set
 
     private var isUserDragging = false
@@ -100,7 +100,7 @@ class CameraPhysicsEngine(
     /**
      * Updates viewport dimensions and recalculates boundaries.
      */
-    fun setViewport(width: Float, height: Float) {
+    internal fun setViewport(width: Float, height: Float) {
         viewportRect = Rect(0f, 0f, width, height)
         updateDynamicBoundaries()
         moveCount++
@@ -109,7 +109,7 @@ class CameraPhysicsEngine(
     /**
      * Centers camera on a specific document point at the specified scale.
      */
-    fun centerOnWorldPoint(worldX: Float, worldY: Float, scale: Float, screenWidth: Float, screenHeight: Float) {
+    internal fun centerOnWorldPoint(worldX: Float, worldY: Float, scale: Float, screenWidth: Float, screenHeight: Float) {
         stopAllAnimations()
         scaleAxis.position = scale.coerceIn(minScale, maxScale)
 
@@ -120,11 +120,11 @@ class CameraPhysicsEngine(
         moveCount++
     }
 
-    fun getCurrentScale(): Float = scaleAxis.position
+    public fun getCurrentScale(): Float = scaleAxis.position
 
-    fun getCurrentTranslation(): Offset = Offset(axisX.position, axisY.position)
+    internal fun getCurrentTranslation(): Offset = Offset(axisX.position, axisY.position)
 
-    fun isAnimating(): Boolean {
+    internal fun isAnimating(): Boolean {
         return !isUserDragging && (
             axisX.state != PhysicsState.IDLE ||
             axisY.state != PhysicsState.IDLE ||
@@ -132,7 +132,7 @@ class CameraPhysicsEngine(
         )
     }
 
-    fun onDragStart() {
+    public fun onDragStart() {
         isUserDragging = true
         stopAllAnimations()
         gestureScale = scaleAxis.position
@@ -147,7 +147,7 @@ class CameraPhysicsEngine(
      * @param focusX Screen X coordinate of gesture focus.
      * @param focusY Screen Y coordinate of gesture focus.
      */
-    fun onDrag(dx: Float, dy: Float, scaleFactor: Float = 1f, focusX: Float = 0f, focusY: Float = 0f) {
+    public fun onDrag(dx: Float, dy: Float, scaleFactor: Float = 1f, focusX: Float = 0f, focusY: Float = 0f) {
         if (scaleFactor != 1f && scaleFactor > 0f) {
             val oldScale = scaleAxis.position
             scaleAxis.position = if (isUserDragging) {
@@ -177,7 +177,7 @@ class CameraPhysicsEngine(
      * @param velocityX Velocity along X in pixels per second.
      * @param velocityY Velocity along Y in pixels per second.
      */
-    fun onRelease(velocityX: Float = 0f, velocityY: Float = 0f) {
+    internal fun onRelease(velocityX: Float = 0f, velocityY: Float = 0f) {
         isUserDragging = false
         updateDynamicBoundaries()
 
@@ -197,13 +197,13 @@ class CameraPhysicsEngine(
         if (isAnimating()) animationStarts++
     }
 
-    fun stopAllAnimations() {
+    internal fun stopAllAnimations() {
         axisX.stop()
         axisY.stop()
         scaleAxis.stop()
     }
 
-    fun restoreToBounds(animated: Boolean = true) {
+    internal fun restoreToBounds(animated: Boolean = true) {
         updateDynamicBoundaries()
 
         if (animated) {
@@ -225,7 +225,7 @@ class CameraPhysicsEngine(
      *
      * @param deltaTimeMillis Elapsed milliseconds.
      */
-    fun update(deltaTimeMillis: Long) {
+    public fun update(deltaTimeMillis: Long) {
         if (isUserDragging || deltaTimeMillis <= 0 || !isAnimating()) return
 
         val dt = (deltaTimeMillis / 1000f).coerceAtMost(0.05f)
@@ -271,7 +271,7 @@ class CameraPhysicsEngine(
      * Generates transformation matrix for rendering with scale, translation,
      * and rubber-band tension.
      */
-    fun getRenderMatrix(outMatrix: Matrix2D = renderMatrix): Matrix2D {
+    internal fun getRenderMatrix(outMatrix: Matrix2D = renderMatrix): Matrix2D {
         val renderScale = scaleAxis.position
         val renderX = axisX.getRubberBandPosition(viewportRect.width.coerceAtLeast(1f), rubberBandTension)
         val renderY = axisY.getRubberBandPosition(viewportRect.height.coerceAtLeast(1f), rubberBandTension)
@@ -310,7 +310,7 @@ class CameraPhysicsEngine(
         }
     }
 
-    enum class PhysicsState { IDLE, FLINGING, BOUNCING }
+    internal enum class PhysicsState { IDLE, FLINGING, BOUNCING }
 
     private inner class AxisPhysics1D {
         var state = PhysicsState.IDLE

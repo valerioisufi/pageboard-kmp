@@ -10,7 +10,7 @@ import io.github.valerioisufi.drawview.platform.syncLock
  * of pixels: the images of the documents are data, their pixels a cache of the renderers.
  * Thread-safe: the tiles are rasterized on background workers.
  */
-class ImageCache(private val maxBytes: Long = 256L * 1024 * 1024) {
+public class ImageCache(private val maxBytes: Long = 256L * 1024 * 1024) {
     private val lock = SyncLock()
 
     // Most recently used last
@@ -18,14 +18,14 @@ class ImageCache(private val maxBytes: Long = 256L * 1024 * 1024) {
     private var bytes = 0L
 
     /** The pixels of the image file [path], decoded when they are not kept, or `null`. */
-    fun load(path: String): ImageBitmap? {
+    public fun load(path: String): ImageBitmap? {
         syncLock(lock) { images.remove(path)?.let { images[path] = it; return it } }
         // Decoded out of the lock: the other workers do not wait for it
         return decodeImageFile(path)?.also { put(path, it) }
     }
 
     /** Keeps [bitmap] as the pixels of the image file [path] (e.g. decoded while importing it). */
-    fun put(path: String, bitmap: ImageBitmap) = syncLock(lock) {
+    public fun put(path: String, bitmap: ImageBitmap): Unit = syncLock(lock) {
         images.remove(path)?.let { bytes -= it.byteCount }
         images[path] = bitmap
         bytes += bitmap.byteCount
@@ -37,8 +37,8 @@ class ImageCache(private val maxBytes: Long = 256L * 1024 * 1024) {
 
     private val ImageBitmap.byteCount: Long get() = width.toLong() * height * 4
 
-    companion object {
+    public companion object {
         /** The cache of the renderers of the process. */
-        val Shared: ImageCache = ImageCache()
+        public val Shared: ImageCache = ImageCache()
     }
 }

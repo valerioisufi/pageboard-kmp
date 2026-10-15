@@ -768,7 +768,7 @@ internal fun PageIndicator(controller: DrawViewController, withZoom: Boolean, mo
 
 /** An icon button of the tools of an extension (e.g. the assistant), tonal when [active]. */
 @Composable
-fun EditorActionButton(icon: ImageVector, label: String, onClick: () -> Unit, active: Boolean = false, highlighted: Boolean = false) {
+public fun EditorActionButton(icon: ImageVector, label: String, onClick: () -> Unit, active: Boolean = false, highlighted: Boolean = false) {
     DesignIconButton(
         icon = icon,
         label = label,

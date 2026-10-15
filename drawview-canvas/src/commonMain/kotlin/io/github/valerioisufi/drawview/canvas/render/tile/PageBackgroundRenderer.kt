@@ -15,7 +15,7 @@ import kotlin.math.min
  * Dedicated renderer for page backgrounds (solid colors and patterns: ruled, grid, dotted).
  * Renders into any Compose Canvas with exact millimeter-to-pixel scaling and viewport clipping.
  */
-class PageBackgroundRenderer {
+internal class PageBackgroundRenderer {
 
     private val bgPaint = Paint().apply {
         style = PaintingStyle.Fill

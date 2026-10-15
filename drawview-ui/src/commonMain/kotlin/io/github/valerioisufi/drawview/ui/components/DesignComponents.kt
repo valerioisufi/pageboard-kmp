@@ -1,23 +1,18 @@
 package io.github.valerioisufi.drawview.ui.components
 
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.ButtonDefaults
-import io.github.valerioisufi.drawview.ui.theme.elevation
-import io.github.valerioisufi.drawview.ui.theme.DrawViewElevation
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,11 +23,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarData
 import androidx.compose.material3.Surface
@@ -49,20 +47,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.ui.command.HoverTooltip
+import io.github.valerioisufi.drawview.ui.theme.DrawViewElevation
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
+import io.github.valerioisufi.drawview.ui.theme.elevation
 
 /** The colors of a badge: the containers of the palette. */
-enum class BadgeTone { Green, Blue, Red, Yellow }
+public enum class BadgeTone { Green, Blue, Red, Yellow }
 
 /** A small label of an item (e.g. "Lecture", "Shared", "PDF"): 22 dp, the container of its [tone]. */
 @Composable
-fun LabelBadge(text: String, tone: BadgeTone, modifier: Modifier = Modifier, icon: ImageVector? = null) {
+public fun LabelBadge(text: String, tone: BadgeTone, modifier: Modifier = Modifier, icon: ImageVector? = null) {
     val colors = MaterialTheme.colorScheme
     val (container, content) = when (tone) {
         BadgeTone.Green -> colors.primaryContainer to colors.onPrimaryContainer
@@ -84,7 +84,7 @@ fun LabelBadge(text: String, tone: BadgeTone, modifier: Modifier = Modifier, ico
 }
 
 /** The look of a [DesignIconButton]. */
-enum class IconButtonStyle {
+public enum class IconButtonStyle {
     /** Only the icon (a primary container when selected). */
     Standard,
 
@@ -101,7 +101,7 @@ enum class IconButtonStyle {
  * @param selected a toggle that is on.
  */
 @Composable
-fun DesignIconButton(
+public fun DesignIconButton(
     icon: ImageVector,
     label: String,
     onClick: () -> Unit,
@@ -143,7 +143,7 @@ private val Color.isSpecified: Boolean get() = this != Color.Unspecified
  * fully rounded.
  */
 @Composable
-fun DesignFilterChip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+public fun DesignFilterChip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     Surface(
         onClick = onClick,
@@ -166,7 +166,7 @@ fun DesignFilterChip(label: String, selected: Boolean, onClick: () -> Unit, modi
 
 /** A row of chips, scrolled when it does not fit. */
 @Composable
-fun ChipRow(modifier: Modifier = Modifier, contentPadding: PaddingValues = PaddingValues(), content: @Composable RowScope.() -> Unit) {
+public fun ChipRow(modifier: Modifier = Modifier, contentPadding: PaddingValues = PaddingValues(), content: @Composable RowScope.() -> Unit) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -184,7 +184,7 @@ fun ChipRow(modifier: Modifier = Modifier, contentPadding: PaddingValues = Paddi
  * keyboard.
  */
 @Composable
-fun SearchField(
+public fun SearchField(
     query: String,
     onQueryChange: (String) -> Unit,
     placeholder: String,
@@ -248,7 +248,7 @@ fun SearchField(
  * it holds; the primary container when [selected].
  */
 @Composable
-fun NavigationItem(
+public fun NavigationItem(
     icon: ImageVector,
     label: String,
     selected: Boolean,
@@ -285,13 +285,13 @@ fun NavigationItem(
 
 /** [content] in the [color] of the content (the icons and texts of a bar). */
 @Composable
-fun WithContentColor(color: Color, content: @Composable () -> Unit) {
+internal fun WithContentColor(color: Color, content: @Composable () -> Unit) {
     CompositionLocalProvider(LocalContentColor provides color, content = content)
 }
 
 /** A message of the design: the inverse surface rounded 12 dp, its action in the inverse primary. */
 @Composable
-fun DesignSnackbar(data: SnackbarData, modifier: Modifier = Modifier) {
+internal fun DesignSnackbar(data: SnackbarData, modifier: Modifier = Modifier) {
     Snackbar(
         snackbarData = data,
         modifier = modifier,
@@ -308,7 +308,7 @@ fun DesignSnackbar(data: SnackbarData, modifier: Modifier = Modifier) {
  * not [enabled] dimmed.
  */
 @Composable
-fun <T> SegmentedChoice(
+public fun <T> SegmentedChoice(
     options: List<T>,
     selected: T,
     label: @Composable (T) -> String,
@@ -351,7 +351,7 @@ fun <T> SegmentedChoice(
 
 /** A tonal button of the design: the primary container (Material's tonal button takes the secondary one). */
 @Composable
-fun TonalButton(
+public fun TonalButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
@@ -373,7 +373,7 @@ fun TonalButton(
 
 /** An outlined button of the design: the outline, its label in the primary color (or [contentColor]). */
 @Composable
-fun OutlineButton(
+public fun OutlineButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,

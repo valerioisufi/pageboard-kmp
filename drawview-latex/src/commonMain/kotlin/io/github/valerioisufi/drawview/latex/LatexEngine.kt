@@ -15,7 +15,7 @@ import kotlinx.coroutines.sync.withLock
 /**
  * Platform binding of the native MicroTeX engine.
  */
-expect object LatexPlatformEngine {
+internal expect object LatexPlatformEngine {
     /** Initializes the native engine with the directory of the unpacked TeX resources. */
     fun init(resourcesDirectory: String): Boolean
     fun isNativeReady(): Boolean
@@ -35,13 +35,13 @@ internal expect fun texResourcesDirectory(): String
  * High-level engine for parsing, sanitizing, and rendering LaTeX mathematical formulas
  * using the native MicroTeX C++ engine (JNI on Android and on the desktop, cinterop on iOS).
  */
-object LatexEngine {
+public object LatexEngine {
 
     private val initMutex = Mutex()
     private val _isReady = MutableStateFlow(false)
 
     /** Emits `true` once the engine is ready to render formulas. */
-    val isReady: StateFlow<Boolean> = _isReady.asStateFlow()
+    public val isReady: StateFlow<Boolean> = _isReady.asStateFlow()
 
     /**
      * Unpacks the TeX resources (once per version) and initializes the native engine.
@@ -49,7 +49,7 @@ object LatexEngine {
      *
      * @return `true` when the engine is ready.
      */
-    suspend fun initialize(): Boolean = initMutex.withLock {
+    public suspend fun initialize(): Boolean = initMutex.withLock {
         if (LatexPlatformEngine.isNativeReady()) {
             _isReady.value = true
             return@withLock true
@@ -68,7 +68,7 @@ object LatexEngine {
     /**
      * Initializes the native engine with an already unpacked resources directory.
      */
-    fun init(resourcesDirectory: String): Boolean {
+    public fun init(resourcesDirectory: String): Boolean {
         val ready = LatexPlatformEngine.isNativeReady() || LatexPlatformEngine.init(resourcesDirectory)
         _isReady.value = ready
         return ready
@@ -77,14 +77,14 @@ object LatexEngine {
     /**
      * Checks if the native TeX C++ library is loaded and ready.
      */
-    fun isNativeReady(): Boolean = LatexPlatformEngine.isNativeReady()
+    internal fun isNativeReady(): Boolean = LatexPlatformEngine.isNativeReady()
 
     /**
      * Sanitizes raw LaTeX input by stripping delimiter markers ($$, $, \[, \]),
      * balancing unclosed braces during real-time typing, and prepending empty
      * bases to lone exponents/subscripts.
      */
-    fun sanitizeLatexString(raw: String): String {
+    internal fun sanitizeLatexString(raw: String): String {
         var s = raw.trim()
         if (s.startsWith("$$") && s.endsWith("$$") && s.length >= 4) {
             s = s.substring(2, s.length - 2).trim()
@@ -132,7 +132,7 @@ object LatexEngine {
      * Renders a sanitized LaTeX formula to a LatexResult containing ImageBitmap and baseline ratio.
      * Returns `null` when the formula is invalid or the engine is not initialized yet.
      */
-    fun renderFormula(
+    public fun renderFormula(
         latex: String,
         fontSizePx: Float,
         color: Color,
@@ -142,7 +142,7 @@ object LatexEngine {
     /**
      * Renders a sanitized LaTeX formula using an ARGB integer color.
      */
-    fun renderFormula(
+    public fun renderFormula(
         latex: String,
         fontSizePx: Float,
         colorArgb: Int,
@@ -162,7 +162,7 @@ object LatexEngine {
      * platform (characters of its fonts, lines, rectangles: see [TexDrawing]), e.g. to write it as
      * vectors; `null` when it is invalid or the engine is not initialized yet.
      */
-    fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): TexDrawing? {
+    public fun drawing(latex: String, fontSizePx: Float, colorArgb: Int): TexDrawing? {
         val clean = sanitizeLatexString(latex)
         if (clean.isBlank() || !LatexPlatformEngine.isNativeReady()) return null
         return try {
@@ -177,12 +177,12 @@ object LatexEngine {
      * [TexFont.BOLD], [TexFont.ITALIC], both): the same on every platform, instead of the fonts of
      * the system. Set before the first formula.
      */
-    fun setTextFonts(byStyle: Map<Int, ByteArray>) = TexTextFonts.set(byStyle)
+    public fun setTextFonts(byStyle: Map<Int, ByteArray>): Unit = TexTextFonts.set(byStyle)
 
     /**
      * Renders a LaTeX formula directly into an ImageBitmap with transparent background.
      */
-    fun renderToBitmap(
+    internal fun renderToBitmap(
         latex: String,
         fontSizePx: Float,
         color: Color,
@@ -192,7 +192,7 @@ object LatexEngine {
     /**
      * Renders a LaTeX formula directly into an ImageBitmap using an ARGB integer color.
      */
-    fun renderToBitmap(
+    internal fun renderToBitmap(
         latex: String,
         fontSizePx: Float,
         colorArgb: Int,
@@ -202,7 +202,7 @@ object LatexEngine {
     /**
      * Generates an error warning badge ImageBitmap for invalid LaTeX syntax.
      */
-    fun generateErrorBitmap(latex: String, fontSizePx: Float): ImageBitmap {
+    internal fun generateErrorBitmap(latex: String, fontSizePx: Float): ImageBitmap {
         return LatexPlatformEngine.generateErrorBitmap(latex, fontSizePx)
     }
 
@@ -210,7 +210,7 @@ object LatexEngine {
      * The engine as the formula renderer of the editors, the thumbnails and the export (give it
      * to `DrawViewEngines`).
      */
-    val formulaRenderer: FormulaRenderer = object : FormulaRenderer {
+    public val formulaRenderer: FormulaRenderer = object : FormulaRenderer {
         override val isReady: StateFlow<Boolean> get() = this@LatexEngine.isReady
 
         override suspend fun prepare(textFonts: Map<TextFace, ByteArray>) {

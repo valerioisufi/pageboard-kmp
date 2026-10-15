@@ -8,9 +8,9 @@ package io.github.valerioisufi.drawview.model
  * The meshes are local: the inputs are what is stored and synchronized, so two devices modeling
  * with different modellers still end up with the same document.
  */
-fun interface StrokeModeller {
+public fun interface StrokeModeller {
     /** The mesh of the stroke of [points] drawn with [brush], or `null` when there is none. */
-    fun buildMesh(points: List<StrokePoint>, brush: BrushConfig, toolType: InputToolType): StrokeMesh?
+    public fun buildMesh(points: List<StrokePoint>, brush: BrushConfig, toolType: InputToolType): StrokeMesh?
 }
 
 /**
@@ -18,7 +18,7 @@ fun interface StrokeModeller {
  * modeller of the documents of the model alone; the stores and the editors use the one of Google
  * Ink (`InkStrokeModeller` of `drawview-ink`).
  */
-object KotlinStrokeModeller : StrokeModeller {
+public object KotlinStrokeModeller : StrokeModeller {
     override fun buildMesh(points: List<StrokePoint>, brush: BrushConfig, toolType: InputToolType): StrokeMesh? {
         if (points.isEmpty()) return null
         val delegate = KotlinStrokeEngineDelegate()
@@ -34,4 +34,4 @@ object KotlinStrokeModeller : StrokeModeller {
 }
 
 /** Physical length of one stroke unit: the strokes are modeled in page millimeters. */
-const val STROKE_UNIT_LENGTH_CM_MM: Float = 0.1f
+public const val STROKE_UNIT_LENGTH_CM_MM: Float = 0.1f

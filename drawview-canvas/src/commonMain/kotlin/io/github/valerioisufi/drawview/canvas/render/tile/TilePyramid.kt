@@ -11,7 +11,7 @@ import kotlin.math.roundToInt
  * Mathematical utilities for Level of Detail (LOD) calculations, coordinate system conversions,
  * and tile pyramid spatial queries.
  */
-object TilePyramid {
+internal object TilePyramid {
     /** Fixed tile dimension in pixels (width and height). */
     const val TILE_SIZE = 512
 

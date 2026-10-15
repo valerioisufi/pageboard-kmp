@@ -2,7 +2,7 @@ package io.nano.tex
 
 import io.github.valerioisufi.drawview.latex.TexOp
 
-class ActionRecorder {
+internal class ActionRecorder {
     companion object {
         const val ACT_setFont: Byte = 0
         const val ACT_setColor: Byte = 1

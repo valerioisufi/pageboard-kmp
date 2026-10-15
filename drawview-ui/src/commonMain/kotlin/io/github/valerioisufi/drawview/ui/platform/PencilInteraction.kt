@@ -3,7 +3,7 @@ package io.github.valerioisufi.drawview.ui.platform
 import androidx.compose.runtime.Composable
 
 /** What a gesture of the stylus itself asks for (a double tap, a squeeze of the Apple Pencil). */
-enum class PencilAction {
+internal enum class PencilAction {
     /** The eraser, or back to the tool before it. */
     SWITCH_ERASER,
 
@@ -23,4 +23,4 @@ enum class PencilAction {
  * platforms.
  */
 @Composable
-expect fun PencilInteractionEffect(onAction: (PencilAction) -> Unit)
+internal expect fun PencilInteractionEffect(onAction: (PencilAction) -> Unit)

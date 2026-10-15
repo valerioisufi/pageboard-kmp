@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-actual fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) -> Unit): () -> Unit {
+public actual fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) -> Unit): () -> Unit {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val currentOnPicked by rememberUpdatedState(onPicked)
@@ -61,7 +61,7 @@ private fun readUri(context: Context, uri: Uri): PickedFile? = try {
 }
 
 @Composable
-actual fun HideSystemBarsEffect() {
+internal actual fun HideSystemBarsEffect() {
     val view = LocalView.current
     DisposableEffect(view) {
         val window = view.context.findActivity()?.window

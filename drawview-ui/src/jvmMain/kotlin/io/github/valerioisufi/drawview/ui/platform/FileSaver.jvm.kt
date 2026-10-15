@@ -8,7 +8,7 @@ import java.awt.Frame
 import java.io.File
 
 @Composable
-actual fun rememberFileSaver(title: String, mimeType: String, onTarget: (FileTarget) -> Unit): (suggestedName: String) -> Unit {
+public actual fun rememberFileSaver(title: String, mimeType: String, onTarget: (FileTarget) -> Unit): (suggestedName: String) -> Unit {
     val target by rememberUpdatedState(onTarget)
     return { name -> chooseFileToSave(title, name)?.let { target(FileTarget(it)) } }
 }

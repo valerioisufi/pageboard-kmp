@@ -24,7 +24,7 @@ import kotlinx.coroutines.withContext
  * Imports images and PDF documents into the document resources and pages. A file already
  * imported (in any document) is kept once: its content is found by its hash.
  */
-class MediaManager(private val controller: DrawViewController) {
+public class MediaManager(private val controller: DrawViewController) {
 
     /** The file of [bytes] (of hash [hash]): the one already kept, or a new one. */
     private suspend fun storedFile(bytes: ByteArray, hash: String, prefix: String, extension: String): String? {
@@ -39,7 +39,7 @@ class MediaManager(private val controller: DrawViewController) {
      *
      * @param extension file extension of the encoded image (png, jpg, webp, ...).
      */
-    fun importImage(bytes: ByteArray, extension: String = "png", targetScreen: Offset? = null) {
+    public fun importImage(bytes: ByteArray, extension: String = "png", targetScreen: Offset? = null) {
         controller.coroutineScope.launch {
             val hash = withContext(Dispatchers.Default) { Sha256.of(bytes) }
             val prepared = withContext(Dispatchers.Default) {
@@ -91,7 +91,7 @@ class MediaManager(private val controller: DrawViewController) {
      * Imports a file by its [extension] (a PDF, an image: [IMPORTED_EXTENSIONS]), an image placed
      * on the page under [targetScreen]; whether it is a kind of file the editor imports.
      */
-    fun importFile(bytes: ByteArray, extension: String, targetScreen: Offset? = null): Boolean {
+    public fun importFile(bytes: ByteArray, extension: String, targetScreen: Offset? = null): Boolean {
         val kind = extension.lowercase()
         when (kind) {
             "pdf" -> importPdf(bytes)
@@ -105,7 +105,7 @@ class MediaManager(private val controller: DrawViewController) {
      * Imports a PDF document, appending one page per PDF page at the end of the document; a
      * document of one empty page (a note just made) becomes the PDF, without that page.
      */
-    fun importPdf(bytes: ByteArray) {
+    public fun importPdf(bytes: ByteArray) {
         val adapter = controller.tileManager.tileRenderer.pdfAdapter
         if (adapter == null) {
             controller.emitMessage(DrawViewController.Message.PDF_NOT_SUPPORTED)
@@ -155,11 +155,11 @@ class MediaManager(private val controller: DrawViewController) {
         }
     }
 
-    companion object {
+    public companion object {
         /** The extensions of the images the editor imports. */
-        val IMAGE_EXTENSIONS: Set<String> = setOf("png", "jpg", "jpeg", "webp", "gif", "bmp")
+        public val IMAGE_EXTENSIONS: Set<String> = setOf("png", "jpg", "jpeg", "webp", "gif", "bmp")
 
         /** The extensions of the files the editor imports: the PDFs and the images. */
-        val IMPORTED_EXTENSIONS: Set<String> = IMAGE_EXTENSIONS + "pdf"
+        public val IMPORTED_EXTENSIONS: Set<String> = IMAGE_EXTENSIONS + "pdf"
     }
 }

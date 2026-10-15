@@ -49,20 +49,20 @@ import kotlinx.coroutines.launch
  *
  * @param onInvalidate Callback triggered when a new tile is rasterized to request a canvas redraw.
  */
-class TileManager(
-    val tileRenderer: TileRenderer = TileRenderer(),
-    val tileCache: TileCache = TileCache(),
+public class TileManager(
+    public val tileRenderer: TileRenderer = TileRenderer(),
+    internal val tileCache: TileCache = TileCache(),
     onInvalidate: () -> Unit = {}
 ) {
     /** Callback invoked (possibly from a background thread) when the canvas must be redrawn. */
-    var onInvalidate: () -> Unit = onInvalidate
+    internal var onInvalidate: () -> Unit = onInvalidate
 
     /** General scope for tile rendering jobs. */
-    val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    public val scope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     /** Dedicated 2-thread worker for background tile rasterization. */
     @OptIn(ExperimentalCoroutinesApi::class)
-    val tileWorkerDispatcher = Dispatchers.Default.limitedParallelism(2)
+    internal val tileWorkerDispatcher = Dispatchers.Default.limitedParallelism(2)
 
     private val lock = SyncLock()
     private val activeTileJobs = mutableMapOf<TileKey, Job>()
@@ -137,7 +137,7 @@ class TileManager(
      * @param pageRects The World Space bounds of each page (indexed like [DrawDocument.pages]).
      * @param skipPageKey Page not drawn (e.g. the page being dragged while reordering).
      */
-    fun drawTiles(
+    internal fun drawTiles(
         canvas: Canvas,
         cameraMatrix: Matrix2D,
         viewportBounds: Rect,
@@ -336,7 +336,7 @@ class TileManager(
      * Draws all the tiles of a single page at an arbitrary destination rectangle (used to render
      * the page being dragged while reordering pages).
      */
-    fun drawPageTiles(canvas: Canvas, page: DrawPage, pageWorldRect: Rect, destScreenRect: Rect, cameraScale: Float) {
+    internal fun drawPageTiles(canvas: Canvas, page: DrawPage, pageWorldRect: Rect, destScreenRect: Rect, cameraScale: Float) {
         val lod = TilePyramid.calculateLod(cameraScale)
         val range = TilePyramid.getPageIntersectingTileRange(
             0f, 0f, pageWorldRect.width, pageWorldRect.height,
@@ -385,7 +385,7 @@ class TileManager(
      * page changed): the tiles of the pages laid out at another scale are dropped, the ones on
      * screen are drawn stretched until the new ones are ready.
      */
-    fun updateLayout(pages: List<DrawPage>, pageRects: List<Rect>) {
+    internal fun updateLayout(pages: List<DrawPage>, pageRects: List<Rect>) {
         for (i in 0 until min(pages.size, pageRects.size)) {
             ensurePageGeometry(pages[i].renderKey, pageRects[i])
         }
@@ -434,12 +434,12 @@ class TileManager(
      * Whether tiles are being rasterized: the pages on screen may still be drawn without them (a
      * screenshot test waits for them).
      */
-    val isRasterizing: Boolean get() = syncLock(lock) { activeTileJobs.isNotEmpty() }
+    public val isRasterizing: Boolean get() = syncLock(lock) { activeTileJobs.isNotEmpty() }
 
     /**
      * Enqueues a tile for background rasterization on the dedicated worker dispatcher.
      */
-    fun enqueueTile(
+    internal fun enqueueTile(
         key: TileKey,
         document: DrawDocument,
         page: DrawPage,
@@ -524,7 +524,7 @@ class TileManager(
      * @param commit Mutation adding the strokes to their pages, executed atomically with the bake
      * so that background workers never miss or double-draw them.
      */
-    fun bakeStrokesDirectlySync(
+    internal fun bakeStrokesDirectlySync(
         strokesByPage: Map<Int, List<DrawStroke>>,
         document: DrawDocument,
         pageRects: List<Rect>,
@@ -593,7 +593,7 @@ class TileManager(
      * @param pageWorldRect World Space bounds of [page].
      * @param commit Mutation adding the marks to the page, executed atomically with the bake.
      */
-    fun bakeMarkupsDirectlySync(page: DrawPage, pageWorldRect: Rect, markups: List<DrawTextMarkup>, commit: () -> Unit) {
+    internal fun bakeMarkupsDirectlySync(page: DrawPage, pageWorldRect: Rect, markups: List<DrawTextMarkup>, commit: () -> Unit) {
         syncLock(lock) {
             commit()
             val bakes = recentBakes.getOrPut(page.renderKey) { mutableListOf() }
@@ -654,7 +654,7 @@ class TileManager(
      * Invalidates the tiles of [page] intersecting [dirtyMmRect] (page millimeters): they keep
      * being drawn (no flash) while a fresh version is rasterized in background.
      */
-    fun invalidatePageRegion(page: DrawPage, dirtyMmRect: Rect, pageWorldRect: Rect?) {
+    internal fun invalidatePageRegion(page: DrawPage, dirtyMmRect: Rect, pageWorldRect: Rect?) {
         bumpGeneration(page.renderKey)
         val scaleX = if (pageWorldRect != null && page.widthMm > 0f) pageWorldRect.width / page.widthMm else null
         val scaleY = if (pageWorldRect != null && page.heightMm > 0f) pageWorldRect.height / page.heightMm else null
@@ -678,7 +678,7 @@ class TileManager(
     /**
      * Invalidates every tile of the page identified by [pageKey].
      */
-    fun invalidatePage(pageKey: Long) {
+    internal fun invalidatePage(pageKey: Long) {
         bumpGeneration(pageKey)
         tileCache.invalidatePage(pageKey)
         onInvalidate()
@@ -687,7 +687,7 @@ class TileManager(
     /**
      * Evicts the tiles of the page identified by [pageKey] (e.g. after its deletion).
      */
-    fun removeForPage(pageKey: Long) {
+    internal fun removeForPage(pageKey: Long) {
         bumpGeneration(pageKey)
         tileCache.removeForPage(pageKey)
         syncLock(lock) {
@@ -701,7 +701,7 @@ class TileManager(
     /**
      * Drops the tiles of pages that are no longer part of [document].
      */
-    fun retainDocumentPages(document: DrawDocument) {
+    internal fun retainDocumentPages(document: DrawDocument) {
         val live = document.pages.map { it.renderKey }.toSet()
         tileCache.retainPages(live)
         syncLock(lock) {
@@ -711,7 +711,7 @@ class TileManager(
         pageTiles.keys.retainAll(live)
     }
 
-    fun invalidateAll() {
+    internal fun invalidateAll() {
         syncLock(lock) {
             activeTileJobs.values.forEach { it.cancel() }
             activeTileJobs.clear()
@@ -727,10 +727,10 @@ class TileManager(
     /**
      * Rasterizes the whole page into a thumbnail bitmap [widthPx] pixels wide.
      */
-    fun renderThumbnail(document: DrawDocument, page: DrawPage, widthPx: Int): ImageBitmap =
+    public fun renderThumbnail(document: DrawDocument, page: DrawPage, widthPx: Int): ImageBitmap =
         tileRenderer.renderThumbnail(document, page, widthPx)
 
-    fun cleanup() {
+    internal fun cleanup() {
         scope.cancel()
         syncLock(lock) {
             activeTileJobs.values.forEach { it.cancel() }

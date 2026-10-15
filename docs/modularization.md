@@ -266,11 +266,23 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 
 ### Controller
 
-* The managers receive narrow interfaces (`EditorHost`: conversions between screen and page,
-  submitting a change, redrawing, the selection) and become `internal`; `Viewport` (camera,
-  layout of the pages, conversions) and `CollaboratorPresence` leave the controller.
-* The public API of the controller is what the UI and the extensions use: tools, history,
-  selection commands, viewport, messages.
+* `Viewport` (`canvas.camera`: the size of the canvas, the layout of the pages, the camera, the
+  conversions between screen, world and page millimeters, the zoom, the moves between pages) and
+  `CollaboratorPresence` (the activity of the editor for the other devices, the collaborators
+  drawn over the document, the edits refused) leave the controller (892 lines to 530).
+* No `EditorHost`: the managers collaborate with each other (the selection with the text editor,
+  the marks, the snapping, the pages) and with most of the editor (the document, the session,
+  the viewport, the presence, the tiles, the history, the messages); an interface listing all of
+  it would be the controller under another name, without lower coupling. They keep the
+  controller (GRASP Controller of the editor, inside the canvas); what matters to the
+  applications is their public surface: their constructors are `internal`, and so is every
+  member the other modules do not use.
+* The public API is declared: explicit API mode strict in every library (convention plugin),
+  each declaration `public` or `internal` by its use outside of its module, the types reached by
+  a public signature public with what of them is used (e.g. `ChangeContext`, opaque: its
+  constructor and its values internal); the members called by name by the native code (JNI)
+  keep their JVM names. The ABI of every library is recorded in its `api/` directory (KGP ABI
+  validation): `check` fails when it changes, `updateKotlinAbi` records a change wanted.
 
 ### Sync and relay
 
@@ -317,7 +329,7 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 | 4a. Persistence port | `DocumentPersistence`, `ChangePersister`, `PersistenceQueue` in the model; the preferences of the editor as text by key (`PreferenceStore`, `DrawPreferences.encode`) | Done |
 | 4b. Stores | `drawview-store` / `drawview-store-room` / `drawview-store-testing`; segregated ports; no global store in the libraries; the Room migrations from version 16 (no destructive fallback); `SelectionActivity` in the model (the synchronization without the canvas) | Done |
 | 4c. Editor session | `EditorContext` given to the extensions; `EditorScreen` in `drawview-ui`; `drawview-session` (`EditorSession`, `DocumentEditorViewModel`, `EditorSessionScreen`, `DrawViewSessions`); `drawview-ui` without any store; the extension points in `ui.extension` | Done |
-| 5. Controller and API | `Viewport`, `CollaboratorPresence`, `EditorHost`, internal managers; explicit API strict and KDoc on every module; ABI dumps | |
+| 5. Controller and API | `Viewport`, `CollaboratorPresence`; no `EditorHost` (see Controller); explicit API strict in every library, the internals by their use; KDoc on every top-level public declaration; ABI dumps (`api/`, checked by `check`) | Done |
 | 6. Sync and relay protocol | `drawview-sync-protocol`; sealed operations with their identity in clear | |
 | 7. Feature modules | `drawview-lecture` / `drawview-lecture-ui`, `drawview-export` / `drawview-export-ui` (`ElementExporter`, export writing to a sink instead of `FileTarget`) | |
 | 8. Release readiness | consumer checks; licenses per artifact; Dokka; CI workflow for the native matrix and the publication (written, run once a remote exists); README of the modules | |
@@ -344,6 +356,8 @@ the sample running, and the modules it touches published to `mavenLocal()`.
 
 ## Left for later
 
+* The KDoc of the public members (about 670 without one, many self-explanatory: `id`, `undo()`,
+  `zoomIn()`): written with the Dokka report of phase 8, which lists them.
 * The built-in kinds drawn through `ElementRenderer` too: they need what a box cannot express
   (meshes, PDF pages, laid-out texts), so they keep their code in `TileRenderer` and the exporter.
 * `ElementExporter` (an element type written in a PDF as vectors): its elements are images at

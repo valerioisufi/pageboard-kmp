@@ -6,21 +6,21 @@ import io.github.valerioisufi.drawview.model.PdfTextLayout
 /**
  * Handle to an open PDF document for page inspection and rasterization.
  */
-interface PdfDocument : AutoCloseable {
+public interface PdfDocument : AutoCloseable {
     /**
      * Total number of pages in the document.
      */
-    val pageCount: Int
+    public val pageCount: Int
 
     /**
      * Returns the physical dimensions of the specified page in points (pt) and millimeters (mm).
      */
-    fun getPageSize(pageIndex: Int): PdfSize
+    public fun getPageSize(pageIndex: Int): PdfSize
 
     /**
      * Renders an entire page into a raster ImageBitmap at the specified pixel resolution.
      */
-    fun renderPage(
+    public fun renderPage(
         pageIndex: Int,
         widthPx: Int,
         heightPx: Int,
@@ -31,7 +31,7 @@ interface PdfDocument : AutoCloseable {
      * Renders a region of a page into a [widthPx] x [heightPx] bitmap: the whole page is scaled
      * to [sizeX] x [sizeY] pixels and placed at ([startX], [startY]) in the bitmap.
      */
-    fun renderPageSlice(
+    public fun renderPageSlice(
         pageIndex: Int,
         startX: Int,
         startY: Int,
@@ -46,13 +46,13 @@ interface PdfDocument : AutoCloseable {
      * Text of the specified page (the text layer of the PDF: empty for a scanned page), or `null`
      * when the page cannot be read.
      */
-    fun getPageText(pageIndex: Int): String?
+    public fun getPageText(pageIndex: Int): String?
 
     /**
      * Characters of the text of the specified page with their boxes (no character for a scanned
      * page), or `null` when the page cannot be read.
      */
-    fun getPageTextLayout(pageIndex: Int): PdfTextLayout?
+    public fun getPageTextLayout(pageIndex: Int): PdfTextLayout?
 
     /**
      * Closes the document and releases native resources.

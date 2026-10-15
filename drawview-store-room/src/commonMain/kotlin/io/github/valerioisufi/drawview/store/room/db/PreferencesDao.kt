@@ -5,7 +5,7 @@ import androidx.room.Query
 import androidx.room.Upsert
 
 @Dao
-interface PreferencesDao {
+internal interface PreferencesDao {
     @Upsert
     suspend fun upsert(preference: PreferenceEntity)
 

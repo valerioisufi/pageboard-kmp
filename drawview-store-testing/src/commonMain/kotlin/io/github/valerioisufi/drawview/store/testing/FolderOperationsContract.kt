@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.first
  * Folder operations every [DocumentStore] must support: run by the tests of each store, of DrawView
  * or of an application, on an empty store.
  */
-suspend fun checkFolderOperations(store: DocumentStore) {
+public suspend fun checkFolderOperations(store: DocumentStore) {
     assertTrue(store.createFolder("Math", null))
     assertFalse(store.createFolder("Math", null), "folder names are unique in a parent")
     val math = store.folders.first().single()

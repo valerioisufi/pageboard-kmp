@@ -37,7 +37,7 @@ import org.jetbrains.compose.resources.stringResource
  * to a preset or delete it.
  */
 @Composable
-fun TextMarkupActionBar(
+internal fun TextMarkupActionBar(
     controller: DrawViewController,
     modifier: Modifier = Modifier
 ) {

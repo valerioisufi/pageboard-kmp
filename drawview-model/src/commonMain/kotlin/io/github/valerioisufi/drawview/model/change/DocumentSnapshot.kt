@@ -20,7 +20,7 @@ import kotlinx.serialization.Serializable
  * operations.
  */
 @Serializable
-data class DocumentSnapshot(
+public data class DocumentSnapshot(
     val id: String,
     val title: String,
     val defaultWidthMm: Float,
@@ -37,7 +37,7 @@ data class DocumentSnapshot(
      * A new document with this state, its strokes modeled by [modeller]; its resources have no
      * file ([DrawResource.path] empty) until they are received.
      */
-    fun toDocument(modeller: StrokeModeller = KotlinStrokeModeller): DrawDocument {
+    public fun toDocument(modeller: StrokeModeller = KotlinStrokeModeller): DrawDocument {
         val document = DrawDocument(
             id = id,
             title = title,
@@ -63,7 +63,7 @@ data class DocumentSnapshot(
  * versions of its content and what of it its removal saw (see [DrawPage.isHidden]).
  */
 @Serializable
-data class PageSnapshot(
+public data class PageSnapshot(
     val data: PageData,
     val added: Stamp = Stamp.ZERO,
     val removed: Stamp? = null,
@@ -75,7 +75,7 @@ data class PageSnapshot(
     val removalSaw: Versions? = null
 ) {
     /** A new page of [document] with this state. */
-    fun toPage(document: DrawDocument): DrawPage {
+    public fun toPage(document: DrawDocument): DrawPage {
         val page = data.toPage(document)
         page.added = added
         page.removed = removed
@@ -91,8 +91,8 @@ data class PageSnapshot(
 
 /** The stamps of the last changes of an element (see [DrawElement]). */
 @Serializable
-data class ElementVersions(val added: Stamp, val removed: Stamp? = null, val placed: Stamp, val updated: Stamp) {
-    fun applyTo(element: DrawElement) {
+public data class ElementVersions(val added: Stamp, val removed: Stamp? = null, val placed: Stamp, val updated: Stamp) {
+    public fun applyTo(element: DrawElement) {
         element.added = added
         element.removed = removed
         element.placed = placed
@@ -101,7 +101,7 @@ data class ElementVersions(val added: Stamp, val removed: Stamp? = null, val pla
 }
 
 /** The state of this document (see [DocumentSnapshot]). */
-fun DrawDocument.snapshot(): DocumentSnapshot = DocumentSnapshot(
+public fun DrawDocument.snapshot(): DocumentSnapshot = DocumentSnapshot(
     id = id,
     title = title,
     defaultWidthMm = defaultWidthMm,
@@ -115,7 +115,7 @@ fun DrawDocument.snapshot(): DocumentSnapshot = DocumentSnapshot(
 )
 
 /** The state of this page (see [PageSnapshot]). */
-fun DrawPage.snapshot(): PageSnapshot = PageSnapshot(
+public fun DrawPage.snapshot(): PageSnapshot = PageSnapshot(
     data = toData(),
     added = added,
     removed = removed,

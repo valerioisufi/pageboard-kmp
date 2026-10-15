@@ -11,6 +11,7 @@ import kotlinx.cinterop.ptr
 import kotlinx.cinterop.set
 import kotlinx.cinterop.value
 import platform.AVFAudio.AVAudioEngine
+import platform.AVFAudio.AVAudioEngineConfigurationChangeNotification
 import platform.AVFAudio.AVAudioFormat
 import platform.AVFAudio.AVAudioPCMBuffer
 import platform.AVFAudio.AVAudioPCMFormatFloat32
@@ -19,16 +20,15 @@ import platform.AVFAudio.AVAudioSession
 import platform.AVFAudio.AVAudioSessionCategoryOptionAllowBluetoothHFP
 import platform.AVFAudio.AVAudioSessionCategoryOptionDefaultToSpeaker
 import platform.AVFAudio.AVAudioSessionCategoryPlayAndRecord
-import platform.AVFAudio.AVAudioSessionModeDefault
-import platform.AVFAudio.setActive
-import platform.AVFAudio.AVAudioEngineConfigurationChangeNotification
 import platform.AVFAudio.AVAudioSessionInterruptionNotification
 import platform.AVFAudio.AVAudioSessionInterruptionTypeBegan
 import platform.AVFAudio.AVAudioSessionInterruptionTypeKey
 import platform.AVFAudio.AVAudioSessionMediaServicesWereResetNotification
+import platform.AVFAudio.AVAudioSessionModeDefault
 import platform.AVFAudio.AVAudioSessionRouteChangeNotification
 import platform.AVFAudio.AVAudioSessionRouteChangeReasonKey
 import platform.AVFAudio.AVAudioSessionRouteChangeReasonOldDeviceUnavailable
+import platform.AVFAudio.setActive
 import platform.Foundation.NSError
 import platform.Foundation.NSNotification
 import platform.Foundation.NSNotificationCenter
@@ -38,9 +38,9 @@ import platform.UIKit.UIApplicationDidBecomeActiveNotification
 import platform.darwin.NSObjectProtocol
 import platform.posix.usleep
 
-actual fun createAudioCapture(): AudioCapture? = AvAudioCapture()
+internal actual fun createAudioCapture(): AudioCapture? = AvAudioCapture()
 
-actual fun createAudioOutput(): AudioOutput? = AvAudioOutput()
+internal actual fun createAudioOutput(): AudioOutput? = AvAudioOutput()
 
 /**
  * The audio session of the lectures: recording and playing, on the speaker (not the receiver),
@@ -69,7 +69,7 @@ private fun activateSession(): String? = memScoped {
  * it is started again once the interruption ends, or when the application becomes active again.
  */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-class AvAudioCapture : AudioCapture {
+internal class AvAudioCapture : AudioCapture {
     private var engine: AVAudioEngine? = null
     private val running = atomic(false)
     private var interrupted = false
@@ -196,7 +196,7 @@ private class SystemObservers {
  * converted by the engine), [write] waiting while a quarter of a second is waiting to be played.
  */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-class AvAudioOutput : AudioOutput {
+internal class AvAudioOutput : AudioOutput {
     private var engine: AVAudioEngine? = null
     private var player: AVAudioPlayerNode? = null
     private val queued = atomic(0)

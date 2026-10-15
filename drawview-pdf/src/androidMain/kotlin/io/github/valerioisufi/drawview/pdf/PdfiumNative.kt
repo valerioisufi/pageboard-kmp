@@ -2,7 +2,7 @@ package io.github.valerioisufi.drawview.pdf
 
 /**
  * JNI entry points of libpdfium_bridge.so (native/bridge/pdfium_bridge_jni.cpp), built by
- * :drawview-native together with the prebuilt libpdfium.so.
+ * :drawview-native-pdfium together with the prebuilt libpdfium.so.
  */
 internal object PdfiumNative {
     /** Loads PDFium and its JNI bridge (in dependency order). */

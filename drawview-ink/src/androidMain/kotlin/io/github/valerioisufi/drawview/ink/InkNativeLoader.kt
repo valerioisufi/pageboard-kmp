@@ -6,7 +6,7 @@ internal object InkNativeLoader {
     private const val TAG = "InkNativeLoader"
 
     /**
-     * Loads `libink_bridge.so` (packaged by the :drawview-native module).
+     * Loads `libink_bridge.so` (packaged by the :drawview-native-ink module).
      * @return `true` on success.
      */
     fun load(): Boolean = try {

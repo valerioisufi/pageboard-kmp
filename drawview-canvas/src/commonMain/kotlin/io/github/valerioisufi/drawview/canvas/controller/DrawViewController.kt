@@ -71,9 +71,9 @@ import kotlinx.coroutines.launch
  *
  * Every piece of state observed by the UI is backed by Compose snapshot state.
  */
-class DrawViewController(
-    val document: DrawDocument = DrawDocument(),
-    val coroutineScope: CoroutineScope,
+public class DrawViewController(
+    public val document: DrawDocument = DrawDocument(),
+    public val coroutineScope: CoroutineScope,
     density: Float = 1f,
     persistence: DocumentPersistence = NoOpDocumentPersistence,
     persistenceScope: CoroutineScope = coroutineScope,
@@ -85,13 +85,13 @@ class DrawViewController(
      */
     sharedSession: DocumentSession? = null,
     /** The engines drawing the PDF pages and the formulas (none: drawn blank and as their source). */
-    val engines: DrawViewEngines = DrawViewEngines.None
+    public val engines: DrawViewEngines = DrawViewEngines.None
 ) {
-    val session: DocumentSession = sharedSession ?: DocumentSession(document)
+    public val session: DocumentSession = sharedSession ?: DocumentSession(document)
     private val storesChanges = sharedSession == null
 
     /** Persistence used by this session (Room in the apps, no-op for in-memory documents). */
-    val persistence: DocumentPersistence = persistence
+    public val persistence: DocumentPersistence = persistence
 
     /**
      * Ordered queue of the persistence operations. It may run on its own [persistenceScope] (e.g.
@@ -100,86 +100,86 @@ class DrawViewController(
      */
     private val persistenceQueue = PersistenceQueue(persistenceScope, persistence)
 
-    val historyManager = HistoryManager(session)
+    public val historyManager: HistoryManager = HistoryManager(session)
 
-    val tileManager = TileManager(onInvalidate = { requestRedraw() })
+    public val tileManager: TileManager = TileManager(onInvalidate = { requestRedraw() })
 
     /** What the editor shows of the document: the layout of the pages, the camera, the conversions. */
-    val viewport = Viewport(document, density, tileManager, ::requestRedraw)
+    public val viewport: Viewport = Viewport(document, density, tileManager, ::requestRedraw)
 
     /** The elements drawn over the tiles: selected, moved or written here or on another device. */
-    val hiddenElements = HiddenElements()
+    internal val hiddenElements = HiddenElements()
 
-    val toolManager = ToolManager(
+    public val toolManager: ToolManager = ToolManager(
         onPresetsChanged = { _, _ -> preferencesChanged() },
         onToolSelected = { preferencesChanged() }
     )
 
-    val selectionManager = SelectionManager(this)
-    val eraserManager = EraserManager(this)
-    val textEditorManager = TextEditorManager(this)
-    val pageManager = PageManager(this)
-    val mediaManager = MediaManager(this)
-    val placementManager = PlacementManager(this)
-    val textMarkupManager = TextMarkupManager(this)
-    val snapManager = SnapManager(this)
+    public val selectionManager: SelectionManager = SelectionManager(this)
+    internal val eraserManager = EraserManager(this)
+    public val textEditorManager: TextEditorManager = TextEditorManager(this)
+    public val pageManager: PageManager = PageManager(this)
+    public val mediaManager: MediaManager = MediaManager(this)
+    public val placementManager: PlacementManager = PlacementManager(this)
+    public val textMarkupManager: TextMarkupManager = TextMarkupManager(this)
+    public val snapManager: SnapManager = SnapManager(this)
 
     /** The elements of the types added by the application. */
-    val customElementManager = CustomElementManager(this)
+    public val customElementManager: CustomElementManager = CustomElementManager(this)
 
     // ==========================================================
     // Observable state
     // ==========================================================
 
     /** Redraw counter: incremented whenever the canvas must be repainted. */
-    var version by mutableIntStateOf(0)
+    public var version: Int by mutableIntStateOf(0)
         private set
 
     private val redrawPending = atomic(false)
 
-    var themeColors by mutableStateOf(DrawThemeColors())
+    public var themeColors: DrawThemeColors by mutableStateOf(DrawThemeColors())
 
     private var drawingModeChosen by mutableStateOf(true)
 
     /** Drawing (the tools change the document) or reading; never drawing on a document only read here. */
-    val isDrawingMode: Boolean get() = drawingModeChosen && !isReadOnly
+    public val isDrawingMode: Boolean get() = drawingModeChosen && !isReadOnly
 
     /** The document may only be read here (see [DocumentSession.isReadOnly]), as Compose state. */
-    var isReadOnly: Boolean by mutableStateOf(session.isReadOnly)
+    public var isReadOnly: Boolean by mutableStateOf(session.isReadOnly)
         private set
 
     private val readOnlyWatch: Job = coroutineScope.launch { session.readOnly.collect { isReadOnly = it } }
 
-    var isStylusOnlyMode by mutableStateOf(false)
+    public var isStylusOnlyMode: Boolean by mutableStateOf(false)
         private set
 
-    var isPageGridVisible by mutableStateOf(false)
+    public var isPageGridVisible: Boolean by mutableStateOf(false)
 
     /** Screen position of the long-press context menu, or `null` when hidden. */
-    var contextMenuPosition by mutableStateOf<Offset?>(null)
+    public var contextMenuPosition: Offset? by mutableStateOf<Offset?>(null)
 
     /** The style of a new text: the one of the text written last. */
-    var textDefaults by mutableStateOf(TextDefaults())
+    public var textDefaults: TextDefaults by mutableStateOf(TextDefaults())
         private set
 
-    val selectedTool: Tool get() = toolManager.selectedTool
+    public val selectedTool: Tool get() = toolManager.selectedTool
 
-    var lassoMode: LassoMode
+    public var lassoMode: LassoMode
         get() = selectionManager.lassoMode
         set(value) {
             selectionManager.lassoMode = value
         }
 
-    val isPanMode: Boolean get() = toolManager.isPanTool
+    internal val isPanMode: Boolean get() = toolManager.isPanTool
 
-    val canUndo: Boolean get() = historyManager.canUndo
-    val canRedo: Boolean get() = historyManager.canRedo
+    public val canUndo: Boolean get() = historyManager.canUndo
+    public val canRedo: Boolean get() = historyManager.canRedo
 
     /** One-shot messages for the UI (snackbars/toasts). */
-    enum class Message { STYLUS_MODE_ACTIVATED, IMPORT_IMAGE_FAILED, IMPORT_PDF_FAILED, PDF_NOT_SUPPORTED, PDF_PAGE_WITHOUT_TEXT }
+    public enum class Message { STYLUS_MODE_ACTIVATED, IMPORT_IMAGE_FAILED, IMPORT_PDF_FAILED, PDF_NOT_SUPPORTED, PDF_PAGE_WITHOUT_TEXT }
 
     private val _messages = MutableSharedFlow<Message>(extraBufferCapacity = 8, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val messages: SharedFlow<Message> = _messages.asSharedFlow()
+    public val messages: SharedFlow<Message> = _messages.asSharedFlow()
 
     internal fun emitMessage(message: Message) {
         _messages.tryEmit(message)
@@ -214,7 +214,7 @@ class DrawViewController(
     // Modes and preferences
     // ==========================================================
 
-    fun selectTool(tool: Tool, presetIndex: Int? = null) {
+    public fun selectTool(tool: Tool, presetIndex: Int? = null) {
         if (tool != Tool.LAZO) selectionManager.clearSelection()
         if (tool != Tool.TEXT && textEditorManager.isEditing) textEditorManager.finishEditing()
         textMarkupManager.clearSelection()
@@ -223,7 +223,7 @@ class DrawViewController(
         requestRedraw()
     }
 
-    fun toggleDrawingMode() {
+    public fun toggleDrawingMode() {
         if (session.isReadOnly) return
         drawingModeChosen = !drawingModeChosen
         textMarkupManager.clearSelection()
@@ -235,7 +235,7 @@ class DrawViewController(
         requestRedraw()
     }
 
-    fun togglePageGrid() {
+    public fun togglePageGrid() {
         isPageGridVisible = !isPageGridVisible
         if (isPageGridVisible) {
             selectionManager.clearSelection()
@@ -245,7 +245,7 @@ class DrawViewController(
         }
     }
 
-    fun updateStylusOnlyMode(enabled: Boolean) {
+    public fun updateStylusOnlyMode(enabled: Boolean) {
         if (isStylusOnlyMode == enabled) return
         isStylusOnlyMode = enabled
         preferencesChanged()
@@ -255,7 +255,7 @@ class DrawViewController(
      * Called the first time a stylus touches the canvas: like the original app, the editor
      * switches to stylus-only mode (fingers pan and zoom).
      */
-    fun onFirstStylusDetected() {
+    internal fun onFirstStylusDetected() {
         if (!isStylusOnlyMode) {
             updateStylusOnlyMode(true)
             emitMessage(Message.STYLUS_MODE_ACTIVATED)
@@ -266,10 +266,10 @@ class DrawViewController(
      * What the formatting of the texts applies to now: the text being written, the texts
      * selected, or `null`.
      */
-    val textFormatTarget: TextFormatTarget?
+    public val textFormatTarget: TextFormatTarget?
         get() = if (textEditorManager.isEditing) textEditorManager else selectionManager.selectedTexts
 
-    fun updateTextDefaults(defaults: TextDefaults) {
+    public fun updateTextDefaults(defaults: TextDefaults) {
         val clamped = defaults.copy(fontSize = TextSizes.clamp(defaults.fontSize))
         if (textDefaults == clamped) return
         textDefaults = clamped
@@ -283,10 +283,10 @@ class DrawViewController(
      * mode, the last tool, the defaults of the texts, the snapping): whoever keeps them collects
      * them and gives them back with [applyPreferences].
      */
-    val preferences: StateFlow<DrawPreferences> = preferencesState.asStateFlow()
+    public val preferences: StateFlow<DrawPreferences> = preferencesState.asStateFlow()
 
     /** Applies the preferences of the user kept (e.g. when the editor opens). */
-    fun applyPreferences(preferences: DrawPreferences) {
+    public fun applyPreferences(preferences: DrawPreferences) {
         isStylusOnlyMode = preferences.isStylusOnlyMode
         textDefaults = preferences.textDefaults
         snapManager.applyPreferences(preferences)
@@ -315,7 +315,7 @@ class DrawViewController(
      * Requests a canvas redraw. Safe to call from any thread: requests are coalesced and applied
      * on the session scope.
      */
-    fun requestRedraw() {
+    public fun requestRedraw() {
         if (redrawPending.compareAndSet(expect = false, update = true)) {
             coroutineScope.launch {
                 redrawPending.value = false
@@ -324,24 +324,24 @@ class DrawViewController(
         }
     }
 
-    fun persist(operation: suspend DocumentPersistence.() -> Unit) {
+    public fun persist(operation: suspend DocumentPersistence.() -> Unit) {
         persistenceQueue.enqueue(operation)
     }
 
     /** Suspends until every pending persistence operation has been executed. */
-    suspend fun flushPersistence() = persistenceQueue.flush()
+    public suspend fun flushPersistence(): Unit = persistenceQueue.flush()
 
     /** The size of [text] as the renderer lays it out, or `null` without a text adapter. */
-    fun measureText(text: DrawText): TextBlockSize? = tileManager.tileRenderer.textAdapter?.measure(text)
+    public fun measureText(text: DrawText): TextBlockSize? = tileManager.tileRenderer.textAdapter?.measure(text)
 
     /** A line of a text of [fontSize] points as the renderer lays it out, or `null` without a text adapter. */
-    fun textLineMetrics(fontSize: Float): TextLineMetrics? = tileManager.tileRenderer.textAdapter?.lineMetrics(fontSize)
+    internal fun textLineMetrics(fontSize: Float): TextLineMetrics? = tileManager.tileRenderer.textAdapter?.lineMetrics(fontSize)
 
     /**
      * What draws the texts (Markdown and formulas) in the tiles, the thumbnails and the overlays:
      * set by the UI, which owns the fonts. The tiles are drawn again when it changes.
      */
-    var textAdapter: TextTileAdapter?
+    public var textAdapter: TextTileAdapter?
         get() = tileManager.tileRenderer.textAdapter
         set(value) {
             if (tileManager.tileRenderer.textAdapter === value) return
@@ -353,13 +353,13 @@ class DrawViewController(
      * The texts are drawn differently (e.g. the formula renderer became ready): what the text
      * adapter kept of them is dropped and the tiles are drawn again.
      */
-    fun textRenderingChanged() {
+    internal fun textRenderingChanged() {
         tileManager.tileRenderer.textAdapter?.clearCaches()
         tileManager.invalidateAll()
         requestRedraw()
     }
 
-    fun invalidatePageContent(page: DrawPage, mmRect: MmRect?) {
+    internal fun invalidatePageContent(page: DrawPage, mmRect: MmRect?) {
         val pageWorldRect = viewport.layout.pagesRectOnWindow.getOrNull(document.pages.indexOf(page))
         if (mmRect == null) tileManager.invalidatePage(page.renderKey)
         else tileManager.invalidatePageRegion(page, mmRect.toCompose(), pageWorldRect)
@@ -370,7 +370,7 @@ class DrawViewController(
      * The file of [resource] arrived (from another device): the images and the PDF pages showing
      * it are drawn again.
      */
-    fun onResourceAvailable(resource: DrawResource) {
+    public fun onResourceAvailable(resource: DrawResource) {
         for (page in document.pages) {
             if (page.images.any { it.resourceId == resource.id } || page.pdfs.any { it.resourceId == resource.id }) {
                 invalidatePageContent(page, null)
@@ -379,12 +379,12 @@ class DrawViewController(
     }
 
     /** The presence of the editor among the other devices working on the document. */
-    val presence: CollaboratorPresence = CollaboratorPresence(document, hiddenElements, ::invalidatePageContent) {
+    public val presence: CollaboratorPresence = CollaboratorPresence(document, hiddenElements, ::invalidatePageContent) {
         // A text selected here that another device starts writing: left to it
         if (selectionManager.currentSelection?.texts?.any { presence.writerOf(it) != null } == true) selectionManager.clearSelection()
     }
 
-    fun clearSelection() {
+    public fun clearSelection() {
         selectionManager.clearSelection()
         textMarkupManager.clearSelection()
     }
@@ -427,7 +427,7 @@ class DrawViewController(
      * Draws [strokes], [texts] and [images] of [page] straight into the cached tiles (used when
      * the elements leave the live selection layer, to avoid a frame without them).
      */
-    fun bakeElementsSync(page: DrawPage, strokes: List<DrawStroke>, texts: List<DrawText>, images: List<DrawImage>) {
+    internal fun bakeElementsSync(page: DrawPage, strokes: List<DrawStroke>, texts: List<DrawText>, images: List<DrawImage>) {
         val index = document.pages.indexOf(page)
         if (index < 0) return
         if (strokes.isNotEmpty()) {
@@ -447,7 +447,7 @@ class DrawViewController(
     /**
      * Brush of the active tool at the zoom level of page [pageIndex].
      */
-    fun brushForActiveTool(pageIndex: Int): BrushConfig? =
+    internal fun brushForActiveTool(pageIndex: Int): BrushConfig? =
         toolManager.brushFor(toolManager.selectedTool, viewport.pixelsPerMm(pageIndex))
 
     /**
@@ -455,7 +455,7 @@ class DrawViewController(
      * page). Strokes crossing several pages are duplicated on every intersected page, each copy
      * expressed in the millimeters of its page, as in the original implementation.
      */
-    fun commitInkStroke(mesh: StrokeMesh, originPageIndex: Int, brush: BrushConfig) {
+    internal fun commitInkStroke(mesh: StrokeMesh, originPageIndex: Int, brush: BrushConfig) {
         val originPage = document.pages.getOrNull(originPageIndex) ?: return
         if (mesh.isEmpty) return
         val bounds = mesh.computeBounds()
@@ -500,12 +500,12 @@ class DrawViewController(
     // History
     // ==========================================================
 
-    fun undo() {
+    public fun undo() {
         clearSelection()
         historyManager.undo()
     }
 
-    fun redo() {
+    public fun redo() {
         clearSelection()
         historyManager.redo()
     }
@@ -513,7 +513,7 @@ class DrawViewController(
     /**
      * Releases the background resources of the session.
      */
-    fun dispose() {
+    public fun dispose() {
         formulasWatch?.cancel()
         readOnlyWatch.cancel()
         // The session may go on without the editor (e.g. synchronized with other devices)

@@ -7,9 +7,9 @@ import javax.sound.sampled.LineUnavailableException
 import javax.sound.sampled.SourceDataLine
 import javax.sound.sampled.TargetDataLine
 
-actual fun createAudioCapture(): AudioCapture? = JavaSoundAudioCapture()
+internal actual fun createAudioCapture(): AudioCapture? = JavaSoundAudioCapture()
 
-actual fun createAudioOutput(): AudioOutput? = JavaSoundAudioOutput()
+internal actual fun createAudioOutput(): AudioOutput? = JavaSoundAudioOutput()
 
 /**
  * Microphone of the desktop (Java Sound): 16 kHz mono when the device supports it, otherwise the
@@ -18,7 +18,7 @@ actual fun createAudioOutput(): AudioOutput? = JavaSoundAudioOutput()
  * On macOS the microphone access is granted to the application launching the JVM (the terminal or
  * the IDE when running from Gradle); without it the line delivers silence.
  */
-class JavaSoundAudioCapture : AudioCapture {
+internal class JavaSoundAudioCapture : AudioCapture {
     @Volatile
     private var running = false
     private var line: TargetDataLine? = null
@@ -100,7 +100,7 @@ class JavaSoundAudioCapture : AudioCapture {
 }
 
 /** The speakers of the desktop, through a Java Sound [SourceDataLine]. */
-class JavaSoundAudioOutput : AudioOutput {
+internal class JavaSoundAudioOutput : AudioOutput {
     @Volatile
     private var line: SourceDataLine? = null
     private var written = 0L

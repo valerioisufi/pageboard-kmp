@@ -32,10 +32,10 @@ import platform.posix.AF_INET
  * (`NSLocalNetworkUsageDescription`).
  */
 @OptIn(BetaInteropApi::class)
-class BonjourLanDiscovery : LanDiscovery {
+public class BonjourLanDiscovery : LanDiscovery {
     private var announced: NSNetService? = null
 
-    override suspend fun advertise(name: String, port: Int, attributes: Map<String, String>) = withContext(Dispatchers.Main) {
+    override suspend fun advertise(name: String, port: Int, attributes: Map<String, String>): Unit = withContext(Dispatchers.Main) {
         announced?.stop()
         val service = NSNetService(domain = DOMAIN, type = TYPE, name = name, port = port)
         val record: Map<Any?, *> = attributes.mapValues { (_, value) -> NSString.create(string = value).dataUsingEncoding(NSUTF8StringEncoding) }

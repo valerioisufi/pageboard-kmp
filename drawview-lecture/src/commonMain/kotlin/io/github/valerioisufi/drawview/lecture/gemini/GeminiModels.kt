@@ -6,13 +6,13 @@ import kotlinx.serialization.json.JsonElement
 // Subset of the Gemini API (generativelanguage.googleapis.com, v1beta) used by the assistant.
 
 @Serializable
-data class GeminiContent(
+internal data class GeminiContent(
     val role: String? = null,
     val parts: List<GeminiPart> = emptyList()
 )
 
 @Serializable
-data class GeminiPart(
+internal data class GeminiPart(
     val text: String? = null,
     val inlineData: GeminiBlob? = null,
     val fileData: GeminiFileData? = null,
@@ -30,14 +30,14 @@ data class GeminiPart(
 
 /** Inline file content, base64-encoded. */
 @Serializable
-data class GeminiBlob(val mimeType: String, val data: String)
+internal data class GeminiBlob(val mimeType: String, val data: String)
 
 /** A file uploaded with the Files API. */
 @Serializable
-data class GeminiFileData(val mimeType: String, val fileUri: String)
+internal data class GeminiFileData(val mimeType: String, val fileUri: String)
 
 @Serializable
-data class ThinkingConfig(val thinkingLevel: String? = null)
+internal data class ThinkingConfig(val thinkingLevel: String? = null)
 
 /**
  * The configuration of the speech models (Gemini 3.5 Transcribe): the languages spoken (BCP-47,
@@ -45,7 +45,7 @@ data class ThinkingConfig(val thinkingLevel: String? = null)
  * `VERBATIM` (every word) or `SMART` (no hesitations, numbers and lists formatted).
  */
 @Serializable
-data class AudioTranscriptionConfig(
+internal data class AudioTranscriptionConfig(
     val languageCodes: List<String> = emptyList(),
     val customVocabulary: List<String>? = null,
     val mode: String? = null
@@ -53,17 +53,17 @@ data class AudioTranscriptionConfig(
 
 /** What a speech model recognized in a part of its answer: its [text], and its [words] when asked. */
 @Serializable
-data class GeminiAudioTranscription(
+internal data class GeminiAudioTranscription(
     val text: String? = null,
     val speakerLabel: String? = null,
     val words: List<GeminiWord> = emptyList()
 )
 
 @Serializable
-data class GeminiWord(val word: String = "", val startOffset: String? = null, val endOffset: String? = null)
+internal data class GeminiWord(val word: String = "", val startOffset: String? = null, val endOffset: String? = null)
 
 @Serializable
-data class GenerationConfig(
+internal data class GenerationConfig(
     val responseMimeType: String? = null,
     val responseJsonSchema: JsonElement? = null,
     val maxOutputTokens: Int? = null,
@@ -75,14 +75,14 @@ data class GenerationConfig(
 )
 
 @Serializable
-data class GenerateContentRequest(
+internal data class GenerateContentRequest(
     val contents: List<GeminiContent>,
     val systemInstruction: GeminiContent? = null,
     val generationConfig: GenerationConfig? = null
 )
 
 @Serializable
-data class GenerateContentResponse(
+internal data class GenerateContentResponse(
     val candidates: List<GeminiCandidate> = emptyList(),
     val promptFeedback: GeminiPromptFeedback? = null,
     val usageMetadata: GeminiUsage? = null
@@ -105,16 +105,16 @@ data class GenerateContentResponse(
 }
 
 @Serializable
-data class GeminiCandidate(
+internal data class GeminiCandidate(
     val content: GeminiContent? = null,
     val finishReason: String? = null
 )
 
 @Serializable
-data class GeminiPromptFeedback(val blockReason: String? = null)
+internal data class GeminiPromptFeedback(val blockReason: String? = null)
 
 @Serializable
-data class GeminiUsage(
+internal data class GeminiUsage(
     val promptTokenCount: Long = 0,
     val candidatesTokenCount: Long = 0,
     val cachedContentTokenCount: Long = 0,
@@ -125,11 +125,11 @@ data class GeminiUsage(
 )
 
 @Serializable
-data class GeminiModalityTokens(val modality: String = "", val tokenCount: Long = 0)
+internal data class GeminiModalityTokens(val modality: String = "", val tokenCount: Long = 0)
 
 /** Metadata of a file of the Files API (kept for 48 hours). */
 @Serializable
-data class GeminiFile(
+internal data class GeminiFile(
     val name: String = "",
     val uri: String = "",
     val mimeType: String = "",

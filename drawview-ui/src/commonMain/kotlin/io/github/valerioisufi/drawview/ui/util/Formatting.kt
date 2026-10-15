@@ -11,7 +11,7 @@ import kotlinx.datetime.toLocalDateTime
  * Formats [value] with exactly [decimals] fractional digits ("%.1f"), without relying on the
  * platform number formatting (Float.toString differs on JS, where floats are doubles).
  */
-fun formatDecimal(value: Float, decimals: Int = 1): String {
+public fun formatDecimal(value: Float, decimals: Int = 1): String {
     var factor = 1L
     repeat(decimals) { factor *= 10L }
     val scaled = (value.toDouble() * factor).roundToLong()
@@ -29,7 +29,7 @@ fun formatDecimal(value: Float, decimals: Int = 1): String {
  * the original app), with the given localized abbreviated month names (January first).
  */
 @OptIn(ExperimentalTime::class)
-fun formatDateTime(epochMs: Long, monthNames: List<String>): String {
+public fun formatDateTime(epochMs: Long, monthNames: List<String>): String {
     val dateTime = Instant.fromEpochMilliseconds(epochMs).toLocalDateTime(TimeZone.currentSystemDefault())
     val month = monthNames.getOrNull(dateTime.month.ordinal) ?: (dateTime.month.ordinal + 1).toString()
     val day = dateTime.day.toString().padStart(2, '0')
@@ -40,7 +40,7 @@ fun formatDateTime(epochMs: Long, monthNames: List<String>): String {
 
 /** Formats an epoch timestamp as "d MMM · HH:mm" in the local time zone (the cards of the library). */
 @OptIn(ExperimentalTime::class)
-fun formatShortDateTime(epochMs: Long, monthNames: List<String>): String {
+public fun formatShortDateTime(epochMs: Long, monthNames: List<String>): String {
     val dateTime = Instant.fromEpochMilliseconds(epochMs).toLocalDateTime(TimeZone.currentSystemDefault())
     val month = monthNames.getOrNull(dateTime.month.ordinal) ?: (dateTime.month.ordinal + 1).toString()
     val hour = dateTime.hour.toString().padStart(2, '0')
@@ -50,7 +50,7 @@ fun formatShortDateTime(epochMs: Long, monthNames: List<String>): String {
 
 /** Formats an epoch timestamp as "d MMM yyyy" in the local time zone. */
 @OptIn(ExperimentalTime::class)
-fun formatDate(epochMs: Long, monthNames: List<String>): String {
+public fun formatDate(epochMs: Long, monthNames: List<String>): String {
     val dateTime = Instant.fromEpochMilliseconds(epochMs).toLocalDateTime(TimeZone.currentSystemDefault())
     val month = monthNames.getOrNull(dateTime.month.ordinal) ?: (dateTime.month.ordinal + 1).toString()
     return "${dateTime.day} $month ${dateTime.year}"

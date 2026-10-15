@@ -44,7 +44,7 @@ private val ToolShape = RoundedCornerShape(16.dp)
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ToolButton(
+internal fun ToolButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
     onLongClick: (() -> Unit) = {},
@@ -105,7 +105,7 @@ fun ToolButton(
  * 24 dp, the content with its margins.
  */
 @Composable
-fun ToolPopover(
+internal fun ToolPopover(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     offset: DpOffset = DpOffset(0.dp, 6.dp),

@@ -9,7 +9,7 @@ import androidx.compose.ui.input.pointer.PointerEvent
  * rate (Android `View.requestUnbufferedDispatch`), lowering the inking latency.
  * No-op on the other platforms.
  */
-expect fun Modifier.unbufferedStylusInput(): Modifier
+internal expect fun Modifier.unbufferedStylusInput(): Modifier
 
 /** Pixels the canvas moves for one unit of scroll (a notch of a mouse wheel), by default. */
 internal const val DEFAULT_SCROLL_UNIT_PX = 48f

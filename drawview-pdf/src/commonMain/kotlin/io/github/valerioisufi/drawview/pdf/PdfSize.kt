@@ -3,7 +3,7 @@ package io.github.valerioisufi.drawview.pdf
 /**
  * Dimensions of a PDF page in points (1/72 inch) and millimeters.
  */
-data class PdfSize(
+public data class PdfSize(
     val widthPt: Double,
     val heightPt: Double
 ) {

@@ -11,7 +11,7 @@ import io.github.valerioisufi.drawview.model.StrokePoint
  * Low level binding of the C API declared in `native/bridge/ink_bridge.h`. Handles are opaque
  * native pointers.
  */
-interface InkNativeApi {
+internal interface InkNativeApi {
     fun createBrush(familyType: Int, size: Float, r: Float, g: Float, b: Float, a: Float, epsilon: Float): Long
     fun destroyBrush(brushHandle: Long)
     fun createStrokeBuilder(): Long
@@ -31,7 +31,7 @@ interface InkNativeApi {
 /**
  * [StrokeEngineDelegate] backed by the Google Ink C++ engine.
  */
-class NativeStrokeEngineDelegate(private val api: InkNativeApi) : StrokeEngineDelegate {
+internal class NativeStrokeEngineDelegate(private val api: InkNativeApi) : StrokeEngineDelegate {
     private var builderHandle: Long = 0L
     private var brushHandle: Long = 0L
     private var brushKey: BrushConfig? = null

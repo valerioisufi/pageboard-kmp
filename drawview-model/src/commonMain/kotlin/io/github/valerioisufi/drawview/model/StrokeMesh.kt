@@ -8,12 +8,12 @@ import kotlin.random.Random
  * A renderable chunk of a stroke mesh whose vertices can be addressed with 16-bit indices
  * (Skia and Android `drawVertices` only accept `short` index buffers).
  */
-class MeshPartition(
-    val positions: FloatArray,
-    val indices: ShortArray
+public class MeshPartition(
+    public val positions: FloatArray,
+    public val indices: ShortArray
 ) {
-    val vertexCount: Int get() = positions.size / 2
-    val triangleCount: Int get() = indices.size / 3
+    public val vertexCount: Int get() = positions.size / 2
+    public val triangleCount: Int get() = indices.size / 3
 }
 
 /**
@@ -23,30 +23,30 @@ class MeshPartition(
  * Meshes with more than 65535 vertices are split in several [partitions]: [positions] and
  * [indices] always describe the first one.
  */
-class StrokeMesh(
-    val id: String = generateId(),
-    val positions: FloatArray,
-    val indices: ShortArray,
-    val color: Int,
-    val tool: StrokeTool,
-    val size: Float,
-    val points: List<StrokePoint> = emptyList(),
+public class StrokeMesh(
+    public val id: String = generateId(),
+    public val positions: FloatArray,
+    public val indices: ShortArray,
+    public val color: Int,
+    public val tool: StrokeTool,
+    public val size: Float,
+    public val points: List<StrokePoint> = emptyList(),
     additionalPartitions: List<MeshPartition> = emptyList(),
-    val inputToolType: InputToolType = InputToolType.UNKNOWN
+    public val inputToolType: InputToolType = InputToolType.UNKNOWN
 ) {
-    val partitions: List<MeshPartition> =
+    public val partitions: List<MeshPartition> =
         if (additionalPartitions.isEmpty()) listOf(MeshPartition(positions, indices))
         else listOf(MeshPartition(positions, indices)) + additionalPartitions
 
-    val vertexCount: Int get() = partitions.sumOf { it.vertexCount }
-    val triangleCount: Int get() = partitions.sumOf { it.triangleCount }
+    public val vertexCount: Int get() = partitions.sumOf { it.vertexCount }
+    public val triangleCount: Int get() = partitions.sumOf { it.triangleCount }
 
-    val isEmpty: Boolean get() = partitions.all { it.positions.isEmpty() || it.indices.isEmpty() }
+    public val isEmpty: Boolean get() = partitions.all { it.positions.isEmpty() || it.indices.isEmpty() }
 
     /**
      * Axis-aligned bounds of every vertex of the mesh, or [Rect.Zero] for an empty mesh.
      */
-    fun computeBounds(): Rect {
+    public fun computeBounds(): Rect {
         var minX = Float.POSITIVE_INFINITY
         var minY = Float.POSITIVE_INFINITY
         var maxX = Float.NEGATIVE_INFINITY
@@ -68,7 +68,7 @@ class StrokeMesh(
     }
 
     /** This mesh with the recorded inputs [points]. */
-    fun withPoints(points: List<StrokePoint>): StrokeMesh = StrokeMesh(
+    public fun withPoints(points: List<StrokePoint>): StrokeMesh = StrokeMesh(
         positions = positions,
         indices = indices,
         color = color,
@@ -83,7 +83,7 @@ class StrokeMesh(
      * This mesh mapped by [transform]: the vertices are mapped directly (what is drawn is exactly
      * the transformed mesh) and so are the recorded inputs, the size scaled accordingly.
      */
-    fun transformed(transform: Matrix2D): StrokeMesh {
+    public fun transformed(transform: Matrix2D): StrokeMesh {
         val scale = transform.scaleFactor
         val mapped = partitions.map { partition ->
             val positions = partition.positions.copyOf()
@@ -129,7 +129,7 @@ class StrokeMesh(
         return result
     }
 
-    companion object {
+    public companion object {
         private const val MAX_PARTITION_VERTICES = 65535
 
         private fun generateId(): String =
@@ -139,7 +139,7 @@ class StrokeMesh(
          * Builds a [StrokeMesh] from a 32-bit indexed triangle list, splitting it into
          * 16-bit addressable [MeshPartition]s when needed.
          */
-        fun fromIndexedMesh(
+        public fun fromIndexedMesh(
             positions: FloatArray,
             indices: IntArray,
             color: Int,

@@ -10,10 +10,10 @@ import kotlin.math.min
  * The formatting of a text being written, as changes of its notation (see [RichTextParser]): the
  * delimiters around the selection, the heading of a line.
  */
-object RichTextEditing {
+public object RichTextEditing {
 
     /** The delimiters of an inline format. */
-    enum class Format(val delimiter: String) {
+    public enum class Format(public val delimiter: String) {
         BOLD("**"),
         ITALIC("*"),
         STRIKETHROUGH("~~"),
@@ -22,13 +22,13 @@ object RichTextEditing {
     }
 
     /** Adds or removes the delimiters of [format] around the selection (see [toggleDelimiters]). */
-    fun toggle(value: TextFieldValue, format: Format): TextFieldValue = toggleDelimiters(value, format.delimiter, format.delimiter)
+    public fun toggle(value: TextFieldValue, format: Format): TextFieldValue = toggleDelimiters(value, format.delimiter, format.delimiter)
 
     /**
      * Adds or removes the delimiters around the selection, or inserts them at the cursor (placing
      * the cursor between them).
      */
-    fun toggleDelimiters(value: TextFieldValue, prefix: String, suffix: String): TextFieldValue {
+    internal fun toggleDelimiters(value: TextFieldValue, prefix: String, suffix: String): TextFieldValue {
         val text = value.text
         val start = min(value.selection.start, value.selection.end)
         val end = max(value.selection.start, value.selection.end)
@@ -57,7 +57,7 @@ object RichTextEditing {
      * Makes the line of the caret (of the start of the selection) a heading, or a heading line
      * plain text again: the `#` and the spaces after them at the start of the line.
      */
-    fun toggleHeading(value: TextFieldValue): TextFieldValue {
+    public fun toggleHeading(value: TextFieldValue): TextFieldValue {
         val text = value.text
         val sel = value.selection
         val lineStart = text.lastIndexOf('\n', min(sel.start, sel.end) - 1) + 1

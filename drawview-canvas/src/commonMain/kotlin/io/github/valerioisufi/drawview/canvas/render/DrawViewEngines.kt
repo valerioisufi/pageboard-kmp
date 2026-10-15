@@ -16,13 +16,13 @@ import io.github.valerioisufi.drawview.canvas.render.tile.PdfTileAdapter
  * @param formulas renders the formulas of the texts.
  * @param elements draws the elements of the types of the application.
  */
-class DrawViewEngines(
-    val pdfTiles: () -> PdfTileAdapter? = { null },
-    val formulas: FormulaRenderer? = null,
-    val elements: ElementRenderers = ElementRenderers.None
+public class DrawViewEngines(
+    public val pdfTiles: () -> PdfTileAdapter? = { null },
+    public val formulas: FormulaRenderer? = null,
+    public val elements: ElementRenderers = ElementRenderers.None
 ) {
-    companion object {
+    public companion object {
         /** No engine: the PDF pages and the formulas are not drawn. */
-        val None: DrawViewEngines = DrawViewEngines()
+        public val None: DrawViewEngines = DrawViewEngines()
     }
 }

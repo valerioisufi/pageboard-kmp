@@ -38,62 +38,62 @@ import kotlinx.coroutines.launch
  * - A long press on a mark, or a tap with the tool, selects it: its text can be copied, its
  *   style changed ([restyleSelectedMarkup]) and the mark deleted ([deleteSelectedMarkup]).
  */
-class TextMarkupManager(private val controller: DrawViewController) {
+public class TextMarkupManager(private val controller: DrawViewController) {
 
     /**
      * The characters of the text of [pdf] (shown on [page]) from [anchor] to [focus], both
      * included: [anchor] stays where the selection started, [focus] follows the pointer.
      */
-    class TextRange(
-        val page: DrawPage,
-        val pdf: DrawPdf,
-        val layout: PdfTextLayout,
-        val anchor: Int,
-        val focus: Int
+    public class TextRange(
+        public val page: DrawPage,
+        public val pdf: DrawPdf,
+        public val layout: PdfTextLayout,
+        public val anchor: Int,
+        public val focus: Int
     ) {
-        val start: Int get() = min(anchor, focus)
+        public val start: Int get() = min(anchor, focus)
 
         /** Exclusive. */
-        val end: Int get() = max(anchor, focus) + 1
+        public val end: Int get() = max(anchor, focus) + 1
 
         /** Lines of the range, in points of the PDF page. */
-        val rects: List<Rect> by lazy { layout.lineRects(start, end) }
+        public val rects: List<Rect> by lazy { layout.lineRects(start, end) }
 
-        val text: String get() = layout.text(start, end).trim()
+        public val text: String get() = layout.text(start, end).trim()
 
         /** Transformation from the points of the PDF page to the millimeters of [page]. */
-        fun pointsToPageMm(): Matrix2D = pdfPointsToPageMm(layout.widthPt, layout.heightPt, page.widthMm, page.heightMm)
+        public fun pointsToPageMm(): Matrix2D = pdfPointsToPageMm(layout.widthPt, layout.heightPt, page.widthMm, page.heightMm)
 
-        fun withFocus(focus: Int) = TextRange(page, pdf, layout, anchor, focus)
+        internal fun withFocus(focus: Int) = TextRange(page, pdf, layout, anchor, focus)
     }
 
     /**
      * A passage being marked with the tool, shown (once the pointer has moved, [isShown]) with
      * the style of the mark it will become.
      */
-    class Marking(val range: TextRange, val kind: TextMarkupKind, val color: Int, val isShown: Boolean)
+    public class Marking(public val range: TextRange, public val kind: TextMarkupKind, public val color: Int, public val isShown: Boolean)
 
     /** A mark of [page] selected to be copied, restyled or deleted. */
-    class SelectedMarkup(val page: DrawPage, val markup: DrawTextMarkup)
+    public class SelectedMarkup(public val page: DrawPage, public val markup: DrawTextMarkup)
 
-    enum class Handle { START, END }
+    public enum class Handle { START, END }
 
     /** Text selected with a long press, or `null`. */
-    var textSelection: TextRange? by mutableStateOf(null)
+    public var textSelection: TextRange? by mutableStateOf(null)
         private set
 
     /** Mark selected with a long press or a tap of the tool, or `null`. */
-    var selectedMarkup: SelectedMarkup? by mutableStateOf(null)
+    public var selectedMarkup: SelectedMarkup? by mutableStateOf(null)
         private set
 
     /** Passage being marked with the tool, or `null`. */
-    var marking: Marking? by mutableStateOf(null)
+    public var marking: Marking? by mutableStateOf(null)
         private set
 
-    val hasSelection: Boolean get() = textSelection != null || selectedMarkup != null
+    public val hasSelection: Boolean get() = textSelection != null || selectedMarkup != null
 
     /** Text of the selection or of the selected mark. */
-    val selectedText: String?
+    public val selectedText: String?
         get() = textSelection?.text ?: selectedMarkup?.markup?.text
 
     /** Offset from the pointer to the end of the selection it drags, in screen pixels. */
@@ -112,7 +112,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
      * Text layout of the PDF page shown by [pdf], read once (and kept for the last pages used),
      * or `null` when PDFs are not supported or the page cannot be read.
      */
-    fun layoutOf(pdf: DrawPdf): PdfTextLayout? {
+    internal fun layoutOf(pdf: DrawPdf): PdfTextLayout? {
         val adapter = controller.tileManager.tileRenderer.pdfAdapter ?: return null
         val resource = controller.document.findResource(pdf.resourceId) ?: return null
         if (resource.type != DrawResource.ResourceType.PDF) return null
@@ -140,7 +140,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
      * Reads in background the text of the PDF pages on screen, so that the first touch of the
      * tool does not wait for it.
      */
-    fun prefetchVisiblePages() {
+    internal fun prefetchVisiblePages() {
         val pdfs = controller.viewport.visiblePages().flatMap { controller.document.pages.getOrNull(it.index)?.pdfs.orEmpty() }
         if (pdfs.isEmpty()) return
         controller.coroutineScope.launch(Dispatchers.Default) {
@@ -159,7 +159,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
      * @return `false` when there is no text there (a message tells when the PDF of the page has
      * no text at all, like a scanned page).
      */
-    fun beginMarking(screen: Offset, tolerancePx: Float): Boolean {
+    internal fun beginMarking(screen: Offset, tolerancePx: Float): Boolean {
         val preset = controller.toolManager.activePreset(Tool.TEXT_MARKUP) ?: return false
         val hit = textAt(screen, tolerancePx)
         if (hit == null) {
@@ -172,7 +172,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
     }
 
     /** Extends the passage being marked to the text at [screen] (the pointer has moved). */
-    fun updateMarking(screen: Offset) {
+    internal fun updateMarking(screen: Offset) {
         val current = marking ?: return
         val focus = focusAt(current.range, screen) ?: current.range.focus
         if (focus != current.range.focus || !current.isShown) {
@@ -181,14 +181,14 @@ class TextMarkupManager(private val controller: DrawViewController) {
     }
 
     /** Marks the passage swept by the tool (nothing when the pointer has not moved). */
-    fun finishMarking(): DrawTextMarkup? {
+    internal fun finishMarking(): DrawTextMarkup? {
         val current = marking ?: return null
         marking = null
         if (!current.isShown) return null
         return addMarkup(current.range, current.kind, current.color)
     }
 
-    fun cancelMarking() {
+    internal fun cancelMarking() {
         marking = null
     }
 
@@ -201,7 +201,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
      *
      * @return `false` when there is neither a mark nor text there.
      */
-    fun selectAt(screen: Offset, tolerancePx: Float): Boolean {
+    internal fun selectAt(screen: Offset, tolerancePx: Float): Boolean {
         if (selectMarkupAt(screen, tolerancePx)) return true
         val hit = textAt(screen, tolerancePx) ?: return false
         val word = hit.layout.wordRange(hit.anchor)
@@ -217,7 +217,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
      *
      * @return `false` when there is no mark there.
      */
-    fun selectMarkupAt(screen: Offset, tolerancePx: Float): Boolean {
+    internal fun selectMarkupAt(screen: Offset, tolerancePx: Float): Boolean {
         val pageIndex = controller.viewport.findPageIndexAtScreen(screen) ?: return false
         val page = controller.document.pages.getOrNull(pageIndex) ?: return false
         val mm = controller.viewport.screenToPageMm(pageIndex, screen) ?: return false
@@ -230,7 +230,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
     }
 
     /** Drops the text selection and the selected mark. */
-    fun clearSelection() {
+    public fun clearSelection() {
         textSelection = null
         selectedMarkup = null
     }
@@ -246,7 +246,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
     /**
      * End of the text selection whose handle is at [screen] (at most [radiusPx] away), or `null`.
      */
-    fun handleAt(screen: Offset, radiusPx: Float): Handle? {
+    internal fun handleAt(screen: Offset, radiusPx: Float): Handle? {
         val (start, end) = handleKnobs() ?: return null
         val toStart = (screen - start).getDistance()
         val toEnd = (screen - end).getDistance()
@@ -258,13 +258,13 @@ class TextMarkupManager(private val controller: DrawViewController) {
     }
 
     /** Radius of the knobs of the handles of the text selection, in screen pixels. */
-    val handleKnobRadiusPx: Float get() = HANDLE_KNOB_RADIUS_DP * controller.viewport.density
+    internal val handleKnobRadiusPx: Float get() = HANDLE_KNOB_RADIUS_DP * controller.viewport.density
 
     /**
      * Screen positions of the centers of the knobs of the handles of the text selection (start,
      * end), hanging below its first and last line, or `null` without a selection on screen.
      */
-    fun handleKnobs(): Pair<Offset, Offset>? {
+    internal fun handleKnobs(): Pair<Offset, Offset>? {
         val selection = textSelection ?: return null
         val toScreen = pointsToScreen(selection.page, selection.pointsToPageMm()) ?: return null
         val first = selection.rects.firstOrNull()?.let { toScreen.mapRect(it) } ?: return null
@@ -274,7 +274,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
     }
 
     /** Starts dragging the [handle] of the text selection with the pointer at [screen]. */
-    fun beginHandleDrag(handle: Handle, screen: Offset) {
+    internal fun beginHandleDrag(handle: Handle, screen: Offset) {
         val selection = textSelection ?: return
         val toScreen = pointsToScreen(selection.page, selection.pointsToPageMm()) ?: return
         val rects = selection.rects
@@ -291,21 +291,21 @@ class TextMarkupManager(private val controller: DrawViewController) {
     }
 
     /** Moves the dragged end of the text selection to the text under the pointer at [screen]. */
-    fun dragHandleTo(screen: Offset) {
+    internal fun dragHandleTo(screen: Offset) {
         val selection = textSelection ?: return
         val focus = focusAt(selection, screen + handleDragOffset) ?: return
         if (focus != selection.focus) textSelection = selection.withFocus(focus)
     }
 
     /** Marks the selected text as [kind] with [color], and drops the selection. */
-    fun markSelection(kind: TextMarkupKind, color: Int): DrawTextMarkup? {
+    public fun markSelection(kind: TextMarkupKind, color: Int): DrawTextMarkup? {
         val selection = textSelection ?: return null
         textSelection = null
         return addMarkup(selection, kind, color)
     }
 
     /** Changes the kind and the color of the selected mark (undoable). */
-    fun restyleSelectedMarkup(kind: TextMarkupKind, color: Int) {
+    public fun restyleSelectedMarkup(kind: TextMarkupKind, color: Int) {
         val selected = selectedMarkup ?: return
         val markup = selected.markup
         if (markup.kind == kind && markup.color == color) return
@@ -315,7 +315,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
     }
 
     /** Deletes the selected mark (undoable). */
-    fun deleteSelectedMarkup() {
+    public fun deleteSelectedMarkup() {
         val selected = selectedMarkup ?: return
         selectedMarkup = null
         controller.session.submit(RemoveElements.of(selected.page, listOf(selected.markup)))
@@ -329,7 +329,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
      * Transformation from the points of a PDF page to the screen, through [pointsToPageMm] (its
      * points to the millimeters of [page]), or `null` when the page is not laid out.
      */
-    fun pointsToScreen(page: DrawPage, pointsToPageMm: Matrix2D): Matrix2D? {
+    internal fun pointsToScreen(page: DrawPage, pointsToPageMm: Matrix2D): Matrix2D? {
         val pageIndex = controller.document.pages.indexOf(page)
         if (pageIndex < 0) return null
         val mmToScreen = controller.viewport.pageMmToScreen(pageIndex) ?: return null

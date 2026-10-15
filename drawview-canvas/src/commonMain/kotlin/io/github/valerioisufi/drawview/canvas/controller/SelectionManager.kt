@@ -42,31 +42,31 @@ import kotlin.math.min
  * millimeter space of the source page; it is applied to the elements by
  * [SelectionManager.applyTransformation].
  */
-class SelectionGroup(
-    val strokes: MutableList<DrawStroke> = mutableListOf(),
-    val texts: MutableList<DrawText> = mutableListOf(),
-    val images: MutableList<DrawImage> = mutableListOf(),
-    var boundingBox: Rect = Rect.Zero,
-    var pageIndex: Int = -1,
+public class SelectionGroup(
+    public val strokes: MutableList<DrawStroke> = mutableListOf(),
+    public val texts: MutableList<DrawText> = mutableListOf(),
+    public val images: MutableList<DrawImage> = mutableListOf(),
+    internal var boundingBox: Rect = Rect.Zero,
+    public var pageIndex: Int = -1,
     /** The elements of the types of the applications, placed by their box like the images. */
-    val customs: MutableList<DrawCustomElement> = mutableListOf()
+    public val customs: MutableList<DrawCustomElement> = mutableListOf()
 ) {
     /** Live transformation (page millimeters of the source page). */
-    val transform = Matrix2D()
+    public val transform: Matrix2D = Matrix2D()
 
     /** Rotation of the selection frame (single rotated text/image). */
-    var baseRotation: Float = 0f
+    internal var baseRotation: Float = 0f
 
-    fun isEmpty(): Boolean = images.isEmpty() && strokes.isEmpty() && texts.isEmpty() && customs.isEmpty()
+    public fun isEmpty(): Boolean = images.isEmpty() && strokes.isEmpty() && texts.isEmpty() && customs.isEmpty()
 
-    val isSingleText: Boolean get() = texts.size == 1 && images.isEmpty() && strokes.isEmpty() && customs.isEmpty()
-    val isSingleImage: Boolean get() = images.size == 1 && texts.isEmpty() && strokes.isEmpty() && customs.isEmpty()
-    val isSingleCustom: Boolean get() = customs.size == 1 && images.isEmpty() && texts.isEmpty() && strokes.isEmpty()
+    public val isSingleText: Boolean get() = texts.size == 1 && images.isEmpty() && strokes.isEmpty() && customs.isEmpty()
+    internal val isSingleImage: Boolean get() = images.size == 1 && texts.isEmpty() && strokes.isEmpty() && customs.isEmpty()
+    internal val isSingleCustom: Boolean get() = customs.size == 1 && images.isEmpty() && texts.isEmpty() && strokes.isEmpty()
 
     /**
      * AABB in millimeters of the whole selection, accounting for [baseRotation].
      */
-    fun getEnclosingBoundingBoxMm(): Rect {
+    internal fun getEnclosingBoundingBoxMm(): Rect {
         if (baseRotation == 0f) return boundingBox
         val m = Matrix2D().postRotate(baseRotation, boundingBox.center.x, boundingBox.center.y)
         return m.mapRect(boundingBox)
@@ -75,14 +75,14 @@ class SelectionGroup(
     /** Placement of the elements when the live transformation started. */
     internal var originalPlacements: Map<String, Placement>? = null
 
-    fun captureOriginalStates() {
+    internal fun captureOriginalStates() {
         originalPlacements = elements().mapNotNull { placementOf(it) }.associateBy { it.id }
     }
 
-    fun elements(): List<DrawElement> = strokes + texts + images + customs
+    public fun elements(): List<DrawElement> = strokes + texts + images + customs
 
     /** Leaves the elements of the selection out of the tiles of [hidden] while [dragging]. */
-    fun setDragging(hidden: HiddenElements, dragging: Boolean) {
+    internal fun setDragging(hidden: HiddenElements, dragging: Boolean) {
         hidden.setDragged(elements().map { it.id }, dragging)
     }
 }
@@ -90,11 +90,11 @@ class SelectionGroup(
 /**
  * Lasso selection, clipboard and transformation of the selected elements.
  */
-class SelectionManager(private val controller: DrawViewController) {
+public class SelectionManager(private val controller: DrawViewController) {
 
     private var selectionState by mutableStateOf<SelectionGroup?>(null)
 
-    var currentSelection: SelectionGroup?
+    public var currentSelection: SelectionGroup?
         get() = selectionState
         private set(value) {
             selectionState = value
@@ -102,15 +102,15 @@ class SelectionManager(private val controller: DrawViewController) {
         }
 
     /** Incremented on every live change of the selection (drives the overlay redraw). */
-    var selectionVersion: Int by mutableIntStateOf(0)
+    public var selectionVersion: Int by mutableIntStateOf(0)
         private set
 
-    var clipboard: SelectionGroup? by mutableStateOf(null)
+    public var clipboard: SelectionGroup? by mutableStateOf(null)
         private set
 
-    var lassoMode: LassoMode by mutableStateOf(LassoMode.ALL)
+    public var lassoMode: LassoMode by mutableStateOf(LassoMode.ALL)
 
-    fun canPaste(): Boolean = clipboard?.isEmpty() == false
+    public fun canPaste(): Boolean = clipboard?.isEmpty() == false
 
     internal fun notifyChanged() {
         selectionVersion++
@@ -133,7 +133,7 @@ class SelectionManager(private val controller: DrawViewController) {
      * Selects the elements of [page] intersecting the closed [lasso] polygon (page millimeters),
      * except the texts other devices are writing (see [CollaboratorPresence.writerOf]).
      */
-    fun selectWithLasso(pageIndex: Int, lasso: FloatArray) {
+    internal fun selectWithLasso(pageIndex: Int, lasso: FloatArray) {
         clearSelection()
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
         if (lasso.size < 6) return
@@ -213,7 +213,7 @@ class SelectionManager(private val controller: DrawViewController) {
     /**
      * Selects a single image (long press on an image).
      */
-    fun selectImage(pageIndex: Int, image: DrawImage) {
+    internal fun selectImage(pageIndex: Int, image: DrawImage) {
         clearSelection()
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
         val selection = SelectionGroup(
@@ -227,7 +227,7 @@ class SelectionManager(private val controller: DrawViewController) {
     /**
      * Selects a single element of a type of the application (a tap on it).
      */
-    fun selectCustomElement(pageIndex: Int, element: DrawCustomElement) {
+    internal fun selectCustomElement(pageIndex: Int, element: DrawCustomElement) {
         clearSelection()
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
         val selection = SelectionGroup(
@@ -241,7 +241,7 @@ class SelectionManager(private val controller: DrawViewController) {
     /**
      * Selects a single text block (e.g. a text added by the application, so that it can be moved).
      */
-    fun selectText(pageIndex: Int, text: DrawText) {
+    public fun selectText(pageIndex: Int, text: DrawText) {
         controller.presence.writerOf(text)?.let { writer ->
             controller.presence.refuseEdit(writer)
             return
@@ -275,7 +275,7 @@ class SelectionManager(private val controller: DrawViewController) {
     /**
      * Drops the selection, baking its elements back into the static layers.
      */
-    fun clearSelection() {
+    public fun clearSelection() {
         val selection = currentSelection ?: return
         currentSelection = null
         val page = controller.document.pages.getOrNull(selection.pageIndex)
@@ -297,7 +297,7 @@ class SelectionManager(private val controller: DrawViewController) {
     /** The move of the gesture so far, in page millimeters, before snapping. */
     private var moveOffset = Offset.Zero
 
-    fun beginTransformation() {
+    public fun beginTransformation() {
         val selection = currentSelection ?: return
         selection.captureOriginalStates()
         moveStart = Matrix2D(selection.transform)
@@ -308,7 +308,7 @@ class SelectionManager(private val controller: DrawViewController) {
      * Moves the selection by ([dxMm], [dyMm]) more in the source page space during a gesture,
      * snapped to what is around it (see [SnapManager]) unless [free].
      */
-    fun moveBy(dxMm: Float, dyMm: Float, free: Boolean = false) {
+    public fun moveBy(dxMm: Float, dyMm: Float, free: Boolean = false) {
         val selection = currentSelection ?: return
         val start = moveStart ?: Matrix2D(selection.transform).also { moveStart = it }
         moveOffset += Offset(dxMm, dyMm)
@@ -324,7 +324,7 @@ class SelectionManager(private val controller: DrawViewController) {
     }
 
     /** Translates the selection by ([dxMm], [dyMm]) in the source page space. */
-    fun translateBy(dxMm: Float, dyMm: Float) {
+    internal fun translateBy(dxMm: Float, dyMm: Float) {
         val selection = currentSelection ?: return
         selection.transform.postTranslate(dxMm, dyMm)
         notifyChanged()
@@ -334,7 +334,7 @@ class SelectionManager(private val controller: DrawViewController) {
      * Scales the selection by [factor] around its (transformed) center; never its texts beyond
      * the sizes of the texts (see [TextSizes]).
      */
-    fun scaleBy(factor: Float) {
+    internal fun scaleBy(factor: Float) {
         val selection = currentSelection ?: return
         if (!(factor > 0f) || !factor.isFinite()) return
         var applied = factor
@@ -350,7 +350,7 @@ class SelectionManager(private val controller: DrawViewController) {
     }
 
     /** Rotates the selection by [degrees] around its (transformed) center. */
-    fun rotateBy(degrees: Float) {
+    public fun rotateBy(degrees: Float) {
         val selection = currentSelection ?: return
         val c = selection.transform.mapPoint(selection.boundingBox.center.x, selection.boundingBox.center.y)
         selection.transform.postRotate(degrees, c.x, c.y)
@@ -362,7 +362,7 @@ class SelectionManager(private val controller: DrawViewController) {
      *
      * @param touchMm finger position in the source page space.
      */
-    fun resizeText(touchMm: Offset, isRightEdge: Boolean, free: Boolean = false) {
+    internal fun resizeText(touchMm: Offset, isRightEdge: Boolean, free: Boolean = false) {
         val selection = currentSelection ?: return
         val text = selection.texts.singleOrNull() ?: return
         val inverse = Matrix2D()
@@ -400,7 +400,7 @@ class SelectionManager(private val controller: DrawViewController) {
      * Applies the live transformation to the selected elements, moving them to the page under
      * the selection center when needed (one change of the document).
      */
-    fun applyTransformation() {
+    public fun applyTransformation() {
         val selection = currentSelection ?: return
         val doc = controller.document
         val oldPage = doc.pages.getOrNull(selection.pageIndex) ?: return
@@ -501,7 +501,7 @@ class SelectionManager(private val controller: DrawViewController) {
     // Clipboard
     // ==========================================================
 
-    fun deleteSelection() {
+    public fun deleteSelection() {
         val selection = currentSelection ?: return
         val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
         currentSelection = null
@@ -510,7 +510,7 @@ class SelectionManager(private val controller: DrawViewController) {
         notifyChanged()
     }
 
-    fun copySelection() {
+    public fun copySelection() {
         val selection = currentSelection ?: return
         clipboard = SelectionGroup(
             strokes = selection.strokes.toMutableList(),
@@ -523,7 +523,7 @@ class SelectionManager(private val controller: DrawViewController) {
         clearSelection()
     }
 
-    fun cutSelection() {
+    public fun cutSelection() {
         val selection = currentSelection ?: return
         clipboard = SelectionGroup(
             strokes = selection.strokes.toMutableList(),
@@ -540,7 +540,7 @@ class SelectionManager(private val controller: DrawViewController) {
      * Pastes the clipboard centered at [targetScreen] (or with a small offset from the copied
      * position when `null`), selecting the pasted elements.
      */
-    fun pasteSelection(targetScreen: Offset? = null) {
+    public fun pasteSelection(targetScreen: Offset? = null) {
         val copied = clipboard ?: return
         val doc = controller.document
         val targetIndex = targetScreen?.let { controller.viewport.findPageIndexAtScreen(it) }
@@ -618,13 +618,13 @@ class SelectionManager(private val controller: DrawViewController) {
      * The text of the texts selected, from the top of the page down, separated by an empty line
      * (their notation kept); `null` when no text is selected.
      */
-    val selectedPlainText: String?
+    public val selectedPlainText: String?
         get() = currentSelection?.texts?.takeIf { it.isNotEmpty() }
             ?.sortedWith(compareBy<DrawText> { it.y }.thenBy { it.x })
             ?.joinToString("\n\n") { it.text }
 
     /** The texts selected, as a target of the formatting; `null` when no text is selected. */
-    val selectedTexts: TextFormatTarget?
+    public val selectedTexts: TextFormatTarget?
         get() = currentSelection?.takeIf { it.texts.isNotEmpty() }?.let { SelectedTexts(it) }
 
     /** The texts of [selection], formatted together (the first one tells their style). */
@@ -639,7 +639,7 @@ class SelectionManager(private val controller: DrawViewController) {
         override fun changeAlignment(newAlignment: TextAlignment) = updateSelectedTextsAlignment(newAlignment)
     }
 
-    fun updateSelectedTextsColor(color: Int) {
+    internal fun updateSelectedTextsColor(color: Int) {
         val selection = currentSelection ?: return
         if (selection.texts.isEmpty()) return
         val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
@@ -647,7 +647,7 @@ class SelectionManager(private val controller: DrawViewController) {
         notifyChanged()
     }
 
-    fun updateSelectedTextsFontSize(fontSize: Float) {
+    internal fun updateSelectedTextsFontSize(fontSize: Float) {
         val selection = currentSelection ?: return
         if (selection.texts.isEmpty()) return
         val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
@@ -666,7 +666,7 @@ class SelectionManager(private val controller: DrawViewController) {
         notifyChanged()
     }
 
-    fun updateSelectedTextsAlignment(alignment: TextAlignment) {
+    internal fun updateSelectedTextsAlignment(alignment: TextAlignment) {
         val selection = currentSelection ?: return
         if (selection.texts.isEmpty()) return
         val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return

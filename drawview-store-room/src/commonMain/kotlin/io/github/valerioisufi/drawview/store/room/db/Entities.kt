@@ -23,7 +23,7 @@ import io.github.valerioisufi.drawview.platform.currentTimeMillis
  * Table for Folders
  */
 @Entity(tableName = "folders")
-data class FolderEntity(
+internal data class FolderEntity(
     @PrimaryKey val id: String,
     val name: String,
     val parentId: String? = null,
@@ -46,7 +46,7 @@ data class FolderEntity(
     ],
     indices = [Index("folderId")]
 )
-data class DocumentEntity(
+internal data class DocumentEntity(
     @PrimaryKey val id: String,
     val name: String,
     val folderId: String? = null,
@@ -76,7 +76,7 @@ data class DocumentEntity(
     ],
     indices = [Index(value = ["documentId", "orderKey"])]
 )
-data class PageEntity(
+internal data class PageEntity(
     @PrimaryKey val id: String,
     val documentId: String,
     val orderKey: String,
@@ -107,7 +107,7 @@ data class PageEntity(
     ],
     indices = [Index("pageId")]
 )
-data class StrokeEntity(
+internal data class StrokeEntity(
     @PrimaryKey val id: String,
     val pageId: String,
     val orderKey: ElementOrder,
@@ -156,7 +156,7 @@ data class StrokeEntity(
     ],
     indices = [Index("pageId")]
 )
-data class TextEntity(
+internal data class TextEntity(
     @PrimaryKey val id: String,
     val pageId: String,
     val orderKey: ElementOrder,
@@ -191,7 +191,7 @@ data class TextEntity(
     ],
     indices = [Index("pageId")]
 )
-data class ImageEntity(
+internal data class ImageEntity(
     @PrimaryKey val id: String,
     val pageId: String,
     val orderKey: ElementOrder,
@@ -223,7 +223,7 @@ data class ImageEntity(
     ],
     indices = [Index("pageId")]
 )
-class CustomElementEntity(
+internal class CustomElementEntity(
     @PrimaryKey val id: String,
     val pageId: String,
     val orderKey: ElementOrder,
@@ -253,7 +253,7 @@ class CustomElementEntity(
     ],
     indices = [Index("pageId")]
 )
-data class PdfEntity(
+internal data class PdfEntity(
     @PrimaryKey val id: String,
     val pageId: String,
     val orderKey: ElementOrder,
@@ -280,7 +280,7 @@ data class PdfEntity(
     ],
     indices = [Index("pageId")]
 )
-data class TextMarkupEntity(
+internal data class TextMarkupEntity(
     @PrimaryKey val id: String,
     val pageId: String,
     val orderKey: ElementOrder,
@@ -316,7 +316,7 @@ data class TextMarkupEntity(
     ],
     indices = [Index("documentId"), Index("contentHash")]
 )
-data class ResourceEntity(
+internal data class ResourceEntity(
     @PrimaryKey val id: String,
     val documentId: String,
     val type: String, // "image", "pdf", "color"
@@ -339,7 +339,7 @@ data class ResourceEntity(
         )
     ]
 )
-data class SharedDocumentEntity(
+internal data class SharedDocumentEntity(
     @PrimaryKey val documentId: String,
     val secret: String,
     /** This device may only read it (see `DocumentSession.isReadOnly`). */
@@ -362,7 +362,7 @@ data class SharedDocumentEntity(
         )
     ]
 )
-data class OperationBaseEntity(
+internal data class OperationBaseEntity(
     val documentId: String,
     val replica: String,
     val sequence: Long,
@@ -386,7 +386,7 @@ data class OperationBaseEntity(
     ],
     indices = [Index(value = ["documentId", "stamp"])]
 )
-data class OperationEntity(
+internal data class OperationEntity(
     val documentId: String,
     val replica: String,
     val sequence: Long,
@@ -398,14 +398,14 @@ data class OperationEntity(
  * This device in the changes of the documents (a single row).
  */
 @Entity(tableName = "replica")
-data class ReplicaEntity(
+internal data class ReplicaEntity(
     @PrimaryKey val id: Int = 1,
     val replicaId: String
 )
 
 /** A preference of the applications: text by key (see `PreferenceStore`). */
 @Entity(tableName = "preferences")
-data class PreferenceEntity(
+internal data class PreferenceEntity(
     @PrimaryKey val key: String,
     val value: String
 )

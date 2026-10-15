@@ -42,7 +42,7 @@ import kotlinx.coroutines.flow.first
  * framerate-independent camera spring physics.
  */
 @Composable
-fun DrawCanvas(
+public fun DrawCanvas(
     controller: DrawViewController,
     modifier: Modifier = Modifier,
     engine: InkStrokeEngine = remember { InkStrokeEngine() }

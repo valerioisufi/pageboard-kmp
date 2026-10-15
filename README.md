@@ -141,6 +141,7 @@ Running:
 ## Running Tests
 
 * **Modules**: `./gradlew :drawview-<module>:jvmTest` (also `iosSimulatorArm64Test`), e.g. `:drawview-store-room:jvmTest`, `:drawview-explorer:jvmTest`, `:drawview-lecture:jvmTest`, `:drawview-export:jvmTest`
+* **Public API**: every library declares it (explicit API mode) and records it in its `api/` directory; `./gradlew check` fails when it changes, `./gradlew updateKotlinAbi` records a change wanted
 * **Screenshots** of the library and of the editor in the reference windows of the adaptive interface (phones, tablets, desktop; see [docs/adaptive-ui.md](./docs/adaptive-ui.md)): `./gradlew :drawview-explorer:verifyRoborazziJvm` compares the interface with the images of `drawview-explorer/screenshots`, `recordRoborazziJvm` records them again after a change of the interface
 * **Sample**:
   * Android: `./gradlew :sample-shared:testAndroidHostTest`

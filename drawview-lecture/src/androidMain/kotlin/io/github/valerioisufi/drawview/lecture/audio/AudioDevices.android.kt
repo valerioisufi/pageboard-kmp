@@ -13,21 +13,21 @@ import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
-import android.media.AudioManager
-import android.media.AudioRecordingConfiguration
 import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioRecord
+import android.media.AudioRecordingConfiguration
 import android.media.AudioTrack
 import android.media.MediaRecorder
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import io.github.valerioisufi.drawview.platform.DrawViewAndroid
 import io.github.valerioisufi.drawview.lecture.R
+import io.github.valerioisufi.drawview.platform.DrawViewAndroid
 
-actual fun createAudioCapture(): AudioCapture? = AndroidAudioCapture(DrawViewAndroid.context)
+internal actual fun createAudioCapture(): AudioCapture? = AndroidAudioCapture(DrawViewAndroid.context)
 
-actual fun createAudioOutput(): AudioOutput? = AndroidAudioOutput(DrawViewAndroid.context)
+internal actual fun createAudioOutput(): AudioOutput? = AndroidAudioOutput(DrawViewAndroid.context)
 
 /**
  * The microphone of Android ([AudioRecord], 16 kHz mono). While it records, a foreground service
@@ -37,7 +37,7 @@ actual fun createAudioOutput(): AudioOutput? = AndroidAudioOutput(DrawViewAndroi
  * During a call the system silences it (the recording goes on with silence, told by [CaptureEvent]);
  * when its device changes or disappears it goes on with the microphone there is.
  */
-class AndroidAudioCapture(private val context: Context) : AudioCapture {
+internal class AndroidAudioCapture(private val context: Context) : AudioCapture {
     @Volatile
     private var running = false
     private var record: AudioRecord? = null
@@ -158,7 +158,7 @@ class AndroidAudioCapture(private val context: Context) : AudioCapture {
  * Keeps a lecture recording with the application in the background: a foreground service of the
  * microphone, with its notification (which opens the application).
  */
-class LectureRecordingService : Service() {
+internal class LectureRecordingService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -189,7 +189,7 @@ class LectureRecordingService : Service() {
  * The speakers of Android ([AudioTrack], 16 kHz mono): [write] waits while a quarter of a second
  * is waiting to be played (a pause or a seek is heard right away).
  */
-class AndroidAudioOutput(private val context: Context) : AudioOutput {
+internal class AndroidAudioOutput(private val context: Context) : AudioOutput {
     @Volatile
     private var track: AudioTrack? = null
     private var written = 0L

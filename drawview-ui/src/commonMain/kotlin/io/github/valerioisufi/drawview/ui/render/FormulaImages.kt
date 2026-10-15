@@ -11,7 +11,7 @@ import kotlin.math.roundToInt
  * asked last (none without a renderer: the formulas stay as their source). Thread-safe: the tiles
  * render them on background threads.
  */
-class FormulaImages(private val renderer: FormulaRenderer?, private val maxSize: Int = 128) {
+internal class FormulaImages(private val renderer: FormulaRenderer?, private val maxSize: Int = 128) {
 
     private data class Key(val latex: String, val color: Int, val sizePx: Int)
 

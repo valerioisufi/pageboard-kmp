@@ -54,7 +54,7 @@ internal sealed interface LibraryDialog {
  * application on a document ([DocumentAction]).
  */
 @Stable
-class LibraryCommands internal constructor(
+internal class LibraryCommands internal constructor(
     private val viewModel: FileExplorerViewModel,
     private val openDocument: (String) -> Unit,
     private val documentActions: List<DocumentAction>,

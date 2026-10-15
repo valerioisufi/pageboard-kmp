@@ -6,7 +6,7 @@ import android.graphics.Matrix
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 
-actual fun decodeImageBitmap(bytes: ByteArray, maxDimension: Int): ImageBitmap? {
+public actual fun decodeImageBitmap(bytes: ByteArray, maxDimension: Int): ImageBitmap? {
     return try {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)

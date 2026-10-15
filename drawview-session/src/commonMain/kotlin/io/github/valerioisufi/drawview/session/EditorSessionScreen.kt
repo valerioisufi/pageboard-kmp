@@ -30,7 +30,7 @@ import kotlinx.coroutines.flow.combine
  *   commands, overlays).
  */
 @Composable
-fun EditorSessionScreen(
+public fun EditorSessionScreen(
     session: EditorSession,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,

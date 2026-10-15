@@ -6,7 +6,7 @@ import io.github.valerioisufi.drawview.model.StrokePoint
  * Binary serializer/deserializer for vector stroke input points.
  * Ensures fast persistence to SQLite BLOB columns and cross-platform fidelity.
  */
-object StrokeInputCodec {
+internal object StrokeInputCodec {
     private const val MAGIC_V1: Byte = 0x44 // 'D'
     private const val MAGIC_V2: Byte = 0x57 // 'W'
 

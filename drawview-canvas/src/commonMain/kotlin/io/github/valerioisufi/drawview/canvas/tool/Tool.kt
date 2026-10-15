@@ -3,7 +3,7 @@ package io.github.valerioisufi.drawview.canvas.tool
 /**
  * Enumeration of primary user-facing interactive tools.
  */
-enum class Tool {
+public enum class Tool {
     INK_PEN,
     INK_HIGHLIGHTER,
 
@@ -18,7 +18,7 @@ enum class Tool {
 /**
  * Selection filtering mode for the Lasso tool.
  */
-enum class LassoMode {
+public enum class LassoMode {
     ALL,
     IMAGES_ONLY
 }

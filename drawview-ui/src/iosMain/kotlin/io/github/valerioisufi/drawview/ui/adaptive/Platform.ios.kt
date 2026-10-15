@@ -10,13 +10,13 @@ import platform.UIKit.UIPencilInteraction
  * Pencil). A keyboard and a trackpad are learned from their events.
  */
 @Composable
-actual fun platformInputHints(): InputHints = remember {
+internal actual fun platformInputHints(): InputHints = remember {
     InputHints(touch = true, stylus = UIPencilInteraction.prefersPencilOnlyDrawing)
 }
 
 /** The soft keyboard types through the text input, not through key events. */
 internal actual fun KeyEvent.isFromHardwareKeyboard(): Boolean = true
 
-actual val platformConventions: PlatformConventions = PlatformConventions(
+public actual val platformConventions: PlatformConventions = PlatformConventions(
     shortcutModifier = ShortcutModifier.COMMAND
 )

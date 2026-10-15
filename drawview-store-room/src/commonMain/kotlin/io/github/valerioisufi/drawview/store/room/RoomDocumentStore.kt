@@ -30,12 +30,12 @@ import kotlinx.coroutines.withContext
 /**
  * [DocumentStore] backed by the Room database (Android, desktop and iOS).
  */
-class RoomDocumentStore(
-    val database: DrawDatabase,
+public class RoomDocumentStore(
+    public val database: DrawDatabase,
     override val strokeModeller: StrokeModeller = InkStrokeModeller
 ) : DocumentStore, PreferenceStore {
-    val repository = DrawDocumentRepository(database, strokeModeller)
-    val fileRepository = FileRepository(database)
+    internal val repository = DrawDocumentRepository(database, strokeModeller)
+    internal val fileRepository = FileRepository(database)
 
     private val sharedDocuments = database.sharedDocumentDao()
 
@@ -53,7 +53,7 @@ class RoomDocumentStore(
 
     override suspend fun preference(key: String): String? = repository.preference(key)
 
-    override suspend fun setPreference(key: String, value: String?) = repository.setPreference(key, value)
+    override suspend fun setPreference(key: String, value: String?): Unit = repository.setPreference(key, value)
 
     override suspend fun createDocument(
         name: String,
@@ -63,7 +63,7 @@ class RoomDocumentStore(
         folderId: String?
     ): DrawDocument = repository.createDocument(name, widthMm, heightMm, background, folderId)
 
-    override suspend fun insertDocument(document: DrawDocument, folderId: String?, versionVector: Map<String, Long>) =
+    override suspend fun insertDocument(document: DrawDocument, folderId: String?, versionVector: Map<String, Long>): Unit =
         repository.insertDocument(document, folderId, versionVector)
 
     override suspend fun loadDocument(documentId: String): DrawDocument? = repository.loadDocument(documentId)
@@ -76,7 +76,7 @@ class RoomDocumentStore(
     override suspend fun moveDocument(documentId: String, folderId: String?): Boolean =
         fileRepository.moveDocument(documentId, folderId)
 
-    override suspend fun updateLastOpened(documentId: String) =
+    override suspend fun updateLastOpened(documentId: String): Unit =
         fileRepository.updateLastOpened(documentId, currentTimeMillis())
 
     override suspend fun replicaId(): String = repository.replicaId()
@@ -95,7 +95,7 @@ class RoomDocumentStore(
         sharedDocuments.getAll().associate { it.documentId to it.secret }
     }
 
-    override suspend fun setSharingSecret(documentId: String, secret: String?, readOnly: Boolean) = withContext(Dispatchers.IO) {
+    override suspend fun setSharingSecret(documentId: String, secret: String?, readOnly: Boolean): Unit = withContext(Dispatchers.IO) {
         if (secret == null) sharedDocuments.delete(documentId) else sharedDocuments.upsert(SharedDocumentEntity(documentId, secret, readOnly))
     }
 
@@ -141,12 +141,12 @@ internal fun FolderEntity.toSummary() = FolderSummary(
 /**
  * Process-wide document store: the database must not be opened more than once.
  */
-object DrawViewStore {
-    val default: RoomDocumentStore by lazy { RoomDocumentStore(DrawViewDatabase.instance) }
+public object DrawViewStore {
+    public val default: RoomDocumentStore by lazy { RoomDocumentStore(DrawViewDatabase.instance) }
 
     /**
      * The documents of [default] being changed (see [OpenDocuments]), on the main thread: shared
      * by the editor and the synchronization with the other devices.
      */
-    val documents: OpenDocuments by lazy { OpenDocuments(default) }
+    public val documents: OpenDocuments by lazy { OpenDocuments(default) }
 }

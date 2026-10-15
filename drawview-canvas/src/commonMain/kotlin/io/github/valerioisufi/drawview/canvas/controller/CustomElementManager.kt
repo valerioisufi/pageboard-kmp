@@ -14,14 +14,14 @@ import io.github.valerioisufi.drawview.model.geometry.Rect
  * like the images, through their box; they are drawn by the renderers of
  * `DrawViewEngines.elements`.
  */
-class CustomElementManager internal constructor(private val controller: DrawViewController) {
+public class CustomElementManager internal constructor(private val controller: DrawViewController) {
 
     /**
      * Adds an element of [type] of value [value] to the page [pageIndex], in [box] (page
      * millimeters), on top of the others, and selects it; `null` when the page does not exist or
      * the document may only be read.
      */
-    fun <T : Any> add(type: ElementType<T>, value: T, pageIndex: Int, box: Rect, select: Boolean = true): DrawCustomElement? {
+    public fun <T : Any> add(type: ElementType<T>, value: T, pageIndex: Int, box: Rect, select: Boolean = true): DrawCustomElement? {
         val page = controller.document.pages.getOrNull(pageIndex) ?: return null
         if (box.isEmpty) return null
         val element = DrawCustomElement(type.id).apply {
@@ -41,7 +41,7 @@ class CustomElementManager internal constructor(private val controller: DrawView
      * Replaces the value of [element] (of [type]) with [value]; `false` when the element is no
      * longer in the document or the document may only be read.
      */
-    fun <T : Any> update(element: DrawCustomElement, type: ElementType<T>, value: T): Boolean {
+    public fun <T : Any> update(element: DrawCustomElement, type: ElementType<T>, value: T): Boolean {
         require(element.type == type.id) { "${element.type} is not of the type ${type.id}" }
         val (page, _) = controller.document.findElement(element.id) ?: return false
         return controller.session.submit(UpdateElementContent(page.id, element.id, type.version, type.encode(value))) != null

@@ -9,7 +9,7 @@ package io.github.valerioisufi.drawview.canvas.render.tile
  * @property col Column index along the X-axis in the tile grid.
  * @property row Row index along the Y-axis in the tile grid.
  */
-data class TileKey(
+public data class TileKey(
     val pageKey: Long,
     val lod: Int,
     val col: Int,
@@ -19,7 +19,7 @@ data class TileKey(
      * Computes the parent tile key at the lower LOD (lod - 1) for the same page.
      * Used for hierarchical mipmap fallback while high-res tiles are loading.
      */
-    fun getParentKey(): TileKey {
+    internal fun getParentKey(): TileKey {
         return TileKey(
             pageKey = pageKey,
             lod = lod - 1,
@@ -32,7 +32,7 @@ data class TileKey(
      * Executes [action] on each of the four children tile keys at the higher LOD (lod + 1)
      * for the same page without allocating a list.
      */
-    inline fun forEachChildKey(action: (TileKey) -> Unit) {
+    internal inline fun forEachChildKey(action: (TileKey) -> Unit) {
         val nextLod = lod + 1
         val c2 = col * 2
         val r2 = row * 2
@@ -45,7 +45,7 @@ data class TileKey(
     /**
      * Computes the four children tile keys at the higher LOD (lod + 1) for the same page.
      */
-    fun getChildrenKeys(): List<TileKey> {
+    internal fun getChildrenKeys(): List<TileKey> {
         val nextLod = lod + 1
         val c2 = col * 2
         val r2 = row * 2

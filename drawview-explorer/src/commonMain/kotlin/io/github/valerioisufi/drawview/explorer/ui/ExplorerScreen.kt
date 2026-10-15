@@ -90,7 +90,7 @@ import org.jetbrains.compose.resources.stringResource
  * @param onImportImage imports an image chosen by the user as a note, if the application can.
  */
 @Composable
-fun ExplorerScreen(
+internal fun ExplorerScreen(
     fileExplorerViewModel: FileExplorerViewModel,
     onOpenDocument: (String) -> Unit,
     title: @Composable () -> Unit,
@@ -288,7 +288,7 @@ private fun LazyGridScope.libraryHeader(
 
 /** The About & Licenses dialog of the application (see `LocalAboutAppInfo`), as an action of the library. */
 @Composable
-fun aboutLibraryAction(): LibraryAction = remember {
+public fun aboutLibraryAction(): LibraryAction = remember {
     LibraryAction(
         icon = DrawViewIcons.Info,
         label = { stringResource(DrawViewRes.string.about_dialog_title) }
@@ -297,7 +297,7 @@ fun aboutLibraryAction(): LibraryAction = remember {
 
 /** Opens the About & Licenses dialog of the application (see `LocalAboutAppInfo`). */
 @Composable
-fun AboutLicensesButton() {
+internal fun AboutLicensesButton() {
     var showAboutDialog by remember { mutableStateOf(false) }
     DesignIconButton(DrawViewIcons.Info, stringResource(DrawViewRes.string.about_dialog_title), { showAboutDialog = true })
     if (showAboutDialog) {

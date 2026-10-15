@@ -14,9 +14,9 @@ import kotlin.math.min
  * right, bottom) in points from the top-left corner of the page as it is displayed, which is
  * [widthPt] x [heightPt].
  */
-class PdfTextLayout(
-    val widthPt: Float,
-    val heightPt: Float,
+public class PdfTextLayout(
+    public val widthPt: Float,
+    public val heightPt: Float,
     private val codePoints: IntArray,
     private val boxes: FloatArray
 ) {
@@ -24,20 +24,20 @@ class PdfTextLayout(
         require(boxes.size >= codePoints.size * 4) { "Four box values per character" }
     }
 
-    val charCount: Int get() = codePoints.size
+    public val charCount: Int get() = codePoints.size
 
     /** Whether the page has text that can be selected (a scanned page has none). */
-    val hasText: Boolean = codePoints.indices.any { hasBox(it) }
+    public val hasText: Boolean = codePoints.indices.any { hasBox(it) }
 
-    fun codePointAt(index: Int): Int = codePoints[index]
+    public fun codePointAt(index: Int): Int = codePoints[index]
 
     /** Whether the character [index] has a box (it is not a space or a line break inferred by PDFium). */
-    fun hasBox(index: Int): Boolean {
+    public fun hasBox(index: Int): Boolean {
         val i = index * 4
         return boxes[i + 2] > boxes[i] && boxes[i + 3] > boxes[i + 1]
     }
 
-    fun boxOf(index: Int): Rect {
+    public fun boxOf(index: Int): Rect {
         val i = index * 4
         return Rect(boxes[i], boxes[i + 1], boxes[i + 2], boxes[i + 3])
     }
@@ -46,7 +46,7 @@ class PdfTextLayout(
      * Index of the character whose box is the nearest to ([x], [y]) (points), when it is at most
      * [maxDistance] points away, or -1.
      */
-    fun charIndexNear(x: Float, y: Float, maxDistance: Float): Int {
+    public fun charIndexNear(x: Float, y: Float, maxDistance: Float): Int {
         var best = -1
         var bestDistance = 0f
         var bestCenter = 0f
@@ -72,7 +72,7 @@ class PdfTextLayout(
      * one of the lines at the height of the pointer (beyond the end of a line, its last one),
      * otherwise the nearest one of the page. -1 when the page has no text.
      */
-    fun charIndexForSelection(x: Float, y: Float): Int {
+    public fun charIndexForSelection(x: Float, y: Float): Int {
         var inRow = -1
         var inRowDx = 0f
         var inRowCenter = 0f
@@ -104,7 +104,7 @@ class PdfTextLayout(
      * The word around the character [index]: for a space or a punctuation mark, the word just
      * before it (or else just after it), otherwise the character alone.
      */
-    fun wordRange(index: Int): IntRange {
+    public fun wordRange(index: Int): IntRange {
         if (index !in codePoints.indices) return IntRange.EMPTY
         if (!isWordChar(index)) {
             return when {
@@ -125,7 +125,7 @@ class PdfTextLayout(
      * points. Lines overlapping each other are split halfway, so that a translucent mark is not
      * darker where two lines meet.
      */
-    fun lineRects(start: Int, end: Int): List<Rect> {
+    public fun lineRects(start: Int, end: Int): List<Rect> {
         val lines = mutableListOf<FloatArray>()
         var line: FloatArray? = null
         var lastRight = 0f
@@ -164,7 +164,7 @@ class PdfTextLayout(
      * Text of the characters from [start] until [end] (exclusive), with the line breaks of the
      * layout.
      */
-    fun text(start: Int, end: Int): String {
+    public fun text(start: Int, end: Int): String {
         val text = StringBuilder()
         var previous = 0
         for (index in max(start, 0) until min(end, charCount)) {

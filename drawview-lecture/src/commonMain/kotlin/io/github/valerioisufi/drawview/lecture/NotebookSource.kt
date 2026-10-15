@@ -32,7 +32,7 @@ import kotlinx.serialization.Serializable
  *
  * @param isCrop the image shows only a part of the page (e.g. what the student just wrote).
  */
-class PageImage(val pageIndex: Int, val jpeg: ByteArray, val isCrop: Boolean = false)
+internal class PageImage(public val pageIndex: Int, public val jpeg: ByteArray, internal val isCrop: Boolean = false)
 
 /**
  * The PDF page shown as the background of a notebook page, with its text.
@@ -42,7 +42,7 @@ class PageImage(val pageIndex: Int, val jpeg: ByteArray, val isCrop: Boolean = f
  * @param text the text layer of the page (empty for a scanned page).
  */
 @Serializable
-data class SlideText(val pdfNumber: Int, val pdfPageIndex: Int, val text: String)
+public data class SlideText(val pdfNumber: Int, val pdfPageIndex: Int, val text: String)
 
 /**
  * What the assistant knows of a page of the notebook: the same description for every provider,
@@ -59,7 +59,7 @@ data class SlideText(val pdfNumber: Int, val pdfPageIndex: Int, val text: String
  * @param imageCount pictures inserted by the student.
  */
 @Serializable
-data class PageContent(
+public data class PageContent(
     val index: Int,
     val pageId: String = "",
     val slide: SlideText? = null,
@@ -82,7 +82,7 @@ data class PageContent(
  * @param strokeIds strokes of the document seen by this capture.
  * @param pageIds identifier of every page of the document, by index.
  */
-class NotebookSnapshot(
+internal class NotebookSnapshot(
     val documentTitle: String,
     val pageCount: Int,
     val visiblePageIndexes: List<Int>,
@@ -98,7 +98,7 @@ class NotebookSnapshot(
 }
 
 /** Source of the notebook content sent to the model. */
-interface NotebookSource {
+internal interface NotebookSource {
     val documentTitle: String
 
     /** Strokes of the document (those present when the lecture starts are not "new writing"). */
@@ -128,7 +128,7 @@ interface NotebookSource {
  * [controller] (PDFium), the images from its tile renderer (paper, PDF, images, texts and ink, as
  * on screen).
  */
-class ControllerNotebookSource(private val controller: DrawViewController) : NotebookSource {
+internal class ControllerNotebookSource(private val controller: DrawViewController) : NotebookSource {
     /** Text of the PDF pages, by resource and page (read once). */
     private val slideTexts = mutableMapOf<Pair<String, Int>, String>()
     private val slideTextsLock = SyncLock()

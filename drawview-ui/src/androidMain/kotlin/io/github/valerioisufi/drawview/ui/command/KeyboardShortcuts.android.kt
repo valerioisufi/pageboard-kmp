@@ -10,7 +10,7 @@ import androidx.compose.ui.input.key.nativeKeyCode
  * with Meta + / (or from the menu of the keyboard): give them from
  * `Activity.onProvideKeyboardShortcuts`. The commands without a shortcut are left out.
  */
-fun CommandHost.keyboardShortcutGroups(): List<KeyboardShortcutGroup> =
+public fun CommandHost.keyboardShortcutGroups(): List<KeyboardShortcutGroup> =
     labeledCommands
         .filter { (command, _) -> command.shortcuts.isNotEmpty() }
         .groupBy { (command, _) -> command.group }

@@ -24,16 +24,16 @@ import org.jetbrains.compose.resources.Font
  * @param monospace the code (Noto Sans Mono).
  */
 @Immutable
-class NotesFonts(val text: FontFamily, val monospace: FontFamily) {
-    companion object {
+public class NotesFonts(public val text: FontFamily, public val monospace: FontFamily) {
+    public companion object {
         /** The fonts of the system: every platform draws the texts with its own. */
-        val System = NotesFonts(FontFamily.Default, FontFamily.Monospace)
+        public val System: NotesFonts = NotesFonts(FontFamily.Default, FontFamily.Monospace)
     }
 }
 
 /** The fonts of the notes, Noto Sans and Noto Sans Mono (shipped with DrawView). */
 @Composable
-fun rememberNotesFonts(): NotesFonts {
+public fun rememberNotesFonts(): NotesFonts {
     val regular = Font(Res.font.noto_sans_regular, FontWeight.Normal, FontStyle.Normal)
     val italic = Font(Res.font.noto_sans_italic, FontWeight.Normal, FontStyle.Italic)
     val bold = Font(Res.font.noto_sans_bold, FontWeight.Bold, FontStyle.Normal)
@@ -46,9 +46,9 @@ fun rememberNotesFonts(): NotesFonts {
 }
 
 /** The files of the fonts of the notes ([rememberNotesFonts]), to embed them in a PDF. */
-object NotesFontFiles {
+public object NotesFontFiles {
     /** The TrueType file of [face]. */
-    suspend fun bytes(face: TextFace): ByteArray = Res.readBytes(
+    public suspend fun bytes(face: TextFace): ByteArray = Res.readBytes(
         when (face) {
             TextFace.REGULAR -> "font/noto_sans_regular.ttf"
             TextFace.ITALIC -> "font/noto_sans_italic.ttf"

@@ -9,23 +9,23 @@ import kotlin.math.min
  * A line a box can be aligned with, in page millimeters: at [position] across x (a vertical line)
  * or y (a horizontal one), drawn as a guide from [from] to [to] along the other axis.
  */
-class SnapLine(val position: Float, val from: Float, val to: Float)
+internal class SnapLine(public val position: Float, public val from: Float, public val to: Float)
 
 /**
  * What a box can be aligned with on its page: the vertical lines [xs] and the horizontal ones
  * [ys] (the edges and the middles of the other elements, the middle of the page), and the [rows]
  * of its paper, where the first baseline of a text sits.
  */
-class SnapTargets(val xs: List<SnapLine>, val ys: List<SnapLine>, val rows: FloatArray = FloatArray(0))
+internal class SnapTargets(val xs: List<SnapLine>, val ys: List<SnapLine>, val rows: FloatArray = FloatArray(0))
 
 /**
  * A line the box is aligned with, shown while it is (page millimeters): vertical at x =
  * [position] ([vertical]) or horizontal at y = [position], from [from] to [to].
  */
-data class SnapGuide(val vertical: Boolean, val position: Float, val from: Float, val to: Float)
+public data class SnapGuide(val vertical: Boolean, val position: Float, val from: Float, val to: Float)
 
 /** How much a box is moved to be aligned ([dx], [dy] in page millimeters), and the [guides] shown. */
-class Snapped(val dx: Float, val dy: Float, val guides: List<SnapGuide>) {
+internal class Snapped(val dx: Float, val dy: Float, val guides: List<SnapGuide>) {
     companion object {
         val None = Snapped(0f, 0f, emptyList())
     }
@@ -36,7 +36,7 @@ class Snapped(val dx: Float, val dy: Float, val guides: List<SnapGuide>) {
  * within the tolerance, on each axis; its edges, its middle (and the first baseline of a text, on
  * the rows of the paper).
  */
-object SnapEngine {
+internal object SnapEngine {
 
     /**
      * Aligns [box] with [targets]: its left edge, middle or right edge with a vertical line; its

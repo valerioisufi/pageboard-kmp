@@ -41,21 +41,21 @@ import kotlin.math.min
  * @param textAdapter Optional adapter for rasterizing text blocks and LaTeX formulas.
  * @param images the pixels of the images of the documents.
  */
-class TileRenderer(
-    var pdfAdapter: PdfTileAdapter? = null,
-    var textAdapter: TextTileAdapter? = null,
-    val images: ImageCache = ImageCache.Shared
+public class TileRenderer(
+    public var pdfAdapter: PdfTileAdapter? = null,
+    public var textAdapter: TextTileAdapter? = null,
+    public val images: ImageCache = ImageCache.Shared
 ) {
     /** Whether the element of an identifier is left out (drawn over the tiles by the editor, see [HiddenElements]). */
-    var isHidden: (String) -> Boolean = { false }
+    public var isHidden: (String) -> Boolean = { false }
 
     /** Draws the elements of the types of the application (placeholders for the others). */
-    var elements: ElementRenderers = ElementRenderers.None
+    public var elements: ElementRenderers = ElementRenderers.None
 
     /**
      * Renders the content of [page] for [tileKey] into [targetBitmap].
      */
-    fun renderTile(
+    internal fun renderTile(
         tileKey: TileKey,
         targetBitmap: ImageBitmap,
         document: DrawDocument,
@@ -70,7 +70,7 @@ class TileRenderer(
      *
      * @param pageWorldRect Unscaled World Space bounds of the page.
      */
-    fun renderTile(
+    internal fun renderTile(
         tileKey: TileKey,
         targetBitmap: ImageBitmap,
         document: DrawDocument,
@@ -90,14 +90,14 @@ class TileRenderer(
     /**
      * Renders the whole page into a new bitmap [widthPx] pixels wide (page thumbnails).
      */
-    fun renderThumbnail(document: DrawDocument, page: DrawPage, widthPx: Int): ImageBitmap =
+    public fun renderThumbnail(document: DrawDocument, page: DrawPage, widthPx: Int): ImageBitmap =
         renderThumbnail(document, page.snapshotContent(), widthPx)
 
     /**
      * Rasterizes [content] (a page copied, drawn on any thread) into a thumbnail [widthPx] wide;
      * [document] gives the files of its resources.
      */
-    fun renderThumbnail(document: DrawDocument, content: PageContentSnapshot, widthPx: Int): ImageBitmap {
+    public fun renderThumbnail(document: DrawDocument, content: PageContentSnapshot, widthPx: Int): ImageBitmap {
         val w = widthPx.coerceAtLeast(1)
         val h = if (content.widthMm > 0f) ceil(w * content.heightMm / content.widthMm).toInt().coerceAtLeast(1) else w
         val bitmap = ImageBitmap(w, h)
@@ -114,7 +114,7 @@ class TileRenderer(
      * @param mmToCanvas Transformation from page millimeters to canvas pixels.
      * @param clipBounds Visible region of the canvas.
      */
-    fun renderPageContent(
+    public fun renderPageContent(
         canvas: Canvas,
         document: DrawDocument,
         content: PageContentSnapshot,
@@ -222,15 +222,15 @@ class TileRenderer(
     }
 
     /** The decoded pixels of [image] of [document] (loaded from its resource file when needed). */
-    fun imageOf(document: DrawDocument, image: DrawImage): ImageBitmap? =
+    internal fun imageOf(document: DrawDocument, image: DrawImage): ImageBitmap? =
         document.findResource(image.resourceId)?.let { images.load(it.path) }
 
-    companion object {
+    public companion object {
 
         /**
          * Draws [bitmap] stretched over the (rotated) rectangle of [image].
          */
-        fun drawImage(canvas: Canvas, image: DrawImage, bitmap: ImageBitmap, mmToCanvas: Matrix2D, paint: Paint) {
+        public fun drawImage(canvas: Canvas, image: DrawImage, bitmap: ImageBitmap, mmToCanvas: Matrix2D, paint: Paint) {
             if (bitmap.width <= 0 || bitmap.height <= 0) return
             val imageMatrix = Matrix2D()
                 .postScale(image.width / bitmap.width, image.height / bitmap.height)

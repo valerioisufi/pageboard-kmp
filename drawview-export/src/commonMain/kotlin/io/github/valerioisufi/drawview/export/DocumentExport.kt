@@ -11,7 +11,7 @@ import io.github.valerioisufi.drawview.ui.platform.FileTarget
  * change arriving meanwhile from another device cannot make a file of two states; the editor and
  * the library give the identifier of the document and the pages only.
  */
-class DocumentExport(private val documents: OpenDocuments) {
+internal class DocumentExport(private val documents: OpenDocuments) {
 
     /**
      * Exports the document [documentId] with [exporter] to [target]; [progress] gets the part

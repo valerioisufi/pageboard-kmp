@@ -27,18 +27,18 @@ import kotlinx.coroutines.launch
 /**
  * The editing session of an open document.
  */
-class EditorSession internal constructor(
-    val documentId: String,
+public class EditorSession internal constructor(
+    public val documentId: String,
     internal val documents: OpenDocuments
 ) {
     internal val store: DocumentStore get() = documents.store
 
     /** `null` while the document is being loaded. */
-    var controller: DrawViewController? by mutableStateOf(null)
+    public var controller: DrawViewController? by mutableStateOf(null)
         internal set
 
     /** The document being changed (`null` while it is being loaded), shared with the synchronization. */
-    var document: OpenDocument? = null
+    public var document: OpenDocument? = null
         internal set
 
     /**
@@ -48,7 +48,7 @@ class EditorSession internal constructor(
     internal val persistenceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     /** Writes every pending change of the session. */
-    suspend fun flush() {
+    public suspend fun flush() {
         controller?.flushPersistence()
         document?.flush()
         store.flush()
@@ -60,20 +60,20 @@ class EditorSession internal constructor(
  * synchronization with the other devices changes it too), creates its editor and writes its
  * changes when it is closed. Survives the configuration changes of Android (e.g. rotations).
  */
-class DocumentEditorViewModel(
-    val documents: OpenDocuments,
+public class DocumentEditorViewModel(
+    public val documents: OpenDocuments,
     /** The engines of the editors (PDF pages, formulas). */
-    val engines: DrawViewEngines = DrawViewEngines.None,
+    public val engines: DrawViewEngines = DrawViewEngines.None,
     /** Where the preferences of the user are kept (by default, in the store when it keeps them). */
-    val preferences: PreferenceStore? = documents.store as? PreferenceStore
+    public val preferences: PreferenceStore? = documents.store as? PreferenceStore
 ) : ViewModel() {
     private val store: DocumentStore get() = documents.store
 
-    var session: EditorSession? by mutableStateOf(null)
+    public var session: EditorSession? by mutableStateOf(null)
         private set
 
     /** Opens the document [documentId] (closing the current one). */
-    fun openDocument(documentId: String) {
+    public fun openDocument(documentId: String) {
         if (session?.documentId == documentId) return
         closeSession()
         val newSession = EditorSession(documentId, documents)
@@ -86,7 +86,7 @@ class DocumentEditorViewModel(
      * Creates a new document (one A4 page, as in the original app) in [folderId] and opens it;
      * [then] is given its editor once open (e.g. to import the files it was made from).
      */
-    fun createAndOpenDocument(name: String, folderId: String? = null, then: (DrawViewController) -> Unit = {}) {
+    public fun createAndOpenDocument(name: String, folderId: String? = null, then: (DrawViewController) -> Unit = {}) {
         viewModelScope.launch {
             val document = store.createDocument(name, folderId = folderId)
             closeSession()
@@ -143,7 +143,7 @@ class DocumentEditorViewModel(
     }
 
     /** Closes the open document, writing its pending changes. */
-    fun closeSession() {
+    public fun closeSession() {
         val current = session ?: return
         session = null
         DrawViewSessions.close(current)
@@ -158,7 +158,7 @@ class DocumentEditorViewModel(
  * The editing sessions of the process: closing a session writes its pending changes in the
  * background, [flushAll] waits for every write (e.g. before the desktop application exits).
  */
-object DrawViewSessions {
+public object DrawViewSessions {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val lock = SyncLock()
     private val open = mutableSetOf<EditorSession>()
@@ -190,7 +190,7 @@ object DrawViewSessions {
     }
 
     /** Writes the pending changes of every session (open or being closed). */
-    suspend fun flushAll() {
+    public suspend fun flushAll() {
         val (sessions, jobs) = syncLock(lock) { open.toList() to closing.toList() }
         for (session in sessions) {
             try {

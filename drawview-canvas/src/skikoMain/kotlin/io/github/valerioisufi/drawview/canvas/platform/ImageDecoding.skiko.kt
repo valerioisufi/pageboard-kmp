@@ -9,7 +9,7 @@ import org.jetbrains.skia.Paint
 import org.jetbrains.skia.Rect
 import org.jetbrains.skia.Surface
 
-actual fun decodeImageBitmap(bytes: ByteArray, maxDimension: Int): ImageBitmap? {
+public actual fun decodeImageBitmap(bytes: ByteArray, maxDimension: Int): ImageBitmap? {
     return try {
         val image = Image.makeFromEncoded(bytes)
         val largest = max(image.width, image.height)

@@ -12,7 +12,7 @@ import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.platform.LocalView
 
 @OptIn(ExperimentalComposeUiApi::class)
-actual fun Modifier.unbufferedStylusInput(): Modifier = composed {
+internal actual fun Modifier.unbufferedStylusInput(): Modifier = composed {
     val view = LocalView.current
     motionEventSpy { event ->
         if (event.actionMasked == MotionEvent.ACTION_DOWN) {

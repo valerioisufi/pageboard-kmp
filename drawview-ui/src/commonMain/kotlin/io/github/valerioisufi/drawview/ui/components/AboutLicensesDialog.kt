@@ -15,10 +15,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,7 +46,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 /** A third-party component listed by [AboutLicensesDialog]. */
-data class ThirdPartyLicense(
+public data class ThirdPartyLicense(
     val name: String,
     val license: String,
     val copyright: String,
@@ -57,7 +58,7 @@ data class ThirdPartyLicense(
  * The application described by [AboutLicensesDialog], with the third-party components it adds
  * to the ones of DrawView.
  */
-data class AboutAppInfo(
+public data class AboutAppInfo(
     val name: String,
     val version: String,
     val description: String,
@@ -69,7 +70,7 @@ data class AboutAppInfo(
 )
 
 /** Application shown by [AboutLicensesDialog]: DrawView itself when not provided. */
-val LocalAboutAppInfo = staticCompositionLocalOf<AboutAppInfo?> { null }
+public val LocalAboutAppInfo: ProvidableCompositionLocal<AboutAppInfo?> = staticCompositionLocalOf { null }
 
 private val THIRD_PARTY_LIBRARIES = listOf(
     ThirdPartyLicense(
@@ -136,7 +137,7 @@ private val THIRD_PARTY_LIBRARIES = listOf(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AboutLicensesDialog(
+public fun AboutLicensesDialog(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {

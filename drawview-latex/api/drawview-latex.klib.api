@@ -1,0 +1,366 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <DrawView-KMP:drawview-latex>
+sealed interface io.github.valerioisufi.drawview.latex/TexOp { // io.github.valerioisufi.drawview.latex/TexOp|null[0]
+    final class DrawLine : io.github.valerioisufi.drawview.latex/TexOp { // io.github.valerioisufi.drawview.latex/TexOp.DrawLine|null[0]
+        constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.latex/TexOp.DrawLine.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+
+        final val x1 // io.github.valerioisufi.drawview.latex/TexOp.DrawLine.x1|{}x1[0]
+            final fun <get-x1>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.DrawLine.x1.<get-x1>|<get-x1>(){}[0]
+        final val x2 // io.github.valerioisufi.drawview.latex/TexOp.DrawLine.x2|{}x2[0]
+            final fun <get-x2>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.DrawLine.x2.<get-x2>|<get-x2>(){}[0]
+        final val y1 // io.github.valerioisufi.drawview.latex/TexOp.DrawLine.y1|{}y1[0]
+            final fun <get-y1>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.DrawLine.y1.<get-y1>|<get-y1>(){}[0]
+        final val y2 // io.github.valerioisufi.drawview.latex/TexOp.DrawLine.y2|{}y2[0]
+            final fun <get-y2>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.DrawLine.y2.<get-y2>|<get-y2>(){}[0]
+    }
+
+    final class DrawRect : io.github.valerioisufi.drawview.latex/TexOp { // io.github.valerioisufi.drawview.latex/TexOp.DrawRect|null[0]
+        constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Boolean) // io.github.valerioisufi.drawview.latex/TexOp.DrawRect.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Boolean){}[0]
+
+        final val fill // io.github.valerioisufi.drawview.latex/TexOp.DrawRect.fill|{}fill[0]
+            final fun <get-fill>(): kotlin/Boolean // io.github.valerioisufi.drawview.latex/TexOp.DrawRect.fill.<get-fill>|<get-fill>(){}[0]
+        final val height // io.github.valerioisufi.drawview.latex/TexOp.DrawRect.height|{}height[0]
+            final fun <get-height>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.DrawRect.height.<get-height>|<get-height>(){}[0]
+        final val width // io.github.valerioisufi.drawview.latex/TexOp.DrawRect.width|{}width[0]
+            final fun <get-width>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.DrawRect.width.<get-width>|<get-width>(){}[0]
+        final val x // io.github.valerioisufi.drawview.latex/TexOp.DrawRect.x|{}x[0]
+            final fun <get-x>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.DrawRect.x.<get-x>|<get-x>(){}[0]
+        final val y // io.github.valerioisufi.drawview.latex/TexOp.DrawRect.y|{}y[0]
+            final fun <get-y>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.DrawRect.y.<get-y>|<get-y>(){}[0]
+    }
+
+    final class DrawRoundRect : io.github.valerioisufi.drawview.latex/TexOp { // io.github.valerioisufi.drawview.latex/TexOp.DrawRoundRect|null[0]
+        constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Boolean) // io.github.valerioisufi.drawview.latex/TexOp.DrawRoundRect.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Boolean){}[0]
+
+        final val fill // io.github.valerioisufi.drawview.latex/TexOp.DrawRoundRect.fill|{}fill[0]
+            final fun <get-fill>(): kotlin/Boolean // io.github.valerioisufi.drawview.latex/TexOp.DrawRoundRect.fill.<get-fill>|<get-fill>(){}[0]
+        final val height // io.github.valerioisufi.drawview.latex/TexOp.DrawRoundRect.height|{}height[0]
+            final fun <get-height>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.DrawRoundRect.height.<get-height>|<get-height>(){}[0]
+        final val rx // io.github.valerioisufi.drawview.latex/TexOp.DrawRoundRect.rx|{}rx[0]
+            final fun <get-rx>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.DrawRoundRect.rx.<get-rx>|<get-rx>(){}[0]
+        final val ry // io.github.valerioisufi.drawview.latex/TexOp.DrawRoundRect.ry|{}ry[0]
+            final fun <get-ry>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.DrawRoundRect.ry.<get-ry>|<get-ry>(){}[0]
+        final val width // io.github.valerioisufi.drawview.latex/TexOp.DrawRoundRect.width|{}width[0]
+            final fun <get-width>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.DrawRoundRect.width.<get-width>|<get-width>(){}[0]
+        final val x // io.github.valerioisufi.drawview.latex/TexOp.DrawRoundRect.x|{}x[0]
+            final fun <get-x>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.DrawRoundRect.x.<get-x>|<get-x>(){}[0]
+        final val y // io.github.valerioisufi.drawview.latex/TexOp.DrawRoundRect.y|{}y[0]
+            final fun <get-y>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.DrawRoundRect.y.<get-y>|<get-y>(){}[0]
+    }
+
+    final class DrawText : io.github.valerioisufi.drawview.latex/TexOp { // io.github.valerioisufi.drawview.latex/TexOp.DrawText|null[0]
+        constructor <init>(kotlin/String, kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.latex/TexOp.DrawText.<init>|<init>(kotlin.String;kotlin.Float;kotlin.Float){}[0]
+
+        final val text // io.github.valerioisufi.drawview.latex/TexOp.DrawText.text|{}text[0]
+            final fun <get-text>(): kotlin/String // io.github.valerioisufi.drawview.latex/TexOp.DrawText.text.<get-text>|<get-text>(){}[0]
+        final val x // io.github.valerioisufi.drawview.latex/TexOp.DrawText.x|{}x[0]
+            final fun <get-x>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.DrawText.x.<get-x>|<get-x>(){}[0]
+        final val y // io.github.valerioisufi.drawview.latex/TexOp.DrawText.y|{}y[0]
+            final fun <get-y>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.DrawText.y.<get-y>|<get-y>(){}[0]
+    }
+
+    final class Rotate : io.github.valerioisufi.drawview.latex/TexOp { // io.github.valerioisufi.drawview.latex/TexOp.Rotate|null[0]
+        constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.latex/TexOp.Rotate.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+
+        final val angle // io.github.valerioisufi.drawview.latex/TexOp.Rotate.angle|{}angle[0]
+            final fun <get-angle>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.Rotate.angle.<get-angle>|<get-angle>(){}[0]
+        final val px // io.github.valerioisufi.drawview.latex/TexOp.Rotate.px|{}px[0]
+            final fun <get-px>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.Rotate.px.<get-px>|<get-px>(){}[0]
+        final val py // io.github.valerioisufi.drawview.latex/TexOp.Rotate.py|{}py[0]
+            final fun <get-py>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.Rotate.py.<get-py>|<get-py>(){}[0]
+    }
+
+    final class Scale : io.github.valerioisufi.drawview.latex/TexOp { // io.github.valerioisufi.drawview.latex/TexOp.Scale|null[0]
+        constructor <init>(kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.latex/TexOp.Scale.<init>|<init>(kotlin.Float;kotlin.Float){}[0]
+
+        final val sx // io.github.valerioisufi.drawview.latex/TexOp.Scale.sx|{}sx[0]
+            final fun <get-sx>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.Scale.sx.<get-sx>|<get-sx>(){}[0]
+        final val sy // io.github.valerioisufi.drawview.latex/TexOp.Scale.sy|{}sy[0]
+            final fun <get-sy>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.Scale.sy.<get-sy>|<get-sy>(){}[0]
+    }
+
+    final class SetColor : io.github.valerioisufi.drawview.latex/TexOp { // io.github.valerioisufi.drawview.latex/TexOp.SetColor|null[0]
+        constructor <init>(kotlin/Int) // io.github.valerioisufi.drawview.latex/TexOp.SetColor.<init>|<init>(kotlin.Int){}[0]
+
+        final val argb // io.github.valerioisufi.drawview.latex/TexOp.SetColor.argb|{}argb[0]
+            final fun <get-argb>(): kotlin/Int // io.github.valerioisufi.drawview.latex/TexOp.SetColor.argb.<get-argb>|<get-argb>(){}[0]
+    }
+
+    final class SetFont : io.github.valerioisufi.drawview.latex/TexOp { // io.github.valerioisufi.drawview.latex/TexOp.SetFont|null[0]
+        constructor <init>(io.github.valerioisufi.drawview.latex/TexFont?) // io.github.valerioisufi.drawview.latex/TexOp.SetFont.<init>|<init>(io.github.valerioisufi.drawview.latex.TexFont?){}[0]
+
+        final val font // io.github.valerioisufi.drawview.latex/TexOp.SetFont.font|{}font[0]
+            final fun <get-font>(): io.github.valerioisufi.drawview.latex/TexFont? // io.github.valerioisufi.drawview.latex/TexOp.SetFont.font.<get-font>|<get-font>(){}[0]
+    }
+
+    final class SetStroke : io.github.valerioisufi.drawview.latex/TexOp { // io.github.valerioisufi.drawview.latex/TexOp.SetStroke|null[0]
+        constructor <init>(kotlin/Float, kotlin/Float, kotlin/Int, kotlin/Int) // io.github.valerioisufi.drawview.latex/TexOp.SetStroke.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Int){}[0]
+
+        final val cap // io.github.valerioisufi.drawview.latex/TexOp.SetStroke.cap|{}cap[0]
+            final fun <get-cap>(): kotlin/Int // io.github.valerioisufi.drawview.latex/TexOp.SetStroke.cap.<get-cap>|<get-cap>(){}[0]
+        final val join // io.github.valerioisufi.drawview.latex/TexOp.SetStroke.join|{}join[0]
+            final fun <get-join>(): kotlin/Int // io.github.valerioisufi.drawview.latex/TexOp.SetStroke.join.<get-join>|<get-join>(){}[0]
+        final val width // io.github.valerioisufi.drawview.latex/TexOp.SetStroke.width|{}width[0]
+            final fun <get-width>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.SetStroke.width.<get-width>|<get-width>(){}[0]
+    }
+
+    final class SetStrokeWidth : io.github.valerioisufi.drawview.latex/TexOp { // io.github.valerioisufi.drawview.latex/TexOp.SetStrokeWidth|null[0]
+        constructor <init>(kotlin/Float) // io.github.valerioisufi.drawview.latex/TexOp.SetStrokeWidth.<init>|<init>(kotlin.Float){}[0]
+
+        final val width // io.github.valerioisufi.drawview.latex/TexOp.SetStrokeWidth.width|{}width[0]
+            final fun <get-width>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.SetStrokeWidth.width.<get-width>|<get-width>(){}[0]
+    }
+
+    final class Translate : io.github.valerioisufi.drawview.latex/TexOp { // io.github.valerioisufi.drawview.latex/TexOp.Translate|null[0]
+        constructor <init>(kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.latex/TexOp.Translate.<init>|<init>(kotlin.Float;kotlin.Float){}[0]
+
+        final val dx // io.github.valerioisufi.drawview.latex/TexOp.Translate.dx|{}dx[0]
+            final fun <get-dx>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.Translate.dx.<get-dx>|<get-dx>(){}[0]
+        final val dy // io.github.valerioisufi.drawview.latex/TexOp.Translate.dy|{}dy[0]
+            final fun <get-dy>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexOp.Translate.dy.<get-dy>|<get-dy>(){}[0]
+    }
+
+    final object Companion // io.github.valerioisufi.drawview.latex/TexOp.Companion|null[0]
+
+    final object Reset : io.github.valerioisufi.drawview.latex/TexOp { // io.github.valerioisufi.drawview.latex/TexOp.Reset|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.latex/TexOp.Reset.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.latex/TexOp.Reset.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.latex/TexOp.Reset.toString|toString(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.latex/LatexResult { // io.github.valerioisufi.drawview.latex/LatexResult|null[0]
+    constructor <init>(androidx.compose.ui.graphics/ImageBitmap, kotlin/Float, kotlin/Int, kotlin/Int) // io.github.valerioisufi.drawview.latex/LatexResult.<init>|<init>(androidx.compose.ui.graphics.ImageBitmap;kotlin.Float;kotlin.Int;kotlin.Int){}[0]
+
+    final val baselineRatio // io.github.valerioisufi.drawview.latex/LatexResult.baselineRatio|{}baselineRatio[0]
+        final fun <get-baselineRatio>(): kotlin/Float // io.github.valerioisufi.drawview.latex/LatexResult.baselineRatio.<get-baselineRatio>|<get-baselineRatio>(){}[0]
+    final val bitmap // io.github.valerioisufi.drawview.latex/LatexResult.bitmap|{}bitmap[0]
+        final fun <get-bitmap>(): androidx.compose.ui.graphics/ImageBitmap // io.github.valerioisufi.drawview.latex/LatexResult.bitmap.<get-bitmap>|<get-bitmap>(){}[0]
+    final val height // io.github.valerioisufi.drawview.latex/LatexResult.height|{}height[0]
+        final fun <get-height>(): kotlin/Int // io.github.valerioisufi.drawview.latex/LatexResult.height.<get-height>|<get-height>(){}[0]
+    final val width // io.github.valerioisufi.drawview.latex/LatexResult.width|{}width[0]
+        final fun <get-width>(): kotlin/Int // io.github.valerioisufi.drawview.latex/LatexResult.width.<get-width>|<get-width>(){}[0]
+
+    final fun component1(): androidx.compose.ui.graphics/ImageBitmap // io.github.valerioisufi.drawview.latex/LatexResult.component1|component1(){}[0]
+    final fun component2(): kotlin/Float // io.github.valerioisufi.drawview.latex/LatexResult.component2|component2(){}[0]
+    final fun component3(): kotlin/Int // io.github.valerioisufi.drawview.latex/LatexResult.component3|component3(){}[0]
+    final fun component4(): kotlin/Int // io.github.valerioisufi.drawview.latex/LatexResult.component4|component4(){}[0]
+    final fun copy(androidx.compose.ui.graphics/ImageBitmap = ..., kotlin/Float = ..., kotlin/Int = ..., kotlin/Int = ...): io.github.valerioisufi.drawview.latex/LatexResult // io.github.valerioisufi.drawview.latex/LatexResult.copy|copy(androidx.compose.ui.graphics.ImageBitmap;kotlin.Float;kotlin.Int;kotlin.Int){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.latex/LatexResult.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.latex/LatexResult.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.latex/LatexResult.toString|toString(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.latex/TexDrawing { // io.github.valerioisufi.drawview.latex/TexDrawing|null[0]
+    constructor <init>(kotlin/Int, kotlin/Int, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.drawview.latex/TexOp>) // io.github.valerioisufi.drawview.latex/TexDrawing.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.drawview.latex.TexOp>){}[0]
+
+    final val baselineRatio // io.github.valerioisufi.drawview.latex/TexDrawing.baselineRatio|{}baselineRatio[0]
+        final fun <get-baselineRatio>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexDrawing.baselineRatio.<get-baselineRatio>|<get-baselineRatio>(){}[0]
+    final val height // io.github.valerioisufi.drawview.latex/TexDrawing.height|{}height[0]
+        final fun <get-height>(): kotlin/Int // io.github.valerioisufi.drawview.latex/TexDrawing.height.<get-height>|<get-height>(){}[0]
+    final val ops // io.github.valerioisufi.drawview.latex/TexDrawing.ops|{}ops[0]
+        final fun <get-ops>(): kotlin.collections/List<io.github.valerioisufi.drawview.latex/TexOp> // io.github.valerioisufi.drawview.latex/TexDrawing.ops.<get-ops>|<get-ops>(){}[0]
+    final val width // io.github.valerioisufi.drawview.latex/TexDrawing.width|{}width[0]
+        final fun <get-width>(): kotlin/Int // io.github.valerioisufi.drawview.latex/TexDrawing.width.<get-width>|<get-width>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.latex/TexFont { // io.github.valerioisufi.drawview.latex/TexFont|null[0]
+    constructor <init>(kotlin/String?, kotlin/Int, kotlin/Float, kotlin/Boolean, kotlin/Boolean) // io.github.valerioisufi.drawview.latex/TexFont.<init>|<init>(kotlin.String?;kotlin.Int;kotlin.Float;kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final val fakeBold // io.github.valerioisufi.drawview.latex/TexFont.fakeBold|{}fakeBold[0]
+        final fun <get-fakeBold>(): kotlin/Boolean // io.github.valerioisufi.drawview.latex/TexFont.fakeBold.<get-fakeBold>|<get-fakeBold>(){}[0]
+    final val fakeItalic // io.github.valerioisufi.drawview.latex/TexFont.fakeItalic|{}fakeItalic[0]
+        final fun <get-fakeItalic>(): kotlin/Boolean // io.github.valerioisufi.drawview.latex/TexFont.fakeItalic.<get-fakeItalic>|<get-fakeItalic>(){}[0]
+    final val file // io.github.valerioisufi.drawview.latex/TexFont.file|{}file[0]
+        final fun <get-file>(): kotlin/String? // io.github.valerioisufi.drawview.latex/TexFont.file.<get-file>|<get-file>(){}[0]
+    final val size // io.github.valerioisufi.drawview.latex/TexFont.size|{}size[0]
+        final fun <get-size>(): kotlin/Float // io.github.valerioisufi.drawview.latex/TexFont.size.<get-size>|<get-size>(){}[0]
+    final val style // io.github.valerioisufi.drawview.latex/TexFont.style|{}style[0]
+        final fun <get-style>(): kotlin/Int // io.github.valerioisufi.drawview.latex/TexFont.style.<get-style>|<get-style>(){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.latex/TexFont.Companion|null[0]
+        final const val BOLD // io.github.valerioisufi.drawview.latex/TexFont.Companion.BOLD|{}BOLD[0]
+            final fun <get-BOLD>(): kotlin/Int // io.github.valerioisufi.drawview.latex/TexFont.Companion.BOLD.<get-BOLD>|<get-BOLD>(){}[0]
+        final const val ITALIC // io.github.valerioisufi.drawview.latex/TexFont.Companion.ITALIC|{}ITALIC[0]
+            final fun <get-ITALIC>(): kotlin/Int // io.github.valerioisufi.drawview.latex/TexFont.Companion.ITALIC.<get-ITALIC>|<get-ITALIC>(){}[0]
+    }
+}
+
+final class io.nano.tex/Font { // io.nano.tex/Font|null[0]
+    constructor <init>(org.jetbrains.skia/Typeface?, kotlin/Float, kotlin/Int = ..., kotlin/String? = ...) // io.nano.tex/Font.<init>|<init>(org.jetbrains.skia.Typeface?;kotlin.Float;kotlin.Int;kotlin.String?){}[0]
+
+    final val file // io.nano.tex/Font.file|{}file[0]
+        final fun <get-file>(): kotlin/String? // io.nano.tex/Font.file.<get-file>|<get-file>(){}[0]
+    final val size // io.nano.tex/Font.size|{}size[0]
+        final fun <get-size>(): kotlin/Float // io.nano.tex/Font.size.<get-size>|<get-size>(){}[0]
+    final val style // io.nano.tex/Font.style|{}style[0]
+        final fun <get-style>(): kotlin/Int // io.nano.tex/Font.style.<get-style>|<get-style>(){}[0]
+    final val typeface // io.nano.tex/Font.typeface|{}typeface[0]
+        final fun <get-typeface>(): org.jetbrains.skia/Typeface? // io.nano.tex/Font.typeface.<get-typeface>|<get-typeface>(){}[0]
+
+    final fun deriveFont(kotlin/Int): io.nano.tex/Font // io.nano.tex/Font.deriveFont|deriveFont(kotlin.Int){}[0]
+    final fun toSkiaFont(kotlin/Float): org.jetbrains.skia/Font // io.nano.tex/Font.toSkiaFont|toSkiaFont(kotlin.Float){}[0]
+    final fun toTexFont(): io.github.valerioisufi.drawview.latex/TexFont // io.nano.tex/Font.toTexFont|toTexFont(){}[0]
+
+    final object Companion { // io.nano.tex/Font.Companion|null[0]
+        final const val BOLD // io.nano.tex/Font.Companion.BOLD|{}BOLD[0]
+            final fun <get-BOLD>(): kotlin/Int // io.nano.tex/Font.Companion.BOLD.<get-BOLD>|<get-BOLD>(){}[0]
+        final const val ITALIC // io.nano.tex/Font.Companion.ITALIC|{}ITALIC[0]
+            final fun <get-ITALIC>(): kotlin/Int // io.nano.tex/Font.Companion.ITALIC.<get-ITALIC>|<get-ITALIC>(){}[0]
+
+        final fun create(kotlin/String, kotlin/Float): io.nano.tex/Font // io.nano.tex/Font.Companion.create|create(kotlin.String;kotlin.Float){}[0]
+        final fun create(kotlin/String, kotlin/Int, kotlin/Float): io.nano.tex/Font // io.nano.tex/Font.Companion.create|create(kotlin.String;kotlin.Int;kotlin.Float){}[0]
+    }
+}
+
+final class io.nano.tex/Graphics2D { // io.nano.tex/Graphics2D|null[0]
+    constructor <init>(org.jetbrains.skia/Canvas) // io.nano.tex/Graphics2D.<init>|<init>(org.jetbrains.skia.Canvas){}[0]
+
+    final val canvas // io.nano.tex/Graphics2D.canvas|{}canvas[0]
+        final fun <get-canvas>(): org.jetbrains.skia/Canvas // io.nano.tex/Graphics2D.canvas.<get-canvas>|<get-canvas>(){}[0]
+
+    final fun drawChar(kotlin/Char, kotlin/Float, kotlin/Float) // io.nano.tex/Graphics2D.drawChar|drawChar(kotlin.Char;kotlin.Float;kotlin.Float){}[0]
+    final fun drawLine(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // io.nano.tex/Graphics2D.drawLine|drawLine(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun drawRect(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // io.nano.tex/Graphics2D.drawRect|drawRect(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun drawRoundRect(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // io.nano.tex/Graphics2D.drawRoundRect|drawRoundRect(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun drawText(kotlin/String, kotlin/Float, kotlin/Float) // io.nano.tex/Graphics2D.drawText|drawText(kotlin.String;kotlin.Float;kotlin.Float){}[0]
+    final fun fillRect(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // io.nano.tex/Graphics2D.fillRect|fillRect(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun fillRoundRect(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // io.nano.tex/Graphics2D.fillRoundRect|fillRoundRect(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun h(kotlin/Float): kotlin/Float // io.nano.tex/Graphics2D.h|h(kotlin.Float){}[0]
+    final fun lockColor() // io.nano.tex/Graphics2D.lockColor|lockColor(){}[0]
+    final fun reset() // io.nano.tex/Graphics2D.reset|reset(){}[0]
+    final fun rotate(kotlin/Float, kotlin/Float, kotlin/Float) // io.nano.tex/Graphics2D.rotate|rotate(kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun scale(kotlin/Float, kotlin/Float) // io.nano.tex/Graphics2D.scale|scale(kotlin.Float;kotlin.Float){}[0]
+    final fun setColor(kotlin/Int) // io.nano.tex/Graphics2D.setColor|setColor(kotlin.Int){}[0]
+    final fun setFont(io.nano.tex/Font?) // io.nano.tex/Graphics2D.setFont|setFont(io.nano.tex.Font?){}[0]
+    final fun setStroke(kotlin/Float, kotlin/Float, kotlin/Int, kotlin/Int) // io.nano.tex/Graphics2D.setStroke|setStroke(kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Int){}[0]
+    final fun setStrokeWidth(kotlin/Float) // io.nano.tex/Graphics2D.setStrokeWidth|setStrokeWidth(kotlin.Float){}[0]
+    final fun sx(): kotlin/Float // io.nano.tex/Graphics2D.sx|sx(){}[0]
+    final fun sy(): kotlin/Float // io.nano.tex/Graphics2D.sy|sy(){}[0]
+    final fun translate(kotlin/Float, kotlin/Float) // io.nano.tex/Graphics2D.translate|translate(kotlin.Float;kotlin.Float){}[0]
+    final fun tx(): kotlin/Float // io.nano.tex/Graphics2D.tx|tx(){}[0]
+    final fun ty(): kotlin/Float // io.nano.tex/Graphics2D.ty|ty(){}[0]
+    final fun unlockColor() // io.nano.tex/Graphics2D.unlockColor|unlockColor(){}[0]
+    final fun w(kotlin/Float): kotlin/Float // io.nano.tex/Graphics2D.w|w(kotlin.Float){}[0]
+    final fun x(kotlin/Float): kotlin/Float // io.nano.tex/Graphics2D.x|x(kotlin.Float){}[0]
+    final fun y(kotlin/Float): kotlin/Float // io.nano.tex/Graphics2D.y|y(kotlin.Float){}[0]
+
+    final object Companion { // io.nano.tex/Graphics2D.Companion|null[0]
+        final const val CAP_BUTT // io.nano.tex/Graphics2D.Companion.CAP_BUTT|{}CAP_BUTT[0]
+            final fun <get-CAP_BUTT>(): kotlin/Int // io.nano.tex/Graphics2D.Companion.CAP_BUTT.<get-CAP_BUTT>|<get-CAP_BUTT>(){}[0]
+        final const val CAP_ROUND // io.nano.tex/Graphics2D.Companion.CAP_ROUND|{}CAP_ROUND[0]
+            final fun <get-CAP_ROUND>(): kotlin/Int // io.nano.tex/Graphics2D.Companion.CAP_ROUND.<get-CAP_ROUND>|<get-CAP_ROUND>(){}[0]
+        final const val CAP_SQUARE // io.nano.tex/Graphics2D.Companion.CAP_SQUARE|{}CAP_SQUARE[0]
+            final fun <get-CAP_SQUARE>(): kotlin/Int // io.nano.tex/Graphics2D.Companion.CAP_SQUARE.<get-CAP_SQUARE>|<get-CAP_SQUARE>(){}[0]
+        final const val JOIN_BEVEL // io.nano.tex/Graphics2D.Companion.JOIN_BEVEL|{}JOIN_BEVEL[0]
+            final fun <get-JOIN_BEVEL>(): kotlin/Int // io.nano.tex/Graphics2D.Companion.JOIN_BEVEL.<get-JOIN_BEVEL>|<get-JOIN_BEVEL>(){}[0]
+        final const val JOIN_MITER // io.nano.tex/Graphics2D.Companion.JOIN_MITER|{}JOIN_MITER[0]
+            final fun <get-JOIN_MITER>(): kotlin/Int // io.nano.tex/Graphics2D.Companion.JOIN_MITER.<get-JOIN_MITER>|<get-JOIN_MITER>(){}[0]
+        final const val JOIN_ROUND // io.nano.tex/Graphics2D.Companion.JOIN_ROUND|{}JOIN_ROUND[0]
+            final fun <get-JOIN_ROUND>(): kotlin/Int // io.nano.tex/Graphics2D.Companion.JOIN_ROUND.<get-JOIN_ROUND>|<get-JOIN_ROUND>(){}[0]
+    }
+}
+
+final class io.nano.tex/Rect { // io.nano.tex/Rect|null[0]
+    constructor <init>(kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ...) // io.nano.tex/Rect.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+
+    final var h // io.nano.tex/Rect.h|{}h[0]
+        final fun <get-h>(): kotlin/Float // io.nano.tex/Rect.h.<get-h>|<get-h>(){}[0]
+        final fun <set-h>(kotlin/Float) // io.nano.tex/Rect.h.<set-h>|<set-h>(kotlin.Float){}[0]
+    final var w // io.nano.tex/Rect.w|{}w[0]
+        final fun <get-w>(): kotlin/Float // io.nano.tex/Rect.w.<get-w>|<get-w>(){}[0]
+        final fun <set-w>(kotlin/Float) // io.nano.tex/Rect.w.<set-w>|<set-w>(kotlin.Float){}[0]
+    final var x // io.nano.tex/Rect.x|{}x[0]
+        final fun <get-x>(): kotlin/Float // io.nano.tex/Rect.x.<get-x>|<get-x>(){}[0]
+        final fun <set-x>(kotlin/Float) // io.nano.tex/Rect.x.<set-x>|<set-x>(kotlin.Float){}[0]
+    final var y // io.nano.tex/Rect.y|{}y[0]
+        final fun <get-y>(): kotlin/Float // io.nano.tex/Rect.y.<get-y>|<get-y>(){}[0]
+        final fun <set-y>(kotlin/Float) // io.nano.tex/Rect.y.<set-y>|<set-y>(kotlin.Float){}[0]
+
+    final fun toString(): kotlin/String // io.nano.tex/Rect.toString|toString(){}[0]
+}
+
+final object io.github.valerioisufi.drawview.latex/LatexEngine { // io.github.valerioisufi.drawview.latex/LatexEngine|null[0]
+    final val formulaRenderer // io.github.valerioisufi.drawview.latex/LatexEngine.formulaRenderer|{}formulaRenderer[0]
+        final fun <get-formulaRenderer>(): io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer // io.github.valerioisufi.drawview.latex/LatexEngine.formulaRenderer.<get-formulaRenderer>|<get-formulaRenderer>(){}[0]
+    final val isReady // io.github.valerioisufi.drawview.latex/LatexEngine.isReady|{}isReady[0]
+        final fun <get-isReady>(): kotlinx.coroutines.flow/StateFlow<kotlin/Boolean> // io.github.valerioisufi.drawview.latex/LatexEngine.isReady.<get-isReady>|<get-isReady>(){}[0]
+
+    final fun drawing(kotlin/String, kotlin/Float, kotlin/Int): io.github.valerioisufi.drawview.latex/TexDrawing? // io.github.valerioisufi.drawview.latex/LatexEngine.drawing|drawing(kotlin.String;kotlin.Float;kotlin.Int){}[0]
+    final fun init(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.latex/LatexEngine.init|init(kotlin.String){}[0]
+    final fun renderFormula(kotlin/String, kotlin/Float, androidx.compose.ui.graphics/Color, kotlin/Float = ...): io.github.valerioisufi.drawview.latex/LatexResult? // io.github.valerioisufi.drawview.latex/LatexEngine.renderFormula|renderFormula(kotlin.String;kotlin.Float;androidx.compose.ui.graphics.Color;kotlin.Float){}[0]
+    final fun renderFormula(kotlin/String, kotlin/Float, kotlin/Int, kotlin/Float = ...): io.github.valerioisufi.drawview.latex/LatexResult? // io.github.valerioisufi.drawview.latex/LatexEngine.renderFormula|renderFormula(kotlin.String;kotlin.Float;kotlin.Int;kotlin.Float){}[0]
+    final fun setTextFonts(kotlin.collections/Map<kotlin/Int, kotlin/ByteArray>) // io.github.valerioisufi.drawview.latex/LatexEngine.setTextFonts|setTextFonts(kotlin.collections.Map<kotlin.Int,kotlin.ByteArray>){}[0]
+    final suspend fun initialize(): kotlin/Boolean // io.github.valerioisufi.drawview.latex/LatexEngine.initialize|initialize(){}[0]
+}
+
+final object io.nano.tex/Alignment { // io.nano.tex/Alignment|null[0]
+    final const val BOTTOM // io.nano.tex/Alignment.BOTTOM|{}BOTTOM[0]
+        final fun <get-BOTTOM>(): kotlin/Int // io.nano.tex/Alignment.BOTTOM.<get-BOTTOM>|<get-BOTTOM>(){}[0]
+    final const val CENTER // io.nano.tex/Alignment.CENTER|{}CENTER[0]
+        final fun <get-CENTER>(): kotlin/Int // io.nano.tex/Alignment.CENTER.<get-CENTER>|<get-CENTER>(){}[0]
+    final const val LEFT // io.nano.tex/Alignment.LEFT|{}LEFT[0]
+        final fun <get-LEFT>(): kotlin/Int // io.nano.tex/Alignment.LEFT.<get-LEFT>|<get-LEFT>(){}[0]
+    final const val RIGHT // io.nano.tex/Alignment.RIGHT|{}RIGHT[0]
+        final fun <get-RIGHT>(): kotlin/Int // io.nano.tex/Alignment.RIGHT.<get-RIGHT>|<get-RIGHT>(){}[0]
+    final const val TOP // io.nano.tex/Alignment.TOP|{}TOP[0]
+        final fun <get-TOP>(): kotlin/Int // io.nano.tex/Alignment.TOP.<get-TOP>|<get-TOP>(){}[0]
+}
+
+final val io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_array$stableprop // io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_array$stableprop|#static{}io_github_valerioisufi_drawview_latex_generated_resources_Res_array$stableprop[0]
+final val io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_drawable$stableprop // io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_drawable$stableprop|#static{}io_github_valerioisufi_drawview_latex_generated_resources_Res_drawable$stableprop[0]
+final val io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_font$stableprop // io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_font$stableprop|#static{}io_github_valerioisufi_drawview_latex_generated_resources_Res_font$stableprop[0]
+final val io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_plurals$stableprop // io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_plurals$stableprop|#static{}io_github_valerioisufi_drawview_latex_generated_resources_Res_plurals$stableprop[0]
+final val io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_string$stableprop // io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_string$stableprop|#static{}io_github_valerioisufi_drawview_latex_generated_resources_Res_string$stableprop[0]
+final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_LatexEngine$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_LatexEngine$stableprop|#static{}io_github_valerioisufi_drawview_latex_LatexEngine$stableprop[0]
+final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_LatexResult$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_LatexResult$stableprop|#static{}io_github_valerioisufi_drawview_latex_LatexResult$stableprop[0]
+final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexDrawing$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexDrawing$stableprop|#static{}io_github_valerioisufi_drawview_latex_TexDrawing$stableprop[0]
+final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexFont$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexFont$stableprop|#static{}io_github_valerioisufi_drawview_latex_TexFont$stableprop[0]
+final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_DrawLine$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_DrawLine$stableprop|#static{}io_github_valerioisufi_drawview_latex_TexOp_DrawLine$stableprop[0]
+final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_DrawRect$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_DrawRect$stableprop|#static{}io_github_valerioisufi_drawview_latex_TexOp_DrawRect$stableprop[0]
+final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_DrawRoundRect$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_DrawRoundRect$stableprop|#static{}io_github_valerioisufi_drawview_latex_TexOp_DrawRoundRect$stableprop[0]
+final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_DrawText$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_DrawText$stableprop|#static{}io_github_valerioisufi_drawview_latex_TexOp_DrawText$stableprop[0]
+final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Reset$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Reset$stableprop|#static{}io_github_valerioisufi_drawview_latex_TexOp_Reset$stableprop[0]
+final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Rotate$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Rotate$stableprop|#static{}io_github_valerioisufi_drawview_latex_TexOp_Rotate$stableprop[0]
+final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Scale$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Scale$stableprop|#static{}io_github_valerioisufi_drawview_latex_TexOp_Scale$stableprop[0]
+final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetColor$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetColor$stableprop|#static{}io_github_valerioisufi_drawview_latex_TexOp_SetColor$stableprop[0]
+final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetFont$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetFont$stableprop|#static{}io_github_valerioisufi_drawview_latex_TexOp_SetFont$stableprop[0]
+final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetStroke$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetStroke$stableprop|#static{}io_github_valerioisufi_drawview_latex_TexOp_SetStroke$stableprop[0]
+final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetStrokeWidth$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetStrokeWidth$stableprop|#static{}io_github_valerioisufi_drawview_latex_TexOp_SetStrokeWidth$stableprop[0]
+final val io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Translate$stableprop // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Translate$stableprop|#static{}io_github_valerioisufi_drawview_latex_TexOp_Translate$stableprop[0]
+final val io.nano.tex/io_nano_tex_Alignment$stableprop // io.nano.tex/io_nano_tex_Alignment$stableprop|#static{}io_nano_tex_Alignment$stableprop[0]
+final val io.nano.tex/io_nano_tex_Font$stableprop // io.nano.tex/io_nano_tex_Font$stableprop|#static{}io_nano_tex_Font$stableprop[0]
+final val io.nano.tex/io_nano_tex_Graphics2D$stableprop // io.nano.tex/io_nano_tex_Graphics2D$stableprop|#static{}io_nano_tex_Graphics2D$stableprop[0]
+final val io.nano.tex/io_nano_tex_Rect$stableprop // io.nano.tex/io_nano_tex_Rect$stableprop|#static{}io_nano_tex_Rect$stableprop[0]
+
+final fun io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_array$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_array$stableprop_getter|io_github_valerioisufi_drawview_latex_generated_resources_Res_array$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_drawable$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_drawable$stableprop_getter|io_github_valerioisufi_drawview_latex_generated_resources_Res_drawable$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_font$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_font$stableprop_getter|io_github_valerioisufi_drawview_latex_generated_resources_Res_font$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_plurals$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_plurals$stableprop_getter|io_github_valerioisufi_drawview_latex_generated_resources_Res_plurals$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_string$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex.generated.resources/io_github_valerioisufi_drawview_latex_generated_resources_Res_string$stableprop_getter|io_github_valerioisufi_drawview_latex_generated_resources_Res_string$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_LatexEngine$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_LatexEngine$stableprop_getter|io_github_valerioisufi_drawview_latex_LatexEngine$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_LatexResult$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_LatexResult$stableprop_getter|io_github_valerioisufi_drawview_latex_LatexResult$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexDrawing$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexDrawing$stableprop_getter|io_github_valerioisufi_drawview_latex_TexDrawing$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexFont$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexFont$stableprop_getter|io_github_valerioisufi_drawview_latex_TexFont$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_DrawLine$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_DrawLine$stableprop_getter|io_github_valerioisufi_drawview_latex_TexOp_DrawLine$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_DrawRect$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_DrawRect$stableprop_getter|io_github_valerioisufi_drawview_latex_TexOp_DrawRect$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_DrawRoundRect$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_DrawRoundRect$stableprop_getter|io_github_valerioisufi_drawview_latex_TexOp_DrawRoundRect$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_DrawText$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_DrawText$stableprop_getter|io_github_valerioisufi_drawview_latex_TexOp_DrawText$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Reset$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Reset$stableprop_getter|io_github_valerioisufi_drawview_latex_TexOp_Reset$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Rotate$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Rotate$stableprop_getter|io_github_valerioisufi_drawview_latex_TexOp_Rotate$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Scale$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Scale$stableprop_getter|io_github_valerioisufi_drawview_latex_TexOp_Scale$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetColor$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetColor$stableprop_getter|io_github_valerioisufi_drawview_latex_TexOp_SetColor$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetFont$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetFont$stableprop_getter|io_github_valerioisufi_drawview_latex_TexOp_SetFont$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetStroke$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetStroke$stableprop_getter|io_github_valerioisufi_drawview_latex_TexOp_SetStroke$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetStrokeWidth$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_SetStrokeWidth$stableprop_getter|io_github_valerioisufi_drawview_latex_TexOp_SetStrokeWidth$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Translate$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.latex/io_github_valerioisufi_drawview_latex_TexOp_Translate$stableprop_getter|io_github_valerioisufi_drawview_latex_TexOp_Translate$stableprop_getter(){}[0]
+final fun io.nano.tex/io_nano_tex_Alignment$stableprop_getter(): kotlin/Int // io.nano.tex/io_nano_tex_Alignment$stableprop_getter|io_nano_tex_Alignment$stableprop_getter(){}[0]
+final fun io.nano.tex/io_nano_tex_Font$stableprop_getter(): kotlin/Int // io.nano.tex/io_nano_tex_Font$stableprop_getter|io_nano_tex_Font$stableprop_getter(){}[0]
+final fun io.nano.tex/io_nano_tex_Graphics2D$stableprop_getter(): kotlin/Int // io.nano.tex/io_nano_tex_Graphics2D$stableprop_getter|io_nano_tex_Graphics2D$stableprop_getter(){}[0]
+final fun io.nano.tex/io_nano_tex_Rect$stableprop_getter(): kotlin/Int // io.nano.tex/io_nano_tex_Rect$stableprop_getter|io_nano_tex_Rect$stableprop_getter(){}[0]

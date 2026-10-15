@@ -92,7 +92,7 @@ import org.jetbrains.compose.resources.stringResource
  * @param documents the documents of the application (those of its library).
  * @param appName the name of the application, written in the PDFs as the one that made them.
  */
-class DocumentExportUi(documents: OpenDocuments, private val appName: String? = null) {
+public class DocumentExportUi(documents: OpenDocuments, private val appName: String? = null) {
     private val export = DocumentExport(documents)
 
     /** The export asked in an editor, shown until it is dismissed. */
@@ -115,7 +115,7 @@ class DocumentExportUi(documents: OpenDocuments, private val appName: String? = 
     }
 
     /** "Export" on the document selected in the library (see `DocumentLibrary.documentActions`). */
-    val documentAction: DocumentAction = DocumentAction(
+    public val documentAction: DocumentAction = DocumentAction(
         icon = DrawViewIcons.Download,
         label = { stringResource(Res.string.export_action) },
         content = { documentId, title, onDone -> ExportDialog(export, appName, documentId, title, pageOnScreen = null, onDismiss = onDone) }
@@ -125,7 +125,7 @@ class DocumentExportUi(documents: OpenDocuments, private val appName: String? = 
      * "Export" in the top bar, the menus and the shortcuts of the editor: the page on screen can
      * also be exported alone. The dialog is shown over the canvas.
      */
-    val editorExtension: EditorExtension = EditorExtension(
+    public val editorExtension: EditorExtension = EditorExtension(
         toolbarActions = { context ->
             val command = remember(context) { exportCommand(context) }
             EditorActionButton(DrawViewIcons.Share, command.label(), onClick = command.perform)
@@ -144,7 +144,7 @@ class DocumentExportUi(documents: OpenDocuments, private val appName: String? = 
  * application [appName].
  */
 @Composable
-fun rememberDocumentExportUi(documents: OpenDocuments, appName: String? = null): DocumentExportUi =
+public fun rememberDocumentExportUi(documents: OpenDocuments, appName: String? = null): DocumentExportUi =
     remember(documents, appName) { DocumentExportUi(documents, appName) }
 
 internal enum class ExportFormat { PDF, PNG }

@@ -18,7 +18,7 @@ import platform.darwin.NSObject
 
 /** Written in the temporary directory, then exported with the document picker (Files, iCloud...). */
 @Composable
-actual fun rememberFileSaver(title: String, mimeType: String, onTarget: (FileTarget) -> Unit): (suggestedName: String) -> Unit {
+public actual fun rememberFileSaver(title: String, mimeType: String, onTarget: (FileTarget) -> Unit): (suggestedName: String) -> Unit {
     val target by rememberUpdatedState(onTarget)
     val holder = remember { DelegateHolder() }
     return remember(holder) {

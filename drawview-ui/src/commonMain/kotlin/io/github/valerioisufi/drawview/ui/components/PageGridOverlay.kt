@@ -77,7 +77,7 @@ import org.jetbrains.compose.resources.stringResource
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PageGridOverlay(
+internal fun PageGridOverlay(
     controller: DrawViewController,
     modifier: Modifier = Modifier,
     onEditPageBackground: (Int) -> Unit = {}
@@ -364,7 +364,7 @@ private fun rememberPageThumbnail(controller: DrawViewController, page: DrawPage
  * Paper and pattern of the page background, scaled for the thumbnails.
  */
 @Composable
-fun PageThumbnailBackground(
+internal fun PageThumbnailBackground(
     page: DrawPage,
     modifier: Modifier = Modifier
 ) {

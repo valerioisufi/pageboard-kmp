@@ -18,14 +18,14 @@ import io.github.valerioisufi.drawview.ui.adaptive.ShortcutModifier
  * Android.
  */
 @Immutable
-data class Shortcut(
+public data class Shortcut(
     val key: Key,
     val primary: Boolean = false,
     val shift: Boolean = false,
     val alt: Boolean = false
 ) {
     /** Whether [event] is this combination, with no other modifier. */
-    fun matches(event: KeyEvent, conventions: PlatformConventions): Boolean {
+    public fun matches(event: KeyEvent, conventions: PlatformConventions): Boolean {
         if (event.key != key) return false
         val command = conventions.shortcutModifier == ShortcutModifier.COMMAND
         val primaryPressed = if (command) event.isMetaPressed else event.isCtrlPressed
@@ -34,7 +34,7 @@ data class Shortcut(
     }
 
     /** The combination as the platform writes it: ⇧⌘Z on Apple systems, Ctrl+Shift+Z elsewhere. */
-    fun label(conventions: PlatformConventions): String {
+    public fun label(conventions: PlatformConventions): String {
         val apple = conventions.shortcutModifier == ShortcutModifier.COMMAND
         val name = keyName(key, apple)
         return if (apple) {

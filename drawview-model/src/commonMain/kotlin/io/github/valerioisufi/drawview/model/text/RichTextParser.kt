@@ -12,10 +12,10 @@ package io.github.valerioisufi.drawview.model.text
  * Formatting nests (`**bold *italic***`, a formula in a heading); the code and the formulas are
  * written as they are.
  */
-object RichTextParser {
+public object RichTextParser {
 
     /** A kind of [Span]. */
-    enum class Kind { BOLD, ITALIC, STRIKE, CODE, HEADING, FORMULA, ESCAPE }
+    public enum class Kind { BOLD, ITALIC, STRIKE, CODE, HEADING, FORMULA, ESCAPE }
 
     /**
      * A part of a text written with the notation: from [start] to [end] (the delimiters
@@ -25,7 +25,7 @@ object RichTextParser {
      * @property display a formula written `$$…$$`, drawn in display style.
      * @property block a display formula alone on its lines: a centered line of its own.
      */
-    data class Span(
+    public data class Span(
         val kind: Kind,
         val start: Int,
         val end: Int,
@@ -44,7 +44,7 @@ object RichTextParser {
      * The spans of [text] sorted by start, an outer span before the ones it contains; spans never
      * overlap partially.
      */
-    fun parse(text: String): List<Span> {
+    public fun parse(text: String): List<Span> {
         val verbatim = scanVerbatim(text)
         // The other delimiters are looked for outside the code and the formulas
         val masked = mask(text, verbatim)

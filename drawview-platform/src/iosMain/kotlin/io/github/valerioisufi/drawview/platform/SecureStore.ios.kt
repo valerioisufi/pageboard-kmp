@@ -38,10 +38,10 @@ import platform.Security.kSecValueData
 
 /** The secrets in the Keychain (generic passwords of the service of DrawView, on this device only). */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-actual object SecureStore {
+public actual object SecureStore {
     private const val SERVICE = "io.github.valerioisufi.drawview"
 
-    actual fun read(name: String): String? = memScoped {
+    public actual fun read(name: String): String? = memScoped {
         val query = query(name, withData = null, returnData = true)
         val result = alloc<CFTypeRefVar>()
         val status = SecItemCopyMatching(query, result.ptr)
@@ -51,7 +51,7 @@ actual object SecureStore {
         NSString.create(data, NSUTF8StringEncoding)?.toString()
     }
 
-    actual fun write(name: String, value: String?): Boolean {
+    public actual fun write(name: String, value: String?): Boolean {
         val deleteQuery = query(name, withData = null, returnData = false)
         SecItemDelete(deleteQuery)
         CFRelease(deleteQuery)

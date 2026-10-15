@@ -6,7 +6,7 @@ import io.github.valerioisufi.drawview.latex.TexOp
  * Records the drawing operations emitted by the native engine (through JNI) and replays them
  * on a [Graphics2D].
  */
-class ActionRecorder {
+internal class ActionRecorder {
 
     private class Action(val action: Int, val arg: Any?, val args: FloatArray?)
 

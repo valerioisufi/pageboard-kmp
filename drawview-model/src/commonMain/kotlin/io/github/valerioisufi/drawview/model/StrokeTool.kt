@@ -4,7 +4,7 @@ package io.github.valerioisufi.drawview.model
  * Brush families supported by the stroke engine. [nativeId] matches `InkBrushFamily` in
  * `native/bridge/ink_bridge.h`.
  */
-enum class StrokeTool(val nativeId: Int) {
+public enum class StrokeTool(public val nativeId: Int) {
     PRESSURE_PEN(0),
     MARKER(1),
     HIGHLIGHTER(2),
@@ -16,14 +16,14 @@ enum class StrokeTool(val nativeId: Int) {
      * Brush family actually used to model strokes for this tool: the eraser trail is modeled
      * as a marker and the lasso as a dashed line.
      */
-    val brushFamily: StrokeTool
+    public val brushFamily: StrokeTool
         get() = when (this) {
             ERASER -> MARKER
             LASSO -> DASHED_LINE
             else -> this
         }
 
-    companion object {
-        fun fromName(name: String?): StrokeTool? = entries.firstOrNull { it.name == name }
+    public companion object {
+        public fun fromName(name: String?): StrokeTool? = entries.firstOrNull { it.name == name }
     }
 }

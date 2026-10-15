@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.asStateFlow
  * here ([activity], for the others), and the other devices drawn over the document
  * ([collaborators], told by the synchronization, see `drawview-sync-ui`).
  */
-class CollaboratorPresence internal constructor(
+public class CollaboratorPresence internal constructor(
     private val document: DrawDocument,
     private val hiddenElements: HiddenElements,
     private val invalidate: (DrawPage, Rect?) -> Unit,
@@ -43,7 +43,7 @@ class CollaboratorPresence internal constructor(
      * What the user is doing on the document now (the pointer, the stroke being drawn, the text
      * being written, the elements selected), for the others working on it; `null` when nothing.
      */
-    val activity: StateFlow<EditorActivity?> = currentActivity.asStateFlow()
+    public val activity: StateFlow<EditorActivity?> = currentActivity.asStateFlow()
 
     /** Where the pointer is and the stroke being drawn (from the gestures). */
     internal fun reportActivity(activity: EditorActivity?) {
@@ -77,7 +77,7 @@ class CollaboratorPresence internal constructor(
      * synchronization, see `drawview-sync-ui`). The texts they write and the elements they move
      * are hidden from the content meanwhile (see [HiddenElements]).
      */
-    var collaborators: List<Collaborator>
+    public var collaborators: List<Collaborator>
         get() = shownCollaborators
         set(value) {
             showByCollaborators(shownCollaborators.hiddenElementIds(), value.hiddenElementIds())
@@ -89,12 +89,12 @@ class CollaboratorPresence internal constructor(
      * The other device writing the text [element] (see [collaborators]), if any: meanwhile the
      * text can be neither edited nor selected here (the user is told, see [editsRefused]).
      */
-    fun writerOf(element: DrawElement): Collaborator? = shownCollaborators.firstOrNull { it.text?.id == element.id }
+    internal fun writerOf(element: DrawElement): Collaborator? = shownCollaborators.firstOrNull { it.text?.id == element.id }
 
     private val refusedEdits = MutableSharedFlow<Collaborator>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     /** The other devices writing the texts the user tried to edit or to select here. */
-    val editsRefused: SharedFlow<Collaborator> = refusedEdits.asSharedFlow()
+    public val editsRefused: SharedFlow<Collaborator> = refusedEdits.asSharedFlow()
 
     /** Tells that the text [writer] is writing was not opened or selected here. */
     internal fun refuseEdit(writer: Collaborator) {

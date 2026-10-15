@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
  * The elevations of the design: each a pair of shadows, a close one and a soft one, as in the
  * effects of the file.
  */
-enum class DrawViewElevation(internal val shadows: List<Shadow>) {
+public enum class DrawViewElevation(internal val shadows: List<Shadow>) {
     /** Cards, thumbnails. */
     Level1(listOf(shadow(1, 2, 0.06f), shadow(2, 8, 0.07f))),
 
@@ -30,5 +30,5 @@ private fun shadow(y: Int, blur: Int, alpha: Float) =
     Shadow(radius = blur.dp, color = Color.Black, offset = DpOffset(0.dp, y.dp), alpha = alpha)
 
 /** The shadows of [elevation] around [shape], drawn behind the content. */
-fun Modifier.elevation(elevation: DrawViewElevation, shape: Shape): Modifier =
+public fun Modifier.elevation(elevation: DrawViewElevation, shape: Shape): Modifier =
     elevation.shadows.fold(this) { modifier, shadow -> modifier.dropShadow(shape, shadow) }

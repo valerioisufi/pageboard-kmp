@@ -113,10 +113,10 @@ internal val DarkColorScheme = darkColorScheme(
 )
 
 /** The color scheme of the design in the light theme. */
-val DrawViewLightColors: ColorScheme get() = LightColorScheme
+internal val DrawViewLightColors: ColorScheme get() = LightColorScheme
 
 /** The color scheme of the design in the dark theme. */
-val DrawViewDarkColors: ColorScheme get() = DarkColorScheme
+internal val DrawViewDarkColors: ColorScheme get() = DarkColorScheme
 
 /**
  * Material 3 theme of DrawView, as the design draws it (docs/ui-design.md): the palette of the
@@ -129,7 +129,7 @@ val DrawViewDarkColors: ColorScheme get() = DarkColorScheme
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun DrawViewTheme(
+public fun DrawViewTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
@@ -154,4 +154,4 @@ fun DrawViewTheme(
  * The dynamic (wallpaper based) color scheme of the platform, or `null` when not supported.
  */
 @Composable
-expect fun dynamicColorScheme(darkTheme: Boolean): ColorScheme?
+internal expect fun dynamicColorScheme(darkTheme: Boolean): ColorScheme?

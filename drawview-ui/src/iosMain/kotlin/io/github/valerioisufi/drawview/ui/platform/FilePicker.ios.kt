@@ -34,7 +34,7 @@ internal class DelegateHolder {
 }
 
 @Composable
-actual fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) -> Unit): () -> Unit {
+public actual fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) -> Unit): () -> Unit {
     val currentOnPicked by rememberUpdatedState(onPicked)
     val holder = remember { DelegateHolder() }
     return remember(type, holder) {
@@ -131,5 +131,5 @@ private fun NSData.toByteArray(): ByteArray {
 }
 
 @Composable
-actual fun HideSystemBarsEffect() {
+internal actual fun HideSystemBarsEffect() {
 }

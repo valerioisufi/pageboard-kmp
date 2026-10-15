@@ -1,12 +1,12 @@
 package io.github.valerioisufi.drawview.lecture.transcription
 
-import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.lecture.TranscriptSegment
 import io.github.valerioisufi.drawview.lecture.audio.Wav
 import io.github.valerioisufi.drawview.lecture.audio.samplesToMs
 import io.github.valerioisufi.drawview.lecture.gemini.AudioTranscriptionConfig
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiException
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -23,7 +23,7 @@ import kotlinx.coroutines.sync.withLock
  *
  * @param now the clock of the pace of the requests.
  */
-class GeminiSpeechTranscriber(
+internal class GeminiSpeechTranscriber(
     private val backend: GeminiBackend,
     private val model: String,
     private val retryDelayMs: Long = 2_000L,

@@ -40,7 +40,7 @@ import org.jetbrains.compose.resources.stringResource
  * The action of the library joining a document shared by another device (by its invitation): a
  * wide button of the navigation pane where there is one.
  */
-fun Collaboration.joinAction(): LibraryAction = LibraryAction(
+public fun Collaboration.joinAction(): LibraryAction = LibraryAction(
     icon = DrawViewIcons.Link,
     label = { stringResource(Res.string.sync_join) },
     prominent = true
@@ -52,7 +52,7 @@ fun Collaboration.joinAction(): LibraryAction = LibraryAction(
  * device owns.
  */
 @Composable
-fun CollaborationDialogs(collaboration: Collaboration) {
+public fun CollaborationDialogs(collaboration: Collaboration) {
     val link by InvitationLinks.link.collectAsState()
     link?.let { JoinDialog(collaboration, it, onDismiss = InvitationLinks::consume) }
     val requests by collaboration.joinRequests.collectAsState()

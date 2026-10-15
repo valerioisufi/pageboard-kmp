@@ -7,11 +7,11 @@ import io.nano.tex.Graphics2D
 import io.nano.tex.LaTeX
 import io.nano.tex.LatexNativeLoader
 import io.nano.tex.TeXRender
+import java.io.File
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.Canvas
-import java.io.File
 
-actual object LatexPlatformEngine {
+internal actual object LatexPlatformEngine {
 
     private val lock = Any()
 

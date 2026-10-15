@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import kotlin.coroutines.CoroutineContext
+import kotlin.math.roundToLong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -16,8 +18,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.coroutines.CoroutineContext
-import kotlin.math.roundToLong
 
 /**
  * Plays the recording of a lecture from any position, at [SPEEDS] (faster without raising the
@@ -27,7 +27,7 @@ import kotlin.math.roundToLong
  * The controls are called on [stateContext] (the UI thread), where the observable properties are
  * updated.
  */
-class RecordingPlayer internal constructor(
+internal class RecordingPlayer internal constructor(
     private val recording: RecordingFile,
     private val outputFactory: () -> AudioOutput?,
     private val stateContext: CoroutineContext

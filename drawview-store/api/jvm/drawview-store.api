@@ -1,0 +1,208 @@
+public abstract interface class io/github/valerioisufi/drawview/store/DocumentCatalog {
+	public abstract fun createDocument (Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun createDocument$default (Lio/github/valerioisufi/drawview/store/DocumentCatalog;Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public abstract fun createFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun deleteDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun deleteFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getDocuments ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun getFolders ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun isDocumentNameAvailable (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun moveDocument (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun moveFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun renameFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun updateLastOpened (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/store/DocumentCatalog$DefaultImpls {
+	public static synthetic fun createDocument$default (Lio/github/valerioisufi/drawview/store/DocumentCatalog;Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/store/DocumentStore : io/github/valerioisufi/drawview/store/DocumentCatalog, io/github/valerioisufi/drawview/store/OperationLog, io/github/valerioisufi/drawview/store/SharingStore {
+	public fun closeDocument (Ljava/lang/String;)V
+	public fun flush (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getPersistence ()Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;
+	public abstract fun getStrokeModeller ()Lio/github/valerioisufi/drawview/model/StrokeModeller;
+	public abstract fun insertDocument (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun insertDocument$default (Lio/github/valerioisufi/drawview/store/DocumentStore;Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public abstract fun loadDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/store/DocumentStore$DefaultImpls {
+	public static fun closeDocument (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/lang/String;)V
+	public static fun flush (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun insertDocument$default (Lio/github/valerioisufi/drawview/store/DocumentStore;Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/store/DocumentSummary {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJFFLio/github/valerioisufi/drawview/model/PageBackground;ZIZ)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJFFLio/github/valerioisufi/drawview/model/PageBackground;ZIZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component10 ()Z
+	public final fun component11 ()I
+	public final fun component12 ()Z
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()J
+	public final fun component5 ()J
+	public final fun component6 ()J
+	public final fun component7 ()F
+	public final fun component8 ()F
+	public final fun component9 ()Lio/github/valerioisufi/drawview/model/PageBackground;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJFFLio/github/valerioisufi/drawview/model/PageBackground;ZIZ)Lio/github/valerioisufi/drawview/store/DocumentSummary;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/DocumentSummary;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJFFLio/github/valerioisufi/drawview/model/PageBackground;ZIZILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/DocumentSummary;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCreatedAt ()J
+	public final fun getDefaultBackground ()Lio/github/valerioisufi/drawview/model/PageBackground;
+	public final fun getDefaultHeightMm ()F
+	public final fun getDefaultWidthMm ()F
+	public final fun getFolderId ()Ljava/lang/String;
+	public final fun getHasPdf ()Z
+	public final fun getId ()Ljava/lang/String;
+	public final fun getLastOpenedAt ()J
+	public final fun getModifiedAt ()J
+	public final fun getName ()Ljava/lang/String;
+	public final fun getPageCount ()I
+	public fun hashCode ()I
+	public final fun isShared ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/store/FolderSummary {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJ)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()J
+	public final fun component5 ()J
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJ)Lio/github/valerioisufi/drawview/store/FolderSummary;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/FolderSummary;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/FolderSummary;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCreatedAt ()J
+	public final fun getId ()Ljava/lang/String;
+	public final fun getModifiedAt ()J
+	public final fun getName ()Ljava/lang/String;
+	public final fun getParentId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/store/InMemoryKeyValueStorage : io/github/valerioisufi/drawview/store/KeyValueStorage {
+	public fun <init> ()V
+	public fun get (Ljava/lang/String;)Ljava/lang/String;
+	public final fun getKeys ()Ljava/util/Set;
+	public fun remove (Ljava/lang/String;)V
+	public fun set (Ljava/lang/String;Ljava/lang/String;)Z
+}
+
+public final class io/github/valerioisufi/drawview/store/KeyValueDocumentStore : io/github/valerioisufi/drawview/model/change/DocumentPersistence, io/github/valerioisufi/drawview/store/DocumentStore, io/github/valerioisufi/drawview/store/PreferenceStore {
+	public static final field Companion Lio/github/valerioisufi/drawview/store/KeyValueDocumentStore$Companion;
+	public fun <init> (Lio/github/valerioisufi/drawview/store/KeyValueStorage;Lkotlinx/coroutines/CoroutineScope;JLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/KeyValueStorage;Lkotlinx/coroutines/CoroutineScope;JLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/model/StrokeModeller;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun appendOperation (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/change/Operation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun closeDocument (Ljava/lang/String;)V
+	public fun compactOperations (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun compactedOperations (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun createDocument (Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun createFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteForGood (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/PurgedContent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun fileWithContent (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun flush (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public synthetic fun getDocuments ()Lkotlinx/coroutines/flow/Flow;
+	public fun getDocuments ()Lkotlinx/coroutines/flow/StateFlow;
+	public synthetic fun getFolders ()Lkotlinx/coroutines/flow/Flow;
+	public fun getFolders ()Lkotlinx/coroutines/flow/StateFlow;
+	public fun getPersistence ()Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;
+	public fun getStrokeModeller ()Lio/github/valerioisufi/drawview/model/StrokeModeller;
+	public fun insertDocument (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun isDocumentNameAvailable (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun isReadOnly (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun loadDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun moveDocument (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun moveFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun operationsAfter (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun preference (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun renameFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun replicaId (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveCustomElement (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawCustomElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveImage (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawImage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun savePage (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawPage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun savePdf (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawPdf;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveResource (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveStrokes (Lio/github/valerioisufi/drawview/model/DrawPage;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveText (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawText;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveTextMarkup (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawTextMarkup;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setPreference (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setSharingSecret (Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun sharingSecrets (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun touchDocument (Lio/github/valerioisufi/drawview/model/DrawDocument;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun updateDocumentDefaults (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun updateDocumentTitle (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun updateLastOpened (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun versionVector (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/store/KeyValueDocumentStore$Companion {
+}
+
+public abstract interface class io/github/valerioisufi/drawview/store/KeyValueStorage {
+	public abstract fun get (Ljava/lang/String;)Ljava/lang/String;
+	public abstract fun remove (Ljava/lang/String;)V
+	public abstract fun set (Ljava/lang/String;Ljava/lang/String;)Z
+}
+
+public final class io/github/valerioisufi/drawview/store/OpenDocument {
+	public final fun compact (Ljava/util/Map;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun compactedOperations (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun edit (Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun flush (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun getDispatcher ()Lkotlinx/coroutines/CoroutineDispatcher;
+	public final fun getDocument ()Lio/github/valerioisufi/drawview/model/DrawDocument;
+	public final fun getResourcesReceived ()Lkotlinx/coroutines/flow/SharedFlow;
+	public final fun getSession ()Lio/github/valerioisufi/drawview/model/change/DocumentSession;
+	public final fun operationsAfter (Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun resourceReceived (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/store/OpenDocuments {
+	public fun <init> (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineScope;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineScope;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun close (Lio/github/valerioisufi/drawview/store/OpenDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun fileWithContent (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun getDispatcher ()Lkotlinx/coroutines/CoroutineDispatcher;
+	public final fun getStore ()Lio/github/valerioisufi/drawview/store/DocumentStore;
+	public final fun getStrokeModeller ()Lio/github/valerioisufi/drawview/model/StrokeModeller;
+	public final fun insert (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun insert$default (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun open (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun rename (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun replicaId (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun setReadOnly (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/store/OperationLog {
+	public abstract fun compactOperations (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun compactedOperations (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun operationsAfter (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun replicaId (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun versionVector (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/store/PreferenceStore {
+	public abstract fun preference (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun setPreference (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/store/SharingStore {
+	public abstract fun isReadOnly (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun setSharingSecret (Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun setSharingSecret$default (Lio/github/valerioisufi/drawview/store/SharingStore;Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public abstract fun sharingSecrets (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/store/SharingStore$DefaultImpls {
+	public static synthetic fun setSharingSecret$default (Lio/github/valerioisufi/drawview/store/SharingStore;Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+

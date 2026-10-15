@@ -14,8 +14,8 @@ import platform.Foundation.writeToFile
 import platform.posix.memcpy
 
 @OptIn(ExperimentalForeignApi::class)
-actual object PlatformFiles {
-    actual fun resourcesDirectory(): String {
+public actual object PlatformFiles {
+    public actual fun resourcesDirectory(): String {
         val documents = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true)
             .firstOrNull() as? String ?: ""
         val dir = "$documents/drawview_resources"
@@ -23,7 +23,7 @@ actual object PlatformFiles {
         return dir
     }
 
-    actual fun readBytes(path: String): ByteArray? {
+    public actual fun readBytes(path: String): ByteArray? {
         val data = NSData.dataWithContentsOfFile(path) ?: return null
         val size = data.length.toInt()
         if (size == 0) return ByteArray(0)
@@ -34,7 +34,7 @@ actual object PlatformFiles {
         return bytes
     }
 
-    actual fun writeBytes(path: String, bytes: ByteArray): Boolean {
+    public actual fun writeBytes(path: String, bytes: ByteArray): Boolean {
         val directory = path.substringBeforeLast('/', "")
         if (directory.isNotEmpty()) {
             NSFileManager.defaultManager.createDirectoryAtPath(directory, withIntermediateDirectories = true, attributes = null, error = null)
@@ -45,7 +45,7 @@ actual object PlatformFiles {
         return data.writeToFile(path, atomically = true)
     }
 
-    actual fun exists(path: String): Boolean = NSFileManager.defaultManager.fileExistsAtPath(path)
+    public actual fun exists(path: String): Boolean = NSFileManager.defaultManager.fileExistsAtPath(path)
 
-    actual fun delete(path: String): Boolean = NSFileManager.defaultManager.removeItemAtPath(path, error = null)
+    public actual fun delete(path: String): Boolean = NSFileManager.defaultManager.removeItemAtPath(path, error = null)
 }

@@ -35,29 +35,29 @@ import kotlin.math.min
  * while the canvas is panned and zoomed. The editor of the interface shows [value] and reports
  * what the user types ([updateValue]) and the height it lays the text out ([reportLayoutHeight]).
  */
-class TextEditorManager(private val controller: DrawViewController) : TextFormatTarget {
+public class TextEditorManager(private val controller: DrawViewController) : TextFormatTarget {
 
     /** The text being changed, `null` for a new one. */
-    var activeTextItem: DrawText? by mutableStateOf(null)
+    internal var activeTextItem: DrawText? by mutableStateOf(null)
         private set
 
-    var activeTextPageIndex: Int by mutableIntStateOf(-1)
+    public var activeTextPageIndex: Int by mutableIntStateOf(-1)
         private set
 
     /** Left of the box in page millimeters. */
-    var boxX: Float by mutableFloatStateOf(0f)
+    public var boxX: Float by mutableFloatStateOf(0f)
         private set
 
     /** Top of the box in page millimeters. */
-    var boxY: Float by mutableFloatStateOf(0f)
+    public var boxY: Float by mutableFloatStateOf(0f)
         private set
 
     /** Width of the box in page millimeters (the lines wrap on it). */
-    var boxWidth: Float by mutableFloatStateOf(MIN_WIDTH_MM)
+    public var boxWidth: Float by mutableFloatStateOf(MIN_WIDTH_MM)
         private set
 
     /** Height of the text as the editor lays it out, in page millimeters. */
-    var boxHeight: Float by mutableFloatStateOf(0f)
+    public var boxHeight: Float by mutableFloatStateOf(0f)
         private set
 
     /**
@@ -65,11 +65,11 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
      * longest line up to the margin of the page, then the lines wrap. A width set by the handles
      * or drawn stays.
      */
-    var autoWidth: Boolean by mutableStateOf(false)
+    public var autoWidth: Boolean by mutableStateOf(false)
         private set
 
     /** The text written so far, with its selection. */
-    var value: TextFieldValue by mutableStateOf(TextFieldValue())
+    public var value: TextFieldValue by mutableStateOf(TextFieldValue())
         private set
 
     /** Size of the text in typographic points. */
@@ -86,13 +86,13 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
     override val formatsCharacters: Boolean get() = true
 
     /** Rotation of the text in degrees (kept: the editor does not turn a text). */
-    val rotation: Float get() = activeTextItem?.rotation ?: 0f
+    public val rotation: Float get() = activeTextItem?.rotation ?: 0f
 
     /** Incremented at every new session (resets the editor UI state). */
-    var sessionId: Int by mutableIntStateOf(0)
+    public var sessionId: Int by mutableIntStateOf(0)
         private set
 
-    val isEditing: Boolean get() = activeTextPageIndex >= 0
+    public val isEditing: Boolean get() = activeTextPageIndex >= 0
 
     /** The identifier of the text being written when it is a new one (the same for the others, see [reportDraft]). */
     private var newTextId = newElementId()
@@ -113,7 +113,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
      * The point of the box where the user put the caret (see [startEditing]), given once: the
      * editor places the caret on the character there.
      */
-    fun takeCaretRequest(): Offset? = caretRequest.also { caretRequest = null }
+    public fun takeCaretRequest(): Offset? = caretRequest.also { caretRequest = null }
 
     // ==========================================================
     // Opening and closing
@@ -126,7 +126,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
      * [autoWidth]). Unless [free], the text snaps (see [SnapManager]): on lined paper its first
      * baseline sits on the line under the point, and its edge aligns with the texts around it.
      */
-    fun startNewText(pageIndex: Int, xMm: Float, yMm: Float, free: Boolean = false) {
+    public fun startNewText(pageIndex: Int, xMm: Float, yMm: Float, free: Boolean = false) {
         controller.document.pages.getOrNull(pageIndex) ?: return
         val defaults = controller.textDefaults
         val line = controller.textLineMetrics(defaults.fontSize)
@@ -148,7 +148,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
      * Starts a new text in the box [box] (page millimeters) drawn on the page [pageIndex]: its
      * width stays the one drawn (not narrower than its minimum).
      */
-    fun startDrawnText(pageIndex: Int, box: Rect) {
+    public fun startDrawnText(pageIndex: Int, box: Rect) {
         controller.document.pages.getOrNull(pageIndex) ?: return
         open(null, pageIndex, box.left, box.top, box.width, caretAt = null, autoWidth = false)
     }
@@ -161,7 +161,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
      *   its box before its rotation (see `RotatableItem.toLocal`): the caret goes on the character
      *   there; at the end of the text when `null`.
      */
-    fun startEditing(item: DrawText, pageIndex: Int, caretAt: Offset? = null) {
+    public fun startEditing(item: DrawText, pageIndex: Int, caretAt: Offset? = null) {
         controller.presence.writerOf(item)?.let { writer ->
             controller.presence.refuseEdit(writer)
             return
@@ -208,7 +208,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
      * the page shown when `null`), in the style of a new text, its width following the text, and
      * selects it, so that it can be moved; one change.
      */
-    fun pasteText(content: String, atScreen: Offset? = null) {
+    public fun pasteText(content: String, atScreen: Offset? = null) {
         if (content.isBlank()) return
         if (isEditing) finishEditing()
         // The page under the point, or the page shown (the first one before the canvas is laid out)
@@ -241,7 +241,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
      *
      * @return `true` when the editor has been opened.
      */
-    fun startEditingSelectedText(): Boolean {
+    public fun startEditingSelectedText(): Boolean {
         val selection = controller.selectionManager.currentSelection ?: return false
         if (!selection.isSingleText || selection.pageIndex < 0) return false
         val text = selection.texts[0]
@@ -255,7 +255,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
      * Saves the text being written and closes the editor: a new text is added, a changed one
      * updated, an emptied one removed. The text is measured as the canvas lays it out.
      */
-    fun finishEditing() {
+    public fun finishEditing() {
         val pageIndex = activeTextPageIndex
         if (pageIndex < 0) return
         val page = controller.document.pages.getOrNull(pageIndex)
@@ -291,7 +291,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
     /**
      * Closes the editor discarding the changes.
      */
-    fun cancelEditing() {
+    internal fun cancelEditing() {
         val item = activeTextItem
         val page = controller.document.pages.getOrNull(activeTextPageIndex)
         if (item != null && page != null) {
@@ -322,7 +322,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
     // ==========================================================
 
     /** The text and its selection as the user changed them. */
-    fun updateValue(newValue: TextFieldValue) {
+    public fun updateValue(newValue: TextFieldValue) {
         if (!isEditing) return
         val textChanged = newValue.text != value.text
         value = newValue
@@ -333,10 +333,10 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
     }
 
     /** Adds or removes [format] around the selection (or inserts its delimiters at the caret). */
-    override fun toggle(format: RichTextEditing.Format) = updateValue(RichTextEditing.toggle(value, format))
+    override fun toggle(format: RichTextEditing.Format): Unit = updateValue(RichTextEditing.toggle(value, format))
 
     /** Makes the line of the caret a heading, or plain text again. */
-    override fun toggleHeading() = updateValue(RichTextEditing.toggleHeading(value))
+    override fun toggleHeading(): Unit = updateValue(RichTextEditing.toggleHeading(value))
 
     override fun changeFontSize(size: Float) {
         val clamped = TextSizes.clamp(size)
@@ -359,7 +359,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
     }
 
     /** The height (page millimeters) the editor lays the text out. */
-    fun reportLayoutHeight(heightMm: Float) {
+    public fun reportLayoutHeight(heightMm: Float) {
         if (!isEditing || abs(heightMm - boxHeight) < HEIGHT_EPSILON_MM) return
         boxHeight = heightMm
         reportDraft()
@@ -370,13 +370,13 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
     // ==========================================================
 
     /** Moves the box by ([dxMm], [dyMm]) page millimeters, a part of it always on its page. */
-    fun moveBy(dxMm: Float, dyMm: Float) = moveTo(boxX + dxMm, boxY + dyMm, free = true)
+    public fun moveBy(dxMm: Float, dyMm: Float): Unit = moveTo(boxX + dxMm, boxY + dyMm, free = true)
 
     /**
      * Moves the box to ([xMm], [yMm]) of its page, a part of it always on the page; unless
      * [free], snapped to what is around it (its first baseline on the rows of the paper).
      */
-    fun moveTo(xMm: Float, yMm: Float, free: Boolean = false) {
+    public fun moveTo(xMm: Float, yMm: Float, free: Boolean = false) {
         val page = controller.document.pages.getOrNull(activeTextPageIndex) ?: return
         val box = Rect(xMm, yMm, xMm + boxWidth, yMm + boxHeight)
         val baseline = if (rotation == 0f) controller.textLineMetrics(fontSize)?.let { yMm + it.baseline } else null
@@ -396,7 +396,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
      * the width not under its minimum); unless [free], snapped to what is around it. The width is
      * then set by hand (see [autoWidth]).
      */
-    fun resizeTo(edgeXMm: Float, leftEdge: Boolean, free: Boolean = false) {
+    internal fun resizeTo(edgeXMm: Float, leftEdge: Boolean, free: Boolean = false) {
         if (!isEditing) return
         val edge = edgeXMm + if (rotation == 0f) {
             controller.snapManager.snapEdge(activeTextPageIndex, edgeXMm, boxY, boxY + boxHeight, listOfNotNull(activeTextItem), free)
@@ -408,7 +408,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
      * Moves the left or the right edge of the box by [dxMm] page millimeters: the lines wrap on
      * the new width (never less than its minimum, the other edge staying where it is).
      */
-    fun resizeBy(dxMm: Float, leftEdge: Boolean) {
+    internal fun resizeBy(dxMm: Float, leftEdge: Boolean) {
         if (!isEditing) return
         // A width set by hand stays
         autoWidth = false

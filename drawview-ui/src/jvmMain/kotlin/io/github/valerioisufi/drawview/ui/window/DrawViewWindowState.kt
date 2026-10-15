@@ -13,15 +13,15 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
 import io.github.valerioisufi.drawview.platform.drawViewDesktopDataDirectory
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.withContext
 import java.awt.Dimension
 import java.awt.GraphicsEnvironment
 import java.awt.Rectangle
 import java.io.File
 import java.util.Properties
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.withContext
 
 /** The size, position and placement of a window, as kept between the launches of the application. */
 internal data class SavedWindow(
@@ -84,7 +84,7 @@ internal class WindowStateStore(private val file: File) {
  */
 @OptIn(FlowPreview::class)
 @Composable
-fun rememberDrawViewWindowState(name: String = "main", defaultSize: DpSize = DpSize(1280.dp, 860.dp)): WindowState {
+public fun rememberDrawViewWindowState(name: String = "main", defaultSize: DpSize = DpSize(1280.dp, 860.dp)): WindowState {
     val store = remember(name) { WindowStateStore(File(drawViewDesktopDataDirectory, "window-$name.properties")) }
     val saved = remember(store) { store.read() }
     val state = rememberWindowState(
@@ -114,7 +114,7 @@ fun rememberDrawViewWindowState(name: String = "main", defaultSize: DpSize = DpS
  * narrow without cutting the bars.
  */
 @Composable
-fun FrameWindowScope.WindowMinimumSize(width: Dp = 360.dp, height: Dp = 480.dp) {
+public fun FrameWindowScope.WindowMinimumSize(width: Dp = 360.dp, height: Dp = 480.dp) {
     LaunchedEffect(window, width, height) {
         window.minimumSize = Dimension(width.value.toInt(), height.value.toInt())
     }

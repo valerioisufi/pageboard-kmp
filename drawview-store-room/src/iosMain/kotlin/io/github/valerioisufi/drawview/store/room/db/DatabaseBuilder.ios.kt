@@ -7,7 +7,7 @@ import platform.Foundation.NSFileManager
 import platform.Foundation.NSUserDomainMask
 
 @OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
-actual fun getDatabaseBuilder(): RoomDatabase.Builder<DrawDatabase> {
+internal actual fun getDatabaseBuilder(): RoomDatabase.Builder<DrawDatabase> {
     val documentDirectory = NSFileManager.defaultManager.URLForDirectory(
         directory = NSDocumentDirectory,
         inDomain = NSUserDomainMask,
@@ -21,6 +21,6 @@ actual fun getDatabaseBuilder(): RoomDatabase.Builder<DrawDatabase> {
     )
 }
 
-actual fun getInMemoryDatabaseBuilder(): RoomDatabase.Builder<DrawDatabase> {
+public actual fun getInMemoryDatabaseBuilder(): RoomDatabase.Builder<DrawDatabase> {
     return Room.inMemoryDatabaseBuilder<DrawDatabase>()
 }

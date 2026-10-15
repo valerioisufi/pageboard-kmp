@@ -1,0 +1,282 @@
+public final class io/github/valerioisufi/drawview/latex/LatexEngine {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/latex/LatexEngine;
+	public final fun drawing (Ljava/lang/String;FI)Lio/github/valerioisufi/drawview/latex/TexDrawing;
+	public final fun getFormulaRenderer ()Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;
+	public final fun init (Ljava/lang/String;)Z
+	public final fun initialize (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun isReady ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun renderFormula (Ljava/lang/String;FIF)Lio/github/valerioisufi/drawview/latex/LatexResult;
+	public static synthetic fun renderFormula$default (Lio/github/valerioisufi/drawview/latex/LatexEngine;Ljava/lang/String;FIFILjava/lang/Object;)Lio/github/valerioisufi/drawview/latex/LatexResult;
+	public final fun renderFormula-9LQNqLg (Ljava/lang/String;FJF)Lio/github/valerioisufi/drawview/latex/LatexResult;
+	public static synthetic fun renderFormula-9LQNqLg$default (Lio/github/valerioisufi/drawview/latex/LatexEngine;Ljava/lang/String;FJFILjava/lang/Object;)Lio/github/valerioisufi/drawview/latex/LatexResult;
+	public final fun setTextFonts (Ljava/util/Map;)V
+}
+
+public final class io/github/valerioisufi/drawview/latex/LatexResult {
+	public static final field $stable I
+	public fun <init> (Landroidx/compose/ui/graphics/ImageBitmap;FII)V
+	public final fun component1 ()Landroidx/compose/ui/graphics/ImageBitmap;
+	public final fun component2 ()F
+	public final fun component3 ()I
+	public final fun component4 ()I
+	public final fun copy (Landroidx/compose/ui/graphics/ImageBitmap;FII)Lio/github/valerioisufi/drawview/latex/LatexResult;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/latex/LatexResult;Landroidx/compose/ui/graphics/ImageBitmap;FIIILjava/lang/Object;)Lio/github/valerioisufi/drawview/latex/LatexResult;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBaselineRatio ()F
+	public final fun getBitmap ()Landroidx/compose/ui/graphics/ImageBitmap;
+	public final fun getHeight ()I
+	public final fun getWidth ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/latex/TexDrawing {
+	public static final field $stable I
+	public fun <init> (IIFLjava/util/List;)V
+	public final fun getBaselineRatio ()F
+	public final fun getHeight ()I
+	public final fun getOps ()Ljava/util/List;
+	public final fun getWidth ()I
+}
+
+public final class io/github/valerioisufi/drawview/latex/TexFont {
+	public static final field $stable I
+	public static final field BOLD I
+	public static final field Companion Lio/github/valerioisufi/drawview/latex/TexFont$Companion;
+	public static final field ITALIC I
+	public fun <init> (Ljava/lang/String;IFZZ)V
+	public final fun getFakeBold ()Z
+	public final fun getFakeItalic ()Z
+	public final fun getFile ()Ljava/lang/String;
+	public final fun getSize ()F
+	public final fun getStyle ()I
+}
+
+public final class io/github/valerioisufi/drawview/latex/TexFont$Companion {
+}
+
+public abstract interface class io/github/valerioisufi/drawview/latex/TexOp {
+	public static final field Companion Lio/github/valerioisufi/drawview/latex/TexOp$Companion;
+}
+
+public final class io/github/valerioisufi/drawview/latex/TexOp$Companion {
+}
+
+public final class io/github/valerioisufi/drawview/latex/TexOp$DrawLine : io/github/valerioisufi/drawview/latex/TexOp {
+	public static final field $stable I
+	public fun <init> (FFFF)V
+	public final fun getX1 ()F
+	public final fun getX2 ()F
+	public final fun getY1 ()F
+	public final fun getY2 ()F
+}
+
+public final class io/github/valerioisufi/drawview/latex/TexOp$DrawRect : io/github/valerioisufi/drawview/latex/TexOp {
+	public static final field $stable I
+	public fun <init> (FFFFZ)V
+	public final fun getFill ()Z
+	public final fun getHeight ()F
+	public final fun getWidth ()F
+	public final fun getX ()F
+	public final fun getY ()F
+}
+
+public final class io/github/valerioisufi/drawview/latex/TexOp$DrawRoundRect : io/github/valerioisufi/drawview/latex/TexOp {
+	public static final field $stable I
+	public fun <init> (FFFFFFZ)V
+	public final fun getFill ()Z
+	public final fun getHeight ()F
+	public final fun getRx ()F
+	public final fun getRy ()F
+	public final fun getWidth ()F
+	public final fun getX ()F
+	public final fun getY ()F
+}
+
+public final class io/github/valerioisufi/drawview/latex/TexOp$DrawText : io/github/valerioisufi/drawview/latex/TexOp {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;FF)V
+	public final fun getText ()Ljava/lang/String;
+	public final fun getX ()F
+	public final fun getY ()F
+}
+
+public final class io/github/valerioisufi/drawview/latex/TexOp$Reset : io/github/valerioisufi/drawview/latex/TexOp {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/latex/TexOp$Reset;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/latex/TexOp$Rotate : io/github/valerioisufi/drawview/latex/TexOp {
+	public static final field $stable I
+	public fun <init> (FFF)V
+	public final fun getAngle ()F
+	public final fun getPx ()F
+	public final fun getPy ()F
+}
+
+public final class io/github/valerioisufi/drawview/latex/TexOp$Scale : io/github/valerioisufi/drawview/latex/TexOp {
+	public static final field $stable I
+	public fun <init> (FF)V
+	public final fun getSx ()F
+	public final fun getSy ()F
+}
+
+public final class io/github/valerioisufi/drawview/latex/TexOp$SetColor : io/github/valerioisufi/drawview/latex/TexOp {
+	public static final field $stable I
+	public fun <init> (I)V
+	public final fun getArgb ()I
+}
+
+public final class io/github/valerioisufi/drawview/latex/TexOp$SetFont : io/github/valerioisufi/drawview/latex/TexOp {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/latex/TexFont;)V
+	public final fun getFont ()Lio/github/valerioisufi/drawview/latex/TexFont;
+}
+
+public final class io/github/valerioisufi/drawview/latex/TexOp$SetStroke : io/github/valerioisufi/drawview/latex/TexOp {
+	public static final field $stable I
+	public fun <init> (FFII)V
+	public final fun getCap ()I
+	public final fun getJoin ()I
+	public final fun getWidth ()F
+}
+
+public final class io/github/valerioisufi/drawview/latex/TexOp$SetStrokeWidth : io/github/valerioisufi/drawview/latex/TexOp {
+	public static final field $stable I
+	public fun <init> (F)V
+	public final fun getWidth ()F
+}
+
+public final class io/github/valerioisufi/drawview/latex/TexOp$Translate : io/github/valerioisufi/drawview/latex/TexOp {
+	public static final field $stable I
+	public fun <init> (FF)V
+	public final fun getDx ()F
+	public final fun getDy ()F
+}
+
+public final class io/nano/tex/Alignment {
+	public static final field $stable I
+	public static final field BOTTOM I
+	public static final field CENTER I
+	public static final field INSTANCE Lio/nano/tex/Alignment;
+	public static final field LEFT I
+	public static final field RIGHT I
+	public static final field TOP I
+}
+
+public final class io/nano/tex/Font {
+	public static final field $stable I
+	public static final field BOLD I
+	public static final field Companion Lio/nano/tex/Font$Companion;
+	public static final field ITALIC I
+	public fun <init> (Lorg/jetbrains/skia/Typeface;FILjava/lang/String;)V
+	public synthetic fun <init> (Lorg/jetbrains/skia/Typeface;FILjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final fun create (Ljava/lang/String;F)Lio/nano/tex/Font;
+	public static final fun create (Ljava/lang/String;IF)Lio/nano/tex/Font;
+	public final fun deriveFont (I)Lio/nano/tex/Font;
+	public final fun getFile ()Ljava/lang/String;
+	public final fun getSize ()F
+	public final fun getStyle ()I
+	public final fun getTypeface ()Lorg/jetbrains/skia/Typeface;
+	public final fun toSkiaFont (F)Lorg/jetbrains/skia/Font;
+	public final fun toTexFont ()Lio/github/valerioisufi/drawview/latex/TexFont;
+}
+
+public final class io/nano/tex/Font$Companion {
+	public final fun create (Ljava/lang/String;F)Lio/nano/tex/Font;
+	public final fun create (Ljava/lang/String;IF)Lio/nano/tex/Font;
+}
+
+public final class io/nano/tex/Graphics2D {
+	public static final field $stable I
+	public static final field CAP_BUTT I
+	public static final field CAP_ROUND I
+	public static final field CAP_SQUARE I
+	public static final field Companion Lio/nano/tex/Graphics2D$Companion;
+	public static final field JOIN_BEVEL I
+	public static final field JOIN_MITER I
+	public static final field JOIN_ROUND I
+	public fun <init> (Lorg/jetbrains/skia/Canvas;)V
+	public final fun drawChar (CFF)V
+	public final fun drawLine (FFFF)V
+	public final fun drawRect (FFFF)V
+	public final fun drawRoundRect (FFFFFF)V
+	public final fun drawText (Ljava/lang/String;FF)V
+	public final fun fillRect (FFFF)V
+	public final fun fillRoundRect (FFFFFF)V
+	public final fun getCanvas ()Lorg/jetbrains/skia/Canvas;
+	public final fun h (F)F
+	public final fun lockColor ()V
+	public final fun reset ()V
+	public final fun rotate (FFF)V
+	public final fun scale (FF)V
+	public final fun setColor (I)V
+	public final fun setFont (Lio/nano/tex/Font;)V
+	public final fun setStroke (FFII)V
+	public final fun setStrokeWidth (F)V
+	public final fun sx ()F
+	public final fun sy ()F
+	public final fun translate (FF)V
+	public final fun tx ()F
+	public final fun ty ()F
+	public final fun unlockColor ()V
+	public final fun w (F)F
+	public final fun x (F)F
+	public final fun y (F)F
+}
+
+public final class io/nano/tex/Graphics2D$Companion {
+}
+
+public final class io/nano/tex/LaTeX {
+	public static final field $stable I
+	public static final field Companion Lio/nano/tex/LaTeX$Companion;
+	public final fun init (Ljava/lang/String;)V
+	public final fun isInitialized ()Z
+	public final fun parse (Ljava/lang/String;FI)Lio/nano/tex/TeXRender;
+	public final fun parse (Ljava/lang/String;IFFI)Lio/nano/tex/TeXRender;
+	public final fun release ()V
+	public final fun setDebug (Z)V
+}
+
+public final class io/nano/tex/LaTeX$Companion {
+	public final fun instance ()Lio/nano/tex/LaTeX;
+}
+
+public final class io/nano/tex/Rect {
+	public static final field $stable I
+	public field h F
+	public field w F
+	public field x F
+	public field y F
+	public fun <init> ()V
+	public fun <init> (FFFF)V
+	public synthetic fun <init> (FFFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/nano/tex/TeXRender {
+	public static final field $stable I
+	public static final field Companion Lio/nano/tex/TeXRender$Companion;
+	public fun <init> (J)V
+	public final fun draw (Lio/nano/tex/Graphics2D;II)V
+	public final fun getBaseline ()F
+	public final fun getDepth ()I
+	public final fun getHeight ()I
+	public final fun getTextSize ()F
+	public final fun getWidth ()I
+	public final fun invalidateDrawingCache ()V
+	public final fun ops ()Ljava/util/List;
+	public final fun setForeground (I)V
+	public final fun setHeight (II)V
+	public final fun setTextSize (F)V
+	public final fun setWidth (II)V
+}
+
+public final class io/nano/tex/TeXRender$Companion {
+}
+

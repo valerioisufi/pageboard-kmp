@@ -5,7 +5,7 @@ import androidx.compose.material3.Shapes
 import androidx.compose.ui.unit.dp
 
 /** The radii of the design, from the small marks to the sheets. */
-object DrawViewRadius {
+internal object DrawViewRadius {
     /** The thumbnails, the marks. */
     val ExtraSmall = 4.dp
 
@@ -29,7 +29,7 @@ object DrawViewRadius {
 }
 
 /** The shapes of Material with the radii of the design. */
-val DrawViewShapes = Shapes(
+internal val DrawViewShapes = Shapes(
     extraSmall = RoundedCornerShape(DrawViewRadius.ExtraSmall),
     small = RoundedCornerShape(DrawViewRadius.Small),
     medium = RoundedCornerShape(DrawViewRadius.Medium),

@@ -4,12 +4,12 @@ import kotlinx.serialization.Serializable
 
 /** Where the lines of a text go in the width of its box. */
 @Serializable
-enum class TextAlignment {
+public enum class TextAlignment {
     START,
     CENTER,
     END;
 
-    companion object {
-        fun fromName(name: String?): TextAlignment? = entries.firstOrNull { it.name == name }
+    public companion object {
+        public fun fromName(name: String?): TextAlignment? = entries.firstOrNull { it.name == name }
     }
 }

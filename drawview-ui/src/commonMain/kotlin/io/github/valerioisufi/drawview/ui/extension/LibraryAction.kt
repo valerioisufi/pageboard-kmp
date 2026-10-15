@@ -13,9 +13,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
  * @param prominent a wide button at the bottom of the navigation pane, where there is one.
  * @param content shown once the action is chosen (e.g. a dialog), until it calls `onDone`.
  */
-class LibraryAction(
-    val icon: ImageVector,
-    val label: @Composable () -> String,
-    val prominent: Boolean = false,
-    val content: @Composable (onDone: () -> Unit) -> Unit
+public class LibraryAction(
+    public val icon: ImageVector,
+    public val label: @Composable () -> String,
+    public val prominent: Boolean = false,
+    public val content: @Composable (onDone: () -> Unit) -> Unit
 )

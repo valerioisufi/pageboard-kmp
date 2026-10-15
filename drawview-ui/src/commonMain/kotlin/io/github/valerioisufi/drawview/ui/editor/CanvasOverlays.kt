@@ -46,7 +46,7 @@ import org.jetbrains.compose.resources.stringResource
  * @param commands the commands of the editor, whose tooltips the buttons show.
  */
 @Composable
-fun SelectionActionBar(
+internal fun SelectionActionBar(
     controller: DrawViewController,
     modifier: Modifier = Modifier,
     commands: EditorCommands? = null
@@ -94,7 +94,7 @@ fun SelectionActionBar(
  * @param onEditPageBackground opens the template configurator of the targeted page.
  */
 @Composable
-fun CanvasContextMenu(
+internal fun CanvasContextMenu(
     controller: DrawViewController,
     commands: EditorCommands,
     onEditPageBackground: () -> Unit

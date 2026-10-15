@@ -60,7 +60,7 @@ import kotlinx.coroutines.withContext
  *   that outlives the application.
  */
 @Composable
-fun DocumentLibrary(
+public fun DocumentLibrary(
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     documents: OpenDocuments,

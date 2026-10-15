@@ -32,7 +32,7 @@ import org.jetbrains.compose.resources.stringResource
 
 /** Name of a kind of mark of the text of the PDFs. */
 @Composable
-fun textMarkupKindLabel(kind: TextMarkupKind): String = stringResource(
+internal fun textMarkupKindLabel(kind: TextMarkupKind): String = stringResource(
     when (kind) {
         TextMarkupKind.HIGHLIGHT -> Res.string.text_markup_highlight
         TextMarkupKind.UNDERLINE -> Res.string.text_markup_underline
@@ -44,7 +44,7 @@ fun textMarkupKindLabel(kind: TextMarkupKind): String = stringResource(
  * The letters "ab" marked as [kind] with [color], as a mark of the text of the PDFs looks.
  */
 @Composable
-fun TextMarkupSample(kind: TextMarkupKind, color: Color, modifier: Modifier = Modifier) {
+internal fun TextMarkupSample(kind: TextMarkupKind, color: Color, modifier: Modifier = Modifier) {
     Text(
         text = "ab",
         fontSize = 14.sp,
@@ -73,7 +73,7 @@ fun TextMarkupSample(kind: TextMarkupKind, color: Color, modifier: Modifier = Mo
  * Compact circular button of a preset of the text markup tool, showing its kind and color.
  */
 @Composable
-fun TextMarkupPresetButton(
+internal fun TextMarkupPresetButton(
     kind: TextMarkupKind,
     color: Color,
     isSelected: Boolean,

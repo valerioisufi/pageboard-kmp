@@ -18,7 +18,7 @@ import kotlin.math.roundToInt
 /**
  * PDF backend: PDFium on the desktop JVM, Android and iOS (see [PdfiumBindings]).
  */
-object PdfPlatform {
+internal object PdfPlatform {
     fun openDocument(filePath: String, password: String? = null): PdfDocument {
         if (!PdfiumBindings.load()) {
             throw UnsupportedOperationException("PDF documents are not supported on this platform")
@@ -34,7 +34,7 @@ object PdfPlatform {
 /**
  * Entry point for opening PDF documents.
  */
-object PdfiumEngine {
+public object PdfiumEngine {
 
     /**
      * Opens a PDF file from a local filesystem path.
@@ -42,19 +42,19 @@ object PdfiumEngine {
      * @param filePath Absolute or relative path to the PDF file.
      * @param password Optional password for encrypted documents.
      */
-    fun open(filePath: String, password: String? = null): PdfDocument {
+    public fun open(filePath: String, password: String? = null): PdfDocument {
         return PdfPlatform.openDocument(filePath, password)
     }
 
     /**
      * Checks if a PDF backend is available on the current platform.
      */
-    fun isAvailable(): Boolean = PdfPlatform.isAvailable()
+    public fun isAvailable(): Boolean = PdfPlatform.isAvailable()
 
     /**
      * Starts a new PDF document, written page by page and then saved (see [PdfWriter]).
      */
-    fun create(): PdfWriter {
+    public fun create(): PdfWriter {
         if (!isAvailable()) throw UnsupportedOperationException("PDF documents are not supported on this platform")
         val handle = PdfiumBindings.newDocument()
         check(handle != 0L) { "Cannot create a PDF document" }
@@ -65,7 +65,7 @@ object PdfiumEngine {
      * Creates the adapter used by the tile engine to render the PDF pages of the documents, or
      * `null` when PDFs are not supported on this platform.
      */
-    fun createTileAdapter(): PdfTileAdapter? = if (isAvailable()) CachingPdfTileAdapter() else null
+    public fun createTileAdapter(): PdfTileAdapter? = if (isAvailable()) CachingPdfTileAdapter() else null
 }
 
 /**

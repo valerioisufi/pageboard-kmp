@@ -21,7 +21,7 @@ import platform.darwin.NSObject
 
 /** The double tap and the squeeze of the Apple Pencil on the view of the composition. */
 @Composable
-actual fun PencilInteractionEffect(onAction: (PencilAction) -> Unit) {
+internal actual fun PencilInteractionEffect(onAction: (PencilAction) -> Unit) {
     val viewController = LocalUIViewController.current
     val current by rememberUpdatedState(onAction)
     DisposableEffect(viewController) {

@@ -43,7 +43,7 @@ import org.jetbrains.compose.resources.stringResource
  * @param document the document, `null` while it is being loaded.
  */
 @Composable
-fun DocumentInfoSelector(
+internal fun DocumentInfoSelector(
     document: DrawDocument?,
     modifier: Modifier = Modifier,
     subtitle: String? = null,

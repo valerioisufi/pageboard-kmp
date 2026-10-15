@@ -2,7 +2,7 @@ package io.nano.tex
 
 import io.github.valerioisufi.drawview.platform.JvmNativeLibraries
 
-object LatexNativeLoader {
+internal object LatexNativeLoader {
     /** Whether `libtex` has been loaded successfully. */
     val isAvailable: Boolean by lazy { JvmNativeLibraries.load(LatexNativeLoader::class.java, "tex") }
 

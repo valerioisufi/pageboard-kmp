@@ -12,25 +12,25 @@ import io.github.valerioisufi.drawview.model.geometry.Rect
  * canvas draws and receives its pointers in Compose types, the model speaks its own.
  */
 
-fun Rect.toCompose(): ComposeRect = ComposeRect(left, top, right, bottom)
+internal fun Rect.toCompose(): ComposeRect = ComposeRect(left, top, right, bottom)
 
-fun ComposeRect.toModel(): Rect = Rect(left, top, right, bottom)
+internal fun ComposeRect.toModel(): Rect = Rect(left, top, right, bottom)
 
-fun Point.toCompose(): Offset = Offset(x, y)
+internal fun Point.toCompose(): Offset = Offset(x, y)
 
-fun Offset.toModel(): Point = Point(x, y)
+internal fun Offset.toModel(): Point = Point(x, y)
 
 /** [rect] mapped through this transformation: the box holding the mapped corners. */
-fun Matrix2D.mapRect(rect: ComposeRect): ComposeRect = mapRect(rect.toModel()).toCompose()
+public fun Matrix2D.mapRect(rect: ComposeRect): ComposeRect = mapRect(rect.toModel()).toCompose()
 
 /** [offset] mapped through this transformation. */
-fun Matrix2D.mapOffset(offset: Offset): Offset = mapPoint(offset.x, offset.y).toCompose()
+internal fun Matrix2D.mapOffset(offset: Offset): Offset = mapPoint(offset.x, offset.y).toCompose()
 
 /** Sets this transformation to the one fitting [src] into [dst]. */
-fun Matrix2D.setRectToRect(src: ComposeRect, dst: ComposeRect): Matrix2D = setRectToRect(src.toModel(), dst.toModel())
+public fun Matrix2D.setRectToRect(src: ComposeRect, dst: ComposeRect): Matrix2D = setRectToRect(src.toModel(), dst.toModel())
 
 /** This transformation as the 4x4 matrix of Compose (written into [out]). */
-fun Matrix2D.toComposeMatrix(out: Matrix = Matrix()): Matrix {
+public fun Matrix2D.toComposeMatrix(out: Matrix = Matrix()): Matrix {
     out.reset()
     // Column-major 4x4
     val values = out.values

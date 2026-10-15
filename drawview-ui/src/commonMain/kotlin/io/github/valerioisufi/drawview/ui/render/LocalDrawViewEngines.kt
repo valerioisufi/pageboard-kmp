@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.ui.render
 
+import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.staticCompositionLocalOf
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 
@@ -8,4 +9,4 @@ import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
  * at hand (the notes of an assistant, an export from the library): provided by the editor
  * ([io.github.valerioisufi.drawview.ui.screen.DrawScreen]) and by the library of the documents.
  */
-val LocalDrawViewEngines = staticCompositionLocalOf { DrawViewEngines.None }
+public val LocalDrawViewEngines: ProvidableCompositionLocal<DrawViewEngines> = staticCompositionLocalOf { DrawViewEngines.None }

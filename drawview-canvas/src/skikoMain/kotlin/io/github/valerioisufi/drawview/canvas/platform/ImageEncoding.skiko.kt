@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.asSkiaBitmap
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Image
 
-actual fun encodePng(bitmap: ImageBitmap): ByteArray? = try {
+public actual fun encodePng(bitmap: ImageBitmap): ByteArray? = try {
     Image.makeFromBitmap(bitmap.asSkiaBitmap()).encodeToData(EncodedImageFormat.PNG)?.bytes
 } catch (_: Throwable) {
     null

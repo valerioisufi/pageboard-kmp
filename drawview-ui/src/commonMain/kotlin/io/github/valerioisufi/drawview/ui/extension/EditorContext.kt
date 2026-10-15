@@ -7,10 +7,10 @@ import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
  * ([controller]). The same instance as long as the document is shown, so that an extension can
  * remember what it makes of it.
  */
-class EditorContext(val controller: DrawViewController) {
+public class EditorContext(public val controller: DrawViewController) {
     /**
      * The document shown, by its identifier (the same on every device): what an extension keeps
      * beside the documents refers to it.
      */
-    val documentId: String get() = controller.document.id
+    public val documentId: String get() = controller.document.id
 }

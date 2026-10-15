@@ -21,7 +21,7 @@ import org.jetbrains.compose.resources.stringResource
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TextColorPickerDialog(
+internal fun TextColorPickerDialog(
     initialColor: Color,
     onDismissRequest: () -> Unit,
     onColorConfirmed: (Color) -> Unit

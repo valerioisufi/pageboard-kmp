@@ -5,12 +5,13 @@ import androidx.compose.runtime.Composable
 /**
  * A file picked by the user.
  */
-class PickedFile(val name: String, val bytes: ByteArray) {
+public class PickedFile(public val name: String, public val bytes: ByteArray) {
     /** Lowercase extension of the file name ("" when missing). */
-    val extension: String get() = name.substringAfterLast('.', "").lowercase()
+    public val extension: String get() = name.substringAfterLast('.', "").lowercase()
 }
 
-enum class PickerType { IMAGE, PDF }
+/** The kinds of files the file pickers choose. */
+public enum class PickerType { IMAGE, PDF }
 
 /**
  * Remembers a launcher of the file picker of the platform (`GetContent` on Android, the file
@@ -18,11 +19,11 @@ enum class PickerType { IMAGE, PDF }
  * [onPicked] receives the selected file and is not called when the user cancels.
  */
 @Composable
-expect fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) -> Unit): () -> Unit
+public expect fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) -> Unit): () -> Unit
 
 /**
  * Hides the system bars while the editor is shown (immersive mode of the original app on
  * Android; no-op on the other platforms).
  */
 @Composable
-expect fun HideSystemBarsEffect()
+internal expect fun HideSystemBarsEffect()

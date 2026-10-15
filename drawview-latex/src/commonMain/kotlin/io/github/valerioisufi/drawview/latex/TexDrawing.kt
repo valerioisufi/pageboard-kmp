@@ -8,17 +8,17 @@ import io.github.valerioisufi.drawview.platform.syncLock
  * [ops] drawing it on [width] x [height] pixels (at the size it was laid out at), its baseline at
  * [baselineRatio] of its height.
  */
-class TexDrawing(val width: Int, val height: Int, val baselineRatio: Float, val ops: List<TexOp>)
+public class TexDrawing(public val width: Int, public val height: Int, public val baselineRatio: Float, public val ops: List<TexOp>)
 
 /**
  * A font of a formula, [size] pixels: a TrueType [file] of the TeX resources, or the font of the
  * text of the formulas (`\text{}`, see [LatexEngine.setTextFonts]) when [file] is `null`. [style]
  * is bold (1) and italic (2); [fakeBold] and [fakeItalic] are synthesized over a font that is not.
  */
-class TexFont(val file: String?, val style: Int, val size: Float, val fakeBold: Boolean, val fakeItalic: Boolean) {
-    companion object {
-        const val BOLD = 1
-        const val ITALIC = 2
+public class TexFont(public val file: String?, public val style: Int, public val size: Float, public val fakeBold: Boolean, public val fakeItalic: Boolean) {
+    public companion object {
+        public const val BOLD: Int = 1
+        public const val ITALIC: Int = 2
     }
 }
 
@@ -27,39 +27,39 @@ class TexFont(val file: String?, val style: Int, val size: Float, val fakeBold: 
  * transformed by the translations and the scales (applied to them), the rotations turn what
  * follows around their point until a [Reset].
  */
-sealed interface TexOp {
-    class SetFont(val font: TexFont?) : TexOp
-    class SetColor(val argb: Int) : TexOp
-    class SetStrokeWidth(val width: Float) : TexOp
-    class SetStroke(val width: Float, val miterLimit: Float, val cap: Int, val join: Int) : TexOp
-    class Translate(val dx: Float, val dy: Float) : TexOp
-    class Scale(val sx: Float, val sy: Float) : TexOp
+public sealed interface TexOp {
+    public class SetFont(public val font: TexFont?) : TexOp
+    public class SetColor(public val argb: Int) : TexOp
+    public class SetStrokeWidth(public val width: Float) : TexOp
+    public class SetStroke(public val width: Float, internal val miterLimit: Float, public val cap: Int, public val join: Int) : TexOp
+    public class Translate(public val dx: Float, public val dy: Float) : TexOp
+    public class Scale(public val sx: Float, public val sy: Float) : TexOp
 
     /** A rotation of [angle] radians around ([px], [py]). */
-    class Rotate(val angle: Float, val px: Float, val py: Float) : TexOp
-    data object Reset : TexOp
+    public class Rotate(public val angle: Float, public val px: Float, public val py: Float) : TexOp
+    public data object Reset : TexOp
 
     /** [text] in the current font, from ([x], [y]) on its baseline. */
-    class DrawText(val text: String, val x: Float, val y: Float) : TexOp
-    class DrawLine(val x1: Float, val y1: Float, val x2: Float, val y2: Float) : TexOp
-    class DrawRect(val x: Float, val y: Float, val width: Float, val height: Float, val fill: Boolean) : TexOp
-    class DrawRoundRect(
-        val x: Float,
-        val y: Float,
-        val width: Float,
-        val height: Float,
-        val rx: Float,
-        val ry: Float,
-        val fill: Boolean
+    public class DrawText(public val text: String, public val x: Float, public val y: Float) : TexOp
+    public class DrawLine(public val x1: Float, public val y1: Float, public val x2: Float, public val y2: Float) : TexOp
+    public class DrawRect(public val x: Float, public val y: Float, public val width: Float, public val height: Float, public val fill: Boolean) : TexOp
+    public class DrawRoundRect(
+        public val x: Float,
+        public val y: Float,
+        public val width: Float,
+        public val height: Float,
+        public val rx: Float,
+        public val ry: Float,
+        public val fill: Boolean
     ) : TexOp
 
-    companion object {
-        const val CAP_BUTT = 0
-        const val CAP_ROUND = 1
-        const val CAP_SQUARE = 2
-        const val JOIN_BEVEL = 0
-        const val JOIN_MITER = 1
-        const val JOIN_ROUND = 2
+    public companion object {
+        internal const val CAP_BUTT = 0
+        internal const val CAP_ROUND = 1
+        internal const val CAP_SQUARE = 2
+        internal const val JOIN_BEVEL = 0
+        internal const val JOIN_MITER = 1
+        internal const val JOIN_ROUND = 2
     }
 }
 

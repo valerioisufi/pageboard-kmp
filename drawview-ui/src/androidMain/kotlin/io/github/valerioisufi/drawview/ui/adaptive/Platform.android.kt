@@ -12,7 +12,7 @@ import androidx.compose.ui.platform.LocalConfiguration
  * is plugged in), the styluses and mice among the input devices.
  */
 @Composable
-actual fun platformInputHints(): InputHints {
+internal actual fun platformInputHints(): InputHints {
     val configuration = LocalConfiguration.current
     return remember(configuration.touchscreen, configuration.keyboard, configuration.hardKeyboardHidden) {
         val devices = InputDevice.getDeviceIds().asList().mapNotNull { InputDevice.getDevice(it) }.filterNot { it.isVirtual }
@@ -32,6 +32,6 @@ internal actual fun KeyEvent.isFromHardwareKeyboard(): Boolean {
     return !device.isVirtual && device.keyboardType == InputDevice.KEYBOARD_TYPE_ALPHABETIC
 }
 
-actual val platformConventions: PlatformConventions = PlatformConventions(
+public actual val platformConventions: PlatformConventions = PlatformConventions(
     shortcutModifier = ShortcutModifier.CONTROL
 )

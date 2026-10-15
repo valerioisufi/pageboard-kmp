@@ -8,22 +8,22 @@ package io.github.valerioisufi.drawview.model.geometry
  * maintain their true physical scale regardless of display metrics. It eagerly computes
  * and stores the measurement across multiple standard physical units upon instantiation.
  */
-class Measure(size: Float, type: Unit) {
+public class Measure(size: Float, type: Unit) {
     /**
      * Enumeration of supported physical units of measurement.
      */
-    enum class Unit {
+    public enum class Unit {
         INCH, DOT, CM, MM
     }
 
     /** The calculated measurement value expressed in inches. */
-    val inch: Float
+    public val inch: Float
     /** The calculated measurement value expressed in typographical points (dots, 1/72 inch). */
-    val pt: Float
+    public val pt: Float
     /** The calculated measurement value expressed in centimeters. */
-    val cm: Float
+    public val cm: Float
     /** The calculated measurement value expressed in millimeters. */
-    val mm: Float
+    public val mm: Float
 
     init {
         when (type) {
@@ -66,28 +66,28 @@ class Measure(size: Float, type: Unit) {
 }
 
 /** Converts an [Int] value into a [Measure] instance representing millimeters. */
-inline val Int.mm: Measure get() = Measure(size = this.toFloat(), type = Measure.Unit.MM)
+public inline val Int.mm: Measure get() = Measure(size = this.toFloat(), type = Measure.Unit.MM)
 
 /** Converts an [Int] value into a [Measure] instance representing centimeters. */
-inline val Int.cm: Measure get() = Measure(size = this.toFloat(), type = Measure.Unit.CM)
+public inline val Int.cm: Measure get() = Measure(size = this.toFloat(), type = Measure.Unit.CM)
 
 /** Converts an [Int] value into a [Measure] instance representing typographical points. */
-inline val Int.pt: Measure get() = Measure(size = this.toFloat(), type = Measure.Unit.DOT)
+public inline val Int.pt: Measure get() = Measure(size = this.toFloat(), type = Measure.Unit.DOT)
 
 /** Converts an [Int] value into a [Measure] instance representing inches. */
-inline val Int.inch: Measure get() = Measure(size = this.toFloat(), type = Measure.Unit.INCH)
+public inline val Int.inch: Measure get() = Measure(size = this.toFloat(), type = Measure.Unit.INCH)
 
 /** Converts a [Float] value into a [Measure] instance representing millimeters. */
-inline val Float.mm: Measure get() = Measure(size = this, type = Measure.Unit.MM)
+public inline val Float.mm: Measure get() = Measure(size = this, type = Measure.Unit.MM)
 
 /** Converts a [Float] value into a [Measure] instance representing centimeters. */
-inline val Float.cm: Measure get() = Measure(size = this, type = Measure.Unit.CM)
+public inline val Float.cm: Measure get() = Measure(size = this, type = Measure.Unit.CM)
 
 /** Converts a [Float] value into a [Measure] instance representing typographical points. */
-inline val Float.pt: Measure get() = Measure(size = this, type = Measure.Unit.DOT)
+public inline val Float.pt: Measure get() = Measure(size = this, type = Measure.Unit.DOT)
 
 /** Converts a [Float] value into a [Measure] instance representing inches. */
-inline val Float.inch: Measure get() = Measure(size = this, type = Measure.Unit.INCH)
+public inline val Float.inch: Measure get() = Measure(size = this, type = Measure.Unit.INCH)
 
 /**
  * A strongly-typed wrapper class representing an exact pixel value on the screen.
@@ -97,13 +97,13 @@ inline val Float.inch: Measure get() = Measure(size = this, type = Measure.Unit.
  *
  * @property px The precise float representation of screen pixels.
  */
-data class Px(val px: Float)
+public data class Px(val px: Float)
 
 /** Wraps an [Int] pixel value into a typed [Px] instance. */
-inline val Int.px: Px get() = Px(this.toFloat())
+public inline val Int.px: Px get() = Px(this.toFloat())
 
 /** Wraps a [Float] pixel value into a typed [Px] instance. */
-inline val Float.px: Px get() = Px(this)
+public inline val Float.px: Px get() = Px(this)
 
 /**
  * Represents the absolute physical boundaries (width and height) of a document page.
@@ -115,32 +115,32 @@ inline val Float.px: Px get() = Px(this)
  * @property width The physical width of the page boundary as a [Measure].
  * @property height The physical height of the page boundary as a [Measure].
  */
-class Dimension(val width: Measure, val height: Measure) {
+public class Dimension(public val width: Measure, public val height: Measure) {
 
-    companion object {
-        enum class Length {
+    public companion object {
+        public enum class Length {
             WIDTH, HEIGHT
         }
 
-        enum class Orientation {
+        public enum class Orientation {
             VERTICAL, HORIZONTAL
         }
 
-        fun A3(orientation: Orientation = Orientation.VERTICAL): Dimension {
+        public fun A3(orientation: Orientation = Orientation.VERTICAL): Dimension {
             return if (orientation == Orientation.VERTICAL)
                 Dimension(297f.mm, 420f.mm)
             else
                 Dimension(420f.mm, 297f.mm)
         }
 
-        fun A4(orientation: Orientation = Orientation.VERTICAL): Dimension {
+        public fun A4(orientation: Orientation = Orientation.VERTICAL): Dimension {
             return if (orientation == Orientation.VERTICAL)
                 Dimension(210f.mm, 297f.mm)
             else
                 Dimension(297f.mm, 210f.mm)
         }
 
-        fun A5(orientation: Orientation = Orientation.VERTICAL): Dimension {
+        public fun A5(orientation: Orientation = Orientation.VERTICAL): Dimension {
             return if (orientation == Orientation.VERTICAL)
                 Dimension(148f.mm, 210f.mm)
             else
@@ -152,7 +152,7 @@ class Dimension(val width: Measure, val height: Measure) {
      * Calculates required pixel height to maintain the page's exact physical aspect ratio,
      * given known pixel width constraints.
      */
-    fun calcHeightFromWidthPx(widthPx: Px): Float {
+    public fun calcHeightFromWidthPx(widthPx: Px): Float {
         return (height.mm * widthPx.px) / width.mm
     }
 
@@ -160,28 +160,28 @@ class Dimension(val width: Measure, val height: Measure) {
      * Calculates required pixel width to maintain the page's exact physical aspect ratio,
      * given known pixel height constraints.
      */
-    fun calcWidthFromHeightPx(heightPx: Px): Float {
+    internal fun calcWidthFromHeightPx(heightPx: Px): Float {
         return (width.mm * heightPx.px) / height.mm
     }
 
     /**
      * Translates physical page height into screen pixels based on DPI.
      */
-    fun calcHeightFromResolutionPxInch(resolutionPxInch: Float): Float {
+    internal fun calcHeightFromResolutionPxInch(resolutionPxInch: Float): Float {
         return height.inch * resolutionPxInch
     }
 
     /**
      * Translates physical page width into screen pixels based on DPI.
      */
-    fun calcWidthFromResolutionPxInch(resolutionPxInch: Float): Float {
+    internal fun calcWidthFromResolutionPxInch(resolutionPxInch: Float): Float {
         return width.inch * resolutionPxInch
     }
 
     /**
      * Calculates corresponding scaled pixel length on the canvas for a physical measurement.
      */
-    fun calcPxFromDim(dim: Measure, length: Px, lengthType: Length = Length.WIDTH): Float {
+    internal fun calcPxFromDim(dim: Measure, length: Px, lengthType: Length = Length.WIDTH): Float {
         return when (lengthType) {
             Length.WIDTH -> (dim.mm / width.mm) * length.px
             Length.HEIGHT -> (dim.mm / height.mm) * length.px
@@ -191,7 +191,7 @@ class Dimension(val width: Measure, val height: Measure) {
     /**
      * Projects a screen-dependent pixel measurement back into an absolute physical [Measure].
      */
-    fun calcDimFromPx(dimPx: Float, length: Px, lengthType: Length = Length.WIDTH): Measure {
+    internal fun calcDimFromPx(dimPx: Float, length: Px, lengthType: Length = Length.WIDTH): Measure {
         return when (lengthType) {
             Length.WIDTH -> Measure(dimPx * width.mm / length.px, Measure.Unit.MM)
             Length.HEIGHT -> Measure(dimPx * height.mm / length.px, Measure.Unit.MM)
@@ -201,42 +201,42 @@ class Dimension(val width: Measure, val height: Measure) {
     /**
      * Maps an X-axis screen coordinate to an absolute document coordinate in typographical points.
      */
-    fun calcXPt(xPx: Float, rectPage: Rect): Float = (xPx - rectPage.left) * width.pt / rectPage.width
+    internal fun calcXPt(xPx: Float, rectPage: Rect): Float = (xPx - rectPage.left) * width.pt / rectPage.width
 
     /**
      * Maps a Y-axis screen coordinate to an absolute document coordinate in typographical points.
      */
-    fun calcYPt(yPx: Float, rectPage: Rect): Float = (yPx - rectPage.top) * height.pt / rectPage.height
+    internal fun calcYPt(yPx: Float, rectPage: Rect): Float = (yPx - rectPage.top) * height.pt / rectPage.height
 
     /**
      * Maps an absolute document X-axis coordinate in points to a screen pixel coordinate.
      */
-    fun calcXPx(xPt: Float, rectPage: Rect): Float = (xPt * rectPage.width / width.pt) + rectPage.left
+    internal fun calcXPx(xPt: Float, rectPage: Rect): Float = (xPt * rectPage.width / width.pt) + rectPage.left
 
     /**
      * Maps an absolute document Y-axis coordinate in points to a screen pixel coordinate.
      */
-    fun calcYPx(yPt: Float, rectPage: Rect): Float = (yPt * rectPage.height / height.pt) + rectPage.top
+    internal fun calcYPx(yPt: Float, rectPage: Rect): Float = (yPt * rectPage.height / height.pt) + rectPage.top
 
     /**
      * Maps an X-axis screen coordinate to an absolute document coordinate in millimeters.
      */
-    fun calcXMm(xPx: Float, rectPage: Rect): Float = (xPx - rectPage.left) * width.mm / rectPage.width
+    public fun calcXMm(xPx: Float, rectPage: Rect): Float = (xPx - rectPage.left) * width.mm / rectPage.width
 
     /**
      * Maps a Y-axis screen coordinate to an absolute document coordinate in millimeters.
      */
-    fun calcYMm(yPx: Float, rectPage: Rect): Float = (yPx - rectPage.top) * height.mm / rectPage.height
+    internal fun calcYMm(yPx: Float, rectPage: Rect): Float = (yPx - rectPage.top) * height.mm / rectPage.height
 
     /**
      * Maps an absolute document X coordinate in millimeters to a screen pixel coordinate.
      */
-    fun calcXPxFromMm(xMm: Float, rectPage: Rect): Float = (xMm * rectPage.width / width.mm) + rectPage.left
+    internal fun calcXPxFromMm(xMm: Float, rectPage: Rect): Float = (xMm * rectPage.width / width.mm) + rectPage.left
 
     /**
      * Maps an absolute document Y coordinate in millimeters to a screen pixel coordinate.
      */
-    fun calcYPxFromMm(yMm: Float, rectPage: Rect): Float = (yMm * rectPage.height / height.mm) + rectPage.top
+    internal fun calcYPxFromMm(yMm: Float, rectPage: Rect): Float = (yMm * rectPage.height / height.mm) + rectPage.top
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

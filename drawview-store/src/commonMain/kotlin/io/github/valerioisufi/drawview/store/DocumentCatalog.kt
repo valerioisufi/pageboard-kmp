@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
  * [isShared]: shared with other devices, see [SharingStore.sharingSecrets]; [pageCount]: its
  * pages; [hasPdf]: one of its pages holds a PDF).
  */
-data class DocumentSummary(
+public data class DocumentSummary(
     val id: String,
     val name: String,
     val folderId: String? = null,
@@ -27,7 +27,7 @@ data class DocumentSummary(
 /**
  * A folder of the document library (`parentId == null` for the folders of the root).
  */
-data class FolderSummary(
+public data class FolderSummary(
     val id: String,
     val name: String,
     val parentId: String? = null,
@@ -39,15 +39,15 @@ data class FolderSummary(
  * The documents and the folders of a library, as a library shows and organizes them (see
  * [DocumentStore]).
  */
-interface DocumentCatalog {
+public interface DocumentCatalog {
     /** Every document, most recently modified first (updated on every change). */
-    val documents: Flow<List<DocumentSummary>>
+    public val documents: Flow<List<DocumentSummary>>
 
     /** Every folder, at any depth (updated on every change). */
-    val folders: Flow<List<FolderSummary>>
+    public val folders: Flow<List<FolderSummary>>
 
     /** Creates a document with one page of the given format in [folderId] and returns it. */
-    suspend fun createDocument(
+    public suspend fun createDocument(
         name: String,
         widthMm: Float = 210f,
         heightMm: Float = 297f,
@@ -60,31 +60,31 @@ interface DocumentCatalog {
      * that name. A document is renamed by a change of it (see [OpenDocuments.rename]), so that the
      * devices it is shared with rename it too.
      */
-    suspend fun isDocumentNameAvailable(documentId: String, name: String): Boolean
+    public suspend fun isDocumentNameAvailable(documentId: String, name: String): Boolean
 
     /** Deletes a document together with its resources (imported images and PDFs). */
-    suspend fun deleteDocument(documentId: String): Boolean
+    public suspend fun deleteDocument(documentId: String): Boolean
 
     /**
      * Moves a document into [folderId] (`null`: the root); `false` when the folder already holds
      * a document with the same name.
      */
-    suspend fun moveDocument(documentId: String, folderId: String?): Boolean
+    public suspend fun moveDocument(documentId: String, folderId: String?): Boolean
 
-    suspend fun updateLastOpened(documentId: String)
+    public suspend fun updateLastOpened(documentId: String)
 
     /** Creates a folder in [parentId]; `false` when the parent already holds a folder with the same name. */
-    suspend fun createFolder(name: String, parentId: String?): Boolean
+    public suspend fun createFolder(name: String, parentId: String?): Boolean
 
     /** Renames a folder; `false` when the parent already holds a folder with the same name. */
-    suspend fun renameFolder(folderId: String, newName: String): Boolean
+    public suspend fun renameFolder(folderId: String, newName: String): Boolean
 
     /** Deletes a folder with its whole content (sub-folders and documents). */
-    suspend fun deleteFolder(folderId: String): Boolean
+    public suspend fun deleteFolder(folderId: String): Boolean
 
     /**
      * Moves a folder into [parentId] (`null`: the root); `false` when the target is the folder
      * itself or one of its sub-folders, or already holds a folder with the same name.
      */
-    suspend fun moveFolder(folderId: String, parentId: String?): Boolean
+    public suspend fun moveFolder(folderId: String, parentId: String?): Boolean
 }

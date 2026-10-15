@@ -619,6 +619,6 @@ internal interface LectureAssistantLibrary {
 }
 
 /** A lecture, its audio or its review arrived from another device ([from]: its name). */
-data class LectureArrival(val documentId: String, val directory: String, val kind: Kind, val from: String, val startedAt: Long) {
+internal data class LectureArrival(val documentId: String, val directory: String, val kind: Kind, val from: String, val startedAt: Long) {
     enum class Kind { LECTURE, AUDIO, REVIEW }
 }

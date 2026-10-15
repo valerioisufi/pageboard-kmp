@@ -4,6 +4,10 @@ import android.content.Context
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.os.Build
+import java.net.Inet4Address
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
+import kotlin.coroutines.resume
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
@@ -12,16 +16,12 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
-import java.net.Inet4Address
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Executors
-import kotlin.coroutines.resume
 
 /**
  * [LanDiscovery] of Android (`NsdManager`). From Android 17 the application asks for the
  * permission `ACCESS_LOCAL_NETWORK` before using it.
  */
-class NsdLanDiscovery(context: Context) : LanDiscovery {
+public class NsdLanDiscovery(context: Context) : LanDiscovery {
     private val nsd = context.applicationContext.getSystemService(NsdManager::class.java)
     private var registration: NsdManager.RegistrationListener? = null
 

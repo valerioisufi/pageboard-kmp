@@ -1,5 +1,6 @@
 package io.nano.tex
 
+import kotlin.math.PI
 import org.jetbrains.skia.Canvas
 import org.jetbrains.skia.Paint
 import org.jetbrains.skia.PaintMode
@@ -7,7 +8,6 @@ import org.jetbrains.skia.PaintStrokeCap
 import org.jetbrains.skia.PaintStrokeJoin
 import org.jetbrains.skia.RRect
 import org.jetbrains.skia.Rect as SkiaRect
-import kotlin.math.PI
 
 /**
  * 2D graphics context replaying the TeX drawing commands on a Skia canvas.
@@ -15,16 +15,16 @@ import kotlin.math.PI
  * Like the Android implementation, the affine transformation is maintained manually ([t]) and
  * applied to the coordinates, rotations excepted.
  */
-class Graphics2D(val canvas: Canvas) {
+public class Graphics2D(public val canvas: Canvas) {
 
-    companion object {
-        const val CAP_BUTT = 0
-        const val CAP_ROUND = 1
-        const val CAP_SQUARE = 2
+    public companion object {
+        public const val CAP_BUTT: Int = 0
+        public const val CAP_ROUND: Int = 1
+        public const val CAP_SQUARE: Int = 2
 
-        const val JOIN_BEVEL = 0
-        const val JOIN_MITER = 1
-        const val JOIN_ROUND = 2
+        public const val JOIN_BEVEL: Int = 0
+        public const val JOIN_MITER: Int = 1
+        public const val JOIN_ROUND: Int = 2
 
         private const val SX = 0
         private const val SY = 4
@@ -49,38 +49,38 @@ class Graphics2D(val canvas: Canvas) {
         0f, 0f, 0f
     )
 
-    fun sx(): Float = t[SX]
-    fun sy(): Float = t[SY]
-    fun tx(): Float = t[TX]
-    fun ty(): Float = t[TY]
+    public fun sx(): Float = t[SX]
+    public fun sy(): Float = t[SY]
+    public fun tx(): Float = t[TX]
+    public fun ty(): Float = t[TY]
 
-    fun x(x: Float): Float = x * t[SX] + t[TX]
-    fun y(y: Float): Float = y * t[SY] + t[TY]
-    fun w(w: Float): Float = t[SX] * w
-    fun h(h: Float): Float = t[SY] * h
+    public fun x(x: Float): Float = x * t[SX] + t[TX]
+    public fun y(y: Float): Float = y * t[SY] + t[TY]
+    public fun w(w: Float): Float = t[SX] * w
+    public fun h(h: Float): Float = t[SY] * h
 
-    fun setFont(font: Font?) {
+    public fun setFont(font: Font?) {
         currentFont = font
     }
 
-    fun lockColor() {
+    public fun lockColor() {
         colorLocked = true
     }
 
-    fun unlockColor() {
+    public fun unlockColor() {
         colorLocked = false
     }
 
-    fun setColor(color: Int) {
+    public fun setColor(color: Int) {
         if (colorLocked) return
         paint.color = color
     }
 
-    fun setStrokeWidth(width: Float) {
+    public fun setStrokeWidth(width: Float) {
         paint.strokeWidth = width
     }
 
-    fun setStroke(width: Float, miterLimit: Float, cap: Int, join: Int) {
+    public fun setStroke(width: Float, miterLimit: Float, cap: Int, join: Int) {
         paint.strokeWidth = width
         paint.strokeMiter = miterLimit
         paint.strokeCap = when (cap) {
@@ -95,17 +95,17 @@ class Graphics2D(val canvas: Canvas) {
         }
     }
 
-    fun translate(dx: Float, dy: Float) {
+    public fun translate(dx: Float, dy: Float) {
         t[TX] += t[SX] * dx
         t[TY] += t[SY] * dy
     }
 
-    fun scale(sx: Float, sy: Float) {
+    public fun scale(sx: Float, sy: Float) {
         t[SX] *= sx
         t[SY] *= sy
     }
 
-    fun rotate(angle: Float, px: Float, py: Float) {
+    public fun rotate(angle: Float, px: Float, py: Float) {
         val deg = (angle / PI * 180).toFloat()
         t[R] += deg
         t[PX] = x(px)
@@ -113,7 +113,7 @@ class Graphics2D(val canvas: Canvas) {
         canvas.rotate(deg, t[PX], t[PY])
     }
 
-    fun reset() {
+    public fun reset() {
         val deg = t[R]
         val px = t[PX]
         val py = t[PY]
@@ -125,11 +125,11 @@ class Graphics2D(val canvas: Canvas) {
         }
     }
 
-    fun drawChar(c: Char, x: Float, y: Float) {
+    public fun drawChar(c: Char, x: Float, y: Float) {
         drawText(c.toString(), x, y)
     }
 
-    fun drawText(txt: String, x: Float, y: Float) {
+    public fun drawText(txt: String, x: Float, y: Float) {
         val font = currentFont
         val size = (font?.size ?: 46f) * sy()
         val skFont = font?.toSkiaFont(size) ?: Font(null, size).toSkiaFont(size)
@@ -138,7 +138,7 @@ class Graphics2D(val canvas: Canvas) {
         canvas.drawString(txt, x(x), y(y), skFont, paint)
     }
 
-    fun drawLine(x1: Float, y1: Float, x2: Float, y2: Float) {
+    public fun drawLine(x1: Float, y1: Float, x2: Float, y2: Float) {
         val origWidth = paint.strokeWidth
         var sw = h(origWidth)
         if (sw < 1f) sw = 1f
@@ -148,7 +148,7 @@ class Graphics2D(val canvas: Canvas) {
         paint.strokeWidth = origWidth
     }
 
-    fun drawRect(x: Float, y: Float, w: Float, h: Float) {
+    public fun drawRect(x: Float, y: Float, w: Float, h: Float) {
         val origWidth = paint.strokeWidth
         paint.strokeWidth = h(origWidth)
         paint.mode = PaintMode.STROKE
@@ -156,12 +156,12 @@ class Graphics2D(val canvas: Canvas) {
         paint.strokeWidth = origWidth
     }
 
-    fun fillRect(x: Float, y: Float, w: Float, h: Float) {
+    public fun fillRect(x: Float, y: Float, w: Float, h: Float) {
         paint.mode = PaintMode.FILL
         canvas.drawRect(SkiaRect.makeXYWH(x(x), y(y), w(w), h(h)), paint)
     }
 
-    fun drawRoundRect(x: Float, y: Float, w: Float, h: Float, rx: Float, ry: Float) {
+    public fun drawRoundRect(x: Float, y: Float, w: Float, h: Float, rx: Float, ry: Float) {
         val origWidth = paint.strokeWidth
         paint.strokeWidth = h(origWidth)
         paint.mode = PaintMode.STROKE
@@ -169,7 +169,7 @@ class Graphics2D(val canvas: Canvas) {
         paint.strokeWidth = origWidth
     }
 
-    fun fillRoundRect(x: Float, y: Float, w: Float, h: Float, rx: Float, ry: Float) {
+    public fun fillRoundRect(x: Float, y: Float, w: Float, h: Float, rx: Float, ry: Float) {
         paint.mode = PaintMode.FILL
         canvas.drawRRect(RRect.makeXYWH(x(x), y(y), w(w), h(h), w(rx), h(ry)), paint)
     }

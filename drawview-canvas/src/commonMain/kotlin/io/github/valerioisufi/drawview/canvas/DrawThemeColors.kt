@@ -8,7 +8,7 @@ package io.github.valerioisufi.drawview.canvas
  * @property primaryColor Accent color for bounding boxes, lasso selection, etc.
  * @property onSurfaceColor Global text layout or secondary static graphic representation coloring.
  */
-data class DrawThemeColors(
+public data class DrawThemeColors(
     val backgroundColor: Int = 0xFFDFE2E6.toInt(),
     val surfaceColor: Int = 0xFFFCFCFF.toInt(),
     val primaryColor: Int = 0xFF00639B.toInt(),

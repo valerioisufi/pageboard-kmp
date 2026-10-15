@@ -39,7 +39,7 @@ import kotlin.math.exp
 /**
  * Live (not yet committed) state of the canvas, drawn on top of the tiles.
  */
-class CanvasLiveState {
+internal class CanvasLiveState {
     /** Incremented whenever the live layer changes. */
     var tick by mutableIntStateOf(0)
         private set

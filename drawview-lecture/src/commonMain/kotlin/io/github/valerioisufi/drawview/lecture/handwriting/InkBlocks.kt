@@ -11,7 +11,7 @@ import kotlin.math.min
  * @param key identity of the block: it changes when a stroke is added or erased.
  * @param bounds area of the strokes, in page millimeters.
  */
-class InkBlock(
+internal class InkBlock(
     val pageIndex: Int,
     val pageId: String,
     val key: String,

@@ -1,0 +1,941 @@
+public final class io/github/valerioisufi/drawview/canvas/DocumentObservationKt {
+	public static final fun observeChanges (Lio/github/valerioisufi/drawview/model/DrawDocument;Landroidx/compose/runtime/Composer;I)J
+}
+
+public final class io/github/valerioisufi/drawview/canvas/DrawCanvasKt {
+	public static final fun DrawCanvas (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/drawview/ink/InkStrokeEngine;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/DrawThemeColors {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (IIII)V
+	public synthetic fun <init> (IIIIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun component4 ()I
+	public final fun copy (IIII)Lio/github/valerioisufi/drawview/canvas/DrawThemeColors;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/canvas/DrawThemeColors;IIIIILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/DrawThemeColors;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBackgroundColor ()I
+	public final fun getOnSurfaceColor ()I
+	public final fun getPrimaryColor ()I
+	public final fun getSurfaceColor ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/FrameStyle {
+	public static final field $stable I
+	public static final field GUIDE_COLOR I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/canvas/FrameStyle;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/SelectionFrame {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Companion;
+	public synthetic fun <init> (Ljava/util/List;Landroidx/compose/ui/geometry/Offset;JLjava/util/List;ZLio/github/valerioisufi/drawview/model/geometry/Matrix2D;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun contains-3MmeM6k (JF)Z
+	public static synthetic fun contains-3MmeM6k$default (Lio/github/valerioisufi/drawview/canvas/SelectionFrame;JFILjava/lang/Object;)Z
+	public final fun getCenter-F1C5BW0 ()J
+	public final fun getCorners ()Ljava/util/List;
+	public final fun getMmToScreen ()Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/SelectionFrame$Companion {
+	public final fun ofEditedText (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)Lio/github/valerioisufi/drawview/canvas/SelectionFrame;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/SelectionFrame$Handle : java/lang/Enum {
+	public static final field CORNER Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Handle;
+	public static final field LEFT Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Handle;
+	public static final field RIGHT Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Handle;
+	public static final field ROTATION Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Handle;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Handle;
+	public static fun values ()[Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Handle;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/TextMarkupPainter {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/canvas/TextMarkupPainter;
+	public final fun draw-Bx497Mc (Landroidx/compose/ui/graphics/Canvas;Ljava/util/List;Lio/github/valerioisufi/drawview/model/TextMarkupKind;JLio/github/valerioisufi/drawview/model/geometry/Matrix2D;Landroidx/compose/ui/graphics/Paint;)V
+	public static synthetic fun draw-Bx497Mc$default (Lio/github/valerioisufi/drawview/canvas/TextMarkupPainter;Landroidx/compose/ui/graphics/Canvas;Ljava/util/List;Lio/github/valerioisufi/drawview/model/TextMarkupKind;JLio/github/valerioisufi/drawview/model/geometry/Matrix2D;Landroidx/compose/ui/graphics/Paint;ILjava/lang/Object;)V
+	public final fun markRect (Lio/github/valerioisufi/drawview/model/geometry/Rect;Lio/github/valerioisufi/drawview/model/TextMarkupKind;)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/camera/CalcPage {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (F)V
+	public synthetic fun <init> (FILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getDensity ()F
+	public final fun setDensity (F)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/camera/CalcPage$PageRectWithIndex {
+	public static final field $stable I
+	public fun <init> (Landroidx/compose/ui/geometry/Rect;I)V
+	public final fun component1 ()Landroidx/compose/ui/geometry/Rect;
+	public final fun component2 ()I
+	public final fun copy (Landroidx/compose/ui/geometry/Rect;I)Lio/github/valerioisufi/drawview/canvas/camera/CalcPage$PageRectWithIndex;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/canvas/camera/CalcPage$PageRectWithIndex;Landroidx/compose/ui/geometry/Rect;IILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/camera/CalcPage$PageRectWithIndex;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getIndex ()I
+	public final fun getRect ()Landroidx/compose/ui/geometry/Rect;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/camera/CameraPhysicsEngine {
+	public static final field $stable I
+	public fun <init> (FLkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (FLkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getCurrentScale ()F
+	public final fun getDensity ()F
+	public final fun getMoveCount ()I
+	public final fun onDrag (FFFFF)V
+	public static synthetic fun onDrag$default (Lio/github/valerioisufi/drawview/canvas/camera/CameraPhysicsEngine;FFFFFILjava/lang/Object;)V
+	public final fun onDragStart ()V
+	public final fun setDensity (F)V
+	public final fun update (J)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/camera/Viewport {
+	public static final field $stable I
+	public final fun firstVisiblePageIndex ()Ljava/lang/Integer;
+	public final fun fitWidth ()V
+	public final fun getCamera ()Lio/github/valerioisufi/drawview/canvas/camera/CameraPhysicsEngine;
+	public final fun getDensity ()F
+	public final fun getHeight ()F
+	public final fun getLayout ()Lio/github/valerioisufi/drawview/canvas/camera/CalcPage;
+	public final fun getWidth ()F
+	public final fun mostVisiblePageIndex ()Ljava/lang/Integer;
+	public final fun pageMmToScreen (I)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public final fun panBy (FF)V
+	public final fun pixelsPerMm (I)F
+	public final fun setDensity (F)V
+	public final fun showNextPage ()V
+	public final fun showPreviousPage ()V
+	public final fun visiblePages ()Ljava/util/List;
+	public final fun zoomIn ()V
+	public final fun zoomOut ()V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/Collaborator {
+	public static final field $stable I
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JLio/github/valerioisufi/drawview/model/StrokeMesh;Ljava/lang/String;FLio/github/valerioisufi/drawview/model/DrawText;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JLio/github/valerioisufi/drawview/model/StrokeMesh;Ljava/lang/String;FLio/github/valerioisufi/drawview/model/DrawText;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component10 ()Ljava/lang/String;
+	public final fun component11 ()Ljava/util/List;
+	public final fun component12 ()Ljava/lang/String;
+	public final fun component13 ()Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3-0d7_KjU ()J
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5-F1C5BW0 ()J
+	public final fun component6 ()Lio/github/valerioisufi/drawview/model/StrokeMesh;
+	public final fun component7 ()Ljava/lang/String;
+	public final fun component8 ()F
+	public final fun component9 ()Lio/github/valerioisufi/drawview/model/DrawText;
+	public final fun copy-RnqHgFc (Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JLio/github/valerioisufi/drawview/model/StrokeMesh;Ljava/lang/String;FLio/github/valerioisufi/drawview/model/DrawText;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;)Lio/github/valerioisufi/drawview/canvas/controller/Collaborator;
+	public static synthetic fun copy-RnqHgFc$default (Lio/github/valerioisufi/drawview/canvas/controller/Collaborator;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JLio/github/valerioisufi/drawview/model/StrokeMesh;Ljava/lang/String;FLio/github/valerioisufi/drawview/model/DrawText;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/controller/Collaborator;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getColor-0d7_KjU ()J
+	public final fun getId ()Ljava/lang/String;
+	public final fun getInk ()Lio/github/valerioisufi/drawview/model/StrokeMesh;
+	public final fun getInkAlpha ()F
+	public final fun getInkPageId ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getPageId ()Ljava/lang/String;
+	public final fun getPosition-F1C5BW0 ()J
+	public final fun getSelection ()Ljava/util/List;
+	public final fun getSelectionPageId ()Ljava/lang/String;
+	public final fun getSelectionTransform ()Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;
+	public final fun getText ()Lio/github/valerioisufi/drawview/model/DrawText;
+	public final fun getTextPageId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/CollaboratorPresence {
+	public static final field $stable I
+	public final fun getActivity ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun getCollaborators ()Ljava/util/List;
+	public final fun getEditsRefused ()Lkotlinx/coroutines/flow/SharedFlow;
+	public final fun setCollaborators (Ljava/util/List;)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/CustomElementManager {
+	public static final field $stable I
+	public final fun add (Lio/github/valerioisufi/drawview/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/drawview/model/geometry/Rect;Z)Lio/github/valerioisufi/drawview/model/DrawCustomElement;
+	public static synthetic fun add$default (Lio/github/valerioisufi/drawview/canvas/controller/CustomElementManager;Lio/github/valerioisufi/drawview/model/ElementType;Ljava/lang/Object;ILio/github/valerioisufi/drawview/model/geometry/Rect;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/DrawCustomElement;
+	public final fun update (Lio/github/valerioisufi/drawview/model/DrawCustomElement;Lio/github/valerioisufi/drawview/model/ElementType;Ljava/lang/Object;)Z
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/DrawPreferences {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences$Companion;
+	public fun <init> ()V
+	public fun <init> (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;)V
+	public synthetic fun <init> (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component2 ()Lio/github/valerioisufi/drawview/canvas/tool/Tool;
+	public final fun component3 ()Lio/github/valerioisufi/drawview/model/text/TextDefaults;
+	public final fun component4 ()Z
+	public final fun component5 ()Ljava/util/Map;
+	public final fun copy (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;)Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;
+	public final fun encode ()Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getLastSelectedTool ()Lio/github/valerioisufi/drawview/canvas/tool/Tool;
+	public final fun getPresets ()Ljava/util/Map;
+	public final fun getTextDefaults ()Lio/github/valerioisufi/drawview/model/text/TextDefaults;
+	public fun hashCode ()I
+	public final fun isSnapEnabled ()Z
+	public final fun isStylusOnlyMode ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/canvas/controller/DrawPreferences$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/DrawPreferences$Companion {
+	public final fun decode (Ljava/lang/String;)Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/DrawViewController {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlinx/coroutines/CoroutineScope;FLio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/model/change/DocumentSession;Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlinx/coroutines/CoroutineScope;FLio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/model/change/DocumentSession;Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun applyPreferences (Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;)V
+	public final fun clearSelection ()V
+	public final fun dispose ()V
+	public final fun flushPersistence (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun getCanRedo ()Z
+	public final fun getCanUndo ()Z
+	public final fun getContextMenuPosition-_m7T9-E ()Landroidx/compose/ui/geometry/Offset;
+	public final fun getCoroutineScope ()Lkotlinx/coroutines/CoroutineScope;
+	public final fun getCustomElementManager ()Lio/github/valerioisufi/drawview/canvas/controller/CustomElementManager;
+	public final fun getDocument ()Lio/github/valerioisufi/drawview/model/DrawDocument;
+	public final fun getEngines ()Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;
+	public final fun getHistoryManager ()Lio/github/valerioisufi/drawview/canvas/history/HistoryManager;
+	public final fun getLassoMode ()Lio/github/valerioisufi/drawview/canvas/tool/LassoMode;
+	public final fun getMediaManager ()Lio/github/valerioisufi/drawview/canvas/controller/MediaManager;
+	public final fun getMessages ()Lkotlinx/coroutines/flow/SharedFlow;
+	public final fun getPageManager ()Lio/github/valerioisufi/drawview/canvas/controller/PageManager;
+	public final fun getPersistence ()Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;
+	public final fun getPlacementManager ()Lio/github/valerioisufi/drawview/canvas/controller/PlacementManager;
+	public final fun getPreferences ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun getPresence ()Lio/github/valerioisufi/drawview/canvas/controller/CollaboratorPresence;
+	public final fun getSelectedTool ()Lio/github/valerioisufi/drawview/canvas/tool/Tool;
+	public final fun getSelectionManager ()Lio/github/valerioisufi/drawview/canvas/controller/SelectionManager;
+	public final fun getSession ()Lio/github/valerioisufi/drawview/model/change/DocumentSession;
+	public final fun getSnapManager ()Lio/github/valerioisufi/drawview/canvas/controller/SnapManager;
+	public final fun getTextAdapter ()Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;
+	public final fun getTextDefaults ()Lio/github/valerioisufi/drawview/model/text/TextDefaults;
+	public final fun getTextEditorManager ()Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;
+	public final fun getTextFormatTarget ()Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;
+	public final fun getTextMarkupManager ()Lio/github/valerioisufi/drawview/canvas/controller/TextMarkupManager;
+	public final fun getThemeColors ()Lio/github/valerioisufi/drawview/canvas/DrawThemeColors;
+	public final fun getTileManager ()Lio/github/valerioisufi/drawview/canvas/render/tile/TileManager;
+	public final fun getToolManager ()Lio/github/valerioisufi/drawview/canvas/controller/ToolManager;
+	public final fun getVersion ()I
+	public final fun getViewport ()Lio/github/valerioisufi/drawview/canvas/camera/Viewport;
+	public final fun isDrawingMode ()Z
+	public final fun isPageGridVisible ()Z
+	public final fun isReadOnly ()Z
+	public final fun isStylusOnlyMode ()Z
+	public final fun measureText (Lio/github/valerioisufi/drawview/model/DrawText;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockSize;
+	public final fun onResourceAvailable (Lio/github/valerioisufi/drawview/model/DrawResource;)V
+	public final fun persist (Lkotlin/jvm/functions/Function2;)V
+	public final fun redo ()V
+	public final fun requestRedraw ()V
+	public final fun selectTool (Lio/github/valerioisufi/drawview/canvas/tool/Tool;Ljava/lang/Integer;)V
+	public static synthetic fun selectTool$default (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;Lio/github/valerioisufi/drawview/canvas/tool/Tool;Ljava/lang/Integer;ILjava/lang/Object;)V
+	public final fun setContextMenuPosition-_kEHs6E (Landroidx/compose/ui/geometry/Offset;)V
+	public final fun setLassoMode (Lio/github/valerioisufi/drawview/canvas/tool/LassoMode;)V
+	public final fun setPageGridVisible (Z)V
+	public final fun setTextAdapter (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;)V
+	public final fun setThemeColors (Lio/github/valerioisufi/drawview/canvas/DrawThemeColors;)V
+	public final fun toggleDrawingMode ()V
+	public final fun togglePageGrid ()V
+	public final fun undo ()V
+	public final fun updateStylusOnlyMode (Z)V
+	public final fun updateTextDefaults (Lio/github/valerioisufi/drawview/model/text/TextDefaults;)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/DrawViewController$Message : java/lang/Enum {
+	public static final field IMPORT_IMAGE_FAILED Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController$Message;
+	public static final field IMPORT_PDF_FAILED Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController$Message;
+	public static final field PDF_NOT_SUPPORTED Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController$Message;
+	public static final field PDF_PAGE_WITHOUT_TEXT Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController$Message;
+	public static final field STYLUS_MODE_ACTIVATED Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController$Message;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController$Message;
+	public static fun values ()[Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController$Message;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/EditorActivity {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;FFJLjava/util/List;Lio/github/valerioisufi/drawview/model/BrushConfig;Lio/github/valerioisufi/drawview/model/InputToolType;ZLio/github/valerioisufi/drawview/model/change/TextData;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/SelectionActivity;)V
+	public synthetic fun <init> (Ljava/lang/String;FFJLjava/util/List;Lio/github/valerioisufi/drawview/model/BrushConfig;Lio/github/valerioisufi/drawview/model/InputToolType;ZLio/github/valerioisufi/drawview/model/change/TextData;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/SelectionActivity;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component10 ()Ljava/lang/String;
+	public final fun component11 ()Lio/github/valerioisufi/drawview/model/SelectionActivity;
+	public final fun component2 ()F
+	public final fun component3 ()F
+	public final fun component4 ()J
+	public final fun component5 ()Ljava/util/List;
+	public final fun component6 ()Lio/github/valerioisufi/drawview/model/BrushConfig;
+	public final fun component7 ()Lio/github/valerioisufi/drawview/model/InputToolType;
+	public final fun component8 ()Z
+	public final fun component9 ()Lio/github/valerioisufi/drawview/model/change/TextData;
+	public final fun copy (Ljava/lang/String;FFJLjava/util/List;Lio/github/valerioisufi/drawview/model/BrushConfig;Lio/github/valerioisufi/drawview/model/InputToolType;ZLio/github/valerioisufi/drawview/model/change/TextData;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/SelectionActivity;)Lio/github/valerioisufi/drawview/canvas/controller/EditorActivity;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/canvas/controller/EditorActivity;Ljava/lang/String;FFJLjava/util/List;Lio/github/valerioisufi/drawview/model/BrushConfig;Lio/github/valerioisufi/drawview/model/InputToolType;ZLio/github/valerioisufi/drawview/model/change/TextData;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/SelectionActivity;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/controller/EditorActivity;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBrush ()Lio/github/valerioisufi/drawview/model/BrushConfig;
+	public final fun getInk ()Ljava/util/List;
+	public final fun getInputType ()Lio/github/valerioisufi/drawview/model/InputToolType;
+	public final fun getPageId ()Ljava/lang/String;
+	public final fun getSelection ()Lio/github/valerioisufi/drawview/model/SelectionActivity;
+	public final fun getStroke ()J
+	public final fun getStrokeCancelled ()Z
+	public final fun getText ()Lio/github/valerioisufi/drawview/model/change/TextData;
+	public final fun getTextPageId ()Ljava/lang/String;
+	public final fun getX ()F
+	public final fun getY ()F
+	public fun hashCode ()I
+	public final fun isIdle ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/MediaManager {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/canvas/controller/MediaManager$Companion;
+	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
+	public final fun importFile-b0fnrdo ([BLjava/lang/String;Landroidx/compose/ui/geometry/Offset;)Z
+	public static synthetic fun importFile-b0fnrdo$default (Lio/github/valerioisufi/drawview/canvas/controller/MediaManager;[BLjava/lang/String;Landroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)Z
+	public final fun importImage-b0fnrdo ([BLjava/lang/String;Landroidx/compose/ui/geometry/Offset;)V
+	public static synthetic fun importImage-b0fnrdo$default (Lio/github/valerioisufi/drawview/canvas/controller/MediaManager;[BLjava/lang/String;Landroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)V
+	public final fun importPdf ([B)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/MediaManager$Companion {
+	public final fun getIMAGE_EXTENSIONS ()Ljava/util/Set;
+	public final fun getIMPORTED_EXTENSIONS ()Ljava/util/Set;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/PageManager {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
+	public final fun addNewPageAfter (I)Lio/github/valerioisufi/drawview/model/DrawPage;
+	public final fun addNewPageAtBottom ()Lio/github/valerioisufi/drawview/model/DrawPage;
+	public final fun applyDocumentTemplateChange (Lio/github/valerioisufi/drawview/model/geometry/Dimension;Lio/github/valerioisufi/drawview/model/PageBackground;Z)V
+	public final fun changeSinglePageTemplate (ILio/github/valerioisufi/drawview/model/geometry/Dimension;Lio/github/valerioisufi/drawview/model/PageBackground;)V
+	public final fun deletePage (I)V
+	public final fun finishPageReorderMode ()V
+	public final fun getContextMenuTargetPageIndex ()I
+	public final fun jumpToPage (I)V
+	public final fun movePage (II)V
+	public final fun movePageDuringReorder (II)V
+	public final fun setContextMenuTargetPageIndex (I)V
+	public final fun startPageReorderMode ()V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/PlacementManager {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
+	public final fun cancel ()V
+	public final fun getPointer-_m7T9-E ()Landroidx/compose/ui/geometry/Offset;
+	public final fun getRequest ()Lio/github/valerioisufi/drawview/canvas/controller/PlacementRequest;
+	public final fun isActive ()Z
+	public final fun start (Lio/github/valerioisufi/drawview/canvas/controller/PlacementRequest;)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/PlacementRequest {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/model/DrawText;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/DrawText;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getOnCancel ()Lkotlin/jvm/functions/Function0;
+	public final fun getOnPlace ()Lkotlin/jvm/functions/Function3;
+	public final fun getPreview ()Lio/github/valerioisufi/drawview/model/DrawText;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/SelectionGroup {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/geometry/Rect;ILjava/util/List;)V
+	public synthetic fun <init> (Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/geometry/Rect;ILjava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun elements ()Ljava/util/List;
+	public final fun getCustoms ()Ljava/util/List;
+	public final fun getImages ()Ljava/util/List;
+	public final fun getPageIndex ()I
+	public final fun getStrokes ()Ljava/util/List;
+	public final fun getTexts ()Ljava/util/List;
+	public final fun getTransform ()Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public final fun isEmpty ()Z
+	public final fun isSingleText ()Z
+	public final fun setPageIndex (I)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/SelectionManager {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
+	public final fun applyTransformation ()V
+	public final fun beginTransformation ()V
+	public final fun canPaste ()Z
+	public final fun clearSelection ()V
+	public final fun copySelection ()V
+	public final fun cutSelection ()V
+	public final fun deleteSelection ()V
+	public final fun getClipboard ()Lio/github/valerioisufi/drawview/canvas/controller/SelectionGroup;
+	public final fun getCurrentSelection ()Lio/github/valerioisufi/drawview/canvas/controller/SelectionGroup;
+	public final fun getLassoMode ()Lio/github/valerioisufi/drawview/canvas/tool/LassoMode;
+	public final fun getSelectedPlainText ()Ljava/lang/String;
+	public final fun getSelectedTexts ()Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;
+	public final fun getSelectionVersion ()I
+	public final fun moveBy (FFZ)V
+	public static synthetic fun moveBy$default (Lio/github/valerioisufi/drawview/canvas/controller/SelectionManager;FFZILjava/lang/Object;)V
+	public final fun pasteSelection-_kEHs6E (Landroidx/compose/ui/geometry/Offset;)V
+	public static synthetic fun pasteSelection-_kEHs6E$default (Lio/github/valerioisufi/drawview/canvas/controller/SelectionManager;Landroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)V
+	public final fun rotateBy (F)V
+	public final fun selectText (ILio/github/valerioisufi/drawview/model/DrawText;)V
+	public final fun setLassoMode (Lio/github/valerioisufi/drawview/canvas/tool/LassoMode;)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/SnapManager {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
+	public final fun getGuides ()Ljava/util/List;
+	public final fun isEnabled ()Z
+	public final fun updateEnabled (Z)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorManager : io/github/valerioisufi/drawview/canvas/controller/TextFormatTarget {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
+	public fun changeAlignment (Lio/github/valerioisufi/drawview/model/TextAlignment;)V
+	public fun changeColor (I)V
+	public fun changeFontSize (F)V
+	public final fun finishEditing ()V
+	public final fun getActiveTextPageIndex ()I
+	public fun getAlignment ()Lio/github/valerioisufi/drawview/model/TextAlignment;
+	public final fun getAutoWidth ()Z
+	public final fun getBoxHeight ()F
+	public final fun getBoxWidth ()F
+	public final fun getBoxX ()F
+	public final fun getBoxY ()F
+	public fun getColor ()I
+	public fun getFontSize ()F
+	public fun getFormatsCharacters ()Z
+	public final fun getRotation ()F
+	public final fun getSessionId ()I
+	public final fun getValue ()Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun isEditing ()Z
+	public final fun moveBy (FF)V
+	public final fun moveTo (FFZ)V
+	public static synthetic fun moveTo$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;FFZILjava/lang/Object;)V
+	public final fun pasteText-MZcJ67o (Ljava/lang/String;Landroidx/compose/ui/geometry/Offset;)V
+	public static synthetic fun pasteText-MZcJ67o$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;Ljava/lang/String;Landroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)V
+	public final fun reportLayoutHeight (F)V
+	public final fun startDrawnText (ILandroidx/compose/ui/geometry/Rect;)V
+	public final fun startEditing-b0fnrdo (Lio/github/valerioisufi/drawview/model/DrawText;ILandroidx/compose/ui/geometry/Offset;)V
+	public static synthetic fun startEditing-b0fnrdo$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;Lio/github/valerioisufi/drawview/model/DrawText;ILandroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)V
+	public final fun startEditingSelectedText ()Z
+	public final fun startNewText (IFFZ)V
+	public static synthetic fun startNewText$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;IFFZILjava/lang/Object;)V
+	public final fun takeCaretRequest-_m7T9-E ()Landroidx/compose/ui/geometry/Offset;
+	public fun toggle (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
+	public fun toggleHeading ()V
+	public final fun updateValue (Landroidx/compose/ui/text/input/TextFieldValue;)V
+}
+
+public abstract interface class io/github/valerioisufi/drawview/canvas/controller/TextFormatTarget {
+	public abstract fun changeAlignment (Lio/github/valerioisufi/drawview/model/TextAlignment;)V
+	public abstract fun changeColor (I)V
+	public abstract fun changeFontSize (F)V
+	public abstract fun getAlignment ()Lio/github/valerioisufi/drawview/model/TextAlignment;
+	public abstract fun getColor ()I
+	public abstract fun getFontSize ()F
+	public fun getFormatsCharacters ()Z
+	public fun toggle (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
+	public fun toggleHeading ()V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/TextFormatTarget$DefaultImpls {
+	public static fun getFormatsCharacters (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
+	public static fun toggle (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
+	public static fun toggleHeading (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/TextMarkupManager {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
+	public final fun clearSelection ()V
+	public final fun deleteSelectedMarkup ()V
+	public final fun getHasSelection ()Z
+	public final fun getMarking ()Lio/github/valerioisufi/drawview/canvas/controller/TextMarkupManager$Marking;
+	public final fun getSelectedMarkup ()Lio/github/valerioisufi/drawview/canvas/controller/TextMarkupManager$SelectedMarkup;
+	public final fun getSelectedText ()Ljava/lang/String;
+	public final fun getTextSelection ()Lio/github/valerioisufi/drawview/canvas/controller/TextMarkupManager$TextRange;
+	public final fun markSelection (Lio/github/valerioisufi/drawview/model/TextMarkupKind;I)Lio/github/valerioisufi/drawview/model/DrawTextMarkup;
+	public final fun restyleSelectedMarkup (Lio/github/valerioisufi/drawview/model/TextMarkupKind;I)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/TextMarkupManager$Handle : java/lang/Enum {
+	public static final field END Lio/github/valerioisufi/drawview/canvas/controller/TextMarkupManager$Handle;
+	public static final field START Lio/github/valerioisufi/drawview/canvas/controller/TextMarkupManager$Handle;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/canvas/controller/TextMarkupManager$Handle;
+	public static fun values ()[Lio/github/valerioisufi/drawview/canvas/controller/TextMarkupManager$Handle;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/TextMarkupManager$Marking {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/TextMarkupManager$TextRange;Lio/github/valerioisufi/drawview/model/TextMarkupKind;IZ)V
+	public final fun getColor ()I
+	public final fun getKind ()Lio/github/valerioisufi/drawview/model/TextMarkupKind;
+	public final fun getRange ()Lio/github/valerioisufi/drawview/canvas/controller/TextMarkupManager$TextRange;
+	public final fun isShown ()Z
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/TextMarkupManager$SelectedMarkup {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawTextMarkup;)V
+	public final fun getMarkup ()Lio/github/valerioisufi/drawview/model/DrawTextMarkup;
+	public final fun getPage ()Lio/github/valerioisufi/drawview/model/DrawPage;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/TextMarkupManager$TextRange {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawPdf;Lio/github/valerioisufi/drawview/model/PdfTextLayout;II)V
+	public final fun getAnchor ()I
+	public final fun getEnd ()I
+	public final fun getFocus ()I
+	public final fun getLayout ()Lio/github/valerioisufi/drawview/model/PdfTextLayout;
+	public final fun getPage ()Lio/github/valerioisufi/drawview/model/DrawPage;
+	public final fun getPdf ()Lio/github/valerioisufi/drawview/model/DrawPdf;
+	public final fun getRects ()Ljava/util/List;
+	public final fun getStart ()I
+	public final fun getText ()Ljava/lang/String;
+	public final fun pointsToPageMm ()Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/ToolManager {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/canvas/controller/ToolManager$Companion;
+	public fun <init> ()V
+	public fun <init> (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun activePreset (Lio/github/valerioisufi/drawview/canvas/tool/Tool;)Lio/github/valerioisufi/drawview/canvas/controller/ToolPreset;
+	public static synthetic fun activePreset$default (Lio/github/valerioisufi/drawview/canvas/controller/ToolManager;Lio/github/valerioisufi/drawview/canvas/tool/Tool;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/controller/ToolPreset;
+	public final fun addPreset (Lio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/canvas/controller/ToolPreset;)I
+	public final fun applyPreferences (Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;)V
+	public final fun getPreviousTool ()Lio/github/valerioisufi/drawview/canvas/tool/Tool;
+	public final fun getSelectedTool ()Lio/github/valerioisufi/drawview/canvas/tool/Tool;
+	public final fun presetsOf (Lio/github/valerioisufi/drawview/canvas/tool/Tool;)Ljava/util/List;
+	public final fun removePreset (Lio/github/valerioisufi/drawview/canvas/tool/Tool;I)V
+	public final fun selectTool (Lio/github/valerioisufi/drawview/canvas/tool/Tool;Ljava/lang/Integer;)V
+	public static synthetic fun selectTool$default (Lio/github/valerioisufi/drawview/canvas/controller/ToolManager;Lio/github/valerioisufi/drawview/canvas/tool/Tool;Ljava/lang/Integer;ILjava/lang/Object;)V
+	public final fun selectedPresetIndex (Lio/github/valerioisufi/drawview/canvas/tool/Tool;)I
+	public final fun updatePreset (Lio/github/valerioisufi/drawview/canvas/tool/Tool;ILio/github/valerioisufi/drawview/canvas/controller/ToolPreset;)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/ToolManager$Companion {
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/ToolPreset {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/canvas/controller/ToolPreset$Companion;
+	public fun <init> (FILio/github/valerioisufi/drawview/model/StrokeTool;Lio/github/valerioisufi/drawview/model/TextMarkupKind;)V
+	public synthetic fun <init> (FILio/github/valerioisufi/drawview/model/StrokeTool;Lio/github/valerioisufi/drawview/model/TextMarkupKind;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()F
+	public final fun component2 ()I
+	public final fun component3 ()Lio/github/valerioisufi/drawview/model/StrokeTool;
+	public final fun component4 ()Lio/github/valerioisufi/drawview/model/TextMarkupKind;
+	public final fun copy (FILio/github/valerioisufi/drawview/model/StrokeTool;Lio/github/valerioisufi/drawview/model/TextMarkupKind;)Lio/github/valerioisufi/drawview/canvas/controller/ToolPreset;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/canvas/controller/ToolPreset;FILio/github/valerioisufi/drawview/model/StrokeTool;Lio/github/valerioisufi/drawview/model/TextMarkupKind;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/controller/ToolPreset;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getColor ()I
+	public final fun getFamily ()Lio/github/valerioisufi/drawview/model/StrokeTool;
+	public final fun getMarkup ()Lio/github/valerioisufi/drawview/model/TextMarkupKind;
+	public final fun getSizeMm ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/canvas/controller/ToolPreset$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/canvas/controller/ToolPreset$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/canvas/controller/ToolPreset;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/canvas/controller/ToolPreset;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/ToolPreset$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/geometry/ComposeGeometryKt {
+	public static final fun mapRect (Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;Landroidx/compose/ui/geometry/Rect;)Landroidx/compose/ui/geometry/Rect;
+	public static final fun setRectToRect (Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;Landroidx/compose/ui/geometry/Rect;Landroidx/compose/ui/geometry/Rect;)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public static final fun toComposeMatrix-EL8BTi8 (Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;[F)[F
+	public static synthetic fun toComposeMatrix-EL8BTi8$default (Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;[FILjava/lang/Object;)[F
+}
+
+public final class io/github/valerioisufi/drawview/canvas/history/HistoryManager : io/github/valerioisufi/drawview/model/change/ChangeObserver {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/model/change/DocumentSession;I)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/change/DocumentSession;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun beginGroup ()V
+	public final fun clear ()V
+	public final fun dispose ()V
+	public final fun endGroup ()V
+	public final fun getCanRedo ()Z
+	public final fun getCanUndo ()Z
+	public final fun group (Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public fun onChange (Lio/github/valerioisufi/drawview/model/change/CommittedChange;)V
+	public final fun redo ()V
+	public final fun undo ()V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/platform/ImageDecoding_androidKt {
+	public static final fun decodeImageBitmap ([BI)Landroidx/compose/ui/graphics/ImageBitmap;
+	public static synthetic fun decodeImageBitmap$default ([BIILjava/lang/Object;)Landroidx/compose/ui/graphics/ImageBitmap;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/platform/ImageEncoding_androidKt {
+	public static final fun encodePng (Landroidx/compose/ui/graphics/ImageBitmap;)[B
+}
+
+public final class io/github/valerioisufi/drawview/canvas/platform/ImageOrientationKt {
+	public static final fun exifOrientation (I)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public static final fun isJpeg ([B)Z
+	public static final fun jpegOrientation ([B)I
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/DrawViewEngines {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines$Companion;
+	public fun <init> ()V
+	public fun <init> (Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getElements ()Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;
+	public final fun getFormulas ()Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;
+	public final fun getPdfTiles ()Lkotlin/jvm/functions/Function0;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/DrawViewEngines$Companion {
+	public final fun getNone ()Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/canvas/render/ElementRenderer {
+	public abstract fun draw (Landroidx/compose/ui/graphics/Canvas;Ljava/lang/Object;FF)V
+	public abstract fun getType ()Lio/github/valerioisufi/drawview/model/ElementType;
+	public fun hits (Ljava/lang/Object;FFFF)Z
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/ElementRenderer$DefaultImpls {
+	public static fun hits (Lio/github/valerioisufi/drawview/canvas/render/ElementRenderer;Ljava/lang/Object;FFFF)Z
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/ElementRenderers {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers$Companion;
+	public fun <init> (Ljava/util/Collection;)V
+	public final fun draw (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/drawview/model/DrawCustomElement;Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;)V
+	public final fun get (Ljava/lang/String;)Lio/github/valerioisufi/drawview/canvas/render/ElementRenderer;
+	public final fun hits (Lio/github/valerioisufi/drawview/model/DrawCustomElement;FF)Z
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/ElementRenderers$Companion {
+	public final fun getNone ()Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/ImageCache {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/canvas/render/ImageCache$Companion;
+	public fun <init> ()V
+	public fun <init> (J)V
+	public synthetic fun <init> (JILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun load (Ljava/lang/String;)Landroidx/compose/ui/graphics/ImageBitmap;
+	public final fun put (Ljava/lang/String;Landroidx/compose/ui/graphics/ImageBitmap;)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/ImageCache$Companion {
+	public final fun getShared ()Lio/github/valerioisufi/drawview/canvas/render/ImageCache;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaImage {
+	public static final field $stable I
+	public fun <init> (Landroidx/compose/ui/graphics/ImageBitmap;F)V
+	public final fun getBaselineRatio ()F
+	public final fun getBitmap ()Landroidx/compose/ui/graphics/ImageBitmap;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer {
+	public abstract fun isReady ()Lkotlinx/coroutines/flow/StateFlow;
+	public abstract fun prepare (Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun prepare$default (Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public abstract fun render (Ljava/lang/String;FI)Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaImage;
+	public abstract fun sanitize (Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer$DefaultImpls {
+	public static synthetic fun prepare$default (Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/canvas/render/tile/PdfTileAdapter {
+	public fun close ()V
+	public abstract fun getPageSizesMm (Ljava/lang/String;)Ljava/util/List;
+	public fun getPageText (Ljava/lang/String;I)Ljava/lang/String;
+	public fun getTextLayout (Ljava/lang/String;I)Lio/github/valerioisufi/drawview/model/PdfTextLayout;
+	public abstract fun renderPdfPage (Landroidx/compose/ui/graphics/Canvas;Ljava/lang/String;ILandroidx/compose/ui/geometry/Rect;Landroidx/compose/ui/geometry/Rect;)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/PdfTileAdapter$DefaultImpls {
+	public static fun close (Lio/github/valerioisufi/drawview/canvas/render/tile/PdfTileAdapter;)V
+	public static fun getPageText (Lio/github/valerioisufi/drawview/canvas/render/tile/PdfTileAdapter;Ljava/lang/String;I)Ljava/lang/String;
+	public static fun getTextLayout (Lio/github/valerioisufi/drawview/canvas/render/tile/PdfTileAdapter;Ljava/lang/String;I)Lio/github/valerioisufi/drawview/model/PdfTextLayout;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/TextBlockLayout {
+	public static final field $stable I
+	public fun <init> (Ljava/util/List;Ljava/util/List;F)V
+	public final fun getFormulas ()Ljava/util/List;
+	public final fun getHeight ()F
+	public final fun getWords ()Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/TextBlockSize {
+	public static final field $stable I
+	public fun <init> (FF)V
+	public final fun getHeight ()F
+	public final fun getWidth ()F
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/TextFace : java/lang/Enum {
+	public static final field BOLD Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;
+	public static final field BOLD_ITALIC Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;
+	public static final field ITALIC Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;
+	public static final field MONO Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;
+	public static final field MONO_BOLD Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;
+	public static final field REGULAR Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;
+	public static fun values ()[Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/TextFormula {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;IFFFF)V
+	public final fun getColor ()I
+	public final fun getHeight ()F
+	public final fun getLatex ()Ljava/lang/String;
+	public final fun getLeft ()F
+	public final fun getTop ()F
+	public final fun getWidth ()F
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/TextLineMetrics {
+	public static final field $stable I
+	public fun <init> (FF)V
+	public final fun getBaseline ()F
+	public final fun getHeight ()F
+}
+
+public abstract interface class io/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter {
+	public fun clearCaches ()V
+	public abstract fun drawText (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/drawview/model/DrawText;Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;)V
+	public fun layout (Lio/github/valerioisufi/drawview/model/DrawText;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockLayout;
+	public fun lineMetrics (F)Lio/github/valerioisufi/drawview/canvas/render/tile/TextLineMetrics;
+	public fun measure (Lio/github/valerioisufi/drawview/model/DrawText;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockSize;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter$DefaultImpls {
+	public static fun clearCaches (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;)V
+	public static fun layout (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Lio/github/valerioisufi/drawview/model/DrawText;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockLayout;
+	public static fun lineMetrics (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;F)Lio/github/valerioisufi/drawview/canvas/render/tile/TextLineMetrics;
+	public static fun measure (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Lio/github/valerioisufi/drawview/model/DrawText;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockSize;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/TextWord {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;FIFFFFFZ)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;FIFFFFFZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBaseline ()F
+	public final fun getColor ()I
+	public final fun getFace ()Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;
+	public final fun getFontSize ()F
+	public final fun getLeft ()F
+	public final fun getLineBottom ()F
+	public final fun getLineTop ()F
+	public final fun getStrikethrough ()Z
+	public final fun getText ()Ljava/lang/String;
+	public final fun getWidth ()F
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/Tile {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/TileKey;Landroidx/compose/ui/graphics/ImageBitmap;Lio/github/valerioisufi/drawview/canvas/render/tile/TileState;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/TileKey;Landroidx/compose/ui/graphics/ImageBitmap;Lio/github/valerioisufi/drawview/canvas/render/tile/TileState;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBitmap ()Landroidx/compose/ui/graphics/ImageBitmap;
+	public final fun getKey ()Lio/github/valerioisufi/drawview/canvas/render/tile/TileKey;
+	public final fun getState ()Lio/github/valerioisufi/drawview/canvas/render/tile/TileState;
+	public final fun setState (Lio/github/valerioisufi/drawview/canvas/render/tile/TileState;)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/TileAdaptersKt {
+	public static final fun fitPdfPage (DDLandroidx/compose/ui/geometry/Rect;)Landroidx/compose/ui/geometry/Rect;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/TileCache {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (I)V
+	public synthetic fun <init> (IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun clear ()V
+	public final fun contains (Lio/github/valerioisufi/drawview/canvas/render/tile/TileKey;)Z
+	public final fun get (Lio/github/valerioisufi/drawview/canvas/render/tile/TileKey;)Lio/github/valerioisufi/drawview/canvas/render/tile/Tile;
+	public final fun invalidate (Lkotlin/jvm/functions/Function1;)V
+	public final fun put (Lio/github/valerioisufi/drawview/canvas/render/tile/Tile;)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/TileKey {
+	public static final field $stable I
+	public fun <init> (JIII)V
+	public final fun component1 ()J
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun component4 ()I
+	public final fun copy (JIII)Lio/github/valerioisufi/drawview/canvas/render/tile/TileKey;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/canvas/render/tile/TileKey;JIIIILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/render/tile/TileKey;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCol ()I
+	public final fun getLod ()I
+	public final fun getPageKey ()J
+	public final fun getRow ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/TileManager {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/TileRenderer;Lio/github/valerioisufi/drawview/canvas/render/tile/TileCache;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/TileRenderer;Lio/github/valerioisufi/drawview/canvas/render/tile/TileCache;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getScope ()Lkotlinx/coroutines/CoroutineScope;
+	public final fun getTileRenderer ()Lio/github/valerioisufi/drawview/canvas/render/tile/TileRenderer;
+	public final fun isRasterizing ()Z
+	public final fun renderThumbnail (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawPage;I)Landroidx/compose/ui/graphics/ImageBitmap;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/TileRenderer {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/canvas/render/tile/TileRenderer$Companion;
+	public fun <init> ()V
+	public fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/PdfTileAdapter;Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Lio/github/valerioisufi/drawview/canvas/render/ImageCache;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/PdfTileAdapter;Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Lio/github/valerioisufi/drawview/canvas/render/ImageCache;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getElements ()Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;
+	public final fun getImages ()Lio/github/valerioisufi/drawview/canvas/render/ImageCache;
+	public final fun getPdfAdapter ()Lio/github/valerioisufi/drawview/canvas/render/tile/PdfTileAdapter;
+	public final fun getTextAdapter ()Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;
+	public final fun isHidden ()Lkotlin/jvm/functions/Function1;
+	public final fun renderPageContent (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/PageContentSnapshot;Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;Landroidx/compose/ui/geometry/Rect;)V
+	public final fun renderThumbnail (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawPage;I)Landroidx/compose/ui/graphics/ImageBitmap;
+	public final fun renderThumbnail (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/PageContentSnapshot;I)Landroidx/compose/ui/graphics/ImageBitmap;
+	public final fun setElements (Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;)V
+	public final fun setHidden (Lkotlin/jvm/functions/Function1;)V
+	public final fun setPdfAdapter (Lio/github/valerioisufi/drawview/canvas/render/tile/PdfTileAdapter;)V
+	public final fun setTextAdapter (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/TileRenderer$Companion {
+	public final fun drawImage (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/drawview/model/DrawImage;Landroidx/compose/ui/graphics/ImageBitmap;Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;Landroidx/compose/ui/graphics/Paint;)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/render/tile/TileState : java/lang/Enum {
+	public static final field READY Lio/github/valerioisufi/drawview/canvas/render/tile/TileState;
+	public static final field RENDERING Lio/github/valerioisufi/drawview/canvas/render/tile/TileState;
+	public static final field STALE Lio/github/valerioisufi/drawview/canvas/render/tile/TileState;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/canvas/render/tile/TileState;
+	public static fun values ()[Lio/github/valerioisufi/drawview/canvas/render/tile/TileState;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/snap/SnapGuide {
+	public static final field $stable I
+	public fun <init> (ZFFF)V
+	public final fun component1 ()Z
+	public final fun component2 ()F
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun copy (ZFFF)Lio/github/valerioisufi/drawview/canvas/snap/SnapGuide;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/canvas/snap/SnapGuide;ZFFFILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/snap/SnapGuide;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFrom ()F
+	public final fun getPosition ()F
+	public final fun getTo ()F
+	public final fun getVertical ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing;
+	public final fun toggle (Landroidx/compose/ui/text/input/TextFieldValue;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun toggleHeading (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format : java/lang/Enum {
+	public static final field BOLD Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;
+	public static final field CODE Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;
+	public static final field FORMULA Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;
+	public static final field ITALIC Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;
+	public static final field STRIKETHROUGH Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;
+	public final fun getDelimiter ()Ljava/lang/String;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;
+	public static fun values ()[Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/tool/LassoMode : java/lang/Enum {
+	public static final field ALL Lio/github/valerioisufi/drawview/canvas/tool/LassoMode;
+	public static final field IMAGES_ONLY Lio/github/valerioisufi/drawview/canvas/tool/LassoMode;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/canvas/tool/LassoMode;
+	public static fun values ()[Lio/github/valerioisufi/drawview/canvas/tool/LassoMode;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/tool/Tool : java/lang/Enum {
+	public static final field ERASER Lio/github/valerioisufi/drawview/canvas/tool/Tool;
+	public static final field INK_HIGHLIGHTER Lio/github/valerioisufi/drawview/canvas/tool/Tool;
+	public static final field INK_PEN Lio/github/valerioisufi/drawview/canvas/tool/Tool;
+	public static final field LAZO Lio/github/valerioisufi/drawview/canvas/tool/Tool;
+	public static final field PAN Lio/github/valerioisufi/drawview/canvas/tool/Tool;
+	public static final field TEXT Lio/github/valerioisufi/drawview/canvas/tool/Tool;
+	public static final field TEXT_MARKUP Lio/github/valerioisufi/drawview/canvas/tool/Tool;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/canvas/tool/Tool;
+	public static fun values ()[Lio/github/valerioisufi/drawview/canvas/tool/Tool;
+}
+

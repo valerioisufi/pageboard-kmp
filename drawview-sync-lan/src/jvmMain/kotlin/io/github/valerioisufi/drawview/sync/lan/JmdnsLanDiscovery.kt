@@ -1,11 +1,5 @@
 package io.github.valerioisufi.drawview.sync.lan
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.withContext
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.NetworkInterface
@@ -13,16 +7,22 @@ import javax.jmdns.JmDNS
 import javax.jmdns.ServiceEvent
 import javax.jmdns.ServiceInfo
 import javax.jmdns.ServiceListener
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
 
 /**
  * [LanDiscovery] of the desktop (JmDNS), on the network of [address] (`null`: the first network
  * interface of the local network).
  */
-class JmdnsLanDiscovery(private val address: InetAddress? = null) : LanDiscovery {
+public class JmdnsLanDiscovery(private val address: InetAddress? = null) : LanDiscovery {
     private val jmdns: JmDNS by lazy { JmDNS.create(address ?: localAddress()) }
     private var announced: ServiceInfo? = null
 
-    override suspend fun advertise(name: String, port: Int, attributes: Map<String, String>) = withContext(Dispatchers.IO) {
+    override suspend fun advertise(name: String, port: Int, attributes: Map<String, String>): Unit = withContext(Dispatchers.IO) {
         announced?.let { jmdns.unregisterService(it) }
         val info = ServiceInfo.create(TYPE, name, port, 0, 0, attributes)
         jmdns.registerService(info)

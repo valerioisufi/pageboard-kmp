@@ -20,6 +20,10 @@ import io.github.valerioisufi.drawview.lecture.gemini.LiveServerMessage
 import io.github.valerioisufi.drawview.lecture.gemini.LiveSetup
 import io.github.valerioisufi.drawview.lecture.gemini.LiveUsage
 import io.github.valerioisufi.drawview.lecture.gemini.parseDurationMs
+import kotlin.concurrent.Volatile
+import kotlin.io.encoding.Base64
+import kotlin.math.max
+import kotlin.math.min
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -29,10 +33,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlin.concurrent.Volatile
-import kotlin.io.encoding.Base64
-import kotlin.math.max
-import kotlin.math.min
 
 /**
  * A live speech model of Gemini (Gemini 3.5 Transcribe Live) transcribing the recording while it
@@ -52,7 +52,7 @@ import kotlin.math.min
  *
  * Everything happens in one coroutine, fed by [events].
  */
-class GeminiLiveTranscriber(
+internal class GeminiLiveTranscriber(
     private val connector: LiveConnector,
     private val apiKey: () -> String,
     private val model: String,

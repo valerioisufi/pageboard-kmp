@@ -40,15 +40,15 @@ import kotlinx.serialization.Serializable
  * the change adding it (see [AddElements]).
  */
 @Serializable
-sealed interface ElementData {
-    val id: String
-    val order: ElementOrder?
+public sealed interface ElementData {
+    public val id: String
+    public val order: ElementOrder?
 
     /**
      * A new model element with this content (and [order], or none yet), its stroke (if any)
      * modeled by [modeller].
      */
-    fun toElement(modeller: StrokeModeller = KotlinStrokeModeller): DrawElement
+    public fun toElement(modeller: StrokeModeller = KotlinStrokeModeller): DrawElement
 }
 
 /**
@@ -56,7 +56,7 @@ sealed interface ElementData {
  */
 @Serializable
 @SerialName("stroke")
-data class StrokeData(
+public data class StrokeData(
     override val id: String,
     val points: List<StrokePoint>,
     val tool: StrokeTool,
@@ -89,7 +89,7 @@ data class StrokeData(
  */
 @Serializable
 @SerialName("text")
-data class TextData(
+public data class TextData(
     override val id: String,
     val text: String,
     val alignment: TextAlignment = TextAlignment.START,
@@ -108,11 +108,11 @@ data class TextData(
     override fun toElement(modeller: StrokeModeller): DrawText = DrawText(id).also { applyTo(it) }.withOrder(order)
 
     /** Whether its content (the text and its format) is the one of [other]. */
-    fun hasContentOf(other: TextData): Boolean =
+    internal fun hasContentOf(other: TextData): Boolean =
         text == other.text && alignment == other.alignment && color == other.color
 
     /** Writes this content into [text] (its identifier and its order excepted). */
-    fun applyTo(text: DrawText) {
+    public fun applyTo(text: DrawText) {
         text.contentVersions = versions
         text.text = this.text
         text.alignment = alignment
@@ -128,9 +128,10 @@ data class TextData(
     }
 }
 
+/** An image ([DrawImage]) as plain values: the file of its resource, its rotated box (page millimeters). */
 @Serializable
 @SerialName("image")
-data class ImageData(
+public data class ImageData(
     override val id: String,
     val resourceId: String,
     val x: Float,
@@ -150,9 +151,10 @@ data class ImageData(
     }
 }
 
+/** A page of a PDF ([DrawPdf]) as plain values: the file of its resource and the index of the page in it. */
 @Serializable
 @SerialName("pdf")
-data class PdfData(
+public data class PdfData(
     override val id: String,
     val resourceId: String,
     val pdfPageIndex: Int,
@@ -167,7 +169,7 @@ data class PdfData(
  */
 @Serializable
 @SerialName("textMarkup")
-data class TextMarkupData(
+public data class TextMarkupData(
     override val id: String,
     val resourceId: String,
     val pdfPageIndex: Int,
@@ -202,17 +204,17 @@ data class TextMarkupData(
  */
 @Serializable
 @SerialName("custom")
-class CustomElementData(
+public class CustomElementData(
     override val id: String,
     /** The identifier of its type (named so not to be the discriminator of the kinds of data). */
-    @SerialName("elementType") val type: String,
-    val version: Int,
-    val payload: ByteArray,
-    val x: Float,
-    val y: Float,
-    val width: Float,
-    val height: Float,
-    val rotation: Float = 0f,
+    @SerialName("elementType") public val type: String,
+    public val version: Int,
+    public val payload: ByteArray,
+    public val x: Float,
+    public val y: Float,
+    public val width: Float,
+    public val height: Float,
+    public val rotation: Float = 0f,
     override val order: ElementOrder? = null
 ) : ElementData {
     override fun toElement(modeller: StrokeModeller): DrawCustomElement = DrawCustomElement(type, id).withOrder(order).also {
@@ -225,12 +227,12 @@ class CustomElementData(
         it.rotation = rotation
     }
 
-    fun copy(
+    public fun copy(
         id: String = this.id,
         x: Float = this.x,
         y: Float = this.y,
         order: ElementOrder? = this.order
-    ) = CustomElementData(id, type, version, payload, x, y, width, height, rotation, order)
+    ): CustomElementData = CustomElementData(id, type, version, payload, x, y, width, height, rotation, order)
 
     override fun equals(other: Any?): Boolean = other is CustomElementData && id == other.id && type == other.type &&
         version == other.version && payload.contentEquals(other.payload) && x == other.x && y == other.y &&
@@ -251,7 +253,7 @@ private val DrawElement.dataOrder: ElementOrder? get() = order.takeIf { it != El
  * of the document; [orderKey]: its position among the pages, see [DrawPage.orderKey]).
  */
 @Serializable
-data class PageData(
+public data class PageData(
     val id: String,
     val orderKey: String,
     val widthMm: Float,
@@ -260,7 +262,7 @@ data class PageData(
     val elements: List<ElementData> = emptyList()
 ) {
     /** A new page of [document] with this content (the elements of every kind in this order). */
-    fun toPage(document: DrawDocument): DrawPage {
+    public fun toPage(document: DrawDocument): DrawPage {
         val page = DrawPage(
             widthMm = widthMm,
             heightMm = heightMm,
@@ -276,13 +278,14 @@ data class PageData(
 
 /** A file of a document (its content travels apart, see `docs/collaboration.md`). */
 @Serializable
-data class ResourceData(val id: String, val type: DrawResource.ResourceType, val hash: String = "")
+public data class ResourceData(val id: String, val type: DrawResource.ResourceType, val hash: String = "")
 
 // ==========================================================
 // From the model
 // ==========================================================
 
-fun DrawStroke.toData() = StrokeData(
+/** The values of a stroke: its inputs and brush, not its mesh (see [ElementData]). */
+public fun DrawStroke.toData(): StrokeData = StrokeData(
     id = id,
     points = baseMesh.points,
     tool = baseBrush.tool,
@@ -293,7 +296,8 @@ fun DrawStroke.toData() = StrokeData(
     order = dataOrder
 )
 
-fun DrawText.toData() = TextData(
+/** The values of a text, with its content versions (see [ElementData]). */
+public fun DrawText.toData(): TextData = TextData(
     id = id,
     text = text,
     alignment = alignment,
@@ -309,11 +313,14 @@ fun DrawText.toData() = TextData(
     versions = contentVersions
 )
 
-fun DrawImage.toData() = ImageData(id, resourceId, x, y, width, height, rotation, dataOrder)
+/** The values of an image (see [ElementData]). */
+public fun DrawImage.toData(): ImageData = ImageData(id, resourceId, x, y, width, height, rotation, dataOrder)
 
-fun DrawPdf.toData() = PdfData(id, resourceId, pdfPageIndex, dataOrder)
+/** The values of a page of a PDF (see [ElementData]). */
+public fun DrawPdf.toData(): PdfData = PdfData(id, resourceId, pdfPageIndex, dataOrder)
 
-fun DrawTextMarkup.toData() = TextMarkupData(
+/** The values of a mark of the text of a PDF (see [ElementData]). */
+public fun DrawTextMarkup.toData(): TextMarkupData = TextMarkupData(
     id = id,
     resourceId = resourceId,
     pdfPageIndex = pdfPageIndex,
@@ -328,9 +335,11 @@ fun DrawTextMarkup.toData() = TextMarkupData(
     order = dataOrder
 )
 
-fun DrawCustomElement.toData() = CustomElementData(id, type, version, payload, x, y, width, height, rotation, dataOrder)
+/** The values of an element of an application, its payload as it is (see [ElementData]). */
+public fun DrawCustomElement.toData(): CustomElementData = CustomElementData(id, type, version, payload, x, y, width, height, rotation, dataOrder)
 
-fun DrawElement.toData(): ElementData = when (this) {
+/** The values of any element, by its kind (see [ElementData]). */
+public fun DrawElement.toData(): ElementData = when (this) {
     is DrawStroke -> toData()
     is DrawText -> toData()
     is DrawImage -> toData()
@@ -340,7 +349,7 @@ fun DrawElement.toData(): ElementData = when (this) {
 }
 
 /** The page with its content, the elements of every kind in their stacking order. */
-fun DrawPage.toData(): PageData = PageData(
+public fun DrawPage.toData(): PageData = PageData(
     id = id,
     orderKey = orderKey,
     widthMm = widthMm,
@@ -353,7 +362,7 @@ fun DrawPage.toData(): PageData = PageData(
  * The placement of the element of [this] (see [Placement]), or `null` for an element not placed
  * freely.
  */
-fun ElementData.placement(): Placement? = when (this) {
+public fun ElementData.placement(): Placement? = when (this) {
     is StrokeData -> StrokePlacement(id, transform, order)
     is TextData -> BoxPlacement(id, x, y, width, height, rotation, fontSize, order, autoWidth)
     is ImageData -> BoxPlacement(id, x, y, width, height, rotation, order = order)

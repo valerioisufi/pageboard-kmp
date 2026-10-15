@@ -14,7 +14,7 @@ import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
  *
  * @param whisper the speech recognition of this computer.
  */
-class Transcribers(
+internal class Transcribers(
     private val gemini: GeminiBackend,
     private val whisper: (AssistantSettings) -> Transcriber = { WhisperTranscriber.of(it) },
     private val live: LiveConnector = GeminiLiveClient()

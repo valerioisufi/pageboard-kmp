@@ -25,27 +25,27 @@ import androidx.compose.ui.unit.dp
  * @param keyboard a hardware keyboard.
  */
 @Immutable
-data class InputHints(
+public data class InputHints(
     val touch: Boolean = false,
     val stylus: Boolean = false,
     val precisePointer: Boolean = false,
     val keyboard: Boolean = false
 ) {
-    companion object {
+    public companion object {
         /** A phone. */
-        val Touch = InputHints(touch = true)
+        public val Touch: InputHints = InputHints(touch = true)
 
         /** A tablet with its stylus. */
-        val Stylus = InputHints(touch = true, stylus = true)
+        public val Stylus: InputHints = InputHints(touch = true, stylus = true)
 
         /** A computer. */
-        val PointerAndKeyboard = InputHints(precisePointer = true, keyboard = true)
+        public val PointerAndKeyboard: InputHints = InputHints(precisePointer = true, keyboard = true)
     }
 }
 
 /** What the platform tells of its input devices, updated when it reports a change (a keyboard plugged in). */
 @Composable
-expect fun platformInputHints(): InputHints
+internal expect fun platformInputHints(): InputHints
 
 /** Whether [this] key event comes from a hardware keyboard (not from the keys of a soft keyboard). */
 internal expect fun KeyEvent.isFromHardwareKeyboard(): Boolean
@@ -56,35 +56,35 @@ internal expect fun KeyEvent.isFromHardwareKeyboard(): Boolean
  * that the interface does not change while the user moves from a finger to the stylus.
  */
 @Stable
-class InputCapabilities(hints: InputHints = InputHints()) {
+public class InputCapabilities(hints: InputHints = InputHints()) {
 
     /** A finger has been used, or the device has a touch screen. */
-    var hasTouch by mutableStateOf(hints.touch)
+    internal var hasTouch by mutableStateOf(hints.touch)
         private set
 
     /** A stylus has been used, or the platform reports one. */
-    var hasStylus by mutableStateOf(hints.stylus)
+    internal var hasStylus by mutableStateOf(hints.stylus)
         private set
 
     /** A mouse or a trackpad has been used, or the platform reports one. */
-    var hasPrecisePointer by mutableStateOf(hints.precisePointer)
+    internal var hasPrecisePointer by mutableStateOf(hints.precisePointer)
         private set
 
     /** A hardware keyboard has been used, or the platform reports one. */
-    var hasKeyboard by mutableStateOf(hints.keyboard)
+    public var hasKeyboard: Boolean by mutableStateOf(hints.keyboard)
         private set
 
     /** Whether a pointer can hover the controls (tooltips, cursors). */
-    val canHover: Boolean get() = hasPrecisePointer
+    internal val canHover: Boolean get() = hasPrecisePointer
 
     /**
      * The smallest size of a control: 48 dp where a finger can touch it, 40 dp when it is reached
      * only by a precise pointer or a stylus.
      */
-    val minimumInteractiveSize: Dp get() = if (hasTouch) 48.dp else 40.dp
+    internal val minimumInteractiveSize: Dp get() = if (hasTouch) 48.dp else 40.dp
 
     /** Adds what [hints] tell. */
-    fun learn(hints: InputHints) {
+    internal fun learn(hints: InputHints) {
         if (hints.touch) hasTouch = true
         if (hints.stylus) hasStylus = true
         if (hints.precisePointer) hasPrecisePointer = true
@@ -92,7 +92,7 @@ class InputCapabilities(hints: InputHints = InputHints()) {
     }
 
     /** A pointer of [type] has been used. */
-    fun onPointer(type: PointerType) {
+    internal fun onPointer(type: PointerType) {
         when (type) {
             PointerType.Touch -> if (!hasTouch) hasTouch = true
             PointerType.Stylus, PointerType.Eraser -> if (!hasStylus) hasStylus = true
@@ -101,7 +101,7 @@ class InputCapabilities(hints: InputHints = InputHints()) {
     }
 
     /** A key of a hardware keyboard has been pressed. */
-    fun onKey() {
+    internal fun onKey() {
         if (!hasKeyboard) hasKeyboard = true
     }
 }
@@ -110,7 +110,7 @@ class InputCapabilities(hints: InputHints = InputHints()) {
  * Tells [capabilities] the pointers and the keys of the content, seen before the content handles
  * them and left to it.
  */
-fun Modifier.observeInput(capabilities: InputCapabilities): Modifier =
+internal fun Modifier.observeInput(capabilities: InputCapabilities): Modifier =
     pointerInput(capabilities) {
         awaitPointerEventScope {
             while (true) {

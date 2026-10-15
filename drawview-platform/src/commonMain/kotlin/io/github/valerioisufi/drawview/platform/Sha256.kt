@@ -4,14 +4,14 @@ package io.github.valerioisufi.drawview.platform
  * SHA-256 of contents, in hexadecimal: the files with the same content have the same hash (e.g.
  * an image imported twice, or received from another device, is kept once).
  */
-class Sha256 {
+public class Sha256 {
     private val state = INITIAL.copyOf()
     private val block = ByteArray(64)
     private var blockSize = 0
     private var length = 0L
     private val words = IntArray(64)
 
-    fun update(bytes: ByteArray, offset: Int = 0, count: Int = bytes.size - offset): Sha256 {
+    public fun update(bytes: ByteArray, offset: Int = 0, count: Int = bytes.size - offset): Sha256 {
         var i = offset
         val end = offset + count
         length += count
@@ -29,7 +29,7 @@ class Sha256 {
     }
 
     /** The hash of what was given, in hexadecimal (the object is not usable afterwards). */
-    fun digestHex(): String {
+    internal fun digestHex(): String {
         val bits = length * 8
         update(byteArrayOf(0x80.toByte()))
         while (blockSize != 56) update(byteArrayOf(0))
@@ -63,9 +63,9 @@ class Sha256 {
         state[4] += e; state[5] += f; state[6] += g; state[7] += h
     }
 
-    companion object {
+    public companion object {
         /** The hash of [bytes], in hexadecimal. */
-        fun of(bytes: ByteArray): String = Sha256().update(bytes).digestHex()
+        public fun of(bytes: ByteArray): String = Sha256().update(bytes).digestHex()
 
         private val INITIAL = intArrayOf(
             0x6a09e667, 0xbb67ae85L.toInt(), 0x3c6ef372, 0xa54ff53aL.toInt(),

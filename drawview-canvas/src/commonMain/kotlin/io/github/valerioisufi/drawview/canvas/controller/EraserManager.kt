@@ -14,7 +14,7 @@ import kotlin.math.min
  * (and the marks of the text of the PDFs it touches) as soon as it touches them; what a gesture
  * erases is undone at once.
  */
-class EraserManager(private val controller: DrawViewController) {
+internal class EraserManager(private val controller: DrawViewController) {
 
     /** A gesture is erasing: its changes are a group of the history until [commitGesture]. */
     private var inGesture = false

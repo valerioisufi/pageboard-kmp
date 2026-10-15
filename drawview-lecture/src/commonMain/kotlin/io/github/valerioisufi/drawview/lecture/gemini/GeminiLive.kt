@@ -22,7 +22,7 @@ import kotlinx.serialization.json.JsonObject
 
 /** A message of the client: the setup first, then the audio. */
 @Serializable
-data class LiveClientMessage(val setup: LiveSetup? = null, val realtimeInput: LiveRealtimeInput? = null)
+internal data class LiveClientMessage(val setup: LiveSetup? = null, val realtimeInput: LiveRealtimeInput? = null)
 
 /**
  * The setup of a session transcribing the audio sent ([inputAudioTranscription]): the model
@@ -30,7 +30,7 @@ data class LiveClientMessage(val setup: LiveSetup? = null, val realtimeInput: Li
  * No default value: the JSON of the client leaves them out.
  */
 @Serializable
-data class LiveSetup(
+internal data class LiveSetup(
     val model: String,
     val generationConfig: LiveGenerationConfig,
     val inputAudioTranscription: AudioTranscriptionConfig,
@@ -38,7 +38,7 @@ data class LiveSetup(
 )
 
 @Serializable
-data class LiveGenerationConfig(val responseModalities: List<String>) {
+internal data class LiveGenerationConfig(val responseModalities: List<String>) {
     companion object {
         val TEXT = LiveGenerationConfig(listOf("TEXT"))
     }
@@ -50,7 +50,7 @@ data class LiveGenerationConfig(val responseModalities: List<String>) {
  * @param interimTranscriptTimestampEnabled the times of the interim transcripts too.
  */
 @Serializable
-data class LiveRealtimeInputConfig(
+internal data class LiveRealtimeInputConfig(
     val automaticActivityDetection: LiveActivityDetection? = null,
     val interimTranscriptTimestampEnabled: Boolean? = null
 )
@@ -60,7 +60,7 @@ data class LiveRealtimeInputConfig(
  * (`START_SENSITIVITY_HIGH`/`_LOW`) and ending (`END_SENSITIVITY_HIGH`/`_LOW`).
  */
 @Serializable
-data class LiveActivityDetection(
+internal data class LiveActivityDetection(
     val disabled: Boolean? = null,
     val startOfSpeechSensitivity: String? = null,
     val endOfSpeechSensitivity: String? = null,
@@ -70,11 +70,11 @@ data class LiveActivityDetection(
 
 /** Audio (PCM 16 kHz, base64) or the end of the audio: what was sent becomes final. */
 @Serializable
-data class LiveRealtimeInput(val audio: GeminiBlob? = null, val audioStreamEnd: Boolean? = null)
+internal data class LiveRealtimeInput(val audio: GeminiBlob? = null, val audioStreamEnd: Boolean? = null)
 
 /** A message of the server. */
 @Serializable
-data class LiveServerMessage(
+internal data class LiveServerMessage(
     val setupComplete: JsonObject? = null,
     val serverContent: LiveServerContent? = null,
     val voiceActivity: LiveVoiceActivity? = null,
@@ -87,13 +87,13 @@ data class LiveServerMessage(
  * the start of the audio of the session ("7.240s").
  */
 @Serializable
-data class LiveVoiceActivity(val type: String = "", val audioOffset: String? = null) {
+internal data class LiveVoiceActivity(val type: String = "", val audioOffset: String? = null) {
     val isStart: Boolean get() = type == "ACTIVITY_START"
     val isEnd: Boolean get() = type == "ACTIVITY_END"
 }
 
 @Serializable
-data class LiveServerContent(
+internal data class LiveServerContent(
     /** Final: the text of an utterance, sent at a pause or at the end of the audio. */
     val inputTranscription: LiveTranscription? = null,
     /** Interim: the utterance being said, still changing. */
@@ -103,7 +103,7 @@ data class LiveServerContent(
 
 /** @param startOffset from the start of the audio of the session ("12.300s"), when given. */
 @Serializable
-data class LiveTranscription(
+internal data class LiveTranscription(
     val text: String = "",
     val languageCode: String? = null,
     val startOffset: String? = null,
@@ -112,10 +112,10 @@ data class LiveTranscription(
 
 /** The server will close the connection in [timeLeft] ("10s"). */
 @Serializable
-data class LiveGoAway(val timeLeft: String? = null)
+internal data class LiveGoAway(val timeLeft: String? = null)
 
 @Serializable
-data class LiveUsage(
+internal data class LiveUsage(
     val promptTokenCount: Long = 0,
     val responseTokenCount: Long = 0,
     val totalTokenCount: Long = 0
@@ -128,7 +128,7 @@ internal fun parseDurationMs(value: String?): Long? {
 }
 
 /** A connection of the Live API: messages in JSON both ways. */
-interface LiveConnection {
+internal interface LiveConnection {
     suspend fun send(message: String)
 
     /** The messages of the server; it ends when the connection closes ([closeError]). */
@@ -141,13 +141,13 @@ interface LiveConnection {
 }
 
 /** Opens [LiveConnection]s. */
-fun interface LiveConnector {
+internal fun interface LiveConnector {
     /** @throws GeminiException when the connection cannot be opened. */
     suspend fun connect(apiKey: String): LiveConnection
 }
 
 /** The Live API of Gemini over the WebSocket of Ktor. */
-class GeminiLiveClient(
+internal class GeminiLiveClient(
     private val httpClient: HttpClient = defaultHttpClient(),
     private val url: String = DEFAULT_URL
 ) : LiveConnector {

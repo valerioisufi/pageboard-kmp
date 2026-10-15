@@ -11,4 +11,4 @@ import io.github.valerioisufi.drawview.model.DrawDocument
  * @return the revision of the document shown.
  */
 @Composable
-fun DrawDocument.observeChanges(): Long = revision.collectAsState().value
+public fun DrawDocument.observeChanges(): Long = revision.collectAsState().value

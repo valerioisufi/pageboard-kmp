@@ -1,10 +1,13 @@
 package io.github.valerioisufi.drawview.lecture
 
-import io.github.valerioisufi.drawview.platform.PlatformFiles
-import io.github.valerioisufi.drawview.platform.DeviceProfile
-import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
 import io.github.valerioisufi.drawview.lecture.platform.lectureDataDirectory
+import io.github.valerioisufi.drawview.platform.DeviceProfile
+import io.github.valerioisufi.drawview.platform.PlatformFiles
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
+import kotlin.random.Random
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -13,25 +16,22 @@ import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
-import kotlin.random.Random
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
 /** A lecture of a document, as listed by the [LectureLibrary]. */
-class LectureSummary(
-    val directory: String,
-    val documentId: String,
-    val documentTitle: String,
-    val startedAt: Long,
-    val durationMs: Long,
-    val hasReview: Boolean,
-    val suggestionCount: Int,
+public class LectureSummary(
+    public val directory: String,
+    public val documentId: String,
+    internal val documentTitle: String,
+    internal val startedAt: Long,
+    internal val durationMs: Long,
+    internal val hasReview: Boolean,
+    internal val suggestionCount: Int,
     /** Saved while recording: still being recorded (maybe on another device), or interrupted. */
-    val wasRecording: Boolean,
+    internal val wasRecording: Boolean,
     /** The name of the device that recorded it, when it is another one. */
-    val recordedElsewhere: String? = null,
+    internal val recordedElsewhere: String? = null,
     /** Being recorded (or imported) on another device. */
-    val activeElsewhere: Boolean = false
+    internal val activeElsewhere: Boolean = false
 )
 
 /**
@@ -45,17 +45,17 @@ class LectureSummary(
  * attached to it there too ([LectureAttachments]); the names of the lecture folders are unique
  * among the devices.
  */
-class LectureLibrary(private val root: String = lectureDataDirectory()) {
+public class LectureLibrary(private val root: String = lectureDataDirectory()) {
 
     /** This device among the ones sharing the lectures: random, kept in [root]. */
-    val deviceId: String by lazy {
+    public val deviceId: String by lazy {
         val path = "${root.trimEnd('/')}/device-id"
         PlatformFiles.readBytes(path)?.decodeToString()?.trim()?.takeIf { it.isNotEmpty() }
             ?: randomName(DEVICE_ID_BYTES).also { PlatformFiles.writeBytes(path, it.encodeToByteArray()) }
     }
 
     /** The name of this device (the one the user chose), shown with the lectures it records on the other ones. */
-    val deviceName: String get() = DeviceProfile.name.value
+    public val deviceName: String get() = DeviceProfile.name.value
 
     /**
      * Held while a `lecture.json` is read, merged and written (the lecture being recorded, and
@@ -71,13 +71,13 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
         onChanged?.invoke(LibraryChange(documentId, lectureId))
     }
 
-    fun documentDirectory(documentId: String): String = "${root.trimEnd('/')}/doc-$documentId"
+    public fun documentDirectory(documentId: String): String = "${root.trimEnd('/')}/doc-$documentId"
 
     /** The folder of the lecture [lectureId] of [documentId]. */
     internal fun lectureDirectory(documentId: String, lectureId: String) = "${documentDirectory(documentId)}/$lectureId"
 
     /** Folder of a new lecture of [documentId] started at [startedAt]: the date, and a few random characters. */
-    fun newLectureDirectory(documentId: String, startedAt: Long): String {
+    internal fun newLectureDirectory(documentId: String, startedAt: Long): String {
         val base = "${documentDirectory(documentId)}/${timestampName(startedAt)}-${randomName(NAME_RANDOM_BYTES)}"
         var directory = base
         var suffix = 2
@@ -86,7 +86,7 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
     }
 
     /** The course context of [documentId], if any. */
-    fun loadContext(documentId: String): CourseContext? {
+    internal fun loadContext(documentId: String): CourseContext? {
         val bytes = PlatformFiles.readBytes("${documentDirectory(documentId)}/context.json") ?: return null
         return try {
             Lecture.recordJson.decodeFromString(CourseContext.serializer(), bytes.decodeToString())
@@ -95,7 +95,7 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
         }
     }
 
-    fun saveContext(documentId: String, context: CourseContext): Boolean = writeContext(documentId, context).also { if (it) changed(documentId, null) }
+    internal fun saveContext(documentId: String, context: CourseContext): Boolean = writeContext(documentId, context).also { if (it) changed(documentId, null) }
 
     internal fun writeContext(documentId: String, context: CourseContext): Boolean = writeAtomically(
         "${documentDirectory(documentId)}/context.json",
@@ -103,7 +103,7 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
     )
 
     /** The documents with a lecture (not deleted): the folders of their lectures, without reading them. */
-    fun documentsWithLectures(): Set<String> {
+    internal fun documentsWithLectures(): Set<String> {
         val rootPath = Path(root)
         if (!SystemFileSystem.exists(rootPath)) return emptySet()
         return SystemFileSystem.list(rootPath).mapNotNullTo(mutableSetOf()) { path ->
@@ -116,7 +116,7 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
     }
 
     /** The lectures of [documentId], the most recent first. */
-    fun list(documentId: String): List<LectureSummary> {
+    public fun list(documentId: String): List<LectureSummary> {
         val documentPath = Path(documentDirectory(documentId))
         if (!SystemFileSystem.exists(documentPath)) return emptyList()
         val deleted = deletedLectures(documentId)
@@ -145,7 +145,7 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
      * as written (the lecture saved again, finished). Must not be called for
      * the lecture being recorded; a lecture being recorded on another device stays as it is.
      */
-    fun load(directory: String): LectureRecord? {
+    public fun load(directory: String): LectureRecord? {
         val record = readRecord(directory) ?: return null
         if (record.status == LectureStatus.FINISHED || !statusSetHere(record)) return record
         val recordedMs = try {
@@ -164,7 +164,7 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
     internal fun statusSetHere(record: LectureRecord): Boolean = record.stampOf(LecturePart.RECORDING).by.let { it.isEmpty() || it == deviceId }
 
     /** Deletes the lecture in [directory], audio included, here and on the other devices. */
-    fun delete(directory: String): Boolean {
+    public fun delete(directory: String): Boolean {
         val path = Path(directory)
         val documentId = path.parent?.name?.removePrefix("doc-") ?: return false
         markDeleted(documentId, mapOf(path.name to currentTimeMillis()))
@@ -182,7 +182,7 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
     }
 
     /** How this device shares the lectures of [documentId] (see [LectureSharingSettings]). */
-    fun sharingOf(documentId: String): LectureSharingSettings =
+    internal fun sharingOf(documentId: String): LectureSharingSettings =
         PlatformFiles.readBytes("${documentDirectory(documentId)}/sharing.json")?.let {
             try {
                 Lecture.recordJson.decodeFromString(LectureSharingSettings.serializer(), it.decodeToString())
@@ -191,7 +191,7 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
             }
         } ?: LectureSharingSettings()
 
-    fun saveSharing(documentId: String, settings: LectureSharingSettings): Boolean =
+    internal fun saveSharing(documentId: String, settings: LectureSharingSettings): Boolean =
         writeAtomically("${documentDirectory(documentId)}/sharing.json", Lecture.recordJson.encodeToString(LectureSharingSettings.serializer(), settings).encodeToByteArray())
 
     /** The lectures of [documentId] deleted (here or on another device), with when. */
@@ -251,7 +251,7 @@ class LectureLibrary(private val root: String = lectureDataDirectory()) {
  * audio was asked for ([requestedAudio]).
  */
 @Serializable
-data class LectureSharingSettings(
+internal data class LectureSharingSettings(
     val shareAudio: Boolean = true,
     val downloadAudio: AudioDownload = AudioDownload.AUTOMATIC,
     val requestedAudio: Set<String> = emptySet()
@@ -259,7 +259,7 @@ data class LectureSharingSettings(
 
 /** When the audio of the lectures recorded on other devices is received. */
 @Serializable
-enum class AudioDownload { AUTOMATIC, ON_REQUEST }
+internal enum class AudioDownload { AUTOMATIC, ON_REQUEST }
 
 /** Something of the lectures of [documentId] changed here: the lecture [lectureId], or what they share (`null`). */
 internal data class LibraryChange(val documentId: String, val lectureId: String?)

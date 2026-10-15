@@ -20,20 +20,20 @@ import io.github.valerioisufi.drawview.model.geometry.Rect
  * paper), how near is near (a few dp on the screen, whatever the zoom), and the guides shown
  * meanwhile. On by default ([isEnabled]); a gesture made with ⌥ / Alt held is free.
  */
-class SnapManager(private val controller: DrawViewController) {
+public class SnapManager(private val controller: DrawViewController) {
 
     /** Whether the boxes snap (a preference of the user). */
-    var isEnabled: Boolean by mutableStateOf(true)
+    public var isEnabled: Boolean by mutableStateOf(true)
         private set
 
     /** The guides of the box snapped now, in page millimeters of the page [guidesPageIndex]. */
-    var guides: List<SnapGuide> by mutableStateOf(emptyList())
+    public var guides: List<SnapGuide> by mutableStateOf(emptyList())
         private set
 
-    var guidesPageIndex: Int by mutableIntStateOf(-1)
+    internal var guidesPageIndex: Int by mutableIntStateOf(-1)
         private set
 
-    fun updateEnabled(enabled: Boolean) {
+    public fun updateEnabled(enabled: Boolean) {
         if (isEnabled == enabled) return
         isEnabled = enabled
         controller.preferencesChanged()
@@ -48,7 +48,7 @@ class SnapManager(private val controller: DrawViewController) {
      * elements of its page except [moved], and the middle of the page; [baseline] (a y of the
      * box) sits on the rows of the paper. Nothing when snapping is off or the gesture is [free].
      */
-    fun snapBox(pageIndex: Int, box: Rect, moved: Collection<DrawElement>, baseline: Float? = null, free: Boolean = false): Point {
+    internal fun snapBox(pageIndex: Int, box: Rect, moved: Collection<DrawElement>, baseline: Float? = null, free: Boolean = false): Point {
         val snapped = snap(pageIndex, moved, free) { targets, tolerance -> SnapEngine.snapBox(box, targets, tolerance, baseline) }
             ?: return Point.Zero
         return Point(snapped.dx, snapped.dy)
@@ -58,14 +58,14 @@ class SnapManager(private val controller: DrawViewController) {
      * How much the vertical edge at [x] (a side of a box from [top] to [bottom], being dragged)
      * moves to be aligned with the elements of the page [pageIndex] except [moved].
      */
-    fun snapEdge(pageIndex: Int, x: Float, top: Float, bottom: Float, moved: Collection<DrawElement>, free: Boolean = false): Float =
+    internal fun snapEdge(pageIndex: Int, x: Float, top: Float, bottom: Float, moved: Collection<DrawElement>, free: Boolean = false): Float =
         snap(pageIndex, moved, free) { targets, tolerance -> SnapEngine.snapEdge(x, top, bottom, targets, tolerance) }?.dx ?: 0f
 
     /**
      * The row of the paper of the page [pageIndex] a new text tapped at [y] writes on: the first
      * one at [y] or below it (the line under the tap), if the paper has rows and snapping is on.
      */
-    fun rowFor(pageIndex: Int, y: Float, free: Boolean = false): Float? {
+    internal fun rowFor(pageIndex: Int, y: Float, free: Boolean = false): Float? {
         if (!isEnabled || free) return null
         val page = controller.document.pages.getOrNull(pageIndex) ?: return null
         val pattern = page.background.pattern(page.widthMm, page.heightMm) ?: return null
@@ -74,7 +74,7 @@ class SnapManager(private val controller: DrawViewController) {
     }
 
     /** Hides the guides (the gesture is over). */
-    fun clearGuides() {
+    internal fun clearGuides() {
         if (guides.isNotEmpty()) guides = emptyList()
         guidesPageIndex = -1
     }

@@ -11,7 +11,7 @@ import kotlinx.atomicfu.locks.synchronized
  * (instead of aliased) so that the shared source sets of the other modules do not depend on its
  * platform-specific declarations.
  */
-class SyncLock {
+public class SyncLock {
     @PublishedApi
     internal val monitor: SynchronizedObject = SynchronizedObject()
 }
@@ -19,4 +19,4 @@ class SyncLock {
 /**
  * Executes [block] while holding [lock] (reentrant).
  */
-inline fun <R> syncLock(lock: SyncLock, block: () -> R): R = synchronized(lock.monitor, block)
+public inline fun <R> syncLock(lock: SyncLock, block: () -> R): R = synchronized(lock.monitor, block)

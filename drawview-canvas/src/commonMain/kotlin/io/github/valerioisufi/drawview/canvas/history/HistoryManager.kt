@@ -17,7 +17,7 @@ import io.github.valerioisufi.drawview.model.change.DocumentSession
  *
  * Backed by Compose snapshot state so that [canUndo] and [canRedo] are observable.
  */
-class HistoryManager(
+public class HistoryManager(
     private val session: DocumentSession,
     private val maxHistorySize: Int = 50
 ) : ChangeObserver {
@@ -27,15 +27,15 @@ class HistoryManager(
     private var groupDepth = 0
     private val groupInverses = mutableListOf<DocumentChange>()
 
-    val canUndo: Boolean get() = undoStack.isNotEmpty()
-    val canRedo: Boolean get() = redoStack.isNotEmpty()
+    public val canUndo: Boolean get() = undoStack.isNotEmpty()
+    public val canRedo: Boolean get() = redoStack.isNotEmpty()
 
     init {
         session.addObserver(this)
     }
 
     /** Stops recording the changes of the session. */
-    fun dispose() {
+    public fun dispose() {
         session.removeObserver(this)
     }
 
@@ -50,12 +50,14 @@ class HistoryManager(
     }
 
     /** Starts a group of changes undone together (groups can be nested). */
-    fun beginGroup() {
+    @PublishedApi
+    internal fun beginGroup() {
         groupDepth++
     }
 
     /** Ends the group started by [beginGroup]: its changes become one entry of the history. */
-    fun endGroup() {
+    @PublishedApi
+    internal fun endGroup() {
         if (groupDepth == 0) return
         groupDepth--
         if (groupDepth > 0 || groupInverses.isEmpty()) return
@@ -65,7 +67,7 @@ class HistoryManager(
     }
 
     /** Runs [block] in a group: the changes it submits are undone together. */
-    inline fun <T> group(block: () -> T): T {
+    public inline fun <T> group(block: () -> T): T {
         beginGroup()
         try {
             return block()
@@ -74,17 +76,17 @@ class HistoryManager(
         }
     }
 
-    fun undo() {
+    public fun undo() {
         val inverse = undoStack.removeLastOrNull() ?: return
         session.submit(inverse, ChangeOrigin.UNDO)?.let { redoStack.add(it) }
     }
 
-    fun redo() {
+    public fun redo() {
         val change = redoStack.removeLastOrNull() ?: return
         session.submit(change, ChangeOrigin.REDO)?.let { undoStack.add(it) }
     }
 
-    fun clear() {
+    public fun clear() {
         undoStack.clear()
         redoStack.clear()
     }

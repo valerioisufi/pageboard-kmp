@@ -2,11 +2,9 @@ package io.github.valerioisufi.drawview.latex
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
-import io.github.valerioisufi.drawview.platform.SyncLock
-import io.github.valerioisufi.drawview.platform.syncLock
-import io.github.valerioisufi.drawview.latex.cinterop.TexCallbacks
 import io.github.valerioisufi.drawview.latex.cinterop.TEX_ACT_DRAW_TEXT
 import io.github.valerioisufi.drawview.latex.cinterop.TEX_ACT_SET_FONT
+import io.github.valerioisufi.drawview.latex.cinterop.TexCallbacks
 import io.github.valerioisufi.drawview.latex.cinterop.tex_init
 import io.github.valerioisufi.drawview.latex.cinterop.tex_parse
 import io.github.valerioisufi.drawview.latex.cinterop.tex_render_draw
@@ -15,6 +13,8 @@ import io.github.valerioisufi.drawview.latex.cinterop.tex_render_get_baseline
 import io.github.valerioisufi.drawview.latex.cinterop.tex_render_get_height
 import io.github.valerioisufi.drawview.latex.cinterop.tex_render_get_width
 import io.github.valerioisufi.drawview.latex.cinterop.tex_set_callbacks
+import io.github.valerioisufi.drawview.platform.SyncLock
+import io.github.valerioisufi.drawview.platform.syncLock
 import io.nano.tex.ActionRecorder
 import io.nano.tex.Font
 import io.nano.tex.Graphics2D
@@ -118,7 +118,7 @@ private fun record(recorder: Long, action: Int, fontHandle: Long, text: CPointer
 }
 
 @OptIn(ExperimentalForeignApi::class)
-actual object LatexPlatformEngine {
+internal actual object LatexPlatformEngine {
 
     private val engineLock = SyncLock()
     private var initialized = false

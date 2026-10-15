@@ -17,7 +17,7 @@ import java.net.URI
 /** The files of the system dragged onto the window (their URIs read as files). */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-actual fun Modifier.fileDropTarget(onFiles: (List<PickedFile>) -> Boolean): Modifier {
+public actual fun Modifier.fileDropTarget(onFiles: (List<PickedFile>) -> Boolean): Modifier {
     val current by rememberUpdatedState(onFiles)
     val target = remember {
         object : DragAndDropTarget {

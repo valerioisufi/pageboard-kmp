@@ -1,0 +1,9 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <DrawView-KMP:drawview-store-testing>
+final suspend fun io.github.valerioisufi.drawview.store.testing/checkFolderOperations(io.github.valerioisufi.drawview.store/DocumentStore) // io.github.valerioisufi.drawview.store.testing/checkFolderOperations|checkFolderOperations(io.github.valerioisufi.drawview.store.DocumentStore){}[0]

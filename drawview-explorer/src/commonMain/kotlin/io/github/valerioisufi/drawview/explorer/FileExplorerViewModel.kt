@@ -27,7 +27,7 @@ import org.jetbrains.compose.resources.StringResource
  * [openDocuments]; the documents are renamed by a change of them (the devices they are shared with
  * rename them too).
  */
-class FileExplorerViewModel(private val openDocuments: OpenDocuments) : ViewModel() {
+internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) : ViewModel() {
     private val store: DocumentStore get() = openDocuments.store
 
     enum class FileType { FILE, FOLDER }

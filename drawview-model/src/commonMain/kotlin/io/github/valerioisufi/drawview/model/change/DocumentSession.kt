@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /** Where a change of a document comes from. */
-enum class ChangeOrigin {
+public enum class ChangeOrigin {
     /** Made by the user on this device (recorded in the history). */
     LOCAL,
 
@@ -33,19 +33,19 @@ enum class ChangeOrigin {
  * An operation applied to [document]: the change undoing it ([inverse], `null` for an operation
  * of another device that changed nothing here), where it comes from and what it did.
  */
-class CommittedChange(
-    val document: DrawDocument,
-    val operation: Operation,
-    val inverse: DocumentChange?,
-    val origin: ChangeOrigin,
-    val effects: ChangeEffects
+public class CommittedChange(
+    public val document: DrawDocument,
+    public val operation: Operation,
+    public val inverse: DocumentChange?,
+    public val origin: ChangeOrigin,
+    public val effects: ChangeEffects
 ) {
-    val change: DocumentChange get() = operation.change
+    public val change: DocumentChange get() = operation.change
 }
 
 /** Notified of every change applied to a document, on the thread of the document. */
-fun interface ChangeObserver {
-    fun onChange(committed: CommittedChange)
+public fun interface ChangeObserver {
+    public fun onChange(committed: CommittedChange)
 }
 
 /**
@@ -64,12 +64,12 @@ fun interface ChangeObserver {
  * @param replica the device making the changes (see `DocumentStore.replicaId`).
  * @param knownOperations the version vector of the operations already applied to [document].
  */
-class DocumentSession(
-    val document: DrawDocument,
-    val replica: String = newElementId(),
+public class DocumentSession(
+    public val document: DrawDocument,
+    public val replica: String = newElementId(),
     knownOperations: Map<String, Long> = emptyMap()
 ) {
-    val clock = HybridClock(replica)
+    public val clock: HybridClock = HybridClock(replica)
     private val applied = knownOperations.toMutableMap()
     private val observers = mutableListOf<ChangeObserver>()
 
@@ -83,26 +83,26 @@ class DocumentSession(
      * The document may only be read here (e.g. shared with this device as a reader): the changes
      * made here are refused, the ones of the other devices are received.
      */
-    var isReadOnly: Boolean
+    public var isReadOnly: Boolean
         get() = readOnlyState.value
         set(value) {
             readOnlyState.value = value
         }
 
     /** [isReadOnly] as it changes. */
-    val readOnly: StateFlow<Boolean> = readOnlyState.asStateFlow()
+    public val readOnly: StateFlow<Boolean> = readOnlyState.asStateFlow()
 
     /** The last operation applied of every replica. */
-    val versionVector: Map<String, Long> get() = applied.toMap()
+    public val versionVector: Map<String, Long> get() = applied.toMap()
 
     /** The number of the last operation of [replica] applied (0: none). */
-    fun lastApplied(replica: String): Long = applied[replica] ?: 0L
+    public fun lastApplied(replica: String): Long = applied[replica] ?: 0L
 
-    fun addObserver(observer: ChangeObserver) {
+    public fun addObserver(observer: ChangeObserver) {
         observers.add(observer)
     }
 
-    fun removeObserver(observer: ChangeObserver) {
+    public fun removeObserver(observer: ChangeObserver) {
         observers.remove(observer)
     }
 
@@ -112,7 +112,7 @@ class DocumentSession(
      * @return the change undoing it, or `null` when it changed nothing (it is not an operation
      *   then: nobody is notified).
      */
-    fun submit(change: DocumentChange, origin: ChangeOrigin = ChangeOrigin.LOCAL): DocumentChange? {
+    public fun submit(change: DocumentChange, origin: ChangeOrigin = ChangeOrigin.LOCAL): DocumentChange? {
         require(origin != ChangeOrigin.REMOTE) { "The changes of another device are received" }
         if (isReadOnly) return null
         val stamp = clock.next()
@@ -133,7 +133,7 @@ class DocumentSession(
      * @return `true` when it has been applied (even if it changed nothing: it was made before
      *   more recent changes).
      */
-    fun receive(operation: Operation): Boolean {
+    public fun receive(operation: Operation): Boolean {
         val id = operation.id
         if (id.sequence != (applied[id.replica] ?: 0L) + 1) return false
         clock.observe(operation.stamp)

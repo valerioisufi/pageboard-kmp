@@ -80,7 +80,7 @@ import org.jetbrains.compose.resources.stringResource
  * bottom over it; also shown and hidden from the menus), its settings and the hints over the
  * canvas. Closing the editor does not stop the recording (see [LectureRecordingIndicator]).
  */
-fun LectureAssistant.editorExtension(): EditorExtension {
+public fun LectureAssistant.editorExtension(): EditorExtension {
     // The panel shown or hidden, where the lectures can be recorded
     val panel = Command(
         id = "lecture-panel",
@@ -148,7 +148,7 @@ private fun BoxScope.ArrivalsBanner(assistant: LectureAssistant, documentId: Str
  * without a transcript, to be transcribed and reviewed here (with what it costs).
  */
 @Composable
-fun LectureDialogs(assistant: LectureAssistant) {
+public fun LectureDialogs(assistant: LectureAssistant) {
     val offer = assistant.generationOffers.firstOrNull() ?: return
     AlertDialog(
         onDismissRequest = { assistant.declineGeneration(offer) },
@@ -178,7 +178,7 @@ fun LectureDialogs(assistant: LectureAssistant) {
  * is created again: the recording goes on).
  */
 @Composable
-fun rememberLectureAssistant(): LectureAssistant {
+public fun rememberLectureAssistant(): LectureAssistant {
     val assistant = viewModel { LectureAssistantHolder() }.assistant
     assistant.requestMicrophone = rememberMicrophoneAccess()
     return assistant
@@ -195,7 +195,7 @@ private class LectureAssistantHolder : ViewModel() {
  * @param onOpenDocument opens the editor of a document.
  */
 @Composable
-fun LectureRecordingIndicator(assistant: LectureAssistant, onOpenDocument: (String) -> Unit, modifier: Modifier = Modifier) {
+public fun LectureRecordingIndicator(assistant: LectureAssistant, onOpenDocument: (String) -> Unit, modifier: Modifier = Modifier) {
     val recorder = assistant.activeRecorder ?: return
     val lecture = recorder.lecture
     val recording = lecture.status == LectureStatus.RECORDING
@@ -252,7 +252,7 @@ fun LectureRecordingIndicator(assistant: LectureAssistant, onOpenDocument: (Stri
 }
 
 /** The tag of the documents with a lecture: their badge and the filter of the library. */
-fun LectureAssistant.documentTag(): DocumentTag = DocumentTag(
+public fun LectureAssistant.documentTag(): DocumentTag = DocumentTag(
     id = "lecture",
     label = { stringResource(Res.string.lecture_tag) },
     filterLabel = { stringResource(Res.string.lecture_tag_filter) },
@@ -267,7 +267,7 @@ fun LectureAssistant.documentTag(): DocumentTag = DocumentTag(
  * @param onExit stops the recordings ([LectureRecordings.finishAll]) and exits.
  */
 @Composable
-fun LectureExitDialog(onExit: () -> Unit, onDismiss: () -> Unit) {
+public fun LectureExitDialog(onExit: () -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(Res.string.lecture_exit_title)) },

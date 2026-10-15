@@ -13,7 +13,7 @@ import kotlin.math.min
  * observers of a [DocumentSession] (persistence, rendering, selection), which therefore do not
  * depend on the kinds of change.
  */
-class ChangeEffects internal constructor(private val document: DrawDocument) {
+public class ChangeEffects internal constructor(private val document: DrawDocument) {
     private val _savedElements = LinkedHashMap<DrawElement, DrawPage>()
     private val _deletedElements = LinkedHashSet<DrawElement>()
     private val _insertedPages = LinkedHashSet<DrawPage>()
@@ -28,47 +28,47 @@ class ChangeEffects internal constructor(private val document: DrawDocument) {
      * Elements inserted, changed or removed (removed elements are kept, hidden: see
      * [DrawPage.removedElements]), with the page holding them.
      */
-    val savedElements: Map<DrawElement, DrawPage> get() = _savedElements
+    public val savedElements: Map<DrawElement, DrawPage> get() = _savedElements
 
     /** Elements removed from their page (hidden), among the [savedElements]. */
-    val deletedElements: Set<DrawElement> get() = _deletedElements
+    public val deletedElements: Set<DrawElement> get() = _deletedElements
 
     /** Pages inserted (or put back), with their content. */
-    val insertedPages: Set<DrawPage> get() = _insertedPages
+    internal val insertedPages: Set<DrawPage> get() = _insertedPages
 
     /** Pages changed: moved, formatted, removed again... (their content excepted). */
-    val savedPages: Set<DrawPage> get() = _savedPages
+    internal val savedPages: Set<DrawPage> get() = _savedPages
 
     /** Pages removed (kept, hidden: see [DrawDocument.removedPages]). */
-    val removedPages: Set<DrawPage> get() = _removedPages
+    public val removedPages: Set<DrawPage> get() = _removedPages
 
     /** Pages whose content changed (see [DrawPage.contentVersions]): their versions to store. */
-    val versionedPages: Set<DrawPage> get() = _versionedPages
+    internal val versionedPages: Set<DrawPage> get() = _versionedPages
 
     /**
      * Contents of texts made apart from the content they lost to (see `UpdateTexts`), as the
      * copies keeping them, with the page to add them to (see [DocumentSession]).
      */
-    val lostVersions: List<Pair<DrawPage, TextData>> get() = _lostVersions
+    public val lostVersions: List<Pair<DrawPage, TextData>> get() = _lostVersions
 
     /** Files added to the document. */
-    val resources: List<DrawResource> get() = _resources
+    public val resources: List<DrawResource> get() = _resources
 
     /** Areas to draw again, in the millimeters of their page (`null`: the whole page). */
-    val dirtyRegions: Map<DrawPage, Rect?> get() = _dirtyRegions
+    public val dirtyRegions: Map<DrawPage, Rect?> get() = _dirtyRegions
 
-    var documentDefaultsChanged: Boolean = false
+    internal var documentDefaultsChanged: Boolean = false
         private set
 
     /** The title of the document changed. */
-    var documentRenamed: Boolean = false
+    internal var documentRenamed: Boolean = false
         private set
 
     /** The pages must be laid out again (pages added, removed, moved or resized). */
-    var layoutChanged: Boolean = false
+    public var layoutChanged: Boolean = false
         private set
 
-    val isEmpty: Boolean
+    public val isEmpty: Boolean
         get() = _savedElements.isEmpty() && _deletedElements.isEmpty() && _insertedPages.isEmpty() &&
             _savedPages.isEmpty() && _removedPages.isEmpty() && _versionedPages.isEmpty() && _lostVersions.isEmpty() &&
             _resources.isEmpty() && !documentDefaultsChanged && !documentRenamed

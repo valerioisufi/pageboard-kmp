@@ -21,17 +21,17 @@ import kotlinx.serialization.encoding.Encoder
  * text order is the stamp order.
  */
 @Serializable(with = StampSerializer::class)
-data class Stamp(val time: Long, val counter: Int, val replica: String) : Comparable<Stamp> {
+public data class Stamp(val time: Long, val counter: Int, val replica: String) : Comparable<Stamp> {
     override fun compareTo(other: Stamp): Int =
         compareValuesBy(this, other, { it.time }, { it.counter }, { it.replica })
 
     override fun toString(): String = time.toString(16).padStart(12, '0') + "." + counter.toString(16).padStart(8, '0') + "." + replica
 
-    companion object {
+    public companion object {
         /** Before every stamp (what was never written). */
-        val ZERO = Stamp(0L, 0, "")
+        public val ZERO: Stamp = Stamp(0L, 0, "")
 
-        fun parse(text: String): Stamp? {
+        public fun parse(text: String): Stamp? {
             val parts = text.split('.', limit = 3)
             if (parts.size != 3) return null
             val time = parts[0].toLongOrNull(16) ?: return null
@@ -53,17 +53,17 @@ internal object StampSerializer : KSerializer<Stamp> {
  * device; written as `stamp/index` (text order = stacking order).
  */
 @Serializable(with = ElementOrderSerializer::class)
-data class ElementOrder(val stamp: Stamp, val index: Int) : Comparable<ElementOrder> {
+public data class ElementOrder(val stamp: Stamp, val index: Int) : Comparable<ElementOrder> {
     override fun compareTo(other: ElementOrder): Int =
         compareValuesBy(this, other, { it.stamp }, { it.index })
 
     override fun toString(): String = "$stamp/" + index.toString(16).padStart(8, '0')
 
-    companion object {
+    public companion object {
         /** The order of an element not on a page yet (assigned when it is added). */
-        val UNASSIGNED = ElementOrder(Stamp.ZERO, -1)
+        public val UNASSIGNED: ElementOrder = ElementOrder(Stamp.ZERO, -1)
 
-        fun parse(text: String): ElementOrder? {
+        public fun parse(text: String): ElementOrder? {
             val slash = text.lastIndexOf('/')
             if (slash < 0) return null
             val stamp = Stamp.parse(text.substring(0, slash)) ?: return null

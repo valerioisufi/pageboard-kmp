@@ -5,7 +5,7 @@ import io.github.valerioisufi.drawview.lecture.TranscriptSegment
 import kotlinx.coroutines.CoroutineScope
 
 /** Transcribes the audio of a lecture while it is recorded: the words arrive while they are said. */
-interface StreamingTranscriber {
+internal interface StreamingTranscriber {
     /** What the transcription gives, from its coroutine. */
     interface Listener {
         /** An utterance, final, with the times of the recording. */

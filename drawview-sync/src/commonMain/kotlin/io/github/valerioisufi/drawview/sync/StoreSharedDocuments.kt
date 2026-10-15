@@ -12,7 +12,7 @@ import kotlinx.coroutines.sync.withLock
  * [SyncEngine]). Whether this device may only read a document goes to its open session too
  * ([OpenDocuments.setReadOnly]).
  */
-class StoreSharedDocuments(private val store: DocumentStore, private val documents: OpenDocuments? = null) : SharedDocuments {
+public class StoreSharedDocuments(private val store: DocumentStore, private val documents: OpenDocuments? = null) : SharedDocuments {
     private val mutex = Mutex()
     private val waiting = mutableMapOf<String, SharingState>()
 

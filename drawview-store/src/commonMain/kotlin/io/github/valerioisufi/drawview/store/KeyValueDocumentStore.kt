@@ -41,19 +41,19 @@ import kotlinx.serialization.json.Json
 /**
  * Minimal string key-value storage.
  */
-interface KeyValueStorage {
-    fun get(key: String): String?
+public interface KeyValueStorage {
+    public fun get(key: String): String?
 
     /** Stores [value]; `false` when it could not be written (e.g. storage quota exceeded). */
-    fun set(key: String, value: String): Boolean
+    public fun set(key: String, value: String): Boolean
 
-    fun remove(key: String)
+    public fun remove(key: String)
 }
 
 /**
  * [KeyValueStorage] kept in memory (tests).
  */
-class InMemoryKeyValueStorage : KeyValueStorage {
+public class InMemoryKeyValueStorage : KeyValueStorage {
     private val values = mutableMapOf<String, String>()
 
     override fun get(key: String): String? = values[key]
@@ -67,7 +67,7 @@ class InMemoryKeyValueStorage : KeyValueStorage {
         values.remove(key)
     }
 
-    val keys: Set<String> get() = values.keys.toSet()
+    public val keys: Set<String> get() = values.keys.toSet()
 }
 
 /**
@@ -83,7 +83,7 @@ class InMemoryKeyValueStorage : KeyValueStorage {
  * @param clock the time of the changes, in milliseconds: a fixed time makes the dates shown by a
  *   test the same at every run.
  */
-class KeyValueDocumentStore(
+public class KeyValueDocumentStore(
     private val storage: KeyValueStorage,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
     private val saveDelayMs: Long = 400L,
@@ -111,7 +111,7 @@ class KeyValueDocumentStore(
     override val persistence: DocumentPersistence get() = this
 
     /** `false` after a write has been rejected by the storage (e.g. quota exceeded). */
-    var lastWriteSucceeded: Boolean = true
+    internal var lastWriteSucceeded: Boolean = true
         private set
 
     // ==========================================================
@@ -322,7 +322,7 @@ class KeyValueDocumentStore(
         return true
     }
 
-    override suspend fun flush() = flushNow()
+    override suspend fun flush(): Unit = flushNow()
 
     override fun closeDocument(documentId: String) {
         syncLock(lock) {
@@ -337,7 +337,7 @@ class KeyValueDocumentStore(
     /**
      * Writes the modified documents immediately.
      */
-    fun flushNow() {
+    internal fun flushNow() {
         syncLock(lock) {
             saveJob?.cancel()
             saveJob = null
@@ -354,17 +354,17 @@ class KeyValueDocumentStore(
     // DocumentPersistence: every change rewrites the owning document
     // ==========================================================
 
-    override suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) = markPageModified(page)
+    override suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>): Unit = markPageModified(page)
 
-    override suspend fun saveText(page: DrawPage, text: DrawText) = markPageModified(page)
+    override suspend fun saveText(page: DrawPage, text: DrawText): Unit = markPageModified(page)
 
-    override suspend fun saveImage(page: DrawPage, image: DrawImage) = markPageModified(page)
+    override suspend fun saveImage(page: DrawPage, image: DrawImage): Unit = markPageModified(page)
 
-    override suspend fun savePdf(page: DrawPage, pdf: DrawPdf) = markPageModified(page)
+    override suspend fun savePdf(page: DrawPage, pdf: DrawPdf): Unit = markPageModified(page)
 
-    override suspend fun saveTextMarkup(page: DrawPage, markup: DrawTextMarkup) = markPageModified(page)
+    override suspend fun saveTextMarkup(page: DrawPage, markup: DrawTextMarkup): Unit = markPageModified(page)
 
-    override suspend fun saveCustomElement(page: DrawPage, element: DrawCustomElement) = markPageModified(page)
+    override suspend fun saveCustomElement(page: DrawPage, element: DrawCustomElement): Unit = markPageModified(page)
 
     @OptIn(ExperimentalEncodingApi::class)
     override suspend fun saveResource(document: DrawDocument, resource: DrawResource) {
@@ -379,7 +379,7 @@ class KeyValueDocumentStore(
         markDocumentModified(document)
     }
 
-    override suspend fun savePage(document: DrawDocument, page: DrawPage) = markDocumentModified(document)
+    override suspend fun savePage(document: DrawDocument, page: DrawPage): Unit = markDocumentModified(document)
 
     override suspend fun appendOperation(document: DrawDocument, operation: Operation) {
         syncLock(lock) {
@@ -615,7 +615,7 @@ class KeyValueDocumentStore(
     private fun folderSummaries(index: StoredIndex): List<FolderSummary> =
         index.folders.sortedBy { it.name }.map { it.toSummary() }
 
-    companion object {
+    public companion object {
         private const val PREFIX = "drawview."
         private const val INDEX_KEY = PREFIX + "index"
         private const val PREFERENCE_PREFIX = PREFIX + "preference."

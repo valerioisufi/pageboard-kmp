@@ -1,23 +1,23 @@
 package io.nano.tex
 
 /**
- * Entry point of the native MicroTeX engine (`libtex.so`, built by :drawview-native).
+ * Entry point of the native MicroTeX engine (`libtex.so`, built by :drawview-native-tex).
  * The native methods are registered by `JNI_OnLoad` (see native/tex/port/jni_latex.cpp).
  */
-class LaTeX private constructor() {
+public class LaTeX private constructor() {
 
     @Volatile
-    var isInitialized = false
+    public var isInitialized: Boolean = false
         private set
 
     @Synchronized
-    fun init(resDir: String) {
+    public fun init(resDir: String) {
         if (!nInit(resDir)) throw TeXException("Failed to initialize LaTeX engine with root directory: $resDir")
         isInitialized = true
     }
 
     @Synchronized
-    fun release() {
+    public fun release() {
         if (isInitialized) {
             nFree()
             isInitialized = false
@@ -25,18 +25,18 @@ class LaTeX private constructor() {
     }
 
     @Synchronized
-    fun parse(ltx: String, textSize: Float, foreground: Int): TeXRender {
+    public fun parse(ltx: String, textSize: Float, foreground: Int): TeXRender {
         check(isInitialized) { "LaTeX engine is not initialized" }
         val ptr = nParse(ltx, 0, textSize, 0f, foreground)
         if (ptr == 0L) throw TeXException("Failed to parse LaTeX: $ltx")
         return TeXRender(ptr)
     }
 
-    companion object {
+    public companion object {
         private var instance: LaTeX? = null
 
         /** Whether `libtex.so` has been loaded. */
-        val isLibraryAvailable: Boolean by lazy {
+        public val isLibraryAvailable: Boolean by lazy {
             try {
                 System.loadLibrary("tex")
                 true
@@ -47,7 +47,7 @@ class LaTeX private constructor() {
         }
 
         @Synchronized
-        fun instance(): LaTeX {
+        public fun instance(): LaTeX {
             if (!isLibraryAvailable) throw UnsatisfiedLinkError("libtex.so is not available")
             return instance ?: LaTeX().also { instance = it }
         }

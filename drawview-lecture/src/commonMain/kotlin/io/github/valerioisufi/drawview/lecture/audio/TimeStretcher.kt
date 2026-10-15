@@ -13,7 +13,7 @@ import kotlin.math.roundToInt
  * Streaming: the input can be given in blocks of any size, the output comes with a delay of about
  * one frame.
  */
-class TimeStretcher(val speed: Float, sampleRate: Int = LECTURE_SAMPLE_RATE) {
+internal class TimeStretcher(public val speed: Float, sampleRate: Int = LECTURE_SAMPLE_RATE) {
     init {
         require(speed in 0.5f..4f)
     }

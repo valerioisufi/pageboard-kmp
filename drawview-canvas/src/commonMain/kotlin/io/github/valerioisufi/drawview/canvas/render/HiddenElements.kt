@@ -9,7 +9,7 @@ import kotlin.concurrent.Volatile
  * The state of the editor, not of the document: the tile workers read it while the editor
  * changes it, so each set is replaced as a whole, never changed in place.
  */
-class HiddenElements {
+internal class HiddenElements {
     @Volatile
     private var dragged: Set<String> = emptySet()
 

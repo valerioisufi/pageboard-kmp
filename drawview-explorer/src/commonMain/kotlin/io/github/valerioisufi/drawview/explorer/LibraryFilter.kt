@@ -10,7 +10,7 @@ import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import org.jetbrains.compose.resources.stringResource
 
 /** The notes the library shows. */
-sealed interface LibraryFilter {
+internal sealed interface LibraryFilter {
     /** Every note, and the folders. */
     data object All : LibraryFilter
 

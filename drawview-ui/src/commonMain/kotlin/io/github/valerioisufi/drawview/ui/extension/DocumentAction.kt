@@ -12,8 +12,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
  * @param content shown once the action is chosen (e.g. a dialog) for the document `documentId`
  *   named `title`, until it calls `onDone`.
  */
-class DocumentAction(
-    val icon: ImageVector,
-    val label: @Composable () -> String,
-    val content: @Composable (documentId: String, title: String, onDone: () -> Unit) -> Unit
+public class DocumentAction(
+    public val icon: ImageVector,
+    public val label: @Composable () -> String,
+    public val content: @Composable (documentId: String, title: String, onDone: () -> Unit) -> Unit
 )

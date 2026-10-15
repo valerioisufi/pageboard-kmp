@@ -6,7 +6,7 @@ import kotlin.concurrent.Volatile
 /**
  * State representing the lifecycle of a tile.
  */
-enum class TileState {
+public enum class TileState {
     READY,
     RENDERING,
     STALE
@@ -19,14 +19,14 @@ enum class TileState {
  * @property bitmap The underlying rasterized Compose ImageBitmap.
  * @property state Current lifecycle state of the tile.
  */
-class Tile(
-    val key: TileKey,
-    val bitmap: ImageBitmap,
-    @Volatile var state: TileState = TileState.RENDERING
+public class Tile(
+    public val key: TileKey,
+    public val bitmap: ImageBitmap,
+    @Volatile public var state: TileState = TileState.RENDERING
 ) {
     /** Last frame of the [TileCache] in which the tile was used (guarded by the cache lock). */
     internal var lastUsedFrame: Long = -1L
 
-    val sizeInBytes: Int
+    internal val sizeInBytes: Int
         get() = bitmap.width * bitmap.height * 4
 }

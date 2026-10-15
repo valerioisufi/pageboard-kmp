@@ -24,7 +24,7 @@ import kotlinx.serialization.json.Json
  * @param modelPath the ggml model (e.g. `ggml-large-v3-turbo-q5_0.bin`).
  * @param engine the native whisper.cpp, `null` where it is not available.
  */
-class WhisperTranscriber internal constructor(
+internal class WhisperTranscriber internal constructor(
     private val modelPath: String,
     private val engine: WhisperEngine?,
     private val threads: Int = DEFAULT_THREADS

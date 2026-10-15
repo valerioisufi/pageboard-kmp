@@ -1,13 +1,14 @@
 package io.nano.tex
 
-class LaTeX private constructor() {
+/** The MicroTeX engine of the process (native): initialized once with its resources, then parses the formulas. */
+public class LaTeX private constructor() {
 
     @Volatile
-    var isInitialized = false
+    public var isInitialized: Boolean = false
         private set
 
     @Synchronized
-    fun init(resDir: String) {
+    public fun init(resDir: String) {
         val success = nInit(resDir)
         if (!success) {
             throw TeXException("Failed to initialize LaTeX engine with root directory: $resDir")
@@ -16,7 +17,7 @@ class LaTeX private constructor() {
     }
 
     @Synchronized
-    fun release() {
+    public fun release() {
         if (isInitialized) {
             nFree()
             isInitialized = false
@@ -30,7 +31,7 @@ class LaTeX private constructor() {
     }
 
     @Synchronized
-    fun parse(ltx: String, textSize: Float, foreground: Int): TeXRender {
+    public fun parse(ltx: String, textSize: Float, foreground: Int): TeXRender {
         check()
         val ptr = nParse(ltx, 0, textSize, 0f, foreground)
         if (ptr == 0L) throw TeXException("Failed to parse LaTeX: $ltx")
@@ -38,7 +39,7 @@ class LaTeX private constructor() {
     }
 
     @Synchronized
-    fun parse(
+    public fun parse(
         ltx: String,
         width: Int,
         textSize: Float,
@@ -56,15 +57,15 @@ class LaTeX private constructor() {
         return r
     }
 
-    fun setDebug(debug: Boolean) {
+    public fun setDebug(debug: Boolean) {
         nSetDebug(debug)
     }
 
-    companion object {
+    public companion object {
         private var instance: LaTeX? = null
 
         @Synchronized
-        fun instance(): LaTeX {
+        public fun instance(): LaTeX {
             LatexNativeLoader.load()
             if (instance == null) {
                 instance = LaTeX()

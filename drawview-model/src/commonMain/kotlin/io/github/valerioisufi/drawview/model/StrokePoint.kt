@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
  * @property timestampMs timestamp of the sample (any monotonic origin, only deltas matter).
  */
 @Serializable
-data class StrokePoint(
+public data class StrokePoint(
     val x: Float,
     val y: Float,
     val pressure: Float = -1f,
@@ -20,14 +20,14 @@ data class StrokePoint(
  * Device that generated the inputs of a stroke. Mirrors `ink::StrokeInput::ToolType`: the
  * Google Ink brushes react to stylus pressure only for [STYLUS] inputs.
  */
-enum class InputToolType(val nativeId: Int) {
+public enum class InputToolType(public val nativeId: Int) {
     UNKNOWN(0),
     MOUSE(1),
     TOUCH(2),
     STYLUS(3);
 
-    companion object {
-        fun fromName(name: String?): InputToolType =
+    public companion object {
+        public fun fromName(name: String?): InputToolType =
             entries.firstOrNull { it.name == name } ?: UNKNOWN
     }
 }

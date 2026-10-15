@@ -21,7 +21,7 @@ import org.jetbrains.compose.resources.Font
  * available on Android only).
  */
 @Composable
-fun plusJakartaSansFontFamily(): FontFamily {
+internal fun plusJakartaSansFontFamily(): FontFamily {
     val regular = Font(Res.font.plus_jakarta_sans_regular, FontWeight.Normal)
     val medium = Font(Res.font.plus_jakarta_sans_medium, FontWeight.Medium)
     val semiBold = Font(Res.font.plus_jakarta_sans_semibold, FontWeight.SemiBold)
@@ -35,13 +35,13 @@ fun plusJakartaSansFontFamily(): FontFamily {
  * regular, all in Plus Jakarta Sans.
  */
 @Composable
-fun drawViewTypography(): Typography {
+internal fun drawViewTypography(): Typography {
     val family = plusJakartaSansFontFamily()
     return remember(family) { drawViewTypography(family) }
 }
 
 /** The type scale of the design in [family]. */
-fun drawViewTypography(family: FontFamily): Typography {
+internal fun drawViewTypography(family: FontFamily): Typography {
     fun style(weight: FontWeight, size: Int, lineHeight: Int, tracking: Double = 0.0) = TextStyle(
         fontFamily = family,
         fontWeight = weight,

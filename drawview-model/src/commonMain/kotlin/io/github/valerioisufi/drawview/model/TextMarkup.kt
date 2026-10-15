@@ -13,13 +13,13 @@ import kotlin.math.min
 /**
  * How a passage of the text of a PDF is marked.
  */
-enum class TextMarkupKind {
+public enum class TextMarkupKind {
     HIGHLIGHT,
     UNDERLINE,
     STRIKEOUT;
 
-    companion object {
-        fun fromName(name: String?): TextMarkupKind? = entries.firstOrNull { it.name == name }
+    public companion object {
+        public fun fromName(name: String?): TextMarkupKind? = entries.firstOrNull { it.name == name }
     }
 }
 
@@ -33,16 +33,16 @@ enum class TextMarkupKind {
  * PDF where the page draws it (fitted in the page, see [fitPdfPage]), even when the format of
  * the page changes. [id] identifies the mark on every device (see [newElementId]).
  */
-class DrawTextMarkup(
+public class DrawTextMarkup(
     override val id: String = newElementId(),
-    val resourceId: String,
-    val pdfPageIndex: Int,
-    val pdfWidthPt: Float,
-    val pdfHeightPt: Float,
-    val startIndex: Int,
-    val endIndex: Int,
-    val text: String,
-    val rects: List<Rect>,
+    public val resourceId: String,
+    public val pdfPageIndex: Int,
+    public val pdfWidthPt: Float,
+    public val pdfHeightPt: Float,
+    public val startIndex: Int,
+    public val endIndex: Int,
+    public val text: String,
+    public val rects: List<Rect>,
     kind: TextMarkupKind,
     color: Int
 ) : DrawElement {
@@ -53,31 +53,31 @@ class DrawTextMarkup(
     override var updated: Stamp = Stamp.ZERO
 
     @Volatile
-    var kind: TextMarkupKind = kind
+    public var kind: TextMarkupKind = kind
 
     /** ARGB color. */
     @Volatile
-    var color: Int = color
+    public var color: Int = color
 
     /** Transformation from the points of the PDF page to the millimeters of [page]. */
-    fun pointsToPageMm(page: DrawPage): Matrix2D = pointsToPageMm(page.widthMm, page.heightMm)
+    public fun pointsToPageMm(page: DrawPage): Matrix2D = pointsToPageMm(page.widthMm, page.heightMm)
 
     /** Transformation from the points of the PDF page to the millimeters of a [widthMm] x [heightMm] page. */
-    fun pointsToPageMm(widthMm: Float, heightMm: Float): Matrix2D =
+    public fun pointsToPageMm(widthMm: Float, heightMm: Float): Matrix2D =
         pdfPointsToPageMm(pdfWidthPt, pdfHeightPt, widthMm, heightMm)
 
     /** Bounds of the lines in points of the PDF page. */
-    val boundsPoints: Rect = rects.reduceOrNull { a, b ->
+    public val boundsPoints: Rect = rects.reduceOrNull { a, b ->
         Rect(min(a.left, b.left), min(a.top, b.top), max(a.right, b.right), max(a.bottom, b.bottom))
     } ?: Rect.Zero
 
     /** Bounds of the lines in the millimeters of a [widthMm] x [heightMm] page. */
-    fun boundsMm(widthMm: Float, heightMm: Float): Rect = pointsToPageMm(widthMm, heightMm).mapRect(boundsPoints)
+    public fun boundsMm(widthMm: Float, heightMm: Float): Rect = pointsToPageMm(widthMm, heightMm).mapRect(boundsPoints)
 
-    fun boundsMm(page: DrawPage): Rect = boundsMm(page.widthMm, page.heightMm)
+    public fun boundsMm(page: DrawPage): Rect = boundsMm(page.widthMm, page.heightMm)
 
     /** Whether [pointMm] (millimeters of [page]) is on a line of the passage, or at most [toleranceMm] away. */
-    fun containsPoint(page: DrawPage, pointMm: Point, toleranceMm: Float = 0f): Boolean {
+    public fun containsPoint(page: DrawPage, pointMm: Point, toleranceMm: Float = 0f): Boolean {
         val toPage = pointsToPageMm(page)
         return rects.any { toPage.mapRect(it).inflate(toleranceMm).contains(pointMm) }
     }
@@ -87,7 +87,7 @@ class DrawTextMarkup(
  * Transformation from the points of a [pdfWidthPt] x [pdfHeightPt] PDF page to the millimeters of
  * a [widthMm] x [heightMm] page showing it.
  */
-fun pdfPointsToPageMm(pdfWidthPt: Float, pdfHeightPt: Float, widthMm: Float, heightMm: Float): Matrix2D {
+public fun pdfPointsToPageMm(pdfWidthPt: Float, pdfHeightPt: Float, widthMm: Float, heightMm: Float): Matrix2D {
     val target = fitPdfPage(pdfWidthPt.toDouble(), pdfHeightPt.toDouble(), Rect(0f, 0f, widthMm, heightMm))
     return Matrix2D().setRectToRect(Rect(0f, 0f, pdfWidthPt, pdfHeightPt), target)
 }

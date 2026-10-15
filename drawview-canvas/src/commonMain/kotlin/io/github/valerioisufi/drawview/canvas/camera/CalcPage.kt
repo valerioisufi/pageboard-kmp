@@ -14,28 +14,28 @@ import io.github.valerioisufi.drawview.model.geometry.px
  *
  * @param density Screen pixel density (defaults to 1.0f).
  */
-class CalcPage(
-    var density: Float = 1f
+public class CalcPage(
+    public var density: Float = 1f
 ) {
     /**
      * Flag indicating whether page layout bounds need recalculation.
      */
-    var needToBeUpdated: Boolean = true
+    internal var needToBeUpdated: Boolean = true
 
     /**
      * Mathematical boundaries for each page relative to the base, unscaled viewport.
      */
-    val pagesRectOnWindow = mutableListOf<Rect>()
+    internal val pagesRectOnWindow = mutableListOf<Rect>()
 
     /**
      * Bounding box encompassing all laid-out pages including their margins.
      */
-    var contentRect: Rect = Rect.Zero
+    internal var contentRect: Rect = Rect.Zero
 
     /**
      * Spacing configuration for document layout.
      */
-    data class PagePositionOnWindowOption(
+    internal data class PagePositionOnWindowOption(
         var horizontalPadding: Float = 8f,
         var topPadding: Float = 8f,
         var betweenPadding: Float = 8f,
@@ -49,7 +49,7 @@ class CalcPage(
      * Content is scaled uniformly to fit the window's width based on the widest page (at most
      * [PagePositionOnWindowOption.maxPageWidth] wide, centered).
      */
-    fun calcPagesRectOnWindow(
+    internal fun calcPagesRectOnWindow(
         pages: List<DrawPage>,
         windowRect: Rect,
         options: PagePositionOnWindowOption = PagePositionOnWindowOption()
@@ -103,7 +103,7 @@ class CalcPage(
     /**
      * Coupling of a dynamically transformed page rectangle with its index.
      */
-    data class PageRectWithIndex(
+    public data class PageRectWithIndex(
         val rect: Rect,
         val index: Int
     )
@@ -112,7 +112,7 @@ class CalcPage(
      * Identifies all pages currently visible within [windowRect] after applying [matrix].
      * Uses binary search to quickly isolate visible pages in large documents.
      */
-    fun getPagesRectOnWindowTransformation(
+    internal fun getPagesRectOnWindowTransformation(
         windowRect: Rect,
         matrix: Matrix2D
     ): List<PageRectWithIndex> {

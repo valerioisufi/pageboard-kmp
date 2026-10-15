@@ -4,6 +4,9 @@ import io.github.valerioisufi.drawview.sync.DocumentKey
 import io.github.valerioisufi.drawview.sync.Invitation
 import io.github.valerioisufi.drawview.sync.SyncEngine
 import io.github.valerioisufi.drawview.sync.SyncException
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -12,9 +15,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.TimeMark
-import kotlin.time.TimeSource
 
 /**
  * Keeps the shared documents of this device the same as on the devices of the local network
@@ -34,7 +34,7 @@ import kotlin.time.TimeSource
  * announcements get lost on some networks): one starting again on the same address (see
  * [LanTransport.DEFAULT_PORT]) is connected again even when it is not found again.
  */
-class LanSync(
+public class LanSync(
     private val engine: SyncEngine,
     private val discovery: LanDiscovery,
     private val scope: CoroutineScope,
@@ -59,7 +59,7 @@ class LanSync(
     private var job: Job? = null
 
     /** Starts listening, announcing and connecting. */
-    suspend fun start() {
+    public suspend fun start() {
         if (job != null) return
         transport.start()
         job = scope.launch {
@@ -90,7 +90,7 @@ class LanSync(
      * [announceAgain] (e.g. when the application comes back to the foreground, the system may
      * have stopped it), the connections with the devices sharing a document with this one.
      */
-    suspend fun refresh(announceAgain: Boolean = false) {
+    public suspend fun refresh(announceAgain: Boolean = false) {
         if (job == null) return
         if (!transport.isListening) {
             transport.start()
@@ -102,7 +102,7 @@ class LanSync(
     }
 
     /** Announces the documents shared now (after one is shared or joined). */
-    suspend fun announce() {
+    public suspend fun announce() {
         if (job == null) return
         val tags = engine.announcedTags().map { it.take(TAG_LENGTH) }.sorted()
         val attributes = mutableMapOf("v" to PROTOCOL.toString(), "n" to deviceName().take(MAX_NAME_LENGTH))
@@ -121,14 +121,14 @@ class LanSync(
      * Joins the document of [invitation]: through its owner, at its address if it has one or found
      * on the network.
      */
-    suspend fun join(invitation: Invitation) {
+    public suspend fun join(invitation: Invitation) {
         engine.join(invitation)
         invitation.address?.let { address -> mutex.withLock { addresses[invitation.documentId] = address } }
         announce()
         connect(missingOnly = true)
     }
 
-    suspend fun stop() {
+    public suspend fun stop() {
         job?.cancel()
         job = null
         mutex.withLock {

@@ -26,7 +26,7 @@ import kotlin.math.min
  * 2. the text drawn on the canvas: delimiters removed, formulas rendered by MicroTeX in their
  *    place (see [toCanvasText]).
  */
-object MarkdownTextUtil {
+public object MarkdownTextUtil {
 
     /**
      * Builds the [AnnotatedString] shown by the field of the editor ("conceal" effect):
@@ -35,7 +35,7 @@ object MarkdownTextUtil {
      *
      * The text is never changed, so that the offsets of the field are preserved.
      */
-    fun toLiveAnnotatedString(
+    public fun toLiveAnnotatedString(
         text: String,
         selection: TextRange,
         defaultColor: Color,
@@ -65,14 +65,14 @@ object MarkdownTextUtil {
      * The font of a text, per pixel of its size: the [ascent] and the [descent] of a line, the
      * [advance] of the character standing for a concealed formula (see [toEditorText]).
      */
-    class FontRoom(val ascent: Float, val descent: Float, val advance: Float)
+    internal class FontRoom(public val ascent: Float, public val descent: Float, public val advance: Float)
 
     /**
      * A formula drawn over the field of the editor, on the character [offset] of its text standing
      * for the source of the formula; [widthPx] x [heightPx], its baseline at [baselineRatio] of its
      * height, or centered in its line when [block].
      */
-    class EditorFormula<T>(
+    internal class EditorFormula<T>(
         val offset: Int,
         val image: T,
         val widthPx: Float,
@@ -87,7 +87,7 @@ object MarkdownTextUtil {
      * the text written and of [text], the [formulas] to draw over their characters, and the
      * formula under the caret ([formulaAtCaret], its source shown), if any.
      */
-    class EditorText<T>(
+    internal class EditorText<T>(
         val text: AnnotatedString,
         val offsetMapping: OffsetMapping,
         val formulas: List<EditorFormula<T>>,
@@ -106,7 +106,7 @@ object MarkdownTextUtil {
      * @param lineWidthPx width of the lines (a block formula takes a line).
      * @param room the font of the text per pixel of its size.
      */
-    fun <T> toEditorText(
+    internal fun <T> toEditorText(
         text: String,
         selection: TextRange,
         defaultColor: Color,
@@ -232,13 +232,13 @@ object MarkdownTextUtil {
     }
 
     /** The source MicroTeX renders for the formula [span] of [text]: in display style when written `$$…$$`. */
-    fun formulaSource(text: String, span: Span): String {
+    internal fun formulaSource(text: String, span: Span): String {
         val content = text.substring(span.contentStart, span.contentEnd)
         return if (span.display) "\\displaystyle $content" else content
     }
 
     /** The size of the formula [span] in a text of [fontSizePx]. */
-    fun formulaSizePx(span: Span, fontSizePx: Float): Float = fontSizePx * if (span.display) DISPLAY_SCALE else INLINE_SCALE
+    internal fun formulaSizePx(span: Span, fontSizePx: Float): Float = fontSizePx * if (span.display) DISPLAY_SCALE else INLINE_SCALE
 
     /** The style of the content of [span] (`null`: none), the sizes relative to [baseFontSize]. */
     private fun contentStyle(span: Span, baseFontSize: Float, monospace: FontFamily): SpanStyle? = when (span.kind) {
@@ -266,25 +266,25 @@ object MarkdownTextUtil {
      * @property latex the source of the formula as it is rendered.
      * @property block a formula on a line of its own, centered in its placeholder.
      */
-    class InlineFormula<T>(
-        val image: T,
-        val widthPx: Float,
-        val heightPx: Float,
-        val baselineRatio: Float,
-        val placeholderIndex: Int,
-        val latex: String = "",
-        val block: Boolean = false
+    public class InlineFormula<T>(
+        public val image: T,
+        public val widthPx: Float,
+        public val heightPx: Float,
+        public val baselineRatio: Float,
+        public val placeholderIndex: Int,
+        public val latex: String = "",
+        public val block: Boolean = false
     )
 
     /**
      * Text of a block laid out on the canvas: the delimiters are removed and each formula is
      * replaced by placeholders.
      */
-    class CanvasText<T>(
-        val text: AnnotatedString,
+    public class CanvasText<T>(
+        public val text: AnnotatedString,
         /** Placeholder ranges: per formula, the body (above the baseline) and the descent, or the line of a block formula. */
-        val placeholders: List<PlaceholderSpec>,
-        val formulas: List<InlineFormula<T>>
+        public val placeholders: List<PlaceholderSpec>,
+        public val formulas: List<InlineFormula<T>>
     )
 
     /**
@@ -292,12 +292,12 @@ object MarkdownTextUtil {
      * zero-width one reserving its descent (top on the top of the font), or the line of a block
      * formula (centered in the line).
      */
-    class PlaceholderSpec(val start: Int, val end: Int, val widthPx: Float, val heightPx: Float, val verticalAlign: PlaceholderVerticalAlign)
+    public class PlaceholderSpec(public val start: Int, public val end: Int, public val widthPx: Float, public val heightPx: Float, public val verticalAlign: PlaceholderVerticalAlign)
 
     /**
      * Rendered formula used by [toCanvasText].
      */
-    class RenderedFormula<T>(val image: T, val widthPx: Float, val heightPx: Float, val baselineRatio: Float)
+    public class RenderedFormula<T>(public val image: T, public val widthPx: Float, public val heightPx: Float, public val baselineRatio: Float)
 
     /**
      * Converts a text into the text drawn on the canvas (the equivalent of the Android `Spanned` of
@@ -310,7 +310,7 @@ object MarkdownTextUtil {
      * @param lineWidthPx width of the lines, `null` when the text has none (block formulas then
      *   stay in the line).
      */
-    fun <T> toCanvasText(
+    public fun <T> toCanvasText(
         text: String,
         baseColor: Color,
         fontSizePx: Float,

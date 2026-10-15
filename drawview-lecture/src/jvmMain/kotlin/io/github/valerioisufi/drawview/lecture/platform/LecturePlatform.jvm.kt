@@ -10,9 +10,9 @@ internal actual val isComputer: Boolean = true
 @Composable
 internal actual fun rememberMicrophoneAccess(): suspend () -> Boolean = remember { suspend { true } }
 
-actual fun environmentApiKey(): String? = System.getenv("GEMINI_API_KEY")?.trim()?.takeIf { it.isNotEmpty() }
+internal actual fun environmentApiKey(): String? = System.getenv("GEMINI_API_KEY")?.trim()?.takeIf { it.isNotEmpty() }
 
-actual fun restrictToOwner(path: String) {
+internal actual fun restrictToOwner(path: String) {
     val file = File(path)
     if (!file.exists()) return
     file.setReadable(false, false)

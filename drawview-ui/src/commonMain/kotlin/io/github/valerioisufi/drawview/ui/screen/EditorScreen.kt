@@ -24,7 +24,7 @@ import io.github.valerioisufi.drawview.ui.extension.EditorExtension
  * does it for the documents of a store.
  */
 @Composable
-fun EditorScreen(
+public fun EditorScreen(
     context: EditorContext,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,

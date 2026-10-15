@@ -23,7 +23,7 @@ import kotlinx.serialization.json.Json
  * @property markup how the text is marked ([Tool.TEXT_MARKUP] only).
  */
 @Serializable
-data class ToolPreset(
+public data class ToolPreset(
     val sizeMm: Float,
     val color: Int,
     val family: StrokeTool,
@@ -35,7 +35,7 @@ data class ToolPreset(
  * text ([encode]) by whoever stores them.
  */
 @Serializable
-data class DrawPreferences(
+public data class DrawPreferences(
     val isStylusOnlyMode: Boolean = false,
     val lastSelectedTool: Tool = Tool.INK_PEN,
     val textDefaults: TextDefaults = TextDefaults(),
@@ -44,13 +44,13 @@ data class DrawPreferences(
     val presets: Map<Tool, List<ToolPreset>> = ToolManager.defaultPresets()
 ) {
     /** These preferences as text (JSON), read again by [decode]. */
-    fun encode(): String = json.encodeToString(serializer(), this)
+    public fun encode(): String = json.encodeToString(serializer(), this)
 
-    companion object {
+    public companion object {
         private val json = Json { ignoreUnknownKeys = true }
 
         /** The preferences written by [encode], or `null` when [text] cannot be read. */
-        fun decode(text: String): DrawPreferences? = try {
+        public fun decode(text: String): DrawPreferences? = try {
             json.decodeFromString(serializer(), text)
         } catch (_: Exception) {
             null
@@ -63,11 +63,11 @@ data class DrawPreferences(
  *
  * All the state is backed by Compose snapshot state, so the UI observes every change.
  */
-class ToolManager(
+public class ToolManager(
     private val onPresetsChanged: (Tool, List<ToolPreset>) -> Unit = { _, _ -> },
     private val onToolSelected: (Tool) -> Unit = {}
 ) {
-    var selectedTool: Tool by mutableStateOf(Tool.INK_PEN)
+    public var selectedTool: Tool by mutableStateOf(Tool.INK_PEN)
         private set
 
     private val presets: Map<Tool, SnapshotStateList<ToolPreset>> = PRESET_TOOLS.associateWith { tool ->
@@ -78,27 +78,27 @@ class ToolManager(
     }
 
     /** Presets of [tool] (empty for tools without presets). */
-    fun presetsOf(tool: Tool): List<ToolPreset> = presets[tool] ?: emptyList()
+    public fun presetsOf(tool: Tool): List<ToolPreset> = presets[tool] ?: emptyList()
 
     /** Index of the selected preset of [tool]. */
-    fun selectedPresetIndex(tool: Tool): Int =
+    public fun selectedPresetIndex(tool: Tool): Int =
         (selectedIndexes[tool] ?: 0).coerceIn(0, (presetsOf(tool).size - 1).coerceAtLeast(0))
 
     /** The selected preset of [tool], or `null` for tools without presets. */
-    fun activePreset(tool: Tool = selectedTool): ToolPreset? = presetsOf(tool).getOrNull(selectedPresetIndex(tool))
+    public fun activePreset(tool: Tool = selectedTool): ToolPreset? = presetsOf(tool).getOrNull(selectedPresetIndex(tool))
 
-    val isPanTool: Boolean get() = selectedTool == Tool.PAN
-    val isTextTool: Boolean get() = selectedTool == Tool.TEXT
-    val isLassoTool: Boolean get() = selectedTool == Tool.LAZO
-    val isEraserTool: Boolean get() = selectedTool == Tool.ERASER
-    val isInkTool: Boolean get() = selectedTool == Tool.INK_PEN || selectedTool == Tool.INK_HIGHLIGHTER
-    val isTextMarkupTool: Boolean get() = selectedTool == Tool.TEXT_MARKUP
+    internal val isPanTool: Boolean get() = selectedTool == Tool.PAN
+    internal val isTextTool: Boolean get() = selectedTool == Tool.TEXT
+    internal val isLassoTool: Boolean get() = selectedTool == Tool.LAZO
+    internal val isEraserTool: Boolean get() = selectedTool == Tool.ERASER
+    internal val isInkTool: Boolean get() = selectedTool == Tool.INK_PEN || selectedTool == Tool.INK_HIGHLIGHTER
+    internal val isTextMarkupTool: Boolean get() = selectedTool == Tool.TEXT_MARKUP
 
     /** The tool chosen before the selected one (the Apple Pencil switches back to it). */
-    var previousTool: Tool by mutableStateOf(Tool.INK_PEN)
+    public var previousTool: Tool by mutableStateOf(Tool.INK_PEN)
         private set
 
-    fun selectTool(tool: Tool, presetIndex: Int? = null) {
+    public fun selectTool(tool: Tool, presetIndex: Int? = null) {
         val changed = selectedTool != tool
         if (changed) previousTool = selectedTool
         selectedTool = tool
@@ -108,14 +108,14 @@ class ToolManager(
         if (changed) onToolSelected(tool)
     }
 
-    fun updatePreset(tool: Tool, index: Int, preset: ToolPreset) {
+    public fun updatePreset(tool: Tool, index: Int, preset: ToolPreset) {
         val list = presets[tool] ?: return
         if (index !in list.indices) return
         list[index] = preset
         onPresetsChanged(tool, list.toList())
     }
 
-    fun addPreset(tool: Tool, preset: ToolPreset): Int {
+    public fun addPreset(tool: Tool, preset: ToolPreset): Int {
         val list = presets[tool] ?: return -1
         list.add(preset)
         selectedIndexes[tool] = list.size - 1
@@ -123,7 +123,7 @@ class ToolManager(
         return list.size - 1
     }
 
-    fun removePreset(tool: Tool, index: Int) {
+    public fun removePreset(tool: Tool, index: Int) {
         val list = presets[tool] ?: return
         if (list.size <= 1 || index !in list.indices) return
         list.removeAt(index)
@@ -136,7 +136,7 @@ class ToolManager(
     /**
      * Applies the persisted preferences (without echoing them back to the persistence layer).
      */
-    fun applyPreferences(preferences: DrawPreferences) {
+    public fun applyPreferences(preferences: DrawPreferences) {
         for (tool in PRESET_TOOLS) {
             val list = presets.getValue(tool)
             val stored = preferences.presets[tool].orEmpty().ifEmpty { defaultPresets().getValue(tool) }
@@ -155,7 +155,7 @@ class ToolManager(
      * @param pixelsPerMm current zoom level: the modelling tolerance is kept below a tenth of a
      * screen pixel, as in the original implementation.
      */
-    fun brushFor(tool: Tool, pixelsPerMm: Float): BrushConfig? {
+    internal fun brushFor(tool: Tool, pixelsPerMm: Float): BrushConfig? {
         val preset = activePreset(tool) ?: return null
         val epsilon = (0.1f / pixelsPerMm.coerceAtLeast(0.01f)).coerceIn(0.001f, 0.5f)
         val family = when (tool) {
@@ -171,11 +171,11 @@ class ToolManager(
         )
     }
 
-    companion object {
+    public companion object {
         /** Tools that own presets. */
-        val PRESET_TOOLS = listOf(Tool.INK_PEN, Tool.INK_HIGHLIGHTER, Tool.TEXT_MARKUP, Tool.ERASER, Tool.LAZO)
+        internal val PRESET_TOOLS = listOf(Tool.INK_PEN, Tool.INK_HIGHLIGHTER, Tool.TEXT_MARKUP, Tool.ERASER, Tool.LAZO)
 
-        fun defaultPresets(): Map<Tool, List<ToolPreset>> = mapOf(
+        internal fun defaultPresets(): Map<Tool, List<ToolPreset>> = mapOf(
             Tool.INK_PEN to listOf(
                 // The inks of the design (black, blue, red)
                 ToolPreset(0.5f, 0xFF1A1C18.toInt(), StrokeTool.PRESSURE_PEN),

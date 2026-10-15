@@ -1,0 +1,4 @@
+public final class io/github/valerioisufi/drawview/store/testing/FolderOperationsContractKt {
+	public static final fun checkFolderOperations (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+

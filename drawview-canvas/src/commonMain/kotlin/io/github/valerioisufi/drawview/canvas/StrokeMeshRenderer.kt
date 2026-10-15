@@ -13,7 +13,7 @@ import io.github.valerioisufi.drawview.model.geometry.Matrix2D
  * A painter owns its native paint objects and is not thread-safe: every rendering thread
  * (UI thread, tile workers) must use its own instance.
  */
-expect class StrokeMeshPainter() {
+internal expect class StrokeMeshPainter() {
     /**
      * Draws [mesh] on [canvas], mapping the mesh coordinates through [transform] when provided.
      * Translucent meshes are composited through an offscreen layer so that the overlapping
@@ -27,11 +27,11 @@ expect class StrokeMeshPainter() {
 /**
  * Convenience overload allocating a [StrokeMeshPainter] for a single draw call.
  */
-fun Canvas.drawStrokeMesh(mesh: StrokeMesh, transform: Matrix2D? = null) {
+internal fun Canvas.drawStrokeMesh(mesh: StrokeMesh, transform: Matrix2D? = null) {
     StrokeMeshPainter().draw(this, mesh, transform)
 }
 
-fun DrawScope.drawStrokeMesh(mesh: StrokeMesh, transform: Matrix2D? = null) {
+internal fun DrawScope.drawStrokeMesh(mesh: StrokeMesh, transform: Matrix2D? = null) {
     if (mesh.isEmpty) return
     drawIntoCanvas { canvas -> canvas.drawStrokeMesh(mesh, transform) }
 }

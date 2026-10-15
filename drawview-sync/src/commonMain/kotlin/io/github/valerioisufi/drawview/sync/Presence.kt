@@ -20,7 +20,7 @@ import kotlinx.serialization.Transient
  * received it.
  */
 @Serializable
-data class Presence(
+public data class Presence(
     val documentId: String,
     val pageId: String? = null,
     val x: Float = 0f,
@@ -43,8 +43,8 @@ data class Presence(
     /** The number of inputs of the stroke being drawn. */
     val inkInputs: Int get() = ink.size / INK_VALUES
 
-    companion object {
+    public companion object {
         /** The values of an input in [ink]: x, y, pressure, time. */
-        const val INK_VALUES = 4
+        public const val INK_VALUES: Int = 4
     }
 }

@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
 
 /** The documents of the system: the file is written in the cache, then copied where the user chose. */
 @Composable
-actual fun rememberFileSaver(title: String, mimeType: String, onTarget: (FileTarget) -> Unit): (suggestedName: String) -> Unit {
+public actual fun rememberFileSaver(title: String, mimeType: String, onTarget: (FileTarget) -> Unit): (suggestedName: String) -> Unit {
     val context = LocalContext.current
     val target by rememberUpdatedState(onTarget)
     // The name asked, for the file written in the cache

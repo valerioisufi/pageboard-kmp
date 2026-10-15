@@ -86,7 +86,7 @@ import org.jetbrains.compose.resources.stringResource
  * confirmation.
  */
 @Composable
-fun RequestNameDialog(
+internal fun RequestNameDialog(
     title: String = "",
     labelTextField: String = "",
     textConfirmButton: String = "",
@@ -139,7 +139,7 @@ fun RequestNameDialog(
  * the bin; [note] says what else happens (e.g. a shared note: the others keep their copy).
  */
 @Composable
-fun ConfirmActionDialog(
+internal fun ConfirmActionDialog(
     title: String = "",
     textDescription: String = "",
     textConfirmButton: String = stringResource(Res.string.explorer_action_confirm),
@@ -194,7 +194,7 @@ fun ConfirmActionDialog(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MoveFileDialog(
+internal fun MoveFileDialog(
     getSubFolders: (String?) -> List<FolderSummary>,
     isFolderSelected: (folderId: String) -> Boolean,
     isValidMove: (targetFolderId: String?) -> Boolean,

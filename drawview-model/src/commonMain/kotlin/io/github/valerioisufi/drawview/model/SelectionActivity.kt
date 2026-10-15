@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
  * [AffineTransform.IDENTITY] while they are not being moved).
  */
 @Serializable
-data class SelectionActivity(
+public data class SelectionActivity(
     val pageId: String,
     val ids: List<String>,
     val transform: AffineTransform = AffineTransform.IDENTITY

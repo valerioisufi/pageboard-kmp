@@ -1,0 +1,2569 @@
+public final class io/github/valerioisufi/drawview/model/AttachmentChange {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/AttachmentChange;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/AttachmentChange;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/AttachmentChange;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDocumentId ()Ljava/lang/String;
+	public final fun getKey ()Ljava/lang/String;
+	public final fun getVersion ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/model/AttachmentReceiver {
+	public abstract fun cancel (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun complete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun write ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/model/AttachmentSource {
+	public fun close (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getSize ()J
+	public abstract fun getVersion ()Ljava/lang/String;
+	public abstract fun read (JILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/model/AttachmentSource$DefaultImpls {
+	public static fun close (Lio/github/valerioisufi/drawview/model/AttachmentSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/model/BackgroundPattern {
+	public fun <init> (IFFZ[F[FFF)V
+	public final fun getColor ()I
+	public final fun getColumns ()[F
+	public final fun getDots ()Z
+	public final fun getHeightMm ()F
+	public final fun getRows ()[F
+	public final fun getSizeMm ()F
+	public final fun getSpacingMm ()F
+	public final fun getWidthMm ()F
+}
+
+public final class io/github/valerioisufi/drawview/model/BrushConfig {
+	public fun <init> ()V
+	public fun <init> (Lio/github/valerioisufi/drawview/model/StrokeTool;FIF)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/StrokeTool;FIFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lio/github/valerioisufi/drawview/model/StrokeTool;
+	public final fun component2 ()F
+	public final fun component3 ()I
+	public final fun component4 ()F
+	public final fun copy (Lio/github/valerioisufi/drawview/model/StrokeTool;FIF)Lio/github/valerioisufi/drawview/model/BrushConfig;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/BrushConfig;Lio/github/valerioisufi/drawview/model/StrokeTool;FIFILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/BrushConfig;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getColor ()I
+	public final fun getEpsilon ()F
+	public final fun getSize ()F
+	public final fun getTool ()Lio/github/valerioisufi/drawview/model/StrokeTool;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/BrushConfigKt {
+	public static final fun remodelingBrush (Lio/github/valerioisufi/drawview/model/StrokeTool;FI)Lio/github/valerioisufi/drawview/model/BrushConfig;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/model/DocumentAttachments {
+	public abstract fun getChanges ()Lkotlinx/coroutines/flow/Flow;
+	public fun getWantedAgain ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun open (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun receive (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun receive$default (Lio/github/valerioisufi/drawview/model/DocumentAttachments;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public fun received (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun version (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun versions (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun wants (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/model/DocumentAttachments$DefaultImpls {
+	public static fun getWantedAgain (Lio/github/valerioisufi/drawview/model/DocumentAttachments;)Lkotlinx/coroutines/flow/Flow;
+	public static synthetic fun receive$default (Lio/github/valerioisufi/drawview/model/DocumentAttachments;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static fun received (Lio/github/valerioisufi/drawview/model/DocumentAttachments;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/model/DrawCustomElement : io/github/valerioisufi/drawview/model/DrawElement, io/github/valerioisufi/drawview/model/RotatableItem {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun containsPoint (FF)Z
+	public final fun copy ()Lio/github/valerioisufi/drawview/model/DrawCustomElement;
+	public fun getAdded ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public fun getCenterX ()F
+	public fun getCenterY ()F
+	public fun getHeight ()F
+	public fun getId ()Ljava/lang/String;
+	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun getPayload ()[B
+	public fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public fun getRotatedBounds ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public fun getRotation ()F
+	public final fun getType ()Ljava/lang/String;
+	public fun getUpdated ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getVersion ()I
+	public fun getWidth ()F
+	public fun getX ()F
+	public fun getY ()F
+	public fun setAdded (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public fun setHeight (F)V
+	public fun setOrder (Lio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public final fun setPayload ([B)V
+	public fun setPlaced (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public fun setRemoved (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public fun setRotation (F)V
+	public fun setUpdated (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public final fun setVersion (I)V
+	public fun setWidth (F)V
+	public fun setX (F)V
+	public fun setY (F)V
+	public fun toLocal (FF)Lio/github/valerioisufi/drawview/model/geometry/Point;
+}
+
+public final class io/github/valerioisufi/drawview/model/DrawDocument {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;JJZLio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;JJZLio/github/valerioisufi/drawview/model/StrokeModeller;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun addPage (FFLio/github/valerioisufi/drawview/model/PageBackground;)Lio/github/valerioisufi/drawview/model/DrawPage;
+	public static synthetic fun addPage$default (Lio/github/valerioisufi/drawview/model/DrawDocument;FFLio/github/valerioisufi/drawview/model/PageBackground;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/DrawPage;
+	public final fun addResource (Lio/github/valerioisufi/drawview/model/DrawResource;)V
+	public final fun allPages ()Ljava/util/List;
+	public final fun appendPage (Lio/github/valerioisufi/drawview/model/DrawPage;)V
+	public final fun findElement (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/DrawPage;)Lkotlin/Pair;
+	public static synthetic fun findElement$default (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/DrawPage;ILjava/lang/Object;)Lkotlin/Pair;
+	public final fun findResource (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/DrawResource;
+	public final fun getCreatedAt ()J
+	public final fun getDefaultBackground ()Lio/github/valerioisufi/drawview/model/PageBackground;
+	public final fun getDefaultHeightMm ()F
+	public final fun getDefaultWidthMm ()F
+	public final fun getDefaultsVersion ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getLastOpenedAt ()Ljava/lang/Long;
+	public final fun getModifiedAt ()J
+	public final fun getName ()Ljava/lang/String;
+	public final fun getPages ()Ljava/util/List;
+	public final fun getRemovedPages ()Ljava/util/Map;
+	public final fun getResources ()Ljava/util/List;
+	public final fun getRevision ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun getStrokeModeller ()Lio/github/valerioisufi/drawview/model/StrokeModeller;
+	public final fun getTitle ()Ljava/lang/String;
+	public final fun getTitleVersion ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun insertPage (Lio/github/valerioisufi/drawview/model/DrawPage;)V
+	public final fun isShown (Lio/github/valerioisufi/drawview/model/DrawPage;)Z
+	public final fun movePage (II)V
+	public final fun orderKeyAt (I)Ljava/lang/String;
+	public final fun pageById (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/DrawPage;
+	public final fun purgeHidden (Lkotlin/jvm/functions/Function1;)Lio/github/valerioisufi/drawview/model/PurgedContent;
+	public final fun reindexPages ()V
+	public final fun restorePageOrder (Ljava/util/List;)V
+	public final fun setCreatedAt (J)V
+	public final fun setDefaultBackground (Lio/github/valerioisufi/drawview/model/PageBackground;)V
+	public final fun setDefaultHeightMm (F)V
+	public final fun setDefaultWidthMm (F)V
+	public final fun setDefaultsVersion (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public final fun setLastOpenedAt (Ljava/lang/Long;)V
+	public final fun setModifiedAt (J)V
+	public final fun setName (Ljava/lang/String;)V
+	public final fun setTitle (Ljava/lang/String;)V
+	public final fun setTitleVersion (Lio/github/valerioisufi/drawview/model/Stamp;)V
+}
+
+public abstract interface class io/github/valerioisufi/drawview/model/DrawElement {
+	public abstract fun getAdded ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public abstract fun getId ()Ljava/lang/String;
+	public abstract fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public abstract fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public abstract fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public abstract fun getUpdated ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public abstract fun setAdded (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public abstract fun setOrder (Lio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public abstract fun setPlaced (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public abstract fun setRemoved (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public abstract fun setUpdated (Lio/github/valerioisufi/drawview/model/Stamp;)V
+}
+
+public final class io/github/valerioisufi/drawview/model/DrawImage : io/github/valerioisufi/drawview/model/DrawElement, io/github/valerioisufi/drawview/model/RotatableItem {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun containsPoint (FF)Z
+	public fun getAdded ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public fun getCenterX ()F
+	public fun getCenterY ()F
+	public fun getHeight ()F
+	public fun getId ()Ljava/lang/String;
+	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getResourceId ()Ljava/lang/String;
+	public fun getRotatedBounds ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public fun getRotation ()F
+	public fun getUpdated ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public fun getWidth ()F
+	public fun getX ()F
+	public fun getY ()F
+	public fun setAdded (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public fun setHeight (F)V
+	public fun setOrder (Lio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public fun setPlaced (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public fun setRemoved (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public final fun setResourceId (Ljava/lang/String;)V
+	public fun setRotation (F)V
+	public fun setUpdated (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public fun setWidth (F)V
+	public fun setX (F)V
+	public fun setY (F)V
+	public fun toLocal (FF)Lio/github/valerioisufi/drawview/model/geometry/Point;
+}
+
+public final class io/github/valerioisufi/drawview/model/DrawPage {
+	public fun <init> ()V
+	public fun <init> (IFFLio/github/valerioisufi/drawview/model/PageBackground;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (IFFLio/github/valerioisufi/drawview/model/PageBackground;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun add (Lio/github/valerioisufi/drawview/model/DrawElement;)V
+	public final fun boundsOf (Lio/github/valerioisufi/drawview/model/DrawElement;)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun elements ()Ljava/util/List;
+	public final fun find (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/DrawElement;
+	public final fun getAdded ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getBackground ()Lio/github/valerioisufi/drawview/model/PageBackground;
+	public final fun getContentVersion ()I
+	public final fun getContentVersions ()Lio/github/valerioisufi/drawview/model/Versions;
+	public final fun getCustomElements ()Ljava/util/List;
+	public final fun getDimension ()Lio/github/valerioisufi/drawview/model/geometry/Dimension;
+	public final fun getFormatVersion ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getHasCustomBackground ()Z
+	public final fun getHeightMm ()F
+	public final fun getId ()Ljava/lang/String;
+	public final fun getImages ()Ljava/util/List;
+	public final fun getIndex ()I
+	public final fun getMarkups ()Ljava/util/List;
+	public final fun getOrderKey ()Ljava/lang/String;
+	public final fun getOrderVersion ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getPdfs ()Ljava/util/List;
+	public final fun getRemovalSaw ()Lio/github/valerioisufi/drawview/model/Versions;
+	public final fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getRemovedElements ()Ljava/util/List;
+	public final fun getRenderKey ()J
+	public final fun getStrokes ()Ljava/util/List;
+	public final fun getTexts ()Ljava/util/List;
+	public final fun getWidthMm ()F
+	public final fun isHidden ()Z
+	public final fun rect ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun remove (Lio/github/valerioisufi/drawview/model/DrawElement;)I
+	public final fun setAdded (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public final fun setBackground (Lio/github/valerioisufi/drawview/model/PageBackground;)V
+	public final fun setContentVersions (Lio/github/valerioisufi/drawview/model/Versions;)V
+	public final fun setFormatVersion (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public final fun setHasCustomBackground (Z)V
+	public final fun setHeightMm (F)V
+	public final fun setIndex (I)V
+	public final fun setOrderKey (Ljava/lang/String;)V
+	public final fun setOrderVersion (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public final fun setRemovalSaw (Lio/github/valerioisufi/drawview/model/Versions;)V
+	public final fun setRemoved (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public final fun setWidthMm (F)V
+	public final fun snapshotContent ()Lio/github/valerioisufi/drawview/model/PageContentSnapshot;
+}
+
+public final class io/github/valerioisufi/drawview/model/DrawPdf : io/github/valerioisufi/drawview/model/DrawElement {
+	public fun <init> ()V
+	public fun <init> (ILjava/lang/String;)V
+	public synthetic fun <init> (ILjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getAdded ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public fun getId ()Ljava/lang/String;
+	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun getPdfPageIndex ()I
+	public fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getResourceId ()Ljava/lang/String;
+	public fun getUpdated ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public fun setAdded (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public fun setOrder (Lio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public final fun setPdfPageIndex (I)V
+	public fun setPlaced (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public fun setRemoved (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public final fun setResourceId (Ljava/lang/String;)V
+	public fun setUpdated (Lio/github/valerioisufi/drawview/model/Stamp;)V
+}
+
+public final class io/github/valerioisufi/drawview/model/DrawResource {
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/DrawResource$ResourceType;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/DrawResource$ResourceType;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getHash ()Ljava/lang/String;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getPath ()Ljava/lang/String;
+	public final fun getType ()Lio/github/valerioisufi/drawview/model/DrawResource$ResourceType;
+	public final fun setPath (Ljava/lang/String;)V
+}
+
+public final class io/github/valerioisufi/drawview/model/DrawResource$ResourceType : java/lang/Enum {
+	public static final field COLOR Lio/github/valerioisufi/drawview/model/DrawResource$ResourceType;
+	public static final field IMAGE Lio/github/valerioisufi/drawview/model/DrawResource$ResourceType;
+	public static final field PDF Lio/github/valerioisufi/drawview/model/DrawResource$ResourceType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/DrawResource$ResourceType;
+	public static fun values ()[Lio/github/valerioisufi/drawview/model/DrawResource$ResourceType;
+}
+
+public final class io/github/valerioisufi/drawview/model/DrawStroke : io/github/valerioisufi/drawview/model/DrawElement {
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/StrokeMesh;Lio/github/valerioisufi/drawview/model/BrushConfig;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/StrokeMesh;Lio/github/valerioisufi/drawview/model/BrushConfig;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getAdded ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getBaseBrush ()Lio/github/valerioisufi/drawview/model/BrushConfig;
+	public final fun getBaseMesh ()Lio/github/valerioisufi/drawview/model/StrokeMesh;
+	public final fun getBounds ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun getBrushConfig ()Lio/github/valerioisufi/drawview/model/BrushConfig;
+	public fun getId ()Ljava/lang/String;
+	public final fun getMesh ()Lio/github/valerioisufi/drawview/model/StrokeMesh;
+	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getTransform ()Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;
+	public fun getUpdated ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun place (Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;)V
+	public fun setAdded (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public fun setOrder (Lio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public fun setPlaced (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public fun setRemoved (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public fun setUpdated (Lio/github/valerioisufi/drawview/model/Stamp;)V
+}
+
+public final class io/github/valerioisufi/drawview/model/DrawText : io/github/valerioisufi/drawview/model/DrawElement, io/github/valerioisufi/drawview/model/RotatableItem {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun containsPoint (FF)Z
+	public final fun copyFrom (Lio/github/valerioisufi/drawview/model/DrawText;)V
+	public fun getAdded ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getAlignment ()Lio/github/valerioisufi/drawview/model/TextAlignment;
+	public final fun getAutoWidth ()Z
+	public fun getCenterX ()F
+	public fun getCenterY ()F
+	public final fun getColor ()I
+	public final fun getContentVersions ()Lio/github/valerioisufi/drawview/model/Versions;
+	public final fun getFontSize ()F
+	public fun getHeight ()F
+	public fun getId ()Ljava/lang/String;
+	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public fun getRotatedBounds ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public fun getRotation ()F
+	public final fun getText ()Ljava/lang/String;
+	public fun getUpdated ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getVersion ()I
+	public fun getWidth ()F
+	public fun getX ()F
+	public fun getY ()F
+	public final fun markDirty ()V
+	public fun setAdded (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public final fun setAlignment (Lio/github/valerioisufi/drawview/model/TextAlignment;)V
+	public final fun setAutoWidth (Z)V
+	public final fun setColor (I)V
+	public final fun setContentVersions (Lio/github/valerioisufi/drawview/model/Versions;)V
+	public final fun setFontSize (F)V
+	public fun setHeight (F)V
+	public fun setOrder (Lio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public fun setPlaced (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public fun setRemoved (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public fun setRotation (F)V
+	public final fun setText (Ljava/lang/String;)V
+	public fun setUpdated (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public fun setWidth (F)V
+	public fun setX (F)V
+	public fun setY (F)V
+	public fun toLocal (FF)Lio/github/valerioisufi/drawview/model/geometry/Point;
+}
+
+public final class io/github/valerioisufi/drawview/model/DrawTextMarkup : io/github/valerioisufi/drawview/model/DrawElement {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;IFFIILjava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/TextMarkupKind;I)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;IFFIILjava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/TextMarkupKind;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun boundsMm (FF)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun boundsMm (Lio/github/valerioisufi/drawview/model/DrawPage;)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun containsPoint (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/geometry/Point;F)Z
+	public static synthetic fun containsPoint$default (Lio/github/valerioisufi/drawview/model/DrawTextMarkup;Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/geometry/Point;FILjava/lang/Object;)Z
+	public fun getAdded ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getBoundsPoints ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun getColor ()I
+	public final fun getEndIndex ()I
+	public fun getId ()Ljava/lang/String;
+	public final fun getKind ()Lio/github/valerioisufi/drawview/model/TextMarkupKind;
+	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun getPdfHeightPt ()F
+	public final fun getPdfPageIndex ()I
+	public final fun getPdfWidthPt ()F
+	public fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getRects ()Ljava/util/List;
+	public fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getResourceId ()Ljava/lang/String;
+	public final fun getStartIndex ()I
+	public final fun getText ()Ljava/lang/String;
+	public fun getUpdated ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun pointsToPageMm (FF)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public final fun pointsToPageMm (Lio/github/valerioisufi/drawview/model/DrawPage;)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public fun setAdded (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public final fun setColor (I)V
+	public final fun setKind (Lio/github/valerioisufi/drawview/model/TextMarkupKind;)V
+	public fun setOrder (Lio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public fun setPlaced (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public fun setRemoved (Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public fun setUpdated (Lio/github/valerioisufi/drawview/model/Stamp;)V
+}
+
+public final class io/github/valerioisufi/drawview/model/ElementOrder : java/lang/Comparable {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/ElementOrder$Companion;
+	public fun <init> (Lio/github/valerioisufi/drawview/model/Stamp;I)V
+	public fun compareTo (Lio/github/valerioisufi/drawview/model/ElementOrder;)I
+	public synthetic fun compareTo (Ljava/lang/Object;)I
+	public final fun component1 ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun component2 ()I
+	public final fun copy (Lio/github/valerioisufi/drawview/model/Stamp;I)Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/ElementOrder;Lio/github/valerioisufi/drawview/model/Stamp;IILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getIndex ()I
+	public final fun getStamp ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/ElementOrder$Companion {
+	public final fun getUNASSIGNED ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun parse (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/model/ElementType {
+	public abstract fun getId ()Ljava/lang/String;
+	public abstract fun getSerializer ()Lkotlinx/serialization/KSerializer;
+	public fun getVersion ()I
+	public fun migrate ([BI)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/model/ElementType$DefaultImpls {
+	public static fun getVersion (Lio/github/valerioisufi/drawview/model/ElementType;)I
+	public static fun migrate (Lio/github/valerioisufi/drawview/model/ElementType;[BI)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/model/ElementTypeKt {
+	public static final fun decode (Lio/github/valerioisufi/drawview/model/ElementType;Lio/github/valerioisufi/drawview/model/DrawCustomElement;)Ljava/lang/Object;
+	public static final fun encode (Lio/github/valerioisufi/drawview/model/ElementType;Ljava/lang/Object;)[B
+}
+
+public final class io/github/valerioisufi/drawview/model/FractionalIndex {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/FractionalIndex;
+	public final fun after (Ljava/lang/String;I)Ljava/util/List;
+	public final fun between (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public final fun reorder (Ljava/util/List;)Ljava/util/Map;
+}
+
+public final class io/github/valerioisufi/drawview/model/InputToolType : java/lang/Enum {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/InputToolType$Companion;
+	public static final field MOUSE Lio/github/valerioisufi/drawview/model/InputToolType;
+	public static final field STYLUS Lio/github/valerioisufi/drawview/model/InputToolType;
+	public static final field TOUCH Lio/github/valerioisufi/drawview/model/InputToolType;
+	public static final field UNKNOWN Lio/github/valerioisufi/drawview/model/InputToolType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getNativeId ()I
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/InputToolType;
+	public static fun values ()[Lio/github/valerioisufi/drawview/model/InputToolType;
+}
+
+public final class io/github/valerioisufi/drawview/model/InputToolType$Companion {
+	public final fun fromName (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/InputToolType;
+}
+
+public final class io/github/valerioisufi/drawview/model/KotlinStrokeEngineDelegate : io/github/valerioisufi/drawview/model/StrokeEngineDelegate {
+	public fun <init> ()V
+	public fun addInput (FFFJLio/github/valerioisufi/drawview/model/InputToolType;)V
+	public fun clear ()V
+	public fun currentMesh (Lio/github/valerioisufi/drawview/model/BrushConfig;Ljava/util/List;Lio/github/valerioisufi/drawview/model/InputToolType;)Lio/github/valerioisufi/drawview/model/StrokeMesh;
+	public fun currentOutline ()Lio/github/valerioisufi/drawview/model/StrokeOutline;
+	public fun finishInputs ()V
+	public fun isNative ()Z
+	public fun release ()V
+	public fun start (Lio/github/valerioisufi/drawview/model/BrushConfig;F)V
+}
+
+public final class io/github/valerioisufi/drawview/model/KotlinStrokeModeller : io/github/valerioisufi/drawview/model/StrokeModeller {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/KotlinStrokeModeller;
+	public fun buildMesh (Ljava/util/List;Lio/github/valerioisufi/drawview/model/BrushConfig;Lio/github/valerioisufi/drawview/model/InputToolType;)Lio/github/valerioisufi/drawview/model/StrokeMesh;
+}
+
+public final class io/github/valerioisufi/drawview/model/MeshPartition {
+	public fun <init> ([F[S)V
+	public final fun getIndices ()[S
+	public final fun getPositions ()[F
+	public final fun getTriangleCount ()I
+	public final fun getVertexCount ()I
+}
+
+public abstract class io/github/valerioisufi/drawview/model/PageBackground {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/PageBackground$Companion;
+	public synthetic fun <init> (ILkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public abstract fun getBackgroundColor ()I
+	public final fun pattern (FFLio/github/valerioisufi/drawview/model/geometry/Rect;)Lio/github/valerioisufi/drawview/model/BackgroundPattern;
+	public static synthetic fun pattern$default (Lio/github/valerioisufi/drawview/model/PageBackground;FFLio/github/valerioisufi/drawview/model/geometry/Rect;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/BackgroundPattern;
+	public static final synthetic fun write$Self (Lio/github/valerioisufi/drawview/model/PageBackground;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class io/github/valerioisufi/drawview/model/PageBackground$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/PageBackground$Dotted : io/github/valerioisufi/drawview/model/PageBackground {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/PageBackground$Dotted$Companion;
+	public fun <init> ()V
+	public fun <init> (IIFF)V
+	public synthetic fun <init> (IIFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun copy (IIFF)Lio/github/valerioisufi/drawview/model/PageBackground$Dotted;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/PageBackground$Dotted;IIFFILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/PageBackground$Dotted;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getBackgroundColor ()I
+	public final fun getDotColor ()I
+	public final fun getDotRadiusMm ()F
+	public final fun getSpacingMm ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/PageBackground$Dotted$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/PageBackground$Dotted$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/PageBackground$Dotted;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/PageBackground$Dotted;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/PageBackground$Dotted$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/PageBackground$Grid : io/github/valerioisufi/drawview/model/PageBackground {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/PageBackground$Grid$Companion;
+	public fun <init> ()V
+	public fun <init> (IIFF)V
+	public synthetic fun <init> (IIFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun copy (IIFF)Lio/github/valerioisufi/drawview/model/PageBackground$Grid;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/PageBackground$Grid;IIFFILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/PageBackground$Grid;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getBackgroundColor ()I
+	public final fun getLineColor ()I
+	public final fun getSpacingMm ()F
+	public final fun getThicknessMm ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/PageBackground$Grid$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/PageBackground$Grid$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/PageBackground$Grid;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/PageBackground$Grid;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/PageBackground$Grid$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/PageBackground$Ruled : io/github/valerioisufi/drawview/model/PageBackground {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/PageBackground$Ruled$Companion;
+	public fun <init> ()V
+	public fun <init> (IIFF)V
+	public synthetic fun <init> (IIFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun copy (IIFF)Lio/github/valerioisufi/drawview/model/PageBackground$Ruled;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/PageBackground$Ruled;IIFFILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/PageBackground$Ruled;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getBackgroundColor ()I
+	public final fun getLineColor ()I
+	public final fun getSpacingMm ()F
+	public final fun getThicknessMm ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/PageBackground$Ruled$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/PageBackground$Ruled$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/PageBackground$Ruled;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/PageBackground$Ruled;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/PageBackground$Ruled$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/PageBackground$Solid : io/github/valerioisufi/drawview/model/PageBackground {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/PageBackground$Solid$Companion;
+	public fun <init> ()V
+	public fun <init> (I)V
+	public synthetic fun <init> (IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()I
+	public final fun copy (I)Lio/github/valerioisufi/drawview/model/PageBackground$Solid;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/PageBackground$Solid;IILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/PageBackground$Solid;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getBackgroundColor ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/PageBackground$Solid$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/PageBackground$Solid$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/PageBackground$Solid;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/PageBackground$Solid;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/PageBackground$Solid$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/PageContentSnapshot {
+	public fun <init> (Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/PageBackground;FFLjava/util/List;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/PageBackground;FFLjava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun detached ()Lio/github/valerioisufi/drawview/model/PageContentSnapshot;
+	public final fun getBackground ()Lio/github/valerioisufi/drawview/model/PageBackground;
+	public final fun getCustoms ()Ljava/util/List;
+	public final fun getHeightMm ()F
+	public final fun getImages ()Ljava/util/List;
+	public final fun getMarkups ()Ljava/util/List;
+	public final fun getPaintOrder ()Ljava/util/List;
+	public final fun getPdfs ()Ljava/util/List;
+	public final fun getStrokes ()Ljava/util/List;
+	public final fun getTexts ()Ljava/util/List;
+	public final fun getWidthMm ()F
+	public final fun rect ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+}
+
+public final class io/github/valerioisufi/drawview/model/PageModelsKt {
+	public static final fun newElementId ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/PdfTextLayout {
+	public fun <init> (FF[I[F)V
+	public final fun boxOf (I)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun charIndexForSelection (FF)I
+	public final fun charIndexNear (FFF)I
+	public final fun codePointAt (I)I
+	public final fun getCharCount ()I
+	public final fun getHasText ()Z
+	public final fun getHeightPt ()F
+	public final fun getWidthPt ()F
+	public final fun hasBox (I)Z
+	public final fun lineRects (II)Ljava/util/List;
+	public final fun text (II)Ljava/lang/String;
+	public final fun wordRange (I)Lkotlin/ranges/IntRange;
+}
+
+public final class io/github/valerioisufi/drawview/model/PurgedContent {
+	public fun <init> (Ljava/util/List;Ljava/util/List;)V
+	public final fun getElements ()Ljava/util/List;
+	public final fun getPages ()Ljava/util/List;
+	public final fun isEmpty ()Z
+}
+
+public abstract interface class io/github/valerioisufi/drawview/model/RotatableItem {
+	public fun containsPoint (FF)Z
+	public fun getCenterX ()F
+	public fun getCenterY ()F
+	public abstract fun getHeight ()F
+	public fun getRotatedBounds ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public abstract fun getRotation ()F
+	public abstract fun getWidth ()F
+	public abstract fun getX ()F
+	public abstract fun getY ()F
+	public abstract fun setHeight (F)V
+	public abstract fun setRotation (F)V
+	public abstract fun setWidth (F)V
+	public abstract fun setX (F)V
+	public abstract fun setY (F)V
+	public fun toLocal (FF)Lio/github/valerioisufi/drawview/model/geometry/Point;
+}
+
+public final class io/github/valerioisufi/drawview/model/RotatableItem$DefaultImpls {
+	public static fun containsPoint (Lio/github/valerioisufi/drawview/model/RotatableItem;FF)Z
+	public static fun getCenterX (Lio/github/valerioisufi/drawview/model/RotatableItem;)F
+	public static fun getCenterY (Lio/github/valerioisufi/drawview/model/RotatableItem;)F
+	public static fun getRotatedBounds (Lio/github/valerioisufi/drawview/model/RotatableItem;)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public static fun toLocal (Lio/github/valerioisufi/drawview/model/RotatableItem;FF)Lio/github/valerioisufi/drawview/model/geometry/Point;
+}
+
+public final class io/github/valerioisufi/drawview/model/SelectionActivity {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/SelectionActivity$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;
+	public final fun copy (Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;)Lio/github/valerioisufi/drawview/model/SelectionActivity;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/SelectionActivity;Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/SelectionActivity;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getIds ()Ljava/util/List;
+	public final fun getPageId ()Ljava/lang/String;
+	public final fun getTransform ()Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;
+	public fun hashCode ()I
+	public final fun isMoving ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/SelectionActivity$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/SelectionActivity$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/SelectionActivity;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/SelectionActivity;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/SelectionActivity$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/Stamp : java/lang/Comparable {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/Stamp$Companion;
+	public fun <init> (JILjava/lang/String;)V
+	public fun compareTo (Lio/github/valerioisufi/drawview/model/Stamp;)I
+	public synthetic fun compareTo (Ljava/lang/Object;)I
+	public final fun component1 ()J
+	public final fun component2 ()I
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (JILjava/lang/String;)Lio/github/valerioisufi/drawview/model/Stamp;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/Stamp;JILjava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/Stamp;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCounter ()I
+	public final fun getReplica ()Ljava/lang/String;
+	public final fun getTime ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/Stamp$Companion {
+	public final fun getZERO ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun parse (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/model/StrokeEngineDelegate {
+	public abstract fun addInput (FFFJLio/github/valerioisufi/drawview/model/InputToolType;)V
+	public abstract fun clear ()V
+	public abstract fun currentMesh (Lio/github/valerioisufi/drawview/model/BrushConfig;Ljava/util/List;Lio/github/valerioisufi/drawview/model/InputToolType;)Lio/github/valerioisufi/drawview/model/StrokeMesh;
+	public fun currentOutline ()Lio/github/valerioisufi/drawview/model/StrokeOutline;
+	public abstract fun finishInputs ()V
+	public abstract fun isNative ()Z
+	public abstract fun release ()V
+	public abstract fun start (Lio/github/valerioisufi/drawview/model/BrushConfig;F)V
+}
+
+public final class io/github/valerioisufi/drawview/model/StrokeEngineDelegate$DefaultImpls {
+	public static fun currentOutline (Lio/github/valerioisufi/drawview/model/StrokeEngineDelegate;)Lio/github/valerioisufi/drawview/model/StrokeOutline;
+}
+
+public final class io/github/valerioisufi/drawview/model/StrokeMesh {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/StrokeMesh$Companion;
+	public fun <init> (Ljava/lang/String;[F[SILio/github/valerioisufi/drawview/model/StrokeTool;FLjava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/InputToolType;)V
+	public synthetic fun <init> (Ljava/lang/String;[F[SILio/github/valerioisufi/drawview/model/StrokeTool;FLjava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/InputToolType;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun computeBounds ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getColor ()I
+	public final fun getId ()Ljava/lang/String;
+	public final fun getIndices ()[S
+	public final fun getInputToolType ()Lio/github/valerioisufi/drawview/model/InputToolType;
+	public final fun getPartitions ()Ljava/util/List;
+	public final fun getPoints ()Ljava/util/List;
+	public final fun getPositions ()[F
+	public final fun getSize ()F
+	public final fun getTool ()Lio/github/valerioisufi/drawview/model/StrokeTool;
+	public final fun getTriangleCount ()I
+	public final fun getVertexCount ()I
+	public fun hashCode ()I
+	public final fun isEmpty ()Z
+	public final fun transformed (Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;)Lio/github/valerioisufi/drawview/model/StrokeMesh;
+	public final fun withPoints (Ljava/util/List;)Lio/github/valerioisufi/drawview/model/StrokeMesh;
+}
+
+public final class io/github/valerioisufi/drawview/model/StrokeMesh$Companion {
+	public final fun fromIndexedMesh ([F[IILio/github/valerioisufi/drawview/model/StrokeTool;FLjava/util/List;Lio/github/valerioisufi/drawview/model/InputToolType;)Lio/github/valerioisufi/drawview/model/StrokeMesh;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/model/StrokeModeller {
+	public abstract fun buildMesh (Ljava/util/List;Lio/github/valerioisufi/drawview/model/BrushConfig;Lio/github/valerioisufi/drawview/model/InputToolType;)Lio/github/valerioisufi/drawview/model/StrokeMesh;
+}
+
+public final class io/github/valerioisufi/drawview/model/StrokeModellerKt {
+	public static final field STROKE_UNIT_LENGTH_CM_MM F
+}
+
+public final class io/github/valerioisufi/drawview/model/StrokeOutline {
+	public fun <init> (Ljava/util/List;)V
+	public final fun getPolygons ()Ljava/util/List;
+	public final fun isEmpty ()Z
+	public final fun transformed (Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;)Lio/github/valerioisufi/drawview/model/StrokeOutline;
+}
+
+public final class io/github/valerioisufi/drawview/model/StrokeOutlineKt {
+	public static final fun triangleOutline (Lio/github/valerioisufi/drawview/model/StrokeMesh;)Lio/github/valerioisufi/drawview/model/StrokeOutline;
+}
+
+public final class io/github/valerioisufi/drawview/model/StrokePoint {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/StrokePoint$Companion;
+	public fun <init> (FFFJ)V
+	public synthetic fun <init> (FFFJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()F
+	public final fun component2 ()F
+	public final fun component3 ()F
+	public final fun component4 ()J
+	public final fun copy (FFFJ)Lio/github/valerioisufi/drawview/model/StrokePoint;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/StrokePoint;FFFJILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/StrokePoint;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPressure ()F
+	public final fun getTimestampMs ()J
+	public final fun getX ()F
+	public final fun getY ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/StrokePoint$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/StrokePoint$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/StrokePoint;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/StrokePoint;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/StrokePoint$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/StrokeTool : java/lang/Enum {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/StrokeTool$Companion;
+	public static final field DASHED_LINE Lio/github/valerioisufi/drawview/model/StrokeTool;
+	public static final field ERASER Lio/github/valerioisufi/drawview/model/StrokeTool;
+	public static final field HIGHLIGHTER Lio/github/valerioisufi/drawview/model/StrokeTool;
+	public static final field LASSO Lio/github/valerioisufi/drawview/model/StrokeTool;
+	public static final field MARKER Lio/github/valerioisufi/drawview/model/StrokeTool;
+	public static final field PRESSURE_PEN Lio/github/valerioisufi/drawview/model/StrokeTool;
+	public final fun getBrushFamily ()Lio/github/valerioisufi/drawview/model/StrokeTool;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getNativeId ()I
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/StrokeTool;
+	public static fun values ()[Lio/github/valerioisufi/drawview/model/StrokeTool;
+}
+
+public final class io/github/valerioisufi/drawview/model/StrokeTool$Companion {
+	public final fun fromName (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/StrokeTool;
+}
+
+public final class io/github/valerioisufi/drawview/model/TextAlignment : java/lang/Enum {
+	public static final field CENTER Lio/github/valerioisufi/drawview/model/TextAlignment;
+	public static final field Companion Lio/github/valerioisufi/drawview/model/TextAlignment$Companion;
+	public static final field END Lio/github/valerioisufi/drawview/model/TextAlignment;
+	public static final field START Lio/github/valerioisufi/drawview/model/TextAlignment;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/TextAlignment;
+	public static fun values ()[Lio/github/valerioisufi/drawview/model/TextAlignment;
+}
+
+public final class io/github/valerioisufi/drawview/model/TextAlignment$Companion {
+	public final fun fromName (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/TextAlignment;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/TextMarkupKind : java/lang/Enum {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/TextMarkupKind$Companion;
+	public static final field HIGHLIGHT Lio/github/valerioisufi/drawview/model/TextMarkupKind;
+	public static final field STRIKEOUT Lio/github/valerioisufi/drawview/model/TextMarkupKind;
+	public static final field UNDERLINE Lio/github/valerioisufi/drawview/model/TextMarkupKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/TextMarkupKind;
+	public static fun values ()[Lio/github/valerioisufi/drawview/model/TextMarkupKind;
+}
+
+public final class io/github/valerioisufi/drawview/model/TextMarkupKind$Companion {
+	public final fun fromName (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/TextMarkupKind;
+}
+
+public final class io/github/valerioisufi/drawview/model/TextMarkupKt {
+	public static final fun pdfPointsToPageMm (FFFF)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+}
+
+public final class io/github/valerioisufi/drawview/model/Versions {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/Versions$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Map;)V
+	public synthetic fun <init> (Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/util/Map;
+	public final fun copy (Ljava/util/Map;)Lio/github/valerioisufi/drawview/model/Versions;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/Versions;Ljava/util/Map;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/Versions;
+	public final fun covers (Lio/github/valerioisufi/drawview/model/Versions;)Z
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getStamps ()Ljava/util/Map;
+	public fun hashCode ()I
+	public final fun plus (Lio/github/valerioisufi/drawview/model/Stamp;)Lio/github/valerioisufi/drawview/model/Versions;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/Versions$Companion {
+	public final fun getNONE ()Lio/github/valerioisufi/drawview/model/Versions;
+	public final fun parse (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/Versions;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/AddElements : io/github/valerioisufi/drawview/model/change/DocumentChange {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/AddElements$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Z
+	public final fun copy (Ljava/lang/String;Ljava/util/List;Z)Lio/github/valerioisufi/drawview/model/change/AddElements;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/AddElements;Ljava/lang/String;Ljava/util/List;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/AddElements;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getElements ()Ljava/util/List;
+	public final fun getLostVersions ()Z
+	public final fun getPageId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/AddElements$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/AddElements$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/AddElements;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/AddElements;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/AddElements$Companion {
+	public final fun of (Lio/github/valerioisufi/drawview/model/DrawPage;Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/AddElements;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/AddPage : io/github/valerioisufi/drawview/model/change/DocumentChange {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/AddPage$Companion;
+	public fun <init> (Lio/github/valerioisufi/drawview/model/change/PageData;)V
+	public fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun component1 ()Lio/github/valerioisufi/drawview/model/change/PageData;
+	public final fun copy (Lio/github/valerioisufi/drawview/model/change/PageData;)Lio/github/valerioisufi/drawview/model/change/AddPage;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/AddPage;Lio/github/valerioisufi/drawview/model/change/PageData;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/AddPage;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPage ()Lio/github/valerioisufi/drawview/model/change/PageData;
+	public fun hashCode ()I
+	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/AddPage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/AddPage$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/AddPage;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/AddPage;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/AddPage$Companion {
+	public final fun of (Lio/github/valerioisufi/drawview/model/DrawPage;)Lio/github/valerioisufi/drawview/model/change/AddPage;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/AddResource : io/github/valerioisufi/drawview/model/change/DocumentChange {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/AddResource$Companion;
+	public fun <init> (Lio/github/valerioisufi/drawview/model/change/ResourceData;)V
+	public fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun component1 ()Lio/github/valerioisufi/drawview/model/change/ResourceData;
+	public final fun copy (Lio/github/valerioisufi/drawview/model/change/ResourceData;)Lio/github/valerioisufi/drawview/model/change/AddResource;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/AddResource;Lio/github/valerioisufi/drawview/model/change/ResourceData;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/AddResource;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getResource ()Lio/github/valerioisufi/drawview/model/change/ResourceData;
+	public fun hashCode ()I
+	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/AddResource$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/AddResource$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/AddResource;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/AddResource;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/AddResource$Companion {
+	public final fun of (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/DrawResource$ResourceType;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/change/AddResource;
+	public static synthetic fun of$default (Lio/github/valerioisufi/drawview/model/change/AddResource$Companion;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/DrawResource$ResourceType;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/AddResource;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/BoxPlacement : io/github/valerioisufi/drawview/model/change/Placement {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/BoxPlacement$Companion;
+	public fun <init> (Ljava/lang/String;FFFFFLjava/lang/Float;Lio/github/valerioisufi/drawview/model/ElementOrder;Ljava/lang/Boolean;)V
+	public synthetic fun <init> (Ljava/lang/String;FFFFFLjava/lang/Float;Lio/github/valerioisufi/drawview/model/ElementOrder;Ljava/lang/Boolean;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun applyTo (Lio/github/valerioisufi/drawview/model/DrawElement;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()F
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun component5 ()F
+	public final fun component6 ()F
+	public final fun component7 ()Ljava/lang/Float;
+	public final fun component8 ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun component9 ()Ljava/lang/Boolean;
+	public final fun copy (Ljava/lang/String;FFFFFLjava/lang/Float;Lio/github/valerioisufi/drawview/model/ElementOrder;Ljava/lang/Boolean;)Lio/github/valerioisufi/drawview/model/change/BoxPlacement;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/BoxPlacement;Ljava/lang/String;FFFFFLjava/lang/Float;Lio/github/valerioisufi/drawview/model/ElementOrder;Ljava/lang/Boolean;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/BoxPlacement;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAutoWidth ()Ljava/lang/Boolean;
+	public final fun getFontSize ()Ljava/lang/Float;
+	public final fun getHeight ()F
+	public fun getId ()Ljava/lang/String;
+	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun getRotation ()F
+	public final fun getWidth ()F
+	public final fun getX ()F
+	public final fun getY ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/BoxPlacement$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/BoxPlacement$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/BoxPlacement;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/BoxPlacement;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/BoxPlacement$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/ChangeContext {
+}
+
+public final class io/github/valerioisufi/drawview/model/change/ChangeEffects {
+	public final fun getDeletedElements ()Ljava/util/Set;
+	public final fun getDirtyRegions ()Ljava/util/Map;
+	public final fun getLayoutChanged ()Z
+	public final fun getLostVersions ()Ljava/util/List;
+	public final fun getRemovedPages ()Ljava/util/Set;
+	public final fun getResources ()Ljava/util/List;
+	public final fun getSavedElements ()Ljava/util/Map;
+	public final fun isEmpty ()Z
+}
+
+public abstract interface class io/github/valerioisufi/drawview/model/change/ChangeObserver {
+	public abstract fun onChange (Lio/github/valerioisufi/drawview/model/change/CommittedChange;)V
+}
+
+public final class io/github/valerioisufi/drawview/model/change/ChangeOrigin : java/lang/Enum {
+	public static final field LOCAL Lio/github/valerioisufi/drawview/model/change/ChangeOrigin;
+	public static final field MERGE Lio/github/valerioisufi/drawview/model/change/ChangeOrigin;
+	public static final field REDO Lio/github/valerioisufi/drawview/model/change/ChangeOrigin;
+	public static final field REMOTE Lio/github/valerioisufi/drawview/model/change/ChangeOrigin;
+	public static final field UNDO Lio/github/valerioisufi/drawview/model/change/ChangeOrigin;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/change/ChangeOrigin;
+	public static fun values ()[Lio/github/valerioisufi/drawview/model/change/ChangeOrigin;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/ChangePersister : io/github/valerioisufi/drawview/model/change/ChangeObserver {
+	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public fun onChange (Lio/github/valerioisufi/drawview/model/change/CommittedChange;)V
+}
+
+public final class io/github/valerioisufi/drawview/model/change/CommittedChange {
+	public fun <init> (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/change/Operation;Lio/github/valerioisufi/drawview/model/change/DocumentChange;Lio/github/valerioisufi/drawview/model/change/ChangeOrigin;Lio/github/valerioisufi/drawview/model/change/ChangeEffects;)V
+	public final fun getChange ()Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun getDocument ()Lio/github/valerioisufi/drawview/model/DrawDocument;
+	public final fun getEffects ()Lio/github/valerioisufi/drawview/model/change/ChangeEffects;
+	public final fun getInverse ()Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun getOperation ()Lio/github/valerioisufi/drawview/model/change/Operation;
+	public final fun getOrigin ()Lio/github/valerioisufi/drawview/model/change/ChangeOrigin;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/CompositeChange : io/github/valerioisufi/drawview/model/change/DocumentChange {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/CompositeChange$Companion;
+	public fun <init> (Ljava/util/List;)V
+	public fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun component1 ()Ljava/util/List;
+	public final fun copy (Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/CompositeChange;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/CompositeChange;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/CompositeChange;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getChanges ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/CompositeChange$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/CompositeChange$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/CompositeChange;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/CompositeChange;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/CompositeChange$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/CustomElementData : io/github/valerioisufi/drawview/model/change/ElementData {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/CustomElementData$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;I[BFFFFFLio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;I[BFFFFFLio/github/valerioisufi/drawview/model/ElementOrder;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun copy (Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/ElementOrder;)Lio/github/valerioisufi/drawview/model/change/CustomElementData;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/CustomElementData;Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/ElementOrder;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/CustomElementData;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHeight ()F
+	public fun getId ()Ljava/lang/String;
+	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun getPayload ()[B
+	public final fun getRotation ()F
+	public final fun getType ()Ljava/lang/String;
+	public final fun getVersion ()I
+	public final fun getWidth ()F
+	public final fun getX ()F
+	public final fun getY ()F
+	public fun hashCode ()I
+	public fun toElement (Lio/github/valerioisufi/drawview/model/StrokeModeller;)Lio/github/valerioisufi/drawview/model/DrawCustomElement;
+	public synthetic fun toElement (Lio/github/valerioisufi/drawview/model/StrokeModeller;)Lio/github/valerioisufi/drawview/model/DrawElement;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/CustomElementData$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/CustomElementData$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/CustomElementData;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/CustomElementData;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/CustomElementData$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/model/change/DocumentChange {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/DocumentChange$Companion;
+	public abstract fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+}
+
+public final class io/github/valerioisufi/drawview/model/change/DocumentChange$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/DocumentChange$DefaultImpls {
+	public static fun prepare (Lio/github/valerioisufi/drawview/model/change/DocumentChange;Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+}
+
+public final class io/github/valerioisufi/drawview/model/change/DocumentChangeKt {
+	public static final fun placementOf (Lio/github/valerioisufi/drawview/model/DrawElement;)Lio/github/valerioisufi/drawview/model/change/Placement;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/model/change/DocumentPersistence {
+	public fun appendOperation (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/change/Operation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteForGood (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/PurgedContent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun fileWithContent (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveCustomElement (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawCustomElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveImage (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawImage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun savePage (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawPage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun savePdf (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawPdf;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveResource (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveStrokes (Lio/github/valerioisufi/drawview/model/DrawPage;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveText (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawText;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveTextMarkup (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawTextMarkup;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun touchDocument (Lio/github/valerioisufi/drawview/model/DrawDocument;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun updateDocumentDefaults (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun updateDocumentTitle (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/DocumentPersistence$DefaultImpls {
+	public static fun appendOperation (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/change/Operation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun deleteForGood (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/PurgedContent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun fileWithContent (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveCustomElement (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawCustomElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveImage (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawImage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun savePage (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawPage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun savePdf (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawPdf;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveResource (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveStrokes (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawPage;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveText (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawText;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveTextMarkup (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawTextMarkup;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun touchDocument (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawDocument;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun updateDocumentDefaults (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun updateDocumentTitle (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/DocumentSession {
+	public fun <init> (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun addObserver (Lio/github/valerioisufi/drawview/model/change/ChangeObserver;)V
+	public final fun getClock ()Lio/github/valerioisufi/drawview/model/change/HybridClock;
+	public final fun getDocument ()Lio/github/valerioisufi/drawview/model/DrawDocument;
+	public final fun getReadOnly ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun getReplica ()Ljava/lang/String;
+	public final fun getVersionVector ()Ljava/util/Map;
+	public final fun isReadOnly ()Z
+	public final fun lastApplied (Ljava/lang/String;)J
+	public final fun receive (Lio/github/valerioisufi/drawview/model/change/Operation;)Z
+	public final fun removeObserver (Lio/github/valerioisufi/drawview/model/change/ChangeObserver;)V
+	public final fun setReadOnly (Z)V
+	public final fun submit (Lio/github/valerioisufi/drawview/model/change/DocumentChange;Lio/github/valerioisufi/drawview/model/change/ChangeOrigin;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public static synthetic fun submit$default (Lio/github/valerioisufi/drawview/model/change/DocumentSession;Lio/github/valerioisufi/drawview/model/change/DocumentChange;Lio/github/valerioisufi/drawview/model/change/ChangeOrigin;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/DocumentSnapshot {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/DocumentSnapshot$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component10 ()Ljava/util/List;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun component5 ()Lio/github/valerioisufi/drawview/model/PageBackground;
+	public final fun component6 ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun component7 ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun component8 ()Ljava/util/List;
+	public final fun component9 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/DocumentSnapshot;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/DocumentSnapshot;Ljava/lang/String;Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/DocumentSnapshot;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDefaultBackground ()Lio/github/valerioisufi/drawview/model/PageBackground;
+	public final fun getDefaultHeightMm ()F
+	public final fun getDefaultWidthMm ()F
+	public final fun getDefaultsVersion ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getPages ()Ljava/util/List;
+	public final fun getRemovedPages ()Ljava/util/List;
+	public final fun getResources ()Ljava/util/List;
+	public final fun getTitle ()Ljava/lang/String;
+	public final fun getTitleVersion ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public fun hashCode ()I
+	public final fun toDocument (Lio/github/valerioisufi/drawview/model/StrokeModeller;)Lio/github/valerioisufi/drawview/model/DrawDocument;
+	public static synthetic fun toDocument$default (Lio/github/valerioisufi/drawview/model/change/DocumentSnapshot;Lio/github/valerioisufi/drawview/model/StrokeModeller;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/DrawDocument;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/DocumentSnapshot$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/DocumentSnapshot$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/DocumentSnapshot;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/DocumentSnapshot;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/DocumentSnapshot$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/DocumentSnapshotKt {
+	public static final fun snapshot (Lio/github/valerioisufi/drawview/model/DrawDocument;)Lio/github/valerioisufi/drawview/model/change/DocumentSnapshot;
+	public static final fun snapshot (Lio/github/valerioisufi/drawview/model/DrawPage;)Lio/github/valerioisufi/drawview/model/change/PageSnapshot;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/model/change/ElementData {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/ElementData$Companion;
+	public abstract fun getId ()Ljava/lang/String;
+	public abstract fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public abstract fun toElement (Lio/github/valerioisufi/drawview/model/StrokeModeller;)Lio/github/valerioisufi/drawview/model/DrawElement;
+	public static synthetic fun toElement$default (Lio/github/valerioisufi/drawview/model/change/ElementData;Lio/github/valerioisufi/drawview/model/StrokeModeller;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/DrawElement;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/ElementData$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/ElementData$DefaultImpls {
+	public static synthetic fun toElement$default (Lio/github/valerioisufi/drawview/model/change/ElementData;Lio/github/valerioisufi/drawview/model/StrokeModeller;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/DrawElement;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/ElementDataKt {
+	public static final fun placement (Lio/github/valerioisufi/drawview/model/change/ElementData;)Lio/github/valerioisufi/drawview/model/change/Placement;
+	public static final fun toData (Lio/github/valerioisufi/drawview/model/DrawCustomElement;)Lio/github/valerioisufi/drawview/model/change/CustomElementData;
+	public static final fun toData (Lio/github/valerioisufi/drawview/model/DrawElement;)Lio/github/valerioisufi/drawview/model/change/ElementData;
+	public static final fun toData (Lio/github/valerioisufi/drawview/model/DrawImage;)Lio/github/valerioisufi/drawview/model/change/ImageData;
+	public static final fun toData (Lio/github/valerioisufi/drawview/model/DrawPage;)Lio/github/valerioisufi/drawview/model/change/PageData;
+	public static final fun toData (Lio/github/valerioisufi/drawview/model/DrawPdf;)Lio/github/valerioisufi/drawview/model/change/PdfData;
+	public static final fun toData (Lio/github/valerioisufi/drawview/model/DrawStroke;)Lio/github/valerioisufi/drawview/model/change/StrokeData;
+	public static final fun toData (Lio/github/valerioisufi/drawview/model/DrawText;)Lio/github/valerioisufi/drawview/model/change/TextData;
+	public static final fun toData (Lio/github/valerioisufi/drawview/model/DrawTextMarkup;)Lio/github/valerioisufi/drawview/model/change/TextMarkupData;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/ElementVersions {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/ElementVersions$Companion;
+	public fun <init> (Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun applyTo (Lio/github/valerioisufi/drawview/model/DrawElement;)V
+	public final fun component1 ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun component2 ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun component3 ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun component4 ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun copy (Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;)Lio/github/valerioisufi/drawview/model/change/ElementVersions;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/ElementVersions;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/ElementVersions;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAdded ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getUpdated ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/ElementVersions$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/ElementVersions$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/ElementVersions;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/ElementVersions;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/ElementVersions$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/HybridClock {
+	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getReplica ()Ljava/lang/String;
+	public final fun next ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun observe (Lio/github/valerioisufi/drawview/model/Stamp;)V
+}
+
+public final class io/github/valerioisufi/drawview/model/change/ImageData : io/github/valerioisufi/drawview/model/change/ElementData {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/ImageData$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;FFFFFLio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;FFFFFLio/github/valerioisufi/drawview/model/ElementOrder;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun component5 ()F
+	public final fun component6 ()F
+	public final fun component7 ()F
+	public final fun component8 ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;FFFFFLio/github/valerioisufi/drawview/model/ElementOrder;)Lio/github/valerioisufi/drawview/model/change/ImageData;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/ImageData;Ljava/lang/String;Ljava/lang/String;FFFFFLio/github/valerioisufi/drawview/model/ElementOrder;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/ImageData;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHeight ()F
+	public fun getId ()Ljava/lang/String;
+	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun getResourceId ()Ljava/lang/String;
+	public final fun getRotation ()F
+	public final fun getWidth ()F
+	public final fun getX ()F
+	public final fun getY ()F
+	public fun hashCode ()I
+	public synthetic fun toElement (Lio/github/valerioisufi/drawview/model/StrokeModeller;)Lio/github/valerioisufi/drawview/model/DrawElement;
+	public fun toElement (Lio/github/valerioisufi/drawview/model/StrokeModeller;)Lio/github/valerioisufi/drawview/model/DrawImage;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/ImageData$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/ImageData$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/ImageData;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/ImageData;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/ImageData$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/MarkupStyle {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/MarkupStyle$Companion;
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/TextMarkupKind;I)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lio/github/valerioisufi/drawview/model/TextMarkupKind;
+	public final fun component3 ()I
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/TextMarkupKind;I)Lio/github/valerioisufi/drawview/model/change/MarkupStyle;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/MarkupStyle;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/TextMarkupKind;IILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/MarkupStyle;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getColor ()I
+	public final fun getId ()Ljava/lang/String;
+	public final fun getKind ()Lio/github/valerioisufi/drawview/model/TextMarkupKind;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/MarkupStyle$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/MarkupStyle$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/MarkupStyle;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/MarkupStyle;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/MarkupStyle$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/MovePages : io/github/valerioisufi/drawview/model/change/DocumentChange {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/MovePages$Companion;
+	public fun <init> (Ljava/util/List;)V
+	public fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun component1 ()Ljava/util/List;
+	public final fun copy (Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/MovePages;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/MovePages;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/MovePages;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMoves ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/MovePages$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/MovePages$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/MovePages;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/MovePages;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/MovePages$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+	public final fun toOrder (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/MovePages;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/NoOpDocumentPersistence : io/github/valerioisufi/drawview/model/change/DocumentPersistence {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/NoOpDocumentPersistence;
+	public fun appendOperation (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/change/Operation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteForGood (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/PurgedContent;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun fileWithContent (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveCustomElement (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawCustomElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveImage (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawImage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun savePage (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawPage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun savePdf (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawPdf;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveResource (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveStrokes (Lio/github/valerioisufi/drawview/model/DrawPage;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveText (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawText;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveTextMarkup (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawTextMarkup;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun touchDocument (Lio/github/valerioisufi/drawview/model/DrawDocument;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun updateDocumentDefaults (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun updateDocumentTitle (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/Operation {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/Operation$Companion;
+	public fun <init> (Lio/github/valerioisufi/drawview/model/change/OperationId;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/change/DocumentChange;)V
+	public final fun component1 ()Lio/github/valerioisufi/drawview/model/change/OperationId;
+	public final fun component2 ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun component3 ()Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun copy (Lio/github/valerioisufi/drawview/model/change/OperationId;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/change/DocumentChange;)Lio/github/valerioisufi/drawview/model/change/Operation;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/Operation;Lio/github/valerioisufi/drawview/model/change/OperationId;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/change/DocumentChange;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/Operation;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getChange ()Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun getId ()Lio/github/valerioisufi/drawview/model/change/OperationId;
+	public final fun getStamp ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/Operation$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/Operation$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/Operation;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/Operation;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/Operation$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/OperationId {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/OperationId$Companion;
+	public fun <init> (Ljava/lang/String;J)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()J
+	public final fun copy (Ljava/lang/String;J)Lio/github/valerioisufi/drawview/model/change/OperationId;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/OperationId;Ljava/lang/String;JILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/OperationId;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getReplica ()Ljava/lang/String;
+	public final fun getSequence ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/OperationId$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/OperationId$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/OperationId;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/OperationId;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/OperationId$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/PageData {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/PageData$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun component5 ()Lio/github/valerioisufi/drawview/model/PageBackground;
+	public final fun component6 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/PageData;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/PageData;Ljava/lang/String;Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/PageData;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBackground ()Lio/github/valerioisufi/drawview/model/PageBackground;
+	public final fun getElements ()Ljava/util/List;
+	public final fun getHeightMm ()F
+	public final fun getId ()Ljava/lang/String;
+	public final fun getOrderKey ()Ljava/lang/String;
+	public final fun getWidthMm ()F
+	public fun hashCode ()I
+	public final fun toPage (Lio/github/valerioisufi/drawview/model/DrawDocument;)Lio/github/valerioisufi/drawview/model/DrawPage;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/PageData$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/PageData$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/PageData;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/PageData;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/PageData$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/PageMove {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/PageMove$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/change/PageMove;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/PageMove;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/PageMove;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getOrderKey ()Ljava/lang/String;
+	public final fun getPageId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/PageMove$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/PageMove$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/PageMove;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/PageMove;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/PageMove$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/PageSnapshot {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/PageSnapshot$Companion;
+	public fun <init> (Lio/github/valerioisufi/drawview/model/change/PageData;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Ljava/util/List;Ljava/util/Map;Lio/github/valerioisufi/drawview/model/Versions;Lio/github/valerioisufi/drawview/model/Versions;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/change/PageData;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Ljava/util/List;Ljava/util/Map;Lio/github/valerioisufi/drawview/model/Versions;Lio/github/valerioisufi/drawview/model/Versions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lio/github/valerioisufi/drawview/model/change/PageData;
+	public final fun component2 ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun component3 ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun component4 ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun component5 ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun component6 ()Ljava/util/List;
+	public final fun component7 ()Ljava/util/Map;
+	public final fun component8 ()Lio/github/valerioisufi/drawview/model/Versions;
+	public final fun component9 ()Lio/github/valerioisufi/drawview/model/Versions;
+	public final fun copy (Lio/github/valerioisufi/drawview/model/change/PageData;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Ljava/util/List;Ljava/util/Map;Lio/github/valerioisufi/drawview/model/Versions;Lio/github/valerioisufi/drawview/model/Versions;)Lio/github/valerioisufi/drawview/model/change/PageSnapshot;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/PageSnapshot;Lio/github/valerioisufi/drawview/model/change/PageData;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Ljava/util/List;Ljava/util/Map;Lio/github/valerioisufi/drawview/model/Versions;Lio/github/valerioisufi/drawview/model/Versions;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/PageSnapshot;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAdded ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getContentVersions ()Lio/github/valerioisufi/drawview/model/Versions;
+	public final fun getData ()Lio/github/valerioisufi/drawview/model/change/PageData;
+	public final fun getFormatVersion ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getOrderVersion ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getRemovalSaw ()Lio/github/valerioisufi/drawview/model/Versions;
+	public final fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getRemovedElements ()Ljava/util/List;
+	public final fun getVersions ()Ljava/util/Map;
+	public fun hashCode ()I
+	public final fun toPage (Lio/github/valerioisufi/drawview/model/DrawDocument;)Lio/github/valerioisufi/drawview/model/DrawPage;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/PageSnapshot$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/PageSnapshot$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/PageSnapshot;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/PageSnapshot;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/PageSnapshot$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/PdfData : io/github/valerioisufi/drawview/model/change/ElementData {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/PdfData$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;ILio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILio/github/valerioisufi/drawview/model/ElementOrder;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()I
+	public final fun component4 ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;ILio/github/valerioisufi/drawview/model/ElementOrder;)Lio/github/valerioisufi/drawview/model/change/PdfData;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/PdfData;Ljava/lang/String;Ljava/lang/String;ILio/github/valerioisufi/drawview/model/ElementOrder;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/PdfData;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getId ()Ljava/lang/String;
+	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun getPdfPageIndex ()I
+	public final fun getResourceId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public synthetic fun toElement (Lio/github/valerioisufi/drawview/model/StrokeModeller;)Lio/github/valerioisufi/drawview/model/DrawElement;
+	public fun toElement (Lio/github/valerioisufi/drawview/model/StrokeModeller;)Lio/github/valerioisufi/drawview/model/DrawPdf;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/PdfData$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/PdfData$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/PdfData;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/PdfData;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/PdfData$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/PersistenceQueue {
+	public fun <init> (Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;)V
+	public final fun enqueue (Lkotlin/jvm/functions/Function2;)V
+	public final fun flush (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/PlaceElements : io/github/valerioisufi/drawview/model/change/DocumentChange {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/PlaceElements$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/change/PlaceElements;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/PlaceElements;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/PlaceElements;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPageId ()Ljava/lang/String;
+	public final fun getPlacements ()Ljava/util/List;
+	public final fun getToPageId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/PlaceElements$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/PlaceElements$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/PlaceElements;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/PlaceElements;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/PlaceElements$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/model/change/Placement {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/Placement$Companion;
+	public abstract fun applyTo (Lio/github/valerioisufi/drawview/model/DrawElement;)V
+	public abstract fun getId ()Ljava/lang/String;
+	public abstract fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/Placement$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/RemoveElements : io/github/valerioisufi/drawview/model/change/DocumentChange {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/RemoveElements$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/util/List;)V
+	public fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/RemoveElements;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/RemoveElements;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/RemoveElements;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getIds ()Ljava/util/List;
+	public final fun getPageId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/RemoveElements$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/RemoveElements$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/RemoveElements;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/RemoveElements;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/RemoveElements$Companion {
+	public final fun of (Lio/github/valerioisufi/drawview/model/DrawPage;Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/RemoveElements;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/RemovePage : io/github/valerioisufi/drawview/model/change/DocumentChange {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/RemovePage$Companion;
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/Versions;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/Versions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lio/github/valerioisufi/drawview/model/Versions;
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/Versions;)Lio/github/valerioisufi/drawview/model/change/RemovePage;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/RemovePage;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/Versions;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/RemovePage;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPageId ()Ljava/lang/String;
+	public final fun getSaw ()Lio/github/valerioisufi/drawview/model/Versions;
+	public fun hashCode ()I
+	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public final fun setSaw (Lio/github/valerioisufi/drawview/model/Versions;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/RemovePage$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/RemovePage$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/RemovePage;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/RemovePage;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/RemovePage$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/RenameDocument : io/github/valerioisufi/drawview/model/change/DocumentChange {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/RenameDocument$Companion;
+	public fun <init> (Ljava/lang/String;)V
+	public fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/change/RenameDocument;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/RenameDocument;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/RenameDocument;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getTitle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/RenameDocument$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/RenameDocument$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/RenameDocument;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/RenameDocument;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/RenameDocument$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/ResourceData {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/ResourceData$Companion;
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/DrawResource$ResourceType;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/DrawResource$ResourceType;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lio/github/valerioisufi/drawview/model/DrawResource$ResourceType;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/DrawResource$ResourceType;Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/change/ResourceData;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/ResourceData;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/DrawResource$ResourceType;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/ResourceData;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHash ()Ljava/lang/String;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getType ()Lio/github/valerioisufi/drawview/model/DrawResource$ResourceType;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/ResourceData$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/ResourceData$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/ResourceData;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/ResourceData;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/ResourceData$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/RestyleMarkups : io/github/valerioisufi/drawview/model/change/DocumentChange {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/RestyleMarkups$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/util/List;)V
+	public fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/RestyleMarkups;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/RestyleMarkups;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/RestyleMarkups;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPageId ()Ljava/lang/String;
+	public final fun getStyles ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/RestyleMarkups$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/RestyleMarkups$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/RestyleMarkups;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/RestyleMarkups;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/RestyleMarkups$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/SetDocumentDefaults : io/github/valerioisufi/drawview/model/change/DocumentChange {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/SetDocumentDefaults$Companion;
+	public fun <init> (FFLio/github/valerioisufi/drawview/model/PageBackground;)V
+	public fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun component1 ()F
+	public final fun component2 ()F
+	public final fun component3 ()Lio/github/valerioisufi/drawview/model/PageBackground;
+	public final fun copy (FFLio/github/valerioisufi/drawview/model/PageBackground;)Lio/github/valerioisufi/drawview/model/change/SetDocumentDefaults;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/SetDocumentDefaults;FFLio/github/valerioisufi/drawview/model/PageBackground;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/SetDocumentDefaults;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBackground ()Lio/github/valerioisufi/drawview/model/PageBackground;
+	public final fun getHeightMm ()F
+	public final fun getWidthMm ()F
+	public fun hashCode ()I
+	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/SetDocumentDefaults$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/SetDocumentDefaults$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/SetDocumentDefaults;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/SetDocumentDefaults;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/SetDocumentDefaults$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/SetPageFormat : io/github/valerioisufi/drawview/model/change/DocumentChange {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/SetPageFormat$Companion;
+	public fun <init> (Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;)V
+	public fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()F
+	public final fun component3 ()F
+	public final fun component4 ()Lio/github/valerioisufi/drawview/model/PageBackground;
+	public final fun copy (Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;)Lio/github/valerioisufi/drawview/model/change/SetPageFormat;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/SetPageFormat;Ljava/lang/String;FFLio/github/valerioisufi/drawview/model/PageBackground;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/SetPageFormat;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBackground ()Lio/github/valerioisufi/drawview/model/PageBackground;
+	public final fun getHeightMm ()F
+	public final fun getPageId ()Ljava/lang/String;
+	public final fun getWidthMm ()F
+	public fun hashCode ()I
+	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/SetPageFormat$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/SetPageFormat$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/SetPageFormat;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/SetPageFormat;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/SetPageFormat$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/StrokeData : io/github/valerioisufi/drawview/model/change/ElementData {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/StrokeData$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/StrokeTool;FILio/github/valerioisufi/drawview/model/InputToolType;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;Lio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/StrokeTool;FILio/github/valerioisufi/drawview/model/InputToolType;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;Lio/github/valerioisufi/drawview/model/ElementOrder;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Lio/github/valerioisufi/drawview/model/StrokeTool;
+	public final fun component4 ()F
+	public final fun component5 ()I
+	public final fun component6 ()Lio/github/valerioisufi/drawview/model/InputToolType;
+	public final fun component7 ()Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;
+	public final fun component8 ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun copy (Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/StrokeTool;FILio/github/valerioisufi/drawview/model/InputToolType;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;Lio/github/valerioisufi/drawview/model/ElementOrder;)Lio/github/valerioisufi/drawview/model/change/StrokeData;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/StrokeData;Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/StrokeTool;FILio/github/valerioisufi/drawview/model/InputToolType;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;Lio/github/valerioisufi/drawview/model/ElementOrder;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/StrokeData;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getColor ()I
+	public fun getId ()Ljava/lang/String;
+	public final fun getInputToolType ()Lio/github/valerioisufi/drawview/model/InputToolType;
+	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun getPoints ()Ljava/util/List;
+	public final fun getSize ()F
+	public final fun getTool ()Lio/github/valerioisufi/drawview/model/StrokeTool;
+	public final fun getTransform ()Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;
+	public fun hashCode ()I
+	public synthetic fun toElement (Lio/github/valerioisufi/drawview/model/StrokeModeller;)Lio/github/valerioisufi/drawview/model/DrawElement;
+	public fun toElement (Lio/github/valerioisufi/drawview/model/StrokeModeller;)Lio/github/valerioisufi/drawview/model/DrawStroke;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/StrokeData$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/StrokeData$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/StrokeData;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/StrokeData;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/StrokeData$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/StrokePlacement : io/github/valerioisufi/drawview/model/change/Placement {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/StrokePlacement$Companion;
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;Lio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;Lio/github/valerioisufi/drawview/model/ElementOrder;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun applyTo (Lio/github/valerioisufi/drawview/model/DrawElement;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;
+	public final fun component3 ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;Lio/github/valerioisufi/drawview/model/ElementOrder;)Lio/github/valerioisufi/drawview/model/change/StrokePlacement;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/StrokePlacement;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;Lio/github/valerioisufi/drawview/model/ElementOrder;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/StrokePlacement;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getId ()Ljava/lang/String;
+	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun getTransform ()Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/StrokePlacement$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/StrokePlacement$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/StrokePlacement;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/StrokePlacement;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/StrokePlacement$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/TextData : io/github/valerioisufi/drawview/model/change/ElementData {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/TextData$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/TextAlignment;ZFFFFFIFLio/github/valerioisufi/drawview/model/ElementOrder;Lio/github/valerioisufi/drawview/model/Versions;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/TextAlignment;ZFFFFFIFLio/github/valerioisufi/drawview/model/ElementOrder;Lio/github/valerioisufi/drawview/model/Versions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun applyTo (Lio/github/valerioisufi/drawview/model/DrawText;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component10 ()I
+	public final fun component11 ()F
+	public final fun component12 ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun component13 ()Lio/github/valerioisufi/drawview/model/Versions;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Lio/github/valerioisufi/drawview/model/TextAlignment;
+	public final fun component4 ()Z
+	public final fun component5 ()F
+	public final fun component6 ()F
+	public final fun component7 ()F
+	public final fun component8 ()F
+	public final fun component9 ()F
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/TextAlignment;ZFFFFFIFLio/github/valerioisufi/drawview/model/ElementOrder;Lio/github/valerioisufi/drawview/model/Versions;)Lio/github/valerioisufi/drawview/model/change/TextData;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/TextData;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/TextAlignment;ZFFFFFIFLio/github/valerioisufi/drawview/model/ElementOrder;Lio/github/valerioisufi/drawview/model/Versions;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/TextData;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAlignment ()Lio/github/valerioisufi/drawview/model/TextAlignment;
+	public final fun getAutoWidth ()Z
+	public final fun getColor ()I
+	public final fun getFontSize ()F
+	public final fun getHeight ()F
+	public fun getId ()Ljava/lang/String;
+	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun getRotation ()F
+	public final fun getText ()Ljava/lang/String;
+	public final fun getVersions ()Lio/github/valerioisufi/drawview/model/Versions;
+	public final fun getWidth ()F
+	public final fun getX ()F
+	public final fun getY ()F
+	public fun hashCode ()I
+	public synthetic fun toElement (Lio/github/valerioisufi/drawview/model/StrokeModeller;)Lio/github/valerioisufi/drawview/model/DrawElement;
+	public fun toElement (Lio/github/valerioisufi/drawview/model/StrokeModeller;)Lio/github/valerioisufi/drawview/model/DrawText;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/TextData$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/TextData$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/TextData;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/TextData;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/TextData$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/TextMarkupData : io/github/valerioisufi/drawview/model/change/ElementData {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/TextMarkupData$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;IFFIILjava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/TextMarkupKind;ILio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;IFFIILjava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/TextMarkupKind;ILio/github/valerioisufi/drawview/model/ElementOrder;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component10 ()Lio/github/valerioisufi/drawview/model/TextMarkupKind;
+	public final fun component11 ()I
+	public final fun component12 ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()I
+	public final fun component4 ()F
+	public final fun component5 ()F
+	public final fun component6 ()I
+	public final fun component7 ()I
+	public final fun component8 ()Ljava/lang/String;
+	public final fun component9 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;IFFIILjava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/TextMarkupKind;ILio/github/valerioisufi/drawview/model/ElementOrder;)Lio/github/valerioisufi/drawview/model/change/TextMarkupData;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/TextMarkupData;Ljava/lang/String;Ljava/lang/String;IFFIILjava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/TextMarkupKind;ILio/github/valerioisufi/drawview/model/ElementOrder;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/TextMarkupData;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getColor ()I
+	public final fun getEndIndex ()I
+	public fun getId ()Ljava/lang/String;
+	public final fun getKind ()Lio/github/valerioisufi/drawview/model/TextMarkupKind;
+	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun getPdfHeightPt ()F
+	public final fun getPdfPageIndex ()I
+	public final fun getPdfWidthPt ()F
+	public final fun getRects ()Ljava/util/List;
+	public final fun getResourceId ()Ljava/lang/String;
+	public final fun getStartIndex ()I
+	public final fun getText ()Ljava/lang/String;
+	public fun hashCode ()I
+	public synthetic fun toElement (Lio/github/valerioisufi/drawview/model/StrokeModeller;)Lio/github/valerioisufi/drawview/model/DrawElement;
+	public fun toElement (Lio/github/valerioisufi/drawview/model/StrokeModeller;)Lio/github/valerioisufi/drawview/model/DrawTextMarkup;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/TextMarkupData$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/TextMarkupData$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/TextMarkupData;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/TextMarkupData;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/TextMarkupData$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/UpdateElementContent : io/github/valerioisufi/drawview/model/change/DocumentChange {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/UpdateElementContent$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;I[B)V
+	public fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Ljava/lang/String;
+	public final fun getPageId ()Ljava/lang/String;
+	public final fun getPayload ()[B
+	public final fun getVersion ()I
+	public fun hashCode ()I
+	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/UpdateElementContent$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/UpdateElementContent$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/UpdateElementContent;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/UpdateElementContent;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/UpdateElementContent$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/UpdateTexts : io/github/valerioisufi/drawview/model/change/DocumentChange {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/UpdateTexts$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/util/List;)V
+	public fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/UpdateTexts;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/UpdateTexts;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/UpdateTexts;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPageId ()Ljava/lang/String;
+	public final fun getTexts ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/UpdateTexts$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/UpdateTexts$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/UpdateTexts;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/UpdateTexts;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/UpdateTexts$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/AffineTransform {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/geometry/AffineTransform$Companion;
+	public fun <init> ()V
+	public fun <init> (FFFFFF)V
+	public synthetic fun <init> (FFFFFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()F
+	public final fun component2 ()F
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun component5 ()F
+	public final fun component6 ()F
+	public final fun copy (FFFFFF)Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;FFFFFFILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getA ()F
+	public final fun getB ()F
+	public final fun getC ()F
+	public final fun getD ()F
+	public final fun getTx ()F
+	public final fun getTy ()F
+	public fun hashCode ()I
+	public final fun isIdentity ()Z
+	public final fun then (Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;)Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;
+	public final fun toMatrix ()Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/geometry/AffineTransform$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/geometry/AffineTransform$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/AffineTransform$Companion {
+	public final fun getIDENTITY ()Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;
+	public final fun of (Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;)Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/Dimension {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion;
+	public fun <init> (Lio/github/valerioisufi/drawview/model/geometry/Measure;Lio/github/valerioisufi/drawview/model/geometry/Measure;)V
+	public final fun calcHeightFromWidthPx (Lio/github/valerioisufi/drawview/model/geometry/Px;)F
+	public final fun calcXMm (FLio/github/valerioisufi/drawview/model/geometry/Rect;)F
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHeight ()Lio/github/valerioisufi/drawview/model/geometry/Measure;
+	public final fun getWidth ()Lio/github/valerioisufi/drawview/model/geometry/Measure;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/Dimension$Companion {
+	public final fun A3 (Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion$Orientation;)Lio/github/valerioisufi/drawview/model/geometry/Dimension;
+	public static synthetic fun A3$default (Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion;Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion$Orientation;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/geometry/Dimension;
+	public final fun A4 (Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion$Orientation;)Lio/github/valerioisufi/drawview/model/geometry/Dimension;
+	public static synthetic fun A4$default (Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion;Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion$Orientation;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/geometry/Dimension;
+	public final fun A5 (Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion$Orientation;)Lio/github/valerioisufi/drawview/model/geometry/Dimension;
+	public static synthetic fun A5$default (Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion;Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion$Orientation;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/geometry/Dimension;
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/Dimension$Companion$Length : java/lang/Enum {
+	public static final field HEIGHT Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion$Length;
+	public static final field WIDTH Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion$Length;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion$Length;
+	public static fun values ()[Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion$Length;
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/Dimension$Companion$Orientation : java/lang/Enum {
+	public static final field HORIZONTAL Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion$Orientation;
+	public static final field VERTICAL Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion$Orientation;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion$Orientation;
+	public static fun values ()[Lio/github/valerioisufi/drawview/model/geometry/Dimension$Companion$Orientation;
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/DimensionKt {
+	public static final fun getCm (F)Lio/github/valerioisufi/drawview/model/geometry/Measure;
+	public static final fun getCm (I)Lio/github/valerioisufi/drawview/model/geometry/Measure;
+	public static final fun getInch (F)Lio/github/valerioisufi/drawview/model/geometry/Measure;
+	public static final fun getInch (I)Lio/github/valerioisufi/drawview/model/geometry/Measure;
+	public static final fun getMm (F)Lio/github/valerioisufi/drawview/model/geometry/Measure;
+	public static final fun getMm (I)Lio/github/valerioisufi/drawview/model/geometry/Measure;
+	public static final fun getPt (F)Lio/github/valerioisufi/drawview/model/geometry/Measure;
+	public static final fun getPt (I)Lio/github/valerioisufi/drawview/model/geometry/Measure;
+	public static final fun getPx (F)Lio/github/valerioisufi/drawview/model/geometry/Px;
+	public static final fun getPx (I)Lio/github/valerioisufi/drawview/model/geometry/Px;
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/HitTesting {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/geometry/HitTesting;
+	public final fun meshIntersectsCapsule (Lio/github/valerioisufi/drawview/model/StrokeMesh;FFFFF)Z
+	public final fun meshIntersectsPolygon (Lio/github/valerioisufi/drawview/model/StrokeMesh;[FLio/github/valerioisufi/drawview/model/geometry/Rect;)Z
+	public final fun pointInPolygon (FF[F)Z
+	public final fun polygonBounds ([F)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun rectIntersectsCapsule (Lio/github/valerioisufi/drawview/model/geometry/Rect;FFFFF)Z
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/Matrix2D {
+	public fun <init> ()V
+	public fun <init> (FFFFFF)V
+	public synthetic fun <init> (FFFFFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getA ()F
+	public final fun getB ()F
+	public final fun getC ()F
+	public final fun getD ()F
+	public final fun getRotationDegrees ()F
+	public final fun getScaleFactor ()F
+	public final fun getTx ()F
+	public final fun getTy ()F
+	public fun hashCode ()I
+	public final fun invert (Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;)Z
+	public static synthetic fun invert$default (Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;ILjava/lang/Object;)Z
+	public final fun isIdentity ()Z
+	public final fun mapPoint (FF)Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun mapPoints ([F[F)V
+	public static synthetic fun mapPoints$default (Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;[F[FILjava/lang/Object;)V
+	public final fun mapRadius (F)F
+	public final fun mapRect (Lio/github/valerioisufi/drawview/model/geometry/Rect;)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun postConcat (Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public final fun postRotate (FFF)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public static synthetic fun postRotate$default (Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;FFFILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public final fun postScale (FF)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public final fun postScale (FFFF)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public final fun postTranslate (FF)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public final fun preConcat (Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public final fun preScale (FF)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public final fun preTranslate (FF)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public final fun reset ()Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public final fun set (Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public final fun setA (F)V
+	public final fun setB (F)V
+	public final fun setC (F)V
+	public final fun setD (F)V
+	public final fun setRectToRect (Lio/github/valerioisufi/drawview/model/geometry/Rect;Lio/github/valerioisufi/drawview/model/geometry/Rect;)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+	public final fun setTx (F)V
+	public final fun setTy (F)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/Measure {
+	public fun <init> (FLio/github/valerioisufi/drawview/model/geometry/Measure$Unit;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCm ()F
+	public final fun getInch ()F
+	public final fun getMm ()F
+	public final fun getPt ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/Measure$Unit : java/lang/Enum {
+	public static final field CM Lio/github/valerioisufi/drawview/model/geometry/Measure$Unit;
+	public static final field DOT Lio/github/valerioisufi/drawview/model/geometry/Measure$Unit;
+	public static final field INCH Lio/github/valerioisufi/drawview/model/geometry/Measure$Unit;
+	public static final field MM Lio/github/valerioisufi/drawview/model/geometry/Measure$Unit;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/geometry/Measure$Unit;
+	public static fun values ()[Lio/github/valerioisufi/drawview/model/geometry/Measure$Unit;
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/PdfPagesKt {
+	public static final fun fitPdfPage (DDLio/github/valerioisufi/drawview/model/geometry/Rect;)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/Point {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/geometry/Point$Companion;
+	public fun <init> (FF)V
+	public final fun component1 ()F
+	public final fun component2 ()F
+	public final fun copy (FF)Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/geometry/Point;FFILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDistance ()F
+	public final fun getX ()F
+	public final fun getY ()F
+	public fun hashCode ()I
+	public final fun minus (Lio/github/valerioisufi/drawview/model/geometry/Point;)Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun plus (Lio/github/valerioisufi/drawview/model/geometry/Point;)Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun times (F)Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/Point$Companion {
+	public final fun getZero ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/Px {
+	public fun <init> (F)V
+	public final fun component1 ()F
+	public final fun copy (F)Lio/github/valerioisufi/drawview/model/geometry/Px;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/geometry/Px;FILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/geometry/Px;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPx ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/Rect {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/geometry/Rect$Companion;
+	public fun <init> (FFFF)V
+	public final fun component1 ()F
+	public final fun component2 ()F
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun contains (Lio/github/valerioisufi/drawview/model/geometry/Point;)Z
+	public final fun copy (FFFF)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/geometry/Rect;FFFFILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBottom ()F
+	public final fun getBottomRight ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun getCenter ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun getHeight ()F
+	public final fun getLeft ()F
+	public final fun getRight ()F
+	public final fun getTop ()F
+	public final fun getTopLeft ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun getWidth ()F
+	public fun hashCode ()I
+	public final fun inflate (F)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun intersect (Lio/github/valerioisufi/drawview/model/geometry/Rect;)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun isEmpty ()Z
+	public final fun overlaps (Lio/github/valerioisufi/drawview/model/geometry/Rect;)Z
+	public fun toString ()Ljava/lang/String;
+	public final fun translate (FF)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun union (Lio/github/valerioisufi/drawview/model/geometry/Rect;)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+}
+
+public final class io/github/valerioisufi/drawview/model/geometry/Rect$Companion {
+	public final fun getZero ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+}
+
+public final class io/github/valerioisufi/drawview/model/text/RichTextParser {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/RichTextParser;
+	public final fun parse (Ljava/lang/String;)Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/drawview/model/text/RichTextParser$Kind : java/lang/Enum {
+	public static final field BOLD Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
+	public static final field CODE Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
+	public static final field ESCAPE Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
+	public static final field FORMULA Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
+	public static final field HEADING Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
+	public static final field ITALIC Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
+	public static final field STRIKE Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
+	public static fun values ()[Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
+}
+
+public final class io/github/valerioisufi/drawview/model/text/RichTextParser$Span {
+	public fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZ)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun component4 ()I
+	public final fun component5 ()I
+	public final fun component6 ()I
+	public final fun component7 ()Z
+	public final fun component8 ()Z
+	public final fun copy (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZ)Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBlock ()Z
+	public final fun getContentEnd ()I
+	public final fun getContentStart ()I
+	public final fun getDelimiters ()Ljava/util/List;
+	public final fun getDisplay ()Z
+	public final fun getEnd ()I
+	public final fun getKind ()Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
+	public final fun getLevel ()I
+	public final fun getStart ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/text/TextDefaults {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/text/TextDefaults$Companion;
+	public fun <init> ()V
+	public fun <init> (FILio/github/valerioisufi/drawview/model/TextAlignment;)V
+	public synthetic fun <init> (FILio/github/valerioisufi/drawview/model/TextAlignment;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()F
+	public final fun component2 ()I
+	public final fun component3 ()Lio/github/valerioisufi/drawview/model/TextAlignment;
+	public final fun copy (FILio/github/valerioisufi/drawview/model/TextAlignment;)Lio/github/valerioisufi/drawview/model/text/TextDefaults;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/text/TextDefaults;FILio/github/valerioisufi/drawview/model/TextAlignment;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/text/TextDefaults;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAlignment ()Lio/github/valerioisufi/drawview/model/TextAlignment;
+	public final fun getColor ()I
+	public final fun getFontSize ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/text/TextDefaults$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/TextDefaults$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/text/TextDefaults;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/text/TextDefaults;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/text/TextDefaults$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/text/TextSizes {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/TextSizes;
+	public static final field MAX F
+	public static final field MIN F
+	public static final field PT_TO_MM F
+	public final fun clamp (F)F
+	public final fun estimatedLineHeightMm (F)F
+	public final fun getPRESETS ()Ljava/util/List;
+	public final fun larger (F)F
+	public final fun smaller (F)F
+}
+

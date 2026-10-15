@@ -6,19 +6,19 @@ import kotlin.math.sqrt
  * Sample rate of the lecture recordings: 16-bit mono PCM at 16 kHz is enough for speech (Gemini
  * downsamples every audio input to 16 kHz anyway) and takes 115 MB per hour.
  */
-const val LECTURE_SAMPLE_RATE = 16_000
+internal const val LECTURE_SAMPLE_RATE = 16_000
 
 /** Bytes per second of the lecture recordings (16-bit mono). */
-const val LECTURE_BYTES_PER_SECOND = LECTURE_SAMPLE_RATE * 2
+internal const val LECTURE_BYTES_PER_SECOND = LECTURE_SAMPLE_RATE * 2
 
-fun samplesToMs(samples: Long, sampleRate: Int = LECTURE_SAMPLE_RATE): Long = samples * 1000 / sampleRate
+internal fun samplesToMs(samples: Long, sampleRate: Int = LECTURE_SAMPLE_RATE): Long = samples * 1000 / sampleRate
 
-fun msToSamples(ms: Long, sampleRate: Int = LECTURE_SAMPLE_RATE): Long = ms * sampleRate / 1000
+internal fun msToSamples(ms: Long, sampleRate: Int = LECTURE_SAMPLE_RATE): Long = ms * sampleRate / 1000
 
 /**
  * WAV (RIFF) container of 16-bit mono PCM.
  */
-object Wav {
+internal object Wav {
     const val HEADER_SIZE = 44
 
     /** Header of a WAV file holding [dataBytes] bytes of 16-bit mono PCM. */
@@ -56,7 +56,7 @@ object Wav {
     }
 }
 
-fun ShortArray.toLittleEndianBytes(): ByteArray {
+internal fun ShortArray.toLittleEndianBytes(): ByteArray {
     val bytes = ByteArray(size * 2)
     for (i in indices) {
         val v = this[i].toInt()
@@ -66,7 +66,7 @@ fun ShortArray.toLittleEndianBytes(): ByteArray {
     return bytes
 }
 
-fun ByteArray.littleEndianToShorts(): ShortArray {
+internal fun ByteArray.littleEndianToShorts(): ShortArray {
     val samples = ShortArray(size / 2)
     for (i in samples.indices) {
         samples[i] = ((this[2 * i].toInt() and 0xFF) or (this[2 * i + 1].toInt() shl 8)).toShort()
@@ -75,7 +75,7 @@ fun ByteArray.littleEndianToShorts(): ShortArray {
 }
 
 /** Root mean square of [samples] in `[from, to)`, in sample units (0..32768). */
-fun rms(samples: ShortArray, from: Int = 0, to: Int = samples.size): Float {
+internal fun rms(samples: ShortArray, from: Int = 0, to: Int = samples.size): Float {
     if (to <= from) return 0f
     var sum = 0.0
     for (i in from until to) {
@@ -91,7 +91,7 @@ fun rms(samples: ShortArray, from: Int = 0, to: Int = samples.size): Float {
  * The loudest moments are the 95th percentile of the 30 ms frames: a few isolated words in a
  * minute of silence count as silence.
  */
-fun isSilent(samples: ShortArray, from: Int = 0, sampleRate: Int = LECTURE_SAMPLE_RATE): Boolean {
+internal fun isSilent(samples: ShortArray, from: Int = 0, sampleRate: Int = LECTURE_SAMPLE_RATE): Boolean {
     val frame = sampleRate * 30 / 1000
     if (samples.size - from < frame) return true
     val levels = (from..samples.size - frame step frame).map { rms(samples, it, it + frame) }.sorted()

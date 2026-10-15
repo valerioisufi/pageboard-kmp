@@ -13,7 +13,7 @@ import io.github.valerioisufi.drawview.model.DrawTextMarkup
  * Writes the effects of the changes of a document through [persist] (a [PersistenceQueue]):
  * the persistence knows nothing of the kinds of change.
  */
-class ChangePersister(
+public class ChangePersister(
     private val persist: (operation: suspend DocumentPersistence.() -> Unit) -> Unit
 ) : ChangeObserver {
 

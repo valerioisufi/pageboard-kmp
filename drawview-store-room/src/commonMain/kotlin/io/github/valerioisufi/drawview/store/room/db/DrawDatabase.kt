@@ -33,26 +33,31 @@ import androidx.room.TypeConverters
     VersionConverters::class
 )
 @ConstructedBy(DrawDatabaseConstructor::class)
-abstract class DrawDatabase : RoomDatabase() {
-    abstract fun folderDao(): FolderDao
-    abstract fun documentDao(): DocumentDao
-    abstract fun pageDao(): PageDao
-    abstract fun strokeDao(): StrokeDao
-    abstract fun textDao(): TextDao
-    abstract fun imageDao(): ImageDao
-    abstract fun customElementDao(): CustomElementDao
-    abstract fun pdfDao(): PdfDao
-    abstract fun textMarkupDao(): TextMarkupDao
-    abstract fun resourceDao(): ResourceDao
-    abstract fun operationDao(): OperationDao
-    abstract fun purgeDao(): PurgeDao
-    abstract fun sharedDocumentDao(): SharedDocumentDao
-    abstract fun replicaDao(): ReplicaDao
-    abstract fun preferencesDao(): PreferencesDao
+/**
+ * The Room database of the documents, their folders, operations, sharing and the preferences of
+ * the applications: opened by [createDrawDatabase], migrated from version 16 on (see
+ * `DRAW_DATABASE_MIGRATIONS`).
+ */
+public abstract class DrawDatabase : RoomDatabase() {
+    internal abstract fun folderDao(): FolderDao
+    internal abstract fun documentDao(): DocumentDao
+    internal abstract fun pageDao(): PageDao
+    internal abstract fun strokeDao(): StrokeDao
+    internal abstract fun textDao(): TextDao
+    internal abstract fun imageDao(): ImageDao
+    internal abstract fun customElementDao(): CustomElementDao
+    internal abstract fun pdfDao(): PdfDao
+    internal abstract fun textMarkupDao(): TextMarkupDao
+    internal abstract fun resourceDao(): ResourceDao
+    internal abstract fun operationDao(): OperationDao
+    internal abstract fun purgeDao(): PurgeDao
+    internal abstract fun sharedDocumentDao(): SharedDocumentDao
+    internal abstract fun replicaDao(): ReplicaDao
+    internal abstract fun preferencesDao(): PreferencesDao
 }
 
 // The Room compiler generates the implementation of this interface
 @Suppress("NO_ACTUAL_FOR_EXPECT")
-expect object DrawDatabaseConstructor : RoomDatabaseConstructor<DrawDatabase> {
+internal expect object DrawDatabaseConstructor : RoomDatabaseConstructor<DrawDatabase> {
     override fun initialize(): DrawDatabase
 }

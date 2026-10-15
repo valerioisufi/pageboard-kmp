@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 /**
  * Devices connected in memory (tests, previews): each [transport] is reachable at its address.
  */
-class InMemoryNetwork {
+internal class InMemoryNetwork {
     private val lock = SynchronizedObject()
     private val transports = mutableMapOf<String, InMemoryTransport>()
 
@@ -25,7 +25,7 @@ class InMemoryNetwork {
 }
 
 /** A device of an [InMemoryNetwork]. */
-class InMemoryTransport internal constructor(val address: String, private val network: InMemoryNetwork) : SyncTransport {
+internal class InMemoryTransport internal constructor(public val address: String, private val network: InMemoryNetwork) : SyncTransport {
     private val accepted = Channel<SyncChannel>(Channel.UNLIMITED)
 
     override val incoming: Flow<SyncChannel> = accepted.receiveAsFlow()
@@ -44,7 +44,7 @@ class InMemoryTransport internal constructor(val address: String, private val ne
 }
 
 /** One end of a connection in memory. */
-class InMemoryChannel private constructor(
+internal class InMemoryChannel private constructor(
     private val inbox: Channel<ByteArray>,
     private val outbox: Channel<ByteArray>
 ) : SyncChannel {

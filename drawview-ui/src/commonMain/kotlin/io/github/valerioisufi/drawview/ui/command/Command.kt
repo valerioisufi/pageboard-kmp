@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import io.github.valerioisufi.drawview.ui.adaptive.PlatformConventions
 
 /** The menu listing a command (the menu bar of the desktop, the menus of the platforms). */
-enum class CommandGroup { FILE, EDIT, VIEW, INSERT, FORMAT, TOOLS, HELP }
+public enum class CommandGroup { FILE, EDIT, VIEW, INSERT, FORMAT, TOOLS, HELP }
 
 /**
  * An action of the interface, defined once and shown in many ways: a button of a bar (with its
@@ -27,23 +27,23 @@ enum class CommandGroup { FILE, EDIT, VIEW, INSERT, FORMAT, TOOLS, HELP }
  * @param destructive it deletes something (the menus write it in the color of the errors).
  */
 @Stable
-class Command(
-    val id: String,
-    val label: @Composable () -> String,
-    val group: CommandGroup,
-    val section: Int = 0,
-    val icon: (@Composable () -> Painter)? = null,
-    val shortcuts: List<Shortcut> = emptyList(),
-    val isEnabled: () -> Boolean = { true },
-    val isChecked: (() -> Boolean)? = null,
-    val destructive: Boolean = false,
-    val perform: () -> Unit
+public class Command(
+    public val id: String,
+    public val label: @Composable () -> String,
+    public val group: CommandGroup,
+    public val section: Int = 0,
+    public val icon: (@Composable () -> Painter)? = null,
+    public val shortcuts: List<Shortcut> = emptyList(),
+    public val isEnabled: () -> Boolean = { true },
+    public val isChecked: (() -> Boolean)? = null,
+    public val destructive: Boolean = false,
+    public val perform: () -> Unit
 ) {
     /** The shortcut shown beside the command, as the platform writes it. */
-    fun shortcutLabel(conventions: PlatformConventions): String? = shortcuts.firstOrNull()?.label(conventions)
+    public fun shortcutLabel(conventions: PlatformConventions): String? = shortcuts.firstOrNull()?.label(conventions)
 
     /** Runs the command if it can run; whether it did. */
-    fun performIfEnabled(): Boolean {
+    public fun performIfEnabled(): Boolean {
         if (!isEnabled()) return false
         perform()
         return true

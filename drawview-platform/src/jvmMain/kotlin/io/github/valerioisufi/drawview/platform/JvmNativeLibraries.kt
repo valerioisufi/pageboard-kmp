@@ -11,10 +11,10 @@ import java.nio.file.StandardCopyOption
  * see `native/scripts/build_desktop.sh`) and extracted into a private temporary directory before being loaded, since the JVM cannot
  * load a shared library from inside a jar.
  */
-object JvmNativeLibraries {
+public object JvmNativeLibraries {
 
     /** Resource folder name of the running platform, e.g. `darwin-aarch64`. */
-    val platformFolder: String by lazy {
+    internal val platformFolder: String by lazy {
         val os = System.getProperty("os.name").lowercase()
         val arch = System.getProperty("os.arch").lowercase()
         val isArm = arch.contains("aarch64") || arch.contains("arm64")
@@ -26,7 +26,7 @@ object JvmNativeLibraries {
     }
 
     /** Maps a library name (e.g. `ink_bridge`) to its platform file name (e.g. `libink_bridge.dylib`). */
-    fun mappedName(name: String): String = System.mapLibraryName(name).let {
+    internal fun mappedName(name: String): String = System.mapLibraryName(name).let {
         // System.mapLibraryName returns .jnilib on some older macOS JDKs
         if (it.endsWith(".jnilib")) it.removeSuffix(".jnilib") + ".dylib" else it
     }
@@ -44,7 +44,7 @@ object JvmNativeLibraries {
      * @return `true` when every library has been loaded.
      */
     @Synchronized
-    fun load(anchor: Class<*>, vararg names: String): Boolean {
+    public fun load(anchor: Class<*>, vararg names: String): Boolean {
         for (name in names) {
             if (name in loaded) continue
             if (!loadOne(anchor, name)) return false

@@ -3,14 +3,14 @@ package io.github.valerioisufi.drawview.canvas.platform
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 
 /** Whether [data] starts like a JPEG file. */
-fun isJpeg(data: ByteArray): Boolean =
+public fun isJpeg(data: ByteArray): Boolean =
     data.size > 3 && data[0] == 0xFF.toByte() && data[1] == 0xD8.toByte() && data[2] == 0xFF.toByte()
 
 /**
  * The orientation of the JPEG [data] in its Exif metadata (1 to 8, 1 when it has none): how its
  * pixels are turned to be shown (see [exifOrientation]). [decodeImageBitmap] turns them.
  */
-fun jpegOrientation(data: ByteArray): Int {
+public fun jpegOrientation(data: ByteArray): Int {
     fun byte(i: Int) = data[i].toInt() and 0xFF
     var i = 2
     while (i + 3 < data.size && byte(i) == 0xFF) {
@@ -53,7 +53,7 @@ private fun orientationTag(data: ByteArray, tiff: Int, end: Int): Int {
  * From the unit square of an image as it is stored (its top-left corner at the origin) to the unit
  * square of the image as it is shown, turned or mirrored by the Exif [orientation].
  */
-fun exifOrientation(orientation: Int): Matrix2D = when (orientation) {
+public fun exifOrientation(orientation: Int): Matrix2D = when (orientation) {
     // Mirrored left to right
     2 -> Matrix2D(-1f, 0f, 0f, 1f, 1f, 0f)
     // Turned half a turn

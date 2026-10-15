@@ -90,7 +90,7 @@ internal class EditorScreenActions(
  * selections, the mode of the editor) and runs through it.
  */
 @Stable
-class EditorCommands internal constructor(
+internal class EditorCommands internal constructor(
     private val controller: DrawViewController,
     private val clipboard: ClipboardManager,
     private val actions: EditorScreenActions

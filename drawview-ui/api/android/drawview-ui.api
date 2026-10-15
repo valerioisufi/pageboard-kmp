@@ -1,0 +1,966 @@
+public final class io/github/valerioisufi/drawview/ui/adaptive/AdaptiveInfo {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;Lio/github/valerioisufi/drawview/ui/adaptive/InputCapabilities;Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;)V
+	public final fun component1 ()Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;
+	public final fun component2 ()Lio/github/valerioisufi/drawview/ui/adaptive/InputCapabilities;
+	public final fun component3 ()Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;
+	public final fun copy (Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;Lio/github/valerioisufi/drawview/ui/adaptive/InputCapabilities;Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;)Lio/github/valerioisufi/drawview/ui/adaptive/AdaptiveInfo;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/ui/adaptive/AdaptiveInfo;Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;Lio/github/valerioisufi/drawview/ui/adaptive/InputCapabilities;Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/adaptive/AdaptiveInfo;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getConventions ()Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;
+	public final fun getInput ()Lio/github/valerioisufi/drawview/ui/adaptive/InputCapabilities;
+	public final fun getWindow ()Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/ui/adaptive/AdaptiveInfoKt {
+	public static final fun AdaptiveRoot (Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun currentAdaptiveInfo (Landroidx/compose/runtime/Composer;I)Lio/github/valerioisufi/drawview/ui/adaptive/AdaptiveInfo;
+}
+
+public final class io/github/valerioisufi/drawview/ui/adaptive/AdaptiveSheetKt {
+	public static final fun AdaptiveSheet-jIwJxvA (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;FZLkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class io/github/valerioisufi/drawview/ui/adaptive/HeightClass : java/lang/Enum {
+	public static final field COMPACT Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;
+	public static final field EXPANDED Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;
+	public static final field MEDIUM Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;
+	public static fun values ()[Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;
+}
+
+public final class io/github/valerioisufi/drawview/ui/adaptive/InputCapabilities {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getHasKeyboard ()Z
+}
+
+public final class io/github/valerioisufi/drawview/ui/adaptive/InputHints {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/ui/adaptive/InputHints$Companion;
+	public fun <init> ()V
+	public fun <init> (ZZZZ)V
+	public synthetic fun <init> (ZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component2 ()Z
+	public final fun component3 ()Z
+	public final fun component4 ()Z
+	public final fun copy (ZZZZ)Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;ZZZZILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getKeyboard ()Z
+	public final fun getPrecisePointer ()Z
+	public final fun getStylus ()Z
+	public final fun getTouch ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/ui/adaptive/InputHints$Companion {
+	public final fun getPointerAndKeyboard ()Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;
+	public final fun getStylus ()Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;
+	public final fun getTouch ()Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;
+}
+
+public final class io/github/valerioisufi/drawview/ui/adaptive/PlatformConventions {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;)V
+	public final fun component1 ()Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;
+	public final fun copy (Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;)Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getShortcutModifier ()Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/ui/adaptive/Platform_androidKt {
+	public static final fun getPlatformConventions ()Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;
+}
+
+public final class io/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow : java/lang/Enum {
+	public static final field DESKTOP Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
+	public static final field DESKTOP_NARROW Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
+	public static final field PHONE Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
+	public static final field PHONE_LANDSCAPE Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
+	public static final field TABLET_LANDSCAPE Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
+	public static final field TABLET_PORTRAIT Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
+	public static final field TABLET_SPLIT_SCREEN Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getHeight-D9Ej5fM ()F
+	public final fun getInput ()Lio/github/valerioisufi/drawview/ui/adaptive/InputHints;
+	public final fun getLayout ()Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;
+	public final fun getWidth-D9Ej5fM ()F
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
+	public static fun values ()[Lio/github/valerioisufi/drawview/ui/adaptive/ReferenceWindow;
+}
+
+public final class io/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier : java/lang/Enum {
+	public static final field COMMAND Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;
+	public static final field CONTROL Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;
+	public static fun values ()[Lio/github/valerioisufi/drawview/ui/adaptive/ShortcutModifier;
+}
+
+public final class io/github/valerioisufi/drawview/ui/adaptive/WidthClass : java/lang/Enum {
+	public static final field COMPACT Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;
+	public static final field EXPANDED Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;
+	public static final field MEDIUM Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;
+	public static fun values ()[Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;
+}
+
+public final class io/github/valerioisufi/drawview/ui/adaptive/WindowLayout {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout$Companion;
+	public fun <init> (Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;)V
+	public final fun component1 ()Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;
+	public final fun component2 ()Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;
+	public final fun copy (Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;)Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHeightClass ()Lio/github/valerioisufi/drawview/ui/adaptive/HeightClass;
+	public final fun getWidthClass ()Lio/github/valerioisufi/drawview/ui/adaptive/WidthClass;
+	public fun hashCode ()I
+	public final fun isCompact ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/ui/adaptive/WindowLayout$Companion {
+	public final fun of-YgX7TsA (FF)Lio/github/valerioisufi/drawview/ui/adaptive/WindowLayout;
+}
+
+public final class io/github/valerioisufi/drawview/ui/command/Command {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lio/github/valerioisufi/drawview/ui/command/CommandGroup;ILkotlin/jvm/functions/Function2;Ljava/util/List;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;ZLkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lio/github/valerioisufi/drawview/ui/command/CommandGroup;ILkotlin/jvm/functions/Function2;Ljava/util/List;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;ZLkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getDestructive ()Z
+	public final fun getGroup ()Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
+	public final fun getIcon ()Lkotlin/jvm/functions/Function2;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getLabel ()Lkotlin/jvm/functions/Function2;
+	public final fun getPerform ()Lkotlin/jvm/functions/Function0;
+	public final fun getSection ()I
+	public final fun getShortcuts ()Ljava/util/List;
+	public final fun isChecked ()Lkotlin/jvm/functions/Function0;
+	public final fun isEnabled ()Lkotlin/jvm/functions/Function0;
+	public final fun performIfEnabled ()Z
+	public final fun shortcutLabel (Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;)Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/ui/command/CommandGroup : java/lang/Enum {
+	public static final field EDIT Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
+	public static final field FILE Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
+	public static final field FORMAT Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
+	public static final field HELP Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
+	public static final field INSERT Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
+	public static final field TOOLS Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
+	public static final field VIEW Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
+	public static fun values ()[Lio/github/valerioisufi/drawview/ui/command/CommandGroup;
+}
+
+public final class io/github/valerioisufi/drawview/ui/command/CommandHost {
+	public static final field $stable I
+	public fun <init> ()V
+	public final fun dispatch-YhN2O0w (Landroid/view/KeyEvent;Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;)Z
+	public static synthetic fun dispatch-YhN2O0w$default (Lio/github/valerioisufi/drawview/ui/command/CommandHost;Landroid/view/KeyEvent;Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;ILjava/lang/Object;)Z
+	public final fun getCommands ()Ljava/util/List;
+	public final fun register (Ljava/util/List;Ljava/util/List;)Lkotlin/jvm/functions/Function0;
+	public static synthetic fun register$default (Lio/github/valerioisufi/drawview/ui/command/CommandHost;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lkotlin/jvm/functions/Function0;
+}
+
+public final class io/github/valerioisufi/drawview/ui/command/CommandHostKt {
+	public static final fun CommandRoot (Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/drawview/ui/command/CommandHost;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun RegisterCommands (Ljava/util/List;Landroidx/compose/runtime/Composer;I)V
+}
+
+public final class io/github/valerioisufi/drawview/ui/command/CommandMenuKt {
+	public static final fun CommandMenu-M8vcaI4 (Ljava/util/List;ZLkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;JLandroidx/compose/runtime/Composer;II)V
+	public static final fun CommandMenuOfSections (Ljava/util/List;ZLkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;JLandroidx/compose/runtime/Composer;II)V
+	public static final fun DesignMenu-IBZr-mw (ZLkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;JLkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
+	public static final fun MenuDivider (Landroidx/compose/runtime/Composer;I)V
+	public static final fun MenuItem (Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLandroidx/compose/ui/graphics/painter/Painter;Ljava/lang/String;ZZZZLandroidx/compose/runtime/Composer;II)V
+	public static final fun MenuLabel (Ljava/lang/String;Landroidx/compose/runtime/Composer;I)V
+	public static final fun onSecondaryClick (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;)Landroidx/compose/ui/Modifier;
+}
+
+public final class io/github/valerioisufi/drawview/ui/command/KeyboardShortcuts_androidKt {
+	public static final fun keyboardShortcutGroups (Lio/github/valerioisufi/drawview/ui/command/CommandHost;)Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/drawview/ui/command/Shortcut {
+	public static final field $stable I
+	public synthetic fun <init> (JZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (JZZZLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-EK5gGoQ ()J
+	public final fun component2 ()Z
+	public final fun component3 ()Z
+	public final fun component4 ()Z
+	public final fun copy-mFnzM5g (JZZZ)Lio/github/valerioisufi/drawview/ui/command/Shortcut;
+	public static synthetic fun copy-mFnzM5g$default (Lio/github/valerioisufi/drawview/ui/command/Shortcut;JZZZILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/command/Shortcut;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAlt ()Z
+	public final fun getKey-EK5gGoQ ()J
+	public final fun getPrimary ()Z
+	public final fun getShift ()Z
+	public fun hashCode ()I
+	public final fun label (Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;)Ljava/lang/String;
+	public final fun matches-YhN2O0w (Landroid/view/KeyEvent;Lio/github/valerioisufi/drawview/ui/adaptive/PlatformConventions;)Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/ui/components/AboutAppInfo {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/text/font/FontFamily;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/text/font/FontFamily;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/util/List;
+	public final fun component5 ()Lkotlin/jvm/functions/Function2;
+	public final fun component6 ()Landroidx/compose/ui/text/font/FontFamily;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/text/font/FontFamily;)Lio/github/valerioisufi/drawview/ui/components/AboutAppInfo;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/ui/components/AboutAppInfo;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/text/font/FontFamily;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/components/AboutAppInfo;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAdditionalLicenses ()Ljava/util/List;
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getMark ()Lkotlin/jvm/functions/Function2;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getNameFontFamily ()Landroidx/compose/ui/text/font/FontFamily;
+	public final fun getVersion ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/ui/components/AboutLicensesDialogKt {
+	public static final fun AboutLicensesDialog (Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun getLocalAboutAppInfo ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+}
+
+public final class io/github/valerioisufi/drawview/ui/components/BadgeTone : java/lang/Enum {
+	public static final field Blue Lio/github/valerioisufi/drawview/ui/components/BadgeTone;
+	public static final field Green Lio/github/valerioisufi/drawview/ui/components/BadgeTone;
+	public static final field Red Lio/github/valerioisufi/drawview/ui/components/BadgeTone;
+	public static final field Yellow Lio/github/valerioisufi/drawview/ui/components/BadgeTone;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/components/BadgeTone;
+	public static fun values ()[Lio/github/valerioisufi/drawview/ui/components/BadgeTone;
+}
+
+public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$AboutLicensesDialogKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$AboutLicensesDialogKt;
+	public fun <init> ()V
+	public final fun getLambda$-1777682932$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$FontSizeControlKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$FontSizeControlKt;
+	public fun <init> ()V
+	public final fun getLambda$1680744731$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$774743524$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$876647364$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$PageGridOverlayKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$PageGridOverlayKt;
+	public fun <init> ()V
+	public final fun getLambda$766499221$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$PageTemplateConfiguratorKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$PageTemplateConfiguratorKt;
+	public fun <init> ()V
+	public final fun getLambda$-1160406895$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-1354675051$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$1034112872$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1089794097$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$619032968$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$832252636$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$TextColorComponentsKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$TextColorComponentsKt;
+	public fun <init> ()V
+	public final fun getLambda$-1328235436$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-596040799$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$ToolButtonKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$ToolButtonKt;
+	public fun <init> ()V
+	public final fun getLambda$1534178684$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$636342549$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$ToolSettingsKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$ToolSettingsKt;
+	public fun <init> ()V
+	public final fun getLambda$-165125072$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-2061225654$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class io/github/valerioisufi/drawview/ui/components/DesignComponentsKt {
+	public static final fun ChipRow (Landroidx/compose/ui/Modifier;Landroidx/compose/foundation/layout/PaddingValues;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
+	public static final fun DesignFilterChip (Ljava/lang/String;ZLkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun DesignIconButton-Wo10IMk (Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/drawview/ui/components/IconButtonStyle;ZZLjava/lang/String;JFLandroidx/compose/runtime/Composer;II)V
+	public static final fun LabelBadge (Ljava/lang/String;Lio/github/valerioisufi/drawview/ui/components/BadgeTone;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/graphics/vector/ImageVector;Landroidx/compose/runtime/Composer;II)V
+	public static final fun NavigationItem (Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;ZLkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/Integer;Landroidx/compose/runtime/Composer;II)V
+	public static final fun OutlineButton-nBX6wN0 (Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLandroidx/compose/foundation/layout/PaddingValues;JJLkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
+	public static final fun SearchField (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/focus/FocusRequester;Landroidx/compose/runtime/Composer;II)V
+	public static final fun SegmentedChoice (Ljava/util/List;Ljava/lang/Object;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/text/TextStyle;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+	public static final fun TonalButton (Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLandroidx/compose/foundation/layout/PaddingValues;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class io/github/valerioisufi/drawview/ui/components/IconButtonStyle : java/lang/Enum {
+	public static final field Filled Lio/github/valerioisufi/drawview/ui/components/IconButtonStyle;
+	public static final field Standard Lio/github/valerioisufi/drawview/ui/components/IconButtonStyle;
+	public static final field Tonal Lio/github/valerioisufi/drawview/ui/components/IconButtonStyle;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/components/IconButtonStyle;
+	public static fun values ()[Lio/github/valerioisufi/drawview/ui/components/IconButtonStyle;
+}
+
+public final class io/github/valerioisufi/drawview/ui/components/ThirdPartyLicense {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/components/ThirdPartyLicense;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/ui/components/ThirdPartyLicense;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/components/ThirdPartyLicense;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCopyright ()Ljava/lang/String;
+	public final fun getLicense ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getNotice ()Ljava/lang/String;
+	public final fun getPurpose ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/ui/components/ToolSettingsKt {
+	public static final fun DesignSlider (FLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Lkotlin/ranges/ClosedFloatingPointRange;ILkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;
+	public final fun toCanvasText-sW7UJKQ (Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function2;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
+	public static synthetic fun toCanvasText-sW7UJKQ$default (Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
+	public final fun toLiveAnnotatedString-5_Xnia0 (Ljava/lang/String;JJJLandroidx/compose/ui/text/font/FontFamily;)Landroidx/compose/ui/text/AnnotatedString;
+	public static synthetic fun toLiveAnnotatedString-5_Xnia0$default (Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;Ljava/lang/String;JJJLandroidx/compose/ui/text/font/FontFamily;ILjava/lang/Object;)Landroidx/compose/ui/text/AnnotatedString;
+}
+
+public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText {
+	public static final field $stable I
+	public fun <init> (Landroidx/compose/ui/text/AnnotatedString;Ljava/util/List;Ljava/util/List;)V
+	public final fun getFormulas ()Ljava/util/List;
+	public final fun getPlaceholders ()Ljava/util/List;
+	public final fun getText ()Landroidx/compose/ui/text/AnnotatedString;
+}
+
+public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$InlineFormula {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/Object;FFFILjava/lang/String;Z)V
+	public synthetic fun <init> (Ljava/lang/Object;FFFILjava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBaselineRatio ()F
+	public final fun getBlock ()Z
+	public final fun getHeightPx ()F
+	public final fun getImage ()Ljava/lang/Object;
+	public final fun getLatex ()Ljava/lang/String;
+	public final fun getPlaceholderIndex ()I
+	public final fun getWidthPx ()F
+}
+
+public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$PlaceholderSpec {
+	public static final field $stable I
+	public synthetic fun <init> (IIFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getEnd ()I
+	public final fun getHeightPx ()F
+	public final fun getStart ()I
+	public final fun getVerticalAlign-J6kI3mc ()I
+	public final fun getWidthPx ()F
+}
+
+public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$RenderedFormula {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/Object;FFF)V
+	public final fun getBaselineRatio ()F
+	public final fun getHeightPx ()F
+	public final fun getImage ()Ljava/lang/Object;
+	public final fun getWidthPx ()F
+}
+
+public final class io/github/valerioisufi/drawview/ui/extension/ComposableSingletons$EditorExtensionKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/extension/ComposableSingletons$EditorExtensionKt;
+	public fun <init> ()V
+	public final fun getLambda$5748682$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function4;
+	public final fun getLambda$655361391$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function4;
+}
+
+public final class io/github/valerioisufi/drawview/ui/extension/ComposableSingletons$EditorPanelKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/extension/ComposableSingletons$EditorPanelKt;
+	public fun <init> ()V
+	public final fun getLambda$990553456$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class io/github/valerioisufi/drawview/ui/extension/DocumentAction {
+	public static final field $stable I
+	public fun <init> (Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function5;)V
+	public final fun getContent ()Lkotlin/jvm/functions/Function5;
+	public final fun getIcon ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getLabel ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class io/github/valerioisufi/drawview/ui/extension/DocumentTag {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/graphics/vector/ImageVector;Lio/github/valerioisufi/drawview/ui/components/BadgeTone;Lkotlin/jvm/functions/Function0;)V
+	public final fun contains (Ljava/lang/String;)Z
+	public final fun getDocuments ()Lkotlin/jvm/functions/Function0;
+	public final fun getFilterLabel ()Lkotlin/jvm/functions/Function2;
+	public final fun getIcon ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getLabel ()Lkotlin/jvm/functions/Function2;
+	public final fun getTone ()Lio/github/valerioisufi/drawview/ui/components/BadgeTone;
+}
+
+public final class io/github/valerioisufi/drawview/ui/extension/EditorContext {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
+	public final fun getController ()Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;
+	public final fun getDocumentId ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/ui/extension/EditorExtension {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getCanvasOverlay ()Lkotlin/jvm/functions/Function4;
+	public final fun getCommands ()Lkotlin/jvm/functions/Function1;
+	public final fun getPanels ()Lkotlin/jvm/functions/Function1;
+	public final fun getReadOnlyNote ()Lkotlin/jvm/functions/Function3;
+	public final fun getToolbarActions ()Lkotlin/jvm/functions/Function4;
+	public final fun plus (Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;)Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;
+}
+
+public final class io/github/valerioisufi/drawview/ui/extension/EditorPanel {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function3;Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function3;)V
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function3;Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function3;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getActions ()Lkotlin/jvm/functions/Function3;
+	public final fun getContent ()Lkotlin/jvm/functions/Function3;
+	public final fun getIcon ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getOnClose ()Lkotlin/jvm/functions/Function0;
+	public final fun getTitle ()Lkotlin/jvm/functions/Function2;
+	public final fun isOpen ()Lkotlin/jvm/functions/Function0;
+}
+
+public final class io/github/valerioisufi/drawview/ui/extension/LibraryAction {
+	public static final field $stable I
+	public fun <init> (Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function2;ZLkotlin/jvm/functions/Function3;)V
+	public synthetic fun <init> (Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function2;ZLkotlin/jvm/functions/Function3;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getContent ()Lkotlin/jvm/functions/Function3;
+	public final fun getIcon ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getLabel ()Lkotlin/jvm/functions/Function2;
+	public final fun getProminent ()Z
+}
+
+public final class io/github/valerioisufi/drawview/ui/generated/resources/ActualResourceCollectorsKt {
+	public static final fun getAllDrawableResources (Lio/github/valerioisufi/drawview/ui/generated/resources/Res;)Ljava/util/Map;
+	public static final fun getAllFontResources (Lio/github/valerioisufi/drawview/ui/generated/resources/Res;)Ljava/util/Map;
+	public static final fun getAllPluralStringResources (Lio/github/valerioisufi/drawview/ui/generated/resources/Res;)Ljava/util/Map;
+	public static final fun getAllStringArrayResources (Lio/github/valerioisufi/drawview/ui/generated/resources/Res;)Ljava/util/Map;
+	public static final fun getAllStringResources (Lio/github/valerioisufi/drawview/ui/generated/resources/Res;)Ljava/util/Map;
+}
+
+public final class io/github/valerioisufi/drawview/ui/generated/resources/Array0_commonMainKt {
+	public static final fun getDate_months_short (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$array;)Lorg/jetbrains/compose/resources/StringArrayResource;
+}
+
+public final class io/github/valerioisufi/drawview/ui/generated/resources/Drawable0_commonMainKt {
+	public static final fun getIcon_add_link (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+	public static final fun getIcon_attach_file (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+	public static final fun getIcon_cut (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+	public static final fun getIcon_ink_eraser (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+	public static final fun getIcon_ink_highlighter (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+	public static final fun getIcon_ink_pen (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+	public static final fun getIcon_lasso_select (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+	public static final fun getIcon_pan_tool (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+	public static final fun getIcon_sticky_note (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+	public static final fun getIcon_text_fields (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+	public static final fun getIcon_text_markup (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+	public static final fun getIcon_visibility (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+	public static final fun getImg_folder (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+	public static final fun getLogo (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+	public static final fun getMaschera_color_wheel (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+	public static final fun getRuler (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;)Lorg/jetbrains/compose/resources/DrawableResource;
+}
+
+public final class io/github/valerioisufi/drawview/ui/generated/resources/Font0_commonMainKt {
+	public static final fun getNoto_sans_bold (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getNoto_sans_bold_italic (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getNoto_sans_italic (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getNoto_sans_mono_bold (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getNoto_sans_mono_regular (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getNoto_sans_regular (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getPlus_jakarta_sans_bold (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getPlus_jakarta_sans_extrabold (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getPlus_jakarta_sans_medium (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getPlus_jakarta_sans_regular (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getPlus_jakarta_sans_semibold (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+}
+
+public final class io/github/valerioisufi/drawview/ui/generated/resources/Plurals0_commonMainKt {
+	public static final fun getEditor_pages_count (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
+}
+
+public final class io/github/valerioisufi/drawview/ui/generated/resources/Res {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/generated/resources/Res;
+	public final fun getUri (Ljava/lang/String;)Ljava/lang/String;
+	public final fun readBytes (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/ui/generated/resources/Res$array {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/generated/resources/Res$array;
+}
+
+public final class io/github/valerioisufi/drawview/ui/generated/resources/Res$drawable {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/generated/resources/Res$drawable;
+}
+
+public final class io/github/valerioisufi/drawview/ui/generated/resources/Res$font {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;
+}
+
+public final class io/github/valerioisufi/drawview/ui/generated/resources/Res$plurals {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/generated/resources/Res$plurals;
+}
+
+public final class io/github/valerioisufi/drawview/ui/generated/resources/Res$string {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;
+}
+
+public final class io/github/valerioisufi/drawview/ui/generated/resources/String0_commonMainKt {
+	public static final fun getAbout_dialog_app_description (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getAbout_dialog_close (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getAbout_dialog_freetype_notice (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getAbout_dialog_libraries_header (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getAbout_dialog_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getAbout_dialog_version (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getApp_name (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getColor_picker_hex (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getColor_picker_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_close (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_fit_width (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_next_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_previous_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_previous_tool (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_snapping (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_zoom_in (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_zoom_out (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_back (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_close (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_copy (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_cut (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_delete (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_more_options (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_paste (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_redo (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_action_undo (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_button_apply (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_button_cancel (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_label_color (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_label_not_available (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommon_state_loading (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getContext_menu_action_add_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getContext_menu_action_add_page_after (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getContext_menu_action_delete_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getContext_menu_action_edit_background (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getContext_menu_action_reorder_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDialog_override_bg_confirm (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDialog_override_bg_dismiss (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDialog_override_bg_message (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDialog_override_bg_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDocument_info_action_collapse (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDocument_info_action_expand (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDocument_info_label_created_date (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDocument_info_label_elements_count (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDocument_info_label_format (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDocument_info_label_modified_date (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDocument_info_label_pages (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDocument_info_value_dimensions (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_menu_about_licenses (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_menu_document_background (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_menu_settings (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_menu_stylus_only (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_read_only (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_add_preset (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_decrease_font_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_draw (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_edit_text (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_eraser (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_grid_view (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_highlighter (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_import_image (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_import_pdf (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_increase_font_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_ink_pen (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_lasso (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_pan (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_text (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_action_text_markup (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_label_brush_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_label_eraser_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_label_font_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_label_highlighter_color (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_label_highlighter_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_label_text_color (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_option_images_only (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_option_select_all (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_title_lasso_mode (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDraw_toolbar_title_text_settings (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDrawing_mode (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getEditor_page_indicator (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMenu_edit (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMenu_file (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMenu_format (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMenu_help (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMenu_insert (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMenu_tools (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMenu_view (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMessage_import_image_failed (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMessage_import_pdf_failed (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMessage_pdf_not_supported (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMessage_pdf_page_without_text (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_bg_dotted (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_bg_grid (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_bg_ruled (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_bg_solid (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_error_max_area (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_error_min_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_format_custom (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_label_bg_pattern (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_label_format (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+}
+
+public final class io/github/valerioisufi/drawview/ui/generated/resources/String1_commonMainKt {
+	public static final fun getPage_config_label_height (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_label_line_color (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_label_paper_color (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_label_spacing (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_label_thickness (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_label_width (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_preview_invalid_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_subtitle_document (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_subtitle_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_value_spacing (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_config_value_thickness (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_action_close (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_content_desc_options (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_content_desc_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getStylus_mode_activated (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_align_center (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_align_end (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_align_start (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_alignment (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_bold (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_code (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_heading (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_italic (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_math (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_save (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_strikethrough (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_formula_invalid (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_font_size_points (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_markup_highlight (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_markup_strikeout (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_markup_underline (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_eraser (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_highlighter (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_pen (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_delete_preset (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_eraser_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_ink (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_lasso_all_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_lasso_images_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_markup_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_presets (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_size (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getTool_settings_text_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+}
+
+public final class io/github/valerioisufi/drawview/ui/platform/FileDrop_androidKt {
+	public static final fun fileDropTarget (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Landroidx/compose/ui/Modifier;
+}
+
+public final class io/github/valerioisufi/drawview/ui/platform/FilePicker_androidKt {
+	public static final fun rememberFilePicker (Lio/github/valerioisufi/drawview/ui/platform/PickerType;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Lkotlin/jvm/functions/Function0;
+}
+
+public final class io/github/valerioisufi/drawview/ui/platform/FileSaver_androidKt {
+	public static final fun rememberFileSaver (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Lkotlin/jvm/functions/Function1;
+}
+
+public final class io/github/valerioisufi/drawview/ui/platform/FileTarget {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getDeliver ()Lkotlin/jvm/functions/Function2;
+	public final fun getPath ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/ui/platform/PickedFile {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;[B)V
+	public final fun getBytes ()[B
+	public final fun getExtension ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/ui/platform/PickerType : java/lang/Enum {
+	public static final field IMAGE Lio/github/valerioisufi/drawview/ui/platform/PickerType;
+	public static final field PDF Lio/github/valerioisufi/drawview/ui/platform/PickerType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/platform/PickerType;
+	public static fun values ()[Lio/github/valerioisufi/drawview/ui/platform/PickerType;
+}
+
+public final class io/github/valerioisufi/drawview/ui/render/ComposeTextTileAdapter : io/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/ui/render/ComposeTextTileAdapter$Companion;
+	public fun <init> (Landroidx/compose/ui/text/font/FontFamily$Resolver;Lio/github/valerioisufi/drawview/ui/theme/NotesFonts;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;)V
+	public synthetic fun <init> (Landroidx/compose/ui/text/font/FontFamily$Resolver;Lio/github/valerioisufi/drawview/ui/theme/NotesFonts;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun clearCaches ()V
+	public fun drawText (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/drawview/model/DrawText;Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;)V
+	public fun layout (Lio/github/valerioisufi/drawview/model/DrawText;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockLayout;
+	public fun lineMetrics (F)Lio/github/valerioisufi/drawview/canvas/render/tile/TextLineMetrics;
+	public fun measure (Lio/github/valerioisufi/drawview/model/DrawText;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockSize;
+}
+
+public final class io/github/valerioisufi/drawview/ui/render/ComposeTextTileAdapter$Companion {
+}
+
+public final class io/github/valerioisufi/drawview/ui/render/LocalDrawViewEnginesKt {
+	public static final fun getLocalDrawViewEngines ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+}
+
+public final class io/github/valerioisufi/drawview/ui/screen/ComposableSingletons$DrawScreenKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/screen/ComposableSingletons$DrawScreenKt;
+	public fun <init> ()V
+	public final fun getLambda$-1001629743$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-1189946907$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-235296165$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-942478314$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$1659128159$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$2057359802$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$523512285$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$55048473$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class io/github/valerioisufi/drawview/ui/screen/ComposableSingletons$EditorToolbarKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/screen/ComposableSingletons$EditorToolbarKt;
+	public fun <init> ()V
+	public final fun getLambda$364959240$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class io/github/valerioisufi/drawview/ui/screen/EditorScreenKt {
+	public static final fun EditorScreen (Lio/github/valerioisufi/drawview/ui/extension/EditorContext;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class io/github/valerioisufi/drawview/ui/screen/EditorToolbarKt {
+	public static final fun EditorActionButton (Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Lkotlin/jvm/functions/Function0;ZZLandroidx/compose/runtime/Composer;II)V
+}
+
+public final class io/github/valerioisufi/drawview/ui/theme/CanvasColors {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/ui/theme/CanvasColors$Companion;
+	public synthetic fun <init> (JLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-0d7_KjU ()J
+	public final fun copy-8_81llA (J)Lio/github/valerioisufi/drawview/ui/theme/CanvasColors;
+	public static synthetic fun copy-8_81llA$default (Lio/github/valerioisufi/drawview/ui/theme/CanvasColors;JILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/theme/CanvasColors;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDesk-0d7_KjU ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/ui/theme/CanvasColors$Companion {
+	public final fun of (Landroidx/compose/material3/ColorScheme;Z)Lio/github/valerioisufi/drawview/ui/theme/CanvasColors;
+}
+
+public final class io/github/valerioisufi/drawview/ui/theme/CanvasColorsKt {
+	public static final fun getLocalCanvasColors ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+}
+
+public final class io/github/valerioisufi/drawview/ui/theme/ColorKt {
+	public static final fun getSeed ()J
+}
+
+public final class io/github/valerioisufi/drawview/ui/theme/DrawViewElevation : java/lang/Enum {
+	public static final field Level1 Lio/github/valerioisufi/drawview/ui/theme/DrawViewElevation;
+	public static final field Level2 Lio/github/valerioisufi/drawview/ui/theme/DrawViewElevation;
+	public static final field Level3 Lio/github/valerioisufi/drawview/ui/theme/DrawViewElevation;
+	public static final field Paper Lio/github/valerioisufi/drawview/ui/theme/DrawViewElevation;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ui/theme/DrawViewElevation;
+	public static fun values ()[Lio/github/valerioisufi/drawview/ui/theme/DrawViewElevation;
+}
+
+public final class io/github/valerioisufi/drawview/ui/theme/DrawViewIcons {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/theme/DrawViewIcons;
+	public final fun getArrowUp ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getArrowUpDown ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getBold ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getBookOpen ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getCheck ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getCheckCheck ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getCheckCircle ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getChevronDown ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getChevronRight ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getChevronUp ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getClipboard ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getClock ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getClose ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getCopy ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getCrown ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getDownload ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getEraser ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getEye ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getEyeOff ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getFile ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getFilePlus ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getFileText ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getFlag ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getFolder ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getFolderInput ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getFolderOpen ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getFolderPlus ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getGlobe ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getGrid ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getHash ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getHistory ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getHome ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getImage ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getInfo ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getItalic ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getKey ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getLasso ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getLayers ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getLink ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getList ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getLock ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getLogOut ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getMic ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getMonitor ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getMoreHorizontal ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getMoreVertical ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getMove ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getOutline ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPageGrid ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPan ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPause ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPencil ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPlay ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPlus ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getQrCode ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getRedo ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getRefresh ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getRotateCcw ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getRotateCw ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSearch ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSettings ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getShare ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getShield ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSliders ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSparkles ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSpline ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getStar ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getStop ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getText ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getTranscript ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getTrash ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getTriangleAlert ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getUndo ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getUpload ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getUserPlus ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getUsers ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getVolume ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getWifiOff ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getZap ()Landroidx/compose/ui/graphics/vector/ImageVector;
+}
+
+public final class io/github/valerioisufi/drawview/ui/theme/ElevationKt {
+	public static final fun elevation (Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/drawview/ui/theme/DrawViewElevation;Landroidx/compose/ui/graphics/Shape;)Landroidx/compose/ui/Modifier;
+}
+
+public final class io/github/valerioisufi/drawview/ui/theme/InkPalette {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/theme/InkPalette;
+	public final fun getBlack-0d7_KjU ()J
+	public final fun getBlue-0d7_KjU ()J
+	public final fun getGreen-0d7_KjU ()J
+	public final fun getGuide-0d7_KjU ()J
+	public final fun getHighlights ()Ljava/util/List;
+	public final fun getInks ()Ljava/util/List;
+	public final fun getOrange-0d7_KjU ()J
+	public final fun getRed-0d7_KjU ()J
+	public final fun getViolet-0d7_KjU ()J
+}
+
+public final class io/github/valerioisufi/drawview/ui/theme/NotesFontFiles {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/theme/NotesFontFiles;
+	public final fun bytes (Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/ui/theme/NotesFonts {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/ui/theme/NotesFonts$Companion;
+	public fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;)V
+	public final fun getMonospace ()Landroidx/compose/ui/text/font/FontFamily;
+	public final fun getText ()Landroidx/compose/ui/text/font/FontFamily;
+}
+
+public final class io/github/valerioisufi/drawview/ui/theme/NotesFonts$Companion {
+	public final fun getSystem ()Lio/github/valerioisufi/drawview/ui/theme/NotesFonts;
+}
+
+public final class io/github/valerioisufi/drawview/ui/theme/NotesFontsKt {
+	public static final fun rememberNotesFonts (Landroidx/compose/runtime/Composer;I)Lio/github/valerioisufi/drawview/ui/theme/NotesFonts;
+}
+
+public final class io/github/valerioisufi/drawview/ui/theme/ThemeKt {
+	public static final fun DrawViewTheme (ZZLandroidx/compose/material3/ColorScheme;Landroidx/compose/material3/ColorScheme;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class io/github/valerioisufi/drawview/ui/util/FormattingKt {
+	public static final fun formatDate (JLjava/util/List;)Ljava/lang/String;
+	public static final fun formatDateTime (JLjava/util/List;)Ljava/lang/String;
+	public static final fun formatDecimal (FI)Ljava/lang/String;
+	public static synthetic fun formatDecimal$default (FIILjava/lang/Object;)Ljava/lang/String;
+	public static final fun formatShortDateTime (JLjava/util/List;)Ljava/lang/String;
+}
+

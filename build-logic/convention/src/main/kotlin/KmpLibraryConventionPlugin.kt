@@ -9,6 +9,7 @@ import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
 import org.jetbrains.kotlin.konan.target.KonanTarget
@@ -18,8 +19,8 @@ import org.jetbrains.kotlin.konan.target.KonanTarget
  * simulator).
  *
  * The Android namespace follows the name of the module (`drawview-sync-ui` →
- * `io.github.valerioisufi.drawview.sync.ui`). `-Pdrawview.explicitApi=warning` (or `strict`)
- * turns the explicit API mode on for every library, to measure what is still public by default.
+ * `io.github.valerioisufi.drawview.sync.ui`). The explicit API mode is strict: every public
+ * declaration says so, with its type.
  */
 class KmpLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
@@ -56,10 +57,12 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
                 }
             }
 
-            when (providers.gradleProperty("drawview.explicitApi").orNull) {
-                "warning" -> explicitApi = ExplicitApiMode.Warning
-                "strict" -> explicitApi = ExplicitApiMode.Strict
-            }
+            // The public API is declared: what is not part of it is internal
+            explicitApi = ExplicitApiMode.Strict
+
+            // The public API is recorded (api/), and every change of it is seen
+            @OptIn(ExperimentalAbiValidation::class)
+            abiValidation {}
         }
     }
 }

@@ -1,12 +1,11 @@
 package io.github.valerioisufi.drawview.ui.command
 
-import androidx.compose.ui.unit.dp
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
@@ -20,6 +19,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -33,7 +33,7 @@ private const val TooltipDelayMillis = 500L
  * pointer rests on it.
  */
 @Composable
-fun CommandTooltip(command: Command, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+internal fun CommandTooltip(command: Command, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     val shortcut = command.shortcutLabel(currentAdaptiveInfo().conventions)
     HoverTooltip(text = command.label(), shortcut = shortcut, modifier = modifier, content = content)
 }
@@ -45,7 +45,7 @@ fun CommandTooltip(command: Command, modifier: Modifier = Modifier, content: @Co
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HoverTooltip(text: String, modifier: Modifier = Modifier, shortcut: String? = null, content: @Composable () -> Unit) {
+internal fun HoverTooltip(text: String, modifier: Modifier = Modifier, shortcut: String? = null, content: @Composable () -> Unit) {
     if (!currentAdaptiveInfo().input.canHover) {
         Box(modifier = modifier, propagateMinConstraints = true) { content() }
         return

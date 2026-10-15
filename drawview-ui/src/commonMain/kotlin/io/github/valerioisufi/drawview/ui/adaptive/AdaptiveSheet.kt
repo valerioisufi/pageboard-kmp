@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -21,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import androidx.compose.foundation.shape.RoundedCornerShape
 
 /**
  * A sheet of the application (a configurator, the details of a file, settings): a bottom sheet in
@@ -37,7 +37,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdaptiveSheet(
+public fun AdaptiveSheet(
     onDismissRequest: () -> Unit,
     title: (@Composable () -> Unit)? = null,
     actions: (@Composable RowScope.() -> Unit)? = null,

@@ -9,7 +9,7 @@ import kotlin.coroutines.cancellation.CancellationException
  * [channel] with its frames encrypted with the key of a document (AES-256-GCM, a random nonce per
  * frame): a frame changed on the way, or encrypted with another key, is refused.
  */
-class SecureChannel private constructor(
+internal class SecureChannel private constructor(
     private val channel: SyncChannel,
     private val cipher: AuthenticatedCipher
 ) : SyncChannel {

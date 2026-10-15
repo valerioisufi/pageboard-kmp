@@ -8,7 +8,7 @@ package io.github.valerioisufi.drawview.model
  * A key is a fraction in (0, 1) written in base 62 without its leading "0." (e.g. "V" is about
  * 0.5); keys never end with the zero digit, so that there is always room before them.
  */
-object FractionalIndex {
+public object FractionalIndex {
     private const val DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
     private const val BASE = 62
 
@@ -17,14 +17,14 @@ object FractionalIndex {
      *
      * @throws IllegalArgumentException when [before] is not smaller than [after].
      */
-    fun between(before: String?, after: String?): String {
+    public fun between(before: String?, after: String?): String {
         val a = before.orEmpty()
         require(after == null || a < after) { "$before is not before $after" }
         return midpoint(a, after)
     }
 
     /** [count] increasing keys after [before] (e.g. pages appended at the end). */
-    fun after(before: String?, count: Int): List<String> {
+    public fun after(before: String?, count: Int): List<String> {
         val keys = mutableListOf<String>()
         var last = before
         repeat(count) {
@@ -59,7 +59,7 @@ object FractionalIndex {
      *
      * @return the index of every item of [keys] that gets a new key, with that key.
      */
-    fun reorder(keys: List<String>): Map<Int, String> {
+    public fun reorder(keys: List<String>): Map<Int, String> {
         val kept = longestIncreasing(keys)
         val result = mutableMapOf<Int, String>()
         var previous: String? = null

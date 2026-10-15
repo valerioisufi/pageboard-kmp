@@ -24,7 +24,7 @@ import kotlinx.serialization.json.JsonElement
  * answer constrained by a JSON schema, streamed so that the progress of a long answer is known)
  * and the management of the models (version of the server, models installed, downloads).
  */
-class OllamaClient(private val httpClient: HttpClient = GeminiClient.defaultHttpClient()) {
+public class OllamaClient(private val httpClient: HttpClient = GeminiClient.defaultHttpClient()) {
 
     /**
      * Sends [request] to the server at [baseUrl].
@@ -32,7 +32,7 @@ class OllamaClient(private val httpClient: HttpClient = GeminiClient.defaultHttp
      * @param onProgress called with the number of tokens written so far.
      * @throws OllamaException when the server cannot be reached or refuses the request.
      */
-    suspend fun chat(baseUrl: String, request: OllamaChatRequest, onProgress: (Int) -> Unit = {}): OllamaChatResult {
+    internal suspend fun chat(baseUrl: String, request: OllamaChatRequest, onProgress: (Int) -> Unit = {}): OllamaChatResult {
         try {
             return httpClient.preparePost("${baseUrl.trimEnd('/')}/api/chat") {
                 setBody(TextContent(json.encodeToString(OllamaChatRequest.serializer(), request.copy(stream = true)), ContentType.Application.Json))
@@ -85,7 +85,7 @@ class OllamaClient(private val httpClient: HttpClient = GeminiClient.defaultHttp
     }
 
     /** The version of the server at [baseUrl], or `null` when it does not answer. */
-    suspend fun version(baseUrl: String): String? = try {
+    public suspend fun version(baseUrl: String): String? = try {
         val response = httpClient.get("${baseUrl.trimEnd('/')}/api/version") { timeout { requestTimeoutMillis = 5_000 } }
         if (response.status.isSuccess()) json.decodeFromString(OllamaVersion.serializer(), response.bodyAsText()).version else null
     } catch (e: CancellationException) {
@@ -95,14 +95,14 @@ class OllamaClient(private val httpClient: HttpClient = GeminiClient.defaultHttp
     }
 
     /** The models installed on the server at [baseUrl]. */
-    suspend fun models(baseUrl: String): List<OllamaModel> = request(baseUrl) {
+    public suspend fun models(baseUrl: String): List<OllamaModel> = request(baseUrl) {
         val response = httpClient.get("${baseUrl.trimEnd('/')}/api/tags")
         if (!response.status.isSuccess()) throw OllamaException(response.status.value, "HTTP ${response.status.value}")
         json.decodeFromString(OllamaModels.serializer(), response.bodyAsText()).models
     }
 
     /** What [model] can do: "completion", "vision" (reads images), "thinking"... */
-    suspend fun capabilities(baseUrl: String, model: String): List<String> = request(baseUrl) {
+    public suspend fun capabilities(baseUrl: String, model: String): List<String> = request(baseUrl) {
         val response = httpClient.post("${baseUrl.trimEnd('/')}/api/show") {
             setBody(TextContent(json.encodeToString(OllamaModelRequest.serializer(), OllamaModelRequest(model)), ContentType.Application.Json))
         }
@@ -115,7 +115,7 @@ class OllamaClient(private val httpClient: HttpClient = GeminiClient.defaultHttp
      *
      * @param onProgress bytes downloaded and total bytes (of the parts known so far).
      */
-    suspend fun pull(baseUrl: String, model: String, onProgress: (Long, Long) -> Unit) = request(baseUrl) {
+    internal suspend fun pull(baseUrl: String, model: String, onProgress: (Long, Long) -> Unit) = request(baseUrl) {
         httpClient.preparePost("${baseUrl.trimEnd('/')}/api/pull") {
             setBody(TextContent(json.encodeToString(OllamaModelRequest.serializer(), OllamaModelRequest(model, stream = true)), ContentType.Application.Json))
             // Gigabytes: as long as it takes, as long as bytes arrive
@@ -163,7 +163,7 @@ class OllamaClient(private val httpClient: HttpClient = GeminiClient.defaultHttp
 }
 
 @Serializable
-data class OllamaMessage(
+internal data class OllamaMessage(
     val role: String,
     val content: String,
     /** Base64-encoded images. */
@@ -171,7 +171,7 @@ data class OllamaMessage(
 )
 
 @Serializable
-data class OllamaOptions(
+internal data class OllamaOptions(
     @SerialName("num_ctx") val numCtx: Int? = null,
     val temperature: Float? = null
 )
@@ -181,7 +181,7 @@ data class OllamaOptions(
  * @param keepAlive seconds the model stays in memory after the answer (0: unloaded right away).
  */
 @Serializable
-data class OllamaChatRequest(
+internal data class OllamaChatRequest(
     val model: String,
     val messages: List<OllamaMessage>,
     val format: JsonElement? = null,
@@ -201,14 +201,14 @@ internal data class OllamaChatChunk(
     @SerialName("total_duration") val totalDuration: Long = 0
 )
 
-class OllamaChatResult(val content: String, val promptTokens: Long, val outputTokens: Long, val durationMs: Long)
+internal class OllamaChatResult(public val content: String, internal val promptTokens: Long, internal val outputTokens: Long, internal val durationMs: Long)
 
 @Serializable
 internal class OllamaVersion(val version: String = "")
 
 /** A model installed in Ollama. */
 @Serializable
-data class OllamaModel(val name: String, val size: Long = 0)
+public data class OllamaModel(val name: String, val size: Long = 0)
 
 @Serializable
 internal class OllamaModels(val models: List<OllamaModel> = emptyList())
@@ -233,4 +233,4 @@ internal class OllamaPullStatus(
  *
  * @param statusCode HTTP status (0 when the server cannot be reached or the answer is broken).
  */
-class OllamaException(val statusCode: Int, message: String) : Exception(message)
+internal class OllamaException(internal val statusCode: Int, message: String) : Exception(message)

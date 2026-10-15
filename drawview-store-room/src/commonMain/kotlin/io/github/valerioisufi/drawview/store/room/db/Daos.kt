@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Data transfer object representing a page and its associated graphical content.
  */
-data class PageWithContent(
+internal data class PageWithContent(
     @Embedded val page: PageEntity,
 
     @Relation(
@@ -65,7 +65,7 @@ data class PageWithContent(
 /**
  * Data model representing a document and its hierarchical content.
  */
-data class DocumentWithPages(
+internal data class DocumentWithPages(
     @Embedded val document: DocumentEntity,
 
     @Relation(
@@ -80,7 +80,7 @@ data class DocumentWithPages(
  * Data Access Object for managing folder structures within the database.
  */
 @Dao
-interface FolderDao {
+internal interface FolderDao {
     @Insert
     suspend fun insert(folder: FolderEntity)
 
@@ -107,7 +107,7 @@ interface FolderDao {
 }
 
 /** A document with what the library tells of its content: its pages and whether it holds a PDF. */
-data class DocumentWithContent(
+internal data class DocumentWithContent(
     @Embedded val document: DocumentEntity,
     val pageCount: Int,
     val hasPdf: Boolean
@@ -117,7 +117,7 @@ data class DocumentWithContent(
  * Data Access Object for document-level operations.
  */
 @Dao
-interface DocumentDao {
+internal interface DocumentDao {
     @Insert
     suspend fun insert(document: DocumentEntity)
 
@@ -174,7 +174,7 @@ interface DocumentDao {
  * Data Access Object for page-level management and ordering.
  */
 @Dao
-interface PageDao {
+internal interface PageDao {
     @Upsert
     suspend fun upsert(page: PageEntity)
 
@@ -186,7 +186,7 @@ interface PageDao {
  * Specialized Data Access Object for handling stroke data.
  */
 @Dao
-interface StrokeDao {
+internal interface StrokeDao {
     @Upsert
     suspend fun upsertAll(strokes: List<StrokeEntity>)
 }
@@ -195,7 +195,7 @@ interface StrokeDao {
  * Data Access Object for managing text elements.
  */
 @Dao
-interface TextDao {
+internal interface TextDao {
     @Upsert
     suspend fun upsert(text: TextEntity)
 }
@@ -204,7 +204,7 @@ interface TextDao {
  * Data Access Object for managing image elements.
  */
 @Dao
-interface ImageDao {
+internal interface ImageDao {
     @Upsert
     suspend fun upsert(image: ImageEntity)
 }
@@ -213,7 +213,7 @@ interface ImageDao {
  * Data Access Object for managing the elements of the types of the applications.
  */
 @Dao
-interface CustomElementDao {
+internal interface CustomElementDao {
     @Upsert
     suspend fun upsert(element: CustomElementEntity)
 }
@@ -222,7 +222,7 @@ interface CustomElementDao {
  * Data Access Object for managing PDF elements.
  */
 @Dao
-interface PdfDao {
+internal interface PdfDao {
     @Upsert
     suspend fun upsert(pdf: PdfEntity)
 }
@@ -231,7 +231,7 @@ interface PdfDao {
  * Data Access Object for managing the marks of the text of the PDFs.
  */
 @Dao
-interface TextMarkupDao {
+internal interface TextMarkupDao {
     @Upsert
     suspend fun upsert(markup: TextMarkupEntity)
 }
@@ -240,7 +240,7 @@ interface TextMarkupDao {
  * Data Access Object for managing supplemental document resources.
  */
 @Dao
-interface ResourceDao {
+internal interface ResourceDao {
     @Upsert
     suspend fun upsert(resource: ResourceEntity)
 
@@ -258,7 +258,7 @@ interface ResourceDao {
  * Data Access Object for the documents shared with other devices.
  */
 @Dao
-interface SharedDocumentDao {
+internal interface SharedDocumentDao {
     @Upsert
     suspend fun upsert(shared: SharedDocumentEntity)
 
@@ -276,13 +276,13 @@ interface SharedDocumentDao {
 }
 
 /** The last operation of a replica (see [OperationDao.lastSequences]). */
-data class ReplicaSequence(val replica: String, val sequence: Long)
+internal data class ReplicaSequence(val replica: String, val sequence: Long)
 
 /**
  * Data Access Object for the log of the operations of the documents.
  */
 @Dao
-interface OperationDao {
+internal interface OperationDao {
     /** Logs [operation] (once: an operation already logged is ignored). */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(operation: OperationEntity)
@@ -314,7 +314,7 @@ interface OperationDao {
  * Deletes for good the pages and the elements removed (see `DrawDocument.purgeHidden`).
  */
 @Dao
-interface PurgeDao {
+internal interface PurgeDao {
     @Query("DELETE FROM pages WHERE id IN (:ids)")
     suspend fun deletePages(ids: List<String>)
 
@@ -341,7 +341,7 @@ interface PurgeDao {
  * Data Access Object for the identity of this device.
  */
 @Dao
-interface ReplicaDao {
+internal interface ReplicaDao {
     @Query("SELECT replicaId FROM replica WHERE id = 1")
     suspend fun get(): String?
 

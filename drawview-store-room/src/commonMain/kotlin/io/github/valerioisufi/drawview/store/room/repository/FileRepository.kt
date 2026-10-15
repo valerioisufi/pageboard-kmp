@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
  * The document library: folders, and the documents as items of the folders (their content is
  * handled by [DrawDocumentRepository]).
  */
-class FileRepository(
+internal class FileRepository(
     val database: DrawDatabase
 ) {
     private val folderDao = database.folderDao()

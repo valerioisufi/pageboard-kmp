@@ -6,14 +6,14 @@ package io.github.valerioisufi.drawview.pdf
  *
  * Throws [IllegalArgumentException] when [data] is not a TrueType font.
  */
-class TrueTypeFont(private val data: ByteArray) {
+public class TrueTypeFont(private val data: ByteArray) {
     private val tables: Map<String, Table>
 
     /** Units of the coordinates of the glyphs in one em. */
-    val unitsPerEm: Int
+    public val unitsPerEm: Int
 
     /** Number of glyphs of the font. */
-    val glyphCount: Int
+    internal val glyphCount: Int
 
     private val longLoca: Boolean
     private val hMetricCount: Int
@@ -49,7 +49,7 @@ class TrueTypeFont(private val data: ByteArray) {
     }
 
     /** The glyph of [codePoint], or 0 (the missing glyph). */
-    fun glyphId(codePoint: Int): Int {
+    public fun glyphId(codePoint: Int): Int {
         cmap[codePoint]?.let { return it }
         // A symbol font maps its characters in the private area (as FreeType and Skia read it)
         if (symbolCmap && codePoint in 0..0xFF) cmap[0xF000 or codePoint]?.let { return it }
@@ -60,17 +60,17 @@ class TrueTypeFont(private val data: ByteArray) {
      * Place of the strikeout above the baseline and its thickness, in font units (from the `OS/2`
      * table), or `null`.
      */
-    fun strikeout(): Pair<Int, Int>? {
+    public fun strikeout(): Pair<Int, Int>? {
         val os2 = tables["OS/2"] ?: return null
         if (os2.length < 30) return null
         return s16(os2.offset + 28) to s16(os2.offset + 26)
     }
 
     /** Whether the font has a glyph for [codePoint]. */
-    fun covers(codePoint: Int): Boolean = glyphId(codePoint) != 0
+    public fun covers(codePoint: Int): Boolean = glyphId(codePoint) != 0
 
     /** Advance of [glyphId] in font units. */
-    fun advance(glyphId: Int): Int {
+    public fun advance(glyphId: Int): Int {
         val hmtx = table("hmtx")
         val index = if (glyphId < hMetricCount) glyphId else hMetricCount - 1
         if (index < 0) return 0
@@ -78,7 +78,7 @@ class TrueTypeFont(private val data: ByteArray) {
     }
 
     /** Advance of [text] in font units (its characters one after the other). */
-    fun advance(text: String): Int {
+    public fun advance(text: String): Int {
         var total = 0
         var i = 0
         while (i < text.length) {
@@ -94,7 +94,7 @@ class TrueTypeFont(private val data: ByteArray) {
      * as points with whether they are on the curve (two points off the curve imply one on it, in
      * the middle). Empty for a glyph without outline (a space).
      */
-    fun outline(glyphId: Int): List<GlyphContour> = outline(glyphId, 0)
+    public fun outline(glyphId: Int): List<GlyphContour> = outline(glyphId, 0)
 
     private fun outline(glyphId: Int, depth: Int): List<GlyphContour> {
         if (glyphId !in 0 until glyphCount || depth > MAX_COMPOSITE_DEPTH) return emptyList()
@@ -222,7 +222,7 @@ class TrueTypeFont(private val data: ByteArray) {
      * the layout (already done by whoever placed the text) are left out. Its characters are the
      * ones of a PDF, its size a small part of the font's.
      */
-    fun subset(codePoints: Set<Int>): ByteArray {
+    public fun subset(codePoints: Set<Int>): ByteArray {
         // The characters in their order (as the subtables of a cmap want them)
         val mapping = LinkedHashMap<Int, Int>()
         for (codePoint in codePoints.sorted()) glyphId(codePoint).takeIf { it != 0 }?.let { mapping[codePoint] = it }
@@ -551,8 +551,8 @@ class TrueTypeFont(private val data: ByteArray) {
  * A closed contour of a glyph: its points ([xs], [ys], font units, y going up) and whether each
  * is on the curve (the others are control points of quadratic Bézier curves).
  */
-class GlyphContour(val xs: FloatArray, val ys: FloatArray, val onCurve: BooleanArray) {
-    val size: Int get() = xs.size
+public class GlyphContour(public val xs: FloatArray, public val ys: FloatArray, public val onCurve: BooleanArray) {
+    public val size: Int get() = xs.size
 }
 
 /** The code point of [text] at [index] (a surrogate pair read as one). */

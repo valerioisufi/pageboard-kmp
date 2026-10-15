@@ -20,14 +20,14 @@ import io.github.valerioisufi.drawview.ui.components.BadgeTone
  *   module knowing them).
  */
 @Stable
-class DocumentTag(
-    val id: String,
-    val label: @Composable () -> String,
-    val filterLabel: @Composable () -> String,
-    val icon: ImageVector,
-    val tone: BadgeTone,
-    val documents: () -> Set<String>
+public class DocumentTag(
+    public val id: String,
+    public val label: @Composable () -> String,
+    public val filterLabel: @Composable () -> String,
+    public val icon: ImageVector,
+    public val tone: BadgeTone,
+    public val documents: () -> Set<String>
 ) {
     /** Whether the document [documentId] has this tag. */
-    fun contains(documentId: String): Boolean = documentId in documents()
+    public fun contains(documentId: String): Boolean = documentId in documents()
 }

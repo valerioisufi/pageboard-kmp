@@ -41,13 +41,13 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.maschera_color_wheel
-import org.jetbrains.compose.resources.imageResource
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
+import org.jetbrains.compose.resources.imageResource
 
 /**
  * Defines the specific interactive region of the color wheel that is currently being targeted by a user's gesture.
@@ -65,7 +65,7 @@ private enum class WheelDragTarget { NONE, HUE, SAT_VAL }
  * @param alphaWidth The width of the vertical alpha (transparency) slider.
  */
 @Composable
-fun ColorWheel(
+internal fun ColorWheel(
     modifier: Modifier = Modifier,
     color: Color = Color.Blue,
     onColorChanged: (Color) -> Unit = {},

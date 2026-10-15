@@ -13,7 +13,7 @@ import io.github.valerioisufi.drawview.platform.syncLock
  *
  * @param maxMemoryBytes Maximum cache budget in bytes (default: 64 MB) for the tiles not in use.
  */
-class TileCache(
+public class TileCache(
     private val maxMemoryBytes: Int = 64 * 1024 * 1024
 ) {
     private val lock = SyncLock()
@@ -24,11 +24,11 @@ class TileCache(
     /**
      * Starts a new frame: the tiles used from now on are kept until the end of the next frame.
      */
-    fun beginFrame() {
+    internal fun beginFrame() {
         syncLock(lock) { frame++ }
     }
 
-    fun get(key: TileKey): Tile? {
+    public fun get(key: TileKey): Tile? {
         return syncLock(lock) {
             val tile = map[key] ?: return@syncLock null
             // Move to end (most recently used)
@@ -39,16 +39,16 @@ class TileCache(
         }
     }
 
-    fun contains(key: TileKey): Boolean {
+    public fun contains(key: TileKey): Boolean {
         return syncLock(lock) {
             map.containsKey(key)
         }
     }
 
-    val entryCount: Int
+    internal val entryCount: Int
         get() = syncLock(lock) { map.size }
 
-    fun put(tile: Tile) {
+    public fun put(tile: Tile) {
         syncLock(lock) {
             val old = map.remove(tile.key)
             if (old != null) {
@@ -73,7 +73,7 @@ class TileCache(
         }
     }
 
-    fun obtainBitmap(
+    internal fun obtainBitmap(
         width: Int = TilePyramid.TILE_SIZE,
         height: Int = TilePyramid.TILE_SIZE
     ): ImageBitmap {
@@ -84,7 +84,7 @@ class TileCache(
      * Finds nearest ready ancestor tile (lower LOD) in pyramid hierarchy.
      * Used for smooth hierarchical fallback (mipmap scaling) when target tile is rendering.
      */
-    fun findNearestAncestor(key: TileKey, maxGenerations: Int = 3): Tile? {
+    internal fun findNearestAncestor(key: TileKey, maxGenerations: Int = 3): Tile? {
         var currentKey = key.getParentKey()
         var generations = 0
         while (generations < maxGenerations && currentKey.lod >= TilePyramid.MIN_LOD) {
@@ -101,7 +101,7 @@ class TileCache(
     /**
      * Finds ready descendant tiles (higher LOD) in pyramid hierarchy.
      */
-    fun findReadyDescendants(key: TileKey, maxGenerations: Int = 2): List<Tile> {
+    internal fun findReadyDescendants(key: TileKey, maxGenerations: Int = 2): List<Tile> {
         val readyDescendants = mutableListOf<Tile>()
         fun collect(currentKey: TileKey, gen: Int) {
             if (gen > maxGenerations || currentKey.lod >= TilePyramid.MAX_LOD) return
@@ -122,7 +122,7 @@ class TileCache(
      * Marks all tiles matching [predicate] as [TileState.STALE].
      * Stale tiles remain in cache and continue to be drawn to prevent flashes.
      */
-    fun invalidate(predicate: (TileKey) -> Boolean) {
+    public fun invalidate(predicate: (TileKey) -> Boolean) {
         syncLock(lock) {
             for ((key, tile) in map) {
                 if (predicate(key)) {
@@ -135,7 +135,7 @@ class TileCache(
     /**
      * Evicts all tiles associated with a specific page from cache.
      */
-    fun removeForPage(pageKey: Long) {
+    internal fun removeForPage(pageKey: Long) {
         syncLock(lock) {
             val iterator = map.entries.iterator()
             while (iterator.hasNext()) {
@@ -151,7 +151,7 @@ class TileCache(
     /**
      * Marks all tiles of a specific page matching [predicate] as [TileState.STALE].
      */
-    fun invalidatePage(pageKey: Long, predicate: (TileKey) -> Boolean = { true }) {
+    internal fun invalidatePage(pageKey: Long, predicate: (TileKey) -> Boolean = { true }) {
         syncLock(lock) {
             for ((key, tile) in map) {
                 if (key.pageKey == pageKey && predicate(key)) {
@@ -164,7 +164,7 @@ class TileCache(
     /**
      * Evicts every tile whose page is not in [livePageKeys] (deleted pages).
      */
-    fun retainPages(livePageKeys: Set<Long>) {
+    internal fun retainPages(livePageKeys: Set<Long>) {
         syncLock(lock) {
             val iterator = map.entries.iterator()
             while (iterator.hasNext()) {
@@ -177,7 +177,7 @@ class TileCache(
         }
     }
 
-    fun clear() {
+    public fun clear() {
         syncLock(lock) {
             map.clear()
             currentMemoryBytes = 0

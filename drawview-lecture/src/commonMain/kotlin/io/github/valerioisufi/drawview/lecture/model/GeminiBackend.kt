@@ -22,7 +22,7 @@ import kotlin.io.encoding.Base64
  *
  * @param apiKey the key of the settings (read at every request).
  */
-class GeminiBackend(val client: GeminiClient, private val apiKey: () -> String) : ModelBackend {
+internal class GeminiBackend(public val client: GeminiClient, private val apiKey: () -> String) : ModelBackend {
     override val provider = ModelProvider.GEMINI
 
     @Volatile

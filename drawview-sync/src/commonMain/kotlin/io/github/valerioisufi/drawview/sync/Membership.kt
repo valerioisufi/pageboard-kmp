@@ -5,7 +5,7 @@ import kotlinx.serialization.json.Json
 
 /** What a device may do on a shared document. */
 @Serializable
-enum class Role {
+public enum class Role {
     /** Shared the document: admits the others, changes their roles, removes them, ends the sharing. */
     OWNER,
     EDITOR,
@@ -22,7 +22,7 @@ enum class Role {
  * document anymore (made reader, or removed): the ones it made before stay, on every device.
  */
 @Serializable
-data class Member(
+public data class Member(
     val device: String,
     val replica: String,
     val name: String,
@@ -30,7 +30,7 @@ data class Member(
     val writesUpTo: Long? = null
 ) {
     /** Whether its operation number [sequence] is accepted. */
-    fun mayWrite(sequence: Long): Boolean = writesUpTo?.let { sequence <= it } ?: (role != Role.READER)
+    internal fun mayWrite(sequence: Long): Boolean = writesUpTo?.let { sequence <= it } ?: (role != Role.READER)
 }
 
 /**
@@ -43,7 +43,7 @@ data class Member(
  * sharing it, every device keeps its copy only.
  */
 @Serializable
-data class Membership(
+public data class Membership(
     val documentId: String,
     val owner: String,
     val version: Long = 1,
@@ -52,21 +52,21 @@ data class Membership(
     val removed: List<Member> = emptyList(),
     val ended: Boolean = false
 ) {
-    fun memberOf(device: String): Member? = members.firstOrNull { it.device == device }
+    public fun memberOf(device: String): Member? = members.firstOrNull { it.device == device }
 
     /** Whether the operation [sequence] of [replica] is accepted (the replicas never members: refused). */
-    fun mayWrite(replica: String, sequence: Long): Boolean {
+    internal fun mayWrite(replica: String, sequence: Long): Boolean {
         members.firstOrNull { it.replica == replica }?.let { return it.mayWrite(sequence) }
         return removed.lastOrNull { it.replica == replica }?.let { sequence <= (it.writesUpTo ?: 0L) } ?: false
     }
 
     /** Whether [replica] is (or was) a member: its operations can be decided on. */
-    fun knows(replica: String): Boolean = members.any { it.replica == replica } || removed.any { it.replica == replica }
+    public fun knows(replica: String): Boolean = members.any { it.replica == replica } || removed.any { it.replica == replica }
 
-    fun encode(): ByteArray = json.encodeToString(serializer(), this).encodeToByteArray()
+    public fun encode(): ByteArray = json.encodeToString(serializer(), this).encodeToByteArray()
 
     /** This membership signed by the owner [identity]. */
-    fun signedBy(identity: DeviceIdentity): SignedMembership {
+    internal fun signedBy(identity: DeviceIdentity): SignedMembership {
         require(identity.publicKey == owner) { "Only the owner signs the membership" }
         val bytes = encode()
         return SignedMembership(bytes, identity.sign(bytes))
@@ -79,9 +79,9 @@ data class Membership(
 
 /** A [Membership] as its owner signed it ([bytes], [signature]): it travels as such. */
 @Serializable
-class SignedMembership(val bytes: ByteArray, val signature: ByteArray) {
+public class SignedMembership(public val bytes: ByteArray, internal val signature: ByteArray) {
     /** The membership, if signed by [owner] (the owner known for the document), otherwise `null`. */
-    fun open(owner: String): Membership? {
+    public fun open(owner: String): Membership? {
         if (!DeviceIdentity.verify(owner, bytes, signature)) return null
         return try {
             Membership.json.decodeFromString(Membership.serializer(), bytes.decodeToString()).takeIf { it.owner == owner }
@@ -104,11 +104,11 @@ class SignedMembership(val bytes: ByteArray, val signature: ByteArray) {
  * them first ([approval]). The owner forgets it to revoke it.
  */
 @Serializable
-data class InvitationGrant(val id: String, val key: String, val role: Role, val approval: Boolean, val createdAt: Long)
+public data class InvitationGrant(val id: String, val key: String, val role: Role, val approval: Boolean, val createdAt: Long)
 
 /** A key of a document and its epoch (see [Membership.epoch]). */
 @Serializable
-data class EpochKey(val epoch: Int, val key: String) {
+public data class EpochKey(val epoch: Int, val key: String) {
     val documentKey: DocumentKey? get() = DocumentKey.decode(key)
 }
 
@@ -121,7 +121,7 @@ data class EpochKey(val epoch: Int, val key: String) {
  * A device joining a document has its [joining] invitation only, until the owner admits it.
  */
 @Serializable
-data class SharingState(
+public data class SharingState(
     val keys: List<EpochKey> = emptyList(),
     val owner: String = "",
     val membership: SignedMembership? = null,
@@ -140,12 +140,12 @@ data class SharingState(
     val members: Membership? get() = membership?.open(owner)
 
     /** The role of the device [device]. */
-    fun roleOf(device: String): Role? = members?.memberOf(device)?.role
+    internal fun roleOf(device: String): Role? = members?.memberOf(device)?.role
 
-    fun encode(): String = Membership.json.encodeToString(serializer(), this)
+    public fun encode(): String = Membership.json.encodeToString(serializer(), this)
 
-    companion object {
-        fun decode(text: String): SharingState? = try {
+    public companion object {
+        public fun decode(text: String): SharingState? = try {
             Membership.json.decodeFromString(serializer(), text)
         } catch (_: Exception) {
             null

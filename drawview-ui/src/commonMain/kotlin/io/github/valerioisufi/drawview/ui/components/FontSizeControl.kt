@@ -48,7 +48,7 @@ import org.jetbrains.compose.resources.stringResource
  * all and a field where any size from [TextSizes.MIN] to [TextSizes.MAX] can be typed.
  */
 @Composable
-fun FontSizeControl(
+internal fun FontSizeControl(
     fontSizePt: Float,
     onFontSizeChange: (Float) -> Unit,
     modifier: Modifier = Modifier

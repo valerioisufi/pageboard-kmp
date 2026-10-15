@@ -11,35 +11,35 @@ import java.io.File
  * Must be initialized once, typically from `Application.onCreate()` or `Activity.onCreate()`.
  */
 @SuppressLint("StaticFieldLeak")
-object DrawViewAndroid {
+public object DrawViewAndroid {
     private var appContext: Context? = null
 
-    fun init(context: Context) {
+    public fun init(context: Context) {
         appContext = context.applicationContext
     }
 
-    val context: Context
+    public val context: Context
         get() = checkNotNull(appContext) {
             "DrawViewAndroid.init(context) must be called before using DrawView on Android"
         }
 
-    val isInitialized: Boolean get() = appContext != null
+    public val isInitialized: Boolean get() = appContext != null
 }
 
-actual object PlatformFiles {
-    actual fun resourcesDirectory(): String {
+public actual object PlatformFiles {
+    public actual fun resourcesDirectory(): String {
         val dir = File(DrawViewAndroid.context.filesDir, "drawview_resources")
         dir.mkdirs()
         return dir.absolutePath
     }
 
-    actual fun readBytes(path: String): ByteArray? = try {
+    public actual fun readBytes(path: String): ByteArray? = try {
         File(path).takeIf { it.exists() }?.readBytes()
     } catch (_: Exception) {
         null
     }
 
-    actual fun writeBytes(path: String, bytes: ByteArray): Boolean = try {
+    public actual fun writeBytes(path: String, bytes: ByteArray): Boolean = try {
         val file = File(path)
         file.parentFile?.mkdirs()
         file.writeBytes(bytes)
@@ -48,7 +48,7 @@ actual object PlatformFiles {
         false
     }
 
-    actual fun exists(path: String): Boolean = File(path).exists()
+    public actual fun exists(path: String): Boolean = File(path).exists()
 
-    actual fun delete(path: String): Boolean = File(path).delete()
+    public actual fun delete(path: String): Boolean = File(path).delete()
 }

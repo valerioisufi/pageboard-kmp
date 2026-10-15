@@ -13,7 +13,7 @@ import kotlinx.io.readByteArray
  * last second is lost if the application stops abruptly; the recording is read from any position
  * meanwhile ([readSegment]), e.g. to listen to it or to transcribe it.
  */
-class RecordingFile(directory: String) {
+internal class RecordingFile(directory: String) {
     private val directoryPath = Path(directory)
     val path = Path(directory, FILE_NAME)
 

@@ -64,7 +64,7 @@ private const val NEARBY_WAIT_MS = 3_000L
  * permission of Android 17; asked when a document is shared or joined, or at the start when some
  * are shared already).
  */
-class Collaboration(
+public class Collaboration(
     documents: OpenDocuments,
     private val discovery: LanDiscovery,
     private val sharedFolderName: String,
@@ -81,37 +81,37 @@ class Collaboration(
     /** Asks for the permission to use the local network (set by [rememberCollaboration]). */
     internal var requestAccess: suspend () -> Boolean = { true }
 
-    val engine = SyncEngine(
+    public val engine: SyncEngine = SyncEngine(
         documents, shared, scope, { DeviceProfile.name.value },
         attachments = attachments, identity = identity, receivedFolder = ::sharedFolder
     )
 
     /** The devices connected, with the document each one works on. */
-    val peers: StateFlow<List<Peer>> get() = engine.peers
+    public val peers: StateFlow<List<Peer>> get() = engine.peers
 
     /** Who works on each shared document, and with what role (as its owner decided). */
-    val memberships: StateFlow<Map<String, Membership>> get() = engine.memberships
+    public val memberships: StateFlow<Map<String, Membership>> get() = engine.memberships
 
     /** This device among the members (see [Member.device]). */
-    val device: String get() = engine.device
+    public val device: String get() = engine.device
 
     /** The devices waiting for this device, the owner, to approve them. */
-    val joinRequests: StateFlow<List<JoinRequest>> get() = engine.joinRequests
+    public val joinRequests: StateFlow<List<JoinRequest>> get() = engine.joinRequests
 
     /** The titles of the documents, by identifier. */
-    val documentTitles: Flow<Map<String, String>> = store.documents.map { list -> list.associate { it.id to it.name } }
+    internal val documentTitles: Flow<Map<String, String>> = store.documents.map { list -> list.associate { it.id to it.name } }
 
     /** The documents being joined with an invitation, and where each one is. */
-    val joining: StateFlow<Map<String, JoinStatus>> get() = engine.joining
+    public val joining: StateFlow<Map<String, JoinStatus>> get() = engine.joining
 
     /** Where the other devices are on the documents. */
-    val presences: StateFlow<List<Presence>> get() = engine.presences
+    public val presences: StateFlow<List<Presence>> get() = engine.presences
 
     /** Whether a device with another version of the application was met (see [SyncEngine.otherVersionMet]). */
-    val otherVersionMet: StateFlow<Boolean> get() = engine.otherVersionMet
+    public val otherVersionMet: StateFlow<Boolean> get() = engine.otherVersionMet
 
     /** Whether this device works with the devices of the network (allowed to and started). */
-    val isOnline: StateFlow<Boolean> = online.asStateFlow()
+    internal val isOnline: StateFlow<Boolean> = online.asStateFlow()
 
     init {
         // Connected to some devices: going on in the background too
@@ -123,7 +123,7 @@ class Collaboration(
     }
 
     /** Starts looking for the devices of the network, once allowed to; returns whether started. */
-    suspend fun start(): Boolean {
+    public suspend fun start(): Boolean {
         if (online.value) return true
         if (!requestAccess()) return false
         mutex.withLock {
@@ -140,30 +140,30 @@ class Collaboration(
      * not shared yet: a new invitation for the devices joining as [role], approved first when
      * [approval]; `null` when this device is not the owner.
      */
-    suspend fun share(documentId: String, title: String, role: Role = Role.EDITOR, approval: Boolean = false): Invitation? {
+    public suspend fun share(documentId: String, title: String, role: Role = Role.EDITOR, approval: Boolean = false): Invitation? {
         val invitation = engine.invite(documentId, title, role, approval)
         if (start()) lan?.announce()
         return invitation
     }
 
     /** The invitations of the document [documentId] given by this device, its owner, as links. */
-    suspend fun invitationsOf(documentId: String, title: String): List<Pair<InvitationGrant, Invitation>> =
+    public suspend fun invitationsOf(documentId: String, title: String): List<Pair<InvitationGrant, Invitation>> =
         engine.invitationsOf(documentId).map { it to engine.invitationOf(documentId, title, it) }
 
     /** Revokes an invitation: nobody joins with it anymore. */
-    suspend fun revokeInvitation(documentId: String, grant: InvitationGrant) {
+    public suspend fun revokeInvitation(documentId: String, grant: InvitationGrant) {
         engine.revokeInvitation(documentId, grant.id)
         lan?.announce()
     }
 
     /** Approves (or refuses) a device joining. */
-    fun answer(request: JoinRequest, approve: Boolean) = engine.answer(request, approve)
+    public fun answer(request: JoinRequest, approve: Boolean): Unit = engine.answer(request, approve)
 
     /**
      * The hosts of the devices found on the local network within [waitMs] (e.g. a computer with
      * the models of the lectures, see LocalModels.nearbyHosts).
      */
-    suspend fun nearbyHosts(waitMs: Long = NEARBY_WAIT_MS): List<String> {
+    public suspend fun nearbyHosts(waitMs: Long = NEARBY_WAIT_MS): List<String> {
         val hosts = mutableSetOf<String>()
         withTimeoutOrNull(waitMs) {
             discovery.services.collect { services -> services.mapTo(hosts) { it.host } }
@@ -172,29 +172,29 @@ class Collaboration(
     }
 
     /** Gives a member another role (this device is the owner). */
-    suspend fun setRole(documentId: String, member: String, role: Role) = engine.setRole(documentId, member, role)
+    public suspend fun setRole(documentId: String, member: String, role: Role): Unit = engine.setRole(documentId, member, role)
 
     /** Removes a member: the document gets a new key it does not have (this device is the owner). */
-    suspend fun removeMember(documentId: String, member: String) = engine.removeMember(documentId, member)
+    public suspend fun removeMember(documentId: String, member: String): Unit = engine.removeMember(documentId, member)
 
     /**
      * Stops sharing the document [documentId]: for every device when this one is its owner (each
      * one keeps its copy), otherwise this device leaves it.
      */
-    suspend fun stopSharing(documentId: String) {
+    internal suspend fun stopSharing(documentId: String) {
         engine.unshare(documentId)
         lan?.announce()
     }
 
     /** Joins the document of the invitation [link]: the invitation, or `null` when it is not one. */
-    suspend fun join(link: String): Invitation? {
+    public suspend fun join(link: String): Invitation? {
         val invitation = Invitation.parse(link) ?: return null
         if (start()) lan?.join(invitation) else engine.join(invitation)
         return invitation
     }
 
     /** Shows this device as [name] to the others (blank: the name of the device). */
-    suspend fun rename(name: String?) {
+    public suspend fun rename(name: String?) {
         DeviceProfile.rename(name)
         lan?.announce()
     }
@@ -203,11 +203,11 @@ class Collaboration(
      * Makes again at once the connections lost (e.g. when the application comes back to the
      * foreground: the system may have closed them meanwhile).
      */
-    suspend fun refresh() {
+    public suspend fun refresh() {
         mutex.withLock { lan }?.refresh(announceAgain = true)
     }
 
-    suspend fun stop() {
+    public suspend fun stop() {
         mutex.withLock {
             lan?.stop()
             lan = null
@@ -230,7 +230,7 @@ class Collaboration(
  * [InvitationLinks]) through [CollaborationDialogs].
  */
 @Composable
-fun rememberCollaboration(
+public fun rememberCollaboration(
     documents: OpenDocuments,
     attachments: DocumentAttachments? = null
 ): Collaboration {
@@ -269,13 +269,13 @@ private class CollaborationHolder(
  * The invitations opened from outside of the application (a `drawview://join` link opened on the
  * device), waiting for [CollaborationDialogs] to join them.
  */
-object InvitationLinks {
+public object InvitationLinks {
     private val pending = MutableStateFlow<String?>(null)
 
     internal val link: StateFlow<String?> = pending.asStateFlow()
 
     /** Opens the invitation [link] (from the platform: an intent, a URL opened...). */
-    fun open(link: String) {
+    public fun open(link: String) {
         if (Invitation.parse(link) != null) pending.value = link
     }
 

@@ -17,7 +17,7 @@ import kotlin.io.encoding.Base64
  *
  * @param url the address of the Ollama server of the settings (read at every request).
  */
-class OllamaBackend(val client: OllamaClient, private val url: () -> String) : ModelBackend {
+internal class OllamaBackend(public val client: OllamaClient, private val url: () -> String) : ModelBackend {
     override val provider = ModelProvider.LOCAL
 
     /**

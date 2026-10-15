@@ -24,23 +24,23 @@ import kotlin.math.hypot
  * - **world**: pages laid out vertically by [layout] to fit the width of the canvas;
  * - **screen**: world transformed by the camera ([getRenderMatrix]).
  */
-class Viewport internal constructor(
+public class Viewport internal constructor(
     private val document: DrawDocument,
     density: Float,
     private val tileManager: TileManager,
     private val requestRedraw: () -> Unit
 ) {
     /** The pages laid out in world space. */
-    val layout = CalcPage(density = density)
+    public val layout: CalcPage = CalcPage(density = density)
 
     /** The camera: its pan, its zoom and their animations. */
-    val camera = CameraPhysicsEngine(
+    public val camera: CameraPhysicsEngine = CameraPhysicsEngine(
         density = density,
         getContentRect = { layout.contentRect }
     )
 
     /** Pixels per density-independent pixel of the screen showing the canvas. */
-    var density: Float = density
+    public var density: Float = density
         set(value) {
             if (field == value) return
             field = value
@@ -51,11 +51,11 @@ class Viewport internal constructor(
         }
 
     /** Width of the canvas, in pixels. */
-    var width by mutableFloatStateOf(0f)
+    public var width: Float by mutableFloatStateOf(0f)
         private set
 
     /** Height of the canvas, in pixels. */
-    var height by mutableFloatStateOf(0f)
+    public var height: Float by mutableFloatStateOf(0f)
         private set
 
     private val cachedRenderMatrix = Matrix2D()
@@ -64,7 +64,7 @@ class Viewport internal constructor(
     /**
      * Updates the size of the canvas, keeping the content under its center stable.
      */
-    fun setSize(width: Float, height: Float) {
+    internal fun setSize(width: Float, height: Float) {
         if (width <= 0f || height <= 0f) return
         val sizeChanged = this.width != width || this.height != height
         if (!sizeChanged && !layout.needToBeUpdated) return
@@ -123,7 +123,7 @@ class Viewport internal constructor(
     }
 
     /** Lays the pages out again (their sizes, their order or the canvas changed). */
-    fun updatePageLayout() {
+    internal fun updatePageLayout() {
         if (width > 0f && height > 0f) {
             layout.calcPagesRectOnWindow(
                 pages = document.pages,
@@ -135,7 +135,7 @@ class Viewport internal constructor(
     }
 
     /** The pages of the document changed (added, removed, moved, resized): lays them out again. */
-    fun markLayoutNeedsUpdate() {
+    internal fun markLayoutNeedsUpdate() {
         layout.needToBeUpdated = true
         updatePageLayout()
         tileManager.retainDocumentPages(document)
@@ -146,44 +146,44 @@ class Viewport internal constructor(
     /**
      * Retrieves the current camera matrix (transforms World space -> Screen space).
      */
-    fun getRenderMatrix(outMatrix: Matrix2D = cachedRenderMatrix): Matrix2D {
+    internal fun getRenderMatrix(outMatrix: Matrix2D = cachedRenderMatrix): Matrix2D {
         return camera.getRenderMatrix(outMatrix)
     }
 
     /**
      * Retrieves the inverse camera matrix (transforms Screen space -> World space).
      */
-    fun getInverseMatrix(outMatrix: Matrix2D = cachedInverseMatrix): Matrix2D {
+    internal fun getInverseMatrix(outMatrix: Matrix2D = cachedInverseMatrix): Matrix2D {
         val render = camera.getRenderMatrix(Matrix2D())
         render.invert(outMatrix)
         return outMatrix
     }
 
-    fun screenToWorld(screenPoint: Offset): Offset {
+    internal fun screenToWorld(screenPoint: Offset): Offset {
         val inverse = getInverseMatrix(Matrix2D())
         return inverse.mapOffset(screenPoint)
     }
 
-    fun worldToScreen(worldPoint: Offset): Offset {
+    internal fun worldToScreen(worldPoint: Offset): Offset {
         val render = camera.getRenderMatrix(Matrix2D())
         return render.mapOffset(worldPoint)
     }
 
     /** Matrix mapping the millimeters of page [pageIndex] to world space. */
-    fun pageMmToWorld(pageIndex: Int): Matrix2D? {
+    internal fun pageMmToWorld(pageIndex: Int): Matrix2D? {
         val page = document.pages.getOrNull(pageIndex) ?: return null
         val worldRect = layout.pagesRectOnWindow.getOrNull(pageIndex) ?: return null
         return Matrix2D().setRectToRect(page.rect(), worldRect.toModel())
     }
 
     /** Matrix mapping the millimeters of page [pageIndex] to screen pixels. */
-    fun pageMmToScreen(pageIndex: Int): Matrix2D? {
+    public fun pageMmToScreen(pageIndex: Int): Matrix2D? {
         val mmToWorld = pageMmToWorld(pageIndex) ?: return null
         return mmToWorld.postConcat(camera.getRenderMatrix(Matrix2D()))
     }
 
     /** Converts a screen point to the millimeters of page [pageIndex]. */
-    fun screenToPageMm(pageIndex: Int, screenPoint: Offset): Offset? {
+    internal fun screenToPageMm(pageIndex: Int, screenPoint: Offset): Offset? {
         val mmToScreen = pageMmToScreen(pageIndex) ?: return null
         val inverse = Matrix2D()
         if (!mmToScreen.invert(inverse)) return null
@@ -191,14 +191,14 @@ class Viewport internal constructor(
     }
 
     /** Current screen pixels per millimeter of page [pageIndex]. */
-    fun pixelsPerMm(pageIndex: Int): Float {
+    public fun pixelsPerMm(pageIndex: Int): Float {
         val page = document.pages.getOrNull(pageIndex) ?: return 1f
         val worldRect = layout.pagesRectOnWindow.getOrNull(pageIndex) ?: return 1f
         return worldRect.width / page.widthMm.coerceAtLeast(0.01f) * camera.getCurrentScale()
     }
 
     /** Pages intersecting the viewport, with their screen rectangles. */
-    fun visiblePages(): List<CalcPage.PageRectWithIndex> {
+    public fun visiblePages(): List<CalcPage.PageRectWithIndex> {
         if (width <= 0f || height <= 0f) return emptyList()
         return layout.getPagesRectOnWindowTransformation(
             Rect(0f, 0f, width, height),
@@ -207,24 +207,24 @@ class Viewport internal constructor(
     }
 
     /** Index of the page under [screenPoint], or `null`. */
-    fun findPageIndexAtScreen(screenPoint: Offset): Int? =
+    internal fun findPageIndexAtScreen(screenPoint: Offset): Int? =
         visiblePages().firstOrNull { it.rect.contains(screenPoint) }?.index
 
     /** Index of the visible page nearest to [screenPoint]. */
-    fun nearestVisiblePageIndex(screenPoint: Offset): Int? =
+    internal fun nearestVisiblePageIndex(screenPoint: Offset): Int? =
         visiblePages().minByOrNull { hypot(it.rect.center.x - screenPoint.x, it.rect.center.y - screenPoint.y) }?.index
 
-    fun firstVisiblePageIndex(): Int? = visiblePages().firstOrNull()?.index
+    public fun firstVisiblePageIndex(): Int? = visiblePages().firstOrNull()?.index
 
     /** Index of the page taking the largest part of the viewport (the page being looked at), or `null`. */
-    fun mostVisiblePageIndex(): Int? = visiblePages().maxByOrNull { page ->
+    public fun mostVisiblePageIndex(): Int? = visiblePages().maxByOrNull { page ->
         minOf(page.rect.bottom, height) - maxOf(page.rect.top, 0f)
     }?.index
 
     /**
      * Index of the page containing [worldPoint] (or the nearest one when [nearest] is `true`).
      */
-    fun findPageIndexAtWorld(worldPoint: Offset, nearest: Boolean = false): Int {
+    internal fun findPageIndexAtWorld(worldPoint: Offset, nearest: Boolean = false): Int {
         val rects = layout.pagesRectOnWindow
         for (i in rects.indices) {
             if (rects[i].contains(worldPoint)) return i
@@ -236,21 +236,21 @@ class Viewport internal constructor(
         }
     }
 
-    fun zoomBy(factor: Float, focus: Offset = Offset(width / 2f, height / 2f)) {
+    internal fun zoomBy(factor: Float, focus: Offset = Offset(width / 2f, height / 2f)) {
         camera.onDrag(0f, 0f, factor, focus.x, focus.y)
         camera.restoreToBounds()
         requestRedraw()
     }
 
-    fun zoomIn() = zoomBy(1.25f)
+    public fun zoomIn(): Unit = zoomBy(1.25f)
 
-    fun zoomOut() = zoomBy(0.8f)
+    public fun zoomOut(): Unit = zoomBy(0.8f)
 
     /**
      * Shows the top of the page [pageIndex] at the zoom level [scale] (the current one by default),
      * centered when the page is narrower than the viewport.
      */
-    fun showPage(pageIndex: Int, scale: Float = camera.getCurrentScale()) {
+    internal fun showPage(pageIndex: Int, scale: Float = camera.getCurrentScale()) {
         if (width <= 0f || height <= 0f) return
         val page = layout.pagesRectOnWindow.getOrNull(pageIndex) ?: return
         camera.centerOnWorldPoint(
@@ -265,19 +265,19 @@ class Viewport internal constructor(
     }
 
     /** Shows the top of the page after the one being looked at. */
-    fun showNextPage() {
+    public fun showNextPage() {
         val current = mostVisiblePageIndex() ?: return
         showPage((current + 1).coerceAtMost(document.pages.lastIndex))
     }
 
     /** Shows the top of the page before the one being looked at. */
-    fun showPreviousPage() {
+    public fun showPreviousPage() {
         val current = mostVisiblePageIndex() ?: return
         showPage((current - 1).coerceAtLeast(0))
     }
 
     /** The pages as wide as the viewport (the zoom of the opening), from the top of the one being looked at. */
-    fun fitWidth() {
+    public fun fitWidth() {
         showPage(mostVisiblePageIndex() ?: 0, scale = 1f)
     }
 
@@ -285,14 +285,14 @@ class Viewport internal constructor(
      * Pans the camera by ([dx], [dy]) screen pixels (e.g. to keep the edited text above the
      * software keyboard).
      */
-    fun panBy(dx: Float, dy: Float) {
+    public fun panBy(dx: Float, dy: Float) {
         if (dx == 0f && dy == 0f) return
         camera.stopAllAnimations()
         camera.onDrag(dx, dy, 1f, width / 2f, height / 2f)
         requestRedraw()
     }
 
-    fun centerDocument() {
+    internal fun centerDocument() {
         if (width <= 0f || height <= 0f) return
         val content = layout.contentRect
         if (content.isEmpty) return

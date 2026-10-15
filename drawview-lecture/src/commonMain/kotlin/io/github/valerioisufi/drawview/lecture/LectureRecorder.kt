@@ -14,6 +14,8 @@ import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
 import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
 import io.github.valerioisufi.drawview.lecture.transcription.StreamingTranscriber
 import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
+import kotlin.concurrent.Volatile
+import kotlin.math.min
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -24,8 +26,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlin.concurrent.Volatile
-import kotlin.math.min
 
 /**
  * Records a [Lecture] and follows it live.
@@ -60,8 +60,8 @@ import kotlin.math.min
  * visible pages only: after every update a few blocks of handwriting are transcribed
  * ([HandwritingReader]), once for all the lectures of the notebook.
  */
-class LectureRecorder internal constructor(
-    val lecture: Lecture,
+public class LectureRecorder internal constructor(
+    public val lecture: Lecture,
     private val settingsStore: AssistantSettingsStore,
     private val capture: AudioCapture,
     notebook: NotebookSource?,
@@ -115,16 +115,16 @@ class LectureRecorder internal constructor(
 
     private class QueuedChunk(val chunk: AudioChunk?, val catchUp: Boolean)
 
-    val isRecording: Boolean get() = lecture.status == LectureStatus.RECORDING
+    public val isRecording: Boolean get() = lecture.status == LectureStatus.RECORDING
 
     /** The editor of the document is open: the analysis sees its pages again. */
-    fun attachNotebook(source: NotebookSource) {
+    internal fun attachNotebook(source: NotebookSource) {
         notebook = source
         lecture.isNotebookAttached = true
     }
 
     /** The editor of the document is closed ([source]: only if it is still the attached one). */
-    fun detachNotebook(source: NotebookSource? = null) {
+    internal fun detachNotebook(source: NotebookSource? = null) {
         if (source != null && notebook !== source) return
         notebook = null
         lecture.isNotebookAttached = false
@@ -234,7 +234,7 @@ class LectureRecorder internal constructor(
     }
 
     /** Analyzes the audio received so far right away, recapping the last minutes. */
-    fun catchUp() {
+    public fun catchUp() {
         if (!isRecording || !analyzes) return
         catchUpRequested.value = true
         cutRequested.value = true
@@ -244,7 +244,7 @@ class LectureRecorder internal constructor(
      * Stops the recording, analyzes the last chunks and reviews the whole lecture (unless the
      * review is written on request: [AssistantSettings.reviewAtTheEnd]).
      */
-    fun stop() {
+    public fun stop() {
         if (follows) return stopFollowing()
         if (!isRecording) return
         lecture.status = LectureStatus.FINALIZING
@@ -300,7 +300,7 @@ class LectureRecorder internal constructor(
      * chunks are dropped and the final review is left to be written later. Does not need the UI
      * thread, which may be the caller.
      */
-    suspend fun finishNow() {
+    internal suspend fun finishNow() {
         if (lecture.status == LectureStatus.FINISHED) return
         analysisJob?.cancel()
         notebookJob?.cancel()

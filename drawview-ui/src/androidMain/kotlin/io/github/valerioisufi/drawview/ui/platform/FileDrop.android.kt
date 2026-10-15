@@ -5,4 +5,4 @@ import androidx.compose.ui.Modifier
 
 /** The files dragged from the other applications are not taken yet (content URIs, item providers). */
 @Composable
-actual fun Modifier.fileDropTarget(onFiles: (List<PickedFile>) -> Boolean): Modifier = this
+public actual fun Modifier.fileDropTarget(onFiles: (List<PickedFile>) -> Boolean): Modifier = this

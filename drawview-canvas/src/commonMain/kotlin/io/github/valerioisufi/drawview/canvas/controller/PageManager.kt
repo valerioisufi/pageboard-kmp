@@ -20,17 +20,17 @@ import io.github.valerioisufi.drawview.model.geometry.Dimension
  * Page management: insertion, deletion, reordering (drag & drop on the canvas or in the page
  * grid), templates and navigation.
  */
-class PageManager(private val controller: DrawViewController) {
+public class PageManager(private val controller: DrawViewController) {
 
     /** Page targeted by the context menu / page grid actions. */
-    var contextMenuTargetPageIndex: Int by mutableIntStateOf(-1)
+    public var contextMenuTargetPageIndex: Int by mutableIntStateOf(-1)
 
     // --- Drag & drop reordering on the canvas ---
-    var isReorderingPages: Boolean by mutableStateOf(false)
+    internal var isReorderingPages: Boolean by mutableStateOf(false)
         private set
-    var draggedPageIndex: Int by mutableIntStateOf(-1)
+    internal var draggedPageIndex: Int by mutableIntStateOf(-1)
         private set
-    var floatingPageRect: Rect? by mutableStateOf(null)
+    internal var floatingPageRect: Rect? by mutableStateOf(null)
         private set
 
     private var dragTouchOffset = Offset.Zero
@@ -46,12 +46,12 @@ class PageManager(private val controller: DrawViewController) {
         orderKey = document.orderKeyAt(index)
     )
 
-    fun addNewPageAtBottom(): DrawPage = insertPage(document.pages.size)
+    public fun addNewPageAtBottom(): DrawPage = insertPage(document.pages.size)
 
     /**
      * Inserts a new page right after [pageIndex] (at the end when the index is invalid).
      */
-    fun addNewPageAfter(pageIndex: Int): DrawPage {
+    public fun addNewPageAfter(pageIndex: Int): DrawPage {
         val target = if (pageIndex in document.pages.indices) pageIndex + 1 else document.pages.size
         return insertPage(target)
     }
@@ -66,7 +66,7 @@ class PageManager(private val controller: DrawViewController) {
     /**
      * Deletes the page at [pageIndex] (the last page of a document cannot be deleted).
      */
-    fun deletePage(pageIndex: Int) {
+    public fun deletePage(pageIndex: Int) {
         if (document.pages.size <= 1 || pageIndex !in document.pages.indices) return
         controller.selectionManager.clearSelection()
         if (controller.textEditorManager.activeTextPageIndex == pageIndex) {
@@ -78,7 +78,7 @@ class PageManager(private val controller: DrawViewController) {
     /**
      * Moves a page (e.g. drag & drop in the page grid), recording the change in the history.
      */
-    fun movePage(fromIndex: Int, toIndex: Int) {
+    public fun movePage(fromIndex: Int, toIndex: Int) {
         if (fromIndex !in document.pages.indices || toIndex !in document.pages.indices || fromIndex == toIndex) return
         controller.selectionManager.clearSelection()
         val order = document.pages.map { it.id }.toMutableList()
@@ -90,7 +90,7 @@ class PageManager(private val controller: DrawViewController) {
     // Canvas drag & drop
     // ==========================================================
 
-    fun startPageReorderMode() {
+    public fun startPageReorderMode() {
         controller.selectionManager.clearSelection()
         controller.textEditorManager.finishEditing()
         controller.contextMenuPosition = null
@@ -103,7 +103,7 @@ class PageManager(private val controller: DrawViewController) {
      * Picks the page under [touch] (screen pixels).
      * @return `true` if a page has been picked.
      */
-    fun startDraggingPage(touch: Offset): Boolean {
+    internal fun startDraggingPage(touch: Offset): Boolean {
         val visible = controller.viewport.visiblePages().firstOrNull { it.rect.contains(touch) } ?: return false
         draggedPageIndex = visible.index
         floatingPageRect = visible.rect
@@ -113,7 +113,7 @@ class PageManager(private val controller: DrawViewController) {
         return true
     }
 
-    fun updateDragPosition(touch: Offset) {
+    internal fun updateDragPosition(touch: Offset) {
         val rect = floatingPageRect ?: return
         val topLeft = touch - dragTouchOffset
         floatingPageRect = Rect(topLeft, rect.size)
@@ -122,7 +122,7 @@ class PageManager(private val controller: DrawViewController) {
     }
 
     /** Called while auto-scrolling: the floating page stays under the finger. */
-    fun onCameraMovedWhileDragging() {
+    internal fun onCameraMovedWhileDragging() {
         performSwap()
     }
 
@@ -140,7 +140,7 @@ class PageManager(private val controller: DrawViewController) {
      * Moves a page while a reorder session is active (drag & drop in the page grid): the whole
      * reordering is recorded as a single change by [finishPageReorderMode].
      */
-    fun movePageDuringReorder(fromIndex: Int, toIndex: Int) {
+    public fun movePageDuringReorder(fromIndex: Int, toIndex: Int) {
         if (!isReorderingPages) return movePage(fromIndex, toIndex)
         if (fromIndex !in document.pages.indices || toIndex !in document.pages.indices || fromIndex == toIndex) return
         document.movePage(fromIndex, toIndex)
@@ -148,13 +148,13 @@ class PageManager(private val controller: DrawViewController) {
         controller.requestRedraw()
     }
 
-    fun releaseDraggedPage() {
+    internal fun releaseDraggedPage() {
         draggedPageIndex = -1
         floatingPageRect = null
         controller.requestRedraw()
     }
 
-    fun finishPageReorderMode() {
+    public fun finishPageReorderMode() {
         releaseDraggedPage()
         isReorderingPages = false
         val oldOrder = originalPageOrder
@@ -175,7 +175,7 @@ class PageManager(private val controller: DrawViewController) {
     /**
      * Centers the camera on the page [pageIndex], keeping the current zoom level.
      */
-    fun jumpToPage(pageIndex: Int) {
+    public fun jumpToPage(pageIndex: Int) {
         val rects = controller.viewport.layout.pagesRectOnWindow
         if (pageIndex !in rects.indices) return
         val target = rects[pageIndex]
@@ -198,7 +198,7 @@ class PageManager(private val controller: DrawViewController) {
     /**
      * Changes format and background of a single page.
      */
-    fun changeSinglePageTemplate(pageIndex: Int, dimension: Dimension, background: PageBackground) {
+    public fun changeSinglePageTemplate(pageIndex: Int, dimension: Dimension, background: PageBackground) {
         val page = document.pages.getOrNull(pageIndex) ?: return
         val custom = background.takeIf { it != document.defaultBackground }
         controller.session.submit(SetPageFormat(page.id, dimension.width.mm, dimension.height.mm, custom))
@@ -210,7 +210,7 @@ class PageManager(private val controller: DrawViewController) {
      * @param overrideAll `true` to apply them to every page, `false` to apply the background only
      * to the pages that follow the document default.
      */
-    fun applyDocumentTemplateChange(dimension: Dimension, background: PageBackground, overrideAll: Boolean) {
+    public fun applyDocumentTemplateChange(dimension: Dimension, background: PageBackground, overrideAll: Boolean) {
         val defaults = SetDocumentDefaults(dimension.width.mm, dimension.height.mm, background)
         val pages = if (overrideAll) {
             document.pages.map { SetPageFormat(it.id, dimension.width.mm, dimension.height.mm, null) }

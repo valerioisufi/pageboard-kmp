@@ -22,7 +22,7 @@ import kotlin.math.sin
  * strip along the smoothed input polyline (so translucent highlighter strokes blend uniformly)
  * closed by round caps. Dashed brushes (lasso) produce one strip per dash.
  */
-class KotlinStrokeEngineDelegate : StrokeEngineDelegate {
+public class KotlinStrokeEngineDelegate : StrokeEngineDelegate {
     private val xs = ArrayList<Float>()
     private val ys = ArrayList<Float>()
     private val radii = ArrayList<Float>()
@@ -126,7 +126,7 @@ class KotlinStrokeEngineDelegate : StrokeEngineDelegate {
         started = false
     }
 
-    override fun release() = clear()
+    override fun release(): Unit = clear()
 
     private fun buildDashes(positions: MutableList<Float>, indices: MutableList<Int>) {
         val dash = brush.size * 4f

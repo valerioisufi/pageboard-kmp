@@ -5,7 +5,7 @@ import io.github.valerioisufi.drawview.model.PageBackground
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class PageBackgroundConverter {
+internal class PageBackgroundConverter {
     private val jsonFormat = Json { ignoreUnknownKeys = true }
 
     @TypeConverter

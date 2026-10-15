@@ -22,19 +22,19 @@ import io.github.valerioisufi.drawview.ui.command.Command
  *
  * Several extensions are combined with `+` (e.g. an assistant and the collaboration).
  */
-class EditorExtension(
-    val toolbarActions: @Composable RowScope.(context: EditorContext) -> Unit = {},
-    val canvasOverlay: @Composable BoxScope.(context: EditorContext) -> Unit = {},
-    val commands: (context: EditorContext) -> List<Command> = { emptyList() },
-    val panels: (context: EditorContext) -> List<EditorPanel> = { emptyList() },
-    val readOnlyNote: @Composable (context: EditorContext) -> String? = { null }
+public class EditorExtension(
+    public val toolbarActions: @Composable RowScope.(context: EditorContext) -> Unit = {},
+    public val canvasOverlay: @Composable BoxScope.(context: EditorContext) -> Unit = {},
+    public val commands: (context: EditorContext) -> List<Command> = { emptyList() },
+    public val panels: (context: EditorContext) -> List<EditorPanel> = { emptyList() },
+    public val readOnlyNote: @Composable (context: EditorContext) -> String? = { null }
 ) {
     /**
      * The contributions of this extension followed by those of [other]: toolbar actions, commands
      * and panels in this order, [other]'s overlay drawn over this one, the note of the read only
      * documents of this one if it has one.
      */
-    operator fun plus(other: EditorExtension): EditorExtension {
+    public operator fun plus(other: EditorExtension): EditorExtension {
         val first = this
         return EditorExtension(
             toolbarActions = { context ->

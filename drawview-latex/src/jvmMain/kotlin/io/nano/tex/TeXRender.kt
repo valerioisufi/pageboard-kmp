@@ -1,49 +1,50 @@
 package io.nano.tex
 
-class TeXRender(private var nativePtr: Long) {
+/** A formula laid out by MicroTeX (native), drawn on a [Graphics2D] at its size. */
+public class TeXRender(private var nativePtr: Long) {
 
     private var recorder: ActionRecorder? = null
 
-    val textSize: Float
+    public val textSize: Float
         get() = nGetTextSize(nativePtr)
 
-    val height: Int
+    public val height: Int
         get() = nGetHeight(nativePtr)
 
-    val depth: Int
+    public val depth: Int
         get() = nGetDepth(nativePtr)
 
-    val width: Int
+    public val width: Int
         get() = nGetWidth(nativePtr)
 
-    val baseline: Float
+    public val baseline: Float
         get() = nGetBaseline(nativePtr)
 
-    fun setTextSize(size: Float) {
+    public fun setTextSize(size: Float) {
         nSetTextSize(nativePtr, size)
     }
 
-    fun setForeground(color: Int) {
+    public fun setForeground(color: Int) {
         recorder = null
         nSetForeground(nativePtr, color)
     }
 
-    fun setWidth(width: Int, align: Int) {
+    public fun setWidth(width: Int, align: Int) {
         nSetWidth(nativePtr, width, align)
     }
 
-    fun setHeight(height: Int, align: Int) {
+    public fun setHeight(height: Int, align: Int) {
         nSetHeight(nativePtr, height, align)
     }
 
     /** The operations drawing the formula from its top-left corner (see [ActionRecorder.toOps]). */
-    fun ops(): List<io.github.valerioisufi.drawview.latex.TexOp> {
+    public fun ops(): List<io.github.valerioisufi.drawview.latex.TexOp> {
         val r = ActionRecorder()
         nDraw(nativePtr, r, 0, 0)
         return r.toOps()
     }
 
-    fun draw(g2: Graphics2D, x: Int, y: Int) {
+    public fun draw(g2: Graphics2D, x: Int, y: Int) {
         if (recorder == null) {
             val r = ActionRecorder()
             nDraw(nativePtr, r, 0, 0)
@@ -53,7 +54,7 @@ class TeXRender(private var nativePtr: Long) {
         recorder?.play(g2)
     }
 
-    fun invalidateDrawingCache() {
+    public fun invalidateDrawingCache() {
         recorder = null
     }
 
@@ -64,7 +65,7 @@ class TeXRender(private var nativePtr: Long) {
         }
     }
 
-    companion object {
+    public companion object {
         @JvmStatic
         private external fun nDraw(ptr: Long, recorder: ActionRecorder, x: Int, y: Int)
 

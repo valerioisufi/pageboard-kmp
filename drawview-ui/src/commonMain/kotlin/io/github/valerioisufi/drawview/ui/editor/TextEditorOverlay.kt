@@ -42,7 +42,7 @@ import kotlin.math.roundToInt
  * outside saves the text).
  */
 @Composable
-fun TextEditorOverlay(controller: DrawViewController, commands: EditorCommands) {
+internal fun TextEditorOverlay(controller: DrawViewController, commands: EditorCommands) {
     val editor = controller.textEditorManager
     if (!editor.isEditing || !controller.isDrawingMode) return
     // Every editing session starts from a fresh state

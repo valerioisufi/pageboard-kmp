@@ -35,18 +35,18 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 
 /** A device working on the document [documentId] with this one ([device]: its identity, see [DeviceIdentity]). */
-data class Peer(val documentId: String, val replica: String, val name: String, val device: String = "")
+public data class Peer(val documentId: String, val replica: String, val name: String, val device: String = "")
 
 /**
  * A device asking to join the document [documentId] with an invitation needing the approval of
  * the owner (see [SyncEngine.answer]), as long as it stays connected.
  */
-class JoinRequest internal constructor(val documentId: String, val device: String, val name: String, val role: Role) {
+public class JoinRequest internal constructor(public val documentId: String, public val device: String, public val name: String, public val role: Role) {
     internal val decision = CompletableDeferred<Boolean>()
 }
 
 /** Where this device is in joining a document with an invitation. */
-enum class JoinStatus { LOOKING_FOR_OWNER, WAITING_APPROVAL, ADMITTED, REFUSED }
+public enum class JoinStatus { LOOKING_FOR_OWNER, WAITING_APPROVAL, ADMITTED, REFUSED }
 
 /**
  * Keeps the shared documents of this device the same as on the other devices (GRASP Controller
@@ -77,7 +77,7 @@ enum class JoinStatus { LOOKING_FOR_OWNER, WAITING_APPROVAL, ADMITTED, REFUSED }
  * other device has said nothing on for three times as long is lost (a device gone without closing
  * it: out of the network, asleep...) and closed, so that it can be made again. `0`: never.
  */
-class SyncEngine(
+public class SyncEngine(
     private val documents: OpenDocuments,
     shared: SharedDocuments,
     private val scope: CoroutineScope,
@@ -96,26 +96,26 @@ class SyncEngine(
     private val connected = MutableStateFlow<List<Peer>>(emptyList())
 
     /** The devices connected (members of the document of the connection), with the document each one works on. */
-    val peers: StateFlow<List<Peer>> = connected.asStateFlow()
+    public val peers: StateFlow<List<Peer>> = connected.asStateFlow()
 
     /** This device among the members of the documents ([DeviceIdentity.publicKey]). */
-    val device: String get() = identity.publicKey
+    public val device: String get() = identity.publicKey
 
     /** The memberships of the shared documents (who works on each one, as the owner decided). */
-    val memberships: StateFlow<Map<String, Membership>> get() = sharing.memberships
+    public val memberships: StateFlow<Map<String, Membership>> get() = sharing.memberships
 
     /** Documents whose keys or invitations changed: what to announce on the network (see [reachable]). */
-    val sharingChanged: SharedFlow<String> get() = sharing.changed
+    public val sharingChanged: SharedFlow<String> get() = sharing.changed
 
     private val requests = MutableStateFlow<List<JoinRequest>>(emptyList())
 
     /** The devices waiting for the approval of this device, the owner, to join a document. */
-    val joinRequests: StateFlow<List<JoinRequest>> = requests.asStateFlow()
+    public val joinRequests: StateFlow<List<JoinRequest>> = requests.asStateFlow()
 
     private val joinStates = MutableStateFlow<Map<String, JoinStatus>>(emptyMap())
 
     /** The documents this device is joining with an invitation, and where it is. */
-    val joining: StateFlow<Map<String, JoinStatus>> = joinStates.asStateFlow()
+    public val joining: StateFlow<Map<String, JoinStatus>> = joinStates.asStateFlow()
 
     private val otherVersion = MutableStateFlow(false)
 
@@ -123,7 +123,7 @@ class SyncEngine(
      * Whether a device with another version of the application tried to work with this one: what
      * it sends cannot be read, so its connections are closed (the devices need the same version).
      */
-    val otherVersionMet: StateFlow<Boolean> = otherVersion.asStateFlow()
+    public val otherVersionMet: StateFlow<Boolean> = otherVersion.asStateFlow()
 
     /** The downloads of the files of the resources, by document and resource (they go on over another connection). */
     private val downloads = mutableMapOf<Pair<String, String>, Download>()
@@ -146,7 +146,7 @@ class SyncEngine(
      * Where the other devices are on the documents (see [Presence]); a device that stops sending
      * its presence for a while is gone (see [Presence.receivedAt]).
      */
-    val presences: StateFlow<List<Presence>> = presenceState.asStateFlow()
+    public val presences: StateFlow<List<Presence>> = presenceState.asStateFlow()
 
     /** The replica of this device (asked once). */
     private var ownReplica: String? = null
@@ -169,7 +169,7 @@ class SyncEngine(
      * being drawn only the inputs not sent yet travel, the text written and the elements selected
      * only when they change; all of it now and then (for the devices arrived meanwhile).
      */
-    suspend fun updatePresence(presence: Presence) {
+    public suspend fun updatePresence(presence: Presence) {
         val replica = replica()
         val (message, targets) = mutex.withLock {
             val now = currentTimeMillis()
@@ -210,7 +210,7 @@ class SyncEngine(
      *
      * @return `null` when this device is not the owner of the document (only the owner invites).
      */
-    suspend fun invite(
+    public suspend fun invite(
         documentId: String,
         title: String,
         role: Role = Role.EDITOR,
@@ -224,26 +224,26 @@ class SyncEngine(
     }
 
     /** The invitations of the document [documentId] (this device is its owner). */
-    suspend fun invitationsOf(documentId: String): List<InvitationGrant> = sharing.stateOf(documentId)?.invitations.orEmpty()
+    public suspend fun invitationsOf(documentId: String): List<InvitationGrant> = sharing.stateOf(documentId)?.invitations.orEmpty()
 
     /** The invitation [grant] as a link to give. */
-    fun invitationOf(documentId: String, title: String, grant: InvitationGrant, address: String? = null): Invitation =
+    public fun invitationOf(documentId: String, title: String, grant: InvitationGrant, address: String? = null): Invitation =
         Invitation(documentId, title, DocumentKey.decode(grant.key)!!, DeviceIdentity.fingerprint(device), address)
 
     /** Revokes the invitation [grantId] of [documentId]: nobody joins with it anymore (the devices joined stay). */
-    suspend fun revokeInvitation(documentId: String, grantId: String) {
+    public suspend fun revokeInvitation(documentId: String, grantId: String) {
         sharing.revoke(documentId, grantId)
         linksOf(documentId).filter { (it.match as? TagMatch.Grant)?.grant?.id == grantId && !it.authorized }.forEach { it.channel.close() }
     }
 
     /** Approves (or refuses) the device of [request] joining its document. */
-    fun answer(request: JoinRequest, approve: Boolean) {
+    public fun answer(request: JoinRequest, approve: Boolean) {
         requests.update { it - request }
         request.decision.complete(approve)
     }
 
     /** Gives the member [target] of [documentId] the role [role] (this device is the owner). */
-    suspend fun setRole(documentId: String, target: String, role: Role) {
+    public suspend fun setRole(documentId: String, target: String, role: Role) {
         val member = sharing.membershipOf(documentId)?.memberOf(target) ?: return
         val state = sharing.setRole(documentId, target, role, lastSequenceOf(documentId, member.replica)) ?: return
         onMembershipChanged(documentId, state, from = null)
@@ -253,7 +253,7 @@ class SyncEngine(
      * Removes the member [target] from [documentId] (this device is the owner): the document gets a
      * new key, given to the other members; the device removed cannot follow it anymore.
      */
-    suspend fun removeMember(documentId: String, target: String) {
+    public suspend fun removeMember(documentId: String, target: String) {
         val member = sharing.membershipOf(documentId)?.memberOf(target) ?: return
         val state = sharing.remove(documentId, target, lastSequenceOf(documentId, member.replica)) ?: return
         onMembershipChanged(documentId, state, from = null)
@@ -263,7 +263,7 @@ class SyncEngine(
      * Stops sharing the document [documentId]: the owner ends the sharing for every device (each one
      * keeps its copy), another device leaves it (the owner removes it). Its connections are closed.
      */
-    suspend fun unshare(documentId: String) {
+    public suspend fun unshare(documentId: String) {
         val state = sharing.stateOf(documentId)
         if (state?.owner == device && state.members != null) {
             sharing.end(documentId)?.let { onMembershipChanged(documentId, it, from = null) }
@@ -294,19 +294,19 @@ class SyncEngine(
     internal suspend fun reachable(announced: Boolean): List<TagMatch> = sharing.reachable(announced)
 
     /** The tags this device answers to on the network (see [DocumentKey.tag]). */
-    suspend fun announcedTags(): Set<String> = reachable(announced = true).mapTo(mutableSetOf()) { it.key.tag }
+    public suspend fun announcedTags(): Set<String> = reachable(announced = true).mapTo(mutableSetOf()) { it.key.tag }
 
     /** The documents and keys to connect with, and the documents joined (see [connect]). */
-    suspend fun connectionKeys(): List<Pair<String, DocumentKey>> = reachable(announced = false).map { it.documentId to it.key }
+    public suspend fun connectionKeys(): List<Pair<String, DocumentKey>> = reachable(announced = false).map { it.documentId to it.key }
 
     /** Joins the document of [invitation]: the owner admits this device when it reaches it (see [connect]). */
-    suspend fun join(invitation: Invitation) {
+    public suspend fun join(invitation: Invitation) {
         sharing.startJoining(invitation)
         joinStates.update { it + (invitation.documentId to JoinStatus.LOOKING_FOR_OWNER) }
     }
 
     /** Serves a channel another device opened to this one (see [SyncTransport.incoming]). */
-    fun accept(channel: SyncChannel): Job = scope.launch {
+    public fun accept(channel: SyncChannel): Job = scope.launch {
         try {
             val open = channel.receive()?.let(SyncCodec::decodeOpen) ?: return@launch
             if (open.protocol != PROTOCOL_VERSION) {
@@ -329,7 +329,7 @@ class SyncEngine(
      * Works on the document [documentId] through [channel] (opened to a device that has it) with
      * the key [key]: a key of the document, or the one of the invitation this device joins with.
      */
-    fun connect(channel: SyncChannel, documentId: String, key: DocumentKey): Job = scope.launch {
+    public fun connect(channel: SyncChannel, documentId: String, key: DocumentKey): Job = scope.launch {
         try {
             val match = sharing.match(key.tag)?.takeIf { it.documentId == documentId } ?: return@launch
             channel.send(SyncCodec.encodeOpen(OpenFrame(PROTOCOL_VERSION, key.tag)))
@@ -343,7 +343,7 @@ class SyncEngine(
     }
 
     /** Closes every connection. */
-    suspend fun stop() {
+    public suspend fun stop() {
         mutex.withLock { links.toList() }.forEach { it.channel.close() }
     }
 

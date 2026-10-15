@@ -3,7 +3,7 @@ package io.github.valerioisufi.drawview.ui.adaptive
 import androidx.compose.runtime.Immutable
 
 /** The modifier of the keyboard shortcuts of a platform. */
-enum class ShortcutModifier {
+public enum class ShortcutModifier {
     /** ⌘ (macOS, iPadOS). */
     COMMAND,
 
@@ -17,9 +17,9 @@ enum class ShortcutModifier {
  * @param shortcutModifier the modifier of the shortcuts: ⌘Z on Apple systems, Ctrl+Z elsewhere.
  */
 @Immutable
-data class PlatformConventions(
+public data class PlatformConventions(
     val shortcutModifier: ShortcutModifier
 )
 
 /** The conventions of the platform running the application. */
-expect val platformConventions: PlatformConventions
+public expect val platformConventions: PlatformConventions

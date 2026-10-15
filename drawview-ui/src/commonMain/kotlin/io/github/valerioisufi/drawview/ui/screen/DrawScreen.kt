@@ -101,7 +101,7 @@ import org.jetbrains.compose.resources.stringResource
  * what the editor composes (its panels and overlays included).
  */
 @Composable
-fun DrawScreen(
+internal fun DrawScreen(
     controller: DrawViewController,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,

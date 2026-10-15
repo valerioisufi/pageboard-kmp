@@ -58,7 +58,7 @@ import kotlinx.serialization.json.Json
  * Every row has the identifier of its element in the model, with its order and the stamps of its
  * last changes. All the content coordinates are stored in page millimeters.
  */
-class DrawDocumentRepository(
+internal class DrawDocumentRepository(
     val database: DrawDatabase,
     /** Models the strokes loaded from their inputs. */
     private val strokeModeller: StrokeModeller = InkStrokeModeller

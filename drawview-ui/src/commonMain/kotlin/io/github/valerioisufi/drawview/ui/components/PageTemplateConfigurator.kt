@@ -99,7 +99,7 @@ private enum class PageFormat(val id: String, val labelRes: StringResource?) {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PageTemplateConfigurator(
+internal fun PageTemplateConfigurator(
     modifier: Modifier = Modifier,
     initialDimension: Dimension = Dimension.A4(),
     initialBackground: PageBackground = PageBackground.Solid(),

@@ -15,7 +15,7 @@ import kotlinx.coroutines.delay
  * instructions and the course context ([LecturePrompts.transcriptionOnlyPrompt]). It gives no
  * times: the piece is one segment.
  */
-class GeminiPromptTranscriber(
+internal class GeminiPromptTranscriber(
     private val backend: GeminiBackend,
     private val model: String,
     private val settings: () -> AssistantSettings,

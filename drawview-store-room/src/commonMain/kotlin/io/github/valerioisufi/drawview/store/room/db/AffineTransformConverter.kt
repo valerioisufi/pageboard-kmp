@@ -6,7 +6,7 @@ import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 /**
  * Stores an [AffineTransform] as its six values ("a,b,c,d,tx,ty").
  */
-class AffineTransformConverter {
+internal class AffineTransformConverter {
     @TypeConverter
     fun fromTransform(transform: AffineTransform): String =
         with(transform) { "$a,$b,$c,$d,$tx,$ty" }

@@ -8,7 +8,7 @@ import io.github.valerioisufi.drawview.model.PageContentSnapshot
  * A format the documents are exported in (see `docs/export.md`): [PdfExporter],
  * [PageImageExporter].
  */
-interface DocumentExporter {
+internal interface DocumentExporter {
     /** Extension of the files written, without the dot. */
     val extension: String
 
@@ -29,7 +29,7 @@ interface DocumentExporter {
  * @param backgroundPattern whether the lines and the dots of the backgrounds are drawn (their
  *   color always is).
  */
-class ExportOptions(
+internal class ExportOptions(
     val pageIds: Set<String>? = null,
     val backgroundPattern: Boolean = true
 )
@@ -38,14 +38,14 @@ class ExportOptions(
  * What an export wrote: [pages], and the [skipped] elements that could not be read (a missing
  * image or PDF file).
  */
-class ExportResult(val pages: Int, val skipped: Int)
+public class ExportResult(public val pages: Int, internal val skipped: Int)
 
 /**
  * What is exported of a document: its [title], its [pages] (copies that stay as they are, see
  * [PageContentSnapshot.detached]) and the files of its [resources] (images and PDFs) by
  * identifier.
  */
-class DocumentContent(
+internal class DocumentContent(
     val title: String,
     val pages: List<PageContentSnapshot>,
     val resources: Map<String, DrawResource>

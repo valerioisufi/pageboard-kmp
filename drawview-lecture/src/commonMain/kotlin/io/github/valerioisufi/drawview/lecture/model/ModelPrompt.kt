@@ -5,7 +5,7 @@ import io.github.valerioisufi.drawview.lecture.TokenUsage
 import kotlinx.serialization.json.JsonObject
 
 /** A piece of the content of a request. */
-sealed interface PromptPart {
+internal sealed interface PromptPart {
     class Text(val text: String) : PromptPart
 
     class Image(val jpeg: ByteArray) : PromptPart
@@ -23,7 +23,7 @@ sealed interface PromptPart {
  *
  * @param thinkingLevel reasoning of the Gemini models (low, medium, high).
  */
-class ModelPrompt(
+internal class ModelPrompt(
     val system: String,
     val parts: List<PromptPart>,
     val schema: JsonObject,
@@ -36,10 +36,10 @@ class ModelPrompt(
  *
  * @param usage tokens billed (Gemini); `null` for a local model, which is free.
  */
-class ModelAnswer(val text: String, val usage: TokenUsage?)
+internal class ModelAnswer(public val text: String, internal val usage: TokenUsage?)
 
 /** A provider of models answering [ModelPrompt]s. */
-interface ModelBackend {
+internal interface ModelBackend {
     val provider: ModelProvider
 
     /**
@@ -51,7 +51,7 @@ interface ModelBackend {
 }
 
 /** The providers of the assistant. */
-class ModelBackends(val gemini: GeminiBackend, val local: OllamaBackend) {
+internal class ModelBackends(internal val gemini: GeminiBackend, public val local: OllamaBackend) {
     fun of(provider: ModelProvider): ModelBackend = when (provider) {
         ModelProvider.GEMINI -> gemini
         ModelProvider.LOCAL -> local

@@ -12,7 +12,7 @@ import io.nano.tex.Graphics2D
 import io.nano.tex.LaTeX
 import java.io.File
 
-actual object LatexPlatformEngine {
+internal actual object LatexPlatformEngine {
 
     private val lock = Any()
 

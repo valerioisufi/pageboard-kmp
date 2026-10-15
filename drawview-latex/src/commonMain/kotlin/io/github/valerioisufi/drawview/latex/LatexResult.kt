@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.ImageBitmap
  * @property width Width of formula in pixels.
  * @property height Height of formula in pixels.
  */
-data class LatexResult(
+public data class LatexResult(
     val bitmap: ImageBitmap,
     val baselineRatio: Float,
     val width: Int,

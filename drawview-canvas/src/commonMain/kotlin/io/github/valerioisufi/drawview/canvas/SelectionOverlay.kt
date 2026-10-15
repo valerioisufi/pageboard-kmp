@@ -30,63 +30,63 @@ import kotlin.math.hypot
  * be, in density-independent pixels: the same frame for the lasso and for the text being written,
  * the same size on every screen.
  */
-object FrameStyle {
+public object FrameStyle {
     /** Room between the frame and what it frames. */
-    const val PADDING_DP = 6f
-    const val STROKE_DP = 1.5f
-    const val CORNER_RADIUS_DP = 4f
-    const val FILL_ALPHA = 0.06f
+    internal const val PADDING_DP = 6f
+    internal const val STROKE_DP = 1.5f
+    internal const val CORNER_RADIUS_DP = 4f
+    internal const val FILL_ALPHA = 0.06f
 
     /** Distance of the rotation knob from the top edge, and its radius. */
-    const val ROTATION_STEM_DP = 24f
-    const val ROTATION_KNOB_DP = 8f
+    internal const val ROTATION_STEM_DP = 24f
+    internal const val ROTATION_KNOB_DP = 8f
 
     /** Radius of the handles of the corners (scale). */
-    const val CORNER_HANDLE_DP = 6.5f
+    internal const val CORNER_HANDLE_DP = 6.5f
 
     /** The handles of the sides of a text (its width): thickness and length. */
-    const val SIDE_HANDLE_WIDTH_DP = 8f
-    const val SIDE_HANDLE_LENGTH_DP = 24f
+    internal const val SIDE_HANDLE_WIDTH_DP = 8f
+    internal const val SIDE_HANDLE_LENGTH_DP = 24f
 
     /** The guides of a box snapped to what is around it (see `SnapManager`): color and thickness. */
-    const val GUIDE_COLOR = 0xFFE5397A.toInt()
-    const val GUIDE_STROKE_DP = 1f
+    public const val GUIDE_COLOR: Int = 0xFFE5397A.toInt()
+    internal const val GUIDE_STROKE_DP = 1f
 
     /** How far from a handle a finger, and a pen or a mouse, may be: targets of 44 and 24 dp. */
-    const val TOUCH_HIT_DP = 22f
-    const val POINTER_HIT_DP = 12f
+    internal const val TOUCH_HIT_DP = 22f
+    internal const val POINTER_HIT_DP = 12f
 
     /** The radius in pixels around a handle where a pointer of [type] takes it. */
-    fun hitRadiusPx(type: PointerType, density: Float): Float = (if (type == PointerType.Touch) TOUCH_HIT_DP else POINTER_HIT_DP) * density
+    internal fun hitRadiusPx(type: PointerType, density: Float): Float = (if (type == PointerType.Touch) TOUCH_HIT_DP else POINTER_HIT_DP) * density
 }
 
 /**
  * Screen-space geometry of the frame of a selection or of the text being written, and of its
  * handles.
  */
-class SelectionFrame(
+public class SelectionFrame(
     /** Corners (top-left, top-right, bottom-right, bottom-left) in screen pixels. */
-    val corners: List<Offset>,
+    public val corners: List<Offset>,
     /** The knob turning the selection, `null` when the frame cannot be turned (a text being written). */
-    val rotationHandle: Offset?,
+    internal val rotationHandle: Offset?,
     /** Anchor of the rotation stem (middle of the top edge). */
-    val rotationStemBase: Offset,
+    internal val rotationStemBase: Offset,
     /** Left and right side handles (the width of a single text). */
-    val sideHandles: List<Offset>,
+    internal val sideHandles: List<Offset>,
     /** Whether the corners scale what is framed (a selection). */
-    val scalesFromCorners: Boolean,
+    internal val scalesFromCorners: Boolean,
     /** Live transformation mapping the source page millimeters to the screen. */
-    val mmToScreen: Matrix2D
+    public val mmToScreen: Matrix2D
 ) {
-    val center: Offset
+    public val center: Offset
         get() = Offset(corners.sumOf { it.x.toDouble() }.toFloat() / 4f, corners.sumOf { it.y.toDouble() }.toFloat() / 4f)
 
     /** Direction of the top edge, from left to right (unit vector). */
-    val horizontalAxis: Offset
+    internal val horizontalAxis: Offset
         get() = (corners[1] - corners[0]).normalized()
 
     /** Whether [point] falls inside the (rotated) frame, expanded by [tolerance] pixels. */
-    fun contains(point: Offset, tolerance: Float = 0f): Boolean {
+    public fun contains(point: Offset, tolerance: Float = 0f): Boolean {
         val c = center
         val ux = corners[1] - corners[0]
         val uy = corners[3] - corners[0]
@@ -100,7 +100,7 @@ class SelectionFrame(
     }
 
     /** The handle of the frame under [point] within [radius] pixels, if any. */
-    fun handleAt(point: Offset, radius: Float): Handle? {
+    internal fun handleAt(point: Offset, radius: Float): Handle? {
         fun near(handle: Offset) = hypot(point.x - handle.x, point.y - handle.y) <= radius
         return when {
             rotationHandle != null && near(rotationHandle) -> Handle.ROTATION
@@ -112,13 +112,13 @@ class SelectionFrame(
     }
 
     /** A handle of the frame. */
-    enum class Handle { ROTATION, CORNER, LEFT, RIGHT }
+    public enum class Handle { ROTATION, CORNER, LEFT, RIGHT }
 
-    companion object {
+    public companion object {
         /**
          * Computes the frame of [selection], or `null` when its page is not laid out.
          */
-        fun compute(controller: DrawViewController, selection: SelectionGroup): SelectionFrame? {
+        internal fun compute(controller: DrawViewController, selection: SelectionGroup): SelectionFrame? {
             val pageToScreen = controller.viewport.pageMmToScreen(selection.pageIndex) ?: return null
             val mmToScreen = Matrix2D(selection.transform).postConcat(pageToScreen)
             return of(mmToScreen, selection.boundingBox.toCompose(), selection.baseRotation, controller.viewport.density, sideHandles = selection.isSingleText, transformable = true)
@@ -128,7 +128,7 @@ class SelectionFrame(
          * The frame of the text being written (see `TextEditorManager`): its width handles, no
          * rotation nor scale; `null` when no text is being written.
          */
-        fun ofEditedText(controller: DrawViewController): SelectionFrame? {
+        public fun ofEditedText(controller: DrawViewController): SelectionFrame? {
             val editor = controller.textEditorManager
             if (!editor.isEditing) return null
             val mmToScreen = controller.viewport.pageMmToScreen(editor.activeTextPageIndex) ?: return null

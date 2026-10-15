@@ -7,7 +7,7 @@ package io.github.valerioisufi.drawview.sync
  * so that the device joining knows it talks to it) and where it can be reached ([address], in the
  * terms of a [SyncTransport]; `null`: to be found on the network).
  */
-data class Invitation(
+public data class Invitation(
     val documentId: String,
     val title: String,
     val key: DocumentKey,
@@ -15,7 +15,7 @@ data class Invitation(
     val address: String? = null
 ) {
     /** The invitation as a link (for a QR code or a message), read back by [parse]. */
-    fun toLink(): String = buildString {
+    public fun toLink(): String = buildString {
         append(SCHEME).append("?d=").append(encode(documentId))
         append("&k=").append(key.encode())
         append("&o=").append(encode(owner))
@@ -23,11 +23,11 @@ data class Invitation(
         address?.let { append("&a=").append(encode(it)) }
     }
 
-    companion object {
+    public companion object {
         private const val SCHEME = "drawview://join"
 
         /** The invitation of a link written by [toLink], or `null` when [link] is not one. */
-        fun parse(link: String): Invitation? {
+        public fun parse(link: String): Invitation? {
             val query = link.trim().removePrefix(SCHEME).takeIf { it.startsWith("?") }?.drop(1) ?: return null
             val fields = query.split('&').mapNotNull { field ->
                 val separator = field.indexOf('=')

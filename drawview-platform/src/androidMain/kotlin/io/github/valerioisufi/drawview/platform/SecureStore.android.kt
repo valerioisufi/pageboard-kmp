@@ -11,13 +11,13 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
 /** The secrets encrypted by a key of the Android Keystore (it never leaves it), in private preferences. */
-actual object SecureStore {
+public actual object SecureStore {
     private const val ALIAS = "drawview-secure-store"
     private const val PREFERENCES = "drawview_secure_store"
 
     private val preferences get() = DrawViewAndroid.context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
 
-    actual fun read(name: String): String? = try {
+    public actual fun read(name: String): String? = try {
         preferences.getString(name, null)?.let { stored ->
             val (iv, encrypted) = stored.split(':').map { Base64.decode(it, Base64.NO_WRAP) }
             val cipher = Cipher.getInstance(TRANSFORMATION)
@@ -28,7 +28,7 @@ actual object SecureStore {
         null
     }
 
-    actual fun write(name: String, value: String?): Boolean = try {
+    public actual fun write(name: String, value: String?): Boolean = try {
         if (value == null) {
             preferences.edit().remove(name).commit()
         } else {

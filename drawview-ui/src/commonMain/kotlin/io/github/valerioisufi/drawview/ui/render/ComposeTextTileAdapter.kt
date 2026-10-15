@@ -60,7 +60,7 @@ import kotlin.math.roundToInt
  *   platform).
  * @param formulas renders the formulas (`null`: they are drawn as their source).
  */
-class ComposeTextTileAdapter(
+public class ComposeTextTileAdapter(
     fontFamilyResolver: FontFamily.Resolver,
     private val fonts: NotesFonts = NotesFonts.System,
     formulas: FormulaRenderer? = null
@@ -233,7 +233,7 @@ class ComposeTextTileAdapter(
     /**
      * Drops the cached layouts and formulas (e.g. when the LaTeX engine becomes available).
      */
-    override fun clearCaches() = syncLock(lock) {
+    override fun clearCaches(): Unit = syncLock(lock) {
         layouts.clear()
         formulaImages.clear()
     }
@@ -327,7 +327,7 @@ class ComposeTextTileAdapter(
         }
     }
 
-    companion object {
+    public companion object {
         private const val MAX_LAYOUTS = 256
 
         /** Resolution of the layouts of [layout] and [measure]. */
@@ -336,7 +336,7 @@ class ComposeTextTileAdapter(
 }
 
 /** The alignment of Compose for the lines of a text. */
-fun TextAlignment.toTextAlign(): TextAlign = when (this) {
+internal fun TextAlignment.toTextAlign(): TextAlign = when (this) {
     TextAlignment.START -> TextAlign.Start
     TextAlignment.CENTER -> TextAlign.Center
     TextAlignment.END -> TextAlign.End

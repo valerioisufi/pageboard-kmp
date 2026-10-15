@@ -13,7 +13,7 @@ import kotlin.math.PI
  * The affine transformation is maintained manually ([t]): Android does not support scaling
  * the text drawn on hardware accelerated canvases reliably.
  */
-class Graphics2D(val canvas: Canvas) {
+public class Graphics2D(public val canvas: Canvas) {
 
     private companion object {
         const val CAP_BUTT = 0
@@ -38,7 +38,7 @@ class Graphics2D(val canvas: Canvas) {
     private var colorLocked = false
     private val tmpRect = RectF()
 
-    fun setFont(font: Font?) {
+    public fun setFont(font: Font?) {
         if (font == null) {
             paint.typeface = Typeface.DEFAULT
             paint.textSize = 46f
@@ -48,24 +48,24 @@ class Graphics2D(val canvas: Canvas) {
         }
     }
 
-    fun lockColor() {
+    public fun lockColor() {
         colorLocked = true
     }
 
-    fun unlockColor() {
+    public fun unlockColor() {
         colorLocked = false
     }
 
-    fun setColor(c: Int) {
+    public fun setColor(c: Int) {
         if (colorLocked) return
         paint.color = c
     }
 
-    fun setStrokeWidth(width: Float) {
+    public fun setStrokeWidth(width: Float) {
         paint.strokeWidth = width
     }
 
-    fun setStroke(width: Float, miterLimit: Float, cap: Int, join: Int) {
+    public fun setStroke(width: Float, miterLimit: Float, cap: Int, join: Int) {
         paint.strokeWidth = width
         paint.strokeMiter = miterLimit
         paint.strokeCap = when (cap) {
@@ -80,17 +80,17 @@ class Graphics2D(val canvas: Canvas) {
         }
     }
 
-    fun translate(dx: Float, dy: Float) {
+    public fun translate(dx: Float, dy: Float) {
         t[TX] += t[SX] * dx
         t[TY] += t[SY] * dy
     }
 
-    fun scale(sx: Float, sy: Float) {
+    public fun scale(sx: Float, sy: Float) {
         t[SX] *= sx
         t[SY] *= sy
     }
 
-    fun rotate(angle: Float, px: Float, py: Float) {
+    public fun rotate(angle: Float, px: Float, py: Float) {
         val r = (angle / PI * 180).toFloat()
         t[R] += r
         t[PX] = x(px)
@@ -98,7 +98,7 @@ class Graphics2D(val canvas: Canvas) {
         canvas.rotate(r, t[PX], t[PY])
     }
 
-    fun reset() {
+    public fun reset() {
         val r = t[R]
         val px = t[PX]
         val py = t[PY]
@@ -106,19 +106,19 @@ class Graphics2D(val canvas: Canvas) {
         canvas.rotate(-r, px, py)
     }
 
-    fun sx(): Float = t[SX]
-    fun sy(): Float = t[SY]
+    public fun sx(): Float = t[SX]
+    public fun sy(): Float = t[SY]
 
     private fun x(x: Float): Float = x * t[SX] + t[TX]
     private fun y(y: Float): Float = y * t[SY] + t[TY]
     private fun w(w: Float): Float = t[SX] * w
     private fun h(h: Float): Float = t[SY] * h
 
-    fun drawChar(c: Char, x: Float, y: Float) {
+    public fun drawChar(c: Char, x: Float, y: Float) {
         drawText(c.toString(), x, y)
     }
 
-    fun drawText(txt: String, x: Float, y: Float) {
+    public fun drawText(txt: String, x: Float, y: Float) {
         val size = paint.textSize
         val scaleX = paint.textScaleX
         paint.textSize = size * sy()
@@ -129,7 +129,7 @@ class Graphics2D(val canvas: Canvas) {
         paint.textScaleX = scaleX
     }
 
-    fun drawLine(x1: Float, y1: Float, x2: Float, y2: Float) {
+    public fun drawLine(x1: Float, y1: Float, x2: Float, y2: Float) {
         val th = paint.strokeWidth
         paint.strokeWidth = h(th).coerceAtLeast(1f)
         canvas.drawLine(x(x1), y(y1), x(x2), y(y2), paint)
@@ -148,9 +148,9 @@ class Graphics2D(val canvas: Canvas) {
         paint.strokeWidth = th
     }
 
-    fun drawRect(x: Float, y: Float, w: Float, h: Float) = renderRect(x, y, w, h, Paint.Style.STROKE)
+    public fun drawRect(x: Float, y: Float, w: Float, h: Float): Unit = renderRect(x, y, w, h, Paint.Style.STROKE)
 
-    fun fillRect(x: Float, y: Float, w: Float, h: Float) = renderRect(x, y, w, h, Paint.Style.FILL)
+    public fun fillRect(x: Float, y: Float, w: Float, h: Float): Unit = renderRect(x, y, w, h, Paint.Style.FILL)
 
     private fun renderRoundRect(x: Float, y: Float, w: Float, h: Float, rx: Float, ry: Float, style: Paint.Style) {
         val oldStyle = paint.style
@@ -166,9 +166,9 @@ class Graphics2D(val canvas: Canvas) {
         paint.strokeWidth = th
     }
 
-    fun drawRoundRect(x: Float, y: Float, w: Float, h: Float, rx: Float, ry: Float) =
+    public fun drawRoundRect(x: Float, y: Float, w: Float, h: Float, rx: Float, ry: Float): Unit =
         renderRoundRect(x, y, w, h, rx, ry, Paint.Style.STROKE)
 
-    fun fillRoundRect(x: Float, y: Float, w: Float, h: Float, rx: Float, ry: Float) =
+    public fun fillRoundRect(x: Float, y: Float, w: Float, h: Float, rx: Float, ry: Float): Unit =
         renderRoundRect(x, y, w, h, rx, ry, Paint.Style.FILL)
 }

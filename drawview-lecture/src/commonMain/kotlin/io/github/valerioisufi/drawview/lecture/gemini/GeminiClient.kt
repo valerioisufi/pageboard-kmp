@@ -20,11 +20,11 @@ import kotlinx.serialization.json.Json
  *
  * The API key is passed to every call (it is read from the settings, which may change).
  */
-class GeminiClient(
+public class GeminiClient(
     private val httpClient: HttpClient = defaultHttpClient(),
     private val baseUrl: String = DEFAULT_BASE_URL
 ) {
-    suspend fun generateContent(apiKey: String, model: String, request: GenerateContentRequest): GenerateContentResponse {
+    internal suspend fun generateContent(apiKey: String, model: String, request: GenerateContentRequest): GenerateContentResponse {
         val response = httpClient.post("$baseUrl/v1beta/models/${model.removePrefix("models/").trim()}:generateContent") {
             header(API_KEY_HEADER, apiKey)
             setBody(TextContent(json.encodeToString(GenerateContentRequest.serializer(), request), ContentType.Application.Json))
@@ -39,7 +39,7 @@ class GeminiClient(
      * Uploads [bytes] with the resumable protocol of the Files API and waits until the file can be
      * used in the requests.
      */
-    suspend fun uploadFile(apiKey: String, bytes: ByteArray, mimeType: String, displayName: String): GeminiFile {
+    internal suspend fun uploadFile(apiKey: String, bytes: ByteArray, mimeType: String, displayName: String): GeminiFile {
         val start = httpClient.post("$baseUrl/upload/v1beta/files") {
             header(API_KEY_HEADER, apiKey)
             header("X-Goog-Upload-Protocol", "resumable")
@@ -76,7 +76,7 @@ class GeminiClient(
         return file
     }
 
-    suspend fun getFile(apiKey: String, name: String): GeminiFile {
+    internal suspend fun getFile(apiKey: String, name: String): GeminiFile {
         val response = httpClient.get("$baseUrl/v1beta/$name") {
             header(API_KEY_HEADER, apiKey)
         }
@@ -96,8 +96,8 @@ class GeminiClient(
         return body
     }
 
-    companion object {
-        const val DEFAULT_BASE_URL = "https://generativelanguage.googleapis.com"
+    public companion object {
+        internal const val DEFAULT_BASE_URL = "https://generativelanguage.googleapis.com"
         private const val API_KEY_HEADER = "x-goog-api-key"
         private const val PROCESSING_POLL_MS = 2_000L
         private const val MAX_PROCESSING_WAIT_MS = 180_000L
@@ -108,7 +108,7 @@ class GeminiClient(
             encodeDefaults = false
         }
 
-        fun defaultHttpClient(): HttpClient = HttpClient {
+        internal fun defaultHttpClient(): HttpClient = HttpClient {
             expectSuccess = false
             install(HttpTimeout) {
                 connectTimeoutMillis = 20_000
@@ -125,7 +125,7 @@ class GeminiClient(
  *
  * @param statusCode HTTP status (0 for the errors without a response).
  */
-class GeminiException(val statusCode: Int, message: String) : Exception(message) {
+internal class GeminiException(internal val statusCode: Int, message: String) : Exception(message) {
     /** Rate limits, timeouts and server errors are temporary: the request can be repeated. */
     val isRetryable: Boolean get() = statusCode == 0 || statusCode == 408 || statusCode == 429 || statusCode >= 500
 

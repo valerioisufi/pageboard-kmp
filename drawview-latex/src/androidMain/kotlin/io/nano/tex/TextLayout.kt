@@ -2,7 +2,7 @@ package io.nano.tex
 
 import android.text.TextPaint
 
-class TextLayout {
+internal class TextLayout {
     companion object {
         /** Keep in sync with the size of TextRenderingBox::_font (MicroTeX). */
         private const val FACTORED_TEXT_SIZE = 10f

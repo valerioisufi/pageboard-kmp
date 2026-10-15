@@ -5,11 +5,16 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 
-expect fun getDatabaseBuilder(): RoomDatabase.Builder<DrawDatabase>
+internal expect fun getDatabaseBuilder(): RoomDatabase.Builder<DrawDatabase>
 
-expect fun getInMemoryDatabaseBuilder(): RoomDatabase.Builder<DrawDatabase>
+/** A database in memory, gone with the process (tests, tools). */
+public expect fun getInMemoryDatabaseBuilder(): RoomDatabase.Builder<DrawDatabase>
 
-fun createDrawDatabase(
+/**
+ * Opens the database of [builder] (by default, the file of the data directory of the
+ * application) with its migrations: the documents are never dropped.
+ */
+public fun createDrawDatabase(
     builder: RoomDatabase.Builder<DrawDatabase> = getDatabaseBuilder()
 ): DrawDatabase {
     return builder
@@ -24,6 +29,6 @@ fun createDrawDatabase(
 /**
  * Process-wide database instance: Room must not open the same file more than once.
  */
-object DrawViewDatabase {
+internal object DrawViewDatabase {
     val instance: DrawDatabase by lazy { createDrawDatabase() }
 }

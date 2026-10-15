@@ -5,17 +5,17 @@ import kotlinx.serialization.Serializable
 
 /** Kind of content suggested by the assistant. */
 @Serializable
-enum class NoteKind {
+public enum class NoteKind {
     DEFINITION, FORMULA, THEOREM, EXAMPLE, EXPLANATION, EXAM_HINT, ANNOUNCEMENT, REFERENCE, OTHER;
 
-    companion object {
-        fun parse(value: String): NoteKind = entries.firstOrNull { it.name.equals(value.trim(), ignoreCase = true) } ?: OTHER
+    public companion object {
+        public fun parse(value: String): NoteKind = entries.firstOrNull { it.name.equals(value.trim(), ignoreCase = true) } ?: OTHER
     }
 }
 
 /** What the student did with a suggestion (sent back to the model, which learns what is known). */
 @Serializable
-enum class SuggestionStatus { NEW, INSERTED, ALREADY_NOTED, DISMISSED }
+public enum class SuggestionStatus { NEW, INSERTED, ALREADY_NOTED, DISMISSED }
 
 /**
  * Content said in the lecture and missing from the slides and from the notes of the student.
@@ -30,7 +30,7 @@ enum class SuggestionStatus { NEW, INSERTED, ALREADY_NOTED, DISMISSED }
  * @param statusStamp when [status] was last changed, and where (the most recent wins, see [Stamp]).
  */
 @Serializable
-data class NoteSuggestion(
+public data class NoteSuggestion(
     val id: String,
     val kind: NoteKind,
     val title: String,
@@ -45,7 +45,7 @@ data class NoteSuggestion(
 )
 
 /** The page of [document] where the suggestion belongs: by identifier, or by index. */
-fun NoteSuggestion.resolvedPageIndex(document: DrawDocument): Int? {
+internal fun NoteSuggestion.resolvedPageIndex(document: DrawDocument): Int? {
     if (pageId.isNotEmpty()) {
         val index = document.pages.indexOfFirst { it.id == pageId }
         if (index >= 0) return index
@@ -54,7 +54,8 @@ fun NoteSuggestion.resolvedPageIndex(document: DrawDocument): Int? {
 }
 
 @Serializable
-data class TranscriptSegment(val startMs: Long, val endMs: Long, val text: String)
+/** A part of the transcription: its text, spoken from [startMs] to [endMs] of the recording. */
+public data class TranscriptSegment(val startMs: Long, val endMs: Long, val text: String)
 
 /**
  * Tokens billed by the Gemini API (the local model is free).
@@ -64,7 +65,7 @@ data class TranscriptSegment(val startMs: Long, val endMs: Long, val text: Strin
  * @param localRequests requests answered by a local model (free, not counted in the tokens).
  */
 @Serializable
-data class TokenUsage(
+public data class TokenUsage(
     val requests: Int = 0,
     val promptTokens: Long = 0,
     val cachedTokens: Long = 0,
@@ -73,7 +74,7 @@ data class TokenUsage(
     val skippedUpdates: Int = 0,
     val localRequests: Int = 0
 ) {
-    operator fun plus(other: TokenUsage) = TokenUsage(
+    public operator fun plus(other: TokenUsage): TokenUsage = TokenUsage(
         requests = requests + other.requests,
         promptTokens = promptTokens + other.promptTokens,
         cachedTokens = cachedTokens + other.cachedTokens,
@@ -92,10 +93,10 @@ data class TokenUsage(
  * [IMPORTING]: an audio file recorded elsewhere being converted, transcribed and reviewed, or a
  * lecture being transcribed again.
  */
-enum class LectureStatus { RECORDING, FINALIZING, FINISHED, IMPORTING }
+public enum class LectureStatus { RECORDING, FINALIZING, FINISHED, IMPORTING }
 
 /** The steps of an import or of a new transcription ([LectureStatus.IMPORTING]). */
-enum class ImportStep { CONVERTING, TRANSCRIBING, REVIEWING }
+internal enum class ImportStep { CONVERTING, TRANSCRIBING, REVIEWING }
 
 /**
  * A page of the notebook seen during the lecture, as last seen, kept for the final review (also
@@ -106,7 +107,7 @@ enum class ImportStep { CONVERTING, TRANSCRIBING, REVIEWING }
  * @param visible the page was on screen (the others were around it).
  */
 @Serializable
-data class SeenPage(val content: PageContent, val image: String? = null, val visible: Boolean = false, val imageHash: String? = null)
+public data class SeenPage(val content: PageContent, val image: String? = null, val visible: Boolean = false, val imageHash: String? = null)
 
 /**
  * When something of a lecture was changed, and on which device (its identifier,
@@ -114,14 +115,14 @@ data class SeenPage(val content: PageContent, val image: String? = null, val vis
  * the devices; [by] tells apart the changes of the same millisecond).
  */
 @Serializable
-data class Stamp(val at: Long, val by: String) : Comparable<Stamp> {
+public data class Stamp(val at: Long, val by: String) : Comparable<Stamp> {
     override fun compareTo(other: Stamp): Int = compareValuesBy(this, other, Stamp::at, Stamp::by)
 
     /** A change made after this one on [device] at [now] (just after this one, when the clock of [device] is behind). */
-    fun next(device: String, now: Long) = Stamp(maxOf(now, at + 1), device)
+    public fun next(device: String, now: Long): Stamp = Stamp(maxOf(now, at + 1), device)
 
-    companion object {
-        val NONE = Stamp(0, "")
+    public companion object {
+        public val NONE: Stamp = Stamp(0, "")
     }
 }
 
@@ -130,7 +131,7 @@ data class Stamp(val at: Long, val by: String) : Comparable<Stamp> {
  * changed on two devices, the most recent change is kept ([LectureRecord.stamps]).
  */
 @Serializable
-enum class LecturePart {
+public enum class LecturePart {
     /** The title, the duration, the status and the pages seen: changed by the device recording it (or importing it). */
     RECORDING,
 
@@ -153,7 +154,7 @@ enum class LecturePart {
  * the most recent.
  */
 @Serializable
-data class DeviceUsage(val name: String, val usage: TokenUsage, val stamp: Stamp = Stamp.NONE)
+public data class DeviceUsage(val name: String, val usage: TokenUsage, val stamp: Stamp = Stamp.NONE)
 
 /**
  * The device writing the transcript or the review of a lecture ([name]: its name), since [since],
@@ -161,13 +162,13 @@ data class DeviceUsage(val name: String, val usage: TokenUsage, val stamp: Stamp
  * [LectureAssistant.generate]).
  */
 @Serializable
-data class GenerationLock(val device: String, val name: String, val since: Long, val refreshedAt: Long) {
+public data class GenerationLock(val device: String, val name: String, val since: Long, val refreshedAt: Long) {
     /** Whether it still holds, at [now] (a device gone stops refreshing it). */
-    fun holds(now: Long): Boolean = now - refreshedAt < STALE_MS
+    public fun holds(now: Long): Boolean = now - refreshedAt < STALE_MS
 
-    companion object {
-        const val REFRESH_MS = 30_000L
-        const val STALE_MS = 3 * 60_000L
+    public companion object {
+        internal const val REFRESH_MS = 30_000L
+        internal const val STALE_MS = 3 * 60_000L
     }
 }
 
@@ -175,7 +176,7 @@ data class GenerationLock(val device: String, val name: String, val since: Long,
  * A recorded lecture, saved as `lecture.json` next to its audio.
  */
 @Serializable
-data class LectureRecord(
+public data class LectureRecord(
     val id: String,
     val documentId: String,
     val documentTitle: String = "",
@@ -204,7 +205,7 @@ data class LectureRecord(
     /** When its parts were last changed, and where (the suggestions have their own, see [LectureRecords.merge]). */
     val stamps: Map<LecturePart, Stamp> = emptyMap()
 ) {
-    fun stampOf(part: LecturePart): Stamp = stamps[part] ?: Stamp.NONE
+    public fun stampOf(part: LecturePart): Stamp = stamps[part] ?: Stamp.NONE
 }
 
 /**
@@ -216,10 +217,10 @@ data class LectureRecord(
  * @param stamp when it was written, and where: of two contexts written apart, the most recent is kept.
  */
 @Serializable
-data class CourseContext(val text: String, val edited: Boolean = false, val generatedAt: Long = 0, val stamp: Stamp = Stamp.NONE)
+internal data class CourseContext(val text: String, val edited: Boolean = false, val generatedAt: Long = 0, val stamp: Stamp = Stamp.NONE)
 
 /** Formats [ms] as `m:ss` (or `h:mm:ss`). */
-fun formatLectureTime(ms: Long): String {
+internal fun formatLectureTime(ms: Long): String {
     val totalSeconds = (ms / 1000).coerceAtLeast(0)
     val hours = totalSeconds / 3600
     val minutes = (totalSeconds % 3600) / 60

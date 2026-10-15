@@ -39,32 +39,32 @@ import kotlinx.serialization.Transient
  * receiving the changes, so that what is put back is the same on every device.
  */
 @Serializable
-sealed interface DocumentChange {
+public sealed interface DocumentChange {
     /**
      * Applies the change to the document of [context], recording what it did in its effects.
      *
      * @return the change undoing it, or `null` when it changed nothing (e.g. its elements are
      *   gone, or changed by a more recent change).
      */
-    fun applyTo(context: ChangeContext): DocumentChange?
+    public fun applyTo(context: ChangeContext): DocumentChange?
 
     /**
      * Does now the slow work of applying it that needs no document (e.g. modeling the strokes it
      * adds again from their inputs, with [modeller]: the one of the document), e.g. on another
      * thread for a change received: it is applied sooner then.
      */
-    fun prepare(modeller: StrokeModeller) {}
+    public fun prepare(modeller: StrokeModeller) {}
 }
 
 /**
  * The document a change is applied to, the stamp of its operation and the effects it records;
  * [received]: the change was made on another device.
  */
-class ChangeContext internal constructor(
-    val document: DrawDocument,
-    val effects: ChangeEffects,
-    val stamp: Stamp,
-    val received: Boolean = false
+public class ChangeContext internal constructor(
+    internal val document: DrawDocument,
+    internal val effects: ChangeEffects,
+    internal val stamp: Stamp,
+    internal val received: Boolean = false
 )
 
 /**
@@ -77,7 +77,7 @@ class ChangeContext internal constructor(
  */
 @Serializable
 @SerialName("addElements")
-data class AddElements(val pageId: String, val elements: List<ElementData>, val lostVersions: Boolean = false) : DocumentChange {
+public data class AddElements(val pageId: String, val elements: List<ElementData>, val lostVersions: Boolean = false) : DocumentChange {
     @Transient
     private var local: Map<String, DrawElement> = emptyMap()
 
@@ -162,9 +162,9 @@ data class AddElements(val pageId: String, val elements: List<ElementData>, val 
         return inverse
     }
 
-    companion object {
+    public companion object {
         /** Adds the model [elements] to [page] (the objects themselves are added). */
-        fun of(page: DrawPage, elements: List<DrawElement>) =
+        public fun of(page: DrawPage, elements: List<DrawElement>): AddElements =
             AddElements(page.id, elements.map { it.toData() }).also { change ->
                 change.local = elements.associateBy { it.id }
             }
@@ -178,7 +178,7 @@ data class AddElements(val pageId: String, val elements: List<ElementData>, val 
  */
 @Serializable
 @SerialName("removeElements")
-data class RemoveElements(val pageId: String, val ids: List<String>) : DocumentChange {
+public data class RemoveElements(val pageId: String, val ids: List<String>) : DocumentChange {
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         val hint = document.anyPage(pageId)
@@ -212,8 +212,8 @@ data class RemoveElements(val pageId: String, val ids: List<String>) : DocumentC
         }
     }
 
-    companion object {
-        fun of(page: DrawPage, elements: List<DrawElement>) = RemoveElements(page.id, elements.map { it.id })
+    public companion object {
+        public fun of(page: DrawPage, elements: List<DrawElement>): RemoveElements = RemoveElements(page.id, elements.map { it.id })
     }
 }
 
@@ -316,18 +316,18 @@ private fun ChangeContext.place(from: DrawPage, element: DrawElement, placement:
  * the order of the change).
  */
 @Serializable
-sealed interface Placement {
-    val id: String
-    val order: ElementOrder?
+public sealed interface Placement {
+    public val id: String
+    public val order: ElementOrder?
 
     /** Writes this placement into [element] (of the matching kind). */
-    fun applyTo(element: DrawElement)
+    public fun applyTo(element: DrawElement)
 }
 
 /** A stroke, by the transformation of the geometry it was drawn with. */
 @Serializable
 @SerialName("stroke")
-data class StrokePlacement(
+public data class StrokePlacement(
     override val id: String,
     val transform: AffineTransform,
     override val order: ElementOrder? = null
@@ -342,7 +342,7 @@ data class StrokePlacement(
  */
 @Serializable
 @SerialName("box")
-data class BoxPlacement(
+public data class BoxPlacement(
     override val id: String,
     val x: Float,
     val y: Float,
@@ -380,7 +380,7 @@ data class BoxPlacement(
 }
 
 /** Where [element] is placed now (with its order), or `null` for an element not placed freely. */
-fun placementOf(element: DrawElement): Placement? = when (element) {
+public fun placementOf(element: DrawElement): Placement? = when (element) {
     is DrawStroke -> StrokePlacement(element.id, element.transform, element.order)
     is DrawText -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation, element.fontSize, element.order, element.autoWidth)
     is DrawImage -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation, order = element.order)
@@ -394,7 +394,7 @@ fun placementOf(element: DrawElement): Placement? = when (element) {
  */
 @Serializable
 @SerialName("placeElements")
-data class PlaceElements(
+public data class PlaceElements(
     val pageId: String,
     val placements: List<Placement>,
     val toPageId: String = pageId
@@ -441,7 +441,7 @@ data class PlaceElements(
  */
 @Serializable
 @SerialName("updateTexts")
-data class UpdateTexts(val pageId: String, val texts: List<TextData>) : DocumentChange {
+public data class UpdateTexts(val pageId: String, val texts: List<TextData>) : DocumentChange {
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         val page = document.anyPage(pageId) ?: return null
@@ -472,14 +472,14 @@ data class UpdateTexts(val pageId: String, val texts: List<TextData>) : Document
 
 /** The kind and the color of a mark of the text of a PDF. */
 @Serializable
-data class MarkupStyle(val id: String, val kind: TextMarkupKind, val color: Int)
+public data class MarkupStyle(val id: String, val kind: TextMarkupKind, val color: Int)
 
 /**
  * Changes the kind and the color of marks of the text of the PDFs of the page [pageId].
  */
 @Serializable
 @SerialName("restyleMarkups")
-data class RestyleMarkups(val pageId: String, val styles: List<MarkupStyle>) : DocumentChange {
+public data class RestyleMarkups(val pageId: String, val styles: List<MarkupStyle>) : DocumentChange {
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val hint = context.document.anyPage(pageId)
         val previous = mutableListOf<MarkupStyle>()
@@ -506,7 +506,7 @@ data class RestyleMarkups(val pageId: String, val styles: List<MarkupStyle>) : D
  */
 @Serializable
 @SerialName("updateContent")
-class UpdateElementContent(val pageId: String, val id: String, val version: Int, val payload: ByteArray) : DocumentChange {
+public class UpdateElementContent(public val pageId: String, public val id: String, public val version: Int, public val payload: ByteArray) : DocumentChange {
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val hint = context.document.anyPage(pageId)
         val (page, element) = context.document.findAnyElement(id, hint) ?: return null
@@ -535,7 +535,7 @@ class UpdateElementContent(val pageId: String, val id: String, val version: Int,
  */
 @Serializable
 @SerialName("addPage")
-data class AddPage(val page: PageData) : DocumentChange {
+public data class AddPage(val page: PageData) : DocumentChange {
     @Transient
     private var local: DrawPage? = null
 
@@ -576,9 +576,9 @@ data class AddPage(val page: PageData) : DocumentChange {
         return RemovePage(page.id)
     }
 
-    companion object {
+    public companion object {
         /** Inserts the model [page] (the object itself) where its order key puts it. */
-        fun of(page: DrawPage) = AddPage(page.toData()).also { it.local = page }
+        public fun of(page: DrawPage): AddPage = AddPage(page.toData()).also { it.local = page }
     }
 }
 
@@ -592,7 +592,7 @@ data class AddPage(val page: PageData) : DocumentChange {
  */
 @Serializable
 @SerialName("removePage")
-data class RemovePage(val pageId: String, var saw: Versions? = null) : DocumentChange {
+public data class RemovePage(val pageId: String, var saw: Versions? = null) : DocumentChange {
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         val page = document.anyPage(pageId) ?: return null
@@ -613,14 +613,14 @@ data class RemovePage(val pageId: String, var saw: Versions? = null) : DocumentC
 
 /** A page and its new position among the pages (see [DrawPage.orderKey]). */
 @Serializable
-data class PageMove(val pageId: String, val orderKey: String)
+public data class PageMove(val pageId: String, val orderKey: String)
 
 /**
  * Moves pages: every page gets its new order key.
  */
 @Serializable
 @SerialName("movePages")
-data class MovePages(val moves: List<PageMove>) : DocumentChange {
+public data class MovePages(val moves: List<PageMove>) : DocumentChange {
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         val previous = mutableListOf<PageMove>()
@@ -637,12 +637,12 @@ data class MovePages(val moves: List<PageMove>) : DocumentChange {
         return MovePages(previous)
     }
 
-    companion object {
+    public companion object {
         /**
          * The moves putting the pages of [document] in the order [pageIds] (the fewest pages
          * move), or `null` when they are in that order already.
          */
-        fun toOrder(document: DrawDocument, pageIds: List<String>): MovePages? {
+        public fun toOrder(document: DrawDocument, pageIds: List<String>): MovePages? {
             val pages = pageIds.mapNotNull { document.pageById(it) }
             val keys = FractionalIndex.reorder(pages.map { it.orderKey })
             if (keys.isEmpty()) return null
@@ -657,7 +657,7 @@ data class MovePages(val moves: List<PageMove>) : DocumentChange {
  */
 @Serializable
 @SerialName("setPageFormat")
-data class SetPageFormat(
+public data class SetPageFormat(
     val pageId: String,
     val widthMm: Float,
     val heightMm: Float,
@@ -684,7 +684,7 @@ data class SetPageFormat(
  */
 @Serializable
 @SerialName("setDocumentDefaults")
-data class SetDocumentDefaults(
+public data class SetDocumentDefaults(
     val widthMm: Float,
     val heightMm: Float,
     val background: PageBackground
@@ -710,7 +710,7 @@ data class SetDocumentDefaults(
 /** Renames the document: the most recent title wins on every device. */
 @Serializable
 @SerialName("renameDocument")
-data class RenameDocument(val title: String) : DocumentChange {
+public data class RenameDocument(val title: String) : DocumentChange {
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         if (document.titleVersion >= context.stamp) return null
@@ -728,7 +728,7 @@ data class RenameDocument(val title: String) : DocumentChange {
  */
 @Serializable
 @SerialName("addResource")
-data class AddResource(val resource: ResourceData) : DocumentChange {
+public data class AddResource(val resource: ResourceData) : DocumentChange {
     /** The file on this device (empty for the file of another device, until it is received). */
     @Transient
     private var path: String = ""
@@ -742,9 +742,9 @@ data class AddResource(val resource: ResourceData) : DocumentChange {
         return NoChange
     }
 
-    companion object {
+    public companion object {
         /** Adds the file [path] of this device (its content of hash [hash]) as the resource [id]. */
-        fun of(id: String, type: DrawResource.ResourceType, path: String, hash: String = "") =
+        public fun of(id: String, type: DrawResource.ResourceType, path: String, hash: String = ""): AddResource =
             AddResource(ResourceData(id, type, hash)).also { it.path = path }
     }
 }
@@ -752,7 +752,7 @@ data class AddResource(val resource: ResourceData) : DocumentChange {
 /** A change that changes nothing (the change undoing [AddResource]). */
 @Serializable
 @SerialName("none")
-data object NoChange : DocumentChange {
+internal data object NoChange : DocumentChange {
     override fun applyTo(context: ChangeContext): DocumentChange = NoChange
 }
 
@@ -761,8 +761,8 @@ data object NoChange : DocumentChange {
  */
 @Serializable
 @SerialName("composite")
-data class CompositeChange(val changes: List<DocumentChange>) : DocumentChange {
-    override fun prepare(modeller: StrokeModeller) = changes.forEach { it.prepare(modeller) }
+public data class CompositeChange(val changes: List<DocumentChange>) : DocumentChange {
+    override fun prepare(modeller: StrokeModeller): Unit = changes.forEach { it.prepare(modeller) }
 
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val inverses = changes.mapNotNull { it.applyTo(context) }

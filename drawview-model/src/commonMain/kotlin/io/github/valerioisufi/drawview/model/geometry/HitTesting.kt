@@ -10,12 +10,12 @@ import kotlin.math.sqrt
  * PDFs), used by the eraser (capsule shaped segments) and by the lasso selection (closed
  * polygons). All coordinates are in page millimeters.
  */
-object HitTesting {
+public object HitTesting {
 
     /**
      * Whether any triangle of [mesh] lies within [radius] of the segment ([x1], [y1]) - ([x2], [y2]).
      */
-    fun meshIntersectsCapsule(
+    public fun meshIntersectsCapsule(
         mesh: StrokeMesh,
         x1: Float, y1: Float,
         x2: Float, y2: Float,
@@ -58,7 +58,7 @@ object HitTesting {
     /**
      * Whether any triangle of [mesh] overlaps the closed [polygon] (interleaved x, y coordinates).
      */
-    fun meshIntersectsPolygon(mesh: StrokeMesh, polygon: FloatArray, polygonBounds: Rect): Boolean {
+    public fun meshIntersectsPolygon(mesh: StrokeMesh, polygon: FloatArray, polygonBounds: Rect): Boolean {
         if (polygon.size < 6) return false
         for (partition in mesh.partitions) {
             val p = partition.positions
@@ -88,7 +88,7 @@ object HitTesting {
     /**
      * Even-odd point in polygon test.
      */
-    fun pointInPolygon(x: Float, y: Float, polygon: FloatArray): Boolean {
+    public fun pointInPolygon(x: Float, y: Float, polygon: FloatArray): Boolean {
         var inside = false
         val n = polygon.size / 2
         var j = n - 1
@@ -107,7 +107,7 @@ object HitTesting {
     /**
      * Axis-aligned bounds of an interleaved point list.
      */
-    fun polygonBounds(polygon: FloatArray): Rect {
+    public fun polygonBounds(polygon: FloatArray): Rect {
         if (polygon.size < 2) return Rect.Zero
         var minX = Float.POSITIVE_INFINITY
         var minY = Float.POSITIVE_INFINITY
@@ -151,7 +151,7 @@ object HitTesting {
         return false
     }
 
-    fun pointInTriangle(
+    internal fun pointInTriangle(
         px: Float, py: Float,
         ax: Float, ay: Float,
         bx: Float, by: Float,
@@ -171,7 +171,7 @@ object HitTesting {
     /**
      * Whether [rect] lies within [radius] of the segment ([x1], [y1]) - ([x2], [y2]).
      */
-    fun rectIntersectsCapsule(rect: Rect, x1: Float, y1: Float, x2: Float, y2: Float, radius: Float): Boolean {
+    public fun rectIntersectsCapsule(rect: Rect, x1: Float, y1: Float, x2: Float, y2: Float, radius: Float): Boolean {
         if (rect.inflate(radius).let { min(x1, x2) > it.right || max(x1, x2) < it.left || min(y1, y2) > it.bottom || max(y1, y2) < it.top }) {
             return false
         }
@@ -186,7 +186,7 @@ object HitTesting {
             segmentSegmentDistanceSq(x1, y1, x2, y2, rect.left, rect.bottom, rect.left, rect.top) <= radiusSq
     }
 
-    fun segmentsIntersect(
+    internal fun segmentsIntersect(
         p1x: Float, p1y: Float, p2x: Float, p2y: Float,
         q1x: Float, q1y: Float, q2x: Float, q2y: Float
     ): Boolean {
@@ -207,7 +207,7 @@ object HitTesting {
     /**
      * Squared distance between point ([px], [py]) and segment ([ax], [ay]) - ([bx], [by]).
      */
-    fun pointSegmentDistanceSq(px: Float, py: Float, ax: Float, ay: Float, bx: Float, by: Float): Float {
+    internal fun pointSegmentDistanceSq(px: Float, py: Float, ax: Float, ay: Float, bx: Float, by: Float): Float {
         val dx = bx - ax
         val dy = by - ay
         val lenSq = dx * dx + dy * dy
@@ -218,7 +218,7 @@ object HitTesting {
         return cx * cx + cy * cy
     }
 
-    fun pointSegmentDistance(px: Float, py: Float, ax: Float, ay: Float, bx: Float, by: Float): Float =
+    internal fun pointSegmentDistance(px: Float, py: Float, ax: Float, ay: Float, bx: Float, by: Float): Float =
         sqrt(pointSegmentDistanceSq(px, py, ax, ay, bx, by))
 
     private fun segmentSegmentDistanceSq(

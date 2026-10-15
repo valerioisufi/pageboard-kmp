@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
  * model and exchanged in the changes of a document.
  */
 @Serializable
-data class AffineTransform(
+public data class AffineTransform(
     val a: Float = 1f,
     val b: Float = 0f,
     val c: Float = 0f,
@@ -17,15 +17,15 @@ data class AffineTransform(
 ) {
     val isIdentity: Boolean get() = this == IDENTITY
 
-    fun toMatrix(): Matrix2D = Matrix2D(a, b, c, d, tx, ty)
+    public fun toMatrix(): Matrix2D = Matrix2D(a, b, c, d, tx, ty)
 
     /** This transformation followed by [after]. */
-    fun then(after: Matrix2D): AffineTransform = of(toMatrix().postConcat(after))
+    public fun then(after: Matrix2D): AffineTransform = of(toMatrix().postConcat(after))
 
-    companion object {
-        val IDENTITY = AffineTransform()
+    public companion object {
+        public val IDENTITY: AffineTransform = AffineTransform()
 
-        fun of(matrix: Matrix2D): AffineTransform =
+        public fun of(matrix: Matrix2D): AffineTransform =
             AffineTransform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty)
     }
 }

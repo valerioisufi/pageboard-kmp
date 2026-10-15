@@ -20,12 +20,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
  * @param content what it shows, under its header; it scrolls its own content.
  */
 @Stable
-class EditorPanel(
-    val id: String,
-    val title: @Composable () -> String,
-    val isOpen: () -> Boolean,
-    val onClose: () -> Unit,
-    val actions: @Composable RowScope.() -> Unit = {},
-    val icon: ImageVector? = null,
-    val content: @Composable ColumnScope.() -> Unit
+public class EditorPanel(
+    public val id: String,
+    public val title: @Composable () -> String,
+    public val isOpen: () -> Boolean,
+    public val onClose: () -> Unit,
+    public val actions: @Composable RowScope.() -> Unit = {},
+    public val icon: ImageVector? = null,
+    public val content: @Composable ColumnScope.() -> Unit
 )

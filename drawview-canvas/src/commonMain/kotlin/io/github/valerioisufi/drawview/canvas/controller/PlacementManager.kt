@@ -16,10 +16,10 @@ import io.github.valerioisufi.drawview.model.DrawText
  *   student, already kept inside the page.
  * @param onCancel called when the placement is cancelled (Escape, another request).
  */
-class PlacementRequest(
-    val preview: DrawText,
-    val onPlace: (pageIndex: Int, xMm: Float, yMm: Float) -> Unit,
-    val onCancel: () -> Unit = {}
+public class PlacementRequest(
+    public val preview: DrawText,
+    public val onPlace: (pageIndex: Int, xMm: Float, yMm: Float) -> Unit,
+    public val onCancel: () -> Unit = {}
 )
 
 /**
@@ -28,19 +28,19 @@ class PlacementRequest(
  * gestures (drags, pinches, wheel, trackpad) still move the canvas, so that any page can be
  * reached. The canvas draws the preview under the pointer (mouse or stylus hover).
  */
-class PlacementManager(private val controller: DrawViewController) {
+public class PlacementManager(private val controller: DrawViewController) {
 
-    var request: PlacementRequest? by mutableStateOf(null)
+    public var request: PlacementRequest? by mutableStateOf(null)
         private set
 
     /** Screen position of the pointer while a placement is pending (`null`: outside the canvas). */
-    var pointer: Offset? by mutableStateOf(null)
+    public var pointer: Offset? by mutableStateOf(null)
         internal set
 
-    val isActive: Boolean get() = request != null
+    public val isActive: Boolean get() = request != null
 
     /** Starts placing [newRequest] (cancelling the pending one). */
-    fun start(newRequest: PlacementRequest) {
+    public fun start(newRequest: PlacementRequest) {
         cancel()
         controller.selectionManager.clearSelection()
         if (controller.textEditorManager.isEditing) controller.textEditorManager.finishEditing()
@@ -50,7 +50,7 @@ class PlacementManager(private val controller: DrawViewController) {
         controller.requestRedraw()
     }
 
-    fun cancel() {
+    public fun cancel() {
         val current = request ?: return
         request = null
         pointer = null
@@ -63,7 +63,7 @@ class PlacementManager(private val controller: DrawViewController) {
      * the top-left corner of the element in its millimeters, kept inside the page; `null` outside
      * of the pages.
      */
-    fun targetAt(screenPoint: Offset): Pair<Int, Offset>? {
+    internal fun targetAt(screenPoint: Offset): Pair<Int, Offset>? {
         val preview = request?.preview ?: return null
         val pageIndex = controller.viewport.findPageIndexAtScreen(screenPoint) ?: return null
         val page = controller.document.pages.getOrNull(pageIndex) ?: return null

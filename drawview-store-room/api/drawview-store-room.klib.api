@@ -1,0 +1,65 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <DrawView-KMP:drawview-store-room>
+abstract class io.github.valerioisufi.drawview.store.room.db/DrawDatabase : androidx.room/RoomDatabase { // io.github.valerioisufi.drawview.store.room.db/DrawDatabase|null[0]
+    constructor <init>() // io.github.valerioisufi.drawview.store.room.db/DrawDatabase.<init>|<init>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.store.room.db/DrawDatabase_Impl : io.github.valerioisufi.drawview.store.room.db/DrawDatabase { // io.github.valerioisufi.drawview.store.room.db/DrawDatabase_Impl|null[0]
+    constructor <init>() // io.github.valerioisufi.drawview.store.room.db/DrawDatabase_Impl.<init>|<init>(){}[0]
+
+    final fun createAutoMigrations(kotlin.collections/Map<kotlin.reflect/KClass<out androidx.room.migration/AutoMigrationSpec>, androidx.room.migration/AutoMigrationSpec>): kotlin.collections/List<androidx.room.migration/Migration> // io.github.valerioisufi.drawview.store.room.db/DrawDatabase_Impl.createAutoMigrations|createAutoMigrations(kotlin.collections.Map<kotlin.reflect.KClass<out|androidx.room.migration.AutoMigrationSpec>,androidx.room.migration.AutoMigrationSpec>){}[0]
+    final fun getRequiredAutoMigrationSpecClasses(): kotlin.collections/Set<kotlin.reflect/KClass<out androidx.room.migration/AutoMigrationSpec>> // io.github.valerioisufi.drawview.store.room.db/DrawDatabase_Impl.getRequiredAutoMigrationSpecClasses|getRequiredAutoMigrationSpecClasses(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.store.room/RoomDocumentStore : io.github.valerioisufi.drawview.store/DocumentStore, io.github.valerioisufi.drawview.store/PreferenceStore { // io.github.valerioisufi.drawview.store.room/RoomDocumentStore|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.store.room.db/DrawDatabase, io.github.valerioisufi.drawview.model/StrokeModeller = ...) // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.<init>|<init>(io.github.valerioisufi.drawview.store.room.db.DrawDatabase;io.github.valerioisufi.drawview.model.StrokeModeller){}[0]
+
+    final val database // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.database|{}database[0]
+        final fun <get-database>(): io.github.valerioisufi.drawview.store.room.db/DrawDatabase // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.database.<get-database>|<get-database>(){}[0]
+    final val documents // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.documents|{}documents[0]
+        final fun <get-documents>(): kotlinx.coroutines.flow/Flow<kotlin.collections/List<io.github.valerioisufi.drawview.store/DocumentSummary>> // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.documents.<get-documents>|<get-documents>(){}[0]
+    final val folders // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.folders|{}folders[0]
+        final fun <get-folders>(): kotlinx.coroutines.flow/Flow<kotlin.collections/List<io.github.valerioisufi.drawview.store/FolderSummary>> // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.folders.<get-folders>|<get-folders>(){}[0]
+    final val persistence // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.persistence|{}persistence[0]
+        final fun <get-persistence>(): io.github.valerioisufi.drawview.model.change/DocumentPersistence // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.persistence.<get-persistence>|<get-persistence>(){}[0]
+    final val strokeModeller // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.strokeModeller|{}strokeModeller[0]
+        final fun <get-strokeModeller>(): io.github.valerioisufi.drawview.model/StrokeModeller // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.strokeModeller.<get-strokeModeller>|<get-strokeModeller>(){}[0]
+
+    final suspend fun compactOperations(kotlin/String, kotlin.collections/Map<kotlin/String, kotlin/Long>): kotlin.collections/Map<kotlin/String, io.github.valerioisufi.drawview.model/Stamp> // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.compactOperations|compactOperations(kotlin.String;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
+    final suspend fun compactedOperations(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/Long> // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.compactedOperations|compactedOperations(kotlin.String){}[0]
+    final suspend fun createDocument(kotlin/String, kotlin/Float, kotlin/Float, io.github.valerioisufi.drawview.model/PageBackground, kotlin/String?): io.github.valerioisufi.drawview.model/DrawDocument // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.createDocument|createDocument(kotlin.String;kotlin.Float;kotlin.Float;io.github.valerioisufi.drawview.model.PageBackground;kotlin.String?){}[0]
+    final suspend fun createFolder(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.createFolder|createFolder(kotlin.String;kotlin.String?){}[0]
+    final suspend fun deleteDocument(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.deleteDocument|deleteDocument(kotlin.String){}[0]
+    final suspend fun deleteFolder(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.deleteFolder|deleteFolder(kotlin.String){}[0]
+    final suspend fun insertDocument(io.github.valerioisufi.drawview.model/DrawDocument, kotlin/String?, kotlin.collections/Map<kotlin/String, kotlin/Long>) // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.insertDocument|insertDocument(io.github.valerioisufi.drawview.model.DrawDocument;kotlin.String?;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
+    final suspend fun isDocumentNameAvailable(kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.isDocumentNameAvailable|isDocumentNameAvailable(kotlin.String;kotlin.String){}[0]
+    final suspend fun isReadOnly(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.isReadOnly|isReadOnly(kotlin.String){}[0]
+    final suspend fun loadDocument(kotlin/String): io.github.valerioisufi.drawview.model/DrawDocument? // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.loadDocument|loadDocument(kotlin.String){}[0]
+    final suspend fun moveDocument(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.moveDocument|moveDocument(kotlin.String;kotlin.String?){}[0]
+    final suspend fun moveFolder(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.moveFolder|moveFolder(kotlin.String;kotlin.String?){}[0]
+    final suspend fun operationsAfter(kotlin/String, kotlin.collections/Map<kotlin/String, kotlin/Long>): kotlin.collections/List<io.github.valerioisufi.drawview.model.change/Operation> // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.operationsAfter|operationsAfter(kotlin.String;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
+    final suspend fun preference(kotlin/String): kotlin/String? // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.preference|preference(kotlin.String){}[0]
+    final suspend fun renameFolder(kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.renameFolder|renameFolder(kotlin.String;kotlin.String){}[0]
+    final suspend fun replicaId(): kotlin/String // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.replicaId|replicaId(){}[0]
+    final suspend fun setPreference(kotlin/String, kotlin/String?) // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.setPreference|setPreference(kotlin.String;kotlin.String?){}[0]
+    final suspend fun setSharingSecret(kotlin/String, kotlin/String?, kotlin/Boolean) // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.setSharingSecret|setSharingSecret(kotlin.String;kotlin.String?;kotlin.Boolean){}[0]
+    final suspend fun sharingSecrets(): kotlin.collections/Map<kotlin/String, kotlin/String> // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.sharingSecrets|sharingSecrets(){}[0]
+    final suspend fun updateLastOpened(kotlin/String) // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.updateLastOpened|updateLastOpened(kotlin.String){}[0]
+    final suspend fun versionVector(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/Long> // io.github.valerioisufi.drawview.store.room/RoomDocumentStore.versionVector|versionVector(kotlin.String){}[0]
+}
+
+final object io.github.valerioisufi.drawview.store.room/DrawViewStore { // io.github.valerioisufi.drawview.store.room/DrawViewStore|null[0]
+    final val default // io.github.valerioisufi.drawview.store.room/DrawViewStore.default|{}default[0]
+        final fun <get-default>(): io.github.valerioisufi.drawview.store.room/RoomDocumentStore // io.github.valerioisufi.drawview.store.room/DrawViewStore.default.<get-default>|<get-default>(){}[0]
+    final val documents // io.github.valerioisufi.drawview.store.room/DrawViewStore.documents|{}documents[0]
+        final fun <get-documents>(): io.github.valerioisufi.drawview.store/OpenDocuments // io.github.valerioisufi.drawview.store.room/DrawViewStore.documents.<get-documents>|<get-documents>(){}[0]
+}
+
+final fun io.github.valerioisufi.drawview.store.room.db/createDrawDatabase(androidx.room/RoomDatabase.Builder<io.github.valerioisufi.drawview.store.room.db/DrawDatabase> = ...): io.github.valerioisufi.drawview.store.room.db/DrawDatabase // io.github.valerioisufi.drawview.store.room.db/createDrawDatabase|createDrawDatabase(androidx.room.RoomDatabase.Builder<io.github.valerioisufi.drawview.store.room.db.DrawDatabase>){}[0]
+final fun io.github.valerioisufi.drawview.store.room.db/getInMemoryDatabaseBuilder(): androidx.room/RoomDatabase.Builder<io.github.valerioisufi.drawview.store.room.db/DrawDatabase> // io.github.valerioisufi.drawview.store.room.db/getInMemoryDatabaseBuilder|getInMemoryDatabaseBuilder(){}[0]

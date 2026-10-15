@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.model.StrokeMesh
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 
-actual class StrokeMeshPainter actual constructor() {
+internal actual class StrokeMeshPainter actual constructor() {
     private val paint = Paint().apply { isAntiAlias = true }
     private val androidMatrix = android.graphics.Matrix()
     private val matrixValues = FloatArray(9)

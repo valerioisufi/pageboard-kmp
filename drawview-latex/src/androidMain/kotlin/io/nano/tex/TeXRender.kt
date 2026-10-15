@@ -3,24 +3,25 @@ package io.nano.tex
 /**
  * A parsed formula (native object released by [release] or when garbage collected).
  */
-class TeXRender internal constructor(private var nativePtr: Long) {
+/** A formula laid out by MicroTeX (native), drawn on a [Graphics2D] at its size. */
+public class TeXRender internal constructor(private var nativePtr: Long) {
 
     private var recorder: ActionRecorder? = null
 
-    val width: Int get() = nGetWidth(nativePtr)
-    val height: Int get() = nGetHeight(nativePtr)
-    val depth: Int get() = nGetDepth(nativePtr)
-    val baseline: Float get() = nGetBaseline(nativePtr)
-    val textSize: Float get() = nGetTextSize(nativePtr)
+    public val width: Int get() = nGetWidth(nativePtr)
+    public val height: Int get() = nGetHeight(nativePtr)
+    public val depth: Int get() = nGetDepth(nativePtr)
+    public val baseline: Float get() = nGetBaseline(nativePtr)
+    public val textSize: Float get() = nGetTextSize(nativePtr)
 
     /** The operations drawing the formula from its top-left corner (see [ActionRecorder.toOps]). */
-    fun ops(): List<io.github.valerioisufi.drawview.latex.TexOp> {
+    public fun ops(): List<io.github.valerioisufi.drawview.latex.TexOp> {
         val r = ActionRecorder()
         nDraw(nativePtr, r, 0, 0)
         return r.toOps()
     }
 
-    fun draw(g2: Graphics2D, x: Int, y: Int) {
+    public fun draw(g2: Graphics2D, x: Int, y: Int) {
         val r = recorder ?: ActionRecorder().also {
             nDraw(nativePtr, it, 0, 0)
             recorder = it
@@ -30,7 +31,7 @@ class TeXRender internal constructor(private var nativePtr: Long) {
     }
 
     @Synchronized
-    fun release() {
+    public fun release() {
         if (nativePtr != 0L) {
             nFinalize(nativePtr)
             nativePtr = 0L

@@ -14,6 +14,7 @@ import io.ktor.utils.io.readFully
 import io.ktor.utils.io.readInt
 import io.ktor.utils.io.writeFully
 import io.ktor.utils.io.writeInt
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -24,7 +25,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * [SyncTransport] over TCP on the local network: [start] listens on [port] (another free port when
@@ -35,7 +35,7 @@ import kotlin.coroutines.cancellation.CancellationException
  * when the application starts again: the devices that knew it connect to it again even when they
  * miss its announcement on the network (see [LanSync]).
  */
-class LanTransport(private val scope: CoroutineScope, private val port: Int = DEFAULT_PORT) : SyncTransport {
+public class LanTransport(private val scope: CoroutineScope, private val port: Int = DEFAULT_PORT) : SyncTransport {
     private val selector = SelectorManager(Dispatchers.IO)
     private val accepted = Channel<SyncChannel>(Channel.UNLIMITED)
     private var server: ServerSocket? = null
@@ -44,19 +44,19 @@ class LanTransport(private val scope: CoroutineScope, private val port: Int = DE
     override val incoming: Flow<SyncChannel> = accepted.receiveAsFlow()
 
     /** The port this device listens on (0 until [start]). */
-    val boundPort: Int get() = server?.port ?: 0
+    internal val boundPort: Int get() = server?.port ?: 0
 
     /**
      * Whether this device listens for connections: no more once the system closed the listener
      * (e.g. an application suspended in the background), then [start] listens again.
      */
-    val isListening: Boolean get() = server != null
+    internal val isListening: Boolean get() = server != null
 
     /**
      * Listens for the connections of the other devices (on the port of the last time when it is
      * free); returns the port.
      */
-    suspend fun start(): Int {
+    public suspend fun start(): Int {
         server?.let { return it.port }
         val socket = bindSoon(lastPort) ?: bind(port) ?: bind(0) ?: throw SyncException("Cannot listen for the other devices")
         server = socket
@@ -77,7 +77,7 @@ class LanTransport(private val scope: CoroutineScope, private val port: Int = DE
     }
 
     /** Stops listening (the connections made stay). */
-    fun stopListening() {
+    internal fun stopListening() {
         server?.close()
         server = null
     }
@@ -119,9 +119,9 @@ class LanTransport(private val scope: CoroutineScope, private val port: Int = DE
         selector.close()
     }
 
-    companion object {
+    public companion object {
         /** The port listened on when it is free (out of the ports the systems give to the connections). */
-        const val DEFAULT_PORT = 28_461
+        internal const val DEFAULT_PORT = 28_461
 
         private const val BIND_ATTEMPTS = 5
         private const val BIND_RETRY_MS = 100L

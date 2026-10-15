@@ -21,18 +21,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import kotlin.jvm.JvmName
 
 /**
@@ -43,7 +43,7 @@ import kotlin.jvm.JvmName
  * @param offset where the menu opens, from the bottom left corner of its anchor.
  */
 @Composable
-fun CommandMenu(
+public fun CommandMenu(
     commands: List<Command>,
     expanded: Boolean,
     onDismissRequest: () -> Unit,
@@ -64,7 +64,7 @@ fun CommandMenu(
  */
 @Composable
 @JvmName("CommandMenuOfSections")
-fun CommandMenu(
+public fun CommandMenu(
     sections: List<List<Command>>,
     expanded: Boolean,
     onDismissRequest: () -> Unit,
@@ -104,7 +104,7 @@ fun CommandMenu(
  * rounded 12 dp ([MenuItem]), its sections apart ([MenuDivider]).
  */
 @Composable
-fun DesignMenu(
+public fun DesignMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
@@ -130,7 +130,7 @@ fun DesignMenu(
  * the place of an icon when it has none (beside items with one).
  */
 @Composable
-fun MenuItem(
+public fun MenuItem(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -173,13 +173,13 @@ fun MenuItem(
 
 /** The line between two sections of a [DesignMenu]. */
 @Composable
-fun MenuDivider() {
+public fun MenuDivider() {
     HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp, horizontal = 4.dp), color = MaterialTheme.colorScheme.outlineVariant)
 }
 
 /** The label of a group of items of a [DesignMenu] (e.g. "Sort by"). */
 @Composable
-fun MenuLabel(text: String) {
+public fun MenuLabel(text: String) {
     Text(
         text,
         style = MaterialTheme.typography.labelMedium,
@@ -192,7 +192,7 @@ fun MenuLabel(text: String) {
  * Calls [onClick] with the position of a click of the secondary button of a mouse (the right
  * button, a two-finger click of a trackpad): where the context menus of the pointers open.
  */
-fun Modifier.onSecondaryClick(onClick: (Offset) -> Unit): Modifier = pointerInput(onClick) {
+public fun Modifier.onSecondaryClick(onClick: (Offset) -> Unit): Modifier = pointerInput(onClick) {
     awaitPointerEventScope {
         while (true) {
             val event = awaitPointerEvent()

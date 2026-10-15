@@ -21,22 +21,22 @@ import kotlinx.serialization.encoding.Encoder
  * Written as the stamps, in their order, separated by commas.
  */
 @Serializable(with = VersionsSerializer::class)
-data class Versions(val stamps: Map<String, Stamp> = emptyMap()) {
+public data class Versions(val stamps: Map<String, Stamp> = emptyMap()) {
 
     /** These and the change of [stamp]. */
-    operator fun plus(stamp: Stamp): Versions =
+    public operator fun plus(stamp: Stamp): Versions =
         if ((stamps[stamp.replica] ?: Stamp.ZERO) >= stamp) this else Versions(stamps + (stamp.replica to stamp))
 
     /** Whether these include every change of [other]. */
-    fun covers(other: Versions): Boolean = other.stamps.all { (replica, stamp) -> (stamps[replica] ?: Stamp.ZERO) >= stamp }
+    public fun covers(other: Versions): Boolean = other.stamps.all { (replica, stamp) -> (stamps[replica] ?: Stamp.ZERO) >= stamp }
 
     override fun toString(): String = stamps.values.sorted().joinToString(",")
 
-    companion object {
+    public companion object {
         /** No change. */
-        val NONE = Versions()
+        public val NONE: Versions = Versions()
 
-        fun parse(text: String): Versions =
+        public fun parse(text: String): Versions =
             Versions(text.split(',').mapNotNull { Stamp.parse(it) }.associateBy { it.replica })
     }
 }

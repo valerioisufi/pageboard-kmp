@@ -12,7 +12,7 @@ import org.jetbrains.skia.Paint
 import org.jetbrains.skia.Rect
 import org.jetbrains.skia.VertexMode
 
-actual class StrokeMeshPainter actual constructor() {
+internal actual class StrokeMeshPainter actual constructor() {
     private val paint = Paint().apply { isAntiAlias = true }
     private val layerPaint = Paint()
 

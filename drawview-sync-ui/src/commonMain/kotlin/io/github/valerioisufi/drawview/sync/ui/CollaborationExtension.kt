@@ -57,7 +57,7 @@ import org.jetbrains.compose.resources.stringResource
  * devices on it; also in the menus, "Share…"), and over the canvas where the others are and what
  * they are drawing (who is writing a text the user tried to edit too) and the sharing dialog.
  */
-fun Collaboration.editorExtension(): EditorExtension {
+public fun Collaboration.editorExtension(): EditorExtension {
     // The document whose sharing is shown, asked by the button or by the command
     val sharing = SharingShown()
     fun shareCommand(documentId: String) = Command(

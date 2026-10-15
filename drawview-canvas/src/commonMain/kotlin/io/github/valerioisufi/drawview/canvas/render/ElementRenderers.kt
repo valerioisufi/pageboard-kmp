@@ -22,14 +22,14 @@ import io.github.valerioisufi.drawview.platform.syncLock
  *
  * Implementations must be thread-safe: the tiles are rasterized on background workers.
  */
-interface ElementRenderer<T : Any> {
-    val type: ElementType<T>
+public interface ElementRenderer<T : Any> {
+    public val type: ElementType<T>
 
     /** Draws [value] in a box of [widthMm] x [heightMm] millimeters. */
-    fun draw(canvas: Canvas, value: T, widthMm: Float, heightMm: Float)
+    public fun draw(canvas: Canvas, value: T, widthMm: Float, heightMm: Float)
 
     /** Whether the point ([xMm], [yMm]) of the box hits the element (by default, its whole box). */
-    fun hits(value: T, xMm: Float, yMm: Float, widthMm: Float, heightMm: Float): Boolean = true
+    public fun hits(value: T, xMm: Float, yMm: Float, widthMm: Float, heightMm: Float): Boolean = true
 }
 
 /**
@@ -37,7 +37,7 @@ interface ElementRenderer<T : Any> {
  * (another application, a newer version) are drawn as a placeholder in their box. Given to the
  * editors, the thumbnails and the export by [DrawViewEngines.elements].
  */
-class ElementRenderers(renderers: Collection<ElementRenderer<*>>) {
+public class ElementRenderers(renderers: Collection<ElementRenderer<*>>) {
     private val byType: Map<String, ElementRenderer<*>> = renderers.associateBy { it.type.id }
 
     private val lock = SyncLock()
@@ -47,13 +47,13 @@ class ElementRenderers(renderers: Collection<ElementRenderer<*>>) {
     private val values = LinkedHashMap<String, Pair<ByteArray, Any?>>()
 
     /** The renderer of the type [type], if the application knows it. */
-    operator fun get(type: String): ElementRenderer<*>? = byType[type]
+    public operator fun get(type: String): ElementRenderer<*>? = byType[type]
 
     /**
      * The value of [element] as its type reads it, or `null` when its type is not known here or
      * its value cannot be read (another format).
      */
-    fun valueOf(element: DrawCustomElement): Any? {
+    internal fun valueOf(element: DrawCustomElement): Any? {
         val renderer = byType[element.type] ?: return null
         val payload = element.payload
         syncLock(lock) {
@@ -71,7 +71,7 @@ class ElementRenderers(renderers: Collection<ElementRenderer<*>>) {
     }
 
     /** Draws [element] on [canvas], its page mapped to the canvas by [mmToCanvas]. */
-    fun draw(canvas: Canvas, element: DrawCustomElement, mmToCanvas: Matrix2D) {
+    public fun draw(canvas: Canvas, element: DrawCustomElement, mmToCanvas: Matrix2D) {
         if (element.width <= 0f || element.height <= 0f) return
         val boxToCanvas = Matrix2D()
             .postRotate(element.rotation, element.width / 2f, element.height / 2f)
@@ -93,7 +93,7 @@ class ElementRenderers(renderers: Collection<ElementRenderer<*>>) {
     }
 
     /** Whether the point ([xMm], [yMm]) of the page hits [element] (its box when its type is not known). */
-    fun hits(element: DrawCustomElement, xMm: Float, yMm: Float): Boolean {
+    public fun hits(element: DrawCustomElement, xMm: Float, yMm: Float): Boolean {
         if (!element.containsPoint(xMm, yMm)) return false
         val renderer = byType[element.type] ?: return true
         val value = valueOf(element) ?: return true
@@ -125,9 +125,9 @@ class ElementRenderers(renderers: Collection<ElementRenderer<*>>) {
         canvas.drawRect(box, line)
     }
 
-    companion object {
+    public companion object {
         /** No type of an application: their elements are drawn as placeholders. */
-        val None: ElementRenderers = ElementRenderers(emptyList())
+        public val None: ElementRenderers = ElementRenderers(emptyList())
 
         private const val MAX_VALUES = 256
         private const val PLACEHOLDER_LINE_MM = 0.3f

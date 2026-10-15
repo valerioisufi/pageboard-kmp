@@ -17,7 +17,7 @@ import io.github.valerioisufi.drawview.model.StrokePoint
  * not available (web targets, or a native library that failed to load) a pure Kotlin
  * tessellator is used instead.
  */
-class InkStrokeEngine {
+public class InkStrokeEngine {
     private val delegate: StrokeEngineDelegate = createStrokeEngineDelegate()
 
     private val recordedPoints = mutableListOf<StrokePoint>()
@@ -27,7 +27,7 @@ class InkStrokeEngine {
     private var isActive = false
 
     /** Whether strokes are modeled by the native Google Ink engine. */
-    val isNative: Boolean get() = delegate.isNative
+    public val isNative: Boolean get() = delegate.isNative
 
     /**
      * Starts a new stroke, discarding any stroke in progress.
@@ -35,7 +35,7 @@ class InkStrokeEngine {
      * @param strokeUnitLengthCm physical length of one stroke unit in centimeters (used by the
      * brush behaviors based on physical speed/acceleration), or a value <= 0 if unknown.
      */
-    fun startStroke(brush: BrushConfig, strokeUnitLengthCm: Float = STROKE_UNIT_LENGTH_CM_MM) {
+    public fun startStroke(brush: BrushConfig, strokeUnitLengthCm: Float = STROKE_UNIT_LENGTH_CM_MM) {
         currentBrush = brush
         currentToolType = InputToolType.UNKNOWN
         recordedPoints.clear()
@@ -48,7 +48,7 @@ class InkStrokeEngine {
      * Adds an input to the current stroke without extracting the mesh. Use [currentMesh] once
      * per frame after feeding all the (historical) samples of an event.
      */
-    fun addInput(
+    public fun addInput(
         x: Float,
         y: Float,
         pressure: Float = -1f,
@@ -69,7 +69,7 @@ class InkStrokeEngine {
     /**
      * Adds an input and returns the updated mesh of the stroke in progress.
      */
-    fun addPoint(
+    public fun addPoint(
         x: Float,
         y: Float,
         pressure: Float = -1f,
@@ -84,7 +84,7 @@ class InkStrokeEngine {
      * Mesh of the stroke in progress (without the recorded inputs, which are attached only to
      * the final mesh returned by [finishStroke]).
      */
-    fun currentMesh(): StrokeMesh? {
+    public fun currentMesh(): StrokeMesh? {
         if (!isActive) return null
         return delegate.currentMesh(currentBrush, emptyList(), currentToolType)
     }
@@ -93,7 +93,7 @@ class InkStrokeEngine {
      * Completes the stroke and returns its final mesh (with the recorded inputs), or `null` if
      * no geometry was produced.
      */
-    fun finishStroke(): StrokeMesh? {
+    public fun finishStroke(): StrokeMesh? {
         if (!isActive) return null
         isActive = false
         delegate.finishInputs()
@@ -107,7 +107,7 @@ class InkStrokeEngine {
      * Completes the stroke and returns its outline instead of its mesh, or `null` when the
      * modeller cannot give it (see [StrokeEngineDelegate.currentOutline]).
      */
-    fun finishStrokeOutline(): StrokeOutline? {
+    internal fun finishStrokeOutline(): StrokeOutline? {
         if (!isActive) return null
         isActive = false
         delegate.finishInputs()
@@ -117,27 +117,27 @@ class InkStrokeEngine {
         return outline?.takeUnless { it.isEmpty }
     }
 
-    fun cancelStroke() {
+    public fun cancelStroke() {
         isActive = false
         delegate.clear()
         recordedPoints.clear()
     }
 
-    fun release() {
+    public fun release() {
         isActive = false
         recordedPoints.clear()
         delegate.release()
     }
 
     /** Recorded inputs of the stroke in progress. */
-    val inputs: List<StrokePoint> get() = recordedPoints
+    public val inputs: List<StrokePoint> get() = recordedPoints
 
-    companion object {
+    public companion object {
         /**
          * Models a complete stroke from recorded inputs (e.g. when loading a document or after a
          * geometric transformation).
          */
-        fun buildMesh(
+        public fun buildMesh(
             points: List<StrokePoint>,
             brush: BrushConfig,
             toolType: InputToolType = InputToolType.UNKNOWN,
@@ -160,7 +160,7 @@ class InkStrokeEngine {
          * Outline of a complete stroke modeled from recorded inputs, or `null` when the engine
          * cannot give one (no inputs, or not the native engine).
          */
-        fun buildOutline(
+        public fun buildOutline(
             points: List<StrokePoint>,
             brush: BrushConfig,
             toolType: InputToolType = InputToolType.UNKNOWN,

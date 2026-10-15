@@ -47,12 +47,12 @@ internal actual fun rememberMicrophoneAccess(): suspend () -> Boolean {
     }
 }
 
-actual fun environmentApiKey(): String? = null
+internal actual fun environmentApiKey(): String? = null
 
 // The files of the application are private to it
-actual fun restrictToOwner(path: String) {}
+internal actual fun restrictToOwner(path: String) {}
 
-actual fun encodeJpeg(bitmap: ImageBitmap, quality: Int): ByteArray? = try {
+internal actual fun encodeJpeg(bitmap: ImageBitmap, quality: Int): ByteArray? = try {
     val stream = ByteArrayOutputStream()
     if (bitmap.asAndroidBitmap().compress(Bitmap.CompressFormat.JPEG, quality, stream)) stream.toByteArray() else null
 } catch (_: Throwable) {

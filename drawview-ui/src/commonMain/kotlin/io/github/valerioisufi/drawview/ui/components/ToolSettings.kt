@@ -51,7 +51,7 @@ import org.jetbrains.compose.resources.stringResource
 
 /** The title of a popover of a tool, with what it shows beside (e.g. the stroke of the pen). */
 @Composable
-fun PopoverTitle(text: String, modifier: Modifier = Modifier, trailing: @Composable RowScope.() -> Unit = {}) {
+internal fun PopoverTitle(text: String, modifier: Modifier = Modifier, trailing: @Composable RowScope.() -> Unit = {}) {
     Row(modifier = modifier.fillMaxWidth().height(24.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(text, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
         trailing()
@@ -60,7 +60,7 @@ fun PopoverTitle(text: String, modifier: Modifier = Modifier, trailing: @Composa
 
 /** The label of a group of a popover ("Presets", "Ink"), with its value at the end, if any. */
 @Composable
-fun SettingLabel(text: String, modifier: Modifier = Modifier, value: String? = null) {
+internal fun SettingLabel(text: String, modifier: Modifier = Modifier, value: String? = null) {
     Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(text, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
         if (value != null) Text(value, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
@@ -71,7 +71,7 @@ fun SettingLabel(text: String, modifier: Modifier = Modifier, value: String? = n
  * A size on a scale linear up to [linearThreshold] (on [linearProportion] of the slider), then
  * exponential up to the end of [valueRange]: the small sizes precise, the large ones reachable.
  */
-class HybridScale(
+internal class HybridScale(
     valueRange: ClosedFloatingPointRange<Float>,
     linearThreshold: Float,
     private val linearProportion: Float
@@ -102,7 +102,7 @@ class HybridScale(
  * The size of a tool: its [label] and its value with its [unit] above a slider of the [scale].
  */
 @Composable
-fun SizeSetting(label: String, value: Float, unit: String, scale: HybridScale, onValueChange: (Float) -> Unit, modifier: Modifier = Modifier) {
+internal fun SizeSetting(label: String, value: Float, unit: String, scale: HybridScale, onValueChange: (Float) -> Unit, modifier: Modifier = Modifier) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         SettingLabel(label, value = "${formatDecimal(value, 1)} $unit")
         DesignSlider(value = scale.position(value), onValueChange = { onValueChange(scale.value(it)) })
@@ -112,7 +112,7 @@ fun SizeSetting(label: String, value: Float, unit: String, scale: HybridScale, o
 /** A slider of the design: a thin track of the outline, filled in the primary color, a round thumb. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DesignSlider(
+public fun DesignSlider(
     value: Float,
     onValueChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
@@ -152,7 +152,7 @@ fun DesignSlider(
  * the button of the color wheel at the end ([onCustom]), ringed when the color is none of them.
  */
 @Composable
-fun ColorSwatches(colors: List<Color>, selected: Color, onSelect: (Color) -> Unit, modifier: Modifier = Modifier, onCustom: (() -> Unit)? = null) {
+internal fun ColorSwatches(colors: List<Color>, selected: Color, onSelect: (Color) -> Unit, modifier: Modifier = Modifier, onCustom: (() -> Unit)? = null) {
     val selectedArgb = selected.toArgb()
     val known = colors.any { it.toArgb() == selectedArgb }
     Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -193,7 +193,7 @@ private fun Swatch(selected: Boolean, onClick: () -> Unit, modifier: Modifier = 
 
 /** The stroke of a pen of [color], as thick as [width] (a wave). */
 @Composable
-fun StrokePreview(color: Color, width: Dp, modifier: Modifier = Modifier.width(84.dp).height(24.dp)) {
+internal fun StrokePreview(color: Color, width: Dp, modifier: Modifier = Modifier.width(84.dp).height(24.dp)) {
     Canvas(modifier = modifier) {
         val path = Path().apply {
             moveTo(size.width * 0.04f, size.height * 0.62f)
@@ -208,7 +208,7 @@ fun StrokePreview(color: Color, width: Dp, modifier: Modifier = Modifier.width(8
  * ring when [selected].
  */
 @Composable
-fun PresetCard(color: Color, strokeWidth: Dp, label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+internal fun PresetCard(color: Color, strokeWidth: Dp, label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     Surface(
         onClick = onClick,
@@ -235,7 +235,7 @@ fun PresetCard(color: Color, strokeWidth: Dp, label: String, selected: Boolean, 
 
 /** The card adding a preset: a "+" in a dashed outline. */
 @Composable
-fun AddPresetCard(label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+internal fun AddPresetCard(label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     Box(
         contentAlignment = Alignment.Center,
@@ -255,7 +255,7 @@ fun AddPresetCard(label: String, onClick: () -> Unit, modifier: Modifier = Modif
  * the primary container and a check when [selected].
  */
 @Composable
-fun OptionCard(icon: ImageVector, title: String, description: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+internal fun OptionCard(icon: ImageVector, title: String, description: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val content = if (selected) colors.onPrimaryContainer else colors.onSurface
     Row(
@@ -280,13 +280,13 @@ fun OptionCard(icon: ImageVector, title: String, description: String, selected: 
 
 /** A hint of a popover, under its controls. */
 @Composable
-fun SettingHint(text: String, modifier: Modifier = Modifier) {
+internal fun SettingHint(text: String, modifier: Modifier = Modifier) {
     Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = modifier)
 }
 
 /** The ring of an eraser as large as it erases (relative to [fraction] of its largest size). */
 @Composable
-fun EraserPreview(fraction: Float, modifier: Modifier = Modifier) {
+internal fun EraserPreview(fraction: Float, modifier: Modifier = Modifier) {
     val color = MaterialTheme.colorScheme.onSurfaceVariant
     Canvas(modifier = modifier.size(28.dp)) {
         val radius = (size.minDimension / 2f) * (0.3f + 0.7f * fraction.coerceIn(0f, 1f)) - 1.dp.toPx()

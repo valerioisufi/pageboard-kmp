@@ -12,7 +12,7 @@ import kotlinx.serialization.json.putJsonObject
 
 /** Answer of the model to a chunk of the lecture (structured output, [LectureAnalysis.chunkSchema]). */
 @Serializable
-data class ChunkAnalysis(
+internal data class ChunkAnalysis(
     val transcript: String = "",
     val currentTopic: String = "",
     /** Page of the document (1-based) the lecturer is talking about. */
@@ -22,7 +22,7 @@ data class ChunkAnalysis(
 )
 
 @Serializable
-data class AnalysisNote(
+internal data class AnalysisNote(
     val kind: String = "OTHER",
     val title: String = "",
     val content: String = "",
@@ -35,12 +35,12 @@ data class AnalysisNote(
 
 /** Answer of the model to the review of the whole lecture ([LectureAnalysis.finalReviewSchema]). */
 @Serializable
-data class FinalReview(
+internal data class FinalReview(
     val notesMarkdown: String = "",
     val missing: List<AnalysisNote> = emptyList()
 )
 
-object LectureAnalysis {
+internal object LectureAnalysis {
     private val json = Json {
         ignoreUnknownKeys = true
         isLenient = true

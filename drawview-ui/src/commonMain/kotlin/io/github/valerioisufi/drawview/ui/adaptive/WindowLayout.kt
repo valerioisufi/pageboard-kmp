@@ -8,7 +8,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /** Size class of a width, with the breakpoints of Material 3. */
-enum class WidthClass {
+public enum class WidthClass {
     /** Under 600 dp: a phone, an iPad in Slide Over, a narrow desktop window. */
     COMPACT,
 
@@ -20,7 +20,7 @@ enum class WidthClass {
 }
 
 /** Size class of a height, with the breakpoints of Material 3. */
-enum class HeightClass {
+public enum class HeightClass {
     /** Under 480 dp: a phone in landscape. */
     COMPACT,
 
@@ -40,26 +40,26 @@ enum class HeightClass {
  * every pixel of a window being resized.
  */
 @Immutable
-data class WindowLayout(val widthClass: WidthClass, val heightClass: HeightClass) {
+public data class WindowLayout(val widthClass: WidthClass, val heightClass: HeightClass) {
 
     /** Whether the width is compact: one pane, the panels rising from the bottom. */
     val isCompact: Boolean get() = widthClass == WidthClass.COMPACT
 
-    companion object {
+    public companion object {
         /** Lower bound of [WidthClass.MEDIUM]. */
-        val MediumWidth: Dp = 600.dp
+        internal val MediumWidth: Dp = 600.dp
 
         /** Lower bound of [WidthClass.EXPANDED]. */
-        val ExpandedWidth: Dp = 840.dp
+        internal val ExpandedWidth: Dp = 840.dp
 
         /** Lower bound of [HeightClass.MEDIUM]. */
-        val MediumHeight: Dp = 480.dp
+        internal val MediumHeight: Dp = 480.dp
 
         /** Lower bound of [HeightClass.EXPANDED]. */
-        val ExpandedHeight: Dp = 900.dp
+        internal val ExpandedHeight: Dp = 900.dp
 
         /** The classes of a window [width] wide and [height] high. */
-        fun of(width: Dp, height: Dp): WindowLayout = WindowLayout(
+        public fun of(width: Dp, height: Dp): WindowLayout = WindowLayout(
             widthClass = when {
                 width < MediumWidth -> WidthClass.COMPACT
                 width < ExpandedWidth -> WidthClass.MEDIUM
@@ -76,7 +76,7 @@ data class WindowLayout(val widthClass: WidthClass, val heightClass: HeightClass
 
 /** The size classes of the window showing the composition, following it when it is resized. */
 @Composable
-fun currentWindowLayout(): WindowLayout {
+internal fun currentWindowLayout(): WindowLayout {
     val size = LocalWindowInfo.current.containerSize
     return with(LocalDensity.current) { WindowLayout.of(size.width.toDp(), size.height.toDp()) }
 }

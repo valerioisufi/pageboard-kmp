@@ -3,13 +3,13 @@ package io.github.valerioisufi.drawview.lecture
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import io.github.valerioisufi.drawview.platform.PlatformFiles
-import io.github.valerioisufi.drawview.platform.SecureStore
 import io.github.valerioisufi.drawview.lecture.platform.environmentApiKey
 import io.github.valerioisufi.drawview.lecture.platform.isComputer
 import io.github.valerioisufi.drawview.lecture.platform.lectureDataDirectory
 import io.github.valerioisufi.drawview.lecture.platform.restrictToOwner
 import io.github.valerioisufi.drawview.lecture.transcription.WhisperTranscriber
+import io.github.valerioisufi.drawview.platform.PlatformFiles
+import io.github.valerioisufi.drawview.platform.SecureStore
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.Json
@@ -18,13 +18,13 @@ import kotlinx.serialization.json.Json
  * Where the small secrets of the assistant are kept (the key of Gemini): the store of the system
  * ([SecureStore]: the Keychain, the Android Keystore, a file of the user on the desktop).
  */
-interface SecretStorage {
-    fun read(name: String): String?
+public interface SecretStorage {
+    public fun read(name: String): String?
 
-    fun write(name: String, value: String?): Boolean
+    public fun write(name: String, value: String?): Boolean
 
     /** The store of the system. */
-    object System : SecretStorage {
+    public object System : SecretStorage {
         override fun read(name: String): String? = SecureStore.read(name)
 
         override fun write(name: String, value: String?): Boolean = SecureStore.write(name, value)
@@ -33,11 +33,11 @@ interface SecretStorage {
 
 /** Who answers a request: the Gemini API (online) or a model of Ollama (on this computer, or one of the local network). */
 @Serializable
-enum class ModelProvider { GEMINI, LOCAL }
+public enum class ModelProvider { GEMINI, LOCAL }
 
 /** What to do with a lecture received without a transcript (recorded where the models are not). */
 @Serializable
-enum class ReceivedLectures {
+public enum class ReceivedLectures {
     /** Asks, saying what it would cost. */
     ASK,
 
@@ -47,11 +47,11 @@ enum class ReceivedLectures {
 }
 
 /** What a lecture can send to Google. */
-enum class SharedData { AUDIO, TRANSCRIPT, NOTEBOOK }
+public enum class SharedData { AUDIO, TRANSCRIPT, NOTEBOOK }
 
 /** The kinds of requests of the assistant, each answered by the provider chosen for it. */
 @Serializable
-enum class LectureTask {
+public enum class LectureTask {
     /** Speech to text: by a model of Gemini (see [TranscriptionMode]) or by whisper.cpp (local). */
     TRANSCRIPTION,
 
@@ -68,7 +68,7 @@ enum class LectureTask {
 /**
  * How the lecture is transcribed, following from the models chosen ([AssistantSettings.transcription]).
  */
-enum class TranscriptionMode {
+public enum class TranscriptionMode {
     /** whisper.cpp on this computer, a chunk at a time. */
     LOCAL,
 
@@ -90,7 +90,7 @@ enum class TranscriptionMode {
  * model is the default one of the task ([AssistantSettings.task]).
  */
 @Serializable
-data class TaskModel(
+public data class TaskModel(
     val provider: ModelProvider = ModelProvider.GEMINI,
     val gemini: String = "",
     val local: String = ""
@@ -115,7 +115,7 @@ data class TaskModel(
  * @param reviewAtTheEnd the final review is written when a lecture ends (otherwise on request).
  */
 @Serializable
-data class AssistantSettings(
+public data class AssistantSettings(
     @Transient val apiKey: String = "",
     val generateHere: Boolean = isComputer,
     val chunkSeconds: Int = 60,
@@ -130,13 +130,13 @@ data class AssistantSettings(
     val reviewAtTheEnd: Boolean = true
 ) {
     /** Provider and models of [task] (the defaults where not configured). */
-    fun task(task: LectureTask): TaskModel {
+    public fun task(task: LectureTask): TaskModel {
         val defaults = defaultTask(task)
         val saved = tasks[task] ?: return defaults
         return saved.copy(gemini = saved.gemini.trim().ifEmpty { defaults.gemini }, local = saved.local.trim().ifEmpty { defaults.local })
     }
 
-    fun withTask(task: LectureTask, model: TaskModel): AssistantSettings = copy(tasks = tasks + (task to model))
+    internal fun withTask(task: LectureTask, model: TaskModel): AssistantSettings = copy(tasks = tasks + (task to model))
 
     /** Provider of the final review. */
     val reviewProvider: ModelProvider get() = task(LectureTask.FINAL_REVIEW).provider
@@ -189,7 +189,7 @@ data class AssistantSettings(
      * These settings with the combination that cannot work corrected: where the speech is not
      * recognized on the device ([canTranscribe] : the phones), Gemini transcribes it.
      */
-    fun consistent(canTranscribe: Boolean = true): AssistantSettings {
+    internal fun consistent(canTranscribe: Boolean = true): AssistantSettings {
         val transcription = task(LectureTask.TRANSCRIPTION)
         return if (!canTranscribe && transcription.provider == ModelProvider.LOCAL) {
             withTask(LectureTask.TRANSCRIPTION, transcription.copy(provider = ModelProvider.GEMINI))
@@ -198,33 +198,33 @@ data class AssistantSettings(
         }
     }
 
-    companion object {
-        const val DEFAULT_MODEL = "gemini-3.8-flash"
+    public companion object {
+        internal const val DEFAULT_MODEL = "gemini-3.8-flash"
 
         /** The speech model of Gemini transcribing live. */
-        const val DEFAULT_SPEECH_MODEL = "gemini-3.5-transcribe-live"
-        const val DEFAULT_LOCAL_MODEL = "gemma4:12b"
+        internal const val DEFAULT_SPEECH_MODEL = "gemini-3.5-transcribe-live"
+        internal const val DEFAULT_LOCAL_MODEL = "gemma4:12b"
 
         /** Smaller local model for the requests of every minute (it must keep up with the lecture). */
-        const val DEFAULT_LOCAL_LIVE_MODEL = "gemma4:e4b"
-        const val DEFAULT_LOCAL_URL = "http://localhost:11434"
-        val CHUNK_SECONDS_RANGE = 30..120
-        val THINKING_LEVELS = listOf("low", "medium", "high")
+        internal const val DEFAULT_LOCAL_LIVE_MODEL = "gemma4:e4b"
+        internal const val DEFAULT_LOCAL_URL = "http://localhost:11434"
+        internal val CHUNK_SECONDS_RANGE = 30..120
+        internal val THINKING_LEVELS = listOf("low", "medium", "high")
 
-        fun defaultTask(task: LectureTask) = when (task) {
+        internal fun defaultTask(task: LectureTask) = when (task) {
             LectureTask.TRANSCRIPTION -> TaskModel(gemini = DEFAULT_SPEECH_MODEL)
             LectureTask.LIVE_NOTES, LectureTask.CATCH_UP -> TaskModel(gemini = DEFAULT_MODEL, local = DEFAULT_LOCAL_LIVE_MODEL)
             LectureTask.FINAL_REVIEW -> TaskModel(gemini = DEFAULT_MODEL, local = DEFAULT_LOCAL_MODEL)
         }
 
         /** A speech model of Gemini (it transcribes only: no prompt). */
-        fun isSpeechModel(model: String): Boolean = "transcribe" in model.lowercase()
+        internal fun isSpeechModel(model: String): Boolean = "transcribe" in model.lowercase()
 
         /** A model of the Live API (a WebSocket). */
-        fun isLiveModel(model: String): Boolean = "-live" in model.lowercase()
+        internal fun isLiveModel(model: String): Boolean = "-live" in model.lowercase()
 
         /** The model for recorded audio of a live speech model (gemini-3.5-transcribe-live: gemini-3.5-transcribe). */
-        fun recordedSpeechModel(model: String): String = model.replace("-live", "")
+        internal fun recordedSpeechModel(model: String): String = model.replace("-live", "")
 
         /** The locales of the speech models (their table), by ISO code: the variants of a language together. */
         private val SPEECH_LOCALES = mapOf(
@@ -241,23 +241,23 @@ data class AssistantSettings(
  * API key in [secrets]. [canTranscribe]: whether the speech is recognized on this device (see
  * [AssistantSettings.consistent]).
  */
-class AssistantSettingsStore(
+public class AssistantSettingsStore(
     private val path: String = lectureDataDirectory() + "/assistant-settings.json",
     private val secrets: SecretStorage = SecretStorage.System,
     private val canTranscribe: Boolean = WhisperTranscriber.isAvailable
 ) {
-    var settings: AssistantSettings by mutableStateOf(load())
+    public var settings: AssistantSettings by mutableStateOf(load())
         private set
 
     /** The configured key, or the `GEMINI_API_KEY` environment variable. */
-    val apiKey: String get() = settings.apiKey.trim().ifEmpty { environmentApiKey().orEmpty() }
+    internal val apiKey: String get() = settings.apiKey.trim().ifEmpty { environmentApiKey().orEmpty() }
 
-    val hasApiKey: Boolean get() = apiKey.isNotEmpty()
+    internal val hasApiKey: Boolean get() = apiKey.isNotEmpty()
 
     /** `true` when the key comes from the environment variable. */
-    val usesEnvironmentKey: Boolean get() = settings.apiKey.isBlank() && !environmentApiKey().isNullOrEmpty()
+    internal val usesEnvironmentKey: Boolean get() = settings.apiKey.isBlank() && !environmentApiKey().isNullOrEmpty()
 
-    fun update(newSettings: AssistantSettings) {
+    public fun update(newSettings: AssistantSettings) {
         val sanitized = newSettings.copy(
             apiKey = newSettings.apiKey.trim(),
             chunkSeconds = newSettings.chunkSeconds.coerceIn(AssistantSettings.CHUNK_SECONDS_RANGE),

@@ -1,9 +1,10 @@
 package io.nano.tex
 
-object Alignment {
-    const val LEFT = 0
-    const val RIGHT = 1
-    const val CENTER = 2
-    const val TOP = 3
-    const val BOTTOM = 4
+/** The alignments of a formula in its box, as MicroTeX numbers them. */
+public object Alignment {
+    public const val LEFT: Int = 0
+    public const val RIGHT: Int = 1
+    public const val CENTER: Int = 2
+    public const val TOP: Int = 3
+    public const val BOTTOM: Int = 4
 }

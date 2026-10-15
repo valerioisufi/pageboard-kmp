@@ -8,13 +8,13 @@ import io.github.valerioisufi.drawview.model.geometry.Matrix2D
  * stroke. The polygons can overlap (filled one by one, a translucent stroke would be darker where
  * they do): they are turned the same way, so that the parts where they overlap are filled too.
  */
-class StrokeOutline(polygons: List<FloatArray>) {
-    val polygons: List<FloatArray> = polygons.map { if (signedArea(it) < 0f) reversed(it) else it }
+public class StrokeOutline(polygons: List<FloatArray>) {
+    public val polygons: List<FloatArray> = polygons.map { if (signedArea(it) < 0f) reversed(it) else it }
 
-    val isEmpty: Boolean get() = polygons.all { it.size < 6 }
+    public val isEmpty: Boolean get() = polygons.all { it.size < 6 }
 
     /** This outline with every vertex mapped by [transform]. */
-    fun transformed(transform: Matrix2D): StrokeOutline = StrokeOutline(
+    public fun transformed(transform: Matrix2D): StrokeOutline = StrokeOutline(
         polygons.map { polygon -> polygon.copyOf().also { transform.mapPoints(it) } }
     )
 
@@ -42,7 +42,7 @@ class StrokeOutline(polygons: List<FloatArray>) {
  * The triangles of this mesh as an outline, all turning the same way so that their union is
  * filled with the non-zero winding rule (where the engine cannot give the outline of the stroke).
  */
-fun StrokeMesh.triangleOutline(): StrokeOutline {
+public fun StrokeMesh.triangleOutline(): StrokeOutline {
     val polygons = ArrayList<FloatArray>(triangleCount)
     for (partition in partitions) {
         val p = partition.positions

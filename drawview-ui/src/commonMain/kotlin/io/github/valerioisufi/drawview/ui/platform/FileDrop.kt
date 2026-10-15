@@ -9,4 +9,4 @@ import androidx.compose.ui.Modifier
  * delivers them; on the other platforms the modifier does nothing yet.
  */
 @Composable
-expect fun Modifier.fileDropTarget(onFiles: (List<PickedFile>) -> Boolean): Modifier
+public expect fun Modifier.fileDropTarget(onFiles: (List<PickedFile>) -> Boolean): Modifier

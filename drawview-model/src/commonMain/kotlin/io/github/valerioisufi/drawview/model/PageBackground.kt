@@ -9,14 +9,14 @@ import kotlinx.serialization.Serializable
  * Styling definition for page background rendering.
  */
 @Serializable
-sealed class PageBackground {
-    abstract val backgroundColor: Int
+public sealed class PageBackground {
+    public abstract val backgroundColor: Int
 
     /**
      * The lines or the dots drawn over [backgroundColor] on a page of [widthMm] x [heightMm], those
      * of [area] only (page millimeters; the whole page by default), or `null` for a solid color.
      */
-    fun pattern(widthMm: Float, heightMm: Float, area: Rect = Rect(0f, 0f, widthMm, heightMm)): BackgroundPattern? {
+    public fun pattern(widthMm: Float, heightMm: Float, area: Rect = Rect(0f, 0f, widthMm, heightMm)): BackgroundPattern? {
         fun positions(spacingMm: Float, lengthMm: Float, from: Float, to: Float): FloatArray {
             if (spacingMm <= 0f) return FloatArray(0)
             val end = minOf(to, lengthMm)
@@ -38,13 +38,13 @@ sealed class PageBackground {
 
     @Serializable
     @SerialName("Solid")
-    data class Solid(
+    public data class Solid(
         override val backgroundColor: Int = 0xFFFFFFFF.toInt()
     ) : PageBackground()
 
     @Serializable
     @SerialName("Ruled")
-    data class Ruled(
+    public data class Ruled(
         override val backgroundColor: Int = 0xFFFFFFFF.toInt(),
         val lineColor: Int = 0x330000FF.toInt(),
         val spacingMm: Float = 8f,
@@ -53,7 +53,7 @@ sealed class PageBackground {
 
     @Serializable
     @SerialName("Grid")
-    data class Grid(
+    public data class Grid(
         override val backgroundColor: Int = 0xFFFFFFFF.toInt(),
         val lineColor: Int = 0x330000FF.toInt(),
         val spacingMm: Float = 5f,
@@ -62,7 +62,7 @@ sealed class PageBackground {
 
     @Serializable
     @SerialName("Dotted")
-    data class Dotted(
+    public data class Dotted(
         override val backgroundColor: Int = 0xFFFFFFFF.toInt(),
         val dotColor: Int = 0x50000000.toInt(),
         val spacingMm: Float = 5f,
@@ -78,13 +78,13 @@ sealed class PageBackground {
  * @param spacingMm distance between two lines or two dots.
  * @param sizeMm thickness of the lines, or radius of the dots.
  */
-class BackgroundPattern(
-    val color: Int,
-    val spacingMm: Float,
-    val sizeMm: Float,
-    val dots: Boolean,
-    val rows: FloatArray,
-    val columns: FloatArray,
-    val widthMm: Float,
-    val heightMm: Float
+public class BackgroundPattern(
+    public val color: Int,
+    public val spacingMm: Float,
+    public val sizeMm: Float,
+    public val dots: Boolean,
+    public val rows: FloatArray,
+    public val columns: FloatArray,
+    public val widthMm: Float,
+    public val heightMm: Float
 )

@@ -21,7 +21,7 @@ import io.github.valerioisufi.drawview.model.geometry.AffineTransform
  * - the text being written ([text], on the page [textPageId]: its content as it is now);
  * - the elements selected ([selection]), and how they are being moved.
  */
-data class EditorActivity(
+public data class EditorActivity(
     val pageId: String? = null,
     val x: Float = 0f,
     val y: Float = 0f,
@@ -48,7 +48,7 @@ data class EditorActivity(
  * - the elements it selected ([selection], on the page [selectionPageId]), moved by
  *   [selectionTransform] while it moves them (`null`: not moving).
  */
-data class Collaborator(
+public data class Collaborator(
     val id: String,
     val name: String,
     val color: Color,

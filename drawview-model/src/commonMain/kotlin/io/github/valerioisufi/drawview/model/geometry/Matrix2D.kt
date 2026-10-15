@@ -21,20 +21,20 @@ import kotlin.math.sin
  * [ 0   0    1 ]   [ 1 ]   [        1       ]
  * ```
  */
-class Matrix2D(
-    var a: Float = 1f,
-    var b: Float = 0f,
-    var c: Float = 0f,
-    var d: Float = 1f,
-    var tx: Float = 0f,
-    var ty: Float = 0f
+public class Matrix2D(
+    public var a: Float = 1f,
+    public var b: Float = 0f,
+    public var c: Float = 0f,
+    public var d: Float = 1f,
+    public var tx: Float = 0f,
+    public var ty: Float = 0f
 ) {
-    constructor(src: Matrix2D) : this(src.a, src.b, src.c, src.d, src.tx, src.ty)
+    public constructor(src: Matrix2D) : this(src.a, src.b, src.c, src.d, src.tx, src.ty)
 
     /**
      * Resets this matrix to the identity matrix.
      */
-    fun reset(): Matrix2D {
+    public fun reset(): Matrix2D {
         a = 1f; b = 0f
         c = 0f; d = 1f
         tx = 0f; ty = 0f
@@ -44,7 +44,7 @@ class Matrix2D(
     /**
      * Sets this matrix to match the values of [other].
      */
-    fun set(other: Matrix2D): Matrix2D {
+    public fun set(other: Matrix2D): Matrix2D {
         a = other.a; b = other.b
         c = other.c; d = other.d
         tx = other.tx; ty = other.ty
@@ -54,7 +54,7 @@ class Matrix2D(
     /**
      * Pre-concatenates this matrix with a translation: M' = M * T.
      */
-    fun preTranslate(dx: Float, dy: Float): Matrix2D {
+    public fun preTranslate(dx: Float, dy: Float): Matrix2D {
         tx += a * dx + c * dy
         ty += b * dx + d * dy
         return this
@@ -63,7 +63,7 @@ class Matrix2D(
     /**
      * Post-concatenates this matrix with a translation: M' = T * M.
      */
-    fun postTranslate(dx: Float, dy: Float): Matrix2D {
+    public fun postTranslate(dx: Float, dy: Float): Matrix2D {
         tx += dx
         ty += dy
         return this
@@ -72,7 +72,7 @@ class Matrix2D(
     /**
      * Pre-concatenates this matrix with a scale: M' = M * S.
      */
-    fun preScale(sx: Float, sy: Float): Matrix2D {
+    public fun preScale(sx: Float, sy: Float): Matrix2D {
         a *= sx
         b *= sx
         c *= sy
@@ -83,7 +83,7 @@ class Matrix2D(
     /**
      * Post-concatenates this matrix with a scale: M' = S * M.
      */
-    fun postScale(sx: Float, sy: Float): Matrix2D {
+    public fun postScale(sx: Float, sy: Float): Matrix2D {
         a *= sx
         c *= sx
         tx *= sx
@@ -96,7 +96,7 @@ class Matrix2D(
     /**
      * Post-concatenates this matrix with a scale around a pivot point (px, py).
      */
-    fun postScale(sx: Float, sy: Float, px: Float, py: Float): Matrix2D {
+    public fun postScale(sx: Float, sy: Float, px: Float, py: Float): Matrix2D {
         postTranslate(-px, -py)
         postScale(sx, sy)
         postTranslate(px, py)
@@ -106,7 +106,7 @@ class Matrix2D(
     /**
      * Post-concatenates this matrix with a rotation of [degrees] around the pivot ([px], [py]).
      */
-    fun postRotate(degrees: Float, px: Float = 0f, py: Float = 0f): Matrix2D {
+    public fun postRotate(degrees: Float, px: Float = 0f, py: Float = 0f): Matrix2D {
         val rad = degrees * PI.toFloat() / 180f
         val cosA = cos(rad)
         val sinA = sin(rad)
@@ -123,7 +123,7 @@ class Matrix2D(
     /**
      * Pre-concatenates this matrix with another matrix: M' = this * other.
      */
-    fun preConcat(other: Matrix2D): Matrix2D {
+    public fun preConcat(other: Matrix2D): Matrix2D {
         val newA = a * other.a + c * other.b
         val newB = b * other.a + d * other.b
         val newC = a * other.c + c * other.d
@@ -140,7 +140,7 @@ class Matrix2D(
     /**
      * Sets this matrix to map [src] onto [dst], scaling each axis independently (FILL).
      */
-    fun setRectToRect(src: Rect, dst: Rect): Matrix2D {
+    public fun setRectToRect(src: Rect, dst: Rect): Matrix2D {
         val sx = if (src.width != 0f) dst.width / src.width else 1f
         val sy = if (src.height != 0f) dst.height / src.height else 1f
         a = sx; b = 0f
@@ -151,21 +151,21 @@ class Matrix2D(
     }
 
     /** Uniform scale factor of this transformation (length of the transformed X basis vector). */
-    val scaleFactor: Float
+    public val scaleFactor: Float
         get() = hypot(a, b)
 
     /** Rotation of this transformation in degrees. */
-    val rotationDegrees: Float
+    public val rotationDegrees: Float
         get() = (atan2(b, a) * 180.0 / PI).toFloat()
 
     /** Whether this matrix is the identity transformation. */
-    val isIdentity: Boolean
+    public val isIdentity: Boolean
         get() = a == 1f && b == 0f && c == 0f && d == 1f && tx == 0f && ty == 0f
 
     /**
      * Post-concatenates this matrix with another matrix: M' = other * this.
      */
-    fun postConcat(other: Matrix2D): Matrix2D {
+    public fun postConcat(other: Matrix2D): Matrix2D {
         val newA = other.a * a + other.c * b
         val newB = other.b * a + other.d * b
         val newC = other.a * c + other.c * d
@@ -182,7 +182,7 @@ class Matrix2D(
     /**
      * Maps a 2D point (x, y) through this transformation matrix.
      */
-    fun mapPoint(x: Float, y: Float): Point {
+    public fun mapPoint(x: Float, y: Float): Point {
         return Point(
             x = a * x + c * y + tx,
             y = b * x + d * y + ty
@@ -193,7 +193,7 @@ class Matrix2D(
      * Maps an array of points in-place or from [src] to [dst].
      * Coordinates are interleaved: [x0, y0, x1, y1, ...]
      */
-    fun mapPoints(dst: FloatArray, src: FloatArray = dst) {
+    public fun mapPoints(dst: FloatArray, src: FloatArray = dst) {
         val count = min(dst.size, src.size) / 2
         for (i in 0 until count) {
             val sx = src[i * 2]
@@ -206,7 +206,7 @@ class Matrix2D(
     /**
      * Maps a bounding [Rect] through this transformation matrix, returning the new axis-aligned bounding box.
      */
-    fun mapRect(rect: Rect): Rect {
+    public fun mapRect(rect: Rect): Rect {
         val p1 = mapPoint(rect.left, rect.top)
         val p2 = mapPoint(rect.right, rect.top)
         val p3 = mapPoint(rect.right, rect.bottom)
@@ -223,7 +223,7 @@ class Matrix2D(
     /**
      * Calculates the mapped geometric radius under this transformation.
      */
-    fun mapRadius(radius: Float): Float {
+    public fun mapRadius(radius: Float): Float {
         // Average length of basis vectors transformed
         val l1 = hypot(a, b)
         val l2 = hypot(c, d)
@@ -234,7 +234,7 @@ class Matrix2D(
      * Inverts this matrix and writes the result into [out].
      * Returns `true` if invertible, `false` otherwise.
      */
-    fun invert(out: Matrix2D = Matrix2D()): Boolean {
+    public fun invert(out: Matrix2D = Matrix2D()): Boolean {
         val det = a * d - b * c
         if (abs(det) < 1e-7f) return false
 

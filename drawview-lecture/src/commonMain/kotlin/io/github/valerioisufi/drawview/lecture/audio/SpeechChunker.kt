@@ -8,7 +8,7 @@ package io.github.valerioisufi.drawview.lecture.audio
  * @param overlapSamples leading samples repeating the end of the previous chunk: context for the
  *   model, already analyzed with the previous chunk.
  */
-class AudioChunk(
+internal class AudioChunk(
     val index: Int,
     val startSample: Long,
     val overlapSamples: Int,
@@ -32,7 +32,7 @@ class AudioChunk(
  * sentences are not split; it is cut anyway at [maxSeconds]. Every chunk starts with the last
  * [overlapSeconds] of the previous one, so that the model has the context of the boundary.
  */
-class SpeechChunker(
+internal class SpeechChunker(
     targetSeconds: Int,
     maxSeconds: Int = targetSeconds + targetSeconds / 2,
     overlapSeconds: Int = 5,

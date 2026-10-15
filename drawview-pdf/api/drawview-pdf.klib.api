@@ -1,0 +1,160 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <DrawView-KMP:drawview-pdf>
+final enum class io.github.valerioisufi.drawview.pdf/PdfMarkupKind : kotlin/Enum<io.github.valerioisufi.drawview.pdf/PdfMarkupKind> { // io.github.valerioisufi.drawview.pdf/PdfMarkupKind|null[0]
+    enum entry HIGHLIGHT // io.github.valerioisufi.drawview.pdf/PdfMarkupKind.HIGHLIGHT|null[0]
+    enum entry STRIKEOUT // io.github.valerioisufi.drawview.pdf/PdfMarkupKind.STRIKEOUT|null[0]
+    enum entry UNDERLINE // io.github.valerioisufi.drawview.pdf/PdfMarkupKind.UNDERLINE|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.pdf/PdfMarkupKind.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.pdf/PdfMarkupKind> // io.github.valerioisufi.drawview.pdf/PdfMarkupKind.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.pdf/PdfMarkupKind // io.github.valerioisufi.drawview.pdf/PdfMarkupKind.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.pdf/PdfMarkupKind> // io.github.valerioisufi.drawview.pdf/PdfMarkupKind.values|values#static(){}[0]
+}
+
+abstract interface io.github.valerioisufi.drawview.pdf/PdfDocument : kotlin/AutoCloseable { // io.github.valerioisufi.drawview.pdf/PdfDocument|null[0]
+    abstract val pageCount // io.github.valerioisufi.drawview.pdf/PdfDocument.pageCount|{}pageCount[0]
+        abstract fun <get-pageCount>(): kotlin/Int // io.github.valerioisufi.drawview.pdf/PdfDocument.pageCount.<get-pageCount>|<get-pageCount>(){}[0]
+
+    abstract fun close() // io.github.valerioisufi.drawview.pdf/PdfDocument.close|close(){}[0]
+    abstract fun getPageSize(kotlin/Int): io.github.valerioisufi.drawview.pdf/PdfSize // io.github.valerioisufi.drawview.pdf/PdfDocument.getPageSize|getPageSize(kotlin.Int){}[0]
+    abstract fun getPageText(kotlin/Int): kotlin/String? // io.github.valerioisufi.drawview.pdf/PdfDocument.getPageText|getPageText(kotlin.Int){}[0]
+    abstract fun getPageTextLayout(kotlin/Int): io.github.valerioisufi.drawview.model/PdfTextLayout? // io.github.valerioisufi.drawview.pdf/PdfDocument.getPageTextLayout|getPageTextLayout(kotlin.Int){}[0]
+    abstract fun renderPageSlice(kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int = ...): androidx.compose.ui.graphics/ImageBitmap? // io.github.valerioisufi.drawview.pdf/PdfDocument.renderPageSlice|renderPageSlice(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+    open fun renderPage(kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int = ...): androidx.compose.ui.graphics/ImageBitmap? // io.github.valerioisufi.drawview.pdf/PdfDocument.renderPage|renderPage(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+}
+
+abstract interface io.github.valerioisufi.drawview.pdf/PdfWriter : kotlin/AutoCloseable { // io.github.valerioisufi.drawview.pdf/PdfWriter|null[0]
+    abstract fun addMarkup(io.github.valerioisufi.drawview.pdf/PdfMarkupKind, kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Rect>, kotlin/Int, kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Rect>? = ...): kotlin/Boolean // io.github.valerioisufi.drawview.pdf/PdfWriter.addMarkup|addMarkup(io.github.valerioisufi.drawview.pdf.PdfMarkupKind;kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.Rect>;kotlin.Int;kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.Rect>?){}[0]
+    abstract fun addText(io.github.valerioisufi.drawview.pdf/PdfFont, kotlin/String, kotlin/Float, io.github.valerioisufi.drawview.model.geometry/Matrix2D, kotlin/Int = ..., kotlin/Float = ..., kotlin/Boolean = ...): kotlin/Boolean // io.github.valerioisufi.drawview.pdf/PdfWriter.addText|addText(io.github.valerioisufi.drawview.pdf.PdfFont;kotlin.String;kotlin.Float;io.github.valerioisufi.drawview.model.geometry.Matrix2D;kotlin.Int;kotlin.Float;kotlin.Boolean){}[0]
+    abstract fun beginPage(io.github.valerioisufi.drawview.pdf/PdfImportedPage) // io.github.valerioisufi.drawview.pdf/PdfWriter.beginPage|beginPage(io.github.valerioisufi.drawview.pdf.PdfImportedPage){}[0]
+    abstract fun beginPage(kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.pdf/PdfWriter.beginPage|beginPage(kotlin.Float;kotlin.Float){}[0]
+    abstract fun close() // io.github.valerioisufi.drawview.pdf/PdfWriter.close|close(){}[0]
+    abstract fun drawImage(kotlin/IntArray, kotlin/Int, kotlin/Int, io.github.valerioisufi.drawview.model.geometry/Matrix2D): kotlin/Boolean // io.github.valerioisufi.drawview.pdf/PdfWriter.drawImage|drawImage(kotlin.IntArray;kotlin.Int;kotlin.Int;io.github.valerioisufi.drawview.model.geometry.Matrix2D){}[0]
+    abstract fun drawJpeg(kotlin/ByteArray, io.github.valerioisufi.drawview.model.geometry/Matrix2D): kotlin/Boolean // io.github.valerioisufi.drawview.pdf/PdfWriter.drawJpeg|drawJpeg(kotlin.ByteArray;io.github.valerioisufi.drawview.model.geometry.Matrix2D){}[0]
+    abstract fun drawPdfPage(kotlin/String, kotlin/Int, io.github.valerioisufi.drawview.model.geometry/Matrix2D): kotlin/Boolean // io.github.valerioisufi.drawview.pdf/PdfWriter.drawPdfPage|drawPdfPage(kotlin.String;kotlin.Int;io.github.valerioisufi.drawview.model.geometry.Matrix2D){}[0]
+    abstract fun fillPath(io.github.valerioisufi.drawview.pdf/PdfPath, kotlin/Int): kotlin/Boolean // io.github.valerioisufi.drawview.pdf/PdfWriter.fillPath|fillPath(io.github.valerioisufi.drawview.pdf.PdfPath;kotlin.Int){}[0]
+    abstract fun importPdfPages(kotlin/String, kotlin.collections/List<kotlin/Int>): kotlin.collections/List<io.github.valerioisufi.drawview.pdf/PdfImportedPage>? // io.github.valerioisufi.drawview.pdf/PdfWriter.importPdfPages|importPdfPages(kotlin.String;kotlin.collections.List<kotlin.Int>){}[0]
+    abstract fun loadFont(kotlin/ByteArray): io.github.valerioisufi.drawview.pdf/PdfFont? // io.github.valerioisufi.drawview.pdf/PdfWriter.loadFont|loadFont(kotlin.ByteArray){}[0]
+    abstract fun pdfPageSize(kotlin/String, kotlin/Int): io.github.valerioisufi.drawview.pdf/PdfSize? // io.github.valerioisufi.drawview.pdf/PdfWriter.pdfPageSize|pdfPageSize(kotlin.String;kotlin.Int){}[0]
+    abstract fun save(kotlin/String, io.github.valerioisufi.drawview.pdf/PdfInfo = ...) // io.github.valerioisufi.drawview.pdf/PdfWriter.save|save(kotlin.String;io.github.valerioisufi.drawview.pdf.PdfInfo){}[0]
+    abstract fun strokePath(io.github.valerioisufi.drawview.pdf/PdfPath, kotlin/Int, kotlin/Float): kotlin/Boolean // io.github.valerioisufi.drawview.pdf/PdfWriter.strokePath|strokePath(io.github.valerioisufi.drawview.pdf.PdfPath;kotlin.Int;kotlin.Float){}[0]
+}
+
+final class io.github.valerioisufi.drawview.pdf/GlyphContour { // io.github.valerioisufi.drawview.pdf/GlyphContour|null[0]
+    constructor <init>(kotlin/FloatArray, kotlin/FloatArray, kotlin/BooleanArray) // io.github.valerioisufi.drawview.pdf/GlyphContour.<init>|<init>(kotlin.FloatArray;kotlin.FloatArray;kotlin.BooleanArray){}[0]
+
+    final val onCurve // io.github.valerioisufi.drawview.pdf/GlyphContour.onCurve|{}onCurve[0]
+        final fun <get-onCurve>(): kotlin/BooleanArray // io.github.valerioisufi.drawview.pdf/GlyphContour.onCurve.<get-onCurve>|<get-onCurve>(){}[0]
+    final val size // io.github.valerioisufi.drawview.pdf/GlyphContour.size|{}size[0]
+        final fun <get-size>(): kotlin/Int // io.github.valerioisufi.drawview.pdf/GlyphContour.size.<get-size>|<get-size>(){}[0]
+    final val xs // io.github.valerioisufi.drawview.pdf/GlyphContour.xs|{}xs[0]
+        final fun <get-xs>(): kotlin/FloatArray // io.github.valerioisufi.drawview.pdf/GlyphContour.xs.<get-xs>|<get-xs>(){}[0]
+    final val ys // io.github.valerioisufi.drawview.pdf/GlyphContour.ys|{}ys[0]
+        final fun <get-ys>(): kotlin/FloatArray // io.github.valerioisufi.drawview.pdf/GlyphContour.ys.<get-ys>|<get-ys>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.pdf/PdfFont { // io.github.valerioisufi.drawview.pdf/PdfFont|null[0]
+    final val metrics // io.github.valerioisufi.drawview.pdf/PdfFont.metrics|{}metrics[0]
+        final fun <get-metrics>(): io.github.valerioisufi.drawview.pdf/TrueTypeFont // io.github.valerioisufi.drawview.pdf/PdfFont.metrics.<get-metrics>|<get-metrics>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.pdf/PdfImportedPage { // io.github.valerioisufi.drawview.pdf/PdfImportedPage|null[0]
+    constructor <init>(kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.pdf/PdfImportedPage.<init>|<init>(kotlin.Float;kotlin.Float){}[0]
+
+    final val heightPt // io.github.valerioisufi.drawview.pdf/PdfImportedPage.heightPt|{}heightPt[0]
+        final fun <get-heightPt>(): kotlin/Float // io.github.valerioisufi.drawview.pdf/PdfImportedPage.heightPt.<get-heightPt>|<get-heightPt>(){}[0]
+    final val widthPt // io.github.valerioisufi.drawview.pdf/PdfImportedPage.widthPt|{}widthPt[0]
+        final fun <get-widthPt>(): kotlin/Float // io.github.valerioisufi.drawview.pdf/PdfImportedPage.widthPt.<get-widthPt>|<get-widthPt>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.pdf/PdfInfo { // io.github.valerioisufi.drawview.pdf/PdfInfo|null[0]
+    constructor <init>(kotlin/String? = ..., kotlin/String? = ...) // io.github.valerioisufi.drawview.pdf/PdfInfo.<init>|<init>(kotlin.String?;kotlin.String?){}[0]
+
+    final val creator // io.github.valerioisufi.drawview.pdf/PdfInfo.creator|{}creator[0]
+        final fun <get-creator>(): kotlin/String? // io.github.valerioisufi.drawview.pdf/PdfInfo.creator.<get-creator>|<get-creator>(){}[0]
+    final val title // io.github.valerioisufi.drawview.pdf/PdfInfo.title|{}title[0]
+        final fun <get-title>(): kotlin/String? // io.github.valerioisufi.drawview.pdf/PdfInfo.title.<get-title>|<get-title>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.pdf/PdfPath { // io.github.valerioisufi.drawview.pdf/PdfPath|null[0]
+    constructor <init>() // io.github.valerioisufi.drawview.pdf/PdfPath.<init>|<init>(){}[0]
+
+    final val isEmpty // io.github.valerioisufi.drawview.pdf/PdfPath.isEmpty|{}isEmpty[0]
+        final fun <get-isEmpty>(): kotlin/Boolean // io.github.valerioisufi.drawview.pdf/PdfPath.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
+
+    final fun addCircle(kotlin/Float, kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.pdf/PdfPath.addCircle|addCircle(kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun addPolygon(kotlin/FloatArray) // io.github.valerioisufi.drawview.pdf/PdfPath.addPolygon|addPolygon(kotlin.FloatArray){}[0]
+    final fun close() // io.github.valerioisufi.drawview.pdf/PdfPath.close|close(){}[0]
+    final fun cubicTo(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.pdf/PdfPath.cubicTo|cubicTo(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun lineTo(kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.pdf/PdfPath.lineTo|lineTo(kotlin.Float;kotlin.Float){}[0]
+    final fun moveTo(kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.pdf/PdfPath.moveTo|moveTo(kotlin.Float;kotlin.Float){}[0]
+}
+
+final class io.github.valerioisufi.drawview.pdf/PdfSize { // io.github.valerioisufi.drawview.pdf/PdfSize|null[0]
+    constructor <init>(kotlin/Double, kotlin/Double) // io.github.valerioisufi.drawview.pdf/PdfSize.<init>|<init>(kotlin.Double;kotlin.Double){}[0]
+
+    final val aspectRatio // io.github.valerioisufi.drawview.pdf/PdfSize.aspectRatio|{}aspectRatio[0]
+        final fun <get-aspectRatio>(): kotlin/Float // io.github.valerioisufi.drawview.pdf/PdfSize.aspectRatio.<get-aspectRatio>|<get-aspectRatio>(){}[0]
+    final val heightMm // io.github.valerioisufi.drawview.pdf/PdfSize.heightMm|{}heightMm[0]
+        final fun <get-heightMm>(): kotlin/Float // io.github.valerioisufi.drawview.pdf/PdfSize.heightMm.<get-heightMm>|<get-heightMm>(){}[0]
+    final val heightPt // io.github.valerioisufi.drawview.pdf/PdfSize.heightPt|{}heightPt[0]
+        final fun <get-heightPt>(): kotlin/Double // io.github.valerioisufi.drawview.pdf/PdfSize.heightPt.<get-heightPt>|<get-heightPt>(){}[0]
+    final val widthMm // io.github.valerioisufi.drawview.pdf/PdfSize.widthMm|{}widthMm[0]
+        final fun <get-widthMm>(): kotlin/Float // io.github.valerioisufi.drawview.pdf/PdfSize.widthMm.<get-widthMm>|<get-widthMm>(){}[0]
+    final val widthPt // io.github.valerioisufi.drawview.pdf/PdfSize.widthPt|{}widthPt[0]
+        final fun <get-widthPt>(): kotlin/Double // io.github.valerioisufi.drawview.pdf/PdfSize.widthPt.<get-widthPt>|<get-widthPt>(){}[0]
+
+    final fun component1(): kotlin/Double // io.github.valerioisufi.drawview.pdf/PdfSize.component1|component1(){}[0]
+    final fun component2(): kotlin/Double // io.github.valerioisufi.drawview.pdf/PdfSize.component2|component2(){}[0]
+    final fun copy(kotlin/Double = ..., kotlin/Double = ...): io.github.valerioisufi.drawview.pdf/PdfSize // io.github.valerioisufi.drawview.pdf/PdfSize.copy|copy(kotlin.Double;kotlin.Double){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.pdf/PdfSize.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.pdf/PdfSize.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.pdf/PdfSize.toString|toString(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.pdf/TrueTypeFont { // io.github.valerioisufi.drawview.pdf/TrueTypeFont|null[0]
+    constructor <init>(kotlin/ByteArray) // io.github.valerioisufi.drawview.pdf/TrueTypeFont.<init>|<init>(kotlin.ByteArray){}[0]
+
+    final val unitsPerEm // io.github.valerioisufi.drawview.pdf/TrueTypeFont.unitsPerEm|{}unitsPerEm[0]
+        final fun <get-unitsPerEm>(): kotlin/Int // io.github.valerioisufi.drawview.pdf/TrueTypeFont.unitsPerEm.<get-unitsPerEm>|<get-unitsPerEm>(){}[0]
+
+    final fun advance(kotlin/Int): kotlin/Int // io.github.valerioisufi.drawview.pdf/TrueTypeFont.advance|advance(kotlin.Int){}[0]
+    final fun advance(kotlin/String): kotlin/Int // io.github.valerioisufi.drawview.pdf/TrueTypeFont.advance|advance(kotlin.String){}[0]
+    final fun covers(kotlin/Int): kotlin/Boolean // io.github.valerioisufi.drawview.pdf/TrueTypeFont.covers|covers(kotlin.Int){}[0]
+    final fun glyphId(kotlin/Int): kotlin/Int // io.github.valerioisufi.drawview.pdf/TrueTypeFont.glyphId|glyphId(kotlin.Int){}[0]
+    final fun outline(kotlin/Int): kotlin.collections/List<io.github.valerioisufi.drawview.pdf/GlyphContour> // io.github.valerioisufi.drawview.pdf/TrueTypeFont.outline|outline(kotlin.Int){}[0]
+    final fun strikeout(): kotlin/Pair<kotlin/Int, kotlin/Int>? // io.github.valerioisufi.drawview.pdf/TrueTypeFont.strikeout|strikeout(){}[0]
+    final fun subset(kotlin.collections/Set<kotlin/Int>): kotlin/ByteArray // io.github.valerioisufi.drawview.pdf/TrueTypeFont.subset|subset(kotlin.collections.Set<kotlin.Int>){}[0]
+}
+
+final object io.github.valerioisufi.drawview.pdf/PdfiumEngine { // io.github.valerioisufi.drawview.pdf/PdfiumEngine|null[0]
+    final fun create(): io.github.valerioisufi.drawview.pdf/PdfWriter // io.github.valerioisufi.drawview.pdf/PdfiumEngine.create|create(){}[0]
+    final fun createTileAdapter(): io.github.valerioisufi.drawview.canvas.render.tile/PdfTileAdapter? // io.github.valerioisufi.drawview.pdf/PdfiumEngine.createTileAdapter|createTileAdapter(){}[0]
+    final fun isAvailable(): kotlin/Boolean // io.github.valerioisufi.drawview.pdf/PdfiumEngine.isAvailable|isAvailable(){}[0]
+    final fun open(kotlin/String, kotlin/String? = ...): io.github.valerioisufi.drawview.pdf/PdfDocument // io.github.valerioisufi.drawview.pdf/PdfiumEngine.open|open(kotlin.String;kotlin.String?){}[0]
+}
+
+final val io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_GlyphContour$stableprop // io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_GlyphContour$stableprop|#static{}io_github_valerioisufi_drawview_pdf_GlyphContour$stableprop[0]
+final val io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfFont$stableprop // io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfFont$stableprop|#static{}io_github_valerioisufi_drawview_pdf_PdfFont$stableprop[0]
+final val io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfImportedPage$stableprop // io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfImportedPage$stableprop|#static{}io_github_valerioisufi_drawview_pdf_PdfImportedPage$stableprop[0]
+final val io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfInfo$stableprop // io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfInfo$stableprop|#static{}io_github_valerioisufi_drawview_pdf_PdfInfo$stableprop[0]
+final val io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfPath$stableprop // io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfPath$stableprop|#static{}io_github_valerioisufi_drawview_pdf_PdfPath$stableprop[0]
+final val io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfSize$stableprop // io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfSize$stableprop|#static{}io_github_valerioisufi_drawview_pdf_PdfSize$stableprop[0]
+final val io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfiumEngine$stableprop // io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfiumEngine$stableprop|#static{}io_github_valerioisufi_drawview_pdf_PdfiumEngine$stableprop[0]
+final val io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_TrueTypeFont$stableprop // io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_TrueTypeFont$stableprop|#static{}io_github_valerioisufi_drawview_pdf_TrueTypeFont$stableprop[0]
+
+final fun io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_GlyphContour$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_GlyphContour$stableprop_getter|io_github_valerioisufi_drawview_pdf_GlyphContour$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfFont$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfFont$stableprop_getter|io_github_valerioisufi_drawview_pdf_PdfFont$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfImportedPage$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfImportedPage$stableprop_getter|io_github_valerioisufi_drawview_pdf_PdfImportedPage$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfInfo$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfInfo$stableprop_getter|io_github_valerioisufi_drawview_pdf_PdfInfo$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfPath$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfPath$stableprop_getter|io_github_valerioisufi_drawview_pdf_PdfPath$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfSize$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfSize$stableprop_getter|io_github_valerioisufi_drawview_pdf_PdfSize$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfiumEngine$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_PdfiumEngine$stableprop_getter|io_github_valerioisufi_drawview_pdf_PdfiumEngine$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_TrueTypeFont$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.pdf/io_github_valerioisufi_drawview_pdf_TrueTypeFont$stableprop_getter|io_github_valerioisufi_drawview_pdf_TrueTypeFont$stableprop_getter(){}[0]

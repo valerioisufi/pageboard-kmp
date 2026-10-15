@@ -66,7 +66,7 @@ import kotlinx.coroutines.withContext
  *   300 dpi (placeholders for the types it does not know).
  * @param createWriter the PDF written.
  */
-class PdfExporter(
+internal class PdfExporter(
     private val textAdapter: TextTileAdapter?,
     private val fontFiles: (suspend (TextFace) -> ByteArray?)? = null,
     private val creator: String? = null,

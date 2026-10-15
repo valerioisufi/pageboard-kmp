@@ -29,10 +29,10 @@ internal actual fun rememberMicrophoneAccess(): suspend () -> Boolean = remember
     }
 }
 
-actual fun environmentApiKey(): String? = null
+internal actual fun environmentApiKey(): String? = null
 
 // The files of the application are private to it
-actual fun restrictToOwner(path: String) {}
+internal actual fun restrictToOwner(path: String) {}
 
 /** A notification of iOS (the permission asked the first time). */
 internal actual fun showNotification(channel: String, title: String, text: String) {

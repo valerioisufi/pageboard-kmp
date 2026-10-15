@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
  * Where to write a file the user saves: [path], then [deliver] with the path written (on the
  * phones the file is written in the application, then given to the place the user chose).
  */
-class FileTarget(val path: String, val deliver: suspend (written: String) -> Unit = {})
+public class FileTarget(public val path: String, public val deliver: suspend (written: String) -> Unit = {})
 
 /**
  * Remembers the chooser of where to save a file of [mimeType] (the dialog of the desktop, the
@@ -14,4 +14,4 @@ class FileTarget(val path: String, val deliver: suspend (written: String) -> Uni
  * it, and is not called when cancelled.
  */
 @Composable
-expect fun rememberFileSaver(title: String, mimeType: String, onTarget: (FileTarget) -> Unit): (suggestedName: String) -> Unit
+public expect fun rememberFileSaver(title: String, mimeType: String, onTarget: (FileTarget) -> Unit): (suggestedName: String) -> Unit

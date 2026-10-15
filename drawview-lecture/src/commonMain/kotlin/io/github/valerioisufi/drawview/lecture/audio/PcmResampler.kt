@@ -12,7 +12,7 @@ import kotlin.math.roundToInt
  * decimation ratio, then linearly interpolated. The state is kept between the blocks, so that a
  * stream can be converted in blocks of any size without discontinuities.
  */
-class PcmResampler(
+internal class PcmResampler(
     private val inputRate: Int,
     private val channels: Int,
     private val outputRate: Int = LECTURE_SAMPLE_RATE

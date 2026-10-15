@@ -6,23 +6,23 @@ import kotlin.random.Random
  * Minimal file system access used to store the resources of the documents (imported images
  * and PDF files).
  */
-expect object PlatformFiles {
+public expect object PlatformFiles {
     /** Directory where document resources are stored (created on demand). */
-    fun resourcesDirectory(): String
+    public fun resourcesDirectory(): String
 
-    fun readBytes(path: String): ByteArray?
+    public fun readBytes(path: String): ByteArray?
 
-    fun writeBytes(path: String, bytes: ByteArray): Boolean
+    public fun writeBytes(path: String, bytes: ByteArray): Boolean
 
-    fun exists(path: String): Boolean
+    public fun exists(path: String): Boolean
 
-    fun delete(path: String): Boolean
+    public fun delete(path: String): Boolean
 }
 
 /**
  * Builds a unique path inside [PlatformFiles.resourcesDirectory].
  */
-fun newResourcePath(prefix: String, extension: String): String {
+public fun newResourcePath(prefix: String, extension: String): String {
     val unique = Random.nextLong().toULong().toString(16) + Random.nextLong().toULong().toString(16)
     return PlatformFiles.resourcesDirectory().trimEnd('/') + "/${prefix}_$unique.$extension"
 }

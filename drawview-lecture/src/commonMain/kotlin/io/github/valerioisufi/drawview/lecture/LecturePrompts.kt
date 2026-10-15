@@ -11,7 +11,7 @@ import io.github.valerioisufi.drawview.lecture.transcription.SpeechHints
  *
  * @param contextMs leading milliseconds already analyzed with the previous request (context only).
  */
-sealed interface RequestSpeech {
+internal sealed interface RequestSpeech {
     val startMs: Long
     val contextMs: Long
     val endMs: Long
@@ -19,7 +19,7 @@ sealed interface RequestSpeech {
 }
 
 /** The audio of a request. */
-class RequestAudio(
+internal class RequestAudio(
     val wav: ByteArray,
     override val startMs: Long,
     override val contextMs: Long,
@@ -27,7 +27,7 @@ class RequestAudio(
 ) : RequestSpeech
 
 /** The transcript of a request: [context] already analyzed, then the new [segments]. */
-class RequestTranscript(
+internal class RequestTranscript(
     val context: List<TranscriptSegment>,
     val segments: List<TranscriptSegment>,
     override val startMs: Long,
@@ -40,7 +40,7 @@ class RequestTranscript(
  *
  * @param courseContext the course of the notebook ([CourseContext]).
  */
-class LectureMemory(
+internal class LectureMemory(
     val elapsedMs: Long,
     val outline: String,
     val currentTopic: String,
@@ -58,7 +58,7 @@ class LectureMemory(
  * slides, typed text, handwriting), with the images of the visible pages; only the number of
  * images changes. The local models receive no audio: their prompts carry the transcript.
  */
-object LecturePrompts {
+internal object LecturePrompts {
 
     /**
      * The language spoken, by its name ("Italian"), when the settings say it: the slides are often

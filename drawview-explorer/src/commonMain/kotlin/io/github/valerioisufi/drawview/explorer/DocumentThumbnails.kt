@@ -46,7 +46,7 @@ import kotlinx.coroutines.withContext
  * @param elements draws the elements of the types of the application.
  */
 @Stable
-class DocumentThumbnails(
+public class DocumentThumbnails(
     private val documents: OpenDocuments,
     private val textAdapter: TextTileAdapter?,
     private val directory: String? = defaultDirectory(),
@@ -56,9 +56,9 @@ class DocumentThumbnails(
 ) {
     private class Thumbnail(val modifiedAt: Long, val widthPx: Int, val image: ImageBitmap)
 
-    companion object {
+    public companion object {
         /** The directory of the thumbnails in the data directory of the application. */
-        fun defaultDirectory(): String = dataDirectory().trimEnd('/') + "/thumbnails"
+        public fun defaultDirectory(): String = dataDirectory().trimEnd('/') + "/thumbnails"
     }
 
     private val mutex = Mutex()
@@ -68,14 +68,14 @@ class DocumentThumbnails(
     private val memory = LinkedHashMap<String, Thumbnail>()
 
     /** How many thumbnails are being drawn (the screenshot tests wait for none). */
-    var rendering by mutableIntStateOf(0)
+    public var rendering: Int by mutableIntStateOf(0)
         private set
 
     /**
      * The thumbnail of the document [documentId] as changed at [modifiedAt], at least [widthPx]
      * wide, or `null` when it has no page or cannot be read.
      */
-    suspend fun of(documentId: String, modifiedAt: Long, widthPx: Int): ImageBitmap? {
+    public suspend fun of(documentId: String, modifiedAt: Long, widthPx: Int): ImageBitmap? {
         remembered(documentId, modifiedAt, widthPx)?.let { return it }
         return mutex.withLock {
             // Drawn meanwhile for another item showing the same document
@@ -163,7 +163,7 @@ class DocumentThumbnails(
  * drawn by the fonts of the notes, their PDF pages and formulas by [engines].
  */
 @Composable
-fun rememberDocumentThumbnails(
+public fun rememberDocumentThumbnails(
     documents: OpenDocuments,
     directory: String? = null,
     engines: DrawViewEngines = LocalDrawViewEngines.current

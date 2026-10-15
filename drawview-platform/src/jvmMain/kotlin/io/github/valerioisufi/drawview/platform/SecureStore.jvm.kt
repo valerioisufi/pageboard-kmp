@@ -4,16 +4,16 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
 
-actual object SecureStore {
+public actual object SecureStore {
     private val directory: File get() = File(drawViewDesktopDataDirectory, "secure").apply { mkdirs() }
 
-    actual fun read(name: String): String? = try {
+    public actual fun read(name: String): String? = try {
         File(directory, fileName(name)).takeIf { it.exists() }?.readText()
     } catch (_: Exception) {
         null
     }
 
-    actual fun write(name: String, value: String?): Boolean = try {
+    public actual fun write(name: String, value: String?): Boolean = try {
         val file = File(directory, fileName(name))
         if (value == null) {
             file.delete()
