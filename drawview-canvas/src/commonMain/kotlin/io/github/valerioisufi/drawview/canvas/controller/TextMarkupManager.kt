@@ -141,7 +141,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
      * tool does not wait for it.
      */
     fun prefetchVisiblePages() {
-        val pdfs = controller.visiblePages().flatMap { controller.document.pages.getOrNull(it.index)?.pdfs.orEmpty() }
+        val pdfs = controller.viewport.visiblePages().flatMap { controller.document.pages.getOrNull(it.index)?.pdfs.orEmpty() }
         if (pdfs.isEmpty()) return
         controller.coroutineScope.launch(Dispatchers.Default) {
             pdfs.forEach { layoutOf(it) }
@@ -218,10 +218,10 @@ class TextMarkupManager(private val controller: DrawViewController) {
      * @return `false` when there is no mark there.
      */
     fun selectMarkupAt(screen: Offset, tolerancePx: Float): Boolean {
-        val pageIndex = controller.findPageIndexAtScreen(screen) ?: return false
+        val pageIndex = controller.viewport.findPageIndexAtScreen(screen) ?: return false
         val page = controller.document.pages.getOrNull(pageIndex) ?: return false
-        val mm = controller.screenToPageMm(pageIndex, screen) ?: return false
-        val toleranceMm = tolerancePx / controller.pixelsPerMm(pageIndex).coerceAtLeast(0.01f)
+        val mm = controller.viewport.screenToPageMm(pageIndex, screen) ?: return false
+        val toleranceMm = tolerancePx / controller.viewport.pixelsPerMm(pageIndex).coerceAtLeast(0.01f)
         val markup = page.markups.lastOrNull { it.containsPoint(page, mm.toModel(), toleranceMm) } ?: return false
         controller.selectionManager.clearSelection()
         textSelection = null
@@ -258,7 +258,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
     }
 
     /** Radius of the knobs of the handles of the text selection, in screen pixels. */
-    val handleKnobRadiusPx: Float get() = HANDLE_KNOB_RADIUS_DP * controller.density
+    val handleKnobRadiusPx: Float get() = HANDLE_KNOB_RADIUS_DP * controller.viewport.density
 
     /**
      * Screen positions of the centers of the knobs of the handles of the text selection (start,
@@ -332,7 +332,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
     fun pointsToScreen(page: DrawPage, pointsToPageMm: Matrix2D): Matrix2D? {
         val pageIndex = controller.document.pages.indexOf(page)
         if (pageIndex < 0) return null
-        val mmToScreen = controller.pageMmToScreen(pageIndex) ?: return null
+        val mmToScreen = controller.viewport.pageMmToScreen(pageIndex) ?: return null
         return Matrix2D(pointsToPageMm).postConcat(mmToScreen)
     }
 
@@ -342,9 +342,9 @@ class TextMarkupManager(private val controller: DrawViewController) {
 
     /** The character of the text of a PDF at [screen] (at most [tolerancePx] away), as an empty range. */
     private fun textAt(screen: Offset, tolerancePx: Float): TextRange? {
-        val pageIndex = controller.findPageIndexAtScreen(screen) ?: return null
+        val pageIndex = controller.viewport.findPageIndexAtScreen(screen) ?: return null
         val page = controller.document.pages.getOrNull(pageIndex) ?: return null
-        val mm = controller.screenToPageMm(pageIndex, screen) ?: return null
+        val mm = controller.viewport.screenToPageMm(pageIndex, screen) ?: return null
         for (pdf in page.pdfs.asReversed()) {
             val layout = layoutOf(pdf) ?: continue
             if (!layout.hasText) continue
@@ -352,7 +352,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
             val mmToPoints = Matrix2D()
             if (!pointsToMm.invert(mmToPoints)) continue
             val point = mmToPoints.mapPoint(mm.x, mm.y)
-            val pixelsPerPoint = controller.pixelsPerMm(pageIndex) * pointsToMm.scaleFactor
+            val pixelsPerPoint = controller.viewport.pixelsPerMm(pageIndex) * pointsToMm.scaleFactor
             val index = layout.charIndexNear(point.x, point.y, tolerancePx / pixelsPerPoint.coerceAtLeast(0.001f))
             if (index >= 0) return TextRange(page, pdf, layout, index, index)
         }
@@ -361,7 +361,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
 
     /** Whether the page at [screen] shows a PDF whose text cannot be selected. */
     private fun isPdfWithoutTextAt(screen: Offset): Boolean {
-        val pageIndex = controller.findPageIndexAtScreen(screen) ?: return false
+        val pageIndex = controller.viewport.findPageIndexAtScreen(screen) ?: return false
         val page = controller.document.pages.getOrNull(pageIndex) ?: return false
         return page.pdfs.isNotEmpty() && page.pdfs.none { layoutOf(it)?.hasText == true }
     }
@@ -370,7 +370,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
     private fun focusAt(range: TextRange, screen: Offset): Int? {
         val pageIndex = controller.document.pages.indexOf(range.page)
         if (pageIndex < 0) return null
-        val mm = controller.screenToPageMm(pageIndex, screen) ?: return null
+        val mm = controller.viewport.screenToPageMm(pageIndex, screen) ?: return null
         val mmToPoints = Matrix2D()
         if (!range.pointsToPageMm().invert(mmToPoints)) return null
         val point = mmToPoints.mapPoint(mm.x, mm.y)
@@ -396,7 +396,7 @@ class TextMarkupManager(private val controller: DrawViewController) {
         )
         val change = AddElements.of(page, listOf(markup))
         // Atomic hand-off from the live layer to the tiles (no missing frame)
-        val pageWorldRect = controller.calcPage.pagesRectOnWindow.getOrNull(pageIndex)
+        val pageWorldRect = controller.viewport.layout.pagesRectOnWindow.getOrNull(pageIndex)
         if (pageWorldRect != null) {
             controller.tileManager.bakeMarkupsDirectlySync(page, pageWorldRect, listOf(markup)) { controller.submitAlreadyDrawn(change) }
         } else {

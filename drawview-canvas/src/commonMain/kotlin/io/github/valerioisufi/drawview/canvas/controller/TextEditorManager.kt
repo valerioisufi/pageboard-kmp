@@ -155,15 +155,15 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
 
     /**
      * Starts editing [item] on the page [pageIndex]; not a text another device is writing (see
-     * [DrawViewController.writerOf]).
+     * [CollaboratorPresence.writerOf]).
      *
      * @param caretAt where the user touched the text, in millimeters from the top-left corner of
      *   its box before its rotation (see `RotatableItem.toLocal`): the caret goes on the character
      *   there; at the end of the text when `null`.
      */
     fun startEditing(item: DrawText, pageIndex: Int, caretAt: Offset? = null) {
-        controller.writerOf(item)?.let { writer ->
-            controller.refuseEdit(writer)
+        controller.presence.writerOf(item)?.let { writer ->
+            controller.presence.refuseEdit(writer)
             return
         }
         open(item, pageIndex, item.x, item.y, item.width, caretAt, item.autoWidth)
@@ -198,7 +198,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
             controller.invalidatePageContent(page, item.getRotatedBounds())
         }
         fitWidth()
-        controller.cameraPhysics.stopAllAnimations()
+        controller.viewport.camera.stopAllAnimations()
         controller.requestRedraw()
         reportDraft()
     }
@@ -212,10 +212,10 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
         if (content.isBlank()) return
         if (isEditing) finishEditing()
         // The page under the point, or the page shown (the first one before the canvas is laid out)
-        val point = atScreen ?: Offset(controller.viewportWidth / 2f, controller.viewportHeight / 2f)
-        val pageIndex = atScreen?.let { controller.findPageIndexAtScreen(it) } ?: controller.firstVisiblePageIndex() ?: 0
+        val point = atScreen ?: Offset(controller.viewport.width / 2f, controller.viewport.height / 2f)
+        val pageIndex = atScreen?.let { controller.viewport.findPageIndexAtScreen(it) } ?: controller.viewport.firstVisiblePageIndex() ?: 0
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
-        val middle = controller.screenToPageMm(pageIndex, point) ?: Offset(page.widthMm / 2f, page.heightMm / 2f)
+        val middle = controller.viewport.screenToPageMm(pageIndex, point) ?: Offset(page.widthMm / 2f, page.heightMm / 2f)
         val defaults = controller.textDefaults
         val most = (page.widthMm - 2f * PAGE_MARGIN_MM).coerceAtLeast(MIN_WIDTH_MM)
         val probe = TextData(
@@ -313,7 +313,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
         activeTextPageIndex = -1
         caretRequest = null
         value = TextFieldValue()
-        controller.reportTextDraft(null, null)
+        controller.presence.reportTextDraft(null, null)
         controller.requestRedraw()
     }
 
@@ -471,7 +471,7 @@ class TextEditorManager(private val controller: DrawViewController) : TextFormat
     /** The text being written as it is now, for the others working on the document. */
     private fun reportDraft() {
         val page = controller.document.pages.getOrNull(activeTextPageIndex) ?: return
-        controller.reportTextDraft(page.id, draft())
+        controller.presence.reportTextDraft(page.id, draft())
     }
 
     private companion object {

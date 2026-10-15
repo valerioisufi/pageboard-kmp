@@ -37,7 +37,7 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
         val document = controller.document
         // Sized for the page of the note (or the visible one), adapted to the page chosen
         val reference = suggestion.resolvedPageIndex(document)?.let { document.pages.getOrNull(it) }
-            ?: controller.firstVisiblePageIndex()?.let { document.pages.getOrNull(it) }
+            ?: controller.viewport.firstVisiblePageIndex()?.let { document.pages.getOrNull(it) }
             ?: return false
         val content = buildString {
             if (suggestion.title.isNotBlank()) appendLine("**${suggestion.title.trim()}**")
@@ -122,8 +122,8 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
     /** Shows page [pageIndex] with its top edge near the top of the viewport. */
     private fun showPageTop(controller: DrawViewController, pageIndex: Int) {
         controller.pageManager.jumpToPage(pageIndex)
-        val rect = controller.visiblePages().firstOrNull { it.index == pageIndex }?.rect ?: return
-        if (rect.height > controller.viewportHeight) controller.panCanvasBy(0f, PAGE_TOP_INSET_PX - rect.top)
+        val rect = controller.viewport.visiblePages().firstOrNull { it.index == pageIndex }?.rect ?: return
+        if (rect.height > controller.viewport.height) controller.viewport.panBy(0f, PAGE_TOP_INSET_PX - rect.top)
     }
 
     private fun noteWidthMm(page: DrawPage): Float =

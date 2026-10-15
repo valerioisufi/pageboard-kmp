@@ -188,34 +188,34 @@ class EditorCoreTest {
         val doc = DrawDocument()
         repeat(pages - 1) { doc.addPage() }
         val controller = DrawViewController(document = doc, coroutineScope = scope)
-        controller.setViewport(800f, 1200f)
+        controller.viewport.setSize(800f, 1200f)
         return controller
     }
 
     @Test
     fun theCameraShowsThePagesOneByOne() = runTest(UnconfinedTestDispatcher()) {
         val controller = controllerWith(3, backgroundScope)
-        assertEquals(0, controller.mostVisiblePageIndex())
+        assertEquals(0, controller.viewport.mostVisiblePageIndex())
 
-        controller.showNextPage()
-        assertEquals(1, controller.mostVisiblePageIndex())
+        controller.viewport.showNextPage()
+        assertEquals(1, controller.viewport.mostVisiblePageIndex())
         // The top of the page under the top margin
-        val top = controller.visiblePages().single { it.index == 1 }.rect.top
-        assertEquals(controller.cameraPhysics.topPaddingPx, top, 1f)
+        val top = controller.viewport.visiblePages().single { it.index == 1 }.rect.top
+        assertEquals(controller.viewport.camera.topPaddingPx, top, 1f)
 
-        controller.showNextPage()
-        controller.showNextPage()
-        assertEquals(2, controller.mostVisiblePageIndex())
-        controller.showPreviousPage()
-        assertEquals(1, controller.mostVisiblePageIndex())
+        controller.viewport.showNextPage()
+        controller.viewport.showNextPage()
+        assertEquals(2, controller.viewport.mostVisiblePageIndex())
+        controller.viewport.showPreviousPage()
+        assertEquals(1, controller.viewport.mostVisiblePageIndex())
 
         // Zoomed in, then the width of the pages again, from the page looked at
-        controller.zoomIn()
-        controller.zoomIn()
-        assertTrue(controller.cameraPhysics.getCurrentScale() > 1.4f)
-        controller.fitWidth()
-        assertEquals(1f, controller.cameraPhysics.getCurrentScale(), 0.001f)
-        assertEquals(1, controller.mostVisiblePageIndex())
+        controller.viewport.zoomIn()
+        controller.viewport.zoomIn()
+        assertTrue(controller.viewport.camera.getCurrentScale() > 1.4f)
+        controller.viewport.fitWidth()
+        assertEquals(1f, controller.viewport.camera.getCurrentScale(), 0.001f)
+        assertEquals(1, controller.viewport.mostVisiblePageIndex())
     }
 
     @Test
@@ -254,7 +254,7 @@ class EditorCoreTest {
         page.add(hit)
         page.add(miss)
 
-        val mmToScreen = assertNotNull(controller.pageMmToScreen(0))
+        val mmToScreen = assertNotNull(controller.viewport.pageMmToScreen(0))
         val from = mmToScreen.mapPoint(40f, 52f).toCompose()
         val to = mmToScreen.mapPoint(70f, 52f).toCompose()
         val erased = controller.eraserManager.eraseAlongSegment(from, to)
@@ -283,7 +283,7 @@ class EditorCoreTest {
 
         placement.start(request())
         assertTrue(placement.isActive)
-        val mmToScreen = assertNotNull(controller.pageMmToScreen(0))
+        val mmToScreen = assertNotNull(controller.viewport.pageMmToScreen(0))
         // Near the bottom-right corner of the A4 page: the element stays inside it
         val (pageIndex, topLeft) = assertNotNull(placement.targetAt(mmToScreen.mapPoint(200f, 290f).toCompose()))
         assertEquals(0, pageIndex)
@@ -356,19 +356,19 @@ class EditorCoreTest {
         assertEquals(listOf(first, added), controller.document.pages.toList())
         controller.undo()
         assertEquals(listOf(first), controller.document.pages.toList())
-        assertTrue(abs(controller.calcPage.pagesRectOnWindow.size - 1) == 0)
+        assertTrue(abs(controller.viewport.layout.pagesRectOnWindow.size - 1) == 0)
     }
 
     @Test
     fun screenAndPageCoordinatesRoundTrip() = runTest(UnconfinedTestDispatcher()) {
         val controller = controllerWith(2, backgroundScope)
-        val screen = assertNotNull(controller.pageMmToScreen(1)).mapPoint(105f, 148.5f).toCompose()
-        assertEquals(1, controller.findPageIndexAtScreen(screen) ?: controller.findPageIndexAtWorld(controller.screenToWorld(screen)))
-        val back = assertNotNull(controller.screenToPageMm(1, screen))
+        val screen = assertNotNull(controller.viewport.pageMmToScreen(1)).mapPoint(105f, 148.5f).toCompose()
+        assertEquals(1, controller.viewport.findPageIndexAtScreen(screen) ?: controller.viewport.findPageIndexAtWorld(controller.viewport.screenToWorld(screen)))
+        val back = assertNotNull(controller.viewport.screenToPageMm(1, screen))
         assertEquals(105f, back.x, 1e-2f)
         assertEquals(148.5f, back.y, 1e-2f)
-        assertTrue(controller.pixelsPerMm(0) > 0f)
-        assertEquals(Offset(0f, 0f), controller.screenToPageMm(0, controller.pageMmToScreen(0)!!.mapPoint(0f, 0f).toCompose())!!.let {
+        assertTrue(controller.viewport.pixelsPerMm(0) > 0f)
+        assertEquals(Offset(0f, 0f), controller.viewport.screenToPageMm(0, controller.viewport.pageMmToScreen(0)!!.mapPoint(0f, 0f).toCompose())!!.let {
             Offset(if (abs(it.x) < 1e-3f) 0f else it.x, if (abs(it.y) < 1e-3f) 0f else it.y)
         })
     }

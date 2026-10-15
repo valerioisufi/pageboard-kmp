@@ -799,7 +799,7 @@ private fun ProfessorPageBanner(lecture: Lecture, controller: DrawViewController
     val visible by remember(controller) {
         derivedStateOf {
             controller.version
-            controller.visiblePages().map { it.index }
+            controller.viewport.visiblePages().map { it.index }
         }
     }
     if (page in visible || page !in controller.document.pages.indices) return
@@ -1437,8 +1437,8 @@ private fun InsertPagesCard(controller: DrawViewController, onInsert: (afterPage
     val currentPage by remember(controller) {
         derivedStateOf {
             controller.version
-            controller.cameraPhysics.moveCount
-            controller.mostVisiblePageIndex()
+            controller.viewport.camera.moveCount
+            controller.viewport.mostVisiblePageIndex()
         }
     }
     var atTheEnd by remember { mutableStateOf(false) }

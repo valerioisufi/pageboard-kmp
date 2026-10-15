@@ -31,7 +31,7 @@ class CustomElementEditingTest {
     }
 
     private fun controller(scope: CoroutineScope): DrawViewController =
-        DrawViewController(document = DrawDocument(), coroutineScope = scope).apply { setViewport(800f, 1200f) }
+        DrawViewController(document = DrawDocument(), coroutineScope = scope).apply { viewport.setSize(800f, 1200f) }
 
     @Test
     fun anElementOfTheApplicationIsAddedMovedChangedCopiedAndRemoved() = runTest(UnconfinedTestDispatcher()) {

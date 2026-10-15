@@ -72,7 +72,7 @@ class TrackpadGesturesTest {
 
     @Test
     fun trackpadPinchZoomsAroundThePointer() = withCanvas(pages = 3) { scene, controller ->
-        val camera = controller.cameraPhysics
+        val camera = controller.viewport.camera
         val scale = camera.getCurrentScale()
         val world = (center - camera.getCurrentTranslation()) / scale
 
@@ -89,7 +89,7 @@ class TrackpadGesturesTest {
 
     @Test
     fun trackpadTwoFingerPanMovesTheCanvas() = withCanvas(pages = 5) { scene, controller ->
-        val camera = controller.cameraPhysics
+        val camera = controller.viewport.camera
         val before = camera.getCurrentTranslation()
 
         scene.sendGesture(PointerEventType.PanStart)
@@ -102,7 +102,7 @@ class TrackpadGesturesTest {
 
     @Test
     fun horizontalScrollOfAMacTrackpadPansHorizontally() = withCanvas(pages = 1) { scene, controller ->
-        val camera = controller.cameraPhysics
+        val camera = controller.viewport.camera
         // Zoom in, so that the page is wider than the viewport
         camera.onDrag(0f, 0f, 6f, center.x, center.y)
         camera.restoreToBounds(animated = false)
@@ -123,7 +123,7 @@ class TrackpadGesturesTest {
 
     @Test
     fun twoFingerScrollOfAMacTrackpadOverscrollsAndBouncesBack() = withCanvas(pages = 1) { scene, controller ->
-        val camera = controller.cameraPhysics
+        val camera = controller.viewport.camera
         // At the top of the page
         camera.onDrag(0f, 10_000f)
         camera.restoreToBounds(animated = false)
@@ -146,7 +146,7 @@ class TrackpadGesturesTest {
 
     @Test
     fun inertiaOfTheSystemIsReplacedByTheFlingOfTheCanvas() = withCanvas(pages = 5) { scene, controller ->
-        val camera = controller.cameraPhysics
+        val camera = controller.viewport.camera
         camera.restoreToBounds(animated = false)
 
         MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.FINGERS_DOWN, 1_000L)
@@ -165,7 +165,7 @@ class TrackpadGesturesTest {
 
     @Test
     fun pinchOfAMacTrackpadZoomsAroundThePointerAndSpringsBackIntoTheLimits() = withCanvas(pages = 1) { scene, controller ->
-        val camera = controller.cameraPhysics
+        val camera = controller.viewport.camera
         val scale = camera.getCurrentScale()
 
         // The pinch of a pointer outside the canvas is not for it

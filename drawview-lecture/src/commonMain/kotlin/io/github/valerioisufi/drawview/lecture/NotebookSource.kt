@@ -144,7 +144,7 @@ class ControllerNotebookSource(private val controller: DrawViewController) : Not
         val document = controller.document
         // Camera and layout: read on the UI thread
         val (visible, pages) = withContext(Dispatchers.Main) {
-            controller.visiblePages().map { it.index } to document.pages.toList()
+            controller.viewport.visiblePages().map { it.index } to document.pages.toList()
         }
         return withContext(Dispatchers.Default) {
             val visibleIndexes = visible.filter { it in pages.indices }.ifEmpty { if (pages.isEmpty()) emptyList() else listOf(0) }

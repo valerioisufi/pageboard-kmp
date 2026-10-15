@@ -141,7 +141,7 @@ fun PageGridOverlay(
         // --- Drag & drop state ---
         val gridState = rememberLazyGridState()
         // The page looked at when the grid was opened
-        val currentPage = remember { controller.mostVisiblePageIndex() ?: 0 }
+        val currentPage = remember { controller.viewport.mostVisiblePageIndex() ?: 0 }
         var draggedIndex by remember { mutableStateOf<Int?>(null) }
         var dragOffset by remember { mutableStateOf(Offset.Zero) }
 

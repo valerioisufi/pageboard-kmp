@@ -53,9 +53,9 @@ class MediaManager(private val controller: DrawViewController) {
             val (path, bitmap) = prepared
 
             val document = controller.document
-            val screenCenter = targetScreen ?: Offset(controller.viewportWidth / 2f, controller.viewportHeight / 2f)
-            val pageIndex = controller.findPageIndexAtScreen(screenCenter)
-                ?: controller.nearestVisiblePageIndex(screenCenter)
+            val screenCenter = targetScreen ?: Offset(controller.viewport.width / 2f, controller.viewport.height / 2f)
+            val pageIndex = controller.viewport.findPageIndexAtScreen(screenCenter)
+                ?: controller.viewport.nearestVisiblePageIndex(screenCenter)
                 ?: 0
             val page = document.pages.getOrNull(pageIndex) ?: return@launch
 
@@ -63,7 +63,7 @@ class MediaManager(private val controller: DrawViewController) {
 
             val widthMm = 100f.coerceAtMost(page.widthMm * 0.8f)
             val heightMm = if (bitmap.width > 0) widthMm * bitmap.height / bitmap.width else widthMm
-            val centerMm = controller.screenToPageMm(pageIndex, screenCenter)
+            val centerMm = controller.viewport.screenToPageMm(pageIndex, screenCenter)
                 ?: Offset(page.widthMm / 2f, page.heightMm / 2f)
 
             val image = DrawImage().apply {

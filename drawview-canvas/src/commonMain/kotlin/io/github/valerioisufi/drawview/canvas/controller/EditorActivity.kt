@@ -40,7 +40,7 @@ data class EditorActivity(
 
 /**
  * Another device working on the document, as drawn over it (see
- * [DrawViewController.collaborators]), with its [name] and [color]:
+ * [CollaboratorPresence.collaborators]), with its [name] and [color]:
  * - its pointer at [position] on the page [pageId] (page millimeters; `null`: on no page);
  * - the stroke it is drawing ([ink], on the page [inkPageId]), fading away once drawn
  *   ([inkAlpha]);

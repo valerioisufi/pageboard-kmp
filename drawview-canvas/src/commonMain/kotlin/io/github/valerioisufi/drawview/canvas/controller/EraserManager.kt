@@ -32,15 +32,15 @@ class EraserManager(private val controller: DrawViewController) {
             max(fromScreen.x, toScreen.x), max(fromScreen.y, toScreen.y)
         )
 
-        for (visible in controller.visiblePages()) {
+        for (visible in controller.viewport.visiblePages()) {
             val page = controller.document.pages.getOrNull(visible.index) ?: continue
             val pxPerMm = visible.rect.width / page.widthMm.coerceAtLeast(0.01f)
             val radiusMm = diameterMm / 2f
             val radiusPx = radiusMm * pxPerMm
             if (!visible.rect.inflate(radiusPx).overlaps(segmentScreenBox.inflate(1f))) continue
 
-            val a = controller.screenToPageMm(visible.index, fromScreen) ?: continue
-            val b = controller.screenToPageMm(visible.index, toScreen) ?: continue
+            val a = controller.viewport.screenToPageMm(visible.index, fromScreen) ?: continue
+            val b = controller.viewport.screenToPageMm(visible.index, toScreen) ?: continue
             val capsule = Rect(
                 min(a.x, b.x) - radiusMm, min(a.y, b.y) - radiusMm,
                 max(a.x, b.x) + radiusMm, max(a.y, b.y) + radiusMm

@@ -85,7 +85,7 @@ class SnapManager(private val controller: DrawViewController) {
             clearGuides()
             return null
         }
-        val tolerance = TOLERANCE_DP * controller.density / controller.pixelsPerMm(pageIndex).coerceAtLeast(0.01f)
+        val tolerance = TOLERANCE_DP * controller.viewport.density / controller.viewport.pixelsPerMm(pageIndex).coerceAtLeast(0.01f)
         val snapped = compute(targetsOf(page, moved), tolerance)
         guides = snapped.guides
         guidesPageIndex = pageIndex

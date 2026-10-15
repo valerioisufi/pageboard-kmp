@@ -56,7 +56,7 @@ class EditorChangesTest {
         val doc = DrawDocument()
         repeat(pages - 1) { doc.addPage() }
         val controller = DrawViewController(document = doc, coroutineScope = scope)
-        controller.setViewport(800f, 1200f)
+        controller.viewport.setSize(800f, 1200f)
         return controller
     }
 
@@ -74,7 +74,7 @@ class EditorChangesTest {
         strokes.forEach { page.add(it) }
         val changes = committed(controller)
 
-        val mmToScreen = assertNotNull(controller.pageMmToScreen(0))
+        val mmToScreen = assertNotNull(controller.viewport.pageMmToScreen(0))
         // Two segments of one gesture, each erasing as soon as it touches
         controller.eraserManager.eraseAlongSegment(mmToScreen.mapPoint(15f, 52f).toCompose(), mmToScreen.mapPoint(65f, 52f).toCompose())
         assertEquals(listOf(strokes[2], strokes[3]), page.strokes.toList())
@@ -155,11 +155,11 @@ class EditorChangesTest {
         editor.write("Notes")
         val text = page.texts.single()
         val refused = mutableListOf<String>()
-        backgroundScope.launch { controller.editsRefused.collect { refused.add(it.name) } }
+        backgroundScope.launch { controller.presence.editsRefused.collect { refused.add(it.name) } }
 
         // Selected here, then written on another device: left to it
         controller.selectionManager.selectText(0, text)
-        controller.collaborators = listOf(
+        controller.presence.collaborators = listOf(
             Collaborator("bob", "Bob", Color.Blue, pageId = null, position = Offset.Zero, text = DrawText(text.id), textPageId = page.id)
         )
         assertNull(controller.selectionManager.currentSelection)
@@ -171,7 +171,7 @@ class EditorChangesTest {
         assertEquals(listOf("Bob", "Bob"), refused)
 
         // Written: free again
-        controller.collaborators = emptyList()
+        controller.presence.collaborators = emptyList()
         editor.startEditing(text, 0)
         assertTrue(editor.isEditing)
     }

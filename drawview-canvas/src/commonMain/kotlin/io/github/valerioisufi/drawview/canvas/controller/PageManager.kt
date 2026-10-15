@@ -104,11 +104,11 @@ class PageManager(private val controller: DrawViewController) {
      * @return `true` if a page has been picked.
      */
     fun startDraggingPage(touch: Offset): Boolean {
-        val visible = controller.visiblePages().firstOrNull { it.rect.contains(touch) } ?: return false
+        val visible = controller.viewport.visiblePages().firstOrNull { it.rect.contains(touch) } ?: return false
         draggedPageIndex = visible.index
         floatingPageRect = visible.rect
         dragTouchOffset = touch - visible.rect.topLeft
-        controller.cameraPhysics.stopAllAnimations()
+        controller.viewport.camera.stopAllAnimations()
         controller.requestRedraw()
         return true
     }
@@ -130,10 +130,10 @@ class PageManager(private val controller: DrawViewController) {
         val floating = floatingPageRect ?: return
         val from = draggedPageIndex
         if (from < 0) return
-        val target = controller.visiblePages().firstOrNull { it.index != from && it.rect.contains(floating.center) } ?: return
+        val target = controller.viewport.visiblePages().firstOrNull { it.index != from && it.rect.contains(floating.center) } ?: return
         document.movePage(from, target.index)
         draggedPageIndex = target.index
-        controller.updatePageLayout()
+        controller.viewport.updatePageLayout()
     }
 
     /**
@@ -144,7 +144,7 @@ class PageManager(private val controller: DrawViewController) {
         if (!isReorderingPages) return movePage(fromIndex, toIndex)
         if (fromIndex !in document.pages.indices || toIndex !in document.pages.indices || fromIndex == toIndex) return
         document.movePage(fromIndex, toIndex)
-        controller.updatePageLayout()
+        controller.viewport.updatePageLayout()
         controller.requestRedraw()
     }
 
@@ -165,7 +165,7 @@ class PageManager(private val controller: DrawViewController) {
             document.restorePageOrder(oldOrder)
             MovePages.toOrder(document, newOrder)?.let { controller.session.submit(it) }
         }
-        controller.markLayoutNeedsUpdate()
+        controller.viewport.markLayoutNeedsUpdate()
     }
 
     // ==========================================================
@@ -176,17 +176,17 @@ class PageManager(private val controller: DrawViewController) {
      * Centers the camera on the page [pageIndex], keeping the current zoom level.
      */
     fun jumpToPage(pageIndex: Int) {
-        val rects = controller.calcPage.pagesRectOnWindow
+        val rects = controller.viewport.layout.pagesRectOnWindow
         if (pageIndex !in rects.indices) return
         val target = rects[pageIndex]
-        controller.cameraPhysics.centerOnWorldPoint(
+        controller.viewport.camera.centerOnWorldPoint(
             worldX = target.center.x,
             worldY = target.center.y,
-            scale = controller.cameraPhysics.getCurrentScale(),
-            screenWidth = controller.viewportWidth,
-            screenHeight = controller.viewportHeight
+            scale = controller.viewport.camera.getCurrentScale(),
+            screenWidth = controller.viewport.width,
+            screenHeight = controller.viewport.height
         )
-        controller.cameraPhysics.restoreToBounds(animated = false)
+        controller.viewport.camera.restoreToBounds(animated = false)
         controller.isPageGridVisible = false
         controller.requestRedraw()
     }

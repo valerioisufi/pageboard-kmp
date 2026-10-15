@@ -349,7 +349,7 @@ private fun BoxScope.PlacementHint(assistant: LectureAssistant, controller: Draw
     val visible by remember(controller) {
         derivedStateOf {
             controller.version
-            controller.visiblePages().map { it.index }
+            controller.viewport.visiblePages().map { it.index }
         }
     }
     val notePage = note.resolvedPageIndex(controller.document)?.takeIf { it !in visible }

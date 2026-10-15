@@ -110,7 +110,7 @@ class DocumentExportUi(documents: OpenDocuments, private val appName: String? = 
         shortcuts = listOf(Shortcut(Key.E, primary = true, shift = true))
     ) {
         val controller = context.controller
-        val pageOnScreen = controller.mostVisiblePageIndex()?.let { controller.document.pages.getOrNull(it)?.id }
+        val pageOnScreen = controller.viewport.mostVisiblePageIndex()?.let { controller.document.pages.getOrNull(it)?.id }
         editorExport = EditorExport(context.documentId, controller.document.title, pageOnScreen)
     }
 

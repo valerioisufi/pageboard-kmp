@@ -100,13 +100,13 @@ private const val WRITING_ELSEWHERE_NOTICE_MS = 2_500L
 
 /**
  * Who is writing the text the user tried to edit or to select (left to them, see
- * [DrawViewController.editsRefused]), for a moment at the top of the canvas.
+ * [CollaboratorPresence.editsRefused]), for a moment at the top of the canvas.
  */
 @Composable
 private fun BoxScope.WritingElsewhereNotice(controller: DrawViewController) {
     var writer by remember(controller) { mutableStateOf<Collaborator?>(null) }
     LaunchedEffect(controller) {
-        controller.editsRefused.collectLatest {
+        controller.presence.editsRefused.collectLatest {
             writer = it
             delay(WRITING_ELSEWHERE_NOTICE_MS)
             writer = null

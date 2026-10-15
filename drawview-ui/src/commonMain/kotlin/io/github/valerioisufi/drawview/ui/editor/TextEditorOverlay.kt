@@ -94,7 +94,7 @@ private fun TextEditorSession(controller: DrawViewController, commands: EditorCo
         LaunchedEffect(editor.value.text, lineCount, imeBottom, containerHeightPx, barHeightPx, atBottom) {
             val current = layout ?: return@LaunchedEffect
             if (current.lineCount == 0) return@LaunchedEffect
-            val top = controller.pageMmToScreen(editor.activeTextPageIndex)?.mapPoint(editor.boxX, editor.boxY)?.y ?: return@LaunchedEffect
+            val top = controller.viewport.pageMmToScreen(editor.activeTextPageIndex)?.mapPoint(editor.boxX, editor.boxY)?.y ?: return@LaunchedEffect
             val textBottom = top + current.getLineBottom(current.lineCount - 1)
             // A bar at the bottom sits 8 dp above the keyboard; the frame extends below the last line
             val marginPx = if (atBottom) {
@@ -108,7 +108,7 @@ private fun TextEditorSession(controller: DrawViewController, commands: EditorCo
                 Animatable(0f).animateTo(textBottom - safeBottom, tween(durationMillis = 250)) {
                     val step = value - previous
                     previous = value
-                    controller.panCanvasBy(0f, -step)
+                    controller.viewport.panBy(0f, -step)
                 }
             }
         }
@@ -126,7 +126,7 @@ private fun Modifier.besideEditedText(controller: DrawViewController): Modifier 
     layout(width, height) {
         // Read while placing: follows the camera and the box without composing again
         @Suppress("UNUSED_VARIABLE") val frameVersion = controller.version
-        @Suppress("UNUSED_VARIABLE") val camera = controller.cameraPhysics.moveCount
+        @Suppress("UNUSED_VARIABLE") val camera = controller.viewport.camera.moveCount
         val frame = SelectionFrame.ofEditedText(controller)
         val gap = BAR_GAP.roundToPx()
         if (frame == null) {

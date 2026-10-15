@@ -8,8 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.canvas.DrawThemeColors
-import io.github.valerioisufi.drawview.canvas.camera.CalcPage
-import io.github.valerioisufi.drawview.canvas.camera.CameraPhysicsEngine
+import io.github.valerioisufi.drawview.canvas.camera.Viewport
 import io.github.valerioisufi.drawview.canvas.geometry.mapOffset
 import io.github.valerioisufi.drawview.canvas.geometry.toCompose
 import io.github.valerioisufi.drawview.canvas.geometry.toModel
@@ -66,16 +65,11 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
 /**
- * Central state holder of an editing session: document, camera, page layout, tools, history,
- * selection, text editing, page management and persistence.
+ * Central state holder of an editing session: document, tools, history, selection, text editing,
+ * page management and persistence; what is shown of the document and the coordinate spaces are
+ * in its [viewport], the other devices working on it in its [presence].
  *
  * Every piece of state observed by the UI is backed by Compose snapshot state.
- *
- * Coordinate spaces:
- * - **page millimeters**: content of a page (strokes, texts, images), origin at the top-left
- *   corner of the page;
- * - **world**: pages laid out vertically by [CalcPage] to fit the viewport width;
- * - **screen**: world transformed by the camera ([getRenderMatrix]).
  */
 class DrawViewController(
     val document: DrawDocument = DrawDocument(),
@@ -106,26 +100,12 @@ class DrawViewController(
      */
     private val persistenceQueue = PersistenceQueue(persistenceScope, persistence)
 
-    var density: Float = density
-        set(value) {
-            if (field == value) return
-            field = value
-            calcPage.density = value
-            cameraPhysics.density = value
-            calcPage.needToBeUpdated = true
-            updatePageLayout()
-        }
-
-    val calcPage = CalcPage(density = density)
-
-    val cameraPhysics = CameraPhysicsEngine(
-        density = density,
-        getContentRect = { calcPage.contentRect }
-    )
-
     val historyManager = HistoryManager(session)
 
     val tileManager = TileManager(onInvalidate = { requestRedraw() })
+
+    /** What the editor shows of the document: the layout of the pages, the camera, the conversions. */
+    val viewport = Viewport(document, density, tileManager, ::requestRedraw)
 
     /** The elements drawn over the tiles: selected, moved or written here or on another device. */
     val hiddenElements = HiddenElements()
@@ -156,11 +136,6 @@ class DrawViewController(
         private set
 
     private val redrawPending = atomic(false)
-
-    var viewportWidth by mutableFloatStateOf(0f)
-        private set
-    var viewportHeight by mutableFloatStateOf(0f)
-        private set
 
     var themeColors by mutableStateOf(DrawThemeColors())
 
@@ -210,9 +185,6 @@ class DrawViewController(
         _messages.tryEmit(message)
     }
 
-    private val cachedRenderMatrix = Matrix2D()
-    private val cachedInverseMatrix = Matrix2D()
-
     /** Set while a change whose elements are already drawn in the tiles is submitted. */
     private var changeAlreadyDrawn = false
     private val changeObserver = ChangeObserver(::onChangeCommitted)
@@ -233,7 +205,7 @@ class DrawViewController(
         tileManager.tileRenderer.elements = engines.elements
         if (storesChanges) session.addObserver(ChangePersister(::persist))
         session.addObserver(changeObserver)
-        updatePageLayout()
+        viewport.updatePageLayout()
         // A document always shows a page: added by a change, so that the other devices get it too
         if (document.pages.isEmpty()) pageManager.addNewPageAtBottom()
     }
@@ -388,7 +360,7 @@ class DrawViewController(
     }
 
     fun invalidatePageContent(page: DrawPage, mmRect: MmRect?) {
-        val pageWorldRect = calcPage.pagesRectOnWindow.getOrNull(document.pages.indexOf(page))
+        val pageWorldRect = viewport.layout.pagesRectOnWindow.getOrNull(document.pages.indexOf(page))
         if (mmRect == null) tileManager.invalidatePage(page.renderKey)
         else tileManager.invalidatePageRegion(page, mmRect.toCompose(), pageWorldRect)
         requestRedraw()
@@ -406,111 +378,15 @@ class DrawViewController(
         }
     }
 
-    // ==========================================================
-    // Activity (for the others working on the document)
-    // ==========================================================
-
-    private val currentActivity = MutableStateFlow<EditorActivity?>(null)
-    private var pointerActivity: EditorActivity? = null
-    private var textDraft: TextData? = null
-    private var textDraftPageId: String? = null
-    private var selectionActivity: SelectionActivity? = null
-
-    /**
-     * What the user is doing on the document now (the pointer, the stroke being drawn, the text
-     * being written, the elements selected), for the others working on it; `null` when nothing.
-     */
-    val activity: StateFlow<EditorActivity?> = currentActivity.asStateFlow()
-
-    /** Where the pointer is and the stroke being drawn (from the gestures). */
-    internal fun reportActivity(activity: EditorActivity?) {
-        pointerActivity = activity
-        publishActivity()
-    }
-
-    /** The text being written on the page [pageId] as it is now (`null`: none). */
-    internal fun reportTextDraft(pageId: String?, text: TextData?) {
-        textDraftPageId = pageId
-        textDraft = text
-        publishActivity()
-    }
-
-    /** The elements selected (`null`: none). */
-    internal fun reportSelection(selection: SelectionActivity?) {
-        selectionActivity = selection
-        publishActivity()
-    }
-
-    private fun publishActivity() {
-        val activity = (pointerActivity ?: EditorActivity()).copy(text = textDraft, textPageId = textDraftPageId, selection = selectionActivity)
-        currentActivity.value = activity.takeUnless { it.isIdle }
-    }
-
-    private var shownCollaborators by mutableStateOf(emptyList<Collaborator>())
-
-    /**
-     * The other devices working on the document, drawn over it: where they are, the strokes they
-     * are drawing, the texts they are writing and the elements they select (kept by the
-     * synchronization, see `drawview-sync-ui`). The texts they write and the elements they move
-     * are hidden from the content meanwhile (see [hiddenElements]).
-     */
-    var collaborators: List<Collaborator>
-        get() = shownCollaborators
-        set(value) {
-            showByCollaborators(shownCollaborators.hiddenElementIds(), value.hiddenElementIds())
-            shownCollaborators = value
-            // A text selected here that another device starts writing: left to it
-            if (selectionManager.currentSelection?.texts?.any { writerOf(it) != null } == true) selectionManager.clearSelection()
-        }
-
-    /**
-     * The other device writing the text [element] (see [collaborators]), if any: meanwhile the
-     * text can be neither edited nor selected here (the user is told, see [editsRefused]).
-     */
-    fun writerOf(element: DrawElement): Collaborator? = shownCollaborators.firstOrNull { it.text?.id == element.id }
-
-    private val refusedEdits = MutableSharedFlow<Collaborator>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-
-    /** The other devices writing the texts the user tried to edit or to select here. */
-    val editsRefused: SharedFlow<Collaborator> = refusedEdits.asSharedFlow()
-
-    /** Tells that the text [writer] is writing was not opened or selected here. */
-    internal fun refuseEdit(writer: Collaborator) {
-        refusedEdits.tryEmit(writer)
-    }
-
-    /** The elements the collaborators draw themselves: the texts written, the elements moved. */
-    private fun List<Collaborator>.hiddenElementIds(): Set<String> = buildSet {
-        for (collaborator in this@hiddenElementIds) {
-            collaborator.text?.let { add(it.id) }
-            if (collaborator.selectionTransform != null) collaborator.selection.forEach { add(it.id) }
-        }
-    }
-
-    private fun showByCollaborators(before: Set<String>, after: Set<String>) {
-        if (before == after) return
-        for (id in before - after) setShownByCollaborator(id, false)
-        for (id in after - before) setShownByCollaborator(id, true)
-    }
-
-    private fun setShownByCollaborator(id: String, shown: Boolean) {
-        val (page, element) = document.findElement(id) ?: return
-        if (element !is DrawStroke && element !is DrawText && element !is DrawImage && element !is DrawCustomElement) return
-        hiddenElements.setShownByCollaborator(id, shown)
-        invalidatePageContent(page, page.boundsOf(element))
+    /** The presence of the editor among the other devices working on the document. */
+    val presence: CollaboratorPresence = CollaboratorPresence(document, hiddenElements, ::invalidatePageContent) {
+        // A text selected here that another device starts writing: left to it
+        if (selectionManager.currentSelection?.texts?.any { presence.writerOf(it) != null } == true) selectionManager.clearSelection()
     }
 
     fun clearSelection() {
         selectionManager.clearSelection()
         textMarkupManager.clearSelection()
-    }
-
-    fun markLayoutNeedsUpdate() {
-        calcPage.needToBeUpdated = true
-        updatePageLayout()
-        tileManager.retainDocumentPages(document)
-        cameraPhysics.restoreToBounds(animated = false)
-        requestRedraw()
     }
 
     /**
@@ -539,7 +415,7 @@ class DrawViewController(
             }
         }
         if (effects.layoutChanged) {
-            markLayoutNeedsUpdate()
+            viewport.markLayoutNeedsUpdate()
         }
         if (!changeAlreadyDrawn) {
             for ((page, rect) in effects.dirtyRegions) invalidatePageContent(page, rect)
@@ -558,178 +434,9 @@ class DrawViewController(
             tileManager.bakeStrokesDirectlySync(
                 strokesByPage = mapOf(index to strokes),
                 document = document,
-                pageRects = calcPage.pagesRectOnWindow,
-                cameraScale = cameraPhysics.getCurrentScale()
+                pageRects = viewport.layout.pagesRectOnWindow,
+                cameraScale = viewport.camera.getCurrentScale()
             )
-        }
-    }
-
-    // ==========================================================
-    // Layout and coordinates
-    // ==========================================================
-
-    /**
-     * Updates viewport dimensions, keeping the content under the center of the viewport stable.
-     */
-    fun setViewport(width: Float, height: Float) {
-        if (width <= 0f || height <= 0f) return
-        val sizeChanged = viewportWidth != width || viewportHeight != height
-        if (!sizeChanged && !calcPage.needToBeUpdated) return
-
-        // Remember which point of which page is at the center of the viewport
-        var anchor: Triple<Int, Float, Float>? = null
-        val previousScale = cameraPhysics.getCurrentScale()
-        val hadLayout = viewportWidth > 0f && calcPage.pagesRectOnWindow.isNotEmpty()
-        if (hadLayout) {
-            val center = screenToWorld(Offset(viewportWidth / 2f, viewportHeight / 2f))
-            val rects = calcPage.pagesRectOnWindow
-            var target = rects.lastIndex
-            for (i in rects.indices) {
-                val zoneBottom = if (i < rects.lastIndex) rects[i + 1].top else calcPage.contentRect.bottom
-                if (center.y <= zoneBottom) {
-                    target = i
-                    break
-                }
-            }
-            val r = rects[target]
-            anchor = Triple(
-                target,
-                ((center.x - r.left) / r.width).coerceIn(0f, 1f),
-                ((center.y - r.top) / r.height).coerceIn(0f, 1f)
-            )
-        }
-
-        viewportWidth = width
-        viewportHeight = height
-        cameraPhysics.stopAllAnimations()
-        cameraPhysics.setViewport(width, height)
-        calcPage.needToBeUpdated = true
-        updatePageLayout()
-
-        if (anchor != null && anchor.first in calcPage.pagesRectOnWindow.indices) {
-            val r = calcPage.pagesRectOnWindow[anchor.first]
-            cameraPhysics.centerOnWorldPoint(
-                worldX = r.left + r.width * anchor.second,
-                worldY = r.top + r.height * anchor.third,
-                scale = previousScale,
-                screenWidth = width,
-                screenHeight = height
-            )
-        } else {
-            // First layout: show the top of the document at 1:1 (pages fit the viewport width)
-            cameraPhysics.centerOnWorldPoint(
-                worldX = width / 2f,
-                worldY = height / 2f,
-                scale = 1f,
-                screenWidth = width,
-                screenHeight = height
-            )
-        }
-        cameraPhysics.restoreToBounds(animated = false)
-        requestRedraw()
-    }
-
-    fun updatePageLayout() {
-        if (viewportWidth > 0f && viewportHeight > 0f) {
-            calcPage.calcPagesRectOnWindow(
-                pages = document.pages,
-                windowRect = Rect(0f, 0f, viewportWidth, viewportHeight)
-            )
-            // The pages laid out at another scale (window resized, widest page changed) are rasterized again
-            tileManager.updateLayout(document.pages, calcPage.pagesRectOnWindow)
-        }
-    }
-
-    /**
-     * Retrieves the current camera matrix (transforms World space -> Screen space).
-     */
-    fun getRenderMatrix(outMatrix: Matrix2D = cachedRenderMatrix): Matrix2D {
-        return cameraPhysics.getRenderMatrix(outMatrix)
-    }
-
-    /**
-     * Retrieves the inverse camera matrix (transforms Screen space -> World space).
-     */
-    fun getInverseMatrix(outMatrix: Matrix2D = cachedInverseMatrix): Matrix2D {
-        val render = cameraPhysics.getRenderMatrix(Matrix2D())
-        render.invert(outMatrix)
-        return outMatrix
-    }
-
-    fun screenToWorld(screenPoint: Offset): Offset {
-        val inverse = getInverseMatrix(Matrix2D())
-        return inverse.mapOffset(screenPoint)
-    }
-
-    fun worldToScreen(worldPoint: Offset): Offset {
-        val render = cameraPhysics.getRenderMatrix(Matrix2D())
-        return render.mapOffset(worldPoint)
-    }
-
-    /** Matrix mapping the millimeters of page [pageIndex] to world space. */
-    fun pageMmToWorld(pageIndex: Int): Matrix2D? {
-        val page = document.pages.getOrNull(pageIndex) ?: return null
-        val worldRect = calcPage.pagesRectOnWindow.getOrNull(pageIndex) ?: return null
-        return Matrix2D().setRectToRect(page.rect(), worldRect.toModel())
-    }
-
-    /** Matrix mapping the millimeters of page [pageIndex] to screen pixels. */
-    fun pageMmToScreen(pageIndex: Int): Matrix2D? {
-        val mmToWorld = pageMmToWorld(pageIndex) ?: return null
-        return mmToWorld.postConcat(cameraPhysics.getRenderMatrix(Matrix2D()))
-    }
-
-    /** Converts a screen point to the millimeters of page [pageIndex]. */
-    fun screenToPageMm(pageIndex: Int, screenPoint: Offset): Offset? {
-        val mmToScreen = pageMmToScreen(pageIndex) ?: return null
-        val inverse = Matrix2D()
-        if (!mmToScreen.invert(inverse)) return null
-        return inverse.mapOffset(screenPoint)
-    }
-
-    /** Current screen pixels per millimeter of page [pageIndex]. */
-    fun pixelsPerMm(pageIndex: Int): Float {
-        val page = document.pages.getOrNull(pageIndex) ?: return 1f
-        val worldRect = calcPage.pagesRectOnWindow.getOrNull(pageIndex) ?: return 1f
-        return worldRect.width / page.widthMm.coerceAtLeast(0.01f) * cameraPhysics.getCurrentScale()
-    }
-
-    /** Pages intersecting the viewport, with their screen rectangles. */
-    fun visiblePages(): List<CalcPage.PageRectWithIndex> {
-        if (viewportWidth <= 0f || viewportHeight <= 0f) return emptyList()
-        return calcPage.getPagesRectOnWindowTransformation(
-            Rect(0f, 0f, viewportWidth, viewportHeight),
-            cameraPhysics.getRenderMatrix(Matrix2D())
-        )
-    }
-
-    /** Index of the page under [screenPoint], or `null`. */
-    fun findPageIndexAtScreen(screenPoint: Offset): Int? =
-        visiblePages().firstOrNull { it.rect.contains(screenPoint) }?.index
-
-    /** Index of the visible page nearest to [screenPoint]. */
-    fun nearestVisiblePageIndex(screenPoint: Offset): Int? =
-        visiblePages().minByOrNull { hypot(it.rect.center.x - screenPoint.x, it.rect.center.y - screenPoint.y) }?.index
-
-    fun firstVisiblePageIndex(): Int? = visiblePages().firstOrNull()?.index
-
-    /** Index of the page taking the largest part of the viewport (the page being looked at), or `null`. */
-    fun mostVisiblePageIndex(): Int? = visiblePages().maxByOrNull { page ->
-        minOf(page.rect.bottom, viewportHeight) - maxOf(page.rect.top, 0f)
-    }?.index
-
-    /**
-     * Index of the page containing [worldPoint] (or the nearest one when [nearest] is `true`).
-     */
-    fun findPageIndexAtWorld(worldPoint: Offset, nearest: Boolean = false): Int {
-        val rects = calcPage.pagesRectOnWindow
-        for (i in rects.indices) {
-            if (rects[i].contains(worldPoint)) return i
-        }
-        if (!nearest || rects.isEmpty()) return -1
-        return rects.indices.minBy { i ->
-            val r = rects[i]
-            hypot(r.center.x - worldPoint.x, r.center.y - worldPoint.y)
         }
     }
 
@@ -741,7 +448,7 @@ class DrawViewController(
      * Brush of the active tool at the zoom level of page [pageIndex].
      */
     fun brushForActiveTool(pageIndex: Int): BrushConfig? =
-        toolManager.brushFor(toolManager.selectedTool, pixelsPerMm(pageIndex))
+        toolManager.brushFor(toolManager.selectedTool, viewport.pixelsPerMm(pageIndex))
 
     /**
      * Commits a completed ink stroke drawn on [originPageIndex] (mesh in the millimeters of that
@@ -754,11 +461,11 @@ class DrawViewController(
         val bounds = mesh.computeBounds()
 
         val strokesByPage = LinkedHashMap<Int, MutableList<DrawStroke>>()
-        val originToWorld = pageMmToWorld(originPageIndex)
+        val originToWorld = viewport.pageMmToWorld(originPageIndex)
         val worldBounds = originToWorld?.mapRect(bounds)?.toCompose()
 
         val targetIndexes = if (worldBounds != null) {
-            calcPage.pagesRectOnWindow.indices.filter { calcPage.pagesRectOnWindow[it].overlaps(worldBounds) }
+            viewport.layout.pagesRectOnWindow.indices.filter { viewport.layout.pagesRectOnWindow[it].overlaps(worldBounds) }
                 .ifEmpty { listOf(originPageIndex) }
         } else listOf(originPageIndex)
 
@@ -767,7 +474,7 @@ class DrawViewController(
             // The copy on another page is the same stroke, placed in the millimeters of that page
             val transform = if (index != originPageIndex && originToWorld != null) {
                 val worldToTarget = Matrix2D()
-                if (pageMmToWorld(index)?.invert(worldToTarget) != true) continue
+                if (viewport.pageMmToWorld(index)?.invert(worldToTarget) != true) continue
                 AffineTransform.of(Matrix2D(originToWorld).postConcat(worldToTarget))
             } else {
                 AffineTransform.IDENTITY
@@ -782,8 +489,8 @@ class DrawViewController(
         tileManager.bakeStrokesDirectlySync(
             strokesByPage = strokesByPage,
             document = document,
-            pageRects = calcPage.pagesRectOnWindow,
-            cameraScale = cameraPhysics.getCurrentScale()
+            pageRects = viewport.layout.pagesRectOnWindow,
+            cameraScale = viewport.camera.getCurrentScale()
         ) {
             submitAlreadyDrawn(changes.singleOrNull() ?: CompositeChange(changes))
         }
@@ -801,81 +508,6 @@ class DrawViewController(
     fun redo() {
         clearSelection()
         historyManager.redo()
-    }
-
-    // ==========================================================
-    // Camera
-    // ==========================================================
-
-    fun zoomBy(factor: Float, focus: Offset = Offset(viewportWidth / 2f, viewportHeight / 2f)) {
-        cameraPhysics.onDrag(0f, 0f, factor, focus.x, focus.y)
-        cameraPhysics.restoreToBounds()
-        requestRedraw()
-    }
-
-    fun zoomIn() = zoomBy(1.25f)
-
-    fun zoomOut() = zoomBy(0.8f)
-
-    /**
-     * Shows the top of the page [pageIndex] at the zoom level [scale] (the current one by default),
-     * centered when the page is narrower than the viewport.
-     */
-    fun showPage(pageIndex: Int, scale: Float = cameraPhysics.getCurrentScale()) {
-        if (viewportWidth <= 0f || viewportHeight <= 0f) return
-        val page = calcPage.pagesRectOnWindow.getOrNull(pageIndex) ?: return
-        cameraPhysics.centerOnWorldPoint(
-            worldX = page.center.x,
-            worldY = page.top + (viewportHeight / 2f - cameraPhysics.topPaddingPx) / scale,
-            scale = scale,
-            screenWidth = viewportWidth,
-            screenHeight = viewportHeight
-        )
-        cameraPhysics.restoreToBounds(animated = false)
-        requestRedraw()
-    }
-
-    /** Shows the top of the page after the one being looked at. */
-    fun showNextPage() {
-        val current = mostVisiblePageIndex() ?: return
-        showPage((current + 1).coerceAtMost(document.pages.lastIndex))
-    }
-
-    /** Shows the top of the page before the one being looked at. */
-    fun showPreviousPage() {
-        val current = mostVisiblePageIndex() ?: return
-        showPage((current - 1).coerceAtLeast(0))
-    }
-
-    /** The pages as wide as the viewport (the zoom of the opening), from the top of the one being looked at. */
-    fun fitWidth() {
-        showPage(mostVisiblePageIndex() ?: 0, scale = 1f)
-    }
-
-    /**
-     * Pans the camera by ([dx], [dy]) screen pixels (e.g. to keep the edited text above the
-     * software keyboard).
-     */
-    fun panCanvasBy(dx: Float, dy: Float) {
-        if (dx == 0f && dy == 0f) return
-        cameraPhysics.stopAllAnimations()
-        cameraPhysics.onDrag(dx, dy, 1f, viewportWidth / 2f, viewportHeight / 2f)
-        requestRedraw()
-    }
-
-    fun centerDocument() {
-        if (viewportWidth <= 0f || viewportHeight <= 0f) return
-        val content = calcPage.contentRect
-        if (content.isEmpty) return
-        cameraPhysics.centerOnWorldPoint(
-            worldX = content.center.x,
-            worldY = content.top + (viewportHeight / 2f),
-            scale = 1f,
-            screenWidth = viewportWidth,
-            screenHeight = viewportHeight
-        )
-        cameraPhysics.restoreToBounds(animated = false)
-        requestRedraw()
     }
 
     /**

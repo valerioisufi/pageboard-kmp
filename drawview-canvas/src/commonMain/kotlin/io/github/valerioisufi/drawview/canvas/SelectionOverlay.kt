@@ -119,9 +119,9 @@ class SelectionFrame(
          * Computes the frame of [selection], or `null` when its page is not laid out.
          */
         fun compute(controller: DrawViewController, selection: SelectionGroup): SelectionFrame? {
-            val pageToScreen = controller.pageMmToScreen(selection.pageIndex) ?: return null
+            val pageToScreen = controller.viewport.pageMmToScreen(selection.pageIndex) ?: return null
             val mmToScreen = Matrix2D(selection.transform).postConcat(pageToScreen)
-            return of(mmToScreen, selection.boundingBox.toCompose(), selection.baseRotation, controller.density, sideHandles = selection.isSingleText, transformable = true)
+            return of(mmToScreen, selection.boundingBox.toCompose(), selection.baseRotation, controller.viewport.density, sideHandles = selection.isSingleText, transformable = true)
         }
 
         /**
@@ -131,9 +131,9 @@ class SelectionFrame(
         fun ofEditedText(controller: DrawViewController): SelectionFrame? {
             val editor = controller.textEditorManager
             if (!editor.isEditing) return null
-            val mmToScreen = controller.pageMmToScreen(editor.activeTextPageIndex) ?: return null
+            val mmToScreen = controller.viewport.pageMmToScreen(editor.activeTextPageIndex) ?: return null
             val box = Rect(editor.boxX, editor.boxY, editor.boxX + editor.boxWidth, editor.boxY + editor.boxHeight)
-            return of(mmToScreen, box, editor.rotation, controller.density, sideHandles = true, transformable = false)
+            return of(mmToScreen, box, editor.rotation, controller.viewport.density, sideHandles = true, transformable = false)
         }
 
         private fun of(mmToScreen: Matrix2D, box: Rect, rotation: Float, density: Float, sideHandles: Boolean, transformable: Boolean): SelectionFrame? {
@@ -207,13 +207,13 @@ internal object SelectionOverlay {
                 painter.draw(canvas, stroke.mesh, frame.mmToScreen)
             }
         }
-        drawFrame(scope, frame, primary, controller.density)
+        drawFrame(scope, frame, primary, controller.viewport.density)
     }
 
     /** Draws the frame of the text being written (its field, over the canvas, draws the text). */
     fun drawEditedText(scope: DrawScope, controller: DrawViewController, primary: Color) {
         val frame = SelectionFrame.ofEditedText(controller) ?: return
-        drawFrame(scope, frame, primary, controller.density)
+        drawFrame(scope, frame, primary, controller.viewport.density)
     }
 
     /** Draws [frame] and its handles, sized for the screen of [density]. */

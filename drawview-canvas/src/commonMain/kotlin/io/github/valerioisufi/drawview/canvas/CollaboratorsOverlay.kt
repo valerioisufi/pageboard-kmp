@@ -30,7 +30,7 @@ import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 
 /**
  * Draws what the other devices are doing on the document (see
- * [DrawViewController.collaborators]), each in its color: the strokes they are drawing, the texts
+ * [CollaboratorPresence.collaborators]), each in its color: the strokes they are drawing, the texts
  * they are writing, the elements they select or move, their pointers with their names.
  */
 internal class CollaboratorsOverlay {
@@ -42,9 +42,9 @@ internal class CollaboratorsOverlay {
 
     /** The strokes being drawn (under the stroke in progress on this device). */
     fun drawInk(scope: DrawScope, controller: DrawViewController, viewport: Rect) {
-        for (collaborator in controller.collaborators) {
+        for (collaborator in controller.presence.collaborators) {
             val mesh = collaborator.ink ?: continue
-            val mmToScreen = controller.pageMmToScreen(pageIndexOf(controller, collaborator.inkPageId)) ?: continue
+            val mmToScreen = controller.viewport.pageMmToScreen(pageIndexOf(controller, collaborator.inkPageId)) ?: continue
             scope.drawIntoCanvas { canvas ->
                 if (collaborator.inkAlpha < 1f) {
                     // Fading away once drawn
@@ -60,7 +60,7 @@ internal class CollaboratorsOverlay {
 
     /** The texts being written and the elements selected or moved, in frames with the names. */
     fun drawWork(scope: DrawScope, controller: DrawViewController, labels: TextMeasurer) {
-        for (collaborator in controller.collaborators) {
+        for (collaborator in controller.presence.collaborators) {
             collaborator.text?.let { scope.drawText(controller, collaborator, it, labels) }
             if (collaborator.selection.isNotEmpty()) scope.drawSelection(controller, collaborator, labels)
         }
@@ -68,9 +68,9 @@ internal class CollaboratorsOverlay {
 
     /** The pointers with the names (of the devices not writing a text). */
     fun drawPointers(scope: DrawScope, controller: DrawViewController, labels: TextMeasurer) {
-        for (collaborator in controller.collaborators) {
+        for (collaborator in controller.presence.collaborators) {
             if (collaborator.text != null) continue
-            val mmToScreen = controller.pageMmToScreen(pageIndexOf(controller, collaborator.pageId)) ?: continue
+            val mmToScreen = controller.viewport.pageMmToScreen(pageIndexOf(controller, collaborator.pageId)) ?: continue
             val point = mmToScreen.mapPoint(collaborator.position.x, collaborator.position.y).toCompose()
             scope.drawCircle(Color.White, radius = with(scope) { 7.dp.toPx() }, center = point)
             scope.drawCircle(collaborator.color, radius = with(scope) { 5.dp.toPx() }, center = point)
@@ -79,7 +79,7 @@ internal class CollaboratorsOverlay {
     }
 
     private fun DrawScope.drawText(controller: DrawViewController, collaborator: Collaborator, text: DrawText, labels: TextMeasurer) {
-        val mmToScreen = controller.pageMmToScreen(pageIndexOf(controller, collaborator.textPageId)) ?: return
+        val mmToScreen = controller.viewport.pageMmToScreen(pageIndexOf(controller, collaborator.textPageId)) ?: return
         drawIntoCanvas { canvas -> controller.tileManager.tileRenderer.textAdapter?.drawText(canvas, text, mmToScreen) }
         val box = Rect(text.x, text.y, text.x + text.width, text.y + text.height)
         val corners = drawFrame(box, text.rotation, mmToScreen, collaborator.color, dashed = false)
@@ -89,7 +89,7 @@ internal class CollaboratorsOverlay {
     private fun DrawScope.drawSelection(controller: DrawViewController, collaborator: Collaborator, labels: TextMeasurer) {
         val pageIndex = pageIndexOf(controller, collaborator.selectionPageId)
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
-        val pageToScreen = controller.pageMmToScreen(pageIndex) ?: return
+        val pageToScreen = controller.viewport.pageMmToScreen(pageIndex) ?: return
         val moved = collaborator.selectionTransform
         val mmToScreen = moved?.toMatrix()?.postConcat(pageToScreen) ?: pageToScreen
         // Moved: drawn here, hidden from the content meanwhile

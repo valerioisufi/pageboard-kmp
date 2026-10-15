@@ -203,30 +203,30 @@ class EditorCommands internal constructor(
         icon = { rememberVectorPainter(DrawViewIcons.ZoomIn) },
         // ⌘+ is ⌘= (with or without ⇧) on many keyboards, + on others and on the keypad
         shortcuts = listOf(primary(Key.Plus), primary(Key.Equals), Shortcut(Key.Equals, primary = true, shift = true), primary(Key.NumPadAdd))
-    ) { controller.zoomIn() }
+    ) { controller.viewport.zoomIn() }
 
     val zoomOut = Command(
         "zoom-out", label(Res.string.command_zoom_out), CommandGroup.VIEW,
         shortcuts = listOf(primary(Key.Minus), primary(Key.NumPadSubtract))
-    ) { controller.zoomOut() }
+    ) { controller.viewport.zoomOut() }
 
     val fitWidth = Command(
         "fit-width", label(Res.string.command_fit_width), CommandGroup.VIEW,
         icon = { rememberVectorPainter(DrawViewIcons.MoveH) },
         shortcuts = listOf(primary(Key.Zero))
-    ) { controller.fitWidth() }
+    ) { controller.viewport.fitWidth() }
 
     val nextPage = Command(
         "next-page", label(Res.string.command_next_page), CommandGroup.VIEW, section = 1,
         shortcuts = listOf(Shortcut(Key.PageDown)),
-        isEnabled = { (controller.mostVisiblePageIndex() ?: 0) < controller.document.pages.lastIndex }
-    ) { controller.showNextPage() }
+        isEnabled = { (controller.viewport.mostVisiblePageIndex() ?: 0) < controller.document.pages.lastIndex }
+    ) { controller.viewport.showNextPage() }
 
     val previousPage = Command(
         "previous-page", label(Res.string.command_previous_page), CommandGroup.VIEW, section = 1,
         shortcuts = listOf(Shortcut(Key.PageUp)),
-        isEnabled = { (controller.mostVisiblePageIndex() ?: 0) > 0 }
-    ) { controller.showPreviousPage() }
+        isEnabled = { (controller.viewport.mostVisiblePageIndex() ?: 0) > 0 }
+    ) { controller.viewport.showPreviousPage() }
 
     val pageGrid = Command(
         "page-grid", label(Res.string.draw_toolbar_action_grid_view), CommandGroup.VIEW, section = 2,
@@ -256,7 +256,7 @@ class EditorCommands internal constructor(
         isEnabled = writable
     ) {
         val pages = controller.pageManager
-        pages.addNewPageAfter(controller.mostVisiblePageIndex() ?: (controller.document.pages.size - 1))
+        pages.addNewPageAfter(controller.viewport.mostVisiblePageIndex() ?: (controller.document.pages.size - 1))
     }
 
     val importPdf = Command(

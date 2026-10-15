@@ -43,7 +43,7 @@ private const val INK_FADE_MS = 300f
 
 /**
  * Tells the others where this device is on the document [documentId] (its pointer, the stroke it
- * is drawing), and shows on the canvas where they are (see [DrawViewController.collaborators]):
+ * is drawing), and shows on the canvas where they are (see [CollaboratorPresence.collaborators]):
  * their pointers glide to where they are, their strokes are modeled as they come like the strokes
  * of this device, and fade away once drawn (the stroke of the document takes their place).
  */
@@ -65,7 +65,7 @@ internal fun CollaboratorsLayer(collaboration: Collaboration, documentId: String
             }
         }
         // As it changes, at most every PRESENCE_INTERVAL_MS (meanwhile the state keeps the last one)
-        controller.activity.collect { activity ->
+        controller.presence.activity.collect { activity ->
             send(activity)
             delay(PRESENCE_INTERVAL_MS)
         }
@@ -308,7 +308,7 @@ private class CollaboratorsDrawing(private val controller: DrawViewController, p
                 }
             }
         }
-        controller.collaborators = peers.values.map {
+        controller.presence.collaborators = peers.values.map {
             Collaborator(
                 id = it.replica,
                 name = it.name,
@@ -333,7 +333,7 @@ private class CollaboratorsDrawing(private val controller: DrawViewController, p
         controller.session.removeObserver(moves)
         peers.values.forEach { it.engine?.release() }
         peers.clear()
-        controller.collaborators = emptyList()
+        controller.presence.collaborators = emptyList()
     }
 }
 

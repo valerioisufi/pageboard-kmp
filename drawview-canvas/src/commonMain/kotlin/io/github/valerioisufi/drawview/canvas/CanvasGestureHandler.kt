@@ -242,7 +242,7 @@ internal class CanvasGestureHandler(
         if (pressed.isEmpty() && !anyUp) {
             val hover = changes.firstOrNull()
             live.overEditedTextFrame = hover != null && controller.textEditorManager.isEditing &&
-                SelectionFrame.ofEditedText(controller)?.contains(hover.position, FrameStyle.hitRadiusPx(hover.type, controller.density)) == true
+                SelectionFrame.ofEditedText(controller)?.contains(hover.position, FrameStyle.hitRadiusPx(hover.type, controller.viewport.density)) == true
             if (hover != null && controller.placementManager.isActive) {
                 controller.placementManager.pointer = hover.position
             } else if (hover != null && controller.isDrawingMode && mode == Mode.NONE) {
@@ -303,7 +303,7 @@ internal class CanvasGestureHandler(
         change.consume()
 
         controller.contextMenuPosition = null
-        controller.cameraPhysics.stopAllAnimations()
+        controller.viewport.camera.stopAllAnimations()
 
         val isStylus = change.type == PointerType.Stylus || change.type == PointerType.Eraser
         if (isStylus && !hasSeenStylus) {
@@ -321,7 +321,7 @@ internal class CanvasGestureHandler(
         val textMarkup = controller.textMarkupManager
         clearTextSelectionOnUp = false
         if (textMarkup.hasSelection) {
-            val handle = textMarkup.handleAt(position, FrameStyle.hitRadiusPx(change.type, controller.density))
+            val handle = textMarkup.handleAt(position, FrameStyle.hitRadiusPx(change.type, controller.viewport.density))
             if (handle != null) {
                 textMarkup.beginHandleDrag(handle, position)
                 mode = Mode.TEXT_HANDLE
@@ -340,7 +340,7 @@ internal class CanvasGestureHandler(
                 return
             }
             val frame = SelectionFrame.ofEditedText(controller)
-            val radius = FrameStyle.hitRadiusPx(change.type, controller.density)
+            val radius = FrameStyle.hitRadiusPx(change.type, controller.viewport.density)
             mode = when {
                 frame == null -> Mode.EDITOR_TAP
                 else -> when (frame.handleAt(position, radius)) {
@@ -388,7 +388,7 @@ internal class CanvasGestureHandler(
         if (selection != null) {
             val frame = SelectionFrame.compute(controller, selection)
             if (frame != null) {
-                val hitMode = when (frame.handleAt(position, FrameStyle.hitRadiusPx(change.type, controller.density))) {
+                val hitMode = when (frame.handleAt(position, FrameStyle.hitRadiusPx(change.type, controller.viewport.density))) {
                     SelectionFrame.Handle.ROTATION -> Mode.SELECTION_ROTATE
                     SelectionFrame.Handle.CORNER -> Mode.SELECTION_SCALE
                     SelectionFrame.Handle.LEFT -> Mode.TEXT_RESIZE_LEFT
@@ -443,7 +443,7 @@ internal class CanvasGestureHandler(
         }
 
         if (isDrawingTool) {
-            val pageIndex = controller.findPageIndexAtScreen(position)
+            val pageIndex = controller.viewport.findPageIndexAtScreen(position)
             val brush = pageIndex?.let { controller.brushForActiveTool(it) }
             if (pageIndex == null || brush == null) {
                 // Outside of any page: the gesture pans the canvas
@@ -468,7 +468,7 @@ internal class CanvasGestureHandler(
 
     private fun startPan() {
         mode = Mode.PAN
-        controller.cameraPhysics.onDragStart()
+        controller.viewport.camera.onDragStart()
     }
 
     private fun onAdditionalPointer(pressed: List<PointerInputChange>) {
@@ -502,7 +502,7 @@ internal class CanvasGestureHandler(
         }
         longPressCandidate = false
         mode = Mode.PINCH
-        controller.cameraPhysics.onDragStart()
+        controller.viewport.camera.onDragStart()
         val p1 = pressed[0].position
         val p2 = pressed[1].position
         pinchCentroid = (p1 + p2) / 2f
@@ -542,7 +542,7 @@ internal class CanvasGestureHandler(
 
             Mode.PAN -> {
                 val delta = position - lastPosition
-                controller.cameraPhysics.onDrag(delta.x, delta.y, 1f, position.x, position.y)
+                controller.viewport.camera.onDrag(delta.x, delta.y, 1f, position.x, position.y)
                 controller.requestRedraw()
             }
 
@@ -560,7 +560,7 @@ internal class CanvasGestureHandler(
 
             Mode.EDITOR_MOVE -> {
                 val editor = controller.textEditorManager
-                val pxPerMm = controller.pixelsPerMm(editor.activeTextPageIndex).coerceAtLeast(0.01f)
+                val pxPerMm = controller.viewport.pixelsPerMm(editor.activeTextPageIndex).coerceAtLeast(0.01f)
                 val delta = position - lastPosition
                 editorMoveOffset += Offset(delta.x / pxPerMm, delta.y / pxPerMm)
                 editor.moveTo(editorMoveOrigin.x + editorMoveOffset.x, editorMoveOrigin.y + editorMoveOffset.y, freeGesture)
@@ -570,11 +570,11 @@ internal class CanvasGestureHandler(
             Mode.EDITOR_RESIZE_LEFT, Mode.EDITOR_RESIZE_RIGHT -> {
                 val editor = controller.textEditorManager
                 val left = mode == Mode.EDITOR_RESIZE_LEFT
-                val pxPerMm = controller.pixelsPerMm(editor.activeTextPageIndex).coerceAtLeast(0.01f)
-                val mm = controller.screenToPageMm(editor.activeTextPageIndex, position)
+                val pxPerMm = controller.viewport.pixelsPerMm(editor.activeTextPageIndex).coerceAtLeast(0.01f)
+                val mm = controller.viewport.screenToPageMm(editor.activeTextPageIndex, position)
                 if (editor.rotation == 0f && mm != null) {
                     // The handle is on the frame, its padding away from the text
-                    val padding = FrameStyle.PADDING_DP * controller.density / pxPerMm
+                    val padding = FrameStyle.PADDING_DP * controller.viewport.density / pxPerMm
                     editor.resizeTo(if (left) mm.x + padding else mm.x - padding, left, freeGesture)
                 } else {
                     // Along the width of the box, turned with the text
@@ -595,16 +595,16 @@ internal class CanvasGestureHandler(
                     live.textBoxDraft = boxBetween(downPosition, position)
                 } else if (movedBeyondSlop) {
                     mode = Mode.PAN
-                    controller.cameraPhysics.onDragStart()
+                    controller.viewport.camera.onDragStart()
                     val delta = position - downPosition
-                    controller.cameraPhysics.onDrag(delta.x, delta.y, 1f, position.x, position.y)
+                    controller.viewport.camera.onDrag(delta.x, delta.y, 1f, position.x, position.y)
                 }
             }
 
             Mode.SELECTION_MOVE -> {
                 val selection = controller.selectionManager.currentSelection
                 if (selection != null) {
-                    val pxPerMm = controller.pixelsPerMm(selection.pageIndex).coerceAtLeast(0.01f)
+                    val pxPerMm = controller.viewport.pixelsPerMm(selection.pageIndex).coerceAtLeast(0.01f)
                     val delta = position - lastPosition
                     controller.selectionManager.moveBy(delta.x / pxPerMm, delta.y / pxPerMm, freeGesture)
                 }
@@ -637,7 +637,7 @@ internal class CanvasGestureHandler(
             Mode.TEXT_RESIZE_LEFT, Mode.TEXT_RESIZE_RIGHT -> {
                 val selection = controller.selectionManager.currentSelection
                 if (selection != null) {
-                    controller.screenToPageMm(selection.pageIndex, position)?.let {
+                    controller.viewport.screenToPageMm(selection.pageIndex, position)?.let {
                         controller.selectionManager.resizeText(it, mode == Mode.TEXT_RESIZE_RIGHT, freeGesture)
                     }
                 }
@@ -660,7 +660,7 @@ internal class CanvasGestureHandler(
             // One finger lifted: keep panning with the remaining one
             val p = pressed[0]
             val delta = p.position - p.previousPosition
-            controller.cameraPhysics.onDrag(delta.x, delta.y, 1f, p.position.x, p.position.y)
+            controller.viewport.camera.onDrag(delta.x, delta.y, 1f, p.position.x, p.position.y)
             pinchCentroid = p.position
             controller.requestRedraw()
             return
@@ -672,7 +672,7 @@ internal class CanvasGestureHandler(
         val pressedCountChanged = pressed.any { it.changedToDownIgnoreConsumed() }
         if (!pressedCountChanged) {
             val delta = centroid - pinchCentroid
-            controller.cameraPhysics.onDrag(delta.x, delta.y, distance / pinchDistance, centroid.x, centroid.y)
+            controller.viewport.camera.onDrag(delta.x, delta.y, distance / pinchDistance, centroid.x, centroid.y)
             controller.requestRedraw()
         }
         pinchCentroid = centroid
@@ -723,12 +723,12 @@ internal class CanvasGestureHandler(
 
             Mode.PAN -> {
                 val velocity = velocityTracker.calculateVelocity()
-                controller.cameraPhysics.onRelease(velocity.x, velocity.y)
+                controller.viewport.camera.onRelease(velocity.x, velocity.y)
                 controller.requestRedraw()
             }
 
             Mode.PINCH -> {
-                controller.cameraPhysics.onRelease(0f, 0f)
+                controller.viewport.camera.onRelease(0f, 0f)
                 controller.requestRedraw()
             }
 
@@ -802,7 +802,7 @@ internal class CanvasGestureHandler(
                 if (mode == Mode.INK) reportActivity(downPosition, inking = false, strokeCancelled = true)
             }
             Mode.ERASE -> controller.eraserManager.commitGesture()
-            Mode.PAN -> controller.cameraPhysics.onRelease(0f, 0f)
+            Mode.PAN -> controller.viewport.camera.onRelease(0f, 0f)
             Mode.MARKUP -> controller.textMarkupManager.cancelMarking()
             else -> {}
         }
@@ -810,17 +810,17 @@ internal class CanvasGestureHandler(
         // A mark or the text of a PDF under the finger: select it
         clearTextSelectionOnUp = false
         if (controller.textMarkupManager.selectAt(downPosition, textTolerancePx(activeType))) {
-            controller.cameraPhysics.stopAllAnimations()
+            controller.viewport.camera.stopAllAnimations()
             return
         }
         if (controller.isDrawingMode && !controller.toolManager.isPanTool) showContextMenu(downPosition)
     }
 
     private fun showContextMenu(position: Offset) {
-        val pageIndex = controller.findPageIndexAtScreen(position) ?: return
+        val pageIndex = controller.viewport.findPageIndexAtScreen(position) ?: return
         controller.pageManager.contextMenuTargetPageIndex = pageIndex
         val page = controller.document.pages.getOrNull(pageIndex)
-        val mm = controller.screenToPageMm(pageIndex, position)
+        val mm = controller.viewport.screenToPageMm(pageIndex, position)
         if (page != null && mm != null) {
             // The elements of the applications are painted over the images: looked for first
             val elements = controller.engines.elements
@@ -832,7 +832,7 @@ internal class CanvasGestureHandler(
             }
         }
         controller.contextMenuPosition = position
-        controller.cameraPhysics.stopAllAnimations()
+        controller.viewport.camera.stopAllAnimations()
     }
 
     // ==========================================================
@@ -841,16 +841,16 @@ internal class CanvasGestureHandler(
 
     private fun onTextToolTap(position: Offset) {
         if (editTextAt(position)) return
-        val pageIndex = controller.findPageIndexAtScreen(position) ?: return
-        val mm = controller.screenToPageMm(pageIndex, position) ?: return
+        val pageIndex = controller.viewport.findPageIndexAtScreen(position) ?: return
+        val mm = controller.viewport.screenToPageMm(pageIndex, position) ?: return
         controller.textEditorManager.startNewText(pageIndex, mm.x, mm.y, freeGesture)
     }
 
     /** Starts a new text in the box drawn on the screen [box] with the text tool. */
     private fun onTextBoxDrawn(box: Rect) {
-        val pageIndex = controller.findPageIndexAtScreen(box.topLeft) ?: controller.findPageIndexAtScreen(box.center) ?: return
-        val topLeft = controller.screenToPageMm(pageIndex, box.topLeft) ?: return
-        val bottomRight = controller.screenToPageMm(pageIndex, box.bottomRight) ?: return
+        val pageIndex = controller.viewport.findPageIndexAtScreen(box.topLeft) ?: controller.viewport.findPageIndexAtScreen(box.center) ?: return
+        val topLeft = controller.viewport.screenToPageMm(pageIndex, box.topLeft) ?: return
+        val bottomRight = controller.viewport.screenToPageMm(pageIndex, box.bottomRight) ?: return
         controller.textEditorManager.startDrawnText(pageIndex, Rect(topLeft, bottomRight))
     }
 
@@ -860,9 +860,9 @@ internal class CanvasGestureHandler(
      * @return `true` if a text block was found.
      */
     private fun editTextAt(position: Offset): Boolean {
-        val pageIndex = controller.findPageIndexAtScreen(position) ?: return false
+        val pageIndex = controller.viewport.findPageIndexAtScreen(position) ?: return false
         val page = controller.document.pages.getOrNull(pageIndex) ?: return false
-        val mm = controller.screenToPageMm(pageIndex, position) ?: return false
+        val mm = controller.viewport.screenToPageMm(pageIndex, position) ?: return false
         val edited = controller.textEditorManager.activeTextItem
         val text = page.texts.lastOrNull { it !== edited && it.containsPoint(mm.x, mm.y) } ?: return false
         controller.textEditorManager.startEditing(text, pageIndex, caretAt = text.toLocal(mm.x, mm.y).toCompose())
@@ -881,7 +881,7 @@ internal class CanvasGestureHandler(
             // Also the pinch of the Windows precision touchpads, reported as Ctrl + wheel
             zoomBy(exp(-delta.y * 0.1f).coerceIn(0.5f, 2f), change.position)
         } else {
-            val unit = scrollUnitPx(controller.density)
+            val unit = scrollUnitPx(controller.viewport.density)
             // Shift + wheel scrolls horizontally. The desktop already reports it as a horizontal
             // delta, like the horizontal scroll of a macOS trackpad (which comes with Shift)
             val swapAxes = modifiers.isShiftPressed && delta.x == 0f
@@ -898,8 +898,8 @@ internal class CanvasGestureHandler(
                     trackpadPanBy(pan, change)
                 }
                 else -> {
-                    controller.cameraPhysics.onDrag(pan.x, pan.y, 1f, change.position.x, change.position.y)
-                    controller.cameraPhysics.restoreToBounds(animated = false)
+                    controller.viewport.camera.onDrag(pan.x, pan.y, 1f, change.position.x, change.position.y)
+                    controller.viewport.camera.restoreToBounds(animated = false)
                     controller.requestRedraw()
                 }
             }
@@ -909,8 +909,8 @@ internal class CanvasGestureHandler(
 
     /** Zooms by [factor] around [focus] at once (wheel with Ctrl / Cmd). */
     private fun zoomBy(factor: Float, focus: Offset) {
-        controller.cameraPhysics.onDrag(0f, 0f, factor, focus.x, focus.y)
-        controller.cameraPhysics.restoreToBounds(animated = false)
+        controller.viewport.camera.onDrag(0f, 0f, factor, focus.x, focus.y)
+        controller.viewport.camera.restoreToBounds(animated = false)
         controller.requestRedraw()
     }
 
@@ -921,7 +921,7 @@ internal class CanvasGestureHandler(
                 trackpadFingersDown = true
                 trackpadMomentum = false
                 // Like a finger on a touch screen, the fingers on the trackpad stop the canvas
-                if (controller.cameraPhysics.isAnimating()) startTrackpadPan()
+                if (controller.viewport.camera.isAnimating()) startTrackpadPan()
             }
             TrackpadScrollPhase.FINGERS_UP -> {
                 trackpadFingersDown = false
@@ -954,7 +954,7 @@ internal class CanvasGestureHandler(
 
     private fun startTrackpadPan() {
         isTrackpadPanning = true
-        controller.cameraPhysics.onDragStart()
+        controller.viewport.camera.onDragStart()
         trackpadVelocityTracker.resetTracking()
         trackpadPanPosition = Offset.Zero
         lastTrackpadSampleTime = 0L
@@ -963,7 +963,7 @@ internal class CanvasGestureHandler(
     /** Moves the canvas with the fingers, beyond its edges too (rubber band). */
     private fun trackpadPanBy(delta: Offset, change: PointerInputChange) {
         if (delta == Offset.Zero) return
-        controller.cameraPhysics.onDrag(delta.x, delta.y, 1f, change.position.x, change.position.y)
+        controller.viewport.camera.onDrag(delta.x, delta.y, 1f, change.position.x, change.position.y)
         trackpadPanPosition += delta
         trackpadVelocityTracker.addPosition(change.uptimeMillis, trackpadPanPosition)
         lastTrackpadSampleTime = change.uptimeMillis
@@ -982,7 +982,7 @@ internal class CanvasGestureHandler(
             trackpadVelocityTracker.addPosition(timeMillis, trackpadPanPosition)
         }
         val velocity = trackpadVelocityTracker.calculateVelocity()
-        controller.cameraPhysics.onRelease(velocity.x, velocity.y)
+        controller.viewport.camera.onRelease(velocity.x, velocity.y)
         controller.requestRedraw()
     }
 
@@ -1005,9 +1005,9 @@ internal class CanvasGestureHandler(
      * with a rubber band.
      */
     fun onTrackpadPinch(phase: TrackpadPinchPhase, factor: Float, focus: Offset) {
-        if (phase == TrackpadPinchPhase.START) controller.cameraPhysics.onDragStart()
-        if (factor > 0f && factor != 1f) controller.cameraPhysics.onDrag(0f, 0f, factor, focus.x, focus.y)
-        if (phase == TrackpadPinchPhase.END) controller.cameraPhysics.onRelease(0f, 0f)
+        if (phase == TrackpadPinchPhase.START) controller.viewport.camera.onDragStart()
+        if (factor > 0f && factor != 1f) controller.viewport.camera.onDrag(0f, 0f, factor, focus.x, focus.y)
+        if (phase == TrackpadPinchPhase.END) controller.viewport.camera.onRelease(0f, 0f)
         controller.requestRedraw()
     }
 
@@ -1017,18 +1017,18 @@ internal class CanvasGestureHandler(
 
     /**
      * Tells the controller where the pointer is ([screen]) and, when [inking], the stroke being
-     * drawn, or that it was given up ([strokeCancelled], see [DrawViewController.activity]).
+     * drawn, or that it was given up ([strokeCancelled], see [CollaboratorPresence.activity]).
      */
     private fun reportActivity(screen: Offset, inking: Boolean, strokeCancelled: Boolean = false) {
-        val pageIndex = if (inking) inkPageIndex else controller.findPageIndexAtScreen(screen)
+        val pageIndex = if (inking) inkPageIndex else controller.viewport.findPageIndexAtScreen(screen)
         val page = pageIndex?.let { controller.document.pages.getOrNull(it) }
-        val mm = pageIndex?.let { controller.screenToPageMm(it, screen) }
+        val mm = pageIndex?.let { controller.viewport.screenToPageMm(it, screen) }
         if (page == null || mm == null) {
-            controller.reportActivity(if (strokeCancelled) EditorActivity(strokeCancelled = true) else null)
+            controller.presence.reportActivity(if (strokeCancelled) EditorActivity(strokeCancelled = true) else null)
             return
         }
         val brush = inkBrush.takeIf { inking }
-        controller.reportActivity(
+        controller.presence.reportActivity(
             EditorActivity(
                 pageId = page.id,
                 x = mm.x,
@@ -1043,7 +1043,7 @@ internal class CanvasGestureHandler(
     }
 
     private fun addInkInput(change: PointerInputChange, screen: Offset, timeMs: Long, pressure: Float) {
-        val mm = controller.screenToPageMm(inkPageIndex, screen) ?: return
+        val mm = controller.viewport.screenToPageMm(inkPageIndex, screen) ?: return
         val toolType = when (change.type) {
             PointerType.Stylus, PointerType.Eraser -> InputToolType.STYLUS
             PointerType.Touch -> InputToolType.TOUCH
@@ -1056,23 +1056,23 @@ internal class CanvasGestureHandler(
 
     /** How far from the text of the PDFs a pointer of [type] may be to select or mark it, in pixels. */
     private fun textTolerancePx(type: PointerType): Float =
-        (if (type == PointerType.Touch) 12f else 6f) * controller.density
+        (if (type == PointerType.Touch) 12f else 6f) * controller.viewport.density
 
     /** The radius on screen of a stroke [sizeMm] wide drawn at [position]. */
     private fun inkRadiusPx(position: Offset, sizeMm: Float): Float {
-        val pageIndex = controller.findPageIndexAtScreen(position) ?: controller.firstVisiblePageIndex() ?: 0
-        return sizeMm / 2f * controller.pixelsPerMm(pageIndex)
+        val pageIndex = controller.viewport.findPageIndexAtScreen(position) ?: controller.viewport.firstVisiblePageIndex() ?: 0
+        return sizeMm / 2f * controller.viewport.pixelsPerMm(pageIndex)
     }
 
     private fun eraserRadiusPx(position: Offset): Float {
-        val pageIndex = controller.findPageIndexAtScreen(position) ?: controller.firstVisiblePageIndex() ?: 0
+        val pageIndex = controller.viewport.findPageIndexAtScreen(position) ?: controller.viewport.firstVisiblePageIndex() ?: 0
         val diameterMm = controller.toolManager.activePreset(Tool.ERASER)?.sizeMm ?: 8f
-        return diameterMm / 2f * controller.pixelsPerMm(pageIndex)
+        return diameterMm / 2f * controller.viewport.pixelsPerMm(pageIndex)
     }
 
     private fun updateAutoScroll(position: Offset) {
         val edge = 80f
-        val height = controller.viewportHeight
+        val height = controller.viewport.height
         live.autoScrollPerFrame = when {
             position.y < edge -> (edge - position.y) * 0.25f
             position.y > height - edge -> -(position.y - (height - edge)) * 0.25f
@@ -1086,21 +1086,21 @@ internal class CanvasGestureHandler(
     fun onAutoScrollFrame() {
         val delta = live.autoScrollPerFrame
         if (delta == 0f || abs(delta) < 0.01f) return
-        controller.cameraPhysics.onDrag(0f, delta, 1f, controller.viewportWidth / 2f, controller.viewportHeight / 2f)
-        controller.cameraPhysics.restoreToBounds(animated = false)
+        controller.viewport.camera.onDrag(0f, delta, 1f, controller.viewport.width / 2f, controller.viewport.height / 2f)
+        controller.viewport.camera.restoreToBounds(animated = false)
         when (mode) {
             Mode.SELECTION_MOVE -> {
                 // Keep the selection under the finger while the camera moves
                 val selection = controller.selectionManager.currentSelection
                 if (selection != null) {
-                    val pxPerMm = controller.pixelsPerMm(selection.pageIndex).coerceAtLeast(0.01f)
+                    val pxPerMm = controller.viewport.pixelsPerMm(selection.pageIndex).coerceAtLeast(0.01f)
                     controller.selectionManager.moveBy(0f, -delta / pxPerMm, freeGesture)
                 }
             }
             Mode.EDITOR_MOVE -> {
                 // Keep the text being written under the pointer while the camera moves
                 val editor = controller.textEditorManager
-                val pxPerMm = controller.pixelsPerMm(editor.activeTextPageIndex).coerceAtLeast(0.01f)
+                val pxPerMm = controller.viewport.pixelsPerMm(editor.activeTextPageIndex).coerceAtLeast(0.01f)
                 editorMoveOffset += Offset(0f, -delta / pxPerMm)
                 editor.moveTo(editorMoveOrigin.x + editorMoveOffset.x, editorMoveOrigin.y + editorMoveOffset.y, freeGesture)
             }

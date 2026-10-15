@@ -116,7 +116,7 @@ class TextMarkupTest {
         document.pages[0].add(DrawPdf(pdfPageIndex = 0).apply { resourceId = "pdf-1" })
         val controller = DrawViewController(document = document, coroutineScope = scope)
         controller.tileManager.tileRenderer.pdfAdapter = FakePdfAdapter(layout)
-        controller.setViewport(800f, 1200f)
+        controller.viewport.setSize(800f, 1200f)
         return controller
     }
 
@@ -124,7 +124,7 @@ class TextMarkupTest {
     private fun DrawViewController.screenOf(x: Float, y: Float): Offset {
         val page = document.pages[0]
         val toScreen = pdfPointsToPageMm(A4_WIDTH_PT, A4_HEIGHT_PT, page.widthMm, page.heightMm)
-            .postConcat(assertNotNull(pageMmToScreen(0)))
+            .postConcat(assertNotNull(viewport.pageMmToScreen(0)))
         return toScreen.mapPoint(x, y).toCompose()
     }
 

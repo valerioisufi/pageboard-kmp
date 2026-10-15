@@ -83,8 +83,8 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
     @Suppress("UNUSED_VARIABLE")
     val frame = controller.version
     @Suppress("UNUSED_VARIABLE")
-    val camera = controller.cameraPhysics.moveCount
-    val mmToScreen = controller.pageMmToScreen(editor.activeTextPageIndex) ?: return
+    val camera = controller.viewport.camera.moveCount
+    val mmToScreen = controller.viewport.pageMmToScreen(editor.activeTextPageIndex) ?: return
 
     // Scale and position anchored to the page (page millimeters -> screen pixels)
     val scale = mmToScreen.scaleFactor.coerceAtLeast(0.01f)

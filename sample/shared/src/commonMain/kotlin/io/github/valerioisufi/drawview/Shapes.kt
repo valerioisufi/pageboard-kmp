@@ -95,7 +95,7 @@ fun shapesExtension(): EditorExtension = EditorExtension(
 )
 
 private fun addShape(controller: DrawViewController, shape: Shape) {
-    val pageIndex = controller.mostVisiblePageIndex() ?: return
+    val pageIndex = controller.viewport.mostVisiblePageIndex() ?: return
     val page = controller.document.pages.getOrNull(pageIndex) ?: return
     val side = min(page.widthMm, page.heightMm) / 4f
     val box = io.github.valerioisufi.drawview.model.geometry.Rect(

@@ -85,8 +85,8 @@ class TextGesturesTest {
         val editor = controller.textEditorManager
         assertTrue(editor.isEditing)
         assertFalse(editor.autoWidth, "the width drawn stays")
-        val topLeft = assertNotNull(controller.screenToPageMm(0, from))
-        val bottomRight = assertNotNull(controller.screenToPageMm(0, to))
+        val topLeft = assertNotNull(controller.viewport.screenToPageMm(0, from))
+        val bottomRight = assertNotNull(controller.viewport.screenToPageMm(0, to))
         assertEquals(topLeft.x, editor.boxX, 0.01f)
         assertEquals(topLeft.y, editor.boxY, 0.01f)
         assertEquals(bottomRight.x - topLeft.x, editor.boxWidth, 0.01f)
@@ -102,12 +102,12 @@ class TextGesturesTest {
         editor.updateValue(TextFieldValue("First", TextRange(5)))
 
         // A tap on the other text: the first one saved, the other one opened
-        scene.click(assertNotNull(controller.pageMmToScreen(0)).mapPoint(40f, 125f).toCompose())
+        scene.click(assertNotNull(controller.viewport.pageMmToScreen(0)).mapPoint(40f, 125f).toCompose())
         assertEquals(listOf("Other", "First"), page.texts.map { it.text })
         assertSame(other, editor.activeTextItem)
 
         // A tap on an empty spot: saved, nothing opened
-        scene.click(assertNotNull(controller.pageMmToScreen(0)).mapPoint(150f, 250f).toCompose())
+        scene.click(assertNotNull(controller.viewport.pageMmToScreen(0)).mapPoint(150f, 250f).toCompose())
         assertFalse(editor.isEditing)
     }
 }

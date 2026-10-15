@@ -49,7 +49,7 @@ fun DrawCanvas(
 ) {
     val density = LocalDensity.current.density
     LaunchedEffect(density) {
-        controller.density = density
+        controller.viewport.density = density
     }
 
     val live = remember { CanvasLiveState() }
@@ -66,7 +66,7 @@ fun DrawCanvas(
     // while nothing moves by itself: a page only looked at lets the device sleep
     var animationTick by remember { mutableStateOf(0L) }
     LaunchedEffect(controller) {
-        val camera = controller.cameraPhysics
+        val camera = controller.viewport.camera
         fun moving() = camera.isAnimating() || live.autoScrollPerFrame != 0f
         while (true) {
             snapshotFlow { camera.animationStarts to live.autoScrollPerFrame }.first { moving() }
@@ -108,7 +108,7 @@ fun DrawCanvas(
             .clipToBounds()
             .onSizeChanged { size ->
                 if (size.width > 0 && size.height > 0) {
-                    controller.setViewport(size.width.toFloat(), size.height.toFloat())
+                    controller.viewport.setSize(size.width.toFloat(), size.height.toFloat())
                 }
             }
             .unbufferedStylusInput()
@@ -119,7 +119,7 @@ fun DrawCanvas(
     ) {
         // Observe every source of invalidation
         @Suppress("UNUSED_VARIABLE") val v = controller.version
-        @Suppress("UNUSED_VARIABLE") val camera = controller.cameraPhysics.moveCount
+        @Suppress("UNUSED_VARIABLE") val camera = controller.viewport.camera.moveCount
         @Suppress("UNUSED_VARIABLE") val tick = animationTick
         @Suppress("UNUSED_VARIABLE") val liveTick = live.tick
         @Suppress("UNUSED_VARIABLE") val selectionVersion = controller.selectionManager.selectionVersion
@@ -127,9 +127,9 @@ fun DrawCanvas(
         val document = controller.document
         val theme = controller.themeColors
 
-        val matrix = controller.getRenderMatrix(Matrix2D())
+        val matrix = controller.viewport.getRenderMatrix(Matrix2D())
         val viewport = Rect(0f, 0f, size.width, size.height)
-        val visible = controller.visiblePages()
+        val visible = controller.viewport.visiblePages()
         val draggedIndex = controller.pageManager.draggedPageIndex
         val draggedPage = document.pages.getOrNull(draggedIndex)?.takeIf { floatingPage != null }
 
@@ -150,7 +150,7 @@ fun DrawCanvas(
                 cameraMatrix = matrix,
                 viewportBounds = viewport,
                 document = document,
-                pageRects = controller.calcPage.pagesRectOnWindow,
+                pageRects = controller.viewport.layout.pagesRectOnWindow,
                 skipPageKey = draggedPage?.renderKey
             )
         }
@@ -174,11 +174,11 @@ fun DrawCanvas(
         // 4a. The guides of a box snapped to what is around it
         val snaps = controller.snapManager
         if (snaps.guides.isNotEmpty()) {
-            controller.pageMmToScreen(snaps.guidesPageIndex)?.let { mmToScreen ->
+            controller.viewport.pageMmToScreen(snaps.guidesPageIndex)?.let { mmToScreen ->
                 for (guide in snaps.guides) {
                     val start = if (guide.vertical) mmToScreen.mapPoint(guide.position, guide.from).toCompose() else mmToScreen.mapPoint(guide.from, guide.position).toCompose()
                     val end = if (guide.vertical) mmToScreen.mapPoint(guide.position, guide.to).toCompose() else mmToScreen.mapPoint(guide.to, guide.position).toCompose()
-                    drawLine(Color(FrameStyle.GUIDE_COLOR), start, end, strokeWidth = FrameStyle.GUIDE_STROKE_DP * controller.density)
+                    drawLine(Color(FrameStyle.GUIDE_COLOR), start, end, strokeWidth = FrameStyle.GUIDE_STROKE_DP * controller.viewport.density)
                 }
             }
         }
@@ -191,7 +191,7 @@ fun DrawCanvas(
         collaboratorsOverlay.drawWork(this, controller, labels)
         collaboratorsOverlay.drawInk(this, controller, viewport)
         live.liveMesh?.let { mesh ->
-            val mmToScreen = controller.pageMmToScreen(live.livePageIndex)
+            val mmToScreen = controller.viewport.pageMmToScreen(live.livePageIndex)
             if (mmToScreen != null) {
                 drawIntoCanvas { canvas -> livePainter.draw(canvas, mesh, mmToScreen) }
             }
@@ -219,12 +219,12 @@ fun DrawCanvas(
 
         // 7. Floating page while reordering
         if (draggedPage != null && floatingPage != null) {
-            val worldRect = controller.calcPage.pagesRectOnWindow.getOrNull(draggedIndex)
+            val worldRect = controller.viewport.layout.pagesRectOnWindow.getOrNull(draggedIndex)
             drawPaperSheet(floatingPage, Color(draggedPage.background.backgroundColor), elevated = true)
             if (worldRect != null) {
                 drawIntoCanvas { canvas ->
                     controller.tileManager.drawPageTiles(
-                        canvas, draggedPage, worldRect, floatingPage, controller.cameraPhysics.getCurrentScale()
+                        canvas, draggedPage, worldRect, floatingPage, controller.viewport.camera.getCurrentScale()
                     )
                 }
             }
@@ -238,7 +238,7 @@ fun DrawCanvas(
                 Color(theme.primaryColor),
                 topLeft = box.topLeft,
                 size = box.size,
-                style = Stroke(width = FrameStyle.STROKE_DP * controller.density, pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 6f)))
+                style = Stroke(width = FrameStyle.STROKE_DP * controller.viewport.density, pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 6f)))
             )
         }
 
@@ -262,7 +262,7 @@ private fun DrawScope.drawPlacementPreview(
     topLeft: Offset,
     primary: Color
 ) {
-    val mmToScreen = controller.pageMmToScreen(pageIndex) ?: return
+    val mmToScreen = controller.viewport.pageMmToScreen(pageIndex) ?: return
     preview.x = topLeft.x
     preview.y = topLeft.y
     val frame = mmToScreen.mapRect(Rect(topLeft.x, topLeft.y, topLeft.x + preview.width, topLeft.y + preview.height))

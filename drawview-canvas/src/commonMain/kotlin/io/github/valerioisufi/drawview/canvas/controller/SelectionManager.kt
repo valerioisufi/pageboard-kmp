@@ -123,15 +123,15 @@ class SelectionManager(private val controller: DrawViewController) {
         val selection = selectionState
         val page = selection?.let { controller.document.pages.getOrNull(it.pageIndex) }
         if (selection == null || page == null || selection.isEmpty()) {
-            controller.reportSelection(null)
+            controller.presence.reportSelection(null)
             return
         }
-        controller.reportSelection(SelectionActivity(page.id, selection.elements().map { it.id }, AffineTransform.of(selection.transform)))
+        controller.presence.reportSelection(SelectionActivity(page.id, selection.elements().map { it.id }, AffineTransform.of(selection.transform)))
     }
 
     /**
      * Selects the elements of [page] intersecting the closed [lasso] polygon (page millimeters),
-     * except the texts other devices are writing (see [DrawViewController.writerOf]).
+     * except the texts other devices are writing (see [CollaboratorPresence.writerOf]).
      */
     fun selectWithLasso(pageIndex: Int, lasso: FloatArray) {
         clearSelection()
@@ -160,8 +160,8 @@ class SelectionManager(private val controller: DrawViewController) {
             }
             for (text in page.texts) {
                 if (isItemInsideLasso(text.centerX, text.centerY, text.getRotatedBounds(), lasso, lassoBox)) {
-                    controller.writerOf(text)?.let { writer ->
-                        controller.refuseEdit(writer)
+                    controller.presence.writerOf(text)?.let { writer ->
+                        controller.presence.refuseEdit(writer)
                         continue
                     }
                     selection.texts.add(text)
@@ -242,8 +242,8 @@ class SelectionManager(private val controller: DrawViewController) {
      * Selects a single text block (e.g. a text added by the application, so that it can be moved).
      */
     fun selectText(pageIndex: Int, text: DrawText) {
-        controller.writerOf(text)?.let { writer ->
-            controller.refuseEdit(writer)
+        controller.presence.writerOf(text)?.let { writer ->
+            controller.presence.refuseEdit(writer)
             return
         }
         clearSelection()
@@ -373,7 +373,7 @@ class SelectionManager(private val controller: DrawViewController) {
             Matrix2D().postRotate(-selection.baseRotation, text.centerX, text.centerY).mapPoint(local.x, local.y).x
         } else local.x
         // The handle is on the frame, its padding away from the text
-        val padding = FrameStyle.PADDING_DP * controller.density / max(controller.pixelsPerMm(selection.pageIndex), 0.01f) / max(selection.transform.scaleFactor, 0.01f)
+        val padding = FrameStyle.PADDING_DP * controller.viewport.density / max(controller.viewport.pixelsPerMm(selection.pageIndex), 0.01f) / max(selection.transform.scaleFactor, 0.01f)
         var edge = if (isRightEdge) x - padding else x + padding
         // An edge of a text not turned nor moved snaps to what is around it
         if (selection.baseRotation == 0f && selection.transform.isIdentity) {
@@ -415,14 +415,14 @@ class SelectionManager(private val controller: DrawViewController) {
 
         // Target page: the one under the transformed selection center
         val center = transform.mapPoint(selection.boundingBox.center.x, selection.boundingBox.center.y)
-        val oldMmToWorld = controller.pageMmToWorld(selection.pageIndex) ?: return
+        val oldMmToWorld = controller.viewport.pageMmToWorld(selection.pageIndex) ?: return
         val worldCenter = oldMmToWorld.mapPoint(center.x, center.y)
-        val targetIndex = controller.findPageIndexAtWorld(worldCenter.toCompose(), nearest = true)
+        val targetIndex = controller.viewport.findPageIndexAtWorld(worldCenter.toCompose(), nearest = true)
         val newPage = doc.pages.getOrNull(targetIndex) ?: oldPage
 
         val finalTransform = Matrix2D(transform)
         if (newPage !== oldPage) {
-            val newMmToWorld = controller.pageMmToWorld(targetIndex) ?: return
+            val newMmToWorld = controller.viewport.pageMmToWorld(targetIndex) ?: return
             val worldToNewMm = Matrix2D()
             if (!newMmToWorld.invert(worldToNewMm)) return
             finalTransform.postConcat(oldMmToWorld).postConcat(worldToNewMm)
@@ -543,8 +543,8 @@ class SelectionManager(private val controller: DrawViewController) {
     fun pasteSelection(targetScreen: Offset? = null) {
         val copied = clipboard ?: return
         val doc = controller.document
-        val targetIndex = targetScreen?.let { controller.findPageIndexAtScreen(it) }
-            ?: controller.firstVisiblePageIndex()
+        val targetIndex = targetScreen?.let { controller.viewport.findPageIndexAtScreen(it) }
+            ?: controller.viewport.firstVisiblePageIndex()
             ?: copied.pageIndex
         val targetPage = doc.pages.getOrNull(targetIndex) ?: return
         clearSelection()
@@ -552,7 +552,7 @@ class SelectionManager(private val controller: DrawViewController) {
         var offsetX = 10f
         var offsetY = 10f
         if (targetScreen != null) {
-            val mm = controller.screenToPageMm(targetIndex, targetScreen)
+            val mm = controller.viewport.screenToPageMm(targetIndex, targetScreen)
             if (mm != null) {
                 offsetX = mm.x - copied.boundingBox.center.x
                 offsetY = mm.y - copied.boundingBox.center.y

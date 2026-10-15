@@ -75,7 +75,7 @@ class SnapTest {
 
     private fun controller(scope: CoroutineScope, background: PageBackground = PageBackground.Solid()): DrawViewController {
         val controller = DrawViewController(document = DrawDocument(defaultBackground = background), coroutineScope = scope)
-        controller.setViewport(800f, 1200f)
+        controller.viewport.setSize(800f, 1200f)
         controller.tileManager.tileRenderer.textAdapter = FakeTextAdapter()
         return controller
     }

@@ -55,7 +55,7 @@ class TextEditingTest {
 
     private fun controller(scope: CoroutineScope): DrawViewController {
         val controller = DrawViewController(document = DrawDocument(), coroutineScope = scope)
-        controller.setViewport(800f, 1200f)
+        controller.viewport.setSize(800f, 1200f)
         controller.tileManager.tileRenderer.textAdapter = FakeTextAdapter()
         return controller
     }
@@ -165,7 +165,7 @@ class TextEditingTest {
     fun theOthersSeeTheTextAsItIsWritten() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope)
         val editor = controller.textEditorManager
-        fun draft() = controller.activity.value?.text
+        fun draft() = controller.presence.activity.value?.text
 
         editor.startNewText(0, 10f, 50f)
         assertEquals("", draft()?.text)
@@ -239,7 +239,7 @@ class TextEditingTest {
     @Test
     fun aTextHasTheSameFrameSelectedAndWritten() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope)
-        controller.density = 2f
+        controller.viewport.density = 2f
         val editor = controller.textEditorManager
         editor.startNewText(0, 30f, 50f)
         editor.type("Framed")
@@ -260,7 +260,7 @@ class TextEditingTest {
         assertNotNull(selected.rotationHandle)
         assertNull(written.rotationHandle)
         assertFalse(written.scalesFromCorners)
-        val radius = FrameStyle.hitRadiusPx(PointerType.Touch, controller.density)
+        val radius = FrameStyle.hitRadiusPx(PointerType.Touch, controller.viewport.density)
         assertEquals(SelectionFrame.Handle.LEFT, written.handleAt(written.sideHandles[0] + Offset(radius - 1f, 0f), radius))
         assertEquals(SelectionFrame.Handle.RIGHT, written.handleAt(written.sideHandles[1], radius))
         assertNull(written.handleAt(written.center, radius))

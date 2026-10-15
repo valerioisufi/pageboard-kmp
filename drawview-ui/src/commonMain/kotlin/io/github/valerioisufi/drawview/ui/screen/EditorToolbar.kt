@@ -240,9 +240,9 @@ private fun documentSubtitle(controller: DrawViewController, location: String?, 
     if (pageOnly) {
         val page by remember(controller) {
             androidx.compose.runtime.derivedStateOf {
-                controller.cameraPhysics.moveCount
+                controller.viewport.camera.moveCount
                 controller.version
-                (controller.mostVisiblePageIndex() ?: 0) + 1
+                (controller.viewport.mostVisiblePageIndex() ?: 0) + 1
             }
         }
         return stringResource(Res.string.editor_page_indicator, page, total)
@@ -741,10 +741,10 @@ internal fun FloatingTools(controller: DrawViewController, commands: EditorComma
 internal fun PageIndicator(controller: DrawViewController, withZoom: Boolean, modifier: Modifier = Modifier) {
     val state by remember(controller) {
         androidx.compose.runtime.derivedStateOf {
-            controller.cameraPhysics.moveCount
+            controller.viewport.camera.moveCount
             controller.version
-            val page = (controller.mostVisiblePageIndex() ?: 0) + 1
-            val zoom = kotlin.math.round(controller.cameraPhysics.getCurrentScale() * 100f).toInt()
+            val page = (controller.viewport.mostVisiblePageIndex() ?: 0) + 1
+            val zoom = kotlin.math.round(controller.viewport.camera.getCurrentScale() * 100f).toInt()
             Triple(page, controller.document.pages.size, zoom)
         }
     }

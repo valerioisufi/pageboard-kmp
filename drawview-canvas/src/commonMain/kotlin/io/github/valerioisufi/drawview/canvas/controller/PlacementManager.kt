@@ -65,9 +65,9 @@ class PlacementManager(private val controller: DrawViewController) {
      */
     fun targetAt(screenPoint: Offset): Pair<Int, Offset>? {
         val preview = request?.preview ?: return null
-        val pageIndex = controller.findPageIndexAtScreen(screenPoint) ?: return null
+        val pageIndex = controller.viewport.findPageIndexAtScreen(screenPoint) ?: return null
         val page = controller.document.pages.getOrNull(pageIndex) ?: return null
-        val mm = controller.screenToPageMm(pageIndex, screenPoint) ?: return null
+        val mm = controller.viewport.screenToPageMm(pageIndex, screenPoint) ?: return null
         val x = mm.x.coerceIn(0f, (page.widthMm - preview.width).coerceAtLeast(0f))
         val y = mm.y.coerceIn(0f, (page.heightMm - preview.height).coerceAtLeast(0f))
         return pageIndex to Offset(x, y)
