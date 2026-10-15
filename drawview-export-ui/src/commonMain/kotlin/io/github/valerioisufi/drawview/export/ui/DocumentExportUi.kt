@@ -44,26 +44,26 @@ import io.github.valerioisufi.drawview.export.DocumentExport
 import io.github.valerioisufi.drawview.export.ExportOptions
 import io.github.valerioisufi.drawview.export.PageImageExporter
 import io.github.valerioisufi.drawview.export.PdfExporter
-import io.github.valerioisufi.drawview.export.generated.resources.Res
-import io.github.valerioisufi.drawview.export.generated.resources.export_action
-import io.github.valerioisufi.drawview.export.generated.resources.export_background
-import io.github.valerioisufi.drawview.export.generated.resources.export_cancel
-import io.github.valerioisufi.drawview.export.generated.resources.export_close
-import io.github.valerioisufi.drawview.export.generated.resources.export_confirm
-import io.github.valerioisufi.drawview.export.generated.resources.export_done
-import io.github.valerioisufi.drawview.export.generated.resources.export_failed
-import io.github.valerioisufi.drawview.export.generated.resources.export_format
-import io.github.valerioisufi.drawview.export.generated.resources.export_format_pdf
-import io.github.valerioisufi.drawview.export.generated.resources.export_format_pdf_hint
-import io.github.valerioisufi.drawview.export.generated.resources.export_format_png
-import io.github.valerioisufi.drawview.export.generated.resources.export_format_png_hint
-import io.github.valerioisufi.drawview.export.generated.resources.export_in_progress
-import io.github.valerioisufi.drawview.export.generated.resources.export_pages
-import io.github.valerioisufi.drawview.export.generated.resources.export_pages_all
-import io.github.valerioisufi.drawview.export.generated.resources.export_pages_on_screen
-import io.github.valerioisufi.drawview.export.generated.resources.export_save_title
-import io.github.valerioisufi.drawview.export.generated.resources.export_skipped
-import io.github.valerioisufi.drawview.export.generated.resources.export_title
+import io.github.valerioisufi.drawview.export.ui.generated.resources.Res
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_action
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_background
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_cancel
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_close
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_confirm
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_done
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_failed
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_format
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_format_pdf
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_format_pdf_hint
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_format_png
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_format_png_hint
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_in_progress
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_pages
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_pages_all
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_pages_on_screen
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_save_title
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_skipped
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_title
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.command.Command
@@ -191,9 +191,11 @@ internal fun ExportDialog(
         state = ExportState.Running(0f)
         scope.launch {
             state = try {
-                val result = export.export(documentId, exporter, ExportOptions(pages, backgroundPattern), target) {
+                val result = export.export(documentId, exporter, ExportOptions(pages, backgroundPattern), target.path) {
                     state = ExportState.Running(it)
                 }
+                // Where the user chose (e.g. moved there from a file of the application)
+                target.deliver(target.path)
                 ExportState.Done(result.skipped)
             } catch (e: CancellationException) {
                 throw e

@@ -2,10 +2,9 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
     id("drawview.compose.library")
-    alias(libs.plugins.roborazzi)
 }
 
-description = "Export of DrawView documents as PDF files and images"
+description = "Export of DrawView documents as PDF files and images (the exporters and the use case, without their dialog)"
 
 kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -19,26 +18,15 @@ kotlin {
         }
     }
 
-    android {
-        // Strings are Compose resources (packaged as assets)
-        androidResources {
-            enable = true
-        }
-    }
-
     sourceSets {
         commonMain.dependencies {
-            api(project(":drawview-ui"))
+            api(project(":drawview-canvas"))
             // The documents exported: those of the store of the application
             api(project(":drawview-store"))
             implementation(project(":drawview-pdf"))
             implementation(project(":drawview-latex"))
             implementation(libs.compose.runtime)
-            implementation(libs.compose.foundation)
-            implementation(libs.compose.material3)
-            implementation(compose.materialIconsExtended)
             implementation(libs.compose.ui)
-            implementation(libs.compose.components.resources)
             implementation(libs.kotlinx.coroutines.core)
         }
         commonTest.dependencies {
@@ -47,18 +35,8 @@ kotlin {
         }
         jvmTest.dependencies {
             implementation(compose.desktop.currentOs)
-            implementation(project(":drawview-latex"))
-            implementation(libs.compose.uiTest)
-            implementation(libs.roborazzi.composeDesktop)
+            // The texts of the documents drawn as in the editor (PdfExporterTest)
+            implementation(project(":drawview-ui"))
         }
     }
-}
-
-// The reference images of the export (see ExportScreenshotTest)
-roborazzi {
-    outputDir.set(layout.projectDirectory.dir("screenshots"))
-}
-
-compose.resources {
-    packageOfResClass = "io.github.valerioisufi.drawview.export.generated.resources"
 }

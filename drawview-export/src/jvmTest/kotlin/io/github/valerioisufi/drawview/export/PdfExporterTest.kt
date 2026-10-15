@@ -41,7 +41,6 @@ import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
-import io.github.valerioisufi.drawview.ui.platform.FileTarget
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.theme.NotesFonts
 import java.io.ByteArrayOutputStream
@@ -293,15 +292,13 @@ class PdfExporterTest {
         val export = DocumentExport(documents)
 
         val pdf = tempFile("second", ".pdf")
-        val delivered = mutableListOf<String>()
         val result = export.export(
             document.id,
             PdfExporter(textAdapter, fontFiles),
             ExportOptions(pageIds = setOf(document.pages[1].id)),
-            FileTarget(pdf.path) { delivered += it }
+            pdf.path
         )
         assertEquals(1, result.pages)
-        assertEquals(listOf(pdf.path), delivered)
         PdfiumEngine.open(pdf.path).use { assertEquals("Hash functions", it.getPageText(0)?.trim()) }
         assertEquals("Lezione 3_ hash.pdf", DocumentExport.fileName(document.title, PdfExporter(null)))
     }

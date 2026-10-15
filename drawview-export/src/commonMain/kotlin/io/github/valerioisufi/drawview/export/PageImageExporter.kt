@@ -26,7 +26,7 @@ import kotlinx.coroutines.withContext
  * @param pdfTiles creates the adapter drawing the PDF pages (see `DrawViewEngines.pdfTiles`).
  * @param elements draws the elements of the types of the application.
  */
-internal class PageImageExporter(
+public class PageImageExporter(
     private val textAdapter: TextTileAdapter?,
     private val pixelsPerMm: Float = 200f / 25.4f,
     private val pdfTiles: () -> PdfTileAdapter? = { null },

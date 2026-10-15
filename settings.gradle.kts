@@ -55,6 +55,7 @@ include(":drawview-sync")
 include(":drawview-sync-lan")
 include(":drawview-sync-ui")
 include(":drawview-export")
+include(":drawview-export-ui")
 
 // Sample application: how to build an application with the DrawView modules
 include(":sample-shared")

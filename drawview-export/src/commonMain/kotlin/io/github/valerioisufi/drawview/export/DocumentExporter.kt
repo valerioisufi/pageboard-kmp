@@ -8,18 +8,18 @@ import io.github.valerioisufi.drawview.model.PageContentSnapshot
  * A format the documents are exported in (see `docs/export.md`): [PdfExporter],
  * [PageImageExporter].
  */
-internal interface DocumentExporter {
+public interface DocumentExporter {
     /** Extension of the files written, without the dot. */
-    val extension: String
+    public val extension: String
 
     /** Media type of the files written. */
-    val mimeType: String
+    public val mimeType: String
 
     /**
      * Writes [content] to the file [path]; [progress] gets the part done, from 0 to 1. Cancelled
      * with the coroutine calling it.
      */
-    suspend fun export(content: DocumentContent, options: ExportOptions, path: String, progress: (Float) -> Unit = {}): ExportResult
+    public suspend fun export(content: DocumentContent, options: ExportOptions, path: String, progress: (Float) -> Unit = {}): ExportResult
 }
 
 /**
@@ -29,33 +29,33 @@ internal interface DocumentExporter {
  * @param backgroundPattern whether the lines and the dots of the backgrounds are drawn (their
  *   color always is).
  */
-internal class ExportOptions(
-    val pageIds: Set<String>? = null,
-    val backgroundPattern: Boolean = true
+public class ExportOptions(
+    public val pageIds: Set<String>? = null,
+    public val backgroundPattern: Boolean = true
 )
 
 /**
  * What an export wrote: [pages], and the [skipped] elements that could not be read (a missing
  * image or PDF file).
  */
-public class ExportResult(public val pages: Int, internal val skipped: Int)
+public class ExportResult(public val pages: Int, public val skipped: Int)
 
 /**
  * What is exported of a document: its [title], its [pages] (copies that stay as they are, see
  * [PageContentSnapshot.detached]) and the files of its [resources] (images and PDFs) by
  * identifier.
  */
-internal class DocumentContent(
-    val title: String,
-    val pages: List<PageContentSnapshot>,
-    val resources: Map<String, DrawResource>
+public class DocumentContent(
+    public val title: String,
+    public val pages: List<PageContentSnapshot>,
+    public val resources: Map<String, DrawResource>
 ) {
-    companion object {
+    public companion object {
         /**
          * The content of [document]: the pages [pageIds] (all of them when `null`) in their order.
          * Called on the thread of the document (see `OpenDocument.edit`).
          */
-        fun of(document: DrawDocument, pageIds: Set<String>? = null): DocumentContent {
+        public fun of(document: DrawDocument, pageIds: Set<String>? = null): DocumentContent {
             val pages = document.pages.filter { pageIds == null || it.id in pageIds }
             return DocumentContent(
                 title = document.title,
