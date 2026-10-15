@@ -22,3 +22,7 @@ hs_err_pid*.log
 
 # Local Xcode settings (Apple development team)
 **/iosApp/Configuration/Local.xcconfig
+
+# Claude Code
+.claude/worktrees/
+.claude/settings.local.json

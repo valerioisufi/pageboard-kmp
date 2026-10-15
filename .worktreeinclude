@@ -1,0 +1,4 @@
+# Ignored files copied into the worktrees Claude Code creates (they hold machine settings)
+local.properties
+sample/iosApp/Configuration/Local.xcconfig
+pencilnotes/iosApp/Configuration/Local.xcconfig
