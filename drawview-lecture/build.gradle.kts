@@ -3,10 +3,9 @@ plugins {
     // The JNI bridges of whisper.cpp and of the audio codecs in the desktop jar
     id("drawview.jvm.natives")
     alias(libs.plugins.kotlinSerialization)
-    alias(libs.plugins.roborazzi)
 }
 
-description = "The DrawView lecture assistant: recording, transcription, notes placed in the notebook"
+description = "The DrawView lecture assistant without its UI: recording, transcription, the models, the lectures of the documents and their sharing"
 
 kotlin {
     applyDefaultHierarchyTemplate {
@@ -36,7 +35,7 @@ kotlin {
     }
 
     android {
-        // Strings are Compose resources (packaged as assets)
+        // The strings of the notification of the recording service (Android resources)
         androidResources {
             enable = true
         }
@@ -44,14 +43,9 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(project(":drawview-ui"))
-            implementation(libs.compose.runtime)
-            implementation(libs.compose.foundation)
-            implementation(libs.compose.material3)
-            implementation(compose.materialIconsExtended)
-            implementation(libs.compose.ui)
-            implementation(libs.compose.components.resources)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
+            api(project(":drawview-model"))
+            // The state of the assistant, observed by its UI (the runtime only: no UI, no Skia)
+            api(libs.compose.runtime)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.io.core)
@@ -61,6 +55,7 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(project(":drawview-lecture-testing"))
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.ktor.client.mock)
         }
@@ -68,28 +63,12 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             // The audio codecs (libaudio_bridge.so)
             implementation(project(":drawview-native-audio"))
-            // The permission of the microphone
-            implementation(libs.androidx.activity.compose)
         }
         jvmMain.dependencies {
             implementation(libs.ktor.client.okhttp)
-        }
-        jvmTest.dependencies {
-            implementation(compose.desktop.currentOs)
-            implementation(libs.compose.uiTest)
-            implementation(libs.roborazzi.composeDesktop)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
         }
     }
-}
-
-compose.resources {
-    packageOfResClass = "io.github.valerioisufi.drawview.lecture.generated.resources"
-}
-
-// The reference images of the panel (see LecturePanelScreenshotTest)
-roborazzi {
-    outputDir.set(layout.projectDirectory.dir("screenshots"))
 }

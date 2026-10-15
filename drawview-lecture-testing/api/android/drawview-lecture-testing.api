@@ -1,0 +1,26 @@
+public final class io/github/valerioisufi/drawview/lecture/testing/FakeMicrophone : io/github/valerioisufi/drawview/lecture/audio/AudioCapture {
+	public fun <init> ()V
+	public final fun event (Lio/github/valerioisufi/drawview/lecture/audio/CaptureEvent;)V
+	public final fun speak (DZLkotlin/random/Random;I)V
+	public static synthetic fun speak$default (Lio/github/valerioisufi/drawview/lecture/testing/FakeMicrophone;DZLkotlin/random/Random;IILjava/lang/Object;)V
+	public fun start (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
+	public fun stop ()V
+}
+
+public final class io/github/valerioisufi/drawview/lecture/testing/FakeNotebook : io/github/valerioisufi/drawview/lecture/NotebookSource {
+	public fun <init> ()V
+	public fun allPages (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun capture (Ljava/util/Set;IILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getDocumentTitle ()Ljava/lang/String;
+	public fun inkBlocks (Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun pageIds (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun renderInk (Lio/github/valerioisufi/drawview/lecture/handwriting/InkBlock;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun strokeIds (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/lecture/testing/MemorySecrets : io/github/valerioisufi/drawview/lecture/SecretStorage {
+	public fun <init> ()V
+	public fun read (Ljava/lang/String;)Ljava/lang/String;
+	public fun write (Ljava/lang/String;Ljava/lang/String;)Z
+}
+

@@ -45,7 +45,7 @@ public data class NoteSuggestion(
 )
 
 /** The page of [document] where the suggestion belongs: by identifier, or by index. */
-internal fun NoteSuggestion.resolvedPageIndex(document: DrawDocument): Int? {
+public fun NoteSuggestion.resolvedPageIndex(document: DrawDocument): Int? {
     if (pageId.isNotEmpty()) {
         val index = document.pages.indexOfFirst { it.id == pageId }
         if (index >= 0) return index
@@ -96,7 +96,7 @@ public data class TokenUsage(
 public enum class LectureStatus { RECORDING, FINALIZING, FINISHED, IMPORTING }
 
 /** The steps of an import or of a new transcription ([LectureStatus.IMPORTING]). */
-internal enum class ImportStep { CONVERTING, TRANSCRIBING, REVIEWING }
+public enum class ImportStep { CONVERTING, TRANSCRIBING, REVIEWING }
 
 /**
  * A page of the notebook seen during the lecture, as last seen, kept for the final review (also
@@ -217,10 +217,10 @@ public data class LectureRecord(
  * @param stamp when it was written, and where: of two contexts written apart, the most recent is kept.
  */
 @Serializable
-internal data class CourseContext(val text: String, val edited: Boolean = false, val generatedAt: Long = 0, val stamp: Stamp = Stamp.NONE)
+public data class CourseContext(val text: String, val edited: Boolean = false, val generatedAt: Long = 0, val stamp: Stamp = Stamp.NONE)
 
 /** Formats [ms] as `m:ss` (or `h:mm:ss`). */
-internal fun formatLectureTime(ms: Long): String {
+public fun formatLectureTime(ms: Long): String {
     val totalSeconds = (ms / 1000).coerceAtLeast(0)
     val hours = totalSeconds / 3600
     val minutes = (totalSeconds % 3600) / 60

@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.lecture
 
+import io.github.valerioisufi.drawview.lecture.testing.MemorySecrets
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.AfterTest

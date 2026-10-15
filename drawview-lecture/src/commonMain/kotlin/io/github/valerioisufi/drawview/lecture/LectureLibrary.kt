@@ -21,17 +21,17 @@ import kotlinx.serialization.builtins.serializer
 public class LectureSummary(
     public val directory: String,
     public val documentId: String,
-    internal val documentTitle: String,
-    internal val startedAt: Long,
-    internal val durationMs: Long,
-    internal val hasReview: Boolean,
+    public val documentTitle: String,
+    public val startedAt: Long,
+    public val durationMs: Long,
+    public val hasReview: Boolean,
     internal val suggestionCount: Int,
     /** Saved while recording: still being recorded (maybe on another device), or interrupted. */
     internal val wasRecording: Boolean,
     /** The name of the device that recorded it, when it is another one. */
-    internal val recordedElsewhere: String? = null,
+    public val recordedElsewhere: String? = null,
     /** Being recorded (or imported) on another device. */
-    internal val activeElsewhere: Boolean = false
+    public val activeElsewhere: Boolean = false
 )
 
 /**
@@ -77,7 +77,7 @@ public class LectureLibrary(private val root: String = lectureDataDirectory()) {
     internal fun lectureDirectory(documentId: String, lectureId: String) = "${documentDirectory(documentId)}/$lectureId"
 
     /** Folder of a new lecture of [documentId] started at [startedAt]: the date, and a few random characters. */
-    internal fun newLectureDirectory(documentId: String, startedAt: Long): String {
+    public fun newLectureDirectory(documentId: String, startedAt: Long): String {
         val base = "${documentDirectory(documentId)}/${timestampName(startedAt)}-${randomName(NAME_RANDOM_BYTES)}"
         var directory = base
         var suffix = 2
@@ -95,15 +95,15 @@ public class LectureLibrary(private val root: String = lectureDataDirectory()) {
         }
     }
 
-    internal fun saveContext(documentId: String, context: CourseContext): Boolean = writeContext(documentId, context).also { if (it) changed(documentId, null) }
+    public fun saveContext(documentId: String, context: CourseContext): Boolean = writeContext(documentId, context).also { if (it) changed(documentId, null) }
 
-    internal fun writeContext(documentId: String, context: CourseContext): Boolean = writeAtomically(
+    public fun writeContext(documentId: String, context: CourseContext): Boolean = writeAtomically(
         "${documentDirectory(documentId)}/context.json",
         Lecture.recordJson.encodeToString(CourseContext.serializer(), context).encodeToByteArray()
     )
 
     /** The documents with a lecture (not deleted): the folders of their lectures, without reading them. */
-    internal fun documentsWithLectures(): Set<String> {
+    public fun documentsWithLectures(): Set<String> {
         val rootPath = Path(root)
         if (!SystemFileSystem.exists(rootPath)) return emptySet()
         return SystemFileSystem.list(rootPath).mapNotNullTo(mutableSetOf()) { path ->
@@ -182,7 +182,7 @@ public class LectureLibrary(private val root: String = lectureDataDirectory()) {
     }
 
     /** How this device shares the lectures of [documentId] (see [LectureSharingSettings]). */
-    internal fun sharingOf(documentId: String): LectureSharingSettings =
+    public fun sharingOf(documentId: String): LectureSharingSettings =
         PlatformFiles.readBytes("${documentDirectory(documentId)}/sharing.json")?.let {
             try {
                 Lecture.recordJson.decodeFromString(LectureSharingSettings.serializer(), it.decodeToString())
@@ -251,7 +251,7 @@ public class LectureLibrary(private val root: String = lectureDataDirectory()) {
  * audio was asked for ([requestedAudio]).
  */
 @Serializable
-internal data class LectureSharingSettings(
+public data class LectureSharingSettings(
     val shareAudio: Boolean = true,
     val downloadAudio: AudioDownload = AudioDownload.AUTOMATIC,
     val requestedAudio: Set<String> = emptySet()
@@ -259,13 +259,13 @@ internal data class LectureSharingSettings(
 
 /** When the audio of the lectures recorded on other devices is received. */
 @Serializable
-internal enum class AudioDownload { AUTOMATIC, ON_REQUEST }
+public enum class AudioDownload { AUTOMATIC, ON_REQUEST }
 
 /** Something of the lectures of [documentId] changed here: the lecture [lectureId], or what they share (`null`). */
 internal data class LibraryChange(val documentId: String, val lectureId: String?)
 
 /** Writes `lecture.json` of [directory] (atomically). */
-internal fun writeLectureRecord(directory: String, record: LectureRecord): Boolean =
+public fun writeLectureRecord(directory: String, record: LectureRecord): Boolean =
     writeAtomically("$directory/lecture.json", Lecture.recordJson.encodeToString(LectureRecord.serializer(), record).encodeToByteArray())
 
 /** Writes [path] whole or not at all (the other devices may be reading it). */

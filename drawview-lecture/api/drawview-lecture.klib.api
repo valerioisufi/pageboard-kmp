@@ -18,6 +18,34 @@ final enum class io.github.valerioisufi.drawview.lecture.audio/CaptureEvent : ko
     final fun values(): kotlin/Array<io.github.valerioisufi.drawview.lecture.audio/CaptureEvent> // io.github.valerioisufi.drawview.lecture.audio/CaptureEvent.values|values#static(){}[0]
 }
 
+final enum class io.github.valerioisufi.drawview.lecture/AudioDownload : kotlin/Enum<io.github.valerioisufi.drawview.lecture/AudioDownload> { // io.github.valerioisufi.drawview.lecture/AudioDownload|null[0]
+    enum entry AUTOMATIC // io.github.valerioisufi.drawview.lecture/AudioDownload.AUTOMATIC|null[0]
+    enum entry ON_REQUEST // io.github.valerioisufi.drawview.lecture/AudioDownload.ON_REQUEST|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.lecture/AudioDownload.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.lecture/AudioDownload> // io.github.valerioisufi.drawview.lecture/AudioDownload.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.lecture/AudioDownload // io.github.valerioisufi.drawview.lecture/AudioDownload.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.lecture/AudioDownload> // io.github.valerioisufi.drawview.lecture/AudioDownload.values|values#static(){}[0]
+
+    final object Companion : kotlinx.serialization.internal/SerializerFactory { // io.github.valerioisufi.drawview.lecture/AudioDownload.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.lecture/AudioDownload> // io.github.valerioisufi.drawview.lecture/AudioDownload.Companion.serializer|serializer(){}[0]
+        final fun serializer(kotlin/Array<out kotlinx.serialization/KSerializer<*>>...): kotlinx.serialization/KSerializer<*> // io.github.valerioisufi.drawview.lecture/AudioDownload.Companion.serializer|serializer(kotlin.Array<out|kotlinx.serialization.KSerializer<*>>...){}[0]
+    }
+}
+
+final enum class io.github.valerioisufi.drawview.lecture/ImportStep : kotlin/Enum<io.github.valerioisufi.drawview.lecture/ImportStep> { // io.github.valerioisufi.drawview.lecture/ImportStep|null[0]
+    enum entry CONVERTING // io.github.valerioisufi.drawview.lecture/ImportStep.CONVERTING|null[0]
+    enum entry REVIEWING // io.github.valerioisufi.drawview.lecture/ImportStep.REVIEWING|null[0]
+    enum entry TRANSCRIBING // io.github.valerioisufi.drawview.lecture/ImportStep.TRANSCRIBING|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.lecture/ImportStep.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.lecture/ImportStep> // io.github.valerioisufi.drawview.lecture/ImportStep.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.lecture/ImportStep // io.github.valerioisufi.drawview.lecture/ImportStep.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.lecture/ImportStep> // io.github.valerioisufi.drawview.lecture/ImportStep.values|values#static(){}[0]
+}
+
 final enum class io.github.valerioisufi.drawview.lecture/LecturePart : kotlin/Enum<io.github.valerioisufi.drawview.lecture/LecturePart> { // io.github.valerioisufi.drawview.lecture/LecturePart|null[0]
     enum entry GENERATION // io.github.valerioisufi.drawview.lecture/LecturePart.GENERATION|null[0]
     enum entry OUTLINE // io.github.valerioisufi.drawview.lecture/LecturePart.OUTLINE|null[0]
@@ -131,6 +159,19 @@ final enum class io.github.valerioisufi.drawview.lecture/ReceivedLectures : kotl
     }
 }
 
+final enum class io.github.valerioisufi.drawview.lecture/ReviewStatus : kotlin/Enum<io.github.valerioisufi.drawview.lecture/ReviewStatus> { // io.github.valerioisufi.drawview.lecture/ReviewStatus|null[0]
+    enum entry DONE // io.github.valerioisufi.drawview.lecture/ReviewStatus.DONE|null[0]
+    enum entry FAILED // io.github.valerioisufi.drawview.lecture/ReviewStatus.FAILED|null[0]
+    enum entry NONE // io.github.valerioisufi.drawview.lecture/ReviewStatus.NONE|null[0]
+    enum entry RUNNING // io.github.valerioisufi.drawview.lecture/ReviewStatus.RUNNING|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.lecture/ReviewStatus.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.lecture/ReviewStatus> // io.github.valerioisufi.drawview.lecture/ReviewStatus.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.lecture/ReviewStatus // io.github.valerioisufi.drawview.lecture/ReviewStatus.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.lecture/ReviewStatus> // io.github.valerioisufi.drawview.lecture/ReviewStatus.values|values#static(){}[0]
+}
+
 final enum class io.github.valerioisufi.drawview.lecture/SharedData : kotlin/Enum<io.github.valerioisufi.drawview.lecture/SharedData> { // io.github.valerioisufi.drawview.lecture/SharedData|null[0]
     enum entry AUDIO // io.github.valerioisufi.drawview.lecture/SharedData.AUDIO|null[0]
     enum entry NOTEBOOK // io.github.valerioisufi.drawview.lecture/SharedData.NOTEBOOK|null[0]
@@ -175,6 +216,27 @@ final enum class io.github.valerioisufi.drawview.lecture/TranscriptionMode : kot
     final fun values(): kotlin/Array<io.github.valerioisufi.drawview.lecture/TranscriptionMode> // io.github.valerioisufi.drawview.lecture/TranscriptionMode.values|values#static(){}[0]
 }
 
+final enum class io.github.valerioisufi.drawview.lecture/WhisperModel : kotlin/Enum<io.github.valerioisufi.drawview.lecture/WhisperModel> { // io.github.valerioisufi.drawview.lecture/WhisperModel|null[0]
+    enum entry BASE // io.github.valerioisufi.drawview.lecture/WhisperModel.BASE|null[0]
+    enum entry LARGE_V3_TURBO // io.github.valerioisufi.drawview.lecture/WhisperModel.LARGE_V3_TURBO|null[0]
+    enum entry LARGE_V3_TURBO_Q5 // io.github.valerioisufi.drawview.lecture/WhisperModel.LARGE_V3_TURBO_Q5|null[0]
+    enum entry SMALL // io.github.valerioisufi.drawview.lecture/WhisperModel.SMALL|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.lecture/WhisperModel.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.lecture/WhisperModel> // io.github.valerioisufi.drawview.lecture/WhisperModel.entries.<get-entries>|<get-entries>#static(){}[0]
+    final val fileName // io.github.valerioisufi.drawview.lecture/WhisperModel.fileName|{}fileName[0]
+        final fun <get-fileName>(): kotlin/String // io.github.valerioisufi.drawview.lecture/WhisperModel.fileName.<get-fileName>|<get-fileName>(){}[0]
+    final val label // io.github.valerioisufi.drawview.lecture/WhisperModel.label|{}label[0]
+        final fun <get-label>(): kotlin/String // io.github.valerioisufi.drawview.lecture/WhisperModel.label.<get-label>|<get-label>(){}[0]
+    final val sizeBytes // io.github.valerioisufi.drawview.lecture/WhisperModel.sizeBytes|{}sizeBytes[0]
+        final fun <get-sizeBytes>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/WhisperModel.sizeBytes.<get-sizeBytes>|<get-sizeBytes>(){}[0]
+    final val url // io.github.valerioisufi.drawview.lecture/WhisperModel.url|{}url[0]
+        final fun <get-url>(): kotlin/String // io.github.valerioisufi.drawview.lecture/WhisperModel.url.<get-url>|<get-url>(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.lecture/WhisperModel // io.github.valerioisufi.drawview.lecture/WhisperModel.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.lecture/WhisperModel> // io.github.valerioisufi.drawview.lecture/WhisperModel.values|values#static(){}[0]
+}
+
 abstract interface io.github.valerioisufi.drawview.lecture.audio/AudioCapture { // io.github.valerioisufi.drawview.lecture.audio/AudioCapture|null[0]
     abstract fun start(kotlin/Function1<kotlin/ShortArray, kotlin/Unit>, kotlin/Function1<io.github.valerioisufi.drawview.lecture.audio/CaptureEvent, kotlin/Unit> = ...) // io.github.valerioisufi.drawview.lecture.audio/AudioCapture.start|start(kotlin.Function1<kotlin.ShortArray,kotlin.Unit>;kotlin.Function1<io.github.valerioisufi.drawview.lecture.audio.CaptureEvent,kotlin.Unit>){}[0]
     abstract fun stop() // io.github.valerioisufi.drawview.lecture.audio/AudioCapture.stop|stop(){}[0]
@@ -201,6 +263,18 @@ abstract interface io.github.valerioisufi.drawview.lecture.transcription/Transcr
     open suspend fun close() // io.github.valerioisufi.drawview.lecture.transcription/Transcriber.close|close(){}[0]
 }
 
+abstract interface io.github.valerioisufi.drawview.lecture/NotebookSource { // io.github.valerioisufi.drawview.lecture/NotebookSource|null[0]
+    abstract val documentTitle // io.github.valerioisufi.drawview.lecture/NotebookSource.documentTitle|{}documentTitle[0]
+        abstract fun <get-documentTitle>(): kotlin/String // io.github.valerioisufi.drawview.lecture/NotebookSource.documentTitle.<get-documentTitle>|<get-documentTitle>(){}[0]
+
+    abstract suspend fun capture(kotlin.collections/Set<kotlin/String>, kotlin/Int, kotlin/Int): io.github.valerioisufi.drawview.lecture/NotebookSnapshot // io.github.valerioisufi.drawview.lecture/NotebookSource.capture|capture(kotlin.collections.Set<kotlin.String>;kotlin.Int;kotlin.Int){}[0]
+    abstract suspend fun strokeIds(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.lecture/NotebookSource.strokeIds|strokeIds(){}[0]
+    open suspend fun allPages(): kotlin.collections/List<io.github.valerioisufi.drawview.lecture/PageContent> // io.github.valerioisufi.drawview.lecture/NotebookSource.allPages|allPages(){}[0]
+    open suspend fun inkBlocks(kotlin.collections/List<kotlin/Int>): kotlin.collections/List<io.github.valerioisufi.drawview.lecture.handwriting/InkBlock> // io.github.valerioisufi.drawview.lecture/NotebookSource.inkBlocks|inkBlocks(kotlin.collections.List<kotlin.Int>){}[0]
+    open suspend fun pageIds(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.lecture/NotebookSource.pageIds|pageIds(){}[0]
+    open suspend fun renderInk(io.github.valerioisufi.drawview.lecture.handwriting/InkBlock): kotlin/ByteArray? // io.github.valerioisufi.drawview.lecture/NotebookSource.renderInk|renderInk(io.github.valerioisufi.drawview.lecture.handwriting.InkBlock){}[0]
+}
+
 abstract interface io.github.valerioisufi.drawview.lecture/SecretStorage { // io.github.valerioisufi.drawview.lecture/SecretStorage|null[0]
     abstract fun read(kotlin/String): kotlin/String? // io.github.valerioisufi.drawview.lecture/SecretStorage.read|read(kotlin.String){}[0]
     abstract fun write(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/SecretStorage.write|write(kotlin.String;kotlin.String?){}[0]
@@ -211,10 +285,158 @@ abstract interface io.github.valerioisufi.drawview.lecture/SecretStorage { // io
     }
 }
 
+sealed interface io.github.valerioisufi.drawview.lecture/LectureProblem { // io.github.valerioisufi.drawview.lecture/LectureProblem|null[0]
+    final class Authentication : io.github.valerioisufi.drawview.lecture/LectureProblem { // io.github.valerioisufi.drawview.lecture/LectureProblem.Authentication|null[0]
+        constructor <init>(kotlin/String) // io.github.valerioisufi.drawview.lecture/LectureProblem.Authentication.<init>|<init>(kotlin.String){}[0]
+
+        final val detail // io.github.valerioisufi.drawview.lecture/LectureProblem.Authentication.detail|{}detail[0]
+            final fun <get-detail>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.Authentication.detail.<get-detail>|<get-detail>(){}[0]
+
+        final fun component1(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.Authentication.component1|component1(){}[0]
+        final fun copy(kotlin/String = ...): io.github.valerioisufi.drawview.lecture/LectureProblem.Authentication // io.github.valerioisufi.drawview.lecture/LectureProblem.Authentication.copy|copy(kotlin.String){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureProblem.Authentication.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.lecture/LectureProblem.Authentication.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.Authentication.toString|toString(){}[0]
+    }
+
+    final class Failed : io.github.valerioisufi.drawview.lecture/LectureProblem { // io.github.valerioisufi.drawview.lecture/LectureProblem.Failed|null[0]
+        constructor <init>(kotlin/String) // io.github.valerioisufi.drawview.lecture/LectureProblem.Failed.<init>|<init>(kotlin.String){}[0]
+
+        final val detail // io.github.valerioisufi.drawview.lecture/LectureProblem.Failed.detail|{}detail[0]
+            final fun <get-detail>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.Failed.detail.<get-detail>|<get-detail>(){}[0]
+
+        final fun component1(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.Failed.component1|component1(){}[0]
+        final fun copy(kotlin/String = ...): io.github.valerioisufi.drawview.lecture/LectureProblem.Failed // io.github.valerioisufi.drawview.lecture/LectureProblem.Failed.copy|copy(kotlin.String){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureProblem.Failed.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.lecture/LectureProblem.Failed.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.Failed.toString|toString(){}[0]
+    }
+
+    final class LocalModelUnavailable : io.github.valerioisufi.drawview.lecture/LectureProblem { // io.github.valerioisufi.drawview.lecture/LectureProblem.LocalModelUnavailable|null[0]
+        constructor <init>(kotlin/String) // io.github.valerioisufi.drawview.lecture/LectureProblem.LocalModelUnavailable.<init>|<init>(kotlin.String){}[0]
+
+        final val detail // io.github.valerioisufi.drawview.lecture/LectureProblem.LocalModelUnavailable.detail|{}detail[0]
+            final fun <get-detail>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.LocalModelUnavailable.detail.<get-detail>|<get-detail>(){}[0]
+
+        final fun component1(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.LocalModelUnavailable.component1|component1(){}[0]
+        final fun copy(kotlin/String = ...): io.github.valerioisufi.drawview.lecture/LectureProblem.LocalModelUnavailable // io.github.valerioisufi.drawview.lecture/LectureProblem.LocalModelUnavailable.copy|copy(kotlin.String){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureProblem.LocalModelUnavailable.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.lecture/LectureProblem.LocalModelUnavailable.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.LocalModelUnavailable.toString|toString(){}[0]
+    }
+
+    final class QuotaExhausted : io.github.valerioisufi.drawview.lecture/LectureProblem { // io.github.valerioisufi.drawview.lecture/LectureProblem.QuotaExhausted|null[0]
+        constructor <init>(kotlin/String, kotlin/Boolean, kotlin/Long?) // io.github.valerioisufi.drawview.lecture/LectureProblem.QuotaExhausted.<init>|<init>(kotlin.String;kotlin.Boolean;kotlin.Long?){}[0]
+
+        final val daily // io.github.valerioisufi.drawview.lecture/LectureProblem.QuotaExhausted.daily|{}daily[0]
+            final fun <get-daily>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureProblem.QuotaExhausted.daily.<get-daily>|<get-daily>(){}[0]
+        final val model // io.github.valerioisufi.drawview.lecture/LectureProblem.QuotaExhausted.model|{}model[0]
+            final fun <get-model>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.QuotaExhausted.model.<get-model>|<get-model>(){}[0]
+        final val retryInMs // io.github.valerioisufi.drawview.lecture/LectureProblem.QuotaExhausted.retryInMs|{}retryInMs[0]
+            final fun <get-retryInMs>(): kotlin/Long? // io.github.valerioisufi.drawview.lecture/LectureProblem.QuotaExhausted.retryInMs.<get-retryInMs>|<get-retryInMs>(){}[0]
+
+        final fun component1(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.QuotaExhausted.component1|component1(){}[0]
+        final fun component2(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureProblem.QuotaExhausted.component2|component2(){}[0]
+        final fun component3(): kotlin/Long? // io.github.valerioisufi.drawview.lecture/LectureProblem.QuotaExhausted.component3|component3(){}[0]
+        final fun copy(kotlin/String = ..., kotlin/Boolean = ..., kotlin/Long? = ...): io.github.valerioisufi.drawview.lecture/LectureProblem.QuotaExhausted // io.github.valerioisufi.drawview.lecture/LectureProblem.QuotaExhausted.copy|copy(kotlin.String;kotlin.Boolean;kotlin.Long?){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureProblem.QuotaExhausted.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.lecture/LectureProblem.QuotaExhausted.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.QuotaExhausted.toString|toString(){}[0]
+    }
+
+    final class Retrying : io.github.valerioisufi.drawview.lecture/LectureProblem { // io.github.valerioisufi.drawview.lecture/LectureProblem.Retrying|null[0]
+        constructor <init>(kotlin/String, kotlin/Int) // io.github.valerioisufi.drawview.lecture/LectureProblem.Retrying.<init>|<init>(kotlin.String;kotlin.Int){}[0]
+
+        final val detail // io.github.valerioisufi.drawview.lecture/LectureProblem.Retrying.detail|{}detail[0]
+            final fun <get-detail>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.Retrying.detail.<get-detail>|<get-detail>(){}[0]
+        final val retryInSeconds // io.github.valerioisufi.drawview.lecture/LectureProblem.Retrying.retryInSeconds|{}retryInSeconds[0]
+            final fun <get-retryInSeconds>(): kotlin/Int // io.github.valerioisufi.drawview.lecture/LectureProblem.Retrying.retryInSeconds.<get-retryInSeconds>|<get-retryInSeconds>(){}[0]
+
+        final fun component1(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.Retrying.component1|component1(){}[0]
+        final fun component2(): kotlin/Int // io.github.valerioisufi.drawview.lecture/LectureProblem.Retrying.component2|component2(){}[0]
+        final fun copy(kotlin/String = ..., kotlin/Int = ...): io.github.valerioisufi.drawview.lecture/LectureProblem.Retrying // io.github.valerioisufi.drawview.lecture/LectureProblem.Retrying.copy|copy(kotlin.String;kotlin.Int){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureProblem.Retrying.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.lecture/LectureProblem.Retrying.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.Retrying.toString|toString(){}[0]
+    }
+
+    final class TranscriptionUnavailable : io.github.valerioisufi.drawview.lecture/LectureProblem { // io.github.valerioisufi.drawview.lecture/LectureProblem.TranscriptionUnavailable|null[0]
+        constructor <init>(kotlin/String) // io.github.valerioisufi.drawview.lecture/LectureProblem.TranscriptionUnavailable.<init>|<init>(kotlin.String){}[0]
+
+        final val detail // io.github.valerioisufi.drawview.lecture/LectureProblem.TranscriptionUnavailable.detail|{}detail[0]
+            final fun <get-detail>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.TranscriptionUnavailable.detail.<get-detail>|<get-detail>(){}[0]
+
+        final fun component1(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.TranscriptionUnavailable.component1|component1(){}[0]
+        final fun copy(kotlin/String = ...): io.github.valerioisufi.drawview.lecture/LectureProblem.TranscriptionUnavailable // io.github.valerioisufi.drawview.lecture/LectureProblem.TranscriptionUnavailable.copy|copy(kotlin.String){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureProblem.TranscriptionUnavailable.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.lecture/LectureProblem.TranscriptionUnavailable.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.TranscriptionUnavailable.toString|toString(){}[0]
+    }
+
+    final object MissingApiKey : io.github.valerioisufi.drawview.lecture/LectureProblem { // io.github.valerioisufi.drawview.lecture/LectureProblem.MissingApiKey|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureProblem.MissingApiKey.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.lecture/LectureProblem.MissingApiKey.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.MissingApiKey.toString|toString(){}[0]
+    }
+
+    final object NoTranscript : io.github.valerioisufi.drawview.lecture/LectureProblem { // io.github.valerioisufi.drawview.lecture/LectureProblem.NoTranscript|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureProblem.NoTranscript.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.lecture/LectureProblem.NoTranscript.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureProblem.NoTranscript.toString|toString(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.lecture.audio/AudioChunk { // io.github.valerioisufi.drawview.lecture.audio/AudioChunk|null[0]
+    constructor <init>(kotlin/Int, kotlin/Long, kotlin/Int, kotlin/ShortArray) // io.github.valerioisufi.drawview.lecture.audio/AudioChunk.<init>|<init>(kotlin.Int;kotlin.Long;kotlin.Int;kotlin.ShortArray){}[0]
+
+    final val index // io.github.valerioisufi.drawview.lecture.audio/AudioChunk.index|{}index[0]
+        final fun <get-index>(): kotlin/Int // io.github.valerioisufi.drawview.lecture.audio/AudioChunk.index.<get-index>|<get-index>(){}[0]
+    final val samples // io.github.valerioisufi.drawview.lecture.audio/AudioChunk.samples|{}samples[0]
+        final fun <get-samples>(): kotlin/ShortArray // io.github.valerioisufi.drawview.lecture.audio/AudioChunk.samples.<get-samples>|<get-samples>(){}[0]
+    final val startMs // io.github.valerioisufi.drawview.lecture.audio/AudioChunk.startMs|{}startMs[0]
+        final fun <get-startMs>(): kotlin/Long // io.github.valerioisufi.drawview.lecture.audio/AudioChunk.startMs.<get-startMs>|<get-startMs>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer { // io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer|null[0]
+    final var durationMs // io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer.durationMs|{}durationMs[0]
+        final fun <get-durationMs>(): kotlin/Long // io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer.durationMs.<get-durationMs>|<get-durationMs>(){}[0]
+    final var isPlaying // io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer.isPlaying|{}isPlaying[0]
+        final fun <get-isPlaying>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer.isPlaying.<get-isPlaying>|<get-isPlaying>(){}[0]
+    final var positionMs // io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer.positionMs|{}positionMs[0]
+        final fun <get-positionMs>(): kotlin/Long // io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer.positionMs.<get-positionMs>|<get-positionMs>(){}[0]
+    final var speed // io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer.speed|{}speed[0]
+        final fun <get-speed>(): kotlin/Float // io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer.speed.<get-speed>|<get-speed>(){}[0]
+
+    final fun nextSpeed() // io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer.nextSpeed|nextSpeed(){}[0]
+    final fun pause() // io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer.pause|pause(){}[0]
+    final fun play(kotlin/Long = ...) // io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer.play|play(kotlin.Long){}[0]
+    final fun refresh() // io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer.refresh|refresh(){}[0]
+    final fun seek(kotlin/Long) // io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer.seek|seek(kotlin.Long){}[0]
+    final fun skip(kotlin/Long) // io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer.skip|skip(kotlin.Long){}[0]
+    final fun toggle() // io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer.toggle|toggle(){}[0]
+
+    final object Companion // io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer.Companion|null[0]
+}
+
 final class io.github.valerioisufi.drawview.lecture.gemini/GeminiClient { // io.github.valerioisufi.drawview.lecture.gemini/GeminiClient|null[0]
     constructor <init>(io.ktor.client/HttpClient = ..., kotlin/String = ...) // io.github.valerioisufi.drawview.lecture.gemini/GeminiClient.<init>|<init>(io.ktor.client.HttpClient;kotlin.String){}[0]
 
     final object Companion // io.github.valerioisufi.drawview.lecture.gemini/GeminiClient.Companion|null[0]
+}
+
+final class io.github.valerioisufi.drawview.lecture.handwriting/InkBlock { // io.github.valerioisufi.drawview.lecture.handwriting/InkBlock|null[0]
+    constructor <init>(kotlin/Int, kotlin/String, kotlin/String, kotlin.collections/Set<kotlin/String>, io.github.valerioisufi.drawview.model.geometry/Rect) // io.github.valerioisufi.drawview.lecture.handwriting/InkBlock.<init>|<init>(kotlin.Int;kotlin.String;kotlin.String;kotlin.collections.Set<kotlin.String>;io.github.valerioisufi.drawview.model.geometry.Rect){}[0]
+
+    final val bounds // io.github.valerioisufi.drawview.lecture.handwriting/InkBlock.bounds|{}bounds[0]
+        final fun <get-bounds>(): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.lecture.handwriting/InkBlock.bounds.<get-bounds>|<get-bounds>(){}[0]
+    final val key // io.github.valerioisufi.drawview.lecture.handwriting/InkBlock.key|{}key[0]
+        final fun <get-key>(): kotlin/String // io.github.valerioisufi.drawview.lecture.handwriting/InkBlock.key.<get-key>|<get-key>(){}[0]
+    final val pageId // io.github.valerioisufi.drawview.lecture.handwriting/InkBlock.pageId|{}pageId[0]
+        final fun <get-pageId>(): kotlin/String // io.github.valerioisufi.drawview.lecture.handwriting/InkBlock.pageId.<get-pageId>|<get-pageId>(){}[0]
+    final val pageIndex // io.github.valerioisufi.drawview.lecture.handwriting/InkBlock.pageIndex|{}pageIndex[0]
+        final fun <get-pageIndex>(): kotlin/Int // io.github.valerioisufi.drawview.lecture.handwriting/InkBlock.pageIndex.<get-pageIndex>|<get-pageIndex>(){}[0]
+    final val strokeIds // io.github.valerioisufi.drawview.lecture.handwriting/InkBlock.strokeIds|{}strokeIds[0]
+        final fun <get-strokeIds>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.lecture.handwriting/InkBlock.strokeIds.<get-strokeIds>|<get-strokeIds>(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.lecture.local/OllamaClient { // io.github.valerioisufi.drawview.lecture.local/OllamaClient|null[0]
@@ -222,6 +444,7 @@ final class io.github.valerioisufi.drawview.lecture.local/OllamaClient { // io.g
 
     final suspend fun capabilities(kotlin/String, kotlin/String): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.lecture.local/OllamaClient.capabilities|capabilities(kotlin.String;kotlin.String){}[0]
     final suspend fun models(kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.lecture.local/OllamaModel> // io.github.valerioisufi.drawview.lecture.local/OllamaClient.models|models(kotlin.String){}[0]
+    final suspend fun pull(kotlin/String, kotlin/String, kotlin/Function2<kotlin/Long, kotlin/Long, kotlin/Unit>) // io.github.valerioisufi.drawview.lecture.local/OllamaClient.pull|pull(kotlin.String;kotlin.String;kotlin.Function2<kotlin.Long,kotlin.Long,kotlin.Unit>){}[0]
     final suspend fun version(kotlin/String): kotlin/String? // io.github.valerioisufi.drawview.lecture.local/OllamaClient.version|version(kotlin.String){}[0]
 }
 
@@ -254,6 +477,17 @@ final class io.github.valerioisufi.drawview.lecture.local/OllamaModel { // io.gi
     }
 }
 
+final class io.github.valerioisufi.drawview.lecture.platform/ChosenFile { // io.github.valerioisufi.drawview.lecture.platform/ChosenFile|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/Long?, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.lecture.platform/ChosenFile.<init>|<init>(kotlin.String;kotlin.String;kotlin.Long?;kotlin.Boolean){}[0]
+
+    final val name // io.github.valerioisufi.drawview.lecture.platform/ChosenFile.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.valerioisufi.drawview.lecture.platform/ChosenFile.name.<get-name>|<get-name>(){}[0]
+    final val path // io.github.valerioisufi.drawview.lecture.platform/ChosenFile.path|{}path[0]
+        final fun <get-path>(): kotlin/String // io.github.valerioisufi.drawview.lecture.platform/ChosenFile.path.<get-path>|<get-path>(){}[0]
+    final val temporary // io.github.valerioisufi.drawview.lecture.platform/ChosenFile.temporary|{}temporary[0]
+        final fun <get-temporary>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture.platform/ChosenFile.temporary.<get-temporary>|<get-temporary>(){}[0]
+}
+
 final class io.github.valerioisufi.drawview.lecture.transcription/SpeechHints { // io.github.valerioisufi.drawview.lecture.transcription/SpeechHints|null[0]
     constructor <init>(kotlin/String = ..., kotlin.collections/List<kotlin/String> = ..., kotlin/String = ..., kotlin.collections/List<kotlin/String> = ..., kotlin/String = ...) // io.github.valerioisufi.drawview.lecture.transcription/SpeechHints.<init>|<init>(kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.String){}[0]
 
@@ -268,6 +502,19 @@ final class io.github.valerioisufi.drawview.lecture.transcription/Transcription 
 
     final val segments // io.github.valerioisufi.drawview.lecture.transcription/Transcription.segments|{}segments[0]
         final fun <get-segments>(): kotlin.collections/List<io.github.valerioisufi.drawview.lecture/TranscriptSegment> // io.github.valerioisufi.drawview.lecture.transcription/Transcription.segments.<get-segments>|<get-segments>(){}[0]
+    final val usage // io.github.valerioisufi.drawview.lecture.transcription/Transcription.usage|{}usage[0]
+        final fun <get-usage>(): io.github.valerioisufi.drawview.lecture/TokenUsage? // io.github.valerioisufi.drawview.lecture.transcription/Transcription.usage.<get-usage>|<get-usage>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.lecture/ArrivalNotification { // io.github.valerioisufi.drawview.lecture/ArrivalNotification|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String) // io.github.valerioisufi.drawview.lecture/ArrivalNotification.<init>|<init>(kotlin.String;kotlin.String;kotlin.String){}[0]
+
+    final val channel // io.github.valerioisufi.drawview.lecture/ArrivalNotification.channel|{}channel[0]
+        final fun <get-channel>(): kotlin/String // io.github.valerioisufi.drawview.lecture/ArrivalNotification.channel.<get-channel>|<get-channel>(){}[0]
+    final val text // io.github.valerioisufi.drawview.lecture/ArrivalNotification.text|{}text[0]
+        final fun <get-text>(): kotlin/String // io.github.valerioisufi.drawview.lecture/ArrivalNotification.text.<get-text>|<get-text>(){}[0]
+    final val title // io.github.valerioisufi.drawview.lecture/ArrivalNotification.title|{}title[0]
+        final fun <get-title>(): kotlin/String // io.github.valerioisufi.drawview.lecture/ArrivalNotification.title.<get-title>|<get-title>(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.lecture/AssistantSettings { // io.github.valerioisufi.drawview.lecture/AssistantSettings|null[0]
@@ -328,6 +575,7 @@ final class io.github.valerioisufi.drawview.lecture/AssistantSettings { // io.gi
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.lecture/AssistantSettings.hashCode|hashCode(){}[0]
     final fun task(io.github.valerioisufi.drawview.lecture/LectureTask): io.github.valerioisufi.drawview.lecture/TaskModel // io.github.valerioisufi.drawview.lecture/AssistantSettings.task|task(io.github.valerioisufi.drawview.lecture.LectureTask){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.lecture/AssistantSettings.toString|toString(){}[0]
+    final fun withTask(io.github.valerioisufi.drawview.lecture/LectureTask, io.github.valerioisufi.drawview.lecture/TaskModel): io.github.valerioisufi.drawview.lecture/AssistantSettings // io.github.valerioisufi.drawview.lecture/AssistantSettings.withTask|withTask(io.github.valerioisufi.drawview.lecture.LectureTask;io.github.valerioisufi.drawview.lecture.TaskModel){}[0]
 
     final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.lecture/AssistantSettings> { // io.github.valerioisufi.drawview.lecture/AssistantSettings.$serializer|null[0]
         final val descriptor // io.github.valerioisufi.drawview.lecture/AssistantSettings.$serializer.descriptor|{}descriptor[0]
@@ -339,8 +587,17 @@ final class io.github.valerioisufi.drawview.lecture/AssistantSettings { // io.gi
     }
 
     final object Companion { // io.github.valerioisufi.drawview.lecture/AssistantSettings.Companion|null[0]
-        final val $childSerializers // io.github.valerioisufi.drawview.lecture/AssistantSettings.Companion.$childSerializers|{}$childSerializers[0]
+        final const val DEFAULT_SPEECH_MODEL // io.github.valerioisufi.drawview.lecture/AssistantSettings.Companion.DEFAULT_SPEECH_MODEL|{}DEFAULT_SPEECH_MODEL[0]
+            final fun <get-DEFAULT_SPEECH_MODEL>(): kotlin/String // io.github.valerioisufi.drawview.lecture/AssistantSettings.Companion.DEFAULT_SPEECH_MODEL.<get-DEFAULT_SPEECH_MODEL>|<get-DEFAULT_SPEECH_MODEL>(){}[0]
 
+        final val $childSerializers // io.github.valerioisufi.drawview.lecture/AssistantSettings.Companion.$childSerializers|{}$childSerializers[0]
+        final val CHUNK_SECONDS_RANGE // io.github.valerioisufi.drawview.lecture/AssistantSettings.Companion.CHUNK_SECONDS_RANGE|{}CHUNK_SECONDS_RANGE[0]
+            final fun <get-CHUNK_SECONDS_RANGE>(): kotlin.ranges/IntRange // io.github.valerioisufi.drawview.lecture/AssistantSettings.Companion.CHUNK_SECONDS_RANGE.<get-CHUNK_SECONDS_RANGE>|<get-CHUNK_SECONDS_RANGE>(){}[0]
+        final val THINKING_LEVELS // io.github.valerioisufi.drawview.lecture/AssistantSettings.Companion.THINKING_LEVELS|{}THINKING_LEVELS[0]
+            final fun <get-THINKING_LEVELS>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.lecture/AssistantSettings.Companion.THINKING_LEVELS.<get-THINKING_LEVELS>|<get-THINKING_LEVELS>(){}[0]
+
+        final fun defaultTask(io.github.valerioisufi.drawview.lecture/LectureTask): io.github.valerioisufi.drawview.lecture/TaskModel // io.github.valerioisufi.drawview.lecture/AssistantSettings.Companion.defaultTask|defaultTask(io.github.valerioisufi.drawview.lecture.LectureTask){}[0]
+        final fun recordedSpeechModel(kotlin/String): kotlin/String // io.github.valerioisufi.drawview.lecture/AssistantSettings.Companion.recordedSpeechModel|recordedSpeechModel(kotlin.String){}[0]
         final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.lecture/AssistantSettings> // io.github.valerioisufi.drawview.lecture/AssistantSettings.Companion.serializer|serializer(){}[0]
     }
 }
@@ -348,10 +605,50 @@ final class io.github.valerioisufi.drawview.lecture/AssistantSettings { // io.gi
 final class io.github.valerioisufi.drawview.lecture/AssistantSettingsStore { // io.github.valerioisufi.drawview.lecture/AssistantSettingsStore|null[0]
     constructor <init>(kotlin/String = ..., io.github.valerioisufi.drawview.lecture/SecretStorage = ..., kotlin/Boolean = ...) // io.github.valerioisufi.drawview.lecture/AssistantSettingsStore.<init>|<init>(kotlin.String;io.github.valerioisufi.drawview.lecture.SecretStorage;kotlin.Boolean){}[0]
 
+    final val hasApiKey // io.github.valerioisufi.drawview.lecture/AssistantSettingsStore.hasApiKey|{}hasApiKey[0]
+        final fun <get-hasApiKey>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/AssistantSettingsStore.hasApiKey.<get-hasApiKey>|<get-hasApiKey>(){}[0]
+    final val usesEnvironmentKey // io.github.valerioisufi.drawview.lecture/AssistantSettingsStore.usesEnvironmentKey|{}usesEnvironmentKey[0]
+        final fun <get-usesEnvironmentKey>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/AssistantSettingsStore.usesEnvironmentKey.<get-usesEnvironmentKey>|<get-usesEnvironmentKey>(){}[0]
+
     final var settings // io.github.valerioisufi.drawview.lecture/AssistantSettingsStore.settings|{}settings[0]
         final fun <get-settings>(): io.github.valerioisufi.drawview.lecture/AssistantSettings // io.github.valerioisufi.drawview.lecture/AssistantSettingsStore.settings.<get-settings>|<get-settings>(){}[0]
 
     final fun update(io.github.valerioisufi.drawview.lecture/AssistantSettings) // io.github.valerioisufi.drawview.lecture/AssistantSettingsStore.update|update(io.github.valerioisufi.drawview.lecture.AssistantSettings){}[0]
+}
+
+final class io.github.valerioisufi.drawview.lecture/CourseContext { // io.github.valerioisufi.drawview.lecture/CourseContext|null[0]
+    constructor <init>(kotlin/String, kotlin/Boolean = ..., kotlin/Long = ..., io.github.valerioisufi.drawview.lecture/Stamp = ...) // io.github.valerioisufi.drawview.lecture/CourseContext.<init>|<init>(kotlin.String;kotlin.Boolean;kotlin.Long;io.github.valerioisufi.drawview.lecture.Stamp){}[0]
+
+    final val edited // io.github.valerioisufi.drawview.lecture/CourseContext.edited|{}edited[0]
+        final fun <get-edited>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/CourseContext.edited.<get-edited>|<get-edited>(){}[0]
+    final val generatedAt // io.github.valerioisufi.drawview.lecture/CourseContext.generatedAt|{}generatedAt[0]
+        final fun <get-generatedAt>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/CourseContext.generatedAt.<get-generatedAt>|<get-generatedAt>(){}[0]
+    final val stamp // io.github.valerioisufi.drawview.lecture/CourseContext.stamp|{}stamp[0]
+        final fun <get-stamp>(): io.github.valerioisufi.drawview.lecture/Stamp // io.github.valerioisufi.drawview.lecture/CourseContext.stamp.<get-stamp>|<get-stamp>(){}[0]
+    final val text // io.github.valerioisufi.drawview.lecture/CourseContext.text|{}text[0]
+        final fun <get-text>(): kotlin/String // io.github.valerioisufi.drawview.lecture/CourseContext.text.<get-text>|<get-text>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.lecture/CourseContext.component1|component1(){}[0]
+    final fun component2(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/CourseContext.component2|component2(){}[0]
+    final fun component3(): kotlin/Long // io.github.valerioisufi.drawview.lecture/CourseContext.component3|component3(){}[0]
+    final fun component4(): io.github.valerioisufi.drawview.lecture/Stamp // io.github.valerioisufi.drawview.lecture/CourseContext.component4|component4(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/Boolean = ..., kotlin/Long = ..., io.github.valerioisufi.drawview.lecture/Stamp = ...): io.github.valerioisufi.drawview.lecture/CourseContext // io.github.valerioisufi.drawview.lecture/CourseContext.copy|copy(kotlin.String;kotlin.Boolean;kotlin.Long;io.github.valerioisufi.drawview.lecture.Stamp){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/CourseContext.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.lecture/CourseContext.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.lecture/CourseContext.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.lecture/CourseContext> { // io.github.valerioisufi.drawview.lecture/CourseContext.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.lecture/CourseContext.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.lecture/CourseContext.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.lecture/CourseContext.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.lecture/CourseContext // io.github.valerioisufi.drawview.lecture/CourseContext.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.lecture/CourseContext) // io.github.valerioisufi.drawview.lecture/CourseContext.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.lecture.CourseContext){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.lecture/CourseContext.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.lecture/CourseContext> // io.github.valerioisufi.drawview.lecture/CourseContext.Companion.serializer|serializer(){}[0]
+    }
 }
 
 final class io.github.valerioisufi.drawview.lecture/DeviceUsage { // io.github.valerioisufi.drawview.lecture/DeviceUsage|null[0]
@@ -431,7 +728,37 @@ final class io.github.valerioisufi.drawview.lecture/GenerationLock { // io.githu
     }
 }
 
+final class io.github.valerioisufi.drawview.lecture/GenerationOffer { // io.github.valerioisufi.drawview.lecture/GenerationOffer|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.lecture/LectureArrival, kotlin/Long, io.github.valerioisufi.drawview.lecture/ModelProvider, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.lecture/GenerationOffer.<init>|<init>(io.github.valerioisufi.drawview.lecture.LectureArrival;kotlin.Long;io.github.valerioisufi.drawview.lecture.ModelProvider;kotlin.Boolean){}[0]
+
+    final val arrival // io.github.valerioisufi.drawview.lecture/GenerationOffer.arrival|{}arrival[0]
+        final fun <get-arrival>(): io.github.valerioisufi.drawview.lecture/LectureArrival // io.github.valerioisufi.drawview.lecture/GenerationOffer.arrival.<get-arrival>|<get-arrival>(){}[0]
+    final val durationMs // io.github.valerioisufi.drawview.lecture/GenerationOffer.durationMs|{}durationMs[0]
+        final fun <get-durationMs>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/GenerationOffer.durationMs.<get-durationMs>|<get-durationMs>(){}[0]
+    final val estimatedTokens // io.github.valerioisufi.drawview.lecture/GenerationOffer.estimatedTokens|{}estimatedTokens[0]
+        final fun <get-estimatedTokens>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/GenerationOffer.estimatedTokens.<get-estimatedTokens>|<get-estimatedTokens>(){}[0]
+    final val live // io.github.valerioisufi.drawview.lecture/GenerationOffer.live|{}live[0]
+        final fun <get-live>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/GenerationOffer.live.<get-live>|<get-live>(){}[0]
+    final val provider // io.github.valerioisufi.drawview.lecture/GenerationOffer.provider|{}provider[0]
+        final fun <get-provider>(): io.github.valerioisufi.drawview.lecture/ModelProvider // io.github.valerioisufi.drawview.lecture/GenerationOffer.provider.<get-provider>|<get-provider>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.lecture/InstalledModel { // io.github.valerioisufi.drawview.lecture/InstalledModel|null[0]
+    constructor <init>(kotlin/String, kotlin/Long, kotlin/Boolean) // io.github.valerioisufi.drawview.lecture/InstalledModel.<init>|<init>(kotlin.String;kotlin.Long;kotlin.Boolean){}[0]
+
+    final val name // io.github.valerioisufi.drawview.lecture/InstalledModel.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.valerioisufi.drawview.lecture/InstalledModel.name.<get-name>|<get-name>(){}[0]
+    final val readsImages // io.github.valerioisufi.drawview.lecture/InstalledModel.readsImages|{}readsImages[0]
+        final fun <get-readsImages>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/InstalledModel.readsImages.<get-readsImages>|<get-readsImages>(){}[0]
+    final val sizeBytes // io.github.valerioisufi.drawview.lecture/InstalledModel.sizeBytes|{}sizeBytes[0]
+        final fun <get-sizeBytes>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/InstalledModel.sizeBytes.<get-sizeBytes>|<get-sizeBytes>(){}[0]
+}
+
 final class io.github.valerioisufi.drawview.lecture/Lecture { // io.github.valerioisufi.drawview.lecture/Lecture|null[0]
+    final val canGenerateReview // io.github.valerioisufi.drawview.lecture/Lecture.canGenerateReview|{}canGenerateReview[0]
+        final fun <get-canGenerateReview>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/Lecture.canGenerateReview.<get-canGenerateReview>|<get-canGenerateReview>(){}[0]
+    final val canPlayAudio // io.github.valerioisufi.drawview.lecture/Lecture.canPlayAudio|{}canPlayAudio[0]
+        final fun <get-canPlayAudio>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/Lecture.canPlayAudio.<get-canPlayAudio>|<get-canPlayAudio>(){}[0]
     final val directory // io.github.valerioisufi.drawview.lecture/Lecture.directory|{}directory[0]
         final fun <get-directory>(): kotlin/String // io.github.valerioisufi.drawview.lecture/Lecture.directory.<get-directory>|<get-directory>(){}[0]
     final val documentId // io.github.valerioisufi.drawview.lecture/Lecture.documentId|{}documentId[0]
@@ -440,45 +767,215 @@ final class io.github.valerioisufi.drawview.lecture/Lecture { // io.github.valer
         final fun <get-generates>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/Lecture.generates.<get-generates>|<get-generates>(){}[0]
     final val id // io.github.valerioisufi.drawview.lecture/Lecture.id|{}id[0]
         final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.lecture/Lecture.id.<get-id>|<get-id>(){}[0]
+    final val player // io.github.valerioisufi.drawview.lecture/Lecture.player|{}player[0]
+        final fun <get-player>(): io.github.valerioisufi.drawview.lecture.audio/RecordingPlayer? // io.github.valerioisufi.drawview.lecture/Lecture.player.<get-player>|<get-player>(){}[0]
+    final val recordedElsewhere // io.github.valerioisufi.drawview.lecture/Lecture.recordedElsewhere|{}recordedElsewhere[0]
+        final fun <get-recordedElsewhere>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/Lecture.recordedElsewhere.<get-recordedElsewhere>|<get-recordedElsewhere>(){}[0]
+    final val recordedOn // io.github.valerioisufi.drawview.lecture/Lecture.recordedOn|{}recordedOn[0]
+        final fun <get-recordedOn>(): kotlin/String // io.github.valerioisufi.drawview.lecture/Lecture.recordedOn.<get-recordedOn>|<get-recordedOn>(){}[0]
+    final val startedAt // io.github.valerioisufi.drawview.lecture/Lecture.startedAt|{}startedAt[0]
+        final fun <get-startedAt>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/Lecture.startedAt.<get-startedAt>|<get-startedAt>(){}[0]
+    final val suggestions // io.github.valerioisufi.drawview.lecture/Lecture.suggestions|{}suggestions[0]
+        final fun <get-suggestions>(): androidx.compose.runtime.snapshots/SnapshotStateList<io.github.valerioisufi.drawview.lecture/NoteSuggestion> // io.github.valerioisufi.drawview.lecture/Lecture.suggestions.<get-suggestions>|<get-suggestions>(){}[0]
+    final val totalUsage // io.github.valerioisufi.drawview.lecture/Lecture.totalUsage|{}totalUsage[0]
+        final fun <get-totalUsage>(): io.github.valerioisufi.drawview.lecture/TokenUsage // io.github.valerioisufi.drawview.lecture/Lecture.totalUsage.<get-totalUsage>|<get-totalUsage>(){}[0]
+    final val transcript // io.github.valerioisufi.drawview.lecture/Lecture.transcript|{}transcript[0]
+        final fun <get-transcript>(): androidx.compose.runtime.snapshots/SnapshotStateList<io.github.valerioisufi.drawview.lecture/TranscriptSegment> // io.github.valerioisufi.drawview.lecture/Lecture.transcript.<get-transcript>|<get-transcript>(){}[0]
 
+    final var audioShared // io.github.valerioisufi.drawview.lecture/Lecture.audioShared|{}audioShared[0]
+        final fun <get-audioShared>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/Lecture.audioShared.<get-audioShared>|<get-audioShared>(){}[0]
+    final var currentTopic // io.github.valerioisufi.drawview.lecture/Lecture.currentTopic|{}currentTopic[0]
+        final fun <get-currentTopic>(): kotlin/String // io.github.valerioisufi.drawview.lecture/Lecture.currentTopic.<get-currentTopic>|<get-currentTopic>(){}[0]
+    final var deletedElsewhere // io.github.valerioisufi.drawview.lecture/Lecture.deletedElsewhere|{}deletedElsewhere[0]
+        final fun <get-deletedElsewhere>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/Lecture.deletedElsewhere.<get-deletedElsewhere>|<get-deletedElsewhere>(){}[0]
+    final var documentTitle // io.github.valerioisufi.drawview.lecture/Lecture.documentTitle|{}documentTitle[0]
+        final fun <get-documentTitle>(): kotlin/String // io.github.valerioisufi.drawview.lecture/Lecture.documentTitle.<get-documentTitle>|<get-documentTitle>(){}[0]
     final var elapsedMs // io.github.valerioisufi.drawview.lecture/Lecture.elapsedMs|{}elapsedMs[0]
         final fun <get-elapsedMs>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/Lecture.elapsedMs.<get-elapsedMs>|<get-elapsedMs>(){}[0]
+    final var finalReview // io.github.valerioisufi.drawview.lecture/Lecture.finalReview|{}finalReview[0]
+        final fun <get-finalReview>(): kotlin/String? // io.github.valerioisufi.drawview.lecture/Lecture.finalReview.<get-finalReview>|<get-finalReview>(){}[0]
+    final var followedHere // io.github.valerioisufi.drawview.lecture/Lecture.followedHere|{}followedHere[0]
+        final fun <get-followedHere>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/Lecture.followedHere.<get-followedHere>|<get-followedHere>(){}[0]
     final var generation // io.github.valerioisufi.drawview.lecture/Lecture.generation|{}generation[0]
         final fun <get-generation>(): io.github.valerioisufi.drawview.lecture/GenerationLock? // io.github.valerioisufi.drawview.lecture/Lecture.generation.<get-generation>|<get-generation>(){}[0]
+    final var hasAudio // io.github.valerioisufi.drawview.lecture/Lecture.hasAudio|{}hasAudio[0]
+        final fun <get-hasAudio>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/Lecture.hasAudio.<get-hasAudio>|<get-hasAudio>(){}[0]
+    final var importProgress // io.github.valerioisufi.drawview.lecture/Lecture.importProgress|{}importProgress[0]
+        final fun <get-importProgress>(): kotlin/Float // io.github.valerioisufi.drawview.lecture/Lecture.importProgress.<get-importProgress>|<get-importProgress>(){}[0]
+    final var importStep // io.github.valerioisufi.drawview.lecture/Lecture.importStep|{}importStep[0]
+        final fun <get-importStep>(): io.github.valerioisufi.drawview.lecture/ImportStep? // io.github.valerioisufi.drawview.lecture/Lecture.importStep.<get-importStep>|<get-importStep>(){}[0]
+    final var interimTranscript // io.github.valerioisufi.drawview.lecture/Lecture.interimTranscript|{}interimTranscript[0]
+        final fun <get-interimTranscript>(): kotlin/String // io.github.valerioisufi.drawview.lecture/Lecture.interimTranscript.<get-interimTranscript>|<get-interimTranscript>(){}[0]
+    final var isAnalyzing // io.github.valerioisufi.drawview.lecture/Lecture.isAnalyzing|{}isAnalyzing[0]
+        final fun <get-isAnalyzing>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/Lecture.isAnalyzing.<get-isAnalyzing>|<get-isAnalyzing>(){}[0]
     final var level // io.github.valerioisufi.drawview.lecture/Lecture.level|{}level[0]
         final fun <get-level>(): kotlin/Float // io.github.valerioisufi.drawview.lecture/Lecture.level.<get-level>|<get-level>(){}[0]
+    final var microphoneInterrupted // io.github.valerioisufi.drawview.lecture/Lecture.microphoneInterrupted|{}microphoneInterrupted[0]
+        final fun <get-microphoneInterrupted>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/Lecture.microphoneInterrupted.<get-microphoneInterrupted>|<get-microphoneInterrupted>(){}[0]
+    final var noAudioWarning // io.github.valerioisufi.drawview.lecture/Lecture.noAudioWarning|{}noAudioWarning[0]
+        final fun <get-noAudioWarning>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/Lecture.noAudioWarning.<get-noAudioWarning>|<get-noAudioWarning>(){}[0]
+    final var otherUsage // io.github.valerioisufi.drawview.lecture/Lecture.otherUsage|{}otherUsage[0]
+        final fun <get-otherUsage>(): kotlin.collections/Map<kotlin/String, io.github.valerioisufi.drawview.lecture/DeviceUsage> // io.github.valerioisufi.drawview.lecture/Lecture.otherUsage.<get-otherUsage>|<get-otherUsage>(){}[0]
     final var outline // io.github.valerioisufi.drawview.lecture/Lecture.outline|{}outline[0]
         final fun <get-outline>(): kotlin/String // io.github.valerioisufi.drawview.lecture/Lecture.outline.<get-outline>|<get-outline>(){}[0]
+    final var pendingUpdates // io.github.valerioisufi.drawview.lecture/Lecture.pendingUpdates|{}pendingUpdates[0]
+        final fun <get-pendingUpdates>(): kotlin/Int // io.github.valerioisufi.drawview.lecture/Lecture.pendingUpdates.<get-pendingUpdates>|<get-pendingUpdates>(){}[0]
+    final var problem // io.github.valerioisufi.drawview.lecture/Lecture.problem|{}problem[0]
+        final fun <get-problem>(): io.github.valerioisufi.drawview.lecture/LectureProblem? // io.github.valerioisufi.drawview.lecture/Lecture.problem.<get-problem>|<get-problem>(){}[0]
+    final var professorPageIndex // io.github.valerioisufi.drawview.lecture/Lecture.professorPageIndex|{}professorPageIndex[0]
+        final fun <get-professorPageIndex>(): kotlin/Int? // io.github.valerioisufi.drawview.lecture/Lecture.professorPageIndex.<get-professorPageIndex>|<get-professorPageIndex>(){}[0]
+    final var recordingHeardAt // io.github.valerioisufi.drawview.lecture/Lecture.recordingHeardAt|{}recordingHeardAt[0]
+        final fun <get-recordingHeardAt>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/Lecture.recordingHeardAt.<get-recordingHeardAt>|<get-recordingHeardAt>(){}[0]
+    final var reviewModel // io.github.valerioisufi.drawview.lecture/Lecture.reviewModel|{}reviewModel[0]
+        final fun <get-reviewModel>(): kotlin/String? // io.github.valerioisufi.drawview.lecture/Lecture.reviewModel.<get-reviewModel>|<get-reviewModel>(){}[0]
+    final var reviewProgressTokens // io.github.valerioisufi.drawview.lecture/Lecture.reviewProgressTokens|{}reviewProgressTokens[0]
+        final fun <get-reviewProgressTokens>(): kotlin/Int // io.github.valerioisufi.drawview.lecture/Lecture.reviewProgressTokens.<get-reviewProgressTokens>|<get-reviewProgressTokens>(){}[0]
+    final var reviewProvider // io.github.valerioisufi.drawview.lecture/Lecture.reviewProvider|{}reviewProvider[0]
+        final fun <get-reviewProvider>(): io.github.valerioisufi.drawview.lecture/ModelProvider? // io.github.valerioisufi.drawview.lecture/Lecture.reviewProvider.<get-reviewProvider>|<get-reviewProvider>(){}[0]
+    final var reviewStatus // io.github.valerioisufi.drawview.lecture/Lecture.reviewStatus|{}reviewStatus[0]
+        final fun <get-reviewStatus>(): io.github.valerioisufi.drawview.lecture/ReviewStatus // io.github.valerioisufi.drawview.lecture/Lecture.reviewStatus.<get-reviewStatus>|<get-reviewStatus>(){}[0]
     final var status // io.github.valerioisufi.drawview.lecture/Lecture.status|{}status[0]
         final fun <get-status>(): io.github.valerioisufi.drawview.lecture/LectureStatus // io.github.valerioisufi.drawview.lecture/Lecture.status.<get-status>|<get-status>(){}[0]
+    final var usage // io.github.valerioisufi.drawview.lecture/Lecture.usage|{}usage[0]
+        final fun <get-usage>(): io.github.valerioisufi.drawview.lecture/TokenUsage // io.github.valerioisufi.drawview.lecture/Lecture.usage.<get-usage>|<get-usage>(){}[0]
 
+    final fun generatingElsewhere(kotlin/Long): io.github.valerioisufi.drawview.lecture/GenerationLock? // io.github.valerioisufi.drawview.lecture/Lecture.generatingElsewhere|generatingElsewhere(kotlin.Long){}[0]
     final fun play(io.github.valerioisufi.drawview.lecture/NoteSuggestion) // io.github.valerioisufi.drawview.lecture/Lecture.play|play(io.github.valerioisufi.drawview.lecture.NoteSuggestion){}[0]
+    final fun updateSuggestion(kotlin/String, io.github.valerioisufi.drawview.lecture/SuggestionStatus) // io.github.valerioisufi.drawview.lecture/Lecture.updateSuggestion|updateSuggestion(kotlin.String;io.github.valerioisufi.drawview.lecture.SuggestionStatus){}[0]
+}
+
+final class io.github.valerioisufi.drawview.lecture/LectureArrival { // io.github.valerioisufi.drawview.lecture/LectureArrival|null[0]
+    constructor <init>(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.lecture/LectureArrival.Kind, kotlin/String, kotlin/Long) // io.github.valerioisufi.drawview.lecture/LectureArrival.<init>|<init>(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.lecture.LectureArrival.Kind;kotlin.String;kotlin.Long){}[0]
+
+    final val directory // io.github.valerioisufi.drawview.lecture/LectureArrival.directory|{}directory[0]
+        final fun <get-directory>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureArrival.directory.<get-directory>|<get-directory>(){}[0]
+    final val documentId // io.github.valerioisufi.drawview.lecture/LectureArrival.documentId|{}documentId[0]
+        final fun <get-documentId>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureArrival.documentId.<get-documentId>|<get-documentId>(){}[0]
+    final val from // io.github.valerioisufi.drawview.lecture/LectureArrival.from|{}from[0]
+        final fun <get-from>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureArrival.from.<get-from>|<get-from>(){}[0]
+    final val kind // io.github.valerioisufi.drawview.lecture/LectureArrival.kind|{}kind[0]
+        final fun <get-kind>(): io.github.valerioisufi.drawview.lecture/LectureArrival.Kind // io.github.valerioisufi.drawview.lecture/LectureArrival.kind.<get-kind>|<get-kind>(){}[0]
+    final val startedAt // io.github.valerioisufi.drawview.lecture/LectureArrival.startedAt|{}startedAt[0]
+        final fun <get-startedAt>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/LectureArrival.startedAt.<get-startedAt>|<get-startedAt>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureArrival.component1|component1(){}[0]
+    final fun component2(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureArrival.component2|component2(){}[0]
+    final fun component3(): io.github.valerioisufi.drawview.lecture/LectureArrival.Kind // io.github.valerioisufi.drawview.lecture/LectureArrival.component3|component3(){}[0]
+    final fun component4(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureArrival.component4|component4(){}[0]
+    final fun component5(): kotlin/Long // io.github.valerioisufi.drawview.lecture/LectureArrival.component5|component5(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., io.github.valerioisufi.drawview.lecture/LectureArrival.Kind = ..., kotlin/String = ..., kotlin/Long = ...): io.github.valerioisufi.drawview.lecture/LectureArrival // io.github.valerioisufi.drawview.lecture/LectureArrival.copy|copy(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.lecture.LectureArrival.Kind;kotlin.String;kotlin.Long){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureArrival.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.lecture/LectureArrival.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureArrival.toString|toString(){}[0]
+
+    final enum class Kind : kotlin/Enum<io.github.valerioisufi.drawview.lecture/LectureArrival.Kind> { // io.github.valerioisufi.drawview.lecture/LectureArrival.Kind|null[0]
+        enum entry AUDIO // io.github.valerioisufi.drawview.lecture/LectureArrival.Kind.AUDIO|null[0]
+        enum entry LECTURE // io.github.valerioisufi.drawview.lecture/LectureArrival.Kind.LECTURE|null[0]
+        enum entry REVIEW // io.github.valerioisufi.drawview.lecture/LectureArrival.Kind.REVIEW|null[0]
+
+        final val entries // io.github.valerioisufi.drawview.lecture/LectureArrival.Kind.entries|#static{}entries[0]
+            final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.lecture/LectureArrival.Kind> // io.github.valerioisufi.drawview.lecture/LectureArrival.Kind.entries.<get-entries>|<get-entries>#static(){}[0]
+
+        final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.lecture/LectureArrival.Kind // io.github.valerioisufi.drawview.lecture/LectureArrival.Kind.valueOf|valueOf#static(kotlin.String){}[0]
+        final fun values(): kotlin/Array<io.github.valerioisufi.drawview.lecture/LectureArrival.Kind> // io.github.valerioisufi.drawview.lecture/LectureArrival.Kind.values|values#static(){}[0]
+    }
 }
 
 final class io.github.valerioisufi.drawview.lecture/LectureAssistant { // io.github.valerioisufi.drawview.lecture/LectureAssistant|null[0]
     constructor <init>(io.github.valerioisufi.drawview.lecture/AssistantSettingsStore = ..., io.github.valerioisufi.drawview.lecture.gemini/GeminiClient = ..., io.github.valerioisufi.drawview.lecture.local/OllamaClient = ..., kotlin/Function0<io.github.valerioisufi.drawview.lecture.audio/AudioCapture?> = ..., kotlin/Function0<io.github.valerioisufi.drawview.lecture.audio/AudioOutput?>? = ..., io.github.valerioisufi.drawview.lecture/LectureLibrary = ..., kotlin.coroutines/CoroutineContext = ..., kotlin/Function1<io.github.valerioisufi.drawview.lecture/AssistantSettings, io.github.valerioisufi.drawview.lecture.transcription/Transcriber> = ..., kotlin/Boolean = ...) // io.github.valerioisufi.drawview.lecture/LectureAssistant.<init>|<init>(io.github.valerioisufi.drawview.lecture.AssistantSettingsStore;io.github.valerioisufi.drawview.lecture.gemini.GeminiClient;io.github.valerioisufi.drawview.lecture.local.OllamaClient;kotlin.Function0<io.github.valerioisufi.drawview.lecture.audio.AudioCapture?>;kotlin.Function0<io.github.valerioisufi.drawview.lecture.audio.AudioOutput?>?;io.github.valerioisufi.drawview.lecture.LectureLibrary;kotlin.coroutines.CoroutineContext;kotlin.Function1<io.github.valerioisufi.drawview.lecture.AssistantSettings,io.github.valerioisufi.drawview.lecture.transcription.Transcriber>;kotlin.Boolean){}[0]
 
+    final val activeRecorder // io.github.valerioisufi.drawview.lecture/LectureAssistant.activeRecorder|{}activeRecorder[0]
+        final fun <get-activeRecorder>(): io.github.valerioisufi.drawview.lecture/LectureRecorder? // io.github.valerioisufi.drawview.lecture/LectureAssistant.activeRecorder.<get-activeRecorder>|<get-activeRecorder>(){}[0]
+    final val arrivals // io.github.valerioisufi.drawview.lecture/LectureAssistant.arrivals|{}arrivals[0]
+        final fun <get-arrivals>(): androidx.compose.runtime.snapshots/SnapshotStateList<io.github.valerioisufi.drawview.lecture/LectureArrival> // io.github.valerioisufi.drawview.lecture/LectureAssistant.arrivals.<get-arrivals>|<get-arrivals>(){}[0]
     final val attachments // io.github.valerioisufi.drawview.lecture/LectureAssistant.attachments|{}attachments[0]
         final fun <get-attachments>(): io.github.valerioisufi.drawview.model/DocumentAttachments // io.github.valerioisufi.drawview.lecture/LectureAssistant.attachments.<get-attachments>|<get-attachments>(){}[0]
+    final val audioArriving // io.github.valerioisufi.drawview.lecture/LectureAssistant.audioArriving|{}audioArriving[0]
+        final fun <get-audioArriving>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/Map<kotlin/String, kotlin/Float>> // io.github.valerioisufi.drawview.lecture/LectureAssistant.audioArriving.<get-audioArriving>|<get-audioArriving>(){}[0]
+    final val canGenerate // io.github.valerioisufi.drawview.lecture/LectureAssistant.canGenerate|{}canGenerate[0]
+        final fun <get-canGenerate>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.canGenerate.<get-canGenerate>|<get-canGenerate>(){}[0]
+    final val canImportAndExport // io.github.valerioisufi.drawview.lecture/LectureAssistant.canImportAndExport|{}canImportAndExport[0]
+        final fun <get-canImportAndExport>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.canImportAndExport.<get-canImportAndExport>|<get-canImportAndExport>(){}[0]
+    final val canTranscribeHere // io.github.valerioisufi.drawview.lecture/LectureAssistant.canTranscribeHere|{}canTranscribeHere[0]
+        final fun <get-canTranscribeHere>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.canTranscribeHere.<get-canTranscribeHere>|<get-canTranscribeHere>(){}[0]
+    final val exportExtension // io.github.valerioisufi.drawview.lecture/LectureAssistant.exportExtension|{}exportExtension[0]
+        final fun <get-exportExtension>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureAssistant.exportExtension.<get-exportExtension>|<get-exportExtension>(){}[0]
+    final val generationOffers // io.github.valerioisufi.drawview.lecture/LectureAssistant.generationOffers|{}generationOffers[0]
+        final fun <get-generationOffers>(): androidx.compose.runtime.snapshots/SnapshotStateList<io.github.valerioisufi.drawview.lecture/GenerationOffer> // io.github.valerioisufi.drawview.lecture/LectureAssistant.generationOffers.<get-generationOffers>|<get-generationOffers>(){}[0]
+    final val isBusy // io.github.valerioisufi.drawview.lecture/LectureAssistant.isBusy|{}isBusy[0]
+        final fun <get-isBusy>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.isBusy.<get-isBusy>|<get-isBusy>(){}[0]
     final val isRecording // io.github.valerioisufi.drawview.lecture/LectureAssistant.isRecording|{}isRecording[0]
         final fun <get-isRecording>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.isRecording.<get-isRecording>|<get-isRecording>(){}[0]
+    final val isRecordingSupported // io.github.valerioisufi.drawview.lecture/LectureAssistant.isRecordingSupported|{}isRecordingSupported[0]
+        final fun <get-isRecordingSupported>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.isRecordingSupported.<get-isRecordingSupported>|<get-isRecordingSupported>(){}[0]
     final val library // io.github.valerioisufi.drawview.lecture/LectureAssistant.library|{}library[0]
         final fun <get-library>(): io.github.valerioisufi.drawview.lecture/LectureLibrary // io.github.valerioisufi.drawview.lecture/LectureAssistant.library.<get-library>|<get-library>(){}[0]
     final val localModels // io.github.valerioisufi.drawview.lecture/LectureAssistant.localModels|{}localModels[0]
         final fun <get-localModels>(): io.github.valerioisufi.drawview.lecture/LocalModels // io.github.valerioisufi.drawview.lecture/LectureAssistant.localModels.<get-localModels>|<get-localModels>(){}[0]
+    final val mayGenerate // io.github.valerioisufi.drawview.lecture/LectureAssistant.mayGenerate|{}mayGenerate[0]
+        final fun <get-mayGenerate>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.mayGenerate.<get-mayGenerate>|<get-mayGenerate>(){}[0]
+    final val settingsStore // io.github.valerioisufi.drawview.lecture/LectureAssistant.settingsStore|{}settingsStore[0]
+        final fun <get-settingsStore>(): io.github.valerioisufi.drawview.lecture/AssistantSettingsStore // io.github.valerioisufi.drawview.lecture/LectureAssistant.settingsStore.<get-settingsStore>|<get-settingsStore>(){}[0]
 
+    final var describeArrival // io.github.valerioisufi.drawview.lecture/LectureAssistant.describeArrival|{}describeArrival[0]
+        final fun <get-describeArrival>(): kotlin.coroutines/SuspendFunction2<io.github.valerioisufi.drawview.lecture/LectureArrival, kotlin/String, io.github.valerioisufi.drawview.lecture/ArrivalNotification?> // io.github.valerioisufi.drawview.lecture/LectureAssistant.describeArrival.<get-describeArrival>|<get-describeArrival>(){}[0]
+        final fun <set-describeArrival>(kotlin.coroutines/SuspendFunction2<io.github.valerioisufi.drawview.lecture/LectureArrival, kotlin/String, io.github.valerioisufi.drawview.lecture/ArrivalNotification?>) // io.github.valerioisufi.drawview.lecture/LectureAssistant.describeArrival.<set-describeArrival>|<set-describeArrival>(kotlin.coroutines.SuspendFunction2<io.github.valerioisufi.drawview.lecture.LectureArrival,kotlin.String,io.github.valerioisufi.drawview.lecture.ArrivalNotification?>){}[0]
+    final var documentsWithLectures // io.github.valerioisufi.drawview.lecture/LectureAssistant.documentsWithLectures|{}documentsWithLectures[0]
+        final fun <get-documentsWithLectures>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.lecture/LectureAssistant.documentsWithLectures.<get-documentsWithLectures>|<get-documentsWithLectures>(){}[0]
+    final var exportResult // io.github.valerioisufi.drawview.lecture/LectureAssistant.exportResult|{}exportResult[0]
+        final fun <get-exportResult>(): io.github.valerioisufi.drawview.lecture/ExportResult? // io.github.valerioisufi.drawview.lecture/LectureAssistant.exportResult.<get-exportResult>|<get-exportResult>(){}[0]
+    final var importError // io.github.valerioisufi.drawview.lecture/LectureAssistant.importError|{}importError[0]
+        final fun <get-importError>(): kotlin/String? // io.github.valerioisufi.drawview.lecture/LectureAssistant.importError.<get-importError>|<get-importError>(){}[0]
     final var importing // io.github.valerioisufi.drawview.lecture/LectureAssistant.importing|{}importing[0]
         final fun <get-importing>(): io.github.valerioisufi.drawview.lecture/Lecture? // io.github.valerioisufi.drawview.lecture/LectureAssistant.importing.<get-importing>|<get-importing>(){}[0]
+    final var isPanelOpen // io.github.valerioisufi.drawview.lecture/LectureAssistant.isPanelOpen|{}isPanelOpen[0]
+        final fun <get-isPanelOpen>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.isPanelOpen.<get-isPanelOpen>|<get-isPanelOpen>(){}[0]
+        final fun <set-isPanelOpen>(kotlin/Boolean) // io.github.valerioisufi.drawview.lecture/LectureAssistant.isPanelOpen.<set-isPanelOpen>|<set-isPanelOpen>(kotlin.Boolean){}[0]
+    final var microphoneDenied // io.github.valerioisufi.drawview.lecture/LectureAssistant.microphoneDenied|{}microphoneDenied[0]
+        final fun <get-microphoneDenied>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.microphoneDenied.<get-microphoneDenied>|<get-microphoneDenied>(){}[0]
+    final var placingNote // io.github.valerioisufi.drawview.lecture/LectureAssistant.placingNote|{}placingNote[0]
+        final fun <get-placingNote>(): io.github.valerioisufi.drawview.lecture/NoteSuggestion? // io.github.valerioisufi.drawview.lecture/LectureAssistant.placingNote.<get-placingNote>|<get-placingNote>(){}[0]
+        final fun <set-placingNote>(io.github.valerioisufi.drawview.lecture/NoteSuggestion?) // io.github.valerioisufi.drawview.lecture/LectureAssistant.placingNote.<set-placingNote>|<set-placingNote>(io.github.valerioisufi.drawview.lecture.NoteSuggestion?){}[0]
     final var recorder // io.github.valerioisufi.drawview.lecture/LectureAssistant.recorder|{}recorder[0]
         final fun <get-recorder>(): io.github.valerioisufi.drawview.lecture/LectureRecorder? // io.github.valerioisufi.drawview.lecture/LectureAssistant.recorder.<get-recorder>|<get-recorder>(){}[0]
+    final var requestMicrophone // io.github.valerioisufi.drawview.lecture/LectureAssistant.requestMicrophone|{}requestMicrophone[0]
+        final fun <get-requestMicrophone>(): kotlin.coroutines/SuspendFunction0<kotlin/Boolean> // io.github.valerioisufi.drawview.lecture/LectureAssistant.requestMicrophone.<get-requestMicrophone>|<get-requestMicrophone>(){}[0]
+        final fun <set-requestMicrophone>(kotlin.coroutines/SuspendFunction0<kotlin/Boolean>) // io.github.valerioisufi.drawview.lecture/LectureAssistant.requestMicrophone.<set-requestMicrophone>|<set-requestMicrophone>(kotlin.coroutines.SuspendFunction0<kotlin.Boolean>){}[0]
+    final var startError // io.github.valerioisufi.drawview.lecture/LectureAssistant.startError|{}startError[0]
+        final fun <get-startError>(): kotlin/String? // io.github.valerioisufi.drawview.lecture/LectureAssistant.startError.<get-startError>|<get-startError>(){}[0]
 
+    final fun acceptGeneration(io.github.valerioisufi.drawview.lecture/GenerationOffer) // io.github.valerioisufi.drawview.lecture/LectureAssistant.acceptGeneration|acceptGeneration(io.github.valerioisufi.drawview.lecture.GenerationOffer){}[0]
+    final fun canRetranscribe(io.github.valerioisufi.drawview.lecture/Lecture): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.canRetranscribe|canRetranscribe(io.github.valerioisufi.drawview.lecture.Lecture){}[0]
+    final fun canWriteContext(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.canWriteContext|canWriteContext(kotlin.String){}[0]
+    final fun changeSharing(kotlin/String, kotlin/Function1<io.github.valerioisufi.drawview.lecture/LectureSharingSettings, io.github.valerioisufi.drawview.lecture/LectureSharingSettings>) // io.github.valerioisufi.drawview.lecture/LectureAssistant.changeSharing|changeSharing(kotlin.String;kotlin.Function1<io.github.valerioisufi.drawview.lecture.LectureSharingSettings,io.github.valerioisufi.drawview.lecture.LectureSharingSettings>){}[0]
+    final fun clearImportAndExportMessages() // io.github.valerioisufi.drawview.lecture/LectureAssistant.clearImportAndExportMessages|clearImportAndExportMessages(){}[0]
+    final fun contextOf(kotlin/String): io.github.valerioisufi.drawview.lecture/CourseContext? // io.github.valerioisufi.drawview.lecture/LectureAssistant.contextOf|contextOf(kotlin.String){}[0]
+    final fun declineGeneration(io.github.valerioisufi.drawview.lecture/GenerationOffer) // io.github.valerioisufi.drawview.lecture/LectureAssistant.declineGeneration|declineGeneration(io.github.valerioisufi.drawview.lecture.GenerationOffer){}[0]
     final fun delete(kotlin/String, io.github.valerioisufi.drawview.lecture/LectureSummary) // io.github.valerioisufi.drawview.lecture/LectureAssistant.delete|delete(kotlin.String;io.github.valerioisufi.drawview.lecture.LectureSummary){}[0]
+    final fun dismissArrival(io.github.valerioisufi.drawview.lecture/LectureArrival) // io.github.valerioisufi.drawview.lecture/LectureAssistant.dismissArrival|dismissArrival(io.github.valerioisufi.drawview.lecture.LectureArrival){}[0]
+    final fun editContext(kotlin/String, kotlin/String) // io.github.valerioisufi.drawview.lecture/LectureAssistant.editContext|editContext(kotlin.String;kotlin.String){}[0]
+    final fun editorNotebook(kotlin/String, kotlin/Function0<io.github.valerioisufi.drawview.lecture/NotebookSource>): io.github.valerioisufi.drawview.lecture/NotebookSource // io.github.valerioisufi.drawview.lecture/LectureAssistant.editorNotebook|editorNotebook(kotlin.String;kotlin.Function0<io.github.valerioisufi.drawview.lecture.NotebookSource>){}[0]
+    final fun exportAudio(io.github.valerioisufi.drawview.lecture/Lecture, kotlin/String, kotlin.coroutines/SuspendFunction1<kotlin/String, kotlin/Unit> = ...) // io.github.valerioisufi.drawview.lecture/LectureAssistant.exportAudio|exportAudio(io.github.valerioisufi.drawview.lecture.Lecture;kotlin.String;kotlin.coroutines.SuspendFunction1<kotlin.String,kotlin.Unit>){}[0]
     final fun forgetDocuments(kotlin.collections/Set<kotlin/String>) // io.github.valerioisufi.drawview.lecture/LectureAssistant.forgetDocuments|forgetDocuments(kotlin.collections.Set<kotlin.String>){}[0]
     final fun generate(io.github.valerioisufi.drawview.lecture/Lecture, io.github.valerioisufi.drawview.lecture/ModelProvider): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.generate|generate(io.github.valerioisufi.drawview.lecture.Lecture;io.github.valerioisufi.drawview.lecture.ModelProvider){}[0]
-    final fun record(kotlin/String, io.github.valerioisufi.drawview.canvas.controller/DrawViewController) // io.github.valerioisufi.drawview.lecture/LectureAssistant.record|record(kotlin.String;io.github.valerioisufi.drawview.canvas.controller.DrawViewController){}[0]
+    final fun importRecording(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.lecture/NotebookSource, kotlin/Function0<kotlin.collections/List<kotlin/String>>, io.github.valerioisufi.drawview.lecture.platform/ChosenFile): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.importRecording|importRecording(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.lecture.NotebookSource;kotlin.Function0<kotlin.collections.List<kotlin.String>>;io.github.valerioisufi.drawview.lecture.platform.ChosenFile){}[0]
+    final fun isWritingContext(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.isWritingContext|isWritingContext(kotlin.String){}[0]
+    final fun lecturesOf(kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.lecture/LectureSummary> // io.github.valerioisufi.drawview.lecture/LectureAssistant.lecturesOf|lecturesOf(kotlin.String){}[0]
+    final fun onEditorHidden(kotlin/String, io.github.valerioisufi.drawview.lecture/NotebookSource) // io.github.valerioisufi.drawview.lecture/LectureAssistant.onEditorHidden|onEditorHidden(kotlin.String;io.github.valerioisufi.drawview.lecture.NotebookSource){}[0]
+    final fun onEditorShown(kotlin/String, io.github.valerioisufi.drawview.lecture/NotebookSource) // io.github.valerioisufi.drawview.lecture/LectureAssistant.onEditorShown|onEditorShown(kotlin.String;io.github.valerioisufi.drawview.lecture.NotebookSource){}[0]
+    final fun record(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.lecture/NotebookSource) // io.github.valerioisufi.drawview.lecture/LectureAssistant.record|record(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.lecture.NotebookSource){}[0]
+    final fun recorderOf(kotlin/String): io.github.valerioisufi.drawview.lecture/LectureRecorder? // io.github.valerioisufi.drawview.lecture/LectureAssistant.recorderOf|recorderOf(kotlin.String){}[0]
     final fun refresh(kotlin/String) // io.github.valerioisufi.drawview.lecture/LectureAssistant.refresh|refresh(kotlin.String){}[0]
+    final fun requestAudio(io.github.valerioisufi.drawview.lecture/Lecture) // io.github.valerioisufi.drawview.lecture/LectureAssistant.requestAudio|requestAudio(io.github.valerioisufi.drawview.lecture.Lecture){}[0]
+    final fun retranscribe(io.github.valerioisufi.drawview.lecture/Lecture, io.github.valerioisufi.drawview.lecture/ModelProvider): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.retranscribe|retranscribe(io.github.valerioisufi.drawview.lecture.Lecture;io.github.valerioisufi.drawview.lecture.ModelProvider){}[0]
+    final fun retranscriptionModel(io.github.valerioisufi.drawview.lecture/ModelProvider): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureAssistant.retranscriptionModel|retranscriptionModel(io.github.valerioisufi.drawview.lecture.ModelProvider){}[0]
+    final fun shareAudio(io.github.valerioisufi.drawview.lecture/Lecture, kotlin/Boolean) // io.github.valerioisufi.drawview.lecture/LectureAssistant.shareAudio|shareAudio(io.github.valerioisufi.drawview.lecture.Lecture;kotlin.Boolean){}[0]
+    final fun sharingOf(kotlin/String): io.github.valerioisufi.drawview.lecture/LectureSharingSettings // io.github.valerioisufi.drawview.lecture/LectureAssistant.sharingOf|sharingOf(kotlin.String){}[0]
     final fun show(kotlin/String, io.github.valerioisufi.drawview.lecture/LectureSummary) // io.github.valerioisufi.drawview.lecture/LectureAssistant.show|show(kotlin.String;io.github.valerioisufi.drawview.lecture.LectureSummary){}[0]
-    final fun start(kotlin/String, io.github.valerioisufi.drawview.canvas.controller/DrawViewController): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.start|start(kotlin.String;io.github.valerioisufi.drawview.canvas.controller.DrawViewController){}[0]
+    final fun showArrival(io.github.valerioisufi.drawview.lecture/LectureArrival) // io.github.valerioisufi.drawview.lecture/LectureAssistant.showArrival|showArrival(io.github.valerioisufi.drawview.lecture.LectureArrival){}[0]
+    final fun shownLecture(kotlin/String): io.github.valerioisufi.drawview.lecture/Lecture? // io.github.valerioisufi.drawview.lecture/LectureAssistant.shownLecture|shownLecture(kotlin.String){}[0]
+    final fun start(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.lecture/NotebookSource): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.start|start(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.lecture.NotebookSource){}[0]
+    final fun writeContext(kotlin/String, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.lecture/LectureAssistant.writeContext|writeContext(kotlin.String;kotlin.Boolean){}[0]
 }
 
 final class io.github.valerioisufi.drawview.lecture/LectureLibrary { // io.github.valerioisufi.drawview.lecture/LectureLibrary|null[0]
@@ -491,8 +988,13 @@ final class io.github.valerioisufi.drawview.lecture/LectureLibrary { // io.githu
 
     final fun delete(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureLibrary.delete|delete(kotlin.String){}[0]
     final fun documentDirectory(kotlin/String): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureLibrary.documentDirectory|documentDirectory(kotlin.String){}[0]
+    final fun documentsWithLectures(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.lecture/LectureLibrary.documentsWithLectures|documentsWithLectures(){}[0]
     final fun list(kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.lecture/LectureSummary> // io.github.valerioisufi.drawview.lecture/LectureLibrary.list|list(kotlin.String){}[0]
     final fun load(kotlin/String): io.github.valerioisufi.drawview.lecture/LectureRecord? // io.github.valerioisufi.drawview.lecture/LectureLibrary.load|load(kotlin.String){}[0]
+    final fun newLectureDirectory(kotlin/String, kotlin/Long): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureLibrary.newLectureDirectory|newLectureDirectory(kotlin.String;kotlin.Long){}[0]
+    final fun saveContext(kotlin/String, io.github.valerioisufi.drawview.lecture/CourseContext): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureLibrary.saveContext|saveContext(kotlin.String;io.github.valerioisufi.drawview.lecture.CourseContext){}[0]
+    final fun sharingOf(kotlin/String): io.github.valerioisufi.drawview.lecture/LectureSharingSettings // io.github.valerioisufi.drawview.lecture/LectureLibrary.sharingOf|sharingOf(kotlin.String){}[0]
+    final fun writeContext(kotlin/String, io.github.valerioisufi.drawview.lecture/CourseContext): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureLibrary.writeContext|writeContext(kotlin.String;io.github.valerioisufi.drawview.lecture.CourseContext){}[0]
 }
 
 final class io.github.valerioisufi.drawview.lecture/LectureRecord { // io.github.valerioisufi.drawview.lecture/LectureRecord|null[0]
@@ -589,26 +1091,110 @@ final class io.github.valerioisufi.drawview.lecture/LectureRecorder { // io.gith
 
     final fun catchUp() // io.github.valerioisufi.drawview.lecture/LectureRecorder.catchUp|catchUp(){}[0]
     final fun stop() // io.github.valerioisufi.drawview.lecture/LectureRecorder.stop|stop(){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.lecture/LectureRecorder.Companion|null[0]
+        final const val SILENT_ELSEWHERE_MS // io.github.valerioisufi.drawview.lecture/LectureRecorder.Companion.SILENT_ELSEWHERE_MS|{}SILENT_ELSEWHERE_MS[0]
+            final fun <get-SILENT_ELSEWHERE_MS>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/LectureRecorder.Companion.SILENT_ELSEWHERE_MS.<get-SILENT_ELSEWHERE_MS>|<get-SILENT_ELSEWHERE_MS>(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.lecture/LectureSharingSettings { // io.github.valerioisufi.drawview.lecture/LectureSharingSettings|null[0]
+    constructor <init>(kotlin/Boolean = ..., io.github.valerioisufi.drawview.lecture/AudioDownload = ..., kotlin.collections/Set<kotlin/String> = ...) // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.<init>|<init>(kotlin.Boolean;io.github.valerioisufi.drawview.lecture.AudioDownload;kotlin.collections.Set<kotlin.String>){}[0]
+
+    final val downloadAudio // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.downloadAudio|{}downloadAudio[0]
+        final fun <get-downloadAudio>(): io.github.valerioisufi.drawview.lecture/AudioDownload // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.downloadAudio.<get-downloadAudio>|<get-downloadAudio>(){}[0]
+    final val requestedAudio // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.requestedAudio|{}requestedAudio[0]
+        final fun <get-requestedAudio>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.requestedAudio.<get-requestedAudio>|<get-requestedAudio>(){}[0]
+    final val shareAudio // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.shareAudio|{}shareAudio[0]
+        final fun <get-shareAudio>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.shareAudio.<get-shareAudio>|<get-shareAudio>(){}[0]
+
+    final fun component1(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.component1|component1(){}[0]
+    final fun component2(): io.github.valerioisufi.drawview.lecture/AudioDownload // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.component2|component2(){}[0]
+    final fun component3(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.component3|component3(){}[0]
+    final fun copy(kotlin/Boolean = ..., io.github.valerioisufi.drawview.lecture/AudioDownload = ..., kotlin.collections/Set<kotlin/String> = ...): io.github.valerioisufi.drawview.lecture/LectureSharingSettings // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.copy|copy(kotlin.Boolean;io.github.valerioisufi.drawview.lecture.AudioDownload;kotlin.collections.Set<kotlin.String>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.lecture/LectureSharingSettings> { // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.lecture/LectureSharingSettings // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.lecture/LectureSharingSettings) // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.lecture.LectureSharingSettings){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.Companion|null[0]
+        final val $childSerializers // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.lecture/LectureSharingSettings> // io.github.valerioisufi.drawview.lecture/LectureSharingSettings.Companion.serializer|serializer(){}[0]
+    }
 }
 
 final class io.github.valerioisufi.drawview.lecture/LectureSummary { // io.github.valerioisufi.drawview.lecture/LectureSummary|null[0]
     constructor <init>(kotlin/String, kotlin/String, kotlin/String, kotlin/Long, kotlin/Long, kotlin/Boolean, kotlin/Int, kotlin/Boolean, kotlin/String? = ..., kotlin/Boolean = ...) // io.github.valerioisufi.drawview.lecture/LectureSummary.<init>|<init>(kotlin.String;kotlin.String;kotlin.String;kotlin.Long;kotlin.Long;kotlin.Boolean;kotlin.Int;kotlin.Boolean;kotlin.String?;kotlin.Boolean){}[0]
 
+    final val activeElsewhere // io.github.valerioisufi.drawview.lecture/LectureSummary.activeElsewhere|{}activeElsewhere[0]
+        final fun <get-activeElsewhere>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureSummary.activeElsewhere.<get-activeElsewhere>|<get-activeElsewhere>(){}[0]
     final val directory // io.github.valerioisufi.drawview.lecture/LectureSummary.directory|{}directory[0]
         final fun <get-directory>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureSummary.directory.<get-directory>|<get-directory>(){}[0]
     final val documentId // io.github.valerioisufi.drawview.lecture/LectureSummary.documentId|{}documentId[0]
         final fun <get-documentId>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureSummary.documentId.<get-documentId>|<get-documentId>(){}[0]
+    final val documentTitle // io.github.valerioisufi.drawview.lecture/LectureSummary.documentTitle|{}documentTitle[0]
+        final fun <get-documentTitle>(): kotlin/String // io.github.valerioisufi.drawview.lecture/LectureSummary.documentTitle.<get-documentTitle>|<get-documentTitle>(){}[0]
+    final val durationMs // io.github.valerioisufi.drawview.lecture/LectureSummary.durationMs|{}durationMs[0]
+        final fun <get-durationMs>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/LectureSummary.durationMs.<get-durationMs>|<get-durationMs>(){}[0]
+    final val hasReview // io.github.valerioisufi.drawview.lecture/LectureSummary.hasReview|{}hasReview[0]
+        final fun <get-hasReview>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureSummary.hasReview.<get-hasReview>|<get-hasReview>(){}[0]
+    final val recordedElsewhere // io.github.valerioisufi.drawview.lecture/LectureSummary.recordedElsewhere|{}recordedElsewhere[0]
+        final fun <get-recordedElsewhere>(): kotlin/String? // io.github.valerioisufi.drawview.lecture/LectureSummary.recordedElsewhere.<get-recordedElsewhere>|<get-recordedElsewhere>(){}[0]
+    final val startedAt // io.github.valerioisufi.drawview.lecture/LectureSummary.startedAt|{}startedAt[0]
+        final fun <get-startedAt>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/LectureSummary.startedAt.<get-startedAt>|<get-startedAt>(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.lecture/LocalModels { // io.github.valerioisufi.drawview.lecture/LocalModels|null[0]
+    final val canTranscribe // io.github.valerioisufi.drawview.lecture/LocalModels.canTranscribe|{}canTranscribe[0]
+        final fun <get-canTranscribe>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LocalModels.canTranscribe.<get-canTranscribe>|<get-canTranscribe>(){}[0]
     final val downloads // io.github.valerioisufi.drawview.lecture/LocalModels.downloads|{}downloads[0]
         final fun <get-downloads>(): androidx.compose.runtime.snapshots/SnapshotStateMap<kotlin/String, kotlin/Float> // io.github.valerioisufi.drawview.lecture/LocalModels.downloads.<get-downloads>|<get-downloads>(){}[0]
+    final val foundServers // io.github.valerioisufi.drawview.lecture/LocalModels.foundServers|{}foundServers[0]
+        final fun <get-foundServers>(): androidx.compose.runtime.snapshots/SnapshotStateList<kotlin/String> // io.github.valerioisufi.drawview.lecture/LocalModels.foundServers.<get-foundServers>|<get-foundServers>(){}[0]
+    final val installed // io.github.valerioisufi.drawview.lecture/LocalModels.installed|{}installed[0]
+        final fun <get-installed>(): androidx.compose.runtime.snapshots/SnapshotStateList<io.github.valerioisufi.drawview.lecture/InstalledModel> // io.github.valerioisufi.drawview.lecture/LocalModels.installed.<get-installed>|<get-installed>(){}[0]
 
+    final var downloadError // io.github.valerioisufi.drawview.lecture/LocalModels.downloadError|{}downloadError[0]
+        final fun <get-downloadError>(): kotlin/Pair<kotlin/String, kotlin/String>? // io.github.valerioisufi.drawview.lecture/LocalModels.downloadError.<get-downloadError>|<get-downloadError>(){}[0]
+    final var isSearching // io.github.valerioisufi.drawview.lecture/LocalModels.isSearching|{}isSearching[0]
+        final fun <get-isSearching>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LocalModels.isSearching.<get-isSearching>|<get-isSearching>(){}[0]
     final var nearbyHosts // io.github.valerioisufi.drawview.lecture/LocalModels.nearbyHosts|{}nearbyHosts[0]
         final fun <get-nearbyHosts>(): kotlin.coroutines/SuspendFunction0<kotlin.collections/List<kotlin/String>> // io.github.valerioisufi.drawview.lecture/LocalModels.nearbyHosts.<get-nearbyHosts>|<get-nearbyHosts>(){}[0]
         final fun <set-nearbyHosts>(kotlin.coroutines/SuspendFunction0<kotlin.collections/List<kotlin/String>>) // io.github.valerioisufi.drawview.lecture/LocalModels.nearbyHosts.<set-nearbyHosts>|<set-nearbyHosts>(kotlin.coroutines.SuspendFunction0<kotlin.collections.List<kotlin.String>>){}[0]
+    final var ollamaState // io.github.valerioisufi.drawview.lecture/LocalModels.ollamaState|{}ollamaState[0]
+        final fun <get-ollamaState>(): io.github.valerioisufi.drawview.lecture/LocalModels.OllamaState // io.github.valerioisufi.drawview.lecture/LocalModels.ollamaState.<get-ollamaState>|<get-ollamaState>(){}[0]
+    final var ollamaVersion // io.github.valerioisufi.drawview.lecture/LocalModels.ollamaVersion|{}ollamaVersion[0]
+        final fun <get-ollamaVersion>(): kotlin/String? // io.github.valerioisufi.drawview.lecture/LocalModels.ollamaVersion.<get-ollamaVersion>|<get-ollamaVersion>(){}[0]
+    final var whisperModels // io.github.valerioisufi.drawview.lecture/LocalModels.whisperModels|{}whisperModels[0]
+        final fun <get-whisperModels>(): kotlin.collections/Set<io.github.valerioisufi.drawview.lecture/WhisperModel> // io.github.valerioisufi.drawview.lecture/LocalModels.whisperModels.<get-whisperModels>|<get-whisperModels>(){}[0]
 
+    final fun downloadWhisper(io.github.valerioisufi.drawview.lecture/WhisperModel) // io.github.valerioisufi.drawview.lecture/LocalModels.downloadWhisper|downloadWhisper(io.github.valerioisufi.drawview.lecture.WhisperModel){}[0]
+    final fun findOnNetwork() // io.github.valerioisufi.drawview.lecture/LocalModels.findOnNetwork|findOnNetwork(){}[0]
+    final fun isInstalled(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LocalModels.isInstalled|isInstalled(kotlin.String){}[0]
+    final fun pull(kotlin/String) // io.github.valerioisufi.drawview.lecture/LocalModels.pull|pull(kotlin.String){}[0]
     final fun refresh(kotlin/String = ...) // io.github.valerioisufi.drawview.lecture/LocalModels.refresh|refresh(kotlin.String){}[0]
+    final fun whisperPath(io.github.valerioisufi.drawview.lecture/WhisperModel): kotlin/String // io.github.valerioisufi.drawview.lecture/LocalModels.whisperPath|whisperPath(io.github.valerioisufi.drawview.lecture.WhisperModel){}[0]
+
+    final enum class OllamaState : kotlin/Enum<io.github.valerioisufi.drawview.lecture/LocalModels.OllamaState> { // io.github.valerioisufi.drawview.lecture/LocalModels.OllamaState|null[0]
+        enum entry CHECKING // io.github.valerioisufi.drawview.lecture/LocalModels.OllamaState.CHECKING|null[0]
+        enum entry NOT_FOUND // io.github.valerioisufi.drawview.lecture/LocalModels.OllamaState.NOT_FOUND|null[0]
+        enum entry RUNNING // io.github.valerioisufi.drawview.lecture/LocalModels.OllamaState.RUNNING|null[0]
+
+        final val entries // io.github.valerioisufi.drawview.lecture/LocalModels.OllamaState.entries|#static{}entries[0]
+            final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.lecture/LocalModels.OllamaState> // io.github.valerioisufi.drawview.lecture/LocalModels.OllamaState.entries.<get-entries>|<get-entries>#static(){}[0]
+
+        final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.lecture/LocalModels.OllamaState // io.github.valerioisufi.drawview.lecture/LocalModels.OllamaState.valueOf|valueOf#static(kotlin.String){}[0]
+        final fun values(): kotlin/Array<io.github.valerioisufi.drawview.lecture/LocalModels.OllamaState> // io.github.valerioisufi.drawview.lecture/LocalModels.OllamaState.values|values#static(){}[0]
+    }
 }
 
 final class io.github.valerioisufi.drawview.lecture/NoteSuggestion { // io.github.valerioisufi.drawview.lecture/NoteSuggestion|null[0]
@@ -669,6 +1255,29 @@ final class io.github.valerioisufi.drawview.lecture/NoteSuggestion { // io.githu
     }
 }
 
+final class io.github.valerioisufi.drawview.lecture/NotebookSnapshot { // io.github.valerioisufi.drawview.lecture/NotebookSnapshot|null[0]
+    constructor <init>(kotlin/String, kotlin/Int, kotlin.collections/List<kotlin/Int>, kotlin.collections/List<io.github.valerioisufi.drawview.lecture/PageContent>, kotlin.collections/List<io.github.valerioisufi.drawview.lecture/PageImage> = ..., kotlin.collections/List<io.github.valerioisufi.drawview.lecture/PageImage> = ..., kotlin.collections/List<io.github.valerioisufi.drawview.lecture.handwriting/InkBlock> = ..., kotlin.collections/Set<kotlin/String> = ..., kotlin.collections/List<kotlin/String> = ...) // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.<init>|<init>(kotlin.String;kotlin.Int;kotlin.collections.List<kotlin.Int>;kotlin.collections.List<io.github.valerioisufi.drawview.lecture.PageContent>;kotlin.collections.List<io.github.valerioisufi.drawview.lecture.PageImage>;kotlin.collections.List<io.github.valerioisufi.drawview.lecture.PageImage>;kotlin.collections.List<io.github.valerioisufi.drawview.lecture.handwriting.InkBlock>;kotlin.collections.Set<kotlin.String>;kotlin.collections.List<kotlin.String>){}[0]
+
+    final val documentTitle // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.documentTitle|{}documentTitle[0]
+        final fun <get-documentTitle>(): kotlin/String // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.documentTitle.<get-documentTitle>|<get-documentTitle>(){}[0]
+    final val inkBlocks // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.inkBlocks|{}inkBlocks[0]
+        final fun <get-inkBlocks>(): kotlin.collections/List<io.github.valerioisufi.drawview.lecture.handwriting/InkBlock> // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.inkBlocks.<get-inkBlocks>|<get-inkBlocks>(){}[0]
+    final val newWriting // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.newWriting|{}newWriting[0]
+        final fun <get-newWriting>(): kotlin.collections/List<io.github.valerioisufi.drawview.lecture/PageImage> // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.newWriting.<get-newWriting>|<get-newWriting>(){}[0]
+    final val pageCount // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.pageCount|{}pageCount[0]
+        final fun <get-pageCount>(): kotlin/Int // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.pageCount.<get-pageCount>|<get-pageCount>(){}[0]
+    final val pageIds // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.pageIds|{}pageIds[0]
+        final fun <get-pageIds>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.pageIds.<get-pageIds>|<get-pageIds>(){}[0]
+    final val pageImages // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.pageImages|{}pageImages[0]
+        final fun <get-pageImages>(): kotlin.collections/List<io.github.valerioisufi.drawview.lecture/PageImage> // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.pageImages.<get-pageImages>|<get-pageImages>(){}[0]
+    final val pages // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.pages|{}pages[0]
+        final fun <get-pages>(): kotlin.collections/List<io.github.valerioisufi.drawview.lecture/PageContent> // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.pages.<get-pages>|<get-pages>(){}[0]
+    final val strokeIds // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.strokeIds|{}strokeIds[0]
+        final fun <get-strokeIds>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.strokeIds.<get-strokeIds>|<get-strokeIds>(){}[0]
+    final val visiblePageIndexes // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.visiblePageIndexes|{}visiblePageIndexes[0]
+        final fun <get-visiblePageIndexes>(): kotlin.collections/List<kotlin/Int> // io.github.valerioisufi.drawview.lecture/NotebookSnapshot.visiblePageIndexes.<get-visiblePageIndexes>|<get-visiblePageIndexes>(){}[0]
+}
+
 final class io.github.valerioisufi.drawview.lecture/PageContent { // io.github.valerioisufi.drawview.lecture/PageContent|null[0]
     constructor <init>(kotlin/Int, kotlin/String = ..., io.github.valerioisufi.drawview.lecture/SlideText? = ..., kotlin.collections/List<kotlin/String> = ..., kotlin.collections/List<kotlin/String> = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Int = ...) // io.github.valerioisufi.drawview.lecture/PageContent.<init>|<init>(kotlin.Int;kotlin.String;io.github.valerioisufi.drawview.lecture.SlideText?;kotlin.collections.List<kotlin.String>;kotlin.collections.List<kotlin.String>;kotlin.Boolean;kotlin.Boolean;kotlin.Int){}[0]
 
@@ -718,6 +1327,26 @@ final class io.github.valerioisufi.drawview.lecture/PageContent { // io.github.v
 
         final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.lecture/PageContent> // io.github.valerioisufi.drawview.lecture/PageContent.Companion.serializer|serializer(){}[0]
     }
+}
+
+final class io.github.valerioisufi.drawview.lecture/PageImage { // io.github.valerioisufi.drawview.lecture/PageImage|null[0]
+    constructor <init>(kotlin/Int, kotlin/ByteArray, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.lecture/PageImage.<init>|<init>(kotlin.Int;kotlin.ByteArray;kotlin.Boolean){}[0]
+
+    final val jpeg // io.github.valerioisufi.drawview.lecture/PageImage.jpeg|{}jpeg[0]
+        final fun <get-jpeg>(): kotlin/ByteArray // io.github.valerioisufi.drawview.lecture/PageImage.jpeg.<get-jpeg>|<get-jpeg>(){}[0]
+    final val pageIndex // io.github.valerioisufi.drawview.lecture/PageImage.pageIndex|{}pageIndex[0]
+        final fun <get-pageIndex>(): kotlin/Int // io.github.valerioisufi.drawview.lecture/PageImage.pageIndex.<get-pageIndex>|<get-pageIndex>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.lecture/RequestAudio : io.github.valerioisufi.drawview.lecture/RequestSpeech { // io.github.valerioisufi.drawview.lecture/RequestAudio|null[0]
+    constructor <init>(kotlin/ByteArray, kotlin/Long, kotlin/Long, kotlin/Long) // io.github.valerioisufi.drawview.lecture/RequestAudio.<init>|<init>(kotlin.ByteArray;kotlin.Long;kotlin.Long;kotlin.Long){}[0]
+
+    final val contextMs // io.github.valerioisufi.drawview.lecture/RequestAudio.contextMs|{}contextMs[0]
+        final fun <get-contextMs>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/RequestAudio.contextMs.<get-contextMs>|<get-contextMs>(){}[0]
+    final val endMs // io.github.valerioisufi.drawview.lecture/RequestAudio.endMs|{}endMs[0]
+        final fun <get-endMs>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/RequestAudio.endMs.<get-endMs>|<get-endMs>(){}[0]
+    final val startMs // io.github.valerioisufi.drawview.lecture/RequestAudio.startMs|{}startMs[0]
+        final fun <get-startMs>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/RequestAudio.startMs.<get-startMs>|<get-startMs>(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.lecture/SeenPage { // io.github.valerioisufi.drawview.lecture/SeenPage|null[0]
@@ -943,6 +1572,11 @@ final object io.github.valerioisufi.drawview.lecture/LectureRecordings { // io.g
     final suspend fun finishAll() // io.github.valerioisufi.drawview.lecture/LectureRecordings.finishAll|finishAll(){}[0]
 }
 
+final const val io.github.valerioisufi.drawview.lecture.audio/LECTURE_SAMPLE_RATE // io.github.valerioisufi.drawview.lecture.audio/LECTURE_SAMPLE_RATE|{}LECTURE_SAMPLE_RATE[0]
+    final fun <get-LECTURE_SAMPLE_RATE>(): kotlin/Int // io.github.valerioisufi.drawview.lecture.audio/LECTURE_SAMPLE_RATE.<get-LECTURE_SAMPLE_RATE>|<get-LECTURE_SAMPLE_RATE>(){}[0]
+
+final val io.github.valerioisufi.drawview.lecture.audio/io_github_valerioisufi_drawview_lecture_audio_AudioChunk$stableprop // io.github.valerioisufi.drawview.lecture.audio/io_github_valerioisufi_drawview_lecture_audio_AudioChunk$stableprop|#static{}io_github_valerioisufi_drawview_lecture_audio_AudioChunk$stableprop[0]
+final val io.github.valerioisufi.drawview.lecture.audio/io_github_valerioisufi_drawview_lecture_audio_RecordingPlayer$stableprop // io.github.valerioisufi.drawview.lecture.audio/io_github_valerioisufi_drawview_lecture_audio_RecordingPlayer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_audio_RecordingPlayer$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_AudioTranscriptionConfig_$serializer$stableprop // io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_AudioTranscriptionConfig_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_gemini_AudioTranscriptionConfig_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_GeminiAudioTranscription_$serializer$stableprop // io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_GeminiAudioTranscription_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_gemini_GeminiAudioTranscription_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_GeminiBlob_$serializer$stableprop // io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_GeminiBlob_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_gemini_GeminiBlob_$serializer$stableprop[0]
@@ -977,13 +1611,9 @@ final val io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_
 final val io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_LiveUsage_$serializer$stableprop // io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_LiveUsage_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_gemini_LiveUsage_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_LiveVoiceActivity_$serializer$stableprop // io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_LiveVoiceActivity_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_gemini_LiveVoiceActivity_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_ThinkingConfig_$serializer$stableprop // io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_ThinkingConfig_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_gemini_ThinkingConfig_$serializer$stableprop[0]
-final val io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_array$stableprop // io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_array$stableprop|#static{}io_github_valerioisufi_drawview_lecture_generated_resources_Res_array$stableprop[0]
-final val io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_drawable$stableprop // io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_drawable$stableprop|#static{}io_github_valerioisufi_drawview_lecture_generated_resources_Res_drawable$stableprop[0]
-final val io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_font$stableprop // io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_font$stableprop|#static{}io_github_valerioisufi_drawview_lecture_generated_resources_Res_font$stableprop[0]
-final val io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_plurals$stableprop // io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_plurals$stableprop|#static{}io_github_valerioisufi_drawview_lecture_generated_resources_Res_plurals$stableprop[0]
-final val io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_string$stableprop // io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_string$stableprop|#static{}io_github_valerioisufi_drawview_lecture_generated_resources_Res_string$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture.handwriting/io_github_valerioisufi_drawview_lecture_handwriting_HandwritingReader_Entry$stableprop // io.github.valerioisufi.drawview.lecture.handwriting/io_github_valerioisufi_drawview_lecture_handwriting_HandwritingReader_Entry$stableprop|#static{}io_github_valerioisufi_drawview_lecture_handwriting_HandwritingReader_Entry$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture.handwriting/io_github_valerioisufi_drawview_lecture_handwriting_HandwritingReader_Entry_$serializer$stableprop // io.github.valerioisufi.drawview.lecture.handwriting/io_github_valerioisufi_drawview_lecture_handwriting_HandwritingReader_Entry_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_handwriting_HandwritingReader_Entry_$serializer$stableprop[0]
+final val io.github.valerioisufi.drawview.lecture.handwriting/io_github_valerioisufi_drawview_lecture_handwriting_InkBlock$stableprop // io.github.valerioisufi.drawview.lecture.handwriting/io_github_valerioisufi_drawview_lecture_handwriting_InkBlock$stableprop|#static{}io_github_valerioisufi_drawview_lecture_handwriting_InkBlock$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture.local/io_github_valerioisufi_drawview_lecture_local_OllamaChatChunk_$serializer$stableprop // io.github.valerioisufi.drawview.lecture.local/io_github_valerioisufi_drawview_lecture_local_OllamaChatChunk_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_local_OllamaChatChunk_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture.local/io_github_valerioisufi_drawview_lecture_local_OllamaChatRequest_$serializer$stableprop // io.github.valerioisufi.drawview.lecture.local/io_github_valerioisufi_drawview_lecture_local_OllamaChatRequest_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_local_OllamaChatRequest_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture.local/io_github_valerioisufi_drawview_lecture_local_OllamaClient$stableprop // io.github.valerioisufi.drawview.lecture.local/io_github_valerioisufi_drawview_lecture_local_OllamaClient$stableprop|#static{}io_github_valerioisufi_drawview_lecture_local_OllamaClient$stableprop[0]
@@ -1000,6 +1630,9 @@ final val io.github.valerioisufi.drawview.lecture.model/io_github_valerioisufi_d
 final val io.github.valerioisufi.drawview.lecture.model/io_github_valerioisufi_drawview_lecture_model_PromptPart_File$stableprop // io.github.valerioisufi.drawview.lecture.model/io_github_valerioisufi_drawview_lecture_model_PromptPart_File$stableprop|#static{}io_github_valerioisufi_drawview_lecture_model_PromptPart_File$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture.model/io_github_valerioisufi_drawview_lecture_model_PromptPart_Image$stableprop // io.github.valerioisufi.drawview.lecture.model/io_github_valerioisufi_drawview_lecture_model_PromptPart_Image$stableprop|#static{}io_github_valerioisufi_drawview_lecture_model_PromptPart_Image$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture.model/io_github_valerioisufi_drawview_lecture_model_PromptPart_Text$stableprop // io.github.valerioisufi.drawview.lecture.model/io_github_valerioisufi_drawview_lecture_model_PromptPart_Text$stableprop|#static{}io_github_valerioisufi_drawview_lecture_model_PromptPart_Text$stableprop[0]
+final val io.github.valerioisufi.drawview.lecture.platform/io_github_valerioisufi_drawview_lecture_platform_ChosenFile$stableprop // io.github.valerioisufi.drawview.lecture.platform/io_github_valerioisufi_drawview_lecture_platform_ChosenFile$stableprop|#static{}io_github_valerioisufi_drawview_lecture_platform_ChosenFile$stableprop[0]
+final val io.github.valerioisufi.drawview.lecture.platform/isComputer // io.github.valerioisufi.drawview.lecture.platform/isComputer|{}isComputer[0]
+    final fun <get-isComputer>(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture.platform/isComputer.<get-isComputer>|<get-isComputer>(){}[0]
 final val io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_Audio$stableprop // io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_Audio$stableprop|#static{}io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_Audio$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_AudioEnd$stableprop // io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_AudioEnd$stableprop|#static{}io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_AudioEnd$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_Closed$stableprop // io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_Closed$stableprop|#static{}io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_Closed$stableprop[0]
@@ -1010,10 +1643,12 @@ final val io.github.valerioisufi.drawview.lecture.transcription/io_github_valeri
 final val io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_WhisperTranscriber_Segment_$serializer$stableprop // io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_WhisperTranscriber_Segment_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_transcription_WhisperTranscriber_Segment_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_WhisperTranscriber_VerboseJson_$serializer$stableprop // io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_WhisperTranscriber_VerboseJson_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_transcription_WhisperTranscriber_VerboseJson_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_AnalysisNote_$serializer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_AnalysisNote_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_AnalysisNote_$serializer$stableprop[0]
+final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_ArrivalNotification$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_ArrivalNotification$stableprop|#static{}io_github_valerioisufi_drawview_lecture_ArrivalNotification$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_AssistantSettings$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_AssistantSettings$stableprop|#static{}io_github_valerioisufi_drawview_lecture_AssistantSettings$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_AssistantSettingsStore$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_AssistantSettingsStore$stableprop|#static{}io_github_valerioisufi_drawview_lecture_AssistantSettingsStore$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_AssistantSettings_$serializer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_AssistantSettings_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_AssistantSettings_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_ChunkAnalysis_$serializer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_ChunkAnalysis_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_ChunkAnalysis_$serializer$stableprop[0]
+final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_CourseContext$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_CourseContext$stableprop|#static{}io_github_valerioisufi_drawview_lecture_CourseContext$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_CourseContext_$serializer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_CourseContext_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_CourseContext_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_DeviceUsage$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_DeviceUsage$stableprop|#static{}io_github_valerioisufi_drawview_lecture_DeviceUsage$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_DeviceUsage_$serializer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_DeviceUsage_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_DeviceUsage_$serializer$stableprop[0]
@@ -1021,11 +1656,14 @@ final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawvie
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_FinalReview_$serializer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_FinalReview_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_FinalReview_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_GenerationLock$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_GenerationLock$stableprop|#static{}io_github_valerioisufi_drawview_lecture_GenerationLock$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_GenerationLock_$serializer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_GenerationLock_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_GenerationLock_$serializer$stableprop[0]
+final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_GenerationOffer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_GenerationOffer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_GenerationOffer$stableprop[0]
+final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_InstalledModel$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_InstalledModel$stableprop|#static{}io_github_valerioisufi_drawview_lecture_InstalledModel$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_Lecture$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_Lecture$stableprop|#static{}io_github_valerioisufi_drawview_lecture_Lecture$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAnalysis_ContextAnswer_$serializer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAnalysis_ContextAnswer_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_LectureAnalysis_ContextAnswer_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAnalysis_HandwritingAnswer_$serializer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAnalysis_HandwritingAnswer_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_LectureAnalysis_HandwritingAnswer_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAnalysis_HandwritingText_$serializer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAnalysis_HandwritingText_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_LectureAnalysis_HandwritingText_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAnalysis_TranscriptAnswer_$serializer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAnalysis_TranscriptAnswer_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_LectureAnalysis_TranscriptAnswer_$serializer$stableprop[0]
+final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureArrival$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureArrival$stableprop|#static{}io_github_valerioisufi_drawview_lecture_LectureArrival$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAssistant$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAssistant$stableprop|#static{}io_github_valerioisufi_drawview_lecture_LectureAssistant$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAttachments_Item_Audio$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAttachments_Item_Audio$stableprop|#static{}io_github_valerioisufi_drawview_lecture_LectureAttachments_Item_Audio$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAttachments_Item_Context$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAttachments_Item_Context$stableprop|#static{}io_github_valerioisufi_drawview_lecture_LectureAttachments_Item_Context$stableprop[0]
@@ -1046,14 +1684,18 @@ final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawvie
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureRecord_$serializer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureRecord_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_LectureRecord_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureRecorder$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureRecorder$stableprop|#static{}io_github_valerioisufi_drawview_lecture_LectureRecorder$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureRecordings$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureRecordings$stableprop|#static{}io_github_valerioisufi_drawview_lecture_LectureRecordings$stableprop[0]
+final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureSharingSettings$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureSharingSettings$stableprop|#static{}io_github_valerioisufi_drawview_lecture_LectureSharingSettings$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureSharingSettings_$serializer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureSharingSettings_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_LectureSharingSettings_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureSummary$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureSummary$stableprop|#static{}io_github_valerioisufi_drawview_lecture_LectureSummary$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LocalModels$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LocalModels$stableprop|#static{}io_github_valerioisufi_drawview_lecture_LocalModels$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_NoteSuggestion$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_NoteSuggestion$stableprop|#static{}io_github_valerioisufi_drawview_lecture_NoteSuggestion$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_NoteSuggestion_$serializer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_NoteSuggestion_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_NoteSuggestion_$serializer$stableprop[0]
+final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_NotebookSnapshot$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_NotebookSnapshot$stableprop|#static{}io_github_valerioisufi_drawview_lecture_NotebookSnapshot$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_PageContent$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_PageContent$stableprop|#static{}io_github_valerioisufi_drawview_lecture_PageContent$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_PageContent_$serializer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_PageContent_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_PageContent_$serializer$stableprop[0]
+final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_PageImage$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_PageImage$stableprop|#static{}io_github_valerioisufi_drawview_lecture_PageImage$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_RecordingTranscriber_Chunk$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_RecordingTranscriber_Chunk$stableprop|#static{}io_github_valerioisufi_drawview_lecture_RecordingTranscriber_Chunk$stableprop[0]
+final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_RequestAudio$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_RequestAudio$stableprop|#static{}io_github_valerioisufi_drawview_lecture_RequestAudio$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_SecretStorage_System$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_SecretStorage_System$stableprop|#static{}io_github_valerioisufi_drawview_lecture_SecretStorage_System$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_SeenPage$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_SeenPage$stableprop|#static{}io_github_valerioisufi_drawview_lecture_SeenPage$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_SeenPage_$serializer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_SeenPage_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_SeenPage_$serializer$stableprop[0]
@@ -1068,8 +1710,10 @@ final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawvie
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_TranscriptSegment$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_TranscriptSegment$stableprop|#static{}io_github_valerioisufi_drawview_lecture_TranscriptSegment$stableprop[0]
 final val io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_TranscriptSegment_$serializer$stableprop // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_TranscriptSegment_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_lecture_TranscriptSegment_$serializer$stableprop[0]
 
-final fun (io.github.valerioisufi.drawview.lecture/LectureAssistant).io.github.valerioisufi.drawview.lecture.ui/documentTag(): io.github.valerioisufi.drawview.ui.extension/DocumentTag // io.github.valerioisufi.drawview.lecture.ui/documentTag|documentTag@io.github.valerioisufi.drawview.lecture.LectureAssistant(){}[0]
-final fun (io.github.valerioisufi.drawview.lecture/LectureAssistant).io.github.valerioisufi.drawview.lecture.ui/editorExtension(): io.github.valerioisufi.drawview.ui.extension/EditorExtension // io.github.valerioisufi.drawview.lecture.ui/editorExtension|editorExtension@io.github.valerioisufi.drawview.lecture.LectureAssistant(){}[0]
+final fun (io.github.valerioisufi.drawview.lecture/NoteSuggestion).io.github.valerioisufi.drawview.lecture/resolvedPageIndex(io.github.valerioisufi.drawview.model/DrawDocument): kotlin/Int? // io.github.valerioisufi.drawview.lecture/resolvedPageIndex|resolvedPageIndex@io.github.valerioisufi.drawview.lecture.NoteSuggestion(io.github.valerioisufi.drawview.model.DrawDocument){}[0]
+final fun io.github.valerioisufi.drawview.lecture.audio/importableExtensions(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.lecture.audio/importableExtensions|importableExtensions(){}[0]
+final fun io.github.valerioisufi.drawview.lecture.audio/io_github_valerioisufi_drawview_lecture_audio_AudioChunk$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.audio/io_github_valerioisufi_drawview_lecture_audio_AudioChunk$stableprop_getter|io_github_valerioisufi_drawview_lecture_audio_AudioChunk$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.lecture.audio/io_github_valerioisufi_drawview_lecture_audio_RecordingPlayer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.audio/io_github_valerioisufi_drawview_lecture_audio_RecordingPlayer$stableprop_getter|io_github_valerioisufi_drawview_lecture_audio_RecordingPlayer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_AudioTranscriptionConfig_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_AudioTranscriptionConfig_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_gemini_AudioTranscriptionConfig_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_GeminiAudioTranscription_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_GeminiAudioTranscription_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_gemini_GeminiAudioTranscription_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_GeminiBlob_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_GeminiBlob_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_gemini_GeminiBlob_$serializer$stableprop_getter(){}[0]
@@ -1104,13 +1748,12 @@ final fun io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_
 final fun io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_LiveUsage_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_LiveUsage_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_gemini_LiveUsage_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_LiveVoiceActivity_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_LiveVoiceActivity_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_gemini_LiveVoiceActivity_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_ThinkingConfig_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.gemini/io_github_valerioisufi_drawview_lecture_gemini_ThinkingConfig_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_gemini_ThinkingConfig_$serializer$stableprop_getter(){}[0]
-final fun io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_array$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_array$stableprop_getter|io_github_valerioisufi_drawview_lecture_generated_resources_Res_array$stableprop_getter(){}[0]
-final fun io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_drawable$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_drawable$stableprop_getter|io_github_valerioisufi_drawview_lecture_generated_resources_Res_drawable$stableprop_getter(){}[0]
-final fun io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_font$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_font$stableprop_getter|io_github_valerioisufi_drawview_lecture_generated_resources_Res_font$stableprop_getter(){}[0]
-final fun io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_plurals$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_plurals$stableprop_getter|io_github_valerioisufi_drawview_lecture_generated_resources_Res_plurals$stableprop_getter(){}[0]
-final fun io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_string$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.generated.resources/io_github_valerioisufi_drawview_lecture_generated_resources_Res_string$stableprop_getter|io_github_valerioisufi_drawview_lecture_generated_resources_Res_string$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.lecture.handwriting/blockKey(kotlin.collections/Collection<kotlin/String>): kotlin/String // io.github.valerioisufi.drawview.lecture.handwriting/blockKey|blockKey(kotlin.collections.Collection<kotlin.String>){}[0]
+final fun io.github.valerioisufi.drawview.lecture.handwriting/groupStrokes(kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Rect>, kotlin/Float = ...): kotlin.collections/List<kotlin.collections/List<kotlin/Int>> // io.github.valerioisufi.drawview.lecture.handwriting/groupStrokes|groupStrokes(kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.Rect>;kotlin.Float){}[0]
 final fun io.github.valerioisufi.drawview.lecture.handwriting/io_github_valerioisufi_drawview_lecture_handwriting_HandwritingReader_Entry$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.handwriting/io_github_valerioisufi_drawview_lecture_handwriting_HandwritingReader_Entry$stableprop_getter|io_github_valerioisufi_drawview_lecture_handwriting_HandwritingReader_Entry$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture.handwriting/io_github_valerioisufi_drawview_lecture_handwriting_HandwritingReader_Entry_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.handwriting/io_github_valerioisufi_drawview_lecture_handwriting_HandwritingReader_Entry_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_handwriting_HandwritingReader_Entry_$serializer$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.lecture.handwriting/io_github_valerioisufi_drawview_lecture_handwriting_InkBlock$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.handwriting/io_github_valerioisufi_drawview_lecture_handwriting_InkBlock$stableprop_getter|io_github_valerioisufi_drawview_lecture_handwriting_InkBlock$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.lecture.handwriting/unionOf(kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Rect>): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.lecture.handwriting/unionOf|unionOf(kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.Rect>){}[0]
 final fun io.github.valerioisufi.drawview.lecture.local/io_github_valerioisufi_drawview_lecture_local_OllamaChatChunk_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.local/io_github_valerioisufi_drawview_lecture_local_OllamaChatChunk_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_local_OllamaChatChunk_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture.local/io_github_valerioisufi_drawview_lecture_local_OllamaChatRequest_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.local/io_github_valerioisufi_drawview_lecture_local_OllamaChatRequest_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_local_OllamaChatRequest_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture.local/io_github_valerioisufi_drawview_lecture_local_OllamaClient$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.local/io_github_valerioisufi_drawview_lecture_local_OllamaClient$stableprop_getter|io_github_valerioisufi_drawview_lecture_local_OllamaClient$stableprop_getter(){}[0]
@@ -1127,6 +1770,7 @@ final fun io.github.valerioisufi.drawview.lecture.model/io_github_valerioisufi_d
 final fun io.github.valerioisufi.drawview.lecture.model/io_github_valerioisufi_drawview_lecture_model_PromptPart_File$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.model/io_github_valerioisufi_drawview_lecture_model_PromptPart_File$stableprop_getter|io_github_valerioisufi_drawview_lecture_model_PromptPart_File$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture.model/io_github_valerioisufi_drawview_lecture_model_PromptPart_Image$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.model/io_github_valerioisufi_drawview_lecture_model_PromptPart_Image$stableprop_getter|io_github_valerioisufi_drawview_lecture_model_PromptPart_Image$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture.model/io_github_valerioisufi_drawview_lecture_model_PromptPart_Text$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.model/io_github_valerioisufi_drawview_lecture_model_PromptPart_Text$stableprop_getter|io_github_valerioisufi_drawview_lecture_model_PromptPart_Text$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.lecture.platform/io_github_valerioisufi_drawview_lecture_platform_ChosenFile$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.platform/io_github_valerioisufi_drawview_lecture_platform_ChosenFile$stableprop_getter|io_github_valerioisufi_drawview_lecture_platform_ChosenFile$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_Audio$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_Audio$stableprop_getter|io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_Audio$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_AudioEnd$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_AudioEnd$stableprop_getter|io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_AudioEnd$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_Closed$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_Closed$stableprop_getter|io_github_valerioisufi_drawview_lecture_transcription_GeminiLiveTranscriber_Event_Closed$stableprop_getter(){}[0]
@@ -1136,15 +1780,15 @@ final fun io.github.valerioisufi.drawview.lecture.transcription/io_github_valeri
 final fun io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_Transcription$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_Transcription$stableprop_getter|io_github_valerioisufi_drawview_lecture_transcription_Transcription$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_WhisperTranscriber_Segment_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_WhisperTranscriber_Segment_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_transcription_WhisperTranscriber_Segment_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_WhisperTranscriber_VerboseJson_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture.transcription/io_github_valerioisufi_drawview_lecture_transcription_WhisperTranscriber_VerboseJson_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_transcription_WhisperTranscriber_VerboseJson_$serializer$stableprop_getter(){}[0]
-final fun io.github.valerioisufi.drawview.lecture.ui/LectureDialogs(io.github.valerioisufi.drawview.lecture/LectureAssistant, androidx.compose.runtime/Composer?, kotlin/Int) // io.github.valerioisufi.drawview.lecture.ui/LectureDialogs|LectureDialogs(io.github.valerioisufi.drawview.lecture.LectureAssistant;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
-final fun io.github.valerioisufi.drawview.lecture.ui/LectureExitDialog(kotlin/Function0<kotlin/Unit>, kotlin/Function0<kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int) // io.github.valerioisufi.drawview.lecture.ui/LectureExitDialog|LectureExitDialog(kotlin.Function0<kotlin.Unit>;kotlin.Function0<kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
-final fun io.github.valerioisufi.drawview.lecture.ui/LectureRecordingIndicator(io.github.valerioisufi.drawview.lecture/LectureAssistant, kotlin/Function1<kotlin/String, kotlin/Unit>, androidx.compose.ui/Modifier?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // io.github.valerioisufi.drawview.lecture.ui/LectureRecordingIndicator|LectureRecordingIndicator(io.github.valerioisufi.drawview.lecture.LectureAssistant;kotlin.Function1<kotlin.String,kotlin.Unit>;androidx.compose.ui.Modifier?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
-final fun io.github.valerioisufi.drawview.lecture.ui/rememberLectureAssistant(androidx.compose.runtime/Composer?, kotlin/Int): io.github.valerioisufi.drawview.lecture/LectureAssistant // io.github.valerioisufi.drawview.lecture.ui/rememberLectureAssistant|rememberLectureAssistant(androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+final fun io.github.valerioisufi.drawview.lecture/cleanSlideText(kotlin/String): kotlin/String // io.github.valerioisufi.drawview.lecture/cleanSlideText|cleanSlideText(kotlin.String){}[0]
+final fun io.github.valerioisufi.drawview.lecture/formatLectureTime(kotlin/Long): kotlin/String // io.github.valerioisufi.drawview.lecture/formatLectureTime|formatLectureTime(kotlin.Long){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_AnalysisNote_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_AnalysisNote_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_AnalysisNote_$serializer$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_ArrivalNotification$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_ArrivalNotification$stableprop_getter|io_github_valerioisufi_drawview_lecture_ArrivalNotification$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_AssistantSettings$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_AssistantSettings$stableprop_getter|io_github_valerioisufi_drawview_lecture_AssistantSettings$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_AssistantSettingsStore$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_AssistantSettingsStore$stableprop_getter|io_github_valerioisufi_drawview_lecture_AssistantSettingsStore$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_AssistantSettings_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_AssistantSettings_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_AssistantSettings_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_ChunkAnalysis_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_ChunkAnalysis_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_ChunkAnalysis_$serializer$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_CourseContext$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_CourseContext$stableprop_getter|io_github_valerioisufi_drawview_lecture_CourseContext$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_CourseContext_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_CourseContext_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_CourseContext_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_DeviceUsage$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_DeviceUsage$stableprop_getter|io_github_valerioisufi_drawview_lecture_DeviceUsage$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_DeviceUsage_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_DeviceUsage_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_DeviceUsage_$serializer$stableprop_getter(){}[0]
@@ -1152,11 +1796,14 @@ final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawvie
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_FinalReview_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_FinalReview_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_FinalReview_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_GenerationLock$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_GenerationLock$stableprop_getter|io_github_valerioisufi_drawview_lecture_GenerationLock$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_GenerationLock_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_GenerationLock_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_GenerationLock_$serializer$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_GenerationOffer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_GenerationOffer$stableprop_getter|io_github_valerioisufi_drawview_lecture_GenerationOffer$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_InstalledModel$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_InstalledModel$stableprop_getter|io_github_valerioisufi_drawview_lecture_InstalledModel$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_Lecture$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_Lecture$stableprop_getter|io_github_valerioisufi_drawview_lecture_Lecture$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAnalysis_ContextAnswer_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAnalysis_ContextAnswer_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_LectureAnalysis_ContextAnswer_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAnalysis_HandwritingAnswer_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAnalysis_HandwritingAnswer_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_LectureAnalysis_HandwritingAnswer_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAnalysis_HandwritingText_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAnalysis_HandwritingText_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_LectureAnalysis_HandwritingText_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAnalysis_TranscriptAnswer_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAnalysis_TranscriptAnswer_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_LectureAnalysis_TranscriptAnswer_$serializer$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureArrival$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureArrival$stableprop_getter|io_github_valerioisufi_drawview_lecture_LectureArrival$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAssistant$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAssistant$stableprop_getter|io_github_valerioisufi_drawview_lecture_LectureAssistant$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAttachments_Item_Audio$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAttachments_Item_Audio$stableprop_getter|io_github_valerioisufi_drawview_lecture_LectureAttachments_Item_Audio$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAttachments_Item_Context$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureAttachments_Item_Context$stableprop_getter|io_github_valerioisufi_drawview_lecture_LectureAttachments_Item_Context$stableprop_getter(){}[0]
@@ -1177,14 +1824,18 @@ final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawvie
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureRecord_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureRecord_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_LectureRecord_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureRecorder$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureRecorder$stableprop_getter|io_github_valerioisufi_drawview_lecture_LectureRecorder$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureRecordings$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureRecordings$stableprop_getter|io_github_valerioisufi_drawview_lecture_LectureRecordings$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureSharingSettings$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureSharingSettings$stableprop_getter|io_github_valerioisufi_drawview_lecture_LectureSharingSettings$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureSharingSettings_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureSharingSettings_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_LectureSharingSettings_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureSummary$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LectureSummary$stableprop_getter|io_github_valerioisufi_drawview_lecture_LectureSummary$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LocalModels$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_LocalModels$stableprop_getter|io_github_valerioisufi_drawview_lecture_LocalModels$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_NoteSuggestion$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_NoteSuggestion$stableprop_getter|io_github_valerioisufi_drawview_lecture_NoteSuggestion$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_NoteSuggestion_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_NoteSuggestion_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_NoteSuggestion_$serializer$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_NotebookSnapshot$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_NotebookSnapshot$stableprop_getter|io_github_valerioisufi_drawview_lecture_NotebookSnapshot$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_PageContent$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_PageContent$stableprop_getter|io_github_valerioisufi_drawview_lecture_PageContent$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_PageContent_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_PageContent_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_PageContent_$serializer$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_PageImage$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_PageImage$stableprop_getter|io_github_valerioisufi_drawview_lecture_PageImage$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_RecordingTranscriber_Chunk$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_RecordingTranscriber_Chunk$stableprop_getter|io_github_valerioisufi_drawview_lecture_RecordingTranscriber_Chunk$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_RequestAudio$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_RequestAudio$stableprop_getter|io_github_valerioisufi_drawview_lecture_RequestAudio$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_SecretStorage_System$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_SecretStorage_System$stableprop_getter|io_github_valerioisufi_drawview_lecture_SecretStorage_System$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_SeenPage$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_SeenPage$stableprop_getter|io_github_valerioisufi_drawview_lecture_SeenPage$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_SeenPage_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_SeenPage_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_SeenPage_$serializer$stableprop_getter(){}[0]
@@ -1198,3 +1849,5 @@ final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawvie
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_TokenUsage_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_TokenUsage_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_TokenUsage_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_TranscriptSegment$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_TranscriptSegment$stableprop_getter|io_github_valerioisufi_drawview_lecture_TranscriptSegment$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_TranscriptSegment_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.lecture/io_github_valerioisufi_drawview_lecture_TranscriptSegment_$serializer$stableprop_getter|io_github_valerioisufi_drawview_lecture_TranscriptSegment_$serializer$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.lecture/requestAudio(kotlin.collections/List<io.github.valerioisufi.drawview.lecture.audio/AudioChunk>, kotlin/Long?, kotlin/Boolean = ...): io.github.valerioisufi.drawview.lecture/RequestAudio? // io.github.valerioisufi.drawview.lecture/requestAudio|requestAudio(kotlin.collections.List<io.github.valerioisufi.drawview.lecture.audio.AudioChunk>;kotlin.Long?;kotlin.Boolean){}[0]
+final fun io.github.valerioisufi.drawview.lecture/writeLectureRecord(kotlin/String, io.github.valerioisufi.drawview.lecture/LectureRecord): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/writeLectureRecord|writeLectureRecord(kotlin.String;io.github.valerioisufi.drawview.lecture.LectureRecord){}[0]

@@ -177,7 +177,7 @@ internal fun transcriptionProblem(e: Throwable): LectureProblem =
  * leading audio already analyzed; `null` for the overlap of the first chunk with the previous one,
  * dropped when not [withContext].
  */
-internal fun requestAudio(chunks: List<AudioChunk>, contextMs: Long?, withContext: Boolean = true): RequestAudio? {
+public fun requestAudio(chunks: List<AudioChunk>, contextMs: Long?, withContext: Boolean = true): RequestAudio? {
     if (chunks.isEmpty()) return null
     // The most recent audio, within the budget of a request (inline data is limited)
     var budgetMs = MAX_REQUEST_AUDIO_MS

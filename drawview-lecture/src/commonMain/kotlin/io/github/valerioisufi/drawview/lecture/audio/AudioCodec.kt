@@ -21,7 +21,7 @@ internal interface AudioCodec {
 internal expect fun audioCodec(): AudioCodec?
 
 /** The audio of other applications this platform reads (the WAV files everywhere). */
-internal fun importableExtensions(): Set<String> =
+public fun importableExtensions(): Set<String> =
     if (audioCodec() != null) setOf("m4a", "mp4", "aac", "mp3", "wav", "aif", "aiff", "caf", "flac") else setOf("wav")
 
 /**

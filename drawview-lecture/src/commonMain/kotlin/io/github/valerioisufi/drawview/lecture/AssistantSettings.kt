@@ -136,7 +136,7 @@ public data class AssistantSettings(
         return saved.copy(gemini = saved.gemini.trim().ifEmpty { defaults.gemini }, local = saved.local.trim().ifEmpty { defaults.local })
     }
 
-    internal fun withTask(task: LectureTask, model: TaskModel): AssistantSettings = copy(tasks = tasks + (task to model))
+    public fun withTask(task: LectureTask, model: TaskModel): AssistantSettings = copy(tasks = tasks + (task to model))
 
     /** Provider of the final review. */
     val reviewProvider: ModelProvider get() = task(LectureTask.FINAL_REVIEW).provider
@@ -202,16 +202,16 @@ public data class AssistantSettings(
         internal const val DEFAULT_MODEL = "gemini-3.8-flash"
 
         /** The speech model of Gemini transcribing live. */
-        internal const val DEFAULT_SPEECH_MODEL = "gemini-3.5-transcribe-live"
+        public const val DEFAULT_SPEECH_MODEL: String = "gemini-3.5-transcribe-live"
         internal const val DEFAULT_LOCAL_MODEL = "gemma4:12b"
 
         /** Smaller local model for the requests of every minute (it must keep up with the lecture). */
         internal const val DEFAULT_LOCAL_LIVE_MODEL = "gemma4:e4b"
         internal const val DEFAULT_LOCAL_URL = "http://localhost:11434"
-        internal val CHUNK_SECONDS_RANGE = 30..120
-        internal val THINKING_LEVELS = listOf("low", "medium", "high")
+        public val CHUNK_SECONDS_RANGE: IntRange = 30..120
+        public val THINKING_LEVELS: List<String> = listOf("low", "medium", "high")
 
-        internal fun defaultTask(task: LectureTask) = when (task) {
+        public fun defaultTask(task: LectureTask): TaskModel = when (task) {
             LectureTask.TRANSCRIPTION -> TaskModel(gemini = DEFAULT_SPEECH_MODEL)
             LectureTask.LIVE_NOTES, LectureTask.CATCH_UP -> TaskModel(gemini = DEFAULT_MODEL, local = DEFAULT_LOCAL_LIVE_MODEL)
             LectureTask.FINAL_REVIEW -> TaskModel(gemini = DEFAULT_MODEL, local = DEFAULT_LOCAL_MODEL)
@@ -224,7 +224,7 @@ public data class AssistantSettings(
         internal fun isLiveModel(model: String): Boolean = "-live" in model.lowercase()
 
         /** The model for recorded audio of a live speech model (gemini-3.5-transcribe-live: gemini-3.5-transcribe). */
-        internal fun recordedSpeechModel(model: String): String = model.replace("-live", "")
+        public fun recordedSpeechModel(model: String): String = model.replace("-live", "")
 
         /** The locales of the speech models (their table), by ISO code: the variants of a language together. */
         private val SPEECH_LOCALES = mapOf(
@@ -252,10 +252,10 @@ public class AssistantSettingsStore(
     /** The configured key, or the `GEMINI_API_KEY` environment variable. */
     internal val apiKey: String get() = settings.apiKey.trim().ifEmpty { environmentApiKey().orEmpty() }
 
-    internal val hasApiKey: Boolean get() = apiKey.isNotEmpty()
+    public val hasApiKey: Boolean get() = apiKey.isNotEmpty()
 
     /** `true` when the key comes from the environment variable. */
-    internal val usesEnvironmentKey: Boolean get() = settings.apiKey.isBlank() && !environmentApiKey().isNullOrEmpty()
+    public val usesEnvironmentKey: Boolean get() = settings.apiKey.isBlank() && !environmentApiKey().isNullOrEmpty()
 
     public fun update(newSettings: AssistantSettings) {
         val sanitized = newSettings.copy(

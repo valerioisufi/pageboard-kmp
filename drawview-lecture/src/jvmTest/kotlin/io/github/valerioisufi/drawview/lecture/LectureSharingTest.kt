@@ -1,6 +1,9 @@
 package io.github.valerioisufi.drawview.lecture
 
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
+import io.github.valerioisufi.drawview.lecture.testing.FakeMicrophone
+import io.github.valerioisufi.drawview.lecture.testing.FakeNotebook
+import io.github.valerioisufi.drawview.lecture.testing.MemorySecrets
 import io.github.valerioisufi.drawview.model.DocumentAttachments
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine

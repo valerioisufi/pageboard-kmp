@@ -6,7 +6,7 @@ import kotlin.math.sqrt
  * Sample rate of the lecture recordings: 16-bit mono PCM at 16 kHz is enough for speech (Gemini
  * downsamples every audio input to 16 kHz anyway) and takes 115 MB per hour.
  */
-internal const val LECTURE_SAMPLE_RATE = 16_000
+public const val LECTURE_SAMPLE_RATE: Int = 16_000
 
 /** Bytes per second of the lecture recordings (16-bit mono). */
 internal const val LECTURE_BYTES_PER_SECOND = LECTURE_SAMPLE_RATE * 2

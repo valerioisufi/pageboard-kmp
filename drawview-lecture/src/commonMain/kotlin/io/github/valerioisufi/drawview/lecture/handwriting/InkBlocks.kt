@@ -11,19 +11,19 @@ import kotlin.math.min
  * @param key identity of the block: it changes when a stroke is added or erased.
  * @param bounds area of the strokes, in page millimeters.
  */
-internal class InkBlock(
-    val pageIndex: Int,
-    val pageId: String,
-    val key: String,
-    val strokeIds: Set<String>,
-    val bounds: Rect
+public class InkBlock(
+    public val pageIndex: Int,
+    public val pageId: String,
+    public val key: String,
+    public val strokeIds: Set<String>,
+    public val bounds: Rect
 )
 
 /**
  * Groups strokes in blocks: two strokes whose areas are closer than [gapMm] are in the same
  * block. Returns the indexes of the strokes of every block, the blocks from the top of the page.
  */
-internal fun groupStrokes(bounds: List<Rect>, gapMm: Float = BLOCK_GAP_MM): List<List<Int>> {
+public fun groupStrokes(bounds: List<Rect>, gapMm: Float = BLOCK_GAP_MM): List<List<Int>> {
     val parent = IntArray(bounds.size) { it }
     fun root(i: Int): Int {
         var r = i
@@ -52,7 +52,7 @@ internal fun groupStrokes(bounds: List<Rect>, gapMm: Float = BLOCK_GAP_MM): List
 }
 
 /** The key of the block of [strokeIds]: the same strokes, the same key. */
-internal fun blockKey(strokeIds: Collection<String>): String {
+public fun blockKey(strokeIds: Collection<String>): String {
     // FNV-1a, 64 bits
     var hash = -0x340d631b7bdddcdbL
     for (id in strokeIds.sorted()) {
@@ -66,7 +66,7 @@ internal fun blockKey(strokeIds: Collection<String>): String {
     return hash.toULong().toString(16)
 }
 
-internal fun unionOf(rects: List<Rect>): Rect = rects.reduce { a, b ->
+public fun unionOf(rects: List<Rect>): Rect = rects.reduce { a, b ->
     Rect(min(a.left, b.left), min(a.top, b.top), max(a.right, b.right), max(a.bottom, b.bottom))
 }
 

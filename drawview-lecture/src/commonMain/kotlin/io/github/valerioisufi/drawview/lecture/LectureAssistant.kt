@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import io.github.valerioisufi.drawview.lecture.audio.AudioCapture
 import io.github.valerioisufi.drawview.lecture.audio.AudioOutput
 import io.github.valerioisufi.drawview.lecture.audio.FollowedRecording
@@ -15,7 +15,6 @@ import io.github.valerioisufi.drawview.lecture.audio.createAudioOutput
 import io.github.valerioisufi.drawview.lecture.audio.exportRecording
 import io.github.valerioisufi.drawview.lecture.audio.samplesToMs
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
-import io.github.valerioisufi.drawview.lecture.generated.resources.*
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
@@ -30,7 +29,6 @@ import io.github.valerioisufi.drawview.model.DocumentAttachments
 import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.platform.syncLock
-import io.github.valerioisufi.drawview.ui.platform.FileTarget
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -41,12 +39,12 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
-import org.jetbrains.compose.resources.getString
 
 /**
  * The lecture assistant of an application.
@@ -70,7 +68,7 @@ import org.jetbrains.compose.resources.getString
  *   recorded only.
  */
 public class LectureAssistant(
-    internal val settingsStore: AssistantSettingsStore = AssistantSettingsStore(),
+    public val settingsStore: AssistantSettingsStore = AssistantSettingsStore(),
     private val client: GeminiClient = GeminiClient(),
     private val localClient: OllamaClient = OllamaClient(),
     private val captureFactory: () -> AudioCapture? = ::createAudioCapture,
@@ -83,10 +81,10 @@ public class LectureAssistant(
     private val generationAllowed = canGenerate
 
     /** Whether the models follow the lectures here (see [AssistantSettings.generateHere]). */
-    internal val canGenerate: Boolean get() = generationAllowed && settingsStore.settings.generateHere
+    public val canGenerate: Boolean get() = generationAllowed && settingsStore.settings.generateHere
 
     /** Whether the models may follow the lectures here, when the student chooses it ([AssistantSettings.generateHere]). */
-    internal val mayGenerate: Boolean get() = generationAllowed
+    public val mayGenerate: Boolean get() = generationAllowed
 
     private val backends = ModelBackends(
         gemini = GeminiBackend(client) { settingsStore.apiKey },
@@ -103,40 +101,39 @@ public class LectureAssistant(
     public var recorder: LectureRecorder? by mutableStateOf(null)
         private set
 
-    internal var isPanelOpen: Boolean by mutableStateOf(false)
+    public var isPanelOpen: Boolean by mutableStateOf(false)
 
     /** The suggestion the student is placing in the notebook, if any. */
-    internal var placingNote: NoteSuggestion? by mutableStateOf(null)
-        internal set
+    public var placingNote: NoteSuggestion? by mutableStateOf(null)
 
     /** The lecture being imported, if any. */
     public var importing: Lecture? by mutableStateOf(null)
         private set
 
     /** Why the last import failed (the file is not audio), if it did. */
-    internal var importError: String? by mutableStateOf(null)
+    public var importError: String? by mutableStateOf(null)
         private set
 
     /** The last export of an audio. */
-    internal var exportResult: ExportResult? by mutableStateOf(null)
+    public var exportResult: ExportResult? by mutableStateOf(null)
         private set
 
     /** Why the last recording could not start, if it could not. */
-    internal var startError: String? by mutableStateOf(null)
+    public var startError: String? by mutableStateOf(null)
         private set
 
     /** The last recording could not start: the microphone is not allowed. */
-    internal var microphoneDenied: Boolean by mutableStateOf(false)
+    public var microphoneDenied: Boolean by mutableStateOf(false)
         private set
 
     /** Asks for the permission to use the microphone (set by [io.github.valerioisufi.drawview.lecture.ui.rememberLectureAssistant]). */
-    internal var requestMicrophone: suspend () -> Boolean = { true }
+    public var requestMicrophone: suspend () -> Boolean = { true }
 
     /** Whether the platform can record (the desktop, for now). */
-    internal val isRecordingSupported: Boolean by lazy { captureFactory() != null }
+    public val isRecordingSupported: Boolean by lazy { captureFactory() != null }
 
     /** The recording not finished yet (recording or reviewing), if any. */
-    internal val activeRecorder: LectureRecorder? get() = recorder?.takeIf { it.lecture.status != LectureStatus.FINISHED }
+    public val activeRecorder: LectureRecorder? get() = recorder?.takeIf { it.lecture.status != LectureStatus.FINISHED }
 
     public val isRecording: Boolean get() = recorder?.isRecording == true
 
@@ -160,13 +157,13 @@ public class LectureAssistant(
     private val sharingSettings = mutableStateMapOf<String, LectureSharingSettings>()
 
     /** What arrived from the other devices and was not looked at yet (see [dismissArrival]). */
-    internal val arrivals = mutableStateListOf<LectureArrival>()
+    public val arrivals: SnapshotStateList<LectureArrival> = mutableStateListOf<LectureArrival>()
 
     /**
      * The lectures received without a transcript, waiting for the user to have them transcribed and
      * reviewed here (see [AssistantSettings.receivedLectures]).
      */
-    internal val generationOffers = mutableStateListOf<GenerationOffer>()
+    public val generationOffers: SnapshotStateList<GenerationOffer> = mutableStateListOf<GenerationOffer>()
 
     private val sharing = object : LectureAssistantLibrary {
         override val files get() = library
@@ -204,22 +201,24 @@ public class LectureAssistant(
         }
     }
 
+    /**
+     * The notification of the system telling what arrived in the document titled `documentTitle`
+     * (in the language of the application: set by its UI), `null` for none.
+     */
+    public var describeArrival: suspend (arrival: LectureArrival, documentTitle: String) -> ArrivalNotification? = { _, _ -> null }
+
     /** Tells the user (with a notification of the system) what arrived. */
     private suspend fun notifyArrival(arrival: LectureArrival) {
         val title = library.list(arrival.documentId).firstOrNull()?.documentTitle.orEmpty()
-        val text = when (arrival.kind) {
-            LectureArrival.Kind.LECTURE -> getString(Res.string.lecture_arrival_lecture, arrival.from)
-            LectureArrival.Kind.AUDIO -> getString(Res.string.lecture_arrival_audio, arrival.from)
-            LectureArrival.Kind.REVIEW -> getString(Res.string.lecture_arrival_review, arrival.from)
-        }
-        showNotification(getString(Res.string.lecture_arrivals_channel), title.ifBlank { getString(Res.string.lecture_title) }, text)
+        val notification = describeArrival(arrival, title) ?: return
+        showNotification(notification.channel, notification.title, notification.text)
     }
 
     /** How this device shares the lectures of [documentId] (loaded by [refresh]). */
-    internal fun sharingOf(documentId: String): LectureSharingSettings = sharingSettings[documentId] ?: LectureSharingSettings()
+    public fun sharingOf(documentId: String): LectureSharingSettings = sharingSettings[documentId] ?: LectureSharingSettings()
 
     /** Changes how this device shares the lectures of [documentId] by [transform]. */
-    internal fun changeSharing(documentId: String, transform: (LectureSharingSettings) -> LectureSharingSettings) {
+    public fun changeSharing(documentId: String, transform: (LectureSharingSettings) -> LectureSharingSettings) {
         val settings = transform(sharingOf(documentId))
         sharingSettings[documentId] = settings
         scope.launch {
@@ -230,13 +229,13 @@ public class LectureAssistant(
     }
 
     /** Whether the audio of [lecture] goes to the other devices (any device decides it, the most recent decision wins). */
-    internal fun shareAudio(lecture: Lecture, shared: Boolean) {
+    public fun shareAudio(lecture: Lecture, shared: Boolean) {
         lecture.audioShared = shared
         lecture.scope.launch { lecture.persist() }
     }
 
     /** Receives the audio of [lecture] (recorded on another device) now, even if received only on request. */
-    internal fun requestAudio(lecture: Lecture) {
+    public fun requestAudio(lecture: Lecture) {
         changeSharing(lecture.documentId) { it.copy(requestedAudio = it.requestedAudio + lecture.id) }
     }
 
@@ -244,14 +243,14 @@ public class LectureAssistant(
     internal fun audioProgress(lecture: Lecture): Float? = lectureAttachments.audioProgress.value[lecture.directory]
 
     /** The audio arriving, by lecture folder (to follow its progress). */
-    internal val audioArriving get() = lectureAttachments.audioProgress
+    public val audioArriving: StateFlow<Map<String, Float>> get() = lectureAttachments.audioProgress
 
-    internal fun dismissArrival(arrival: LectureArrival) {
+    public fun dismissArrival(arrival: LectureArrival) {
         arrivals.remove(arrival)
     }
 
     /** Shows the lecture of [arrival] in the panel. */
-    internal fun showArrival(arrival: LectureArrival) {
+    public fun showArrival(arrival: LectureArrival) {
         isPanelOpen = true
         scope.launch {
             val summary = library.list(arrival.documentId).firstOrNull { it.directory == arrival.directory } ?: return@launch
@@ -296,12 +295,12 @@ public class LectureAssistant(
     }
 
     /** Transcribes and reviews the lecture of [offer] here (the user accepted it, or always does). */
-    internal fun acceptGeneration(offer: GenerationOffer) {
+    public fun acceptGeneration(offer: GenerationOffer) {
         generationOffers.remove(offer)
         scope.launch { if (offer.live) follow(offer) else generateReceived(offer) }
     }
 
-    internal fun declineGeneration(offer: GenerationOffer) {
+    public fun declineGeneration(offer: GenerationOffer) {
         generationOffers.remove(offer)
     }
 
@@ -375,7 +374,7 @@ public class LectureAssistant(
     }
 
     /** The documents with a lecture (the badge and the filter of the library, see [documentTag]). */
-    internal var documentsWithLectures: Set<String> by mutableStateOf(emptySet())
+    public var documentsWithLectures: Set<String> by mutableStateOf(emptySet())
         private set
 
     init {
@@ -387,19 +386,19 @@ public class LectureAssistant(
     }
 
     /** The lectures of [documentId] (loaded by [refresh]), the most recent first. */
-    internal fun lecturesOf(documentId: String): List<LectureSummary> = lectureLists[documentId].orEmpty()
+    public fun lecturesOf(documentId: String): List<LectureSummary> = lectureLists[documentId].orEmpty()
 
     /** The lecture shown in the panel of [documentId]: the one being recorded, or the last one. */
-    internal fun shownLecture(documentId: String): Lecture? = shownLectures[documentId]
+    public fun shownLecture(documentId: String): Lecture? = shownLectures[documentId]
 
     /** The recorder of [documentId], if it is the one being recorded or reviewed. */
-    internal fun recorderOf(documentId: String): LectureRecorder? = activeRecorder?.takeIf { it.lecture.documentId == documentId }
+    public fun recorderOf(documentId: String): LectureRecorder? = activeRecorder?.takeIf { it.lecture.documentId == documentId }
 
     /**
      * The editor of [documentId] is shown: the recording of the document (if any) sees its pages
      * again, and its lectures are loaded.
      */
-    internal fun onEditorShown(documentId: String, notebook: NotebookSource) {
+    public fun onEditorShown(documentId: String, notebook: NotebookSource) {
         editorNotebooks[documentId] = notebook
         recorderOf(documentId)?.attachNotebook(notebook)
         followers.values.filter { it.lecture.documentId == documentId }.forEach { it.attachNotebook(notebook) }
@@ -407,7 +406,7 @@ public class LectureAssistant(
     }
 
     /** The editor of [documentId] is closed: the recording goes on, without its pages. */
-    internal fun onEditorHidden(documentId: String, notebook: NotebookSource) {
+    public fun onEditorHidden(documentId: String, notebook: NotebookSource) {
         if (editorNotebooks[documentId] === notebook) editorNotebooks.remove(documentId)
         recorderOf(documentId)?.detachNotebook(notebook)
         followers.values.filter { it.lecture.documentId == documentId }.forEach { it.detachNotebook(notebook) }
@@ -416,16 +415,16 @@ public class LectureAssistant(
     }
 
     /** The course context of [documentId] (loaded by [refresh]), if any. */
-    internal fun contextOf(documentId: String): CourseContext? = contexts[documentId]
+    public fun contextOf(documentId: String): CourseContext? = contexts[documentId]
 
     /** The course context of [documentId] is being written. */
-    internal fun isWritingContext(documentId: String): Boolean = writingContexts[documentId] == true
+    public fun isWritingContext(documentId: String): Boolean = writingContexts[documentId] == true
 
     /** Whether the context of [documentId] can be written: its notebook is open (and the models are here). */
-    internal fun canWriteContext(documentId: String): Boolean = canGenerate && documentId in editorNotebooks
+    public fun canWriteContext(documentId: String): Boolean = canGenerate && documentId in editorNotebooks
 
     /** The student changed the course context of [documentId]: it is not replaced automatically. */
-    internal fun editContext(documentId: String, text: String) {
+    public fun editContext(documentId: String, text: String) {
         val previous = contexts[documentId]
         val context = CourseContext(text.trim(), edited = true, generatedAt = previous?.generatedAt ?: 0L, stamp = nextContextStamp(previous))
         contexts[documentId] = context
@@ -436,7 +435,7 @@ public class LectureAssistant(
      * Writes the course context of [documentId] from its notebook (open), with the model of the
      * live suggestions; [onlyIfMissing]: not when the notebook has one already.
      */
-    internal fun writeContext(documentId: String, onlyIfMissing: Boolean = false) {
+    public fun writeContext(documentId: String, onlyIfMissing: Boolean = false) {
         if (!canGenerate) return
         val notebook = editorNotebooks[documentId] ?: return
         if (isWritingContext(documentId)) return
@@ -541,33 +540,36 @@ public class LectureAssistant(
     )
 
     /**
-     * Starts recording a lecture of the document edited by [controller], once allowed to use the
-     * microphone ([microphoneDenied] otherwise).
+     * Starts recording a lecture of the document [documentId] titled [title], seen through
+     * [notebook] (see [editorNotebook]), once allowed to use the microphone ([microphoneDenied]
+     * otherwise).
      */
-    public fun record(documentId: String, controller: DrawViewController) {
+    public fun record(documentId: String, title: String, notebook: NotebookSource) {
         if (isBusy) return
         scope.launch {
             withContext(stateContext) {
                 val allowed = requestMicrophone()
                 microphoneDenied = !allowed
-                if (allowed) start(documentId, controller)
+                if (allowed) start(documentId, title, notebook)
             }
         }
     }
 
     /**
-     * Starts recording a lecture of the document edited by [controller] (the microphone allowed).
+     * The notebook of the editor of [documentId] (made by [create] the first time): the pages the
+     * recordings of the document see.
+     */
+    public fun editorNotebook(documentId: String, create: () -> NotebookSource): NotebookSource =
+        editorNotebooks.getOrPut(documentId, create)
+
+    /**
+     * Starts recording a lecture of the document [documentId] titled [title], seen through
+     * [notebook] (the microphone allowed).
      *
      * @return `false` when another lecture is being recorded, or the microphone cannot be opened
      *   ([startError]).
      */
-    public fun start(documentId: String, controller: DrawViewController): Boolean {
-        val notebook = editorNotebooks[documentId] ?: ControllerNotebookSource(controller).also { editorNotebooks[documentId] = it }
-        return start(documentId, controller.document.title, notebook)
-    }
-
-    /** Starts recording a lecture of the document [documentId] titled [title], seen through [notebook]. */
-    internal fun start(documentId: String, title: String, notebook: NotebookSource): Boolean {
+    public fun start(documentId: String, title: String, notebook: NotebookSource): Boolean {
         if (isBusy) return false
         val capture = captureFactory() ?: return false
         val startedAt = currentTimeMillis()
@@ -635,25 +637,32 @@ public class LectureAssistant(
     }
 
     /** Whether a recording or an import is in progress (one at a time). */
-    internal val isBusy: Boolean get() = activeRecorder != null || importing != null
+    public val isBusy: Boolean get() = activeRecorder != null || importing != null
 
     /** Whether recordings can be imported and exported here (every platform chooses files). */
-    internal val canImportAndExport: Boolean get() = true
+    public val canImportAndExport: Boolean get() = true
 
     /**
      * Imports [file], a recording made elsewhere (a phone, a recorder), as a lecture of
-     * [documentId]: converted, transcribed and reviewed ([LectureImporter]), in the background.
+     * [documentId] titled [title] (seen through [notebook], whose pages are [pageIds], read on
+     * the thread of the state): converted, transcribed and reviewed ([LectureImporter]), in the
+     * background.
      *
      * @return `false` when a recording or an import is in progress.
      */
-    internal fun importRecording(documentId: String, controller: DrawViewController, file: ChosenFile): Boolean {
+    public fun importRecording(
+        documentId: String,
+        title: String,
+        notebook: NotebookSource,
+        pageIds: () -> List<String>,
+        file: ChosenFile
+    ): Boolean {
         if (isBusy) return false
         val startedAt = file.lastModified ?: currentTimeMillis()
         val lecture = newLecture(documentId, library.newLectureDirectory(documentId, startedAt), record = null, startedAt = startedAt).apply {
-            documentTitle = controller.document.title
+            documentTitle = title
             status = LectureStatus.IMPORTING
         }
-        val notebook = editorNotebooks[documentId] ?: ControllerNotebookSource(controller).also { editorNotebooks[documentId] = it }
         importing = lecture
         importError = null
         shownLectures[documentId] = lecture
@@ -669,9 +678,9 @@ public class LectureAssistant(
                 } catch (_: Throwable) {
                     emptyList()
                 }
-                val pageIds = withContext(stateContext) { controller.document.pages.map { it.id } }
+                val ids = withContext(stateContext) { pageIds() }
                 val settings = settingsStore.settings
-                LectureImporter(lecture, settingsStore, transcribers.forRecording(settings)).run(file.path, pages, pageIds, reviews = canGenerate)
+                LectureImporter(lecture, settingsStore, transcribers.forRecording(settings)).run(file.path, pages, ids, reviews = canGenerate)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
@@ -763,7 +772,7 @@ public class LectureAssistant(
      * Whether [lecture] can be transcribed again here: over, its audio here, the models here, no
      * recording or import in progress, no other device writing it now.
      */
-    internal fun canRetranscribe(lecture: Lecture): Boolean =
+    public fun canRetranscribe(lecture: Lecture): Boolean =
         canGenerate && !isBusy && lecture.status == LectureStatus.FINISHED && lecture.hasAudio &&
             lecture.generatingElsewhere(currentTimeMillis()) == null
 
@@ -774,7 +783,7 @@ public class LectureAssistant(
      *
      * @return  when it cannot be transcribed again now ([canRetranscribe]).
      */
-    internal fun retranscribe(lecture: Lecture, provider: ModelProvider): Boolean {
+    public fun retranscribe(lecture: Lecture, provider: ModelProvider): Boolean {
         if (!canRetranscribe(lecture)) return false
         val transcriber = transcribers.forRecording(settingsStore.settings, provider)
         lecture.stopPlayback()
@@ -795,32 +804,32 @@ public class LectureAssistant(
     }
 
     /** The model transcribing a lecture again by [provider] (online), empty on this computer. */
-    internal fun retranscriptionModel(provider: ModelProvider): String = transcribers.recordingModel(settingsStore.settings, provider)
+    public fun retranscriptionModel(provider: ModelProvider): String = transcribers.recordingModel(settingsStore.settings, provider)
 
     /** Whether this device can transcribe (whisper.cpp built in). */
-    internal val canTranscribeHere: Boolean get() = WhisperTranscriber.isAvailable
+    public val canTranscribeHere: Boolean get() = WhisperTranscriber.isAvailable
 
-    /** The audio of [lecture] saved in [target], as m4a. */
-    internal fun exportAudio(lecture: Lecture, target: FileTarget) {
+    /** The audio of [lecture] saved at [path], as m4a, then given to [deliver] (e.g. where the student chose). */
+    public fun exportAudio(lecture: Lecture, path: String, deliver: suspend (written: String) -> Unit = {}) {
         exportResult = null
         scope.launch {
             val result = try {
-                val saved = withContext(Dispatchers.IO) { exportRecording(lecture.recording, target.path) }
-                target.deliver(saved)
+                val saved = withContext(Dispatchers.IO) { exportRecording(lecture.recording, path) }
+                deliver(saved)
                 ExportResult(saved.substringAfterLast('/'), failure = null)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
-                ExportResult(target.path.substringAfterLast('/'), failure = e.message ?: e::class.simpleName.orEmpty())
+                ExportResult(path.substringAfterLast('/'), failure = e.message ?: e::class.simpleName.orEmpty())
             }
             withContext(stateContext) { exportResult = result }
         }
     }
 
     /** The extension of the exported audio. */
-    internal val exportExtension: String get() = "m4a"
+    public val exportExtension: String get() = "m4a"
 
-    internal fun clearImportAndExportMessages() {
+    public fun clearImportAndExportMessages() {
         importError = null
         exportResult = null
     }
@@ -879,12 +888,12 @@ public class ExportResult(public val fileName: String, public val failure: Strin
  * A lecture received from another device ([arrival]), [durationMs] long, without a transcript:
  * offered to be transcribed and reviewed here by [provider] (see [LectureAssistant.generationOffers]).
  */
-internal class GenerationOffer(val arrival: LectureArrival, val durationMs: Long, val provider: ModelProvider, val live: Boolean = false) {
+public class GenerationOffer(public val arrival: LectureArrival, public val durationMs: Long, public val provider: ModelProvider, public val live: Boolean = false) {
     /**
      * The tokens of the requests to Gemini, about (the audio counts 32 tokens a second, read twice:
      * transcribed, then reviewed), `0` for the local models; for a lecture followed live, an hour of it.
      */
-    val estimatedTokens: Long
+    public val estimatedTokens: Long
         get() = if (provider == ModelProvider.LOCAL) 0 else (if (live) HOUR_SECONDS else durationMs / 1000) * AUDIO_TOKENS_PER_SECOND * 2
 
     private companion object {
@@ -895,3 +904,6 @@ internal class GenerationOffer(val arrival: LectureArrival, val durationMs: Long
 
 /** The audio of a lecture followed is whole when it is this close to the length the recording device says. */
 private const val FOLLOW_END_TOLERANCE_MS = 2_000L
+
+/** A notification of the system: its [channel] (the kind of notifications, where the system names them), [title] and [text]. */
+public class ArrivalNotification(public val channel: String, public val title: String, public val text: String)

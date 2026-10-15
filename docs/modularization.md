@@ -80,7 +80,8 @@ until the release (see the release checklist at the end).
    feature (a formula shown as its source), never the build.
 2. Headless modules (no Compose): `drawview-platform`, `drawview-model`, `drawview-ink`,
    `drawview-store`, `drawview-store-room`, `drawview-sync-protocol`, `drawview-sync`,
-   `drawview-sync-lan`, `drawview-lecture`.
+   `drawview-sync-lan`; `drawview-lecture` keeps the Compose runtime only (no UI, no Skia), the
+   observable state of its assistant (see Feature modules).
 3. A native library ships with the module that uses it, and only with it.
 4. No global mutable state in the APIs: the engines, the stores and the registries are instances
    passed in (Creator, Low Coupling); a module may keep a default instance for convenience only
@@ -109,9 +110,10 @@ until the release (see the release checklist at the end).
 | `drawview-sync` | sync engine, messages, presence, membership | sync-protocol, store | no | — |
 | `drawview-sync-lan` | LAN transport and discovery | sync | no | — |
 | `drawview-sync-ui` | collaboration extension, dialogs | sync-lan, ui | yes | — |
-| `drawview-lecture` | recording, audio codecs, transcription, AI backends, lecture records | model, store | no | audio codecs, whisper.cpp (desktop) |
-| `drawview-lecture-ui` | lecture panel and extension | lecture, ui | yes | — |
-| `drawview-export` | export use case, PDF and image exporters, element exporters | canvas, pdf | yes | — |
+| `drawview-lecture` | recording, audio codecs, transcription, AI backends, the lectures of the documents and their sharing, the assistant (`LectureAssistant`, its state) | model | runtime only | audio codecs, whisper.cpp (desktop) |
+| `drawview-lecture-ui` | lecture panel, settings, extension of the editor and of the library, the notebook of an editor (`ControllerNotebookSource`), the microphone permission, the file pickers | lecture, ui | yes | — |
+| `drawview-lecture-testing` | the test doubles of the assistant (microphone, notebook, secrets) | lecture | runtime only | — |
+| `drawview-export` | export use case, PDF and image exporters | canvas, store, pdf, latex | yes (graphics) | — |
 | `drawview-export-ui` | export dialog and extension | export, ui | yes | — |
 | `drawview-native-ink`, `-tex`, `-pdfium`, `-audio` | Android shared libraries, one engine each | — | — | one each |
 
@@ -308,6 +310,30 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 * The relay server (`drawview-sync-relay`, a self-hostable Ktor server, and `RelayTransport`) is
   left for later; whether a public relay is offered for PencilNotes is a product decision.
 
+### Feature modules
+
+* **Export.** `drawview-export` holds the exporters and the use case (`DocumentExport`): it writes
+  the file at a path; `drawview-export-ui` (the dialog, "Export" in the library and in the editor)
+  delivers it where the user chose (`FileTarget.deliver`). The texts are drawn by the
+  `TextTileAdapter` the dialog gives (the one of the editor).
+* **Lecture.** `drawview-lecture` holds everything but the screens: the recording and the codecs,
+  the transcription, the models (Gemini, Ollama), the lectures of the documents and their sharing,
+  and the assistant (`LectureAssistant`, the Controller of the feature). It no longer knows the
+  editor: a recording sees the notebook through `NotebookSource` (`ControllerNotebookSource` of
+  `drawview-lecture-ui` reads an editor), the audio is exported to a path and delivered by
+  whoever asked, the notifications of what arrives from the other devices are described by the
+  UI (`describeArrival`, in the language of the application). `drawview-lecture-ui` holds the
+  panel, the settings, the extensions of the editor and of the library, the microphone
+  permission, the file pickers, the strings and the reference images.
+* The state of the assistant (`Lecture`, `LectureAssistant`, `LocalModels`, `AssistantSettings`,
+  `RecordingPlayer`: about 80 values the panel shows) stays Compose snapshot state: the core
+  depends on the Compose runtime, not on its UI or Skia (a tool on the JVM can still record and
+  transcribe). Turning it into `StateFlow`s would rewrite every read of the panel, the risk of
+  a regression of a feature in daily use for no consumer that needs it; it is left for when one
+  does.
+* The test doubles of the assistant (`FakeMicrophone`, `FakeNotebook`, `MemorySecrets`) are in
+  `drawview-lecture-testing`, for its tests, the ones of its UI and those of the applications.
+
 ### Publishing
 
 * Coordinates `io.github.valerioisufi:<module>`, version `0.1.0-SNAPSHOT` until the first release
@@ -342,7 +368,7 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 | 4c. Editor session | `EditorContext` given to the extensions; `EditorScreen` in `drawview-ui`; `drawview-session` (`EditorSession`, `DocumentEditorViewModel`, `EditorSessionScreen`, `DrawViewSessions`); `drawview-ui` without any store; the extension points in `ui.extension` | Done |
 | 5. Controller and API | `Viewport`, `CollaboratorPresence`; no `EditorHost` (see Controller); explicit API strict in every library, the internals by their use; KDoc on every top-level public declaration; ABI dumps (`api/`, checked by `check`) | Done |
 | 6. Sync and relay protocol | `drawview-sync-protocol` (frames, encryption, identities, invitations, membership, transports; on `drawview-platform` only); sealed operations with their identity in clear | Done |
-| 7. Feature modules | `drawview-lecture` / `drawview-lecture-ui`, `drawview-export` / `drawview-export-ui` (`ElementExporter`, export writing to a sink instead of `FileTarget`) | |
+| 7. Feature modules | `drawview-lecture` / `drawview-lecture-ui` / `drawview-lecture-testing`; `drawview-export` / `drawview-export-ui` (the use case writing a file at a path, the dialog delivering it: no `FileTarget` in the export) | Done |
 | 8. Release readiness | consumer checks; licenses per artifact; Dokka; CI workflow for the native matrix and the publication (written, run once a remote exists); README of the modules | |
 
 Every phase ends with the tests of the JVM green, the desktop application of PencilNotes and of

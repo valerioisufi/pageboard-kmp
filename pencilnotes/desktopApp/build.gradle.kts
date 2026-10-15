@@ -12,7 +12,7 @@ dependencies {
     implementation(project(":drawview-ui"))
     // Every pending change written before the application exits (DrawViewSessions)
     implementation(project(":drawview-session"))
-    implementation(project(":drawview-lecture"))
+    implementation(project(":drawview-lecture-ui"))
 
     implementation(compose.desktop.currentOs)
     implementation(libs.kotlinx.coroutinesSwing)

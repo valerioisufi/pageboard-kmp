@@ -8,69 +8,14 @@ import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
 import io.github.valerioisufi.drawview.lecture.transcription.Transcription
 import io.ktor.http.HttpHeaders
 import io.ktor.http.headersOf
+import java.util.Collections
+import kotlin.random.Random
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import java.util.Collections
-import kotlin.random.Random
 
 // The microphone, the notebook, the transcription and the answers of Gemini of the tests
-
-internal class FakeMicrophone : AudioCapture {
-    var onSamples: ((ShortArray) -> Unit)? = null
-    var onEvent: ((CaptureEvent) -> Unit)? = null
-
-    override fun start(onSamples: (ShortArray) -> Unit, onEvent: (CaptureEvent) -> Unit) {
-        this.onSamples = onSamples
-        this.onEvent = onEvent
-    }
-
-    override fun stop() {
-        onSamples = null
-        onEvent = null
-    }
-
-    /** The system takes the microphone (a call), or gives it back. */
-    fun event(event: CaptureEvent) {
-        onEvent?.invoke(event)
-    }
-
-    fun speak(seconds: Double, loud: Boolean, random: Random, quietLevel: Int = 0) {
-        val total = (seconds * LECTURE_SAMPLE_RATE).toInt()
-        var sent = 0
-        while (sent < total) {
-            val size = minOf(LECTURE_SAMPLE_RATE / 10, total - sent)
-            onSamples?.invoke(
-                ShortArray(size) {
-                    when {
-                        loud -> random.nextInt(-6000, 6000).toShort()
-                        quietLevel > 0 -> random.nextInt(-quietLevel, quietLevel).toShort()
-                        else -> 0
-                    }
-                }
-            )
-            sent += size
-        }
-    }
-}
-
-internal class FakeNotebook : NotebookSource {
-    override val documentTitle = "Analisi 1"
-    override suspend fun strokeIds() = setOf("old")
-    override suspend fun capture(knownStrokeIds: Set<String>, textPages: Int, imagePages: Int) = NotebookSnapshot(
-        documentTitle = documentTitle,
-        pageCount = 3,
-        visiblePageIndexes = listOf(1),
-        pages = listOf(
-            PageContent(1, pageId = "11", slide = SlideText(1, 0, "Limiti"), hasInk = true),
-            PageContent(2, pageId = "12", slide = SlideText(1, 1, "Derivate"))
-        ),
-        pageImages = listOf(PageImage(1, byteArrayOf(1, 2, 3))),
-        strokeIds = setOf("old", "new"),
-        pageIds = listOf("10", "11", "12")
-    )
-}
 
 /** A transcription on this computer (with times, with the overlap as context). */
 internal class FakeTranscriber : Transcriber {

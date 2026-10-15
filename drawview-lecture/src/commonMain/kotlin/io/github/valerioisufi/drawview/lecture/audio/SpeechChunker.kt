@@ -8,20 +8,20 @@ package io.github.valerioisufi.drawview.lecture.audio
  * @param overlapSamples leading samples repeating the end of the previous chunk: context for the
  *   model, already analyzed with the previous chunk.
  */
-internal class AudioChunk(
-    val index: Int,
-    val startSample: Long,
-    val overlapSamples: Int,
-    val samples: ShortArray
+public class AudioChunk(
+    public val index: Int,
+    internal val startSample: Long,
+    internal val overlapSamples: Int,
+    public val samples: ShortArray
 ) {
-    val endSample: Long get() = startSample + samples.size
+    internal val endSample: Long get() = startSample + samples.size
 
     /** First sample of the new (not yet analyzed) audio. */
-    val newStartSample: Long get() = startSample + overlapSamples
+    internal val newStartSample: Long get() = startSample + overlapSamples
 
-    val startMs: Long get() = samplesToMs(startSample)
-    val newStartMs: Long get() = samplesToMs(newStartSample)
-    val endMs: Long get() = samplesToMs(endSample)
+    public val startMs: Long get() = samplesToMs(startSample)
+    internal val newStartMs: Long get() = samplesToMs(newStartSample)
+    internal val endMs: Long get() = samplesToMs(endSample)
 }
 
 /**

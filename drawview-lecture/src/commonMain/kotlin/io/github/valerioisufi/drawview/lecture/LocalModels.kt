@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
@@ -32,19 +33,19 @@ import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 
 /** A speech recognition model of whisper.cpp offered by the settings (from huggingface.co/ggerganov/whisper.cpp). */
-internal enum class WhisperModel(public val fileName: String, internal val sizeBytes: Long) {
+public enum class WhisperModel(public val fileName: String, public val sizeBytes: Long) {
     /** Accurate and light: the default. */
     LARGE_V3_TURBO_Q5("ggml-large-v3-turbo-q5_0.bin", 574_041_195),
     LARGE_V3_TURBO("ggml-large-v3-turbo.bin", 1_624_555_275),
     SMALL("ggml-small.bin", 487_601_967),
     BASE("ggml-base.bin", 147_951_465);
 
-    val label: String get() = fileName.removePrefix("ggml-").removeSuffix(".bin")
-    val url: String get() = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/$fileName"
+    public val label: String get() = fileName.removePrefix("ggml-").removeSuffix(".bin")
+    public val url: String get() = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/$fileName"
 }
 
 /** A model installed in Ollama, and whether it reads images (the notes of the student). */
-internal class InstalledModel(public val name: String, internal val sizeBytes: Long, internal val readsImages: Boolean)
+public class InstalledModel(public val name: String, public val sizeBytes: Long, public val readsImages: Boolean)
 
 /**
  * The models on this computer, for the settings of the assistant: Ollama (whether it runs, its
@@ -60,26 +61,26 @@ public class LocalModels internal constructor(
     internal val modelsDirectory: String = WhisperTranscriber.modelsDirectory(),
     private val stateContext: CoroutineContext = Dispatchers.Main
 ) {
-    internal enum class OllamaState { CHECKING, RUNNING, NOT_FOUND }
+    public enum class OllamaState { CHECKING, RUNNING, NOT_FOUND }
 
-    internal var ollamaState by mutableStateOf(OllamaState.CHECKING)
+    public var ollamaState: OllamaState by mutableStateOf(OllamaState.CHECKING)
         private set
 
-    internal var ollamaVersion by mutableStateOf<String?>(null)
+    public var ollamaVersion: String? by mutableStateOf<String?>(null)
         private set
 
     /** The models of Ollama, by name. */
-    internal val installed = mutableStateListOf<InstalledModel>()
+    public val installed: SnapshotStateList<InstalledModel> = mutableStateListOf<InstalledModel>()
 
     /** Downloads in progress (Ollama models and whisper models), by name: progress 0..1, or -1 when unknown. */
     public val downloads: SnapshotStateMap<String, Float> = mutableStateMapOf()
 
     /** The last download that failed, and why. */
-    internal var downloadError by mutableStateOf<Pair<String, String>?>(null)
+    public var downloadError: Pair<String, String>? by mutableStateOf<Pair<String, String>?>(null)
         private set
 
     /** The whisper models downloaded. */
-    internal var whisperModels by mutableStateOf<Set<WhisperModel>>(emptySet())
+    public var whisperModels: Set<WhisperModel> by mutableStateOf<Set<WhisperModel>>(emptySet())
         private set
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -91,13 +92,13 @@ public class LocalModels internal constructor(
     public var nearbyHosts: suspend () -> List<String> = { emptyList() }
 
     /** The addresses of Ollama found on the local network ([findOnNetwork]). */
-    internal val foundServers = mutableStateListOf<String>()
+    public val foundServers: SnapshotStateList<String> = mutableStateListOf<String>()
 
-    internal var isSearching by mutableStateOf(false)
+    public var isSearching: Boolean by mutableStateOf(false)
         private set
 
     /** Looks for Ollama on the devices of the local network (e.g. the computer of the student, from a tablet). */
-    internal fun findOnNetwork() {
+    public fun findOnNetwork() {
         if (isSearching) return
         isSearching = true
         scope.launch {
@@ -124,7 +125,7 @@ public class LocalModels internal constructor(
     }
 
     /** Whether the transcription can run on this device (the desktop, for now). */
-    internal val canTranscribe: Boolean get() = WhisperTranscriber.isAvailable
+    public val canTranscribe: Boolean get() = WhisperTranscriber.isAvailable
 
     /** Checks Ollama (at [url]) and its models, and the whisper models downloaded. */
     public fun refresh(url: String = settingsStore.settings.localUrl) {
@@ -160,10 +161,10 @@ public class LocalModels internal constructor(
         }
     }
 
-    internal fun isInstalled(model: String): Boolean = installed.any { it.name == model || it.name == "$model:latest" }
+    public fun isInstalled(model: String): Boolean = installed.any { it.name == model || it.name == "$model:latest" }
 
     /** Downloads [model] into Ollama. */
-    internal fun pull(model: String) {
+    public fun pull(model: String) {
         if (model.isBlank() || model in downloads) return
         downloads[model] = -1f
         downloadError = null
@@ -183,10 +184,10 @@ public class LocalModels internal constructor(
     }
 
     /** The file of [model] in [modelsDirectory]. */
-    internal fun whisperPath(model: WhisperModel): String = "$modelsDirectory/${model.fileName}"
+    public fun whisperPath(model: WhisperModel): String = "$modelsDirectory/${model.fileName}"
 
     /** Downloads [model] into [modelsDirectory] (a `.part` file, renamed when complete). */
-    internal fun downloadWhisper(model: WhisperModel) {
+    public fun downloadWhisper(model: WhisperModel) {
         val name = model.fileName
         if (name in downloads) return
         downloads[name] = 0f

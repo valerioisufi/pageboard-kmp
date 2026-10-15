@@ -27,30 +27,30 @@ import kotlinx.coroutines.withContext
  * The controls are called on [stateContext] (the UI thread), where the observable properties are
  * updated.
  */
-internal class RecordingPlayer internal constructor(
+public class RecordingPlayer internal constructor(
     private val recording: RecordingFile,
     private val outputFactory: () -> AudioOutput?,
     private val stateContext: CoroutineContext
 ) {
-    var isPlaying by mutableStateOf(false)
+    public var isPlaying: Boolean by mutableStateOf(false)
         private set
 
     /** Position in the recording. */
-    var positionMs by mutableLongStateOf(0L)
+    public var positionMs: Long by mutableLongStateOf(0L)
         private set
 
     /** Length of the recording (it grows while recording). */
-    var durationMs by mutableLongStateOf(recordedMs())
+    public var durationMs: Long by mutableLongStateOf(recordedMs())
         private set
 
-    var speed by mutableFloatStateOf(1f)
+    public var speed: Float by mutableFloatStateOf(1f)
         private set
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var job: Job? = null
 
     /** Plays from [fromMs] (by default where it stopped; from the start when it reached the end). */
-    fun play(fromMs: Long = positionMs) {
+    public fun play(fromMs: Long = positionMs) {
         if (current !== this) current?.pause()
         current = this
         job?.cancel()
@@ -62,30 +62,30 @@ internal class RecordingPlayer internal constructor(
         job = scope.launch { run(start, speed) }
     }
 
-    fun pause() {
+    public fun pause() {
         job?.cancel()
         job = null
         isPlaying = false
     }
 
-    fun toggle() = if (isPlaying) pause() else play()
+    public fun toggle(): Unit = if (isPlaying) pause() else play()
 
     /** Goes to [ms], playing on from there if it was playing. */
-    fun seek(ms: Long) {
+    public fun seek(ms: Long) {
         durationMs = recordedMs()
         if (isPlaying) play(ms.coerceIn(0L, durationMs)) else positionMs = ms.coerceIn(0L, durationMs)
     }
 
-    fun skip(deltaMs: Long) = seek(positionMs + deltaMs)
+    public fun skip(deltaMs: Long): Unit = seek(positionMs + deltaMs)
 
     /** The next speed of [SPEEDS], after the last one the first. */
-    fun nextSpeed() {
+    public fun nextSpeed() {
         speed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.size]
         if (isPlaying) play(positionMs)
     }
 
     /** Refreshes the length (the recording grows while recording). */
-    fun refresh() {
+    public fun refresh() {
         durationMs = recordedMs()
     }
 
@@ -144,8 +144,8 @@ internal class RecordingPlayer internal constructor(
         }
     }
 
-    companion object {
-        val SPEEDS = listOf(1f, 1.25f, 1.5f, 2f)
+    public companion object {
+        internal val SPEEDS = listOf(1f, 1.25f, 1.5f, 2f)
 
         /** Audio read from the file at a time. */
         private const val BLOCK_MS = 2_000L

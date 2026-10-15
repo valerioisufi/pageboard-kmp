@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import io.github.valerioisufi.drawview.lecture.audio.AudioOutput
 import io.github.valerioisufi.drawview.lecture.audio.LECTURE_SAMPLE_RATE
 import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
@@ -33,35 +34,35 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
-internal enum class ReviewStatus { NONE, RUNNING, DONE, FAILED }
+public enum class ReviewStatus { NONE, RUNNING, DONE, FAILED }
 
 /** A problem of the assistant, shown in its panel. The recording goes on in any case. */
-internal sealed interface LectureProblem {
-    data object MissingApiKey : LectureProblem
+public sealed interface LectureProblem {
+    public data object MissingApiKey : LectureProblem
 
     /** The key was refused (wrong key, API not enabled, model not allowed). */
-    data class Authentication(val detail: String) : LectureProblem
+    public data class Authentication(val detail: String) : LectureProblem
 
     /** A temporary error: the update is repeated in [retryInSeconds]. */
-    data class Retrying(val detail: String, val retryInSeconds: Int) : LectureProblem
+    public data class Retrying(val detail: String, val retryInSeconds: Int) : LectureProblem
 
     /** An update failed: its content will be covered by the final review. */
-    data class Failed(val detail: String) : LectureProblem
+    public data class Failed(val detail: String) : LectureProblem
 
     /** The local model (Ollama) cannot be reached or is not installed. */
-    data class LocalModelUnavailable(val detail: String) : LectureProblem
+    public data class LocalModelUnavailable(val detail: String) : LectureProblem
 
     /** The local review needs the transcript of the live analysis, which is empty. */
-    data object NoTranscript : LectureProblem
+    public data object NoTranscript : LectureProblem
 
     /** The audio cannot be transcribed on this computer (whisper.cpp missing or failing). */
-    data class TranscriptionUnavailable(val detail: String) : LectureProblem
+    public data class TranscriptionUnavailable(val detail: String) : LectureProblem
 
     /**
      * The plan of Gemini allows no more requests to [model] now: none until the next day
      * ([daily]), or for a while; they come back in [retryInMs], when the API says.
      */
-    data class QuotaExhausted(val model: String, val daily: Boolean, val retryInMs: Long?) : LectureProblem
+    public data class QuotaExhausted(val model: String, val daily: Boolean, val retryInMs: Long?) : LectureProblem
 }
 
 /**
@@ -105,16 +106,16 @@ public class Lecture internal constructor(
     internal val onChanged: (lectureId: String?) -> Unit = {}
 ) {
     public val id: String = directory.trimEnd('/').substringAfterLast('/')
-    internal val startedAt: Long = record?.startedAt ?: startedAt ?: currentTimeMillis()
+    public val startedAt: Long = record?.startedAt ?: startedAt ?: currentTimeMillis()
 
     /** The device that recorded it, and its name. */
     private val recordedBy: String = record?.recordedBy?.takeIf { it.isNotEmpty() } ?: device
-    internal val recordedOn: String = record?.recordedOn?.takeIf { it.isNotEmpty() } ?: deviceName
+    public val recordedOn: String = record?.recordedOn?.takeIf { it.isNotEmpty() } ?: deviceName
 
     /** Recorded on another device (it may still be recording it, its audio may not be here yet). */
-    internal val recordedElsewhere: Boolean get() = recordedBy.isNotEmpty() && recordedBy != device
+    public val recordedElsewhere: Boolean get() = recordedBy.isNotEmpty() && recordedBy != device
 
-    internal var documentTitle by mutableStateOf(record?.documentTitle.orEmpty())
+    public var documentTitle: String by mutableStateOf(record?.documentTitle.orEmpty())
         internal set
 
     public var status: LectureStatus by mutableStateOf(LectureStatus.RECORDING)
@@ -131,26 +132,26 @@ public class Lecture internal constructor(
         internal set
 
     /** The microphone delivers only silence (typically: access not granted). */
-    internal var noAudioWarning by mutableStateOf(false)
+    public var noAudioWarning: Boolean by mutableStateOf(false)
         internal set
 
     /** The system holds the microphone (a call, Siri): the recording goes on when it gives it back. */
-    internal var microphoneInterrupted by mutableStateOf(false)
+    public var microphoneInterrupted: Boolean by mutableStateOf(false)
         internal set
 
     /** Chunks waiting to be analyzed (or being analyzed). */
-    internal var pendingUpdates by mutableIntStateOf(0)
+    public var pendingUpdates: Int by mutableIntStateOf(0)
         internal set
 
-    internal var isAnalyzing by mutableStateOf(false)
+    public var isAnalyzing: Boolean by mutableStateOf(false)
         internal set
 
     /** The step of an import ([LectureStatus.IMPORTING]). */
-    internal var importStep by mutableStateOf<ImportStep?>(null)
+    public var importStep: ImportStep? by mutableStateOf<ImportStep?>(null)
         internal set
 
     /** Progress of the step of an import (0..1), -1 when unknown. */
-    internal var importProgress by mutableFloatStateOf(-1f)
+    public var importProgress: Float by mutableFloatStateOf(-1f)
         internal set
 
     /** Whether the notebook of the lecture is open (the analysis sees the pages). */
@@ -159,61 +160,61 @@ public class Lecture internal constructor(
 
     // --- Generated content ---
 
-    internal var problem by mutableStateOf<LectureProblem?>(null)
+    public var problem: LectureProblem? by mutableStateOf<LectureProblem?>(null)
         internal set
 
     public var outline: String by mutableStateOf(record?.outline.orEmpty())
         internal set
 
-    internal var currentTopic by mutableStateOf(record?.currentTopic.orEmpty())
+    public var currentTopic: String by mutableStateOf(record?.currentTopic.orEmpty())
         internal set
 
     /** Page the lecturer is talking about (last known). */
-    internal var professorPageIndex by mutableStateOf<Int?>(null)
+    public var professorPageIndex: Int? by mutableStateOf<Int?>(null)
         internal set
 
-    internal val suggestions = mutableStateListOf<NoteSuggestion>().apply { record?.let { addAll(it.suggestions) } }
-    internal val transcript = mutableStateListOf<TranscriptSegment>().apply { record?.let { addAll(it.transcript) } }
+    public val suggestions: SnapshotStateList<NoteSuggestion> = mutableStateListOf<NoteSuggestion>().apply { record?.let { addAll(it.suggestions) } }
+    public val transcript: SnapshotStateList<TranscriptSegment> = mutableStateListOf<TranscriptSegment>().apply { record?.let { addAll(it.transcript) } }
 
     /** What the lecturer is saying, transcribed live and still changing (not saved). */
-    internal var interimTranscript by mutableStateOf("")
+    public var interimTranscript: String by mutableStateOf("")
         internal set
 
-    internal var finalReview by mutableStateOf(record?.finalReview)
+    public var finalReview: String? by mutableStateOf(record?.finalReview)
         private set
 
-    internal var reviewStatus by mutableStateOf(if (record?.finalReview != null) ReviewStatus.DONE else ReviewStatus.NONE)
+    public var reviewStatus: ReviewStatus by mutableStateOf(if (record?.finalReview != null) ReviewStatus.DONE else ReviewStatus.NONE)
         private set
 
     /** Model of the final review: the Gemini model or the local one. */
-    internal var reviewModel by mutableStateOf(record?.finalReviewBy)
+    public var reviewModel: String? by mutableStateOf(record?.finalReviewBy)
         private set
 
     /** Provider of the final review being written (or written). */
-    internal var reviewProvider by mutableStateOf(record?.finalReviewProvider)
+    public var reviewProvider: ModelProvider? by mutableStateOf(record?.finalReviewProvider)
         private set
 
     /** Tokens written so far by the local model. */
-    internal var reviewProgressTokens by mutableIntStateOf(0)
+    public var reviewProgressTokens: Int by mutableIntStateOf(0)
         private set
 
     /** The tokens this device used for the lecture. */
-    internal var usage by mutableStateOf(record?.usageByDevice?.get(device)?.usage ?: TokenUsage())
+    public var usage: TokenUsage by mutableStateOf(record?.usageByDevice?.get(device)?.usage ?: TokenUsage())
         internal set
 
     /** The tokens the other devices used for it, by device. */
-    internal var otherUsage by mutableStateOf(record?.usageByDevice?.minus(device).orEmpty())
+    public var otherUsage: Map<String, DeviceUsage> by mutableStateOf(record?.usageByDevice?.minus(device).orEmpty())
         private set
 
     /** The tokens every device used for it. */
-    internal val totalUsage: TokenUsage get() = otherUsage.values.fold(usage) { total, other -> total + other.usage }
+    public val totalUsage: TokenUsage get() = otherUsage.values.fold(usage) { total, other -> total + other.usage }
 
     /** The audio is here (a lecture recorded on another device gets it once finished there). */
-    internal var hasAudio by mutableStateOf(record != null && RecordingFile(directory).exists)
+    public var hasAudio: Boolean by mutableStateOf(record != null && RecordingFile(directory).exists)
         private set
 
     /** Whether its audio goes to the other devices working on the notebook. */
-    internal var audioShared by mutableStateOf(record?.audioShared ?: true)
+    public var audioShared: Boolean by mutableStateOf(record?.audioShared ?: true)
         internal set
 
     /** The device writing its transcript or review now (this one or another), if any. */
@@ -221,37 +222,37 @@ public class Lecture internal constructor(
         internal set
 
     /** When the device recording it was last heard of (its last change of the recording). */
-    internal var recordingHeardAt by mutableLongStateOf(record?.stampOf(LecturePart.RECORDING)?.at ?: 0L)
+    public var recordingHeardAt: Long by mutableLongStateOf(record?.stampOf(LecturePart.RECORDING)?.at ?: 0L)
         private set
 
     /** It was deleted on another device while recorded here: deleted here too once over. */
-    internal var deletedElsewhere by mutableStateOf(false)
+    public var deletedElsewhere: Boolean by mutableStateOf(false)
         internal set
 
     /** Recorded on another device and followed here live (see LectureRecorder.follows). */
-    internal var followedHere by mutableStateOf(false)
+    public var followedHere: Boolean by mutableStateOf(false)
         internal set
 
     /** The transcription or review running here, stopped when another device took it over (see [generation]). */
     internal var generating: Job? = null
 
     /** Another device writes its transcript or review now ([generation], still held). */
-    internal fun generatingElsewhere(now: Long): GenerationLock? = generation?.takeIf { it.device != device && it.holds(now) }
+    public fun generatingElsewhere(now: Long): GenerationLock? = generation?.takeIf { it.device != device && it.holds(now) }
 
 
     /** The final review can be written (again): the recording is over and no review is running. */
     /** Whether this device writes what the models write (now: it is a setting). */
     public val generates: Boolean get() = generatesHere()
 
-    internal val canGenerateReview: Boolean get() = generates && status == LectureStatus.FINISHED && reviewStatus != ReviewStatus.RUNNING
+    public val canGenerateReview: Boolean get() = generates && status == LectureStatus.FINISHED && reviewStatus != ReviewStatus.RUNNING
 
     internal val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     internal val recording = RecordingFile(directory)
 
     /** Plays the recording, where the platform can (`null` elsewhere). */
-    internal val player: RecordingPlayer? = audioOutput?.let { RecordingPlayer(recording, it, stateContext) }
+    public val player: RecordingPlayer? = audioOutput?.let { RecordingPlayer(recording, it, stateContext) }
 
-    internal val canPlayAudio: Boolean get() = player != null
+    public val canPlayAudio: Boolean get() = player != null
 
     /** The lecture as last saved or merged (the stamps of its parts: what changed since then is stamped when saved). */
     private var saved: LectureRecord? = record
@@ -280,7 +281,7 @@ public class Lecture internal constructor(
     // ==========================================================
 
     /** Records what the student did with a suggestion (sent back to the model). */
-    internal fun updateSuggestion(id: String, status: SuggestionStatus) {
+    public fun updateSuggestion(id: String, status: SuggestionStatus) {
         val index = suggestions.indexOfFirst { it.id == id }
         if (index < 0) return
         val suggestion = suggestions[index]

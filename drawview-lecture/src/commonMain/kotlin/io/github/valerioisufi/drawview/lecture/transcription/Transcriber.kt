@@ -26,7 +26,7 @@ public class SpeechHints(
  * @param segments times from the start of the audio (one segment for the models without times).
  * @param usage the tokens billed (the online models), `null` on this computer.
  */
-public class Transcription(public val segments: List<TranscriptSegment>, internal val usage: TokenUsage? = null)
+public class Transcription(public val segments: List<TranscriptSegment>, public val usage: TokenUsage? = null)
 
 /** Transcribes the audio of a lecture a piece at a time. */
 public interface Transcriber {

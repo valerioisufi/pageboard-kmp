@@ -36,7 +36,7 @@ internal class ModelPrompt(
  *
  * @param usage tokens billed (Gemini); `null` for a local model, which is free.
  */
-internal class ModelAnswer(public val text: String, internal val usage: TokenUsage?)
+internal class ModelAnswer(public val text: String, public val usage: TokenUsage?)
 
 /** A provider of models answering [ModelPrompt]s. */
 internal interface ModelBackend {

@@ -595,35 +595,35 @@ public class LectureRecorder internal constructor(
     /** What helps the speech recognition now: the course and the slides on screen. */
     private fun speechHints() = LecturePrompts.speechHints(settingsStore.settings, lecture.courseContext(), visibleSlides)
 
-    internal companion object {
-        const val OVERLAP_SECONDS = 5
+    public companion object {
+        internal const val OVERLAP_SECONDS = 5
 
         /** How often the notebook of a recording not analyzed is captured, and its visible pages as images. */
-        const val NOTEBOOK_CAPTURE_MS = 30_000L
+        internal const val NOTEBOOK_CAPTURE_MS = 30_000L
 
         /** How often the lecture being recorded is saved (and sent to the other devices) at least. */
-        const val HEARTBEAT_MS = 30_000L
+        internal const val HEARTBEAT_MS = 30_000L
 
         /** How often the audio recorded is offered to the other devices, which follow it. */
-        const val AUDIO_SHARE_MS = 5_000L
+        internal const val AUDIO_SHARE_MS = 5_000L
 
         /** Without news of a lecture being recorded on another device for so long, it may have stopped. */
-        const val SILENT_ELSEWHERE_MS = 2 * 60_000L
-        const val IMAGE_PAGES = 2
+        public const val SILENT_ELSEWHERE_MS: Long = 2 * 60_000L
+        internal const val IMAGE_PAGES = 2
 
         /** Pages described around the visible ones (their text costs little). */
-        const val TEXT_PAGES = 10
+        internal const val TEXT_PAGES = 10
 
         /** New audio merged in a request when the analysis is behind (a chunk can exceed it). */
-        const val MAX_MERGED_MS = 3 * 60_000L
+        internal const val MAX_MERGED_MS = 3 * 60_000L
 
-        const val CATCH_UP_MS = 3 * 60_000L
-        const val MAX_ATTEMPTS = 6
-        const val SILENCE_WARNING_MS = 4_000L
-        const val STATE_UPDATE_MS = 200L
-        const val LEVEL_FULL_SCALE = 6_000f
+        internal const val CATCH_UP_MS = 3 * 60_000L
+        internal const val MAX_ATTEMPTS = 6
+        internal const val SILENCE_WARNING_MS = 4_000L
+        internal const val STATE_UPDATE_MS = 200L
+        internal const val LEVEL_FULL_SCALE = 6_000f
 
         /** The outline is rewritten (output tokens) every few minutes only. */
-        const val OUTLINE_INTERVAL_MS = 210_000L
+        internal const val OUTLINE_INTERVAL_MS = 210_000L
     }
 }

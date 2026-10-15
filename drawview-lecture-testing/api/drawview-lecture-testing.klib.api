@@ -1,0 +1,33 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <DrawView-KMP:drawview-lecture-testing>
+final class io.github.valerioisufi.drawview.lecture.testing/FakeMicrophone : io.github.valerioisufi.drawview.lecture.audio/AudioCapture { // io.github.valerioisufi.drawview.lecture.testing/FakeMicrophone|null[0]
+    constructor <init>() // io.github.valerioisufi.drawview.lecture.testing/FakeMicrophone.<init>|<init>(){}[0]
+
+    final fun event(io.github.valerioisufi.drawview.lecture.audio/CaptureEvent) // io.github.valerioisufi.drawview.lecture.testing/FakeMicrophone.event|event(io.github.valerioisufi.drawview.lecture.audio.CaptureEvent){}[0]
+    final fun speak(kotlin/Double, kotlin/Boolean, kotlin.random/Random, kotlin/Int = ...) // io.github.valerioisufi.drawview.lecture.testing/FakeMicrophone.speak|speak(kotlin.Double;kotlin.Boolean;kotlin.random.Random;kotlin.Int){}[0]
+    final fun start(kotlin/Function1<kotlin/ShortArray, kotlin/Unit>, kotlin/Function1<io.github.valerioisufi.drawview.lecture.audio/CaptureEvent, kotlin/Unit>) // io.github.valerioisufi.drawview.lecture.testing/FakeMicrophone.start|start(kotlin.Function1<kotlin.ShortArray,kotlin.Unit>;kotlin.Function1<io.github.valerioisufi.drawview.lecture.audio.CaptureEvent,kotlin.Unit>){}[0]
+    final fun stop() // io.github.valerioisufi.drawview.lecture.testing/FakeMicrophone.stop|stop(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.lecture.testing/FakeNotebook : io.github.valerioisufi.drawview.lecture/NotebookSource { // io.github.valerioisufi.drawview.lecture.testing/FakeNotebook|null[0]
+    constructor <init>() // io.github.valerioisufi.drawview.lecture.testing/FakeNotebook.<init>|<init>(){}[0]
+
+    final val documentTitle // io.github.valerioisufi.drawview.lecture.testing/FakeNotebook.documentTitle|{}documentTitle[0]
+        final fun <get-documentTitle>(): kotlin/String // io.github.valerioisufi.drawview.lecture.testing/FakeNotebook.documentTitle.<get-documentTitle>|<get-documentTitle>(){}[0]
+
+    final suspend fun capture(kotlin.collections/Set<kotlin/String>, kotlin/Int, kotlin/Int): io.github.valerioisufi.drawview.lecture/NotebookSnapshot // io.github.valerioisufi.drawview.lecture.testing/FakeNotebook.capture|capture(kotlin.collections.Set<kotlin.String>;kotlin.Int;kotlin.Int){}[0]
+    final suspend fun strokeIds(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.lecture.testing/FakeNotebook.strokeIds|strokeIds(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.lecture.testing/MemorySecrets : io.github.valerioisufi.drawview.lecture/SecretStorage { // io.github.valerioisufi.drawview.lecture.testing/MemorySecrets|null[0]
+    constructor <init>() // io.github.valerioisufi.drawview.lecture.testing/MemorySecrets.<init>|<init>(){}[0]
+
+    final fun read(kotlin/String): kotlin/String? // io.github.valerioisufi.drawview.lecture.testing/MemorySecrets.read|read(kotlin.String){}[0]
+    final fun write(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.drawview.lecture.testing/MemorySecrets.write|write(kotlin.String;kotlin.String?){}[0]
+}

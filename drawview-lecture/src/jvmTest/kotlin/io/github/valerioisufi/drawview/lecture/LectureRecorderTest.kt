@@ -13,6 +13,9 @@ import io.github.valerioisufi.drawview.lecture.local.OllamaClient
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
 import io.github.valerioisufi.drawview.lecture.model.ModelBackends
 import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
+import io.github.valerioisufi.drawview.lecture.testing.FakeMicrophone
+import io.github.valerioisufi.drawview.lecture.testing.FakeNotebook
+import io.github.valerioisufi.drawview.lecture.testing.MemorySecrets
 import io.github.valerioisufi.drawview.lecture.transcription.SpeechHints
 import io.github.valerioisufi.drawview.lecture.transcription.StreamingTranscriber
 import io.github.valerioisufi.drawview.lecture.transcription.Transcriber

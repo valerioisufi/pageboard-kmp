@@ -19,8 +19,8 @@ internal sealed interface RequestSpeech {
 }
 
 /** The audio of a request. */
-internal class RequestAudio(
-    val wav: ByteArray,
+public class RequestAudio(
+    internal val wav: ByteArray,
     override val startMs: Long,
     override val contextMs: Long,
     override val endMs: Long

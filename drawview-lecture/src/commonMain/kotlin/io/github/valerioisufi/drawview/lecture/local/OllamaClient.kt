@@ -115,7 +115,7 @@ public class OllamaClient(private val httpClient: HttpClient = GeminiClient.defa
      *
      * @param onProgress bytes downloaded and total bytes (of the parts known so far).
      */
-    internal suspend fun pull(baseUrl: String, model: String, onProgress: (Long, Long) -> Unit) = request(baseUrl) {
+    public suspend fun pull(baseUrl: String, model: String, onProgress: (Long, Long) -> Unit): Unit = request(baseUrl) {
         httpClient.preparePost("${baseUrl.trimEnd('/')}/api/pull") {
             setBody(TextContent(json.encodeToString(OllamaModelRequest.serializer(), OllamaModelRequest(model, stream = true)), ContentType.Application.Json))
             // Gigabytes: as long as it takes, as long as bytes arrive
@@ -201,7 +201,7 @@ internal data class OllamaChatChunk(
     @SerialName("total_duration") val totalDuration: Long = 0
 )
 
-internal class OllamaChatResult(public val content: String, internal val promptTokens: Long, internal val outputTokens: Long, internal val durationMs: Long)
+internal class OllamaChatResult(public val content: String, internal val promptTokens: Long, internal val outputTokens: Long, public val durationMs: Long)
 
 @Serializable
 internal class OllamaVersion(val version: String = "")
