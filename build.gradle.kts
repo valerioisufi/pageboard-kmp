@@ -22,6 +22,19 @@ plugins {
     alias(libs.plugins.roborazzi) apply false
     alias(libs.plugins.kotlinSerialization) apply false
     alias(libs.plugins.mavenPublish) apply false
+    // The documentation of the libraries: each one, and all of them together (dokkaGenerate)
+    alias(libs.plugins.dokka)
+}
+
+// The documentation of every library together: ./gradlew :dokkaGenerate (build/dokka/html)
+dependencies {
+    for (library in subprojects.filter { it.name.startsWith("drawview-") && !it.name.startsWith("drawview-native-") }) {
+        dokka(project(library.path))
+    }
+}
+
+dokka {
+    moduleName.set("DrawView")
 }
 // =====================================================================================
 // iOS native engines (Google Ink, MicroTeX, PDFium bridge), linked statically through cinterop.

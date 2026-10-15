@@ -16,8 +16,8 @@ import io.github.valerioisufi.drawview.platform.syncLock
 
 /**
  * Draws the elements of a type added by an application ([ElementType]) in their box: the canvas
- * is in millimeters of the box, (0, 0) its top-left corner before its rotation, ([widthMm],
- * [heightMm]) its bottom-right one. The editor places, rotates, resizes and selects the elements
+ * is in millimeters of the box, (0, 0) its top-left corner before its rotation, (`widthMm`,
+ * `heightMm`) its bottom-right one. The editor places, rotates, resizes and selects the elements
  * through their box.
  *
  * Implementations must be thread-safe: the tiles are rasterized on background workers.
@@ -25,7 +25,7 @@ import io.github.valerioisufi.drawview.platform.syncLock
 public interface ElementRenderer<T : Any> {
     public val type: ElementType<T>
 
-    /** Draws [value] in a box of [widthMm] x [heightMm] millimeters. */
+    /** Draws [value] in a box of `widthMm` x `heightMm` millimeters. */
     public fun draw(canvas: Canvas, value: T, widthMm: Float, heightMm: Float)
 
     /** Whether the point ([xMm], [yMm]) of the box hits the element (by default, its whole box). */

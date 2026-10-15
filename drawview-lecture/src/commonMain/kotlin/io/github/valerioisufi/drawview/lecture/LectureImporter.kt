@@ -15,7 +15,7 @@ import kotlinx.io.files.SystemFileSystem
  * Turns an audio file recorded elsewhere (a phone, a recorder) into a [lecture] of a notebook:
  * converted into the audio of the lectures, transcribed by [transcriber] ([RecordingTranscriber]),
  * then reviewed as a recorded lecture (unless the review is written on request). No live
- * suggestion: the review writes the notes and what is missing from the notebook ([pages]).
+ * suggestion: the review writes the notes and what is missing from the notebook (`pages`).
  *
  * A lecture recorded on a device without the models is transcribed and reviewed the same way
  * ([transcribeAndReview]).

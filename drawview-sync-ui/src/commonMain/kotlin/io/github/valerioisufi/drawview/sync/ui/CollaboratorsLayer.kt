@@ -43,7 +43,7 @@ private const val INK_FADE_MS = 300f
 
 /**
  * Tells the others where this device is on the document [documentId] (its pointer, the stroke it
- * is drawing), and shows on the canvas where they are (see [CollaboratorPresence.collaborators]):
+ * is drawing), and shows on the canvas where they are (see [io.github.valerioisufi.drawview.canvas.controller.CollaboratorPresence.collaborators]):
  * their pointers glide to where they are, their strokes are modeled as they come like the strokes
  * of this device, and fade away once drawn (the stroke of the document takes their place).
  */
@@ -95,7 +95,7 @@ internal fun CollaboratorsLayer(collaboration: Collaboration, documentId: String
     }
 }
 
-/** The presence of this device for [activity] (`null`: nothing). */
+/** The presence of this device for `activity` (`null`: nothing). */
 private fun EditorActivity?.toPresence(documentId: String): Presence {
     if (this == null) return Presence(documentId)
     val brush = brush

@@ -57,7 +57,7 @@ internal expect fun Modifier.trackpadInput(
 ): Modifier
 
 /**
- * Whether a button of the stylus is held during [event] (the stylus erases while it is held),
+ * Whether a button of the stylus is held during `event` (the stylus erases while it is held),
  * where the platform reports it: Android; the Apple Pencil has no button, the desktop reports the
  * pens as mice.
  */

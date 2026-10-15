@@ -31,6 +31,16 @@ fun App() {
 }
 ```
 
+### Using the libraries
+
+Every module is published as `io.github.valerioisufi:<module>` (`0.1.0-SNAPSHOT` until the first release): an application declares the ones it uses (e.g. `drawview-explorer`, `drawview-store-room`, `drawview-pdf` and `drawview-latex` for the library with PDFs and formulas) and gets nothing else; the optional engines are given to the editor in `DrawViewEngines`. `./gradlew publishToMavenLocal` publishes them to the local repository.
+
+* **Documentation**: `./gradlew :dokkaGenerate` writes the documentation of every library in `build/dokka/html` (the javadoc jar of each one is the same); each module has its page (`Module.md`).
+* **Public API**: declared (explicit API mode) and recorded in the `api/` directory of each library (see Running Tests).
+* **As another developer uses them**: `./consumer-checks/check.sh` publishes them to `mavenLocal()` and builds against them a JVM program with `drawview-model` alone (no Compose on its classpath), a desktop editor without the PDF and formula engines, and an Android application with the canvas (only the native library of Google Ink in its APK).
+* **Licenses**: every jar and Android library carries the license of DrawView and `THIRD_PARTY_LICENSES.md` (`META-INF/drawview/<module>/`).
+* **Releases**: `.github/workflows/release.yml` builds the JNI libraries of the five desktop platforms and publishes the libraries on Maven Central, signed (see its secrets); `.github/workflows/check.yml` checks every change.
+
 ### Trackpad
 
 On the canvas, two fingers on a trackpad move the pages like a finger on a touch screen (beyond the edges with a rubber band, with inertia when they are lifted) and the pinch zooms around the pointer, beyond the zoom limits with a rubber band too. The wheel with Ctrl / Cmd zooms as well (the pinch of the Windows precision touchpads arrives this way). On macOS, the phases of the scroll and the pinch, which AWT does not deliver, come from `libtrackpad_bridge` (an event monitor of the application, bundled in the `drawview-canvas` jar).

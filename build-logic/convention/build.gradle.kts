@@ -7,6 +7,7 @@ dependencies {
     compileOnly(libs.android.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.mavenPublish.gradlePlugin)
+    compileOnly(libs.dokka.gradlePlugin)
 }
 
 gradlePlugin {

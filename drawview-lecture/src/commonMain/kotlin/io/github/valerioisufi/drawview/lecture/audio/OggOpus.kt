@@ -178,7 +178,7 @@ internal class OggOpusWriter(private val sink: RawSink, bitrate: Int = BITRATE) 
 internal class OggPage(val offset: Long, val size: Long, val granule: Long, val flags: Int, val packets: List<ByteArray>)
 
 /**
- * Reads an Ogg Opus recording: its pages ([pages], their packets only when [withPackets]), the
+ * Reads an Ogg Opus recording: its pages ([pages], their packets only when `withPackets`), the
  * pre-skip of its stream ([preSkip]).
  */
 internal object OggOpusReader {

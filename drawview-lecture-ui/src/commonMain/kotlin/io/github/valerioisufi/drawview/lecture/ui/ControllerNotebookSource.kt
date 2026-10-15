@@ -161,7 +161,7 @@ internal class ControllerNotebookSource(private val controller: DrawViewControll
         }
     }
 
-    /** The text of a PDF page, without the empty lines, at most [MAX_SLIDE_TEXT_CHARS]. */
+    /** The text of a PDF page, without the empty lines, at most `MAX_SLIDE_TEXT_CHARS`. */
     private fun slideText(resourceId: String, pdfPageIndex: Int): String {
         syncLock(slideTextsLock) { slideTexts[resourceId to pdfPageIndex] }?.let { return it }
         val resource = controller.document.findResource(resourceId)?.takeIf { it.type == DrawResource.ResourceType.PDF }

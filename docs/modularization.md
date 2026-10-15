@@ -369,7 +369,7 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 | 5. Controller and API | `Viewport`, `CollaboratorPresence`; no `EditorHost` (see Controller); explicit API strict in every library, the internals by their use; KDoc on every top-level public declaration; ABI dumps (`api/`, checked by `check`) | Done |
 | 6. Sync and relay protocol | `drawview-sync-protocol` (frames, encryption, identities, invitations, membership, transports; on `drawview-platform` only); sealed operations with their identity in clear | Done |
 | 7. Feature modules | `drawview-lecture` / `drawview-lecture-ui` / `drawview-lecture-testing`; `drawview-export` / `drawview-export-ui` (the use case writing a file at a path, the dialog delivering it: no `FileTarget` in the export) | Done |
-| 8. Release readiness | consumer checks; licenses per artifact; Dokka; CI workflow for the native matrix and the publication (written, run once a remote exists); README of the modules | |
+| 8. Release readiness | consumer checks (`consumer-checks/`: the model alone on the JVM, the editor without engines on the desktop, the canvas on Android); the license and the third-party notices in every jar and Android library; Dokka (the javadoc jars, `:dokkaGenerate` for all); CI workflows `check.yml` and `release.yml` (the native matrix and the publication: written, run once a remote exists); a `Module.md` page per module | Done |
 
 Every phase ends with the tests of the JVM green, the desktop application of PencilNotes and of
 the sample running, and the modules it touches published to `mavenLocal()`.
@@ -394,7 +394,10 @@ the sample running, and the modules it touches published to `mavenLocal()`.
 ## Left for later
 
 * The KDoc of the public members (about 670 without one, many self-explanatory: `id`, `undo()`,
-  `zoomIn()`): written with the Dokka report of phase 8, which lists them.
+  `zoomIn()`): Dokka lists them (`reportUndocumented`), to write before the first release.
+* The iOS consumer check (an Xcode project using the frameworks of the libraries), and the
+  licenses inside the klibs (a klib has no place for them: the applications show
+  `THIRD_PARTY_LICENSES.md`, as PencilNotes does in its About & Licenses).
 * The built-in kinds drawn through `ElementRenderer` too: they need what a box cannot express
   (meshes, PDF pages, laid-out texts), so they keep their code in `TileRenderer` and the exporter.
 * `ElementExporter` (an element type written in a PDF as vectors): its elements are images at

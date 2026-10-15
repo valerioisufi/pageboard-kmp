@@ -60,6 +60,11 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
             // The public API is declared: what is not part of it is internal
             explicitApi = ExplicitApiMode.Strict
 
+            // The licenses in the jars of the JVM and of Android
+            val licenses = licensesTask().flatMap { it.output }
+            sourceSets.named("jvmMain") { resources.srcDir(licenses) }
+            sourceSets.named("androidMain") { resources.srcDir(licenses) }
+
             // The public API is recorded (api/), and every change of it is seen
             @OptIn(ExperimentalAbiValidation::class)
             abiValidation {}

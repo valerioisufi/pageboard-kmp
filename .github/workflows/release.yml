@@ -1,0 +1,76 @@
+# A release of the libraries on Maven Central, from a tag vX.Y.Z (VERSION_NAME without -SNAPSHOT):
+# the JNI libraries of every desktop platform built on its own runner, then published together
+# (-Pdrawview.native.prebuilt=true: a release without one of them fails), signed.
+#
+# Secrets: MAVEN_CENTRAL_USERNAME, MAVEN_CENTRAL_PASSWORD (a token of the Central Portal),
+# SIGNING_KEY (an armored PGP key), SIGNING_KEY_PASSWORD.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  natives:
+    strategy:
+      matrix:
+        include:
+          - platform: darwin-aarch64
+            runner: macos-14
+          - platform: darwin-x86_64
+            runner: macos-14
+          - platform: linux-x86_64
+            runner: ubuntu-24.04
+          - platform: linux-aarch64
+            runner: ubuntu-24.04-arm
+          - platform: windows-x86_64
+            runner: windows-2022
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: JNI libraries of ${{ matrix.platform }}
+        run: ./gradlew buildDesktopNativeLibs -Pdrawview.desktop.platform=${{ matrix.platform }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: natives-${{ matrix.platform }}
+          path: build/nativeLibs/jvm
+
+  publish:
+    needs: natives
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: natives-*
+          path: build/nativeLibs/jvm
+          merge-multiple: true
+      - name: Publish on Maven Central
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: ./gradlew publishToMavenCentral -Pdrawview.native.prebuilt=true
+      - name: PDFium for the iOS applications
+        run: |
+          ./gradlew assemblePdfiumXcframework
+          (cd build/pdfium && zip -qry PDFium.xcframework.zip PDFium.xcframework)
+      - name: Documentation
+        run: ./gradlew :dokkaGenerate
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: build/pdfium/PDFium.xcframework.zip

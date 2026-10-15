@@ -100,7 +100,7 @@ private const val WRITING_ELSEWHERE_NOTICE_MS = 2_500L
 
 /**
  * Who is writing the text the user tried to edit or to select (left to them, see
- * [CollaboratorPresence.editsRefused]), for a moment at the top of the canvas.
+ * [io.github.valerioisufi.drawview.canvas.controller.CollaboratorPresence.editsRefused]), for a moment at the top of the canvas.
  */
 @Composable
 private fun BoxScope.WritingElsewhereNotice(controller: DrawViewController) {

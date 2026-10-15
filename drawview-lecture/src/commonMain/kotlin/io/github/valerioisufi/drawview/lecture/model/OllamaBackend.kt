@@ -12,7 +12,7 @@ import kotlin.io.encoding.Base64
  * The models of Ollama on this computer as a [ModelBackend]: free, private, slower.
  *
  * Ollama takes text and images (attached to the message, in order: the text marks where each
- * one belongs), no audio nor files. A model used every minute stays loaded ([keepLoadedSeconds]);
+ * one belongs), no audio nor files. A model used every minute stays loaded (`keepLoadedSeconds`);
  * [unload] frees the memory when it is no longer needed.
  *
  * @param url the address of the Ollama server of the settings (read at every request).

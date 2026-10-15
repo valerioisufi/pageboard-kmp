@@ -39,7 +39,7 @@ public data class Member(
  * ([version]) and applies it, so that the owner decides on every device without a server.
  *
  * [epoch]: the key of the document in use (a new one each time a device is removed, so that it
- * cannot follow the document anymore, see [SharingState.keys]). [ended]: the owner stopped
+ * cannot follow the document anymore, see `SharingState.keys` of `drawview-sync`). [ended]: the owner stopped
  * sharing it, every device keeps its copy only.
  */
 @Serializable

@@ -30,7 +30,7 @@ import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 
 /**
  * Draws what the other devices are doing on the document (see
- * [CollaboratorPresence.collaborators]), each in its color: the strokes they are drawing, the texts
+ * [io.github.valerioisufi.drawview.canvas.controller.CollaboratorPresence.collaborators]), each in its color: the strokes they are drawing, the texts
  * they are writing, the elements they select or move, their pointers with their names.
  */
 internal class CollaboratorsOverlay {

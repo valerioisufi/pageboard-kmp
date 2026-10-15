@@ -43,7 +43,7 @@ import kotlinx.serialization.builtins.serializer
  *   of it; `deleted`: the lectures deleted, deleted on every device.
  *
  * The lectures shown or being recorded take what is received at once ([Lecture.merge]); the
- * assistant is told of the others ([LectureAssistant.onReceived]).
+ * assistant is told of the others (`LectureAssistant.onReceived`).
  */
 internal class LectureAttachments(
     private val library: LectureAssistantLibrary,

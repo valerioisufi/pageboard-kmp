@@ -32,6 +32,7 @@ jmdns = "3.6.3"
 qrose = "1.3.1"
 roborazzi = "1.76.0"
 mavenPublish = "0.37.0"
+dokka = "2.2.0"
 
 [libraries]
 qrose = { module = "io.github.alexzhirkevich:qrose", version.ref = "qrose" }
@@ -83,6 +84,7 @@ navigationevent-compose = { module = "org.jetbrains.androidx.navigationevent:nav
 android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 mavenPublish-gradlePlugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "mavenPublish" }
+dokka-gradlePlugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -97,3 +99,4 @@ kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

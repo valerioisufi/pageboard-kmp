@@ -46,7 +46,7 @@ public class TileRenderer(
     public var textAdapter: TextTileAdapter? = null,
     public val images: ImageCache = ImageCache.Shared
 ) {
-    /** Whether the element of an identifier is left out (drawn over the tiles by the editor, see [HiddenElements]). */
+    /** Whether the element of an identifier is left out (drawn over the tiles by the editor, see [io.github.valerioisufi.drawview.canvas.render.HiddenElements]). */
     public var isHidden: (String) -> Boolean = { false }
 
     /** Draws the elements of the types of the application (placeholders for the others). */

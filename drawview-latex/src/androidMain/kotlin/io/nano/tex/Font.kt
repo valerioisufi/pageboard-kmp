@@ -24,7 +24,7 @@ public class Font private constructor(
         return Font(Typeface.create(typeface, style), size, style, file)
     }
 
-    /** This font for a [TexDrawing][io.github.valerioisufi.drawview.latex.TexDrawing]. */
+    /** This font for a [io.github.valerioisufi.drawview.latex.TexDrawing][io.github.valerioisufi.drawview.latex.TexDrawing]. */
     public fun toTexFont(): TexFont {
         val bold = style and TexFont.BOLD != 0
         val italic = style and TexFont.ITALIC != 0

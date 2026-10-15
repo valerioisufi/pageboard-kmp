@@ -130,7 +130,7 @@ public class SelectionManager(private val controller: DrawViewController) {
     }
 
     /**
-     * Selects the elements of [page] intersecting the closed [lasso] polygon (page millimeters),
+     * Selects the elements of `page` intersecting the closed [lasso] polygon (page millimeters),
      * except the texts other devices are writing (see [CollaboratorPresence.writerOf]).
      */
     internal fun selectWithLasso(pageIndex: Int, lasso: FloatArray) {

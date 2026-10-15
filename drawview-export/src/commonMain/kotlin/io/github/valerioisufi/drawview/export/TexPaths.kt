@@ -14,7 +14,7 @@ internal class TexShape(val path: PdfPath, val argb: Int, val strokeWidth: Float
 
 /**
  * The shapes of a formula as MicroTeX draws it (see [TexDrawing]): its characters as the outlines
- * of their glyphs, its rules and lines as paths, mapped by [toPage] from the pixels of the drawing.
+ * of their glyphs, its rules and lines as paths, mapped by `toPage` from the pixels of the drawing.
  * It follows the graphics of the platforms (`io.nano.tex.Graphics2D`): the translations and the
  * scales applied to the coordinates, the rotations to what follows them, the styles a font has not
  * synthesized (bold outset, italic slanted).

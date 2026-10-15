@@ -1017,7 +1017,7 @@ internal class CanvasGestureHandler(
 
     /**
      * Tells the controller where the pointer is ([screen]) and, when [inking], the stroke being
-     * drawn, or that it was given up ([strokeCancelled], see [CollaboratorPresence.activity]).
+     * drawn, or that it was given up ([strokeCancelled], see [io.github.valerioisufi.drawview.canvas.controller.CollaboratorPresence.activity]).
      */
     private fun reportActivity(screen: Offset, inking: Boolean, strokeCancelled: Boolean = false) {
         val pageIndex = if (inking) inkPageIndex else controller.viewport.findPageIndexAtScreen(screen)

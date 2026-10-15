@@ -56,8 +56,8 @@ import kotlinx.io.files.SystemFileSystem
  * Every notebook has its course context ([CourseContext]), written by the assistant from the
  * notebook when its first lecture starts ([contextOf], [writeContext], [editContext]).
  *
- * The editors show it through [io.github.valerioisufi.drawview.lecture.ui.editorExtension], the
- * document library through [io.github.valerioisufi.drawview.lecture.ui.LectureRecordingIndicator].
+ * The editors show it through `editorExtension` of `drawview-lecture-ui`, the
+ * document library through `LectureRecordingIndicator` of `drawview-lecture-ui`.
  *
  * The devices working on a notebook share its lectures ([attachments], for the synchronization):
  * a lecture recorded on a device without the models is transcribed and reviewed where they are
@@ -126,7 +126,7 @@ public class LectureAssistant(
     public var microphoneDenied: Boolean by mutableStateOf(false)
         private set
 
-    /** Asks for the permission to use the microphone (set by [io.github.valerioisufi.drawview.lecture.ui.rememberLectureAssistant]). */
+    /** Asks for the permission to use the microphone (set by `rememberLectureAssistant` of `drawview-lecture-ui`). */
     public var requestMicrophone: suspend () -> Boolean = { true }
 
     /** Whether the platform can record (the desktop, for now). */
@@ -373,7 +373,7 @@ public class LectureAssistant(
         }
     }
 
-    /** The documents with a lecture (the badge and the filter of the library, see [documentTag]). */
+    /** The documents with a lecture (the badge and the filter of the library, see `documentTag` of `drawview-lecture-ui`). */
     public var documentsWithLectures: Set<String> by mutableStateOf(emptySet())
         private set
 

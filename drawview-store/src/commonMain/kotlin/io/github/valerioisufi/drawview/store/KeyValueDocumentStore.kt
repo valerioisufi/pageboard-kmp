@@ -73,7 +73,7 @@ public class InMemoryKeyValueStorage : KeyValueStorage {
 /**
  * [DocumentStore] that keeps every document as a JSON value of a [KeyValueStorage] (the folders
  * and the document summaries are kept in a single index value). Lightweight alternative to
- * [RoomDocumentStore], used in memory by the tests (with [InMemoryKeyValueStorage]).
+ * `RoomDocumentStore` (`drawview-store-room`), used in memory by the tests (with [InMemoryKeyValueStorage]).
  *
  * While a document is open, its in-memory model is the source of truth: every persistence
  * operation marks the document as modified and its whole content is written shortly after

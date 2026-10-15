@@ -126,7 +126,7 @@ internal fun LibrarySearchField(
 
 /**
  * The title of what the library shows (the root, a folder, a section) and what it holds: the
- * notes and the folders with their order ([withOrder]), or the path of a folder; inside a folder,
+ * notes and the folders with their order (`withOrder`), or the path of a folder; inside a folder,
  * the button going up to the one holding it.
  */
 @Composable

@@ -1,4 +1,5 @@
 import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -46,6 +47,14 @@ class AndroidNativeConventionPlugin : Plugin<Project> {
             compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_11
                 targetCompatibility = JavaVersion.VERSION_11
+            }
+        }
+
+        // The licenses of the engine (and of DrawView) in the library: its Java resources
+        val licenses = licensesTask()
+        extensions.configure<LibraryAndroidComponentsExtension> {
+            onVariants { variant ->
+                variant.sources.resources?.addGeneratedSourceDirectory(licenses, LicensesTask::output)
             }
         }
     }

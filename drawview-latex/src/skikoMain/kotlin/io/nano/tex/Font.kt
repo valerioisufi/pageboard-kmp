@@ -25,7 +25,7 @@ public class Font(
 ) {
     public fun deriveFont(style: Int): Font = if (style == this.style) this else Font(typeface, size, style, file)
 
-    /** This font for a [TexDrawing]: the style synthesized over the file as [toSkiaFont] does. */
+    /** This font for a [io.github.valerioisufi.drawview.latex.TexDrawing]: the style synthesized over the file as [toSkiaFont] does. */
     public fun toTexFont(): TexFont {
         val tfStyle = typeface?.fontStyle
         val boldFace = tfStyle != null && tfStyle.weight >= 600
