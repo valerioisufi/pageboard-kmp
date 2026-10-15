@@ -10,7 +10,7 @@ import io.github.valerioisufi.drawview.explorer.ui.LibraryDialog
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
-import io.github.valerioisufi.drawview.ui.session.DocumentAction
+import io.github.valerioisufi.drawview.ui.extension.DocumentAction
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test

@@ -45,32 +45,32 @@ import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_confirm
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_delete
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_rename
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_root_folder
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_delete_shared
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_delete_confirm
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_delete_title_one
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_items_count
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_move_subtitle
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_move_to
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_rename
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_delete_confirm
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_delete_shared
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_delete_title_one
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_dialog_delete_description
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_dialog_delete_multiple_description
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_dialog_new_folder
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_input_name
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_items_count
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_move_subtitle
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_root_folder
 import io.github.valerioisufi.drawview.ui.command.RegisterCommands
 import io.github.valerioisufi.drawview.ui.components.AboutLicensesDialog
 import io.github.valerioisufi.drawview.ui.components.DesignIconButton
+import io.github.valerioisufi.drawview.ui.extension.DocumentAction
+import io.github.valerioisufi.drawview.ui.extension.DocumentTag
+import io.github.valerioisufi.drawview.ui.extension.LibraryAction
+import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 import io.github.valerioisufi.drawview.ui.generated.resources.about_dialog_title
 import io.github.valerioisufi.drawview.ui.platform.PickedFile
 import io.github.valerioisufi.drawview.ui.platform.fileDropTarget
-import io.github.valerioisufi.drawview.ui.session.DocumentAction
-import io.github.valerioisufi.drawview.ui.session.DocumentTag
-import io.github.valerioisufi.drawview.ui.session.LibraryAction
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
-import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 
 /**
  * The document library: the sections and the folders, the search and the filters, the notes as

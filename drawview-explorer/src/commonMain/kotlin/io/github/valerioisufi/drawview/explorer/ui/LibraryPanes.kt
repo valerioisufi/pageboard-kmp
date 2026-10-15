@@ -39,7 +39,7 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sec
 import io.github.valerioisufi.drawview.ui.components.DesignIconButton
 import io.github.valerioisufi.drawview.ui.components.NavigationItem
 import io.github.valerioisufi.drawview.ui.components.TonalButton
-import io.github.valerioisufi.drawview.ui.session.LibraryAction
+import io.github.valerioisufi.drawview.ui.extension.LibraryAction
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import org.jetbrains.compose.resources.stringResource
 

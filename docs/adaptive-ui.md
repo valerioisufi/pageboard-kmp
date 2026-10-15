@@ -89,7 +89,7 @@ Variations).
 | What the user has at hand: stylus, precise pointer, hover, hardware keyboard | `InputCapabilities` (`drawview-ui`), updated by the pointer and key events seen at the root of the application (`Modifier.observeInput`, initial pass, nothing consumed) | Information Expert (the events know their type), Low Coupling |
 | First guess of the input, before any event | `platformInputHints()` (expect / actual: the desktop a pointer and a keyboard; Android `Configuration.keyboard` and the input devices; iOS `GCKeyboard`) | Polymorphism, Protected Variations |
 | Conventions of the platform: primary modifier (Cmd on Apple, Ctrl elsewhere), where the menus live (menu bar or in the window), names of the keys | `PlatformConventions` (expect / actual, `drawview-ui`) | Polymorphism, Protected Variations |
-| Give the three to every composable | `AdaptiveInfo` (window layout, input, conventions) in `LocalAdaptiveInfo`, provided by `AdaptiveRoot`: `DocumentLibrary` and `EditorSessionScreen` declare one, the application may declare one around its dialogs (the inner ones then only show their content); `currentAdaptiveInfo()` outside of a root | Indirection, Low Coupling (the theme belongs to the application: PencilNotes has its own) |
+| Give the three to every composable | `AdaptiveInfo` (window layout, input, conventions) in `LocalAdaptiveInfo`, provided by `AdaptiveRoot`: `DocumentLibrary` and `EditorScreen` declare one, the application may declare one around its dialogs (the inner ones then only show their content); `currentAdaptiveInfo()` outside of a root | Indirection, Low Coupling (the theme belongs to the application: PencilNotes has its own) |
 | Density by input: minimum interactive size 48 dp with touch, 40 dp with a precise pointer only | `InputCapabilities.minimumInteractiveSize`, given by `AdaptiveRoot` as `LocalMinimumInteractiveComponentSize`; `ToolButton` drawn 36 dp and as large as it | Information Expert (the input knows what it can reach) |
 | Complete color schemes (every role, `surfaceContainer*` included) | `Color.kt` of DrawView and of PencilNotes, generated from their seed | Information Expert |
 
@@ -108,7 +108,7 @@ by the user; `InputCapabilities.hasStylus` only says that a stylus exists.
 | The dialogs the commands open in the library (new item, rename, move, delete, about), one at a time | `LibraryDialog`, shown by `ExplorerScreen` (no longer by the sheet and the bar of the selection, each with its own) | High Cohesion |
 | The commands of an extension: "Export…", "Share…", the panel of the lecture | `EditorExtension.commands`; the state of their dialog in the extension (`DocumentExportUi`, the extension of `Collaboration`), the dialog drawn over the canvas, so that the button and the command open the same | Low Coupling, Protected Variations |
 | The commands of the screens shown, for the presenters outside of them (menu bar) and the shortcuts | `CommandHost` (`drawview-ui`): the screens register their commands while shown (`RegisterCommands`), the screen in front first; `dispatch` runs the enabled command of a key | Pure Fabrication, Indirection |
-| The root of the commands: the host of the application (or its own), the keys the focused element leaves (a text field keeps its own ⌘Z), the focus when nothing has it (at first, when touched) | `CommandRoot`, declared by `DocumentLibrary`, `EditorSessionScreen` and the application around its dialogs (the inner ones then only show their content) | Controller |
+| The root of the commands: the host of the application (or its own), the keys the focused element leaves (a text field keeps its own ⌘Z), the focus when nothing has it (at first, when touched) | `CommandRoot`, declared by `DocumentLibrary`, `EditorScreen` and the application around its dialogs (the inner ones then only show their content) | Controller |
 | Show the commands | `ToolButton(command)` and `CommandTooltip` / `HoverTooltip` (label and shortcut where a precise pointer rests: the long press stays to the controls), `CommandMenu` (a context menu; `Modifier.onSecondaryClick`), `DrawViewMenuBar` (`jvmMain`: a Compose `MenuBar`, the window running the shortcuts with `Window(onKeyEvent = host::dispatch)`), the menu of iPadOS and the shortcut helper of Android (see [Platforms](#platforms)) | Polymorphism |
 
 `toolbarActions` stays for the content that is not an action (the time of a recording, the
@@ -239,7 +239,7 @@ an iPad with a Pencil, an Android tablet with a stylus, a phone, a Mac with a tr
   `AdaptiveInfo`, `AdaptiveRoot`, `ReferenceWindow`. The hints of the platform: a pointer and a
   keyboard on the desktop; the configuration and the input devices on Android; a touch screen and
   the Pencil-only drawing of the system on iOS.
-* **`AdaptiveRoot`** is declared by `DocumentLibrary`, `EditorSessionScreen` and PencilNotes
+* **`AdaptiveRoot`** is declared by `DocumentLibrary`, `EditorScreen` and PencilNotes
   around its dialogs (not by `DrawViewTheme`: PencilNotes has a theme of its own). It gives the
   minimum interactive size of the input to Material and to `ToolButton`, drawn 36 dp and taking
   48 dp for a finger, 40 dp for a pointer.

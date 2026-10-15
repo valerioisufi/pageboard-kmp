@@ -1,14 +1,13 @@
-package io.github.valerioisufi.drawview.ui.session
+package io.github.valerioisufi.drawview.ui.extension
 
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.runtime.Composable
-import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.ui.command.Command
 
 /**
  * Content contributed to the editor by the application (e.g. an assistant), composed with the
- * editor of every open document.
+ * editor of every open document; each contribution receives the [EditorContext] of the document.
  *
  * @param toolbarActions actions added to the top bar of the editor, before the drawing mode toggle.
  * @param canvasOverlay content drawn over the canvas (e.g. hints), the dialogs of the extension
@@ -24,11 +23,11 @@ import io.github.valerioisufi.drawview.ui.command.Command
  * Several extensions are combined with `+` (e.g. an assistant and the collaboration).
  */
 class EditorExtension(
-    val toolbarActions: @Composable RowScope.(session: EditorSession, controller: DrawViewController) -> Unit = { _, _ -> },
-    val canvasOverlay: @Composable BoxScope.(session: EditorSession, controller: DrawViewController) -> Unit = { _, _ -> },
-    val commands: (session: EditorSession, controller: DrawViewController) -> List<Command> = { _, _ -> emptyList() },
-    val panels: (session: EditorSession, controller: DrawViewController) -> List<EditorPanel> = { _, _ -> emptyList() },
-    val readOnlyNote: @Composable (session: EditorSession, controller: DrawViewController) -> String? = { _, _ -> null }
+    val toolbarActions: @Composable RowScope.(context: EditorContext) -> Unit = {},
+    val canvasOverlay: @Composable BoxScope.(context: EditorContext) -> Unit = {},
+    val commands: (context: EditorContext) -> List<Command> = { emptyList() },
+    val panels: (context: EditorContext) -> List<EditorPanel> = { emptyList() },
+    val readOnlyNote: @Composable (context: EditorContext) -> String? = { null }
 ) {
     /**
      * The contributions of this extension followed by those of [other]: toolbar actions, commands
@@ -38,17 +37,17 @@ class EditorExtension(
     operator fun plus(other: EditorExtension): EditorExtension {
         val first = this
         return EditorExtension(
-            toolbarActions = { session, controller ->
-                first.toolbarActions(this, session, controller)
-                other.toolbarActions(this, session, controller)
+            toolbarActions = { context ->
+                first.toolbarActions(this, context)
+                other.toolbarActions(this, context)
             },
-            canvasOverlay = { session, controller ->
-                first.canvasOverlay(this, session, controller)
-                other.canvasOverlay(this, session, controller)
+            canvasOverlay = { context ->
+                first.canvasOverlay(this, context)
+                other.canvasOverlay(this, context)
             },
-            commands = { session, controller -> first.commands(session, controller) + other.commands(session, controller) },
-            panels = { session, controller -> first.panels(session, controller) + other.panels(session, controller) },
-            readOnlyNote = { session, controller -> first.readOnlyNote(session, controller) ?: other.readOnlyNote(session, controller) }
+            commands = { context -> first.commands(context) + other.commands(context) },
+            panels = { context -> first.panels(context) + other.panels(context) },
+            readOnlyNote = { context -> first.readOnlyNote(context) ?: other.readOnlyNote(context) }
         )
     }
 }

@@ -31,7 +31,7 @@ import io.github.valerioisufi.drawview.sync.Invitation
 import io.github.valerioisufi.drawview.sync.JoinRequest
 import io.github.valerioisufi.drawview.sync.JoinStatus
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.*
-import io.github.valerioisufi.drawview.ui.session.LibraryAction
+import io.github.valerioisufi.drawview.ui.extension.LibraryAction
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource

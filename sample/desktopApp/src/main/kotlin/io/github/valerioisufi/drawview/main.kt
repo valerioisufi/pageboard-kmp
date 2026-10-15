@@ -3,11 +3,11 @@ package io.github.valerioisufi.drawview
 import androidx.compose.runtime.remember
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import io.github.valerioisufi.drawview.session.DrawViewSessions
 import io.github.valerioisufi.drawview.ui.command.CommandHost
 import io.github.valerioisufi.drawview.ui.command.DrawViewMenuBar
 import io.github.valerioisufi.drawview.ui.window.WindowMinimumSize
 import io.github.valerioisufi.drawview.ui.window.rememberDrawViewWindowState
-import io.github.valerioisufi.drawview.ui.session.DrawViewSessions
 import kotlinx.coroutines.runBlocking
 
 fun main() {

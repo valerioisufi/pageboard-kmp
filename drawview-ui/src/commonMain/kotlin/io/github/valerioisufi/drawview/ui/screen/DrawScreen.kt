@@ -66,6 +66,7 @@ import io.github.valerioisufi.drawview.ui.editor.CanvasContextMenu
 import io.github.valerioisufi.drawview.ui.editor.SelectionActionBar
 import io.github.valerioisufi.drawview.ui.editor.TextEditorOverlay
 import io.github.valerioisufi.drawview.ui.editor.TextMarkupActionBar
+import io.github.valerioisufi.drawview.ui.extension.EditorPanel
 import io.github.valerioisufi.drawview.ui.generated.resources.*
 import io.github.valerioisufi.drawview.ui.platform.HideSystemBarsEffect
 import io.github.valerioisufi.drawview.ui.platform.PencilInteractionEffect
@@ -74,7 +75,6 @@ import io.github.valerioisufi.drawview.ui.platform.fileDropTarget
 import io.github.valerioisufi.drawview.ui.platform.rememberFilePicker
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.render.LocalDrawViewEngines
-import io.github.valerioisufi.drawview.ui.session.EditorPanel
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.LocalCanvasColors
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts

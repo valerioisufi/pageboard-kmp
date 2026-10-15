@@ -43,6 +43,7 @@ kotlin {
             api(project(":drawview-canvas"))
             api(project(":drawview-store-room"))
             api(project(":drawview-ui"))
+            api(project(":drawview-session"))
             implementation(project(":drawview-explorer"))
             // The engines of the PDF pages and of the formulas
             implementation(project(":drawview-pdf"))

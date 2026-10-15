@@ -26,6 +26,7 @@ import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
+import io.github.valerioisufi.drawview.session.DocumentEditorViewModel
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
@@ -33,8 +34,7 @@ import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.adaptive.PlatformConventions
 import io.github.valerioisufi.drawview.ui.adaptive.ReferenceWindow
 import io.github.valerioisufi.drawview.ui.adaptive.ShortcutModifier
-import io.github.valerioisufi.drawview.ui.session.DocumentEditorViewModel
-import io.github.valerioisufi.drawview.ui.session.EditorExtension
+import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

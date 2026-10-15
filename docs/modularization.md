@@ -252,9 +252,17 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 * A new version of the Room schema comes with its migration (`Migration`), tested on a database of
   the version before (`MigrationTestHelper`) and checked on a copy of a real database: the
   documents are never dropped.
-* `EditorExtension` receives an `EditorContext` (document identifier, controller). The editor
-  session bound to a store (`DocumentEditorViewModel`, `EditorSessionScreen`, `DrawViewSessions`)
-  moves to `drawview-session`; `drawview-ui` no longer depends on any store.
+* Every contribution of an `EditorExtension` receives an `EditorContext`: the editor of the
+  document shown (its controller) and the identifier of the document, the same instance as long
+  as the document is shown; what the editor gives its extensions later is added there without
+  changing their signature (Protected Variations). The extension points (`EditorExtension`,
+  `EditorPanel`, `DocumentAction`, `LibraryAction`, `DocumentTag`) are in the package
+  `ui.extension`.
+* `EditorScreen` (`drawview-ui`) is the editor of a controller with its extensions, whoever keeps
+  the document. The editor session bound to a store (`EditorSession`, `DocumentEditorViewModel`,
+  `EditorSessionScreen`, `DrawViewSessions`) is in `drawview-session`, with its package; the
+  library depends on it, `drawview-ui` depends on no store (nor on the lifecycle of the view
+  models).
 
 ### Controller
 
@@ -308,7 +316,7 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 | 3c. Open element types | `ElementType` (CBOR payloads, versions, migration), `DrawCustomElement`, `CustomElementData`, `UpdateElementContent`, unknown types kept as bytes; `ElementRenderer` / `ElementRenderers` (placeholders for the unknown types) in the tiles, the overlays, the selection, the snapping, the thumbnails, the image and PDF export; `CustomElementManager`; Room table `custom_elements`; the shapes of `sample` | Done |
 | 4a. Persistence port | `DocumentPersistence`, `ChangePersister`, `PersistenceQueue` in the model; the preferences of the editor as text by key (`PreferenceStore`, `DrawPreferences.encode`) | Done |
 | 4b. Stores | `drawview-store` / `drawview-store-room` / `drawview-store-testing`; segregated ports; no global store in the libraries; the Room migrations from version 16 (no destructive fallback); `SelectionActivity` in the model (the synchronization without the canvas) | Done |
-| 4c. Editor session | `EditorContext`; `drawview-session` (`DocumentEditorViewModel`, `EditorSessionScreen`); `drawview-ui` without any store | |
+| 4c. Editor session | `EditorContext` given to the extensions; `EditorScreen` in `drawview-ui`; `drawview-session` (`EditorSession`, `DocumentEditorViewModel`, `EditorSessionScreen`, `DrawViewSessions`); `drawview-ui` without any store; the extension points in `ui.extension` | Done |
 | 5. Controller and API | `Viewport`, `CollaboratorPresence`, `EditorHost`, internal managers; explicit API strict and KDoc on every module; ABI dumps | |
 | 6. Sync and relay protocol | `drawview-sync-protocol`; sealed operations with their identity in clear | |
 | 7. Feature modules | `drawview-lecture` / `drawview-lecture-ui`, `drawview-export` / `drawview-export-ui` (`ElementExporter`, export writing to a sink instead of `FileTarget`) | |

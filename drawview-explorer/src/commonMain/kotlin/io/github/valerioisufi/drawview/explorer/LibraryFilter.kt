@@ -5,7 +5,7 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_tag
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_tag_pdfs
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_tag_shared
 import io.github.valerioisufi.drawview.ui.components.BadgeTone
-import io.github.valerioisufi.drawview.ui.session.DocumentTag
+import io.github.valerioisufi.drawview.ui.extension.DocumentTag
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import org.jetbrains.compose.resources.stringResource
 

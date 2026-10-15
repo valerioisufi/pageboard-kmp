@@ -9,7 +9,7 @@ import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.ui.components.BadgeTone
-import io.github.valerioisufi.drawview.ui.session.DocumentTag
+import io.github.valerioisufi.drawview.ui.extension.DocumentTag
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test

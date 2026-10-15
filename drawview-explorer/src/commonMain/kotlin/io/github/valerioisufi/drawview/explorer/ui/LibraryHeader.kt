@@ -74,7 +74,7 @@ import io.github.valerioisufi.drawview.ui.components.DesignFilterChip
 import io.github.valerioisufi.drawview.ui.components.DesignIconButton
 import io.github.valerioisufi.drawview.ui.components.IconButtonStyle
 import io.github.valerioisufi.drawview.ui.components.SearchField
-import io.github.valerioisufi.drawview.ui.session.LibraryAction
+import io.github.valerioisufi.drawview.ui.extension.LibraryAction
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource

@@ -29,6 +29,8 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":drawview-ui"))
+            // The documents exported: those of the store of the application
+            api(project(":drawview-store"))
             implementation(project(":drawview-pdf"))
             implementation(project(":drawview-latex"))
             implementation(libs.compose.runtime)

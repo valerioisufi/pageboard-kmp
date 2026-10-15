@@ -1,8 +1,8 @@
 package io.github.valerioisufi.drawview.explorer.ui
 
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -31,12 +31,12 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sor
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.command.Shortcut
+import io.github.valerioisufi.drawview.ui.extension.DocumentAction
+import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 import io.github.valerioisufi.drawview.ui.generated.resources.about_dialog_title
-import io.github.valerioisufi.drawview.ui.session.DocumentAction
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 
 /** A dialog of the library, opened by its commands (one at a time). */
 internal sealed interface LibraryDialog {

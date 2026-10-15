@@ -1,4 +1,4 @@
-package io.github.valerioisufi.drawview.ui.session
+package io.github.valerioisufi.drawview.ui.extension
 
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope

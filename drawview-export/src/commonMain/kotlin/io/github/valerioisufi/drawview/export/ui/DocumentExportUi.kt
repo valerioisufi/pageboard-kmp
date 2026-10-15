@@ -40,7 +40,6 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.export.DocumentExport
 import io.github.valerioisufi.drawview.export.ExportOptions
 import io.github.valerioisufi.drawview.export.PageImageExporter
@@ -70,13 +69,13 @@ import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.command.Shortcut
+import io.github.valerioisufi.drawview.ui.extension.DocumentAction
+import io.github.valerioisufi.drawview.ui.extension.EditorContext
+import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.render.LocalDrawViewEngines
 import io.github.valerioisufi.drawview.ui.screen.EditorActionButton
-import io.github.valerioisufi.drawview.ui.session.DocumentAction
-import io.github.valerioisufi.drawview.ui.session.EditorExtension
-import io.github.valerioisufi.drawview.ui.session.EditorSession
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.NotesFontFiles
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
@@ -101,8 +100,8 @@ class DocumentExportUi(documents: OpenDocuments, private val appName: String? = 
 
     private var editorExport by mutableStateOf<EditorExport?>(null)
 
-    /** "Export…" in the editor of [session]: the document, and the page on screen to export it alone. */
-    private fun exportCommand(session: EditorSession, controller: DrawViewController) = Command(
+    /** "Export…" in the editor of [context]: the document, and the page on screen to export it alone. */
+    private fun exportCommand(context: EditorContext) = Command(
         id = "export",
         label = { stringResource(Res.string.export_action) },
         group = CommandGroup.FILE,
@@ -110,8 +109,9 @@ class DocumentExportUi(documents: OpenDocuments, private val appName: String? = 
         icon = { rememberVectorPainter(Icons.Outlined.IosShare) },
         shortcuts = listOf(Shortcut(Key.E, primary = true, shift = true))
     ) {
+        val controller = context.controller
         val pageOnScreen = controller.mostVisiblePageIndex()?.let { controller.document.pages.getOrNull(it)?.id }
-        editorExport = EditorExport(session.documentId, controller.document.title, pageOnScreen)
+        editorExport = EditorExport(context.documentId, controller.document.title, pageOnScreen)
     }
 
     /** "Export" on the document selected in the library (see `DocumentLibrary.documentActions`). */
@@ -126,16 +126,16 @@ class DocumentExportUi(documents: OpenDocuments, private val appName: String? = 
      * also be exported alone. The dialog is shown over the canvas.
      */
     val editorExtension: EditorExtension = EditorExtension(
-        toolbarActions = { session, controller ->
-            val command = remember(session, controller) { exportCommand(session, controller) }
+        toolbarActions = { context ->
+            val command = remember(context) { exportCommand(context) }
             EditorActionButton(DrawViewIcons.Share, command.label(), onClick = command.perform)
         },
-        canvasOverlay = { session, _ ->
-            editorExport?.takeIf { it.documentId == session.documentId }?.let {
+        canvasOverlay = { context ->
+            editorExport?.takeIf { it.documentId == context.documentId }?.let {
                 ExportDialog(export, appName, it.documentId, it.title, it.pageOnScreen, onDismiss = { editorExport = null })
             }
         },
-        commands = { session, controller -> listOf(exportCommand(session, controller)) }
+        commands = { context -> listOf(exportCommand(context)) }
     )
 }
 

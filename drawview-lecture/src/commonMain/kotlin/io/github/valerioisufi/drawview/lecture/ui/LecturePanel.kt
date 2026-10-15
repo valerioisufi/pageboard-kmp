@@ -110,12 +110,12 @@ import io.github.valerioisufi.drawview.ui.components.OutlineButton
 import io.github.valerioisufi.drawview.ui.components.SegmentedChoice
 import io.github.valerioisufi.drawview.ui.components.TonalButton
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
+import io.github.valerioisufi.drawview.ui.extension.EditorPanel
 import io.github.valerioisufi.drawview.ui.generated.resources.Res as UiRes
 import io.github.valerioisufi.drawview.ui.generated.resources.date_months_short
 import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.render.LocalDrawViewEngines
-import io.github.valerioisufi.drawview.ui.session.EditorPanel
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import io.github.valerioisufi.drawview.ui.util.formatShortDateTime

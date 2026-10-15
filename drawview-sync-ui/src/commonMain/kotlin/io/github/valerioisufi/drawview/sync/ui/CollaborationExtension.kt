@@ -44,8 +44,8 @@ import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
+import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.screen.EditorActionButton
-import io.github.valerioisufi.drawview.ui.session.EditorExtension
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -68,22 +68,22 @@ fun Collaboration.editorExtension(): EditorExtension {
         icon = { rememberVectorPainter(DrawViewIcons.UserPlus) }
     ) { sharing.documentId = documentId }
     return EditorExtension(
-        toolbarActions = { session, _ ->
-            val command = remember(session) { shareCommand(session.documentId) }
-            ShareAction(this@editorExtension, session.documentId, command)
+        toolbarActions = { context ->
+            val command = remember(context) { shareCommand(context.documentId) }
+            ShareAction(this@editorExtension, context.documentId, command)
         },
-        canvasOverlay = { session, controller ->
-            CollaboratorsLayer(this@editorExtension, session.documentId, controller)
-            WritingElsewhereNotice(controller)
-            if (sharing.documentId == session.documentId) {
-                ShareDialog(this@editorExtension, session.documentId, controller.document.title, onDismiss = { sharing.documentId = null })
+        canvasOverlay = { context ->
+            CollaboratorsLayer(this@editorExtension, context.documentId, context.controller)
+            WritingElsewhereNotice(context.controller)
+            if (sharing.documentId == context.documentId) {
+                ShareDialog(this@editorExtension, context.documentId, context.controller.document.title, onDismiss = { sharing.documentId = null })
             }
         },
-        commands = { session, _ -> listOf(shareCommand(session.documentId)) },
-        readOnlyNote = { session, _ ->
+        commands = { context -> listOf(shareCommand(context.documentId)) },
+        readOnlyNote = { context ->
             // The owner decides who edits a shared document
             val memberships by memberships.collectAsState()
-            val membership = memberships[session.documentId]
+            val membership = memberships[context.documentId]
             val owner = membership?.takeIf { it.owner != device }?.let { it.memberOf(it.owner)?.name }
             owner?.let { stringResource(Res.string.sync_read_only_note, it) }
         }

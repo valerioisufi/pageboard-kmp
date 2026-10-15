@@ -11,8 +11,8 @@ import androidx.compose.ui.graphics.Path
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.render.ElementRenderer
 import io.github.valerioisufi.drawview.model.ElementType
+import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.screen.EditorActionButton
-import io.github.valerioisufi.drawview.ui.session.EditorExtension
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import kotlin.math.PI
 import kotlin.math.cos
@@ -88,9 +88,9 @@ object ShapeRenderer : ElementRenderer<Shape> {
  * kind and color.
  */
 fun shapesExtension(): EditorExtension = EditorExtension(
-    toolbarActions = { _, controller ->
-        val next = remember(controller) { ShapeSequence() }
-        EditorActionButton(DrawViewIcons.Star, "Add a shape", onClick = { addShape(controller, next.next()) })
+    toolbarActions = { context ->
+        val next = remember(context) { ShapeSequence() }
+        EditorActionButton(DrawViewIcons.Star, "Add a shape", onClick = { addShape(context.controller, next.next()) })
     }
 )
 

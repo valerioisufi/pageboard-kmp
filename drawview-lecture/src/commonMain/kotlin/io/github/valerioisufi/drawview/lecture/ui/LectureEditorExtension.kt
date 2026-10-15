@@ -66,9 +66,9 @@ import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.components.BadgeTone
+import io.github.valerioisufi.drawview.ui.extension.DocumentTag
+import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.screen.EditorActionButton
-import io.github.valerioisufi.drawview.ui.session.DocumentTag
-import io.github.valerioisufi.drawview.ui.session.EditorExtension
 import io.github.valerioisufi.drawview.ui.theme.DrawViewElevation
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.elevation
@@ -92,15 +92,15 @@ fun LectureAssistant.editorExtension(): EditorExtension {
     ) { isPanelOpen = !isPanelOpen }
     val panelState = LecturePanelState()
     return EditorExtension(
-        toolbarActions = { session, _ -> LectureToolbarButton(this@editorExtension, session.documentId, panel) },
-        canvasOverlay = { session, controller ->
-            LectureEditorEffects(this@editorExtension, session.documentId, controller)
-            PlacementHint(this@editorExtension, controller)
-            ArrivalsBanner(this@editorExtension, session.documentId)
+        toolbarActions = { context -> LectureToolbarButton(this@editorExtension, context.documentId, panel) },
+        canvasOverlay = { context ->
+            LectureEditorEffects(this@editorExtension, context.documentId, context.controller)
+            PlacementHint(this@editorExtension, context.controller)
+            ArrivalsBanner(this@editorExtension, context.documentId)
             LectureSettings(this@editorExtension, panelState)
         },
-        commands = { _, _ -> if (isRecordingSupported) listOf(panel) else emptyList() },
-        panels = { session, controller -> listOf(lecturePanel(this@editorExtension, session.documentId, controller, panelState)) }
+        commands = { if (isRecordingSupported) listOf(panel) else emptyList() },
+        panels = { context -> listOf(lecturePanel(this@editorExtension, context.documentId, context.controller, panelState)) }
     )
 }
 

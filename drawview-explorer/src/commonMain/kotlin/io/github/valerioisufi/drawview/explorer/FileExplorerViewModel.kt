@@ -17,7 +17,7 @@ import io.github.valerioisufi.drawview.store.DocumentStore
 import io.github.valerioisufi.drawview.store.DocumentSummary
 import io.github.valerioisufi.drawview.store.FolderSummary
 import io.github.valerioisufi.drawview.store.OpenDocuments
-import io.github.valerioisufi.drawview.ui.session.DocumentTag
+import io.github.valerioisufi.drawview.ui.extension.DocumentTag
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 

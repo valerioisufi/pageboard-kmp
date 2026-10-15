@@ -1,4 +1,4 @@
-package io.github.valerioisufi.drawview.ui.session
+package io.github.valerioisufi.drawview.session
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

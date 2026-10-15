@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import io.github.valerioisufi.drawview.canvas.tool.Tool
+import io.github.valerioisufi.drawview.session.DocumentEditorViewModel
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
@@ -30,7 +31,6 @@ import io.github.valerioisufi.drawview.ui.adaptive.ShortcutModifier
 import io.github.valerioisufi.drawview.ui.adaptive.platformConventions
 import io.github.valerioisufi.drawview.ui.command.CommandHost
 import io.github.valerioisufi.drawview.ui.command.CommandRoot
-import io.github.valerioisufi.drawview.ui.session.DocumentEditorViewModel
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import java.util.Locale
 import kotlin.test.BeforeTest

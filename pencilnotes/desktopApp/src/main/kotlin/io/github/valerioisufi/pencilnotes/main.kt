@@ -1,19 +1,19 @@
 package io.github.valerioisufi.pencilnotes
 
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
-import io.github.valerioisufi.drawview.platform.DRAWVIEW_DATA_DIRECTORY_PROPERTY
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.application
 import io.github.valerioisufi.drawview.lecture.LectureRecordings
 import io.github.valerioisufi.drawview.lecture.ui.LectureExitDialog
+import io.github.valerioisufi.drawview.platform.DRAWVIEW_DATA_DIRECTORY_PROPERTY
+import io.github.valerioisufi.drawview.session.DrawViewSessions
 import io.github.valerioisufi.drawview.ui.command.CommandHost
 import io.github.valerioisufi.drawview.ui.command.DrawViewMenuBar
 import io.github.valerioisufi.drawview.ui.window.WindowMinimumSize
 import io.github.valerioisufi.drawview.ui.window.rememberDrawViewWindowState
-import io.github.valerioisufi.drawview.ui.session.DrawViewSessions
 import io.github.valerioisufi.pencilnotes.ui.theme.PencilNotesTheme
 import java.io.File
 import kotlinx.coroutines.runBlocking

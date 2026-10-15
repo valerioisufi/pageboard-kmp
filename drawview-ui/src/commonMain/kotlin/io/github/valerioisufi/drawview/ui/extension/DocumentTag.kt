@@ -1,4 +1,4 @@
-package io.github.valerioisufi.drawview.ui.session
+package io.github.valerioisufi.drawview.ui.extension
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable

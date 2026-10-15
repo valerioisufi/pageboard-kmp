@@ -10,6 +10,8 @@ dependencies {
     implementation(project(":pencilnotes-shared"))
     implementation(project(":drawview-canvas"))
     implementation(project(":drawview-ui"))
+    // Every pending change written before the application exits (DrawViewSessions)
+    implementation(project(":drawview-session"))
     implementation(project(":drawview-lecture"))
 
     implementation(compose.desktop.currentOs)
