@@ -1,15 +1,18 @@
 package io.github.valerioisufi.drawview.canvas
 
 import android.graphics.Paint
+import android.graphics.Path
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokeOutline
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 
 internal actual class StrokeMeshPainter actual constructor() {
     private val paint = Paint().apply { isAntiAlias = true }
+    private val path = Path()
     private val androidMatrix = android.graphics.Matrix()
     private val matrixValues = FloatArray(9)
 
@@ -17,7 +20,6 @@ internal actual class StrokeMeshPainter actual constructor() {
         if (mesh.isEmpty) return
         val androidCanvas = canvas.nativeCanvas
         val color = colorOverride ?: Color(mesh.color)
-        val translucent = color.alpha < 0.999f
 
         val saveCount = androidCanvas.save()
         if (transform != null) {
@@ -28,7 +30,42 @@ internal actual class StrokeMeshPainter actual constructor() {
             androidCanvas.concat(androidMatrix)
         }
 
-        if (translucent) {
+        val outline = mesh.outline
+        if (outline != null && !outline.isEmpty) {
+            drawOutline(androidCanvas, outline, color)
+        } else {
+            drawTriangles(androidCanvas, mesh, color)
+        }
+        androidCanvas.restoreToCount(saveCount)
+    }
+
+    /**
+     * Fills [outline] antialiased with the non-zero rule: where the stroke overlaps itself it is
+     * painted once, translucent too.
+     */
+    private fun drawOutline(androidCanvas: android.graphics.Canvas, outline: StrokeOutline, color: Color) {
+        path.rewind()
+        path.fillType = Path.FillType.WINDING
+        for (polygon in outline.polygons) {
+            if (polygon.size < 6) continue
+            path.moveTo(polygon[0], polygon[1])
+            var i = 2
+            while (i + 1 < polygon.size) {
+                path.lineTo(polygon[i], polygon[i + 1])
+                i += 2
+            }
+            path.close()
+        }
+        paint.color = color.toArgb()
+        androidCanvas.drawPath(path, paint)
+    }
+
+    /**
+     * Draws the triangles of [mesh] (never antialiased): translucent through an offscreen layer, so
+     * that the overlapping triangles do not accumulate alpha.
+     */
+    private fun drawTriangles(androidCanvas: android.graphics.Canvas, mesh: StrokeMesh, color: Color) {
+        if (color.alpha < 0.999f) {
             val bounds = mesh.computeBounds()
             androidCanvas.saveLayerAlpha(
                 bounds.left, bounds.top, bounds.right, bounds.bottom,
@@ -57,7 +94,5 @@ internal actual class StrokeMeshPainter actual constructor() {
                 paint
             )
         }
-
-        androidCanvas.restoreToCount(saveCount)
     }
 }

@@ -85,7 +85,7 @@ A probe on the desktop (JVM, native Ink): 300 strokes of handwriting of 60 to 15
 | Phase | Content | Status |
 |---|---|---|
 | 1 | The outline with the mesh: `StrokeMesh.outline` (kept by `withPoints`, mapped by `transformed`), filled by the native modeller; the export uses it (`buildOutline` removed); tests; ABI of `drawview-model` and `drawview-ink` | Done |
-| 2 | The painters fill the outline: `StrokeMeshPainter` on Skiko and Android, the triangles as fallback; tests on the pixels (antialiased edges, translucent overlaps painted once); PencilNotes on the screen of 1x | Planned |
+| 2 | The painters fill the outline: `StrokeMeshPainter` on Skiko and Android, the triangles as fallback; tests on the pixels (antialiased edges, translucent overlaps painted once); PencilNotes on the screen of 1x | Done |
 
 ### Phase 1 results
 
@@ -99,6 +99,19 @@ A probe on the desktop (JVM, native Ink): 300 strokes of handwriting of 60 to 15
   `InkStrokeEngine.buildOutline` is removed. The dumps of the JVM and of Android are generated;
   the klib dumps are edited by hand on Windows (where the iOS targets cannot be dumped) and to be
   checked on macOS.
+
+### Phase 2 results
+
+* `StrokeMeshPainter` fills the outline with an antialiased paint and the non-zero rule: Skia
+  `PathBuilder` (one `addPoly` per polygon) on Skiko, `android.graphics.Path` on Android, both
+  kept by the painter between the strokes. The triangles stay for the meshes without outline.
+* `StrokeAntialiasingTest` (JVM, native Ink): a slanted line drawn from its outline has more than
+  a hundred pixels partly covered, more than ten times those of its triangles; a highlighter crossing
+  itself is as light at the crossing as elsewhere.
+* PencilNotes on the screen of 1x: the strokes at 100%, loaded or just drawn, have smooth edges
+  where they were stair-stepped; the thumbnails of the library show a thin stroke whole where it
+  broke into dashes.
+* The screenshots of the repository draw no stroke: they do not change.
 
 ### Left for later
 
@@ -123,6 +136,7 @@ Taken alone, revertible:
 
 ## Risks
 
-* Memory: about +20% for an open document (the outline beside the mesh and the inputs).
+* Memory: the geometry of the strokes grows by 57% in the probe (the outline beside the
+  positions and the indices of the mesh); the inputs, kept too, are not counted there.
 * On Android a path is built with one call per vertex (`lineTo`): a tile of many strokes takes
   longer to rasterize there; to measure on a device.

@@ -5,22 +5,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.skiaCanvas
 import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.model.StrokeMesh
+import io.github.valerioisufi.drawview.model.StrokeOutline
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import org.jetbrains.skia.BlendMode
 import org.jetbrains.skia.Matrix33
 import org.jetbrains.skia.Paint
+import org.jetbrains.skia.PathBuilder
+import org.jetbrains.skia.PathFillMode
 import org.jetbrains.skia.Rect
 import org.jetbrains.skia.VertexMode
 
 internal actual class StrokeMeshPainter actual constructor() {
     private val paint = Paint().apply { isAntiAlias = true }
     private val layerPaint = Paint()
+    private val pathBuilder = PathBuilder(PathFillMode.WINDING)
 
     actual fun draw(canvas: Canvas, mesh: StrokeMesh, transform: Matrix2D?, colorOverride: Color?) {
         if (mesh.isEmpty) return
         val skiaCanvas = canvas.skiaCanvas
         val color = colorOverride ?: Color(mesh.color)
-        val translucent = color.alpha < 0.999f
 
         skiaCanvas.save()
         if (transform != null) {
@@ -33,6 +36,36 @@ internal actual class StrokeMeshPainter actual constructor() {
             )
         }
 
+        val outline = mesh.outline
+        if (outline != null && !outline.isEmpty) {
+            drawOutline(skiaCanvas, outline, color)
+        } else {
+            drawTriangles(skiaCanvas, mesh, color)
+        }
+        skiaCanvas.restore()
+    }
+
+    /**
+     * Fills [outline] antialiased with the non-zero rule: where the stroke overlaps itself it is
+     * painted once, translucent too.
+     */
+    private fun drawOutline(skiaCanvas: org.jetbrains.skia.Canvas, outline: StrokeOutline, color: Color) {
+        pathBuilder.setFillType(PathFillMode.WINDING)
+        for (polygon in outline.polygons) {
+            if (polygon.size >= 6) pathBuilder.addPoly(polygon, true)
+        }
+        val path = pathBuilder.detach()
+        paint.color = color.toArgb()
+        skiaCanvas.drawPath(path, paint)
+        path.close()
+    }
+
+    /**
+     * Draws the triangles of [mesh] (never antialiased): translucent through an offscreen layer, so
+     * that the overlapping triangles do not accumulate alpha.
+     */
+    private fun drawTriangles(skiaCanvas: org.jetbrains.skia.Canvas, mesh: StrokeMesh, color: Color) {
+        val translucent = color.alpha < 0.999f
         if (translucent) {
             val bounds = mesh.computeBounds()
             layerPaint.alpha = (color.alpha * 255f).toInt().coerceIn(0, 255)
@@ -56,6 +89,5 @@ internal actual class StrokeMeshPainter actual constructor() {
         }
 
         if (translucent) skiaCanvas.restore()
-        skiaCanvas.restore()
     }
 }
