@@ -3,19 +3,13 @@ package io.github.valerioisufi.drawview.explorer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
-import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
 import io.github.valerioisufi.drawview.explorer.ui.LibraryDrag
 import io.github.valerioisufi.drawview.explorer.ui.LibraryLayout
+import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
+import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
+import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.ui.adaptive.ReferenceWindow
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -23,6 +17,13 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AdaptiveLibraryTest {
@@ -37,7 +38,7 @@ class AdaptiveLibraryTest {
         Dispatchers.resetMain()
     }
 
-    private fun TestScope.library() = FileExplorerViewModel(KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope))
+    private fun TestScope.library() = FileExplorerViewModel(OpenDocuments(KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)))
 
     private fun FileExplorerViewModel.item(name: String) = currentDirectoryFiles.single { it.name == name }
 

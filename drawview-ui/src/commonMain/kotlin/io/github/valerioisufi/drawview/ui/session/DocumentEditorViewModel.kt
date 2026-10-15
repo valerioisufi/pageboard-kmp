@@ -8,12 +8,12 @@ import androidx.lifecycle.viewModelScope
 import io.github.valerioisufi.drawview.canvas.controller.DrawPreferences
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
-import io.github.valerioisufi.drawview.data.DocumentStore
-import io.github.valerioisufi.drawview.data.OpenDocument
-import io.github.valerioisufi.drawview.data.OpenDocuments
-import io.github.valerioisufi.drawview.data.PreferenceStore
 import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.syncLock
+import io.github.valerioisufi.drawview.store.DocumentStore
+import io.github.valerioisufi.drawview.store.OpenDocument
+import io.github.valerioisufi.drawview.store.OpenDocuments
+import io.github.valerioisufi.drawview.store.PreferenceStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -29,9 +29,10 @@ import kotlinx.coroutines.launch
  */
 class EditorSession internal constructor(
     val documentId: String,
-    internal val store: DocumentStore,
     internal val documents: OpenDocuments
 ) {
+    internal val store: DocumentStore get() = documents.store
+
     /** `null` while the document is being loaded. */
     var controller: DrawViewController? by mutableStateOf(null)
         internal set
@@ -60,13 +61,13 @@ class EditorSession internal constructor(
  * changes when it is closed. Survives the configuration changes of Android (e.g. rotations).
  */
 class DocumentEditorViewModel(
-    val store: DocumentStore,
-    val documents: OpenDocuments = OpenDocuments(store),
+    val documents: OpenDocuments,
     /** The engines of the editors (PDF pages, formulas). */
     val engines: DrawViewEngines = DrawViewEngines.None,
     /** Where the preferences of the user are kept (by default, in the store when it keeps them). */
-    val preferences: PreferenceStore? = store as? PreferenceStore
+    val preferences: PreferenceStore? = documents.store as? PreferenceStore
 ) : ViewModel() {
+    private val store: DocumentStore get() = documents.store
 
     var session: EditorSession? by mutableStateOf(null)
         private set
@@ -75,7 +76,7 @@ class DocumentEditorViewModel(
     fun openDocument(documentId: String) {
         if (session?.documentId == documentId) return
         closeSession()
-        val newSession = EditorSession(documentId, store, documents)
+        val newSession = EditorSession(documentId, documents)
         session = newSession
         DrawViewSessions.register(newSession)
         viewModelScope.launch { load(newSession) }
@@ -89,7 +90,7 @@ class DocumentEditorViewModel(
         viewModelScope.launch {
             val document = store.createDocument(name, folderId = folderId)
             closeSession()
-            val newSession = EditorSession(document.id, store, documents)
+            val newSession = EditorSession(document.id, documents)
             session = newSession
             DrawViewSessions.register(newSession)
             load(newSession)

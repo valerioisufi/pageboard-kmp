@@ -1,16 +1,11 @@
 package io.github.valerioisufi.drawview.sync
 
 import androidx.room.Room
-import io.github.valerioisufi.drawview.data.OpenDocuments
-import io.github.valerioisufi.drawview.data.RoomDocumentStore
-import io.github.valerioisufi.drawview.data.db.DrawDatabase
-import io.github.valerioisufi.drawview.data.db.createDrawDatabase
-import io.github.valerioisufi.drawview.data.db.getInMemoryDatabaseBuilder
-import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.DrawStroke
 import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.KotlinStrokeModeller
 import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.StrokeTool
 import io.github.valerioisufi.drawview.model.change.AddElements
@@ -20,6 +15,11 @@ import io.github.valerioisufi.drawview.model.change.RemoveElements
 import io.github.valerioisufi.drawview.model.change.StrokePlacement
 import io.github.valerioisufi.drawview.model.change.snapshot
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
+import io.github.valerioisufi.drawview.store.OpenDocuments
+import io.github.valerioisufi.drawview.store.room.RoomDocumentStore
+import io.github.valerioisufi.drawview.store.room.db.DrawDatabase
+import io.github.valerioisufi.drawview.store.room.db.createDrawDatabase
+import io.github.valerioisufi.drawview.store.room.db.getInMemoryDatabaseBuilder
 import java.io.File
 import kotlin.math.sin
 import kotlin.random.Random
@@ -149,6 +149,6 @@ class OfflineWorkBenchmark {
     private fun stroke(x: Float, y: Float): DrawStroke {
         val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 1f, color = 0xFF000000.toInt())
         val points = (0 until 150).map { i -> StrokePoint(x + i * 0.2f, y + 3f * sin(i / 10f), 0.5f, i * 8L) }
-        return DrawStroke(mesh = InkStrokeEngine.buildMesh(points, brush, InputToolType.STYLUS)!!, brushConfig = brush)
+        return DrawStroke(mesh = KotlinStrokeModeller.buildMesh(points, brush, InputToolType.STYLUS)!!, brushConfig = brush)
     }
 }

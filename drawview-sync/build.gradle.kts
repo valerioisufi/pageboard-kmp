@@ -8,7 +8,7 @@ description = "Synchronization of DrawView documents between devices: protocol, 
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            api(project(":drawview-data"))
+            api(project(":drawview-store"))
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.cbor)
             implementation(libs.kotlinx.serialization.json)
@@ -21,6 +21,7 @@ kotlin {
         }
         jvmTest.dependencies {
             // The documents in Room, as in the applications (OfflineWorkBenchmark)
+            implementation(project(":drawview-store-room"))
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
         }

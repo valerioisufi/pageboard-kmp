@@ -1,6 +1,6 @@
 package io.github.valerioisufi.drawview.sync
 
-import io.github.valerioisufi.drawview.canvas.controller.SelectionActivity
+import io.github.valerioisufi.drawview.model.SelectionActivity
 import io.github.valerioisufi.drawview.model.change.TextData
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient

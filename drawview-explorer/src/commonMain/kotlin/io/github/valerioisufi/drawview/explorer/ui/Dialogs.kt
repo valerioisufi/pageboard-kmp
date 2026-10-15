@@ -48,7 +48,6 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.github.valerioisufi.drawview.data.FolderSummary
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_cancel
@@ -69,6 +68,7 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_pap
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_root_folder
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_untitled_note
 import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.store.FolderSummary
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.command.DesignMenu
 import io.github.valerioisufi.drawview.ui.command.MenuItem

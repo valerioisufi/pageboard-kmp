@@ -1,7 +1,7 @@
 package io.github.valerioisufi.drawview.sync
 
-import io.github.valerioisufi.drawview.data.DocumentStore
-import io.github.valerioisufi.drawview.data.OpenDocuments
+import io.github.valerioisufi.drawview.store.DocumentStore
+import io.github.valerioisufi.drawview.store.OpenDocuments
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

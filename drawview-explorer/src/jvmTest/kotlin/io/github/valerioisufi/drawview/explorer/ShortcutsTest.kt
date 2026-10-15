@@ -20,9 +20,9 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import io.github.valerioisufi.drawview.canvas.tool.Tool
-import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
-import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
-import io.github.valerioisufi.drawview.data.OpenDocuments
+import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
+import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
+import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.adaptive.InputHints
 import io.github.valerioisufi.drawview.ui.adaptive.PlatformConventions
@@ -105,7 +105,6 @@ class ShortcutsTest {
                             // The documents read on the thread asking (the scene of a test has no main thread)
                             DocumentLibrary(
                                 title = { Text("DrawView") },
-                                store = store,
                                 documents = remember { OpenDocuments(store, dispatcher = Dispatchers.Unconfined) },
                                 modifier = Modifier.fillMaxSize()
                             )

@@ -1,14 +1,14 @@
 package io.github.valerioisufi.drawview.sync.lan
 
-import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
-import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
-import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.change.AddPage
 import io.github.valerioisufi.drawview.model.change.DocumentChange
 import io.github.valerioisufi.drawview.model.change.DocumentSession
 import io.github.valerioisufi.drawview.model.change.DocumentSnapshot
 import io.github.valerioisufi.drawview.model.change.snapshot
+import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
+import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
+import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.sync.InMemorySharedDocuments
 import io.github.valerioisufi.drawview.sync.ResourceFiles
 import io.github.valerioisufi.drawview.sync.SyncEngine

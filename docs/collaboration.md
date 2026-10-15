@@ -38,8 +38,8 @@ Variations).
 | Persistence | `ChangePersister`, translating the effects of the changes into `DrawPersistence` calls | Indirection, Protected Variations |
 | Tiles and selection | `RenderInvalidator`, `SelectionManager.onElementsRemoved`, subscribed to the session | Low Coupling (observer) |
 | Clock and conflicts | `HybridClock`, `Stamp`s of the pieces of the pages and elements (last-writer-wins) | Pure Fabrication |
-| Operation log and version vector | `DocumentSession` (numbers the operations, applies those of the others once each), `DrawPersistence.appendOperation`, `DocumentStore.versionVector` / `operationsAfter` (Room and key-value implementations in `drawview-data`) | Protected Variations |
-| One session per document, for the editor and the synchronization (documents not open too) | `OpenDocuments` in `drawview-data` | Creator, Information Expert (the store knows the replica, the log, the persistence) |
+| Operation log and version vector | `DocumentSession` (numbers the operations, applies those of the others once each), `DrawPersistence.appendOperation`, `OperationLog.versionVector` / `operationsAfter` (Room implementation in `drawview-store-room`, key-value one in `drawview-store`) | Protected Variations |
+| One session per document, for the editor and the synchronization (documents not open too) | `OpenDocuments` in `drawview-store` | Creator, Information Expert (the store knows the replica, the log, the persistence) |
 | Synchronize the documents | `SyncEngine` (a connection: `Link`; a document: `DocumentSync`) | Controller, Pure Fabrication |
 | Transport | `SyncTransport` / `SyncChannel`: `InMemoryTransport`, `LanTransport`, later `RelayTransport` | Polymorphism, Protected Variations |
 | Encryption | `SecureChannel`, decorator of `SyncChannel` | Indirection |
@@ -141,7 +141,7 @@ The origin of a change decides what the observers do:
 ```
 drawview-core      DocumentChange, DocumentSession, HybridClock, Operation, DocumentSnapshot,
                    DocumentAttachments
-drawview-data      persistent identifiers, operations log on Room, OpenDocuments
+drawview-store     persistent identifiers, operations log, OpenDocuments (Room: drawview-store-room)
 drawview-sync      SyncEngine, protocol, encryption, presence, InMemoryTransport
 drawview-sync-lan  LanTransport (TCP), LanDiscovery (JmDNS / NsdManager / Bonjour), LanSync
 drawview-sync-ui   Collaboration, editor extension, join dialog (Compose)

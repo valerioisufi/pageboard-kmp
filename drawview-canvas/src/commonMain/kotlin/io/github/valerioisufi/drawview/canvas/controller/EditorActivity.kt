@@ -6,11 +6,11 @@ import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.DrawElement
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.SelectionActivity
 import io.github.valerioisufi.drawview.model.StrokeMesh
 import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.change.TextData
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
-import kotlinx.serialization.Serializable
 
 /**
  * What the user is doing on the document, for the others working on it:
@@ -36,19 +36,6 @@ data class EditorActivity(
 ) {
     /** Whether there is nothing to show. */
     val isIdle: Boolean get() = pageId == null && !strokeCancelled && text == null && selection == null
-}
-
-/**
- * The elements [ids] of the page [pageId] selected, moved by [transform] (page millimeters;
- * [AffineTransform.IDENTITY] while they are not being moved).
- */
-@Serializable
-data class SelectionActivity(
-    val pageId: String,
-    val ids: List<String>,
-    val transform: AffineTransform = AffineTransform.IDENTITY
-) {
-    val isMoving: Boolean get() = transform != AffineTransform.IDENTITY
 }
 
 /**

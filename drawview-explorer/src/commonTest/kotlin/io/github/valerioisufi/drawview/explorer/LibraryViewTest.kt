@@ -2,11 +2,12 @@ package io.github.valerioisufi.drawview.explorer
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Mic
-import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
-import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.Section
 import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
+import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
+import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.ui.components.BadgeTone
 import io.github.valerioisufi.drawview.ui.session.DocumentTag
 import kotlin.test.AfterTest
@@ -39,7 +40,7 @@ class LibraryViewTest {
 
     private fun TestScope.library(): Pair<KeyValueDocumentStore, FileExplorerViewModel> {
         val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)
-        return store to FileExplorerViewModel(store)
+        return store to FileExplorerViewModel(OpenDocuments(store))
     }
 
     private val FileExplorerViewModel.shownNames get() = shownFiles.map { it.name }

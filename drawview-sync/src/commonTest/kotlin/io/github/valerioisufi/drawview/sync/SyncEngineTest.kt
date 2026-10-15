@@ -1,9 +1,5 @@
 package io.github.valerioisufi.drawview.sync
 
-import io.github.valerioisufi.drawview.canvas.controller.SelectionActivity
-import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
-import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
-import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.model.AttachmentChange
 import io.github.valerioisufi.drawview.model.AttachmentReceiver
 import io.github.valerioisufi.drawview.model.AttachmentSource
@@ -15,6 +11,7 @@ import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.DrawResource
 import io.github.valerioisufi.drawview.model.DrawStroke
 import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.SelectionActivity
 import io.github.valerioisufi.drawview.model.StrokeMesh
 import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.StrokeTool
@@ -37,6 +34,9 @@ import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.model.change.snapshot
 import io.github.valerioisufi.drawview.model.change.toData
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
+import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
+import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
+import io.github.valerioisufi.drawview.store.OpenDocuments
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertContentEquals

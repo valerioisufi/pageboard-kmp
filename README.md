@@ -9,7 +9,7 @@ The repository also contains a [sample application](./sample) showing how to bui
 ## Modules
 
 * [`/drawview-model`](./drawview-model) is the document without Compose (pages, elements, changes, clock, geometry), [`/drawview-ink`](./drawview-ink) models the strokes with Google Ink, [`/drawview-canvas`](./drawview-canvas) is the editor of a document and its tiled rendering. Every change of a document is a serializable `DocumentChange` submitted to the `DocumentSession` of the document (see [docs/collaboration.md](./docs/collaboration.md)).
-* [`/drawview-data`](./drawview-data) handles persistence (Room / SQLite): documents, folders and preferences.
+* [`/drawview-store`](./drawview-store) is the storage of the documents without a database: its ports (`DocumentCatalog`, `OperationLog`, `SharingStore`, `PreferenceStore`, together `DocumentStore`), `OpenDocuments` (the documents being changed, shared by the editor and the synchronization) and a store on any key-value storage (in memory for the tests); [`/drawview-store-room`](./drawview-store-room) implements it with Room (SQLite), with the migrations of its schema; [`/drawview-store-testing`](./drawview-store-testing) holds the tests every store must pass.
 * [`/drawview-ui`](./drawview-ui) contains the editor user interface (`DrawScreen`, `EditorSessionScreen`) and its components.
 * [`/drawview-explorer`](./drawview-explorer) provides the document library: folders and notes (create, rename, move, delete, multiple selection), sorting, recent documents, and `DocumentLibrary`, a complete note-taking application (library + editor) themed by the caller.
 * [`/drawview-pdf`](./drawview-pdf) provides PDF document rendering with PDFium (Desktop JVM, Android and iOS), and the text of the pages with the position of every character.
@@ -18,13 +18,14 @@ The repository also contains a [sample application](./sample) showing how to bui
 * [`/drawview-export`](./drawview-export) exports the documents (see [docs/export.md](./docs/export.md)): a PDF of the pages, written with PDFium (the pages of the imported PDFs copied with their vectors and text, the marks of their text as annotations, the strokes as vector outlines, the texts as images with their text searchable), or the image of a page (PNG); "Export" on a document of the library and in the editor (`DocumentExportUi`).
 * [`/native`](./native) contains the native C++ engines and JNI bridges for Google Ink, MicroTeX, and PDFium.
 
-A minimal application is a theme around `DocumentLibrary`:
+A minimal application is a theme around `DocumentLibrary`, given the documents of its store:
 
 ```kotlin
 @Composable
 fun App() {
     DrawViewTheme {
-        DocumentLibrary(title = { Text("My Notes") }, modifier = Modifier.fillMaxSize())
+        // The documents in Room, in the data directory of the application (drawview-store-room)
+        DocumentLibrary(title = { Text("My Notes") }, documents = DrawViewStore.documents, modifier = Modifier.fillMaxSize())
     }
 }
 ```
@@ -139,7 +140,7 @@ Running:
 
 ## Running Tests
 
-* **Modules**: `./gradlew :drawview-<module>:jvmTest` (also `iosSimulatorArm64Test`), e.g. `:drawview-data:jvmTest`, `:drawview-explorer:jvmTest`, `:drawview-lecture:jvmTest`, `:drawview-export:jvmTest`
+* **Modules**: `./gradlew :drawview-<module>:jvmTest` (also `iosSimulatorArm64Test`), e.g. `:drawview-store-room:jvmTest`, `:drawview-explorer:jvmTest`, `:drawview-lecture:jvmTest`, `:drawview-export:jvmTest`
 * **Screenshots** of the library and of the editor in the reference windows of the adaptive interface (phones, tablets, desktop; see [docs/adaptive-ui.md](./docs/adaptive-ui.md)): `./gradlew :drawview-explorer:verifyRoborazziJvm` compares the interface with the images of `drawview-explorer/screenshots`, `recordRoborazziJvm` records them again after a change of the interface
 * **Sample**:
   * Android: `./gradlew :sample-shared:testAndroidHostTest`

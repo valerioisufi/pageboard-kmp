@@ -1,9 +1,9 @@
 package io.github.valerioisufi.drawview.explorer
 
-import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
-import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
-import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
+import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
+import io.github.valerioisufi.drawview.store.OpenDocuments
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.Test

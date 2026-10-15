@@ -1,6 +1,6 @@
 package io.github.valerioisufi.drawview.export
 
-import io.github.valerioisufi.drawview.data.OpenDocuments
+import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.ui.platform.FileTarget
 
 /**

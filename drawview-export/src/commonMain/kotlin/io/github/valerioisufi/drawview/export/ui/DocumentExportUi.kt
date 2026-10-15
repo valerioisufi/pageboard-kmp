@@ -41,8 +41,6 @@ import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
-import io.github.valerioisufi.drawview.data.DrawViewStore
-import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.export.DocumentExport
 import io.github.valerioisufi.drawview.export.ExportOptions
 import io.github.valerioisufi.drawview.export.PageImageExporter
@@ -67,6 +65,7 @@ import io.github.valerioisufi.drawview.export.generated.resources.export_pages_o
 import io.github.valerioisufi.drawview.export.generated.resources.export_save_title
 import io.github.valerioisufi.drawview.export.generated.resources.export_skipped
 import io.github.valerioisufi.drawview.export.generated.resources.export_title
+import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
@@ -141,11 +140,11 @@ class DocumentExportUi(documents: OpenDocuments, private val appName: String? = 
 }
 
 /**
- * The export of the documents of [documents] (by default those of the library of `DrawViewStore`)
- * in the application [appName].
+ * The export of the documents of [documents] (those of the library of the application) in the
+ * application [appName].
  */
 @Composable
-fun rememberDocumentExportUi(documents: OpenDocuments = DrawViewStore.documents, appName: String? = null): DocumentExportUi =
+fun rememberDocumentExportUi(documents: OpenDocuments, appName: String? = null): DocumentExportUi =
     remember(documents, appName) { DocumentExportUi(documents, appName) }
 
 internal enum class ExportFormat { PDF, PNG }

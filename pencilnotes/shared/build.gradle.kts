@@ -38,6 +38,8 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":drawview-ui"))
             implementation(project(":drawview-explorer"))
+            // The documents in Room, in the data directory of the application
+            implementation(project(":drawview-store-room"))
             implementation(project(":drawview-lecture"))
             implementation(project(":drawview-sync-ui"))
             implementation(project(":drawview-export"))

@@ -22,8 +22,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
-import io.github.valerioisufi.drawview.data.DrawViewStore
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
+import io.github.valerioisufi.drawview.explorer.DocumentThumbnails
+import io.github.valerioisufi.drawview.explorer.rememberDocumentThumbnails
 import io.github.valerioisufi.drawview.explorer.ui.aboutLibraryAction
 import io.github.valerioisufi.drawview.export.ui.rememberDocumentExportUi
 import io.github.valerioisufi.drawview.latex.LatexEngine
@@ -33,6 +34,7 @@ import io.github.valerioisufi.drawview.lecture.ui.documentTag
 import io.github.valerioisufi.drawview.lecture.ui.editorExtension
 import io.github.valerioisufi.drawview.lecture.ui.rememberLectureAssistant
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
+import io.github.valerioisufi.drawview.store.room.DrawViewStore
 import io.github.valerioisufi.drawview.sync.ui.CollaborationDialogs
 import io.github.valerioisufi.drawview.sync.ui.InvitationLinks
 import io.github.valerioisufi.drawview.sync.ui.editorExtension
@@ -70,14 +72,17 @@ fun PencilNotesApp(commandHost: CommandHost = remember { CommandHost() }) {
             mark = { PencilNotesMark(size = 64.dp) },
             nameFontFamily = cherryBombOneFontFamily()
         )
+        // The documents of PencilNotes, in its data directory: those open are shared by the library,
+        // the editor, the collaboration and the export
+        val documents = DrawViewStore.documents
         // Lecture recording, followed by Gemini or a local model: it goes on in the background
         val lectureAssistant = rememberLectureAssistant()
         // The documents shared with the devices of the local network, with their lectures
-        val collaboration = rememberCollaboration(attachments = lectureAssistant.attachments)
+        val collaboration = rememberCollaboration(documents, attachments = lectureAssistant.attachments)
         // A tablet uses the models of a computer of the local network (Ollama)
         LaunchedEffect(lectureAssistant, collaboration) { lectureAssistant.localModels.nearbyHosts = collaboration::nearbyHosts }
         // The documents exported as PDF or as the image of a page
-        val export = rememberDocumentExportUi(appName = "PencilNotes")
+        val export = rememberDocumentExportUi(documents, appName = "PencilNotes")
         // The PDF pages drawn by PDFium, the formulas by MicroTeX
         val engines = remember { DrawViewEngines(pdfTiles = PdfiumEngine::createTileAdapter, formulas = LatexEngine.formulaRenderer) }
         // The documents with a lecture: their badge and a filter of the library
@@ -88,8 +93,8 @@ fun PencilNotesApp(commandHost: CommandHost = remember { CommandHost() }) {
         // The lectures of the documents deleted go with them
         LaunchedEffect(lectureAssistant) {
             var known: Set<String>? = null
-            DrawViewStore.default.documents.collect { documents ->
-                val ids = documents.mapTo(mutableSetOf()) { it.id }
+            documents.store.documents.collect { summaries ->
+                val ids = summaries.mapTo(mutableSetOf()) { it.id }
                 known?.let { lectureAssistant.forgetDocuments(it - ids) }
                 known = ids
             }
@@ -103,12 +108,14 @@ fun PencilNotesApp(commandHost: CommandHost = remember { CommandHost() }) {
                     LectureDialogs(lectureAssistant)
                     DocumentLibrary(
                         title = { PencilNotesBrand() },
+                        documents = documents,
                         actions = listOf(collaboration.joinAction(), aboutLibraryAction()),
                         fullScreenEditor = true,
                         editorExtension = editorExtension,
                         documentActions = listOf(export.documentAction),
                         tags = listOf(lectureTag),
                         engines = engines,
+                        thumbnails = rememberDocumentThumbnails(documents, DocumentThumbnails.defaultDirectory(), engines),
                         libraryOverlay = { openDocument ->
                             LectureRecordingIndicator(
                                 assistant = lectureAssistant,

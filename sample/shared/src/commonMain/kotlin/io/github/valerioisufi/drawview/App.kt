@@ -9,8 +9,11 @@ import androidx.compose.ui.Modifier
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.canvas.render.ElementRenderers
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
+import io.github.valerioisufi.drawview.explorer.DocumentThumbnails
+import io.github.valerioisufi.drawview.explorer.rememberDocumentThumbnails
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
+import io.github.valerioisufi.drawview.store.room.DrawViewStore
 import io.github.valerioisufi.drawview.ui.command.CommandHost
 import io.github.valerioisufi.drawview.ui.command.CommandRoot
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
@@ -36,11 +39,15 @@ fun App(commandHost: CommandHost = remember { CommandHost() }) {
         )
     }
     val shapes = remember { shapesExtension() }
+    // The documents of the sample, in its data directory (see DrawViewStore)
+    val documents = DrawViewStore.documents
     DrawViewTheme {
         CommandRoot(host = commandHost) {
             DocumentLibrary(
                 title = { Text(stringResource(Res.string.app_name), style = MaterialTheme.typography.titleLarge) },
+                documents = documents,
                 engines = engines,
+                thumbnails = rememberDocumentThumbnails(documents, DocumentThumbnails.defaultDirectory(), engines),
                 editorExtension = shapes,
                 modifier = Modifier.fillMaxSize()
             )

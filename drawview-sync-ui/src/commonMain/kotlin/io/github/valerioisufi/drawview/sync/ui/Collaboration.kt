@@ -6,11 +6,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.valerioisufi.drawview.data.DocumentStore
-import io.github.valerioisufi.drawview.data.DrawViewStore
-import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.model.DocumentAttachments
 import io.github.valerioisufi.drawview.platform.DeviceProfile
+import io.github.valerioisufi.drawview.store.DocumentStore
+import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.sync.DeviceIdentity
 import io.github.valerioisufi.drawview.sync.Invitation
 import io.github.valerioisufi.drawview.sync.InvitationGrant
@@ -66,7 +65,6 @@ private const val NEARBY_WAIT_MS = 3_000L
  * are shared already).
  */
 class Collaboration(
-    private val store: DocumentStore,
     documents: OpenDocuments,
     private val discovery: LanDiscovery,
     private val sharedFolderName: String,
@@ -74,6 +72,7 @@ class Collaboration(
     attachments: DocumentAttachments? = null,
     identity: DeviceIdentity = DeviceIdentity.ofThisDevice()
 ) {
+    private val store: DocumentStore = documents.store
     private val shared = StoreSharedDocuments(store, documents)
     private val mutex = Mutex()
     private var lan: LanSync? = null
@@ -232,17 +231,16 @@ class Collaboration(
  */
 @Composable
 fun rememberCollaboration(
-    store: DocumentStore = DrawViewStore.default,
-    documents: OpenDocuments = DrawViewStore.documents,
+    documents: OpenDocuments,
     attachments: DocumentAttachments? = null
 ): Collaboration {
     val folderName = stringResource(Res.string.sync_shared_folder)
-    val holder = viewModel { CollaborationHolder(store, documents, folderName, attachments) }
+    val holder = viewModel { CollaborationHolder(documents, folderName, attachments) }
     val requestAccess = rememberLocalNetworkAccess()
     val collaboration = holder.collaboration
     collaboration.requestAccess = requestAccess
     LaunchedEffect(collaboration) {
-        if (store.sharingSecrets().isNotEmpty()) collaboration.start()
+        if (documents.store.sharingSecrets().isNotEmpty()) collaboration.start()
     }
     // Back to the foreground: the connections closed meanwhile are made again at once
     val scope = rememberCoroutineScope()
@@ -255,13 +253,12 @@ fun rememberCollaboration(
 
 /** Keeps the collaboration across the configuration changes of Android. */
 private class CollaborationHolder(
-    store: DocumentStore,
     documents: OpenDocuments,
     folderName: String,
     attachments: DocumentAttachments?
 ) : ViewModel() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    val collaboration = Collaboration(store, documents, createLanDiscovery(), folderName, scope, attachments)
+    val collaboration = Collaboration(documents, createLanDiscovery(), folderName, scope, attachments)
 
     override fun onCleared() {
         scope.launch { collaboration.stop() }.invokeOnCompletion { scope.cancel() }

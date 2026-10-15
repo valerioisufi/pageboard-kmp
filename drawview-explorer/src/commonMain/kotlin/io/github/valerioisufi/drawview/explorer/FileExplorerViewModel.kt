@@ -7,30 +7,28 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.valerioisufi.drawview.data.DocumentStore
-import io.github.valerioisufi.drawview.data.DocumentSummary
-import io.github.valerioisufi.drawview.data.FolderSummary
-import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_create_failed
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_empty
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_exists
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_invalid_chars
 import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.store.DocumentStore
+import io.github.valerioisufi.drawview.store.DocumentSummary
+import io.github.valerioisufi.drawview.store.FolderSummary
+import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.ui.session.DocumentTag
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 
 /**
  * State of the document library: navigation between the folders, sorting, selection and the
- * operations on documents and folders. The content follows the changes of the [store]; the
- * documents are renamed by a change of them ([openDocuments]: the devices they are shared with rename
- * them too).
+ * operations on documents and folders. The content follows the changes of the store of
+ * [openDocuments]; the documents are renamed by a change of them (the devices they are shared with
+ * rename them too).
  */
-class FileExplorerViewModel(
-    private val store: DocumentStore,
-    private val openDocuments: OpenDocuments = OpenDocuments(store)
-) : ViewModel() {
+class FileExplorerViewModel(private val openDocuments: OpenDocuments) : ViewModel() {
+    private val store: DocumentStore get() = openDocuments.store
 
     enum class FileType { FILE, FOLDER }
 

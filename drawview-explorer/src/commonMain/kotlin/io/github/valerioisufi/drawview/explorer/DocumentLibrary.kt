@@ -12,12 +12,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.valerioisufi.drawview.canvas.controller.MediaManager
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.canvas.render.tile.TextFace
-import io.github.valerioisufi.drawview.data.DocumentStore
-import io.github.valerioisufi.drawview.data.DrawViewStore
-import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.explorer.platform.SystemBarsHidden
 import io.github.valerioisufi.drawview.explorer.ui.ExplorerScreen
 import io.github.valerioisufi.drawview.explorer.ui.aboutLibraryAction
+import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.command.CommandRoot
 import io.github.valerioisufi.drawview.ui.platform.PickedFile
@@ -40,8 +38,9 @@ import kotlinx.coroutines.withContext
  *
  * @param title the brand of the application (its mark and its name, or its name), at the top of
  *   the library.
- * @param documents the documents of [store] being changed, shared with the synchronization with
- *   the other devices (see `drawview-sync`).
+ * @param documents the documents of the library (see [OpenDocuments.store]) and those being
+ *   changed, shared with the synchronization with the other devices (see `drawview-sync`): one
+ *   per store in an application (e.g. `DrawViewStore.documents` of `drawview-store-room`).
  * @param actions actions of the application in the library (its bar or its navigation pane): the
  *   About & Licenses dialog by default.
  * @param fullScreenEditor hides the system bars while a document is open (Android).
@@ -57,15 +56,14 @@ import kotlinx.coroutines.withContext
  *   the application composes in the library ([LocalDrawViewEngines]); the formula renderer is
  *   prepared with the fonts of the notes.
  * @param thumbnails the thumbnails of the documents (the first pages of the grid of a wider
- *   window), kept in the data directory for the documents of `DrawViewStore`, in memory for the
- *   others.
+ *   window): in memory by default; [DocumentThumbnails.defaultDirectory] keeps those of a store
+ *   that outlives the application.
  */
 @Composable
 fun DocumentLibrary(
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    store: DocumentStore = DrawViewStore.default,
-    documents: OpenDocuments = if (store === DrawViewStore.default) DrawViewStore.documents else remember(store) { OpenDocuments(store) },
+    documents: OpenDocuments,
     actions: List<LibraryAction> = listOf(aboutLibraryAction()),
     fullScreenEditor: Boolean = false,
     editorExtension: EditorExtension? = null,
@@ -73,14 +71,10 @@ fun DocumentLibrary(
     documentActions: List<DocumentAction> = emptyList(),
     tags: List<DocumentTag> = emptyList(),
     engines: DrawViewEngines = DrawViewEngines.None,
-    thumbnails: DocumentThumbnails = rememberDocumentThumbnails(
-        documents,
-        directory = if (store === DrawViewStore.default) DocumentThumbnails.defaultDirectory() else null,
-        engines = engines
-    )
+    thumbnails: DocumentThumbnails = rememberDocumentThumbnails(documents, engines = engines)
 ) {
-    val fileExplorerViewModel = viewModel { FileExplorerViewModel(store, documents) }
-    val editorViewModel = viewModel { DocumentEditorViewModel(store, documents, engines) }
+    val fileExplorerViewModel = viewModel { FileExplorerViewModel(documents) }
+    val editorViewModel = viewModel { DocumentEditorViewModel(documents, engines) }
 
     // The formula engine may unpack its fonts at the first start: off the main thread. The text
     // of the formulas (\text{}) is in the font of the notes, as their text

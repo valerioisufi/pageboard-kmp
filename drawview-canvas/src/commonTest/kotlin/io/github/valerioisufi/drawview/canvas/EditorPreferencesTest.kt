@@ -37,6 +37,31 @@ class EditorPreferencesTest {
     }
 
     @Test
+    fun thePreferencesMovedByTheMigrationOfTheDatabaseAreRead() {
+        // As the migration 17 -> 18 of drawview-store-room writes them: the tools without presets left out
+        val migrated = """
+            {"isStylusOnlyMode":false,"lastSelectedTool":"TEXT_MARKUP",
+             "textDefaults":{"fontSize":11.0,"color":-14722394,"alignment":"START"},"isSnapEnabled":true,
+             "presets":{"INK_PEN":[{"sizeMm":0.5,"color":-15066088,"family":"PRESSURE_PEN"}],
+                        "TEXT_MARKUP":[{"sizeMm":0.0,"color":-2999493,"family":"HIGHLIGHTER","markup":"UNDERLINE"}]}}
+        """
+        val preferences = DrawPreferences.decode(migrated)
+        assertEquals(
+            DrawPreferences(
+                lastSelectedTool = Tool.TEXT_MARKUP,
+                textDefaults = TextDefaults(11f, -14722394, TextAlignment.START),
+                presets = mapOf(
+                    Tool.INK_PEN to listOf(ToolPreset(0.5f, -15066088, StrokeTool.PRESSURE_PEN)),
+                    Tool.TEXT_MARKUP to listOf(ToolPreset(0f, -2999493, StrokeTool.HIGHLIGHTER, TextMarkupKind.UNDERLINE))
+                )
+            ),
+            preferences
+        )
+        val tools = ToolManager().apply { applyPreferences(preferences!!) }
+        assertEquals(ToolManager.defaultPresets().getValue(Tool.ERASER), tools.presetsOf(Tool.ERASER))
+    }
+
+    @Test
     fun theEditorTellsItsPreferencesAsTheyChangeAndTakesThemBack() = runTest(UnconfinedTestDispatcher()) {
         val controller = DrawViewController(document = DrawDocument(), coroutineScope = backgroundScope)
         controller.updateStylusOnlyMode(true)

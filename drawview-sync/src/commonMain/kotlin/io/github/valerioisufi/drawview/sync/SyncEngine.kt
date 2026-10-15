@@ -1,8 +1,6 @@
 package io.github.valerioisufi.drawview.sync
 
 import dev.whyoleg.cryptography.random.CryptographyRandom
-import io.github.valerioisufi.drawview.data.OpenDocument
-import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.model.AttachmentChange
 import io.github.valerioisufi.drawview.model.AttachmentReceiver
 import io.github.valerioisufi.drawview.model.DocumentAttachments
@@ -14,6 +12,8 @@ import io.github.valerioisufi.drawview.model.change.Operation
 import io.github.valerioisufi.drawview.model.change.TextData
 import io.github.valerioisufi.drawview.model.change.snapshot
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
+import io.github.valerioisufi.drawview.store.OpenDocument
+import io.github.valerioisufi.drawview.store.OpenDocuments
 import kotlin.math.min
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope

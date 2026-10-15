@@ -15,12 +15,12 @@ import io.github.valerioisufi.drawview.canvas.render.ElementRenderers
 import io.github.valerioisufi.drawview.canvas.render.tile.PdfTileAdapter
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.canvas.render.tile.TileRenderer
-import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawResource
 import io.github.valerioisufi.drawview.model.PageContentSnapshot
 import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.platform.dataDirectory
+import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.render.LocalDrawViewEngines
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
@@ -57,7 +57,7 @@ class DocumentThumbnails(
     private class Thumbnail(val modifiedAt: Long, val widthPx: Int, val image: ImageBitmap)
 
     companion object {
-        /** The thumbnails of the documents of the data directory. */
+        /** The directory of the thumbnails in the data directory of the application. */
         fun defaultDirectory(): String = dataDirectory().trimEnd('/') + "/thumbnails"
     }
 
@@ -158,13 +158,14 @@ class DocumentThumbnails(
 }
 
 /**
- * The thumbnails of [documents] kept in [directory] (`null`: in memory only), their texts drawn by
- * the fonts of the notes, their PDF pages and formulas by [engines].
+ * The thumbnails of [documents] kept in [directory] (`null`: in memory only; e.g.
+ * [DocumentThumbnails.defaultDirectory] for a store that outlives the application), their texts
+ * drawn by the fonts of the notes, their PDF pages and formulas by [engines].
  */
 @Composable
 fun rememberDocumentThumbnails(
     documents: OpenDocuments,
-    directory: String? = DocumentThumbnails.defaultDirectory(),
+    directory: String? = null,
     engines: DrawViewEngines = LocalDrawViewEngines.current
 ): DocumentThumbnails {
     val fontFamilyResolver = LocalFontFamilyResolver.current

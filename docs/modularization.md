@@ -14,8 +14,10 @@ storage without Room). Two decisions shape the work (2026-10-10):
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
 Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected
-Variations). Nothing is released yet: no compatibility is kept for the stored documents, the
-database schemas or the protocol (see the release checklist at the end).
+Variations). Nothing is released yet, but the documents already written with PencilNotes are kept:
+every version of the Room schema from 16 on comes with its migration, never a destructive one (a
+database without its migration is not opened); the protocol is changed under the same version
+until the release (see the release checklist at the end).
 
 ## Starting point
 
@@ -98,8 +100,9 @@ database schemas or the protocol (see the release checklist at the end).
 | `drawview-pdf` | PDFium: reading, rendering (implements the PDF port), writing | canvas | yes | PDFium |
 | `drawview-latex` | MicroTeX (implements the formula port) | canvas | yes | MicroTeX |
 | `drawview-ui` | editor screen, bars, dialogs, commands, theme, `EditorExtension` | canvas | yes | — |
-| `drawview-store` | store ports, `OpenDocuments`, in-memory store | model | no | — |
-| `drawview-store-room` | the Room store | store | no | SQLite |
+| `drawview-store` | store ports, `OpenDocuments`, key-value (and in-memory) store | model | no | — |
+| `drawview-store-room` | the Room store, the migrations of its schema | store | no | SQLite |
+| `drawview-store-testing` | the contract tests every store must pass | store | no | — |
 | `drawview-session` | opening a stored document in the editor, writing its changes (`DocumentEditorViewModel`, `EditorSessionScreen`) | ui, store | yes | — |
 | `drawview-explorer` | library of documents and folders, thumbnails | session | yes | — |
 | `drawview-sync-protocol` | frames, routing header, encryption, identity, invitations, transport ports | platform | no | — |
@@ -143,7 +146,9 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 | The optional engines of an editor (PDF, formulas) | `DrawViewEngines` (`drawview-canvas`), given to the controller, the thumbnails and the library; `LocalDrawViewEngines` for the composables | Pure Fabrication, Indirection, Protected Variations |
 | Rendering a formula, telling when the engine is ready | `FormulaRenderer` port (`drawview-canvas`), implemented by `drawview-latex` | Indirection, Protected Variations |
 | Clearing the text caches when the formula engine becomes ready | the text adapter, subscribed to its `FormulaRenderer` | Information Expert |
-| Storage of documents, folders, operations, sharing secrets, preferences | segregated ports in `drawview-store`, Room behind them in `drawview-store-room` | Protected Variations, High Cohesion |
+| Storage of documents, folders, operations, sharing secrets, preferences | segregated ports in `drawview-store` (`DocumentCatalog`, `OperationLog`, `SharingStore`, `PreferenceStore`; `DocumentStore` adds the content and the persistence), Room behind them in `drawview-store-room` | Protected Variations, High Cohesion |
+| The documents of a store being changed, one session each | `OpenDocuments`, created once by the application and given to the library, the editor, the synchronization and the export (it knows its store: Information Expert); an open document reads only the operation log | Creator, Low Coupling |
+| Keeping the stored documents across the versions of the schema | the migrations of `drawview-store-room` (`DRAW_DATABASE_MIGRATIONS`), each one tested on a database of its version | Protected Variations |
 | Saving the changes of an open document | `DrawPersistence` with element saves for every type; preferences in a port of their own | High Cohesion, Polymorphism |
 | What an extension of the editor receives | `EditorContext` (document identifier, controller) in `drawview-ui` | Low Coupling |
 | Opening a stored document in the editor and writing its changes | `DocumentEditorViewModel` (`drawview-session`) | Controller, High Cohesion |
@@ -231,10 +236,22 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 
 ### Storage and editor session
 
-* `drawview-store` keeps the ports and `OpenDocuments`: documents and folders, the operations log,
-  the sharing secrets, the preferences, the persistence of the open documents; the in-memory store
-  (tests, tools). `drawview-store-room` implements them with Room; custom elements go into a table
-  of their own (type, version, payload, box, order, stamps).
+* `drawview-store` keeps the ports and `OpenDocuments`: the library of documents and folders
+  (`DocumentCatalog`), the operations log (`OperationLog`), the sharing secrets and the read only
+  (`SharingStore`), the preferences as text by key (`PreferenceStore`), the content and the
+  persistence of the open documents (`DocumentStore`, which extends the first three); the
+  key-value store (in memory for the tests and the tools). `drawview-store-room` implements them
+  with Room; custom elements go into a table of their own (type, version, payload, box, order,
+  stamps). The tests every store must pass are in `drawview-store-testing`, for the stores of the
+  applications too.
+* No library reaches a global store: the library, the editor, the collaboration and the export
+  receive the `OpenDocuments` of the application (`DrawViewStore.documents` of
+  `drawview-store-room` is the one of the data directory, called by the applications only); the
+  thumbnails are kept on disk only when the application says where
+  (`DocumentThumbnails.defaultDirectory`).
+* A new version of the Room schema comes with its migration (`Migration`), tested on a database of
+  the version before (`MigrationTestHelper`) and checked on a copy of a real database: the
+  documents are never dropped.
 * `EditorExtension` receives an `EditorContext` (document identifier, controller). The editor
   session bound to a store (`DocumentEditorViewModel`, `EditorSessionScreen`, `DrawViewSessions`)
   moves to `drawview-session`; `drawview-ui` no longer depends on any store.
@@ -289,7 +306,9 @@ native-tex, pdf → native-pdfium, lecture → native-audio); the applications n
 | 3a. Model values | `drawview-platform` (files, native libraries, secure store, device, locks, time, SHA-256) and `drawview-model` created; `Point`, `Rect` and ARGB colors in the model, converted at the border of the canvas (`ComposeGeometry`); moved: stamps, versions, element order, fractional index, `Matrix2D`, `AffineTransform`, measures, hit testing, PDF page fit, stroke points, tools, meshes, outlines, brushes, PDF text layout, rich text parsing, text sizes, backgrounds, alignment, attachments | Done |
 | 3b. Headless state | `drawview-ink` (Google Ink, its bridges) and the `StrokeModeller` of the document (Kotlin in the model, Ink in the stores); `HiddenElements` and `ImageCache` in the canvas instead of flags and pixels in the elements; the content of a page one immutable value, copy-on-write pages and files, `DrawDocument.revision` and the read only of the session as `StateFlow`s (`observeChanges` in the composables); document, changes and session moved; `drawview-core` renamed `drawview-canvas` | Done |
 | 3c. Open element types | `ElementType` (CBOR payloads, versions, migration), `DrawCustomElement`, `CustomElementData`, `UpdateElementContent`, unknown types kept as bytes; `ElementRenderer` / `ElementRenderers` (placeholders for the unknown types) in the tiles, the overlays, the selection, the snapping, the thumbnails, the image and PDF export; `CustomElementManager`; Room table `custom_elements`; the shapes of `sample` | Done |
-| 4. Storage and session | `drawview-store` / `drawview-store-room`; segregated ports; element persistence for every type; `EditorContext`; `drawview-session`; no global store | |
+| 4a. Persistence port | `DocumentPersistence`, `ChangePersister`, `PersistenceQueue` in the model; the preferences of the editor as text by key (`PreferenceStore`, `DrawPreferences.encode`) | Done |
+| 4b. Stores | `drawview-store` / `drawview-store-room` / `drawview-store-testing`; segregated ports; no global store in the libraries; the Room migrations from version 16 (no destructive fallback); `SelectionActivity` in the model (the synchronization without the canvas) | Done |
+| 4c. Editor session | `EditorContext`; `drawview-session` (`DocumentEditorViewModel`, `EditorSessionScreen`); `drawview-ui` without any store | |
 | 5. Controller and API | `Viewport`, `CollaboratorPresence`, `EditorHost`, internal managers; explicit API strict and KDoc on every module; ABI dumps | |
 | 6. Sync and relay protocol | `drawview-sync-protocol`; sealed operations with their identity in clear | |
 | 7. Feature modules | `drawview-lecture` / `drawview-lecture-ui`, `drawview-export` / `drawview-export-ui` (`ElementExporter`, export writing to a sink instead of `FileTarget`) | |
@@ -325,6 +344,6 @@ the sample running, and the modules it touches published to `mavenLocal()`.
 * The relay server and `RelayTransport`.
 * Running the CI workflow (the repository has no remote yet) and the first publication on Maven
   Central (namespace verification, signing key).
-* Release checklist: real Room migrations, `PROTOCOL_VERSION` raised on every format change, the
-  formats of `ElementType` payloads frozen (see `docs/collaboration.md` and the memory of the
-  project: nothing is compatible before the first release).
+* Release checklist: `PROTOCOL_VERSION` raised on every format change, the formats of
+  `ElementType` payloads frozen (see `docs/collaboration.md`); the Room migrations are written
+  already (from version 16).

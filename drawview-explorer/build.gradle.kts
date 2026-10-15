@@ -16,7 +16,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(project(":drawview-data"))
+            api(project(":drawview-store"))
             api(project(":drawview-ui"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)

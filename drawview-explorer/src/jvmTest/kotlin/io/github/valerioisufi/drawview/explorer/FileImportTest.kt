@@ -1,12 +1,13 @@
 package io.github.valerioisufi.drawview.explorer
 
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
-import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
-import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import io.github.valerioisufi.drawview.platform.DRAWVIEW_DATA_DIRECTORY_PROPERTY
+import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
+import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
+import io.github.valerioisufi.drawview.store.OpenDocuments
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.Test
@@ -29,7 +30,7 @@ class FileImportTest {
     fun aDroppedFileGetsANameFreeInTheFolder() = runTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         try {
-            val viewModel = FileExplorerViewModel(KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope))
+            val viewModel = FileExplorerViewModel(OpenDocuments(KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)))
             viewModel.createFile(FileType.FILE, "Slides")
             viewModel.createFile(FileType.FILE, "Slides (2)")
             assertEquals("Slides (3)", viewModel.availableName("Slides"))

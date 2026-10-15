@@ -41,7 +41,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":drawview-canvas"))
-            api(project(":drawview-data"))
+            api(project(":drawview-store-room"))
             api(project(":drawview-ui"))
             implementation(project(":drawview-explorer"))
             // The engines of the PDF pages and of the formulas

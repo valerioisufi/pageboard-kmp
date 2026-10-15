@@ -23,12 +23,12 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import io.github.takahirom.roborazzi.captureRoboImage
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
-import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
-import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
-import io.github.valerioisufi.drawview.data.OpenDocuments
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
+import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
+import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
+import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.adaptive.PlatformConventions
 import io.github.valerioisufi.drawview.ui.adaptive.ReferenceWindow
@@ -80,7 +80,6 @@ internal fun capture(
                 AdaptiveRoot(hints = window.input, conventions = PlatformConventions(ShortcutModifier.COMMAND)) {
                     DocumentLibrary(
                         title = { Text("DrawView", modifier = Modifier.padding(horizontal = 16.dp)) },
-                        store = store,
                         documents = documents,
                         // The PDF pages and the formulas drawn as in the applications
                         engines = ENGINES,

@@ -1,5 +1,7 @@
 package io.github.valerioisufi.drawview.sync
 
+import io.github.valerioisufi.drawview.model.SelectionActivity
+
 /**
  * The format of the messages of every version of the protocol (see [ProtocolFormatTest]): every
  * kind of value they are made of, with its fields (`?`: optional).
@@ -26,10 +28,10 @@ internal val PROTOCOL_FORMATS: Map<Int, String> = mapOf(
         custom CLASS(id: kotlin.String, elementType: kotlin.String, version: kotlin.Int, payload: List<kotlin.Byte>, x: kotlin.Float, y: kotlin.Float, width: kotlin.Float, height: kotlin.Float, rotation?: kotlin.Float, order?: ElementOrder?)
         hello CLASS(replica: kotlin.String, name: kotlin.String, versionVector: Map<kotlin.String, kotlin.Long>, hasDocument: kotlin.Boolean, device: kotlin.String, proof: List<kotlin.Byte>, membershipVersion?: kotlin.Long, epoch?: kotlin.Int)
         image CLASS(id: kotlin.String, resourceId: kotlin.String, x: kotlin.Float, y: kotlin.Float, width: kotlin.Float, height: kotlin.Float, rotation?: kotlin.Float, order?: ElementOrder?)
-        io.github.valerioisufi.drawview.canvas.controller.SelectionActivity CLASS(pageId: kotlin.String, ids: List<kotlin.String>, transform?: io.github.valerioisufi.drawview.model.geometry.AffineTransform)
         io.github.valerioisufi.drawview.model.DrawResource.ResourceType ENUM(PDF, IMAGE, COLOR)
         io.github.valerioisufi.drawview.model.InputToolType ENUM(UNKNOWN, MOUSE, TOUCH, STYLUS)
         io.github.valerioisufi.drawview.model.PageBackground SEALED(type: kotlin.String, value: kotlinx.serialization.Sealed<PageBackground>)
+        io.github.valerioisufi.drawview.model.SelectionActivity CLASS(pageId: kotlin.String, ids: List<kotlin.String>, transform?: io.github.valerioisufi.drawview.model.geometry.AffineTransform)
         io.github.valerioisufi.drawview.model.StrokePoint CLASS(x: kotlin.Float, y: kotlin.Float, pressure?: kotlin.Float, timestampMs?: kotlin.Long)
         io.github.valerioisufi.drawview.model.StrokeTool ENUM(PRESSURE_PEN, MARKER, HIGHLIGHTER, DASHED_LINE, ERASER, LASSO)
         io.github.valerioisufi.drawview.model.TextAlignment ENUM(START, CENTER, END)
@@ -49,7 +51,7 @@ internal val PROTOCOL_FORMATS: Map<Int, String> = mapOf(
         io.github.valerioisufi.drawview.model.geometry.AffineTransform CLASS(a?: kotlin.Float, b?: kotlin.Float, c?: kotlin.Float, d?: kotlin.Float, tx?: kotlin.Float, ty?: kotlin.Float)
         io.github.valerioisufi.drawview.sync.AttachmentAsk CLASS(key: kotlin.String, version: kotlin.String, from?: kotlin.Long)
         io.github.valerioisufi.drawview.sync.OpenFrame CLASS(protocol: kotlin.Int, tag: kotlin.String)
-        io.github.valerioisufi.drawview.sync.Presence CLASS(documentId: kotlin.String, pageId?: kotlin.String?, x?: kotlin.Float, y?: kotlin.Float, stroke?: kotlin.Long, ink?: List<kotlin.Float>, inkTool?: kotlin.String, inkColor?: kotlin.Int, inkSize?: kotlin.Float, inkInput?: kotlin.String, inkCancelled?: kotlin.Boolean, text?: text?, textPageId?: kotlin.String?, selection?: io.github.valerioisufi.drawview.canvas.controller.SelectionActivity?, replica?: kotlin.String, name?: kotlin.String, sequence?: kotlin.Long)
+        io.github.valerioisufi.drawview.sync.Presence CLASS(documentId: kotlin.String, pageId?: kotlin.String?, x?: kotlin.Float, y?: kotlin.Float, stroke?: kotlin.Long, ink?: List<kotlin.Float>, inkTool?: kotlin.String, inkColor?: kotlin.Int, inkSize?: kotlin.Float, inkInput?: kotlin.String, inkCancelled?: kotlin.Boolean, text?: text?, textPageId?: kotlin.String?, selection?: io.github.valerioisufi.drawview.model.SelectionActivity?, replica?: kotlin.String, name?: kotlin.String, sequence?: kotlin.Long)
         io.github.valerioisufi.drawview.sync.ResourceAsk CLASS(id: kotlin.String, from?: kotlin.Long)
         io.github.valerioisufi.drawview.sync.SignedMembership CLASS(bytes: List<kotlin.Byte>, signature: List<kotlin.Byte>)
         io.github.valerioisufi.drawview.sync.SyncMessage SEALED(type: kotlin.String, value: kotlinx.serialization.Sealed<SyncMessage>)

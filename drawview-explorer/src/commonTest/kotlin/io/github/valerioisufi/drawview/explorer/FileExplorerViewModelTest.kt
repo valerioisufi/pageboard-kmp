@@ -1,7 +1,5 @@
 package io.github.valerioisufi.drawview.explorer
 
-import io.github.valerioisufi.drawview.data.InMemoryKeyValueStorage
-import io.github.valerioisufi.drawview.data.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileItem
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.SortOption
@@ -9,13 +7,9 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.Res
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_empty
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_exists
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_invalid_chars
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
+import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
+import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
+import io.github.valerioisufi.drawview.store.OpenDocuments
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -23,6 +17,13 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FileExplorerViewModelTest {
@@ -38,7 +39,7 @@ class FileExplorerViewModelTest {
     }
 
     private fun TestScope.createViewModel() =
-        FileExplorerViewModel(KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope))
+        FileExplorerViewModel(OpenDocuments(KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)))
 
     private val FileExplorerViewModel.names get() = currentDirectoryFiles.map { it.name }
 
@@ -151,7 +152,7 @@ class FileExplorerViewModelTest {
             sortFiles(items, SortOption.DATE_CREATED, ascending = true, foldersOnTop = false).map { it.name }
         )
 
-        val viewModel = FileExplorerViewModel(KeyValueDocumentStore(InMemoryKeyValueStorage()))
+        val viewModel = FileExplorerViewModel(OpenDocuments(KeyValueDocumentStore(InMemoryKeyValueStorage())))
         viewModel.selectSortOption(SortOption.DATE_MODIFIED)
         assertFalse(viewModel.sortAscending, "the dates start from the most recent")
         viewModel.selectSortOption(SortOption.NAME)
