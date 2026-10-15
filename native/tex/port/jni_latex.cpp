@@ -41,7 +41,7 @@ static jlong LaTeX_parse(
     env->ReleaseStringUTFChars(ltx, str);
     try {
         TeXRender* r = LaTeX::parse(value, width, textSize, lineSpace, foreground);
-        return reinterpret_cast<long>(r);
+        return reinterpret_cast<jlong>(r);
     } catch (exception& e) {
         LOGE("Failed to parse LaTeX, caused by: %s", e.what());
         return 0;
