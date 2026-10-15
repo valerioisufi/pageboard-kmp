@@ -9,6 +9,7 @@ import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.ln
+import kotlin.math.round
 import kotlin.math.sign
 
 /**
@@ -270,6 +271,10 @@ public class CameraPhysicsEngine(
     /**
      * Generates transformation matrix for rendering with scale, translation,
      * and rubber-band tension.
+     *
+     * The translation is on whole pixels, like the pages (see [CalcPage.calcPagesRectOnWindow]):
+     * the tiles shown at their own scale are not filtered half a pixel off. The physics keeps the
+     * exact position.
      */
     internal fun getRenderMatrix(outMatrix: Matrix2D = renderMatrix): Matrix2D {
         val renderScale = scaleAxis.position
@@ -278,7 +283,7 @@ public class CameraPhysicsEngine(
 
         outMatrix.reset()
         outMatrix.postScale(renderScale, renderScale)
-        outMatrix.postTranslate(renderX, renderY)
+        outMatrix.postTranslate(round(renderX), round(renderY))
 
         return outMatrix
     }

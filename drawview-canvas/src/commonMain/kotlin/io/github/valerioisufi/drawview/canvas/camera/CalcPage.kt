@@ -5,6 +5,7 @@ import io.github.valerioisufi.drawview.canvas.geometry.mapRect
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.px
+import kotlin.math.round
 
 /**
  * Handles mathematical layout, positioning, and coordinate calculations for document pages.
@@ -48,6 +49,10 @@ public class CalcPage(
      * Computes bounding rectangles for a sequence of pages stacked vertically in continuous scroll.
      * Content is scaled uniformly to fit the window's width based on the widest page (at most
      * [PagePositionOnWindowOption.maxPageWidth] wide, centered).
+     *
+     * Every page starts on a whole pixel: with the camera on whole pixels too, the tiles of a page
+     * shown at their own scale fall on the pixels of the screen instead of being filtered half a
+     * pixel off, which blurs them.
      */
     internal fun calcPagesRectOnWindow(
         pages: List<DrawPage>,
@@ -77,8 +82,8 @@ public class CalcPage(
             val pageWidth = page.dimension.width.mm * scaleFactor
             val pageHeight = page.dimension.calcHeightFromWidthPx(pageWidth.px)
 
-            val top = if (pagesRectOnWindow.isEmpty()) topPadding else pagesRectOnWindow.last().bottom + betweenPadding
-            val left = (windowRect.width / 2f) - (pageWidth / 2f)
+            val top = round(if (pagesRectOnWindow.isEmpty()) topPadding else pagesRectOnWindow.last().bottom + betweenPadding)
+            val left = round((windowRect.width / 2f) - (pageWidth / 2f))
             val right = left + pageWidth
             val bottom = top + pageHeight
 
