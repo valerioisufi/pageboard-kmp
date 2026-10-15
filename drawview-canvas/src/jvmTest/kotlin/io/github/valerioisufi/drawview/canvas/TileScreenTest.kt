@@ -44,7 +44,7 @@ class TileScreenTest {
         var stableFrames = 0
         var frames = 0
         while (stableFrames < 5 && frames < 100) {
-            manager.drawTiles(canvas, camera, viewport, doc, listOf(pageRect))
+            manager.drawTiles(canvas, camera, viewport, doc, listOf(pageRect), density = 2f)
             Thread.sleep(100)
             val now = rasterized.get()
             if (now == last) stableFrames++ else stableFrames = 0
@@ -84,7 +84,8 @@ class TileScreenTest {
             canvas.drawRect(Rect(0f, 0f, 800f, 800f), Paint().apply { color = Color.White })
             val camera = Matrix2D().postScale(scale, scale).postTranslate(3.3f, 2.7f)
             val viewport = Rect(0f, 0f, 512f * scale * 1.5f, 512f * scale * 1.5f)
-            manager.drawTiles(canvas, camera, viewport, doc, listOf(Rect(0f, 0f, 1024f, 1024f)))
+            // A dense screen: the tiles of LOD 0 are drawn up to √2
+            manager.drawTiles(canvas, camera, viewport, doc, listOf(Rect(0f, 0f, 1024f, 1024f)), density = 2f)
 
             val pixels = screen.toPixelMap()
             val seamX = (512f * scale + 3.3f).toInt()

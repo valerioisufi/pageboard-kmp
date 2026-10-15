@@ -71,7 +71,7 @@ pixels.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | Pages and camera on whole pixels: `CalcPage.calcPagesRectOnWindow`, `CameraPhysicsEngine.getRenderMatrix`; `TileSharpnessTest` | Done |
-| 2 | LOD by density: `TilePyramid.maxMagnification`, `calculateLod`, the density through `TileManager.drawTiles` and `drawPageTiles` from `DrawCanvas`; tests | Planned |
+| 2 | LOD by density: `TilePyramid.maxMagnification`, `calculateLod`, the density through `TileManager.drawTiles` and `drawPageTiles` from `DrawCanvas`; tests | Done |
 | Later | Antialiased ink (B3) | |
 
 ### Phase 1 results
@@ -79,6 +79,20 @@ pixels.
 * An odd width, the second page of an A4 document and a scroll of 123.37 pixels: the pages start
   on whole pixels of the screen (`TileSharpnessTest`, which fails before the change: the first
   page started at 60.5).
+
+### Phase 2 results
+
+* The policy (`TileSharpnessTest`): the nearest LOD at 2x and more, the LOD above on screens of 1x
+  to 1.75x as soon as the tiles would be magnified by more than 5%; `drawTiles` draws the tiles of
+  LOD 1 at a zoom of 130% on a screen of 1x, those of LOD 0 on a screen of 2x.
+* PencilNotes on the screen of 1x, a note with a stroke on ruled paper zoomed to 135%: the stroke
+  and the lines are sharp, where they were blurred (and the edges of the stroke are smoother,
+  being the tiles of LOD 1 shrunk).
+* The screenshots of the explorer, recorded on Windows from the code before the change and
+  verified after it: the editors differ by the edges of the pages, moved by less than a pixel;
+  nothing else changes (the screenshots of the repository are recorded on macOS: they are
+  verified there).
+* The ABI dumps of the JVM and of Android do not change.
 
 ### Left for later
 
@@ -88,6 +102,9 @@ pixels.
     exact, each stroke keeps its outlines besides its mesh;
   * the tiles rasterized at twice their resolution on screens of low density and shrunk: no
     change to the strokes, four times the rasterization (PDF pages included).
+
+  The thumbnails of the library show it too: a thin stroke shrunk without antialiasing breaks
+  into dashes.
 * `TrackpadGesturesTest.twoFingerScrollOfAMacTrackpadOverscrollsAndBouncesBack` fails on Windows
   before this work too (the bounce stops at 39.6 instead of 40).
 

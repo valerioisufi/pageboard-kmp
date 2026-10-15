@@ -2,10 +2,10 @@ package io.github.valerioisufi.drawview.canvas.render.tile
 
 import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.ln
 import kotlin.math.pow
-import kotlin.math.roundToInt
 
 /**
  * Mathematical utilities for Level of Detail (LOD) calculations, coordinate system conversions,
@@ -21,12 +21,25 @@ internal object TilePyramid {
     /** Maximum supported LOD index (deep zoom). Scale = 2^5 = 32x. */
     const val MAX_LOD = 5
 
+    /** Largest magnification of the tiles of the nearest LOD (halfway between two LODs). */
+    const val NEAREST_LOD_MAGNIFICATION = 1.4142135f
+
     /**
-     * Calculates the nearest discrete LOD level from the continuous camera scale factor.
+     * Largest magnification of the tiles on a screen of [density] (pixels per dp). The pixels of a
+     * screen of 2x and more are too small to see a tile magnified up to √2, so the nearest LOD is
+     * drawn; on a screen of 1x to 1.75x a magnified tile is blurred, so the tiles are only shrunk
+     * there (the 5% leaves room for the rounding of the zoom), at the cost of up to twice the
+     * tiles of the nearest LOD.
      */
-    fun calculateLod(scale: Float): Int {
+    fun maxMagnification(density: Float): Float = if (density >= 2f) NEAREST_LOD_MAGNIFICATION else 1.05f
+
+    /**
+     * Calculates the LOD for the continuous camera [scale]: the lowest whose tiles are magnified
+     * on screen at most by [maxMagnification] (by default the nearest LOD).
+     */
+    fun calculateLod(scale: Float, maxMagnification: Float = NEAREST_LOD_MAGNIFICATION): Int {
         if (scale <= 0f) return 0
-        val rawLod = (ln(scale.toDouble()) / ln(2.0)).roundToInt()
+        val rawLod = ceil(ln(scale.toDouble() / maxMagnification) / ln(2.0)).toInt()
         return rawLod.coerceIn(MIN_LOD, MAX_LOD)
     }
 
