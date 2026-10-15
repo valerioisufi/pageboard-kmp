@@ -18,8 +18,6 @@ public final class io/github/valerioisufi/drawview/ink/InkStrokeEngine {
 public final class io/github/valerioisufi/drawview/ink/InkStrokeEngine$Companion {
 	public final fun buildMesh (Ljava/util/List;Lio/github/valerioisufi/drawview/model/BrushConfig;Lio/github/valerioisufi/drawview/model/InputToolType;F)Lio/github/valerioisufi/drawview/model/StrokeMesh;
 	public static synthetic fun buildMesh$default (Lio/github/valerioisufi/drawview/ink/InkStrokeEngine$Companion;Ljava/util/List;Lio/github/valerioisufi/drawview/model/BrushConfig;Lio/github/valerioisufi/drawview/model/InputToolType;FILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/StrokeMesh;
-	public final fun buildOutline (Ljava/util/List;Lio/github/valerioisufi/drawview/model/BrushConfig;Lio/github/valerioisufi/drawview/model/InputToolType;F)Lio/github/valerioisufi/drawview/model/StrokeOutline;
-	public static synthetic fun buildOutline$default (Lio/github/valerioisufi/drawview/ink/InkStrokeEngine$Companion;Ljava/util/List;Lio/github/valerioisufi/drawview/model/BrushConfig;Lio/github/valerioisufi/drawview/model/InputToolType;FILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/StrokeOutline;
 }
 
 public final class io/github/valerioisufi/drawview/ink/InkStrokeModeller : io/github/valerioisufi/drawview/model/StrokeModeller {

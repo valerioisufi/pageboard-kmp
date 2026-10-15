@@ -788,14 +788,15 @@ public final class io/github/valerioisufi/drawview/model/StrokeEngineDelegate$De
 
 public final class io/github/valerioisufi/drawview/model/StrokeMesh {
 	public static final field Companion Lio/github/valerioisufi/drawview/model/StrokeMesh$Companion;
-	public fun <init> (Ljava/lang/String;[F[SILio/github/valerioisufi/drawview/model/StrokeTool;FLjava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/InputToolType;)V
-	public synthetic fun <init> (Ljava/lang/String;[F[SILio/github/valerioisufi/drawview/model/StrokeTool;FLjava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/InputToolType;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;[F[SILio/github/valerioisufi/drawview/model/StrokeTool;FLjava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/InputToolType;Lio/github/valerioisufi/drawview/model/StrokeOutline;)V
+	public synthetic fun <init> (Ljava/lang/String;[F[SILio/github/valerioisufi/drawview/model/StrokeTool;FLjava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/InputToolType;Lio/github/valerioisufi/drawview/model/StrokeOutline;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun computeBounds ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getColor ()I
 	public final fun getId ()Ljava/lang/String;
 	public final fun getIndices ()[S
 	public final fun getInputToolType ()Lio/github/valerioisufi/drawview/model/InputToolType;
+	public final fun getOutline ()Lio/github/valerioisufi/drawview/model/StrokeOutline;
 	public final fun getPartitions ()Ljava/util/List;
 	public final fun getPoints ()Ljava/util/List;
 	public final fun getPositions ()[F
@@ -810,7 +811,8 @@ public final class io/github/valerioisufi/drawview/model/StrokeMesh {
 }
 
 public final class io/github/valerioisufi/drawview/model/StrokeMesh$Companion {
-	public final fun fromIndexedMesh ([F[IILio/github/valerioisufi/drawview/model/StrokeTool;FLjava/util/List;Lio/github/valerioisufi/drawview/model/InputToolType;)Lio/github/valerioisufi/drawview/model/StrokeMesh;
+	public final fun fromIndexedMesh ([F[IILio/github/valerioisufi/drawview/model/StrokeTool;FLjava/util/List;Lio/github/valerioisufi/drawview/model/InputToolType;Lio/github/valerioisufi/drawview/model/StrokeOutline;)Lio/github/valerioisufi/drawview/model/StrokeMesh;
+	public static synthetic fun fromIndexedMesh$default (Lio/github/valerioisufi/drawview/model/StrokeMesh$Companion;[F[IILio/github/valerioisufi/drawview/model/StrokeTool;FLjava/util/List;Lio/github/valerioisufi/drawview/model/InputToolType;Lio/github/valerioisufi/drawview/model/StrokeOutline;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/StrokeMesh;
 }
 
 public abstract interface class io/github/valerioisufi/drawview/model/StrokeModeller {

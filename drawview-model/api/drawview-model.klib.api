@@ -2499,7 +2499,7 @@ final class io.github.valerioisufi.drawview.model/Stamp : kotlin/Comparable<io.g
 }
 
 final class io.github.valerioisufi.drawview.model/StrokeMesh { // io.github.valerioisufi.drawview.model/StrokeMesh|null[0]
-    constructor <init>(kotlin/String = ..., kotlin/FloatArray, kotlin/ShortArray, kotlin/Int, io.github.valerioisufi.drawview.model/StrokeTool, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint> = ..., kotlin.collections/List<io.github.valerioisufi.drawview.model/MeshPartition> = ..., io.github.valerioisufi.drawview.model/InputToolType = ...) // io.github.valerioisufi.drawview.model/StrokeMesh.<init>|<init>(kotlin.String;kotlin.FloatArray;kotlin.ShortArray;kotlin.Int;io.github.valerioisufi.drawview.model.StrokeTool;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.drawview.model.StrokePoint>;kotlin.collections.List<io.github.valerioisufi.drawview.model.MeshPartition>;io.github.valerioisufi.drawview.model.InputToolType){}[0]
+    constructor <init>(kotlin/String = ..., kotlin/FloatArray, kotlin/ShortArray, kotlin/Int, io.github.valerioisufi.drawview.model/StrokeTool, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint> = ..., kotlin.collections/List<io.github.valerioisufi.drawview.model/MeshPartition> = ..., io.github.valerioisufi.drawview.model/InputToolType = ..., io.github.valerioisufi.drawview.model/StrokeOutline? = ...) // io.github.valerioisufi.drawview.model/StrokeMesh.<init>|<init>(kotlin.String;kotlin.FloatArray;kotlin.ShortArray;kotlin.Int;io.github.valerioisufi.drawview.model.StrokeTool;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.drawview.model.StrokePoint>;kotlin.collections.List<io.github.valerioisufi.drawview.model.MeshPartition>;io.github.valerioisufi.drawview.model.InputToolType;io.github.valerioisufi.drawview.model.StrokeOutline?){}[0]
 
     final val color // io.github.valerioisufi.drawview.model/StrokeMesh.color|{}color[0]
         final fun <get-color>(): kotlin/Int // io.github.valerioisufi.drawview.model/StrokeMesh.color.<get-color>|<get-color>(){}[0]
@@ -2511,6 +2511,8 @@ final class io.github.valerioisufi.drawview.model/StrokeMesh { // io.github.vale
         final fun <get-inputToolType>(): io.github.valerioisufi.drawview.model/InputToolType // io.github.valerioisufi.drawview.model/StrokeMesh.inputToolType.<get-inputToolType>|<get-inputToolType>(){}[0]
     final val isEmpty // io.github.valerioisufi.drawview.model/StrokeMesh.isEmpty|{}isEmpty[0]
         final fun <get-isEmpty>(): kotlin/Boolean // io.github.valerioisufi.drawview.model/StrokeMesh.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
+    final val outline // io.github.valerioisufi.drawview.model/StrokeMesh.outline|{}outline[0]
+        final fun <get-outline>(): io.github.valerioisufi.drawview.model/StrokeOutline? // io.github.valerioisufi.drawview.model/StrokeMesh.outline.<get-outline>|<get-outline>(){}[0]
     final val partitions // io.github.valerioisufi.drawview.model/StrokeMesh.partitions|{}partitions[0]
         final fun <get-partitions>(): kotlin.collections/List<io.github.valerioisufi.drawview.model/MeshPartition> // io.github.valerioisufi.drawview.model/StrokeMesh.partitions.<get-partitions>|<get-partitions>(){}[0]
     final val points // io.github.valerioisufi.drawview.model/StrokeMesh.points|{}points[0]
@@ -2533,7 +2535,7 @@ final class io.github.valerioisufi.drawview.model/StrokeMesh { // io.github.vale
     final fun withPoints(kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint>): io.github.valerioisufi.drawview.model/StrokeMesh // io.github.valerioisufi.drawview.model/StrokeMesh.withPoints|withPoints(kotlin.collections.List<io.github.valerioisufi.drawview.model.StrokePoint>){}[0]
 
     final object Companion { // io.github.valerioisufi.drawview.model/StrokeMesh.Companion|null[0]
-        final fun fromIndexedMesh(kotlin/FloatArray, kotlin/IntArray, kotlin/Int, io.github.valerioisufi.drawview.model/StrokeTool, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint>, io.github.valerioisufi.drawview.model/InputToolType): io.github.valerioisufi.drawview.model/StrokeMesh // io.github.valerioisufi.drawview.model/StrokeMesh.Companion.fromIndexedMesh|fromIndexedMesh(kotlin.FloatArray;kotlin.IntArray;kotlin.Int;io.github.valerioisufi.drawview.model.StrokeTool;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.drawview.model.StrokePoint>;io.github.valerioisufi.drawview.model.InputToolType){}[0]
+        final fun fromIndexedMesh(kotlin/FloatArray, kotlin/IntArray, kotlin/Int, io.github.valerioisufi.drawview.model/StrokeTool, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint>, io.github.valerioisufi.drawview.model/InputToolType, io.github.valerioisufi.drawview.model/StrokeOutline? = ...): io.github.valerioisufi.drawview.model/StrokeMesh // io.github.valerioisufi.drawview.model/StrokeMesh.Companion.fromIndexedMesh|fromIndexedMesh(kotlin.FloatArray;kotlin.IntArray;kotlin.Int;io.github.valerioisufi.drawview.model.StrokeTool;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.drawview.model.StrokePoint>;io.github.valerioisufi.drawview.model.InputToolType;io.github.valerioisufi.drawview.model.StrokeOutline?){}[0]
     }
 }
 

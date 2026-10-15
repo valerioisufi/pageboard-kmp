@@ -16,7 +16,6 @@ import io.github.valerioisufi.drawview.canvas.render.tile.TextBlockLayout
 import io.github.valerioisufi.drawview.canvas.render.tile.TextFace
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.canvas.render.tile.TextWord
-import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawImage
@@ -479,12 +478,7 @@ public class PdfExporter(
 private val TextWord.printable: String get() = text.filter { it >= ' ' }
 
 /**
- * Outline of [stroke] on its page: modeled again from its inputs (the outlines of Google Ink), or
- * the triangles of its mesh when the engine cannot give it.
+ * Outline of [stroke] on its page: the one of its mesh (from Google Ink), or the triangles of its
+ * mesh when the modeller could not give it.
  */
-private fun outlineOf(stroke: DrawStroke): StrokeOutline {
-    val base = stroke.baseMesh
-    val modeled = InkStrokeEngine.buildOutline(base.points, stroke.baseBrush, base.inputToolType)
-        ?: return stroke.mesh.triangleOutline()
-    return if (stroke.transform.isIdentity) modeled else modeled.transformed(stroke.transform.toMatrix())
-}
+private fun outlineOf(stroke: DrawStroke): StrokeOutline = stroke.mesh.outline ?: stroke.mesh.triangleOutline()

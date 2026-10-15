@@ -92,7 +92,8 @@ internal class NativeStrokeEngineDelegate(private val api: InkNativeApi) : Strok
             tool = brush.tool,
             size = brush.size,
             points = points,
-            inputToolType = toolType
+            inputToolType = toolType,
+            outline = currentOutline()?.takeUnless { it.isEmpty }
         )
     }
 

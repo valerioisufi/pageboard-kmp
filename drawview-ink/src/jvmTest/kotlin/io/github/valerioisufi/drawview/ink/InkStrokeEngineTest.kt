@@ -8,6 +8,7 @@ import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class InkStrokeEngineTest {
@@ -52,23 +53,31 @@ class InkStrokeEngineTest {
     }
 
     @Test
-    fun theOutlineOfAStrokeFollowsItsMesh() {
+    fun theMeshCarriesTheOutlineOfTheStroke() {
         val brush = BrushConfig(tool = StrokeTool.PRESSURE_PEN, size = 2f, color = BLUE, epsilon = 0.05f)
         val points = (0..20).map { i -> StrokePoint(10f + i * 3f, 20f + (i * i) * 0.2f, 0.5f, 16L * (i + 1)) }
         val mesh = assertNotNull(InkStrokeEngine.buildMesh(points, brush))
-        val outline = assertNotNull(InkStrokeEngine.buildOutline(points, brush), "Ink gives the outline of the stroke")
+        val outline = assertNotNull(mesh.outline, "Ink gives the outline of the stroke with its mesh")
 
-        // Fewer points than the triangles, around the same shape
+        // Through the vertices of the mesh, around the same shape
         val vertices = outline.polygons.sumOf { it.size / 2 }
-        assertTrue(vertices in 3 until mesh.triangleCount * 3, "outline of $vertices vertices for ${mesh.triangleCount} triangles")
+        assertTrue(vertices in 3..mesh.vertexCount, "outline of $vertices vertices for ${mesh.vertexCount} vertices")
         val meshBounds = mesh.computeBounds()
         val xs = outline.polygons.flatMap { p -> p.filterIndexed { i, _ -> i % 2 == 0 } }
         val ys = outline.polygons.flatMap { p -> p.filterIndexed { i, _ -> i % 2 == 1 } }
         assertTrue(abs(xs.min() - meshBounds.left) < 0.01f && abs(xs.max() - meshBounds.right) < 0.01f)
         assertTrue(abs(ys.min() - meshBounds.top) < 0.01f && abs(ys.max() - meshBounds.bottom) < 0.01f)
 
-        // The outline placed on a page is placed with the stroke
-        val placed = outline.transformed(AffineTransform(tx = 100f).toMatrix())
+        // The stroke being drawn has it too
+        val engine = InkStrokeEngine()
+        engine.startStroke(brush)
+        points.take(10).forEach { engine.addInput(it.x, it.y, it.pressure, it.timestampMs) }
+        assertNotNull(engine.currentMesh()?.outline, "outline of the stroke in progress")
+        engine.release()
+
+        // Kept with the inputs, placed on a page with the vertices
+        assertSame(outline, mesh.withPoints(emptyList()).outline)
+        val placed = assertNotNull(mesh.transformed(AffineTransform(tx = 100f).toMatrix()).outline)
         assertEquals(outline.polygons.size, placed.polygons.size)
         assertEquals(outline.polygons[0][0] + 100f, placed.polygons[0][0], 0.001f)
         assertEquals(outline.polygons[0][1], placed.polygons[0][1], 0.001f)

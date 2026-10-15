@@ -24,7 +24,6 @@ final class io.github.valerioisufi.drawview.ink/InkStrokeEngine { // io.github.v
 
     final object Companion { // io.github.valerioisufi.drawview.ink/InkStrokeEngine.Companion|null[0]
         final fun buildMesh(kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint>, io.github.valerioisufi.drawview.model/BrushConfig, io.github.valerioisufi.drawview.model/InputToolType = ..., kotlin/Float = ...): io.github.valerioisufi.drawview.model/StrokeMesh? // io.github.valerioisufi.drawview.ink/InkStrokeEngine.Companion.buildMesh|buildMesh(kotlin.collections.List<io.github.valerioisufi.drawview.model.StrokePoint>;io.github.valerioisufi.drawview.model.BrushConfig;io.github.valerioisufi.drawview.model.InputToolType;kotlin.Float){}[0]
-        final fun buildOutline(kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint>, io.github.valerioisufi.drawview.model/BrushConfig, io.github.valerioisufi.drawview.model/InputToolType = ..., kotlin/Float = ...): io.github.valerioisufi.drawview.model/StrokeOutline? // io.github.valerioisufi.drawview.ink/InkStrokeEngine.Companion.buildOutline|buildOutline(kotlin.collections.List<io.github.valerioisufi.drawview.model.StrokePoint>;io.github.valerioisufi.drawview.model.BrushConfig;io.github.valerioisufi.drawview.model.InputToolType;kotlin.Float){}[0]
     }
 }
 

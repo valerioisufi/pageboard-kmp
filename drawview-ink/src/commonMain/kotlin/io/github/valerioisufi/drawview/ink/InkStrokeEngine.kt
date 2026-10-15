@@ -5,17 +5,16 @@ import io.github.valerioisufi.drawview.model.InputToolType
 import io.github.valerioisufi.drawview.model.STROKE_UNIT_LENGTH_CM_MM
 import io.github.valerioisufi.drawview.model.StrokeEngineDelegate
 import io.github.valerioisufi.drawview.model.StrokeMesh
-import io.github.valerioisufi.drawview.model.StrokeOutline
 import io.github.valerioisufi.drawview.model.StrokePoint
 
 /**
  * Real-time stroke modeller.
  *
- * Inputs are fed in stroke units (page millimeters) and produce a triangle mesh ready to be
- * rendered with `drawVertices`. The heavy lifting is done by the Google Ink C++ engine through
- * the platform bridge (JNI on Android and desktop, cinterop on iOS); when the native engine is
- * not available (web targets, or a native library that failed to load) a pure Kotlin
- * tessellator is used instead.
+ * Inputs are fed in stroke units (page millimeters) and produce a triangle mesh with the outline
+ * of the stroke ([StrokeMesh.outline]), filled to draw it. The heavy lifting is done by the Google
+ * Ink C++ engine through the platform bridge (JNI on Android and desktop, cinterop on iOS); when
+ * the native engine is not available (a native library that failed to load) a pure Kotlin
+ * tessellator is used instead, which gives the triangles only.
  */
 public class InkStrokeEngine {
     private val delegate: StrokeEngineDelegate = createStrokeEngineDelegate()
@@ -103,20 +102,6 @@ public class InkStrokeEngine {
         return mesh
     }
 
-    /**
-     * Completes the stroke and returns its outline instead of its mesh, or `null` when the
-     * modeller cannot give it (see [StrokeEngineDelegate.currentOutline]).
-     */
-    internal fun finishStrokeOutline(): StrokeOutline? {
-        if (!isActive) return null
-        isActive = false
-        delegate.finishInputs()
-        val outline = delegate.currentOutline()
-        delegate.clear()
-        recordedPoints.clear()
-        return outline?.takeUnless { it.isEmpty }
-    }
-
     public fun cancelStroke() {
         isActive = false
         delegate.clear()
@@ -151,29 +136,6 @@ public class InkStrokeEngine {
                     engine.addInput(p.x, p.y, p.pressure, p.timestampMs, toolType)
                 }
                 engine.finishStroke()
-            } finally {
-                engine.release()
-            }
-        }
-
-        /**
-         * Outline of a complete stroke modeled from recorded inputs, or `null` when the engine
-         * cannot give one (no inputs, or not the native engine).
-         */
-        public fun buildOutline(
-            points: List<StrokePoint>,
-            brush: BrushConfig,
-            toolType: InputToolType = InputToolType.UNKNOWN,
-            strokeUnitLengthCm: Float = STROKE_UNIT_LENGTH_CM_MM
-        ): StrokeOutline? {
-            if (points.isEmpty()) return null
-            val engine = InkStrokeEngine()
-            return try {
-                engine.startStroke(brush, strokeUnitLengthCm)
-                for (p in points) {
-                    engine.addInput(p.x, p.y, p.pressure, p.timestampMs, toolType)
-                }
-                engine.finishStrokeOutline()
             } finally {
                 engine.release()
             }

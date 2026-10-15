@@ -22,6 +22,10 @@ public class MeshPartition(
  *
  * Meshes with more than 65535 vertices are split in several [partitions]: [positions] and
  * [indices] always describe the first one.
+ *
+ * @property outline The shape of the stroke as closed polygons, from the same modeling as the
+ * triangles: the strokes are drawn by filling it, antialiased. `null` when the modeller cannot
+ * give it (the Kotlin one): the triangles are drawn instead.
  */
 public class StrokeMesh(
     public val id: String = generateId(),
@@ -32,7 +36,8 @@ public class StrokeMesh(
     public val size: Float,
     public val points: List<StrokePoint> = emptyList(),
     additionalPartitions: List<MeshPartition> = emptyList(),
-    public val inputToolType: InputToolType = InputToolType.UNKNOWN
+    public val inputToolType: InputToolType = InputToolType.UNKNOWN,
+    public val outline: StrokeOutline? = null
 ) {
     public val partitions: List<MeshPartition> =
         if (additionalPartitions.isEmpty()) listOf(MeshPartition(positions, indices))
@@ -76,12 +81,14 @@ public class StrokeMesh(
         size = size,
         points = points,
         additionalPartitions = partitions.drop(1),
-        inputToolType = inputToolType
+        inputToolType = inputToolType,
+        outline = outline
     )
 
     /**
      * This mesh mapped by [transform]: the vertices are mapped directly (what is drawn is exactly
-     * the transformed mesh) and so are the recorded inputs, the size scaled accordingly.
+     * the transformed mesh) and so are the outline and the recorded inputs, the size scaled
+     * accordingly.
      */
     public fun transformed(transform: Matrix2D): StrokeMesh {
         val scale = transform.scaleFactor
@@ -101,7 +108,8 @@ public class StrokeMesh(
                 StrokePoint(point.x, point.y, p.pressure, p.timestampMs)
             },
             additionalPartitions = mapped.drop(1),
-            inputToolType = inputToolType
+            inputToolType = inputToolType,
+            outline = outline?.transformed(transform)
         )
     }
 
@@ -137,7 +145,7 @@ public class StrokeMesh(
 
         /**
          * Builds a [StrokeMesh] from a 32-bit indexed triangle list, splitting it into
-         * 16-bit addressable [MeshPartition]s when needed.
+         * 16-bit addressable [MeshPartition]s when needed, with the [outline] of the stroke.
          */
         public fun fromIndexedMesh(
             positions: FloatArray,
@@ -146,7 +154,8 @@ public class StrokeMesh(
             tool: StrokeTool,
             size: Float,
             points: List<StrokePoint>,
-            inputToolType: InputToolType
+            inputToolType: InputToolType,
+            outline: StrokeOutline? = null
         ): StrokeMesh {
             val vertexCount = positions.size / 2
             if (vertexCount <= MAX_PARTITION_VERTICES) {
@@ -158,7 +167,8 @@ public class StrokeMesh(
                     tool = tool,
                     size = size,
                     points = points,
-                    inputToolType = inputToolType
+                    inputToolType = inputToolType,
+                    outline = outline
                 )
             }
 
@@ -172,7 +182,8 @@ public class StrokeMesh(
                 size = size,
                 points = points,
                 additionalPartitions = partitions.drop(1),
-                inputToolType = inputToolType
+                inputToolType = inputToolType,
+                outline = outline
             )
         }
 
