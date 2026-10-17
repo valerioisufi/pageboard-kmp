@@ -1,0 +1,10 @@
+public final class io/github/valerioisufi/drawview/ml/litert/LiteRtRuntime : io/github/valerioisufi/drawview/ml/ModelRuntime {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun embedder (Lio/github/valerioisufi/drawview/ml/InstalledModel;Lio/github/valerioisufi/drawview/ml/EmbedderOptions;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun generator (Lio/github/valerioisufi/drawview/ml/InstalledModel;Lio/github/valerioisufi/drawview/ml/GeneratorOptions;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun isAvailable ()Z
+	public fun supports (Lio/github/valerioisufi/drawview/ml/ModelSpec;)Z
+}
+

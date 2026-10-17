@@ -29,7 +29,7 @@ public class Sha256 {
     }
 
     /** The hash of what was given, in hexadecimal (the object is not usable afterwards). */
-    internal fun digestHex(): String {
+    public fun digestHex(): String {
         val bits = length * 8
         update(byteArrayOf(0x80.toByte()))
         while (blockSize != 56) update(byteArrayOf(0))

@@ -42,6 +42,7 @@ public final class io/github/valerioisufi/drawview/platform/SecureStore {
 public final class io/github/valerioisufi/drawview/platform/Sha256 {
 	public static final field Companion Lio/github/valerioisufi/drawview/platform/Sha256$Companion;
 	public fun <init> ()V
+	public final fun digestHex ()Ljava/lang/String;
 	public final fun update ([BII)Lio/github/valerioisufi/drawview/platform/Sha256;
 	public static synthetic fun update$default (Lio/github/valerioisufi/drawview/platform/Sha256;[BIIILjava/lang/Object;)Lio/github/valerioisufi/drawview/platform/Sha256;
 }

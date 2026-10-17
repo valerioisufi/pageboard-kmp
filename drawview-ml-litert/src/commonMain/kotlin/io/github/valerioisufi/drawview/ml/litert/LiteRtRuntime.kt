@@ -1,0 +1,56 @@
+package io.github.valerioisufi.drawview.ml.litert
+
+import io.github.valerioisufi.drawview.ml.Embedder
+import io.github.valerioisufi.drawview.ml.EmbedderOptions
+import io.github.valerioisufi.drawview.ml.Generator
+import io.github.valerioisufi.drawview.ml.GeneratorOptions
+import io.github.valerioisufi.drawview.ml.InstalledModel
+import io.github.valerioisufi.drawview.ml.ModelException
+import io.github.valerioisufi.drawview.ml.ModelRuntime
+import io.github.valerioisufi.drawview.ml.ModelSpec
+
+/**
+ * LiteRT-LM as the [ModelRuntime] of DrawView: the `.litertlm` models (Gemma 4, EmbeddingGemma 2),
+ * on the GPU when it can be used, on the processor otherwise.
+ *
+ * On the desktop JVM of the platforms LiteRT-LM is built for (Windows x86-64, macOS on Apple
+ * silicon, Linux); elsewhere, Android and iOS for now, it supports no model ([isAvailable] is
+ * false) and the applications use their other models.
+ *
+ * @param cacheDirectory where LiteRT-LM keeps what makes the next load of a model faster (`null`:
+ *   nothing is kept).
+ */
+public class LiteRtRuntime(private val cacheDirectory: String? = null) : ModelRuntime {
+    private val engine: LiteRtEngine? by lazy { liteRtEngine() }
+
+    /** Whether LiteRT-LM runs on this platform (its native library loaded). */
+    public val isAvailable: Boolean get() = engine != null
+
+    override fun supports(spec: ModelSpec): Boolean = engine != null && spec.fileName.endsWith(MODEL_EXTENSION)
+
+    override suspend fun generator(model: InstalledModel, options: GeneratorOptions): Generator =
+        available(model).generator(model, options, cacheDirectory)
+
+    override suspend fun embedder(model: InstalledModel, options: EmbedderOptions): Embedder =
+        available(model).embedder(model, options, cacheDirectory)
+
+    private fun available(model: InstalledModel): LiteRtEngine {
+        val engine = engine ?: throw ModelException("LiteRT-LM does not run on this platform")
+        if (!supports(model.spec)) throw ModelException("${model.spec.name} is not a model of LiteRT-LM")
+        return engine
+    }
+
+    private companion object {
+        const val MODEL_EXTENSION = ".litertlm"
+    }
+}
+
+/** LiteRT-LM on a platform: it loads the models. */
+internal interface LiteRtEngine {
+    suspend fun generator(model: InstalledModel, options: GeneratorOptions, cacheDirectory: String?): Generator
+
+    suspend fun embedder(model: InstalledModel, options: EmbedderOptions, cacheDirectory: String?): Embedder
+}
+
+/** LiteRT-LM on this platform, `null` where it is not built or its native library does not load. */
+internal expect fun liteRtEngine(): LiteRtEngine?

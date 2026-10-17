@@ -57,8 +57,10 @@ Variations).
   `uses-native-library` for `libOpenCL.so` and `libvndksupport.so` (not required). The embeddings:
   `EmbeddingEngine(EmbeddingEngineConfig(modelPath, backend, visionBackend, audioBackend))`,
   `computeEmbedding(listOf(InputData.Text(...)))`.
-* **No constrained decoding is documented**: the answer in the JSON of a schema is not guaranteed
-  (Ollama guarantees it today).
+* **Constrained decoding**: not in the documentation, but in the API of 0.18.0 (phase 1):
+  `ResponseFormat.json(schema)` given to `sendMessageAsync`, with
+  `ConversationConfig(enableResponseFormat = true)` and the experimental
+  `ExperimentalFlags.enableConversationConstrainedDecoding`.
 * **Swift** is an official SDK, of no use from Kotlin; the **C API** (`c/engine.h`,
   `conversation.h`, `embedding_engine.h`) is the way of Kotlin/Native. No example of it from
   Kotlin/Native exists.
@@ -68,7 +70,7 @@ Variations).
   |---|---|---|---|
   | Gemma 4 E2B | 2,583 MB | text, image, audio | phones and tablets |
   | Gemma 4 E4B | 3,654 MB | text, image, audio | tablets and computers |
-  | Gemma 4 12B | — (to check) | text, image, audio | the review on a computer |
+  | Gemma 4 12B | 6,883 MB | text, image, audio | the review on a computer |
   | EmbeddingGemma 2, text 270M | 165 MB (int4) | text | the search |
 
   The audio of Gemma 4 is at most 30 seconds a clip, with no times said; the images take a budget
@@ -122,7 +124,6 @@ which `LocalModels` of `drawview-lecture` turns into the Compose state of the se
 | Run a model: load it, answer a request of text, images and audio, compute an embedding | `ModelRuntime`, `Generator`, `Embedder` (ml) | Protected Variations, Polymorphism |
 | LiteRT-LM on every platform (GPU tried first, then CPU) | `LiteRtRuntime` (ml-litert, one `actual` per platform) | Polymorphism, Indirection |
 | Keep in memory what is used, free what is not, one large model at a time on a phone | `LoadedModels` (ml) | Pure Fabrication, Low Coupling |
-| An answer in the JSON of its schema, without constrained decoding: checked, asked again once with the error | `JsonAnswers` (ml) | Pure Fabrication |
 | The requests of the assistant answered on the device | `DeviceBackend : ModelBackend` (lecture) | Polymorphism |
 | Which engine answers the local requests, and its models | `AssistantSettings.localEngine`, `TaskModel.device` (lecture) | Information Expert |
 | The settings of the previous version read as they were | `AssistantSettingsStore` (lecture), version 2 | Information Expert |
@@ -209,9 +210,9 @@ the student reached from a tablet on the local network. It is no longer the defa
 ## Phases
 
 1. **The runtime on the desktop**: `drawview-ml` (ports, `ModelCatalog`, `InstalledModels`,
-   `ModelDownloads` with resume and SHA-256, `LoadedModels`, `JsonAnswers`) and
+   `ModelDownloads` with resume and SHA-256, `LoadedModels`) and
    `drawview-ml-litert` on the JVM; the bench (a JVM test of `drawview-ml-litert` run only with
-   `-Ddrawview.bench=<scratch dir>`, never by `jvmTest`); the natives of `litertlm-jvm` checked on
+   `-Pdrawview.bench=<scratch dir>`, never by `jvmTest`); the natives of `litertlm-jvm` checked on
    Windows. Both modules as every new library: `drawview.kmp.library`, `settings.gradle.kts`, the
    Dokka aggregate, `Module.md`, the `api/` dump.
 2. **Measure on the desktop**, on a copy of some notebooks and of a lecture in a scratch directory
@@ -237,7 +238,7 @@ the student reached from a tablet on the local network. It is no longer the defa
 
 | Phase | State |
 |---|---|
-| 1. The runtime on the desktop | not started |
+| 1. The runtime on the desktop | done |
 | 2. Measure on the desktop | not started |
 | 3. Android | not started |
 | 4. The assistant on the device | not started |
@@ -245,6 +246,37 @@ the student reached from a tablet on the local network. It is no longer the defa
 | 6. The speech on the device | not started |
 | 7. iOS | not started |
 | 8. Documentation | not started |
+
+### Phase 1 results
+
+* **`drawview-ml`** (headless, no native code): `ModelCatalog` with `ModelSpec` (id, file, revision,
+  SHA-256, size, inputs, memory, dimensions), `InstalledModels` (`models/<id>/<file>` of the data
+  directory, a file there only complete), `ModelDownloads` (a `.part` file hashed while it
+  arrives, resumed by an HTTP range and hashed again, deleted when it does not match),
+  `LoadedModels` (a model loaded by its first request, one request at a time, kept for the time
+  asked, the least recently used closed for a new one, `unload`), and the port: `ModelRuntime`,
+  `Generator`, `Embedder`, `GenerationRequest` (text, images, WAV audio, a JSON schema).
+* **`drawview-ml-litert`**: `LiteRtRuntime` on `litertlm-jvm` 0.18.0 (Google Maven), the GPU tried
+  first and the processor after; `isAvailable` false on Android and iOS (phases 3 and 7).
+* **The models of the catalog** (`litert-community`, Apache 2.0, not gated), each at a fixed
+  revision of its repository: Gemma 4 E2B (`gemma-4-E2B-it.litertlm`, 2,588,147,712 bytes), E4B
+  (3,659,530,240), 12B (6,883,278,368), EmbeddingGemma 2 text (164,626,432).
+* **`litertlm-jvm`** is a jar of 131 MB holding the JNI library of `windows-x86_64`,
+  `darwin-aarch64`, `linux-x86_64` and `linux-aarch64`: none for macOS on Intel nor for Windows on
+  Arm, where `isAvailable` is false. Its `NativeLibraryLoader` is internal: the first call into
+  `Engine` loads the library. It loads on Windows x86-64 (`LiteRtRuntimeTest`); a file that is not
+  a model is a `ModelException`, after the GPU and the processor tried.
+* **The bench**: `./gradlew :drawview-ml-litert:jvmTest --tests '*LiteRtBench*'
+  -Pdrawview.bench=<scratch dir> [-Pdrawview.bench.download=<ids>]` (a Gradle property: the JVM of
+  the tests does not see the `-D` of Gradle) loads every model found in `<scratch dir>/models`, asks
+  a question and an answer in JSON (generation) or three embeddings, and writes
+  `<scratch dir>/bench.md`. Not run with models yet: the downloads are part of phase 2.
+* `Sha256.digestHex` of `drawview-platform` is public: a hash of gigabytes, a piece at a time.
+* LiteRT-LM in `THIRD_PARTY_LICENSES.md` (its jar carries its own license and notices).
+* Tests: the catalog, the models installed and deleted (nothing else touched), the downloads
+  (complete, resumed, a server ignoring the range, a file not matching, an interrupted one, an
+  HTTP error), the models in memory with a runtime of the tests (kept, closed, replaced, one
+  request at a time, unloaded, a load failing).
 
 ## Checks
 
@@ -271,8 +303,9 @@ the student reached from a tablet on the local network. It is no longer the defa
   in `models/` of the data directory; a model file is deleted only when the student asks it in the
   settings.
 * whisper.cpp and Ollama stay until they are replaced by a measurement and a decision (revertible).
-* The JSON answers are checked and asked again once (no constrained decoding); tool calling is the
-  alternative if phase 2 finds too many answers out of their schema (revertible).
+* The JSON answers come from the constrained decoding of LiteRT-LM (`ResponseFormat`), not from a
+  check of our own (`JsonAnswers` of the first design is dropped, phase 1); phase 2 measures how
+  often they follow their schema (revertible).
 
 ## Left for later
 
@@ -293,4 +326,4 @@ the student reached from a tablet on the local network. It is no longer the defa
 * The quality of Gemma 4 on Italian handwriting and on formulas is not measured yet: the models
   write plausible text that is not on the page (most of their errors in WildHandBench, August
   2026).
-* The answers out of their schema, without constrained decoding.
+* The constrained decoding of LiteRT-LM is experimental (`ExperimentalFlags`).

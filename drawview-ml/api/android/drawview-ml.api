@@ -1,0 +1,194 @@
+public final class io/github/valerioisufi/drawview/ml/Accelerator : java/lang/Enum {
+	public static final field CPU Lio/github/valerioisufi/drawview/ml/Accelerator;
+	public static final field GPU Lio/github/valerioisufi/drawview/ml/Accelerator;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ml/Accelerator;
+	public static fun values ()[Lio/github/valerioisufi/drawview/ml/Accelerator;
+}
+
+public final class io/github/valerioisufi/drawview/ml/DownloadProgress {
+	public fun <init> (JJ)V
+	public final fun getDownloadedBytes ()J
+	public final fun getFraction ()F
+	public final fun getTotalBytes ()J
+}
+
+public abstract interface class io/github/valerioisufi/drawview/ml/Embedder : java/lang/AutoCloseable {
+	public abstract fun embed (Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getAccelerator ()Lio/github/valerioisufi/drawview/ml/Accelerator;
+	public abstract fun getDimensions ()I
+	public abstract fun getModel ()Lio/github/valerioisufi/drawview/ml/InstalledModel;
+}
+
+public final class io/github/valerioisufi/drawview/ml/EmbedderOptions {
+	public fun <init> ()V
+	public fun <init> (ILio/github/valerioisufi/drawview/ml/Accelerator;)V
+	public synthetic fun <init> (ILio/github/valerioisufi/drawview/ml/Accelerator;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAccelerator ()Lio/github/valerioisufi/drawview/ml/Accelerator;
+	public final fun getDimensions ()I
+	public fun hashCode ()I
+}
+
+public abstract interface class io/github/valerioisufi/drawview/ml/GenerationPart {
+}
+
+public final class io/github/valerioisufi/drawview/ml/GenerationPart$Audio : io/github/valerioisufi/drawview/ml/GenerationPart {
+	public fun <init> ([B)V
+	public final fun getWav ()[B
+}
+
+public final class io/github/valerioisufi/drawview/ml/GenerationPart$Image : io/github/valerioisufi/drawview/ml/GenerationPart {
+	public fun <init> ([B)V
+	public final fun getBytes ()[B
+}
+
+public final class io/github/valerioisufi/drawview/ml/GenerationPart$Text : io/github/valerioisufi/drawview/ml/GenerationPart {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun getText ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/ml/GenerationRequest {
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;IF)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;IFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getJsonSchema ()Ljava/lang/String;
+	public final fun getMaxOutputTokens ()I
+	public final fun getParts ()Ljava/util/List;
+	public final fun getSystem ()Ljava/lang/String;
+	public final fun getTemperature ()F
+}
+
+public abstract interface class io/github/valerioisufi/drawview/ml/Generator : java/lang/AutoCloseable {
+	public abstract fun generate (Lio/github/valerioisufi/drawview/ml/GenerationRequest;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun generate$default (Lio/github/valerioisufi/drawview/ml/Generator;Lio/github/valerioisufi/drawview/ml/GenerationRequest;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public abstract fun getAccelerator ()Lio/github/valerioisufi/drawview/ml/Accelerator;
+	public abstract fun getModel ()Lio/github/valerioisufi/drawview/ml/InstalledModel;
+}
+
+public final class io/github/valerioisufi/drawview/ml/Generator$DefaultImpls {
+	public static synthetic fun generate$default (Lio/github/valerioisufi/drawview/ml/Generator;Lio/github/valerioisufi/drawview/ml/GenerationRequest;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/ml/GeneratorOptions {
+	public fun <init> ()V
+	public fun <init> (IZZLio/github/valerioisufi/drawview/ml/Accelerator;)V
+	public synthetic fun <init> (IZZLio/github/valerioisufi/drawview/ml/Accelerator;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAccelerator ()Lio/github/valerioisufi/drawview/ml/Accelerator;
+	public final fun getAudio ()Z
+	public final fun getImages ()Z
+	public final fun getMaxTokens ()I
+	public fun hashCode ()I
+}
+
+public final class io/github/valerioisufi/drawview/ml/InstalledModel {
+	public fun <init> (Lio/github/valerioisufi/drawview/ml/ModelSpec;Ljava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPath ()Ljava/lang/String;
+	public final fun getSpec ()Lio/github/valerioisufi/drawview/ml/ModelSpec;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/ml/InstalledModels {
+	public static final field Companion Lio/github/valerioisufi/drawview/ml/InstalledModels$Companion;
+	public fun <init> ()V
+	public fun <init> (Lio/github/valerioisufi/drawview/ml/ModelCatalog;Ljava/lang/String;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/ml/ModelCatalog;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun delete (Lio/github/valerioisufi/drawview/ml/ModelSpec;)Z
+	public final fun get (Lio/github/valerioisufi/drawview/ml/ModelSpec;)Lio/github/valerioisufi/drawview/ml/InstalledModel;
+	public final fun get (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ml/InstalledModel;
+	public final fun getCatalog ()Lio/github/valerioisufi/drawview/ml/ModelCatalog;
+	public final fun getDirectory ()Ljava/lang/String;
+	public final fun getInstalled ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun pathOf (Lio/github/valerioisufi/drawview/ml/ModelSpec;)Ljava/lang/String;
+	public final fun refresh ()V
+}
+
+public final class io/github/valerioisufi/drawview/ml/InstalledModels$Companion {
+	public final fun defaultDirectory ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/ml/LoadedModels {
+	public fun <init> (Lio/github/valerioisufi/drawview/ml/ModelRuntime;IILkotlinx/coroutines/CoroutineScope;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/ml/ModelRuntime;IILkotlinx/coroutines/CoroutineScope;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getLoaded ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun unload (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun unloadAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun withEmbedder (Lio/github/valerioisufi/drawview/ml/InstalledModel;Lio/github/valerioisufi/drawview/ml/EmbedderOptions;JLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun withEmbedder$default (Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/InstalledModel;Lio/github/valerioisufi/drawview/ml/EmbedderOptions;JLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun withGenerator (Lio/github/valerioisufi/drawview/ml/InstalledModel;Lio/github/valerioisufi/drawview/ml/GeneratorOptions;JLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun withGenerator$default (Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/InstalledModel;Lio/github/valerioisufi/drawview/ml/GeneratorOptions;JLkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/ml/ModelCatalog {
+	public static final field Companion Lio/github/valerioisufi/drawview/ml/ModelCatalog$Companion;
+	public fun <init> (Ljava/util/List;)V
+	public final fun get (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ml/ModelSpec;
+	public final fun getModels ()Ljava/util/List;
+	public final fun of (Lio/github/valerioisufi/drawview/ml/ModelKind;)Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/drawview/ml/ModelCatalog$Companion {
+	public final fun getDefault ()Lio/github/valerioisufi/drawview/ml/ModelCatalog;
+	public final fun getEMBEDDING_GEMMA_2_TEXT ()Lio/github/valerioisufi/drawview/ml/ModelSpec;
+	public final fun getGEMMA_4_12B ()Lio/github/valerioisufi/drawview/ml/ModelSpec;
+	public final fun getGEMMA_4_E2B ()Lio/github/valerioisufi/drawview/ml/ModelSpec;
+	public final fun getGEMMA_4_E4B ()Lio/github/valerioisufi/drawview/ml/ModelSpec;
+}
+
+public final class io/github/valerioisufi/drawview/ml/ModelDownloads {
+	public fun <init> (Lio/github/valerioisufi/drawview/ml/InstalledModels;Lkotlinx/coroutines/CoroutineScope;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/ml/InstalledModels;Lkotlinx/coroutines/CoroutineScope;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun cancel (Lio/github/valerioisufi/drawview/ml/ModelSpec;)V
+	public final fun download (Lio/github/valerioisufi/drawview/ml/ModelSpec;)Lkotlinx/coroutines/Job;
+	public final fun getFailures ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun getProgress ()Lkotlinx/coroutines/flow/StateFlow;
+}
+
+public final class io/github/valerioisufi/drawview/ml/ModelException : java/lang/Exception {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class io/github/valerioisufi/drawview/ml/ModelInput : java/lang/Enum {
+	public static final field AUDIO Lio/github/valerioisufi/drawview/ml/ModelInput;
+	public static final field IMAGE Lio/github/valerioisufi/drawview/ml/ModelInput;
+	public static final field TEXT Lio/github/valerioisufi/drawview/ml/ModelInput;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ml/ModelInput;
+	public static fun values ()[Lio/github/valerioisufi/drawview/ml/ModelInput;
+}
+
+public final class io/github/valerioisufi/drawview/ml/ModelKind : java/lang/Enum {
+	public static final field EMBEDDING Lio/github/valerioisufi/drawview/ml/ModelKind;
+	public static final field GENERATION Lio/github/valerioisufi/drawview/ml/ModelKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/ml/ModelKind;
+	public static fun values ()[Lio/github/valerioisufi/drawview/ml/ModelKind;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/ml/ModelRuntime {
+	public abstract fun embedder (Lio/github/valerioisufi/drawview/ml/InstalledModel;Lio/github/valerioisufi/drawview/ml/EmbedderOptions;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun generator (Lio/github/valerioisufi/drawview/ml/InstalledModel;Lio/github/valerioisufi/drawview/ml/GeneratorOptions;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun supports (Lio/github/valerioisufi/drawview/ml/ModelSpec;)Z
+}
+
+public final class io/github/valerioisufi/drawview/ml/ModelSpec {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/ml/ModelKind;Ljava/util/Set;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JI)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/ml/ModelKind;Ljava/util/Set;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDimensions ()I
+	public final fun getFileName ()Ljava/lang/String;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getInputs ()Ljava/util/Set;
+	public final fun getKind ()Lio/github/valerioisufi/drawview/ml/ModelKind;
+	public final fun getMemoryBytes ()J
+	public final fun getName ()Ljava/lang/String;
+	public final fun getSha256 ()Ljava/lang/String;
+	public final fun getSizeBytes ()J
+	public final fun getUrl ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+

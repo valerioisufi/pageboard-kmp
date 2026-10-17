@@ -9,6 +9,7 @@
 final class io.github.valerioisufi.drawview.platform/Sha256 { // io.github.valerioisufi.drawview.platform/Sha256|null[0]
     constructor <init>() // io.github.valerioisufi.drawview.platform/Sha256.<init>|<init>(){}[0]
 
+    final fun digestHex(): kotlin/String // io.github.valerioisufi.drawview.platform/Sha256.digestHex|digestHex(){}[0]
     final fun update(kotlin/ByteArray, kotlin/Int = ..., kotlin/Int = ...): io.github.valerioisufi.drawview.platform/Sha256 // io.github.valerioisufi.drawview.platform/Sha256.update|update(kotlin.ByteArray;kotlin.Int;kotlin.Int){}[0]
 
     final object Companion { // io.github.valerioisufi.drawview.platform/Sha256.Companion|null[0]
