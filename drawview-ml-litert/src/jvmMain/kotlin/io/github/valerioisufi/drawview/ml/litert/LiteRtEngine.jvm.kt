@@ -25,6 +25,7 @@ import io.github.valerioisufi.drawview.ml.Generator
 import io.github.valerioisufi.drawview.ml.GeneratorOptions
 import io.github.valerioisufi.drawview.ml.InstalledModel
 import io.github.valerioisufi.drawview.ml.ModelException
+import java.io.File
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -32,13 +33,10 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /** LiteRT-LM of `litertlm-jvm`, loaded once: `null` on a platform its jar has no library for. */
-@OptIn(ExperimentalApi::class)
 private val jvmEngine: LiteRtEngine? by lazy {
     try {
         // The first call into the engine loads its native library
         Engine.setNativeMinLogSeverity(LogSeverity.ERROR)
-        // The answers in the JSON of their schema (ResponseFormat of a conversation)
-        ExperimentalFlags.enableConversationConstrainedDecoding = true
         JvmLiteRtEngine
     } catch (_: Throwable) {
         // UnsatisfiedLinkError, or the library missing from the jar (macOS on Intel, Windows on Arm)
@@ -59,7 +57,7 @@ private object JvmLiteRtEngine : LiteRtEngine {
                         visionBackend = if (options.images) backend else null,
                         audioBackend = if (options.audio) backend else null,
                         maxNumTokens = options.maxTokens,
-                        cacheDir = cacheDirectory
+                        cacheDir = cache(cacheDirectory)
                     )
                 ).also { it.initialize() }
             }
@@ -69,12 +67,15 @@ private object JvmLiteRtEngine : LiteRtEngine {
     override suspend fun embedder(model: InstalledModel, options: EmbedderOptions, cacheDirectory: String?): Embedder =
         withContext(Dispatchers.IO) {
             val (engine, accelerator) = load(options.accelerator) { backend ->
-                EmbeddingEngine(EmbeddingEngineConfig(modelPath = model.path, backend = backend, cacheDir = cacheDirectory))
+                EmbeddingEngine(EmbeddingEngineConfig(modelPath = model.path, backend = backend, cacheDir = cache(cacheDirectory)))
                     .also { it.initialize() }
             }
             val dimensions = options.dimensions.takeIf { it > 0 } ?: model.spec.dimensions
             LiteRtEmbedder(model, engine, accelerator, dimensions, outputSize = options.dimensions.takeIf { it > 0 })
         }
+
+    /** [directory], created if missing: LiteRT-LM refuses a cache directory that does not exist. */
+    private fun cache(directory: String?): String? = directory?.takeIf { File(it).apply { mkdirs() }.isDirectory }
 
     /** Loads on the GPU when asked and when it can be used, on the processor otherwise. */
     private fun <T : AutoCloseable> load(accelerator: Accelerator, open: (Backend) -> T): Pair<T, Accelerator> {
@@ -93,16 +94,24 @@ private object JvmLiteRtEngine : LiteRtEngine {
     }
 }
 
+/**
+ * Held by a conversation of any model while it runs: its constrained decoding is a flag of the
+ * whole process ([ExperimentalFlags]), and left on it cuts the answers of the conversations
+ * without a schema after a few tokens.
+ */
+private val conversations = Mutex()
+
 /** A Gemma model of LiteRT-LM: one conversation per request, closed with it. */
 private class LiteRtGenerator(
     override val model: InstalledModel,
     private val engine: Engine,
     override val accelerator: Accelerator
 ) : Generator {
-    private val mutex = Mutex()
-
-    override suspend fun generate(request: GenerationRequest, onProgress: (Int) -> Unit): String = mutex.withLock {
+    @OptIn(ExperimentalApi::class)
+    override suspend fun generate(request: GenerationRequest, onProgress: (Int) -> Unit): String = conversations.withLock {
         withContext(Dispatchers.IO) {
+            // The answer in the JSON of its schema for this request only
+            ExperimentalFlags.enableConversationConstrainedDecoding = request.jsonSchema != null
             val config = ConversationConfig(
                 systemInstruction = Contents.of(request.system),
                 samplerConfig = SamplerConfig(topK = TOP_K, topP = TOP_P, temperature = request.temperature.toDouble(), seed = 0),

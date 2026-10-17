@@ -239,7 +239,7 @@ the student reached from a tablet on the local network. It is no longer the defa
 | Phase | State |
 |---|---|
 | 1. The runtime on the desktop | done |
-| 2. Measure on the desktop | not started |
+| 2. Measure on the desktop | in progress: the first bench done |
 | 3. Android | not started |
 | 4. The assistant on the device | not started |
 | 5. The settings | not started |
@@ -270,13 +270,45 @@ the student reached from a tablet on the local network. It is no longer the defa
   -Pdrawview.bench=<scratch dir> [-Pdrawview.bench.download=<ids>]` (a Gradle property: the JVM of
   the tests does not see the `-D` of Gradle) loads every model found in `<scratch dir>/models`, asks
   a question and an answer in JSON (generation) or three embeddings, and writes
-  `<scratch dir>/bench.md`. Not run with models yet: the downloads are part of phase 2.
+  `<scratch dir>/bench.md`. Run with the models in phase 2.
 * `Sha256.digestHex` of `drawview-platform` is public: a hash of gigabytes, a piece at a time.
 * LiteRT-LM in `THIRD_PARTY_LICENSES.md` (its jar carries its own license and notices).
 * Tests: the catalog, the models installed and deleted (nothing else touched), the downloads
   (complete, resumed, a server ignoring the range, a file not matching, an interrupted one, an
   HTTP error), the models in memory with a runtime of the tests (kept, closed, replaced, one
   request at a time, unloaded, a load failing).
+
+### Phase 2: the first bench (2026-10-18)
+
+On the computer of the student (Windows 11, x86-64, 24 processors), with the three models
+downloaded by `ModelDownloads` (EmbeddingGemma 2 text, Gemma 4 E2B and E4B: 6.4 GB, each verified
+by its SHA-256):
+
+* **Fixed by the bench**:
+  * LiteRT-LM refuses a cache directory that does not exist: `LiteRtRuntime` creates it.
+  * `ExperimentalFlags.enableConversationConstrainedDecoding` is a flag of the process, and left on
+    it cuts the answers without a schema after a few tokens (E2B stopped at ```` ```json ````). It
+    is set for each request, under one lock held by the conversations of every model.
+* **The GPU cannot be used on the desktop JVM**: `litertlm-jvm` holds the JNI library only, and on
+  Windows the GPU needs the WebGPU accelerator of LiteRT (`libLiteRtWebGpuAccelerator.dll`, Dawn's
+  `webgpu_dawn.dll`, `libLiteRtTopKWebGpuSampler.dll`, in `prebuilt/windows_x86_64` of the
+  repository, on Git LFS). Every model fell back to the processor, as designed.
+* **Times on the processor**: a load in 0.3 s (E2B) and 0.5 s (E4B) with the cache of LiteRT-LM,
+  2.3 to 2.7 s without; a short answer in Italian in 1.9 s (E2B, 36 pieces) and 4.3 s (E4B, 46);
+  an answer in JSON of four points in 7 to 13 s; three embeddings in 0.17 s.
+* **Answers in JSON** (an object of two keys, `additionalProperties: false`):
+
+  | Model | Schema enforced (constrained decoding) | Schema asked in the prompt only |
+  |---|---|---|
+  | E2B | wrong: its first string is `": "`, every run | right, in a ```` ```json ```` block |
+  | E4B | right | right, in a ```` ```json ```` block |
+
+  E2B also wrote things that are false ("c ∉ [a, b]", a "Teorema del Limite Esato"); E4B did not.
+* **Embeddings**: a query on the incremental ratio is closer to the sentence on the derivative
+  (cosine 0.752) than to a recipe (0.525), with the prompts of the model card.
+* Left for the rest of phase 2: the handwriting and the formulas of real notebooks, the answers
+  of the assistant on its own prompts, the speech against whisper.cpp, the search (with phase 0
+  of [docs/search.md](search.md)).
 
 ## Checks
 
@@ -305,7 +337,8 @@ the student reached from a tablet on the local network. It is no longer the defa
 * whisper.cpp and Ollama stay until they are replaced by a measurement and a decision (revertible).
 * The JSON answers come from the constrained decoding of LiteRT-LM (`ResponseFormat`), not from a
   check of our own (`JsonAnswers` of the first design is dropped, phase 1); phase 2 measures how
-  often they follow their schema (revertible).
+  often they follow their schema (revertible). The first bench found it wrong with E2B: the
+  schema may have to be asked in the prompt, the answer taken out of its ```` ```json ```` block.
 
 ## Left for later
 
@@ -326,4 +359,7 @@ the student reached from a tablet on the local network. It is no longer the defa
 * The quality of Gemma 4 on Italian handwriting and on formulas is not measured yet: the models
   write plausible text that is not on the page (most of their errors in WildHandBench, August
   2026).
-* The constrained decoding of LiteRT-LM is experimental (`ExperimentalFlags`).
+* The constrained decoding of LiteRT-LM is experimental (`ExperimentalFlags`), a flag of the
+  process, and wrong with E2B.
+* The GPU on the desktop needs the WebGPU accelerator of LiteRT, which `litertlm-jvm` does not
+  ship: without it, the models run on the processor.

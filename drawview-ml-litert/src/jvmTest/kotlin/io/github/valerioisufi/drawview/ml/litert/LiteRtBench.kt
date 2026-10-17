@@ -1,5 +1,14 @@
 package io.github.valerioisufi.drawview.ml.litert
 
+import com.google.ai.edge.litertlm.Backend
+import com.google.ai.edge.litertlm.Contents
+import com.google.ai.edge.litertlm.ConversationConfig
+import com.google.ai.edge.litertlm.EmbeddingEngine
+import com.google.ai.edge.litertlm.EmbeddingEngineConfig
+import com.google.ai.edge.litertlm.Engine
+import com.google.ai.edge.litertlm.EngineConfig
+import com.google.ai.edge.litertlm.ExperimentalApi
+import com.google.ai.edge.litertlm.ExperimentalFlags
 import io.github.valerioisufi.drawview.ml.Accelerator
 import io.github.valerioisufi.drawview.ml.EmbedderOptions
 import io.github.valerioisufi.drawview.ml.GenerationPart
@@ -19,13 +28,14 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * The bench of the local models on this computer, run only when asked (see the build of the
  * module): every model of the catalog found in `<bench>/models` (`<id>/<file>`, as
  * [InstalledModels] keeps them) is loaded, asked a question in Italian and an answer in the JSON
- * of a schema (generation), or the vectors of three sentences (embedding); the times go to
- * `<bench>/bench.md`.
+ * of a schema, enforced and only asked (generation), or the vectors of three sentences
+ * (embedding); the times go to `<bench>/bench.md`, with why the GPU cannot be used, if it cannot.
  *
  * `drawview.bench.download` lists the ids of the models to download first into `<bench>/models`.
  * Nothing is read or written outside the directory of the bench.
@@ -45,6 +55,8 @@ class LiteRtBench {
         for (spec in ModelCatalog.Default.models) {
             val model = models[spec] ?: continue
             report.appendLine().appendLine("## ${spec.name}").appendLine()
+            report.appendLine("* the GPU: ${gpuFailure(model, "$directory/cache")}")
+            if (spec.kind == ModelKind.GENERATION) report.appendLine("* a raw answer of LiteRT-LM: ${rawAnswer(model, "$directory/cache")}")
             try {
                 when (spec.kind) {
                     ModelKind.GENERATION -> benchGenerator(loaded, model, report)
@@ -87,21 +99,20 @@ class LiteRtBench {
             report.appendLine("* a question: $tokens pieces in $answerTime")
             report.appendLine("  > " + answer.trim().replace("\n", " "))
 
-            val structured = GenerationRequest(
-                system = "Riassumi l'argomento per gli appunti di uno studente.",
-                parts = listOf(GenerationPart.Text("Il teorema di Rolle: una funzione continua in [a, b], derivabile in (a, b), con f(a) = f(b).")),
-                jsonSchema = SCHEMA,
-                maxOutputTokens = 512
-            )
-            val (json, jsonTime) = measureTimedValue { generator.generate(structured) }
-            val valid = try {
-                val answerObject = Json.parseToJsonElement(json).jsonObject
-                "title" in answerObject && answerObject.getValue("points").jsonArray.isNotEmpty()
-            } catch (_: Exception) {
-                false
+            // The same request with its schema enforced (constrained decoding), and only asked in the prompt
+            for (constrained in listOf(true, false)) {
+                val structured = GenerationRequest(
+                    system = "Riassumi l'argomento per gli appunti di uno studente, in italiano, in tre o quattro punti brevi. " +
+                        "Rispondi solo con un oggetto JSON di questo schema, senza altro testo: $SCHEMA",
+                    parts = listOf(GenerationPart.Text("Il teorema di Rolle: una funzione continua in [a, b], derivabile in (a, b), con f(a) = f(b).")),
+                    jsonSchema = SCHEMA.takeIf { constrained },
+                    maxOutputTokens = 512
+                )
+                val (json, jsonTime) = measureTimedValue { generator.generate(structured) }
+                val kind = if (constrained) "its schema enforced" else "its schema asked only"
+                report.appendLine("* an answer in JSON, $kind, in $jsonTime: ${check(json)}")
+                report.appendLine("  > " + json.trim().replace("\n", " ").take(600))
             }
-            report.appendLine("* an answer in JSON in $jsonTime, of its schema: $valid")
-            report.appendLine("  > " + json.trim().replace("\n", " "))
         }
         loaded.unload(model.spec.id)
     }
@@ -116,9 +127,69 @@ class LiteRtBench {
         val (_, loadTime) = measureTimedValue { loaded.withEmbedder(model, options, keepLoadedMillis = 60_000) { it.dimensions } }
         loaded.withEmbedder(model, options) { embedder ->
             val (vectors, time) = measureTimedValue { embedder.embed(sentences) }
-            report.appendLine("* asked the ${accelerator}, loaded on the ${embedder.accelerator} in $loadTime; 3 sentences in $time, ${vectors.first().size} dimensions")
+            report.appendLine("* asked the $accelerator, loaded on the ${embedder.accelerator} in $loadTime; 3 sentences in $time, ${vectors.first().size} dimensions")
             report.appendLine("  * cosine of the query and the derivative: ${cosine(vectors[1], vectors[0])}, and the recipe: ${cosine(vectors[1], vectors[2])}")
         }
+    }
+
+    /** Whether [answer] is an object of [SCHEMA] exactly: its two keys, a title, points that say something. */
+    private fun check(answer: String): String = try {
+        val text = answer.trim().removePrefix("```json").removePrefix("```").removeSuffix("```")
+        val json = Json.parseToJsonElement(text).jsonObject
+        val title = json["title"]?.jsonPrimitive?.content.orEmpty()
+        val points = json["points"]?.jsonArray?.map { it.jsonPrimitive.content }.orEmpty()
+        when {
+            json.keys != setOf("title", "points") -> "other keys, ${json.keys}"
+            title.count { it.isLetter() } < 3 -> "no title"
+            points.isEmpty() || points.any { point -> point.count { it.isLetter() } < 3 } -> "empty points"
+            else -> "valid, ${points.size} points"
+        }
+    } catch (e: Exception) {
+        "not JSON (${e.message?.lineSequence()?.firstOrNull()?.take(80)})"
+    }
+
+    /** Why LiteRT-LM cannot load [model] on the GPU of this computer, if it cannot. */
+    private fun gpuFailure(model: InstalledModel, cacheDirectory: String): String = try {
+        when (model.spec.kind) {
+            ModelKind.GENERATION ->
+                Engine(EngineConfig(modelPath = model.path, backend = Backend.GPU(), cacheDir = cacheDirectory)).use { it.initialize() }
+            ModelKind.EMBEDDING ->
+                EmbeddingEngine(EmbeddingEngineConfig(modelPath = model.path, backend = Backend.GPU(), cacheDir = cacheDirectory)).use { it.initialize() }
+        }
+        "it loads"
+    } catch (e: Throwable) {
+        "cannot be used: " + (e.message ?: e::class.simpleName.orEmpty()).replace("\n", " ")
+    }
+
+    /**
+     * The messages of LiteRT-LM to a JSON asked in the prompt only, as they come (contents, tool
+     * calls, channels): with the constrained decoding of the conversations on and off, and with a
+     * prompt asking to start with the brace.
+     */
+    @OptIn(ExperimentalApi::class)
+    private fun rawAnswer(model: InstalledModel, cacheDirectory: String): String = try {
+        Engine(EngineConfig(modelPath = model.path, backend = Backend.CPU(), cacheDir = cacheDirectory)).use { engine ->
+            engine.initialize()
+            val constrainedBefore = ExperimentalFlags.enableConversationConstrainedDecoding
+            val answers = listOf(true, false).flatMap { constrained ->
+                ExperimentalFlags.enableConversationConstrainedDecoding = constrained
+                listOf("", " Comincia la risposta con { e non usare blocchi di codice.").map { hint ->
+                    val config = ConversationConfig(
+                        systemInstruction = Contents.of("Rispondi solo con un oggetto JSON di questo schema, senza altro testo: $SCHEMA.$hint"),
+                        maxOutputToken = 256
+                    )
+                    engine.createConversation(config).use { conversation ->
+                        val message = conversation.sendMessage(Contents.of("Il teorema di Rolle, in tre punti."))
+                        "\n  * flag $constrained, hint ${hint.isNotEmpty()}: contents " +
+                            "${message.contents.contents.map { it.toString().replace("\n", " ").take(300) }}, tool calls ${message.toolCalls}, channels ${message.channels}"
+                    }
+                }
+            }
+            ExperimentalFlags.enableConversationConstrainedDecoding = constrainedBefore
+            answers.joinToString("")
+        }
+    } catch (e: Throwable) {
+        "failed: ${e.message}"
     }
 
     private fun cosine(a: FloatArray, b: FloatArray): String {
@@ -132,7 +203,8 @@ class LiteRtBench {
             mapOf(
                 "type" to Json.parseToJsonElement("\"object\""),
                 "properties" to Json.parseToJsonElement("""{"title": {"type": "string"}, "points": {"type": "array", "items": {"type": "string"}}}"""),
-                "required" to Json.parseToJsonElement("""["title", "points"]""")
+                "required" to Json.parseToJsonElement("""["title", "points"]"""),
+                "additionalProperties" to Json.parseToJsonElement("false")
             )
         ).toString()
     }
