@@ -32,5 +32,9 @@ gradlePlugin {
             id = "drawview.publish"
             implementationClass = "PublishConventionPlugin"
         }
+        register("testData") {
+            id = "drawview.test.data"
+            implementationClass = "TestDataConventionPlugin"
+        }
     }
 }

@@ -89,6 +89,9 @@ until the release (see the release checklist at the end).
 5. The public API is declared (explicit API mode, strict), checked (ABI validation) and
    documented (KDoc, Dokka); the rest is `internal`.
 6. A third-party element type uses the same API as the built-in ones.
+7. The tests never use the data of the user: every `Test` task runs on `build/test-data/<task>`
+   (`drawview.test.data`, applied by `drawview.kmp.library` and by the modules of the
+   applications; see [test-data.md](test-data.md)).
 
 ## Target modules
 

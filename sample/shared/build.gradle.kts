@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    // The tests on a data directory of their own (build/test-data), never the one of the user
+    id("drawview.test.data")
     // The values of the shapes (an element type of the sample)
     alias(libs.plugins.kotlinSerialization)
 }

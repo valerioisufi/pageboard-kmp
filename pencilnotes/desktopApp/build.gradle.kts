@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    // The tests on a data directory of their own (build/test-data), never the one of the user
+    id("drawview.test.data")
 }
 
 dependencies {
