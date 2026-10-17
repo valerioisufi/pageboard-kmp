@@ -25,11 +25,11 @@ class TileScreenTest {
 
     @Test
     fun visibleTilesAreRasterizedOnceAndKept() {
-        // A Retina window zoomed just past a change of LOD: every tile covers the fewest screen
-        // pixels, the tiles on screen exceed the memory budget of the cache
+        // A Retina window zoomed just past a change of LOD (at 1.05): every tile covers the fewest
+        // screen pixels, the tiles on screen exceed the memory budget of the cache
         val viewport = Rect(0f, 0f, 2880f, 1800f)
         val pageRect = Rect(16f, 16f, 2864f, 16f + 2848f * 1.4142f)
-        val scale = 1.42f
+        val scale = 1.06f
         val originX = 300f
         val originY = 1000f
         val camera = Matrix2D().postScale(scale, scale).postTranslate(-originX * scale, -originY * scale)
@@ -44,7 +44,7 @@ class TileScreenTest {
         var stableFrames = 0
         var frames = 0
         while (stableFrames < 5 && frames < 100) {
-            manager.drawTiles(canvas, camera, viewport, doc, listOf(pageRect), density = 2f)
+            manager.drawTiles(canvas, camera, viewport, doc, listOf(pageRect))
             Thread.sleep(100)
             val now = rasterized.get()
             if (now == last) stableFrames++ else stableFrames = 0
@@ -78,14 +78,14 @@ class TileScreenTest {
             manager.tileCache.put(Tile(TileKey(page.renderKey, 0, col, row), bitmap, TileState.READY))
         }
 
-        for (scale in listOf(0.73f, 0.917f, 1.1f, 1.37f)) {
+        // The zooms drawing the tiles of LOD 0
+        for (scale in listOf(0.6f, 0.73f, 0.917f, 1.04f)) {
             val screen = ImageBitmap(800, 800)
             val canvas = Canvas(screen)
             canvas.drawRect(Rect(0f, 0f, 800f, 800f), Paint().apply { color = Color.White })
             val camera = Matrix2D().postScale(scale, scale).postTranslate(3.3f, 2.7f)
             val viewport = Rect(0f, 0f, 512f * scale * 1.5f, 512f * scale * 1.5f)
-            // A dense screen: the tiles of LOD 0 are drawn up to √2
-            manager.drawTiles(canvas, camera, viewport, doc, listOf(Rect(0f, 0f, 1024f, 1024f)), density = 2f)
+            manager.drawTiles(canvas, camera, viewport, doc, listOf(Rect(0f, 0f, 1024f, 1024f)))
 
             val pixels = screen.toPixelMap()
             val seamX = (512f * scale + 3.3f).toInt()

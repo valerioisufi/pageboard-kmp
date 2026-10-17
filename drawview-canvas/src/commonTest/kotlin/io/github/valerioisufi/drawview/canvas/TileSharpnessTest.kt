@@ -44,28 +44,20 @@ class TileSharpnessTest {
     }
 
     @Test
-    fun tilesAreMagnifiedOnDenseScreensOnly() {
-        fun lod(scale: Float, density: Float) = TilePyramid.calculateLod(scale, TilePyramid.maxMagnification(density))
-
-        // 2x and more: the nearest LOD, magnified up to √2
-        assertEquals(0, lod(1f, 2f))
-        assertEquals(0, lod(1.3f, 2f))
-        assertEquals(1, lod(1.5f, 3f))
-        assertEquals(-1, lod(0.6f, 2f))
-        // 1x to 1.75x: the LOD above as soon as the tiles would be magnified
-        assertEquals(0, lod(1f, 1f))
-        assertEquals(0, lod(1.04f, 1.25f))
-        assertEquals(1, lod(1.1f, 1f))
-        assertEquals(1, lod(1.3f, 1.5f))
-        assertEquals(1, lod(2f, 1.75f))
-        assertEquals(0, lod(0.6f, 1f))
-        // The nearest LOD by default
-        assertEquals(0, TilePyramid.calculateLod(1.3f))
-        assertEquals(1, TilePyramid.calculateLod(1.5f))
+    fun tilesAreNeverMagnified() {
+        // At a power of two the tiles of its LOD at their size, within 5% too (the rounding of the zoom)
+        assertEquals(0, TilePyramid.calculateLod(1f))
+        assertEquals(1, TilePyramid.calculateLod(2f))
+        assertEquals(0, TilePyramid.calculateLod(1.04f))
+        // Beyond, the tiles of the LOD above, shrunk
+        assertEquals(1, TilePyramid.calculateLod(1.1f))
+        assertEquals(1, TilePyramid.calculateLod(1.41f))
+        assertEquals(2, TilePyramid.calculateLod(2.2f))
+        assertEquals(0, TilePyramid.calculateLod(0.6f))
     }
 
     @Test
-    fun aScreenOfLowDensityShowsTheTilesOfTheLodAbove() {
+    fun aZoomBetweenTwoLodsShowsTheTilesOfTheLodAbove() {
         val manager = TileManager()
         val document = DrawDocument("doc", "Doc")
         val page = document.pages[0]
@@ -80,15 +72,13 @@ class TileSharpnessTest {
             }
         }
 
-        // Zoomed to 130%
-        val camera = Matrix2D().postScale(1.3f, 1.3f)
-        fun centerOn(density: Float): Color {
+        fun centerAt(zoom: Float): Color {
             val screen = ImageBitmap(200, 200)
-            manager.drawTiles(Canvas(screen), camera, Rect(0f, 0f, 200f, 200f), document, listOf(pageRect), density = density)
+            manager.drawTiles(Canvas(screen), Matrix2D().postScale(zoom, zoom), Rect(0f, 0f, 200f, 200f), document, listOf(pageRect))
             return screen.toPixelMap()[100, 100]
         }
-        assertEquals(Color.Blue, centerOn(density = 1f))
-        assertEquals(Color.Red, centerOn(density = 2f))
+        assertEquals(Color.Red, centerAt(zoom = 1f))
+        assertEquals(Color.Blue, centerAt(zoom = 1.3f))
         manager.cleanup()
     }
 }

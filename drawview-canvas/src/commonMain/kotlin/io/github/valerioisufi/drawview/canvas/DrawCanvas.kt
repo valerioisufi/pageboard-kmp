@@ -151,8 +151,7 @@ public fun DrawCanvas(
                 viewportBounds = viewport,
                 document = document,
                 pageRects = controller.viewport.layout.pagesRectOnWindow,
-                skipPageKey = draggedPage?.renderKey,
-                density = density
+                skipPageKey = draggedPage?.renderKey
             )
         }
 
@@ -225,7 +224,7 @@ public fun DrawCanvas(
             if (worldRect != null) {
                 drawIntoCanvas { canvas ->
                     controller.tileManager.drawPageTiles(
-                        canvas, draggedPage, worldRect, floatingPage, controller.viewport.camera.getCurrentScale(), density
+                        canvas, draggedPage, worldRect, floatingPage, controller.viewport.camera.getCurrentScale()
                     )
                 }
             }

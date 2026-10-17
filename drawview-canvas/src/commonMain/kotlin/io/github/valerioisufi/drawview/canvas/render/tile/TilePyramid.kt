@@ -21,25 +21,20 @@ internal object TilePyramid {
     /** Maximum supported LOD index (deep zoom). Scale = 2^5 = 32x. */
     const val MAX_LOD = 5
 
-    /** Largest magnification of the tiles of the nearest LOD (halfway between two LODs). */
-    const val NEAREST_LOD_MAGNIFICATION = 1.4142135f
-
     /**
-     * Largest magnification of the tiles on a screen of [density] (pixels per dp). The pixels of a
-     * screen of 2x and more are too small to see a tile magnified up to √2, so the nearest LOD is
-     * drawn; on a screen of 1x to 1.75x a magnified tile is blurred, so the tiles are only shrunk
-     * there (the 5% leaves room for the rounding of the zoom), at the cost of up to twice the
-     * tiles of the nearest LOD.
+     * Largest magnification of the tiles on screen. A magnified tile is blurred, on dense screens
+     * too, so the tiles are only shrunk, at the cost of up to twice the tiles of the nearest LOD;
+     * the 5% leaves room for the rounding of the zoom.
      */
-    fun maxMagnification(density: Float): Float = if (density >= 2f) NEAREST_LOD_MAGNIFICATION else 1.05f
+    const val MAX_MAGNIFICATION = 1.05f
 
     /**
      * Calculates the LOD for the continuous camera [scale]: the lowest whose tiles are magnified
-     * on screen at most by [maxMagnification] (by default the nearest LOD).
+     * on screen at most by [MAX_MAGNIFICATION].
      */
-    fun calculateLod(scale: Float, maxMagnification: Float = NEAREST_LOD_MAGNIFICATION): Int {
+    fun calculateLod(scale: Float): Int {
         if (scale <= 0f) return 0
-        val rawLod = ceil(ln(scale.toDouble() / maxMagnification) / ln(2.0)).toInt()
+        val rawLod = ceil(ln(scale.toDouble() / MAX_MAGNIFICATION) / ln(2.0)).toInt()
         return rawLod.coerceIn(MIN_LOD, MAX_LOD)
     }
 

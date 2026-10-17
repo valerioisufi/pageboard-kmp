@@ -136,8 +136,6 @@ public class TileManager(
      * @param document The document data model.
      * @param pageRects The World Space bounds of each page (indexed like [DrawDocument.pages]).
      * @param skipPageKey Page not drawn (e.g. the page being dragged while reordering).
-     * @param density Pixels per dp of the screen: how much the tiles may be magnified (see
-     * [TilePyramid.maxMagnification]).
      */
     internal fun drawTiles(
         canvas: Canvas,
@@ -145,8 +143,7 @@ public class TileManager(
         viewportBounds: Rect,
         document: DrawDocument,
         pageRects: List<Rect>,
-        skipPageKey: Long? = null,
-        density: Float = 1f
+        skipPageKey: Long? = null
     ) {
         if (pageRects.isEmpty()) return
         tileCache.beginFrame()
@@ -158,7 +155,7 @@ public class TileManager(
 
         // 2. Determine current scale and LOD
         val currentScale = cameraMatrix.a
-        val targetLod = TilePyramid.calculateLod(currentScale, TilePyramid.maxMagnification(density))
+        val targetLod = TilePyramid.calculateLod(currentScale)
         val tileSize = TilePyramid.getTileWorldSize(targetLod)
 
         val pages = document.pages
@@ -337,10 +334,10 @@ public class TileManager(
 
     /**
      * Draws all the tiles of a single page at an arbitrary destination rectangle (used to render
-     * the page being dragged while reordering pages), on a screen of [density] (see [drawTiles]).
+     * the page being dragged while reordering pages).
      */
-    internal fun drawPageTiles(canvas: Canvas, page: DrawPage, pageWorldRect: Rect, destScreenRect: Rect, cameraScale: Float, density: Float = 1f) {
-        val lod = TilePyramid.calculateLod(cameraScale, TilePyramid.maxMagnification(density))
+    internal fun drawPageTiles(canvas: Canvas, page: DrawPage, pageWorldRect: Rect, destScreenRect: Rect, cameraScale: Float) {
+        val lod = TilePyramid.calculateLod(cameraScale)
         val range = TilePyramid.getPageIntersectingTileRange(
             0f, 0f, pageWorldRect.width, pageWorldRect.height,
             pageWorldRect.width, pageWorldRect.height, lod

@@ -2,7 +2,8 @@
 
 The content of the documents (ink, paper, PDFs, texts, images) as sharp on screen as the screen
 allows. This document starts from the blur seen on a Windows desktop at 100% (3440 × 1440,
-density 1), where the same documents are sharp on a Retina Mac (density 2) (2026-10-15).
+density 1), where the same documents are sharp on a Retina Mac (density 2) (2026-10-15); the Mac
+then showed the tiles slightly blurred at some zooms too (2026-10-17).
 
 The responsibilities are assigned following the GRASP principles (Information Expert, Low
 Coupling, Protected Variations).
@@ -34,19 +35,18 @@ over the inked pixels (0–255):
 | B2 | Tiles magnified up to √2 | `calculateLod` rounds `log2(scale)` to the nearest LOD: between 1 and 1.41 the tiles of LOD 0 are magnified |
 | B3 | Stair-stepped ink | The strokes are drawn with `drawVertices`, which Skia (and Android) never antialias |
 
-The three are fractions of a pixel of the screen: on a screen of 2x and more a pixel is too small
-to see them, on a screen of 1x it is not. The density itself is not the cause: Java reports a
-scale of 1.0 on this screen, and multiplying the camera scale by the density (a commit dropped
-from `fix/windows-desktop-build`) counts it twice, since the camera scale is already in screen
-pixels.
+The three are fractions of a pixel of the screen: on a screen of 2x and more a pixel is smaller and
+they are seen less, on a screen of 1x they are seen at once; B2 is seen on a Retina Mac too,
+between two LODs. The density itself is not the cause: Java reports a scale of 1.0 on this
+screen, and multiplying the camera scale by the density (a commit dropped from
+`fix/windows-desktop-build`) counts it twice, since the camera scale is already in screen pixels.
 
 ## Requirements
 
 1. At a zoom of 1 (and of its powers of two) every pixel of a tile falls on one pixel of the
    screen (B1).
-2. On a screen of low density the tiles are not magnified (B2).
-3. Nothing changes on the dense screens (Retina, iOS, Android phones): the same LODs, the same
-   memory.
+2. The tiles are not magnified, on every screen (B2).
+3. One rule for every platform: the density does not enter the rendering of the tiles.
 4. No change of the public API (`checkKotlinAbi`) or of the stored data: the layout of the world
    is computed at every start.
 
@@ -57,21 +57,19 @@ pixels.
   * `CameraPhysicsEngine` makes the render matrix, so its translation is on whole pixels. The
     physics keeps the exact position: only what is drawn (and the input mapped back through the
     same matrix) is rounded.
-  * `TilePyramid` knows the LODs, so it holds the policy: `maxMagnification(density)` (√2 at 2x
-    and more, 5% below) and `calculateLod(scale, maxMagnification)`, the lowest LOD whose tiles
-    are magnified at most that much.
-* **Low Coupling.** The density reaches `TileManager.drawTiles` (internal) as a parameter, from
-  `DrawCanvas`, which reads it from `LocalDensity`. `TileManager` keeps no density of its own (the
-  dropped commit kept one, set from two places).
-* **Protected Variations.** Another threshold, or a curve between 1x and 2x, changes
-  `maxMagnification` only.
+  * `TilePyramid` knows the LODs, so it holds the policy: `calculateLod(scale)` is the lowest LOD
+    whose tiles are magnified at most by `MAX_MAGNIFICATION` (5%).
+* **Low Coupling.** The density does not reach the tiles: the camera scale is already in screen
+  pixels. `TileManager` keeps no density (the dropped commit kept one, set from two places).
+* **Protected Variations.** Another tolerance changes `MAX_MAGNIFICATION` only.
 
 ## Plan
 
 | Phase | Content | Status |
 |---|---|---|
 | 1 | Pages and camera on whole pixels: `CalcPage.calcPagesRectOnWindow`, `CameraPhysicsEngine.getRenderMatrix`; `TileSharpnessTest` | Done |
-| 2 | LOD by density: `TilePyramid.maxMagnification`, `calculateLod`, the density through `TileManager.drawTiles` and `drawPageTiles` from `DrawCanvas`; tests | Done |
+| 2 | LOD by density: `TilePyramid.maxMagnification`, `calculateLod`, the density through `TileManager.drawTiles` and `drawPageTiles` from `DrawCanvas`; tests | Done, replaced by 3 |
+| 3 | One rule for every screen: `TilePyramid.MAX_MAGNIFICATION`, the density out of `drawTiles` and `drawPageTiles`; tests | Done |
 | Later | Antialiased ink (B3) | |
 
 ### Phase 1 results
@@ -94,6 +92,17 @@ pixels.
   verified there).
 * The ABI dumps of the JVM and of Android do not change.
 
+### Phase 3 results
+
+* `calculateLod` takes the LOD of a power of two up to 5% above it, the LOD above beyond, on every
+  screen (`TileSharpnessTest`); `drawTiles` draws the tiles of LOD 0 at a zoom of 100%, those of
+  LOD 1 at 130%. On this screen of 1x nothing changes from phase 2.
+* `TileScreenTest`: a Retina window zoomed just past a change of LOD (1.06) rasterizes its tiles
+  once and keeps them, beyond the budget of the cache; the tiles of LOD 0 leave no seam from 60%
+  to 104%.
+* To see on the Retina Mac: the zooms between two LODs (100–141%, 200–283%) as sharp as the
+  powers of two.
+
 ### Left for later
 
 * **Antialiased ink (B3).** Two ways, to choose:
@@ -110,11 +119,15 @@ pixels.
 
 ## Decisions
 
+Taken by the user on 2026-10-17:
+
+1. One rule for every screen: the tiles are never magnified, on the dense screens too, at the cost
+   of twice the tiles. It replaces the two regimes of phase 2 (the nearest LOD at 2x and more,
+   no magnification below), taken alone and dropped when the Mac showed the blur too.
+
 Taken alone, revertible:
 
-1. Two regimes, split at a density of 2, rather than a curve from 1x to 2x: the screens of 1x to
-   1.75x are the ones where the pixels are seen (`maxMagnification`).
-2. A tolerance of 5% before the LOD above (`maxMagnification`): the zoom of the opening and of
+2. A tolerance of 5% before the LOD above (`MAX_MAGNIFICATION`): the zoom of the opening and of
    "fit width" is 1.0 exactly, but a scale a hair above 1 (rounding of the zoom commands) must
    not take the tiles of LOD 1, four times as many pixels.
 3. The translation of the camera rounded in the render matrix only, not in the physics
@@ -122,9 +135,11 @@ Taken alone, revertible:
 
 ## Risks
 
-* Memory on screens of low density: up to twice the tiles of the nearest LOD. In the worst case (a
-  zoom just past a power of two) four pixels of tiles per pixel of the screen: 79 MB of tiles on
-  screen for a window of 3440 × 1440, kept by `TileCache` beyond its budget of 64 MB as every
-  tile on screen.
+* Memory: up to twice the tiles of the nearest LOD, on every screen. In the worst case (a zoom
+  just past a power of two) four pixels of tiles per pixel of the screen, kept by `TileCache`
+  beyond its budget of 64 MB as every tile on screen: about 95 MB of tiles on screen on a
+  MacBook Pro 14" (3024 × 1964, 47 MB before), 90 MB on an iPad Pro 12.9" (45 MB), 79 MB for a
+  window of 3440 × 1440, 41 MB on an Android phone of 1080 × 2400 (21 MB): to watch on the
+  phones. Zooming rasterizes twice the pixels in background.
 * A camera on whole pixels moves by whole pixels: a slow fling steps, and the focus of a pinch
   moves by less than half a pixel.
