@@ -48,4 +48,15 @@ public actual object PlatformFiles {
     public actual fun exists(path: String): Boolean = NSFileManager.defaultManager.fileExistsAtPath(path)
 
     public actual fun delete(path: String): Boolean = NSFileManager.defaultManager.removeItemAtPath(path, error = null)
+
+    public actual fun name(path: String): String = path.trimEnd('/').substringAfterLast('/')
+
+    public actual fun parent(path: String): String? {
+        val trimmed = path.trimEnd('/')
+        return when (val slash = trimmed.lastIndexOf('/')) {
+            -1 -> null
+            0 -> "/"
+            else -> trimmed.substring(0, slash)
+        }
+    }
 }

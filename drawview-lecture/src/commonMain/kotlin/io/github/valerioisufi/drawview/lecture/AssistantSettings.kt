@@ -272,7 +272,8 @@ public class AssistantSettingsStore(
                 null
             }
         } ?: AssistantSettings()
-        return saved.copy(apiKey = secrets.read(API_KEY).orEmpty())
+        // Written again as read at the next update
+        return saved.copy(apiKey = secrets.read(API_KEY).orEmpty(), whisperModel = WhisperTranscriber.movedModel(saved.whisperModel))
     }
 
     internal companion object {

@@ -6,7 +6,10 @@ import io.github.valerioisufi.drawview.lecture.transcription.TranscriptionExcept
 import io.github.valerioisufi.drawview.lecture.transcription.WhisperEngine
 import io.github.valerioisufi.drawview.lecture.transcription.WhisperNative
 import io.github.valerioisufi.drawview.lecture.transcription.WhisperTranscriber
+import io.github.valerioisufi.drawview.lecture.testing.MemorySecrets
+import io.github.valerioisufi.drawview.platform.PlatformFiles
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.JsonPrimitive
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.AfterTest
@@ -85,5 +88,31 @@ class WhisperTranscriberTest {
         assertTrue(WhisperNative.isAvailable)
         // Not a model: refused without crashing
         assertEquals(0L, WhisperNative.load(model.path, useGpu = false))
+    }
+
+    @Test
+    fun aModelChosenInTheResourcesIsReadWhereItWasMoved() {
+        // As Windows saved it: in the resources, built with '/'
+        val chosen = PlatformFiles.resourcesDirectory() + "/whisper/ggml-small.bin"
+        val moved = File(WhisperTranscriber.modelsDirectory(), "ggml-small.bin").apply { parentFile.mkdirs(); writeText("") }
+        val path = File(directory, "settings.json").path
+        File(path).writeText("""{"whisperModel": ${JsonPrimitive(chosen)}}""")
+        try {
+            val settings = AssistantSettingsStore(path, MemorySecrets()).settings
+            assertEquals(moved.absoluteFile, File(settings.whisperModel).absoluteFile)
+            assertEquals(WhisperTranscriber.modelsDirectory() + "/ggml-small.bin", settings.whisperModel)
+            // The file as it was, until the settings are changed
+            assertTrue(File(path).readText().contains("resources"))
+
+            // Still in the resources (not moved yet), or chosen elsewhere: as it is
+            File(chosen).apply { parentFile.mkdirs(); writeText("") }
+            assertEquals(chosen, WhisperTranscriber.movedModel(chosen))
+            File(chosen).delete()
+            val elsewhere = File(directory, "ggml-small.bin").path
+            assertEquals(elsewhere, WhisperTranscriber.movedModel(elsewhere))
+            assertEquals("", WhisperTranscriber.movedModel(""))
+        } finally {
+            moved.delete()
+        }
     }
 }

@@ -17,6 +17,18 @@ public expect object PlatformFiles {
     public fun exists(path: String): Boolean
 
     public fun delete(path: String): Boolean
+
+    /**
+     * The name of the file or directory at [path]: its last segment, on the separators of the
+     * platform (`\` too on Windows), a trailing one ignored.
+     */
+    public fun name(path: String): String
+
+    /**
+     * The directory holding [path], on the separators of the platform (`\` too on Windows), a
+     * trailing one ignored: `null` when [path] has a single segment.
+     */
+    public fun parent(path: String): String?
 }
 
 /**

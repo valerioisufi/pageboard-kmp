@@ -51,4 +51,8 @@ public actual object PlatformFiles {
     public actual fun exists(path: String): Boolean = File(path).exists()
 
     public actual fun delete(path: String): Boolean = File(path).delete()
+
+    public actual fun name(path: String): String = File(path).name
+
+    public actual fun parent(path: String): String? = File(path).parent
 }

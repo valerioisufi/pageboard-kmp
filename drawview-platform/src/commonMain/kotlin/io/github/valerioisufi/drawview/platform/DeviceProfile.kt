@@ -41,12 +41,5 @@ public object DeviceProfile {
     public const val MAX_LENGTH: Int = 40
 }
 
-/** The directory of the data of the application (the documents' resources are in it). */
-public fun dataDirectory(): String = parentDirectory(PlatformFiles.resourcesDirectory())
-
-/** The directory holding [path], with the separators of every system (`\` on Windows). */
-internal fun parentDirectory(path: String): String {
-    val trimmed = path.trimEnd('/', '\\')
-    val last = trimmed.lastIndexOfAny(charArrayOf('/', '\\'))
-    return if (last < 0) trimmed else trimmed.substring(0, last)
-}
+/** The directory of the data of the application: the one holding the resources directory of the documents. */
+public fun dataDirectory(): String = PlatformFiles.resourcesDirectory().let { PlatformFiles.parent(it) ?: it }

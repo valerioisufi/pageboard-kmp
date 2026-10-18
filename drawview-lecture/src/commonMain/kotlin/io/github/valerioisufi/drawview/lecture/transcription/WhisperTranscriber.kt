@@ -4,6 +4,7 @@ import io.github.valerioisufi.drawview.lecture.AssistantSettings
 import io.github.valerioisufi.drawview.lecture.TranscriptSegment
 import io.github.valerioisufi.drawview.lecture.audio.Wav
 import io.github.valerioisufi.drawview.lecture.audio.littleEndianToShorts
+import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.platform.dataDirectory
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -86,8 +87,21 @@ internal class WhisperTranscriber internal constructor(
 
         private val json = Json { ignoreUnknownKeys = true }
 
-        /** Folder of the speech recognition models: `whisper` next to `lectures`. */
+        /** Folder of the speech recognition models: `whisper` in the data directory, next to `lectures`. */
         fun modelsDirectory(): String = dataDirectory() + "/whisper"
+
+        /**
+         * The model at [path] (chosen in the settings) where it is now. On Windows the models
+         * were in `whisper` of the resources directory, until `dataDirectory()` took the parent of
+         * the resources there too; `DesktopDataLayout` (`drawview-platform`) moved them to
+         * [modelsDirectory], so a model chosen there is read in [modelsDirectory].
+         */
+        fun movedModel(path: String): String {
+            if (path.isBlank() || SystemFileSystem.exists(Path(path))) return path
+            if (Path(path).parent != Path(PlatformFiles.resourcesDirectory(), "whisper")) return path
+            val moved = "${modelsDirectory()}/${Path(path).name}"
+            return if (SystemFileSystem.exists(Path(moved))) moved else path
+        }
 
         /** The model of [settings], or the largest one in [modelsDirectory]. */
         fun modelPath(settings: AssistantSettings): String {

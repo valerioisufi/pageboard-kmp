@@ -8,17 +8,21 @@ public const val DRAWVIEW_DATA_DIRECTORY_PROPERTY: String = "drawview.dataDir"
 /**
  * Root directory of the DrawView desktop data (database, resources, LaTeX fonts): the
  * [DRAWVIEW_DATA_DIRECTORY_PROPERTY] system property, so that each application keeps its own
- * data, `~/.drawview` by default.
+ * data, `~/.drawview` by default. Its layout is brought up to date the first time it is read
+ * ([DesktopDataLayout]).
  */
 public val drawViewDesktopDataDirectory: File
     get() {
         val configured = System.getProperty(DRAWVIEW_DATA_DIRECTORY_PROPERTY)?.takeIf { it.isNotBlank() }
-        return (configured?.let(::File) ?: File(System.getProperty("user.home"), ".drawview")).apply { mkdirs() }
+        return (configured?.let(::File) ?: File(System.getProperty("user.home"), ".drawview")).apply {
+            mkdirs()
+            DesktopDataLayout.ensureUpToDate(this)
+        }
     }
 
 public actual object PlatformFiles {
     public actual fun resourcesDirectory(): String {
-        val dir = File(drawViewDesktopDataDirectory, "resources")
+        val dir = File(drawViewDesktopDataDirectory, DesktopDataLayout.RESOURCES)
         dir.mkdirs()
         return dir.absolutePath
     }
@@ -41,4 +45,8 @@ public actual object PlatformFiles {
     public actual fun exists(path: String): Boolean = File(path).exists()
 
     public actual fun delete(path: String): Boolean = File(path).delete()
+
+    public actual fun name(path: String): String = File(path).name
+
+    public actual fun parent(path: String): String? = File(path).parent
 }

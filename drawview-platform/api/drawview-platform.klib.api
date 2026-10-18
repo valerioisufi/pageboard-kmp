@@ -39,6 +39,8 @@ final object io.github.valerioisufi.drawview.platform/DeviceProfile { // io.gith
 final object io.github.valerioisufi.drawview.platform/PlatformFiles { // io.github.valerioisufi.drawview.platform/PlatformFiles|null[0]
     final fun delete(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.platform/PlatformFiles.delete|delete(kotlin.String){}[0]
     final fun exists(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.platform/PlatformFiles.exists|exists(kotlin.String){}[0]
+    final fun name(kotlin/String): kotlin/String // io.github.valerioisufi.drawview.platform/PlatformFiles.name|name(kotlin.String){}[0]
+    final fun parent(kotlin/String): kotlin/String? // io.github.valerioisufi.drawview.platform/PlatformFiles.parent|parent(kotlin.String){}[0]
     final fun readBytes(kotlin/String): kotlin/ByteArray? // io.github.valerioisufi.drawview.platform/PlatformFiles.readBytes|readBytes(kotlin.String){}[0]
     final fun resourcesDirectory(): kotlin/String // io.github.valerioisufi.drawview.platform/PlatformFiles.resourcesDirectory|resourcesDirectory(){}[0]
     final fun writeBytes(kotlin/String, kotlin/ByteArray): kotlin/Boolean // io.github.valerioisufi.drawview.platform/PlatformFiles.writeBytes|writeBytes(kotlin.String;kotlin.ByteArray){}[0]

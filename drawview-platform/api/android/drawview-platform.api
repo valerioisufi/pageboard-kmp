@@ -21,6 +21,8 @@ public final class io/github/valerioisufi/drawview/platform/PlatformFiles {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/platform/PlatformFiles;
 	public final fun delete (Ljava/lang/String;)Z
 	public final fun exists (Ljava/lang/String;)Z
+	public final fun name (Ljava/lang/String;)Ljava/lang/String;
+	public final fun parent (Ljava/lang/String;)Ljava/lang/String;
 	public final fun readBytes (Ljava/lang/String;)[B
 	public final fun resourcesDirectory ()Ljava/lang/String;
 	public final fun writeBytes (Ljava/lang/String;[B)Z
