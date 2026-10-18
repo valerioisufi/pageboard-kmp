@@ -149,6 +149,8 @@ Fabrication, Protected Variations).
   on Windows; the iOS compilations of the modules with cinterop are skipped on this host.
 * `:pencilnotes-android:assembleDebug` and `:sample-android:assembleDebug` pass (a first run
   failed in the NDK build of PDFium on a transient error of Windows opening a header).
+* `consumer-checks` pass. `publishToMavenLocal` fails only on the iOS metadata of the modules
+  with Compose or Room, as on this host before the change.
 
 ### Phase 2 results
 
