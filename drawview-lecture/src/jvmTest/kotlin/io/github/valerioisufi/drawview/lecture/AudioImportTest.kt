@@ -107,4 +107,18 @@ class AudioImportTest {
         assertTrue(abs(pcm.size - 10 * LECTURE_SAMPLE_RATE) < LECTURE_SAMPLE_RATE / 5, "${pcm.size}")
         assertTrue(rms(pcm, LECTURE_SAMPLE_RATE, 2 * LECTURE_SAMPLE_RATE) > 4_000f)
     }
+
+    @Test
+    fun aRecordingIsExportedInAFolderWithADot() {
+        val recording = RecordingFile(File(directory, "lecture").absolutePath).apply {
+            open()
+            append(ShortArray(LECTURE_SAMPLE_RATE))
+            finish()
+        }
+        // The path of the platform (with '\' on Windows), a name without extension
+        val folder = File(directory, "valerio.isufi").apply { mkdirs() }
+        val exported = File(exportRecording(recording, File(folder, "Analisi 1").absolutePath))
+        assertEquals(File(folder, "Analisi 1.m4a").absoluteFile, exported.absoluteFile)
+        assertTrue(exported.isFile)
+    }
 }

@@ -34,6 +34,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.io.files.Path
 import kotlinx.serialization.json.Json
 
 public enum class ReviewStatus { NONE, RUNNING, DONE, FAILED }
@@ -107,7 +108,8 @@ public class Lecture internal constructor(
     private val recordsLock: Mutex = Mutex(),
     internal val onChanged: (lectureId: String?) -> Unit = {}
 ) {
-    public val id: String = directory.trimEnd('/').substringAfterLast('/')
+    /** The name of its folder. */
+    public val id: String = Path(directory).name
     public val startedAt: Long = record?.startedAt ?: startedAt ?: currentTimeMillis()
 
     /** The device that recorded it, and its name. */

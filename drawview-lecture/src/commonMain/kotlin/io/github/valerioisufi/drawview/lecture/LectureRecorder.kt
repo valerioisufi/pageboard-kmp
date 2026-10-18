@@ -26,6 +26,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.io.files.Path
 
 /**
  * Records a [Lecture] and follows it live.
@@ -68,7 +69,7 @@ public class LectureRecorder internal constructor(
     private val transcriber: Transcriber? = null,
     private val analyzes: Boolean = true,
     private val follows: Boolean = false,
-    private val handwriting: HandwritingReader = HandwritingReader(lecture.directory.trimEnd('/').substringBeforeLast('/') + "/handwriting.json") {
+    private val handwriting: HandwritingReader = HandwritingReader("${Path(lecture.directory).parent ?: lecture.directory}/handwriting.json") {
         lecture.onChanged(null)
     },
     private val onFinished: (LectureRecorder) -> Unit = {}

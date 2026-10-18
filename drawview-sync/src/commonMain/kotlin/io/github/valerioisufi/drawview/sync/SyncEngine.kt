@@ -12,6 +12,7 @@ import io.github.valerioisufi.drawview.model.change.Operation
 import io.github.valerioisufi.drawview.model.change.OperationId
 import io.github.valerioisufi.drawview.model.change.TextData
 import io.github.valerioisufi.drawview.model.change.snapshot
+import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.platform.Sha256
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.store.OpenDocument
@@ -1835,8 +1836,7 @@ public class SyncEngine(
                 link.send(ResourceMissing(ask.id))
                 continue
             }
-            // The name of the file, whatever the separators of the paths of this device
-            val extension = path.substringAfterLast('/').substringAfterLast('\\').substringAfterLast('.', "")
+            val extension = PlatformFiles.name(path).substringAfterLast('.', "")
             var offset = ask.from.coerceIn(0, bytes.size.toLong()).toInt()
             do {
                 val end = min(offset + CHUNK_SIZE, bytes.size)

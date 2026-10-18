@@ -59,6 +59,7 @@ import io.github.valerioisufi.drawview.lecture.ReceivedLectures
 import io.github.valerioisufi.drawview.lecture.WhisperModel
 import io.github.valerioisufi.drawview.lecture.platform.isComputer
 import io.github.valerioisufi.drawview.lecture.ui.generated.resources.*
+import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.DesignMenu
@@ -615,7 +616,7 @@ private fun TranscriptionSetup(settings: AssistantSettings, localModels: LocalMo
         ?: if (settings.whisperModel.isBlank()) localModels.whisperModels.maxByOrNull { it.sizeBytes } ?: WhisperModel.LARGE_V3_TURBO_Q5 else null
     Choice(
         label = stringResource(Res.string.lecture_whisper_model),
-        value = chosen?.let { it.label + " · " + formatSize(it.sizeBytes) } ?: settings.whisperModel.substringAfterLast('/'),
+        value = chosen?.let { it.label + " · " + formatSize(it.sizeBytes) } ?: PlatformFiles.name(settings.whisperModel),
         options = WhisperModel.entries.map { whisperLabel(it, localModels) to it },
         onSelect = { onChange(settings.copy(whisperModel = localModels.whisperPath(it))) },
         modifier = Modifier.fillMaxWidth()

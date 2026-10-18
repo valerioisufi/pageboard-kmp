@@ -241,6 +241,15 @@ class LectureRecorderTest {
     }
 
     @Test
+    fun theIdOfALectureIsTheNameOfItsFolder() = runBlocking<Unit> {
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets())
+        // Its folder as the platform gives it (with '\' on Windows)
+        val lecture = newLecture(settingsStore, MockEngine { respond("", HttpStatusCode.NotFound) }, name = "2026-10-01_10-00-00-a1b2c3")
+        assertEquals("2026-10-01_10-00-00-a1b2c3", lecture.id)
+        assertEquals("2026-10-01_10-00-00-a1b2c3", withContext(stateContext) { lecture.toRecord() }.id)
+    }
+
+    @Test
     fun repeatedNotesAreSuggestedOnce() = runBlocking<Unit> {
         val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets())
         val lecture = newLecture(settingsStore, MockEngine { respond("", HttpStatusCode.NotFound) })

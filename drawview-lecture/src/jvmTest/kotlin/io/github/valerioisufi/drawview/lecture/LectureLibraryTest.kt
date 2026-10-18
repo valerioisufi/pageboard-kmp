@@ -7,6 +7,7 @@ import java.io.File
 import java.nio.file.Files
 import kotlin.test.AfterTest
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
@@ -45,6 +46,46 @@ class LectureLibraryTest {
         assertTrue(library.delete(first))
         assertFalse(File(first).exists())
         assertEquals(listOf(second), library.list("5").map { it.directory })
+    }
+
+    @Test
+    fun aRecordSavedWithThePathOfItsFolderIsReadWithItsName() {
+        val directory = library.newLectureDirectory("5", 1_000)
+        val name = File(directory).name
+        // As Windows saved a lecture loaded from the library, until it split the path on '\'
+        val saved = LectureRecord(
+            id = "C:\\Users\\me\\.pencilnotes\\resources\\lectures\\doc-5\\$name", documentId = "5", startedAt = 1_000,
+            transcript = listOf(TranscriptSegment(0, 1_000, "Buongiorno"))
+        )
+        save(directory, saved)
+        val bytes = File(directory, "lecture.json").readBytes()
+
+        val record = assertNotNull(library.readRecord(directory))
+        assertEquals(saved.copy(id = name), record)
+        // The version of the other devices, which have the name
+        assertEquals(LectureRecords.version(saved.copy(id = name)), LectureRecords.version(record))
+        assertEquals(name, library.load(library.list("5").single().directory)?.id)
+        // Read, not written
+        assertContentEquals(bytes, File(directory, "lecture.json").readBytes())
+    }
+
+    @Test
+    fun theAudioAskedForWithThePathOfItsLectureIsReadWithItsName() {
+        val sharing = LectureSharingSettings(
+            downloadAudio = AudioDownload.ON_REQUEST,
+            requestedAudio = setOf("C:\\Users\\me\\.pencilnotes\\resources\\lectures\\doc-5\\2026-10-01_10-00-00-a1b2c3", "2026-10-02_10-00-00-d4e5f6")
+        )
+        File(library.documentDirectory("5")).mkdirs()
+        val file = File(library.documentDirectory("5"), "sharing.json").apply {
+            writeText(Lecture.recordJson.encodeToString(LectureSharingSettings.serializer(), sharing))
+        }
+        val bytes = file.readBytes()
+
+        assertEquals(
+            sharing.copy(requestedAudio = setOf("2026-10-01_10-00-00-a1b2c3", "2026-10-02_10-00-00-d4e5f6")),
+            library.sharingOf("5")
+        )
+        assertContentEquals(bytes, file.readBytes())
     }
 
     @Test

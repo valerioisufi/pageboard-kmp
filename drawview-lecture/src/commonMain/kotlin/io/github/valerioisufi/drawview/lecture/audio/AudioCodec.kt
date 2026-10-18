@@ -159,7 +159,7 @@ internal const val EXPORT_BITRATE = 32_000
  */
 internal fun exportRecording(recording: RecordingFile, target: String): String {
     require(recording.samples() > 0) { "the recording is empty" }
-    val base = target.substringBeforeLast('.').takeIf { target.substringAfterLast('/').contains('.') } ?: target
+    val base = target.substringBeforeLast('.').takeIf { Path(target).name.contains('.') } ?: target
     val m4a = Path("$base.m4a")
     val encoder = AacEncoder(LECTURE_SAMPLE_RATE, EXPORT_BITRATE)
     val writer = M4aWriter(m4a, LECTURE_SAMPLE_RATE, EXPORT_BITRATE)

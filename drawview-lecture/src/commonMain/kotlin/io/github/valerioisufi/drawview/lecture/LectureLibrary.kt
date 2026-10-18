@@ -122,7 +122,9 @@ public class LectureLibrary(private val root: String = lectureDataDirectory()) {
         val deleted = deletedLectures(documentId)
         return SystemFileSystem.list(documentPath).mapNotNull { path ->
             if (path.name in deleted) return@mapNotNull null
-            val directory = path.toString()
+            // As built here, not as the file system lists it (with '\' on Windows): one string per
+            // lecture, compared by the assistant and the attachments
+            val directory = lectureDirectory(documentId, path.name)
             val record = readRecord(directory) ?: return@mapNotNull null
             LectureSummary(
                 directory = directory,
@@ -191,7 +193,10 @@ public class LectureLibrary(private val root: String = lectureDataDirectory()) {
     public fun sharingOf(documentId: String): LectureSharingSettings =
         PlatformFiles.readBytes("${documentDirectory(documentId)}/sharing.json")?.let {
             try {
-                Lecture.recordJson.decodeFromString(LectureSharingSettings.serializer(), it.decodeToString())
+                val saved = Lecture.recordJson.decodeFromString(LectureSharingSettings.serializer(), it.decodeToString())
+                // The id of a lecture is the name of its folder, without separators: Windows saved
+                // the whole path of the folder until it split it on '\'. Written as read at the next change
+                saved.copy(requestedAudio = saved.requestedAudio.mapTo(mutableSetOf()) { id -> id.substringAfterLast('/').substringAfterLast('\\') })
             } catch (_: Exception) {
                 null
             }
@@ -225,10 +230,17 @@ public class LectureLibrary(private val root: String = lectureDataDirectory()) {
         SystemFileSystem.delete(path, mustExist = false)
     }
 
+    /**
+     * The lecture saved in [directory], with the name of the folder as id: Windows saved the
+     * whole path of the folder until it split it on '\', and the record is written with the name
+     * the next time the lecture is saved.
+     */
     internal fun readRecord(directory: String): LectureRecord? {
         val bytes = PlatformFiles.readBytes("$directory/lecture.json") ?: return null
         return try {
-            Lecture.recordJson.decodeFromString(LectureRecord.serializer(), bytes.decodeToString())
+            val record = Lecture.recordJson.decodeFromString(LectureRecord.serializer(), bytes.decodeToString())
+            val id = Path(directory).name
+            if (record.id == id) record else record.copy(id = id)
         } catch (_: Exception) {
             null
         }

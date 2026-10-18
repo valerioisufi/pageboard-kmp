@@ -567,11 +567,11 @@ public class LectureAssistant(
             val result = try {
                 val saved = withContext(Dispatchers.IO) { exportRecording(lecture.recording, path) }
                 deliver(saved)
-                ExportResult(saved.substringAfterLast('/'), failure = null)
+                ExportResult(Path(saved).name, failure = null)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
-                ExportResult(path.substringAfterLast('/'), failure = e.message ?: e::class.simpleName.orEmpty())
+                ExportResult(Path(path).name, failure = e.message ?: e::class.simpleName.orEmpty())
             }
             withContext(stateContext) { exportResult = result }
         }
