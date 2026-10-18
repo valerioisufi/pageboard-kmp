@@ -35,7 +35,10 @@ Fabrication, Protected Variations).
     `<root>\doc-5\<name>` listed), and `LectureAssistant`, `LecturePanel` and
     `LectureAttachments` compare them with `==`: the lecture being recorded is not found in the
     list, the progress of the audio arriving is not shown, a lecture followed live is not
-    matched.
+    matched. `LectureAttachments.indexOf` gives the folders it lists to `recoverInterrupted`,
+    which asks whether one is being recorded here: the lecture being recorded is not
+    recognized, is taken for one interrupted by a crash and saved `FINISHED` while it is
+    recorded (found later, by the session of the writes refused by Windows).
   * `LectureRecorder` puts `handwriting.json` in `directory.substringBeforeLast('/')`: on
     Windows, for a lecture of the library, inside the folder of the lecture instead of beside it.
   * `exportRecording` looks for the extension in `target.substringAfterLast('/')` (the whole
@@ -164,6 +167,10 @@ Fabrication, Protected Variations).
   (`AudioImportTest`).
 * Two tests of `LectureSharingTest` still fail on Windows, as before the plan: the writes of
   `lecture.json` refused by Windows (see [Left for later](#left-for-later)), not the separators.
+* Added after the phase: `LectureAttachments.indexOf` gives `recoverInterrupted` the directory
+  the library builds. `LectureAttachmentsTest.theLectureBeingRecordedHereIsNotRecoveredByTheIndex`
+  fails on Windows without it (the lecture being recorded saved `FINISHED`) and passes with it;
+  no other listing of folders gives a directory that is compared.
 * `./gradlew jvmTest checkKotlinAbi compileAndroidMain compileKotlinIosSimulatorArm64` and the two
   Android applications: no other failure than those of this host before the change.
   `verifyRoborazziJvm` of `drawview-lecture-ui` differs in the antialiasing of the text of the
@@ -212,6 +219,7 @@ is not written by reading it.
   deletion, is not enough). The record is written again at the next change, but the last change
   of a lecture can stay in memory only. `LectureSharingTest.aLectureRecordedOnATabletIsFollowedLiveOnAComputer`
   and `aLectureRecordedOnATabletIsReviewedOnAComputerAndSharedBack` fail on Windows because of
-  it, before and after this plan. Close to it: deleting the folder of a lecture just finished
+  it and of `indexOf` (now fixed here): both are needed. Planned in `docs/windows-file-locks.md`
+  (`feat/windows-file-locks`). Close to it: deleting the folder of a lecture just finished
   fails on Windows while one of its files is still open, and is not tried again
   (`theLecturesOfADocumentDeletedGoWithIt`, now and then under load).

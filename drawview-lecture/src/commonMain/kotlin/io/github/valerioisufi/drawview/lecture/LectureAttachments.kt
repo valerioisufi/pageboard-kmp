@@ -369,7 +369,9 @@ internal class LectureAttachments(
                 val deleted = files.deletedLectures(documentId)
                 for (path in SystemFileSystem.list(folder)) {
                     if (SystemFileSystem.metadataOrNull(path)?.isDirectory != true || path.name in deleted) continue
-                    recoverInterrupted(path.toString())
+                    // As the library builds it, not as the file system lists it (with '\' on
+                    // Windows): compared with the lecture being recorded
+                    recoverInterrupted(directoryOf(documentId, path.name))
                     indexLecture(documentId, path.name, index)
                 }
                 indexShared(documentId, index)
