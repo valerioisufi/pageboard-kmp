@@ -62,7 +62,9 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             // The audio codecs (libaudio_bridge.so)
-            implementation(project(":drawview-native-audio"))
+            if (findProject(":drawview-native-audio") != null) {
+                implementation(project(":drawview-native-audio"))
+            }
         }
         jvmMain.dependencies {
             implementation(libs.ktor.client.okhttp)

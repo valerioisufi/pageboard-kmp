@@ -22,13 +22,13 @@ namespace ink::geometry_internal {
 
 float FloatModulo(float a, float b) {
   ABSL_DCHECK(std::isfinite(b) && b > 0.f);
-  float result = std::fmodf(a, b);
-  // `fmodf` always matches the sign of the first argument, so `fmodf(a, b)`
+  float result = std::fmod(a, b);
+  // `fmod` always matches the sign of the first argument, so `fmod(a, b)`
   // returns a value in the range (-b, b).  We want [0, b), so wrap negative
   // values back to positive.
   if (result < 0.f) {
     result += b;
-    // If `fmodf` returned a sufficiently small negative number, then adding `b`
+    // If `fmod` returned a sufficiently small negative number, then adding `b`
     // will give us a result exactly equal to `b`, due to float rounding.
     // However, `FloatModulo` promises to return a value strictly less than `b`,
     // so we should return zero in this case.

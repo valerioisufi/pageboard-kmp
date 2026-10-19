@@ -63,7 +63,9 @@ kotlin {
         }
         androidMain.dependencies {
             // libtex.so built with the NDK
-            implementation(project(":drawview-native-tex"))
+            if (findProject(":drawview-native-tex") != null) {
+                implementation(project(":drawview-native-tex"))
+            }
         }
         jvmTest.dependencies {
             implementation(compose.desktop.currentOs)

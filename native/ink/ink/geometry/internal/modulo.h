@@ -18,7 +18,7 @@
 namespace ink::geometry_internal {
 
 // Returns `a` mod `b`, with the result being in the range [0, `b`). This is
-// different from `std::fmodf`, which returns a negative result if `a` is
+// different from `std::fmod`, which returns a negative result if `a` is
 // negative. `b` must be finite and strictly greater than zero. Returns NaN if
 // `a` is infinite or NaN.
 float FloatModulo(float a, float b);

@@ -32,7 +32,9 @@ kotlin {
         }
         androidMain.dependencies {
             // libink_bridge.so built with the NDK
-            implementation(project(":drawview-native-ink"))
+            if (findProject(":drawview-native-ink") != null) {
+                implementation(project(":drawview-native-ink"))
+            }
         }
     }
 }
