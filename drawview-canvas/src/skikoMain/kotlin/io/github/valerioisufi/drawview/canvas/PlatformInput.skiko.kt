@@ -5,4 +5,7 @@ import androidx.compose.ui.input.pointer.PointerEvent
 
 internal actual fun Modifier.unbufferedStylusInput(): Modifier = this
 
+internal actual fun Modifier.canvasGestureExclusion(): Modifier = this
+
 internal actual fun PointerEvent.isStylusButtonPressed(): Boolean = false
+
