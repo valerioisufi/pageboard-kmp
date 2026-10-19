@@ -162,6 +162,11 @@ internal class CanvasGestureHandler(
     // Pinch tracking
     private var pinchCentroid = Offset.Zero
     private var pinchDistance = 0f
+    private var initialPinchDistance = 0f
+    private var isPinchZooming = false
+    private val pinchVelocityTracker = VelocityTracker()
+    private var pinchPanPosition = Offset.Zero
+    private var lastPinchSampleTime = 0L
 
     private val velocityTracker = VelocityTracker()
 
@@ -276,7 +281,7 @@ internal class CanvasGestureHandler(
 
         // Move
         if (mode == Mode.PINCH) {
-            onPinchMove(pressed)
+            onPinchMove(pressed, touchSlop)
             changes.forEach { it.consume() }
             return
         }
@@ -507,6 +512,13 @@ internal class CanvasGestureHandler(
         val p2 = pressed[1].position
         pinchCentroid = (p1 + p2) / 2f
         pinchDistance = (p1 - p2).getDistance().coerceAtLeast(1f)
+        initialPinchDistance = pinchDistance
+        isPinchZooming = false
+        pinchPanPosition = Offset.Zero
+        pinchVelocityTracker.resetTracking()
+        val time = pressed[0].uptimeMillis
+        pinchVelocityTracker.addPosition(time, pinchPanPosition)
+        lastPinchSampleTime = time
     }
 
     // ==========================================================
@@ -654,15 +666,21 @@ internal class CanvasGestureHandler(
         lastPosition = position
     }
 
-    private fun onPinchMove(pressed: List<PointerInputChange>) {
+    private fun onPinchMove(pressed: List<PointerInputChange>, touchSlop: Float) {
         if (pressed.isEmpty()) return
+        val time = pressed[0].uptimeMillis
         if (pressed.size == 1) {
             // One finger lifted: keep panning with the remaining one
             val p = pressed[0]
             val delta = p.position - p.previousPosition
-            controller.viewport.camera.onDrag(delta.x, delta.y, 1f, p.position.x, p.position.y)
-            pinchCentroid = p.position
-            controller.requestRedraw()
+            if (delta != Offset.Zero) {
+                controller.viewport.camera.onDrag(delta.x, delta.y, 1f, p.position.x, p.position.y)
+                pinchPanPosition += delta
+                pinchVelocityTracker.addPosition(time, pinchPanPosition)
+                lastPinchSampleTime = time
+                pinchCentroid = p.position
+                controller.requestRedraw()
+            }
             return
         }
         val p1 = pressed[0].position
@@ -672,8 +690,20 @@ internal class CanvasGestureHandler(
         val pressedCountChanged = pressed.any { it.changedToDownIgnoreConsumed() }
         if (!pressedCountChanged) {
             val delta = centroid - pinchCentroid
-            controller.viewport.camera.onDrag(delta.x, delta.y, distance / pinchDistance, centroid.x, centroid.y)
+            val zoomSlop = touchSlop * 2f
+            if (!isPinchZooming && abs(distance - initialPinchDistance) > zoomSlop) {
+                isPinchZooming = true
+                pinchDistance = if (distance > initialPinchDistance) initialPinchDistance + zoomSlop else initialPinchDistance - zoomSlop
+            }
+            val scale = if (isPinchZooming) distance / pinchDistance else 1f
+            controller.viewport.camera.onDrag(delta.x, delta.y, scale, centroid.x, centroid.y)
+            pinchPanPosition += delta
+            pinchVelocityTracker.addPosition(time, pinchPanPosition)
+            lastPinchSampleTime = time
             controller.requestRedraw()
+        } else {
+            initialPinchDistance = distance
+            isPinchZooming = false
         }
         pinchCentroid = centroid
         pinchDistance = distance
@@ -728,7 +758,11 @@ internal class CanvasGestureHandler(
             }
 
             Mode.PINCH -> {
-                controller.viewport.camera.onRelease(0f, 0f)
+                if (up.uptimeMillis > lastPinchSampleTime) {
+                    pinchVelocityTracker.addPosition(up.uptimeMillis, pinchPanPosition)
+                }
+                val velocity = pinchVelocityTracker.calculateVelocity()
+                controller.viewport.camera.onRelease(velocity.x, velocity.y)
                 controller.requestRedraw()
             }
 
