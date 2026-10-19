@@ -249,12 +249,9 @@ set_target_properties(tex PROPERTIES
 )
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-    target_compile_options(tex PRIVATE
-        -Wno-dynamic-exception-spec
-        -Wno-deprecated-declarations
-        -Wno-non-c-typedef-for-linkage
-        -Wno-parentheses
-    )
+    target_compile_options(tex PRIVATE -w)
+elseif(MSVC)
+    target_compile_options(tex PRIVATE /W0)
 endif()
 
 target_include_directories(tex PUBLIC

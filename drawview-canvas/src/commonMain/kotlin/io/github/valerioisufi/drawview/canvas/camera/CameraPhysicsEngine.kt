@@ -323,6 +323,7 @@ public class CameraPhysicsEngine(
         var velocity: Float = 0f
         var minValue: Float = 0f
         var maxValue: Float = 0f
+        private var bounceEdge: Int = 0
 
         fun startFling(v: Float) {
             velocity = v
@@ -330,12 +331,18 @@ public class CameraPhysicsEngine(
         }
 
         fun startBounce() {
+            bounceEdge = when {
+                position > maxValue -> 1
+                position < minValue -> -1
+                else -> 0
+            }
             state = PhysicsState.BOUNCING
         }
 
         fun stop() {
             state = PhysicsState.IDLE
             velocity = 0f
+            bounceEdge = 0
         }
 
         fun calculateExcess(): Float {
@@ -348,7 +355,6 @@ public class CameraPhysicsEngine(
 
         fun update(dt: Float) {
             if (state == PhysicsState.IDLE) return
-            val excess = calculateExcess()
 
             when (state) {
                 PhysicsState.FLINGING -> {
@@ -356,7 +362,7 @@ public class CameraPhysicsEngine(
                     position += velocity * dt
 
                     if (calculateExcess() != 0f) {
-                        state = PhysicsState.BOUNCING
+                        startBounce()
                     }
 
                     if (abs(velocity) < 10f && calculateExcess() == 0f) {
@@ -364,12 +370,22 @@ public class CameraPhysicsEngine(
                     }
                 }
                 PhysicsState.BOUNCING -> {
+                    val target = when (bounceEdge) {
+                        1 -> maxValue
+                        -1 -> minValue
+                        else -> when {
+                            position > maxValue -> maxValue.also { bounceEdge = 1 }
+                            position < minValue -> minValue.also { bounceEdge = -1 }
+                            else -> null
+                        }
+                    }
+                    val excess = if (target != null) position - target else calculateExcess()
                     val springForce = (-springStiffness * excess) - (springDamping * velocity)
                     velocity += springForce * dt
                     position += velocity * dt
 
                     if (abs(excess) < 0.5f && abs(velocity) < 10f) {
-                        position -= calculateExcess()
+                        if (target != null) position = target else position -= calculateExcess()
                         stop()
                     }
                 }
@@ -393,14 +409,21 @@ public class CameraPhysicsEngine(
         var state = PhysicsState.IDLE
         var position: Float = 1f
         var velocity: Float = 0f
+        private var bounceEdge: Int = 0
 
         fun startBounce() {
+            bounceEdge = when {
+                position > maxScale -> 1
+                position < minScale -> -1
+                else -> 0
+            }
             state = PhysicsState.BOUNCING
         }
 
         fun stop() {
             state = PhysicsState.IDLE
             velocity = 0f
+            bounceEdge = 0
         }
 
         fun calculateExcess(): Float {
@@ -413,14 +436,23 @@ public class CameraPhysicsEngine(
 
         fun update(dt: Float) {
             if (state != PhysicsState.BOUNCING) return
-            val excess = calculateExcess()
+            val target = when (bounceEdge) {
+                1 -> maxScale
+                -1 -> minScale
+                else -> when {
+                    position > maxScale -> maxScale.also { bounceEdge = 1 }
+                    position < minScale -> minScale.also { bounceEdge = -1 }
+                    else -> null
+                }
+            }
+            val excess = if (target != null) position - target else calculateExcess()
 
             val springForce = (-springStiffness * 1.5f * excess) - (springDamping * velocity)
             velocity += springForce * dt
             position += velocity * dt
 
             if (abs(excess) < 0.005f && abs(velocity) < 0.05f) {
-                position -= calculateExcess()
+                if (target != null) position = target else position -= calculateExcess()
                 stop()
             }
         }

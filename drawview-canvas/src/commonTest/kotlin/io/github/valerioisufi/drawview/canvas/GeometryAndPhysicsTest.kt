@@ -127,7 +127,7 @@ class GeometryAndPhysicsTest {
         // After settling, it should spring back to boundary (top padding = 40px)
         assertFalse(engine.isAnimating())
         val finalPos = engine.getCurrentTranslation()
-        assertEquals(40f, finalPos.y, 2f)
+        assertEquals(40f, finalPos.y, 1e-3f)
     }
 
     @Test

@@ -282,26 +282,6 @@ public class TileManager(
                     enqueueTile(key, document, page, pageWorldRect)
                 }
             }
-
-            // Ensure base LOD 0 tiles of the visible page exist in cache so zooming out is always instant
-            if (isPageVisible && targetLod > 0) {
-                val baseRange = TilePyramid.getPageIntersectingTileRange(
-                    localLeft = 0f,
-                    localTop = 0f,
-                    localRight = pageWidth,
-                    localBottom = pageHeight,
-                    pageWidth = pageWidth,
-                    pageHeight = pageHeight,
-                    lod = 0,
-                    overscanMargin = 0
-                )
-                baseRange.forEach { col, row ->
-                    val key = TileKey(page.renderKey, 0, col, row)
-                    if (!tileCache.contains(key)) {
-                        enqueueTile(key, document, page, pageWorldRect)
-                    }
-                }
-            }
             onScreen.endFrame()
         }
     }
