@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -239,7 +240,7 @@ public fun LectureRecordingIndicator(assistant: LectureAssistant, onOpenDocument
                 )
                 Text(
                     text = if (recording) lecture.documentTitle + " · " + formatLectureTime(lecture.elapsedMs) else lecture.documentTitle,
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnum"),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -300,6 +301,7 @@ private fun LectureToolbarButton(assistant: LectureAssistant, documentId: String
 
     if (recording != null) {
         // Recording: time of the lecture, red dot, new suggestions
+        val minTimeWidth = if (recording.elapsedMs >= 3600_000L) 64.dp else 44.dp
         Row(
             modifier = Modifier
                 .padding(horizontal = 4.dp)
@@ -319,9 +321,11 @@ private fun LectureToolbarButton(assistant: LectureAssistant, documentId: String
             )
             Text(
                 text = formatLectureTime(recording.elapsedMs),
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnum"),
                 color = MaterialTheme.colorScheme.onErrorContainer,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.widthIn(min = minTimeWidth)
             )
             if (newNotes > 0 && !assistant.isPanelOpen) {
                 Badge { Text(newNotesText, maxLines = 1) }
