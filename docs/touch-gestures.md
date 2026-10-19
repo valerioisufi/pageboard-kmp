@@ -65,7 +65,7 @@ Low Coupling, Protected Variations).
 | Phase | Content | Status |
 |---|---|---|
 | 1 | Two-finger fling and zoom deadzone in `CanvasGestureHandler`: cumulative `pinchPanPosition` with `pinchVelocityTracker`, zoom threshold (`touchSlop * 2`) with smooth scaling, release velocity passed to `camera.onRelease`; unit tests in `TouchGesturesTest` | Done |
-| 2 | Safe touch-down for tools: `EraserManager.cancelGesture()` called on additional pointer down during `Mode.ERASE`; unit tests | Planned |
+| 2 | Safe touch-down for tools: `EraserManager.cancelGesture()` called on additional pointer down during `Mode.ERASE`; unit tests | Done |
 
 ### Phase 1 results
 
@@ -76,6 +76,14 @@ Low Coupling, Protected Variations).
 * Zoom deadzone (`touchSlop * 2`) locks scale factor to 1.0f during normal two-finger panning. When intentional pinch
   deviates beyond the deadzone, zoom engages smoothly from the threshold.
 * Tested with 6 automated tests in `TouchGesturesTest` covering pan, fling, zoom slop, zoom magnification, pause, and asymmetric lift.
+
+### Phase 2 results
+
+* Added `EraserManager.cancelGesture()`, which closes the current group and calls `undo()` to restore any strokes removed
+  during live eraser contact.
+* In `CanvasGestureHandler.onAdditionalPointer`, when switching from `Mode.ERASE` to `Mode.PINCH` upon the second finger touching down,
+  `cancelGesture()` is invoked. Accidental single-finger touch-down while beginning a two-finger scroll does not delete content.
+* Verified with automated unit tests for eraser restoration and pen stroke cancellation on two-finger touch.
 
 ### Decisions
 

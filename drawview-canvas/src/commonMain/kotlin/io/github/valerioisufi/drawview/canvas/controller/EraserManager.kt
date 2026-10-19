@@ -80,4 +80,14 @@ internal class EraserManager(private val controller: DrawViewController) {
         inGesture = false
         controller.historyManager.endGroup()
     }
+
+    /**
+     * Cancels the gesture: whatever it erased is undone.
+     */
+    fun cancelGesture() {
+        if (!inGesture) return
+        inGesture = false
+        controller.historyManager.endGroup()
+        controller.historyManager.undo()
+    }
 }

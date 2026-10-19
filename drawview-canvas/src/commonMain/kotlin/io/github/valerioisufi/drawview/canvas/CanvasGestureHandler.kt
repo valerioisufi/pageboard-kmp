@@ -493,7 +493,7 @@ internal class CanvasGestureHandler(
                 }
             }
             Mode.ERASE -> {
-                controller.eraserManager.commitGesture()
+                controller.eraserManager.cancelGesture()
                 live.setEraserCursor(null, 0f)
             }
             Mode.MARKUP -> controller.textMarkupManager.cancelMarking()
