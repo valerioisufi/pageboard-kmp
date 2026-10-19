@@ -12,6 +12,7 @@ import io.github.valerioisufi.drawview.platform.DRAWVIEW_DATA_DIRECTORY_PROPERTY
 import io.github.valerioisufi.drawview.session.DrawViewSessions
 import io.github.valerioisufi.drawview.ui.command.CommandHost
 import io.github.valerioisufi.drawview.ui.command.DrawViewMenuBar
+import io.github.valerioisufi.drawview.ui.window.DrawViewWindowDecor
 import io.github.valerioisufi.drawview.ui.window.WindowMinimumSize
 import io.github.valerioisufi.drawview.ui.window.rememberDrawViewWindowState
 import io.github.valerioisufi.pencilnotes.ui.theme.PencilNotesTheme
@@ -41,19 +42,22 @@ fun main() {
             }
             exitApplication()
         }
+        val windowState = rememberDrawViewWindowState()
         Window(
             onCloseRequest = { if (LectureRecordings.isRecording) confirmExit = true else exit() },
             // Its size, position and placement kept between the launches
-            state = rememberDrawViewWindowState(),
+            state = windowState,
             title = "PencilNotes",
             onKeyEvent = { commands.dispatch(it) }
         ) {
-            DrawViewMenuBar(commands)
-            WindowMinimumSize()
-            PencilNotesApp(commandHost = commands)
-            if (confirmExit) {
-                PencilNotesTheme {
-                    LectureExitDialog(onExit = { exit() }, onDismiss = { confirmExit = false })
+            DrawViewWindowDecor(state = windowState) {
+                DrawViewMenuBar(commands)
+                WindowMinimumSize()
+                PencilNotesApp(commandHost = commands)
+                if (confirmExit) {
+                    PencilNotesTheme {
+                        LectureExitDialog(onExit = { exit() }, onDismiss = { confirmExit = false })
+                    }
                 }
             }
         }

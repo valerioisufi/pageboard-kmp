@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -34,7 +35,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
+import io.github.valerioisufi.drawview.ui.window.LocalWindowDecorInsets
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.NavigationBackHandler
@@ -172,17 +175,18 @@ internal fun ExplorerScreen(
                         .fillMaxHeight()
                         .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + if (layout == LibraryLayout.PANES) WindowInsetsSides.End else WindowInsetsSides.Horizontal))
                 ) {
+                    val decorStartPad = LocalWindowDecorInsets.current.calculateStartPadding(LocalLayoutDirection.current)
                     when (layout) {
                         LibraryLayout.LIST -> if (viewModel.selectionMode) {
-                            SelectionBar(viewModel, commands, withActions = true, modifier = Modifier.padding(horizontal = 4.dp))
+                            SelectionBar(viewModel, commands, withActions = true, modifier = Modifier.padding(start = 4.dp + decorStartPad, end = 4.dp))
                         } else {
-                            LibraryAppBar(title, actions, onAction = { libraryAction = it }, modifier = Modifier.padding(start = 16.dp, end = 8.dp))
+                            LibraryAppBar(title, actions, onAction = { libraryAction = it }, modifier = Modifier.padding(start = 16.dp + decorStartPad, end = 8.dp))
                         }
                         LibraryLayout.GRID -> LibraryAppBar(
                             brand = title,
                             actions = actions,
                             onAction = { libraryAction = it },
-                            modifier = Modifier.padding(start = 28.dp, end = 20.dp, top = 8.dp),
+                            modifier = Modifier.padding(start = 28.dp + decorStartPad, end = 20.dp, top = 8.dp),
                             search = { LibrarySearchField(viewModel, commands, searchFocus, modifier = Modifier.width(260.dp).padding(end = 8.dp)) }
                         )
                         LibraryLayout.PANES -> Unit

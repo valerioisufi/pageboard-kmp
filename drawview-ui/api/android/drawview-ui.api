@@ -782,7 +782,11 @@ public final class io/github/valerioisufi/drawview/ui/screen/ComposableSingleton
 public final class io/github/valerioisufi/drawview/ui/screen/ComposableSingletons$EditorToolbarKt {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/screen/ComposableSingletons$EditorToolbarKt;
 	public fun <init> ()V
+	public final fun getLambda$-1105431035$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-1663931570$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1301150839$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$364959240$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$775446766$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
 }
 
 public final class io/github/valerioisufi/drawview/ui/screen/EditorScreenKt {
@@ -962,5 +966,17 @@ public final class io/github/valerioisufi/drawview/ui/util/FormattingKt {
 	public static final fun formatDecimal (FI)Ljava/lang/String;
 	public static synthetic fun formatDecimal$default (FIILjava/lang/Object;)Ljava/lang/String;
 	public static final fun formatShortDateTime (JLjava/util/List;)Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/ui/window/ComposableSingletons$WindowDecorInsetsKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/window/ComposableSingletons$WindowDecorInsetsKt;
+	public fun <init> ()V
+	public final fun getLambda$-671818452$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function4;
+}
+
+public final class io/github/valerioisufi/drawview/ui/window/WindowDecorInsetsKt {
+	public static final fun WindowDraggable (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun getLocalWindowDecorInsets ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+	public static final fun getLocalWindowDraggableArea ()Landroidx/compose/runtime/ProvidableCompositionLocal;
 }
 
