@@ -193,4 +193,49 @@ class TileEngineTest {
 
         manager.cleanup()
     }
+
+    @Test
+    fun testPriorityEvictionPreservesBaseLodTiles() {
+        // Cache with budget of 4 tiles (4 MB)
+        val cache = TileCache(maxMemoryBytes = 4 * 512 * 512 * 4)
+
+        val baseKey1 = TileKey(0L, 0, 0, 0)
+        val baseKey2 = TileKey(0L, 0, 1, 0)
+        cache.put(Tile(baseKey1, cache.obtainBitmap(), TileState.READY))
+        cache.put(Tile(baseKey2, cache.obtainBitmap(), TileState.READY))
+
+        // Advance frames so base tiles become older than frame - 1
+        cache.beginFrame()
+        cache.beginFrame()
+
+        val detailKey1 = TileKey(0L, 1, 0, 0)
+        val detailKey2 = TileKey(0L, 1, 1, 0)
+        cache.put(Tile(detailKey1, cache.obtainBitmap(), TileState.READY))
+        cache.put(Tile(detailKey2, cache.obtainBitmap(), TileState.READY))
+
+        // Total 4 tiles, right at budget limit
+        assertEquals(4, cache.entryCount)
+        assertTrue(cache.contains(baseKey1))
+        assertTrue(cache.contains(baseKey2))
+
+        // Advance frames so detail tiles at LOD 1 also become eligible for eviction
+        cache.beginFrame()
+        cache.beginFrame()
+
+        // Insert high detail tiles at LOD 2, exceeding the budget
+        val deepDetailKey1 = TileKey(0L, 2, 0, 0)
+        val deepDetailKey2 = TileKey(0L, 2, 1, 0)
+        cache.put(Tile(deepDetailKey1, cache.obtainBitmap(), TileState.READY))
+        cache.put(Tile(deepDetailKey2, cache.obtainBitmap(), TileState.READY))
+
+        // Budget is 4 tiles: the 2 detail tiles at LOD 1 must be evicted first,
+        // while the 2 base tiles at LOD 0 must be preserved.
+        assertEquals(4, cache.entryCount)
+        assertTrue(cache.contains(baseKey1), "Base LOD 0 tile 1 must be preserved")
+        assertTrue(cache.contains(baseKey2), "Base LOD 0 tile 2 must be preserved")
+        assertFalse(cache.contains(detailKey1), "Detail LOD 1 tile 1 should be evicted")
+        assertFalse(cache.contains(detailKey2), "Detail LOD 1 tile 2 should be evicted")
+        assertTrue(cache.contains(deepDetailKey1), "Recent LOD 2 tile 1 should be present")
+        assertTrue(cache.contains(deepDetailKey2), "Recent LOD 2 tile 2 should be present")
+    }
 }

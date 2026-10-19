@@ -64,6 +64,25 @@ public class TileCache(
     }
 
     private fun trimToSize() {
+        if (currentMemoryBytes <= maxMemoryBytes) return
+
+        // 1. Evict off-screen high-detail tiles first, from highest LOD down to LOD 1.
+        // Detail tiles cover small localized areas and have high churn, whereas base/overview tiles
+        // (LOD <= 0) cover full pages and should be preserved to avoid re-rasterization on zoom-out.
+        for (targetLod in TilePyramid.MAX_LOD downTo 1) {
+            if (currentMemoryBytes <= maxMemoryBytes) return
+            val iterator = map.entries.iterator()
+            while (iterator.hasNext() && currentMemoryBytes > maxMemoryBytes) {
+                val entry = iterator.next()
+                if (frame > 0L && entry.value.lastUsedFrame >= frame - 1) continue
+                if (entry.key.lod == targetLod) {
+                    currentMemoryBytes -= entry.value.sizeInBytes
+                    iterator.remove()
+                }
+            }
+        }
+
+        // 2. If still over budget, evict off-screen base/overview tiles (LOD <= 0) in LRU order
         val iterator = map.entries.iterator()
         while (iterator.hasNext() && currentMemoryBytes > maxMemoryBytes) {
             val entry = iterator.next()
