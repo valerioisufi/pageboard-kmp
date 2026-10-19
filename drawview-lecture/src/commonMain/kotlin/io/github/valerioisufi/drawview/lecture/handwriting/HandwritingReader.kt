@@ -119,12 +119,17 @@ internal class HandwritingReader(
 
     private fun prompt(images: List<Pair<InkBlock, ByteArray>>, pages: List<PageContent>): ModelPrompt {
         val parts = mutableListOf<PromptPart>()
+        val shownSlides = mutableSetOf<Int>()
         images.forEachIndexed { i, (block, jpeg) ->
-            val slide = pages.firstOrNull { it.index == block.pageIndex }?.slide?.text?.take(SLIDE_HINT_CHARS)
+            val slide = if (shownSlides.add(block.pageIndex)) {
+                pages.firstOrNull { it.index == block.pageIndex }?.slide?.text?.take(SLIDE_HINT_CHARS)
+            } else {
+                null
+            }
             parts.add(
                 PromptPart.Text(
                     "Image ${i + 1}: notebook page ${block.pageIndex + 1}" +
-                        (if (!slide.isNullOrBlank()) ", written over a slide that reads: \"${slide.replace('\n', ' ')}\"" else "") + "."
+                            (if (!slide.isNullOrBlank()) ", written over a slide that reads: \"${slide.replace('\n', ' ')}\"" else "") + "."
                 )
             )
             parts.add(PromptPart.Image(jpeg))
@@ -133,7 +138,7 @@ internal class HandwritingReader(
             system = SYSTEM,
             parts = parts,
             schema = schema,
-            maxOutputTokens = 4096,
+            maxOutputTokens = 2048,
             thinkingLevel = "low"
         )
     }

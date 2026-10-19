@@ -71,4 +71,4 @@ public fun unionOf(rects: List<Rect>): Rect = rects.reduce { a, b ->
 }
 
 /** Strokes closer than this (millimeters) are in the same block: the lines of a paragraph. */
-internal const val BLOCK_GAP_MM = 8f
+internal const val BLOCK_GAP_MM = 12f

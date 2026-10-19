@@ -452,13 +452,14 @@ public class LectureRecorder internal constructor(
     private suspend fun recapLastMinutes() {
         val settings = settingsStore.settings
         val task = settings.task(LectureTask.CATCH_UP)
-        val speech: RequestSpeech = if (task.provider == ModelProvider.GEMINI && settings.sendsAudio) {
+        val latest = recentChunks.lastOrNull()?.endMs ?: lecture.elapsedMs
+        val segments = lecture.setStateResult { transcript.filter { it.endMs > latest - CATCH_UP_MS } }
+        val speech: RequestSpeech = if (segments.isNotEmpty()) {
+            RequestTranscript(emptyList(), segments, segments.first().startMs, 0L, segments.last().endMs)
+        } else if (task.provider == ModelProvider.GEMINI && settings.sendsAudio) {
             requestAudio(recentChunks.toList(), contextMs = 0L) ?: return
         } else {
-            val latest = recentChunks.lastOrNull()?.endMs ?: lecture.elapsedMs
-            val segments = lecture.setStateResult { transcript.filter { it.endMs > latest - CATCH_UP_MS } }
-            if (segments.isEmpty()) return
-            RequestTranscript(emptyList(), segments, segments.first().startMs, 0L, segments.last().endMs)
+            return
         }
         val result = request(task, settings) { notebook ->
             LecturePrompts.chunkPrompt(
@@ -612,7 +613,7 @@ public class LectureRecorder internal constructor(
         internal const val IMAGE_PAGES = 2
 
         /** Pages described around the visible ones (their text costs little). */
-        internal const val TEXT_PAGES = 10
+        internal const val TEXT_PAGES = 4
 
         /** New audio merged in a request when the analysis is behind (a chunk can exceed it). */
         internal const val MAX_MERGED_MS = 3 * 60_000L

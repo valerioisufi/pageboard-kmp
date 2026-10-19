@@ -161,34 +161,23 @@ internal object LectureAnalysis {
             putJsonObject("kind") {
                 put("type", "string")
                 putJsonArray("enum") { NoteKind.entries.forEach { add(it.name) } }
-                put(
-                    "description",
-                    "THEOREM with its conditions, EXAMPLE = steps of a worked example, EXPLANATION = an intuition " +
-                        "or a clarification of a slide, EXAM_HINT = stressed by the lecturer or for the exam, " +
-                        "ANNOUNCEMENT = deadlines and organization of the course only, REFERENCE = books, papers, websites."
-                )
             }
             putJsonObject("title") {
                 put("type", "string")
-                put("description", "A few words.")
             }
             putJsonObject("content") {
                 put("type", "string")
-                put("description", "Concise notebook-ready Markdown; formulas in LaTeX between \$...\$.")
             }
             putJsonObject("page") {
                 put("type", "integer")
-                put("description", "Notebook page number (1-based) where the note belongs.")
             }
             putJsonObject("importance") {
                 put("type", "integer")
                 put("minimum", 1)
                 put("maximum", 3)
-                put("description", "3 = stressed by the lecturer or relevant for the exam, 1 = useful detail.")
             }
             putJsonObject("atSeconds") {
                 put("type", "number")
-                put("description", "Seconds from the start of the audio of this request where it was said.")
             }
         }
         putJsonArray("required") {

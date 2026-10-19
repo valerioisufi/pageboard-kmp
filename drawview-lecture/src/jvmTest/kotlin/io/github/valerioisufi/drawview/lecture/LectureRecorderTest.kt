@@ -134,7 +134,6 @@ class LectureRecorderTest {
         assertTrue(requests[1].contains("[p. 2, 0:10, inserted] Definizione di limite"), requests[1])
         // The outline was rewritten a few seconds before
         assertTrue(requests[1].contains("The outline is not updated in this answer."))
-        assertTrue(requests[2].contains("https://x/files/rec"))
         // The review reads the pages seen
         assertTrue(requests[2].contains("### Page 3\\nSlide 2 of PDF 1:\\nDerivate"), requests[2])
         assertTrue(requests[2].contains("### Page 2 (visible)"))

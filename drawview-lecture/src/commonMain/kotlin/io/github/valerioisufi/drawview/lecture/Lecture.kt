@@ -504,8 +504,10 @@ public class Lecture internal constructor(
             prepare()
             val prompt = when (provider) {
                 ModelProvider.GEMINI -> {
-                    // The complete recording, when the audio may leave the device
-                    val audioFile = if (!settings.sendsAudio) null else try {
+                    // Carica l'intera registrazione solo se il parlato non è già stato trascritto
+                    val transcribedMs = transcriptCopy.sumOf { (it.endMs - it.startMs).coerceAtLeast(0L) }
+                    val hasTranscript = transcriptCopy.isNotEmpty() && (elapsedMs <= 0L || transcribedMs >= elapsedMs / 4)
+                    val audioFile = if (!settings.sendsAudio || hasTranscript) null else try {
                         recording.readEncoded()?.let { backends.gemini.client.uploadFile(apiKey, it, RecordingFile.MIME_TYPE, "lecture-$id.opus") }
                     } catch (e: CancellationException) {
                         throw e
@@ -703,7 +705,7 @@ public class Lecture internal constructor(
         const val MAX_REVIEW_IMAGES = 16
         const val MAX_LOCAL_REVIEW_IMAGES = 8
         const val MIN_REVIEW_SECONDS = 20
-        const val PREVIOUS_TRANSCRIPT_CHARS = 600
+        const val PREVIOUS_TRANSCRIPT_CHARS = 300
         const val MIN_WORDS_TO_COMPARE = 6
         const val REPEATED_WORDS = 0.8
         const val PLAYBACK_LEAD_MS = 3_000L

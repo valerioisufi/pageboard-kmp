@@ -69,7 +69,22 @@ internal class ControllerNotebookSource(private val controller: DrawViewControll
 
             val pageContents = (visibleIndexes + around).map { index -> pageContent(index, pages[index].id, contents[index], pdfNumbers) }
 
+            val contentByIndex = pageContents.associateBy { it.index }
+            // Close-ups of the new strokes, page by page
+            val strokeIds = mutableSetOf<String>()
+            val newStrokesByPage = mutableMapOf<Int, List<DrawStroke>>()
+            for ((index, content) in contents.withIndex()) {
+                content.strokes.forEach { strokeIds.add(it.id) }
+                val newStrokes = content.strokes.filter { it.id !in knownStrokeIds }
+                if (newStrokes.isNotEmpty()) newStrokesByPage[index] = newStrokes
+            }
+
             val pageImages = visibleIndexes.take(imagePages).mapNotNull { index ->
+                val pageInfo = contentByIndex[index]
+                // Evita di inviare un JPEG da 560 token per un foglio bianco o con solo testo già noto
+                if (pageInfo != null && (pageInfo.isBlank || (pageInfo.slide == null && pageInfo.imageCount == 0 && !pageInfo.hasInk))) {
+                    return@mapNotNull null
+                }
                 val bitmap = try {
                     renderer.renderThumbnail(document, pages[index], PAGE_WIDTH_PX)
                 } catch (_: Throwable) {
@@ -77,15 +92,16 @@ internal class ControllerNotebookSource(private val controller: DrawViewControll
                 }
                 bitmap?.let { encodeJpeg(it) }?.let { PageImage(index, it) }
             }
+            val fullImagePages = pageImages.mapTo(mutableSetOf()) { it.pageIndex }
 
-            // Close-ups of the new strokes, page by page
-            val strokeIds = mutableSetOf<String>()
             val newWriting = mutableListOf<PageImage>()
-            for ((index, content) in contents.withIndex()) {
-                content.strokes.forEach { strokeIds.add(it.id) }
-                val newStrokes = content.strokes.filter { it.id !in knownStrokeIds }
-                if (newStrokes.isEmpty() || newWriting.size >= MAX_NEW_WRITING_IMAGES) continue
+            for ((index, newStrokes) in newStrokesByPage) {
+                if (newWriting.size >= MAX_NEW_WRITING_IMAGES) break
+                val content = contents[index]
                 val bounds = newStrokes.map { it.bounds }.reduce(::union)
+                // Se la pagina è già inviata per intero in pageImages e il nuovo tratto copre oltre il 35% dell'area, evita il doppione
+                val coversPage = bounds.width * bounds.height > content.widthMm * content.heightMm * 0.35f
+                if (index in fullImagePages && coversPage) continue
                 renderRegion(renderer, document, content, index, bounds)?.let { newWriting.add(it) }
             }
 

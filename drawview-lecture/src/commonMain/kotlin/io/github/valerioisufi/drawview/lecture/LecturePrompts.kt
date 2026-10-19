@@ -347,21 +347,26 @@ internal object LecturePrompts {
 
     private fun memoryText(memory: LectureMemory): String = buildString {
         appendLine("## Lecture so far")
-        append("Elapsed time: ${formatLectureTime(memory.elapsedMs)}.")
-        if (memory.currentTopic.isNotBlank()) append(" Current topic: ${memory.currentTopic}.")
-        appendLine()
         appendLine("### Outline")
         appendLine(memory.outline.ifBlank { "(the lecture has just started)" })
         val suggested = memory.suggestions.takeLast(MAX_SUGGESTIONS_IN_MEMORY)
         if (suggested.isNotEmpty()) {
             appendLine("### Notes already suggested (do not repeat them)")
             appendLine("Status: inserted = added to the notebook; already noted = the student already had it; dismissed = not useful to the student; new = not handled yet.")
-            for (s in suggested) {
+            val detailedFrom = (suggested.size - MAX_DETAILED_SUGGESTIONS).coerceAtLeast(0)
+            for ((index, s) in suggested.withIndex()) {
                 val page = s.pageIndex?.let { "p. ${it + 1}, " }.orEmpty()
-                append("- [$page${formatLectureTime(s.atMs)}, ${statusLabel(s.status)}] ${s.title}: ")
-                appendLine(s.content.replace('\n', ' ').take(140))
+                if (index < detailedFrom) {
+                    appendLine("- [$page${formatLectureTime(s.atMs)}, ${statusLabel(s.status)}] ${s.title}")
+                } else {
+                    append("- [$page${formatLectureTime(s.atMs)}, ${statusLabel(s.status)}] ${s.title}: ")
+                    appendLine(s.content.replace('\n', ' ').take(100))
+                }
             }
         }
+        append("Elapsed time: ${formatLectureTime(memory.elapsedMs)}.")
+        if (memory.currentTopic.isNotBlank()) append(" Current topic: ${memory.currentTopic}.")
+        appendLine()
         if (memory.previousTranscript.isNotBlank()) {
             appendLine("### End of the previous transcript")
             appendLine(memory.previousTranscript)
@@ -461,10 +466,11 @@ internal object LecturePrompts {
         if (image.isCrop) "Notebook page ${image.pageIndex + 1}, area written by the student"
         else "Notebook page ${image.pageIndex + 1}"
 
-    private const val MAX_SUGGESTIONS_IN_MEMORY = 60
+    private const val MAX_SUGGESTIONS_IN_MEMORY = 50
+    private const val MAX_DETAILED_SUGGESTIONS = 10
 
     /** Text of the pages around the visible ones in a live request. */
-    private const val MAX_NOTEBOOK_TEXT_CHARS = 8_000
+    private const val MAX_NOTEBOOK_TEXT_CHARS = 3_500
 
     /** English names of the languages of the speech recognition, by ISO code. */
     private val SLIDE_WORD = Regex("""[\p{L}\p{N}][\p{L}\p{N}-]*[\p{L}\p{N}]""")
@@ -478,10 +484,10 @@ internal object LecturePrompts {
     )
 
     /** Text of the notebook from which the course context is written. */
-    private const val MAX_CONTEXT_NOTEBOOK_CHARS = 20_000
+    private const val MAX_CONTEXT_NOTEBOOK_CHARS = 12_000
 
     /** Text of the pages seen during the lecture in the final review. */
-    private const val MAX_REVIEW_NOTEBOOK_CHARS = 30_000
+    private const val MAX_REVIEW_NOTEBOOK_CHARS = 18_000
 
     /** Room kept for the typed and handwritten notes of a page when the text of its slide is cut. */
     private const val MIN_PAGE_CHARS = 200

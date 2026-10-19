@@ -208,8 +208,17 @@ internal class GeminiLiveTranscriber(
         message.voiceActivity?.let { activity ->
             val offset = parseDurationMs(activity.audioOffset) ?: return@let
             val at = session.startSample + msToSamples(offset)
-            if (activity.isStart) session.utteranceStart = max(lastFinalEnd, at)
-            if (activity.isEnd && session.utteranceStart == null) committed = max(committed, at)
+            if (activity.isStart) {
+                if (session.utteranceStart == null) {
+                    committed = max(committed, at)
+                    dropCommitted()
+                }
+                session.utteranceStart = max(lastFinalEnd, at)
+            }
+            if (activity.isEnd && session.utteranceStart == null) {
+                committed = max(committed, at)
+                dropCommitted()
+            }
         }
         val content = message.serverContent
         content?.interimInputTranscription?.let { interim ->
@@ -446,7 +455,7 @@ internal class SpeechLevel {
         recent.addLast(sum / samples.size)
         while (recent.size > WINDOW) recent.removeFirst()
         val rms = kotlin.math.sqrt(recent.average())
-        val target = (TARGET_RMS / rms.coerceAtLeast(1.0)).coerceIn(1.0, MAX_GAIN)
+        val target = if (rms < MIN_SPEECH_RMS) 1.0 else (TARGET_RMS / rms).coerceIn(1.0, MAX_GAIN)
         val from = gain
         gain += (target - gain) * SMOOTHING
         // From the previous gain to the new one along the piece: no step
@@ -458,6 +467,7 @@ internal class SpeechLevel {
 
     private companion object {
         const val WINDOW = 5
+        const val MIN_SPEECH_RMS = 80.0
         const val TARGET_RMS = 1_500.0
         const val MAX_GAIN = 4.0
         const val SMOOTHING = 0.5
