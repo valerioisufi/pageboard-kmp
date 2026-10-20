@@ -1,6 +1,15 @@
 package io.github.valerioisufi.drawview.ui.render
 
+import androidx.compose.ui.text.ParagraphStyle
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.createFontFamilyResolver
+import androidx.compose.ui.text.style.TextIndent
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.text.TextSizes
@@ -60,5 +69,20 @@ class ComposeTextTileAdapterTest {
         assertTrue(wrapped.width <= 40f + 0.1f)
         long.width = 80f
         assertTrue(assertNotNull(adapter.measure(long)).height < wrapped.height)
+    }
+
+    @Test
+    fun listItemsRenderWithBulletsAndHangingIndent() {
+        val bulletText = text("- First bullet item\n- Second bullet item")
+        val layout = assertNotNull(adapter.layout(bulletText))
+        val firstWord = layout.words.first()
+        assertEquals("• ", firstWord.text)
+
+        val longItem = text("- " + "word ".repeat(30).trim(), width = 40f)
+        val longLayout = assertNotNull(adapter.layout(longItem))
+        assertTrue(longLayout.words.size > 5)
+        val laterLineWords = longLayout.words.filter { it.baseline > longLayout.words[0].baseline }
+        assertTrue(laterLineWords.isNotEmpty())
+        assertTrue(laterLineWords.first().left > 0f, "Hanging indent indents wrapped lines")
     }
 }

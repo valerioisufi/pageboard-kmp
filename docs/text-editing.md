@@ -204,7 +204,7 @@ work against the user, and text can be lost.
 | 8 | Snapping: `SnapEngine`, guides, moving the selection and the edited text, width handles, new texts on the lines of the paper; ⌥ / Alt and the switch (the elements placed by the lecture assistant are left for later) | Done |
 | 9a | Bulleted and numbered lists notation & commands: `RichTextParser` parsing list items (`- `, `* `, `+ `, `\d+\. `) with nesting levels; `RichTextEditing.toggleBulletList` and `toggleNumberedList`; `TextEditorManager` formatting target methods; toolbar buttons in `TextFormatBar` (`DrawViewIcons.List` and `DrawViewIcons.ListOrdered`) and `EditorCommands` (Format menu, shortcuts ⌘⇧8 and ⌘⇧7); tests in model and canvas | Done |
 | 9b | Smart list editing: automatic continuation on Enter (next bullet or incremented number), list exit on empty item (clearing the marker), indentation adjustment via Tab and Shift+Tab (adding/removing 2 spaces); tests of editing interactions in canvas and UI | Done |
-| 9c | Typography and hanging indent: `MarkdownTextUtil` presenting bullets (`•`, `◦`) and numbers; advanced hanging indent via `ParagraphStyle.textIndent` for wrapped lines; layout and measure in `ComposeTextTileAdapter`; PDF export verified; tests and screenshots | To do |
+| 9c | Typography and hanging indent: `MarkdownTextUtil` presenting bullets (`•`, `◦`, `▪`) and numbers; advanced hanging indent via `ParagraphStyle.textIndent` for wrapped lines; layout and measure in `ComposeTextTileAdapter`; PDF export verified; tests and screenshots | Done |
 
 ### Phase 1 results
 
@@ -424,6 +424,21 @@ work against the user, and text can be lost.
 * Tests: comprehensive unit tests in `RichTextEditingTest` and `TextEditingTest` covering list continuation,
   empty-item exit, item splitting, indent/outdent offset mappings, and virtual keyboard input.
   Kotlin ABI dumps updated.
+
+### Phase 9c results
+
+* Typography and bullet glyphs (`MarkdownTextUtil.bulletGlyph` & `listPrefix`): bullet markers are rendered
+  on canvas with typographic glyphs adapted to the nesting hierarchy (`•` for root level, `◦` for sub-items,
+  `▪` for deeper items). Numbered lists render standard numeric prefixes (`1. `, `2. `).
+* Advanced hanging indent (`MarkdownTextUtil.toCanvasText`): each list item line is formatted with
+  `ParagraphStyle(textIndent = TextIndent(firstLine = 0.sp, restLine = prefixWidthPx.sp))` calculated from
+  the marker glyph width and nesting indentation. Wrapped text flows directly under the content text rather
+  than under the marker.
+* Formula and span nesting: extracted `appendFormula` and integrated character offset mapping so inline
+  formatting (bold, italic, code, formulas) inside list items aligns accurately without offset drifting.
+* Verification: unit tests in `MarkdownTextUtilTest` and `ComposeTextTileAdapterTest` verifying bullet glyphs,
+  hanging indent behavior for wrapped lines, inline formatting preservation within list items, full JVM test
+  suite, Android/iOS compilation, and binary compatibility checks (`checkKotlinAbi`).
 
 ### Left for later
 
