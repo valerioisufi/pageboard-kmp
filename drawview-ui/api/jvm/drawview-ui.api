@@ -784,7 +784,11 @@ public final class io/github/valerioisufi/drawview/ui/screen/ComposableSingleton
 public final class io/github/valerioisufi/drawview/ui/screen/ComposableSingletons$EditorToolbarKt {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/screen/ComposableSingletons$EditorToolbarKt;
 	public fun <init> ()V
+	public final fun getLambda$-1105431035$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-1663931570$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1301150839$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$364959240$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$775446766$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
 }
 
 public final class io/github/valerioisufi/drawview/ui/screen/EditorScreenKt {
@@ -850,6 +854,7 @@ public final class io/github/valerioisufi/drawview/ui/theme/DrawViewIcons {
 	public final fun getCrown ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getDownload ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getEraser ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getExternalLink ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getEye ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getEyeOff ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getFile ()Landroidx/compose/ui/graphics/vector/ImageVector;
@@ -967,8 +972,41 @@ public final class io/github/valerioisufi/drawview/ui/util/FormattingKt {
 	public static final fun formatShortDateTime (JLjava/util/List;)Ljava/lang/String;
 }
 
+public final class io/github/valerioisufi/drawview/ui/window/ComposableSingletons$WindowDecorInsetsKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/window/ComposableSingletons$WindowDecorInsetsKt;
+	public fun <init> ()V
+	public final fun getLambda$-671818452$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function4;
+}
+
+public final class io/github/valerioisufi/drawview/ui/window/DesktopWindowManager {
+	public static final field $stable I
+	public fun <init> ()V
+	public final fun closeDocument (Ljava/lang/String;)V
+	public final fun closeLibrary ()V
+	public final fun getOpenDocumentIds ()Ljava/util/List;
+	public final fun getShouldExit ()Z
+	public final fun isLibraryOpen ()Z
+	public final fun openDocument (Ljava/lang/String;)V
+	public final fun openLibrary ()V
+}
+
+public final class io/github/valerioisufi/drawview/ui/window/DesktopWindowManagerKt {
+	public static final fun rememberDesktopWindowManager (Landroidx/compose/runtime/Composer;I)Lio/github/valerioisufi/drawview/ui/window/DesktopWindowManager;
+}
+
+public final class io/github/valerioisufi/drawview/ui/window/DrawViewWindowDecorKt {
+	public static final fun DrawViewWindowDecor (Landroidx/compose/ui/window/FrameWindowScope;Landroidx/compose/ui/window/WindowState;ZLkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun SetWindowDocumentModified (Landroidx/compose/ui/window/FrameWindowScope;ZLandroidx/compose/runtime/Composer;I)V
+}
+
 public final class io/github/valerioisufi/drawview/ui/window/DrawViewWindowStateKt {
 	public static final fun WindowMinimumSize-WMci_g0 (Landroidx/compose/ui/window/FrameWindowScope;FFLandroidx/compose/runtime/Composer;II)V
 	public static final fun rememberDrawViewWindowState-eVKgIn8 (Ljava/lang/String;JLandroidx/compose/runtime/Composer;II)Landroidx/compose/ui/window/WindowState;
+}
+
+public final class io/github/valerioisufi/drawview/ui/window/WindowDecorInsetsKt {
+	public static final fun WindowDraggable (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun getLocalWindowDecorInsets ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+	public static final fun getLocalWindowDraggableArea ()Landroidx/compose/runtime/ProvidableCompositionLocal;
 }
 

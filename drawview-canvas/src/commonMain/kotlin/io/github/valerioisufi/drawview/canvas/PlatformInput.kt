@@ -11,6 +11,12 @@ import androidx.compose.ui.input.pointer.PointerEvent
  */
 internal expect fun Modifier.unbufferedStylusInput(): Modifier
 
+/**
+ * Protects drawing gestures near the display edges from triggering system back navigation gestures
+ * on platforms that support system gesture exclusion (Android 10+).
+ */
+internal expect fun Modifier.canvasGestureExclusion(): Modifier
+
 /** Pixels the canvas moves for one unit of scroll (a notch of a mouse wheel), by default. */
 internal const val DEFAULT_SCROLL_UNIT_PX = 48f
 

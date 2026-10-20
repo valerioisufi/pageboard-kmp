@@ -71,7 +71,8 @@ public fun DocumentLibrary(
     documentActions: List<DocumentAction> = emptyList(),
     tags: List<DocumentTag> = emptyList(),
     engines: DrawViewEngines = DrawViewEngines.None,
-    thumbnails: DocumentThumbnails = rememberDocumentThumbnails(documents, engines = engines)
+    thumbnails: DocumentThumbnails = rememberDocumentThumbnails(documents, engines = engines),
+    onOpenDocumentInNewWindow: ((String) -> Unit)? = null
 ) {
     val fileExplorerViewModel = viewModel { FileExplorerViewModel(documents) }
     val editorViewModel = viewModel { DocumentEditorViewModel(documents, engines) }
@@ -120,6 +121,7 @@ public fun DocumentLibrary(
                             onFilesDropped = importFiles,
                             onImportPdf = pdfPicker,
                             onImportImage = imagePicker,
+                            onOpenDocumentInNewWindow = onOpenDocumentInNewWindow,
                             modifier = Modifier.fillMaxSize()
                         )
                         libraryOverlay { documentId -> editorViewModel.openDocument(documentId) }

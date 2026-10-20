@@ -47,6 +47,9 @@ import io.github.valerioisufi.drawview.ui.components.AboutAppInfo
 import io.github.valerioisufi.drawview.ui.components.LocalAboutAppInfo
 import io.github.valerioisufi.drawview.ui.components.ThirdPartyLicense
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
+import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.valerioisufi.drawview.session.DocumentEditorViewModel
+import io.github.valerioisufi.drawview.session.EditorSessionScreen
 import io.github.valerioisufi.pencilnotes.generated.resources.Res
 import io.github.valerioisufi.pencilnotes.generated.resources.about_description
 import io.github.valerioisufi.pencilnotes.generated.resources.about_version
@@ -60,9 +63,13 @@ import org.jetbrains.compose.resources.stringResource
  *
  * @param commandHost the commands of the screen shown, for the menu bar and the shortcuts of the
  *   window of the desktop.
+ * @param onOpenDocumentInNewWindow opens the document in an independent desktop window when provided.
  */
 @Composable
-fun PencilNotesApp(commandHost: CommandHost = remember { CommandHost() }) {
+fun PencilNotesApp(
+    commandHost: CommandHost = remember { CommandHost() },
+    onOpenDocumentInNewWindow: ((String) -> Unit)? = null
+) {
     PencilNotesTheme {
         val aboutAppInfo = AboutAppInfo(
             name = stringResource(Res.string.app_name),
@@ -125,6 +132,7 @@ fun PencilNotesApp(commandHost: CommandHost = remember { CommandHost() }) {
                                     .padding(16.dp)
                             )
                         },
+                        onOpenDocumentInNewWindow = onOpenDocumentInNewWindow,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
@@ -174,3 +182,41 @@ private val CherryBombOneLicense = ThirdPartyLicense(
     purpose = "Typography of the PencilNotes title.",
     notice = "Cherry Bomb One is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org"
 )
+
+/**
+ * A standalone document editor window for PencilNotes (multi-window desktop mode).
+ */
+@Composable
+fun PencilNotesDocumentWindow(
+    documentId: String,
+    onClose: () -> Unit,
+    commandHost: CommandHost = remember { CommandHost() },
+    onTitleChange: (String) -> Unit = {}
+) {
+    PencilNotesTheme {
+        val documents = DrawViewStore.documents
+        val export = rememberDocumentExportUi(documents, appName = "PencilNotes")
+        val engines = remember { DrawViewEngines(pdfTiles = PdfiumEngine::createTileAdapter, formulas = LatexEngine.formulaRenderer) }
+        val editorViewModel = viewModel(key = "doc-$documentId") {
+            DocumentEditorViewModel(documents, engines).apply {
+                openDocument(documentId)
+            }
+        }
+        val session = editorViewModel.session
+        LaunchedEffect(session?.controller?.document?.name) {
+            session?.controller?.document?.name?.let(onTitleChange)
+        }
+        AdaptiveRoot(modifier = Modifier.fillMaxSize()) {
+            CommandRoot(host = commandHost) {
+                if (session != null) {
+                    EditorSessionScreen(
+                        session = session,
+                        onClose = onClose,
+                        extension = export.editorExtension
+                    )
+                }
+            }
+        }
+    }
+}
+

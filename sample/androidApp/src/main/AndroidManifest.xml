@@ -12,12 +12,23 @@
         <activity
                 android:exported="true"
                 android:name=".MainActivity"
+                android:documentLaunchMode="intoExisting"
+                android:resizeableActivity="true"
                 android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
                 android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <!-- Document views for multi-window / deep linking -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+
+                <data android:scheme="drawview" android:host="document"/>
             </intent-filter>
         </activity>
     </application>

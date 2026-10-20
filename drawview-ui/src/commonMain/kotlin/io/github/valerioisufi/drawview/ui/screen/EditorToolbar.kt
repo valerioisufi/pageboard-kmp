@@ -37,8 +37,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -88,6 +90,8 @@ import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.InkPalette
 import io.github.valerioisufi.drawview.ui.theme.elevation
 import io.github.valerioisufi.drawview.ui.util.formatDecimal
+import io.github.valerioisufi.drawview.ui.window.LocalWindowDecorInsets
+import io.github.valerioisufi.drawview.ui.window.WindowDraggable
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -183,12 +187,16 @@ internal fun EditorTopBar(
 ) {
     val density = LocalDensity.current
     val compact = arrangement == ToolbarArrangement.FLOATING_TOOLS
+    val decorStartPad = LocalWindowDecorInsets.current.calculateStartPadding(LocalLayoutDirection.current)
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .zIndex(1f)
             .height(if (compact) ToolbarLayout.CompactBarHeight else ToolbarLayout.BarHeight)
-            .padding(horizontal = if (compact) 4.dp else 12.dp),
+            .padding(
+                start = if (compact) 4.dp + decorStartPad else 12.dp + decorStartPad,
+                end = if (compact) 4.dp else 12.dp
+            ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(if (compact) 0.dp else 4.dp)
     ) {
@@ -209,15 +217,15 @@ internal fun EditorTopBar(
         )
 
         if (toolsInBar) {
-            Spacer(modifier = Modifier.weight(1f))
+            WindowDraggable(modifier = Modifier.weight(1f)) { Spacer(modifier = Modifier.fillMaxWidth()) }
             ToolGroup(modifier = Modifier.widthIn(max = toolsMaxWidth)) {
                 EditorTools(controller, commands, withImports = true)
             }
-            Spacer(modifier = Modifier.weight(1f))
+            WindowDraggable(modifier = Modifier.weight(1f)) { Spacer(modifier = Modifier.fillMaxWidth()) }
         } else if (readOnlyInBar) {
-            Spacer(modifier = Modifier.weight(1f))
+            WindowDraggable(modifier = Modifier.weight(1f)) { Spacer(modifier = Modifier.fillMaxWidth()) }
             ReadOnlyBadge(readOnlyNote(), floating = false, modifier = Modifier.widthIn(max = toolsMaxWidth))
-            Spacer(modifier = Modifier.weight(1f))
+            WindowDraggable(modifier = Modifier.weight(1f)) { Spacer(modifier = Modifier.fillMaxWidth()) }
         }
 
         Row(

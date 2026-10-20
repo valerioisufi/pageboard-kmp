@@ -39,6 +39,7 @@
     <string name="explorer_error_create_failed">Errore durante la creazione</string>
     <string name="explorer_shared">Condiviso con altri dispositivi</string>
     <string name="explorer_action_open">Apri</string>
+    <string name="explorer_action_open_in_new_window">Apri in una nuova finestra</string>
     <string name="explorer_command_sort_by">Ordina per %1$s</string>
     <string name="explorer_section_recent">Recenti</string>
     <string name="explorer_section_shared">Condivise</string>

@@ -1,6 +1,7 @@
 package io.github.valerioisufi.pencilnotes
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -12,7 +13,10 @@ import io.github.valerioisufi.drawview.platform.DRAWVIEW_DATA_DIRECTORY_PROPERTY
 import io.github.valerioisufi.drawview.session.DrawViewSessions
 import io.github.valerioisufi.drawview.ui.command.CommandHost
 import io.github.valerioisufi.drawview.ui.command.DrawViewMenuBar
+import io.github.valerioisufi.drawview.ui.window.DrawViewWindowDecor
+import io.github.valerioisufi.drawview.ui.window.SetWindowDocumentModified
 import io.github.valerioisufi.drawview.ui.window.WindowMinimumSize
+import io.github.valerioisufi.drawview.ui.window.rememberDesktopWindowManager
 import io.github.valerioisufi.drawview.ui.window.rememberDrawViewWindowState
 import io.github.valerioisufi.pencilnotes.ui.theme.PencilNotesTheme
 import java.io.File
@@ -29,9 +33,9 @@ fun main() {
     System.setProperty("apple.laf.useScreenMenuBar", "true")
 
     application {
-        // The commands of the screen shown: the menu bar and the shortcuts of the window
-        val commands = remember { CommandHost() }
+        val windowManager = rememberDesktopWindowManager()
         var confirmExit by remember { mutableStateOf(false) }
+
         fun exit() {
             runBlocking {
                 // The lecture being recorded is saved (its review is left for later), then the
@@ -41,21 +45,81 @@ fun main() {
             }
             exitApplication()
         }
-        Window(
-            onCloseRequest = { if (LectureRecordings.isRecording) confirmExit = true else exit() },
-            // Its size, position and placement kept between the launches
-            state = rememberDrawViewWindowState(),
-            title = "PencilNotes",
-            onKeyEvent = { commands.dispatch(it) }
-        ) {
-            DrawViewMenuBar(commands)
-            WindowMinimumSize()
-            PencilNotesApp(commandHost = commands)
-            if (confirmExit) {
-                PencilNotesTheme {
-                    LectureExitDialog(onExit = { exit() }, onDismiss = { confirmExit = false })
+
+        // 1. Primary Library Window
+        if (windowManager.isLibraryOpen) {
+            val commands = remember { CommandHost() }
+            val windowState = rememberDrawViewWindowState("library")
+            Window(
+                onCloseRequest = {
+                    if (windowManager.openDocumentIds.isNotEmpty()) {
+                        windowManager.closeLibrary()
+                    } else if (LectureRecordings.isRecording) {
+                        confirmExit = true
+                    } else {
+                        exit()
+                    }
+                },
+                state = windowState,
+                title = "PencilNotes",
+                onKeyEvent = { commands.dispatch(it) }
+            ) {
+                DrawViewWindowDecor(state = windowState) {
+                    DrawViewMenuBar(commands)
+                    WindowMinimumSize()
+                    PencilNotesApp(
+                        commandHost = commands,
+                        onOpenDocumentInNewWindow = { docId ->
+                            windowManager.openDocument(docId)
+                        }
+                    )
+                    if (confirmExit) {
+                        PencilNotesTheme {
+                            LectureExitDialog(onExit = { exit() }, onDismiss = { confirmExit = false })
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2. Secondary Document Windows
+        for (documentId in windowManager.openDocumentIds) {
+            key(documentId) {
+                val docCommands = remember { CommandHost() }
+                val docWindowState = rememberDrawViewWindowState("doc-$documentId")
+                var docTitle by remember { mutableStateOf("PencilNotes") }
+                val session = remember(documentId) { DrawViewSessions.find(documentId) }
+
+                Window(
+                    onCloseRequest = {
+                        windowManager.closeDocument(documentId)
+                        if (windowManager.shouldExit) {
+                            if (LectureRecordings.isRecording) confirmExit = true else exit()
+                        }
+                    },
+                    state = docWindowState,
+                    title = docTitle,
+                    onKeyEvent = { docCommands.dispatch(it) }
+                ) {
+                    DrawViewWindowDecor(state = docWindowState) {
+                        SetWindowDocumentModified(session?.controller?.historyManager?.canUndo == true)
+                        DrawViewMenuBar(docCommands)
+                        WindowMinimumSize()
+                        PencilNotesDocumentWindow(
+                            documentId = documentId,
+                            onClose = {
+                                windowManager.closeDocument(documentId)
+                                if (windowManager.shouldExit) {
+                                    if (LectureRecordings.isRecording) confirmExit = true else exit()
+                                }
+                            },
+                            commandHost = docCommands,
+                            onTitleChange = { docTitle = it }
+                        )
+                    }
                 }
             }
         }
     }
 }
+

@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.usePinned
 import platform.Foundation.NSData
 import platform.Foundation.NSURL
@@ -130,6 +131,50 @@ private fun NSData.toByteArray(): ByteArray {
     return result
 }
 
+private var isUiSystemBarsHidden: Boolean = false
+
+@OptIn(ExperimentalForeignApi::class)
+private val uiPrefersStatusBarHiddenImp = kotlinx.cinterop.staticCFunction { _: kotlinx.cinterop.COpaquePointer?, _: kotlinx.cinterop.COpaquePointer? ->
+    isUiSystemBarsHidden
+}
+
+@OptIn(ExperimentalForeignApi::class)
+private val uiPrefersHomeIndicatorAutoHiddenImp = kotlinx.cinterop.staticCFunction { _: kotlinx.cinterop.COpaquePointer?, _: kotlinx.cinterop.COpaquePointer? ->
+    isUiSystemBarsHidden
+}
+
+private var uiOverridesInstalled = false
+
+@OptIn(ExperimentalForeignApi::class, kotlinx.cinterop.BetaInteropApi::class)
+private fun ensureUiOverridesInstalled(viewController: UIViewController) {
+    if (uiOverridesInstalled) return
+    val cls = platform.objc.object_getClass(viewController) ?: return
+    val selStatusBar = platform.objc.sel_registerName("prefersStatusBarHidden")
+    val selHomeIndicator = platform.objc.sel_registerName("prefersHomeIndicatorAutoHidden")
+    val types = "B@:"
+    val statusImp = uiPrefersStatusBarHiddenImp.reinterpret<kotlinx.cinterop.CFunction<() -> Unit>>()
+    val homeImp = uiPrefersHomeIndicatorAutoHiddenImp.reinterpret<kotlinx.cinterop.CFunction<() -> Unit>>()
+    if (!platform.objc.class_addMethod(cls, selStatusBar, statusImp, types)) {
+        platform.objc.class_replaceMethod(cls, selStatusBar, statusImp, types)
+    }
+    if (!platform.objc.class_addMethod(cls, selHomeIndicator, homeImp, types)) {
+        platform.objc.class_replaceMethod(cls, selHomeIndicator, homeImp, types)
+    }
+    uiOverridesInstalled = true
+}
+
+@OptIn(ExperimentalForeignApi::class)
 @Composable
 internal actual fun HideSystemBarsEffect() {
+    val viewController = androidx.compose.ui.uikit.LocalUIViewController.current
+    androidx.compose.runtime.DisposableEffect(viewController) {
+        ensureUiOverridesInstalled(viewController)
+        isUiSystemBarsHidden = true
+        viewController.setNeedsStatusBarAppearanceUpdate()
+        onDispose {
+            isUiSystemBarsHidden = false
+            viewController.setNeedsStatusBarAppearanceUpdate()
+        }
+    }
 }
+
