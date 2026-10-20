@@ -209,7 +209,7 @@ Variations).
 | 1. Desktop Window Decor | macOS unified title bar (`apple.awt.fullWindowContent`, `transparentTitleBar`), `WindowDecorInsets` providing traffic-light clearance; `WindowDraggableArea` on headers; Windows DWM dark title bar; Roborazzi screenshot verification | Done |
 | 2. Mobile Insets & Gestures | Android `setSystemGestureExclusionRects` for edge drawing safety; iOS `SystemBarsHidden` (status bar & home indicator auto-hide); safe area padding validation | Done |
 | 3. Desktop Multi-Window | `DesktopWindowManager`, "Open in New Window" command & shortcuts in library, independent document windows with per-document `rememberDrawViewWindowState`, session flushing, macOS modified dot | Done |
-| 4. Mobile Multi-Window | Android `documentLaunchMode` & multi-window intent handling (tablet split-screen, DeX); iPadOS `WindowGroup(for:)` scene support | Planned |
+| 4. Mobile Multi-Window | Android `documentLaunchMode` & multi-window intent handling (tablet split-screen, DeX); iPadOS `WindowGroup(for:)` scene support | Done |
 
 ### Decisions
 
