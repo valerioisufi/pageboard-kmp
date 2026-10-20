@@ -28,6 +28,12 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
@@ -128,11 +134,21 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
 
     CompositionLocalProvider(LocalDensity provides unscaledDensity) {
+        // Tracks Shift+Enter on hardware keyboard to allow regular line breaks without list continuation
+        var lastKeyWasShiftEnter by remember { mutableStateOf(false) }
+
         // The field where the text is on the page, turned with it around its middle; its frame and
         // handles are drawn and handled by the canvas, as those of a selection
         BasicTextField(
             value = value,
-            onValueChange = editor::updateValue,
+            onValueChange = { newValue ->
+                if (lastKeyWasShiftEnter) {
+                    lastKeyWasShiftEnter = false
+                    editor.updateValue(newValue, smartNewline = false)
+                } else {
+                    editor.updateValue(newValue)
+                }
+            },
             modifier = Modifier
                 .offset { IntOffset(origin.x.roundToInt(), origin.y.roundToInt()) }
                 .width(widthDp)
@@ -141,6 +157,29 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                     transformOrigin = TransformOrigin.Center
                 }
                 .focusRequester(focusRequester)
+                .onPreviewKeyEvent { event ->
+                    if (event.type == KeyEventType.KeyDown) {
+                        if (event.key == Key.Tab) {
+                            if (event.isShiftPressed) {
+                                editor.outdent()
+                            } else {
+                                editor.indent()
+                            }
+                            return@onPreviewKeyEvent true
+                        }
+                        if (event.key == Key.Enter || event.key == Key.NumPadEnter) {
+                            if (event.isShiftPressed) {
+                                lastKeyWasShiftEnter = true
+                                return@onPreviewKeyEvent false
+                            }
+                            lastKeyWasShiftEnter = false
+                            if (editor.handleEnter()) {
+                                return@onPreviewKeyEvent true
+                            }
+                        }
+                    }
+                    false
+                }
                 .drawWithContent {
                     drawContent()
                     val current = layout ?: return@drawWithContent

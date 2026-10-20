@@ -15,15 +15,17 @@ package io.github.valerioisufi.drawview.model.text
 public object RichTextParser {
 
     /** A kind of [Span]. */
-    public enum class Kind { BOLD, ITALIC, STRIKE, CODE, HEADING, FORMULA, ESCAPE }
+    public enum class Kind { BOLD, ITALIC, STRIKE, CODE, HEADING, FORMULA, ESCAPE, LIST_ITEM }
 
     /**
      * A part of a text written with the notation: from [start] to [end] (the delimiters
      * included), its content from [contentStart] to [contentEnd].
      *
-     * @property level the level of a heading (the number of its `#`).
+     * @property level the level of a heading (the number of its `#`) or of a list item (indentation depth).
      * @property display a formula written `$$…$$`, drawn in display style.
      * @property block a display formula alone on its lines: a centered line of its own.
+     * @property ordered whether a list item is ordered (numbered).
+     * @property number the sequence number of an ordered list item.
      */
     public data class Span(
         val kind: Kind,
@@ -33,11 +35,13 @@ public object RichTextParser {
         val contentEnd: Int,
         val level: Int = 0,
         val display: Boolean = false,
-        val block: Boolean = false
+        val block: Boolean = false,
+        val ordered: Boolean = false,
+        val number: Int = 0
     ) {
         /** The delimiters, hidden when the text is drawn: before and after the content. */
         val delimiters: List<IntRange>
-            get() = listOf(start until contentStart, contentEnd until end).filterNot { it.isEmpty() }
+            get() = if (kind == Kind.LIST_ITEM) emptyList() else listOf(start until contentStart, contentEnd until end).filterNot { it.isEmpty() }
     }
 
     /**
@@ -65,6 +69,27 @@ public object RichTextParser {
             val level = contentStart - start
             while (contentStart < end && text[contentStart].isWhitespace()) contentStart++
             if (contentStart < end) candidates += Span(Kind.HEADING, start, end, contentStart, end, level = level)
+        }
+        for (match in BULLET_LIST.findAll(masked)) {
+            val start = match.range.first
+            val end = match.range.last + 1
+            val indent = match.groupValues[1]
+            val marker = match.groupValues[2]
+            var contentStart = start + indent.length + marker.length
+            while (contentStart < end && text[contentStart].isWhitespace()) contentStart++
+            val level = indentLevel(indent)
+            candidates += Span(Kind.LIST_ITEM, start, end, contentStart, end, level = level, ordered = false)
+        }
+        for (match in NUMBERED_LIST.findAll(masked)) {
+            val start = match.range.first
+            val end = match.range.last + 1
+            val indent = match.groupValues[1]
+            val numberStr = match.groupValues[2]
+            var contentStart = start + indent.length + numberStr.length + 1
+            while (contentStart < end && text[contentStart].isWhitespace()) contentStart++
+            val level = indentLevel(indent)
+            val number = numberStr.toIntOrNull() ?: 1
+            candidates += Span(Kind.LIST_ITEM, start, end, contentStart, end, level = level, ordered = true, number = number)
         }
         return nest(candidates)
     }
@@ -203,6 +228,14 @@ public object RichTextParser {
 
     // Inline flags such as (?m) are not supported everywhere
     private val HEADING = Regex("""^#{1,6}[ \t]+\S.*$""", RegexOption.MULTILINE)
+    private val BULLET_LIST = Regex("""^([ \t]*)([-*+])[ \t]+(.*)$""", RegexOption.MULTILINE)
+    private val NUMBERED_LIST = Regex("""^([ \t]*)(\d+)\.[ \t]+(.*)$""", RegexOption.MULTILINE)
+
+    private fun indentLevel(indent: String): Int {
+        var spaces = 0
+        for (c in indent) spaces += if (c == '\t') 2 else 1
+        return spaces / 2
+    }
 
     /** The punctuation an escape writes as it is. */
     private const val ESCAPABLE = """\`*_{}[]()#+-.!${'$'}~|<>"""

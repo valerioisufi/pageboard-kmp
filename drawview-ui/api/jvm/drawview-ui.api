@@ -686,10 +686,12 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getText_align_start (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_alignment (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_bold (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_bullet_list (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_code (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_heading (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_italic (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_math (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_numbered_list (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_save (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_strikethrough (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_formula_invalid (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -871,6 +873,7 @@ public final class io/github/valerioisufi/drawview/ui/theme/DrawViewIcons {
 	public final fun getLayers ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getLink ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getList ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getListOrdered ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getLock ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getLogOut ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getMic ()Landroidx/compose/ui/graphics/vector/ImageVector;

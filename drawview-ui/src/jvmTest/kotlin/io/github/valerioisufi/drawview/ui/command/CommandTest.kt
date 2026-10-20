@@ -221,6 +221,26 @@ class CommandTest {
         assertEquals(shortcuts.size, shortcuts.map { it.first }.toSet().size, shortcuts.groupBy { it.first }.filter { it.value.size > 1 }.toString())
     }
 
+    @Test
+    fun listCommandsToggleListsOnTheEditedText() {
+        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val commands = editorCommands(controller)
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 10f, 10f)
+        editor.updateValue(TextFieldValue("My item", TextRange(0)))
+        assertTrue(commands.bulletList.isEnabled())
+        assertTrue(commands.numberedList.isEnabled())
+
+        commands.bulletList.perform()
+        assertEquals("- My item", editor.value.text)
+
+        commands.numberedList.perform()
+        assertEquals("1. My item", editor.value.text)
+
+        commands.numberedList.perform()
+        assertEquals("My item", editor.value.text)
+    }
+
     /** The clipboard of the system in a test: the text set last. */
     private class FakeClipboard : ClipboardManager {
         var text: String? = null

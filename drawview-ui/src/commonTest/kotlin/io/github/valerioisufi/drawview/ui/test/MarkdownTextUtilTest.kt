@@ -6,6 +6,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -33,6 +34,38 @@ class MarkdownTextUtilTest {
         // Without a LaTeX engine the formula is kept as (red) source
         assertEquals("Title\nbold it del x \$a^2\$", canvas.text.text)
         assertTrue(canvas.placeholders.isEmpty())
+    }
+
+    @Test
+    fun canvasTextPresentsBulletsAndHangingIndent() {
+        val canvas = MarkdownTextUtil.toCanvasText<Unit>(
+            text = "- Item 1\n  * Item 2\n1. Numbered",
+            baseColor = Color.Black,
+            fontSizePx = 20f,
+            fontAscentPx = 18f
+        ) { _, _ -> null }
+        assertEquals("• Item 1  ◦ Item 21. Numbered", canvas.text.text)
+        assertEquals(3, canvas.text.paragraphStyles.size)
+        val p0 = canvas.text.paragraphStyles[0].item
+        assertEquals(0.sp, p0.textIndent?.firstLine)
+        assertTrue((p0.textIndent?.restLine?.value ?: 0f) > 0f)
+
+        val p1 = canvas.text.paragraphStyles[1].item
+        assertTrue((p1.textIndent?.restLine?.value ?: 0f) > (p0.textIndent?.restLine?.value ?: 0f), "Nested item has larger restLine indent")
+    }
+
+    @Test
+    fun canvasTextListWithFormattingAndFormulas() {
+        val canvas = MarkdownTextUtil.toCanvasText<Unit>(
+            text = "- Item with **bold** text",
+            baseColor = Color.Black,
+            fontSizePx = 20f,
+            fontAscentPx = 18f
+        ) { _, _ -> null }
+        assertEquals("• Item with bold text", canvas.text.text)
+        val boldStart = canvas.text.text.indexOf("bold")
+        val styles = canvas.text.spanStyles.filter { boldStart >= it.start && boldStart + 4 <= it.end }.map { it.item }
+        assertTrue(styles.any { it.fontWeight == FontWeight.Bold }, "Bold applied within list item")
     }
 
     @Test

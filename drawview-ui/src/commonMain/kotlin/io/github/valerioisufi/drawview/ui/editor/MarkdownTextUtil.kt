@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.ui.editor
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
@@ -11,6 +12,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.model.text.RichTextParser
@@ -247,7 +249,7 @@ public object MarkdownTextUtil {
         Kind.STRIKE -> SpanStyle(textDecoration = TextDecoration.LineThrough)
         Kind.CODE -> SpanStyle(fontFamily = monospace)
         Kind.HEADING -> SpanStyle(fontWeight = FontWeight.Bold, fontSize = (baseFontSize * headingScale(span.level)).sp)
-        Kind.FORMULA, Kind.ESCAPE -> null
+        Kind.FORMULA, Kind.ESCAPE, Kind.LIST_ITEM -> null
     }
 
     /** How much bigger than the text a heading of [level] is. */
@@ -322,78 +324,111 @@ public object MarkdownTextUtil {
         val spans = RichTextParser.parse(text)
         val hidden = BooleanArray(text.length)
         val formulaAt = HashMap<Int, Span>()
+        val listItemAt = HashMap<Int, Span>()
         for (span in spans) {
-            if (span.kind == Kind.FORMULA) {
-                formulaAt[span.start] = span
-                // A block formula takes its lines alone: the spaces around it go
-                if (span.block && lineWidthPx != null) {
-                    var i = span.start - 1
-                    while (i >= 0 && text[i] != '\n' && text[i].isWhitespace()) hidden[i--] = true
-                    i = span.end
-                    while (i < text.length && text[i] != '\n' && text[i].isWhitespace()) hidden[i++] = true
+            when (span.kind) {
+                Kind.FORMULA -> {
+                    formulaAt[span.start] = span
+                    // A block formula takes its lines alone: the spaces around it go
+                    if (span.block && lineWidthPx != null) {
+                        var i = span.start - 1
+                        while (i >= 0 && text[i] != '\n' && text[i].isWhitespace()) hidden[i--] = true
+                        i = span.end
+                        while (i < text.length && text[i] != '\n' && text[i].isWhitespace()) hidden[i++] = true
+                    }
                 }
-            } else {
-                for (delimiter in span.delimiters) for (i in delimiter) hidden[i] = true
+                Kind.LIST_ITEM -> {
+                    listItemAt[span.start] = span
+                }
+                else -> {
+                    for (delimiter in span.delimiters) for (i in delimiter) hidden[i] = true
+                }
             }
         }
 
+        val hasListItems = listItemAt.isNotEmpty()
         val placeholders = mutableListOf<PlaceholderSpec>()
         val formulas = mutableListOf<InlineFormula<T>>()
         val errors = mutableListOf<IntRange>()
         // Offset in the drawn text of every offset of the source
         val offsets = IntArray(text.length + 1)
         val annotated = buildAnnotatedString {
-            var i = 0
-            while (i < text.length) {
-                offsets[i] = length
-                val formula = formulaAt[i]
-                if (formula == null) {
-                    if (!hidden[i]) append(text[i])
-                    i++
-                    continue
+            if (!hasListItems) {
+                var i = 0
+                while (i < text.length) {
+                    offsets[i] = length
+                    val formula = formulaAt[i]
+                    if (formula == null) {
+                        if (!hidden[i]) append(text[i])
+                        i++
+                        continue
+                    }
+                    appendFormula(formula, text, fontSizePx, fontAscentPx, lineWidthPx, placeholders, formulas, errors, offsets, renderFormula)
+                    i = formula.end
                 }
-                val latex = formulaSource(text, formula)
-                val rendered = renderFormula(latex, formulaSizePx(formula, fontSizePx))?.takeIf { it.widthPx > 0f && it.heightPx > 0f }
-                when {
-                    rendered == null -> {
-                        // The source, highlighted when it cannot be rendered
-                        val start = length
-                        append(text, formula.start, formula.end)
-                        errors += start until length
-                    }
-                    formula.block && lineWidthPx != null -> {
-                        // The whole line, the formula centered in it (smaller when wider than the line)
-                        val fit = min(1f, lineWidthPx / rendered.widthPx)
-                        val start = length
-                        append(OBJECT_REPLACEMENT)
-                        placeholders += PlaceholderSpec(start, start + 1, lineWidthPx * LINE_FILL, rendered.heightPx * fit, PlaceholderVerticalAlign.Center)
-                        formulas += InlineFormula(rendered.image, rendered.widthPx * fit, rendered.heightPx * fit, rendered.baselineRatio, placeholders.size - 1, latex, block = true)
-                    }
-                    else -> {
-                        val ascent = rendered.heightPx * rendered.baselineRatio
-                        val descent = rendered.heightPx - ascent
-                        // Body of the formula: bottom on the baseline
-                        val bodyStart = length
-                        append(OBJECT_REPLACEMENT)
-                        placeholders += PlaceholderSpec(bodyStart, bodyStart + 1, rendered.widthPx, ascent.coerceAtLeast(1f), PlaceholderVerticalAlign.AboveBaseline)
-                        formulas += InlineFormula(rendered.image, rendered.widthPx, rendered.heightPx, rendered.baselineRatio, placeholders.size - 1, latex)
-                        if (descent > 0.5f) {
-                            // Zero-width placeholder hanging from the top of the font down to the
-                            // descent of the formula (a word joiner prevents a line break)
-                            append(WORD_JOINER)
-                            val descentStart = length
-                            append(OBJECT_REPLACEMENT)
-                            placeholders += PlaceholderSpec(descentStart, descentStart + 1, 0.01f, fontAscentPx + descent, PlaceholderVerticalAlign.TextTop)
+                offsets[text.length] = length
+            } else {
+                // Line-by-line processing with ParagraphStyle hanging indent
+                var lineStart = 0
+                while (lineStart <= text.length) {
+                    val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0) text.length else it }
+                    val listItem = listItemAt[lineStart]
+                    val pStart = length
+
+                    if (listItem != null) {
+                        val prefix = listPrefix(listItem)
+                        append(prefix)
+                        for (k in lineStart until listItem.contentStart) offsets[k] = pStart + prefix.length
+                        var i = listItem.contentStart
+                        while (i < lineEnd) {
+                            offsets[i] = length
+                            val formula = formulaAt[i]
+                            if (formula == null) {
+                                if (!hidden[i]) append(text[i])
+                                i++
+                                continue
+                            }
+                            appendFormula(formula, text, fontSizePx, fontAscentPx, lineWidthPx, placeholders, formulas, errors, offsets, renderFormula)
+                            i = formula.end
+                        }
+                    } else {
+                        var i = lineStart
+                        while (i < lineEnd) {
+                            offsets[i] = length
+                            val formula = formulaAt[i]
+                            if (formula == null) {
+                                if (!hidden[i]) append(text[i])
+                                i++
+                                continue
+                            }
+                            appendFormula(formula, text, fontSizePx, fontAscentPx, lineWidthPx, placeholders, formulas, errors, offsets, renderFormula)
+                            i = formula.end
                         }
                     }
+
+                    offsets[lineEnd] = length
+                    val pEnd = length
+
+                    if (listItem != null) {
+                        val restLinePx = listPrefixWidthPx(listItem, fontSizePx)
+                        addStyle(
+                            ParagraphStyle(textIndent = TextIndent(firstLine = 0.sp, restLine = restLinePx.sp)),
+                            pStart,
+                            pEnd
+                        )
+                    } else {
+                        addStyle(ParagraphStyle(), pStart, pEnd)
+                    }
+
+                    if (lineEnd >= text.length) break
+                    lineStart = lineEnd + 1
                 }
-                for (k in formula.start + 1 until formula.end) offsets[k] = length
-                i = formula.end
+                offsets[text.length] = length
             }
-            offsets[text.length] = length
 
             addStyle(SpanStyle(color = baseColor), 0, length)
             for (span in spans) {
+                if (span.kind == Kind.LIST_ITEM) continue
                 val style = contentStyle(span, fontSizePx, monospace) ?: continue
                 val start = offsets[span.contentStart]
                 val end = offsets[span.contentEnd]
@@ -402,6 +437,79 @@ public object MarkdownTextUtil {
             for (error in errors) addStyle(SpanStyle(color = ERROR_COLOR, fontStyle = FontStyle.Italic), error.first, error.last + 1)
         }
         return CanvasText(annotated, placeholders, formulas)
+    }
+
+    private fun <T> AnnotatedString.Builder.appendFormula(
+        formula: Span,
+        text: String,
+        fontSizePx: Float,
+        fontAscentPx: Float,
+        lineWidthPx: Float?,
+        placeholders: MutableList<PlaceholderSpec>,
+        formulas: MutableList<InlineFormula<T>>,
+        errors: MutableList<IntRange>,
+        offsets: IntArray,
+        renderFormula: (latex: String, fontSizePx: Float) -> RenderedFormula<T>?
+    ) {
+        val latex = formulaSource(text, formula)
+        val rendered = renderFormula(latex, formulaSizePx(formula, fontSizePx))?.takeIf { it.widthPx > 0f && it.heightPx > 0f }
+        when {
+            rendered == null -> {
+                val start = length
+                append(text, formula.start, formula.end)
+                errors += start until length
+            }
+            formula.block && lineWidthPx != null -> {
+                val fit = min(1f, lineWidthPx / rendered.widthPx)
+                val start = length
+                append(OBJECT_REPLACEMENT)
+                placeholders += PlaceholderSpec(start, start + 1, lineWidthPx * LINE_FILL, rendered.heightPx * fit, PlaceholderVerticalAlign.Center)
+                formulas += InlineFormula(rendered.image, rendered.widthPx * fit, rendered.heightPx * fit, rendered.baselineRatio, placeholders.size - 1, latex, block = true)
+            }
+            else -> {
+                val ascent = rendered.heightPx * rendered.baselineRatio
+                val descent = rendered.heightPx - ascent
+                val bodyStart = length
+                append(OBJECT_REPLACEMENT)
+                placeholders += PlaceholderSpec(bodyStart, bodyStart + 1, rendered.widthPx, ascent.coerceAtLeast(1f), PlaceholderVerticalAlign.AboveBaseline)
+                formulas += InlineFormula(rendered.image, rendered.widthPx, rendered.heightPx, rendered.baselineRatio, placeholders.size - 1, latex)
+                if (descent > 0.5f) {
+                    append(WORD_JOINER)
+                    val descentStart = length
+                    append(OBJECT_REPLACEMENT)
+                    placeholders += PlaceholderSpec(descentStart, descentStart + 1, 0.01f, fontAscentPx + descent, PlaceholderVerticalAlign.TextTop)
+                }
+            }
+        }
+        for (k in formula.start + 1 until formula.end) offsets[k] = length
+    }
+
+    /** The bullet glyph for a list item of [level]. */
+    internal fun bulletGlyph(level: Int): String = when (level % 3) {
+        0 -> "•"
+        1 -> "◦"
+        else -> "▪"
+    }
+
+    /** The prefix formatted for a list item [span] drawn on the canvas. */
+    internal fun listPrefix(span: Span): String {
+        val indent = "  ".repeat(span.level)
+        return if (span.ordered) {
+            "$indent${span.number}. "
+        } else {
+            "$indent${bulletGlyph(span.level)} "
+        }
+    }
+
+    /** The approximate width in pixels of the prefix of [span] at [fontSizePx]. */
+    internal fun listPrefixWidthPx(span: Span, fontSizePx: Float): Float {
+        val indentPx = span.level * 0.7f * fontSizePx
+        val markerPx = if (span.ordered) {
+            (span.number.toString().length * 0.55f + 0.65f) * fontSizePx
+        } else {
+            0.95f * fontSizePx
+        }
+        return indentPx + markerPx
     }
 
     internal const val OBJECT_REPLACEMENT = "￼"

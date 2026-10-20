@@ -94,6 +94,8 @@
     <string name="text_editor_action_strikethrough">Barrato</string>
     <string name="text_editor_action_code">Codice</string>
     <string name="text_editor_action_heading">Titolo</string>
+    <string name="text_editor_action_bullet_list">Elenco puntato</string>
+    <string name="text_editor_action_numbered_list">Elenco numerato</string>
     <string name="text_editor_action_math">Formula</string>
     <string name="text_editor_formula_invalid">Formula non valida</string>
     <string name="text_align_start">Allinea a sinistra</string>

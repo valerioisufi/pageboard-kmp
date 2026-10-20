@@ -55,4 +55,188 @@ class RichTextEditingTest {
         assertEquals("area \$pi r^2\$", RichTextEditing.toggle(value, RichTextEditing.Format.FORMULA).text)
         assertEquals("area ~~pi r^2~~", RichTextEditing.toggle(value, RichTextEditing.Format.STRIKETHROUGH).text)
     }
+
+    @Test
+    fun toggleBulletListOnSingleLineAddsAndRemovesBullet() {
+        val plain = TextFieldValue("Hello World", TextRange(6))
+        val bullet = RichTextEditing.toggleBulletList(plain)
+        assertEquals("- Hello World", bullet.text)
+        assertEquals(TextRange(8), bullet.selection, "the caret shifts with the added prefix")
+
+        val reverted = RichTextEditing.toggleBulletList(bullet)
+        assertEquals("Hello World", reverted.text)
+        assertEquals(TextRange(6), reverted.selection, "the caret shifts back when prefix is removed")
+    }
+
+    @Test
+    fun toggleNumberedListOnSingleLineAddsAndRemovesNumber() {
+        val plain = TextFieldValue("First item", TextRange(2))
+        val numbered = RichTextEditing.toggleNumberedList(plain)
+        assertEquals("1. First item", numbered.text)
+        assertEquals(TextRange(5), numbered.selection)
+
+        val reverted = RichTextEditing.toggleNumberedList(numbered)
+        assertEquals("First item", reverted.text)
+        assertEquals(TextRange(2), reverted.selection)
+    }
+
+    @Test
+    fun toggleListConvertsBetweenBulletAndNumbered() {
+        val bullet = TextFieldValue("- Item", TextRange(3))
+        val numbered = RichTextEditing.toggleNumberedList(bullet)
+        assertEquals("1. Item", numbered.text)
+
+        val backToBullet = RichTextEditing.toggleBulletList(numbered)
+        assertEquals("- Item", backToBullet.text)
+    }
+
+    @Test
+    fun toggleListsOnMultilineSelection() {
+        val lines = "Apple\nBanana\nCherry"
+        val value = TextFieldValue(lines, TextRange(0, lines.length))
+        val bulleted = RichTextEditing.toggleBulletList(value)
+        assertEquals("- Apple\n- Banana\n- Cherry", bulleted.text)
+
+        val numbered = RichTextEditing.toggleNumberedList(bulleted)
+        assertEquals("1. Apple\n2. Banana\n3. Cherry", numbered.text)
+
+        val plain = RichTextEditing.toggleNumberedList(numbered)
+        assertEquals("Apple\nBanana\nCherry", plain.text)
+    }
+
+    @Test
+    fun toggleListPreservesIndentation() {
+        val indented = TextFieldValue("  Subitem", TextRange(4))
+        val bulleted = RichTextEditing.toggleBulletList(indented)
+        assertEquals("  - Subitem", bulleted.text)
+        assertEquals(TextRange(6), bulleted.selection)
+
+        val plain = RichTextEditing.toggleBulletList(bulleted)
+        assertEquals("  Subitem", plain.text)
+        assertEquals(TextRange(4), plain.selection)
+    }
+
+    @Test
+    fun handleEnterContinuesBulletList() {
+        val dash = TextFieldValue("- Item 1", TextRange(8))
+        val continuedDash = RichTextEditing.handleEnter(dash)
+        assertEquals("- Item 1\n- ", continuedDash?.text)
+        assertEquals(TextRange(11), continuedDash?.selection)
+
+        val star = TextFieldValue("  * Subitem", TextRange(11))
+        val continuedStar = RichTextEditing.handleEnter(star)
+        assertEquals("  * Subitem\n  * ", continuedStar?.text)
+        assertEquals(TextRange(16), continuedStar?.selection)
+
+        val plus = TextFieldValue("+ Plus", TextRange(6))
+        val continuedPlus = RichTextEditing.handleEnter(plus)
+        assertEquals("+ Plus\n+ ", continuedPlus?.text)
+        assertEquals(TextRange(9), continuedPlus?.selection)
+    }
+
+    @Test
+    fun handleEnterContinuesNumberedList() {
+        val single = TextFieldValue("1. First", TextRange(8))
+        val continued = RichTextEditing.handleEnter(single)
+        assertEquals("1. First\n2. ", continued?.text)
+        assertEquals(TextRange(12), continued?.selection)
+
+        val nine = TextFieldValue("9. Item 9", TextRange(9))
+        val continuedNine = RichTextEditing.handleEnter(nine)
+        assertEquals("9. Item 9\n10. ", continuedNine?.text)
+        assertEquals(TextRange(14), continuedNine?.selection)
+
+        val indented = TextFieldValue("  3. Nested", TextRange(11))
+        val continuedIndented = RichTextEditing.handleEnter(indented)
+        assertEquals("  3. Nested\n  4. ", continuedIndented?.text)
+        assertEquals(TextRange(17), continuedIndented?.selection)
+    }
+
+    @Test
+    fun handleEnterSplitsItemWithContentAfterCursor() {
+        val item = TextFieldValue("- Hello world", TextRange(7))
+        val split = RichTextEditing.handleEnter(item)
+        assertEquals("- Hello\n- world", split?.text)
+        assertEquals(TextRange(10), split?.selection)
+    }
+
+    @Test
+    fun handleEnterExitsListOnEmptyItem() {
+        val emptyBullet = TextFieldValue("- ", TextRange(2))
+        val exitBullet = RichTextEditing.handleEnter(emptyBullet)
+        assertEquals("", exitBullet?.text)
+        assertEquals(TextRange(0), exitBullet?.selection)
+
+        val inMiddle = TextFieldValue("Line 1\n- \nLine 3", TextRange(9))
+        val exitMiddle = RichTextEditing.handleEnter(inMiddle)
+        assertEquals("Line 1\n\nLine 3", exitMiddle?.text)
+        assertEquals(TextRange(7), exitMiddle?.selection)
+
+        val emptyNumbered = TextFieldValue("  1. ", TextRange(5))
+        val exitNumbered = RichTextEditing.handleEnter(emptyNumbered)
+        assertEquals("", exitNumbered?.text)
+        assertEquals(TextRange(0), exitNumbered?.selection)
+    }
+
+    @Test
+    fun handleEnterReturnsNullOnNonListItems() {
+        val plain = TextFieldValue("Just plain text", TextRange(15))
+        assertEquals(null, RichTextEditing.handleEnter(plain))
+
+        val heading = TextFieldValue("# Heading", TextRange(9))
+        assertEquals(null, RichTextEditing.handleEnter(heading))
+
+        val notAList = TextFieldValue("-Not a list", TextRange(11))
+        assertEquals(null, RichTextEditing.handleEnter(notAList))
+    }
+
+    @Test
+    fun indentAddsTwoSpacesToLines() {
+        val single = TextFieldValue("- Item", TextRange(6))
+        val indented = RichTextEditing.indent(single)
+        assertEquals("  - Item", indented.text)
+        assertEquals(TextRange(8), indented.selection)
+
+        val multi = TextFieldValue("A\nB", TextRange(0, 3))
+        val multiIndented = RichTextEditing.indent(multi)
+        assertEquals("  A\n  B", multiIndented.text)
+        assertEquals(TextRange(2, 7), multiIndented.selection)
+    }
+
+    @Test
+    fun outdentRemovesUpToTwoSpacesFromLines() {
+        val twoSpaces = TextFieldValue("  - Item", TextRange(8))
+        val outdented = RichTextEditing.outdent(twoSpaces)
+        assertEquals("- Item", outdented.text)
+        assertEquals(TextRange(6), outdented.selection)
+
+        val oneSpace = TextFieldValue(" - Item", TextRange(7))
+        assertEquals("- Item", RichTextEditing.outdent(oneSpace).text)
+
+        val zeroSpaces = TextFieldValue("- Item", TextRange(6))
+        assertEquals("- Item", RichTextEditing.outdent(zeroSpaces).text)
+
+        val multi = TextFieldValue("  A\n    B", TextRange(2, 9))
+        val multiOutdented = RichTextEditing.outdent(multi)
+        assertEquals("A\n  B", multiOutdented.text)
+        assertEquals(TextRange(0, 5), multiOutdented.selection)
+    }
+
+    @Test
+    fun handleSmartNewlineDetectsSingleNewlineInsertion() {
+        val oldVal = TextFieldValue("- Item", TextRange(6))
+        val newVal = TextFieldValue("- Item\n", TextRange(7))
+        val smart = RichTextEditing.handleSmartNewline(oldVal, newVal)
+        assertEquals("- Item\n- ", smart?.text)
+        assertEquals(TextRange(9), smart?.selection)
+
+        val emptyOld = TextFieldValue("- ", TextRange(2))
+        val emptyNew = TextFieldValue("- \n", TextRange(3))
+        val smartExit = RichTextEditing.handleSmartNewline(emptyOld, emptyNew)
+        assertEquals("", smartExit?.text)
+        assertEquals(TextRange(0), smartExit?.selection)
+
+        val charInput = TextFieldValue("- Itemx", TextRange(7))
+        assertEquals(null, RichTextEditing.handleSmartNewline(oldVal, charInput))
+    }
 }

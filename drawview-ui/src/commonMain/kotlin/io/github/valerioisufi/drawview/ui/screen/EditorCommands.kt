@@ -62,10 +62,12 @@ import io.github.valerioisufi.drawview.ui.generated.resources.text_align_center
 import io.github.valerioisufi.drawview.ui.generated.resources.text_align_end
 import io.github.valerioisufi.drawview.ui.generated.resources.text_align_start
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_bold
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_bullet_list
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_code
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_heading
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_italic
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_math
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_numbered_list
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_strikethrough
 import io.github.valerioisufi.drawview.ui.platform.PencilAction
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
@@ -349,6 +351,20 @@ internal class EditorCommands internal constructor(
         isEnabled = { textTarget?.formatsCharacters == true }
     ) { textTarget?.toggleHeading() }
 
+    val bulletList = Command(
+        "format-bullet-list", label(Res.string.text_editor_action_bullet_list), CommandGroup.FORMAT,
+        icon = { rememberVectorPainter(DrawViewIcons.List) },
+        shortcuts = listOf(Shortcut(Key.Eight, primary = true, shift = true)),
+        isEnabled = { textTarget?.formatsCharacters == true }
+    ) { textTarget?.toggleBulletList() }
+
+    val numberedList = Command(
+        "format-numbered-list", label(Res.string.text_editor_action_numbered_list), CommandGroup.FORMAT,
+        icon = { rememberVectorPainter(DrawViewIcons.ListOrdered) },
+        shortcuts = listOf(Shortcut(Key.Seven, primary = true, shift = true)),
+        isEnabled = { textTarget?.formatsCharacters == true }
+    ) { textTarget?.toggleNumberedList() }
+
     val alignStart = alignment(TextAlignment.START, Res.string.text_align_start, DrawViewIcons.AlignLeft, Key.L)
     val alignCenter = alignment(TextAlignment.CENTER, Res.string.text_align_center, DrawViewIcons.AlignCenter, Key.C)
     val alignEnd = alignment(TextAlignment.END, Res.string.text_align_end, DrawViewIcons.AlignRight, Key.R)
@@ -366,7 +382,10 @@ internal class EditorCommands internal constructor(
     ) { textTarget?.let { it.changeFontSize(TextSizes.smaller(it.fontSize)) } }
 
     /** The commands of the formatting bars and of the menu Format. */
-    val formats: List<Command> = listOf(bold, italic, strikethrough, code, formula, heading, alignStart, alignCenter, alignEnd, largerText, smallerText)
+    val formats: List<Command> = listOf(
+        bold, italic, strikethrough, code, heading, bulletList, numberedList, formula,
+        alignStart, alignCenter, alignEnd, largerText, smallerText
+    )
 
     /** The command adding or removing [format] around the selection of the text being written. */
     private fun characterFormat(format: Format, title: StringResource, icon: ImageVector, shortcut: Shortcut) = Command(

@@ -94,6 +94,8 @@
     <string name="text_editor_action_strikethrough">Barré</string>
     <string name="text_editor_action_code">Code</string>
     <string name="text_editor_action_heading">Titre</string>
+    <string name="text_editor_action_bullet_list">Liste à puces</string>
+    <string name="text_editor_action_numbered_list">Liste numérotée</string>
     <string name="text_editor_action_math">Formule</string>
     <string name="text_editor_formula_invalid">Formule non valide</string>
     <string name="text_align_start">Aligner à gauche</string>
