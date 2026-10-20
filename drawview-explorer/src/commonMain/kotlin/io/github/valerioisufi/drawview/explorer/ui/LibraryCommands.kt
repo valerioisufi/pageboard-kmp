@@ -33,6 +33,7 @@ import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.command.Shortcut
 import io.github.valerioisufi.drawview.ui.extension.DocumentAction
+import io.github.valerioisufi.drawview.ui.extension.FolderAction
 import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 import io.github.valerioisufi.drawview.ui.generated.resources.about_dialog_title
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
@@ -59,8 +60,10 @@ internal class LibraryCommands internal constructor(
     private val viewModel: FileExplorerViewModel,
     private val openDocument: (String) -> Unit,
     private val documentActions: List<DocumentAction>,
+    private val folderActions: List<FolderAction> = emptyList(),
     private val showDialog: (LibraryDialog) -> Unit,
     private val chooseAction: (DocumentAction, FileItem) -> Unit,
+    private val chooseFolderAction: (FolderAction, String?, String) -> Unit = { _, _, _ -> },
     private val focusSearch: () -> Unit,
     private val openDocumentInNewWindow: ((String) -> Unit)? = null
 ) {
@@ -106,6 +109,34 @@ internal class LibraryCommands internal constructor(
     }
 
     private val selectedDocument: FileItem? get() = selection.singleOrNull()?.takeIf { it.type == FileType.FILE }
+
+    /** The actions of the application on the folder selected alone (e.g. "Export folder…"). */
+    val folderActionCommands: List<Command> = folderActions.mapIndexed { index, action ->
+        Command(
+            FolderActionPrefix + index, action.label, CommandGroup.FILE, section = 1,
+            icon = { rememberVectorPainter(action.icon) },
+            isEnabled = { selectedFolder != null }
+        ) { selectedFolder?.let { chooseFolderAction(action, it.id, it.name) } }
+    }
+
+    private val selectedFolder: FileItem? get() = selection.singleOrNull()?.takeIf { it.type == FileType.FOLDER }
+
+    class FolderActionCommand(val action: FolderAction, val command: Command)
+
+    /** The actions of the application on the current folder or Home. */
+    val currentFolderActions: List<FolderActionCommand> = folderActions.mapIndexed { index, action ->
+        val command = Command(
+            "current-folder-action-$index", action.label, CommandGroup.FILE, section = 1,
+            icon = { rememberVectorPainter(action.icon) },
+            isEnabled = { viewModel.section == FileExplorerViewModel.Section.HOME }
+        ) {
+            val current = viewModel.currentFolder
+            chooseFolderAction(action, current?.id, current?.name ?: "")
+        }
+        FolderActionCommand(action, command)
+    }
+
+    val currentFolderActionCommands: List<Command> = currentFolderActions.map { it.command }
 
     // ----- Edit -----
 
@@ -175,6 +206,7 @@ internal class LibraryCommands internal constructor(
 
     /** The commands of the folder shown and of the selection, in the order of the menus. */
     val all: List<Command> = listOfNotNull(newNote, newFolder, openInNewWindow) + documentActionCommands +
+        folderActionCommands + currentFolderActionCommands +
         listOf(selectAll, rename, move, delete, search, enclosingFolder) + sortBy + listOf(invertOrder, foldersOnTop, about)
 
     /**
@@ -214,7 +246,11 @@ internal class LibraryCommands internal constructor(
                 }
             }
         } else {
-            emptyList()
+            folderActions.mapIndexed { index, action ->
+                Command(FolderActionPrefix + index, action.label, CommandGroup.FILE, section = 2, icon = { rememberVectorPainter(action.icon) }) {
+                    chooseFolderAction(action, item.id, item.name)
+                }
+            }
         }) + Command("delete", delete.label, CommandGroup.EDIT, section = 3, icon = delete.icon, destructive = true) {
             showDialog(LibraryDialog.Delete(listOf(item)))
         }
@@ -228,9 +264,11 @@ private fun label(resource: StringResource): @Composable () -> String = { string
 internal fun rememberLibraryCommands(
     viewModel: FileExplorerViewModel,
     documentActions: List<DocumentAction>,
+    folderActions: List<FolderAction> = emptyList(),
     onOpenDocument: (String) -> Unit,
     onShowDialog: (LibraryDialog) -> Unit,
     onChooseAction: (DocumentAction, FileItem) -> Unit,
+    onChooseFolderAction: (FolderAction, String?, String) -> Unit = { _, _, _ -> },
     onFocusSearch: () -> Unit,
     onOpenDocumentInNewWindow: ((String) -> Unit)? = null
 ): LibraryCommands {
@@ -238,14 +276,17 @@ internal fun rememberLibraryCommands(
     val openInNewWindow by rememberUpdatedState(onOpenDocumentInNewWindow)
     val show by rememberUpdatedState(onShowDialog)
     val choose by rememberUpdatedState(onChooseAction)
+    val chooseFolder by rememberUpdatedState(onChooseFolderAction)
     val focus by rememberUpdatedState(onFocusSearch)
-    return remember(viewModel, documentActions) {
+    return remember(viewModel, documentActions, folderActions) {
         LibraryCommands(
             viewModel = viewModel,
             openDocument = { open(it) },
             documentActions = documentActions,
+            folderActions = folderActions,
             showDialog = { show(it) },
             chooseAction = { action, item -> choose(action, item) },
+            chooseFolderAction = { action, folderId, folderName -> chooseFolder(action, folderId, folderName) },
             focusSearch = { focus() },
             openDocumentInNewWindow = if (onOpenDocumentInNewWindow != null) { { openInNewWindow?.invoke(it) } } else null
         )

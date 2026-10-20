@@ -23,6 +23,7 @@ import io.github.valerioisufi.drawview.ui.command.CommandRoot
 import io.github.valerioisufi.drawview.ui.extension.DocumentAction
 import io.github.valerioisufi.drawview.ui.extension.DocumentTag
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
+import io.github.valerioisufi.drawview.ui.extension.FolderAction
 import io.github.valerioisufi.drawview.ui.extension.LibraryAction
 import io.github.valerioisufi.drawview.ui.platform.PickedFile
 import io.github.valerioisufi.drawview.ui.platform.PickerType
@@ -49,6 +50,7 @@ import kotlinx.coroutines.withContext
  *   function opening a document.
  * @param documentActions actions of the application on a document of the library (e.g. its
  *   export), in the bar of the selection.
+ * @param folderActions actions of the application on a folder of the library (e.g. its export).
  * @param tags what the application says of the documents (e.g. that they have a lecture): their
  *   badges and the filters of the library.
  * @param engines the engines drawing the PDF pages and the formulas (e.g. `PdfiumEngine` and
@@ -69,6 +71,7 @@ public fun DocumentLibrary(
     editorExtension: EditorExtension? = null,
     libraryOverlay: @Composable BoxScope.(openDocument: (String) -> Unit) -> Unit = {},
     documentActions: List<DocumentAction> = emptyList(),
+    folderActions: List<FolderAction> = emptyList(),
     tags: List<DocumentTag> = emptyList(),
     engines: DrawViewEngines = DrawViewEngines.None,
     thumbnails: DocumentThumbnails = rememberDocumentThumbnails(documents, engines = engines),
@@ -116,6 +119,7 @@ public fun DocumentLibrary(
                             title = title,
                             actions = actions,
                             documentActions = documentActions,
+                            folderActions = folderActions,
                             tags = tags,
                             thumbnails = thumbnails,
                             onFilesDropped = importFiles,

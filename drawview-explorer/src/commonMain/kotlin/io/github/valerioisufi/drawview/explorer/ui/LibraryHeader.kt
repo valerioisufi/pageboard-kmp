@@ -203,7 +203,7 @@ private fun librarySubtitle(viewModel: FileExplorerViewModel, withOrder: Boolean
 
 /** The views of the notes (cards or rows) and the button of their order, with its menu. */
 @Composable
-internal fun LibraryViewControls(viewModel: FileExplorerViewModel, showViews: Boolean) {
+internal fun LibraryViewControls(viewModel: FileExplorerViewModel, commands: LibraryCommands, showViews: Boolean) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         if (showViews) {
             DesignIconButton(
@@ -218,6 +218,11 @@ internal fun LibraryViewControls(viewModel: FileExplorerViewModel, showViews: Bo
                 onClick = { viewModel.viewMode = ViewMode.LIST },
                 selected = viewModel.viewMode == ViewMode.LIST
             )
+        }
+        if (viewModel.section == Section.HOME) {
+            for (entry in commands.currentFolderActions) {
+                DesignIconButton(entry.action.icon, entry.action.label(), onClick = entry.command.perform, style = IconButtonStyle.Tonal)
+            }
         }
         SortButton(viewModel)
     }
@@ -316,7 +321,7 @@ internal fun SelectionBar(viewModel: FileExplorerViewModel, commands: LibraryCom
                 enabled = commands.delete.isEnabled(),
                 tint = MaterialTheme.colorScheme.error
             )
-            val applicationActions = commands.documentActionCommands.filter { it.isEnabled() }
+            val applicationActions = (commands.documentActionCommands + commands.folderActionCommands).filter { it.isEnabled() }
             if (applicationActions.isNotEmpty()) {
                 var expanded by remember { mutableStateOf(false) }
                 Box {

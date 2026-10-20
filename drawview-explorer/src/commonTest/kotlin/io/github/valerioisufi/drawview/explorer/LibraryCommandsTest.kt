@@ -11,6 +11,7 @@ import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.ui.extension.DocumentAction
+import io.github.valerioisufi.drawview.ui.extension.FolderAction
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -43,10 +44,12 @@ class LibraryCommandsTest {
         var dialog: LibraryDialog? = null
         var opened: String? = null
         var action: Pair<DocumentAction, FileItem>? = null
+        var folderAction: Triple<FolderAction, String?, String>? = null
         var searchFocused = false
     }
 
     private val export = DocumentAction(Icons.Outlined.IosShare, { "Export" }, { _, _, _ -> })
+    private val exportFolder = FolderAction(Icons.Outlined.IosShare, { "Export folder" }, { _, _, _ -> })
 
     private fun TestScope.library(): Pair<FileExplorerViewModel, Pair<LibraryCommands, Shown>> {
         val viewModel = FileExplorerViewModel(OpenDocuments(KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)))
@@ -55,8 +58,10 @@ class LibraryCommandsTest {
             viewModel = viewModel,
             openDocument = { shown.opened = it },
             documentActions = listOf(export),
+            folderActions = listOf(exportFolder),
             showDialog = { shown.dialog = it },
             chooseAction = { action, item -> shown.action = action to item },
+            chooseFolderAction = { action, folderId, folderName -> shown.folderAction = Triple(action, folderId, folderName) },
             focusSearch = { shown.searchFocused = true }
         )
         return viewModel to (commands to shown)
@@ -76,6 +81,8 @@ class LibraryCommandsTest {
         assertFalse(commands.delete.isEnabled())
         assertFalse(commands.rename.isEnabled())
         assertFalse(commands.documentActionCommands.single().isEnabled())
+        assertFalse(commands.folderActionCommands.single().isEnabled())
+        assertTrue(commands.currentFolderActionCommands.single().isEnabled())
         assertFalse(commands.enclosingFolder.isEnabled())
 
         commands.selectAll.perform()
@@ -90,6 +97,15 @@ class LibraryCommandsTest {
         assertTrue(commands.rename.isEnabled())
         commands.documentActionCommands.single().perform()
         assertEquals("Note", shown.action?.second?.name)
+
+        // A folder selected alone: renamed, its folder actions
+        viewModel.clearSelection()
+        viewModel.toggleSelection(viewModel.item("Math"))
+        assertTrue(commands.rename.isEnabled())
+        assertFalse(commands.documentActionCommands.single().isEnabled())
+        assertTrue(commands.folderActionCommands.single().isEnabled())
+        commands.folderActionCommands.single().perform()
+        assertEquals("Math", shown.folderAction?.third)
     }
 
     @Test
@@ -107,14 +123,28 @@ class LibraryCommandsTest {
         assertEquals(listOf(note), assertIs<LibraryDialog.Move>(shown.dialog).items)
         assertTrue("document-action-0" in noteCommands)
 
-        // A folder: opened in the library, without the actions of the documents
+        // A folder: opened in the library, with folder actions and without document actions
         val folderCommands = commands.forItem(viewModel.item("Math")).associateBy { it.id }
         assertFalse("document-action-0" in folderCommands)
+        assertTrue("folder-action-0" in folderCommands)
+        folderCommands.getValue("folder-action-0").perform()
+        assertEquals("Math", shown.folderAction?.third)
+
         folderCommands.getValue("open").perform()
         assertEquals("Math", viewModel.currentFolder?.name)
         assertTrue(commands.enclosingFolder.isEnabled())
+
+        // Inside Math: current folder action operates on Math
+        commands.currentFolderActionCommands.single().perform()
+        assertEquals("Math", shown.folderAction?.third)
+        assertEquals(viewModel.currentFolder?.id, shown.folderAction?.second)
+
         commands.enclosingFolder.perform()
         assertEquals(null, viewModel.currentFolder)
+
+        // Back in Home: current folder action operates on Home (folderId = null)
+        commands.currentFolderActionCommands.single().perform()
+        assertEquals(null, shown.folderAction?.second)
     }
 
     @Test

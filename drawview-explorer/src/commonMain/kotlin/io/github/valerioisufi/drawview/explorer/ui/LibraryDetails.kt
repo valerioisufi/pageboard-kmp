@@ -172,8 +172,8 @@ private fun DetailRow(label: String, value: String) {
 @Composable
 private fun PaneActions(item: FileItem, itemCommands: List<Command>) {
     val open = itemCommands.firstOrNull { it.id == OpenCommand }
-    val applicationActions = itemCommands.filter { it.id.startsWith(DocumentActionPrefix) }
-    val others = itemCommands.filter { it.id != OpenCommand && !it.id.startsWith(DocumentActionPrefix) }
+    val applicationActions = itemCommands.filter { it.id.startsWith(DocumentActionPrefix) || it.id.startsWith(FolderActionPrefix) }
+    val others = itemCommands.filter { it.id != OpenCommand && !it.id.startsWith(DocumentActionPrefix) && !it.id.startsWith(FolderActionPrefix) }
     Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
         if (open != null) {
             Button(
@@ -327,7 +327,7 @@ private fun ColumnScope.DetailsSheetContent(item: FileItem, itemCommands: List<C
         ItemDetails(item, actions, previewHeight = 250)
     }
     val open = itemCommands.firstOrNull { it.id == OpenCommand }
-    val applicationActions = itemCommands.filter { it.id.startsWith(DocumentActionPrefix) }
+    val applicationActions = itemCommands.filter { it.id.startsWith(DocumentActionPrefix) || it.id.startsWith(FolderActionPrefix) }
     Row(
         modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -386,3 +386,4 @@ private fun SheetCommand(icon: androidx.compose.ui.graphics.painter.Painter?, la
 
 /** The prefix of the identifiers of the commands of the actions of the application on a document. */
 internal const val DocumentActionPrefix = "document-action-"
+internal const val FolderActionPrefix = "folder-action-"

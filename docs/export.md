@@ -256,8 +256,8 @@ Variations).
 | Phase | Content | Status |
 |---|---|---|
 | F1 | `drawview-export`: `ZipWriter` (pure Kotlin, STORE method, CRC32), `FolderExportFormat`, `FolderExportOptions`, `DocumentExport.exportFolder` (folder traversal, sequential snapshotting, ZIP and combined PDF writing); unit tests | Done |
-| F2 | `drawview-ui` & `drawview-explorer`: `FolderAction` in `drawview-ui`, `folderActions` parameter in `DocumentLibrary` and `ExplorerScreen`, `LibraryCommands.forItem` for folders, header action in `LibraryTitle`, and tests | In progress |
-| F3 | `drawview-export-ui` & `pencilnotes`: localized resources, `FolderExportDialog`, `DocumentExportUi.folderAction`, wiring into `PencilNotesApp`, screenshot tests | |
+| F2 | `drawview-ui` & `drawview-explorer`: `FolderAction` in `drawview-ui`, `folderActions` parameter in `DocumentLibrary` and `ExplorerScreen`, `LibraryCommands.forItem` for folders, header action in `LibraryTitle`, and tests | Done |
+| F3 | `drawview-export-ui` & `pencilnotes`: localized resources, `FolderExportDialog`, `DocumentExportUi.folderAction`, wiring into `PencilNotesApp`, screenshot tests | In progress |
 | F4 | ABI dumps (`updateKotlinAbi`), build verification (`jvmTest`, `checkKotlinAbi`), verification on desktop JVM scratch data directory | |
 
 ### Decisions

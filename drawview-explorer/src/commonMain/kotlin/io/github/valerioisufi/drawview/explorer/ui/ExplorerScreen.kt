@@ -63,8 +63,10 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_roo
 import io.github.valerioisufi.drawview.ui.command.RegisterCommands
 import io.github.valerioisufi.drawview.ui.components.AboutLicensesDialog
 import io.github.valerioisufi.drawview.ui.components.DesignIconButton
+import io.github.valerioisufi.drawview.ui.components.IconButtonStyle
 import io.github.valerioisufi.drawview.ui.extension.DocumentAction
 import io.github.valerioisufi.drawview.ui.extension.DocumentTag
+import io.github.valerioisufi.drawview.ui.extension.FolderAction
 import io.github.valerioisufi.drawview.ui.extension.LibraryAction
 import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 import io.github.valerioisufi.drawview.ui.generated.resources.about_dialog_title
@@ -100,6 +102,7 @@ internal fun ExplorerScreen(
     modifier: Modifier = Modifier,
     actions: List<LibraryAction> = listOf(aboutLibraryAction()),
     documentActions: List<DocumentAction> = emptyList(),
+    folderActions: List<FolderAction> = emptyList(),
     tags: List<DocumentTag> = emptyList(),
     thumbnails: DocumentThumbnails? = null,
     onFilesDropped: ((List<PickedFile>) -> Boolean)? = null,
@@ -116,6 +119,9 @@ internal fun ExplorerScreen(
     // The action chosen on a document, shown until it is done (the selection is cleared meanwhile)
     var chosenAction by remember { mutableStateOf<Pair<DocumentAction, FileExplorerViewModel.FileItem>?>(null) }
     chosenAction?.let { (action, item) -> action.content(item.id, item.name) { chosenAction = null } }
+    // The action chosen on a folder (or the home), shown until it is done
+    var chosenFolderAction by remember { mutableStateOf<Triple<FolderAction, String?, String>?>(null) }
+    chosenFolderAction?.let { (action, folderId, folderName) -> action.content(folderId, folderName) { chosenFolderAction = null } }
     // The action of the application chosen in the library, shown until it is done
     var libraryAction by remember { mutableStateOf<LibraryAction?>(null) }
     libraryAction?.let { action -> action.content { libraryAction = null } }
@@ -126,10 +132,15 @@ internal fun ExplorerScreen(
     val commands = rememberLibraryCommands(
         viewModel = viewModel,
         documentActions = documentActions,
+        folderActions = folderActions,
         onOpenDocument = onOpenDocument,
         onShowDialog = { dialog = it },
         onChooseAction = { action, item ->
             chosenAction = action to item
+            viewModel.clearSelection()
+        },
+        onChooseFolderAction = { action, folderId, folderName ->
+            chosenFolderAction = Triple(action, folderId, folderName)
             viewModel.clearSelection()
         },
         onFocusSearch = { runCatching { searchFocus.requestFocus() } },
@@ -258,7 +269,13 @@ private fun LazyGridScope.libraryHeader(
         ) {
             when (layout) {
                 LibraryLayout.LIST -> {
-                    LibraryTitle(viewModel, commands, compact = true)
+                    LibraryTitle(viewModel, commands, compact = true) {
+                        if (viewModel.section == FileExplorerViewModel.Section.HOME) {
+                            for (entry in commands.currentFolderActions) {
+                                DesignIconButton(entry.action.icon, entry.action.label(), onClick = entry.command.perform, style = IconButtonStyle.Tonal)
+                            }
+                        }
+                    }
                     LibrarySearchField(viewModel, commands, searchFocus, modifier = Modifier.fillMaxWidth())
                 }
                 LibraryLayout.GRID -> if (viewModel.selectionMode) {
@@ -267,7 +284,7 @@ private fun LazyGridScope.libraryHeader(
                     }
                 } else {
                     LibraryTitle(viewModel, commands, compact = false) {
-                        LibraryViewControls(viewModel, showViews = true)
+                        LibraryViewControls(viewModel, commands, showViews = true)
                     }
                 }
                 LibraryLayout.PANES -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -279,7 +296,7 @@ private fun LazyGridScope.libraryHeader(
                         }
                     }
                     LibrarySearchField(viewModel, commands, searchFocus, modifier = Modifier.width(280.dp))
-                    LibraryViewControls(viewModel, showViews = true)
+                    LibraryViewControls(viewModel, commands, showViews = true)
                 }
             }
         }
