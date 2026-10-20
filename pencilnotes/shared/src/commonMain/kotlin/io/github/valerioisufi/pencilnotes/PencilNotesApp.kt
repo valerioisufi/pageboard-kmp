@@ -120,6 +120,7 @@ fun PencilNotesApp(
                         fullScreenEditor = true,
                         editorExtension = editorExtension,
                         documentActions = listOf(export.documentAction),
+                        folderActions = listOf(export.folderAction),
                         tags = listOf(lectureTag),
                         engines = engines,
                         thumbnails = rememberDocumentThumbnails(documents, DocumentThumbnails.defaultDirectory(), engines),

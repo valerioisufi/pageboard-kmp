@@ -19,4 +19,13 @@
     <string name="export_save_title">Esporta il documento</string>
     <string name="export_format_pdf_hint">Ogni pagina, con il testo dei PDF e delle note ricercabile</string>
     <string name="export_format_png_hint">Come la disegna l’editor, a 200 dpi</string>
+    <string name="export_folder_format_zip">Archivio ZIP (PDF individuali)</string>
+    <string name="export_folder_format_zip_hint">Mantiene la gerarchia delle cartelle con un PDF per ciascuna nota</string>
+    <string name="export_folder_format_pdf">Singolo PDF unificato</string>
+    <string name="export_folder_format_pdf_hint">Tutte le note unite in un unico documento PDF</string>
+    <string name="export_folder_include_subfolders">Includi sottocartelle</string>
+    <string name="export_folder_notes_count">Note da esportare: %1$d</string>
+    <string name="export_folder_empty">Nessuna nota da esportare in questa cartella</string>
+    <string name="export_folder_done">La cartella è stata esportata.</string>
+    <string name="export_folder_failed">Non è stato possibile esportare la cartella.</string>
 </resources>

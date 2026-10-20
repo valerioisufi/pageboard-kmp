@@ -72,6 +72,7 @@ import io.github.valerioisufi.drawview.ui.command.Shortcut
 import io.github.valerioisufi.drawview.ui.extension.DocumentAction
 import io.github.valerioisufi.drawview.ui.extension.EditorContext
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
+import io.github.valerioisufi.drawview.ui.extension.FolderAction
 import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.render.LocalDrawViewEngines
@@ -86,8 +87,8 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * The export of the documents in an application (see `docs/export.md`): "Export" on a document
- * of the library ([documentAction]) and in the top bar of the editor ([editorExtension]), both
- * opening the export dialog.
+ * of the library ([documentAction]), on a folder or root of the library ([folderAction]), and in
+ * the top bar of the editor ([editorExtension]), opening the export dialog.
  *
  * @param documents the documents of the application (those of its library).
  * @param appName the name of the application, written in the PDFs as the one that made them.
@@ -119,6 +120,13 @@ public class DocumentExportUi(documents: OpenDocuments, private val appName: Str
         icon = DrawViewIcons.Download,
         label = { stringResource(Res.string.export_action) },
         content = { documentId, title, onDone -> ExportDialog(export, appName, documentId, title, pageOnScreen = null, onDismiss = onDone) }
+    )
+
+    /** "Export" on the folder or root selected in the library (see `DocumentLibrary.folderActions`). */
+    public val folderAction: FolderAction = FolderAction(
+        icon = DrawViewIcons.Download,
+        label = { stringResource(Res.string.export_action) },
+        content = { folderId, title, onDone -> FolderExportDialog(export, appName, folderId, title, onDismiss = onDone) }
     )
 
     /**
@@ -319,7 +327,7 @@ internal fun ExportBody(
 
 /** The label of a group of choices. */
 @Composable
-private fun Label(text: StringResource) {
+internal fun Label(text: StringResource) {
     Text(
         text = stringResource(text),
         style = MaterialTheme.typography.labelLarge,
@@ -330,7 +338,7 @@ private fun Label(text: StringResource) {
 
 /** A choice: its radio, its [text] and what it does ([hint]); the primary container when [selected]. */
 @Composable
-private fun Choice(text: StringResource, hint: StringResource?, selected: Boolean, enabled: Boolean = true, onSelect: () -> Unit) {
+internal fun Choice(text: StringResource, hint: StringResource?, selected: Boolean, enabled: Boolean = true, onSelect: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
@@ -354,7 +362,7 @@ private fun Choice(text: StringResource, hint: StringResource?, selected: Boolea
 
 /** How the export went: its [icon] in [tint] and its [text]. */
 @Composable
-private fun Outcome(icon: ImageVector, tint: Color, text: String) {
+internal fun Outcome(icon: ImageVector, tint: Color, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(22.dp))
         Text(text, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)

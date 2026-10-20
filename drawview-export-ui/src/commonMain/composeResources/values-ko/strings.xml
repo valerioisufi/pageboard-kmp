@@ -19,4 +19,13 @@
     <string name="export_save_title">문서 내보내기</string>
     <string name="export_format_pdf_hint">모든 페이지, PDF와 노트의 텍스트 검색 가능</string>
     <string name="export_format_png_hint">편집기에 그려진 그대로, 200dpi</string>
+    <string name="export_folder_format_zip">ZIP 압축 파일 (개별 PDF)</string>
+    <string name="export_folder_format_zip_hint">각 노트의 PDF로 폴더 계층 구조 유지</string>
+    <string name="export_folder_format_pdf">단일 병합 PDF</string>
+    <string name="export_folder_format_pdf_hint">모든 노트를 하나의 PDF 문서로 병합</string>
+    <string name="export_folder_include_subfolders">하위 폴더 포함</string>
+    <string name="export_folder_notes_count">내보낼 노트 수: %1$d</string>
+    <string name="export_folder_empty">이 폴더에 내보낼 노트가 없습니다</string>
+    <string name="export_folder_done">폴더를 내보냈습니다.</string>
+    <string name="export_folder_failed">폴더를 내보내지 못했습니다.</string>
 </resources>

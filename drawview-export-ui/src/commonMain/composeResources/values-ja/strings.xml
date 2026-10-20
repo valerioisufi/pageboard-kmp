@@ -19,4 +19,13 @@
     <string name="export_save_title">書類を書き出す</string>
     <string name="export_format_pdf_hint">すべてのページ。PDF とノートのテキストは検索可能</string>
     <string name="export_format_png_hint">エディタの表示どおり、200 dpi</string>
+    <string name="export_folder_format_zip">ZIP アーカイブ（個別 PDF）</string>
+    <string name="export_folder_format_zip_hint">ノートごとの PDF でフォルダ階層を保持</string>
+    <string name="export_folder_format_pdf">結合 PDF（単一ファイル）</string>
+    <string name="export_folder_format_pdf_hint">すべてのノートを 1 つの PDF に結合</string>
+    <string name="export_folder_include_subfolders">サブフォルダを含める</string>
+    <string name="export_folder_notes_count">書き出すノート: %1$d</string>
+    <string name="export_folder_empty">このフォルダには書き出すノートがありません</string>
+    <string name="export_folder_done">フォルダを書き出しました。</string>
+    <string name="export_folder_failed">フォルダを書き出せませんでした。</string>
 </resources>

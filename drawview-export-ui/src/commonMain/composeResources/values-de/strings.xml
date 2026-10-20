@@ -19,4 +19,13 @@
     <string name="export_save_title">Dokument exportieren</string>
     <string name="export_format_pdf_hint">Jede Seite, mit durchsuchbarem Text der PDFs und der Notizen</string>
     <string name="export_format_png_hint">Wie der Editor sie zeichnet, mit 200 dpi</string>
+    <string name="export_folder_format_zip">ZIP-Archiv (einzelne PDFs)</string>
+    <string name="export_folder_format_zip_hint">Behält Ordnerhierarchie mit einem PDF für jede Notiz bei</string>
+    <string name="export_folder_format_pdf">Einzelnes kombiniertes PDF</string>
+    <string name="export_folder_format_pdf_hint">Alle Notizen in einem PDF-Dokument zusammengeführt</string>
+    <string name="export_folder_include_subfolders">Unterordner einbeziehen</string>
+    <string name="export_folder_notes_count">Zu exportierende Notizen: %1$d</string>
+    <string name="export_folder_empty">Keine Notizen in diesem Ordner zum Exportieren</string>
+    <string name="export_folder_done">Der Ordner wurde exportiert.</string>
+    <string name="export_folder_failed">Der Ordner konnte nicht exportiert werden.</string>
 </resources>

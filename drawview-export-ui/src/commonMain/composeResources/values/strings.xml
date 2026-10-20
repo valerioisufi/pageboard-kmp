@@ -19,4 +19,13 @@
     <string name="export_save_title">Export the document</string>
     <string name="export_format_pdf_hint">Every page, with the text of the PDFs and of the notes searchable</string>
     <string name="export_format_png_hint">As the editor draws it, at 200 dpi</string>
+    <string name="export_folder_format_zip">ZIP archive (individual PDFs)</string>
+    <string name="export_folder_format_zip_hint">Preserves folder hierarchy with a PDF for each note</string>
+    <string name="export_folder_format_pdf">Single combined PDF</string>
+    <string name="export_folder_format_pdf_hint">All notes merged into one PDF document</string>
+    <string name="export_folder_include_subfolders">Include subfolders</string>
+    <string name="export_folder_notes_count">Notes to export: %1$d</string>
+    <string name="export_folder_empty">No notes to export in this folder</string>
+    <string name="export_folder_done">The folder has been exported.</string>
+    <string name="export_folder_failed">The folder could not be exported.</string>
 </resources>
