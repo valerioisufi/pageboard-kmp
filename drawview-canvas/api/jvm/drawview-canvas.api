@@ -460,7 +460,9 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public static synthetic fun startNewText$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;IFFZILjava/lang/Object;)V
 	public final fun takeCaretRequest-_m7T9-E ()Landroidx/compose/ui/geometry/Offset;
 	public fun toggle (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
+	public fun toggleBulletList ()V
 	public fun toggleHeading ()V
+	public fun toggleNumberedList ()V
 	public final fun updateValue (Landroidx/compose/ui/text/input/TextFieldValue;)V
 }
 
@@ -473,13 +475,17 @@ public abstract interface class io/github/valerioisufi/drawview/canvas/controlle
 	public abstract fun getFontSize ()F
 	public fun getFormatsCharacters ()Z
 	public fun toggle (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
+	public fun toggleBulletList ()V
 	public fun toggleHeading ()V
+	public fun toggleNumberedList ()V
 }
 
 public final class io/github/valerioisufi/drawview/canvas/controller/TextFormatTarget$DefaultImpls {
 	public static fun getFormatsCharacters (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun toggle (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
+	public static fun toggleBulletList (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
 	public static fun toggleHeading (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
+	public static fun toggleNumberedList (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
 }
 
 public final class io/github/valerioisufi/drawview/canvas/controller/TextMarkupManager {
@@ -903,7 +909,9 @@ public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing;
 	public final fun toggle (Landroidx/compose/ui/text/input/TextFieldValue;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun toggleBulletList (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleHeading (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun toggleNumberedList (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 }
 
 public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format : java/lang/Enum {

@@ -55,4 +55,64 @@ class RichTextEditingTest {
         assertEquals("area \$pi r^2\$", RichTextEditing.toggle(value, RichTextEditing.Format.FORMULA).text)
         assertEquals("area ~~pi r^2~~", RichTextEditing.toggle(value, RichTextEditing.Format.STRIKETHROUGH).text)
     }
+
+    @Test
+    fun toggleBulletListOnSingleLineAddsAndRemovesBullet() {
+        val plain = TextFieldValue("Hello World", TextRange(6))
+        val bullet = RichTextEditing.toggleBulletList(plain)
+        assertEquals("- Hello World", bullet.text)
+        assertEquals(TextRange(8), bullet.selection, "the caret shifts with the added prefix")
+
+        val reverted = RichTextEditing.toggleBulletList(bullet)
+        assertEquals("Hello World", reverted.text)
+        assertEquals(TextRange(6), reverted.selection, "the caret shifts back when prefix is removed")
+    }
+
+    @Test
+    fun toggleNumberedListOnSingleLineAddsAndRemovesNumber() {
+        val plain = TextFieldValue("First item", TextRange(2))
+        val numbered = RichTextEditing.toggleNumberedList(plain)
+        assertEquals("1. First item", numbered.text)
+        assertEquals(TextRange(5), numbered.selection)
+
+        val reverted = RichTextEditing.toggleNumberedList(numbered)
+        assertEquals("First item", reverted.text)
+        assertEquals(TextRange(2), reverted.selection)
+    }
+
+    @Test
+    fun toggleListConvertsBetweenBulletAndNumbered() {
+        val bullet = TextFieldValue("- Item", TextRange(3))
+        val numbered = RichTextEditing.toggleNumberedList(bullet)
+        assertEquals("1. Item", numbered.text)
+
+        val backToBullet = RichTextEditing.toggleBulletList(numbered)
+        assertEquals("- Item", backToBullet.text)
+    }
+
+    @Test
+    fun toggleListsOnMultilineSelection() {
+        val lines = "Apple\nBanana\nCherry"
+        val value = TextFieldValue(lines, TextRange(0, lines.length))
+        val bulleted = RichTextEditing.toggleBulletList(value)
+        assertEquals("- Apple\n- Banana\n- Cherry", bulleted.text)
+
+        val numbered = RichTextEditing.toggleNumberedList(bulleted)
+        assertEquals("1. Apple\n2. Banana\n3. Cherry", numbered.text)
+
+        val plain = RichTextEditing.toggleNumberedList(numbered)
+        assertEquals("Apple\nBanana\nCherry", plain.text)
+    }
+
+    @Test
+    fun toggleListPreservesIndentation() {
+        val indented = TextFieldValue("  Subitem", TextRange(4))
+        val bulleted = RichTextEditing.toggleBulletList(indented)
+        assertEquals("  - Subitem", bulleted.text)
+        assertEquals(TextRange(6), bulleted.selection)
+
+        val plain = RichTextEditing.toggleBulletList(bulleted)
+        assertEquals("  Subitem", plain.text)
+        assertEquals(TextRange(4), plain.selection)
+    }
 }

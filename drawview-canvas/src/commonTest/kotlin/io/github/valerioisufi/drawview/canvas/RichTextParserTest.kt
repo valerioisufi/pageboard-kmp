@@ -96,4 +96,35 @@ class RichTextParserTest {
             assertTrue(disjoint || nested, "$a and $b")
         }
     }
+
+    @Test
+    fun bulletListsAreParsedWithTheirMarkersAndIndentation() {
+        val text = "- Item 1\n* Item 2\n+ Item 3\n  - Subitem\n    - Deep subitem"
+        val parsed = RichTextParser.parse(text)
+        assertEquals(listOf(Kind.LIST_ITEM, Kind.LIST_ITEM, Kind.LIST_ITEM, Kind.LIST_ITEM, Kind.LIST_ITEM), parsed.map { it.kind })
+        assertEquals(listOf("Item 1", "Item 2", "Item 3", "Subitem", "Deep subitem"), parsed.map { text.substring(it.contentStart, it.contentEnd) })
+        assertEquals(listOf(0, 0, 0, 1, 2), parsed.map { it.level })
+        assertTrue(parsed.none { it.ordered })
+    }
+
+    @Test
+    fun numberedListsAreParsedWithNumbers() {
+        val text = "1. First\n2. Second\n  1. Sub first\n42. Answer"
+        val parsed = RichTextParser.parse(text)
+        assertEquals(listOf(Kind.LIST_ITEM, Kind.LIST_ITEM, Kind.LIST_ITEM, Kind.LIST_ITEM), parsed.map { it.kind })
+        assertEquals(listOf("First", "Second", "Sub first", "Answer"), parsed.map { text.substring(it.contentStart, it.contentEnd) })
+        assertEquals(listOf(1, 2, 1, 42), parsed.map { it.number })
+        assertEquals(listOf(0, 0, 1, 0), parsed.map { it.level })
+        assertTrue(parsed.all { it.ordered })
+    }
+
+    @Test
+    fun formattingNestsInsideListItems() {
+        val text = "- Item with **bold** and \$x^2\$"
+        val parsed = RichTextParser.parse(text)
+        assertEquals(listOf(Kind.LIST_ITEM, Kind.BOLD, Kind.FORMULA), parsed.map { it.kind })
+        assertEquals("Item with **bold** and \$x^2\$", text.substring(parsed[0].contentStart, parsed[0].contentEnd))
+        assertEquals("bold", text.substring(parsed[1].contentStart, parsed[1].contentEnd))
+        assertEquals("x^2", text.substring(parsed[2].contentStart, parsed[2].contentEnd))
+    }
 }

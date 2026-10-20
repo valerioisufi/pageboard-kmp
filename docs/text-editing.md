@@ -145,7 +145,10 @@ work against the user, and text can be lost.
 | The formula under the caret: rendered above it, with the error when invalid, off the main thread | `FormulaPopover` (`drawview-ui`) | High Cohesion |
 | The frame of the selection and of the edited text: geometry, style in dp, handles, hit test | `SelectionFrame`, `FrameStyle`, `SelectionOverlay.drawFrame` (`drawview-core`), drawn by the canvas for both | Information Expert, High Cohesion |
 | The gestures on the handles of the edited text, as on the selection | `CanvasGestureHandler` (modes of the editor) → `TextEditorManager.moveBy`, `resizeWidth` | Controller |
-| The formatting actions: bold, italic, strikethrough, code, heading, formula, alignment, size, color | the format commands of `EditorCommands` (`drawview-ui`: shortcuts, the Format menu, tooltips) acting on `DrawViewController.textFormatTarget`: a `TextFormatTarget` (`drawview-core`), the text being written (`TextEditorManager`) or the texts selected (`SelectionManager.selectedTexts`) | Controller, Polymorphism (target) |
+| The formatting actions: bold, italic, strikethrough, code, heading, formula, lists, alignment, size, color | the format commands of `EditorCommands` (`drawview-ui`: shortcuts, the Format menu, tooltips) acting on `DrawViewController.textFormatTarget`: a `TextFormatTarget` (`drawview-core`), the text being written (`TextEditorManager`) or the texts selected (`SelectionManager.selectedTexts`) | Controller, Polymorphism (target) |
+| The notation of lists: bulleted (`- `, `* `, `+ `) and numbered (`\d+\. `) items, indentation level | `RichTextParser` (`drawview-model`) with `Kind.LIST_ITEM` | Information Expert |
+| List formatting actions: toggle bulleted, toggle numbered, auto-continuation on Enter, indent / outdent with Tab / Shift+Tab | `RichTextEditing` (`drawview-canvas`) | Information Expert, High Cohesion |
+| List presentation and hanging indent: bullet glyphs (`•`, `◦`), number formatting, `ParagraphStyle.textIndent` for wrapped lines | `MarkdownTextUtil`, `ComposeTextTileAdapter` (`drawview-ui`) | High Cohesion, Protected Variations |
 | The formatting bar, one for both targets, placed by the window: above the keyboard on a phone, floating by the box on a tablet or a desktop | `TextFormatBar` (`drawview-ui`) with `AdaptiveInfo` | High Cohesion, Low Coupling |
 | The size control: steps on the presets, a typed value, the whole range | `FontSizeControl` (`drawview-ui`) with `TextSizes` | Information Expert |
 | Snapping: the candidates (edges, margins and center of the page, edges and centers of the other elements, lines of the background), the threshold in screen pixels, the result and its guides | `SnapEngine` (`drawview-core`); the lines from `PageBackground.pattern`; guides drawn by `SnapGuidesOverlay` | Pure Fabrication, Indirection, Information Expert |
@@ -199,7 +202,9 @@ work against the user, and text can be lost.
 | 6 | Formatting: `TextCommands` (shortcuts, Format menu, tooltips), `TextFormatBar` shared with the lasso and placed by `AdaptiveInfo`, `TextSizes` and `FontSizeControl`, alignment icons, defaults with the alignment | Done |
 | 7 | Creating and sizing: automatic width, box drawn by a drag, one tap to move to another text, text pasted from the system, texts copied as plain text | Done |
 | 8 | Snapping: `SnapEngine`, guides, moving the selection and the edited text, width handles, new texts on the lines of the paper; ⌥ / Alt and the switch (the elements placed by the lecture assistant are left for later) | Done |
-| 9 | Proposed: bulleted, numbered and check lists; a choice of fonts; completion of the LaTeX commands while typing | Proposed |
+| 9a | Bulleted and numbered lists notation & commands: `RichTextParser` parsing list items (`- `, `* `, `+ `, `\d+\. `) with nesting levels; `RichTextEditing.toggleBulletList` and `toggleNumberedList`; `TextEditorManager` formatting target methods; toolbar buttons in `TextFormatBar` (`DrawViewIcons.List` and `DrawViewIcons.ListOrdered`) and `EditorCommands` (Format menu, shortcuts ⌘⇧8 and ⌘⇧7); tests in model and canvas | Done |
+| 9b | Smart list editing: automatic continuation on Enter (next bullet or incremented number), list exit on empty item (clearing the marker), indentation adjustment via Tab and Shift+Tab (adding/removing 2 spaces); tests of editing interactions in canvas and UI | To do |
+| 9c | Typography and hanging indent: `MarkdownTextUtil` presenting bullets (`•`, `◦`) and numbers; advanced hanging indent via `ParagraphStyle.textIndent` for wrapped lines; layout and measure in `ComposeTextTileAdapter`; PDF export verified; tests and screenshots | To do |
 
 ### Phase 1 results
 
@@ -387,6 +392,21 @@ work against the user, and text can be lost.
   to a text then free and with snapping off, a text written on the lines of the paper, the side of
   a text snapped (also on the iOS simulator); screenshots of a snapped move and of the "more" menu.
 
+### Phase 9a results
+
+* `RichTextParser` (`drawview-model`): `Kind.LIST_ITEM` identifies bulleted items (`- `, `* `, `+ `)
+  and numbered items (`\d+\. `). Spans record `ordered: Boolean` and `number: Int` with nesting
+  level calculated from leading whitespace (`indent / 2`). Delimiters are transparently preserved
+  as source until Phase 9c applies hanging indent and custom bullet glyphs.
+* `RichTextEditing` (`drawview-canvas`): `toggleBulletList` and `toggleNumberedList` toggle lists
+  on selected lines, convert between list formats, preserve indentation levels, and maintain
+  correct selection offsets. Integrated into `TextFormatTarget` and `TextEditorManager`.
+* Interface (`drawview-ui`): added `DrawViewIcons.ListOrdered` alongside standard list icon; added
+  `bulletList` (⌘⇧8) and `numberedList` (⌘⇧7) editor commands and shortcuts in Format menu and
+  text format toolbar; strings localized across all 7 supported languages.
+* Tests: parser unit tests covering nested bullets and numbers, list toggling unit tests in
+  `RichTextEditingTest`, and command execution tests in `CommandTest`. Kotlin ABI dumps updated.
+
 ### Left for later
 
 * On real devices: the caret, the input methods and the selection handles of a field showing a
@@ -398,7 +418,7 @@ work against the user, and text can be lost.
   from the scope of the controller, which in the desktop tests is not the thread of the scene,
   and Compose then corrupts its queue of measures. Not from these phases; to fix with the scope
   of the editor in the tests.
-* Phase 9 (lists, fonts, completion of the LaTeX commands) waits for a decision.
+* Checklists (`- [ ]`, `- [x]`), custom fonts selection and completion of LaTeX commands while typing are left for later.
 
 ## Decisions
 
@@ -410,6 +430,10 @@ Taken by the user on 2026-10-08, who authorized doing the phases in order with c
 3. The sizes go from 4 to 288 pt (phase 6).
 4. Snapping is on by default, held ⌥ / Alt moves freely; the candidates are those of
    [Snapping](#snapping) (phase 8).
+5. Lists use standard Markdown notation (`- `, `* `, `+ `, `\d+\. `) with no checklists (decided
+   2026-10-20, phase 9a).
+6. List items render with advanced hanging indent (wrapping lines aligned with the item text, not
+   under the marker, phase 9c).
 
 ## Risks
 

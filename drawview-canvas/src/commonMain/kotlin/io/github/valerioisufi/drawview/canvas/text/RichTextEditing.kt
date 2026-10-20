@@ -77,5 +77,123 @@ public object RichTextEditing {
         )
     }
 
+    /**
+     * Makes the lines of the selection bullet list items (`- `), or plain text again if they are
+     * already all bullet list items.
+     */
+    public fun toggleBulletList(value: TextFieldValue): TextFieldValue = toggleListLines(value, ordered = false)
+
+    /**
+     * Makes the lines of the selection numbered list items (`1. `, `2. `...), or plain text again
+     * if they are already all numbered list items.
+     */
+    public fun toggleNumberedList(value: TextFieldValue): TextFieldValue = toggleListLines(value, ordered = true)
+
+    private fun toggleListLines(value: TextFieldValue, ordered: Boolean): TextFieldValue {
+        val text = value.text
+        val sel = value.selection
+        val selMin = min(sel.start, sel.end)
+        val selMax = max(sel.start, sel.end)
+
+        val firstLineStart = text.lastIndexOf('\n', selMin - 1) + 1
+        val lastLineEnd = if (selMax == selMin) {
+            text.indexOf('\n', selMin).let { if (it < 0) text.length else it }
+        } else {
+            val endBound = if (selMax > 0 && text[selMax - 1] == '\n') selMax - 1 else selMax
+            text.indexOf('\n', endBound).let { if (it < 0) text.length else it }
+        }
+
+        val block = text.substring(firstLineStart, lastLineEnd)
+        val lines = block.split('\n')
+
+        val parsed = lines.map { line ->
+            val indent = line.takeWhile { it == ' ' || it == '\t' }
+            val rest = line.substring(indent.length)
+            val numMatch = NUMBERED_MARKER.find(rest)
+            val headMatch = HEADING_MARKER.find(rest)
+            val (type, len) = when {
+                rest.startsWith("- ") || rest.startsWith("* ") || rest.startsWith("+ ") -> {
+                    var mLen = 2
+                    while (mLen < rest.length && rest[mLen].isWhitespace()) mLen++
+                    MarkerType.BULLET to mLen
+                }
+                numMatch != null -> MarkerType.NUMBERED to numMatch.value.length
+                headMatch != null -> MarkerType.HEADING to headMatch.value.length
+                else -> MarkerType.NONE to 0
+            }
+            LineInfo(indent, type, len, rest.substring(len))
+        }
+
+        val allSame = if (ordered) {
+            parsed.all { it.markerType == MarkerType.NUMBERED }
+        } else {
+            parsed.all { it.markerType == MarkerType.BULLET }
+        }
+
+        val newLines = parsed.mapIndexed { index, lineInfo ->
+            if (allSame) {
+                lineInfo.indent + lineInfo.content
+            } else if (ordered) {
+                lineInfo.indent + "${index + 1}. " + lineInfo.content
+            } else {
+                lineInfo.indent + BULLET_PREFIX + lineInfo.content
+            }
+        }
+
+        val newBlock = newLines.joinToString("\n")
+
+        fun mapOffset(offset: Int): Int {
+            if (offset < firstLineStart) return offset
+            if (offset > lastLineEnd) return offset + (newBlock.length - block.length)
+            var oldPos = firstLineStart
+            var newPos = firstLineStart
+            for (i in lines.indices) {
+                val oldLine = lines[i]
+                val newLine = newLines[i]
+                val info = parsed[i]
+                val oldLineEnd = oldPos + oldLine.length
+                if (offset <= oldLineEnd) {
+                    val inLineOffset = offset - oldPos
+                    val indentLen = info.indent.length
+                    val oldMarkerEnd = indentLen + info.markerLength
+                    val newMarkerEnd = if (allSame) {
+                        indentLen
+                    } else if (ordered) {
+                        indentLen + "${i + 1}. ".length
+                    } else {
+                        indentLen + BULLET_PREFIX.length
+                    }
+                    val mappedInLine = when {
+                        inLineOffset < indentLen -> inLineOffset
+                        inLineOffset <= oldMarkerEnd -> newMarkerEnd
+                        else -> newMarkerEnd + (inLineOffset - oldMarkerEnd)
+                    }
+                    return (newPos + mappedInLine).coerceIn(newPos, newPos + newLine.length)
+                }
+                oldPos = oldLineEnd + 1
+                newPos = newPos + newLine.length + 1
+            }
+            return newPos
+        }
+
+        val newText = text.substring(0, firstLineStart) + newBlock + text.substring(lastLineEnd)
+        return value.copy(
+            text = newText,
+            selection = TextRange(mapOffset(sel.start), mapOffset(sel.end))
+        )
+    }
+
+    private data class LineInfo(
+        val indent: String,
+        val markerType: MarkerType,
+        val markerLength: Int,
+        val content: String
+    )
+
+    private enum class MarkerType { NONE, BULLET, NUMBERED, HEADING }
+
+    private val NUMBERED_MARKER = Regex("""^\d+\.[ \t]+""")
+    private val HEADING_MARKER = Regex("""^#{1,6}[ \t]+""")
+    private const val BULLET_PREFIX = "- "
     private const val HEADING_PREFIX = "# "
 }

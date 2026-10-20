@@ -94,6 +94,8 @@
     <string name="text_editor_action_strikethrough">Tachado</string>
     <string name="text_editor_action_code">Código</string>
     <string name="text_editor_action_heading">Título</string>
+    <string name="text_editor_action_bullet_list">Lista con viñetas</string>
+    <string name="text_editor_action_numbered_list">Lista numerada</string>
     <string name="text_editor_action_math">Fórmula</string>
     <string name="text_editor_formula_invalid">Fórmula no válida</string>
     <string name="text_align_start">Alinear a la izquierda</string>

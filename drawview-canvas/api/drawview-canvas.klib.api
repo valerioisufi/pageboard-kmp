@@ -82,7 +82,9 @@ abstract interface io.github.valerioisufi.drawview.canvas.controller/TextFormatT
     abstract fun changeColor(kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.changeColor|changeColor(kotlin.Int){}[0]
     abstract fun changeFontSize(kotlin/Float) // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.changeFontSize|changeFontSize(kotlin.Float){}[0]
     open fun toggle(io.github.valerioisufi.drawview.canvas.text/RichTextEditing.Format) // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.toggle|toggle(io.github.valerioisufi.drawview.canvas.text.RichTextEditing.Format){}[0]
+    open fun toggleBulletList() // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.toggleBulletList|toggleBulletList(){}[0]
     open fun toggleHeading() // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.toggleHeading|toggleHeading(){}[0]
+    open fun toggleNumberedList() // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.toggleNumberedList|toggleNumberedList(){}[0]
 }
 
 abstract interface io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer { // io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer|null[0]
@@ -610,7 +612,9 @@ final class io.github.valerioisufi.drawview.canvas.controller/TextEditorManager 
     final fun startNewText(kotlin/Int, kotlin/Float, kotlin/Float, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.startNewText|startNewText(kotlin.Int;kotlin.Float;kotlin.Float;kotlin.Boolean){}[0]
     final fun takeCaretRequest(): androidx.compose.ui.geometry/Offset? // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.takeCaretRequest|takeCaretRequest(){}[0]
     final fun toggle(io.github.valerioisufi.drawview.canvas.text/RichTextEditing.Format) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.toggle|toggle(io.github.valerioisufi.drawview.canvas.text.RichTextEditing.Format){}[0]
+    final fun toggleBulletList() // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.toggleBulletList|toggleBulletList(){}[0]
     final fun toggleHeading() // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.toggleHeading|toggleHeading(){}[0]
+    final fun toggleNumberedList() // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.toggleNumberedList|toggleNumberedList(){}[0]
     final fun updateValue(androidx.compose.ui.text.input/TextFieldValue) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.updateValue|updateValue(androidx.compose.ui.text.input.TextFieldValue){}[0]
 }
 
@@ -1051,7 +1055,9 @@ final class io.github.valerioisufi.drawview.canvas/SelectionFrame { // io.github
 
 final object io.github.valerioisufi.drawview.canvas.text/RichTextEditing { // io.github.valerioisufi.drawview.canvas.text/RichTextEditing|null[0]
     final fun toggle(androidx.compose.ui.text.input/TextFieldValue, io.github.valerioisufi.drawview.canvas.text/RichTextEditing.Format): androidx.compose.ui.text.input/TextFieldValue // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.toggle|toggle(androidx.compose.ui.text.input.TextFieldValue;io.github.valerioisufi.drawview.canvas.text.RichTextEditing.Format){}[0]
+    final fun toggleBulletList(androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.toggleBulletList|toggleBulletList(androidx.compose.ui.text.input.TextFieldValue){}[0]
     final fun toggleHeading(androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.toggleHeading|toggleHeading(androidx.compose.ui.text.input.TextFieldValue){}[0]
+    final fun toggleNumberedList(androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.toggleNumberedList|toggleNumberedList(androidx.compose.ui.text.input.TextFieldValue){}[0]
 
     final enum class Format : kotlin/Enum<io.github.valerioisufi.drawview.canvas.text/RichTextEditing.Format> { // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.Format|null[0]
         enum entry BOLD // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.Format.BOLD|null[0]

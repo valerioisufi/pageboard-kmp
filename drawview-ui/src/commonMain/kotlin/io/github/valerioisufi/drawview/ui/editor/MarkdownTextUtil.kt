@@ -247,7 +247,7 @@ public object MarkdownTextUtil {
         Kind.STRIKE -> SpanStyle(textDecoration = TextDecoration.LineThrough)
         Kind.CODE -> SpanStyle(fontFamily = monospace)
         Kind.HEADING -> SpanStyle(fontWeight = FontWeight.Bold, fontSize = (baseFontSize * headingScale(span.level)).sp)
-        Kind.FORMULA, Kind.ESCAPE -> null
+        Kind.FORMULA, Kind.ESCAPE, Kind.LIST_ITEM -> null
     }
 
     /** How much bigger than the text a heading of [level] is. */

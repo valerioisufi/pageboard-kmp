@@ -26,4 +26,10 @@ public interface TextFormatTarget {
 
     /** Makes the line of the caret a heading, or plain text again. */
     public fun toggleHeading() {}
+
+    /** Makes the lines of the selection bullet list items, or plain text again. */
+    public fun toggleBulletList() {}
+
+    /** Makes the lines of the selection numbered list items, or plain text again. */
+    public fun toggleNumberedList() {}
 }

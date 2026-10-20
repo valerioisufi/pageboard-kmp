@@ -338,6 +338,12 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
     /** Makes the line of the caret a heading, or plain text again. */
     override fun toggleHeading(): Unit = updateValue(RichTextEditing.toggleHeading(value))
 
+    /** Makes the lines of the selection bullet list items, or plain text again. */
+    override fun toggleBulletList(): Unit = updateValue(RichTextEditing.toggleBulletList(value))
+
+    /** Makes the lines of the selection numbered list items, or plain text again. */
+    override fun toggleNumberedList(): Unit = updateValue(RichTextEditing.toggleNumberedList(value))
+
     override fun changeFontSize(size: Float) {
         val clamped = TextSizes.clamp(size)
         if (!isEditing || clamped == fontSize) return

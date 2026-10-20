@@ -47,6 +47,8 @@ internal fun TextFormatBar(
             FormatButton(commands.strikethrough, DrawViewIcons.Strikethrough)
             FormatButton(commands.code, DrawViewIcons.Code)
             FormatButton(commands.heading, DrawViewIcons.Heading)
+            FormatButton(commands.bulletList, DrawViewIcons.List)
+            FormatButton(commands.numberedList, DrawViewIcons.ListOrdered)
             FormatButton(commands.formula, DrawViewIcons.Sigma)
             BarDivider()
         }
