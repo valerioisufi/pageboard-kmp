@@ -54,17 +54,10 @@ internal actual fun SystemBarsHidden(hidden: Boolean) {
         ensureOverridesInstalled(viewController)
         isSystemBarsHiddenState = hidden
         viewController.setNeedsStatusBarAppearanceUpdate()
-        val selUpdateHome = sel_registerName("setNeedsUpdateOfHomeIndicatorAutoHidden")
-        if (viewController.respondsToSelector(selUpdateHome)) {
-            viewController.performSelector(selUpdateHome)
-        }
         onDispose {
             if (hidden) {
                 isSystemBarsHiddenState = false
                 viewController.setNeedsStatusBarAppearanceUpdate()
-                if (viewController.respondsToSelector(selUpdateHome)) {
-                    viewController.performSelector(selUpdateHome)
-                }
             }
         }
     }

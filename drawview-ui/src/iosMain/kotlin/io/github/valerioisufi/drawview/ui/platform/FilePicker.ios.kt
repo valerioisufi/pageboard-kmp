@@ -171,16 +171,9 @@ internal actual fun HideSystemBarsEffect() {
         ensureUiOverridesInstalled(viewController)
         isUiSystemBarsHidden = true
         viewController.setNeedsStatusBarAppearanceUpdate()
-        val selUpdateHome = platform.objc.sel_registerName("setNeedsUpdateOfHomeIndicatorAutoHidden")
-        if (viewController.respondsToSelector(selUpdateHome)) {
-            viewController.performSelector(selUpdateHome)
-        }
         onDispose {
             isUiSystemBarsHidden = false
             viewController.setNeedsStatusBarAppearanceUpdate()
-            if (viewController.respondsToSelector(selUpdateHome)) {
-                viewController.performSelector(selUpdateHome)
-            }
         }
     }
 }

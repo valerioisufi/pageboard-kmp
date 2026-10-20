@@ -37,6 +37,7 @@ struct SampleDocumentView: View {
             dismissWindow(id: "sample-note", value: documentId)
         })
         .ignoresSafeArea()
+        .persistentSystemOverlays(.hidden)
     }
 }
 
