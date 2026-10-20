@@ -76,24 +76,48 @@ public class PdfExporter(
     override val mimeType: String get() = "application/pdf"
 
     override suspend fun export(content: DocumentContent, options: ExportOptions, path: String, progress: (Float) -> Unit): ExportResult =
-        withContext(Dispatchers.Default) {
-            // The texts laid out once, the characters of their words embedded once per face
-            val layouts = HashMap<DrawText, TextBlockLayout?>()
-            for (page in content.pages) for (text in page.texts) layouts[text] = textAdapter?.layout(text)
-            val faces = loadFaces(layouts.values.filterNotNull())
-            var skipped = 0
+        exportCombined(listOf(content), options, path, title = content.title, progress)
+
+    /**
+     * Writes [contents] sequentially into a single PDF document at [path].
+     */
+    public suspend fun exportCombined(
+        contents: List<DocumentContent>,
+        options: ExportOptions,
+        path: String,
+        title: String? = null,
+        progress: (Float) -> Unit = {}
+    ): ExportResult = withContext(Dispatchers.Default) {
+        val totalPages = contents.sumOf { it.pages.size }
+        if (totalPages == 0) {
             createWriter().use { writer ->
-                val texts = TextWriter(writer, layouts, embed(writer, faces, layouts.values.filterNotNull()), faces)
+                writer.save(path, PdfInfo(title = title, creator = creator))
+            }
+            return@withContext ExportResult(0, 0)
+        }
+        // The texts laid out once, the characters of their words embedded once per face
+        val layouts = HashMap<DrawText, TextBlockLayout?>()
+        for (content in contents) {
+            for (page in content.pages) for (text in page.texts) layouts[text] = textAdapter?.layout(text)
+        }
+        val faces = loadFaces(layouts.values.filterNotNull())
+        var skipped = 0
+        var pagesWritten = 0
+        createWriter().use { writer ->
+            val texts = TextWriter(writer, layouts, embed(writer, faces, layouts.values.filterNotNull()), faces)
+            for (content in contents) {
                 val bases = importBases(writer, content)
                 content.pages.forEachIndexed { index, page ->
                     ensureActive()
                     skipped += PageWriter(writer, content, page, texts, bases[index]).write(options)
-                    progress((index + 1f) / content.pages.size)
+                    pagesWritten++
+                    progress(pagesWritten.toFloat() / totalPages)
                 }
-                writer.save(path, PdfInfo(title = content.title, creator = creator))
             }
-            ExportResult(content.pages.size, skipped)
+            writer.save(path, PdfInfo(title = title, creator = creator))
         }
+        ExportResult(pagesWritten, skipped)
+    }
 
     /** The fonts of the faces the texts use, and of the text of their formulas. */
     private suspend fun loadFaces(layouts: List<TextBlockLayout>): Map<TextFace, TrueTypeFont> {

@@ -189,3 +189,83 @@ editor give in common code: no drawing of a platform is captured.
   an update of the file PDFium saved (PDFium cannot write it).
 * Limits: the links of the PDFs to their own pages are not kept (PDFium cannot write their
   destinations).
+
+## Export of a folder and Home
+
+Users can export all notes belonging to a specific folder or to the Home (the root of the
+library). The export produces either a ZIP archive containing individual PDF documents for each
+note (preserving directory hierarchy) or a single combined PDF document concatenating all notes.
+
+The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
+Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected
+Variations).
+
+### Starting point
+
+* `DocumentExport` (`drawview-export`) exports a single document given its `documentId` via
+  `DocumentExporter` (`PdfExporter`, `PageImageExporter`).
+* `DocumentExportUi` (`drawview-export-ui`) exposes `documentAction` (`DocumentAction` for a single
+  selected document in the library) and `editorExtension` (top bar action in the editor).
+* `DocumentAction` (`drawview-ui`) models actions on a single document:
+  `content: @Composable (documentId: String, title: String, onDone: () -> Unit) -> Unit`.
+* `DocumentLibrary` (`drawview-explorer`) displays folders and notes. A folder row or card has
+  rename, move, and delete actions, but no application action extension point. When viewing a folder
+  or Home, there is no action to export all contained documents.
+
+### Requirements
+
+1. **Trigger points in the UI**:
+   * **In the library header**: when viewing a folder or the Home (`viewModel.section == Section.HOME`),
+     an action button or menu item ("Export folder…" or "Export all documents…").
+   * **On folder items**: option "Export folder" in the three-dots action sheet and right-click
+     context menu of folder cards and list rows.
+   * **In selection mode**: available when a single folder is selected.
+   * **Commands**: registered in `LibraryCommands` so that shortcuts and the window menu bar (desktop)
+     trigger the export of the current folder or Home.
+2. **Export formats**:
+   * **ZIP archive (individual PDFs)** (default): a `.zip` archive containing each document as a
+     standalone `.pdf`. If subfolders are included, folder hierarchy is preserved inside the archive
+     (`Folder/Subfolder/Note.pdf`).
+   * **Single combined PDF**: all pages of all selected documents merged sequentially into one PDF
+     document.
+3. **Export options**:
+   * Switch *Include subfolders* (default: true). Dynamically updates the count of notes to be exported.
+   * Switch *Background pattern* (default: true). Controls whether paper lines/grids/dots are rendered.
+   * Note count summary: displays how many notes will be exported (if 0 notes, disables export).
+4. **Platform integration & performance**:
+   * File delivery via `rememberFileSaver` with `application/zip` or `application/pdf`, working
+     identically on Desktop JVM, Android, and iOS.
+   * Sequential document processing (one open session snapshot at a time) to maintain flat memory
+     usage regardless of the number of notes in the folder.
+   * Linear progress tracking and cancellation handling.
+
+### Design
+
+| Responsibility | Class (module) | GRASP |
+|---|---|---|
+| Action of the application on a folder or root/home | `FolderAction` (`drawview-ui`) | Low Coupling, Protected Variations, Polymorphism |
+| Controller for exporting multiple documents (folder/home) | `DocumentExport.exportFolder` (`drawview-export`) | Controller, High Cohesion |
+| Minimal zero-dependency ZIP archive writer (STORE method, CRC-32) | `ZipWriter` (`drawview-export`) | Pure Fabrication, Low Coupling |
+| Formatting options and result of folder export | `FolderExportFormat`, `FolderExportOptions`, `FolderExportResult` (`drawview-export`) | Information Expert |
+| UI dialog for folder export: format, options, note count, file saver, progress | `FolderExportDialog` (`drawview-export-ui`) | Information Expert, Indirection |
+| Exposing folder export to the library | `DocumentExportUi.folderAction` (`drawview-export-ui`) | Low Coupling, Protected Variations |
+| Support folder actions in library, item menus, header, and commands | `DocumentLibrary(folderActions = ...)`, `LibraryCommands` (`drawview-explorer`) | Low Coupling, Protected Variations |
+
+### Plan
+
+| Phase | Content | Status |
+|---|---|---|
+| F1 | `drawview-export`: `ZipWriter` (pure Kotlin, STORE method, CRC32), `FolderExportFormat`, `FolderExportOptions`, `DocumentExport.exportFolder` (folder traversal, sequential snapshotting, ZIP and combined PDF writing); unit tests | Done |
+| F2 | `drawview-ui` & `drawview-explorer`: `FolderAction` in `drawview-ui`, `folderActions` parameter in `DocumentLibrary` and `ExplorerScreen`, `LibraryCommands.forItem` for folders, header action in `LibraryTitle`, and tests | In progress |
+| F3 | `drawview-export-ui` & `pencilnotes`: localized resources, `FolderExportDialog`, `DocumentExportUi.folderAction`, wiring into `PencilNotesApp`, screenshot tests | |
+| F4 | ABI dumps (`updateKotlinAbi`), build verification (`jvmTest`, `checkKotlinAbi`), verification on desktop JVM scratch data directory | |
+
+### Decisions
+
+* **ZIP STORE method**: PDFs are already internally compressed. Storing them without recompression
+  is fast, requires zero external compression libraries or native C dependencies, and produces
+  fully standard ZIP files compatible with all platforms.
+* **Sequential document opening**: Documents are opened, snapshotted, exported, and closed one by
+  one via `OpenDocuments` to keep memory consumption low.
+* **Relative paths in ZIP**: Notes in subfolders are placed under `SubfolderName/NoteName.pdf` inside
+  the ZIP archive to prevent naming collisions.
