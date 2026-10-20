@@ -104,7 +104,8 @@ internal fun ExplorerScreen(
     thumbnails: DocumentThumbnails? = null,
     onFilesDropped: ((List<PickedFile>) -> Boolean)? = null,
     onImportPdf: (() -> Unit)? = null,
-    onImportImage: (() -> Unit)? = null
+    onImportImage: (() -> Unit)? = null,
+    onOpenDocumentInNewWindow: ((String) -> Unit)? = null
 ) {
     val viewModel = fileExplorerViewModel
     LaunchedEffect(viewModel, tags) { viewModel.tags = tags }
@@ -131,7 +132,8 @@ internal fun ExplorerScreen(
             chosenAction = action to item
             viewModel.clearSelection()
         },
-        onFocusSearch = { runCatching { searchFocus.requestFocus() } }
+        onFocusSearch = { runCatching { searchFocus.requestFocus() } },
+        onOpenDocumentInNewWindow = onOpenDocumentInNewWindow
     )
     RegisterCommands(commands.all)
     var fabMenuExpanded by rememberSaveable { mutableStateOf(false) }
@@ -162,7 +164,8 @@ internal fun ExplorerScreen(
                 onOpenDocument = onOpenDocument,
                 thumbnails = thumbnails,
                 commands = commands,
-                onShowDetails = if (layout == LibraryLayout.PANES) { item -> viewModel.selectOnly(item) } else null
+                onShowDetails = if (layout == LibraryLayout.PANES) { item -> viewModel.selectOnly(item) } else null,
+                onOpenDocumentInNewWindow = onOpenDocumentInNewWindow
             )
             val newNote = { commands.newNote.perform() }
             Row(modifier = Modifier.fillMaxSize()) {

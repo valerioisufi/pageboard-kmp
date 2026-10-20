@@ -602,6 +602,8 @@ final object io.github.valerioisufi.drawview.ui.theme/DrawViewIcons { // io.gith
         final fun <get-Download>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.valerioisufi.drawview.ui.theme/DrawViewIcons.Download.<get-Download>|<get-Download>(){}[0]
     final val Eraser // io.github.valerioisufi.drawview.ui.theme/DrawViewIcons.Eraser|{}Eraser[0]
         final fun <get-Eraser>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.valerioisufi.drawview.ui.theme/DrawViewIcons.Eraser.<get-Eraser>|<get-Eraser>(){}[0]
+    final val ExternalLink // io.github.valerioisufi.drawview.ui.theme/DrawViewIcons.ExternalLink|{}ExternalLink[0]
+        final fun <get-ExternalLink>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.valerioisufi.drawview.ui.theme/DrawViewIcons.ExternalLink.<get-ExternalLink>|<get-ExternalLink>(){}[0]
     final val Eye // io.github.valerioisufi.drawview.ui.theme/DrawViewIcons.Eye|{}Eye[0]
         final fun <get-Eye>(): androidx.compose.ui.graphics.vector/ImageVector // io.github.valerioisufi.drawview.ui.theme/DrawViewIcons.Eye.<get-Eye>|<get-Eye>(){}[0]
     final val EyeOff // io.github.valerioisufi.drawview.ui.theme/DrawViewIcons.EyeOff|{}EyeOff[0]

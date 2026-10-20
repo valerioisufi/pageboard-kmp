@@ -79,7 +79,8 @@ internal class ItemActions(
     val thumbnails: DocumentThumbnails?,
     val commands: LibraryCommands?,
     /** Shows the details of an item beside the library; `null`: in a sheet. */
-    val onShowDetails: ((FileItem) -> Unit)?
+    val onShowDetails: ((FileItem) -> Unit)?,
+    val onOpenDocumentInNewWindow: ((String) -> Unit)? = null
 )
 
 /**
@@ -102,7 +103,7 @@ internal fun NoteCard(item: FileItem, actions: ItemActions, modifier: Modifier =
                 .background(if (selected) colors.surfaceContainerLowest else colors.surfaceContainerLow)
                 .then(if (selected) Modifier.border(2.dp, colors.primary, shape) else Modifier)
                 .draggableItem(item, viewModel)
-                .fileItemInteraction(item, viewModel, actions.onOpenDocument) { position ->
+                .fileItemInteraction(item, viewModel, actions.onOpenDocument, actions.onOpenDocumentInNewWindow) { position ->
                     if (itemCommands.isNotEmpty()) contextMenu = position
                 }
                 .padding(8.dp),
@@ -156,7 +157,7 @@ internal fun FolderCard(item: FileItem, actions: ItemActions, modifier: Modifier
                 .then(if (selected) Modifier.border(2.dp, colors.primary, shape) else Modifier)
                 .draggableItem(item, viewModel)
                 .dropTarget(viewModel, item.id)
-                .fileItemInteraction(item, viewModel, actions.onOpenDocument) { position ->
+                .fileItemInteraction(item, viewModel, actions.onOpenDocument, actions.onOpenDocumentInNewWindow) { position ->
                     if (itemCommands.isNotEmpty()) contextMenu = position
                 }
                 .padding(14.dp),
@@ -216,7 +217,7 @@ internal fun NoteRow(item: FileItem, actions: ItemActions, modifier: Modifier = 
                 .background(if (selected) colors.primaryContainer else Color.Transparent)
                 .draggableItem(item, viewModel)
                 .then(if (item.type == FileType.FOLDER) Modifier.dropTarget(viewModel, item.id) else Modifier)
-                .fileItemInteraction(item, viewModel, actions.onOpenDocument) { position ->
+                .fileItemInteraction(item, viewModel, actions.onOpenDocument, actions.onOpenDocumentInNewWindow) { position ->
                     if (itemCommands.isNotEmpty()) contextMenu = position
                 }
                 .padding(start = 16.dp, end = 8.dp, top = 10.dp, bottom = 10.dp),

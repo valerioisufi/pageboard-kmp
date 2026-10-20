@@ -164,6 +164,10 @@ public object DrawViewSessions {
     private val open = mutableSetOf<EditorSession>()
     private val closing = mutableSetOf<Job>()
 
+    public fun find(documentId: String): EditorSession? = syncLock(lock) {
+        open.firstOrNull { it.documentId == documentId }
+    }
+
     internal fun register(session: EditorSession) {
         syncLock(lock) { open.add(session) }
     }

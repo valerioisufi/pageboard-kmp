@@ -39,6 +39,7 @@
     <string name="explorer_error_create_failed">생성 중 오류 발생</string>
     <string name="explorer_shared">다른 기기와 공유됨</string>
     <string name="explorer_action_open">열기</string>
+    <string name="explorer_action_open_in_new_window">새 창에서 열기</string>
     <string name="explorer_command_sort_by">정렬 기준: %1$s</string>
     <string name="explorer_section_recent">최근</string>
     <string name="explorer_section_shared">공유됨</string>

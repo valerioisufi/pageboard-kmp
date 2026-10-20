@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerKeyboardModifiers
+import androidx.compose.ui.input.pointer.isAltPressed
 import androidx.compose.ui.input.pointer.isCtrlPressed
 import androidx.compose.ui.input.pointer.isMetaPressed
 import androidx.compose.ui.input.pointer.isShiftPressed
@@ -41,6 +42,7 @@ internal fun Modifier.fileItemInteraction(
     item: FileItem,
     viewModel: FileExplorerViewModel,
     onOpenDocument: (String) -> Unit,
+    onOpenDocumentInNewWindow: ((String) -> Unit)? = null,
     onContextMenu: (DpOffset) -> Unit
 ): Modifier {
     val held = remember { HeldModifiers() }
@@ -62,6 +64,7 @@ internal fun Modifier.fileItemInteraction(
                 when {
                     keys != null && keys.isShiftPressed -> viewModel.extendSelection(item)
                     keys != null && (if (apple) keys.isMetaPressed else keys.isCtrlPressed) -> viewModel.toggleSelection(item)
+                    keys != null && keys.isAltPressed && item.type == FileType.FILE && onOpenDocumentInNewWindow != null -> onOpenDocumentInNewWindow(item.id)
                     viewModel.selectionMode -> viewModel.toggleSelection(item)
                     item.type == FileType.FILE -> onOpenDocument(item.id)
                     else -> viewModel.enterFolder(item)

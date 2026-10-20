@@ -852,6 +852,7 @@ public final class io/github/valerioisufi/drawview/ui/theme/DrawViewIcons {
 	public final fun getCrown ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getDownload ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getEraser ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getExternalLink ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getEye ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getEyeOff ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getFile ()Landroidx/compose/ui/graphics/vector/ImageVector;
@@ -972,6 +973,22 @@ public final class io/github/valerioisufi/drawview/ui/window/ComposableSingleton
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/window/ComposableSingletons$WindowDecorInsetsKt;
 	public fun <init> ()V
 	public final fun getLambda$-671818452$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function4;
+}
+
+public final class io/github/valerioisufi/drawview/ui/window/DesktopWindowManager {
+	public static final field $stable I
+	public fun <init> ()V
+	public final fun closeDocument (Ljava/lang/String;)V
+	public final fun closeLibrary ()V
+	public final fun getOpenDocumentIds ()Ljava/util/List;
+	public final fun getShouldExit ()Z
+	public final fun isLibraryOpen ()Z
+	public final fun openDocument (Ljava/lang/String;)V
+	public final fun openLibrary ()V
+}
+
+public final class io/github/valerioisufi/drawview/ui/window/DesktopWindowManagerKt {
+	public static final fun rememberDesktopWindowManager (Landroidx/compose/runtime/Composer;I)Lio/github/valerioisufi/drawview/ui/window/DesktopWindowManager;
 }
 
 public final class io/github/valerioisufi/drawview/ui/window/DrawViewWindowDecorKt {

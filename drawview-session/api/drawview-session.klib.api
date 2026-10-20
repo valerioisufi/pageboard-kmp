@@ -37,6 +37,7 @@ final class io.github.valerioisufi.drawview.session/EditorSession { // io.github
 }
 
 final object io.github.valerioisufi.drawview.session/DrawViewSessions { // io.github.valerioisufi.drawview.session/DrawViewSessions|null[0]
+    final fun find(kotlin/String): io.github.valerioisufi.drawview.session/EditorSession? // io.github.valerioisufi.drawview.session/DrawViewSessions.find|find(kotlin.String){}[0]
     final suspend fun flushAll() // io.github.valerioisufi.drawview.session/DrawViewSessions.flushAll|flushAll(){}[0]
 }
 

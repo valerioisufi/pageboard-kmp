@@ -852,6 +852,7 @@ public final class io/github/valerioisufi/drawview/ui/theme/DrawViewIcons {
 	public final fun getCrown ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getDownload ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getEraser ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getExternalLink ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getEye ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getEyeOff ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getFile ()Landroidx/compose/ui/graphics/vector/ImageVector;

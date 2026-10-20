@@ -1,13 +1,19 @@
 package io.github.valerioisufi.drawview
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import io.github.valerioisufi.drawview.session.DrawViewSessions
 import io.github.valerioisufi.drawview.ui.command.CommandHost
 import io.github.valerioisufi.drawview.ui.command.DrawViewMenuBar
 import io.github.valerioisufi.drawview.ui.window.DrawViewWindowDecor
+import io.github.valerioisufi.drawview.ui.window.SetWindowDocumentModified
 import io.github.valerioisufi.drawview.ui.window.WindowMinimumSize
+import io.github.valerioisufi.drawview.ui.window.rememberDesktopWindowManager
 import io.github.valerioisufi.drawview.ui.window.rememberDrawViewWindowState
 import kotlinx.coroutines.runBlocking
 
@@ -15,25 +21,76 @@ fun main() {
     // The menus in the bar of the system on macOS
     System.setProperty("apple.laf.useScreenMenuBar", "true")
     application {
-        // The commands of the screen shown: the menu bar and the shortcuts of the window
-        val commands = remember { CommandHost() }
-        val windowState = rememberDrawViewWindowState()
-        Window(
-            onCloseRequest = {
-                // The pending changes of the open document are written before exiting
-                runBlocking { DrawViewSessions.flushAll() }
-                exitApplication()
-            },
-            // Its size, position and placement kept between the launches
-            state = windowState,
-            title = "DrawView",
-            onKeyEvent = { commands.dispatch(it) }
-        ) {
-            DrawViewWindowDecor(state = windowState) {
-                DrawViewMenuBar(commands)
-                WindowMinimumSize()
-                App(commandHost = commands)
+        val windowManager = rememberDesktopWindowManager()
+
+        // The primary library window
+        if (windowManager.isLibraryOpen) {
+            val libraryCommands = remember { CommandHost() }
+            val libraryWindowState = rememberDrawViewWindowState("library")
+            Window(
+                onCloseRequest = {
+                    windowManager.closeLibrary()
+                    if (windowManager.shouldExit) {
+                        runBlocking { DrawViewSessions.flushAll() }
+                        exitApplication()
+                    }
+                },
+                state = libraryWindowState,
+                title = "DrawView",
+                onKeyEvent = { libraryCommands.dispatch(it) }
+            ) {
+                DrawViewWindowDecor(state = libraryWindowState) {
+                    DrawViewMenuBar(libraryCommands)
+                    WindowMinimumSize()
+                    App(
+                        commandHost = libraryCommands,
+                        onOpenDocumentInNewWindow = { docId -> windowManager.openDocument(docId) }
+                    )
+                }
+            }
+        }
+
+        // Secondary windows: one for each document open independently
+        for (documentId in windowManager.openDocumentIds) {
+            key(documentId) {
+                val docCommands = remember { CommandHost() }
+                val docWindowState = rememberDrawViewWindowState("doc-$documentId")
+                var docTitle by remember { mutableStateOf("DrawView") }
+                val session = remember(documentId) { DrawViewSessions.find(documentId) }
+                val isDirty = session?.controller?.historyManager?.canUndo == true
+
+                Window(
+                    onCloseRequest = {
+                        windowManager.closeDocument(documentId)
+                        if (windowManager.shouldExit) {
+                            runBlocking { DrawViewSessions.flushAll() }
+                            exitApplication()
+                        }
+                    },
+                    state = docWindowState,
+                    title = docTitle,
+                    onKeyEvent = { docCommands.dispatch(it) }
+                ) {
+                    SetWindowDocumentModified(isDirty)
+                    DrawViewWindowDecor(state = docWindowState) {
+                        DrawViewMenuBar(docCommands)
+                        WindowMinimumSize()
+                        SampleDocumentWindow(
+                            documentId = documentId,
+                            onClose = {
+                                windowManager.closeDocument(documentId)
+                                if (windowManager.shouldExit) {
+                                    runBlocking { DrawViewSessions.flushAll() }
+                                    exitApplication()
+                                }
+                            },
+                            commandHost = docCommands,
+                            onTitleChange = { docTitle = "$it — DrawView" }
+                        )
+                    }
+                }
             }
         }
     }
 }
+

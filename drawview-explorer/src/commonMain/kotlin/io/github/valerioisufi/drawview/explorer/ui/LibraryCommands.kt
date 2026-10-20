@@ -16,6 +16,7 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_act
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_delete
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_move_to
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_open
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_open_in_new_window
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_rename
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_select_all
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_command_search
@@ -60,7 +61,8 @@ internal class LibraryCommands internal constructor(
     private val documentActions: List<DocumentAction>,
     private val showDialog: (LibraryDialog) -> Unit,
     private val chooseAction: (DocumentAction, FileItem) -> Unit,
-    private val focusSearch: () -> Unit
+    private val focusSearch: () -> Unit,
+    private val openDocumentInNewWindow: ((String) -> Unit)? = null
 ) {
     private val selection: List<FileItem> get() = viewModel.selectedItems.toList()
 
@@ -77,6 +79,15 @@ internal class LibraryCommands internal constructor(
         icon = { rememberVectorPainter(DrawViewIcons.FolderPlus) },
         shortcuts = listOf(Shortcut(Key.N, primary = true, shift = true))
     ) { showDialog(LibraryDialog.NewItem(FileType.FOLDER)) }
+
+    val openInNewWindow: Command? = openDocumentInNewWindow?.let { openNew ->
+        Command(
+            "open-in-new-window", label(Res.string.explorer_action_open_in_new_window), CommandGroup.FILE,
+            icon = { rememberVectorPainter(DrawViewIcons.ExternalLink) },
+            shortcuts = listOf(Shortcut(Key.O, primary = true, alt = true)),
+            isEnabled = { selectedDocument != null }
+        ) { selectedDocument?.let { openNew(it.id) } }
+    }
 
     /** Moves the focus to the search of the library. */
     val search = Command(
@@ -163,15 +174,15 @@ internal class LibraryCommands internal constructor(
     }
 
     /** The commands of the folder shown and of the selection, in the order of the menus. */
-    val all: List<Command> = listOf(newNote, newFolder) + documentActionCommands +
+    val all: List<Command> = listOfNotNull(newNote, newFolder, openInNewWindow) + documentActionCommands +
         listOf(selectAll, rename, move, delete, search, enclosingFolder) + sortBy + listOf(invertOrder, foldersOnTop, about)
 
     /**
-     * The commands of [item] (its context menu, its sheet): open, rename, move, the actions of the
-     * application, delete.
+     * The commands of [item] (its context menu, its sheet): open, open in new window, rename, move,
+     * the actions of the application, delete.
      */
-    fun forItem(item: FileItem): List<Command> = listOf(
-        Command(
+    fun forItem(item: FileItem): List<Command> {
+        val openCommand = Command(
             "open", label(Res.string.explorer_action_open), CommandGroup.FILE,
             icon = { rememberVectorPainter(if (item.type == FileType.FILE) DrawViewIcons.FileText else DrawViewIcons.FolderOpen) }
         ) {
@@ -179,23 +190,34 @@ internal class LibraryCommands internal constructor(
                 FileType.FILE -> openDocument(item.id)
                 FileType.FOLDER -> viewModel.enterFolder(item)
             }
-        },
-        Command("rename", rename.label, CommandGroup.EDIT, section = 1, icon = rename.icon) {
-            showDialog(LibraryDialog.Rename(item))
-        },
-        Command("move", move.label, CommandGroup.EDIT, section = 1, icon = move.icon) {
-            showDialog(LibraryDialog.Move(listOf(item)))
         }
-    ) + (if (item.type == FileType.FILE) {
-        documentActions.mapIndexed { index, action ->
-            Command(DocumentActionPrefix + index, action.label, CommandGroup.FILE, section = 2, icon = { rememberVectorPainter(action.icon) }) {
-                chooseAction(action, item)
+        val itemOpenInNewWindow = if (item.type == FileType.FILE && openDocumentInNewWindow != null) {
+            Command(
+                "open-in-new-window", label(Res.string.explorer_action_open_in_new_window), CommandGroup.FILE,
+                icon = { rememberVectorPainter(DrawViewIcons.ExternalLink) },
+                shortcuts = listOf(Shortcut(Key.O, primary = true, alt = true))
+            ) {
+                openDocumentInNewWindow.invoke(item.id)
             }
+        } else null
+        return listOfNotNull(openCommand, itemOpenInNewWindow) + listOf(
+            Command("rename", rename.label, CommandGroup.EDIT, section = 1, icon = rename.icon) {
+                showDialog(LibraryDialog.Rename(item))
+            },
+            Command("move", move.label, CommandGroup.EDIT, section = 1, icon = move.icon) {
+                showDialog(LibraryDialog.Move(listOf(item)))
+            }
+        ) + (if (item.type == FileType.FILE) {
+            documentActions.mapIndexed { index, action ->
+                Command(DocumentActionPrefix + index, action.label, CommandGroup.FILE, section = 2, icon = { rememberVectorPainter(action.icon) }) {
+                    chooseAction(action, item)
+                }
+            }
+        } else {
+            emptyList()
+        }) + Command("delete", delete.label, CommandGroup.EDIT, section = 3, icon = delete.icon, destructive = true) {
+            showDialog(LibraryDialog.Delete(listOf(item)))
         }
-    } else {
-        emptyList()
-    }) + Command("delete", delete.label, CommandGroup.EDIT, section = 3, icon = delete.icon, destructive = true) {
-        showDialog(LibraryDialog.Delete(listOf(item)))
     }
 }
 
@@ -209,9 +231,11 @@ internal fun rememberLibraryCommands(
     onOpenDocument: (String) -> Unit,
     onShowDialog: (LibraryDialog) -> Unit,
     onChooseAction: (DocumentAction, FileItem) -> Unit,
-    onFocusSearch: () -> Unit
+    onFocusSearch: () -> Unit,
+    onOpenDocumentInNewWindow: ((String) -> Unit)? = null
 ): LibraryCommands {
     val open by rememberUpdatedState(onOpenDocument)
+    val openInNewWindow by rememberUpdatedState(onOpenDocumentInNewWindow)
     val show by rememberUpdatedState(onShowDialog)
     val choose by rememberUpdatedState(onChooseAction)
     val focus by rememberUpdatedState(onFocusSearch)
@@ -222,7 +246,9 @@ internal fun rememberLibraryCommands(
             documentActions = documentActions,
             showDialog = { show(it) },
             chooseAction = { action, item -> choose(action, item) },
-            focusSearch = { focus() }
+            focusSearch = { focus() },
+            openDocumentInNewWindow = if (onOpenDocumentInNewWindow != null) { { openInNewWindow?.invoke(it) } } else null
         )
     }
 }
+
