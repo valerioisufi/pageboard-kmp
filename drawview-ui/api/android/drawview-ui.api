@@ -469,6 +469,14 @@ public final class io/github/valerioisufi/drawview/ui/extension/EditorPanel {
 	public final fun isOpen ()Lkotlin/jvm/functions/Function0;
 }
 
+public final class io/github/valerioisufi/drawview/ui/extension/FolderAction {
+	public static final field $stable I
+	public fun <init> (Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function5;)V
+	public final fun getContent ()Lkotlin/jvm/functions/Function5;
+	public final fun getIcon ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getLabel ()Lkotlin/jvm/functions/Function2;
+}
+
 public final class io/github/valerioisufi/drawview/ui/extension/LibraryAction {
 	public static final field $stable I
 	public fun <init> (Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function2;ZLkotlin/jvm/functions/Function3;)V

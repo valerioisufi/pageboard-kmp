@@ -13,6 +13,8 @@ final class io.github.valerioisufi.drawview.export.ui/DocumentExportUi { // io.g
         final fun <get-documentAction>(): io.github.valerioisufi.drawview.ui.extension/DocumentAction // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.documentAction.<get-documentAction>|<get-documentAction>(){}[0]
     final val editorExtension // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.editorExtension|{}editorExtension[0]
         final fun <get-editorExtension>(): io.github.valerioisufi.drawview.ui.extension/EditorExtension // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.editorExtension.<get-editorExtension>|<get-editorExtension>(){}[0]
+    final val folderAction // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.folderAction|{}folderAction[0]
+        final fun <get-folderAction>(): io.github.valerioisufi.drawview.ui.extension/FolderAction // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.folderAction.<get-folderAction>|<get-folderAction>(){}[0]
 }
 
 final val io.github.valerioisufi.drawview.export.ui.generated.resources/io_github_valerioisufi_drawview_export_ui_generated_resources_Res_array$stableprop // io.github.valerioisufi.drawview.export.ui.generated.resources/io_github_valerioisufi_drawview_export_ui_generated_resources_Res_array$stableprop|#static{}io_github_valerioisufi_drawview_export_ui_generated_resources_Res_array$stableprop[0]

@@ -20,10 +20,16 @@ public final class io/github/valerioisufi/drawview/export/DocumentExport {
 	public static synthetic fun content$default (Lio/github/valerioisufi/drawview/export/DocumentExport;Ljava/lang/String;Lio/github/valerioisufi/drawview/export/ExportOptions;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun export (Ljava/lang/String;Lio/github/valerioisufi/drawview/export/DocumentExporter;Lio/github/valerioisufi/drawview/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun export$default (Lio/github/valerioisufi/drawview/export/DocumentExport;Ljava/lang/String;Lio/github/valerioisufi/drawview/export/DocumentExporter;Lio/github/valerioisufi/drawview/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun exportFolder (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/export/FolderExportFormat;Lio/github/valerioisufi/drawview/export/FolderExportOptions;Lio/github/valerioisufi/drawview/export/PdfExporter;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun exportFolder$default (Lio/github/valerioisufi/drawview/export/DocumentExport;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/export/FolderExportFormat;Lio/github/valerioisufi/drawview/export/FolderExportOptions;Lio/github/valerioisufi/drawview/export/PdfExporter;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun folderDocuments (Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun folderDocuments$default (Lio/github/valerioisufi/drawview/export/DocumentExport;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/drawview/export/DocumentExport$Companion {
 	public final fun fileName (Ljava/lang/String;Lio/github/valerioisufi/drawview/export/DocumentExporter;)Ljava/lang/String;
+	public final fun folderFileName (Ljava/lang/String;Lio/github/valerioisufi/drawview/export/FolderExportFormat;)Ljava/lang/String;
+	public final fun sanitizeFileName (Ljava/lang/String;)Ljava/lang/String;
 }
 
 public abstract interface class io/github/valerioisufi/drawview/export/DocumentExporter {
@@ -53,6 +59,40 @@ public final class io/github/valerioisufi/drawview/export/ExportResult {
 	public final fun getSkipped ()I
 }
 
+public final class io/github/valerioisufi/drawview/export/FolderDocumentItem {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/store/DocumentSummary;Ljava/lang/String;)V
+	public final fun getRelativePath ()Ljava/lang/String;
+	public final fun getSummary ()Lio/github/valerioisufi/drawview/store/DocumentSummary;
+}
+
+public final class io/github/valerioisufi/drawview/export/FolderExportFormat : java/lang/Enum {
+	public static final field COMBINED_PDF Lio/github/valerioisufi/drawview/export/FolderExportFormat;
+	public static final field ZIP Lio/github/valerioisufi/drawview/export/FolderExportFormat;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getExtension ()Ljava/lang/String;
+	public final fun getMimeType ()Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/export/FolderExportFormat;
+	public static fun values ()[Lio/github/valerioisufi/drawview/export/FolderExportFormat;
+}
+
+public final class io/github/valerioisufi/drawview/export/FolderExportOptions {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (ZZ)V
+	public synthetic fun <init> (ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBackgroundPattern ()Z
+	public final fun getIncludeSubfolders ()Z
+}
+
+public final class io/github/valerioisufi/drawview/export/FolderExportResult {
+	public static final field $stable I
+	public fun <init> (III)V
+	public final fun getDocuments ()I
+	public final fun getPages ()I
+	public final fun getSkipped ()I
+}
+
 public final class io/github/valerioisufi/drawview/export/PageImageExporter : io/github/valerioisufi/drawview/export/DocumentExporter {
 	public static final field $stable I
 	public fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;FLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;)V
@@ -67,6 +107,8 @@ public final class io/github/valerioisufi/drawview/export/PdfExporter : io/githu
 	public fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Lkotlin/jvm/functions/Function2;Ljava/lang/String;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lkotlin/jvm/functions/Function0;)V
 	public synthetic fun <init> (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Lkotlin/jvm/functions/Function2;Ljava/lang/String;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun export (Lio/github/valerioisufi/drawview/export/DocumentContent;Lio/github/valerioisufi/drawview/export/ExportOptions;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun exportCombined (Ljava/util/List;Lio/github/valerioisufi/drawview/export/ExportOptions;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun exportCombined$default (Lio/github/valerioisufi/drawview/export/PdfExporter;Ljava/util/List;Lio/github/valerioisufi/drawview/export/ExportOptions;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun getExtension ()Ljava/lang/String;
 	public fun getMimeType ()Ljava/lang/String;
 }
