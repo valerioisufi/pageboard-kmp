@@ -32,4 +32,10 @@ public interface TextFormatTarget {
 
     /** Makes the lines of the selection numbered list items, or plain text again. */
     public fun toggleNumberedList() {}
+
+    /** Adds 2 spaces of indentation to the lines of the selection. */
+    public fun indent() {}
+
+    /** Removes up to 2 spaces of indentation from the lines of the selection. */
+    public fun outdent() {}
 }

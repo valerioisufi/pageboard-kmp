@@ -203,7 +203,7 @@ work against the user, and text can be lost.
 | 7 | Creating and sizing: automatic width, box drawn by a drag, one tap to move to another text, text pasted from the system, texts copied as plain text | Done |
 | 8 | Snapping: `SnapEngine`, guides, moving the selection and the edited text, width handles, new texts on the lines of the paper; ⌥ / Alt and the switch (the elements placed by the lecture assistant are left for later) | Done |
 | 9a | Bulleted and numbered lists notation & commands: `RichTextParser` parsing list items (`- `, `* `, `+ `, `\d+\. `) with nesting levels; `RichTextEditing.toggleBulletList` and `toggleNumberedList`; `TextEditorManager` formatting target methods; toolbar buttons in `TextFormatBar` (`DrawViewIcons.List` and `DrawViewIcons.ListOrdered`) and `EditorCommands` (Format menu, shortcuts ⌘⇧8 and ⌘⇧7); tests in model and canvas | Done |
-| 9b | Smart list editing: automatic continuation on Enter (next bullet or incremented number), list exit on empty item (clearing the marker), indentation adjustment via Tab and Shift+Tab (adding/removing 2 spaces); tests of editing interactions in canvas and UI | To do |
+| 9b | Smart list editing: automatic continuation on Enter (next bullet or incremented number), list exit on empty item (clearing the marker), indentation adjustment via Tab and Shift+Tab (adding/removing 2 spaces); tests of editing interactions in canvas and UI | Done |
 | 9c | Typography and hanging indent: `MarkdownTextUtil` presenting bullets (`•`, `◦`) and numbers; advanced hanging indent via `ParagraphStyle.textIndent` for wrapped lines; layout and measure in `ComposeTextTileAdapter`; PDF export verified; tests and screenshots | To do |
 
 ### Phase 1 results
@@ -406,6 +406,24 @@ work against the user, and text can be lost.
   text format toolbar; strings localized across all 7 supported languages.
 * Tests: parser unit tests covering nested bullets and numbers, list toggling unit tests in
   `RichTextEditingTest`, and command execution tests in `CommandTest`. Kotlin ABI dumps updated.
+
+### Phase 9b results
+
+* Smart Enter handling (`RichTextEditing.handleEnter`): pressing Enter on a list item continues the
+  item on the next line with matching indentation and marker (next bullet symbol or incremented
+  number `n + 1`). If the item is empty (marker and optional whitespace only), pressing Enter clears
+  the line and exits the list. Also handles splitting items when the caret is positioned mid-text.
+* Soft keyboard & IME compatibility (`RichTextEditing.handleSmartNewline`): automatically detects
+  single newline insertions during `TextEditorManager.updateValue` and applies list continuation or
+  exit seamlessly on mobile virtual keyboards without conflicting with multi-character pastes.
+* Indentation adjustment (`RichTextEditing.indent` and `outdent`): Tab adds 2 spaces at the start of
+  all selected lines (increasing nesting level); Shift+Tab removes up to 2 leading spaces (decreasing
+  nesting level). Intercepted in `TextBoxEditor` via `onPreviewKeyEvent` to avoid losing focus.
+* Shift+Enter support: pressing Shift+Enter on hardware keyboards inserts a normal line break without
+  continuing the list marker.
+* Tests: comprehensive unit tests in `RichTextEditingTest` and `TextEditingTest` covering list continuation,
+  empty-item exit, item splitting, indent/outdent offset mappings, and virtual keyboard input.
+  Kotlin ABI dumps updated.
 
 ### Left for later
 

@@ -81,6 +81,8 @@ abstract interface io.github.valerioisufi.drawview.canvas.controller/TextFormatT
     abstract fun changeAlignment(io.github.valerioisufi.drawview.model/TextAlignment) // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.changeAlignment|changeAlignment(io.github.valerioisufi.drawview.model.TextAlignment){}[0]
     abstract fun changeColor(kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.changeColor|changeColor(kotlin.Int){}[0]
     abstract fun changeFontSize(kotlin/Float) // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.changeFontSize|changeFontSize(kotlin.Float){}[0]
+    open fun indent() // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.indent|indent(){}[0]
+    open fun outdent() // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.outdent|outdent(){}[0]
     open fun toggle(io.github.valerioisufi.drawview.canvas.text/RichTextEditing.Format) // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.toggle|toggle(io.github.valerioisufi.drawview.canvas.text.RichTextEditing.Format){}[0]
     open fun toggleBulletList() // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.toggleBulletList|toggleBulletList(){}[0]
     open fun toggleHeading() // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.toggleHeading|toggleHeading(){}[0]
@@ -602,8 +604,11 @@ final class io.github.valerioisufi.drawview.canvas.controller/TextEditorManager 
     final fun changeColor(kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.changeColor|changeColor(kotlin.Int){}[0]
     final fun changeFontSize(kotlin/Float) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.changeFontSize|changeFontSize(kotlin.Float){}[0]
     final fun finishEditing() // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.finishEditing|finishEditing(){}[0]
+    final fun handleEnter(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.handleEnter|handleEnter(){}[0]
+    final fun indent() // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.indent|indent(){}[0]
     final fun moveBy(kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.moveBy|moveBy(kotlin.Float;kotlin.Float){}[0]
     final fun moveTo(kotlin/Float, kotlin/Float, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.moveTo|moveTo(kotlin.Float;kotlin.Float;kotlin.Boolean){}[0]
+    final fun outdent() // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.outdent|outdent(){}[0]
     final fun pasteText(kotlin/String, androidx.compose.ui.geometry/Offset? = ...) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.pasteText|pasteText(kotlin.String;androidx.compose.ui.geometry.Offset?){}[0]
     final fun reportLayoutHeight(kotlin/Float) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.reportLayoutHeight|reportLayoutHeight(kotlin.Float){}[0]
     final fun startDrawnText(kotlin/Int, androidx.compose.ui.geometry/Rect) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.startDrawnText|startDrawnText(kotlin.Int;androidx.compose.ui.geometry.Rect){}[0]
@@ -616,6 +621,7 @@ final class io.github.valerioisufi.drawview.canvas.controller/TextEditorManager 
     final fun toggleHeading() // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.toggleHeading|toggleHeading(){}[0]
     final fun toggleNumberedList() // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.toggleNumberedList|toggleNumberedList(){}[0]
     final fun updateValue(androidx.compose.ui.text.input/TextFieldValue) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.updateValue|updateValue(androidx.compose.ui.text.input.TextFieldValue){}[0]
+    final fun updateValue(androidx.compose.ui.text.input/TextFieldValue, kotlin/Boolean) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.updateValue|updateValue(androidx.compose.ui.text.input.TextFieldValue;kotlin.Boolean){}[0]
 }
 
 final class io.github.valerioisufi.drawview.canvas.controller/TextMarkupManager { // io.github.valerioisufi.drawview.canvas.controller/TextMarkupManager|null[0]
@@ -1054,6 +1060,10 @@ final class io.github.valerioisufi.drawview.canvas/SelectionFrame { // io.github
 }
 
 final object io.github.valerioisufi.drawview.canvas.text/RichTextEditing { // io.github.valerioisufi.drawview.canvas.text/RichTextEditing|null[0]
+    final fun handleEnter(androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue? // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.handleEnter|handleEnter(androidx.compose.ui.text.input.TextFieldValue){}[0]
+    final fun handleSmartNewline(androidx.compose.ui.text.input/TextFieldValue, androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue? // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.handleSmartNewline|handleSmartNewline(androidx.compose.ui.text.input.TextFieldValue;androidx.compose.ui.text.input.TextFieldValue){}[0]
+    final fun indent(androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.indent|indent(androidx.compose.ui.text.input.TextFieldValue){}[0]
+    final fun outdent(androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.outdent|outdent(androidx.compose.ui.text.input.TextFieldValue){}[0]
     final fun toggle(androidx.compose.ui.text.input/TextFieldValue, io.github.valerioisufi.drawview.canvas.text/RichTextEditing.Format): androidx.compose.ui.text.input/TextFieldValue // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.toggle|toggle(androidx.compose.ui.text.input.TextFieldValue;io.github.valerioisufi.drawview.canvas.text.RichTextEditing.Format){}[0]
     final fun toggleBulletList(androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.toggleBulletList|toggleBulletList(androidx.compose.ui.text.input.TextFieldValue){}[0]
     final fun toggleHeading(androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.toggleHeading|toggleHeading(androidx.compose.ui.text.input.TextFieldValue){}[0]

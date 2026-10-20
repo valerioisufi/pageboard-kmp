@@ -445,10 +445,13 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public final fun getRotation ()F
 	public final fun getSessionId ()I
 	public final fun getValue ()Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun handleEnter ()Z
+	public fun indent ()V
 	public final fun isEditing ()Z
 	public final fun moveBy (FF)V
 	public final fun moveTo (FFZ)V
 	public static synthetic fun moveTo$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;FFZILjava/lang/Object;)V
+	public fun outdent ()V
 	public final fun pasteText-MZcJ67o (Ljava/lang/String;Landroidx/compose/ui/geometry/Offset;)V
 	public static synthetic fun pasteText-MZcJ67o$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;Ljava/lang/String;Landroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)V
 	public final fun reportLayoutHeight (F)V
@@ -464,6 +467,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public fun toggleHeading ()V
 	public fun toggleNumberedList ()V
 	public final fun updateValue (Landroidx/compose/ui/text/input/TextFieldValue;)V
+	public final fun updateValue (Landroidx/compose/ui/text/input/TextFieldValue;Z)V
 }
 
 public abstract interface class io/github/valerioisufi/drawview/canvas/controller/TextFormatTarget {
@@ -474,6 +478,8 @@ public abstract interface class io/github/valerioisufi/drawview/canvas/controlle
 	public abstract fun getColor ()I
 	public abstract fun getFontSize ()F
 	public fun getFormatsCharacters ()Z
+	public fun indent ()V
+	public fun outdent ()V
 	public fun toggle (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
 	public fun toggleBulletList ()V
 	public fun toggleHeading ()V
@@ -482,6 +488,8 @@ public abstract interface class io/github/valerioisufi/drawview/canvas/controlle
 
 public final class io/github/valerioisufi/drawview/canvas/controller/TextFormatTarget$DefaultImpls {
 	public static fun getFormatsCharacters (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
+	public static fun indent (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
+	public static fun outdent (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
 	public static fun toggle (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
 	public static fun toggleBulletList (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
 	public static fun toggleHeading (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
@@ -908,6 +916,10 @@ public final class io/github/valerioisufi/drawview/canvas/snap/SnapGuide {
 public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing;
+	public final fun handleEnter (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun handleSmartNewline (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun indent (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun outdent (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggle (Landroidx/compose/ui/text/input/TextFieldValue;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleBulletList (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleHeading (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;

@@ -434,4 +434,49 @@ class TextEditingTest {
         editor.type("Hello there")
         assertEquals(right, editor.boxX + editor.boxWidth, 0.01f)
     }
+
+    @Test
+    fun listEditingEnterContinuesAndExits() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 50f, 50f)
+        editor.type("- First")
+        assertTrue(editor.handleEnter(), "Enter continues bullet list")
+        assertEquals("- First\n- ", editor.value.text)
+        assertEquals(TextRange(10), editor.value.selection)
+
+        // Enter on empty item exits list
+        assertTrue(editor.handleEnter(), "Enter on empty item exits list")
+        assertEquals("- First\n", editor.value.text)
+        assertEquals(TextRange(8), editor.value.selection)
+    }
+
+    @Test
+    fun listEditingIndentAndOutdent() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 50f, 50f)
+        editor.type("- Item")
+        editor.indent()
+        assertEquals("  - Item", editor.value.text)
+        editor.outdent()
+        assertEquals("- Item", editor.value.text)
+    }
+
+    @Test
+    fun softKeyboardReturnContinuesAndExitsList() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 50f, 50f)
+        editor.type("- Item")
+        // Simulating soft keyboard inserting '\n'
+        editor.updateValue(TextFieldValue("- Item\n", TextRange(7)))
+        assertEquals("- Item\n- ", editor.value.text)
+        assertEquals(TextRange(9), editor.value.selection)
+
+        // Simulating soft keyboard inserting '\n' on empty item
+        editor.updateValue(TextFieldValue("- Item\n- \n", TextRange(10)))
+        assertEquals("- Item\n", editor.value.text)
+        assertEquals(TextRange(7), editor.value.selection)
+    }
 }

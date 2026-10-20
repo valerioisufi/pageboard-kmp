@@ -323,26 +323,57 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
 
     /** The text and its selection as the user changed them. */
     public fun updateValue(newValue: TextFieldValue) {
+        updateValue(newValue, smartNewline = true)
+    }
+
+    /**
+     * The text and its selection as the user changed them, optionally applying smart list continuation
+     * if [newValue] represents a single newline insertion.
+     */
+    public fun updateValue(newValue: TextFieldValue, smartNewline: Boolean) {
         if (!isEditing) return
         val textChanged = newValue.text != value.text
-        value = newValue
-        if (textChanged) {
+        val applied = if (textChanged && smartNewline) {
+            RichTextEditing.handleSmartNewline(value, newValue) ?: newValue
+        } else {
+            newValue
+        }
+        val reallyChanged = applied.text != value.text
+        value = applied
+        if (reallyChanged) {
             fitWidth()
             reportDraft()
         }
     }
 
+    /**
+     * Handles Enter on the current line if it is a list item: continues the list or exits if empty.
+     * Returns `true` if handled.
+     */
+    public fun handleEnter(): Boolean {
+        if (!isEditing) return false
+        val result = RichTextEditing.handleEnter(value) ?: return false
+        updateValue(result, smartNewline = false)
+        return true
+    }
+
     /** Adds or removes [format] around the selection (or inserts its delimiters at the caret). */
-    override fun toggle(format: RichTextEditing.Format): Unit = updateValue(RichTextEditing.toggle(value, format))
+    override fun toggle(format: RichTextEditing.Format): Unit = updateValue(RichTextEditing.toggle(value, format), smartNewline = false)
 
     /** Makes the line of the caret a heading, or plain text again. */
-    override fun toggleHeading(): Unit = updateValue(RichTextEditing.toggleHeading(value))
+    override fun toggleHeading(): Unit = updateValue(RichTextEditing.toggleHeading(value), smartNewline = false)
 
     /** Makes the lines of the selection bullet list items, or plain text again. */
-    override fun toggleBulletList(): Unit = updateValue(RichTextEditing.toggleBulletList(value))
+    override fun toggleBulletList(): Unit = updateValue(RichTextEditing.toggleBulletList(value), smartNewline = false)
 
     /** Makes the lines of the selection numbered list items, or plain text again. */
-    override fun toggleNumberedList(): Unit = updateValue(RichTextEditing.toggleNumberedList(value))
+    override fun toggleNumberedList(): Unit = updateValue(RichTextEditing.toggleNumberedList(value), smartNewline = false)
+
+    /** Adds 2 spaces of indentation to the lines of the selection. */
+    override fun indent(): Unit = updateValue(RichTextEditing.indent(value), smartNewline = false)
+
+    /** Removes up to 2 spaces of indentation from the lines of the selection. */
+    override fun outdent(): Unit = updateValue(RichTextEditing.outdent(value), smartNewline = false)
 
     override fun changeFontSize(size: Float) {
         val clamped = TextSizes.clamp(size)
