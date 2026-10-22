@@ -1,0 +1,278 @@
+# Synchronization over the internet
+
+The devices sharing a document synchronize today on the same local network only
+(`drawview-sync-lan`). This plan adds the internet: devices on different networks (home,
+university, mobile data) connect to each other directly when they can and through a relay when
+they cannot, with [iroh](https://github.com/n0-computer/iroh) (Rust) compiled for every platform
+of the libraries. The devices are online at the same time: handing the operations to a device
+that comes online later (store and forward) is left to a plan of its own.
+
+The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
+Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected
+Variations).
+
+## Starting point
+
+* `SyncEngine` works on any `SyncChannel` (whole frames, in order, both ways): `accept` serves
+  the channels the other devices open, `connect` the ones this device opens. `LanTransport` (TCP)
+  and `InMemoryTransport` implement `SyncTransport`. `LanSync` is the Controller of the local
+  network: it announces the tags of the documents shared (mDNS), connects to the devices sharing
+  the same ones, makes the lost connections again every 5 s and remembers the devices found.
+* A transport is not trusted: everything after the `OpenFrame` (protocol version and tag of the
+  document, in clear) is encrypted with the key of the document (`SecureChannel`), each device
+  proves its `DeviceIdentity` (ECDSA P-256, kept in the `SecureStore`) in its `Hello`, and the
+  membership signed by the owner says who works on the document.
+* `Invitation.address` is "in the terms of a `SyncTransport`", but the applications make their
+  invitations without one: the owner is found on the local network by its tag.
+* `SyncCodec` ignores the fields it does not know, but a message of a kind it does not know closes
+  the connection (`SyncEngine.otherVersionMet`).
+* Two devices on different networks never synchronize, and neither do two devices on a network
+  isolating its clients (guest Wi-Fi, many university networks): see the risks of
+  [collaboration.md](collaboration.md).
+* The native code is C and C++ only: one Android library per engine (`drawview-native-*`, CMake
+  through the NDK), JNI libraries in the desktop jars (`buildDesktopNativeLibs`, five platforms
+  built by the CI for a release), static libraries and cinterop on iOS (`build_ios.sh`). There is
+  no Rust in the build, and no Rust toolchain on the development Mac.
+* The operations travel sealed (`SealedOperation`), ready for a store-and-forward relay that is
+  not built.
+
+## Requirements
+
+1. Two devices sharing a document, online at the same time on different networks (behind NATs,
+   on mobile data, behind a carrier-grade NAT), synchronize as they do on the local network:
+   operations, presence, resources and attachments, with the protocol above the channel
+   unchanged.
+2. The connection is direct whenever the network allows it (hole punching), through a relay
+   otherwise. The relay carries all of the traffic and reads none of it: it has neither the key
+   of the document nor the keys of the connection.
+3. Nothing is announced in public: no directory says who shares what. A device learns where the
+   members of its documents are from the members only (the invitation, the connections).
+4. The application gives the relay (its address and access token). The relay can be hosted on a
+   small virtual machine. PencilNotes uses the relay of its user; the tests run a relay in the
+   process; the public relays of n0 serve the development until the relay exists.
+5. The local network keeps working without the internet. Both transports run at the same time,
+   and the engine keeps one connection per device and document.
+6. The rules of the libraries hold: a headless module; the native library ships with the module
+   that uses it (Android library, JNI in the desktop jar for the five platforms, static library in
+   the iOS klib); no global state in the API; explicit API and ABI dump; an application without
+   the module works on the local network only; every artifact carries the licenses of the Rust
+   crates it contains.
+7. The mobile life cycle: the connections come back quickly after the background and after a
+   change of network (Wi-Fi to mobile data). No new entitlement on iOS (no multicast), no new
+   permission on Android (`INTERNET` only).
+8. The data of the user: no change to the Room schema or to the stored formats. The only new
+   storage (the addresses of the devices) is versioned from its first version. The protocol
+   changes are declared (version 2, see [Protocol](#protocol-version-2)).
+
+## Design
+
+### Responsibilities
+
+| Responsibility | Class (module) | GRASP |
+|---|---|---|
+| A connection to another device by its key, direct or relayed, with streams | the iroh `Endpoint`, behind the C API of `native/iroh-bridge` (Rust) | Indirection, Protected Variations |
+| The bridge seen from Kotlin: endpoint, connections, streams, as blocking calls with a timeout | `IrohNative` (`internal` expect/actual: JNI on Android and the desktop, cinterop on iOS; the members called by JNI public) | Pure Fabrication |
+| Reaching a device and being reached | `IrohTransport : SyncTransport` (`drawview-sync-iroh`): one QUIC connection per device, one bidirectional stream per document | Polymorphism, Protected Variations |
+| A stream as a channel | `IrohChannel : SyncChannel` (frames with their length, delimited by the bridge) | Polymorphism |
+| The key of the connections of this device | `IrohSecret` (Ed25519, in the `SecureStore`), apart from the `DeviceIdentity` | Information Expert |
+| Where a device can be reached, proved by the device | `DeviceAddress` (`drawview-sync-protocol`): device, transport, address (opaque), time, signature by the `DeviceIdentity` | Information Expert, Creator (each device makes and signs its own) |
+| Carrying the addresses between the members | `SyncEngine`: its own in the `Hello`, those of the members of the document in `DeviceAddresses`, relayed; it never reads them | Protected Variations |
+| Keeping the addresses | `AddressBook` port (`drawview-sync`), in memory by default; one versioned value of the `PreferenceStore` in the applications | Protected Variations |
+| Working with the devices over the internet | `IrohSync` (`drawview-sync-iroh`), like `LanSync`: the endpoint, its address published, the members not connected, the retries, the changes of network, the foreground | Controller |
+| The relay of an application | `RelayConfig` (addresses, access token) | Protected Variations |
+| Showing how each participant is connected, the settings of the relay | `Collaboration` (`drawview-sync-ui`), the settings of PencilNotes | Controller |
+
+### Connections
+
+* The connections of the synchronization use the ALPN `drawview/sync/2`. `IrohTransport` keeps
+  one connection per device: `connect(address)` opens a bidirectional stream on it (and the
+  connection when it is missing), and the streams the other devices open are its `incoming`
+  channels. The engine then works as over TCP: `OpenFrame`, `SecureChannel`, `Challenge`,
+  `Hello`.
+* Who connects: as with `LanSync`, the device with the smaller identity first, the other one when
+  the connection is still missing a moment later. A device already connected about a document
+  (through any transport, see `SyncEngine.peers`) is not connected again; when both transports
+  connect at once, the engine keeps one of the two connections (its rule for two connections
+  between the same devices). On the same network iroh finds the direct path itself, so neither
+  transport needs to be preferred.
+* The `Ping` of the engine (4 s, lost after 12 s) stays; iroh keeps the NAT mappings alive on its
+  own.
+* After the background and at every change of network, `IrohSync.refresh()` tells the endpoint
+  (`network_change`) and makes the missing connections again.
+* The `OpenFrame` now travels inside the TLS of QUIC: only the other device sees the tag.
+
+### Addresses
+
+* The address of a device on iroh is its endpoint identifier (an Ed25519 public key), its home
+  relay and the direct addresses it knows, written as text by the bridge; the engine never reads
+  it.
+* `DeviceAddress(device, transport, address, issuedAt, signature)` is signed by the
+  `DeviceIdentity` of the device. A device keeps an address only when its signature is right and
+  the device is a member of a document they share.
+* Exchange: a device gives its own addresses in its `Hello` (`addresses`). After the membership,
+  each side sends the addresses of the members of the document it knows (`DeviceAddresses`). An
+  address received is relayed to the other connections of the documents of that device. Of two
+  addresses of the same device and transport, the more recent one wins.
+* The invitation carries the addresses of the owner (`addresses`, by transport, instead of
+  `address`): the device joining reaches the owner over the internet. On the local network the
+  owner is still found by its tag.
+* `AddressBook`: the addresses by device, kept (one value with its version). An address is
+  forgotten when its device is not a member of any document shared any more.
+* Nothing is published: no DHT, and the DNS address lookup of iroh is off. Only the members of a
+  document know the endpoint identifiers of each other.
+
+### Protocol (version 2)
+
+* Changes: `Hello.addresses`, the message `DeviceAddresses`, the addresses of the invitation (the
+  link repeats `a=<transport>:<address>`), the ALPN on iroh.
+* `PROTOCOL_VERSION` goes from 1 to 2, and `ProtocolFormatTest` records the format of version 2.
+  A device of version 1 is refused at the first frame and told (`otherVersionMet`). The devices of
+  version 1 need not be compatible (the decision of the user, 2026-10-22), and the new kind of
+  message would close their connections anyway, in the middle of a session: the version makes
+  the refusal clean.
+* The version is authenticated with every frame and every sealed operation. Nothing is stored
+  sealed, so no stored data changes. The invitation links made before (without addresses) keep
+  working.
+
+### Native bridge
+
+* `native/iroh-bridge`: a Rust crate (static and dynamic library) on iroh 1.x at a fixed version,
+  with `Cargo.lock` committed and `rust-toolchain.toml` fixing the version of Rust and its targets.
+  Each endpoint owns its tokio runtime: the API keeps no global state.
+* The C API has about ten functions on opaque handles and byte buffers:
+  * bind an endpoint (its secret key, its relays, the ALPN);
+  * its own address;
+  * connect and accept;
+  * open and accept a stream;
+  * send a frame, receive one with a timeout;
+  * close;
+  * what a connection goes through (direct or relay, round-trip time);
+  * a change of network;
+  * free a buffer.
+
+  The errors come back as a code and a message, and every function catches the panics.
+* Kotlin calls them blocking, on `Dispatchers.IO`, with a timeout. Closing a stream or the
+  endpoint wakes the calls waiting on it, which is how a coroutine cancelled lets go.
+* Desktop and Android: the JNI functions are exported by the same crate (the `jni` crate). iOS:
+  the header is generated by cbindgen, read by cinterop, and the static library goes into the
+  klib.
+* The build is chosen in phase 0: Corrosion inside `native/CMakeLists.txt`, so that the three
+  paths we have (the NDK of `drawview-native-iroh`, `build_desktop.sh`, `build_ios.sh`) build the
+  crate too; otherwise cargo-ndk and Gradle tasks of their own.
+* A release is built for its size (`opt-level = "s"`, LTO, one codegen unit, stripped); phase 0
+  measures it on every platform.
+* An iOS application can link one Rust static library only (two would have the symbols of `std`
+  twice). If another module in Rust comes (the runtime of the local models), the crates go into
+  one library.
+* The TLS cryptography (ring or aws-lc-rs) is the one of the two that builds for every target
+  without other tools; phase 0 chooses it.
+* The licenses: cargo-about writes the notices of the crates, which go into each artifact and into
+  `THIRD_PARTY_LICENSES.md`.
+
+### Relay
+
+* The `iroh-relay` server of the same version as the crate:
+  * HTTPS on port 443 with a Let's Encrypt certificate, which needs a domain name (a free dynamic
+    DNS name will do);
+  * port 80 for the certificate;
+  * QUIC address discovery on UDP port 7842.
+
+  Access is by a shared token (`access.shared_token`), which the applications receive with the
+  address. The configuration and the service unit live in `tools/relay/`, with a guide.
+* Where it runs (the user wants a free tier of AWS or Google Cloud):
+  * the e2-micro of the Google Cloud free tier runs in the United States only (`us-west1`,
+    `us-central1`, `us-east1`) with 1 GB of outbound traffic a month. That is enough for
+    coordinating and keeping the connections alive, since most connections go direct, but tight
+    for traffic through the relay: the audio of a lecture is about 11 MB an hour, plus the
+    presence while drawing;
+  * an AWS account opened after 15 July 2025 gets credits for a free plan of six months, then
+    pays, and a public IPv4 address is billed by the hour.
+
+  So the start is an e2-micro with a budget alert. Phase 7 measures the traffic through the relay
+  (its metrics) and moves it if it does not fit. The price of the external address is to be
+  checked when the machine is created.
+* Until then the development uses the public relays of n0 (rate-limited), and the tests a relay in
+  the process (`iroh::test_utils`).
+
+### Modules
+
+```
+drawview-sync-protocol  + DeviceAddress
+drawview-sync           + addresses in Hello, DeviceAddresses, AddressBook, protocol 2
+drawview-sync-iroh      IrohTransport, IrohChannel, IrohSync, RelayConfig (headless, on sync)
+drawview-native-iroh    Android: libiroh_bridge.so (three ABIs)
+drawview-sync-ui        + how each participant is connected
+native/iroh-bridge      the Rust crate (C API, JNI)
+tools/relay             configuration of the relay, guide
+```
+
+## Plan
+
+| Phase | Content | Status |
+|---|---|---|
+| 0. Spike | A throw-away module, not versioned. The Rust toolchain (rustup, targets). A crate with the C API on the desktop JVM, the iOS simulator and the Android emulator. Checks: two endpoints exchanging frames through a public relay; this Mac and a phone on mobile data (direct or relayed); the size of the library on each platform; the build (Corrosion or cargo-ndk); the TLS cryptography; the network interfaces on Android; iOS without entitlements | proposed |
+| 1. Bridge and build | `native/iroh-bridge`, `drawview-native-iroh`, the desktop JNI in `buildDesktopNativeLibs` and in the CI matrix, the iOS static library and cinterop, `rust-toolchain.toml`, the licenses, the consumer check of the Android library | proposed |
+| 2. Transport | `drawview-sync-iroh`: `IrohNative`, `IrohTransport`, `IrohChannel`, `RelayConfig`. Tests: frames (1.5 MB too); three devices synchronizing over iroh with a relay in the process, on the JVM and the iOS simulator | proposed |
+| 3. Addresses, protocol 2 | `DeviceAddress`, `Hello.addresses`, `DeviceAddresses`, `AddressBook` (a versioned value, with its tests), the addresses of the invitation, `PROTOCOL_VERSION` 2 and `ProtocolFormatTest` | proposed |
+| 4. Controller | `IrohSync`: the endpoint and its life cycle, its address published, the members connected, the retries, the foreground, the changes of network; with `LanSync` at the same time. Tests: devices "on different networks", through the relay only, a connection lost and made again | proposed |
+| 5. Relay | `tools/relay/`: the configuration of `iroh-relay` (TLS, token, QUIC address discovery), the service unit, the guide for an e2-micro. The user creates the machine | proposed |
+| 6. Applications | PencilNotes on Android, iOS and the desktop: the relay in the settings (address, token), synchronization over the internet on or off, how each participant is connected in the sharing dialog; the sample; the strings in the 7 languages; the screenshots | proposed |
+| 7. Real networks | iPad or phone on mobile data and the Mac at home, the university Wi-Fi, two homes. Measures: the time to connect, how many connections go direct, the traffic through the relay, the battery | proposed |
+
+Every phase ends with the checks of `CLAUDE.md` (the JVM tests, the ABI, the Android, iOS and
+application builds, the consumer checks when the published API or the dependencies change), and
+the desktop applications run on a scratch data directory.
+
+## Decisions
+
+### Taken by the user (2026-10-22)
+
+* iroh rather than libp2p. When the hole punching fails, the relay of iroh carries all of the
+  traffic, while the relay (v2) of rust-libp2p has limits of 128 KiB and 2 minutes per circuit by
+  default. iroh has fewer pieces to put together and its API is stable since 1.0.
+* The relay runs on a free tier of AWS or Google Cloud.
+* No compatibility with the devices of protocol version 1.
+* Store and forward comes later, in a plan of its own.
+
+### Taken by me (revertible)
+
+* Protocol version 2 (see [Protocol](#protocol-version-2)).
+* A C API written by hand, called through JNI and cinterop, rather than UniFFI with Gobley. The
+  other way would bring JNA, generated public code against the explicit API, and a third-party
+  Gradle plugin, for an API of ten functions. The ink bridge is already made this way.
+* The key of the connections apart from the `DeviceIdentity`, as `CLAUDE.md` asks: the signed
+  `DeviceAddress` binds the two.
+* The addresses are signed by each device and relayed between the members. Two other ways were
+  left:
+  * in the membership signed by the owner, a member could not be found while the owner is
+    offline;
+  * published in the DNS, they would be public.
+* One QUIC connection per device and one stream per document.
+* Blocking calls on `Dispatchers.IO` rather than callbacks from the threads of Rust.
+* The modules are named after the engine (`drawview-sync-iroh`, `drawview-native-iroh`), like
+  `drawview-store-room` and `drawview-ml-litert`.
+* The `iroh-relay` server of n0 rather than one of ours: the store and forward will need a service
+  of its own anyway.
+* The e2-micro of Google Cloud rather than AWS, whose free plan is credits for six months.
+* The local network stays on `drawview-sync-lan`: it works without the internet, and the local
+  discovery of iroh would need the multicast entitlement on iOS.
+
+## Left for later
+
+* Store and forward (`drawview-sync-relay`): a service that keeps the sealed operations for the
+  devices offline.
+* Several relays (failover, Europe and United States), or managed relays.
+* The local network through iroh, in place of `LanTransport`.
+* Rotating the keys of the connections. The relay sees which endpoints talk to each other, when
+  and how much.
+* Port mapping (UPnP, PCP) on the desktop, if the measures show it helps.
+
+## Risks
+
+* The size of the library on Android (three ABIs) and in the desktop jar (five platforms):
+  measured in phase 0, split by ABI in the app bundle.
+* The build on Windows (MSVC) and on Linux arm64 in the CI.
+* The background on iOS suspends the connections, as on the local network (`BackgroundSync`).
+* The outbound traffic of the free tier.
+* A single project (n0) behind the engine. Mitigated: it is open source, the relay is our own,
+  and the bridge sits behind `SyncTransport`, so another engine would be another module.

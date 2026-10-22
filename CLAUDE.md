@@ -7,8 +7,9 @@ sample. Start from:
 - `README.md`: the modules, how to build, run and test.
 - `docs/modularization.md`: the module table, the dependency graph and the rules the libraries
   follow (the "Rules" and "Design" sections).
-- The plan of the area you work on: `docs/collaboration.md` (sync), `docs/lecture-assistant.md`,
-  `docs/export.md`, `docs/text-editing.md`, `docs/adaptive-ui.md`, `docs/ui-design.md`.
+- The plan of the area you work on: `docs/collaboration.md` (sync), `docs/internet-sync.md`
+  (sync over the internet), `docs/lecture-assistant.md`, `docs/export.md`, `docs/text-editing.md`,
+  `docs/adaptive-ui.md`, `docs/ui-design.md`.
 
 ## How work is done
 
@@ -100,18 +101,13 @@ downloads them, which takes a while.
 
 ## Planned work
 
-These are not started yet; each one gets its own plan.
+Each one gets its own plan.
 
-- **libp2p as a sync transport.**
-  - Shape: a new module implementing `SyncTransport` and `SyncChannel`, with a discovery
-    controller like `LanSync`.
-  - Native bindings: there is no libp2p for Kotlin/Native, so it needs native bindings.
-  - Identity: `DeviceIdentity` (ECDSA P-256) is checked inside the channel, so it stays apart
-    from the libp2p peer key.
-  - Discovery: announcing the tags of the documents on a public DHT would reveal who shares
-    what.
-  - Offline devices: the circuit relay of libp2p does not store anything, so they still need
-    the store-and-forward relay (`SealedOperation` was made for it).
+- **Sync over the internet with iroh** (in progress, `feat/internet-sync`): the plan is
+  `docs/internet-sync.md`. It replaces the idea of libp2p, whose relay limits every circuit to
+  128 KiB and 2 minutes by default.
+  - Offline devices: the relay of iroh does not store anything, so they still need the
+    store-and-forward relay (`SealedOperation` was made for it), in a plan of its own.
 - **Lecture assistant on small, specialized local models.**
   - Today Gemini and Ollama are wired inside `drawview-lecture`.
   - The model runtime (whisper.cpp today) should become a module of its own, shared with
