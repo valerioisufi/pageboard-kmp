@@ -31,6 +31,17 @@ class RichTextParserBoundsTest {
     }
 
     @Test
+    fun manySpansTakeLinearTime() {
+        val patterns = listOf(
+            "*a* ", "**a** ", "~~a~~ ", "\\*", "`a` ", "# a b\n", "- a\n", "  1. a\n", "\$a\$ ",
+            // Formulas never closed on one line, display formulas on one line and on lines of their own
+            "\$a ", "\$\$a\$\$", "\$\$a\$\$\n",
+            "- **a** *b* ~~c~~ `d` \$e\$ \\* \$f\n## g \$\$h\$\$\n"
+        )
+        for (pattern in patterns) assertLinear(pattern)
+    }
+
+    @Test
     fun randomTextsNeverMakeItThrow() {
         val random = Random(20261022)
         repeat(2_000) {
@@ -47,6 +58,44 @@ class RichTextParserBoundsTest {
             // Some characters masked, as the code and the formulas are
             val masked = text.map { if (random.nextInt(12) == 0) MASK else it }.joinToString("")
             assertEquals(referenceEmphasis(masked, text), RichTextParser.emphasis(masked, text), "masked: $masked, text: $text")
+        }
+    }
+
+    @Test
+    fun theInlineFormulasCloseWhereTheWalkOfEachFound() {
+        val random = Random(2210)
+        repeat(10_000) {
+            val text = randomText(random, random.nextInt(0, 40))
+            val closings = RichTextParser.InlineClosings(text)
+            for (open in text.indices) {
+                if (text[open] == '$') assertEquals(referenceClosing(text, open), closings.closing(open), "the $ at $open of $text")
+            }
+        }
+    }
+
+    @Test
+    fun displayFormulasAreAloneOnTheirLinesAsBefore() {
+        val random = Random(221)
+        repeat(10_000) {
+            val text = randomText(random, random.nextInt(0, 40))
+            val start = random.nextInt(0, text.length + 1)
+            val end = random.nextInt(start, text.length + 1)
+            assertEquals(referenceAlone(text, start, end), RichTextParser.isAloneOnItsLines(text, start, end), "$start .. $end of $text")
+        }
+    }
+
+    @Test
+    fun theNestingIsWhatComparingWithEverySpanGave() {
+        val random = Random(22)
+        repeat(10_000) {
+            val candidates = List(random.nextInt(0, 12)) {
+                val start = random.nextInt(0, 30)
+                val end = random.nextInt(start + 1, start + 16)
+                val contentStart = random.nextInt(start, end + 1)
+                val contentEnd = random.nextInt(contentStart, end + 1)
+                Span(Kind.entries[random.nextInt(Kind.entries.size)], start, end, contentStart, contentEnd)
+            }
+            assertEquals(referenceNest(candidates), RichTextParser.nest(candidates), "$candidates")
         }
     }
 
@@ -81,6 +130,49 @@ class RichTextParserBoundsTest {
             }
         }
         return spans
+    }
+
+    /** The `$` closing the formula opened at [open], walked from it as before [RichTextParser.InlineClosings]. */
+    private fun referenceClosing(text: String, open: Int): Int {
+        val first = text.getOrNull(open + 1) ?: return -1
+        if (first.isWhitespace() || first == '$') return -1
+        var j = open + 1
+        while (j < text.length) {
+            val c = text[j]
+            if (c == '\n') return -1
+            if (c == '\\') {
+                j += 2
+                continue
+            }
+            if (c == '$') {
+                val closes = !text[j - 1].isWhitespace() && text.getOrNull(j + 1)?.isDigit() != true && text.getOrNull(j + 1) != '$'
+                if (closes) return j
+            }
+            j++
+        }
+        return -1
+    }
+
+    /** Whether only spaces are around [start] .. [end] on their lines, their whole lines read. */
+    private fun referenceAlone(text: String, start: Int, end: Int): Boolean {
+        val lineStart = text.lastIndexOf('\n', start - 1) + 1
+        val lineEnd = text.indexOf('\n', end).let { if (it < 0) text.length else it }
+        return text.substring(lineStart, start).isBlank() && text.substring(end, lineEnd).isBlank()
+    }
+
+    /** The nesting comparing each span with every span kept before it (see [RichTextParser.nest]). */
+    private fun referenceNest(candidates: List<Span>): List<Span> {
+        val sorted = candidates.sortedWith(compareBy<Span> { it.start }.thenByDescending { it.end })
+        val kept = mutableListOf<Span>()
+        for (span in sorted) {
+            val fits = kept.all { other ->
+                span.end <= other.start || span.start >= other.end ||
+                    (other.kind != Kind.CODE && other.kind != Kind.FORMULA && other.kind != Kind.ESCAPE &&
+                        span.start >= other.contentStart && span.end <= other.contentEnd)
+            }
+            if (fits) kept += span
+        }
+        return kept
     }
 
     private data class Rule(val kind: Kind, val delimiter: Int, val regex: Regex, val wordBound: Boolean = false)

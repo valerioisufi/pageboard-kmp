@@ -93,6 +93,7 @@ public object RichTextParser {
      */
     private fun scanVerbatim(text: String): List<Span> {
         val spans = mutableListOf<Span>()
+        val inline = InlineClosings(text)
         var i = 0
         while (i < text.length) {
             val c = text[i]
@@ -120,7 +121,7 @@ public object RichTextParser {
                     // No closing "$$": the first dollar is plain text, the second may open a formula
                 }
                 c == '$' -> {
-                    val close = closingInline(text, i)
+                    val close = inline.closing(i)
                     if (close >= 0) {
                         spans += Span(Kind.FORMULA, i, close + 1, i + 1, close)
                         i = close + 1
@@ -148,35 +149,54 @@ public object RichTextParser {
     }
 
     /**
-     * Where the `$` closing the formula opened at [open] is, or -1 (Pandoc: a character other
-     * than a space after the opening one and before the closing one, no digit after the closing
-     * one; on one line).
+     * The `$` closing the formulas in the line of [text] (Pandoc: a character other than a space
+     * after the opening one and before the closing one, no digit after the closing one; on one
+     * line), asked for its `$` in the order of the text.
+     *
+     * The walk from a `$` moves by one character, or by two after a backslash: it never jumps over
+     * the character after a later `$`, where the walk from that `$` starts, and from there on they
+     * are the same walk. Whether a `$` closes depends on its neighbours only. So the `$` passed by
+     * a walk that found no closing `$` have none either, and no part of the text is walked twice.
      */
-    private fun closingInline(text: String, open: Int): Int {
-        val first = text.getOrNull(open + 1) ?: return -1
-        if (first.isWhitespace() || first == '$') return -1
-        var j = open + 1
-        while (j < text.length) {
-            val c = text[j]
-            if (c == '\n') return -1
-            if (c == '\\') {
-                j += 2
-                continue
+    internal class InlineClosings(private val text: String) {
+        /** The `$` before here close no formula: a walk passed them and found none. */
+        private var unclosedBefore = 0
+
+        /** Where the `$` closing the formula opened at [open] is, or -1. */
+        fun closing(open: Int): Int {
+            if (open < unclosedBefore) return -1
+            val first = text.getOrNull(open + 1) ?: return -1
+            if (first.isWhitespace() || first == '$') return -1
+            var j = open + 1
+            while (j < text.length) {
+                val c = text[j]
+                if (c == '\n') break
+                if (c == '\\') {
+                    j += 2
+                    continue
+                }
+                if (c == '$') {
+                    val closes = !text[j - 1].isWhitespace() && text.getOrNull(j + 1)?.isDigit() != true && text.getOrNull(j + 1) != '$'
+                    if (closes) return j
+                }
+                j++
             }
-            if (c == '$') {
-                val closes = !text[j - 1].isWhitespace() && text.getOrNull(j + 1)?.isDigit() != true && text.getOrNull(j + 1) != '$'
-                if (closes) return j
-            }
-            j++
+            unclosedBefore = j
+            return -1
         }
-        return -1
     }
 
-    /** Whether only spaces are around [start] .. [end] on their lines. */
-    private fun isAloneOnItsLines(text: String, start: Int, end: Int): Boolean {
-        val lineStart = text.lastIndexOf('\n', start - 1) + 1
-        val lineEnd = text.indexOf('\n', end).let { if (it < 0) text.length else it }
-        return text.substring(lineStart, start).isBlank() && text.substring(end, lineEnd).isBlank()
+    /**
+     * Whether only spaces are around [start] .. [end] on their lines: the spaces next to them are
+     * walked, up to the line break or another character, not the whole line.
+     */
+    internal fun isAloneOnItsLines(text: String, start: Int, end: Int): Boolean {
+        var before = start - 1
+        while (before >= 0 && text[before] != '\n' && text[before].isWhitespace()) before--
+        if (before >= 0 && text[before] != '\n') return false
+        var after = end
+        while (after < text.length && text[after] != '\n' && text[after].isWhitespace()) after++
+        return after == text.length || text[after] == '\n'
     }
 
     /**
@@ -201,19 +221,29 @@ public object RichTextParser {
 
     /**
      * The spans that nest, sorted: an outer one first; a span overlapping one kept partially, or
-     * inside a delimiter, code or formula, is dropped.
+     * inside a delimiter, code or formula, is dropped. The [candidates] are not empty.
+     *
+     * The spans kept and still open where a span starts nest in each other, each in the content of
+     * the one before it: a span in the content of the innermost one is in the content of all of
+     * them, so it is checked against that one only.
      */
-    private fun nest(candidates: List<Span>): List<Span> {
-        val sorted = candidates.sortedWith(compareBy<Span> { it.start }.thenByDescending { it.end })
+    internal fun nest(candidates: List<Span>): List<Span> {
+        // By start, then by end backwards: an outer span before the ones it contains
+        val sorted = candidates.sortedWith { a, b -> if (a.start != b.start) a.start.compareTo(b.start) else b.end.compareTo(a.end) }
         val kept = mutableListOf<Span>()
+        // The spans kept and still open, the innermost last
+        val open = mutableListOf<Span>()
         for (span in sorted) {
-            val fits = kept.all { other ->
-                span.end <= other.start || span.start >= other.end ||
-                    // Inside the content of a span whose content is notation
-                    (other.kind != Kind.CODE && other.kind != Kind.FORMULA && other.kind != Kind.ESCAPE &&
-                        span.start >= other.contentStart && span.end <= other.contentEnd)
+            while (open.isNotEmpty() && open.last().end <= span.start) open.removeAt(open.lastIndex)
+            val outer = open.lastOrNull()
+            val fits = outer == null ||
+                // Inside the content of a span whose content is notation
+                (outer.kind != Kind.CODE && outer.kind != Kind.FORMULA && outer.kind != Kind.ESCAPE &&
+                    span.start >= outer.contentStart && span.end <= outer.contentEnd)
+            if (fits) {
+                kept += span
+                open += span
             }
-            if (fits) kept += span
         }
         return kept
     }

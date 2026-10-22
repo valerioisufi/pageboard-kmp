@@ -131,7 +131,7 @@ text, as with `findAll` (`a__b __c__` has no bold).
 | Phase | Content | Status |
 |---|---|---|
 | 1. Emphasis | `Emphasis` opening, closing and scanning; the expressions removed; the tests of phase 1 | done |
-| 2. The rest of the parsing | `nest` with a stack, the inline formulas walked once, the lines of the display formulas; the tests of phase 2 | to do |
+| 2. The rest of the parsing | `nest` with a stack, the inline formulas walked once, the lines of the display formulas; the tests of phase 2 | done |
 
 Every phase ends with the checks of `CLAUDE.md` and `:drawview-model:iosSimulatorArm64Test`.
 
@@ -154,6 +154,27 @@ Every phase ends with the checks of `CLAUDE.md` and `:drawview-model:iosSimulato
   simulator.
 * Checked once more, outside the tests: the whole `parse` of before and of now give the same spans
   for 400 000 random texts (786 082 spans).
+
+### Phase 2 results
+
+* `RichTextParser.nest` (internal) keeps the spans with a stack of the ones still open, and sorts
+  them with a comparator of its own: `compareBy` boxed the offsets, and took half of the time of
+  the nesting on the iOS simulator. `RichTextParser.InlineClosings` (internal) walks for the
+  inline formulas, keeping where a walk found no closing `$`; `isAloneOnItsLines` (internal) walks
+  the spaces around a display formula only.
+* Texts of 1 MiB with 150 000 to 525 000 spans (`*a* `, `**a** `, `~~a~~ `, `\*`, `` `a` ``,
+  `# a b⏎`, `- a⏎`, `  1. a⏎`, `$a$ `, `$$a$$`, `$$a$$⏎`, every kind mixed) and `$a ` on one line
+  are parsed in 10–42 ms on the JVM, where they would take from 14 s to minutes (from their times
+  at 64 000 characters), and in 0.1–1.2 s on the iOS simulator. The slowest there is `- a⏎`: half of its time is the expression of the bulleted
+  lists, 545 ms for its 262 144 matches.
+* `RichTextParserBoundsTest`: those texts within 10 s each; against the code they replace, kept in
+  the test as the references, 10 000 random texts with a walk for each of their `$`, 10 000 with a
+  formula placed at random, 10 000 sets of up to 12 random spans nested. Each reference test fails
+  with a broken change: the walks taken as done past the line break, or for a `$` followed by a
+  space; the line break crossed walking back from a formula; the nesting checked against the
+  outermost open span.
+* Checked once more, outside the tests: the whole `parse` of before (the code of `main`) and of now
+  give the same spans for 400 000 random texts (786 082 spans).
 
 ## Decisions
 
@@ -182,5 +203,7 @@ Every phase ends with the checks of `CLAUDE.md` and `:drawview-model:iosSimulato
   some texts differently (`***a***`, `**a *b** c*`): a change of the notation, not of its cost.
 * The emphasis takes the spaces of ASCII, the formulas all the spaces of Unicode (`isWhitespace`),
   as before.
+* The expressions of the headings and the lists cost about 2 µs per match on the iOS simulator:
+  linear, but a scan of the lines would be faster.
 * A kind of span written as it is, added later (the code blocks of `docs/code-blocks.md`), joins
   the code, the formulas and the escapes in the check of the nesting.
