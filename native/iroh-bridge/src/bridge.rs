@@ -226,10 +226,13 @@ pub fn network_change(endpoint_id: u64) -> Result<()> {
     Ok(())
 }
 
-/// Closes the endpoint and its connections.
+/// Closes the endpoint and its connections: its number is refused at once, the connections say
+/// goodbye on a thread of their own (the caller does not wait).
 pub fn close_endpoint(endpoint_id: u64) {
     if let Some(Entry::Endpoint(entry)) = remove(endpoint_id) {
-        let _ = wait(entry.runtime(), CLOSE_TIMEOUT.as_millis() as i64, entry.endpoint.close());
+        std::thread::spawn(move || {
+            let _ = wait(entry.runtime(), CLOSE_TIMEOUT.as_millis() as i64, entry.endpoint.close());
+        });
     }
 }
 

@@ -57,6 +57,7 @@ kotlin {
         commonMain.dependencies {
             api(project(":drawview-sync"))
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.cryptography.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

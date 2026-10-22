@@ -49,6 +49,16 @@ class IrohRelayTest {
         }
     }
 
+    @Test
+    fun devicesMeetingThroughTheRelayKeepTheDocumentsTheSame() = withRelay { relay ->
+        irohSyncTest { scope ->
+            // What a device learns of another one: its identifier and its relay
+            threeDevicesKeepTheDocumentTheSame(scope, RelayConfig(listOf(relay))) { device ->
+                device.address.split(' ').filter { ':' !in it || "://" in it }.joinToString(" ")
+            }
+        }
+    }
+
     private companion object {
         const val ALPN = "drawview/test"
     }

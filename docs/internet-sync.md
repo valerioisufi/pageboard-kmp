@@ -116,15 +116,22 @@ Variations).
 * The invitation carries the addresses of the owner (`addresses`, by transport, instead of
   `address`): the device joining reaches the owner over the internet. On the local network the
   owner is still found by its tag.
-* `AddressBook`: the addresses by device, kept (one value with its version). An address is
-  forgotten when its device is not a member of any document shared any more.
+* In the link, each address is `a.<transport>=<address>`. The links are stored too: the device
+  joining keeps its link in `SharingState.joining`. So `a=<address>`, the form before, is read as
+  the address on the local network (`lan`).
+* `AddressBook` (a port of `drawview-sync`): the addresses by device, kept in the preferences of
+  the store (`PreferenceStore`, one JSON value with its version). The Room schema does not change.
+  An address is forgotten when its device is not a member of any document shared any more.
+* The engine signs the addresses of this device (it holds the `DeviceIdentity`) when a transport
+  gives them (`SyncEngine.publishAddress`), and gives the controllers the addresses of the
+  members (`SyncEngine.addressesOf`).
 * Nothing is published: no DHT, and the DNS address lookup of iroh is off. Only the members of a
   document know the endpoint identifiers of each other.
 
 ### Protocol (version 2)
 
 * Changes: `Hello.addresses`, the message `DeviceAddresses`, the addresses of the invitation (the
-  link repeats `a=<transport>:<address>`), the ALPN on iroh.
+  link repeats `a.<transport>=<address>`), the ALPN on iroh.
 * `PROTOCOL_VERSION` goes from 1 to 2, and `ProtocolFormatTest` records the format of version 2.
   A device of version 1 is refused at the first frame and told (`otherVersionMet`). The devices of
   version 1 need not be compatible (the decision of the user, 2026-10-22), and the new kind of
@@ -242,7 +249,7 @@ tools/relay             configuration of the relay, guide
 |---|---|---|
 | 0. Spike | A throw-away module, not versioned. The Rust toolchain (rustup, targets). A crate with the C API on the desktop JVM, the iOS simulator and the Android emulator. Checks: two endpoints exchanging frames through a public relay; this Mac and a phone on mobile data (direct or relayed); the size of the library on each platform; the build (Corrosion or cargo-ndk); the TLS cryptography; the network interfaces on Android; iOS without entitlements | done |
 | 1. Bridge and build | `native/iroh-bridge`, `drawview-native-iroh`, the desktop JNI in `buildDesktopNativeLibs` and in the CI matrix, the iOS static library and cinterop, `rust-toolchain.toml`, the licenses, the consumer check of the Android library | done |
-| 2. Transport | `drawview-sync-iroh`: `IrohNative`, `IrohTransport`, `IrohChannel`, `RelayConfig`. Tests: frames (1.5 MB too); three devices synchronizing over iroh with a relay in the process, on the JVM and the iOS simulator | to do |
+| 2. Transport | `drawview-sync-iroh`: `IrohNative`, `IrohTransport`, `IrohChannel`, `RelayConfig`. Tests: frames (1.5 MB too); three devices synchronizing over iroh with a relay in the process, on the JVM and the iOS simulator | done |
 | 3. Addresses, protocol 2 | `DeviceAddress`, `Hello.addresses`, `DeviceAddresses`, `AddressBook` (a versioned value, with its tests), the addresses of the invitation, `PROTOCOL_VERSION` 2 and `ProtocolFormatTest` | to do |
 | 4. Controller | `IrohSync`: the endpoint and its life cycle, its address published, the members connected, the retries, the foreground, the changes of network; with `LanSync` at the same time. Tests: devices "on different networks", through the relay only, a connection lost and made again | to do |
 | 5. Relay | `tools/relay/`: the configuration of `iroh-relay` (TLS, token, QUIC address discovery), the service unit, the guide for an e2-micro. The user creates the machine | to do |
@@ -325,6 +332,38 @@ ones of n0 (the nearest one, in Frankfurt).
 * The checks of `CLAUDE.md`, the consumer checks included, pass. The ABI of `drawview-sync-iroh` is
   recorded empty: everything in it is internal until phase 2.
 
+
+### Phase 2 results
+
+* `IrohTransport` (a `SyncTransport`):
+  * `start` binds the endpoint and gives its address;
+  * `connect` opens a stream on the connection to the device, made first when missing;
+  * `incoming` gives the streams the others open;
+  * `networkChanged` and `currentAddress` serve phase 4;
+  * `isAvailable` tells whether the bridge is on the platform.
+
+  The channels to the same device share one connection. The side that opened the connection
+  closes it with the last of its channels. A connection found closed (the other device went
+  away) is opened again once.
+* `IrohChannel` (a `SyncChannel`) blocks in the bridge for 250 ms at most, again and again, on
+  threads of its own: `Dispatchers.IO.limitedParallelism(256)`, beyond the 64 of `Dispatchers.IO`.
+  So a receive cancelled by the engine (a connection silent for too long) lets go at once, and a
+  frame is never cut. Each channel waiting for a frame holds a thread (see Left for later).
+* `IrohSecret`: the key of the connections, generated with `CryptographyRandom` and kept in the
+  `SecureStore`. `RelayConfig`: the relays of the application with their token, which its
+  `toString` hides.
+* Tests on the JVM and the iOS simulator:
+  * frames over iroh (an empty frame and 1.5 MB too), the end seen when the other side closes;
+  * a receive cancelled letting go within 250 ms, the channel going on;
+  * three channels on one connection, and a new connection once they are closed;
+  * a device gone cannot be connected to, nor a transport not started;
+  * three `SyncEngine`s keeping a document the same: Bob and Cy join through Ada, and the change
+    of Bob reaches Cy relayed by her.
+
+  On the JVM the three devices also run through the relay of the tests, reaching Ada by her
+  identifier and relay only.
+* The ABI of `drawview-sync-iroh` records `IrohTransport`, `IrohSecret` and `RelayConfig`.
+
 ## Decisions
 
 ### Taken by the user (2026-10-22)
@@ -369,6 +408,10 @@ ones of n0 (the nearest one, in Frankfurt).
   arrays only.
 * The C header written by hand rather than generated by cbindgen: one tool less for twenty
   functions.
+* The calls of the bridge blocking for 250 ms at most and made again, on a dispatcher of their own
+  (phase 2), rather than callbacks from Rust into Kotlin.
+* The side that opened a connection closes it with its last channel, and the other side leaves it
+  to the first one or to the idle timeout of QUIC.
 * The Android library built by its own module (`drawview.android.rust`, with the NDK that AGP
   manages), the desktop one by `build_desktop.sh` (which clears the libraries of its platform
   before installing them), the iOS ones by `drawview-sync-iroh` (the module linking them).
@@ -382,6 +425,9 @@ ones of n0 (the nearest one, in Frankfurt).
 * Rotating the keys of the connections. The relay sees which endpoints talk to each other, when
   and how much.
 * Port mapping (UPnP, PCP) on the desktop, if the measures show it helps.
+* One thread for every channel waiting for a frame (phase 2): with many shared documents and
+  devices, a call of the bridge giving the frames of every stream of an endpoint at once (one
+  thread per endpoint) would replace it.
 
 ## Risks
 
