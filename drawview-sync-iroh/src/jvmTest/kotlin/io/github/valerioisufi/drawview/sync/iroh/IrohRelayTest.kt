@@ -59,6 +59,11 @@ class IrohRelayTest {
         }
     }
 
+    @Test
+    fun membersReachEachOtherThroughTheRelayWithoutTheOwner() = withRelay { relay ->
+        irohSyncTest { scope -> membersReachEachOtherWithoutTheOwner(scope, RelayConfig(listOf(relay))) }
+    }
+
     private companion object {
         const val ALPN = "drawview/test"
     }

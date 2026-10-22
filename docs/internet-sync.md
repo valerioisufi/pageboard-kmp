@@ -251,7 +251,7 @@ tools/relay             configuration of the relay, guide
 | 1. Bridge and build | `native/iroh-bridge`, `drawview-native-iroh`, the desktop JNI in `buildDesktopNativeLibs` and in the CI matrix, the iOS static library and cinterop, `rust-toolchain.toml`, the licenses, the consumer check of the Android library | done |
 | 2. Transport | `drawview-sync-iroh`: `IrohNative`, `IrohTransport`, `IrohChannel`, `RelayConfig`. Tests: frames (1.5 MB too); three devices synchronizing over iroh with a relay in the process, on the JVM and the iOS simulator | done |
 | 3. Addresses, protocol 2 | `DeviceAddress`, `Hello.addresses`, `DeviceAddresses`, `AddressBook` (a versioned value, with its tests), the addresses of the invitation, `PROTOCOL_VERSION` 2 and `ProtocolFormatTest` | done |
-| 4. Controller | `IrohSync`: the endpoint and its life cycle, its address published, the members connected, the retries, the foreground, the changes of network; with `LanSync` at the same time. Tests: devices "on different networks", through the relay only, a connection lost and made again | to do |
+| 4. Controller | `IrohSync`: the endpoint and its life cycle, its address published, the members connected, the retries, the foreground, the changes of network; with `LanSync` at the same time. Tests: devices "on different networks", through the relay only, a connection lost and made again | done |
 | 5. Relay | `tools/relay/`: the configuration of `iroh-relay` (TLS, token, QUIC address discovery), the service unit, the guide for an e2-micro. The user creates the machine | to do |
 | 6. Applications | PencilNotes on Android, iOS and the desktop: the relay in the settings (address, token), synchronization over the internet on or off, how each participant is connected in the sharing dialog; the sample; the strings in the 7 languages; the screenshots | to do |
 | 7. Real networks | iPad or phone on mobile data and the Mac at home, the university Wi-Fi, two homes. Measures: the time to connect, how many connections go direct, the traffic through the relay, the battery | to do |
@@ -401,6 +401,35 @@ ones of n0 (the nearest one, in Frankfurt).
     store);
   * the LAN and iroh tests, on version 2.
 
+
+### Phase 4 results
+
+* `IrohSync` (`drawview-sync-iroh`), the Controller like `LanSync`:
+  * `start` starts the transport, publishes where this device is, serves the channels of the
+    others and connects to the members missing;
+  * `join` connects to the owner of an invitation at its iroh address;
+  * `refresh(networkChanged)` serves the background and the changes of network;
+  * `stop` closes everything and takes the address of this device back.
+* Who connects:
+  * the member with the smaller identity, at once;
+  * the other one at the next round, when the connection is still missing (every `retryMs`,
+    10 s);
+  * at once too when a member arrives or moves, or a document is shared or joined (the
+    addresses, the memberships and the sharing of the engine, observed);
+  * the first round waits `firstDelayMs` (3 s), so that the local network goes first;
+  * a member connected through any transport is not connected to again.
+* The address published is the identifier and the relays of the device. They do not change
+  with the network, so the address is not sent again at every change of Wi-Fi, and the members
+  do not learn the IP addresses of each other. iroh finds the direct paths through the relays.
+  Without relays (the tests, one network) the whole address is published.
+* Tests on the JVM and the iOS simulator:
+  * Bob and Cy join a document of Ada with her invitation, learn from her where the other one
+    is, and connect to each other: once Ada is gone, they keep working together;
+  * a device back online, at another port, is connected again with what each one missed;
+  * a device gone offline no longer says where it is.
+
+  On the JVM the first test also runs through the relay of the tests only.
+
 ## Decisions
 
 ### Taken by the user (2026-10-22)
@@ -440,6 +469,8 @@ ones of n0 (the nearest one, in Frankfurt).
 * The addresses kept with the preferences of the store (`PreferenceAddressBook`) rather than with
   the sharing state of each document: no change to the Room schema, and they are per device, not
   per document.
+* The address published by `IrohSync` is the identifier and the relays only (phase 4): stable,
+  and without the IP addresses of the device.
 * The relay of the tests over plain HTTP on the loopback: neither the public relays nor TLS
   certificates are needed for the tests.
 * Numbers instead of pointers for the endpoints, connections and streams of the bridge (see Native

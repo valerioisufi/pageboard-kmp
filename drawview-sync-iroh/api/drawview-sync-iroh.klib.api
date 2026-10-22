@@ -15,6 +15,15 @@ final class io.github.valerioisufi.drawview.sync.iroh/IrohSecret { // io.github.
     }
 }
 
+final class io.github.valerioisufi.drawview.sync.iroh/IrohSync { // io.github.valerioisufi.drawview.sync.iroh/IrohSync|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.sync/SyncEngine, io.github.valerioisufi.drawview.sync.iroh/IrohTransport, kotlinx.coroutines/CoroutineScope, kotlin/Long = ..., kotlin/Long = ..., kotlin/Long = ...) // io.github.valerioisufi.drawview.sync.iroh/IrohSync.<init>|<init>(io.github.valerioisufi.drawview.sync.SyncEngine;io.github.valerioisufi.drawview.sync.iroh.IrohTransport;kotlinx.coroutines.CoroutineScope;kotlin.Long;kotlin.Long;kotlin.Long){}[0]
+
+    final suspend fun join(io.github.valerioisufi.drawview.sync.protocol/Invitation) // io.github.valerioisufi.drawview.sync.iroh/IrohSync.join|join(io.github.valerioisufi.drawview.sync.protocol.Invitation){}[0]
+    final suspend fun refresh(kotlin/Boolean = ...) // io.github.valerioisufi.drawview.sync.iroh/IrohSync.refresh|refresh(kotlin.Boolean){}[0]
+    final suspend fun start() // io.github.valerioisufi.drawview.sync.iroh/IrohSync.start|start(){}[0]
+    final suspend fun stop() // io.github.valerioisufi.drawview.sync.iroh/IrohSync.stop|stop(){}[0]
+}
+
 final class io.github.valerioisufi.drawview.sync.iroh/IrohTransport : io.github.valerioisufi.drawview.sync.protocol/SyncTransport { // io.github.valerioisufi.drawview.sync.iroh/IrohTransport|null[0]
     constructor <init>(kotlinx.coroutines/CoroutineScope, io.github.valerioisufi.drawview.sync.iroh/IrohSecret, io.github.valerioisufi.drawview.sync.iroh/RelayConfig, kotlin/Long = ...) // io.github.valerioisufi.drawview.sync.iroh/IrohTransport.<init>|<init>(kotlinx.coroutines.CoroutineScope;io.github.valerioisufi.drawview.sync.iroh.IrohSecret;io.github.valerioisufi.drawview.sync.iroh.RelayConfig;kotlin.Long){}[0]
 

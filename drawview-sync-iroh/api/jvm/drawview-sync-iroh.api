@@ -8,6 +8,16 @@ public final class io/github/valerioisufi/drawview/sync/iroh/IrohSecret$Companio
 	public final fun ofThisDevice ()Lio/github/valerioisufi/drawview/sync/iroh/IrohSecret;
 }
 
+public final class io/github/valerioisufi/drawview/sync/iroh/IrohSync {
+	public fun <init> (Lio/github/valerioisufi/drawview/sync/SyncEngine;Lio/github/valerioisufi/drawview/sync/iroh/IrohTransport;Lkotlinx/coroutines/CoroutineScope;JJJ)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/sync/SyncEngine;Lio/github/valerioisufi/drawview/sync/iroh/IrohTransport;Lkotlinx/coroutines/CoroutineScope;JJJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun join (Lio/github/valerioisufi/drawview/sync/protocol/Invitation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun refresh (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun refresh$default (Lio/github/valerioisufi/drawview/sync/iroh/IrohSync;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun start (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun stop (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class io/github/valerioisufi/drawview/sync/iroh/IrohTransport : io/github/valerioisufi/drawview/sync/protocol/SyncTransport {
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/iroh/IrohTransport$Companion;
 	public static final field NAME Ljava/lang/String;
