@@ -31,7 +31,8 @@ case "$(uname -m)" in
     *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
 esac
 
-# The binary of the release, checked
+# The binary of the release, checked (the minimal images may come without curl)
+command -v curl >/dev/null || { apt-get update -qq && apt-get install -y -qq curl >/dev/null; }
 ARCHIVE="iroh-relay-v$VERSION-$ARCH-unknown-linux-musl.tar.gz"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
@@ -52,6 +53,25 @@ fi
 chown root:iroh-relay /etc/iroh-relay/token.env
 chmod 0640 /etc/iroh-relay/token.env
 
+# The firewall of the machine: the images of Oracle Cloud close every port but SSH with a REJECT
+# at the end of INPUT, kept in /etc/iptables/rules.{v4,v6}. The ports of the relay go before it.
+# The firewall of the provider (a security list, firewall rules) is opened apart.
+for TABLES in iptables ip6tables; do
+    command -v "$TABLES" >/dev/null || continue
+    "$TABLES" -S INPUT 2>/dev/null | grep -q -- '-j REJECT' || continue
+    for PORT in tcp:80 tcp:443 udp:7842; do
+        RULE=(-p "${PORT%%:*}" -m "${PORT%%:*}" --dport "${PORT#*:}" -m comment --comment iroh-relay -j ACCEPT)
+        "$TABLES" -C INPUT "${RULE[@]}" 2>/dev/null && continue
+        REJECT="$("$TABLES" -L INPUT --line-numbers -n | awk '$2 == "REJECT" { print $1; exit }')"
+        "$TABLES" -I INPUT "$REJECT" "${RULE[@]}"
+    done
+    echo "$TABLES: TCP 80 and 443, UDP 7842 open"
+    OPENED=1
+done
+if [[ -n "${OPENED:-}" ]] && command -v netfilter-persistent >/dev/null; then
+    netfilter-persistent save >/dev/null 2>&1
+fi
+
 install -m 0644 "$HERE/iroh-relay.service" /etc/systemd/system/iroh-relay.service
 systemctl daemon-reload
 systemctl enable iroh-relay >/dev/null
@@ -62,3 +82,4 @@ echo "The relay of DrawView runs (iroh-relay $VERSION). In the settings of the a
 echo "  address: https://$HOSTNAME_"
 echo "  token:   $(sed -n 's/^IROH_RELAY_ACCESS_TOKEN=//p' /etc/iroh-relay/token.env)"
 echo "Its log: journalctl -u iroh-relay -f"
+echo "From your computer: curl https://$HOSTNAME_/healthz"

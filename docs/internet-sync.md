@@ -209,23 +209,27 @@ Variations).
 * The `iroh-relay` server of the same version as the crate:
   * HTTPS on port 443 with a Let's Encrypt certificate, which needs a domain name (a free dynamic
     DNS name will do);
-  * port 80 for the certificate;
+  * port 80, which the devices check for captive portals (Let's Encrypt checks the name on 443,
+    TLS-ALPN-01);
   * QUIC address discovery on UDP port 7842.
 
   Access is by a shared token (`access.shared_token`), which the applications receive with the
   address. The configuration and the service unit live in `tools/relay/`, with a guide.
-* Where it runs (the user wants a free tier of AWS or Google Cloud):
-  * the e2-micro of the Google Cloud free tier runs in the United States only (`us-west1`,
-    `us-central1`, `us-east1`) with 1 GB of outbound traffic a month. That is enough for
-    coordinating and keeping the connections alive, since most connections go direct, but tight
-    for traffic through the relay: the audio of a lecture is about 11 MB an hour, plus the
-    presence while drawing;
+* Where it runs: an Always Free machine of Oracle Cloud, `VM.Standard.E2.1.Micro` (AMD; the
+  Ampere machines have no capacity for the user). The free tiers looked at first:
+  * the e2-micro of Google Cloud runs in the United States only (`us-west1`, `us-central1`,
+    `us-east1`) with 1 GB of outbound traffic a month: enough for coordinating and keeping the
+    connections alive, since most connections go direct, but tight for traffic through the
+    relay (the audio of a lecture is about 11 MB an hour, plus the presence while drawing);
   * an AWS account opened after 15 July 2025 gets credits for a free plan of six months, then
     pays, and a public IPv4 address is billed by the hour.
 
-  So the start is an e2-micro with a budget alert. Phase 7 measures the traffic through the relay
-  (its metrics) and moves it if it does not fit. The price of the external address is to be
-  checked when the machine is created.
+  The machine of Oracle is free with no end, in the home region of the account (in Europe, near
+  the users), with its public address and 10 TB of outbound traffic a month. It is small (1/8 of
+  an OCPU, 1 GB of memory, 50 Mbps), which is plenty for the relay. Oracle stops an Always Free
+  machine idle for 7 days (CPU and network under 20 %), as a relay of a few devices is, unless
+  the account is upgraded to Pay As You Go: the guide says so, with a budget alert. Its images
+  close the ports in the machine too (iptables), so `install.sh` opens them there.
 * Until then the development uses the public relays of n0 (rate-limited). The tests use a relay on
   the loopback over plain HTTP, as `iroh-relay --dev` does: `dev_relay`, a binary of the crate
   (feature `dev-relay`, never in the libraries), built by `:drawview-sync-iroh:buildIrohDevRelay`.
@@ -252,7 +256,7 @@ tools/relay             configuration of the relay, guide
 | 2. Transport | `drawview-sync-iroh`: `IrohNative`, `IrohTransport`, `IrohChannel`, `RelayConfig`. Tests: frames (1.5 MB too); three devices synchronizing over iroh with a relay in the process, on the JVM and the iOS simulator | done |
 | 3. Addresses, protocol 2 | `DeviceAddress`, `Hello.addresses`, `DeviceAddresses`, `AddressBook` (a versioned value, with its tests), the addresses of the invitation, `PROTOCOL_VERSION` 2 and `ProtocolFormatTest` | done |
 | 4. Controller | `IrohSync`: the endpoint and its life cycle, its address published, the members connected, the retries, the foreground, the changes of network; with `LanSync` at the same time. Tests: devices "on different networks", through the relay only, a connection lost and made again | done |
-| 5. Relay | `tools/relay/`: the configuration of `iroh-relay` (TLS, token, QUIC address discovery), the service unit, the guide for an e2-micro. The user creates the machine | done (the machine: to do, by the user) |
+| 5. Relay | `tools/relay/`: the configuration of `iroh-relay` (TLS, token, QUIC address discovery), the service unit, the guide for an Always Free machine of Oracle Cloud. The user creates the machine | done (the machine: to do, by the user) |
 | 6. Applications | PencilNotes on Android, iOS and the desktop: the relay in the settings (address, token), synchronization over the internet on or off, how each participant is connected in the sharing dialog; the sample; the strings in the 7 languages; the screenshots | done |
 | 7. Real networks | iPad or phone on mobile data and the Mac at home, the university Wi-Fi, two homes. Measures: the time to connect, how many connections go direct, the traffic through the relay, the battery | to do |
 
@@ -441,8 +445,13 @@ ones of n0 (the nearest one, in Frankfurt).
     on GitHub: nothing is built on the machine).
   * It makes the access token once, in `token.env`, never in the configuration.
   * It prints the address and the token for the applications.
-* `tools/relay/README.md`: the guide for an e2-micro of Google Cloud (budget alert, static
-  address, firewall, DNS name, install, the traffic to watch, updates).
+* `tools/relay/README.md`: the guide for an Always Free machine of Oracle Cloud (the account and
+  the stops of idle machines, the machine, the security list, the DNS name, the install, the
+  traffic to watch, updates). It was first written for an e2-micro of Google Cloud; the user
+  chose Oracle afterwards, and `install.sh` learnt to open the ports in the firewall of the
+  machine (iptables, before the REJECT of the images of Oracle, saved with
+  `netfilter-persistent`). Checked in a container of Ubuntu 24.04 (amd64) with those rules: the
+  install, the ports before the REJECT, nothing added when run again.
 * Checked on this Mac with `iroh-relay` 1.4.1 built from its crate:
   * the configuration is read;
   * with the token, two endpoints of the bridge meet through the relay by identifier and relay
@@ -507,7 +516,8 @@ ones of n0 (the nearest one, in Frankfurt).
 * iroh rather than libp2p. When the hole punching fails, the relay of iroh carries all of the
   traffic, while the relay (v2) of rust-libp2p has limits of 128 KiB and 2 minutes per circuit by
   default. iroh has fewer pieces to put together and its API is stable since 1.0.
-* The relay runs on a free tier of AWS or Google Cloud.
+* The relay runs on an Always Free machine of Oracle Cloud, AMD (`VM.Standard.E2.1.Micro`), in
+  place of the free tiers of AWS or Google Cloud.
 * No compatibility with the devices of protocol version 1.
 * Store and forward comes later, in a plan of its own.
 
@@ -530,9 +540,13 @@ ones of n0 (the nearest one, in Frankfurt).
   `drawview-store-room` and `drawview-ml-litert`.
 * The `iroh-relay` server of n0 rather than one of ours: the store and forward will need a service
   of its own anyway.
-* The e2-micro of Google Cloud rather than AWS, whose free plan is credits for six months.
+* The guide advises Pay As You Go with a budget alert, so that Oracle does not stop the relay
+  as idle. The choice is the user's: without it the machine is started again from the console.
+* `install.sh` opens the ports in the firewall of the machine when it finds a REJECT in INPUT,
+  rather than leaving it to the guide: the rule has to go before the REJECT, which is easy to get
+  wrong by hand.
 * The relay installed from the releases of n0, checked against their SHA-256, rather than built on
-  the machine: an e2-micro has 1 GB of memory.
+  the machine: it has 1 GB of memory and 1/8 of an OCPU.
 * The local network stays on `drawview-sync-lan`: it works without the internet, and the local
   discovery of iroh would need the multicast entitlement on iOS.
 * The build through Gradle tasks running cargo, without Corrosion or cargo-ndk (see Native bridge).
@@ -582,6 +596,7 @@ ones of n0 (the nearest one, in Frankfurt).
   measured in phase 0, split by ABI in the app bundle.
 * The build on Windows (MSVC) and on Linux arm64 in the CI.
 * The background on iOS suspends the connections, as on the local network (`BackgroundSync`).
-* The outbound traffic of the free tier.
+* The free machine stopped by Oracle as idle, on an account not upgraded to Pay As You Go; and
+  the free tier itself, whose terms Oracle can change.
 * A single project (n0) behind the engine. Mitigated: it is open source, the relay is our own,
   and the bridge sits behind `SyncTransport`, so another engine would be another module.

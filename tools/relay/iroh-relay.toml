@@ -3,7 +3,8 @@
 # @HOSTNAME@ and @CONTACT@ replaced; the access token is in /etc/iroh-relay/token.env
 # (IROH_RELAY_ACCESS_TOKEN), never in this file.
 
-# HTTP on port 80: the challenges of Let's Encrypt (the relay itself is on HTTPS, port 443)
+# HTTP on port 80: the devices check it for captive portals (/generate_204). The relay is on
+# HTTPS, port 443, where Let's Encrypt also checks the name (TLS-ALPN-01)
 http_bind_addr = "[::]:80"
 
 # The devices learn the address the internet sees them at (UDP port 7842): the hole punching
