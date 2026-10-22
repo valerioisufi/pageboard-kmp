@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds the JNI libraries used by the desktop (JVM) targets (and whisper.cpp, built from the
-# source of its release) into
+# source of its release; the iroh bridge, a Rust crate built by cargo) into
 #   build/nativeLibs/jvm/<module>/native/<platform>/
 # which Gradle adds to the jvmMain resources of the Kotlin modules, where the native loaders
 # look for them. libpdfium itself is added by Gradle too (preparePdfiumJvmResources).
@@ -96,6 +96,24 @@ fi
 cmake --build "$BUILD_DIR" ${BUILD_ARGS[@]+"${BUILD_ARGS[@]}"} --target "${TARGETS[@]}" \
     -j "$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)"
 
+# The iroh bridge (Rust, native/iroh-bridge), with the versions of its Cargo.lock. Cargo: the
+# rust.cargo of local.properties, else the PATH, else ~/.cargo/bin
+case "$PLATFORM" in
+    darwin-aarch64) RUST_TARGET="aarch64-apple-darwin" ;;
+    darwin-x86_64) RUST_TARGET="x86_64-apple-darwin" ;;
+    linux-x86_64) RUST_TARGET="x86_64-unknown-linux-gnu" ;;
+    linux-aarch64) RUST_TARGET="aarch64-unknown-linux-gnu" ;;
+    windows-x86_64) RUST_TARGET="x86_64-pc-windows-msvc" ;;
+    windows-aarch64) RUST_TARGET="aarch64-pc-windows-msvc" ;;
+esac
+CARGO="$(sed -n 's/^rust\.cargo=//p' "$ROOT_DIR/local.properties" 2>/dev/null | tail -n 1)"
+[[ -n "$CARGO" ]] || CARGO="$(command -v cargo || true)"
+[[ -n "$CARGO" ]] || CARGO="$HOME/.cargo/bin/cargo"
+RUST_DIR="$NATIVE_DIR/build/rust"
+# rustc beside cargo (rustup)
+(cd "$NATIVE_DIR/iroh-bridge" && PATH="$(dirname "$CARGO"):$PATH" MACOSX_DEPLOYMENT_TARGET=13.0 CARGO_TARGET_DIR="$RUST_DIR" \
+    "$CARGO" rustc --release --locked --lib --crate-type cdylib --target "$RUST_TARGET")
+
 OUT_DIR="$ROOT_DIR/build/nativeLibs/jvm"
 # The libraries this build installs only: none left behind by another layout of the modules
 for dir in "$OUT_DIR"/*/native/"$PLATFORM"; do
@@ -113,6 +131,10 @@ install_lib() {
 }
 
 install_lib ink_bridge drawview-ink
+IROH_FILE="${PREFIX}iroh_bridge.$EXT"
+mkdir -p "$OUT_DIR/drawview-sync-iroh/native/$PLATFORM"
+cp "$RUST_DIR/$RUST_TARGET/release/$IROH_FILE" "$OUT_DIR/drawview-sync-iroh/native/$PLATFORM/$IROH_FILE"
+echo "Installed $OUT_DIR/drawview-sync-iroh/native/$PLATFORM/$IROH_FILE"
 if [[ "$PLATFORM" == darwin-* ]]; then
     install_lib trackpad_bridge drawview-canvas
 fi

@@ -80,7 +80,7 @@ until the release (see the release checklist at the end).
    feature (a formula shown as its source), never the build.
 2. Headless modules (no Compose): `drawview-platform`, `drawview-model`, `drawview-ink`,
    `drawview-store`, `drawview-store-room`, `drawview-sync-protocol`, `drawview-sync`,
-   `drawview-sync-lan`; `drawview-lecture` keeps the Compose runtime only (no UI, no Skia), the
+   `drawview-sync-lan`, `drawview-sync-iroh`; `drawview-lecture` keeps the Compose runtime only (no UI, no Skia), the
    observable state of its assistant (see Feature modules).
 3. A native library ships with the module that uses it, and only with it.
 4. No global mutable state in the APIs: the engines, the stores and the registries are instances
@@ -112,24 +112,26 @@ until the release (see the release checklist at the end).
 | `drawview-sync-protocol` | frames, routing header, encryption, identity, invitations, transport ports | platform | no | — |
 | `drawview-sync` | sync engine, messages, presence, membership | sync-protocol, store | no | — |
 | `drawview-sync-lan` | LAN transport and discovery | sync | no | — |
+| `drawview-sync-iroh` | internet transport through iroh, direct or relayed (see [internet-sync.md](internet-sync.md)) | sync | no | iroh bridge (Rust) |
 | `drawview-sync-ui` | collaboration extension, dialogs | sync-lan, ui | yes | — |
 | `drawview-lecture` | recording, audio codecs, transcription, AI backends, the lectures of the documents and their sharing, the assistant (`LectureAssistant`, its state) | model | runtime only | audio codecs, whisper.cpp (desktop) |
 | `drawview-lecture-ui` | lecture panel, settings, extension of the editor and of the library, the notebook of an editor (`ControllerNotebookSource`), the microphone permission, the file pickers | lecture, ui | yes | — |
 | `drawview-lecture-testing` | the test doubles of the assistant (microphone, notebook, secrets) | lecture | runtime only | — |
 | `drawview-export` | export use case, PDF and image exporters | canvas, store, pdf, latex | yes (graphics) | — |
 | `drawview-export-ui` | export dialog and extension | export, ui | yes | — |
-| `drawview-native-ink`, `-tex`, `-pdfium`, `-audio` | Android shared libraries, one engine each | — | — | one each |
+| `drawview-native-ink`, `-tex`, `-pdfium`, `-audio`, `-iroh` | Android shared libraries, one engine each | — | — | one each |
 
 ```
 platform ← model ← ink ← canvas ← ui ← session ← explorer
               ↑            ↑   ↖ pdf, latex      ↖ sync-ui, lecture-ui, export-ui
               ├ store ← store-room                    (+ sync-lan, lecture, export)
-              │   ↖ sync ← sync-lan
+              │   ↖ sync ← sync-lan, sync-iroh
 platform ← sync-protocol ↗          lecture → model, store;  export → canvas, pdf
 ```
 
 `drawview-native-*` are dependencies of the Android source sets only (ink → native-ink, latex →
-native-tex, pdf → native-pdfium, lecture → native-audio); the applications never declare them.
+native-tex, pdf → native-pdfium, lecture → native-audio, sync-iroh → native-iroh); the
+applications never declare them.
 
 ## Design
 

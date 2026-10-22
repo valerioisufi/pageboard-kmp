@@ -1,0 +1,5 @@
+package = io.github.valerioisufi.drawview.sync.iroh.cinterop
+headers = iroh_bridge.h
+headerFilter = iroh_bridge.h
+staticLibraries = libiroh_bridge.a
+linkerOpts = -framework Security -framework SystemConfiguration -framework CoreFoundation -framework Network -lresolv

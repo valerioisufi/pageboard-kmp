@@ -24,6 +24,10 @@ gradlePlugin {
             id = "drawview.android.native"
             implementationClass = "AndroidNativeConventionPlugin"
         }
+        register("androidRust") {
+            id = "drawview.android.rust"
+            implementationClass = "AndroidRustConventionPlugin"
+        }
         register("jvmNatives") {
             id = "drawview.jvm.natives"
             implementationClass = "JvmNativesConventionPlugin"

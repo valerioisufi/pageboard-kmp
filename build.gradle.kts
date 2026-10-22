@@ -303,7 +303,7 @@ val desktopBash: String = if (!System.getProperty("os.name").lowercase().startsW
 
 tasks.register<Exec>("buildDesktopNativeLibs") {
     group = "native"
-    description = "Builds the Google Ink, MicroTeX, PDFium, whisper.cpp and trackpad (macOS) bridge JNI libraries for $desktopPlatform"
+    description = "Builds the Google Ink, MicroTeX, PDFium, whisper.cpp, iroh and trackpad (macOS) bridge JNI libraries for $desktopPlatform"
     val prebuilt = nativeLibsPrebuilt
     onlyIf { !prebuilt }
     val pdfium = extractPdfiumTasks.getValue(desktopPdfiumPackage)
@@ -311,14 +311,15 @@ tasks.register<Exec>("buildDesktopNativeLibs") {
     inputs.files(
         fileTree(nativeSourcesDir) {
             include("CMakeLists.txt", "bridge/**", "tex/src/**", "tex/port/**", "ink/ink/**", "ink/LICENSE", "external/**", "scripts/build_desktop.sh")
-            exclude("build/**")
+            include("iroh-bridge/**")
+            exclude("build/**", "iroh-bridge/target/**")
         }
     ).withPropertyName("nativeSources").withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.property("platform", desktopPlatform)
     inputs.property("whisperVersion", whisperVersion)
     inputs.property("opusVersion", opusVersion)
     inputs.property("aacVersion", aacVersion)
-    listOf("drawview-ink", "drawview-canvas", "drawview-latex", "drawview-pdf", "drawview-lecture").forEach { module ->
+    listOf("drawview-ink", "drawview-canvas", "drawview-latex", "drawview-pdf", "drawview-lecture", "drawview-sync-iroh").forEach { module ->
         outputs.dir(layout.buildDirectory.dir("nativeLibs/jvm/$module/native/$desktopPlatform")).withPropertyName(module)
     }
     environment("DRAWVIEW_PDFIUM_DIR", pdfiumBuildDir.get().dir(desktopPdfiumPackage).asFile.absolutePath)

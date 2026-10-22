@@ -1,6 +1,7 @@
 name: Native libraries
 
-# Builds and tests the native engines (Google Ink, MicroTeX, PDFium) on every platform:
+# Builds and tests the native engines (Google Ink, MicroTeX, PDFium, the iroh bridge) on every
+# platform (the Rust toolchain of native/iroh-bridge/rust-toolchain.toml is installed by rustup):
 # - desktop: the JNI libraries of each platform, built on a matching runner and merged into
 #   the jvm jars of :drawview-ink, :drawview-canvas, :drawview-latex and :drawview-pdf (artifact "desktop-jars");
 # - android: the NDK libraries (+ the prebuilt libpdfium.so) of the debug APK;
@@ -53,7 +54,7 @@ jobs:
 
       - name: Test the native engines
         if: matrix.test
-        run: ./gradlew :drawview-ink:jvmTest :drawview-canvas:jvmTest :drawview-latex:jvmTest :drawview-pdf:jvmTest :drawview-lecture:jvmTest
+        run: ./gradlew :drawview-ink:jvmTest :drawview-canvas:jvmTest :drawview-latex:jvmTest :drawview-pdf:jvmTest :drawview-lecture:jvmTest :drawview-sync-iroh:jvmTest
 
       - uses: actions/upload-artifact@v4
         with:
@@ -85,6 +86,7 @@ jobs:
         run: >
           ./gradlew -Pdrawview.native.prebuilt=true -Pdrawview.pdfium.desktop=all
           :drawview-ink:jvmJar :drawview-canvas:jvmJar :drawview-latex:jvmJar :drawview-pdf:jvmJar :drawview-lecture:jvmJar
+          :drawview-sync-iroh:jvmJar
 
       - name: Check that every platform is bundled
         run: |
@@ -101,6 +103,7 @@ jobs:
               "drawview-pdf:${pre}pdfium_bridge"
               "drawview-pdf:${pre}pdfium"
               "drawview-lecture:${pre}whisper_bridge"
+              "drawview-sync-iroh:${pre}iroh_bridge"
             )
             if [[ "$platform" == darwin-* ]]; then
               entries+=("drawview-canvas:${pre}trackpad_bridge" "drawview-lecture:${pre}audio_codec_bridge")
@@ -133,7 +136,14 @@ jobs:
       - uses: gradle/actions/setup-gradle@v5
 
       - name: Build the debug APK
-        run: ./gradlew :sample-android:assembleDebug :pencilnotes-android:assembleDebug
+        run: ./gradlew :sample-android:assembleDebug :pencilnotes-android:assembleDebug :drawview-native-iroh:assembleRelease
+
+      - name: Check the iroh bridge of every ABI
+        run: |
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            unzip -l drawview-native-iroh/build/outputs/aar/*-release.aar | grep -q " jni/$abi/libiroh_bridge.so$" \
+              || { echo "::error::jni/$abi/libiroh_bridge.so missing from drawview-native-iroh"; exit 1; }
+          done
 
       - name: Check the native libraries of the APK
         run: |
@@ -160,8 +170,8 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v5
 
-      - name: Test PDFium on the simulator
-        run: ./gradlew :drawview-pdf:iosSimulatorArm64Test
+      - name: Test PDFium and the iroh bridge on the simulator
+        run: ./gradlew :drawview-pdf:iosSimulatorArm64Test :drawview-sync-iroh:iosSimulatorArm64Test
 
       - name: Build the app for the simulator
         # -target: the iosApp scheme is not shared (xcuserdata)

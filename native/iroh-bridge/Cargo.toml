@@ -1,0 +1,39 @@
+[package]
+name = "iroh_bridge"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+publish = false
+description = "The iroh endpoint of DrawView behind a C API (iOS) and JNI (Android, desktop JVM)"
+
+[lib]
+# Built as a cdylib (Android, desktop) or a staticlib (iOS) with `cargo rustc --crate-type`
+crate-type = ["rlib"]
+
+[[bin]]
+name = "dev_relay"
+required-features = ["dev-relay"]
+
+[features]
+# The relay of the tests (plain HTTP on the loopback), never in the libraries
+dev-relay = ["dep:iroh-relay"]
+
+[dependencies]
+iroh = { version = "=1.4.1", default-features = false, features = ["tls-ring"] }
+iroh-relay = { version = "=1.4.1", features = ["server"], optional = true }
+tokio = { version = "1", features = ["rt-multi-thread", "sync", "time", "macros", "io-util"] }
+
+[target.'cfg(not(target_os = "ios"))'.dependencies]
+# The version jni 0.22 (under iroh, on Android) uses: linked once
+jni-sys = "0.4.1"
+
+[dev-dependencies]
+iroh-relay = { version = "=1.4.1", features = ["server"] }
+
+[profile.release]
+opt-level = "z"
+lto = "fat"
+codegen-units = 1
+strip = true
+# Unwinding: every exported function catches the panics instead of aborting the application
+panic = "unwind"
