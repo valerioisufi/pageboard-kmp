@@ -19,6 +19,7 @@ import io.github.valerioisufi.drawview.model.StrokeTool
 import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.AddPage
 import io.github.valerioisufi.drawview.model.change.AddResource
+import io.github.valerioisufi.drawview.model.change.ChangeObserver
 import io.github.valerioisufi.drawview.model.change.CompositeChange
 import io.github.valerioisufi.drawview.model.change.DocumentChange
 import io.github.valerioisufi.drawview.model.change.DocumentSession
@@ -41,12 +42,15 @@ import io.github.valerioisufi.drawview.platform.Sha256
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
+import io.github.valerioisufi.drawview.sync.protocol.DeviceAddress
 import io.github.valerioisufi.drawview.sync.protocol.DeviceIdentity
 import io.github.valerioisufi.drawview.sync.protocol.DocumentKey
 import io.github.valerioisufi.drawview.sync.protocol.InMemoryChannel
 import io.github.valerioisufi.drawview.sync.protocol.InMemoryNetwork
 import io.github.valerioisufi.drawview.sync.protocol.Invitation
 import io.github.valerioisufi.drawview.sync.protocol.MAX_FRAME_SIZE
+import io.github.valerioisufi.drawview.sync.protocol.Member
+import io.github.valerioisufi.drawview.sync.protocol.Membership
 import io.github.valerioisufi.drawview.sync.protocol.OpenFrame
 import io.github.valerioisufi.drawview.sync.protocol.OperationProof
 import io.github.valerioisufi.drawview.sync.protocol.OperationSeal
@@ -68,6 +72,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -306,7 +311,14 @@ class SyncEngineTest {
         override suspend fun received(documentId: String, key: String, version: String): Long =
             if (isBlob(key)) partial[documentId to key]?.size?.toLong() ?: 0L else 0L
 
+        /** The items whose storage fails here (a full disk...). */
+        val broken = mutableSetOf<String>()
+
         override suspend fun receive(documentId: String, key: String, version: String, size: Long, from: Long) = object : AttachmentReceiver {
+            init {
+                if (key in broken) throw IllegalStateException("The storage of $key failed")
+            }
+
             val received = mutableListOf<ByteArray>().apply {
                 askedFrom.add(from)
                 if (from > 0) partial.remove(documentId to key)?.let { add(it) }
@@ -390,12 +402,16 @@ class SyncEngineTest {
      */
     // Minutes: the encryption of many frames is slow on a simulator busy with other builds
     private fun syncTest(block: suspend TestScope.(CoroutineScope) -> Unit) = runTest(timeout = 5.minutes) {
-        val work = CoroutineScope(SupervisorJob() + StandardTestDispatcher(testScheduler))
+        // What fails in an engine without being caught fails the test (in an application, it
+        // would be an uncaught exception)
+        val failures = mutableListOf<Throwable>()
+        val work = CoroutineScope(SupervisorJob() + StandardTestDispatcher(testScheduler) + CoroutineExceptionHandler { _, e -> failures += e })
         try {
             block(work)
         } finally {
             work.cancel()
         }
+        assertEquals(emptyList(), failures.map { it.toString() }, "failures not caught by the engines")
     }
 
     @Test
@@ -1121,6 +1137,149 @@ class SyncEngineTest {
         again.send(SyncCodec.encode(ResourceChunk("photo", "jpg", 0, bytes.size.toLong(), bytes)))
         advanceUntilIdle()
         assertContentEquals(bytes, ada.files.files[assertNotNull(ada.resourcePath(document.id, "photo"))])
+    }
+
+    // --- What a member sends: anything ---
+
+    /** [bytes] changed at random: some of them changed, cut, more of them, or other bytes altogether. */
+    private fun mutated(bytes: ByteArray, random: Random): ByteArray = when (random.nextInt(4)) {
+        0 -> bytes.copyOf().also { if (it.isNotEmpty()) repeat(1 + random.nextInt(4)) { _ -> it[random.nextInt(it.size)] = random.nextInt(256).toByte() } }
+        1 -> bytes.copyOf(random.nextInt(bytes.size + 1))
+        2 -> {
+            val at = random.nextInt(bytes.size + 1)
+            bytes.copyOfRange(0, at) + random.nextBytes(1 + random.nextInt(16)) + bytes.copyOfRange(at, bytes.size)
+        }
+        else -> random.nextBytes(random.nextInt(64))
+    }
+
+    /** [bytes] with one or two of them changed: often still an operation, with odd values. */
+    private fun changedLightly(bytes: ByteArray, random: Random): ByteArray =
+        bytes.copyOf().also { repeat(1 + random.nextInt(2)) { _ -> it[random.nextInt(it.size)] = random.nextInt(256).toByte() } }
+
+    /** The operations of [count] changes of every kind made on a document of its own (with their pages and elements). */
+    private fun operations(count: Int, random: Random): List<Operation> {
+        val session = DocumentSession(DrawDocument(), "ada")
+        val made = mutableListOf<Operation>()
+        session.addObserver(ChangeObserver { made += it.operation })
+        repeat(count) { randomChange(session, random)?.let(session::submit) }
+        session.submit(CompositeChange(listOf(RenameDocument("Lab"), AddPage.of(DrawPage(orderKey = session.document.orderKeyAt(0))))))
+        session.submit(AddResource.of("photo", DrawResource.ResourceType.IMAGE, "", "abc"))
+        return made
+    }
+
+    /** Messages of every kind, as the devices send them. */
+    private fun messages(random: Random): List<SyncMessage> {
+        val identity = DeviceIdentity.generate()
+        val key = DocumentKey.generate()
+        val document = DrawDocument().apply { pages[0].add(stroke(1f, 2f)); pages[0].add(text("hello")) }
+        val signed = Membership("doc", identity.publicKey, members = listOf(Member(identity.publicKey, "ada", "Ada", Role.OWNER)), keyHash = key.hash).signedBy(identity)
+        val sealed = operations(10, random).map { OperationSeal(key).seal(it.id.replica, it.id.sequence, OperationProof.sign(identity, "doc", it.id.replica, it.id.sequence, SyncCodec.encodeOperation(it))) }
+        return listOf(
+            Challenge(random.nextBytes(16)),
+            Hello("ada", "Ada", mapOf("ada" to 3L), hasDocument = true, device = identity.publicKey, proof = random.nextBytes(64), membershipVersion = 2, epoch = 1),
+            MembershipMessage(signed),
+            MembershipQuery(1),
+            Admission(1, key.encode(), signed),
+            JoinRefused,
+            KeyUpdate(1, key.encode()),
+            Leave,
+            KnownVersions(mapOf(identity.publicKey to mapOf("ada" to 3L))),
+            Snapshot(document.snapshot(), mapOf("ada" to 2L)),
+            Operations(sealed),
+            ResourceRequest(listOf(ResourceAsk("photo", 10))),
+            ResourceChunk("photo", "jpg", 0, 100, random.nextBytes(100)),
+            ResourceMissing("photo"),
+            PresenceMessage(Presence("doc", pageId = document.pages[0].id, x = 1f, y = 2f, replica = "ada", name = "Ada", sequence = 4)),
+            AttachmentVersions(mapOf("lecture" to "v1")),
+            AttachmentRequest(listOf(AttachmentAsk("lecture", "v1"))),
+            AttachmentPart("lecture", "v1", 0, 10, random.nextBytes(10)),
+            DeviceAddresses(listOf(DeviceAddress.sign(identity, "iroh", "id https://relay.example.com/", 1))),
+            Ping
+        )
+    }
+
+    @Test
+    fun whatADeviceSendsNeverMakesTheDecodingFail() {
+        val random = Random(7)
+        val frames = messages(random).map(SyncCodec::encode)
+        val operations = operations(40, random).map(SyncCodec::encodeOperation)
+        repeat(3_000) {
+            // Anything: a message or null, an operation or a SyncException, never another failure
+            SyncCodec.decode(mutated(frames.random(random), random))
+            try {
+                SyncCodec.decodeOperation(mutated(operations.random(random), random))
+            } catch (_: SyncException) {
+            }
+            OpenFrame.decode(mutated(OpenFrame(PROTOCOL_VERSION, "tag").encode(), random))
+            OperationProof.decode(mutated(OperationProof(random.nextBytes(20), random.nextBytes(64)).encode(), random))
+        }
+        // What the devices send is read as it was
+        for (frame in frames) assertContentEquals(frame, SyncCodec.encode(assertNotNull(SyncCodec.decode(frame))))
+        for (operation in operations) assertContentEquals(operation, SyncCodec.encodeOperation(SyncCodec.decodeOperation(operation)))
+    }
+
+    @Test
+    fun aMemberSendingAnythingStopsNothing() = syncTest { work ->
+        val random = Random(11)
+        val network = InMemoryNetwork()
+        val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Physics")
+        repeat(10) { ada.change(document.id) { randomChange(it, random) } }
+        val invitation = ada.share(document.id, "Physics")
+        bob.join(invitation, "ada")
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+        val frames = messages(random).map(SyncCodec::encode)
+
+        // Bob sends Ada changed messages of every kind, a connection each
+        repeat(150) {
+            impostor(bob, ada, document.id).send(mutated(frames.random(random), random))
+            advanceUntilIdle()
+        }
+        // Then changes of every kind with odd values, signed by Bob as they should be
+        val bobReplica = bob.store.replicaId()
+        val key = bob.engine.connectionKeys().first { it.first == document.id }.second
+        val changes = operations(40, random).map { SyncCodec.encodeOperation(it) }
+        repeat(300) {
+            val change = try {
+                SyncCodec.decodeOperation(changedLightly(changes.random(random), random)).change
+            } catch (_: SyncException) {
+                return@repeat
+            }
+            val sequence = (ada.versionVector(document.id)[bobReplica] ?: 0L) + 1
+            impostor(bob, ada, document.id).send(SyncCodec.encode(Operations(listOf(forged(document.id, key, bobReplica, sequence, change, bob.identity)))))
+            advanceUntilIdle()
+        }
+
+        // Ada and Cy go on: the changes of Cy reach Ada, and the document is the same on both
+        cy.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(0))) }
+        advanceUntilIdle()
+        assertSame(document.id, listOf(ada, cy))
+        // And it is read again from the store of Ada as it is
+        ada.store.flush()
+        assertNotNull(KeyValueDocumentStore(ada.storage, scope = work).loadDocument(document.id))
+    }
+
+    @Test
+    fun aFailureHandlingWhatAMemberSentClosesItsConnectionOnly() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Physics")
+        val invitation = ada.share(document.id, "Physics")
+        bob.join(invitation, "ada")
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+
+        // Storing an item Bob sends fails on Ada: Bob's connection closes
+        ada.attachments.broken += "lecture"
+        val channel = impostor(bob, ada, document.id)
+        channel.send(SyncCodec.encode(AttachmentPart("lecture", "v1", 0, 3, byteArrayOf(1, 2, 3))))
+        assertTrue(isClosed(channel))
+
+        // Ada goes on with Cy
+        cy.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(0))) }
+        advanceUntilIdle()
+        assertSame(document.id, listOf(ada, cy))
     }
 
     // --- Members ---

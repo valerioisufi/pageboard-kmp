@@ -2,7 +2,6 @@ package io.github.valerioisufi.drawview.sync.protocol
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.cbor.Cbor
 
 /**
@@ -29,12 +28,10 @@ public data class OpenFrame(val protocol: Int, val tag: String) {
         @OptIn(ExperimentalSerializationApi::class)
         private val cbor = Cbor { ignoreUnknownKeys = true }
 
-        /** The frame of [bytes], or `null` when they are not one. */
+        /** The frame of [bytes], or `null` when they are not one (anything a device sends: never a failure). */
         public fun decode(bytes: ByteArray): OpenFrame? = try {
             cbor.decodeFromByteArray(serializer(), bytes)
-        } catch (_: SerializationException) {
-            null
-        } catch (_: IllegalArgumentException) {
+        } catch (_: Exception) {
             null
         }
     }

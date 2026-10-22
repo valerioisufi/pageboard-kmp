@@ -200,25 +200,42 @@ internal object SyncCodec {
 
     fun encode(message: SyncMessage): ByteArray = cbor.encodeToByteArray(SyncMessage.serializer(), message)
 
-    /** The message of [frame], or `null` for a message this version does not know. */
+    /**
+     * The message of [frame], or `null` for a message this version does not know: anything that is
+     * not one, nested too deep (see [cborNestsWithin]) or not decoded for any reason.
+     */
     fun decode(frame: ByteArray): SyncMessage? = try {
         decodeOrThrow(frame)
-    } catch (_: SerializationException) {
-        null
-    } catch (_: IllegalArgumentException) {
+    } catch (_: Exception) {
         null
     }
 
-    fun decodeOrThrow(frame: ByteArray): SyncMessage = cbor.decodeFromByteArray(SyncMessage.serializer(), frame)
+    fun decodeOrThrow(frame: ByteArray): SyncMessage {
+        if (!cborNestsWithin(frame, MAX_NESTING)) throw SerializationException("Not a message, or nested too deep")
+        return cbor.decodeFromByteArray(SyncMessage.serializer(), frame)
+    }
 
     /** The content of a [SealedOperation]. */
     fun encodeOperation(operation: Operation): ByteArray = cbor.encodeToByteArray(Operation.serializer(), operation)
 
-    fun decodeOperation(bytes: ByteArray): Operation = try {
-        cbor.decodeFromByteArray(Operation.serializer(), bytes)
-    } catch (e: SerializationException) {
-        throw SyncException("An operation not understood", e)
-    } catch (e: IllegalArgumentException) {
-        throw SyncException("An operation not understood", e)
+    /**
+     * The operation of [bytes].
+     *
+     * @throws SyncException for anything that is not one, nested too deep or not decoded.
+     */
+    fun decodeOperation(bytes: ByteArray): Operation {
+        if (!cborNestsWithin(bytes, MAX_NESTING)) throw SyncException("An operation not understood, or nested too deep")
+        return try {
+            cbor.decodeFromByteArray(Operation.serializer(), bytes)
+        } catch (e: Exception) {
+            throw SyncException("An operation not understood", e)
+        }
     }
+
+    /**
+     * The deepest nesting of a frame or an operation: far more than the applications make (a
+     * composite change of composite changes nests about four levels each), far less than what
+     * would run out of the stack of a thread decoding it.
+     */
+    private const val MAX_NESTING = 200
 }

@@ -115,7 +115,7 @@ the same number does not meet the "other version" message: it is to be updated w
 |---|---|---|
 | 1. Stored proofs | `OperationLog.proofs` / `saveProofs`; `KeyValueDocumentStore`; Room schema 19 with `Migration18To19` (`MigrationTestHelper`); compaction and deletion. Tests: kept, read again after a restart, removed with the operations, a store of before read | done |
 | 2. Signed operations | `OperationProof`, `SealedOperation.signature`; the engine signing, checking, keeping and giving on the proofs; `Membership.keyHash` and `adoptKey`; the snapshot from the owner; `KnownVersions` of the sender; the resources checked against their hash and received in parts; `PROTOCOL_VERSION` back to 1 and `ProtocolFormatTest`. Tests: a reader writing as an editor, a member writing as another, an operation given on through a member, a wrong key, a snapshot of a member, versions said for another, a wrong file | done |
-| 3. Nothing makes a device fail | `SyncEngine.run` closing the connection on any failure of a message; `SyncCodec` never throwing but `SyncException`; tests with random bytes, changed frames, changed operations and snapshots (a fixed seed, on the JVM and the iOS simulator), and what they find fixed | to do |
+| 3. Nothing makes a device fail | `SyncEngine.run` closing the connection on any failure of a message; `SyncCodec` never throwing but `SyncException`; tests with random bytes, changed frames, changed operations and snapshots (a fixed seed, on the JVM and the iOS simulator), and what they find fixed | done |
 
 Every phase ends with the checks of `CLAUDE.md`, the Rust tests when the bridge changes, and the
 tests of the sync modules on the iOS simulator.
@@ -178,6 +178,41 @@ tests of the sync modules on the iOS simulator.
 * Compacting needs what each member says of itself, at its connections: the log keeps the
   operations of a connection until the next one.
 
+### Phase 3 results
+
+* What the tests found, and is fixed:
+  * a frame changed on the way made the CBOR decoder throw an `ArrayIndexOutOfBoundsException`,
+    which `SyncCodec.decode` let through (it caught two kinds of exceptions): out of `run`, it was
+    an uncaught exception in the application;
+  * a change nested 100 000 times (composite changes in composite changes, a few megabytes)
+    makes the decoder run out of stack: a `StackOverflowError` on the JVM, the end of the
+    application on iOS, where it cannot be caught.
+* `cborNestsWithin` (`drawview-sync`): reads the CBOR of a frame or an operation without
+  recursion and refuses it beyond 200 levels, before it is decoded. The changes of the
+  applications nest far less (30 composite changes in each other pass).
+* `SyncCodec.decode` gives `null` and `decodeOperation` a `SyncException` for any failure;
+  `OpenFrame.decode` and `OperationProof.decode` give `null`.
+* `SyncEngine`: any failure while a connection starts (`accept`, `connect`), handles a message
+  (`run`), sends (the sender) or sends an item asked for (the transfers) closes that connection
+  only; the cancellations go on as they are.
+* Tests:
+  * `whatADeviceSendsNeverMakesTheDecodingFail`: 3 000 frames, operations, open frames and proofs
+    changed at random (bytes changed, cut, added, others altogether), from messages of every
+    kind; what the devices send is read back as it was;
+  * `aMemberSendingAnythingStopsNothing`: a member sends 150 changed messages of every kind, then
+    300 operations with one or two bytes changed, signed as they should be (123 of them are
+    applied: odd values); the owner and another member go on, their documents the same, and the
+    store of the owner reads the document again;
+  * `aFailureHandlingWhatAMemberSentClosesItsConnectionOnly`: the storage of an item failing on
+    the owner closes that connection, and the owner goes on with the others;
+  * `DeepNestingJvmTest`: the change nested 100 000 times, as an operation and in a frame, refused
+    (encoded on a thread with a large stack, as the device sending it would);
+  * every test of `SyncEngineTest` fails when an exception leaves an engine
+    (`CoroutineExceptionHandler` of its scope).
+
+  Without the new catches, the first and the third fail; without the check of the nesting, the
+  last one.
+
 ## Decisions
 
 ### Taken by the user (2026-10-22)
@@ -202,6 +237,10 @@ tests of the sync modules on the iOS simulator.
   member, rather than when another one says so.
 * A signature that does not check closes the connection, rather than dropping the operation:
   the device that sent it is not to be worked with.
+* The nesting of the CBOR checked before decoding, rather than a depth counted by the
+  serializers of the changes: it protects every kind of value, the ones added later too.
+* 200 levels at most: far more than the changes of the applications, far less than the stack of a
+  thread decoding them.
 
 ## Left for later
 

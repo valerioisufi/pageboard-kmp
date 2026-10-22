@@ -2,7 +2,6 @@ package io.github.valerioisufi.drawview.sync.protocol
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.cbor.Cbor
 
 /**
@@ -33,9 +32,7 @@ public class OperationProof(public val content: ByteArray, public val signature:
         /** The proof kept as [bytes] (see [encode]), `null` when they are not one. */
         public fun decode(bytes: ByteArray): OperationProof? = try {
             cbor.decodeFromByteArray(serializer(), bytes)
-        } catch (_: SerializationException) {
-            null
-        } catch (_: IllegalArgumentException) {
+        } catch (_: Exception) {
             null
         }
 

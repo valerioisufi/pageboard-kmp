@@ -35,6 +35,7 @@ import io.github.valerioisufi.drawview.sync.protocol.SignedMembership
 import io.github.valerioisufi.drawview.sync.protocol.SyncChannel
 import io.github.valerioisufi.drawview.sync.protocol.SyncException
 import io.github.valerioisufi.drawview.sync.protocol.SyncTransport
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.min
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -392,6 +393,10 @@ public class SyncEngine(
             run(Link(secure, match, opened = false), acquire(match.documentId), known)
         } catch (_: SyncException) {
             // Refused or lost before it started
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // What it sent made the start fail (see run)
         } finally {
             known()
             channel.close()
@@ -410,6 +415,10 @@ public class SyncEngine(
             run(Link(secure, match, opened = true), acquire(documentId))
         } catch (_: SyncException) {
             // Refused or lost before it started
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // What it sent made the start fail (see run)
         } finally {
             channel.close()
         }
@@ -627,7 +636,18 @@ public class SyncEngine(
         link.sync = initial
         mutex.withLock { links.add(link) }
         val sender = scope.launch { send(link) }
-        val transfers = attachments?.let { scope.launch { for (ask in link.attachmentRequests) sendAttachment(link, ask) } }
+        val transfers = attachments?.let {
+            scope.launch {
+                try {
+                    for (ask in link.attachmentRequests) sendAttachment(link, ask)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    // Asked for what cannot be sent: the connection closes (see below)
+                    link.channel.close()
+                }
+            }
+        }
         try {
             if (link.match is TagMatch.Joining) joinStates.update { it + (link.documentId to JoinStatus.LOOKING_FOR_OWNER) }
             link.send(Challenge(link.nonce))
@@ -647,6 +667,11 @@ public class SyncEngine(
             }
         } catch (_: SyncException) {
             // The connection is lost: what was missed is exchanged at the next one
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // What the other device sent made its handling fail: its connection closes, this device
+            // and its other connections go on (what another device sends is untrusted)
         } finally {
             sender.cancel()
             transfers?.cancel()
@@ -713,6 +738,11 @@ public class SyncEngine(
                 if (frame is AttachmentPart) link.attachmentParts.release()
             }
         } catch (_: SyncException) {
+            link.channel.close()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // Asked for what cannot be sent (see run)
             link.channel.close()
         }
     }

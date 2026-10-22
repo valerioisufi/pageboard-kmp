@@ -54,7 +54,7 @@ sample. Start from:
   - Bound what is read before the other device is authorized (`SyncChannel.receive(maxSize)`),
     and never allocate a length announced before its bytes come.
   - A frame, message or operation not understood fails the connection (a `SyncException`), never
-    the application.
+    the application; its CBOR nesting is checked before it is decoded (`cborNestsWithin`).
   - Members are not trusted either (`docs/untrusted-members.md`): an operation is taken only signed
     by the device of its replica, a key only as the owner named it, a document from its owner
     only, what a member has from that member only.
