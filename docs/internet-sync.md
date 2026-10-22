@@ -252,7 +252,7 @@ tools/relay             configuration of the relay, guide
 | 2. Transport | `drawview-sync-iroh`: `IrohNative`, `IrohTransport`, `IrohChannel`, `RelayConfig`. Tests: frames (1.5 MB too); three devices synchronizing over iroh with a relay in the process, on the JVM and the iOS simulator | done |
 | 3. Addresses, protocol 2 | `DeviceAddress`, `Hello.addresses`, `DeviceAddresses`, `AddressBook` (a versioned value, with its tests), the addresses of the invitation, `PROTOCOL_VERSION` 2 and `ProtocolFormatTest` | done |
 | 4. Controller | `IrohSync`: the endpoint and its life cycle, its address published, the members connected, the retries, the foreground, the changes of network; with `LanSync` at the same time. Tests: devices "on different networks", through the relay only, a connection lost and made again | done |
-| 5. Relay | `tools/relay/`: the configuration of `iroh-relay` (TLS, token, QUIC address discovery), the service unit, the guide for an e2-micro. The user creates the machine | to do |
+| 5. Relay | `tools/relay/`: the configuration of `iroh-relay` (TLS, token, QUIC address discovery), the service unit, the guide for an e2-micro. The user creates the machine | done (the machine: to do, by the user) |
 | 6. Applications | PencilNotes on Android, iOS and the desktop: the relay in the settings (address, token), synchronization over the internet on or off, how each participant is connected in the sharing dialog; the sample; the strings in the 7 languages; the screenshots | to do |
 | 7. Real networks | iPad or phone on mobile data and the Mac at home, the university Wi-Fi, two homes. Measures: the time to connect, how many connections go direct, the traffic through the relay, the battery | to do |
 
@@ -430,6 +430,34 @@ ones of n0 (the nearest one, in Frankfurt).
 
   On the JVM the first test also runs through the relay of the tests only.
 
+
+### Phase 5 results
+
+* `tools/relay/`: the configuration of `iroh-relay` (`iroh-relay.toml`), its systemd unit
+  (`iroh-relay.service`: an unprivileged user, ports 80 and 443 through a capability), and
+  `install.sh`.
+  * The script installs or updates the relay on the machine with the release of n0 of the
+    version of the bridge. It checks the release against its SHA-256 (the `digest` of the assets
+    on GitHub: nothing is built on the machine).
+  * It makes the access token once, in `token.env`, never in the configuration.
+  * It prints the address and the token for the applications.
+* `tools/relay/README.md`: the guide for an e2-micro of Google Cloud (budget alert, static
+  address, firewall, DNS name, install, the traffic to watch, updates).
+* Checked on this Mac with `iroh-relay` 1.4.1 built from its crate:
+  * the configuration is read;
+  * with the token, two endpoints of the bridge meet through the relay by identifier and relay
+    only, and with another token or none they do not;
+  * the metrics answer on the loopback.
+
+  Let's Encrypt, port 443 and the QUIC address discovery are left to the machine.
+* `dev_relay` takes an access token too. The JVM tests check `RelayConfig.token` from Kotlin: a
+  device with the token is reached through the relay, one without it is not.
+* Fixed on the way:
+  * the transport read the error of a failed connection on another thread than the call (the
+    bridge keeps it per thread), so it was empty;
+  * `IrohSync` publishes its address again at every round, so a relay reached late (or a new
+    one) reaches the others.
+
 ## Decisions
 
 ### Taken by the user (2026-10-22)
@@ -461,6 +489,8 @@ ones of n0 (the nearest one, in Frankfurt).
 * The `iroh-relay` server of n0 rather than one of ours: the store and forward will need a service
   of its own anyway.
 * The e2-micro of Google Cloud rather than AWS, whose free plan is credits for six months.
+* The relay installed from the releases of n0, checked against their SHA-256, rather than built on
+  the machine: an e2-micro has 1 GB of memory.
 * The local network stays on `drawview-sync-lan`: it works without the internet, and the local
   discovery of iroh would need the multicast entitlement on iOS.
 * The build through Gradle tasks running cargo, without Corrosion or cargo-ndk (see Native bridge).

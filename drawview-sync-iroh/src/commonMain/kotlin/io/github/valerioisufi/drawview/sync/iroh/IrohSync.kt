@@ -60,6 +60,8 @@ public class IrohSync(
                 connect(missingOnly = false)
                 while (true) {
                     delay(retryMs)
+                    // Its relay reached late, or another one: the others are told
+                    publish()
                     connect(missingOnly = true)
                 }
             }

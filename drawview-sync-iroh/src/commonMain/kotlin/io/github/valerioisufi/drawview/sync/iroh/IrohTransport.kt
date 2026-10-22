@@ -44,9 +44,13 @@ public class IrohTransport(
 
     private fun endpoint(): Long = synchronized(lock) { endpoint }
 
-    /** A connection to a device, being opened or open, with the channels on it. */
-    private class Opened(val number: Deferred<Long>) {
+    /**
+     * A connection to a device, being opened or open, with the channels on it: its number, or
+     * what went wrong (the error read on the thread of the call, where the bridge keeps it).
+     */
+    private class Opened(val result: Deferred<Pair<Long, String>>) {
         var channels = 0
+        val number: Long? get() = if (result.isCompleted && !result.isCancelled) @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class) result.getCompleted().first else null
     }
 
     override val incoming: Flow<SyncChannel> = accepted.receiveAsFlow()
@@ -106,13 +110,21 @@ public class IrohTransport(
             val opened = synchronized(lock) {
                 val endpoint = endpoint.takeIf { it > 0 } ?: throw SyncException("The transport is not started")
                 connections.getOrPut(id) {
-                    Opened(scope.async(IrohDispatcher) { bridge.connect(endpoint, address, connectTimeoutMs) })
+                    Opened(
+                        scope.async(IrohDispatcher) {
+                            val number = bridge.connect(endpoint, address, connectTimeoutMs)
+                            number to if (number == IrohBridge.ERROR) bridge.lastError() else ""
+                        }
+                    )
                 }.also { it.channels++ }
             }
-            val connection = opened.number.await()
-            val stream = if (connection > 0) withContext(IrohDispatcher) { bridge.openStream(connection) } else connection
+            val (connection, connectError) = opened.result.await()
+            val (stream, streamError) = if (connection <= 0) connection to connectError else withContext(IrohDispatcher) {
+                val number = bridge.openStream(connection)
+                number to if (number == IrohBridge.ERROR) bridge.lastError() else ""
+            }
             if (stream > 0) return IrohChannel(bridge, stream) { release(id, opened) }
-            val error = if (connection <= 0 || stream == IrohBridge.ERROR) bridge.lastError() else ""
+            val error = streamError
             forget(id, opened)
             if (connection <= 0) {
                 throw SyncException(if (connection == IrohBridge.TIMEOUT) "No answer from $id" else "Cannot connect to $id: $error")
@@ -138,8 +150,7 @@ public class IrohTransport(
 
     /** Closes the connection of [opened] (open: its channels are all closed or failed). */
     private fun closeConnection(opened: Opened) {
-        @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
-        val connection = if (opened.number.isCompleted && !opened.number.isCancelled) opened.number.getCompleted() else return
+        val connection = opened.number ?: return
         if (connection > 0) irohBridge?.closeConnection(connection)
     }
 

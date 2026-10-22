@@ -1,0 +1,25 @@
+# The relay of DrawView: an iroh-relay server, of the version of iroh the bridge uses
+# (native/iroh-bridge/Cargo.lock). install.sh writes it to /etc/iroh-relay/iroh-relay.toml with
+# @HOSTNAME@ and @CONTACT@ replaced; the access token is in /etc/iroh-relay/token.env
+# (IROH_RELAY_ACCESS_TOKEN), never in this file.
+
+# HTTP on port 80: the challenges of Let's Encrypt (the relay itself is on HTTPS, port 443)
+http_bind_addr = "[::]:80"
+
+# The devices learn the address the internet sees them at (UDP port 7842): the hole punching
+enable_quic_addr_discovery = true
+
+# Counters of the connections and of the traffic, on the loopback only (read through SSH)
+enable_metrics = true
+metrics_bind_addr = "127.0.0.1:9090"
+
+[tls]
+cert_mode = "LetsEncrypt"
+hostname = "@HOSTNAME@"
+contact = "@CONTACT@"
+cert_dir = "/var/lib/iroh-relay/certs"
+prod_tls = true
+
+[access]
+# Replaced by IROH_RELAY_ACCESS_TOKEN (token.env): only the applications with it use the relay
+shared_token = ["set-in-token-env"]
