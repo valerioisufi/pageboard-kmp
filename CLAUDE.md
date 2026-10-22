@@ -42,11 +42,18 @@ sample. Start from:
 - **Never touch `~/.pencilnotes` or `~/.drawview` while verifying.** Run the desktop apps on a
   scratch directory:
   `JAVA_TOOL_OPTIONS="-Ddrawview.dataDir=<scratch dir>" ./gradlew :pencilnotes-desktop:run`
-- **The sync protocol is live between the user's devices** (`PROTOCOL_VERSION = 1`).
+- **The sync protocol is live between the user's devices** (`PROTOCOL_VERSION` in
+  `OpenFrame.kt`: 1 on `main`, 2 on `feat/internet-sync`).
   - Any change to what travels is a protocol change: frames, messages, sealed operations,
     invitations, membership. Say so, re-record `ProtocolFormatTest`, and agree on the version
     with the user.
   - Devices on different formats cannot sync.
+- **What another device sends is untrusted input**: anyone may reach a device over the internet
+  or on the same Wi-Fi.
+  - Bound what is read before the other device is authorized (`SyncChannel.receive(maxSize)`),
+    and never allocate a length announced before its bytes come.
+  - A frame, message or operation not understood fails the connection (a `SyncException`), never
+    the application.
 - **No web targets.** No JS or Wasm, ever: the targets are Android, JVM, `iosArm64` and
   `iosSimulatorArm64`.
 - **Ask before granting** microphone, notification or system permissions in simulators and
@@ -60,11 +67,13 @@ These are in brief; the full version is in `docs/modularization.md`.
   is given by the application, and when it is missing the feature degrades, never the build.
 - **Headless modules have no Compose:**
   - `drawview-platform`, `-model`, `-ink`, `-store`, `-store-room`;
-  - `-sync-protocol`, `-sync`, `-sync-lan`.
+  - `-sync-protocol`, `-sync`, `-sync-lan`, `-sync-iroh`.
 
   `drawview-lecture` keeps the Compose runtime only.
 - A native library ships with the module that uses it, and only with it: `drawview-native-*` on
-  Android, JNI in the jar on desktop, cinterop on iOS.
+  Android, JNI in the jar on desktop, cinterop on iOS. The iroh bridge (`native/iroh-bridge`) is
+  Rust, built by Gradle with the cargo of `rust.cargo` in `local.properties` (or `~/.cargo/bin`,
+  or the `PATH`) into `native/build/rust`.
 - **No global mutable state in the APIs.** Engines, stores and registries are instances passed
   in.
 - **The public API is explicit and recorded:**
@@ -88,6 +97,12 @@ These are in brief; the full version is in `docs/modularization.md`.
 ./consumer-checks/check.sh   # when published APIs or dependencies change
 ```
 
+- **The iroh bridge changed:** its Rust tests, with the target directory of the Gradle builds
+  (`native/iroh-bridge/target` is not one to commit):
+  `CARGO_TARGET_DIR=native/build/rust cargo test --manifest-path native/iroh-bridge/Cargo.toml --features dev-relay`
+- **The sync modules changed:** their tests on the iOS simulator too,
+  `./gradlew :drawview-sync-protocol:iosSimulatorArm64Test :drawview-sync:iosSimulatorArm64Test :drawview-sync-lan:iosSimulatorArm64Test :drawview-sync-iroh:iosSimulatorArm64Test`.
+
 - **UI changes:** check the screenshots with `verifyRoborazziJvm` (explorer, ui, sync-ui,
   lecture-ui, export-ui), and run the desktop app on a scratch data directory.
 - **Stale results:** if a result looks stale, run again with `--rerun-tasks` on the module.
@@ -106,8 +121,13 @@ Each one gets its own plan.
 - **Sync over the internet with iroh** (in progress, `feat/internet-sync`): the plan is
   `docs/internet-sync.md`. It replaces the idea of libp2p, whose relay limits every circuit to
   128 KiB and 2 minutes by default.
+  - Left to the user: the relay on Oracle Cloud (`tools/relay/README.md`) and the tests on real
+    networks (phase 7).
   - Offline devices: the relay of iroh does not store anything, so they still need the
     store-and-forward relay (`SealedOperation` was made for it), in a plan of its own.
+  - Publishing the applications to other users needs more: the access to the relay (a token in
+    an application is no secret), privacy and the forms of the stores, the compatibility between
+    versions of the protocol (see "Left for later" in the plan).
 - **Lecture assistant on small, specialized local models.**
   - Today Gemini and Ollama are wired inside `drawview-lecture`.
   - The model runtime (whisper.cpp today) should become a module of its own, shared with

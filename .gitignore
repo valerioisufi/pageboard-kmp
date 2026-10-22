@@ -26,3 +26,6 @@ hs_err_pid*.log
 # Claude Code
 .claude/worktrees/
 .claude/settings.local.json
+
+# Cargo run in the crate (the Gradle builds use native/build/rust)
+native/iroh-bridge/target/
