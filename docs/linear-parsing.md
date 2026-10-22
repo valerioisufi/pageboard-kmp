@@ -84,7 +84,7 @@ Step 1 and step 2 read each character at most once each (step 3 jumps over what 
 linear, five times for the five rules. A span dropped because it touches a word still takes its
 text, as with `findAll` (`a__b __c__` has no bold).
 
-### The rest of the parsing (phase 2, proposed)
+### The rest of the parsing (phase 2)
 
 * **Nesting.** The spans sorted as now (by start, the outer one first) go through a stack of the
   spans kept that are still open: the ones ending before the start of a span are popped; the span
@@ -115,7 +115,8 @@ text, as with `findAll` (`a__b __c__` has no bold).
 
 `RichTextParserBoundsTest` (`drawview-model`, common), on the JVM and on the iOS simulator:
 
-* texts of 1 MiB parsed within 2 s each (tens of milliseconds when linear, minutes when quadratic):
+* texts of 1 MiB parsed within 10 s each (tens of milliseconds when linear on the JVM, a few
+  hundred on the iOS simulator, minutes when quadratic):
   in phase 1 the delimiters of every rule never closed (`**`, `*`, `__`, `_`, `~~`) and all of them
   mixed; in phase 2 the closed emphasis, escapes, headings, list items, `$a ` on one line,
   `$$a$$` on one line, and every kind mixed;
@@ -129,14 +130,38 @@ text, as with `findAll` (`a__b __c__` has no bold).
 
 | Phase | Content | Status |
 |---|---|---|
-| 1. Emphasis | `Emphasis` opening, closing and scanning; the expressions removed; the tests of phase 1 | to do |
-| 2. The rest of the parsing | `nest` with a stack, the inline formulas walked once, the lines of the display formulas; the tests of phase 2 | proposed |
+| 1. Emphasis | `Emphasis` opening, closing and scanning; the expressions removed; the tests of phase 1 | done |
+| 2. The rest of the parsing | `nest` with a stack, the inline formulas walked once, the lines of the display formulas; the tests of phase 2 | to do |
 
 Every phase ends with the checks of `CLAUDE.md` and `:drawview-model:iosSimulatorArm64Test`.
 
+### Phase 1 results
+
+* `RichTextParser.Emphasis` holds its delimiter (`**`, `__`, `~~`, `*`, `_`), says where it opens
+  (`opensAt`) and closes (`closesAt`), and scans a text (`scan`), jumping from one of its
+  characters to the next (`indexOf`); `RichTextParser.emphasis` (internal) runs the five rules. The
+  regular expressions of the emphasis are gone.
+* A text of 1 MiB of delimiters never closed (`**a `, `*a `, `__a `, `_a `, `~~a `, `**a⏎`
+  repeated), where each took 20 to 30 minutes, is parsed in 11–26 ms on the JVM and in 120–430 ms
+  on the iOS simulator (the emphasis 4–9 ms and 37–89 ms of it; the rest is the masking and the
+  expressions of the headings and the lists, `**a⏎` the slowest).
+* `RichTextParserBoundsTest` (`drawview-model`): those texts, and the five delimiters mixed on a
+  line and on lines of their own, within 10 s each; 2 000 random texts parsed without failing, their
+  spans in the text, sorted, nested or apart; 10 000 random texts
+  (an emoji, a lone surrogate, a no-break space among their characters, some characters masked)
+  with the same emphasis as the regular expressions, kept in the test as the reference. Without
+  one of the conditions of a single delimiter, the reference test fails. On the JVM and on the iOS
+  simulator.
+* Checked once more, outside the tests: the whole `parse` of before and of now give the same spans
+  for 400 000 random texts (786 082 spans).
+
 ## Decisions
 
-### Proposed by me (revertible)
+### Taken by the user (2026-10-22)
+
+* The plan as it is, with phase 2 on the same branch.
+
+### Taken by me (revertible)
 
 * The same results as the expressions, their quirks included: `***a***` is a bold of `*a`, followed
   by a `*`; `a__b __c__` has no bold; the spaces of the emphasis are those of ASCII.
@@ -144,10 +169,8 @@ Every phase ends with the checks of `CLAUDE.md` and `:drawview-model:iosSimulato
   every result as it is, and five linear scans are linear.
 * The new tests in `drawview-model`, next to the parser and able to reach its internals (the scan of
   the emphasis, the nesting) for the references; the existing ones stay in `drawview-canvas`.
-* 2 s for 1 MiB as the bound: far above the linear time on a slow machine, far below the quadratic
-  one.
-* Phase 2 on the same branch: the same failure (a text freezing the application) in the same
-  function, and `docs/code-blocks.md` asks for the notation linear (its requirement 8).
+* 10 s for 1 MiB as the bound: far above the linear time on a busy machine (2 s on the iOS
+  simulator while Gradle built the native libraries, 0.3 s alone), far below the quadratic one.
 
 ## Left for later
 

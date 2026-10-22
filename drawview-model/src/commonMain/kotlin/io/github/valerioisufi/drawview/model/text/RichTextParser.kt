@@ -53,14 +53,7 @@ public object RichTextParser {
         // The other delimiters are looked for outside the code and the formulas
         val masked = mask(text, verbatim)
         val candidates = verbatim.toMutableList()
-        for (pattern in EMPHASIS) {
-            for (match in pattern.regex.findAll(masked)) {
-                val start = match.range.first
-                val end = match.range.last + 1
-                if (pattern.wordBound && (text.isWordAt(start - 1) || text.isWordAt(end))) continue
-                candidates += Span(pattern.kind, start, end, start + pattern.delimiter, end - pattern.delimiter)
-            }
-        }
+        candidates += emphasis(masked, text)
         for (match in HEADING.findAll(masked)) {
             val start = match.range.first
             val end = match.range.last + 1
@@ -186,6 +179,16 @@ public object RichTextParser {
         return text.substring(lineStart, start).isBlank() && text.substring(end, lineEnd).isBlank()
     }
 
+    /**
+     * The emphasis of [text], found in [masked] (its code and formulas masked) rule after rule, each
+     * rule from the start of the text.
+     */
+    internal fun emphasis(masked: String, text: String): List<Span> {
+        val spans = mutableListOf<Span>()
+        for (rule in EMPHASIS) rule.scan(masked, text, spans)
+        return spans
+    }
+
     /** [text] with the characters of [spans] replaced, the offsets kept. */
     private fun mask(text: String, spans: List<Span>): String {
         if (spans.isEmpty()) return text
@@ -215,16 +218,73 @@ public object RichTextParser {
         return kept
     }
 
-    private class Emphasis(val kind: Kind, val delimiter: Int, val regex: Regex, val wordBound: Boolean = false)
+    /**
+     * A rule of emphasis: its [delimiter] around a content touching it; a rule bound to words
+     * ([wordBound]) does not work inside a word.
+     */
+    private class Emphasis(val kind: Kind, val delimiter: String, val wordBound: Boolean = false) {
+        private val char = delimiter[0]
+        private val single = delimiter.length == 1
 
-    // The content touches its delimiters; [\s\S]: any character, the line breaks included
+        /**
+         * Whether a delimiter opening a span is at [i] of [masked]: a character other than a space
+         * follows it; a single one neither follows its character nor is followed by it.
+         */
+        fun opensAt(masked: String, i: Int): Boolean {
+            if (!masked.startsWith(delimiter, i)) return false
+            val next = masked.getOrNull(i + delimiter.length) ?: return false
+            return !next.isSpace() && (!single || (next != char && masked.getOrNull(i - 1) != char))
+        }
+
+        /**
+         * Whether a delimiter closing a span is at [i] of [masked]: it follows a character other
+         * than a space; a single one neither follows its character nor is followed by it.
+         */
+        fun closesAt(masked: String, i: Int): Boolean {
+            if (!masked.startsWith(delimiter, i)) return false
+            val previous = masked.getOrNull(i - 1) ?: return false
+            return !previous.isSpace() && (!single || (previous != char && masked.getOrNull(i + 1) != char))
+        }
+
+        /**
+         * Adds to [spans] the spans of the rule in [masked], from the start: each from a delimiter
+         * that opens to the first one closing after a character of content, the next one after it.
+         *
+         * Whether a delimiter closes does not depend on where its span opened: when none closes
+         * after a delimiter that opens, none closes after the later ones either. So each character
+         * is read once looking for a delimiter that opens and once for one that closes.
+         */
+        fun scan(masked: String, text: String, spans: MutableList<Span>) {
+            val length = delimiter.length
+            var open = masked.indexOf(char)
+            while (open >= 0) {
+                if (!opensAt(masked, open)) {
+                    open = masked.indexOf(char, open + 1)
+                    continue
+                }
+                var close = masked.indexOf(char, open + length + 1)
+                while (close >= 0 && !closesAt(masked, close)) close = masked.indexOf(char, close + 1)
+                if (close < 0) return
+                val end = close + length
+                // A span touching a word is dropped, its text taken all the same
+                if (!wordBound || !(text.isWordAt(open - 1) || text.isWordAt(end))) {
+                    spans += Span(kind, open, end, open + length, close)
+                }
+                open = masked.indexOf(char, end)
+            }
+        }
+    }
+
     private val EMPHASIS = listOf(
-        Emphasis(Kind.BOLD, 2, Regex("""\*\*(?=\S)([\s\S]+?)(?<=\S)\*\*""")),
-        Emphasis(Kind.BOLD, 2, Regex("""__(?=\S)([\s\S]+?)(?<=\S)__"""), wordBound = true),
-        Emphasis(Kind.STRIKE, 2, Regex("""~~(?=\S)([\s\S]+?)(?<=\S)~~""")),
-        Emphasis(Kind.ITALIC, 1, Regex("""(?<!\*)\*(?![\s*])([\s\S]+?)(?<![\s*])\*(?!\*)""")),
-        Emphasis(Kind.ITALIC, 1, Regex("""(?<!_)_(?![\s_])([\s\S]+?)(?<![\s_])_(?!_)"""), wordBound = true)
+        Emphasis(Kind.BOLD, "**"),
+        Emphasis(Kind.BOLD, "__", wordBound = true),
+        Emphasis(Kind.STRIKE, "~~"),
+        Emphasis(Kind.ITALIC, "*"),
+        Emphasis(Kind.ITALIC, "_", wordBound = true)
     )
+
+    /** A space around the delimiters of the emphasis: the spaces of ASCII. */
+    private fun Char.isSpace() = this == ' ' || this in '\t'..'\r'
 
     // Inline flags such as (?m) are not supported everywhere
     private val HEADING = Regex("""^#{1,6}[ \t]+\S.*$""", RegexOption.MULTILINE)
