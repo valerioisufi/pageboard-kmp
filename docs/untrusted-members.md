@@ -138,6 +138,9 @@ tests of the sync modules on the iOS simulator.
   validated against 19.
 * The ABI of `drawview-store`, `drawview-store-testing` and `drawview-store-room` is recorded
   again: additions only.
+* Checked on a copy of the database of PencilNotes of the user (schema 18: 12 documents, 588
+  pages of which 88 removed, 2131 operations), the original untouched: migrated to 19, every
+  document read with its 500 pages and its operations, a proof kept and read.
 
 ### Phase 2 results
 
