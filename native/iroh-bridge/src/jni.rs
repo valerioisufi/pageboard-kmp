@@ -279,8 +279,9 @@ pub unsafe extern "system" fn Java_io_github_valerioisufi_drawview_sync_iroh_Iro
     _this: jobject,
     stream: jlong,
     timeout_ms: jlong,
+    max_size: jint,
 ) -> jbyteArray {
-    match caught(Err(Failure::Closed), || bridge::receive(stream as u64, timeout_ms)) {
+    match caught(Err(Failure::Closed), || bridge::receive(stream as u64, timeout_ms, max_size.max(0) as usize)) {
         Ok(frame) => unsafe { new_bytes(env, &frame) },
         Err(_) => null_mut(),
     }

@@ -42,6 +42,7 @@ import io.github.valerioisufi.drawview.sync.protocol.DocumentKey
 import io.github.valerioisufi.drawview.sync.protocol.InMemoryChannel
 import io.github.valerioisufi.drawview.sync.protocol.InMemoryNetwork
 import io.github.valerioisufi.drawview.sync.protocol.Invitation
+import io.github.valerioisufi.drawview.sync.protocol.MAX_FRAME_SIZE
 import io.github.valerioisufi.drawview.sync.protocol.OpenFrame
 import io.github.valerioisufi.drawview.sync.protocol.OperationSeal
 import io.github.valerioisufi.drawview.sync.protocol.PROTOCOL_VERSION
@@ -63,6 +64,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -72,7 +74,11 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.cbor.Cbor
 
 class SyncEngineTest {
 
@@ -672,9 +678,9 @@ class SyncEngineTest {
             if (!cable.cut.value) inner.send(frame)
         }
 
-        override suspend fun receive(): ByteArray? {
+        override suspend fun receive(maxSize: Int): ByteArray? {
             if (!cable.cut.value) {
-                val frame = inner.receive()
+                val frame = inner.receive(maxSize)
                 if (!cable.cut.value) return frame
             }
             closed.await()
@@ -750,6 +756,105 @@ class SyncEngineTest {
         bob.documents.close(open)
         assertTrue(path!!.endsWith(".jpg"), path)
         assertContentEquals(bytes, bob.files.files[path])
+    }
+
+    // --- Devices not known yet ---
+
+    /** [inner], recording the largest frame each receive takes. */
+    private class Recording(private val inner: SyncChannel) : SyncChannel by inner {
+        val sizes = mutableListOf<Int>()
+
+        override suspend fun receive(maxSize: Int): ByteArray? {
+            sizes += maxSize
+            return inner.receive(maxSize)
+        }
+    }
+
+    /** An [OpenFrame] with more in it. */
+    @Serializable
+    private class PaddedOpenFrame(val protocol: Int, val tag: String, val padding: ByteArray)
+
+    /** Whether the other end closed [end]: what it sent is read, and nothing more comes. */
+    private suspend fun TestScope.isClosed(end: SyncChannel): Boolean {
+        while (true) {
+            val next = backgroundScope.async { end.receive() }
+            runCurrent()
+            if (!next.isCompleted) {
+                next.cancel()
+                return false
+            }
+            next.await() ?: return true
+        }
+    }
+
+    @Test
+    fun theFramesOfADeviceGrowWithWhatItProved() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val bob = Device("bob", work, this, network)
+        val document = ada.store.createDocument("Physics")
+        val invitation = ada.share(document.id, "Physics")
+        val (one, other) = InMemoryChannel.pair()
+        val accepted = Recording(one)
+        ada.engine.accept(accepted)
+        bob.engine.join(invitation)
+        bob.engine.connect(other, document.id, invitation.key)
+        advanceUntilIdle()
+        assertSame(document.id, listOf(ada, bob))
+        // Its open frame, its handshake (256 KiB, and what the encryption adds), anything once admitted
+        assertEquals(listOf(OpenFrame.MAX_SIZE, 256 * 1024 + 28, MAX_FRAME_SIZE), accepted.sizes.distinct())
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    @Test
+    fun aDeviceNotKnownSendingLargerFramesIsClosed() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network)
+        val document = ada.store.createDocument("Physics")
+        val invitation = ada.share(document.id, "Physics")
+
+        // A good open frame, too large (what it adds is skipped otherwise)
+        val (one, other) = InMemoryChannel.pair()
+        ada.engine.accept(one)
+        other.send(Cbor.encodeToByteArray(PaddedOpenFrame.serializer(), PaddedOpenFrame(PROTOCOL_VERSION, invitation.key.tag, ByteArray(OpenFrame.MAX_SIZE))))
+        assertTrue(isClosed(other))
+
+        // With the key of the invitation, a good challenge larger than a handshake (answered otherwise)
+        val (three, four) = InMemoryChannel.pair()
+        ada.engine.accept(three)
+        four.send(OpenFrame(PROTOCOL_VERSION, invitation.key.tag).encode())
+        SecureChannel.of(four, invitation.key).send(SyncCodec.encode(Challenge(ByteArray(300 * 1024))))
+        assertTrue(isClosed(four))
+
+        // The same, small: answered
+        val (five, six) = InMemoryChannel.pair()
+        ada.engine.accept(five)
+        six.send(OpenFrame(PROTOCOL_VERSION, invitation.key.tag).encode())
+        SecureChannel.of(six, invitation.key).send(SyncCodec.encode(Challenge(ByteArray(16))))
+        assertFalse(isClosed(six))
+        assertTrue(ada.engine.peers.value.isEmpty())
+    }
+
+    @Test
+    fun theDevicesNotKnownAreAFewAtATimeAndSaySoonWhatTheyWant() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val ada = Device("ada", work, this, network, keepAliveMs = 1_000)
+        val bob = Device("bob", work, this, network, keepAliveMs = 1_000)
+        val document = ada.store.createDocument("Physics")
+        val invitation = ada.share(document.id, "Physics")
+
+        // Silent ones: 16 at once, the next one closed at once
+        val silent = List(17) { InMemoryChannel.pair().also { (one, _) -> ada.engine.accept(one) }.second }
+        runCurrent()
+        assertTrue(silent.take(16).none { isClosed(it) })
+        assertTrue(isClosed(silent.last()))
+
+        // Silent for as long as a connection is lost in: closed, room for the others
+        advanceTimeBy(3_100)
+        assertTrue(silent.all { isClosed(it) })
+        bob.join(invitation, "ada")
+        advanceTimeBy(500)
+        assertSame(document.id, listOf(ada, bob))
     }
 
     // --- Members ---

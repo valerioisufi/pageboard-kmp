@@ -235,6 +235,42 @@ Variations).
   (feature `dev-relay`, never in the libraries), built by `:drawview-sync-iroh:buildIrohDevRelay`.
   The JVM tests start it; the iOS tests connect directly.
 
+### Limits before authentication
+
+Asked by the user on 2026-10-22, after a review of what a public application would need. The
+starting point:
+
+* Anyone who knows the identifier of a device can open an iroh connection to it and streams on
+  it: the identifier is in the invitations and in the addresses the members give each other, and
+  the ALPN (`drawview/sync/2`) is public. On the local network, anyone on the same Wi-Fi reaches
+  the TCP port announced by mDNS, with the tags of the documents.
+* A frame announces its length in 4 bytes, and both transports allocate it at once (up to
+  256 MiB: `vec![0u8; length]` in the bridge, `ByteArray(size)` in `TcpChannel`), before the
+  other device has said anything: a few streams make a phone run out of memory.
+* `SyncEngine.accept` waits for the first frame (`OpenFrame`) for ever, and a channel of
+  `IrohChannel` waiting holds a thread of `IrohDispatcher` (256 of them): a few hundred silent
+  streams stop the synchronization. Every incoming connection holds a thread too.
+* The channels and connections of devices not known yet have no limit.
+
+What the other device may send grows with what it has proved:
+
+| Stage | The largest frame | Where |
+|---|---|---|
+| Nothing yet: the first frame (`OpenFrame`, in clear) | `OpenFrame.MAX_SIZE` (1 KiB) | `SyncEngine.accept` |
+| The key of the tag (or of an invitation) known, the device not authorized yet: `Challenge`, `Hello`, the membership, the admission | 256 KiB (a membership of about a thousand members) | `SyncEngine.run` |
+| A member, its identity proven (`Link.authorized`) | `MAX_FRAME_SIZE` (256 MiB, as before) | `SyncEngine.run` |
+
+| Responsibility | Class (module) | GRASP |
+|---|---|---|
+| The largest frame the next `receive` takes, from what the other device has proved | `SyncEngine` (it knows the stage of each connection) | Information Expert |
+| Refusing a larger frame before reading it, and reading a frame in parts (the memory follows the bytes that came, not the length announced) | `SyncChannel.receive(maxSize)`: `TcpChannel`, `IrohChannel` and the bridge, `InMemoryChannel`; `SecureChannel` adds the size of its encryption | Polymorphism, Protected Variations |
+| The bridge reading ahead only the frames the last `receive` allowed (a larger one is held back at its length, then fails the stream) | the reader of each stream (`bridge.rs`) | Information Expert |
+| Devices not known yet: a few at a time (16 channels before their first frame decrypted), the others closed at once; the first frame within the time a connection is lost in (three times `keepAliveMs`) | `SyncEngine.accept` | Controller |
+| Incoming iroh connections: 32 at once (the others closed as soon as they are open), 4 MiB of data in flight per connection | the endpoint of the bridge (`bind`) | Pure Fabrication |
+
+Nothing changes in what travels: the frames, their order and their contents are the same, and a
+device sends nothing larger before it is authorized. So this is no protocol change.
+
 ### Modules
 
 ```
@@ -259,6 +295,7 @@ tools/relay             configuration of the relay, guide
 | 5. Relay | `tools/relay/`: the configuration of `iroh-relay` (TLS, token, QUIC address discovery), the service unit, the guide for an Always Free machine of Oracle Cloud. The user creates the machine | done (the machine: to do, by the user) |
 | 6. Applications | PencilNotes on Android, iOS and the desktop: the relay in the settings (address, token), synchronization over the internet on or off, how each participant is connected in the sharing dialog; the sample; the strings in the 7 languages; the screenshots | done |
 | 7. Real networks | iPad or phone on mobile data and the Mac at home, the university Wi-Fi, two homes. Measures: the time to connect, how many connections go direct, the traffic through the relay, the battery | to do |
+| 8. Limits before authentication | `SyncChannel.receive(maxSize)` and the limits of each stage (see [Limits before authentication](#limits-before-authentication)); the frames read in parts by `TcpChannel` and the bridge; the bridge holding back a frame larger than allowed; the first frame within a time; 16 devices not known at once; 32 incoming iroh connections, 4 MiB in flight each. Tests: the limits of each stage, a frame too large failing the channel unread, the silent channels, the devices not known refused, the iroh connections closed | done |
 
 Every phase ends with the checks of `CLAUDE.md` (the JVM tests, the ABI, the Android, iOS and
 application builds, the consumer checks when the published API or the dependencies change), and
@@ -509,6 +546,40 @@ ones of n0 (the nearest one, in Frankfurt).
   collaboration with a fake `InternetSync` (turned on, joining, refreshing, another relay, turned
   off, started with the collaboration when turned on).
 
+### Phase 8 results
+
+* `SyncChannel.receive(maxSize = MAX_FRAME_SIZE)` in `drawview-sync-protocol`: the callers stay as
+  they were, the channels take the parameter (the ABI is recorded again). `SecureChannel` adds
+  the 28 bytes of its encryption, `InMemoryChannel` refuses a larger frame like the others.
+* `SyncEngine`:
+  * the open frame of 1 KiB at most, within three times `keepAliveMs`;
+  * 256 KiB until the other device is authorized, then `MAX_FRAME_SIZE`;
+  * 16 incoming channels at once before their first frame decrypted, the others closed at once.
+* `TcpChannel` reads a frame in parts, each as large as what came before it (64 KiB first).
+* The bridge:
+  * the reader of a stream takes ahead the frames the last `receive` allows, holds a larger one
+    back at its length (its bytes stay in QUIC, which stops the sender) and the `receive` finding
+    it fails the stream (`null`, then `isEnded`); a frame is read in parts, like on the local
+    network;
+  * 32 incoming connections at once, counted once open and closed at once beyond them. Refusing
+    them at the handshake did not work: iroh may start several handshakes for one connection,
+    and the one refused failed the connection that had got the free place;
+  * 4 MiB in flight per connection (QUIC `receive_window`; it was unlimited, 1.25 MB per stream
+    on 100 streams).
+* Tests, each of them failing without its limit (checked by removing it):
+  * `SyncEngineTest`: the limits of each stage, as the channel sees them; a good open frame too
+    large and a good challenge larger than a handshake close the connection (the same challenge,
+    small, is answered); 16 silent channels kept and the 17th closed, all of them closed after
+    three times `keepAliveMs`, then a device joins;
+  * `LanTransportJvmTest`: a frame of 3 MB in pieces; a length larger than allowed refused; four
+    lengths of 250 MiB announced with a few bytes (with the allocation of before: an
+    `OutOfMemoryError` in the heap of the tests);
+  * the bridge (Rust and `IrohBridgeTest`): a frame held back behind a small one, then taken; a
+    frame never allowed leaves the sender waiting, then fails the stream; 32 connections kept,
+    the 33rd closed, room again once one is closed.
+* No protocol change: what travels is the same, and no device sends larger frames before it is
+  authorized.
+
 ## Decisions
 
 ### Taken by the user (2026-10-22)
@@ -576,9 +647,22 @@ ones of n0 (the nearest one, in Frankfurt).
 * The Android library built by its own module (`drawview.android.rust`, with the NDK that AGP
   manages), the desktop one by `build_desktop.sh` (which clears the libraries of its platform
   before installing them), the iOS ones by `drawview-sync-iroh` (the module linking them).
+* `receive(maxSize)` on the channel rather than a property of it: the engine says at each read
+  what it takes, and a transport keeps no state of the handshake.
+* The bridge holding back a frame larger than allowed rather than failing it as it reads ahead:
+  the reader is ahead of the engine, which may authorize the other device meanwhile.
+* A frame too large ends an iroh channel (`null`) rather than throwing: the JNI functions give
+  `null` on any failure. The engine closes the connection either way.
+* The limits: 1 KiB for the open frame, 256 KiB before authorization (a membership of about a
+  thousand members), 16 devices not known, 32 incoming connections, 4 MiB in flight.
 
 ## Left for later
 
+* What remains after phase 8: anyone may hold the 32 incoming iroh connections of a device (it
+  still reaches the members, connecting to them itself); the operations of a member are not
+  signed (a member with a modified application may write as a reader, or as another member); the
+  other points of a public application (the access to the relay, privacy, the store forms, the
+  compatibility between versions).
 * Store and forward (`drawview-sync-relay`): a service that keeps the sealed operations for the
   devices offline.
 * Several relays (failover, Europe and United States), or managed relays.

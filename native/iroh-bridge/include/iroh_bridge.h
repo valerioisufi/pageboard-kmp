@@ -53,8 +53,9 @@ int32_t dv_iroh_open_stream(uint64_t connection, uint64_t *stream);
 int32_t dv_iroh_accept_stream(uint64_t connection, int64_t timeout_ms, uint64_t *stream);
 /* Queues a frame; DV_IROH_TIMEOUT when the queue stayed full (the frame is not queued). */
 int32_t dv_iroh_send(uint64_t stream, const uint8_t *frame, size_t length, int64_t timeout_ms);
-/* The next frame (freed with dv_iroh_bytes_free); DV_IROH_CLOSED once the stream ended. */
-int32_t dv_iroh_receive(uint64_t stream, int64_t timeout_ms, DvIrohBytes *frame);
+/* The next frame of max_size bytes at most (freed with dv_iroh_bytes_free): a larger one fails
+ * the stream unread (DV_IROH_ERROR, then dv_iroh_is_ended); DV_IROH_CLOSED once the stream ended. */
+int32_t dv_iroh_receive(uint64_t stream, int64_t timeout_ms, size_t max_size, DvIrohBytes *frame);
 /* Whether a dv_iroh_receive found the stream ended (or the stream is closed). */
 bool dv_iroh_is_ended(uint64_t stream);
 /* Sends the frames queued, finishes the stream and reads nothing more. */

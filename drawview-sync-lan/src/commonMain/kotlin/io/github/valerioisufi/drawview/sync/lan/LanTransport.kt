@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.sync.lan
 
+import io.github.valerioisufi.drawview.sync.protocol.MAX_FRAME_SIZE
 import io.github.valerioisufi.drawview.sync.protocol.Route
 import io.github.valerioisufi.drawview.sync.protocol.SyncChannel
 import io.github.valerioisufi.drawview.sync.protocol.SyncException
@@ -158,7 +159,7 @@ internal class TcpChannel(private val socket: Socket) : SyncChannel {
         }
     }
 
-    override suspend fun receive(): ByteArray? {
+    override suspend fun receive(maxSize: Int): ByteArray? {
         val size = try {
             input.readInt()
         } catch (e: CancellationException) {
@@ -166,21 +167,28 @@ internal class TcpChannel(private val socket: Socket) : SyncChannel {
         } catch (_: Exception) {
             return null
         }
-        if (size !in 0..MAX_FRAME_SIZE) throw SyncException("A frame of $size bytes")
-        val frame = ByteArray(size)
+        if (size !in 0..minOf(maxSize, MAX_FRAME_SIZE)) throw SyncException("A frame of $size bytes")
+        // In parts, each as large as what came before it: the memory follows the bytes that come
+        var frame = ByteArray(minOf(size, FIRST_PART))
         try {
-            input.readFully(frame)
+            var read = 0
+            while (true) {
+                input.readFully(frame, read, frame.size)
+                read = frame.size
+                if (read == size) return frame
+                frame = frame.copyOf(minOf(size, read * 2))
+            }
         } catch (e: CancellationException) {
             throw e
         } catch (_: Exception) {
             return null
         }
-        return frame
     }
 
     override fun close() = socket.close()
 
     private companion object {
-        const val MAX_FRAME_SIZE = 256 * 1024 * 1024
+        /** The first part of a frame read (see [receive]). */
+        const val FIRST_PART = 64 * 1024
     }
 }

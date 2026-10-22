@@ -63,7 +63,7 @@ public final class io/github/valerioisufi/drawview/sync/protocol/InMemoryChannel
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/protocol/InMemoryChannel$Companion;
 	public fun close ()V
 	public fun getRoute ()Lio/github/valerioisufi/drawview/sync/protocol/Route;
-	public fun receive (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun receive (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun send ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
@@ -188,6 +188,7 @@ public final synthetic class io/github/valerioisufi/drawview/sync/protocol/Membe
 
 public final class io/github/valerioisufi/drawview/sync/protocol/OpenFrame {
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/protocol/OpenFrame$Companion;
+	public static final field MAX_SIZE I
 	public fun <init> (ILjava/lang/String;)V
 	public final fun component1 ()I
 	public final fun component2 ()Ljava/lang/String;
@@ -278,7 +279,7 @@ public final class io/github/valerioisufi/drawview/sync/protocol/SecureChannel :
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/protocol/SecureChannel$Companion;
 	public fun close ()V
 	public fun getRoute ()Lio/github/valerioisufi/drawview/sync/protocol/Route;
-	public fun receive (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun receive (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun send ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
@@ -311,12 +312,18 @@ public final class io/github/valerioisufi/drawview/sync/protocol/SignedMembershi
 public abstract interface class io/github/valerioisufi/drawview/sync/protocol/SyncChannel {
 	public abstract fun close ()V
 	public fun getRoute ()Lio/github/valerioisufi/drawview/sync/protocol/Route;
-	public abstract fun receive (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun receive (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun receive$default (Lio/github/valerioisufi/drawview/sync/protocol/SyncChannel;ILkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public abstract fun send ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/drawview/sync/protocol/SyncChannel$DefaultImpls {
 	public static fun getRoute (Lio/github/valerioisufi/drawview/sync/protocol/SyncChannel;)Lio/github/valerioisufi/drawview/sync/protocol/Route;
+	public static synthetic fun receive$default (Lio/github/valerioisufi/drawview/sync/protocol/SyncChannel;ILkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/sync/protocol/SyncChannelKt {
+	public static final field MAX_FRAME_SIZE I
 }
 
 public final class io/github/valerioisufi/drawview/sync/protocol/SyncException : java/lang/Exception {

@@ -8,6 +8,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.test.fail
 
 /** The iroh bridge of this platform between two endpoints of this process, directly. */
 class IrohBridgeTest {
@@ -71,6 +72,20 @@ class IrohBridgeTest {
         assertFalse(bridge.isEnded(back))
         assertEquals(IrohBridge.SENT, bridge.send(out, "later".encodeToByteArray(), 5_000))
         assertContentEquals("later".encodeToByteArray(), bridge.receive(back, 5_000))
+    }
+
+    @Test
+    fun aFrameLargerThanAllowedEndsTheStreamUnread() {
+        val (out, back) = stream()
+        assertEquals(IrohBridge.SENT, bridge.send(out, ByteArray(100), 5_000))
+        assertEquals(IrohBridge.SENT, bridge.send(out, ByteArray(5_000), 5_000))
+        assertContentEquals(ByteArray(100), bridge.receive(back, 5_000, maxSize = 1_000))
+        // Held back by the bridge: timeouts until it sees it, then the end (it is never given)
+        repeat(50) {
+            assertNull(bridge.receive(back, 100, maxSize = 1_000))
+            if (bridge.isEnded(back)) return
+        }
+        fail("The stream did not end")
     }
 
     @Test

@@ -151,9 +151,9 @@ pub unsafe extern "C" fn dv_iroh_send(stream: u64, frame: *const u8, length: usi
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn dv_iroh_receive(stream: u64, timeout_ms: i64, frame: *mut DvIrohBytes) -> i32 {
+pub unsafe extern "C" fn dv_iroh_receive(stream: u64, timeout_ms: i64, max_size: usize, frame: *mut DvIrohBytes) -> i32 {
     caught(|| {
-        code(bridge::receive(stream, timeout_ms), |bytes| unsafe {
+        code(bridge::receive(stream, timeout_ms, max_size), |bytes| unsafe {
             let bytes = bytes.into_boxed_slice();
             let length = bytes.len();
             *frame = DvIrohBytes { data: Box::into_raw(bytes).cast(), length };

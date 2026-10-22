@@ -118,9 +118,9 @@ internal object IrohCinterop : IrohBridge {
         }
     }
 
-    override fun receive(stream: Long, timeoutMs: Long): ByteArray? = memScoped {
+    override fun receive(stream: Long, timeoutMs: Long, maxSize: Int): ByteArray? = memScoped {
         val bytes = alloc<DvIrohBytes>()
-        if (dv_iroh_receive(stream.toULong(), timeoutMs, bytes.ptr) != DV_IROH_OK) return@memScoped null
+        if (dv_iroh_receive(stream.toULong(), timeoutMs, maxSize.coerceAtLeast(0).toULong(), bytes.ptr) != DV_IROH_OK) return@memScoped null
         val frame = bytes.data?.readBytes(bytes.length.toInt()) ?: ByteArray(0)
         dv_iroh_bytes_free(bytes.readValue())
         frame

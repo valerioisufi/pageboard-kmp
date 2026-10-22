@@ -41,7 +41,7 @@ abstract interface io.github.valerioisufi.drawview.sync.protocol/SyncChannel { /
         open fun <get-route>(): io.github.valerioisufi.drawview.sync.protocol/Route // io.github.valerioisufi.drawview.sync.protocol/SyncChannel.route.<get-route>|<get-route>(){}[0]
 
     abstract fun close() // io.github.valerioisufi.drawview.sync.protocol/SyncChannel.close|close(){}[0]
-    abstract suspend fun receive(): kotlin/ByteArray? // io.github.valerioisufi.drawview.sync.protocol/SyncChannel.receive|receive(){}[0]
+    abstract suspend fun receive(kotlin/Int = ...): kotlin/ByteArray? // io.github.valerioisufi.drawview.sync.protocol/SyncChannel.receive|receive(kotlin.Int){}[0]
     abstract suspend fun send(kotlin/ByteArray) // io.github.valerioisufi.drawview.sync.protocol/SyncChannel.send|send(kotlin.ByteArray){}[0]
 }
 
@@ -122,7 +122,7 @@ final class io.github.valerioisufi.drawview.sync.protocol/DocumentKey { // io.gi
 
 final class io.github.valerioisufi.drawview.sync.protocol/InMemoryChannel : io.github.valerioisufi.drawview.sync.protocol/SyncChannel { // io.github.valerioisufi.drawview.sync.protocol/InMemoryChannel|null[0]
     final fun close() // io.github.valerioisufi.drawview.sync.protocol/InMemoryChannel.close|close(){}[0]
-    final suspend fun receive(): kotlin/ByteArray? // io.github.valerioisufi.drawview.sync.protocol/InMemoryChannel.receive|receive(){}[0]
+    final suspend fun receive(kotlin/Int): kotlin/ByteArray? // io.github.valerioisufi.drawview.sync.protocol/InMemoryChannel.receive|receive(kotlin.Int){}[0]
     final suspend fun send(kotlin/ByteArray) // io.github.valerioisufi.drawview.sync.protocol/InMemoryChannel.send|send(kotlin.ByteArray){}[0]
 
     final object Companion { // io.github.valerioisufi.drawview.sync.protocol/InMemoryChannel.Companion|null[0]
@@ -288,6 +288,9 @@ final class io.github.valerioisufi.drawview.sync.protocol/OpenFrame { // io.gith
     }
 
     final object Companion { // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.Companion|null[0]
+        final const val MAX_SIZE // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.Companion.MAX_SIZE|{}MAX_SIZE[0]
+            final fun <get-MAX_SIZE>(): kotlin/Int // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.Companion.MAX_SIZE.<get-MAX_SIZE>|<get-MAX_SIZE>(){}[0]
+
         final fun decode(kotlin/ByteArray): io.github.valerioisufi.drawview.sync.protocol/OpenFrame? // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.Companion.decode|decode(kotlin.ByteArray){}[0]
         final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.sync.protocol/OpenFrame> // io.github.valerioisufi.drawview.sync.protocol/OpenFrame.Companion.serializer|serializer(){}[0]
     }
@@ -329,7 +332,7 @@ final class io.github.valerioisufi.drawview.sync.protocol/SecureChannel : io.git
         final fun <get-route>(): io.github.valerioisufi.drawview.sync.protocol/Route // io.github.valerioisufi.drawview.sync.protocol/SecureChannel.route.<get-route>|<get-route>(){}[0]
 
     final fun close() // io.github.valerioisufi.drawview.sync.protocol/SecureChannel.close|close(){}[0]
-    final suspend fun receive(): kotlin/ByteArray? // io.github.valerioisufi.drawview.sync.protocol/SecureChannel.receive|receive(){}[0]
+    final suspend fun receive(kotlin/Int): kotlin/ByteArray? // io.github.valerioisufi.drawview.sync.protocol/SecureChannel.receive|receive(kotlin.Int){}[0]
     final suspend fun send(kotlin/ByteArray) // io.github.valerioisufi.drawview.sync.protocol/SecureChannel.send|send(kotlin.ByteArray){}[0]
 
     final object Companion { // io.github.valerioisufi.drawview.sync.protocol/SecureChannel.Companion|null[0]
@@ -363,5 +366,7 @@ final class io.github.valerioisufi.drawview.sync.protocol/SyncException : kotlin
     constructor <init>(kotlin/String, kotlin/Throwable? = ...) // io.github.valerioisufi.drawview.sync.protocol/SyncException.<init>|<init>(kotlin.String;kotlin.Throwable?){}[0]
 }
 
+final const val io.github.valerioisufi.drawview.sync.protocol/MAX_FRAME_SIZE // io.github.valerioisufi.drawview.sync.protocol/MAX_FRAME_SIZE|{}MAX_FRAME_SIZE[0]
+    final fun <get-MAX_FRAME_SIZE>(): kotlin/Int // io.github.valerioisufi.drawview.sync.protocol/MAX_FRAME_SIZE.<get-MAX_FRAME_SIZE>|<get-MAX_FRAME_SIZE>(){}[0]
 final const val io.github.valerioisufi.drawview.sync.protocol/PROTOCOL_VERSION // io.github.valerioisufi.drawview.sync.protocol/PROTOCOL_VERSION|{}PROTOCOL_VERSION[0]
     final fun <get-PROTOCOL_VERSION>(): kotlin/Int // io.github.valerioisufi.drawview.sync.protocol/PROTOCOL_VERSION.<get-PROTOCOL_VERSION>|<get-PROTOCOL_VERSION>(){}[0]

@@ -49,12 +49,15 @@ internal class IrohChannel(
         }
     }
 
-    override suspend fun receive(): ByteArray? = withContext(IrohDispatcher) { next() }
+    override suspend fun receive(maxSize: Int): ByteArray? = withContext(IrohDispatcher) { next(maxSize) }
 
-    /** The next frame, `null` at the end of the stream; it lets go when its coroutine is cancelled. */
-    private fun CoroutineScope.next(): ByteArray? {
+    /**
+     * The next frame of [maxSize] bytes at most, `null` at the end of the stream (or after a larger
+     * one); it lets go when its coroutine is cancelled.
+     */
+    private fun CoroutineScope.next(maxSize: Int): ByteArray? {
         while (true) {
-            bridge.receive(stream, SLICE_MS)?.let { return it }
+            bridge.receive(stream, SLICE_MS, maxSize)?.let { return it }
             if (bridge.isEnded(stream)) return null
             ensureActive()
         }

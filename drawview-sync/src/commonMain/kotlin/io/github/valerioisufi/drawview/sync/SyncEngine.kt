@@ -18,6 +18,7 @@ import io.github.valerioisufi.drawview.sync.protocol.DeviceAddress
 import io.github.valerioisufi.drawview.sync.protocol.DeviceIdentity
 import io.github.valerioisufi.drawview.sync.protocol.DocumentKey
 import io.github.valerioisufi.drawview.sync.protocol.Invitation
+import io.github.valerioisufi.drawview.sync.protocol.MAX_FRAME_SIZE
 import io.github.valerioisufi.drawview.sync.protocol.Member
 import io.github.valerioisufi.drawview.sync.protocol.Membership
 import io.github.valerioisufi.drawview.sync.protocol.OpenFrame
@@ -145,6 +146,12 @@ public class SyncEngine(
      * it sends cannot be read, so its connections are closed (the devices need the same version).
      */
     public val otherVersionMet: StateFlow<Boolean> = otherVersion.asStateFlow()
+
+    /**
+     * The incoming channels of devices not known yet (before their first frame decrypted), a few
+     * at a time: each one may hold a thread of its transport and the frames it sends.
+     */
+    private val strangers = Semaphore(MAX_STRANGERS)
 
     /** The downloads of the files of the resources, by document and resource (they go on over another connection). */
     private val downloads = mutableMapOf<Pair<String, String>, Download>()
@@ -350,10 +357,27 @@ public class SyncEngine(
         joinStates.update { it + (invitation.documentId to JoinStatus.LOOKING_FOR_OWNER) }
     }
 
-    /** Serves a channel another device opened to this one (see [SyncTransport.incoming]). */
+    /**
+     * Serves a channel another device opened to this one (see [SyncTransport.incoming]). Anyone
+     * may open one: 16 at once until they show they have a key (the others are closed
+     * at once), their first frame within the time a connection is lost in, and small frames until
+     * the device is authorized.
+     */
     public fun accept(channel: SyncChannel): Job = scope.launch {
+        // Too many devices not known yet: refused at once
+        if (!strangers.tryAcquire()) {
+            channel.close()
+            return@launch
+        }
+        var stranger = true
+        val known = {
+            if (stranger) {
+                stranger = false
+                strangers.release()
+            }
+        }
         try {
-            val open = channel.receive()?.let(OpenFrame::decode) ?: return@launch
+            val open = receiveLive(channel, OpenFrame.MAX_SIZE)?.let(OpenFrame::decode) ?: return@launch
             if (open.protocol != PROTOCOL_VERSION) {
                 otherVersion.value = true
                 return@launch
@@ -362,10 +386,11 @@ public class SyncEngine(
             // A device joins through the owner only
             if (match is TagMatch.Joining) return@launch
             val secure = SecureChannel.of(channel, match.key)
-            run(Link(secure, match, opened = false), acquire(match.documentId))
+            run(Link(secure, match, opened = false), acquire(match.documentId), known)
         } catch (_: SyncException) {
             // Refused or lost before it started
         } finally {
+            known()
             channel.close()
         }
     }
@@ -544,7 +569,15 @@ public class SyncEngine(
         var received = 0L
     }
 
-    private suspend fun run(link: Link, initial: DocumentSync?) {
+    /**
+     * The next frame of [channel], at most [maxSize] bytes; `null` when it is closed or silent for
+     * too long (lost, see [keepAliveMs]).
+     */
+    private suspend fun receiveLive(channel: SyncChannel, maxSize: Int): ByteArray? =
+        if (keepAliveMs > 0) withTimeoutOrNull(keepAliveMs * 3) { channel.receive(maxSize) } else channel.receive(maxSize)
+
+    /** Works through [link]; [known] runs at each frame decrypted (the other device has the key). */
+    private suspend fun run(link: Link, initial: DocumentSync?, known: () -> Unit = {}) {
         link.sync = initial
         mutex.withLock { links.add(link) }
         val sender = scope.launch { send(link) }
@@ -553,8 +586,9 @@ public class SyncEngine(
             if (link.match is TagMatch.Joining) joinStates.update { it + (link.documentId to JoinStatus.LOOKING_FOR_OWNER) }
             link.send(Challenge(link.nonce))
             while (true) {
-                // Closed, or silent for too long: lost
-                val frame = (if (keepAliveMs > 0) withTimeoutOrNull(keepAliveMs * 3) { link.channel.receive() } else link.channel.receive()) ?: break
+                // Closed, or silent for too long: lost. Small frames until the other device is authorized
+                val frame = receiveLive(link.channel, if (link.authorized) MAX_FRAME_SIZE else HANDSHAKE_FRAME_SIZE) ?: break
+                known()
                 link.receivedAt = currentTimeMillis()
                 val message = SyncCodec.decode(frame)
                 if (message == null) {
@@ -1332,5 +1366,14 @@ public class SyncEngine(
         const val MAX_RESOURCE_SIZE = 512L * 1024 * 1024
         const val MAX_ATTACHMENT_SIZE = 4L * 1024 * 1024 * 1024
         const val ATTACHMENT_PARTS_AHEAD = 4
+
+        /**
+         * The largest frame of a device not authorized yet (see [Link.authorized]): its hello, a
+         * membership of about a thousand members, an admission.
+         */
+        const val HANDSHAKE_FRAME_SIZE = 256 * 1024
+
+        /** The incoming channels of devices not known yet at once (see [strangers]). */
+        const val MAX_STRANGERS = 16
     }
 }

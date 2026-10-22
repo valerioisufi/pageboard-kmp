@@ -22,6 +22,9 @@ public data class OpenFrame(val protocol: Int, val tag: String) {
     public fun encode(): ByteArray = cbor.encodeToByteArray(serializer(), this)
 
     public companion object {
+        /** The largest open frame a device takes (the first frame of a device not known yet). */
+        public const val MAX_SIZE: Int = 1024
+
         @OptIn(ExperimentalSerializationApi::class)
         private val cbor = Cbor { ignoreUnknownKeys = true }
 

@@ -57,7 +57,14 @@ public class InMemoryChannel private constructor(
         }
     }
 
-    override suspend fun receive(): ByteArray? = inbox.receiveCatching().getOrNull()
+    override suspend fun receive(maxSize: Int): ByteArray? {
+        val frame = inbox.receiveCatching().getOrNull() ?: return null
+        if (frame.size > maxSize) {
+            close()
+            throw SyncException("A frame of ${frame.size} bytes")
+        }
+        return frame
+    }
 
     override fun close() {
         outbox.close()

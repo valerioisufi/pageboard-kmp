@@ -19,7 +19,7 @@ internal object IrohJni : IrohBridge {
     external override fun openStream(connection: Long): Long
     external override fun acceptStream(connection: Long, timeoutMs: Long): Long
     external override fun send(stream: Long, frame: ByteArray, timeoutMs: Long): Int
-    external override fun receive(stream: Long, timeoutMs: Long): ByteArray?
+    external override fun receive(stream: Long, timeoutMs: Long, maxSize: Int): ByteArray?
     external override fun isEnded(stream: Long): Boolean
     external override fun closeStream(stream: Long)
 }

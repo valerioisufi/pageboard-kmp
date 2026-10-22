@@ -17,8 +17,8 @@ public class SecureChannel private constructor(
     // The blocking forms: quick for frames, and they stay on the coroutine (no thread switch)
     override suspend fun send(frame: ByteArray): Unit = channel.send(cipher.encryptBlocking(frame, ASSOCIATED_DATA))
 
-    override suspend fun receive(): ByteArray? {
-        val frame = channel.receive() ?: return null
+    override suspend fun receive(maxSize: Int): ByteArray? {
+        val frame = channel.receive(maxSize.coerceAtMost(MAX_FRAME_SIZE - OVERHEAD) + OVERHEAD) ?: return null
         return try {
             cipher.decryptBlocking(frame, ASSOCIATED_DATA)
         } catch (e: CancellationException) {
@@ -35,6 +35,9 @@ public class SecureChannel private constructor(
     public companion object {
         /** The version of the protocol is authenticated with every frame. */
         private val ASSOCIATED_DATA = "drawview-sync/$PROTOCOL_VERSION".encodeToByteArray()
+
+        /** What the encryption adds to a frame: its nonce (12 bytes) and its tag (16). */
+        private const val OVERHEAD = 12 + 16
 
         /** [channel] with its frames encrypted with [key]. */
         public fun of(channel: SyncChannel, key: DocumentKey): SecureChannel {

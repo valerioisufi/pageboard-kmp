@@ -10,14 +10,22 @@ public interface SyncChannel {
     /** Sends [frame] whole (the frames are kept apart). */
     public suspend fun send(frame: ByteArray)
 
-    /** The next frame of the other device, or `null` when the connection is closed. */
-    public suspend fun receive(): ByteArray?
+    /**
+     * The next frame of the other device, or `null` when the connection is closed. A frame larger
+     * than [maxSize] ends the channel before its bytes are read (a [SyncException], or `null`):
+     * a device not known yet only sends small ones. The memory of a frame follows its bytes as
+     * they come, not the length it announces.
+     */
+    public suspend fun receive(maxSize: Int = MAX_FRAME_SIZE): ByteArray?
 
     /** What the frames go through now (it may change: a relay, then a direct path). */
     public val route: Route get() = Route.UNKNOWN
 
     public fun close()
 }
+
+/** The largest frame of a [SyncChannel] (a snapshot of a document: its files go in parts). */
+public const val MAX_FRAME_SIZE: Int = 256 * 1024 * 1024
 
 /** What the frames of a [SyncChannel] go through. */
 public enum class Route {

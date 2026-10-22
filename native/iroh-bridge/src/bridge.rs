@@ -4,16 +4,21 @@
 //! bytes, big endian, then the bytes) into a queue and a task writing the frames of another
 //! queue: [receive] and [send] only wait on the queues, so that a timeout never leaves half a
 //! frame read or written.
+//!
+//! Anyone knowing the identifier of an endpoint can connect to it: the reader takes ahead only
+//! the frames as large as the last [receive] allows (a device not known yet sends small ones),
+//! in parts as their bytes come; an endpoint takes [MAX_INCOMING] connections at once, with
+//! [RECEIVE_WINDOW] bytes in flight each.
 
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, LazyLock, Mutex};
 use std::time::Duration;
 
-use iroh::endpoint::{Connection, RecvStream, SendStream, presets};
+use iroh::endpoint::{Connection, QuicTransportConfig, RecvStream, SendStream, VarInt, presets};
 use iroh::{Endpoint, RelayMap, RelayMode, RelayUrl, SecretKey};
 use tokio::runtime::Runtime;
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, watch};
 use tokio::task::AbortHandle;
 
 use crate::address;
@@ -23,6 +28,17 @@ pub const MAX_FRAME: usize = 256 * 1024 * 1024;
 
 /// Frames waiting in each direction of a stream.
 const QUEUE: usize = 8;
+
+/// The first part of a frame read (see [read_frame]).
+const FIRST_PART: usize = 64 * 1024;
+
+/// The connections of other endpoints an endpoint keeps at once (open, given or not to the
+/// application): the next ones are closed as soon as they are open.
+const MAX_INCOMING: usize = 32;
+
+/// The bytes another endpoint may send on a connection before this one reads them (all of its
+/// streams together): 40 MB/s at 100 ms of round trip.
+const RECEIVE_WINDOW: u32 = 4 * 1024 * 1024;
 
 /// How long closing an endpoint waits for its connections to say goodbye.
 const CLOSE_TIMEOUT: Duration = Duration::from_secs(2);
@@ -56,7 +72,16 @@ struct EndpointEntry {
     endpoint: Endpoint,
     alpn: Vec<u8>,
     relays: bool,
-    accepted: tokio::sync::Mutex<mpsc::Receiver<Connection>>,
+    accepted: tokio::sync::Mutex<mpsc::Receiver<(Connection, IncomingSlot)>>,
+}
+
+/// A connection of another endpoint counted against [MAX_INCOMING], as long as it lives.
+struct IncomingSlot(Arc<AtomicUsize>);
+
+impl Drop for IncomingSlot {
+    fn drop(&mut self) {
+        self.0.fetch_sub(1, Ordering::AcqRel);
+    }
 }
 
 impl EndpointEntry {
@@ -78,12 +103,18 @@ struct ConnectionEntry {
     owner: Arc<EndpointEntry>,
     connection: Connection,
     streams: tokio::sync::Mutex<mpsc::Receiver<(SendStream, RecvStream)>>,
+    /// Of a connection another endpoint opened.
+    _slot: Option<IncomingSlot>,
 }
 
 struct StreamEntry {
     owner: Arc<EndpointEntry>,
     outgoing: Mutex<Option<mpsc::Sender<Vec<u8>>>>,
     incoming: tokio::sync::Mutex<mpsc::Receiver<Vec<u8>>>,
+    /// The largest frame the reader takes ahead, from the last [receive].
+    limit: watch::Sender<usize>,
+    /// The length of the frame the reader holds back, larger than [limit] (0: none).
+    held: Arc<AtomicUsize>,
     /// Set by the [receive] that found the stream ended.
     ended: AtomicBool,
     reader: AbortHandle,
@@ -171,26 +202,38 @@ pub fn bind(secret_key: &[u8], relays: &str, token: &str, alpn: &str) -> Result<
         .enable_all()
         .build()
         .map_err(|e| error("runtime", e))?;
+    let transport = QuicTransportConfig::builder().receive_window(VarInt::from_u32(RECEIVE_WINDOW)).build();
     let endpoint = runtime
         .block_on(
             Endpoint::builder(presets::Minimal)
                 .secret_key(SecretKey::from_bytes(&key))
                 .alpns(vec![alpn.as_bytes().to_vec()])
                 .relay_mode(mode)
+                .transport_config(transport)
                 .bind(),
         )
         .map_err(|e| error("bind", e))?;
 
     // The connections of the other endpoints, as their handshakes end
-    let (accepted, receiver) = mpsc::channel(64);
+    let (accepted, receiver) = mpsc::channel(MAX_INCOMING);
     let listener = endpoint.clone();
+    let count = Arc::new(AtomicUsize::new(0));
     runtime.spawn(async move {
         while let Some(incoming) = listener.accept().await {
             let accepted = accepted.clone();
+            let count = count.clone();
             tokio::spawn(async move {
-                if let Ok(connection) = incoming.await {
-                    let _ = accepted.send(connection).await;
+                let Ok(connection) = incoming.await else {
+                    return;
+                };
+                // Too many open at once: closed. Counted once open (refusing the handshake would
+                // refuse the other attempts of the same connection too)
+                if count.fetch_add(1, Ordering::AcqRel) >= MAX_INCOMING {
+                    count.fetch_sub(1, Ordering::AcqRel);
+                    connection.close(1u32.into(), b"too many connections");
+                    return;
                 }
+                let _ = accepted.send((connection, IncomingSlot(count))).await;
             });
         }
     });
@@ -240,7 +283,7 @@ pub fn close_endpoint(endpoint_id: u64) {
 // Connections
 // =============================================================================
 
-fn register_connection(owner: Arc<EndpointEntry>, connection: Connection) -> u64 {
+fn register_connection(owner: Arc<EndpointEntry>, connection: Connection, slot: Option<IncomingSlot>) -> u64 {
     // The streams the other endpoint opens
     let (streams, receiver) = mpsc::channel(QUEUE);
     let source = connection.clone();
@@ -255,6 +298,7 @@ fn register_connection(owner: Arc<EndpointEntry>, connection: Connection) -> u64
         owner,
         connection,
         streams: tokio::sync::Mutex::new(receiver),
+        _slot: slot,
     })))
 }
 
@@ -264,15 +308,15 @@ pub fn connect(endpoint_id: u64, address: &str, timeout_ms: i64) -> Result<u64> 
     let addr = address::parse(address).ok_or_else(|| Failure::Error(format!("not an address: {address}")))?;
     let connection = wait(entry.runtime(), timeout_ms, entry.endpoint.connect(addr, &entry.alpn))?
         .map_err(|e| error("connect", e))?;
-    Ok(register_connection(entry, connection))
+    Ok(register_connection(entry, connection, None))
 }
 
 /// The next connection another endpoint opened to this one.
 pub fn accept(endpoint_id: u64, timeout_ms: i64) -> Result<u64> {
     let entry = endpoint(endpoint_id)?;
-    let connection = wait(entry.runtime(), timeout_ms, async { entry.accepted.lock().await.recv().await })?
+    let (connection, slot) = wait(entry.runtime(), timeout_ms, async { entry.accepted.lock().await.recv().await })?
         .ok_or(Failure::Closed)?;
-    Ok(register_connection(entry, connection))
+    Ok(register_connection(entry, connection, Some(slot)))
 }
 
 /// The identifier of the endpoint at the other end.
@@ -319,6 +363,10 @@ fn register_stream(owner: Arc<EndpointEntry>, mut send: SendStream, mut recv: Re
     });
 
     let (read, incoming) = mpsc::channel::<Vec<u8>>(QUEUE);
+    // Nothing is taken ahead before the first receive says how large
+    let (limit, mut allowed) = watch::channel(0usize);
+    let held = Arc::new(AtomicUsize::new(0));
+    let holding = held.clone();
     let reader = runtime.spawn(async move {
         loop {
             let mut length = [0u8; 4];
@@ -329,8 +377,20 @@ fn register_stream(owner: Arc<EndpointEntry>, mut send: SendStream, mut recv: Re
             if length > MAX_FRAME {
                 break;
             }
-            let mut frame = vec![0u8; length];
-            if recv.read_exact(&mut frame).await.is_err() || read.send(frame).await.is_err() {
+            // Held back until a receive takes frames this large (it fails the stream otherwise)
+            if length > *allowed.borrow_and_update() {
+                holding.store(length, Ordering::Release);
+                while length > *allowed.borrow_and_update() {
+                    if allowed.changed().await.is_err() {
+                        return;
+                    }
+                }
+                holding.store(0, Ordering::Release);
+            }
+            let Some(frame) = read_frame(&mut recv, length).await else {
+                break;
+            };
+            if read.send(frame).await.is_err() {
                 break;
             }
         }
@@ -341,9 +401,27 @@ fn register_stream(owner: Arc<EndpointEntry>, mut send: SendStream, mut recv: Re
         owner,
         outgoing: Mutex::new(Some(outgoing)),
         incoming: tokio::sync::Mutex::new(incoming),
+        limit,
+        held,
         ended: AtomicBool::new(false),
         reader: reader.abort_handle(),
     })))
+}
+
+/// The [length] bytes of a frame of [recv], in parts each as large as what came before it: the
+/// memory follows the bytes that come, not the length announced. `None` when the stream ends
+/// first.
+async fn read_frame(recv: &mut RecvStream, length: usize) -> Option<Vec<u8>> {
+    let mut frame = vec![0u8; length.min(FIRST_PART)];
+    let mut read = 0;
+    loop {
+        recv.read_exact(&mut frame[read..]).await.ok()?;
+        read = frame.len();
+        if read == length {
+            return Some(frame);
+        }
+        frame.resize(length.min(read * 2), 0);
+    }
 }
 
 /// Opens a stream to the other endpoint (it sees it once the first frame is sent).
@@ -373,15 +451,30 @@ pub fn send(stream_id: u64, frame: Vec<u8>, timeout_ms: i64) -> Result<()> {
     wait(entry.owner.runtime(), timeout_ms, outgoing.send(frame))?.map_err(|_| Failure::Closed)
 }
 
-/// The next frame of the other endpoint; [Failure::Closed] once the stream ended (every frame
-/// received before is given first).
-pub fn receive(stream_id: u64, timeout_ms: i64) -> Result<Vec<u8>> {
+/// The next frame of the other endpoint, of [max_size] bytes at most: a larger one fails the
+/// stream unread ([Failure::Error], then [is_ended]). [Failure::Closed] once the stream ended
+/// (every frame received before is given first).
+pub fn receive(stream_id: u64, timeout_ms: i64, max_size: usize) -> Result<Vec<u8>> {
     let entry = stream(stream_id)?;
-    let frame = wait(entry.owner.runtime(), timeout_ms, async { entry.incoming.lock().await.recv().await })?;
-    frame.ok_or_else(|| {
+    // The reader takes ahead the frames this large
+    entry.limit.send_if_modified(|limit| std::mem::replace(limit, max_size) != max_size);
+    let too_large = |size: usize| {
         entry.ended.store(true, Ordering::Release);
-        Failure::Closed
-    })
+        entry.reader.abort();
+        Failure::Error(format!("a frame of {size} bytes"))
+    };
+    let held = entry.held.load(Ordering::Acquire);
+    if held > max_size {
+        return Err(too_large(held));
+    }
+    match wait(entry.owner.runtime(), timeout_ms, async { entry.incoming.lock().await.recv().await })? {
+        Some(frame) if frame.len() > max_size => Err(too_large(frame.len())),
+        Some(frame) => Ok(frame),
+        None => {
+            entry.ended.store(true, Ordering::Release);
+            Err(Failure::Closed)
+        }
+    }
 }
 
 /// Whether a [receive] found the stream ended (or the stream is closed): what tells an ended

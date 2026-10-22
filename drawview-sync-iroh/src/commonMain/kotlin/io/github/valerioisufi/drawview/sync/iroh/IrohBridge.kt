@@ -1,5 +1,7 @@
 package io.github.valerioisufi.drawview.sync.iroh
 
+import io.github.valerioisufi.drawview.sync.protocol.MAX_FRAME_SIZE
+
 /**
  * The functions of the iroh bridge (`native/iroh-bridge`, Rust), the same on every platform: JNI
  * on Android and the desktop, its C API on iOS. Endpoints, connections and streams are numbers;
@@ -69,10 +71,11 @@ internal interface IrohBridge {
     fun send(stream: Long, frame: ByteArray, timeoutMs: Long): Int
 
     /**
-     * The next frame of [stream], or `null`: a timeout, or the end of the stream when [isEnded]
-     * says so (after every frame received before it).
+     * The next frame of [stream], of [maxSize] bytes at most, or `null`: a timeout, or the end of
+     * the stream when [isEnded] says so (after every frame received before it). A larger frame
+     * ends the stream unread.
      */
-    fun receive(stream: Long, timeoutMs: Long): ByteArray?
+    fun receive(stream: Long, timeoutMs: Long, maxSize: Int = MAX_FRAME_SIZE): ByteArray?
 
     /** Whether a [receive] found [stream] ended (or [stream] is closed). */
     fun isEnded(stream: Long): Boolean
