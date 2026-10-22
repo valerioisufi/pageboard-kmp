@@ -2,3 +2,7 @@ public final class io/github/valerioisufi/drawview/store/testing/FolderOperation
 	public static final fun checkFolderOperations (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public final class io/github/valerioisufi/drawview/store/testing/OperationProofsContractKt {
+	public static final fun checkOperationProofs (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+

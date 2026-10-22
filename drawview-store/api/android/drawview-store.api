@@ -31,6 +31,8 @@ public final class io/github/valerioisufi/drawview/store/DocumentStore$DefaultIm
 	public static fun closeDocument (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/lang/String;)V
 	public static fun flush (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun insertDocument$default (Lio/github/valerioisufi/drawview/store/DocumentStore;Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static fun proofs (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveProofs (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/drawview/store/DocumentSummary {
@@ -124,12 +126,14 @@ public final class io/github/valerioisufi/drawview/store/KeyValueDocumentStore :
 	public fun moveFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun operationsAfter (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun preference (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun proofs (Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun renameFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun replicaId (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun saveCustomElement (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawCustomElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun saveImage (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawImage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun savePage (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawPage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun savePdf (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawPdf;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveProofs (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun saveResource (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawResource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun saveStrokes (Lio/github/valerioisufi/drawview/model/DrawPage;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun saveText (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawText;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -163,7 +167,9 @@ public final class io/github/valerioisufi/drawview/store/OpenDocument {
 	public final fun getResourcesReceived ()Lkotlinx/coroutines/flow/SharedFlow;
 	public final fun getSession ()Lio/github/valerioisufi/drawview/model/change/DocumentSession;
 	public final fun operationsAfter (Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun proofs (Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun resourceReceived (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun saveProofs (Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/drawview/store/OpenDocuments {
@@ -186,8 +192,15 @@ public abstract interface class io/github/valerioisufi/drawview/store/OperationL
 	public abstract fun compactOperations (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun compactedOperations (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun operationsAfter (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun proofs (Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun replicaId (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun saveProofs (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun versionVector (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/store/OperationLog$DefaultImpls {
+	public static fun proofs (Lio/github/valerioisufi/drawview/store/OperationLog;Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun saveProofs (Lio/github/valerioisufi/drawview/store/OperationLog;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class io/github/valerioisufi/drawview/store/PreferenceStore {

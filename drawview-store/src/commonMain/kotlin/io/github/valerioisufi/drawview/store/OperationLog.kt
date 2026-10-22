@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.store
 
 import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.change.Operation
+import io.github.valerioisufi.drawview.model.change.OperationId
 
 /**
  * The log of the operations of the documents (appended by [DocumentStore.persistence]), as the
@@ -26,4 +27,18 @@ public interface OperationLog {
 
     /** The last operation of every replica no longer in the log of [documentId] (see [compactOperations]). */
     public suspend fun compactedOperations(documentId: String): Map<String, Long>
+
+    /**
+     * The proofs kept of the operations [ids] of [documentId] (see [saveProofs]), by operation: the
+     * ones without a proof are left out.
+     */
+    public suspend fun proofs(documentId: String, ids: Collection<OperationId>): Map<OperationId, ByteArray> = emptyMap()
+
+    /**
+     * Keeps [proofs] of operations of [documentId]: what the synchronization gives the other
+     * devices with them (who made each one, signed), opaque bytes to the store. They go with their
+     * operations ([compactOperations], the deletion of the document). A store keeping none gives
+     * the other devices the operations of its own device only.
+     */
+    public suspend fun saveProofs(documentId: String, proofs: Map<OperationId, ByteArray>) {}
 }

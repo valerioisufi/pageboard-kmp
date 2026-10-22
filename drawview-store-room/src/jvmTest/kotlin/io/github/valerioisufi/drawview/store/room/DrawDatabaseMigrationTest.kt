@@ -4,7 +4,9 @@ import androidx.room.Room
 import androidx.room.testing.MigrationTestHelper
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
+import io.github.valerioisufi.drawview.model.change.OperationId
 import io.github.valerioisufi.drawview.store.room.db.DRAW_DATABASE_MIGRATIONS
+import io.github.valerioisufi.drawview.store.room.db.Migration18To19
 import io.github.valerioisufi.drawview.store.room.db.DrawDatabase
 import io.github.valerioisufi.drawview.store.room.db.createDrawDatabase
 import java.nio.file.Files
@@ -54,7 +56,7 @@ class DrawDatabaseMigrationTest {
             )
         }
 
-        helper.runMigrationsAndValidate(18, DRAW_DATABASE_MIGRATIONS.toList()).close()
+        helper.runMigrationsAndValidate(19, DRAW_DATABASE_MIGRATIONS.toList()).close()
 
         val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
         try {
@@ -73,6 +75,36 @@ class DrawDatabaseMigrationTest {
                 ),
                 Json.parseToJsonElement(assertNotNull(store.preference("drawview.editor")))
             )
+        } finally {
+            database.close()
+        }
+    }
+
+    @Test
+    fun theOperationsOfVersion18AreKeptAndTheirProofsCanBe() = runTest {
+        helper.createDatabase(18).use { connection ->
+            connection.execSQL(
+                "INSERT INTO documents (id, name, folderId, createdAt, modifiedAt, lastOpenedAt, defaultBackground, " +
+                    "defaultWidth, defaultHeight, defaultsVersion, titleVersion) VALUES ('$DOCUMENT', 'Lectures', NULL, " +
+                    "1, 2, NULL, '{\"type\":\"Solid\"}', 210.0, 297.0, '$STAMP', '$STAMP')"
+            )
+            connection.execSQL(
+                "INSERT INTO operations (documentId, replica, sequence, stamp, change) VALUES ('$DOCUMENT', 'bob', 1, " +
+                    "'$STAMP', '{\"type\":\"renameDocument\",\"title\":\"Physics\"}')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(19, listOf(Migration18To19)).close()
+
+        val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
+        try {
+            val store = RoomDocumentStore(database)
+            assertEquals(mapOf("bob" to 1L), store.versionVector(DOCUMENT))
+            val operation = store.operationsAfter(DOCUMENT, emptyMap()).single()
+            assertEquals(OperationId("bob", 1), operation.id)
+            assertTrue(store.proofs(DOCUMENT, listOf(operation.id)).isEmpty())
+            store.saveProofs(DOCUMENT, mapOf(operation.id to byteArrayOf(1, 2, 3)))
+            assertContentEquals(byteArrayOf(1, 2, 3), store.proofs(DOCUMENT, listOf(operation.id))[operation.id])
         } finally {
             database.close()
         }

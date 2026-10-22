@@ -7,3 +7,4 @@
 
 // Library unique name: <DrawView-KMP:drawview-store-testing>
 final suspend fun io.github.valerioisufi.drawview.store.testing/checkFolderOperations(io.github.valerioisufi.drawview.store/DocumentStore) // io.github.valerioisufi.drawview.store.testing/checkFolderOperations|checkFolderOperations(io.github.valerioisufi.drawview.store.DocumentStore){}[0]
+final suspend fun io.github.valerioisufi.drawview.store.testing/checkOperationProofs(io.github.valerioisufi.drawview.store/DocumentStore, kotlin.coroutines/SuspendFunction0<io.github.valerioisufi.drawview.store/DocumentStore>) // io.github.valerioisufi.drawview.store.testing/checkOperationProofs|checkOperationProofs(io.github.valerioisufi.drawview.store.DocumentStore;kotlin.coroutines.SuspendFunction0<io.github.valerioisufi.drawview.store.DocumentStore>){}[0]

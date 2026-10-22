@@ -15,6 +15,7 @@ import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.StrokeModeller
 import io.github.valerioisufi.drawview.model.change.DocumentPersistence
 import io.github.valerioisufi.drawview.model.change.Operation
+import io.github.valerioisufi.drawview.model.change.OperationId
 import io.github.valerioisufi.drawview.model.change.PageSnapshot
 import io.github.valerioisufi.drawview.model.change.snapshot
 import io.github.valerioisufi.drawview.model.newElementId
@@ -431,14 +432,17 @@ public class KeyValueDocumentStore(
         val operations = operationsLocked(documentId)
         val stamps = index.operationBaseStamps[documentId].orEmpty().toMutableMap()
         val bases = index.operationBases[documentId].orEmpty().toMutableMap()
+        val proofs = proofsLocked(documentId)
         for ((replica, sequence) in upTo) {
             if (sequence <= (bases[replica] ?: 0L)) continue
             val last = operations.firstOrNull { it.id.replica == replica && it.id.sequence == sequence } ?: continue
             operations.removeAll { it.id.replica == replica && it.id.sequence <= sequence }
+            proofs.keys.removeAll { it.replica == replica && it.sequence <= sequence }
             bases[replica] = sequence
             stamps[replica] = last.stamp
         }
         storage.set(operationsKey(documentId), json.encodeToString(ListSerializer(Operation.serializer()), operations))
+        writeProofsLocked(documentId)
         index = index.copy(operationBases = index.operationBases + (documentId to bases), operationBaseStamps = index.operationBaseStamps + (documentId to stamps))
         writeIndexLocked()
         stamps
@@ -455,7 +459,51 @@ public class KeyValueDocumentStore(
         operationsLocked(documentId).filter { it.id.sequence > (known[it.id.replica] ?: 0L) }.sortedBy { it.stamp }
     }
 
+    override suspend fun proofs(documentId: String, ids: Collection<OperationId>): Map<OperationId, ByteArray> = syncLock(lock) {
+        val proofs = proofsLocked(documentId)
+        ids.mapNotNull { id -> proofs[id]?.let { id to it } }.toMap()
+    }
+
+    override suspend fun saveProofs(documentId: String, proofs: Map<OperationId, ByteArray>) {
+        if (proofs.isEmpty()) return
+        syncLock(lock) {
+            // Not for a document deleted meanwhile
+            if (index.documents.none { it.id == documentId }) return@syncLock
+            proofsLocked(documentId).putAll(proofs)
+            writeProofsLocked(documentId)
+        }
+    }
+
     private val operations = mutableMapOf<String, MutableList<Operation>>()
+
+    /** The proofs of the operations of the documents read so far (see [OperationLog.saveProofs]). */
+    private val proofs = mutableMapOf<String, MutableMap<OperationId, ByteArray>>()
+
+    private fun proofsLocked(documentId: String): MutableMap<OperationId, ByteArray> = proofs.getOrPut(documentId) {
+        storage.get(proofsKey(documentId))
+            ?.let { decodeOrNull<StoredProofs>(it) }
+            ?.proofs.orEmpty()
+            .mapNotNull { stored -> decodeProof(stored.proof)?.let { OperationId(stored.replica, stored.sequence) to it } }
+            .toMap(mutableMapOf())
+    }
+
+    @OptIn(ExperimentalEncodingApi::class)
+    private fun writeProofsLocked(documentId: String) {
+        val proofs = proofsLocked(documentId)
+        if (proofs.isEmpty()) {
+            storage.remove(proofsKey(documentId))
+            return
+        }
+        val stored = StoredProofs(proofs = proofs.map { (id, proof) -> StoredProof(id.replica, id.sequence, Base64.encode(proof)) })
+        storage.set(proofsKey(documentId), json.encodeToString(StoredProofs.serializer(), stored))
+    }
+
+    @OptIn(ExperimentalEncodingApi::class)
+    private fun decodeProof(text: String): ByteArray? = try {
+        Base64.decode(text)
+    } catch (_: IllegalArgumentException) {
+        null
+    }
 
     private fun operationsLocked(documentId: String): MutableList<Operation> = operations.getOrPut(documentId) {
         storage.get(operationsKey(documentId))
@@ -549,6 +597,8 @@ public class KeyValueDocumentStore(
         storage.remove(documentKey(documentId))
         storage.remove(operationsKey(documentId))
         operations.remove(documentId)
+        storage.remove(proofsKey(documentId))
+        proofs.remove(documentId)
         openDocuments.remove(documentId)
         dirtyDocuments.remove(documentId)
         index = index.copy(
@@ -622,6 +672,7 @@ public class KeyValueDocumentStore(
 
         private fun documentKey(id: String) = PREFIX + "document." + id
         private fun operationsKey(id: String) = PREFIX + "operations." + id
+        private fun proofsKey(id: String) = PREFIX + "proofs." + id
         private fun resourceKey(path: String) = PREFIX + "file." + path
     }
 }
@@ -697,6 +748,14 @@ internal data class StoredDocument(
 
 @Serializable
 internal data class StoredResource(val id: String, val type: String, val uri: String, val hash: String = "")
+
+/** The proofs of the operations of a document (see [OperationLog.saveProofs]), format [version]. */
+@Serializable
+internal data class StoredProofs(val version: Int = 1, val proofs: List<StoredProof> = emptyList())
+
+/** The proof of the operation [replica] / [sequence], in Base64. */
+@Serializable
+internal data class StoredProof(val replica: String, val sequence: Long, val proof: String)
 
 
 private fun DrawDocument.toStored(): StoredDocument = StoredDocument(

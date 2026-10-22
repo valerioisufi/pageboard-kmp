@@ -113,12 +113,31 @@ the same number does not meet the "other version" message: it is to be updated w
 
 | Phase | Content | Status |
 |---|---|---|
-| 1. Stored proofs | `OperationLog.proofs` / `saveProofs`; `KeyValueDocumentStore`; Room schema 19 with `Migration18To19` (`MigrationTestHelper`); compaction and deletion. Tests: kept, read again after a restart, removed with the operations, a store of before read | to do |
+| 1. Stored proofs | `OperationLog.proofs` / `saveProofs`; `KeyValueDocumentStore`; Room schema 19 with `Migration18To19` (`MigrationTestHelper`); compaction and deletion. Tests: kept, read again after a restart, removed with the operations, a store of before read | done |
 | 2. Signed operations | `OperationProof`, `SealedOperation.signature`; the engine signing, checking, keeping and giving on the proofs; `Membership.keyHash` and `adoptKey`; the snapshot from the owner; `KnownVersions` of the sender; the resources checked against their hash and received in parts; `PROTOCOL_VERSION` back to 1 and `ProtocolFormatTest`. Tests: a reader writing as an editor, a member writing as another, an operation given on through a member, a wrong key, a snapshot of a member, versions said for another, a wrong file | to do |
 | 3. Nothing makes a device fail | `SyncEngine.run` closing the connection on any failure of a message; `SyncCodec` never throwing but `SyncException`; tests with random bytes, changed frames, changed operations and snapshots (a fixed seed, on the JVM and the iOS simulator), and what they find fixed | to do |
 
 Every phase ends with the checks of `CLAUDE.md`, the Rust tests when the bridge changes, and the
 tests of the sync modules on the iOS simulator.
+
+### Phase 1 results
+
+* `OperationLog.proofs(documentId, ids)` and `saveProofs(documentId, proofs)`, with default
+  implementations keeping nothing; `OpenDocument.proofs` / `saveProofs` for the engine. A proof
+  for a document deleted meanwhile is not kept.
+* `KeyValueDocumentStore`: the value `drawview.proofs.<document>` (`StoredProofs`, format 1: the
+  proofs in Base64 by replica and sequence), read once per document, removed with the document,
+  pruned by the compaction. A store written before has none, and reads as before.
+* `RoomDocumentStore`: the table `operation_proofs`, schema 19, `Migration18To19` creating it;
+  the compaction deletes the proofs with their operations, the deletion of a document by its
+  foreign key. The proofs are read by replica, 500 sequences per query at most.
+* `checkOperationProofs` in `drawview-store-testing`, run on both stores: kept by document and by
+  operation, read again by a new store on the same storage, removed by the compaction and the
+  deletion. `DrawDatabaseMigrationTest`: a database of schema 18 with a document and its
+  operation migrated to 19, the operation read, a proof kept for it; the migration from 16 now
+  validated against 19.
+* The ABI of `drawview-store`, `drawview-store-testing` and `drawview-store-room` is recorded
+  again: additions only.
 
 ## Decisions
 

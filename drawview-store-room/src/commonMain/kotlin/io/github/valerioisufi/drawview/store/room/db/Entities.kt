@@ -395,6 +395,29 @@ internal data class OperationEntity(
 )
 
 /**
+ * The proof of an operation of another device (who made it, signed: see
+ * `OperationLog.saveProofs`), opaque bytes kept to give it on; removed with the operation.
+ */
+@Entity(
+    tableName = "operation_proofs",
+    primaryKeys = ["documentId", "replica", "sequence"],
+    foreignKeys = [
+        ForeignKey(
+            entity = DocumentEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["documentId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
+internal class OperationProofEntity(
+    val documentId: String,
+    val replica: String,
+    val sequence: Long,
+    val proof: ByteArray
+)
+
+/**
  * This device in the changes of the documents (a single row).
  */
 @Entity(tableName = "replica")

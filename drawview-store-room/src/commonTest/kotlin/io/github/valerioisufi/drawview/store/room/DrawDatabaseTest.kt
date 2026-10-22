@@ -37,6 +37,7 @@ import io.github.valerioisufi.drawview.store.room.db.*
 import io.github.valerioisufi.drawview.store.room.repository.DrawDocumentRepository
 import io.github.valerioisufi.drawview.store.room.repository.FileRepository
 import io.github.valerioisufi.drawview.store.testing.checkFolderOperations
+import io.github.valerioisufi.drawview.store.testing.checkOperationProofs
 import kotlin.test.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -383,6 +384,11 @@ class DrawDatabaseTest {
     @Test
     fun testFolderOperations() = runTest {
         checkFolderOperations(RoomDocumentStore(database))
+    }
+
+    @Test
+    fun theProofsOfTheOperationsAreKept() = runTest {
+        checkOperationProofs(RoomDocumentStore(database)) { RoomDocumentStore(database) }
     }
 
     @Test

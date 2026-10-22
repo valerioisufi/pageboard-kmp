@@ -7,6 +7,7 @@ import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.StrokeModeller
 import io.github.valerioisufi.drawview.model.change.DocumentPersistence
 import io.github.valerioisufi.drawview.model.change.Operation
+import io.github.valerioisufi.drawview.model.change.OperationId
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.store.DocumentStore
 import io.github.valerioisufi.drawview.store.DocumentSummary
@@ -90,6 +91,10 @@ public class RoomDocumentStore(
         repository.compactOperations(documentId, upTo)
 
     override suspend fun compactedOperations(documentId: String): Map<String, Long> = repository.compactedOperations(documentId)
+
+    override suspend fun proofs(documentId: String, ids: Collection<OperationId>): Map<OperationId, ByteArray> = repository.proofs(documentId, ids)
+
+    override suspend fun saveProofs(documentId: String, proofs: Map<OperationId, ByteArray>): Unit = repository.saveProofs(documentId, proofs)
 
     override suspend fun sharingSecrets(): Map<String, String> = withContext(Dispatchers.IO) {
         sharedDocuments.getAll().associate { it.documentId to it.secret }

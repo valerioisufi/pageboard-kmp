@@ -35,6 +35,7 @@ import io.github.valerioisufi.drawview.store.room.db.DrawDatabase
 import io.github.valerioisufi.drawview.store.room.db.ImageEntity
 import io.github.valerioisufi.drawview.store.room.db.OperationBaseEntity
 import io.github.valerioisufi.drawview.store.room.db.OperationEntity
+import io.github.valerioisufi.drawview.store.room.db.OperationProofEntity
 import io.github.valerioisufi.drawview.store.room.db.PageEntity
 import io.github.valerioisufi.drawview.store.room.db.PdfEntity
 import io.github.valerioisufi.drawview.store.room.db.PreferenceEntity
@@ -345,6 +346,7 @@ internal class DrawDocumentRepository(
             if (sequence <= (bases[replica]?.sequence ?: 0L)) continue
             val stamp = operationDao.stampOf(documentId, replica, sequence) ?: continue
             operationDao.deleteUpTo(documentId, replica, sequence)
+            operationDao.deleteProofsUpTo(documentId, replica, sequence)
             operationDao.upsertBase(OperationBaseEntity(documentId, replica, sequence, stamp))
         }
         operationDao.baseEntities(documentId).associate { it.replica to it.stamp }
@@ -359,6 +361,19 @@ internal class DrawDocumentRepository(
         purgeDao.deleteCustomElements(elements.filterIsInstance<DrawCustomElement>().map { it.id })
         purgeDao.deletePdfs(elements.filterIsInstance<DrawPdf>().map { it.id })
         purgeDao.deleteTextMarkups(elements.filterIsInstance<DrawTextMarkup>().map { it.id })
+    }
+
+    /** The proofs kept of the operations [ids] of [documentId] (see `OperationLog.proofs`). */
+    suspend fun proofs(documentId: String, ids: Collection<OperationId>): Map<OperationId, ByteArray> = withContext(Dispatchers.IO) {
+        ids.groupBy({ it.replica }, { it.sequence }).flatMap { (replica, sequences) ->
+            sequences.chunked(MAX_QUERY_ARGUMENTS).flatMap { operationDao.proofs(documentId, replica, it) }
+        }.associate { OperationId(it.replica, it.sequence) to it.proof }
+    }
+
+    /** Keeps [proofs] of operations of [documentId] (not for a document deleted meanwhile). */
+    suspend fun saveProofs(documentId: String, proofs: Map<OperationId, ByteArray>) = withContext(Dispatchers.IO) {
+        if (proofs.isEmpty() || documentDao.getDocumentById(documentId) == null) return@withContext
+        operationDao.upsertProofs(proofs.map { (id, proof) -> OperationProofEntity(documentId, id.replica, id.sequence, proof) })
     }
 
     /** The operations of [documentId] after [known] (a version vector), in stamp order. */
@@ -568,3 +583,6 @@ internal class DrawDocumentRepository(
         )
     }
 }
+
+/** The most values of a query at once (SQLite takes 999 at least). */
+private const val MAX_QUERY_ARGUMENTS = 500

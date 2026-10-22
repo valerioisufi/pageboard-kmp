@@ -6,6 +6,7 @@ import io.github.valerioisufi.drawview.model.StrokeModeller
 import io.github.valerioisufi.drawview.model.change.ChangePersister
 import io.github.valerioisufi.drawview.model.change.DocumentSession
 import io.github.valerioisufi.drawview.model.change.Operation
+import io.github.valerioisufi.drawview.model.change.OperationId
 import io.github.valerioisufi.drawview.model.change.PersistenceQueue
 import io.github.valerioisufi.drawview.model.change.RenameDocument
 import kotlinx.coroutines.CoroutineDispatcher
@@ -136,6 +137,12 @@ public class OpenDocument internal constructor(
 
     /** The last operation of every replica no longer in the log (see [OperationLog.compactOperations]). */
     public suspend fun compactedOperations(): Map<String, Long> = log.compactedOperations(document.id)
+
+    /** The proofs kept of the operations [ids] (see [OperationLog.proofs]). */
+    public suspend fun proofs(ids: Collection<OperationId>): Map<OperationId, ByteArray> = log.proofs(document.id, ids)
+
+    /** Keeps [proofs] of operations of the document (see [OperationLog.saveProofs]). */
+    public suspend fun saveProofs(proofs: Map<OperationId, ByteArray>): Unit = log.saveProofs(document.id, proofs)
 
     /**
      * Removes from the log the operations up to [upTo] (the ones every device working on the

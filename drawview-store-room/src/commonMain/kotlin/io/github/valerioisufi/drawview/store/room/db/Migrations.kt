@@ -26,7 +26,7 @@ import kotlinx.serialization.json.putJsonObject
  */
 
 /** The migrations from version 16 to [DrawDatabase]'s version. */
-internal val DRAW_DATABASE_MIGRATIONS: Array<Migration> = arrayOf(Migration16To17, Migration17To18)
+internal val DRAW_DATABASE_MIGRATIONS: Array<Migration> = arrayOf(Migration16To17, Migration17To18, Migration18To19)
 
 /** 17: the elements of the types added by the applications. */
 internal object Migration16To17 : Migration(16, 17) {
@@ -122,5 +122,16 @@ internal object Migration17To18 : Migration(17, 18) {
             buildJsonObject { preset(size, color, values["family"]?.jsonPrimitive?.content) }
         }
         return if (presets.isEmpty()) null else buildJsonArray { presets.forEach { add(it) } }
+    }
+}
+
+/** 19: the proofs of the operations of the other devices (see `OperationProofEntity`). */
+internal object Migration18To19 : Migration(18, 19) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `operation_proofs` (`documentId` TEXT NOT NULL, `replica` TEXT NOT NULL, " +
+                "`sequence` INTEGER NOT NULL, `proof` BLOB NOT NULL, PRIMARY KEY(`documentId`, `replica`, `sequence`), " +
+                "FOREIGN KEY(`documentId`) REFERENCES `documents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
     }
 }

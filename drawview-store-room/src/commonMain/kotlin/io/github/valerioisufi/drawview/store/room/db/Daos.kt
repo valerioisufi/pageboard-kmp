@@ -297,6 +297,16 @@ internal interface OperationDao {
     @Query("DELETE FROM operations WHERE documentId = :documentId AND replica = :replica AND sequence <= :upTo")
     suspend fun deleteUpTo(documentId: String, replica: String, upTo: Long)
 
+    @Upsert
+    suspend fun upsertProofs(proofs: List<OperationProofEntity>)
+
+    /** The proofs of the operations [sequences] of the replica [replica]. */
+    @Query("SELECT * FROM operation_proofs WHERE documentId = :documentId AND replica = :replica AND sequence IN (:sequences)")
+    suspend fun proofs(documentId: String, replica: String, sequences: List<Long>): List<OperationProofEntity>
+
+    @Query("DELETE FROM operation_proofs WHERE documentId = :documentId AND replica = :replica AND sequence <= :upTo")
+    suspend fun deleteProofsUpTo(documentId: String, replica: String, upTo: Long)
+
     @Query("SELECT replica, sequence FROM operation_bases WHERE documentId = :documentId")
     suspend fun bases(documentId: String): List<ReplicaSequence>
 

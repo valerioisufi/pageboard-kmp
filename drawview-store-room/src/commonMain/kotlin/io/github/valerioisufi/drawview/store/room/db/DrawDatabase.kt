@@ -20,12 +20,13 @@ import androidx.room.TypeConverters
         ResourceEntity::class,
         OperationEntity::class,
         OperationBaseEntity::class,
+        OperationProofEntity::class,
         SharedDocumentEntity::class,
         ReplicaEntity::class,
         PreferenceEntity::class
     ],
     // Every new version comes with its migration (see DRAW_DATABASE_MIGRATIONS)
-    version = 18
+    version = 19
 )
 @TypeConverters(
     PageBackgroundConverter::class,
