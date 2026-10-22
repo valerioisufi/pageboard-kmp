@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import io.github.takahirom.roborazzi.captureRoboImage
 import io.github.valerioisufi.drawview.sync.JoinStatus
 import io.github.valerioisufi.drawview.sync.protocol.Role
+import io.github.valerioisufi.drawview.sync.protocol.Route
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import io.github.valerioisufi.drawview.ui.theme.InkPalette
 import io.github.valerioisufi.drawview.ui.theme.LocalCanvasColors
@@ -29,7 +30,8 @@ import kotlin.test.Test
 
 /**
  * Screenshots of the sharing as the dialogs draw it (the dialogs themselves open in windows the
- * screenshots do not take): the owner, a member, before sharing, joining (docs/ui-design.md).
+ * screenshots do not take): the owner, a member, before sharing, joining (docs/ui-design.md), over
+ * the internet (docs/internet-sync.md).
  *
  * `./gradlew :drawview-sync-ui:recordRoborazziJvm` records them in `screenshots/`.
  */
@@ -91,6 +93,38 @@ class SharingScreenshotTest {
                     compact = false
                 )
             }
+        }
+    }
+
+    /**
+     * A member over the internet: how each one is reached (the local network, the internet directly
+     * or through the relay), the relay of this device being changed.
+     */
+    @Test
+    fun internet() = capture("share-internet", width = 608, height = 900) {
+        Dialog(ShareDialogNarrowWidth) {
+            ShareContent(
+                state = SharingState(
+                    shared = true,
+                    isOwner = false,
+                    owner = "Valerio’s Mac",
+                    invitation = null,
+                    requests = emptyList(),
+                    members = listOf(
+                        members[0].copy(route = Route.INTERNET_DIRECT),
+                        members[1].copy(me = true),
+                        members[2].copy(route = Route.INTERNET_RELAYED)
+                    ),
+                    offline = false,
+                    otherVersion = false,
+                    internet = InternetSettings(enabled = true, relay = "relay.example.com", token = "secret")
+                ),
+                actions = noActions,
+                name = "Marta’s iPad",
+                deviceName = "Marta’s iPad",
+                onRename = {},
+                compact = false
+            )
         }
     }
 

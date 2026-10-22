@@ -123,7 +123,7 @@ public class IrohTransport(
                 val number = bridge.openStream(connection)
                 number to if (number == IrohBridge.ERROR) bridge.lastError() else ""
             }
-            if (stream > 0) return IrohChannel(bridge, stream) { release(id, opened) }
+            if (stream > 0) return IrohChannel(bridge, stream, connection) { release(id, opened) }
             val error = streamError
             forget(id, opened)
             if (connection <= 0) {
@@ -172,7 +172,7 @@ public class IrohTransport(
                 val stream = bridge.acceptStream(connection, SLICE_MS)
                 when {
                     stream > 0 -> {
-                        val channel = IrohChannel(bridge, stream)
+                        val channel = IrohChannel(bridge, stream, connection)
                         // Closed meanwhile: the stream with it
                         if (accepted.trySend(channel).isFailure) channel.close()
                     }

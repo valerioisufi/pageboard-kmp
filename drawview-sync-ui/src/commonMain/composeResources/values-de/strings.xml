@@ -49,4 +49,15 @@
     <string name="sync_joining_as">Beitreten als</string>
     <string name="sync_no_invitation">Ohne Einladung tritt niemand bei: Eine neue hat einen neuen Link.</string>
     <string name="sync_read_only_note">%1$s entscheidet, wer bearbeitet</string>
+    <string name="sync_internet">Über das Internet</string>
+    <string name="sync_internet_hint">Mit den anderen arbeiten, wo immer sie sind, nicht nur im selben Netzwerk</string>
+    <string name="sync_relay">Relay-Adresse</string>
+    <string name="sync_relay_hint">Dort treffen sich die Geräte; was sie senden, kann es nicht lesen</string>
+    <string name="sync_relay_public">Leer: die öffentlichen Relays von n0, begrenzt, zum Ausprobieren</string>
+    <string name="sync_relay_token">Zugangstoken</string>
+    <string name="sync_relay_use">Dieses Relay verwenden</string>
+    <string name="sync_route_local">Lokales Netzwerk</string>
+    <string name="sync_route_direct">Internet, direkt</string>
+    <string name="sync_route_relayed">Internet, über das Relay</string>
+    <string name="sync_share_explanation_internet">Die Geräte, die die Einladung öffnen, arbeiten gleichzeitig mit dir an diesem Dokument, wo immer sie sind.</string>
 </resources>

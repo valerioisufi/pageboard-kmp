@@ -47,6 +47,11 @@ public final class io/github/valerioisufi/drawview/sync/InMemorySharedDocuments 
 	public fun stateOf (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public abstract interface class io/github/valerioisufi/drawview/sync/InternetSync {
+	public abstract fun isAvailable ()Z
+	public abstract fun network (Lio/github/valerioisufi/drawview/sync/SyncEngine;Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/sync/SyncNetwork;
+}
+
 public final class io/github/valerioisufi/drawview/sync/InvitationGrant {
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/InvitationGrant$Companion;
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;ZJ)V
@@ -297,9 +302,22 @@ public final class io/github/valerioisufi/drawview/sync/SyncEngine {
 	public final fun publishAddress (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun removeMember (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun revokeInvitation (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun routeOf (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun setRole (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun stop (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun unshare (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun updatePresence (Lio/github/valerioisufi/drawview/sync/Presence;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/sync/SyncNetwork {
+	public abstract fun join (Lio/github/valerioisufi/drawview/sync/protocol/Invitation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun refresh (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun refresh$default (Lio/github/valerioisufi/drawview/sync/SyncNetwork;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public abstract fun start (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun stop (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/sync/SyncNetwork$DefaultImpls {
+	public static synthetic fun refresh$default (Lio/github/valerioisufi/drawview/sync/SyncNetwork;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 

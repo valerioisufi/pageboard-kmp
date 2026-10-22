@@ -1,3 +1,9 @@
+public final class io/github/valerioisufi/drawview/sync/iroh/IrohInternet : io/github/valerioisufi/drawview/sync/InternetSync {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/sync/iroh/IrohInternet;
+	public fun isAvailable ()Z
+	public fun network (Lio/github/valerioisufi/drawview/sync/SyncEngine;Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/sync/SyncNetwork;
+}
+
 public final class io/github/valerioisufi/drawview/sync/iroh/IrohSecret {
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/iroh/IrohSecret$Companion;
 	public fun toString ()Ljava/lang/String;
@@ -8,14 +14,13 @@ public final class io/github/valerioisufi/drawview/sync/iroh/IrohSecret$Companio
 	public final fun ofThisDevice ()Lio/github/valerioisufi/drawview/sync/iroh/IrohSecret;
 }
 
-public final class io/github/valerioisufi/drawview/sync/iroh/IrohSync {
+public final class io/github/valerioisufi/drawview/sync/iroh/IrohSync : io/github/valerioisufi/drawview/sync/SyncNetwork {
 	public fun <init> (Lio/github/valerioisufi/drawview/sync/SyncEngine;Lio/github/valerioisufi/drawview/sync/iroh/IrohTransport;Lkotlinx/coroutines/CoroutineScope;JJJ)V
 	public synthetic fun <init> (Lio/github/valerioisufi/drawview/sync/SyncEngine;Lio/github/valerioisufi/drawview/sync/iroh/IrohTransport;Lkotlinx/coroutines/CoroutineScope;JJJILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun join (Lio/github/valerioisufi/drawview/sync/protocol/Invitation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun refresh (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun refresh$default (Lio/github/valerioisufi/drawview/sync/iroh/IrohSync;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public final fun start (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun stop (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun join (Lio/github/valerioisufi/drawview/sync/protocol/Invitation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun refresh (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun start (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun stop (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/drawview/sync/iroh/IrohTransport : io/github/valerioisufi/drawview/sync/protocol/SyncTransport {

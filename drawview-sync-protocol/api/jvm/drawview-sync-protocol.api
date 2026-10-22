@@ -62,6 +62,7 @@ public final class io/github/valerioisufi/drawview/sync/protocol/DocumentKey$Com
 public final class io/github/valerioisufi/drawview/sync/protocol/InMemoryChannel : io/github/valerioisufi/drawview/sync/protocol/SyncChannel {
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/protocol/InMemoryChannel$Companion;
 	public fun close ()V
+	public fun getRoute ()Lio/github/valerioisufi/drawview/sync/protocol/Route;
 	public fun receive (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun send ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -240,6 +241,16 @@ public final class io/github/valerioisufi/drawview/sync/protocol/Role$Companion 
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class io/github/valerioisufi/drawview/sync/protocol/Route : java/lang/Enum {
+	public static final field INTERNET_DIRECT Lio/github/valerioisufi/drawview/sync/protocol/Route;
+	public static final field INTERNET_RELAYED Lio/github/valerioisufi/drawview/sync/protocol/Route;
+	public static final field LOCAL_NETWORK Lio/github/valerioisufi/drawview/sync/protocol/Route;
+	public static final field UNKNOWN Lio/github/valerioisufi/drawview/sync/protocol/Route;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/sync/protocol/Route;
+	public static fun values ()[Lio/github/valerioisufi/drawview/sync/protocol/Route;
+}
+
 public final class io/github/valerioisufi/drawview/sync/protocol/SealedOperation {
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/protocol/SealedOperation$Companion;
 	public fun <init> (Ljava/lang/String;J[B)V
@@ -266,6 +277,7 @@ public final class io/github/valerioisufi/drawview/sync/protocol/SealedOperation
 public final class io/github/valerioisufi/drawview/sync/protocol/SecureChannel : io/github/valerioisufi/drawview/sync/protocol/SyncChannel {
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/protocol/SecureChannel$Companion;
 	public fun close ()V
+	public fun getRoute ()Lio/github/valerioisufi/drawview/sync/protocol/Route;
 	public fun receive (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun send ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -298,8 +310,13 @@ public final class io/github/valerioisufi/drawview/sync/protocol/SignedMembershi
 
 public abstract interface class io/github/valerioisufi/drawview/sync/protocol/SyncChannel {
 	public abstract fun close ()V
+	public fun getRoute ()Lio/github/valerioisufi/drawview/sync/protocol/Route;
 	public abstract fun receive (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun send ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/sync/protocol/SyncChannel$DefaultImpls {
+	public static fun getRoute (Lio/github/valerioisufi/drawview/sync/protocol/SyncChannel;)Lio/github/valerioisufi/drawview/sync/protocol/Route;
 }
 
 public final class io/github/valerioisufi/drawview/sync/protocol/SyncException : java/lang/Exception {

@@ -40,11 +40,13 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.semantics.Role as SemanticsRole
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 import io.github.valerioisufi.drawview.sync.protocol.Role
+import io.github.valerioisufi.drawview.sync.protocol.Route
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.*
 import io.github.valerioisufi.drawview.ui.command.DesignMenu
 import io.github.valerioisufi.drawview.ui.command.MenuItem
@@ -58,8 +60,18 @@ import kotlin.math.abs
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-/** A device of a shared document as the sharing shows it: a member, or one asking to join with [role]. */
-internal data class SharingPerson(val device: String, val name: String, val role: Role, val color: Color, val me: Boolean = false)
+/**
+ * A device of a shared document as the sharing shows it: a member, or one asking to join with
+ * [role]; [route]: what the connection with it goes through, `null` when not connected.
+ */
+internal data class SharingPerson(
+    val device: String,
+    val name: String,
+    val role: Role,
+    val color: Color,
+    val me: Boolean = false,
+    val route: Route? = null
+)
 
 /** The invitation of a document: its [link] (and its QR code), the [role] of who joins with it, whether the owner approves them first. */
 internal data class SharingInvitation(val link: String, val role: Role, val approval: Boolean)
@@ -71,6 +83,8 @@ internal data class SharingInvitation(val link: String, val role: Role, val appr
  * @param owner the name of its owner.
  * @param invitation the invitation of the owner, `null` when revoked.
  * @param requests the devices waiting for the owner to let them in.
+ * @param internet the synchronization over the internet of this device, `null` when the
+ *   application does not give it.
  */
 internal class SharingState(
     val shared: Boolean,
@@ -80,7 +94,8 @@ internal class SharingState(
     val requests: List<SharingPerson>,
     val members: List<SharingPerson>,
     val offline: Boolean,
-    val otherVersion: Boolean
+    val otherVersion: Boolean,
+    val internet: InternetSettings? = null
 ) {
     /** Whether the invitation is shown: to the owner, or before sharing. */
     val invites: Boolean get() = !shared || isOwner
@@ -103,6 +118,9 @@ internal interface SharingActions {
 
     /** Ends the sharing (the owner) or leaves the document (the others), once confirmed. */
     fun stop()
+
+    /** Works with the others over the internet or not, through the relay of [settings]. */
+    fun setInternet(settings: InternetSettings) = Unit
 
     fun close()
 }
@@ -137,7 +155,7 @@ internal fun ShareContent(
         val wide = !compact && state.invites && maxWidth >= 720.dp
         Column(modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = if (compact) 16.dp else 0.dp)) {
             // On a phone what sharing does is said before sharing only
-            ShareHeader(compact, explained = !compact || !state.shared, onClose = actions::close)
+            ShareHeader(compact, explained = !compact || !state.shared, overInternet = state.internet?.enabled == true, onClose = actions::close)
             Column(
                 modifier = Modifier
                     .weight(1f, fill = false)
@@ -170,9 +188,12 @@ internal fun ShareContent(
     }
 }
 
-/** "Share the document", what sharing does ([explained]), the close button of the dialog. */
+/**
+ * "Share the document", what sharing does ([explained]: with the devices of the same network, or
+ * wherever they are [overInternet]), the close button of the dialog.
+ */
 @Composable
-private fun ShareHeader(compact: Boolean, explained: Boolean, onClose: () -> Unit) {
+private fun ShareHeader(compact: Boolean, explained: Boolean, overInternet: Boolean, onClose: () -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
@@ -181,7 +202,11 @@ private fun ShareHeader(compact: Boolean, explained: Boolean, onClose: () -> Uni
                 color = MaterialTheme.colorScheme.onSurface
             )
             if (explained) {
-                Text(stringResource(Res.string.sync_share_explanation), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    stringResource(if (overInternet) Res.string.sync_share_explanation_internet else Res.string.sync_share_explanation),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
         if (!compact) DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.sync_close), onClick = onClose)
@@ -373,6 +398,65 @@ private fun People(
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier.fillMaxWidth()
     )
+    state.internet?.let { settings -> InternetSection(settings, actions::setInternet) }
+}
+
+/**
+ * Working with the others over the internet: its switch, then the relay (its address and its
+ * access token), used once confirmed; without a relay of its own, the public relays of the engine
+ * (said under the field).
+ */
+@Composable
+private fun InternetSection(settings: InternetSettings, onChange: (InternetSettings) -> Unit) {
+    var relay by remember(settings) { mutableStateOf(settings.relay) }
+    var token by remember(settings) { mutableStateOf(settings.token) }
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .toggleable(value = settings.enabled, role = SemanticsRole.Switch, onValueChange = { onChange(settings.copy(enabled = it)) }),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(DrawViewIcons.Globe, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(stringResource(Res.string.sync_internet), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+                Text(stringResource(Res.string.sync_internet_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Switch(
+                checked = settings.enabled,
+                onCheckedChange = null,
+                thumbContent = if (settings.enabled) {
+                    { Icon(DrawViewIcons.Check, contentDescription = null, modifier = Modifier.size(SwitchDefaults.IconSize)) }
+                } else null
+            )
+        }
+        if (!settings.enabled) return@Column
+        OutlinedTextField(
+            value = relay,
+            onValueChange = { relay = it.trim() },
+            label = { Text(stringResource(Res.string.sync_relay)) },
+            placeholder = { Text("relay.example.com") },
+            singleLine = true,
+            supportingText = { Text(stringResource(if (relay.isBlank()) Res.string.sync_relay_public else Res.string.sync_relay_hint)) },
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = token,
+            onValueChange = { token = it.trim() },
+            label = { Text(stringResource(Res.string.sync_relay_token)) },
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation(),
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        )
+        if (relay != settings.relay || token != settings.token) {
+            TonalButton(onClick = { onChange(settings.copy(relay = relay, token = token)) }, modifier = Modifier.align(Alignment.End)) {
+                Text(stringResource(Res.string.sync_relay_use))
+            }
+        }
+    }
 }
 
 /** The devices asking to join, let in or refused by the owner. */
@@ -423,7 +507,14 @@ private fun MemberRow(member: SharingPerson, ownerView: Boolean, actions: Sharin
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Text(stringResource(roleLabel(member.role)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            val route = member.route?.let { routeLabel(it) }?.let { stringResource(it) }
+            Text(
+                listOfNotNull(stringResource(roleLabel(member.role)), route).joinToString(" · "),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
         when {
             member.role == Role.OWNER -> Icon(
@@ -523,6 +614,14 @@ internal fun MemberAvatar(name: String, color: Color, size: Dp = 32.dp, ring: Co
 /** "Marta’s iPad": "MI"; the first letters of the first two words. */
 internal fun initialsOf(name: String): String =
     name.split(' ', '-', '_').filter { it.isNotBlank() }.take(2).joinToString("") { it.first().uppercase() }.ifEmpty { "?" }
+
+/** What a connection goes through, as the participants show it; `null` when not known. */
+internal fun routeLabel(route: Route): StringResource? = when (route) {
+    Route.LOCAL_NETWORK -> Res.string.sync_route_local
+    Route.INTERNET_DIRECT -> Res.string.sync_route_direct
+    Route.INTERNET_RELAYED -> Res.string.sync_route_relayed
+    Route.UNKNOWN -> null
+}
 
 internal fun roleLabel(role: Role): StringResource = when (role) {
     Role.OWNER -> Res.string.sync_role_owner

@@ -253,7 +253,7 @@ tools/relay             configuration of the relay, guide
 | 3. Addresses, protocol 2 | `DeviceAddress`, `Hello.addresses`, `DeviceAddresses`, `AddressBook` (a versioned value, with its tests), the addresses of the invitation, `PROTOCOL_VERSION` 2 and `ProtocolFormatTest` | done |
 | 4. Controller | `IrohSync`: the endpoint and its life cycle, its address published, the members connected, the retries, the foreground, the changes of network; with `LanSync` at the same time. Tests: devices "on different networks", through the relay only, a connection lost and made again | done |
 | 5. Relay | `tools/relay/`: the configuration of `iroh-relay` (TLS, token, QUIC address discovery), the service unit, the guide for an e2-micro. The user creates the machine | done (the machine: to do, by the user) |
-| 6. Applications | PencilNotes on Android, iOS and the desktop: the relay in the settings (address, token), synchronization over the internet on or off, how each participant is connected in the sharing dialog; the sample; the strings in the 7 languages; the screenshots | to do |
+| 6. Applications | PencilNotes on Android, iOS and the desktop: the relay in the settings (address, token), synchronization over the internet on or off, how each participant is connected in the sharing dialog; the sample; the strings in the 7 languages; the screenshots | done |
 | 7. Real networks | iPad or phone on mobile data and the Mac at home, the university Wi-Fi, two homes. Measures: the time to connect, how many connections go direct, the traffic through the relay, the battery | to do |
 
 Every phase ends with the checks of `CLAUDE.md` (the JVM tests, the ABI, the Android, iOS and
@@ -458,6 +458,48 @@ ones of n0 (the nearest one, in Frankfurt).
   * `IrohSync` publishes its address again at every round, so a relay reached late (or a new
     one) reaches the others.
 
+
+### Phase 6 results
+
+* Two ports in `drawview-sync`, so that `drawview-sync-ui` does not depend on iroh nor ships its
+  native library (Protected Variations, Polymorphism):
+  * `SyncNetwork` (`start`, `join`, `refresh(networkChanged)`, `stop`), implemented by `LanSync`
+    and `IrohSync`;
+  * `InternetSync`, the synchronization over the internet an application gives, implemented by
+    `IrohInternet` of `drawview-sync-iroh`. A relay without a scheme is `https://`, and no relay
+    means the public relays of n0, for trying before the relay of phase 5 exists.
+* `SyncChannel.route` (`drawview-sync-protocol`) says what the frames go through: the local
+  network, the internet directly, or through the relay. `SecureChannel` passes it on, and
+  `SyncEngine.routeOf` gives it for a device and a document.
+* `Collaboration` (`rememberCollaboration(internet = ...)`):
+  * it runs the internet beside the local network when the user turns it on (`setInternet`),
+    started once documents are shared, as the local network is;
+  * it joins over both, and refreshes both after the background;
+  * another relay starts the network again with it.
+
+  The settings (`InternetSettings`: on or off, relay, token) are kept in the `SecureStore`, since
+  the token is a secret. Their format is version 1, and a value of another version, or damaged,
+  is never written over.
+* The sharing dialog:
+  * a section "Over the internet" under the name of the device: its switch, the address of the
+    relay and its access token, used once confirmed. Without a relay, it says that the public
+    relays of n0 are used;
+  * under each participant, how it is reached, looked at again every second;
+  * the explanation at the top says "wherever they are" when it is on.
+
+  The strings are in the 7 languages. The screenshot `share-internet` is recorded, and the other
+  screenshots do not change.
+* PencilNotes gives `IrohInternet`:
+  * the Android APK carries `libiroh_bridge.so` for the three ABIs, with the notices;
+  * the iOS application builds and links for the simulator (the frameworks the bridge needs come
+    with the klib);
+  * the desktop application starts on a scratch data directory.
+
+  The sample uses no synchronization: nothing to change there.
+* Tests: the settings (kept, format 1 read, a value of another version kept as it is) and the
+  collaboration with a fake `InternetSync` (turned on, joining, refreshing, another relay, turned
+  off, started with the collaboration when turned on).
+
 ## Decisions
 
 ### Taken by the user (2026-10-22)
@@ -501,6 +543,10 @@ ones of n0 (the nearest one, in Frankfurt).
   per document.
 * The address published by `IrohSync` is the identifier and the relays only (phase 4): stable,
   and without the IP addresses of the device.
+* The settings of the internet in the sharing dialog, like the name of the device, rather than in
+  settings of the application: PencilNotes has none, and they are about working with the others.
+* Without a relay of its own, the public relays of n0 (said in the dialog), so that the
+  synchronization over the internet can be tried at once.
 * The relay of the tests over plain HTTP on the loopback: neither the public relays nor TLS
   certificates are needed for the tests.
 * Numbers instead of pointers for the endpoints, connections and streams of the bridge (see Native

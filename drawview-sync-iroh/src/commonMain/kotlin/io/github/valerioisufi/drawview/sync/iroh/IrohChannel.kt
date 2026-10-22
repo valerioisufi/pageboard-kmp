@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.sync.iroh
 
+import io.github.valerioisufi.drawview.sync.protocol.Route
 import io.github.valerioisufi.drawview.sync.protocol.SyncChannel
 import io.github.valerioisufi.drawview.sync.protocol.SyncException
 import kotlinx.atomicfu.locks.SynchronizedObject
@@ -24,12 +25,13 @@ internal val IrohDispatcher: CoroutineDispatcher = Dispatchers.IO.limitedParalle
 internal const val SLICE_MS: Long = 250
 
 /**
- * A stream of an iroh connection as a [SyncChannel]: the bridge keeps the frames whole (a length,
- * then the bytes). [onClose] runs once, when this side closes it.
+ * A stream of the iroh connection [connection] as a [SyncChannel]: the bridge keeps the frames
+ * whole (a length, then the bytes). [onClose] runs once, when this side closes it.
  */
 internal class IrohChannel(
     private val bridge: IrohBridge,
     private val stream: Long,
+    private val connection: Long,
     private val onClose: () -> Unit = {}
 ) : SyncChannel {
     private val lock = SynchronizedObject()
@@ -57,6 +59,13 @@ internal class IrohChannel(
             ensureActive()
         }
     }
+
+    override val route: Route
+        get() = when (bridge.pathKind(connection)) {
+            IrohBridge.PATH_DIRECT -> Route.INTERNET_DIRECT
+            IrohBridge.PATH_RELAY -> Route.INTERNET_RELAYED
+            else -> Route.UNKNOWN
+        }
 
     override fun close() {
         val first = synchronized(lock) { !closed.also { closed = true } }

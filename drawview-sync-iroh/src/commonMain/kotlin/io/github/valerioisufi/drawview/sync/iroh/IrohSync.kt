@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.sync.iroh
 
 import io.github.valerioisufi.drawview.sync.SyncEngine
+import io.github.valerioisufi.drawview.sync.SyncNetwork
 import io.github.valerioisufi.drawview.sync.protocol.DocumentKey
 import io.github.valerioisufi.drawview.sync.protocol.Invitation
 import io.github.valerioisufi.drawview.sync.protocol.SyncException
@@ -37,7 +38,7 @@ public class IrohSync(
     private val retryMs: Long = 10_000,
     private val firstDelayMs: Long = 3_000,
     private val connectTimeoutMs: Long = 15_000
-) {
+) : SyncNetwork {
     private val mutex = Mutex()
 
     /** The connections opened by this device (being made or made): to a device, about a document. */
@@ -48,7 +49,7 @@ public class IrohSync(
     private var job: Job? = null
 
     /** Starts the transport, says where this device is, serves the others and connects to them. */
-    public suspend fun start() {
+    override suspend fun start() {
         if (job != null) return
         transport.start()
         publish()
@@ -78,7 +79,7 @@ public class IrohSync(
      * Joins the document of [invitation]: through its owner, at its address on iroh (if the
      * invitation has one).
      */
-    public suspend fun join(invitation: Invitation) {
+    override suspend fun join(invitation: Invitation) {
         engine.join(invitation)
         invitation.addresses[IrohTransport.NAME]?.let { address -> mutex.withLock { owners[invitation.documentId] = address } }
         if (job != null) connect(missingOnly = true)
@@ -88,7 +89,7 @@ public class IrohSync(
      * Makes again what was lost: tells the transport that the network changed when
      * [networkChanged], says where this device is now, connects to the members missing.
      */
-    public suspend fun refresh(networkChanged: Boolean = false) {
+    override suspend fun refresh(networkChanged: Boolean) {
         if (job == null) return
         if (networkChanged) transport.networkChanged()
         publish()
@@ -96,7 +97,7 @@ public class IrohSync(
     }
 
     /** Stops: the connections, the transport, and this device no longer says where it is. */
-    public suspend fun stop() {
+    override suspend fun stop() {
         job?.cancel()
         job = null
         mutex.withLock {

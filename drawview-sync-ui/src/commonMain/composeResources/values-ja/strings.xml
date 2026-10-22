@@ -49,4 +49,15 @@
     <string name="sync_joining_as">参加時の権限</string>
     <string name="sync_no_invitation">招待がなければ誰も参加できません。新しい招待には新しいリンクがつきます。</string>
     <string name="sync_read_only_note">編集できる人は%1$sが決めます</string>
+    <string name="sync_internet">インターネット経由</string>
+    <string name="sync_internet_hint">同じネットワークだけでなく、どこにいても他の人と作業できます</string>
+    <string name="sync_relay">リレーのアドレス</string>
+    <string name="sync_relay_hint">デバイスが出会う場所です。送信内容は読めません</string>
+    <string name="sync_relay_public">空欄：n0 の公開リレー（制限あり、お試し用）</string>
+    <string name="sync_relay_token">アクセストークン</string>
+    <string name="sync_relay_use">このリレーを使う</string>
+    <string name="sync_route_local">ローカルネットワーク</string>
+    <string name="sync_route_direct">インターネット（直接）</string>
+    <string name="sync_route_relayed">インターネット（リレー経由）</string>
+    <string name="sync_share_explanation_internet">招待を開いたデバイスは、どこにいてもあなたと同時にこのドキュメントで作業できます。</string>
 </resources>

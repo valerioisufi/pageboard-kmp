@@ -1,6 +1,7 @@
 package io.github.valerioisufi.drawview.sync.lan
 
 import io.github.valerioisufi.drawview.sync.SyncEngine
+import io.github.valerioisufi.drawview.sync.SyncNetwork
 import io.github.valerioisufi.drawview.sync.protocol.DocumentKey
 import io.github.valerioisufi.drawview.sync.protocol.Invitation
 import io.github.valerioisufi.drawview.sync.protocol.SyncException
@@ -43,7 +44,7 @@ public class LanSync(
     private val transport: LanTransport = LanTransport(scope),
     private val retryMs: Long = 5_000,
     private val connectTimeoutMs: Long = 5_000
-) {
+) : SyncNetwork {
     private val mutex = Mutex()
 
     /** The connections opened by this device (being made or made): to a device, about a document. */
@@ -59,7 +60,7 @@ public class LanSync(
     private var job: Job? = null
 
     /** Starts listening, announcing and connecting. */
-    public suspend fun start() {
+    override suspend fun start() {
         if (job != null) return
         transport.start()
         job = scope.launch {
@@ -87,15 +88,15 @@ public class LanSync(
 
     /**
      * Makes again what was lost: the listener closed by the system, the announcement too when
-     * [announceAgain] (e.g. when the application comes back to the foreground, the system may
+     * [networkChanged] (e.g. when the application comes back to the foreground, the system may
      * have stopped it), the connections with the devices sharing a document with this one.
      */
-    public suspend fun refresh(announceAgain: Boolean = false) {
+    override suspend fun refresh(networkChanged: Boolean) {
         if (job == null) return
         if (!transport.isListening) {
             transport.start()
             announce()
-        } else if (announceAgain) {
+        } else if (networkChanged) {
             announce()
         }
         connect(missingOnly = true)
@@ -121,14 +122,14 @@ public class LanSync(
      * Joins the document of [invitation]: through its owner, at its address if it has one or found
      * on the network.
      */
-    public suspend fun join(invitation: Invitation) {
+    override suspend fun join(invitation: Invitation) {
         engine.join(invitation)
         invitation.addresses[LanTransport.NAME]?.let { address -> mutex.withLock { addresses[invitation.documentId] = address } }
         announce()
         connect(missingOnly = true)
     }
 
-    public suspend fun stop() {
+    override suspend fun stop() {
         job?.cancel()
         job = null
         mutex.withLock {

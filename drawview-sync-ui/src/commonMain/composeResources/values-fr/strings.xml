@@ -49,4 +49,15 @@
     <string name="sync_joining_as">Rejoint en tant que</string>
     <string name="sync_no_invitation">Personne ne rejoint sans invitation : une nouvelle a un nouveau lien.</string>
     <string name="sync_read_only_note">%1$s décide qui modifie</string>
+    <string name="sync_internet">Par Internet</string>
+    <string name="sync_internet_hint">Travailler avec les autres où qu\'ils soient, pas seulement sur le même réseau</string>
+    <string name="sync_relay">Adresse du relais</string>
+    <string name="sync_relay_hint">Là où les appareils se retrouvent ; il ne peut pas lire ce qu\'ils envoient</string>
+    <string name="sync_relay_public">Vide : les relais publics de n0, limités, pour essayer</string>
+    <string name="sync_relay_token">Jeton d\'accès</string>
+    <string name="sync_relay_use">Utiliser ce relais</string>
+    <string name="sync_route_local">Réseau local</string>
+    <string name="sync_route_direct">Internet, direct</string>
+    <string name="sync_route_relayed">Internet, par le relais</string>
+    <string name="sync_share_explanation_internet">Les appareils qui ouvrent l’invitation travaillent sur ce document avec vous, en même temps, où qu’ils soient.</string>
 </resources>

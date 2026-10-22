@@ -39,6 +39,7 @@ import io.github.valerioisufi.drawview.platform.DeviceProfile
 import io.github.valerioisufi.drawview.sync.InvitationGrant
 import io.github.valerioisufi.drawview.sync.protocol.Invitation
 import io.github.valerioisufi.drawview.sync.protocol.Role
+import io.github.valerioisufi.drawview.sync.protocol.Route
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.*
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
@@ -174,6 +175,9 @@ private fun ShareAction(collaboration: Collaboration, documentId: String, share:
 /** The avatars beside the share button at most. */
 private const val MAX_AVATARS = 3
 
+/** How often the sharing dialog looks again at what each connection goes through. */
+private const val ROUTES_MS = 1_000L
+
 /**
  * Shares the document, or shows its sharing (see [ShareContent]): gathers what it shows from
  * [collaboration] and does there what the user chooses; ending the sharing or leaving the
@@ -193,8 +197,19 @@ private fun ShareDialog(collaboration: Collaboration, documentId: String, title:
     var invitations by remember { mutableStateOf<List<Pair<InvitationGrant, Invitation>>>(emptyList()) }
     var version by remember { mutableStateOf(0) }
     var confirmStop by remember { mutableStateOf(false) }
+    val internet by collaboration.internetSettings.collectAsState()
+    var routes by remember { mutableStateOf<Map<String, Route>>(emptyMap()) }
     LaunchedEffect(documentId, version, isOwner) {
         invitations = if (isOwner) collaboration.invitationsOf(documentId, title) else emptyList()
+    }
+    // What each connection goes through (a relay, then a direct path...): looked at again and again
+    LaunchedEffect(documentId, membership) {
+        while (true) {
+            routes = membership?.members.orEmpty().mapNotNull { member ->
+                collaboration.routeOf(documentId, member.device)?.let { member.device to it }
+            }.toMap()
+            delay(ROUTES_MS)
+        }
     }
     val current = invitations.lastOrNull()
 
@@ -206,10 +221,11 @@ private fun ShareDialog(collaboration: Collaboration, documentId: String, title:
         requests = requests.filter { it.documentId == documentId }.map { SharingPerson(it.device, it.name, it.role, colorOf(it.device)) },
         members = membership?.members.orEmpty().map { member ->
             val me = member.device == collaboration.device
-            SharingPerson(member.device, if (me) deviceName else member.name, member.role, colorOf(member.replica), me = me)
+            SharingPerson(member.device, if (me) deviceName else member.name, member.role, colorOf(member.replica), me = me, route = routes[member.device])
         },
         offline = !online,
-        otherVersion = otherVersion
+        otherVersion = otherVersion,
+        internet = internet.takeIf { collaboration.isInternetAvailable }
     )
     val actions = remember(collaboration, documentId, title) {
         object : SharingActions {
@@ -245,6 +261,10 @@ private fun ShareDialog(collaboration: Collaboration, documentId: String, title:
 
             override fun stop() {
                 confirmStop = true
+            }
+
+            override fun setInternet(settings: InternetSettings) {
+                scope.launch { collaboration.setInternet(settings) }
             }
 
             override fun close() = onDismiss()

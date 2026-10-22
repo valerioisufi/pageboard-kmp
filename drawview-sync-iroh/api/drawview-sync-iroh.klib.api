@@ -15,11 +15,11 @@ final class io.github.valerioisufi.drawview.sync.iroh/IrohSecret { // io.github.
     }
 }
 
-final class io.github.valerioisufi.drawview.sync.iroh/IrohSync { // io.github.valerioisufi.drawview.sync.iroh/IrohSync|null[0]
+final class io.github.valerioisufi.drawview.sync.iroh/IrohSync : io.github.valerioisufi.drawview.sync/SyncNetwork { // io.github.valerioisufi.drawview.sync.iroh/IrohSync|null[0]
     constructor <init>(io.github.valerioisufi.drawview.sync/SyncEngine, io.github.valerioisufi.drawview.sync.iroh/IrohTransport, kotlinx.coroutines/CoroutineScope, kotlin/Long = ..., kotlin/Long = ..., kotlin/Long = ...) // io.github.valerioisufi.drawview.sync.iroh/IrohSync.<init>|<init>(io.github.valerioisufi.drawview.sync.SyncEngine;io.github.valerioisufi.drawview.sync.iroh.IrohTransport;kotlinx.coroutines.CoroutineScope;kotlin.Long;kotlin.Long;kotlin.Long){}[0]
 
     final suspend fun join(io.github.valerioisufi.drawview.sync.protocol/Invitation) // io.github.valerioisufi.drawview.sync.iroh/IrohSync.join|join(io.github.valerioisufi.drawview.sync.protocol.Invitation){}[0]
-    final suspend fun refresh(kotlin/Boolean = ...) // io.github.valerioisufi.drawview.sync.iroh/IrohSync.refresh|refresh(kotlin.Boolean){}[0]
+    final suspend fun refresh(kotlin/Boolean) // io.github.valerioisufi.drawview.sync.iroh/IrohSync.refresh|refresh(kotlin.Boolean){}[0]
     final suspend fun start() // io.github.valerioisufi.drawview.sync.iroh/IrohSync.start|start(){}[0]
     final suspend fun stop() // io.github.valerioisufi.drawview.sync.iroh/IrohSync.stop|stop(){}[0]
 }
@@ -71,4 +71,11 @@ final class io.github.valerioisufi.drawview.sync.iroh/RelayConfig { // io.github
         final val NONE // io.github.valerioisufi.drawview.sync.iroh/RelayConfig.Companion.NONE|{}NONE[0]
             final fun <get-NONE>(): io.github.valerioisufi.drawview.sync.iroh/RelayConfig // io.github.valerioisufi.drawview.sync.iroh/RelayConfig.Companion.NONE.<get-NONE>|<get-NONE>(){}[0]
     }
+}
+
+final object io.github.valerioisufi.drawview.sync.iroh/IrohInternet : io.github.valerioisufi.drawview.sync/InternetSync { // io.github.valerioisufi.drawview.sync.iroh/IrohInternet|null[0]
+    final val isAvailable // io.github.valerioisufi.drawview.sync.iroh/IrohInternet.isAvailable|{}isAvailable[0]
+        final fun <get-isAvailable>(): kotlin/Boolean // io.github.valerioisufi.drawview.sync.iroh/IrohInternet.isAvailable.<get-isAvailable>|<get-isAvailable>(){}[0]
+
+    final fun network(io.github.valerioisufi.drawview.sync/SyncEngine, kotlinx.coroutines/CoroutineScope, kotlin/String, kotlin/String): io.github.valerioisufi.drawview.sync/SyncNetwork // io.github.valerioisufi.drawview.sync.iroh/IrohInternet.network|network(io.github.valerioisufi.drawview.sync.SyncEngine;kotlinx.coroutines.CoroutineScope;kotlin.String;kotlin.String){}[0]
 }

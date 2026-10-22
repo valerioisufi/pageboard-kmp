@@ -28,6 +28,8 @@ public class SecureChannel private constructor(
         }
     }
 
+    override val route: Route get() = channel.route
+
     override fun close(): Unit = channel.close()
 
     public companion object {

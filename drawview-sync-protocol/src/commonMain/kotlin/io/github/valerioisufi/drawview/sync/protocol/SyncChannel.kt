@@ -13,7 +13,25 @@ public interface SyncChannel {
     /** The next frame of the other device, or `null` when the connection is closed. */
     public suspend fun receive(): ByteArray?
 
+    /** What the frames go through now (it may change: a relay, then a direct path). */
+    public val route: Route get() = Route.UNKNOWN
+
     public fun close()
+}
+
+/** What the frames of a [SyncChannel] go through. */
+public enum class Route {
+    /** The local network. */
+    LOCAL_NETWORK,
+
+    /** The internet, directly between the devices. */
+    INTERNET_DIRECT,
+
+    /** The internet, through a relay (which cannot read them). */
+    INTERNET_RELAYED,
+
+    /** Not known (the memory of the tests, a path being found). */
+    UNKNOWN
 }
 
 /**

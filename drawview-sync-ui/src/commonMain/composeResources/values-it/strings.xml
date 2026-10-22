@@ -49,4 +49,15 @@
     <string name="sync_joining_as">Entra come</string>
     <string name="sync_no_invitation">Senza un invito non entra nessuno: uno nuovo ha un nuovo link.</string>
     <string name="sync_read_only_note">%1$s decide chi modifica</string>
+    <string name="sync_internet">Via internet</string>
+    <string name="sync_internet_hint">Lavora con gli altri ovunque siano, non solo sulla stessa rete</string>
+    <string name="sync_relay">Indirizzo del relay</string>
+    <string name="sync_relay_hint">Dove i dispositivi si incontrano; non può leggere ciò che si inviano</string>
+    <string name="sync_relay_public">Vuoto: i relay pubblici di n0, limitati, per provare</string>
+    <string name="sync_relay_token">Token di accesso</string>
+    <string name="sync_relay_use">Usa questo relay</string>
+    <string name="sync_route_local">Rete locale</string>
+    <string name="sync_route_direct">Internet, diretto</string>
+    <string name="sync_route_relayed">Internet, tramite relay</string>
+    <string name="sync_share_explanation_internet">I dispositivi che aprono l’invito lavorano su questo documento con te, nello stesso momento, ovunque siano.</string>
 </resources>

@@ -12,6 +12,7 @@ import io.github.valerioisufi.drawview.store.DocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.store.PreferenceStore
 import io.github.valerioisufi.drawview.sync.InMemoryAddressBook
+import io.github.valerioisufi.drawview.sync.InternetSync
 import io.github.valerioisufi.drawview.sync.InvitationGrant
 import io.github.valerioisufi.drawview.sync.JoinRequest
 import io.github.valerioisufi.drawview.sync.JoinStatus
@@ -20,6 +21,7 @@ import io.github.valerioisufi.drawview.sync.PreferenceAddressBook
 import io.github.valerioisufi.drawview.sync.Presence
 import io.github.valerioisufi.drawview.sync.StoreSharedDocuments
 import io.github.valerioisufi.drawview.sync.SyncEngine
+import io.github.valerioisufi.drawview.sync.SyncNetwork
 import io.github.valerioisufi.drawview.sync.lan.LanDiscovery
 import io.github.valerioisufi.drawview.sync.lan.LanSync
 import io.github.valerioisufi.drawview.sync.protocol.DeviceIdentity
@@ -27,6 +29,8 @@ import io.github.valerioisufi.drawview.sync.protocol.Invitation
 import io.github.valerioisufi.drawview.sync.protocol.Member
 import io.github.valerioisufi.drawview.sync.protocol.Membership
 import io.github.valerioisufi.drawview.sync.protocol.Role
+import io.github.valerioisufi.drawview.sync.protocol.Route
+import io.github.valerioisufi.drawview.sync.protocol.SyncException
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.sync.ui.generated.resources.sync_shared_folder
 import kotlinx.coroutines.CoroutineScope
@@ -50,10 +54,11 @@ import org.jetbrains.compose.resources.stringResource
 private const val NEARBY_WAIT_MS = 3_000L
 
 /**
- * Working on the documents with the other devices of the local network (GRASP Controller of
- * sharing and joining the documents of an application): the documents shared are kept the same
- * on every device as long as the devices are on the same network; the documents received go to
- * the folder [sharedFolderName] of the library.
+ * Working on the documents with the other devices (GRASP Controller of sharing and joining the
+ * documents of an application): the documents shared are kept the same on every device as long as
+ * the devices are on the same network, or wherever they are over the internet when the
+ * application gives [internet] and the user turns it on ([internetSettings]); the documents
+ * received go to the folder [sharedFolderName] of the library.
  *
  * The device sharing a document is its owner: it gives the invitations (with the role of the
  * devices joining with them, and whether it approves them first), changes the roles of the
@@ -73,13 +78,23 @@ public class Collaboration(
     private val sharedFolderName: String,
     private val scope: CoroutineScope,
     attachments: DocumentAttachments? = null,
-    identity: DeviceIdentity = DeviceIdentity.ofThisDevice()
+    identity: DeviceIdentity = DeviceIdentity.ofThisDevice(),
+    private val internet: InternetSync? = null
 ) {
     private val store: DocumentStore = documents.store
     private val shared = StoreSharedDocuments(store, documents)
     private val mutex = Mutex()
     private var lan: LanSync? = null
+    private var internetNetwork: SyncNetwork? = null
     private val online = MutableStateFlow(false)
+    private val settingsStore = InternetSettingsStore()
+    private val internetSettingsState = MutableStateFlow(if (internet != null) settingsStore.load() else InternetSettings())
+
+    /** Whether this device can work with the others over the internet (the application gives it, and it works here). */
+    public val isInternetAvailable: Boolean get() = internet?.isAvailable == true
+
+    /** Whether this device works with the others over the internet, and through which relay (see [setInternet]). */
+    public val internetSettings: StateFlow<InternetSettings> = internetSettingsState.asStateFlow()
 
     /** Asks for the permission to use the local network (set by [rememberCollaboration]). */
     internal var requestAccess: suspend () -> Boolean = { true }
@@ -127,8 +142,12 @@ public class Collaboration(
         }
     }
 
-    /** Starts looking for the devices of the network, once allowed to; returns whether started. */
+    /**
+     * Starts looking for the devices of the network, once allowed to (and over the internet, if
+     * turned on); returns whether started.
+     */
     public suspend fun start(): Boolean {
+        startInternet()
         if (online.value) return true
         if (!requestAccess()) return false
         mutex.withLock {
@@ -195,6 +214,8 @@ public class Collaboration(
     public suspend fun join(link: String): Invitation? {
         val invitation = Invitation.parse(link) ?: return null
         if (start()) lan?.join(invitation) else engine.join(invitation)
+        // Over the internet too: the owner may be elsewhere
+        mutex.withLock { internetNetwork }?.join(invitation)
         return invitation
     }
 
@@ -209,16 +230,55 @@ public class Collaboration(
      * foreground: the system may have closed them meanwhile).
      */
     public suspend fun refresh() {
-        mutex.withLock { lan }?.refresh(announceAgain = true)
+        val (lan, internet) = mutex.withLock { lan to internetNetwork }
+        lan?.refresh(networkChanged = true)
+        internet?.refresh(networkChanged = true)
     }
 
     public suspend fun stop() {
         mutex.withLock {
             lan?.stop()
             lan = null
+            internetNetwork?.stop()
+            internetNetwork = null
             online.value = false
         }
     }
+
+    /**
+     * Works with the others over the internet or not, through the relay of [settings] (kept for
+     * the next starts): the connections over the internet start again with them.
+     */
+    public suspend fun setInternet(settings: InternetSettings) {
+        if (settings == internetSettingsState.value) return
+        settingsStore.save(settings)
+        internetSettingsState.value = settings
+        mutex.withLock {
+            internetNetwork?.stop()
+            internetNetwork = null
+        }
+        // Over the internet once some documents are shared (or when the user shares or joins one)
+        if (online.value || store.sharingSecrets().isNotEmpty()) startInternet()
+    }
+
+    /** Starts working over the internet, when turned on and possible. */
+    private suspend fun startInternet() {
+        val settings = internetSettingsState.value
+        val internet = internet?.takeIf { settings.enabled && it.isAvailable } ?: return
+        val network = mutex.withLock {
+            if (internetNetwork != null) return
+            internet.network(engine, scope, settings.relay, settings.token).also { internetNetwork = it }
+        }
+        // Started outside of the lock: it waits for its relay
+        try {
+            network.start()
+        } catch (_: SyncException) {
+            mutex.withLock { if (internetNetwork === network) internetNetwork = null }
+        }
+    }
+
+    /** What the connection with the device [device] about [documentId] goes through, `null` when not connected. */
+    public suspend fun routeOf(documentId: String, device: String): Route? = engine.routeOf(documentId, device)
 
     /** The folder of the documents received, created the first time. */
     private suspend fun sharedFolder(): String? {
@@ -231,16 +291,18 @@ public class Collaboration(
 
 /**
  * The [Collaboration] of the application (one per process: it listens on the network), started at
- * once when some documents are shared already. Joins the invitations opened from outside (see
- * [InvitationLinks]) through [CollaborationDialogs].
+ * once when some documents are shared already, over the internet too with [internet] (e.g.
+ * `IrohInternet` of `drawview-sync-iroh`) once the user turns it on. Joins the invitations opened
+ * from outside (see [InvitationLinks]) through [CollaborationDialogs].
  */
 @Composable
 public fun rememberCollaboration(
     documents: OpenDocuments,
-    attachments: DocumentAttachments? = null
+    attachments: DocumentAttachments? = null,
+    internet: InternetSync? = null
 ): Collaboration {
     val folderName = stringResource(Res.string.sync_shared_folder)
-    val holder = viewModel { CollaborationHolder(documents, folderName, attachments) }
+    val holder = viewModel { CollaborationHolder(documents, folderName, attachments, internet) }
     val requestAccess = rememberLocalNetworkAccess()
     val collaboration = holder.collaboration
     collaboration.requestAccess = requestAccess
@@ -260,10 +322,11 @@ public fun rememberCollaboration(
 private class CollaborationHolder(
     documents: OpenDocuments,
     folderName: String,
-    attachments: DocumentAttachments?
+    attachments: DocumentAttachments?,
+    internet: InternetSync?
 ) : ViewModel() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    val collaboration = Collaboration(documents, createLanDiscovery(), folderName, scope, attachments)
+    val collaboration = Collaboration(documents, createLanDiscovery(), folderName, scope, attachments, internet = internet)
 
     override fun onCleared() {
         scope.launch { collaboration.stop() }.invokeOnCompletion { scope.cancel() }

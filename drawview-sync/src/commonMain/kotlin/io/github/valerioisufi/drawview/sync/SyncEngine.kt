@@ -24,6 +24,7 @@ import io.github.valerioisufi.drawview.sync.protocol.OpenFrame
 import io.github.valerioisufi.drawview.sync.protocol.OperationSeal
 import io.github.valerioisufi.drawview.sync.protocol.PROTOCOL_VERSION
 import io.github.valerioisufi.drawview.sync.protocol.Role
+import io.github.valerioisufi.drawview.sync.protocol.Route
 import io.github.valerioisufi.drawview.sync.protocol.SealedOperation
 import io.github.valerioisufi.drawview.sync.protocol.SecureChannel
 import io.github.valerioisufi.drawview.sync.protocol.SignedMembership
@@ -384,6 +385,14 @@ public class SyncEngine(
         } finally {
             channel.close()
         }
+    }
+
+    /**
+     * What the connection with the device [device] about [documentId] goes through now, `null`
+     * when they are not connected.
+     */
+    public suspend fun routeOf(documentId: String, device: String): Route? = mutex.withLock {
+        links.firstOrNull { it.documentId == documentId && it.authorized && it.peer?.device == device }?.channel?.route
     }
 
     /** Closes every connection. */

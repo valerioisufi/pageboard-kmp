@@ -35,6 +35,7 @@ import io.github.valerioisufi.drawview.lecture.ui.editorExtension
 import io.github.valerioisufi.drawview.lecture.ui.rememberLectureAssistant
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import io.github.valerioisufi.drawview.store.room.DrawViewStore
+import io.github.valerioisufi.drawview.sync.iroh.IrohInternet
 import io.github.valerioisufi.drawview.sync.ui.CollaborationDialogs
 import io.github.valerioisufi.drawview.sync.ui.InvitationLinks
 import io.github.valerioisufi.drawview.sync.ui.editorExtension
@@ -84,8 +85,9 @@ fun PencilNotesApp(
         val documents = DrawViewStore.documents
         // Lecture recording, followed by Gemini or a local model: it goes on in the background
         val lectureAssistant = rememberLectureAssistant()
-        // The documents shared with the devices of the local network, with their lectures
-        val collaboration = rememberCollaboration(documents, attachments = lectureAssistant.attachments)
+        // The documents shared with the devices of the local network, with their lectures, and over
+        // the internet (iroh) once the user turns it on in the sharing
+        val collaboration = rememberCollaboration(documents, attachments = lectureAssistant.attachments, internet = IrohInternet)
         // A tablet uses the models of a computer of the local network (Ollama)
         LaunchedEffect(lectureAssistant, collaboration) { lectureAssistant.localModels.nearbyHosts = collaboration::nearbyHosts }
         // The documents exported as PDF or as the image of a page

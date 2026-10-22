@@ -23,7 +23,23 @@ final enum class io.github.valerioisufi.drawview.sync.protocol/Role : kotlin/Enu
     }
 }
 
+final enum class io.github.valerioisufi.drawview.sync.protocol/Route : kotlin/Enum<io.github.valerioisufi.drawview.sync.protocol/Route> { // io.github.valerioisufi.drawview.sync.protocol/Route|null[0]
+    enum entry INTERNET_DIRECT // io.github.valerioisufi.drawview.sync.protocol/Route.INTERNET_DIRECT|null[0]
+    enum entry INTERNET_RELAYED // io.github.valerioisufi.drawview.sync.protocol/Route.INTERNET_RELAYED|null[0]
+    enum entry LOCAL_NETWORK // io.github.valerioisufi.drawview.sync.protocol/Route.LOCAL_NETWORK|null[0]
+    enum entry UNKNOWN // io.github.valerioisufi.drawview.sync.protocol/Route.UNKNOWN|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.sync.protocol/Route.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.sync.protocol/Route> // io.github.valerioisufi.drawview.sync.protocol/Route.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.sync.protocol/Route // io.github.valerioisufi.drawview.sync.protocol/Route.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.sync.protocol/Route> // io.github.valerioisufi.drawview.sync.protocol/Route.values|values#static(){}[0]
+}
+
 abstract interface io.github.valerioisufi.drawview.sync.protocol/SyncChannel { // io.github.valerioisufi.drawview.sync.protocol/SyncChannel|null[0]
+    open val route // io.github.valerioisufi.drawview.sync.protocol/SyncChannel.route|{}route[0]
+        open fun <get-route>(): io.github.valerioisufi.drawview.sync.protocol/Route // io.github.valerioisufi.drawview.sync.protocol/SyncChannel.route.<get-route>|<get-route>(){}[0]
+
     abstract fun close() // io.github.valerioisufi.drawview.sync.protocol/SyncChannel.close|close(){}[0]
     abstract suspend fun receive(): kotlin/ByteArray? // io.github.valerioisufi.drawview.sync.protocol/SyncChannel.receive|receive(){}[0]
     abstract suspend fun send(kotlin/ByteArray) // io.github.valerioisufi.drawview.sync.protocol/SyncChannel.send|send(kotlin.ByteArray){}[0]
@@ -309,6 +325,9 @@ final class io.github.valerioisufi.drawview.sync.protocol/SealedOperation { // i
 }
 
 final class io.github.valerioisufi.drawview.sync.protocol/SecureChannel : io.github.valerioisufi.drawview.sync.protocol/SyncChannel { // io.github.valerioisufi.drawview.sync.protocol/SecureChannel|null[0]
+    final val route // io.github.valerioisufi.drawview.sync.protocol/SecureChannel.route|{}route[0]
+        final fun <get-route>(): io.github.valerioisufi.drawview.sync.protocol/Route // io.github.valerioisufi.drawview.sync.protocol/SecureChannel.route.<get-route>|<get-route>(){}[0]
+
     final fun close() // io.github.valerioisufi.drawview.sync.protocol/SecureChannel.close|close(){}[0]
     final suspend fun receive(): kotlin/ByteArray? // io.github.valerioisufi.drawview.sync.protocol/SecureChannel.receive|receive(){}[0]
     final suspend fun send(kotlin/ByteArray) // io.github.valerioisufi.drawview.sync.protocol/SecureChannel.send|send(kotlin.ByteArray){}[0]

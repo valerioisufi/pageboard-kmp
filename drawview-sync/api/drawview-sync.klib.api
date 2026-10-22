@@ -24,6 +24,13 @@ abstract interface io.github.valerioisufi.drawview.sync/AddressBook { // io.gith
     abstract suspend fun save(kotlin.collections/List<io.github.valerioisufi.drawview.sync.protocol/DeviceAddress>) // io.github.valerioisufi.drawview.sync/AddressBook.save|save(kotlin.collections.List<io.github.valerioisufi.drawview.sync.protocol.DeviceAddress>){}[0]
 }
 
+abstract interface io.github.valerioisufi.drawview.sync/InternetSync { // io.github.valerioisufi.drawview.sync/InternetSync|null[0]
+    abstract val isAvailable // io.github.valerioisufi.drawview.sync/InternetSync.isAvailable|{}isAvailable[0]
+        abstract fun <get-isAvailable>(): kotlin/Boolean // io.github.valerioisufi.drawview.sync/InternetSync.isAvailable.<get-isAvailable>|<get-isAvailable>(){}[0]
+
+    abstract fun network(io.github.valerioisufi.drawview.sync/SyncEngine, kotlinx.coroutines/CoroutineScope, kotlin/String, kotlin/String): io.github.valerioisufi.drawview.sync/SyncNetwork // io.github.valerioisufi.drawview.sync/InternetSync.network|network(io.github.valerioisufi.drawview.sync.SyncEngine;kotlinx.coroutines.CoroutineScope;kotlin.String;kotlin.String){}[0]
+}
+
 abstract interface io.github.valerioisufi.drawview.sync/ResourceFiles { // io.github.valerioisufi.drawview.sync/ResourceFiles|null[0]
     abstract fun read(kotlin/String): kotlin/ByteArray? // io.github.valerioisufi.drawview.sync/ResourceFiles.read|read(kotlin.String){}[0]
     abstract fun write(kotlin/ByteArray, kotlin/String): kotlin/String? // io.github.valerioisufi.drawview.sync/ResourceFiles.write|write(kotlin.ByteArray;kotlin.String){}[0]
@@ -35,6 +42,13 @@ abstract interface io.github.valerioisufi.drawview.sync/SharedDocuments { // io.
     abstract suspend fun remove(kotlin/String) // io.github.valerioisufi.drawview.sync/SharedDocuments.remove|remove(kotlin.String){}[0]
     abstract suspend fun save(kotlin/String, io.github.valerioisufi.drawview.sync/SharingState, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.sync/SharedDocuments.save|save(kotlin.String;io.github.valerioisufi.drawview.sync.SharingState;kotlin.Boolean){}[0]
     abstract suspend fun stateOf(kotlin/String): io.github.valerioisufi.drawview.sync/SharingState? // io.github.valerioisufi.drawview.sync/SharedDocuments.stateOf|stateOf(kotlin.String){}[0]
+}
+
+abstract interface io.github.valerioisufi.drawview.sync/SyncNetwork { // io.github.valerioisufi.drawview.sync/SyncNetwork|null[0]
+    abstract suspend fun join(io.github.valerioisufi.drawview.sync.protocol/Invitation) // io.github.valerioisufi.drawview.sync/SyncNetwork.join|join(io.github.valerioisufi.drawview.sync.protocol.Invitation){}[0]
+    abstract suspend fun refresh(kotlin/Boolean = ...) // io.github.valerioisufi.drawview.sync/SyncNetwork.refresh|refresh(kotlin.Boolean){}[0]
+    abstract suspend fun start() // io.github.valerioisufi.drawview.sync/SyncNetwork.start|start(){}[0]
+    abstract suspend fun stop() // io.github.valerioisufi.drawview.sync/SyncNetwork.stop|stop(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.sync/EpochKey { // io.github.valerioisufi.drawview.sync/EpochKey|null[0]
@@ -352,6 +366,7 @@ final class io.github.valerioisufi.drawview.sync/SyncEngine { // io.github.valer
     final suspend fun publishAddress(kotlin/String, kotlin/String?) // io.github.valerioisufi.drawview.sync/SyncEngine.publishAddress|publishAddress(kotlin.String;kotlin.String?){}[0]
     final suspend fun removeMember(kotlin/String, kotlin/String) // io.github.valerioisufi.drawview.sync/SyncEngine.removeMember|removeMember(kotlin.String;kotlin.String){}[0]
     final suspend fun revokeInvitation(kotlin/String, kotlin/String) // io.github.valerioisufi.drawview.sync/SyncEngine.revokeInvitation|revokeInvitation(kotlin.String;kotlin.String){}[0]
+    final suspend fun routeOf(kotlin/String, kotlin/String): io.github.valerioisufi.drawview.sync.protocol/Route? // io.github.valerioisufi.drawview.sync/SyncEngine.routeOf|routeOf(kotlin.String;kotlin.String){}[0]
     final suspend fun setRole(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.sync.protocol/Role) // io.github.valerioisufi.drawview.sync/SyncEngine.setRole|setRole(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.sync.protocol.Role){}[0]
     final suspend fun stop() // io.github.valerioisufi.drawview.sync/SyncEngine.stop|stop(){}[0]
     final suspend fun unshare(kotlin/String) // io.github.valerioisufi.drawview.sync/SyncEngine.unshare|unshare(kotlin.String){}[0]

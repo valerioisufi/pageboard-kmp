@@ -49,4 +49,15 @@
     <string name="sync_joining_as">Entra como</string>
     <string name="sync_no_invitation">Sin invitación no se une nadie: una nueva tiene un enlace nuevo.</string>
     <string name="sync_read_only_note">%1$s decide quién edita</string>
+    <string name="sync_internet">Por internet</string>
+    <string name="sync_internet_hint">Trabajar con los demás estén donde estén, no solo en la misma red</string>
+    <string name="sync_relay">Dirección del relé</string>
+    <string name="sync_relay_hint">Donde se encuentran los dispositivos; no puede leer lo que envían</string>
+    <string name="sync_relay_public">Vacío: los relés públicos de n0, limitados, para probar</string>
+    <string name="sync_relay_token">Token de acceso</string>
+    <string name="sync_relay_use">Usar este relé</string>
+    <string name="sync_route_local">Red local</string>
+    <string name="sync_route_direct">Internet, directo</string>
+    <string name="sync_route_relayed">Internet, por el relé</string>
+    <string name="sync_share_explanation_internet">Los dispositivos que abran la invitación trabajan contigo en este documento, al mismo tiempo, estén donde estén.</string>
 </resources>

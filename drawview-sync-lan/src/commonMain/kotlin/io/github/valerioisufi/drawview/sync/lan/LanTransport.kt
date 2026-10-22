@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.sync.lan
 
+import io.github.valerioisufi.drawview.sync.protocol.Route
 import io.github.valerioisufi.drawview.sync.protocol.SyncChannel
 import io.github.valerioisufi.drawview.sync.protocol.SyncException
 import io.github.valerioisufi.drawview.sync.protocol.SyncTransport
@@ -139,6 +140,8 @@ internal expect fun isListenedOnIpv4(port: Int): Boolean
 
 /** A TCP connection carrying frames (see [LanTransport]). */
 internal class TcpChannel(private val socket: Socket) : SyncChannel {
+    override val route: Route get() = Route.LOCAL_NETWORK
+
     private val input = socket.openReadChannel()
     private val output = socket.openWriteChannel(autoFlush = false)
     private val writing = Mutex()

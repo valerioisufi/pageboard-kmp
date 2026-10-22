@@ -49,4 +49,15 @@
     <string name="sync_joining_as">Joining as</string>
     <string name="sync_no_invitation">Nobody joins without an invitation: a new one has a new link.</string>
     <string name="sync_read_only_note">%1$s decides who edits</string>
+    <string name="sync_internet">Over the internet</string>
+    <string name="sync_internet_hint">Work with the others wherever they are, not only on the same network</string>
+    <string name="sync_relay">Relay address</string>
+    <string name="sync_relay_hint">Where the devices meet; it cannot read what they send</string>
+    <string name="sync_relay_public">Empty: the public relays of n0, rate-limited, for trying</string>
+    <string name="sync_relay_token">Access token</string>
+    <string name="sync_relay_use">Use this relay</string>
+    <string name="sync_route_local">Local network</string>
+    <string name="sync_route_direct">Internet, direct</string>
+    <string name="sync_route_relayed">Internet, via the relay</string>
+    <string name="sync_share_explanation_internet">The devices that open the invitation work on this document with you, at the same time, wherever they are.</string>
 </resources>

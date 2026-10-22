@@ -1,10 +1,11 @@
 public final class io/github/valerioisufi/drawview/sync/ui/Collaboration {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Ljava/lang/String;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Ljava/lang/String;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Ljava/lang/String;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Lio/github/valerioisufi/drawview/sync/InternetSync;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/lan/LanDiscovery;Ljava/lang/String;Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Lio/github/valerioisufi/drawview/sync/InternetSync;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun answer (Lio/github/valerioisufi/drawview/sync/JoinRequest;Z)V
 	public final fun getDevice ()Ljava/lang/String;
 	public final fun getEngine ()Lio/github/valerioisufi/drawview/sync/SyncEngine;
+	public final fun getInternetSettings ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getJoinRequests ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getJoining ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getMemberships ()Lkotlinx/coroutines/flow/StateFlow;
@@ -12,6 +13,7 @@ public final class io/github/valerioisufi/drawview/sync/ui/Collaboration {
 	public final fun getPeers ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getPresences ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun invitationsOf (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun isInternetAvailable ()Z
 	public final fun join (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun nearbyHosts (JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun nearbyHosts$default (Lio/github/valerioisufi/drawview/sync/ui/Collaboration;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
@@ -19,6 +21,8 @@ public final class io/github/valerioisufi/drawview/sync/ui/Collaboration {
 	public final fun removeMember (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun rename (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun revokeInvitation (Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/InvitationGrant;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun routeOf (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun setInternet (Lio/github/valerioisufi/drawview/sync/ui/InternetSettings;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun setRole (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun share (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun share$default (Lio/github/valerioisufi/drawview/sync/ui/Collaboration;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
@@ -31,7 +35,7 @@ public final class io/github/valerioisufi/drawview/sync/ui/CollaborationExtensio
 }
 
 public final class io/github/valerioisufi/drawview/sync/ui/CollaborationKt {
-	public static final fun rememberCollaboration (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Landroidx/compose/runtime/Composer;II)Lio/github/valerioisufi/drawview/sync/ui/Collaboration;
+	public static final fun rememberCollaboration (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/InternetSync;Landroidx/compose/runtime/Composer;II)Lio/github/valerioisufi/drawview/sync/ui/Collaboration;
 }
 
 public final class io/github/valerioisufi/drawview/sync/ui/ComposableSingletons$CollaborationExtensionKt {
@@ -62,14 +66,37 @@ public final class io/github/valerioisufi/drawview/sync/ui/ComposableSingletons$
 	public fun <init> ()V
 	public final fun getLambda$-1482221443$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$-1834838271$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-2024359921$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$-2066358145$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$-2084203884$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-569617384$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-958395001$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$106856320$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$1289508837$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$1890538776$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$1906931988$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$217067108$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$454555473$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$685164633$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$76524353$DrawView_KMP_drawview_sync_ui ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class io/github/valerioisufi/drawview/sync/ui/InternetSettings {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (ZLjava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (ZLjava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (ZLjava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/sync/ui/InternetSettings;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/sync/ui/InternetSettings;ZLjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/ui/InternetSettings;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEnabled ()Z
+	public final fun getRelay ()Ljava/lang/String;
+	public final fun getToken ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/sync/ui/InvitationLinks {

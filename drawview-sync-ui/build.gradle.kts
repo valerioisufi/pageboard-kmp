@@ -1,5 +1,6 @@
 plugins {
     id("drawview.compose.library")
+    alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.roborazzi)
 }
 
@@ -28,6 +29,8 @@ kotlin {
             implementation(libs.qrose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.kotlinx.coroutines.core)
+            // The settings of the synchronization over the internet, kept as JSON
+            implementation(libs.kotlinx.serialization.json)
         }
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)

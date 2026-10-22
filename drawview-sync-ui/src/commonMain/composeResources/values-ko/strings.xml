@@ -49,4 +49,15 @@
     <string name="sync_joining_as">참여 권한</string>
     <string name="sync_no_invitation">초대 없이는 아무도 참여할 수 없습니다. 새 초대에는 새 링크가 생깁니다.</string>
     <string name="sync_read_only_note">편집할 사람은 %1$s이(가) 정합니다</string>
+    <string name="sync_internet">인터넷으로</string>
+    <string name="sync_internet_hint">같은 네트워크뿐 아니라 어디에 있든 다른 사람과 함께 작업합니다</string>
+    <string name="sync_relay">릴레이 주소</string>
+    <string name="sync_relay_hint">기기들이 만나는 곳이며, 주고받는 내용은 읽을 수 없습니다</string>
+    <string name="sync_relay_public">비워 두면: n0의 공개 릴레이(제한 있음, 시험용)</string>
+    <string name="sync_relay_token">액세스 토큰</string>
+    <string name="sync_relay_use">이 릴레이 사용</string>
+    <string name="sync_route_local">로컬 네트워크</string>
+    <string name="sync_route_direct">인터넷(직접)</string>
+    <string name="sync_route_relayed">인터넷(릴레이 경유)</string>
+    <string name="sync_share_explanation_internet">초대를 연 기기들이 어디에 있든 동시에 이 문서에서 함께 작업합니다.</string>
 </resources>
