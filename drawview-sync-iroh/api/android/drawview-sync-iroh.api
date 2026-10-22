@@ -10,6 +10,7 @@ public final class io/github/valerioisufi/drawview/sync/iroh/IrohSecret$Companio
 
 public final class io/github/valerioisufi/drawview/sync/iroh/IrohTransport : io/github/valerioisufi/drawview/sync/protocol/SyncTransport {
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/iroh/IrohTransport$Companion;
+	public static final field NAME Ljava/lang/String;
 	public fun <init> (Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/sync/iroh/IrohSecret;Lio/github/valerioisufi/drawview/sync/iroh/RelayConfig;J)V
 	public synthetic fun <init> (Lkotlinx/coroutines/CoroutineScope;Lio/github/valerioisufi/drawview/sync/iroh/IrohSecret;Lio/github/valerioisufi/drawview/sync/iroh/RelayConfig;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun close ()V

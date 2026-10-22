@@ -80,11 +80,22 @@ class SyncEngineTest {
 
     @Test
     fun anInvitationIsALink() {
-        val invitation = Invitation("doc-1", "Appunti di Fisica & co. 100%", DocumentKey.generate(), "0123456789abcdef", "192.168.1.20:4567")
+        val addresses = mapOf("lan" to "192.168.1.20:4567", "iroh" to "f00d https://relay.example.com/ [2001:db8::1]:4433")
+        val invitation = Invitation("doc-1", "Appunti di Fisica & co. 100%", DocumentKey.generate(), "0123456789abcdef", addresses)
         assertEquals(invitation, Invitation.parse(invitation.toLink()))
-        assertEquals(invitation.copy(address = null), Invitation.parse(invitation.copy(address = null).toLink()))
+        assertEquals(invitation.copy(addresses = emptyMap()), Invitation.parse(invitation.copy(addresses = emptyMap()).toLink()))
         assertNull(Invitation.parse("https://example.com/?d=x&k=y"))
         assertNull(Invitation.parse("drawview://join?d=doc&k=not-a-key"))
+    }
+
+    @Test
+    fun aLinkOfBeforeIsReadWithItsAddressOnTheLocalNetwork() {
+        // As kept by a device joining (SharingState.joining) before the addresses by transport
+        val key = DocumentKey.generate()
+        val link = "drawview://join?d=doc-1&k=${key.encode()}&o=0123456789abcdef&t=Lab&a=192.168.1.20%3A4567"
+        assertEquals(Invitation("doc-1", "Lab", key, "0123456789abcdef", mapOf("lan" to "192.168.1.20:4567")), Invitation.parse(link))
+        // What a link of a later version adds is skipped
+        assertEquals(Invitation("doc-1", "Lab", key, "0123456789abcdef"), Invitation.parse("drawview://join?d=doc-1&k=${key.encode()}&o=0123456789abcdef&t=Lab&z=1"))
     }
 
     @Test
@@ -142,7 +153,14 @@ class SyncEngineTest {
      * (its connections say they are there every [keepAliveMs], `0`: never, so that
      * [advanceUntilIdle] ends).
      */
-    private class Device(val name: String, scope: CoroutineScope, test: TestScope, val network: InMemoryNetwork, keepAliveMs: Long = 0) {
+    private class Device(
+        val name: String,
+        scope: CoroutineScope,
+        test: TestScope,
+        val network: InMemoryNetwork,
+        keepAliveMs: Long = 0,
+        addressBook: AddressBook = InMemoryAddressBook()
+    ) {
         val storage = InMemoryKeyValueStorage()
         val store = KeyValueDocumentStore(storage, scope = scope)
         val documents = OpenDocuments(store, StandardTestDispatcher(test.testScheduler), scope)
@@ -150,7 +168,11 @@ class SyncEngineTest {
         val files = MemoryFiles()
         val attachments = MemoryAttachments()
         val identity = DeviceIdentity.generate()
-        val engine = SyncEngine(documents, shared, scope, { name }, files, keepAliveMs, attachments, identity) { store.folders.first().firstOrNull()?.id }
+        val engine = SyncEngine(
+            documents, shared, scope, { name }, files, keepAliveMs, attachments, identity,
+            receivedFolder = { store.folders.first().firstOrNull()?.id },
+            addressBook = addressBook
+        )
         val transport = network.transport(name)
         private val connections = mutableListOf<Job>()
 
@@ -163,7 +185,7 @@ class SyncEngineTest {
          * invitation for the devices joining as [role], approved first when [approval].
          */
         suspend fun share(documentId: String, title: String, role: Role = Role.EDITOR, approval: Boolean = false): Invitation =
-            assertNotNull(engine.invite(documentId, title, role, approval, address = name))
+            assertNotNull(engine.invite(documentId, title, role, approval, addresses = mapOf(MEMORY to name)))
 
         /**
          * Works on the document of [invitation] through the device at [address]: the first time
@@ -174,7 +196,7 @@ class SyncEngineTest {
             val key = engine.connectionKeys().firstOrNull { it.first == invitation.documentId && it.second != invitation.key }?.second
             if (key == null) {
                 engine.join(invitation)
-                connections += engine.connect(transport.connect(invitation.address ?: address), invitation.documentId, invitation.key)
+                connections += engine.connect(transport.connect(invitation.addresses[MEMORY] ?: address), invitation.documentId, invitation.key)
             } else {
                 connections += engine.connect(transport.connect(address), invitation.documentId, key)
             }
@@ -947,5 +969,49 @@ class SyncEngineTest {
         cy.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
         advanceUntilIdle()
         assertSame(document.id, listOf(ada, bob, cy))
+    }
+
+    @Test
+    fun theMembersGiveEachOtherWhereTheyCanBeReached() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val book = InMemoryAddressBook()
+        val (ada, bob) = listOf("ada", "bob").map { Device(it, work, this, network) }
+        val cy = Device("cy", work, this, network, addressBook = book)
+        fun Device.addressOf(other: Device) = engine.addresses.value[other.engine.device]?.get("iroh")?.address
+
+        cy.engine.publishAddress("iroh", "cy-at-home")
+        val document = ada.store.createDocument("Lab")
+        val invitation = ada.share(document.id, "Lab")
+        bob.join(invitation, "ada")
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+        // Ada met Cy; Bob knows where Cy is through Ada
+        assertEquals("cy-at-home", ada.addressOf(cy))
+        assertEquals("cy-at-home", bob.addressOf(cy))
+
+        // Cy moves: the new address reaches the others
+        cy.engine.publishAddress("iroh", "cy-at-school")
+        advanceUntilIdle()
+        assertEquals("cy-at-school", bob.addressOf(cy))
+        // Bob says where it is once connected: Cy learns it through Ada, and keeps it
+        bob.engine.publishAddress("iroh", "bob-on-mobile")
+        advanceUntilIdle()
+        assertEquals("bob-on-mobile", cy.addressOf(bob))
+        assertEquals("bob-on-mobile", book.load().single { it.device == bob.engine.device }.address)
+        // The invitations give where the owner is
+        ada.engine.publishAddress("iroh", "ada-at-home")
+        assertEquals("ada-at-home", ada.engine.invite(document.id, "Lab")?.addresses?.get("iroh"))
+
+        // Bob removed: its addresses are forgotten
+        ada.engine.removeMember(document.id, bob.engine.device)
+        advanceUntilIdle()
+        assertNull(cy.addressOf(bob))
+        assertTrue(book.load().none { it.device == bob.engine.device })
+        assertEquals("cy-at-school", ada.addressOf(cy))
+    }
+
+    private companion object {
+        /** The name of the in-memory transport in the addresses of the invitations. */
+        const val MEMORY = "memory"
     }
 }

@@ -1,3 +1,8 @@
+public abstract interface class io/github/valerioisufi/drawview/sync/AddressBook {
+	public abstract fun load (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun save (Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class io/github/valerioisufi/drawview/sync/EpochKey {
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/EpochKey$Companion;
 	public fun <init> (ILjava/lang/String;)V
@@ -26,6 +31,12 @@ public final synthetic class io/github/valerioisufi/drawview/sync/EpochKey$$seri
 
 public final class io/github/valerioisufi/drawview/sync/EpochKey$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/sync/InMemoryAddressBook : io/github/valerioisufi/drawview/sync/AddressBook {
+	public fun <init> ()V
+	public fun load (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun save (Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/drawview/sync/InMemorySharedDocuments : io/github/valerioisufi/drawview/sync/SharedDocuments {
@@ -104,6 +115,18 @@ public final class io/github/valerioisufi/drawview/sync/Peer {
 	public final fun getReplica ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/sync/PreferenceAddressBook : io/github/valerioisufi/drawview/sync/AddressBook {
+	public static final field Companion Lio/github/valerioisufi/drawview/sync/PreferenceAddressBook$Companion;
+	public static final field DEFAULT_KEY Ljava/lang/String;
+	public fun <init> (Lio/github/valerioisufi/drawview/store/PreferenceStore;Ljava/lang/String;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/PreferenceStore;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun load (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun save (Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/sync/PreferenceAddressBook$Companion {
 }
 
 public final class io/github/valerioisufi/drawview/sync/Presence {
@@ -248,27 +271,30 @@ public final class io/github/valerioisufi/drawview/sync/StoreSharedDocuments : i
 }
 
 public final class io/github/valerioisufi/drawview/sync/SyncEngine {
-	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/SharedDocuments;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/sync/ResourceFiles;JLio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Lkotlin/jvm/functions/Function1;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/SharedDocuments;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/sync/ResourceFiles;JLio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/SharedDocuments;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/sync/ResourceFiles;JLio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/drawview/sync/AddressBook;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Lio/github/valerioisufi/drawview/sync/SharedDocuments;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/sync/ResourceFiles;JLio/github/valerioisufi/drawview/model/DocumentAttachments;Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/drawview/sync/AddressBook;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun accept (Lio/github/valerioisufi/drawview/sync/protocol/SyncChannel;)Lkotlinx/coroutines/Job;
 	public final fun announcedTags (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun answer (Lio/github/valerioisufi/drawview/sync/JoinRequest;Z)V
 	public final fun connect (Lio/github/valerioisufi/drawview/sync/protocol/SyncChannel;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/DocumentKey;)Lkotlinx/coroutines/Job;
 	public final fun connectionKeys (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun getAddresses ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getDevice ()Ljava/lang/String;
 	public final fun getJoinRequests ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getJoining ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getMemberships ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getOtherVersionMet ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun getOwnAddresses ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getPeers ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getPresences ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getSharingChanged ()Lkotlinx/coroutines/flow/SharedFlow;
-	public final fun invitationOf (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/InvitationGrant;Ljava/lang/String;)Lio/github/valerioisufi/drawview/sync/protocol/Invitation;
-	public static synthetic fun invitationOf$default (Lio/github/valerioisufi/drawview/sync/SyncEngine;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/InvitationGrant;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/protocol/Invitation;
+	public final fun invitationOf (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/InvitationGrant;Ljava/util/Map;)Lio/github/valerioisufi/drawview/sync/protocol/Invitation;
+	public static synthetic fun invitationOf$default (Lio/github/valerioisufi/drawview/sync/SyncEngine;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/InvitationGrant;Ljava/util/Map;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/protocol/Invitation;
 	public final fun invitationsOf (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun invite (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;ZLjava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun invite$default (Lio/github/valerioisufi/drawview/sync/SyncEngine;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;ZLjava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun invite (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;ZLjava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun invite$default (Lio/github/valerioisufi/drawview/sync/SyncEngine;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;ZLjava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun join (Lio/github/valerioisufi/drawview/sync/protocol/Invitation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun publishAddress (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun removeMember (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun revokeInvitation (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun setRole (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/Role;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

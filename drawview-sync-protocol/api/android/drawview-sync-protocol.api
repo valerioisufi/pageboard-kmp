@@ -1,3 +1,34 @@
+public final class io/github/valerioisufi/drawview/sync/protocol/DeviceAddress {
+	public static final field Companion Lio/github/valerioisufi/drawview/sync/protocol/DeviceAddress$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J[B)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAddress ()Ljava/lang/String;
+	public final fun getDevice ()Ljava/lang/String;
+	public final fun getIssuedAt ()J
+	public final fun getSignature ()[B
+	public final fun getTransport ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isNewerThan (Lio/github/valerioisufi/drawview/sync/protocol/DeviceAddress;)Z
+	public final fun isSigned ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/sync/protocol/DeviceAddress$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/sync/protocol/DeviceAddress$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/sync/protocol/DeviceAddress;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/sync/protocol/DeviceAddress;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/sync/protocol/DeviceAddress$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+	public final fun sign (Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Ljava/lang/String;Ljava/lang/String;J)Lio/github/valerioisufi/drawview/sync/protocol/DeviceAddress;
+}
+
 public final class io/github/valerioisufi/drawview/sync/protocol/DeviceIdentity {
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity$Companion;
 	public final fun getPublicKey ()Ljava/lang/String;
@@ -53,17 +84,17 @@ public final class io/github/valerioisufi/drawview/sync/protocol/InMemoryTranspo
 
 public final class io/github/valerioisufi/drawview/sync/protocol/Invitation {
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/protocol/Invitation$Companion;
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/DocumentKey;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/DocumentKey;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/DocumentKey;Ljava/lang/String;Ljava/util/Map;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/DocumentKey;Ljava/lang/String;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Lio/github/valerioisufi/drawview/sync/protocol/DocumentKey;
 	public final fun component4 ()Ljava/lang/String;
-	public final fun component5 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/DocumentKey;Ljava/lang/String;Ljava/lang/String;)Lio/github/valerioisufi/drawview/sync/protocol/Invitation;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/sync/protocol/Invitation;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/DocumentKey;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/protocol/Invitation;
+	public final fun component5 ()Ljava/util/Map;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/DocumentKey;Ljava/lang/String;Ljava/util/Map;)Lio/github/valerioisufi/drawview/sync/protocol/Invitation;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/sync/protocol/Invitation;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/sync/protocol/DocumentKey;Ljava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/protocol/Invitation;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAddress ()Ljava/lang/String;
+	public final fun getAddresses ()Ljava/util/Map;
 	public final fun getDocumentId ()Ljava/lang/String;
 	public final fun getKey ()Lio/github/valerioisufi/drawview/sync/protocol/DocumentKey;
 	public final fun getOwner ()Ljava/lang/String;

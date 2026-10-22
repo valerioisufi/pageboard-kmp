@@ -250,7 +250,7 @@ tools/relay             configuration of the relay, guide
 | 0. Spike | A throw-away module, not versioned. The Rust toolchain (rustup, targets). A crate with the C API on the desktop JVM, the iOS simulator and the Android emulator. Checks: two endpoints exchanging frames through a public relay; this Mac and a phone on mobile data (direct or relayed); the size of the library on each platform; the build (Corrosion or cargo-ndk); the TLS cryptography; the network interfaces on Android; iOS without entitlements | done |
 | 1. Bridge and build | `native/iroh-bridge`, `drawview-native-iroh`, the desktop JNI in `buildDesktopNativeLibs` and in the CI matrix, the iOS static library and cinterop, `rust-toolchain.toml`, the licenses, the consumer check of the Android library | done |
 | 2. Transport | `drawview-sync-iroh`: `IrohNative`, `IrohTransport`, `IrohChannel`, `RelayConfig`. Tests: frames (1.5 MB too); three devices synchronizing over iroh with a relay in the process, on the JVM and the iOS simulator | done |
-| 3. Addresses, protocol 2 | `DeviceAddress`, `Hello.addresses`, `DeviceAddresses`, `AddressBook` (a versioned value, with its tests), the addresses of the invitation, `PROTOCOL_VERSION` 2 and `ProtocolFormatTest` | to do |
+| 3. Addresses, protocol 2 | `DeviceAddress`, `Hello.addresses`, `DeviceAddresses`, `AddressBook` (a versioned value, with its tests), the addresses of the invitation, `PROTOCOL_VERSION` 2 and `ProtocolFormatTest` | done |
 | 4. Controller | `IrohSync`: the endpoint and its life cycle, its address published, the members connected, the retries, the foreground, the changes of network; with `LanSync` at the same time. Tests: devices "on different networks", through the relay only, a connection lost and made again | to do |
 | 5. Relay | `tools/relay/`: the configuration of `iroh-relay` (TLS, token, QUIC address discovery), the service unit, the guide for an e2-micro. The user creates the machine | to do |
 | 6. Applications | PencilNotes on Android, iOS and the desktop: the relay in the settings (address, token), synchronization over the internet on or off, how each participant is connected in the sharing dialog; the sample; the strings in the 7 languages; the screenshots | to do |
@@ -364,6 +364,43 @@ ones of n0 (the nearest one, in Frankfurt).
   identifier and relay only.
 * The ABI of `drawview-sync-iroh` records `IrohTransport`, `IrohSecret` and `RelayConfig`.
 
+
+### Phase 3 results
+
+* `DeviceAddress` (`drawview-sync-protocol`) is signed by its device: a field changed on the way,
+  or another device passing for it, is refused (`isSigned`).
+* `KnownAddresses` (`drawview-sync`, the Information Expert of which address to keep) keeps an
+  address only when it is signed, of a member, not of this device, and more recent than the one
+  known for its device and transport.
+* `SyncEngine`:
+  * `publishAddress(transport, address)` signs where this device is now and sends it to the
+    members connected;
+  * the `Hello` carries the addresses of the device;
+  * once a device works on a document with this one, it gets the addresses of the other members
+    this device knows (`DeviceAddresses`);
+  * an address kept is relayed to the other members connected, never back;
+  * `addresses` and `ownAddresses` are what the controllers read;
+  * the invitations give the addresses of the owner by default.
+* `AddressBook`: `InMemoryAddressBook`, and `PreferenceAddressBook` in the preferences of the
+  store, which `Collaboration` uses. Its format is version 1. A value of another version, or
+  damaged, is never written over. An address goes with the last document its device is a member
+  of.
+* `Invitation.addresses` replaces `address`. The links write `a.<transport>=`, and `a=` is read as
+  `lan`, so the joining links kept by the devices still work.
+* `LanTransport.NAME` (`lan`) and `IrohTransport.NAME` (`iroh`).
+* `PROTOCOL_VERSION` is 2, and `ProtocolFormatTest` records format 2. The difference with format 1
+  is the message `addresses`, `Hello.addresses` and `DeviceAddress`. The ALPN of iroh follows:
+  `drawview/sync/2`.
+* Tests:
+  * the signature of the addresses;
+  * the rules of `KnownAddresses`;
+  * the format of the stored addresses (version 1 read, a newer or damaged value kept);
+  * the links, with and without addresses, and those of before;
+  * three engines: the addresses travel through the owner, a new address reaches the others,
+    the invitations carry the owner's one, a member removed is forgotten everywhere (and in the
+    store);
+  * the LAN and iroh tests, on version 2.
+
 ## Decisions
 
 ### Taken by the user (2026-10-22)
@@ -400,6 +437,9 @@ ones of n0 (the nearest one, in Frankfurt).
 * The build through Gradle tasks running cargo, without Corrosion or cargo-ndk (see Native bridge).
 * `opt-level = "z"` (18 % smaller than `"s"`). The traffic is small, and the cryptography of ring
   is assembly anyway.
+* The addresses kept with the preferences of the store (`PreferenceAddressBook`) rather than with
+  the sharing state of each document: no change to the Room schema, and they are per device, not
+  per document.
 * The relay of the tests over plain HTTP on the loopback: neither the public relays nor TLS
   certificates are needed for the tests.
 * Numbers instead of pointers for the endpoints, connections and streams of the bridge (see Native

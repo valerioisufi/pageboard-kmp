@@ -57,7 +57,7 @@ class RemoteHostTest {
                 open.edit { session -> session.submit(AddElements.of(session.document.pages[0], listOf(DrawStroke(mesh = mesh, brushConfig = brush)))) }
                 documents.close(open)
 
-                val invitation = engine.invite(document.id, document.title, address = "127.0.0.1:$port")!!
+                val invitation = engine.invite(document.id, document.title, addresses = mapOf(LanTransport.NAME to "127.0.0.1:$port"))!!
                 println("HOST invitation ${invitation.toLink()}")
                 repeat(seconds) {
                     delay(1_000)

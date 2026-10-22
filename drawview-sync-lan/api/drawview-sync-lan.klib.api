@@ -70,5 +70,8 @@ final class io.github.valerioisufi.drawview.sync.lan/LanTransport : io.github.va
     final suspend fun connect(kotlin/String): io.github.valerioisufi.drawview.sync.protocol/SyncChannel // io.github.valerioisufi.drawview.sync.lan/LanTransport.connect|connect(kotlin.String){}[0]
     final suspend fun start(): kotlin/Int // io.github.valerioisufi.drawview.sync.lan/LanTransport.start|start(){}[0]
 
-    final object Companion // io.github.valerioisufi.drawview.sync.lan/LanTransport.Companion|null[0]
+    final object Companion { // io.github.valerioisufi.drawview.sync.lan/LanTransport.Companion|null[0]
+        final const val NAME // io.github.valerioisufi.drawview.sync.lan/LanTransport.Companion.NAME|{}NAME[0]
+            final fun <get-NAME>(): kotlin/String // io.github.valerioisufi.drawview.sync.lan/LanTransport.Companion.NAME.<get-NAME>|<get-NAME>(){}[0]
+    }
 }

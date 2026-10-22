@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.sync
 
 import io.github.valerioisufi.drawview.model.change.DocumentSnapshot
 import io.github.valerioisufi.drawview.model.change.Operation
+import io.github.valerioisufi.drawview.sync.protocol.DeviceAddress
 import io.github.valerioisufi.drawview.sync.protocol.DeviceIdentity
 import io.github.valerioisufi.drawview.sync.protocol.Membership
 import io.github.valerioisufi.drawview.sync.protocol.SealedOperation
@@ -21,7 +22,8 @@ import kotlinx.serialization.cbor.Cbor
  * [JoinRefused]); then each sends the other what it misses ([Snapshot] for a device without the
  * document, [Operations]), then the operations as they are made; the files of the resources are
  * asked for and sent apart ([ResourceRequest], [ResourceChunk]); where each device is goes
- * along ([PresenceMessage]); a connection silent for a while says it is still there ([Ping]).
+ * along ([PresenceMessage]), and where each member can be reached ([DeviceAddresses]); a
+ * connection silent for a while says it is still there ([Ping]).
  */
 @Serializable
 internal sealed interface SyncMessage
@@ -35,7 +37,8 @@ internal class Challenge(val nonce: ByteArray) : SyncMessage
  * The device [device] ([DeviceIdentity.publicKey], [proof]: its signature of the challenge of the
  * other device, see [helloProof]) of replica [replica] named [name], with the operations it has
  * applied ([versionVector]); [hasDocument] is `false` for a device joining a document it does not
- * have yet. [membershipVersion] and [epoch]: the membership and the key it has.
+ * have yet. [membershipVersion] and [epoch]: the membership and the key it has. [addresses]:
+ * where it can be reached (see [DeviceAddress]).
  */
 @Serializable
 @SerialName("hello")
@@ -47,7 +50,8 @@ internal class Hello(
     val device: String,
     val proof: ByteArray,
     val membershipVersion: Long = 0,
-    val epoch: Int = 0
+    val epoch: Int = 0,
+    val addresses: List<DeviceAddress> = emptyList()
 ) : SyncMessage
 
 /** The bytes a device signs in its [Hello]: the [nonce] of the other one, the [tag] of the connection and who it is. */
@@ -175,6 +179,14 @@ internal class AttachmentPart(
     val size: Long,
     val bytes: ByteArray
 ) : SyncMessage
+
+/**
+ * Where members of the document can be reached (signed by each one, see [DeviceAddress]): the
+ * ones this device knows once the other one is admitted, then each one as it changes, relayed.
+ */
+@Serializable
+@SerialName("addresses")
+internal class DeviceAddresses(val addresses: List<DeviceAddress>) : SyncMessage
 
 /** A connection with nothing to send says it is still there (see [SyncEngine]). */
 @Serializable

@@ -14,6 +14,7 @@ import io.github.valerioisufi.drawview.model.change.snapshot
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.store.OpenDocument
 import io.github.valerioisufi.drawview.store.OpenDocuments
+import io.github.valerioisufi.drawview.sync.protocol.DeviceAddress
 import io.github.valerioisufi.drawview.sync.protocol.DeviceIdentity
 import io.github.valerioisufi.drawview.sync.protocol.DocumentKey
 import io.github.valerioisufi.drawview.sync.protocol.Invitation
@@ -91,6 +92,9 @@ public enum class JoinStatus { LOOKING_FOR_OWNER, WAITING_APPROVAL, ADMITTED, RE
  * others). A connection with nothing to send says it is still there every [keepAliveMs]; one the
  * other device has said nothing on for three times as long is lost (a device gone without closing
  * it: out of the network, asleep...) and closed, so that it can be made again. `0`: never.
+ *
+ * The members of the documents give each other where they can be reached ([addresses], see
+ * [publishAddress]), kept in [addressBook]: the controllers of the transports connect to them.
  */
 public class SyncEngine(
     private val documents: OpenDocuments,
@@ -101,7 +105,8 @@ public class SyncEngine(
     private val keepAliveMs: Long = 4_000,
     private val attachments: DocumentAttachments? = null,
     identity: DeviceIdentity = DeviceIdentity.generate(),
-    private val receivedFolder: suspend () -> String? = { null }
+    private val receivedFolder: suspend () -> String? = { null },
+    private val addressBook: AddressBook = InMemoryAddressBook()
 ) {
     private val sharing = DocumentSharing(shared, identity)
     private val identity get() = sharing.identity
@@ -144,7 +149,22 @@ public class SyncEngine(
     private val downloads = mutableMapOf<Pair<String, String>, Download>()
     private val downloadsMutex = Mutex()
 
+    private val known = KnownAddresses()
+    private val own = MutableStateFlow<Map<String, DeviceAddress>>(emptyMap())
+    private val addressesLoaded = CompletableDeferred<Unit>()
+    private val addressesMutex = Mutex()
+
+    /**
+     * Where the other members of the shared documents can be reached, by device ([Member.device])
+     * and transport: what they said, signed (see [DeviceAddress]), kept from one start to the next.
+     */
+    public val addresses: StateFlow<Map<String, Map<String, DeviceAddress>>> get() = known.all
+
+    /** Where this device can be reached, by transport (see [publishAddress]). */
+    public val ownAddresses: StateFlow<Map<String, DeviceAddress>> = own.asStateFlow()
+
     init {
+        scope.launch { loadAddresses() }
         attachments?.let { attachments ->
             // The items beside the documents changed here: to the devices on their document
             scope.launch { attachments.changes.collect(::onAttachmentChanged) }
@@ -221,7 +241,8 @@ public class SyncEngine(
     /**
      * Shares the document [documentId] (titled [title]), this device becoming its owner (unless it
      * is shared already): an invitation for the devices joining as [role], approved first by this
-     * device when [approval], reaching this one at [address].
+     * device when [approval], reaching this one at [addresses] (by transport: where it is now, by
+     * default, see [publishAddress]).
      *
      * @return `null` when this device is not the owner of the document (only the owner invites).
      */
@@ -230,20 +251,26 @@ public class SyncEngine(
         title: String,
         role: Role = Role.EDITOR,
         approval: Boolean = false,
-        address: String? = null
+        addresses: Map<String, String> = ownAddressesByTransport()
     ): Invitation? {
         val state = sharing.stateOf(documentId)
         if (state?.members == null) sharing.share(documentId, replica(), deviceName())
         val grant = sharing.invite(documentId, role, approval) ?: return null
-        return Invitation(documentId, title, DocumentKey.decode(grant.key)!!, DeviceIdentity.fingerprint(device), address)
+        return Invitation(documentId, title, DocumentKey.decode(grant.key)!!, DeviceIdentity.fingerprint(device), addresses)
     }
 
     /** The invitations of the document [documentId] (this device is its owner). */
     public suspend fun invitationsOf(documentId: String): List<InvitationGrant> = sharing.stateOf(documentId)?.invitations.orEmpty()
 
-    /** The invitation [grant] as a link to give. */
-    public fun invitationOf(documentId: String, title: String, grant: InvitationGrant, address: String? = null): Invitation =
-        Invitation(documentId, title, DocumentKey.decode(grant.key)!!, DeviceIdentity.fingerprint(device), address)
+    /** The invitation [grant] as a link to give, reaching this device at [addresses] (by transport). */
+    public fun invitationOf(
+        documentId: String,
+        title: String,
+        grant: InvitationGrant,
+        addresses: Map<String, String> = ownAddressesByTransport()
+    ): Invitation = Invitation(documentId, title, DocumentKey.decode(grant.key)!!, DeviceIdentity.fingerprint(device), addresses)
+
+    private fun ownAddressesByTransport(): Map<String, String> = own.value.mapValues { it.value.address }
 
     /** Revokes the invitation [grantId] of [documentId]: nobody joins with it anymore (the devices joined stay). */
     public suspend fun revokeInvitation(documentId: String, grantId: String) {
@@ -287,6 +314,8 @@ public class SyncEngine(
         }
         sharing.forget(documentId)
         joinStates.update { it - documentId }
+        // The addresses of the devices no longer members of any document go
+        scope.launch { saveAddresses() }
         // The last messages first
         linksOf(documentId).forEach { closeSoon(it) }
     }
@@ -622,6 +651,7 @@ public class SyncEngine(
             is AttachmentVersions -> onAttachmentVersions(link, message.versions)
             is AttachmentRequest -> message.asks.forEach { link.attachmentRequests.trySend(it) }
             is AttachmentPart -> onAttachmentPart(link, message)
+            is DeviceAddresses -> onDeviceAddresses(link, message.addresses)
             Ping -> Unit
         }
     }
@@ -645,7 +675,8 @@ public class SyncEngine(
                 device = device,
                 proof = proof,
                 membershipVersion = state?.members?.version ?: 0,
-                epoch = state?.epoch ?: 0
+                epoch = state?.epoch ?: 0,
+                addresses = own.value.values.toList()
             )
         )
     }
@@ -705,6 +736,7 @@ public class SyncEngine(
         val peer = Peer(link.documentId, hello.replica, hello.name, hello.device)
         link.peer = peer
         connected.update { it + peer }
+        exchangeAddresses(link, hello)
         // The next presence whole, for the device arrived
         mutex.withLock { sentPresences[link.documentId]?.wholeAt = 0 }
         // Without the document: it comes with the snapshot
@@ -763,6 +795,8 @@ public class SyncEngine(
             val device = link.peerHello?.device ?: continue
             if (link.authorized && (membership.memberOf(device) == null || membership.ended)) closeSoon(link)
         }
+        // The addresses of the devices no longer members of any document go
+        scope.launch { saveAddresses() }
         if (membership.ended || membership.memberOf(device) == null) {
             // This device was removed, or the sharing ended: it keeps its copy
             sharing.forget(documentId)
@@ -791,6 +825,87 @@ public class SyncEngine(
     private suspend fun onLeave(link: Link) {
         val hello = link.peerHello ?: return
         if (sharing.stateOf(link.documentId)?.owner == device) removeMember(link.documentId, hello.device)
+    }
+
+    // ==========================================================
+    // Addresses
+    // ==========================================================
+
+    /**
+     * Signs where this device can be reached on [transport] now ([address]; `null`: no longer) and
+     * gives it to the members connected, who relay it to the others.
+     */
+    public suspend fun publishAddress(transport: String, address: String?) {
+        var signed: DeviceAddress? = null
+        own.update { addresses ->
+            val previous = addresses[transport]
+            if (address == null) return@update addresses - transport
+            if (previous?.address == address) return@update addresses
+            // Always more recent than the one before, even within the same millisecond
+            val issuedAt = maxOf(currentTimeMillis(), (previous?.issuedAt ?: 0) + 1)
+            addresses + (transport to DeviceAddress.sign(identity, transport, address, issuedAt).also { signed = it })
+        }
+        val message = DeviceAddresses(listOf(signed ?: return))
+        mutex.withLock { links.filter { it.authorized } }.forEach { it.trySend(message) }
+    }
+
+    /** The addresses kept, of the members still. */
+    private suspend fun loadAddresses() {
+        try {
+            val members = memberDevices()
+            known.take(addressBook.load(), device) { it in members }
+        } finally {
+            addressesLoaded.complete(Unit)
+        }
+    }
+
+    /** The members of the documents shared now. */
+    private suspend fun memberDevices(): Set<String> = sharing.all().values
+        .mapNotNull { state -> state.members?.takeIf { !it.ended } }
+        .flatMapTo(mutableSetOf()) { membership -> membership.members.map { it.device } }
+
+    /** Keeps the addresses known, of the members only. */
+    private suspend fun saveAddresses() {
+        addressesLoaded.await()
+        addressesMutex.withLock {
+            val members = memberDevices()
+            known.retain { it in members }
+            addressBook.save(known.list())
+        }
+    }
+
+    /**
+     * The device of [link] works on the document with this one: its addresses (from its [hello]),
+     * and to it the ones of the other members this device knows.
+     */
+    private suspend fun exchangeAddresses(link: Link, hello: Hello) {
+        val membership = sharing.membershipOf(link.documentId) ?: return
+        onAddresses(link, hello.addresses.filter { it.device == hello.device }, membership)
+        addressesLoaded.await()
+        val others = known.of(membership.members.map { it.device }.filter { it != hello.device && it != device })
+        if (others.isNotEmpty()) link.send(DeviceAddresses(others))
+    }
+
+    private suspend fun onDeviceAddresses(link: Link, addresses: List<DeviceAddress>) {
+        val membership = sharing.membershipOf(link.documentId) ?: return
+        onAddresses(link, addresses, membership)
+    }
+
+    /**
+     * Keeps the addresses of [addresses] of members of the document of [from] (see
+     * [KnownAddresses.take]), and relays the ones kept to the other members connected (never back).
+     */
+    private suspend fun onAddresses(from: Link, addresses: List<DeviceAddress>, membership: Membership) {
+        if (addresses.isEmpty()) return
+        addressesLoaded.await()
+        val taken = known.take(addresses, device) { !membership.ended && membership.memberOf(it) != null }
+        if (taken.isEmpty()) return
+        scope.launch { saveAddresses() }
+        for (link in mutex.withLock { links.filter { it !== from && it.authorized } }) {
+            val members = sharing.membershipOf(link.documentId) ?: continue
+            val relayed = taken.filter { it.device != link.peerHello?.device && members.memberOf(it.device) != null }
+            if (relayed.isNotEmpty()) link.trySend(DeviceAddresses(relayed))
+        }
     }
 
     // ==========================================================

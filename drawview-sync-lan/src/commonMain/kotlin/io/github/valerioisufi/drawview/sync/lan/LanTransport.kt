@@ -120,6 +120,9 @@ public class LanTransport(private val scope: CoroutineScope, private val port: I
     }
 
     public companion object {
+        /** The name of this transport in the addresses of the devices and of the invitations. */
+        public const val NAME: String = "lan"
+
         /** The port listened on when it is free (out of the ports the systems give to the connections). */
         internal const val DEFAULT_PORT = 28_461
 

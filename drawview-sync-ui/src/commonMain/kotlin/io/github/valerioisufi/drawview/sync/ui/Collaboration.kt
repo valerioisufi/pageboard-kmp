@@ -10,10 +10,13 @@ import io.github.valerioisufi.drawview.model.DocumentAttachments
 import io.github.valerioisufi.drawview.platform.DeviceProfile
 import io.github.valerioisufi.drawview.store.DocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
+import io.github.valerioisufi.drawview.store.PreferenceStore
+import io.github.valerioisufi.drawview.sync.InMemoryAddressBook
 import io.github.valerioisufi.drawview.sync.InvitationGrant
 import io.github.valerioisufi.drawview.sync.JoinRequest
 import io.github.valerioisufi.drawview.sync.JoinStatus
 import io.github.valerioisufi.drawview.sync.Peer
+import io.github.valerioisufi.drawview.sync.PreferenceAddressBook
 import io.github.valerioisufi.drawview.sync.Presence
 import io.github.valerioisufi.drawview.sync.StoreSharedDocuments
 import io.github.valerioisufi.drawview.sync.SyncEngine
@@ -83,7 +86,9 @@ public class Collaboration(
 
     public val engine: SyncEngine = SyncEngine(
         documents, shared, scope, { DeviceProfile.name.value },
-        attachments = attachments, identity = identity, receivedFolder = ::sharedFolder
+        attachments = attachments, identity = identity, receivedFolder = ::sharedFolder,
+        // Where the other members can be reached, kept with the preferences of the store
+        addressBook = (store as? PreferenceStore)?.let(::PreferenceAddressBook) ?: InMemoryAddressBook()
     )
 
     /** The devices connected, with the document each one works on. */

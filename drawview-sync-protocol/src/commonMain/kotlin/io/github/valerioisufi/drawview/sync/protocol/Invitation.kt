@@ -4,15 +4,15 @@ package io.github.valerioisufi.drawview.sync.protocol
  * What a device needs to join a shared document: its identifier, its title, the secret of the
  * invitation ([key]: not the key of the document, which the owner gives to the devices it
  * admits), the owner ([owner]: a fingerprint of its identity, see [DeviceIdentity.fingerprint],
- * so that the device joining knows it talks to it) and where it can be reached ([address], in the
- * terms of a [SyncTransport]; `null`: to be found on the network).
+ * so that the device joining knows it talks to it) and where it can be reached ([addresses]: by
+ * transport, in the terms of each [SyncTransport]; none: to be found on the network).
  */
 public data class Invitation(
     val documentId: String,
     val title: String,
     val key: DocumentKey,
     val owner: String,
-    val address: String? = null
+    val addresses: Map<String, String> = emptyMap()
 ) {
     /** The invitation as a link (for a QR code or a message), read back by [parse]. */
     public fun toLink(): String = buildString {
@@ -20,11 +20,19 @@ public data class Invitation(
         append("&k=").append(key.encode())
         append("&o=").append(encode(owner))
         append("&t=").append(encode(title))
-        address?.let { append("&a=").append(encode(it)) }
+        for ((transport, address) in addresses.entries.sortedBy { it.key }) {
+            append("&a.").append(encode(transport)).append('=').append(encode(address))
+        }
     }
 
     public companion object {
         private const val SCHEME = "drawview://join"
+
+        /**
+         * The transport of an address written `a=` (the links of before: the address on the local
+         * network, see `LanTransport`); the links are kept, by the devices joining.
+         */
+        private const val LEGACY_TRANSPORT = "lan"
 
         /** The invitation of a link written by [toLink], or `null` when [link] is not one. */
         public fun parse(link: String): Invitation? {
@@ -33,12 +41,19 @@ public data class Invitation(
                 val separator = field.indexOf('=')
                 if (separator <= 0) null else field.take(separator) to decode(field.substring(separator + 1))
             }.toMap()
+            val addresses = fields.mapNotNull { (name, value) ->
+                when {
+                    name == "a" -> LEGACY_TRANSPORT to value
+                    name.startsWith("a.") && name.length > 2 && value.isNotEmpty() -> name.substring(2) to value
+                    else -> null
+                }
+            }.toMap()
             return Invitation(
                 documentId = fields["d"]?.takeIf { it.isNotEmpty() } ?: return null,
                 title = fields["t"].orEmpty(),
                 key = fields["k"]?.let { DocumentKey.decode(it) } ?: return null,
                 owner = fields["o"]?.takeIf { it.isNotEmpty() } ?: return null,
-                address = fields["a"]
+                addresses = addresses
             )
         }
 

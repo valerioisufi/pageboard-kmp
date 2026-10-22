@@ -189,6 +189,9 @@ public class IrohTransport(
     private fun bridge(): IrohBridge = irohBridge ?: throw SyncException("No iroh bridge on this platform")
 
     public companion object {
+        /** The name of this transport in the addresses of the devices and of the invitations. */
+        public const val NAME: String = "iroh"
+
         /** The protocol the endpoints answer (the version of the synchronization with it). */
         internal val ALPN: String = "drawview/sync/$PROTOCOL_VERSION"
 

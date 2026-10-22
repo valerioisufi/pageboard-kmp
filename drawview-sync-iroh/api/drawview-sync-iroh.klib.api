@@ -33,6 +33,9 @@ final class io.github.valerioisufi.drawview.sync.iroh/IrohTransport : io.github.
     final suspend fun start(kotlin/Long = ...): kotlin/String // io.github.valerioisufi.drawview.sync.iroh/IrohTransport.start|start(kotlin.Long){}[0]
 
     final object Companion { // io.github.valerioisufi.drawview.sync.iroh/IrohTransport.Companion|null[0]
+        final const val NAME // io.github.valerioisufi.drawview.sync.iroh/IrohTransport.Companion.NAME|{}NAME[0]
+            final fun <get-NAME>(): kotlin/String // io.github.valerioisufi.drawview.sync.iroh/IrohTransport.Companion.NAME.<get-NAME>|<get-NAME>(){}[0]
+
         final val isAvailable // io.github.valerioisufi.drawview.sync.iroh/IrohTransport.Companion.isAvailable|{}isAvailable[0]
             final fun <get-isAvailable>(): kotlin/Boolean // io.github.valerioisufi.drawview.sync.iroh/IrohTransport.Companion.isAvailable.<get-isAvailable>|<get-isAvailable>(){}[0]
     }

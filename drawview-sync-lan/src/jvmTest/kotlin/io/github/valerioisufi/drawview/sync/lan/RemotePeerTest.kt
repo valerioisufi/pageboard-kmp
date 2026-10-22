@@ -48,7 +48,7 @@ class RemotePeerTest {
     fun joinsTheDocumentOfAnotherDevice() {
         val link = System.getenv("DRAWVIEW_PEER_LINK") ?: return
         val invitation = assertNotNull(Invitation.parse(link))
-        val address = assertNotNull(invitation.address, "the invitation needs the address of the device")
+        val address = assertNotNull(invitation.addresses[LanTransport.NAME], "the invitation needs the address of the device")
         runBlocking(Dispatchers.Default) {
             val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
             try {

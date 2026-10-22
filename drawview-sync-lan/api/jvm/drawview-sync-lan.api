@@ -48,6 +48,7 @@ public final class io/github/valerioisufi/drawview/sync/lan/LanSync {
 
 public final class io/github/valerioisufi/drawview/sync/lan/LanTransport : io/github/valerioisufi/drawview/sync/protocol/SyncTransport {
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/lan/LanTransport$Companion;
+	public static final field NAME Ljava/lang/String;
 	public fun <init> (Lkotlinx/coroutines/CoroutineScope;I)V
 	public synthetic fun <init> (Lkotlinx/coroutines/CoroutineScope;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun close ()V

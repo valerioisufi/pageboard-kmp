@@ -123,7 +123,7 @@ public class LanSync(
      */
     public suspend fun join(invitation: Invitation) {
         engine.join(invitation)
-        invitation.address?.let { address -> mutex.withLock { addresses[invitation.documentId] = address } }
+        invitation.addresses[LanTransport.NAME]?.let { address -> mutex.withLock { addresses[invitation.documentId] = address } }
         announce()
         connect(missingOnly = true)
     }
