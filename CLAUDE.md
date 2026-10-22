@@ -43,7 +43,8 @@ sample. Start from:
   scratch directory:
   `JAVA_TOOL_OPTIONS="-Ddrawview.dataDir=<scratch dir>" ./gradlew :pencilnotes-desktop:run`
 - **The sync protocol is live between the user's devices** (`PROTOCOL_VERSION` in
-  `OpenFrame.kt`: 1 on `main`, 2 on `feat/internet-sync`).
+  `OpenFrame.kt`: 1). Its format changed on `feat/internet-sync` and `feat/untrusted-members`
+  under the same version, the applications being on two devices of the user, updated together.
   - Any change to what travels is a protocol change: frames, messages, sealed operations,
     invitations, membership. Say so, re-record `ProtocolFormatTest`, and agree on the version
     with the user.
@@ -54,6 +55,9 @@ sample. Start from:
     and never allocate a length announced before its bytes come.
   - A frame, message or operation not understood fails the connection (a `SyncException`), never
     the application.
+  - Members are not trusted either (`docs/untrusted-members.md`): an operation is taken only signed
+    by the device of its replica, a key only as the owner named it, a document from its owner
+    only, what a member has from that member only.
 - **No web targets.** No JS or Wasm, ever: the targets are Android, JVM, `iosArm64` and
   `iosSimulatorArm64`.
 - **Ask before granting** microphone, notification or system permissions in simulators and

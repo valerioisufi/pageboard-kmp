@@ -39,8 +39,9 @@ public data class Member(
  * ([version]) and applies it, so that the owner decides on every device without a server.
  *
  * [epoch]: the key of the document in use (a new one each time a device is removed, so that it
- * cannot follow the document anymore, see `SharingState.keys` of `drawview-sync`). [ended]: the owner stopped
- * sharing it, every device keeps its copy only.
+ * cannot follow the document anymore, see `SharingState.keys` of `drawview-sync`), [keyHash] its
+ * hash ([DocumentKey.hash]: the members take that key only; empty in the memberships of before).
+ * [ended]: the owner stopped sharing it, every device keeps its copy only.
  */
 @Serializable
 public data class Membership(
@@ -50,9 +51,14 @@ public data class Membership(
     val epoch: Int = 1,
     val members: List<Member> = emptyList(),
     val removed: List<Member> = emptyList(),
-    val ended: Boolean = false
+    val ended: Boolean = false,
+    val keyHash: String = ""
 ) {
     public fun memberOf(device: String): Member? = members.firstOrNull { it.device == device }
+
+    /** The device making the operations of [replica]: a member's, or a removed one's (see [OperationProof]). */
+    public fun deviceOf(replica: String): String? =
+        members.firstOrNull { it.replica == replica }?.device ?: removed.lastOrNull { it.replica == replica }?.device
 
     /** Whether the operation [sequence] of [replica] is accepted (the replicas never members: refused). */
     public fun mayWrite(replica: String, sequence: Long): Boolean {

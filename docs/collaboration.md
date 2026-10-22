@@ -513,8 +513,9 @@ The application is not released yet, so the stored documents are not migrated:
   forgetting it. The link is also a QR code in the sharing dialog (`qrose`).
 * Readers: the document is read only on their device (`DocumentSession.isReadOnly`: the editor
   shows a lock instead of the drawing mode), and every device refuses their operations
-  (`Membership.mayWrite`; a device made reader keeps the operations it made before). Not against a
-  modified application: the operations are not signed.
+  (`Membership.mayWrite`; a device made reader keeps the operations it made before). Against a
+  modified application too, since the operations are signed by the device of their replica
+  ([untrusted-members.md](untrusted-members.md)).
 * Removing a member gives the document a new key (`KeyUpdate`, to the members, also through each
   other); the device removed is told when connected, cannot connect with the old key anymore
   (the devices still accept it from the members on it, to give them the new one) and keeps its

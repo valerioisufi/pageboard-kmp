@@ -130,6 +130,10 @@ Variations).
 
 ### Protocol (version 2)
 
+The version went back to 1 later, with these formats and the signed operations of
+[untrusted-members.md](untrusted-members.md): the decision of the user, the applications being on
+two devices of theirs only.
+
 * Changes: `Hello.addresses`, the message `DeviceAddresses`, the addresses of the invitation (the
   link repeats `a.<transport>=<address>`), the ALPN on iroh.
 * `PROTOCOL_VERSION` goes from 1 to 2, and `ProtocolFormatTest` records the format of version 2.

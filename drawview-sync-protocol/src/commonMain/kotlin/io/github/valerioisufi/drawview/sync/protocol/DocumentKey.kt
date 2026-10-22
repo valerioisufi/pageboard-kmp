@@ -4,6 +4,7 @@ import dev.whyoleg.cryptography.CryptographyProvider
 import dev.whyoleg.cryptography.algorithms.HMAC
 import dev.whyoleg.cryptography.algorithms.SHA256
 import dev.whyoleg.cryptography.random.CryptographyRandom
+import io.github.valerioisufi.drawview.platform.Sha256
 import kotlin.io.encoding.Base64
 
 /**
@@ -18,6 +19,9 @@ public class DocumentKey private constructor(private val bytes: ByteArray) {
 
     /** The key as text (URL-safe base 64). */
     public fun encode(): String = base64.encode(bytes)
+
+    /** The SHA-256 of the key, in hexadecimal: what the membership names it by ([Membership.keyHash]). */
+    public val hash: String by lazy { Sha256.of(bytes) }
 
     /**
      * The tag of the document on the network: it tells a device which of its documents a

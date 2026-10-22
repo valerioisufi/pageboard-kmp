@@ -47,6 +47,7 @@ public final class io/github/valerioisufi/drawview/sync/protocol/DocumentKey {
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/protocol/DocumentKey$Companion;
 	public final fun encode ()Ljava/lang/String;
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHash ()Ljava/lang/String;
 	public final fun getTag ()Ljava/lang/String;
 	public fun hashCode ()I
 	public final fun toByteArray ()[B
@@ -147,8 +148,8 @@ public final class io/github/valerioisufi/drawview/sync/protocol/Member$Companio
 }
 
 public final class io/github/valerioisufi/drawview/sync/protocol/Membership {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;JILjava/util/List;Ljava/util/List;Z)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;JILjava/util/List;Ljava/util/List;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;JILjava/util/List;Ljava/util/List;ZLjava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;JILjava/util/List;Ljava/util/List;ZLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()J
@@ -156,13 +157,16 @@ public final class io/github/valerioisufi/drawview/sync/protocol/Membership {
 	public final fun component5 ()Ljava/util/List;
 	public final fun component6 ()Ljava/util/List;
 	public final fun component7 ()Z
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;JILjava/util/List;Ljava/util/List;Z)Lio/github/valerioisufi/drawview/sync/protocol/Membership;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/sync/protocol/Membership;Ljava/lang/String;Ljava/lang/String;JILjava/util/List;Ljava/util/List;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/protocol/Membership;
+	public final fun component8 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;JILjava/util/List;Ljava/util/List;ZLjava/lang/String;)Lio/github/valerioisufi/drawview/sync/protocol/Membership;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/sync/protocol/Membership;Ljava/lang/String;Ljava/lang/String;JILjava/util/List;Ljava/util/List;ZLjava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/sync/protocol/Membership;
+	public final fun deviceOf (Ljava/lang/String;)Ljava/lang/String;
 	public final fun encode ()[B
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDocumentId ()Ljava/lang/String;
 	public final fun getEnded ()Z
 	public final fun getEpoch ()I
+	public final fun getKeyHash ()Ljava/lang/String;
 	public final fun getMembers ()Ljava/util/List;
 	public final fun getOwner ()Ljava/lang/String;
 	public final fun getRemoved ()Ljava/util/List;
@@ -222,10 +226,36 @@ public final class io/github/valerioisufi/drawview/sync/protocol/OpenFrameKt {
 	public static final field PROTOCOL_VERSION I
 }
 
+public final class io/github/valerioisufi/drawview/sync/protocol/OperationProof {
+	public static final field Companion Lio/github/valerioisufi/drawview/sync/protocol/OperationProof$Companion;
+	public fun <init> ([B[B)V
+	public final fun encode ()[B
+	public final fun getContent ()[B
+	public final fun getSignature ()[B
+	public final fun isBy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)Z
+}
+
+public final synthetic class io/github/valerioisufi/drawview/sync/protocol/OperationProof$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/sync/protocol/OperationProof$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/sync/protocol/OperationProof;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/sync/protocol/OperationProof;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/sync/protocol/OperationProof$Companion {
+	public final fun decode ([B)Lio/github/valerioisufi/drawview/sync/protocol/OperationProof;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+	public final fun sign (Lio/github/valerioisufi/drawview/sync/protocol/DeviceIdentity;Ljava/lang/String;Ljava/lang/String;J[B)Lio/github/valerioisufi/drawview/sync/protocol/OperationProof;
+}
+
 public final class io/github/valerioisufi/drawview/sync/protocol/OperationSeal {
 	public fun <init> (Lio/github/valerioisufi/drawview/sync/protocol/DocumentKey;)V
-	public final fun open (Lio/github/valerioisufi/drawview/sync/protocol/SealedOperation;)[B
-	public final fun seal (Ljava/lang/String;J[B)Lio/github/valerioisufi/drawview/sync/protocol/SealedOperation;
+	public final fun open (Lio/github/valerioisufi/drawview/sync/protocol/SealedOperation;)Lio/github/valerioisufi/drawview/sync/protocol/OperationProof;
+	public final fun seal (Ljava/lang/String;JLio/github/valerioisufi/drawview/sync/protocol/OperationProof;)Lio/github/valerioisufi/drawview/sync/protocol/SealedOperation;
 }
 
 public final class io/github/valerioisufi/drawview/sync/protocol/Role : java/lang/Enum {
@@ -254,10 +284,11 @@ public final class io/github/valerioisufi/drawview/sync/protocol/Route : java/la
 
 public final class io/github/valerioisufi/drawview/sync/protocol/SealedOperation {
 	public static final field Companion Lio/github/valerioisufi/drawview/sync/protocol/SealedOperation$Companion;
-	public fun <init> (Ljava/lang/String;J[B)V
+	public fun <init> (Ljava/lang/String;J[B[B)V
 	public final fun getContent ()[B
 	public final fun getReplica ()Ljava/lang/String;
 	public final fun getSequence ()J
+	public final fun getSignature ()[B
 }
 
 public final synthetic class io/github/valerioisufi/drawview/sync/protocol/SealedOperation$$serializer : kotlinx/serialization/internal/GeneratedSerializer {

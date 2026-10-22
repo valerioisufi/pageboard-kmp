@@ -114,7 +114,7 @@ the same number does not meet the "other version" message: it is to be updated w
 | Phase | Content | Status |
 |---|---|---|
 | 1. Stored proofs | `OperationLog.proofs` / `saveProofs`; `KeyValueDocumentStore`; Room schema 19 with `Migration18To19` (`MigrationTestHelper`); compaction and deletion. Tests: kept, read again after a restart, removed with the operations, a store of before read | done |
-| 2. Signed operations | `OperationProof`, `SealedOperation.signature`; the engine signing, checking, keeping and giving on the proofs; `Membership.keyHash` and `adoptKey`; the snapshot from the owner; `KnownVersions` of the sender; the resources checked against their hash and received in parts; `PROTOCOL_VERSION` back to 1 and `ProtocolFormatTest`. Tests: a reader writing as an editor, a member writing as another, an operation given on through a member, a wrong key, a snapshot of a member, versions said for another, a wrong file | to do |
+| 2. Signed operations | `OperationProof`, `SealedOperation.signature`; the engine signing, checking, keeping and giving on the proofs; `Membership.keyHash` and `adoptKey`; the snapshot from the owner; `KnownVersions` of the sender; the resources checked against their hash and received in parts; `PROTOCOL_VERSION` back to 1 and `ProtocolFormatTest`. Tests: a reader writing as an editor, a member writing as another, an operation given on through a member, a wrong key, a snapshot of a member, versions said for another, a wrong file | done |
 | 3. Nothing makes a device fail | `SyncEngine.run` closing the connection on any failure of a message; `SyncCodec` never throwing but `SyncException`; tests with random bytes, changed frames, changed operations and snapshots (a fixed seed, on the JVM and the iOS simulator), and what they find fixed | to do |
 
 Every phase ends with the checks of `CLAUDE.md`, the Rust tests when the bridge changes, and the
@@ -138,6 +138,45 @@ tests of the sync modules on the iOS simulator.
   validated against 19.
 * The ABI of `drawview-store`, `drawview-store-testing` and `drawview-store-room` is recorded
   again: additions only.
+
+### Phase 2 results
+
+* `OperationProof` (`drawview-sync-protocol`): signs and checks
+  `drawview-sync/operation|<length>:<document>|<length>:<replica>|<sequence>|` and the content (the
+  lengths, so that no other parts give the same bytes), kept as CBOR. `SealedOperation` carries
+  the signature; `OperationSeal.seal` takes a proof and `open` gives one. `Membership.deviceOf`
+  (a member's or a removed one's), `Membership.keyHash`, `DocumentKey.hash`.
+* `SyncEngine`:
+  * it signs the operations of this device as they leave, once each (the last 1024 proofs of a
+    document kept in memory), its older ones too;
+  * an operation is checked once its membership is known; one not signed by the device of its
+    replica closes the connection; the proofs of the operations of the others it takes are kept
+    (`OpenDocument.saveProofs`) and given on with them, from memory or from the store; an
+    operation of another device without a proof is not given on;
+  * the snapshot from the owner only, and a device that is not the owner gives nothing of the
+    document to one without it;
+  * `KnownVersions` carries the versions of the device sending it, and only those are taken;
+  * a resource is received in a buffer growing as its bytes come, and kept only when its SHA-256
+    is the one of its `AddResource`.
+* `DocumentSharing`: the owner names the key of each epoch in the membership (a membership of
+  before gets it at its first change); `adoptKey` takes, when it is named, that key only.
+* `PROTOCOL_VERSION` back to 1 (the ALPN of iroh is `drawview/sync/1` again); `ProtocolFormatTest`
+  records format 1 again, now with the membership (it travels in the bytes the owner signs, and
+  was not in the format before).
+* Tests of members with an application of their own (`SyncEngineTest`: a device speaking with the
+  identity of a member, sending what it likes), each failing without its check (checked by
+  removing it): a member writing as another one; a reader writing as itself; an operation of a
+  member given on by another, taken; the operations of a member reaching the owner through
+  another one, after both started again (the proofs read from the store); a key of a member for
+  the new epoch, refused, the owner's taken; a document lost on the way to a device joining, not
+  given by a member nor taken from one, then received from the owner; a member saying that another
+  one has everything, the log of the owner not compacted until that one says so; a wrong file for
+  an image, not kept, the right one kept at the next connection. `SealedOperationTest`: the
+  signature of another device, document, replica, sequence or content does not check.
+* The cable of the tests cut silently now lets a pending read go when its end is closed, as a
+  connection closed by its own side does.
+* Compacting needs what each member says of itself, at its connections: the log keeps the
+  operations of a connection until the next one.
 
 ## Decisions
 

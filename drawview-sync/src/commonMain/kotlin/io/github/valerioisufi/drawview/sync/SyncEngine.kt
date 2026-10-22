@@ -9,8 +9,10 @@ import io.github.valerioisufi.drawview.model.change.ChangeOrigin
 import io.github.valerioisufi.drawview.model.change.DocumentSession
 import io.github.valerioisufi.drawview.model.change.DocumentSnapshot
 import io.github.valerioisufi.drawview.model.change.Operation
+import io.github.valerioisufi.drawview.model.change.OperationId
 import io.github.valerioisufi.drawview.model.change.TextData
 import io.github.valerioisufi.drawview.model.change.snapshot
+import io.github.valerioisufi.drawview.platform.Sha256
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.store.OpenDocument
 import io.github.valerioisufi.drawview.store.OpenDocuments
@@ -22,6 +24,7 @@ import io.github.valerioisufi.drawview.sync.protocol.MAX_FRAME_SIZE
 import io.github.valerioisufi.drawview.sync.protocol.Member
 import io.github.valerioisufi.drawview.sync.protocol.Membership
 import io.github.valerioisufi.drawview.sync.protocol.OpenFrame
+import io.github.valerioisufi.drawview.sync.protocol.OperationProof
 import io.github.valerioisufi.drawview.sync.protocol.OperationSeal
 import io.github.valerioisufi.drawview.sync.protocol.PROTOCOL_VERSION
 import io.github.valerioisufi.drawview.sync.protocol.Role
@@ -445,6 +448,35 @@ public class SyncEngine(
             // The ones this device makes meanwhile (e.g. merging them, see ChangeOrigin.MERGE) go to it too
             for (link in links) if (link !== receivingFrom || committed.origin != ChangeOrigin.REMOTE) link.offer(committed.operation)
         }
+
+        /**
+         * The proofs of the last operations signed here or received (under [proofsLock]): the
+         * others are read from the store.
+         */
+        private val recentProofs = LinkedHashMap<OperationId, OperationProof>()
+        private val proofsLock = Mutex()
+
+        suspend fun remember(proofs: Map<OperationId, OperationProof>) = proofsLock.withLock {
+            recentProofs.putAll(proofs)
+            while (recentProofs.size > RECENT_PROOFS) recentProofs.remove(recentProofs.keys.first())
+        }
+
+        /** The proofs of the operations [ids] of the other devices (the ones without one left out). */
+        suspend fun proofsOf(ids: List<OperationId>): Map<OperationId, OperationProof> {
+            val found = proofsLock.withLock { ids.mapNotNull { id -> recentProofs[id]?.let { id to it } }.toMap() }
+            val missing = ids.filter { it !in found }
+            if (missing.isEmpty()) return found
+            return found + open.proofs(missing).mapNotNull { (id, bytes) -> OperationProof.decode(bytes)?.let { id to it } }
+        }
+
+        /** The proof of [operation], made by this device: signed now (once). */
+        suspend fun ownProof(operation: Operation): OperationProof {
+            proofsLock.withLock { recentProofs[operation.id] }?.let { return it }
+            val id = operation.id
+            val proof = OperationProof.sign(identity, open.document.id, id.replica, id.sequence, SyncCodec.encodeOperation(operation))
+            remember(mapOf(id to proof))
+            return proof
+        }
     }
 
     /** The document [documentId] being synchronized, or `null` when this device does not have it. */
@@ -529,7 +561,7 @@ public class SyncEngine(
         val pending = mutableListOf<Operation>()
 
         /** Operations of devices not in the membership known here (on the receiving coroutine): applied once it comes. */
-        val deferred = mutableListOf<Operation>()
+        val deferred = mutableListOf<Received>()
 
         // On the receiving coroutine:
         val requested = mutableSetOf<String>()
@@ -559,9 +591,23 @@ public class SyncEngine(
 
     private class OutgoingOperations(val operations: List<Operation>) : Outgoing
 
-    /** A download of the file of a resource: [received] of its bytes (it goes on over another connection). */
-    private class Download(val bytes: ByteArray) {
+    /** An operation received with the proof of its author (checked once the membership names it). */
+    private class Received(val operation: Operation, val proof: OperationProof)
+
+    /**
+     * A download of the file of a resource of [total] bytes: the [received] ones in [bytes], which
+     * grow as they come (it goes on over another connection).
+     */
+    private class Download(val total: Long) {
+        var bytes = ByteArray(0)
         var received = 0
+
+        /** Adds [part], the next bytes. */
+        fun add(part: ByteArray) {
+            if (received + part.size > bytes.size) bytes = bytes.copyOf(minOf(total, maxOf(received + part.size.toLong(), bytes.size * 2L)).toInt())
+            part.copyInto(bytes, received)
+            received += part.size
+        }
     }
 
     /** An item beside the document being received: [received] of its [size] bytes, at [version]. */
@@ -657,8 +703,9 @@ public class SyncEngine(
                             val id = operation.id
                             (id.sequence > (link.sent[id.replica] ?: 0L)).also { if (it) link.sent[id.replica] = id.sequence }
                         }
-                        if (missing.isEmpty()) continue
-                        Operations(missing.map { link.seal.seal(it.id.replica, it.id.sequence, SyncCodec.encodeOperation(it)) })
+                        val sealed = seal(link, missing)
+                        if (sealed.isEmpty()) continue
+                        Operations(sealed)
                     }
                     is OutgoingMessage -> item.message
                 }
@@ -1029,6 +1076,8 @@ public class SyncEngine(
 
     private suspend fun onSnapshot(link: Link, snapshot: DocumentSnapshot, base: Map<String, Long>) {
         if (link.sync != null || snapshot.id != link.documentId) return
+        // From its owner only: a member could give anything
+        if (link.peerHello?.device == null || link.peerHello?.device != sharing.stateOf(link.documentId)?.owner) return
         val sync = adopt(snapshot, base)
         link.sync = sync
         // Kept with the document now that it is here
@@ -1041,6 +1090,8 @@ public class SyncEngine(
      * it has not applied; then the operations as they are made.
      */
     private suspend fun catchUp(link: Link, sync: DocumentSync, hello: Hello) {
+        // A device without the document gets it from its owner (see onSnapshot)
+        if (!hello.hasDocument && sharing.stateOf(link.documentId)?.owner != device) return
         // From now on the operations applied here wait for the link
         sync.open.edit { sync.links.add(link) }
         val known = if (hello.hasDocument) {
@@ -1058,34 +1109,66 @@ public class SyncEngine(
             link.waiting.clear()
         }
         requestResources(link, sync)
-        // What the members have, for the compaction of the log
-        val state = sharing.stateOf(link.documentId)
-        link.send(KnownVersions(state?.versions.orEmpty() + (device to sync.open.edit { it.versionVector })))
+        // What this device has, for the compaction of the log (each device says its own)
+        link.send(KnownVersions(mapOf(device to sync.open.edit { it.versionVector })))
         // Then the items beside the document
         attachments?.let { link.send(AttachmentVersions(it.versions(link.documentId))) }
     }
 
+    /**
+     * [operations] sealed for [link] with the proofs of their authors: this device signs its own,
+     * the ones of the others go as they came (an operation of another device without one is left
+     * to its author).
+     */
+    private suspend fun seal(link: Link, operations: List<Operation>): List<SealedOperation> {
+        val sync = link.sync ?: return emptyList()
+        val mine = replica()
+        val proofs = sync.proofsOf(operations.filter { it.id.replica != mine }.map { it.id })
+        return operations.mapNotNull { operation ->
+            val id = operation.id
+            val proof = if (id.replica == mine) sync.ownProof(operation) else proofs[id]
+            proof?.let { link.seal.seal(id.replica, id.sequence, it) }
+        }
+    }
+
     /** The operation of [sealed], opened with the key of [link]: the same as its identity in clear. */
-    private fun open(link: Link, sealed: SealedOperation): Operation {
-        val operation = SyncCodec.decodeOperation(link.seal.open(sealed))
+    private fun open(link: Link, sealed: SealedOperation): Received {
+        val proof = link.seal.open(sealed)
+        val operation = SyncCodec.decodeOperation(proof.content)
         if (operation.id.replica != sealed.replica || operation.id.sequence != sealed.sequence) {
             throw SyncException("An operation sealed under another identity")
         }
-        return operation
+        return Received(operation, proof)
     }
 
-    private suspend fun onOperations(link: Link, operations: List<Operation>) {
+    private suspend fun onOperations(link: Link, operations: List<Received>) {
         val sync = link.sync ?: return
         // The operations of the devices that may change the document only
         val membership = sharing.membershipOf(link.documentId) ?: return
         // Of a device this one does not know yet (admitted meanwhile): kept until the membership comes
-        val (known, unknown) = operations.partition { membership.knows(it.id.replica) }
+        val (known, unknown) = operations.partition { membership.knows(it.operation.id.replica) }
         if (unknown.isNotEmpty()) {
             link.deferred.addAll(unknown)
             link.send(MembershipQuery(membership.version))
         }
-        val accepted = known.filter { membership.mayWrite(it.id.replica, it.id.sequence) }
-        if (accepted.isEmpty()) return
+        // Signed by the device of its replica, wherever it comes from: the connection carrying one
+        // that is not is closed
+        for (received in known) {
+            val id = received.operation.id
+            val author = membership.deviceOf(id.replica)
+            if (author == null || !received.proof.isBy(author, link.documentId, id.replica, id.sequence)) {
+                throw SyncException("An operation not signed by the device of ${id.replica}")
+            }
+        }
+        val allowed = known.filter { membership.mayWrite(it.operation.id.replica, it.operation.id.sequence) }
+        if (allowed.isEmpty()) return
+        // Kept to give them on, as they came
+        val proofs = allowed.filter { it.operation.id.replica != replica() }.associate { it.operation.id to it.proof }
+        if (proofs.isNotEmpty()) {
+            sync.remember(proofs)
+            sync.open.saveProofs(proofs.mapValues { it.value.encode() })
+        }
+        val accepted = allowed.map { it.operation }
         // Prepared first, at the same time (e.g. the strokes modeled again: slow), so that the
         // document waits less
         coroutineScope {
@@ -1126,9 +1209,14 @@ public class SyncEngine(
         }
     }
 
-    /** What the members have: the operations all of them have leave the log. */
+    /**
+     * What the other device has: the operations all the members have leave the log. What it says of
+     * the others is not taken: they say it themselves (a member could make the others drop what
+     * one of them misses).
+     */
     private suspend fun onKnownVersions(link: Link, versions: Map<String, Map<String, Long>>) {
-        sharing.recordVersions(link.documentId, versions)
+        val sender = link.peerHello?.device ?: return
+        versions[sender]?.let { sharing.recordVersions(link.documentId, mapOf(sender to it)) }
         val sync = link.sync ?: return
         compact(link.documentId, sync)
     }
@@ -1197,18 +1285,22 @@ public class SyncEngine(
         val key = link.documentId to chunk.id
         val complete = downloadsMutex.withLock {
             var download = downloads[key]
-            if (download == null || download.bytes.size.toLong() != chunk.total || chunk.offset == 0L && download.received != 0) {
-                download = Download(ByteArray(chunk.total.toInt())).also { downloads[key] = it }
+            if (download == null || download.total != chunk.total || chunk.offset == 0L && download.received != 0) {
+                // The memory as the bytes come, not as many as announced
+                download = Download(chunk.total).also { downloads[key] = it }
             }
             // The next bytes only
-            if (chunk.offset != download.received.toLong() || chunk.offset + chunk.bytes.size > download.bytes.size) return
-            chunk.bytes.copyInto(download.bytes, chunk.offset.toInt())
-            download.received += chunk.bytes.size
-            if (download.received < download.bytes.size) return
+            if (chunk.offset != download.received.toLong() || chunk.offset + chunk.bytes.size > download.total) return
+            download.add(chunk.bytes)
+            if (download.received < download.total) return
             downloads.remove(key)
             download.bytes
         }
         link.requested.remove(chunk.id)
+        // The file the operation adding the resource names (signed by its author): another one is
+        // not kept, and asked for again at the next connection
+        val hash = sync.open.edit { it.document.findResource(chunk.id)?.hash }
+        if (!hash.isNullOrEmpty() && Sha256.of(complete) != hash) return
         val path = files.write(complete, chunk.extension) ?: return
         sync.open.resourceReceived(chunk.id, path)
     }
@@ -1366,6 +1458,9 @@ public class SyncEngine(
         const val MAX_RESOURCE_SIZE = 512L * 1024 * 1024
         const val MAX_ATTACHMENT_SIZE = 4L * 1024 * 1024 * 1024
         const val ATTACHMENT_PARTS_AHEAD = 4
+
+        /** The proofs of the last operations kept in memory by document (see [DocumentSync.proofsOf]). */
+        const val RECENT_PROOFS = 1024
 
         /**
          * The largest frame of a device not authorized yet (see [Link.authorized]): its hello, a

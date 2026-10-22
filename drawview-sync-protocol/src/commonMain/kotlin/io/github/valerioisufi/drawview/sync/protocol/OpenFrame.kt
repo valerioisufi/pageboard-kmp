@@ -6,10 +6,11 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.cbor.Cbor
 
 /**
- * The version of the protocol of the synchronization: 2 since the devices give each other their
- * addresses ([DeviceAddress]).
+ * The version of the protocol of the synchronization. Still 1: its format is recorded again while
+ * the applications are on the devices of their author only (the addresses of the devices,
+ * [DeviceAddress], and the signed operations, [OperationProof], came so).
  */
-public const val PROTOCOL_VERSION: Int = 2
+public const val PROTOCOL_VERSION: Int = 1
 
 /**
  * The first frame of a connection, in clear: the version of the protocol and the document the

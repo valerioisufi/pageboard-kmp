@@ -94,9 +94,10 @@ internal class DocumentSharing(private val shared: SharedDocuments, val identity
     /** Shares [documentId] (this device becomes its owner), unless it is shared already. */
     suspend fun share(documentId: String, replica: String, name: String): SharingState = update(documentId) { state ->
         if (state?.members != null) return@update state
-        val membership = Membership(documentId, owner = device, members = listOf(Member(device, replica, name, Role.OWNER)))
+        val key = DocumentKey.generate()
+        val membership = Membership(documentId, owner = device, members = listOf(Member(device, replica, name, Role.OWNER)), keyHash = key.hash)
         SharingState(
-            keys = listOf(EpochKey(1, DocumentKey.generate().encode())),
+            keys = listOf(EpochKey(1, key.encode())),
             owner = device,
             membership = membership.signedBy(identity)
         )
@@ -160,12 +161,13 @@ internal class DocumentSharing(private val shared: SharedDocuments, val identity
         var changed = false
         val state = update(documentId) { state ->
             val membership = state?.members?.takeIf { state.owner == device } ?: return@update state
-            val next = transform(membership)?.copy(version = membership.version + 1) ?: return@update state
+            val changedMembership = transform(membership)?.copy(version = membership.version + 1) ?: return@update state
+            val keys = if (changedMembership.epoch > state.epoch && newKey != null) state.keys + EpochKey(changedMembership.epoch, newKey) else state.keys
+            // The key of its epoch named (a membership of before gets it at its first change)
+            val key = keys.lastOrNull { it.epoch == changedMembership.epoch }?.key?.let(DocumentKey::decode)
+            val next = changedMembership.copy(keyHash = key?.hash ?: changedMembership.keyHash)
             changed = true
-            state.copy(
-                membership = next.signedBy(identity),
-                keys = if (next.epoch > state.epoch && newKey != null) state.keys + EpochKey(next.epoch, newKey) else state.keys
-            )
+            state.copy(membership = next.signedBy(identity), keys = keys)
         }
         return state.takeIf { changed }
     }
@@ -186,12 +188,18 @@ internal class DocumentSharing(private val shared: SharedDocuments, val identity
         return adopted
     }
 
-    /** Keeps the key of [epoch] (given by a member: up to the epoch of the membership). */
+    /**
+     * Keeps the key of [epoch] (given by a member: up to the epoch of the membership); when the
+     * membership names its key ([Membership.keyHash]), that one only.
+     */
     suspend fun adoptKey(documentId: String, epoch: Int, key: String): Boolean {
         var adopted = false
         update(documentId) { state ->
-            if (state == null || DocumentKey.decode(key) == null || state.keys.any { it.epoch == epoch }) return@update state
-            if (epoch > (state.members?.epoch ?: 0)) return@update state
+            val decoded = DocumentKey.decode(key)
+            if (state == null || decoded == null || state.keys.any { it.epoch == epoch }) return@update state
+            val members = state.members
+            if (epoch > (members?.epoch ?: 0)) return@update state
+            if (members != null && members.keyHash.isNotEmpty() && (epoch != members.epoch || decoded.hash != members.keyHash)) return@update state
             adopted = true
             state.copy(keys = state.keys + EpochKey(epoch, key))
         }

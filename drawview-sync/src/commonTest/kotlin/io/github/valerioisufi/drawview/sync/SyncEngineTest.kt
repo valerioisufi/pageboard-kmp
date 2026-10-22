@@ -12,6 +12,7 @@ import io.github.valerioisufi.drawview.model.DrawResource
 import io.github.valerioisufi.drawview.model.DrawStroke
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.SelectionActivity
+import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.StrokeMesh
 import io.github.valerioisufi.drawview.model.StrokePoint
 import io.github.valerioisufi.drawview.model.StrokeTool
@@ -28,12 +29,15 @@ import io.github.valerioisufi.drawview.model.change.OperationId
 import io.github.valerioisufi.drawview.model.change.PlaceElements
 import io.github.valerioisufi.drawview.model.change.RemoveElements
 import io.github.valerioisufi.drawview.model.change.RemovePage
+import io.github.valerioisufi.drawview.model.change.RenameDocument
+import io.github.valerioisufi.drawview.model.change.ResourceData
 import io.github.valerioisufi.drawview.model.change.StrokePlacement
 import io.github.valerioisufi.drawview.model.change.TextData
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.model.change.snapshot
 import io.github.valerioisufi.drawview.model.change.toData
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
+import io.github.valerioisufi.drawview.platform.Sha256
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
@@ -44,9 +48,11 @@ import io.github.valerioisufi.drawview.sync.protocol.InMemoryNetwork
 import io.github.valerioisufi.drawview.sync.protocol.Invitation
 import io.github.valerioisufi.drawview.sync.protocol.MAX_FRAME_SIZE
 import io.github.valerioisufi.drawview.sync.protocol.OpenFrame
+import io.github.valerioisufi.drawview.sync.protocol.OperationProof
 import io.github.valerioisufi.drawview.sync.protocol.OperationSeal
 import io.github.valerioisufi.drawview.sync.protocol.PROTOCOL_VERSION
 import io.github.valerioisufi.drawview.sync.protocol.Role
+import io.github.valerioisufi.drawview.sync.protocol.SealedOperation
 import io.github.valerioisufi.drawview.sync.protocol.SecureChannel
 import io.github.valerioisufi.drawview.sync.protocol.SyncChannel
 import io.github.valerioisufi.drawview.sync.protocol.SyncException
@@ -56,6 +62,7 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -66,10 +73,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
@@ -135,7 +144,7 @@ class SyncEngineTest {
         val messages = listOf(
             Hello("ada", "Ada", mapOf("ada" to 3L), hasDocument = true, device = "key", proof = byteArrayOf(1, 2), membershipVersion = 3, epoch = 2),
             Snapshot(document.snapshot(), mapOf("bob" to 4L)),
-            Operations(listOf(OperationSeal(DocumentKey.generate()).seal("ada", 1, SyncCodec.encodeOperation(operation)))),
+            Operations(listOf(OperationSeal(DocumentKey.generate()).seal("ada", 1, OperationProof.sign(DeviceIdentity.generate(), "doc", "ada", 1, SyncCodec.encodeOperation(operation))))),
             ResourceRequest(listOf(ResourceAsk("photo", 1024))),
             AttachmentRequest(listOf(AttachmentAsk("audio", "a1", 5)))
         )
@@ -228,6 +237,22 @@ class SyncEngineTest {
         suspend fun versionVector(documentId: String): Map<String, Long> {
             val open = assertNotNull(documents.open(documentId))
             return open.edit { it.versionVector }.also { documents.close(open) }
+        }
+
+        suspend fun title(documentId: String): String {
+            val open = assertNotNull(documents.open(documentId))
+            return open.edit { it.document.title }.also { documents.close(open) }
+        }
+
+        suspend fun compactedOperations(documentId: String): Map<String, Long> {
+            val open = assertNotNull(documents.open(documentId))
+            return open.compactedOperations().also { documents.close(open) }
+        }
+
+        /** Where the file of the resource [resourceId] of [documentId] is here (empty: not received). */
+        suspend fun resourcePath(documentId: String, resourceId: String): String? {
+            val open = assertNotNull(documents.open(documentId))
+            return open.edit { it.document.findResource(resourceId)?.path }.also { documents.close(open) }
         }
     }
 
@@ -664,8 +689,11 @@ class SyncEngineTest {
         assertEquals("bob", cy.engine.presences.value.single().name)
     }
 
-    /** A connection that can be cut silently, like by a device gone out of the network ([framesLeft]: after so many frames). */
-    private class Cable(var framesLeft: Int = Int.MAX_VALUE) {
+    /**
+     * A connection that can be cut silently, like by a device gone out of the network
+     * ([framesLeft]: after so many frames; [cutAbove]: at the first frame larger than that).
+     */
+    private class Cable(var framesLeft: Int = Int.MAX_VALUE, val cutAbove: Int = Int.MAX_VALUE) {
         val cut = MutableStateFlow(false)
     }
 
@@ -674,13 +702,23 @@ class SyncEngineTest {
         private val closed = CompletableDeferred<Unit>()
 
         override suspend fun send(frame: ByteArray) {
-            if (cable.framesLeft-- <= 0) cable.cut.value = true
+            if (cable.framesLeft-- <= 0 || frame.size > cable.cutAbove) cable.cut.value = true
             if (!cable.cut.value) inner.send(frame)
         }
 
         override suspend fun receive(maxSize: Int): ByteArray? {
             if (!cable.cut.value) {
-                val frame = inner.receive(maxSize)
+                // Closed by this side meanwhile: nothing more, cut or not
+                val frame = coroutineScope {
+                    val next = async { inner.receive(maxSize) }
+                    select {
+                        next.onAwait { it }
+                        closed.onAwait {
+                            next.cancel()
+                            null
+                        }
+                    }
+                }
                 if (!cable.cut.value) return frame
             }
             closed.await()
@@ -855,6 +893,234 @@ class SyncEngineTest {
         bob.join(invitation, "ada")
         advanceTimeBy(500)
         assertSame(document.id, listOf(ada, bob))
+    }
+
+    // --- Members not trusted ---
+
+    /**
+     * A member with an application of its own: [member]'s identity, sending [target] what it likes
+     * about [documentId] (with [key], the key of the document by default). The channel, once
+     * [target] took it as [member] (what [target] sends on it is not read).
+     */
+    private suspend fun TestScope.impostor(member: Device, target: Device, documentId: String, key: DocumentKey? = null): SecureChannel {
+        val documentKey = key ?: member.engine.connectionKeys().first { it.first == documentId }.second
+        val (mine, theirs) = InMemoryChannel.pair()
+        target.engine.accept(theirs)
+        mine.send(OpenFrame(PROTOCOL_VERSION, documentKey.tag).encode())
+        val channel = SecureChannel.of(mine, documentKey)
+        runCurrent()
+        val challenge = assertIs<Challenge>(SyncCodec.decode(assertNotNull(channel.receive())))
+        val replica = member.store.replicaId()
+        val device = member.identity.publicKey
+        val membership = assertNotNull(member.engine.memberships.value[documentId])
+        val proof = member.identity.sign(helloProof(challenge.nonce, documentKey.tag, replica, device))
+        channel.send(
+            SyncCodec.encode(
+                Hello(replica, member.name, emptyMap(), hasDocument = true, device = device, proof = proof, membershipVersion = membership.version, epoch = membership.epoch)
+            )
+        )
+        runCurrent()
+        return channel
+    }
+
+    /** The operation [sequence] of [replica] making [change] in [documentId], sealed with [key] and signed by [signer]. */
+    private fun forged(documentId: String, key: DocumentKey, replica: String, sequence: Long, change: DocumentChange, signer: DeviceIdentity): SealedOperation {
+        val operation = Operation(OperationId(replica, sequence), Stamp(1L shl 50, sequence.toInt(), replica), change)
+        return OperationSeal(key).seal(replica, sequence, OperationProof.sign(signer, documentId, replica, sequence, SyncCodec.encodeOperation(operation)))
+    }
+
+    /** The messages [channel] received so far. */
+    private suspend fun TestScope.messages(channel: SyncChannel): List<SyncMessage> = buildList {
+        while (true) {
+            val next = backgroundScope.async { channel.receive() }
+            runCurrent()
+            if (!next.isCompleted) {
+                next.cancel()
+                break
+            }
+            add(SyncCodec.decode(next.await() ?: break) ?: continue)
+        }
+    }
+
+    @Test
+    fun anOperationIsTakenFromTheDeviceOfItsReplicaOnly() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Physics")
+        val invitation = ada.share(document.id, "Physics")
+        bob.join(invitation, "ada")
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+        val key = bob.engine.connectionKeys().first { it.first == document.id }.second
+        val cyReplica = cy.store.replicaId()
+
+        // Bob writing as Cy: refused, and Bob is not worked with anymore
+        val forgery = impostor(bob, ada, document.id)
+        forgery.send(SyncCodec.encode(Operations(listOf(forged(document.id, key, cyReplica, 1, RenameDocument("Forged"), bob.identity)))))
+        assertTrue(isClosed(forgery))
+        assertEquals("Physics", ada.title(document.id))
+
+        // Bob made reader, writing as itself: signed, refused
+        ada.engine.setRole(document.id, bob.engine.device, Role.READER)
+        advanceUntilIdle()
+        val reader = impostor(bob, ada, document.id)
+        reader.send(SyncCodec.encode(Operations(listOf(forged(document.id, key, bob.store.replicaId(), 1, RenameDocument("Read only"), bob.identity)))))
+        advanceUntilIdle()
+        assertEquals("Physics", ada.title(document.id))
+
+        // An operation of Cy, signed by Cy, given on by Bob: taken
+        reader.send(SyncCodec.encode(Operations(listOf(forged(document.id, key, cyReplica, 1, RenameDocument("By Cy"), cy.identity)))))
+        advanceUntilIdle()
+        assertEquals("By Cy", ada.title(document.id))
+    }
+
+    @Test
+    fun theOperationsOfAMemberReachTheOthersThroughAnotherOne() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Physics")
+        val invitation = ada.share(document.id, "Physics")
+        bob.join(invitation, "ada")
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+        listOf(ada, bob, cy).forEach { it.disconnect() }
+        advanceUntilIdle()
+
+        // Cy meets Bob only, then goes; Bob meets Ada later, with the proofs it kept
+        cy.join(invitation, "bob")
+        cy.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        advanceUntilIdle()
+        assertSame(document.id, listOf(bob, cy))
+        listOf(bob, cy).forEach { it.disconnect() }
+        advanceUntilIdle()
+        bob.join(invitation, "ada")
+        advanceUntilIdle()
+        assertSame(document.id, listOf(ada, bob, cy))
+    }
+
+    @Test
+    fun aKeyIsTakenAsTheOwnerChoseIt() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, cy, dan) = listOf("ada", "bob", "cy", "dan").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Physics")
+        val invitation = ada.share(document.id, "Physics")
+        listOf(bob, cy, dan).forEach { it.join(invitation, "ada") }
+        advanceUntilIdle()
+        val oldKey = cy.engine.connectionKeys().first { it.first == document.id }.second
+        cy.disconnect()
+        advanceUntilIdle()
+        // Dan removed: a new key, which Cy, away, does not have
+        ada.engine.removeMember(document.id, dan.engine.device)
+        advanceUntilIdle()
+        val state = assertNotNull(ada.shared.stateOf(document.id))
+        val newKey = state.keys.single { it.epoch == 2 }.key
+
+        // Bob, with the key Cy has, gives it the new membership, then a key of its own: not taken
+        val channel = impostor(bob, cy, document.id, oldKey)
+        channel.send(SyncCodec.encode(MembershipMessage(assertNotNull(state.membership))))
+        channel.send(SyncCodec.encode(KeyUpdate(2, DocumentKey.generate().encode())))
+        advanceUntilIdle()
+        assertEquals(2, cy.engine.memberships.value[document.id]?.epoch)
+        assertNull(cy.shared.stateOf(document.id)?.keys?.firstOrNull { it.epoch == 2 })
+        // The one of the owner: taken
+        channel.send(SyncCodec.encode(KeyUpdate(2, newKey)))
+        advanceUntilIdle()
+        assertEquals(newKey, cy.shared.stateOf(document.id)?.keys?.firstOrNull { it.epoch == 2 }?.key)
+    }
+
+    @Test
+    fun aDocumentComesFromItsOwnerOnly() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, eve) = listOf("ada", "bob", "eve").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Physics")
+        ada.change(document.id) { AddElements.of(it.document.pages[0], List(100) { i -> stroke(i * 6f, 10f) }) }
+        val invitation = ada.share(document.id, "Physics")
+        bob.join(invitation, "ada")
+        advanceUntilIdle()
+
+        // Eve admitted, the document lost on the way (the frames as large as it are cut)
+        connect(ada, eve, invitation, Cable(cutAbove = 8_000))
+        advanceUntilIdle()
+        assertNotNull(eve.shared.stateOf(document.id)?.key)
+        assertTrue(eve.store.documents.first().isEmpty())
+
+        // A member does not give it, nor is it taken from one
+        eve.join(invitation, "bob")
+        advanceUntilIdle()
+        assertTrue(eve.store.documents.first().isEmpty())
+        eve.disconnect()
+        advanceUntilIdle()
+        impostor(bob, eve, document.id).send(SyncCodec.encode(Snapshot(ada.snapshot(document.id))))
+        advanceUntilIdle()
+        assertTrue(eve.store.documents.first().isEmpty())
+
+        // From its owner
+        eve.disconnect()
+        advanceUntilIdle()
+        eve.join(invitation, "ada")
+        advanceUntilIdle()
+        assertSame(document.id, listOf(ada, eve))
+    }
+
+    @Test
+    fun whatAMemberHasIsSaidByThatMember() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Physics")
+        val invitation = ada.share(document.id, "Physics")
+        bob.join(invitation, "ada")
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+        cy.disconnect()
+        ada.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        advanceUntilIdle()
+        val vector = ada.versionVector(document.id)
+        val adaReplica = ada.store.replicaId()
+
+        // Bob says Cy has everything: Ada keeps what Cy misses
+        val channel = impostor(bob, ada, document.id)
+        channel.send(SyncCodec.encode(KnownVersions(mapOf(bob.engine.device to vector, cy.engine.device to vector))))
+        advanceUntilIdle()
+        assertTrue((ada.compactedOperations(document.id)[adaReplica] ?: 0L) < vector.getValue(adaReplica))
+        // Cy says so itself (when it connects, once it has them): the log is compacted
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+        cy.disconnect()
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+        assertEquals(vector.getValue(adaReplica), ada.compactedOperations(document.id)[adaReplica])
+    }
+
+    @Test
+    fun aFileIsTheOneItsOperationNames() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob) = listOf("ada", "bob").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Physics")
+        val invitation = ada.share(document.id, "Physics")
+        bob.join(invitation, "ada")
+        advanceUntilIdle()
+        val key = bob.engine.connectionKeys().first { it.first == document.id }.second
+        val bytes = Random(3).nextBytes(10_000)
+        val bobReplica = bob.store.replicaId()
+        val sequence = (ada.versionVector(document.id)[bobReplica] ?: 0L) + 1
+        val image = AddResource(ResourceData("photo", DrawResource.ResourceType.IMAGE, Sha256.of(bytes)))
+
+        // Bob adds an image, then gives another file for it: not kept
+        val channel = impostor(bob, ada, document.id)
+        channel.send(SyncCodec.encode(Operations(listOf(forged(document.id, key, bobReplica, sequence, image, bob.identity)))))
+        advanceUntilIdle()
+        assertTrue(messages(channel).any { it is ResourceRequest })
+        channel.send(SyncCodec.encode(ResourceChunk("photo", "jpg", 0, bytes.size.toLong(), Random(4).nextBytes(bytes.size))))
+        advanceUntilIdle()
+        assertEquals("", ada.resourcePath(document.id, "photo"))
+
+        // Asked again at the next connection: the right one is kept
+        val again = impostor(bob, ada, document.id)
+        advanceUntilIdle()
+        assertTrue(messages(again).any { it is ResourceRequest })
+        again.send(SyncCodec.encode(ResourceChunk("photo", "jpg", 0, bytes.size.toLong(), bytes)))
+        advanceUntilIdle()
+        assertContentEquals(bytes, ada.files.files[assertNotNull(ada.resourcePath(document.id, "photo"))])
     }
 
     // --- Members ---
