@@ -394,9 +394,11 @@ tests of the sync modules on the iOS simulator.
     ahead, given on by another member, refused.
 * `devicesChangingADocumentThroughEachOtherConverge` compares the document shown and the
   operations applied, not what was removed (`assertSameShown`): the check, a step more before the
-  operations are applied, made the owner drop its hidden content for good before the others, and
-  `SyncEngine.compact` drops it only when the base of the log moves on (see Left for later). Before,
-  the order of the steps of the test happened to make them drop the same.
+  operations are applied, made the owner drop its hidden content for good before the others. A
+  device knows what another one has from its last connection only (`KnownVersions` is sent once,
+  when a connection starts), so the ones that did not connect again after every member had
+  everything keep it (see Left for later). Before, the order of the steps of the test happened to
+  make them drop the same.
 * Left: the check on a copy of the database of the user, waiting for the copy.
 
 ## Decisions
@@ -479,10 +481,11 @@ tests of the sync modules on the iOS simulator.
 * A device whose clock is off by more than an hour stops syncing that document silently: telling
   the user ("the date of this device, or of that one, is wrong") needs the reason of the closing
   up to the interface.
-* `SyncEngine.compact` drops the hidden content for good (`purge`) only when the base of the log
-  moves on: a device that compacted up to a base before every member had everything never drops
-  what was removed until then. The devices keep different hidden content (more, never less), the
-  document shown is the same. A plan of its own (it deletes for good).
+* A device knows what the others have from its last connection to each one (`KnownVersions` is
+  sent once, when a connection starts): the members staying connected compact their logs and drop
+  their hidden content for good only when they connect again. The devices keep different hidden
+  content meanwhile (more, never less), the document shown is the same. A plan of its own (it
+  deletes for good).
 * The lecture records have stamps of their own (the `Stamp` of `drawview-lecture`), not bounded
   either: with their signature.
 * The stacking order (`docs/z-order.md`, proposed): its new keys will not be stamps. Then
