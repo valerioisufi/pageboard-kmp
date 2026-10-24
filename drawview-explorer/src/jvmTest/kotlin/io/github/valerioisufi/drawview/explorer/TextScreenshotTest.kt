@@ -65,6 +65,22 @@ class TextScreenshotTest {
         save(viewModels)
     }
 
+    /**
+     * Code drawn by the page (docs/code-blocks.md): in the line on its background, a block in the
+     * colors of its language with a long line wrapped under its indentation, a tab and an empty
+     * line, a block without a language at the start of a centered text.
+     */
+    @Test
+    fun textSavedCode() = capture("text-saved-code", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        val kotlin = "Call `listOf()` to make a list:\n```kotlin\n// The squares of the even numbers\nfun squares(n: Int): List<Int> {\n" +
+            "\tval evens = (1..n).filter { it % 2 == 0 }\n\n\treturn evens.map { it * it } // each one times itself, a comment long enough to wrap\n}\n```\nand **after** it."
+        write(viewModels, 20f, 20f, kotlin, drawnWidthMm = 120f)
+        save(viewModels)
+        write(viewModels, 20f, 125f, "Centered\n```\nno language: one color\n```", TextAlignment.CENTER, drawnWidthMm = 90f)
+        save(viewModels)
+    }
+
     /** A text selected: the frame of the selection. */
     @Test
     fun textSelected() = WINDOWS.forEach { window ->

@@ -205,4 +205,33 @@ class MarkdownTextUtilTest {
         assertEquals(15f, style.fontSize.value, 0.01f)
         assertEquals((300f * 0.999f - 30f * 0.5f) / 2f, style.letterSpacing.value, 0.01f)
     }
+
+    @Test
+    fun canvasTextTellsWhereTheCodeInTheLineIs() {
+        val canvas = MarkdownTextUtil.toCanvasText<Unit>(
+            text = "Run `make`\n# The `main` file",
+            baseColor = Color.Black,
+            fontSizePx = 20f,
+            fontAscentPx = 18f
+        ) { _, _ -> null }
+        assertEquals("Run make\nThe main file", canvas.text.text)
+        val (make, main) = canvas.inlineCode
+        assertEquals("make", canvas.text.text.substring(make.start, make.end))
+        assertEquals(20f, make.fontSizePx)
+        assertEquals("main", canvas.text.text.substring(main.start, main.end))
+        assertEquals(28f, main.fontSizePx, 0.01f, "the size of its heading")
+    }
+
+    @Test
+    fun withoutALayoutABlockOfCodeIsCodeInTheLine() {
+        val canvas = MarkdownTextUtil.toCanvasText<Unit>(
+            text = "a\n```kotlin\nval x = 1\n```\nb",
+            baseColor = Color.Black,
+            fontSizePx = 20f,
+            fontAscentPx = 18f
+        ) { _, _ -> null }
+        assertEquals("a\nval x = 1\nb", canvas.text.text, "its fences hidden")
+        assertTrue(canvas.codeBlocks.isEmpty())
+        assertTrue(canvas.text.spanStyles.any { it.item.fontFamily == FontFamily.Monospace && canvas.text.text.substring(it.start, it.end) == "val x = 1" })
+    }
 }

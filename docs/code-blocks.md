@@ -178,7 +178,7 @@ Variations).
 |---|---|---|
 | — | Before phase 1, on its own branch: the parsing of `RichTextParser` made linear, its rules and tests unchanged ([linear-parsing.md](./linear-parsing.md)) | Done |
 | 1 | Notation and highlighting: `Kind.CODE_BLOCK` and `Span.language` (fences, language, content as it is, a fence not closed), `CodeHighlighter`, `BuiltInCodeHighlighter` and the grammars; tests of the rules (the notation not read inside, `#` and `-` in a block, the fences of CommonMark), of every grammar on real snippets, of the bounds (random input, unclosed strings and comments at every place, long code in linear time); ABI of `drawview-model` | Done |
-| 2 | On the page: `CodeTheme`, `CodeBlockLayout`, the blocks and the code in the line in `toCanvasText`, drawn, measured and laid out by the adapter (`TextBlockLayout.boxes`), `DrawViewEngines.code`; the PDF export of the backgrounds; the automatic width; the texts with fences counted on a copy of the database of the user (asked first, the original untouched), and measured again on load if any; tests (layout, wrapping, tabs, empty lines, alignment, PDF), screenshots; ABI of `drawview-canvas`, `drawview-ui` | To do |
+| 2 | On the page: `CodeTheme`, `CodeBlockLayout`, the blocks and the code in the line in `toCanvasText`, drawn, measured and laid out by the adapter (`TextBlockLayout.boxes`), `DrawViewEngines.code`; the PDF export of the backgrounds; the automatic width; the texts with fences counted on a copy of the database of the user (asked first, the original untouched), and measured again on load if any; tests (layout, wrapping, tabs, empty lines, alignment, PDF), screenshots; ABI of `drawview-canvas`, `drawview-ui` | Done |
 | 3 | In the editor: the block away from the caret drawn as on the page over its character, its source under the caret on its background and in its colors, the code in the line on its background, the caret on the tapped character of a block; tests of the offsets, screenshots | To do |
 | 4 | Writing code: `RichTextEditing` (Enter, Tab, ⇧Tab and the formats in a block, the fence closed, the block toggled, ⌘E on several lines), `EditorCommands.codeBlock` (⌘⌥C, Format menu, tooltip), the button of `TextFormatBar` and its icon, the strings in the 7 languages; tests of the editing and of the command | To do |
 | 5 | Lecture assistant: `MARKDOWN_RULE` and the reading of the handwriting with the fenced blocks; the fence stripped by `LectureAnalysis` checked with answers holding code; tests | To do |
@@ -215,6 +215,53 @@ schema stay as they are.
   time would still take minutes.
 * The ABI of `drawview-model` recorded again: `Kind.CODE_BLOCK`, `Span.language` (the
   constructor and `copy` of `Span` change), the highlighter added.
+
+### Phase 2 results
+
+* The spike: in a layout of its own, a paragraph per line of code without the line breaks keeps
+  the empty lines and indents the wrapped lines (`TextIndent.restLine`); with the line breaks in
+  the paragraphs, Compose adds empty lines. Long words break where they must.
+* `CodeBlockLayout` (`drawview-ui`, `ui.render`) lays a block out with the `TextMeasurer` of the
+  adapter: the code at 0.9 times the size of the text in the monospace of the notes, a paragraph
+  per line (the spaces of the fence taken off, a tab up to the next column of 4), its tokens in
+  the colors of `CodeTheme` (the palette of light paper for a dark text, of dark paper for a light
+  one; the background the color of the text at 7 %), the name of its language in a row above the
+  code, on the right. It tells its size and its natural width (its longest line with the padding).
+  The tokens of an engine are kept only sorted, apart and in the code; an engine that throws
+  leaves the code in one color.
+* `MarkdownTextUtil.toCanvasText` takes `layoutCodeBlock`: a block becomes a placeholder of its
+  line (`CanvasCodeBlock`), the code in the line is told with its size (`InlineCode`, the size of
+  its heading in a heading). Without it (the panel of the lecture assistant) a block is still code
+  in the line.
+* `ComposeTextTileAdapter` draws the backgrounds of the code in the line under the text (from
+  0.9 em above the baseline to 0.25 em below it, 0.15 em beyond the characters, taking no room),
+  then the text, then the blocks in their placeholders; it measures a block by its natural width
+  (a text of automatic width grows with it) and gives the export the words of the blocks (in the
+  monospace, in their colors, the name of the language too) and the backgrounds
+  (`TextBlockLayout.boxes`, `TextBox`). The style of the words for the export is computed once per
+  character: before, every character read every style of its text, quadratic.
+* `DrawViewEngines.code` gives the highlighter (`BuiltInCodeHighlighter` by default, in
+  `DrawViewEngines.None` too: it needs no engine); the editor, the thumbnails, the export dialogs
+  and the lecture assistant pass it to their adapters.
+* `PdfExporter` fills the backgrounds as rectangles with rounded corners (cubic curves) under the
+  words: the code stays text, searchable, in its colors.
+* Counted on a copy of the database of the user (the original untouched): 517 texts, 7 with blocks
+  of code (in C, five of them indented by two spaces under a list item, drawn at the top level as
+  decided), 53 with a backtick. So `DrawViewController` measures again the texts with fences when
+  it is given its text adapter: a height other than the stored one is corrected, one `UpdateTexts`
+  per page with `ChangeOrigin.MERGE` (out of the history; its documentation now says so), which
+  reaches the other devices as any change.
+* Tests: a block in the monospace and the colors of its language on its background, the text
+  under it, a block without a language known in one color, a long line wrapped under its
+  indentation, the tabs and the empty lines, a block at the start of a centered text, the natural
+  width in the measure, the code in the line on a background taking no room, an engine giving
+  wrong tokens or failing (`ComposeTextTileAdapterTest`); the code in the line and its size in a
+  heading, a block without a layout (`MarkdownTextUtilTest`); the code exported as text on its
+  background, as the editor draws it (`PdfExporterTest`); the texts with code measured again out
+  of the history (`TextEditingTest`); the screenshot `text-saved-code`.
+* The ABI of `drawview-canvas` (`DrawViewEngines.code`, `TextBlockLayout.boxes`, `TextBox`) and of
+  `drawview-ui` (`CodeBlockLayout`, `CanvasText.codeBlocks` and `inlineCode`, the parameter of
+  `toCanvasText` and of `ComposeTextTileAdapter`) recorded again.
 
 ## Decisions
 
@@ -265,6 +312,9 @@ Proposed with the plan and approved by the user on 2026-10-22, every one reverti
 
 ## Left for later
 
+* An opaque background, in the color of the paper: the lines of a lined page show through the
+  background of the code, which is translucent because the adapter of the texts does not know the
+  page it draws on.
 * Line numbers.
 * Blocks inside list items.
 * The language detected from the code; the names of the languages completed while typed.

@@ -183,7 +183,7 @@ internal fun ExportDialog(
     val notesFonts = rememberNotesFonts()
     // The engines of the editor or of the library showing the dialog
     val engines = LocalDrawViewEngines.current
-    val textAdapter = remember(fontFamilyResolver, notesFonts, engines) { ComposeTextTileAdapter(fontFamilyResolver, notesFonts, engines.formulas) }
+    val textAdapter = remember(fontFamilyResolver, notesFonts, engines) { ComposeTextTileAdapter(fontFamilyResolver, notesFonts, engines.formulas, engines.code) }
     var format by remember { mutableStateOf(ExportFormat.PDF) }
     var onlyPageOnScreen by remember { mutableStateOf(false) }
     var backgroundPattern by remember { mutableStateOf(true) }

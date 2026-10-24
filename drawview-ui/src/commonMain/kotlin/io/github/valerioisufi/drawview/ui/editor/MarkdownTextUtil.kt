@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.model.text.RichTextParser
 import io.github.valerioisufi.drawview.model.text.RichTextParser.Kind
 import io.github.valerioisufi.drawview.model.text.RichTextParser.Span
+import io.github.valerioisufi.drawview.ui.render.CodeBlockLayout
 import kotlin.math.max
 import kotlin.math.min
 
@@ -279,15 +280,29 @@ public object MarkdownTextUtil {
     )
 
     /**
-     * Text of a block laid out on the canvas: the delimiters are removed and each formula is
-     * replaced by placeholders.
+     * Text of a block laid out on the canvas: the delimiters are removed and each formula and
+     * block of code is replaced by placeholders.
      */
     public class CanvasText<T>(
         public val text: AnnotatedString,
-        /** Placeholder ranges: per formula, the body (above the baseline) and the descent, or the line of a block formula. */
+        /** Placeholder ranges: per formula, the body (above the baseline) and the descent, or the line of a block formula or of a block of code. */
         public val placeholders: List<PlaceholderSpec>,
-        public val formulas: List<InlineFormula<T>>
+        public val formulas: List<InlineFormula<T>>,
+        public val codeBlocks: List<CanvasCodeBlock> = emptyList(),
+        public val inlineCode: List<InlineCode> = emptyList()
     )
+
+    /**
+     * A block of code of a text drawn on the canvas: its [layout], drawn in the placeholder
+     * [placeholderIndex] of [CanvasText.placeholders], a line of its own.
+     */
+    public class CanvasCodeBlock(public val layout: CodeBlockLayout, public val placeholderIndex: Int)
+
+    /**
+     * Code in the line, from [start] to [end] of [CanvasText.text], in a font of [fontSizePx]:
+     * drawn on a background.
+     */
+    public class InlineCode(public val start: Int, public val end: Int, public val fontSizePx: Float)
 
     /**
      * A placeholder of [CanvasText] in pixels: the body of a formula (bottom on the baseline), the
@@ -311,6 +326,9 @@ public object MarkdownTextUtil {
      * @param fontAscentPx ascent of the base font, used to reserve the descent of the formulas.
      * @param lineWidthPx width of the lines, `null` when the text has none (block formulas then
      *   stay in the line).
+     * @param layoutCodeBlock lays out the code of a block (its lines between its fences, its
+     *   language, the spaces before its fence) on the width of the lines; `null`, or without
+     *   [lineWidthPx], a block is drawn as code in the line.
      */
     public fun <T> toCanvasText(
         text: String,
@@ -319,13 +337,19 @@ public object MarkdownTextUtil {
         fontAscentPx: Float,
         lineWidthPx: Float? = null,
         monospace: FontFamily = FontFamily.Monospace,
+        layoutCodeBlock: ((code: String, language: String, indent: Int) -> CodeBlockLayout)? = null,
         renderFormula: (latex: String, fontSizePx: Float) -> RenderedFormula<T>?
     ): CanvasText<T> {
         val spans = RichTextParser.parse(text)
         val hidden = BooleanArray(text.length)
         val formulaAt = HashMap<Int, Span>()
         val listItemAt = HashMap<Int, Span>()
+        val blockAt = HashMap<Int, Pair<Span, CodeBlockLayout>>()
         for (span in spans) {
+            if (span.kind == Kind.CODE_BLOCK && layoutCodeBlock != null && lineWidthPx != null) {
+                blockAt[span.start] = span to layoutCodeBlock(text.substring(span.contentStart, span.contentEnd), span.language, span.level)
+                continue
+            }
             when (span.kind) {
                 Kind.FORMULA -> {
                     formulaAt[span.start] = span
@@ -349,14 +373,32 @@ public object MarkdownTextUtil {
         val hasListItems = listItemAt.isNotEmpty()
         val placeholders = mutableListOf<PlaceholderSpec>()
         val formulas = mutableListOf<InlineFormula<T>>()
+        val codeBlocks = mutableListOf<CanvasCodeBlock>()
+        val inlineCode = mutableListOf<InlineCode>()
         val errors = mutableListOf<IntRange>()
         // Offset in the drawn text of every offset of the source
         val offsets = IntArray(text.length + 1)
         val annotated = buildAnnotatedString {
+            /** The block of code [block] as a placeholder of its line, its offsets on it. */
+            fun appendCodeBlock(block: Span, layout: CodeBlockLayout) {
+                val start = length
+                append(OBJECT_REPLACEMENT)
+                placeholders += PlaceholderSpec(start, start + 1, (lineWidthPx ?: 0f) * LINE_FILL, layout.heightPx, PlaceholderVerticalAlign.Center)
+                codeBlocks += CanvasCodeBlock(layout, placeholders.size - 1)
+                offsets[block.start] = start
+                for (k in block.start + 1..block.end) offsets[k] = length
+            }
+
             if (!hasListItems) {
                 var i = 0
                 while (i < text.length) {
                     offsets[i] = length
+                    val block = blockAt[i]
+                    if (block != null) {
+                        appendCodeBlock(block.first, block.second)
+                        i = block.first.end
+                        continue
+                    }
                     val formula = formulaAt[i]
                     if (formula == null) {
                         if (!hidden[i]) append(text[i])
@@ -371,6 +413,15 @@ public object MarkdownTextUtil {
                 // Line-by-line processing with ParagraphStyle hanging indent
                 var lineStart = 0
                 while (lineStart <= text.length) {
+                    val block = blockAt[lineStart]
+                    if (block != null) {
+                        val pStart = length
+                        appendCodeBlock(block.first, block.second)
+                        addStyle(ParagraphStyle(), pStart, length)
+                        if (block.first.end >= text.length) break
+                        lineStart = block.first.end + 1
+                        continue
+                    }
                     val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0) text.length else it }
                     val listItem = listItemAt[lineStart]
                     val pStart = length
@@ -427,16 +478,25 @@ public object MarkdownTextUtil {
             }
 
             addStyle(SpanStyle(color = baseColor), 0, length)
+            // The spans still open, the innermost last: the size of the code in a heading
+            val open = ArrayList<Span>()
             for (span in spans) {
-                if (span.kind == Kind.LIST_ITEM) continue
+                while (open.isNotEmpty() && open.last().end <= span.start) open.removeAt(open.lastIndex)
+                open += span
+                if (span.kind == Kind.LIST_ITEM || (span.kind == Kind.CODE_BLOCK && span.start in blockAt)) continue
                 val style = contentStyle(span, fontSizePx, monospace) ?: continue
                 val start = offsets[span.contentStart]
                 val end = offsets[span.contentEnd]
-                if (end > start) addStyle(style, start, end)
+                if (end <= start) continue
+                addStyle(style, start, end)
+                if (span.kind == Kind.CODE) {
+                    val heading = open.lastOrNull { it.kind == Kind.HEADING }
+                    inlineCode += InlineCode(start, end, fontSizePx * (heading?.let { headingScale(it.level) } ?: 1f))
+                }
             }
             for (error in errors) addStyle(SpanStyle(color = ERROR_COLOR, fontStyle = FontStyle.Italic), error.first, error.last + 1)
         }
-        return CanvasText(annotated, placeholders, formulas)
+        return CanvasText(annotated, placeholders, formulas, codeBlocks, inlineCode)
     }
 
     private fun <T> AnnotatedString.Builder.appendFormula(

@@ -13,6 +13,7 @@ import io.github.valerioisufi.drawview.canvas.platform.isJpeg
 import io.github.valerioisufi.drawview.canvas.platform.jpegOrientation
 import io.github.valerioisufi.drawview.canvas.render.ElementRenderers
 import io.github.valerioisufi.drawview.canvas.render.tile.TextBlockLayout
+import io.github.valerioisufi.drawview.canvas.render.tile.TextBox
 import io.github.valerioisufi.drawview.canvas.render.tile.TextFace
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.canvas.render.tile.TextWord
@@ -210,6 +211,8 @@ public class PdfExporter(
                 .postTranslate(text.x, text.y)
                 .postConcat(mmToPt)
             val raster = BlockRaster(text, toBlock)
+            // The backgrounds of the code, under its words
+            for (box in layout.boxes) writer.fillPath(roundedRect(box, toBlock), box.color)
             for (word in layout.words) {
                 val printable = word.printable
                 if (printable.isBlank()) continue
@@ -237,6 +240,42 @@ public class PdfExporter(
                 }
             }
             return true
+        }
+
+        /** The rectangle of [box] with its rounded corners, placed by [toBlock] (its curves are cubic). */
+        private fun roundedRect(box: TextBox, toBlock: Matrix2D): PdfPath {
+            val r = box.radius.coerceIn(0f, minOf(box.width, box.height) / 2f)
+            val k = r * (1f - CIRCLE_KAPPA)
+            val l = box.left
+            val t = box.top
+            val rt = box.left + box.width
+            val b = box.top + box.height
+            // From the top edge, clockwise: the points of the lines and of the curves at the corners
+            val points = floatArrayOf(
+                l + r, t, rt - r, t,
+                rt - k, t, rt, t + k, rt, t + r,
+                rt, b - r,
+                rt, b - k, rt - k, b, rt - r, b,
+                l + r, b,
+                l + k, b, l, b - k, l, b - r,
+                l, t + r,
+                l, t + k, l + k, t, l + r, t
+            )
+            toBlock.mapPoints(points)
+            fun x(i: Int) = points[2 * i]
+            fun y(i: Int) = points[2 * i + 1]
+            return PdfPath().apply {
+                moveTo(x(0), y(0))
+                lineTo(x(1), y(1))
+                cubicTo(x(2), y(2), x(3), y(3), x(4), y(4))
+                lineTo(x(5), y(5))
+                cubicTo(x(6), y(6), x(7), y(7), x(8), y(8))
+                lineTo(x(9), y(9))
+                cubicTo(x(10), y(10), x(11), y(11), x(12), y(12))
+                lineTo(x(13), y(13))
+                cubicTo(x(14), y(14), x(15), y(15), x(16), y(16))
+                close()
+            }
         }
 
         /** The line through [word], where its font strikes out. */
@@ -495,6 +534,9 @@ public class PdfExporter(
 
         /** Largest side of an image that is not a JPEG (written as pixels), in pixels. */
         const val MAX_IMAGE_SIDE = 4096
+
+        /** Where the control points of a cubic curve drawing a quarter of a circle are on its tangents. */
+        const val CIRCLE_KAPPA = 0.5523f
     }
 }
 

@@ -83,7 +83,7 @@ internal fun FolderExportDialog(
     val notesFonts = rememberNotesFonts()
     val engines = LocalDrawViewEngines.current
     val textAdapter = remember(fontFamilyResolver, notesFonts, engines) {
-        ComposeTextTileAdapter(fontFamilyResolver, notesFonts, engines.formulas)
+        ComposeTextTileAdapter(fontFamilyResolver, notesFonts, engines.formulas, engines.code)
     }
     var format by remember { mutableStateOf(FolderExportFormat.ZIP) }
     var includeSubfolders by remember { mutableStateOf(true) }

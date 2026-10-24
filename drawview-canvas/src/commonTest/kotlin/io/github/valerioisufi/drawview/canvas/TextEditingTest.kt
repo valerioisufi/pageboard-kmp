@@ -63,6 +63,22 @@ class TextEditingTest {
     private fun TextEditorManager.type(text: String) = updateValue(TextFieldValue(text, TextRange(text.length)))
 
     @Test
+    fun theTextsWithCodeAreMeasuredAgainOutOfTheHistory() = runTest(UnconfinedTestDispatcher()) {
+        val document = DrawDocument()
+        val code = DrawText().apply { text = "Code:\n```\nval a = 1\n```"; width = 400f; height = 3f; fontSize = 20f }
+        val plain = DrawText().apply { text = "plain"; width = 400f; height = 3f; fontSize = 20f }
+        document.pages[0].add(code)
+        document.pages[0].add(plain)
+        val controller = DrawViewController(document = document, coroutineScope = backgroundScope)
+        controller.textAdapter = FakeTextAdapter()
+
+        val page = controller.document.pages[0]
+        assertEquals(10f, page.texts.single { it.id == code.id }.height, "the height of its layout")
+        assertEquals(3f, page.texts.single { it.id == plain.id }.height, "a text without code is left as it is")
+        assertFalse(controller.historyManager.canUndo, "not something the user did")
+    }
+
+    @Test
     fun aNewTextPutsTheCaretOnTheTap() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope)
         controller.updateTextDefaults(TextDefaults(fontSize = 20f, alignment = TextAlignment.CENTER))

@@ -10,16 +10,22 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
+import io.github.valerioisufi.drawview.canvas.render.tile.TextFace
+import io.github.valerioisufi.drawview.canvas.render.tile.TextWord
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.text.TextSizes
+import io.github.valerioisufi.drawview.model.text.code.CodeHighlighter
+import io.github.valerioisufi.drawview.model.text.code.CodeToken
+import io.github.valerioisufi.drawview.model.text.code.CodeTokenKind
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
- * The texts as the canvas lays them out: aligned in the width of their box, measured.
+ * The texts as the canvas lays them out: aligned in the width of their box, measured, with their
+ * blocks of code and their code in the line.
  */
 class ComposeTextTileAdapterTest {
 
@@ -84,5 +90,95 @@ class ComposeTextTileAdapterTest {
         val laterLineWords = longLayout.words.filter { it.baseline > longLayout.words[0].baseline }
         assertTrue(laterLineWords.isNotEmpty())
         assertTrue(laterLineWords.first().left > 0f, "Hanging indent indents wrapped lines")
+    }
+
+    /** The words of [text] that are not spaces, with their text trimmed. */
+    private fun words(text: DrawText) = assertNotNull(adapter.layout(text)).words.filter { it.text.isNotBlank() }
+
+    private fun List<TextWord>.word(text: String) = first { it.text.trim() == text }
+
+    @Test
+    fun aBlockOfCodeIsInTheMonospaceAndTheColorsOfItsLanguageOnItsBackground() {
+        val layout = assertNotNull(adapter.layout(text("Code:\n```kotlin\nfun f() = 1\n```\nafter")))
+        val keyword = layout.words.first { it.text.trim() == "fun" }
+        assertEquals(TextFace.MONO, keyword.face)
+        assertEquals(0xFFCF222E.toInt(), keyword.color, "a keyword in its color")
+        assertEquals(TextFace.MONO, layout.words.first { it.text.trim() == "kotlin" }.face, "the name of the language")
+        val box = layout.boxes.single()
+        assertEquals(0f, box.left, 0.01f)
+        assertEquals(100f, box.width, 0.5f, "the width of the box")
+        assertTrue(keyword.left > box.left && keyword.baseline in box.top..box.top + box.height)
+        assertTrue(box.color ushr 24 in 1..0x40, "a faint background")
+        val after = layout.words.first { it.text.trim() == "after" }
+        assertTrue(after.lineTop >= box.top + box.height - 0.1f, "the text goes on under the block")
+        assertTrue(layout.words.first { it.text.trim() == "Code:" }.lineBottom <= box.top + 0.1f)
+    }
+
+    @Test
+    fun aBlockWithoutALanguageKnownIsInOneColor() {
+        val words = words(text("```\nfun f() = 1\n```")) + words(text("```brainfuck\nfun f() = 1\n```"))
+        assertTrue(words.filter { it.text.trim() != "brainfuck" }.all { it.color == 0xFF000000.toInt() }, "${words.map { it.text to it.color }}")
+    }
+
+    @Test
+    fun aLongLineWrapsUnderItsIndentation() {
+        val words = words(text("```\n    " + "word ".repeat(30).trim() + "\n```", width = 80f))
+        val lineStarts = words.groupBy { it.baseline }.values.map { line -> line.minOf { it.left } }
+        assertTrue(lineStarts.size > 2, "the line wraps")
+        for (start in lineStarts) assertEquals(lineStarts.first(), start, 0.2f)
+        assertTrue(lineStarts.first() > 5f, "after the padding and the indentation")
+    }
+
+    @Test
+    fun theTabsAndTheEmptyLinesOfTheCodeAreKept() {
+        val oneLine = words(text("```\na\nb\n```")).let { it.word("b").baseline - it.word("a").baseline }
+        val words = words(text("```\n\tx\n\ny\n```"))
+        val x = words.word("x")
+        val y = words.word("y")
+        assertEquals(2f * oneLine, y.baseline - x.baseline, 0.2f, "an empty line between them")
+        assertEquals(4f * x.width, x.left - y.left, 0.2f, "a tab is four columns")
+    }
+
+    @Test
+    fun aBlockIsAtTheStartOfACenteredText() {
+        val words = words(text("Title\n```\nab\n```", alignment = TextAlignment.CENTER))
+        assertTrue(words.word("Title").left > 30f)
+        assertTrue(words.word("ab").left < 10f)
+    }
+
+    @Test
+    fun aBlockCountsItsOwnWidthInTheMeasure() {
+        val short = assertNotNull(adapter.measure(text("```\nab\n```", width = 150f))).width
+        val long = assertNotNull(adapter.measure(text("```\n" + "x".repeat(40) + "\n```", width = 150f))).width
+        assertTrue(short < 20f, "its longest line and its padding: $short")
+        assertTrue(long > 100f && long < 150f, "$long")
+    }
+
+    @Test
+    fun codeInTheLineIsOnABackgroundTakingNoRoom() {
+        val plain = words(text("a code b"))
+        val code = assertNotNull(adapter.layout(text("a `code` b")))
+        val word = code.words.first { it.text.trim() == "code" }
+        assertEquals(TextFace.MONO, word.face)
+        val box = code.boxes.single()
+        assertTrue(box.left < word.left && box.left + box.width > word.left + word.width - 0.5f)
+        assertTrue(word.baseline in box.top..box.top + box.height)
+        assertEquals(plain.word("b").baseline, code.words.first { it.text.trim() == "b" }.baseline, 0.01f, "the same line")
+    }
+
+    @Test
+    fun anEngineGivingWrongTokensOrFailingDrawsTheCodeInOneColor() {
+        val wrong = ComposeTextTileAdapter(createFontFamilyResolver(), code = object : CodeHighlighter {
+            override fun tokens(code: String, language: String) = listOf(
+                CodeToken(CodeTokenKind.KEYWORD, 5, 2), CodeToken(CodeTokenKind.KEYWORD, -1, 100), CodeToken(CodeTokenKind.KEYWORD, 0, 3),
+                CodeToken(CodeTokenKind.KEYWORD, 1, 2), CodeToken(CodeTokenKind.KEYWORD, 4, 1_000)
+            )
+        })
+        val layout = assertNotNull(wrong.layout(text("```kotlin\nfun f\n```")))
+        assertEquals(0xFFCF222E.toInt(), layout.words.first { it.text.trim() == "fun" }.color, "the tokens in order and in the code are kept")
+        val failing = ComposeTextTileAdapter(createFontFamilyResolver(), code = object : CodeHighlighter {
+            override fun tokens(code: String, language: String): List<CodeToken> = throw IllegalStateException()
+        })
+        assertNotNull(failing.layout(text("```kotlin\nfun f\n```")))
     }
 }

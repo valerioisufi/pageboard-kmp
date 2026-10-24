@@ -357,18 +357,36 @@ public final class io/github/valerioisufi/drawview/ui/components/ToolSettingsKt 
 public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;
-	public final fun toCanvasText-sW7UJKQ (Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function2;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
-	public static synthetic fun toCanvasText-sW7UJKQ$default (Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
+	public final fun toCanvasText-8V94_ZQ (Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
+	public static synthetic fun toCanvasText-8V94_ZQ$default (Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
 	public final fun toLiveAnnotatedString-5_Xnia0 (Ljava/lang/String;JJJLandroidx/compose/ui/text/font/FontFamily;)Landroidx/compose/ui/text/AnnotatedString;
 	public static synthetic fun toLiveAnnotatedString-5_Xnia0$default (Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;Ljava/lang/String;JJJLandroidx/compose/ui/text/font/FontFamily;ILjava/lang/Object;)Landroidx/compose/ui/text/AnnotatedString;
 }
 
+public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasCodeBlock {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/ui/render/CodeBlockLayout;I)V
+	public final fun getLayout ()Lio/github/valerioisufi/drawview/ui/render/CodeBlockLayout;
+	public final fun getPlaceholderIndex ()I
+}
+
 public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText {
 	public static final field $stable I
-	public fun <init> (Landroidx/compose/ui/text/AnnotatedString;Ljava/util/List;Ljava/util/List;)V
+	public fun <init> (Landroidx/compose/ui/text/AnnotatedString;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
+	public synthetic fun <init> (Landroidx/compose/ui/text/AnnotatedString;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getCodeBlocks ()Ljava/util/List;
 	public final fun getFormulas ()Ljava/util/List;
+	public final fun getInlineCode ()Ljava/util/List;
 	public final fun getPlaceholders ()Ljava/util/List;
 	public final fun getText ()Landroidx/compose/ui/text/AnnotatedString;
+}
+
+public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$InlineCode {
+	public static final field $stable I
+	public fun <init> (IIF)V
+	public final fun getEnd ()I
+	public final fun getFontSizePx ()F
+	public final fun getStart ()I
 }
 
 public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$InlineFormula {
@@ -757,11 +775,18 @@ public final class io/github/valerioisufi/drawview/ui/platform/PickerType : java
 	public static fun values ()[Lio/github/valerioisufi/drawview/ui/platform/PickerType;
 }
 
+public final class io/github/valerioisufi/drawview/ui/render/CodeBlockLayout {
+	public static final field $stable I
+	public final fun getHeightPx ()F
+	public final fun getNaturalWidthPx ()F
+	public final fun getWidthPx ()F
+}
+
 public final class io/github/valerioisufi/drawview/ui/render/ComposeTextTileAdapter : io/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/ui/render/ComposeTextTileAdapter$Companion;
-	public fun <init> (Landroidx/compose/ui/text/font/FontFamily$Resolver;Lio/github/valerioisufi/drawview/ui/theme/NotesFonts;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;)V
-	public synthetic fun <init> (Landroidx/compose/ui/text/font/FontFamily$Resolver;Lio/github/valerioisufi/drawview/ui/theme/NotesFonts;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Landroidx/compose/ui/text/font/FontFamily$Resolver;Lio/github/valerioisufi/drawview/ui/theme/NotesFonts;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/drawview/model/text/code/CodeHighlighter;)V
+	public synthetic fun <init> (Landroidx/compose/ui/text/font/FontFamily$Resolver;Lio/github/valerioisufi/drawview/ui/theme/NotesFonts;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/drawview/model/text/code/CodeHighlighter;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun clearCaches ()V
 	public fun drawText (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/drawview/model/DrawText;Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;)V
 	public fun layout (Lio/github/valerioisufi/drawview/model/DrawText;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockLayout;

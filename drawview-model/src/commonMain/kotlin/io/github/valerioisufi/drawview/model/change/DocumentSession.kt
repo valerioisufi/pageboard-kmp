@@ -23,7 +23,8 @@ public enum class ChangeOrigin {
 
     /**
      * Made by this device to merge its changes with the ones of the others (e.g. the copy of the
-     * content of a text lost to another one, see [ChangeEffects.lostVersions]): not recorded in
+     * content of a text lost to another one, see [ChangeEffects.lostVersions]), or to store what
+     * it draws (e.g. the height of a text drawn differently since it was stored): not recorded in
      * the history.
      */
     MERGE

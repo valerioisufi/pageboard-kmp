@@ -104,9 +104,28 @@ public class TextLineMetrics(public val height: Float, public val baseline: Floa
 /**
  * A text block as a [TextTileAdapter] lays it out, in millimeters of the block (from its top-left
  * corner, before its rotation, which turns it around its middle, [height] being the height it is
- * drawn): its [words] and its [formulas].
+ * drawn): its [words], its [formulas] and the [boxes] drawn under them (the backgrounds of its
+ * code).
  */
-public class TextBlockLayout(public val words: List<TextWord>, public val formulas: List<TextFormula>, public val height: Float)
+public class TextBlockLayout(
+    public val words: List<TextWord>,
+    public val formulas: List<TextFormula>,
+    public val height: Float,
+    public val boxes: List<TextBox> = emptyList()
+)
+
+/**
+ * A background of a text block: the rectangle from [left], [top] of [width] x [height], its corners
+ * rounded by [radius], filled in [color] (ARGB, translucent as it is drawn).
+ */
+public class TextBox(
+    public val left: Float,
+    public val top: Float,
+    public val width: Float,
+    public val height: Float,
+    public val radius: Float,
+    public val color: Int
+)
 
 /**
  * A word of a text block with the spaces after it: its [text] goes from [left] for [width] on the

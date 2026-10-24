@@ -30,6 +30,7 @@ import io.github.valerioisufi.drawview.canvas.geometry.toComposeMatrix
 import io.github.valerioisufi.drawview.canvas.render.tile.FormulaRenderer
 import io.github.valerioisufi.drawview.canvas.render.tile.TextBlockLayout
 import io.github.valerioisufi.drawview.canvas.render.tile.TextBlockSize
+import io.github.valerioisufi.drawview.canvas.render.tile.TextBox
 import io.github.valerioisufi.drawview.canvas.render.tile.TextFace
 import io.github.valerioisufi.drawview.canvas.render.tile.TextFormula
 import io.github.valerioisufi.drawview.canvas.render.tile.TextLineMetrics
@@ -39,6 +40,8 @@ import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.text.TextSizes.PT_TO_MM
+import io.github.valerioisufi.drawview.model.text.code.BuiltInCodeHighlighter
+import io.github.valerioisufi.drawview.model.text.code.CodeHighlighter
 import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.syncLock
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
@@ -51,7 +54,8 @@ import kotlin.math.roundToInt
  * Draws the text blocks of the pages (the `TextLayerRenderer` of the original app): Markdown laid
  * out with the Compose text engine at the pixel size of the destination (word wrapping on the
  * width of the block, as in the editor), its formulas rendered by MicroTeX in the lines or, alone
- * on their lines, centered on a line of their own.
+ * on their lines, centered on a line of their own, its blocks of code on lines of their own (see
+ * [CodeBlockLayout]) and its code in the line on a background.
  *
  * Thread-safe: the tiles are rasterized on background threads.
  *
@@ -59,11 +63,13 @@ import kotlin.math.roundToInt
  * @param fonts the fonts of the texts ([rememberNotesFonts] in the editor, the same on every
  *   platform).
  * @param formulas renders the formulas (`null`: they are drawn as their source).
+ * @param code tells the tokens of the blocks of code, for their colors (`null`: in one color).
  */
 public class ComposeTextTileAdapter(
     fontFamilyResolver: FontFamily.Resolver,
     private val fonts: NotesFonts = NotesFonts.System,
-    formulas: FormulaRenderer? = null
+    formulas: FormulaRenderer? = null,
+    private val code: CodeHighlighter? = BuiltInCodeHighlighter
 ) : TextTileAdapter {
 
     private val lock = SyncLock()
@@ -79,6 +85,7 @@ public class ComposeTextTileAdapter(
         isAntiAlias = true
         filterQuality = FilterQuality.Medium
     }
+    private val chipPaint = Paint().apply { isAntiAlias = true }
 
     private data class LayoutKey(
         val textId: String,
@@ -90,11 +97,21 @@ public class ComposeTextTileAdapter(
         val alignment: TextAlignment
     )
 
+    /**
+     * A text laid out: its [layout], its [formulas] and [codeBlocks] in its placeholders, the
+     * backgrounds of its code in the line ([chips], in [chipColor]).
+     */
     private class PreparedText(
         val layout: TextLayoutResult,
         val formulas: List<MarkdownTextUtil.InlineFormula<ImageBitmap>>,
-        val fontPx: Float
+        val fontPx: Float,
+        val codeBlocks: List<MarkdownTextUtil.CanvasCodeBlock>,
+        val chips: List<Chip>,
+        val chipColor: Color
     )
+
+    /** The background of code in the line on one line: [rect], its corners of [radius]. */
+    private class Chip(val rect: Rect, val radius: Float)
 
     override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D) {
         val scale = mmToCanvas.scaleFactor
@@ -108,12 +125,16 @@ public class ComposeTextTileAdapter(
             val scale = LAYOUT_PX_PER_MM
             val prepared = prepare(text, text.fontSize * PT_TO_MM * scale, (text.width * scale).toInt().coerceAtLeast(1))
             val layout = prepared.layout
-            // A formula alone on its line takes the line: its own width counts
+            // A formula alone on its line and a block of code take the line: their own width counts
             val blockLines = HashMap<Int, Float>()
             for (formula in prepared.formulas) {
                 if (!formula.block) continue
                 val rect = layout.placeholderRects.getOrNull(formula.placeholderIndex) ?: continue
                 blockLines[layout.getLineForVerticalPosition(rect.center.y)] = formula.widthPx
+            }
+            for (block in prepared.codeBlocks) {
+                val rect = layout.placeholderRects.getOrNull(block.placeholderIndex) ?: continue
+                blockLines[layout.getLineForVerticalPosition(rect.center.y)] = block.layout.naturalWidthPx
             }
             var longest = 0f
             for (line in 0 until layout.lineCount) {
@@ -132,7 +153,7 @@ public class ComposeTextTileAdapter(
         }
     }
 
-    /** The words and the formulas of a text, laid out as [drawRichText] does. */
+    /** The words, the formulas and the backgrounds of a text, laid out as [drawRichText] does. */
     override fun layout(text: DrawText): TextBlockLayout? {
         if (text.width <= 0f || text.text.isBlank()) return null
         return syncLock(lock) {
@@ -141,52 +162,75 @@ public class ComposeTextTileAdapter(
             val fontPx = text.fontSize * PT_TO_MM * scale
             val prepared = prepare(text, fontPx, (text.width * scale).toInt().coerceAtLeast(1))
             val layout = prepared.layout
-            val shown = layout.layoutInput.text
-            val chars = shown.text
             val words = mutableListOf<TextWord>()
-            for (line in 0 until layout.lineCount) {
-                val end = layout.getLineEnd(line)
-                var start = layout.getLineStart(line)
-                while (start < end) {
-                    if (chars[start].isPlaceholder() || chars[start] == '\n') {
-                        start++
-                        continue
-                    }
-                    // The word and the spaces after it, in one style
-                    val style = styleAt(shown, start, text.color, fontPx)
-                    var stop = start
-                    var spaces = false
-                    while (stop < end && !chars[stop].isPlaceholder() && chars[stop] != '\n' && styleAt(shown, stop, text.color, fontPx) == style) {
-                        val space = chars[stop].isWhitespace()
-                        if (spaces && !space) break
-                        spaces = spaces || space
-                        stop++
-                    }
-                    val left = layout.getBoundingBox(start).left
-                    val right = layout.getBoundingBox(stop - 1).right
-                    words += TextWord(
-                        text = chars.substring(start, stop),
-                        face = style.face,
-                        fontSize = style.sizePx / scale,
-                        color = style.color,
-                        left = left / scale,
-                        baseline = layout.getLineBaseline(line) / scale,
-                        width = (right - left) / scale,
-                        lineTop = layout.getLineTop(line) / scale,
-                        lineBottom = layout.getLineBottom(line) / scale,
-                        strikethrough = style.strikethrough
-                    )
-                    start = stop
-                }
-            }
+            val boxes = mutableListOf<TextBox>()
+            for (chip in prepared.chips) boxes += chip.rect.toBox(chip.radius, prepared.chipColor, scale)
+            addWords(layout, CharStyles(layout.layoutInput.text, text.color, fontPx, mono = false), scale, 0f, 0f, words)
             val rects = layout.placeholderRects
             val formulas = prepared.formulas.mapNotNull { formula ->
                 val box = formulaBox(formula, rects.getOrNull(formula.placeholderIndex) ?: return@mapNotNull null)
                 TextFormula(formula.latex, text.color, box.left / scale, box.top / scale, box.width / scale, box.height / scale)
             }
-            TextBlockLayout(words, formulas, text.height)
+            for (codeBlock in prepared.codeBlocks) {
+                val rect = rects.getOrNull(codeBlock.placeholderIndex) ?: continue
+                val block = codeBlock.layout
+                boxes += Rect(rect.left, rect.top, rect.left + block.widthPx, rect.top + block.heightPx).toBox(block.radiusPx, block.theme.background, scale)
+                val code = CharStyles(block.code.layoutInput.text, text.color, block.fontPx, mono = true)
+                addWords(block.code, code, scale, rect.left + block.paddingPx, rect.top + block.codeTopPx, words)
+                val label = block.label ?: continue
+                val labelStyles = CharStyles(label.layoutInput.text, block.theme.label.toArgb(), label.layoutInput.style.fontSize.value, mono = true)
+                addWords(label, labelStyles, scale, rect.left + block.labelLeftPx, rect.top + block.labelTopPx, words)
+            }
+            TextBlockLayout(words, formulas, text.height, boxes)
         }
     }
+
+    /**
+     * Adds to [words] the words of [layout] (its placeholders left out) in the styles of their
+     * characters, [left], [top] its origin, [scale] pixels per millimeter.
+     */
+    private fun addWords(layout: TextLayoutResult, styles: CharStyles, scale: Float, left: Float, top: Float, words: MutableList<TextWord>) {
+        val chars = layout.layoutInput.text.text
+        for (line in 0 until layout.lineCount) {
+            val end = layout.getLineEnd(line)
+            var start = layout.getLineStart(line)
+            while (start < end) {
+                if (chars[start].isPlaceholder() || chars[start] == '\n') {
+                    start++
+                    continue
+                }
+                // The word and the spaces after it, in one style
+                val style = styles.at(start)
+                var stop = start
+                var spaces = false
+                while (stop < end && !chars[stop].isPlaceholder() && chars[stop] != '\n' && styles.at(stop) == style) {
+                    val space = chars[stop].isWhitespace()
+                    if (spaces && !space) break
+                    spaces = spaces || space
+                    stop++
+                }
+                val wordLeft = layout.getBoundingBox(start).left
+                val wordRight = layout.getBoundingBox(stop - 1).right
+                words += TextWord(
+                    text = chars.substring(start, stop),
+                    face = style.face,
+                    fontSize = style.sizePx / scale,
+                    color = style.color,
+                    left = (left + wordLeft) / scale,
+                    baseline = (top + layout.getLineBaseline(line)) / scale,
+                    width = (wordRight - wordLeft) / scale,
+                    lineTop = (top + layout.getLineTop(line)) / scale,
+                    lineBottom = (top + layout.getLineBottom(line)) / scale,
+                    strikethrough = style.strikethrough
+                )
+                start = stop
+            }
+        }
+    }
+
+    /** [this] rectangle in pixels as a background of [color] in millimeters, its corners of [radius] pixels. */
+    private fun Rect.toBox(radius: Float, color: Color, scale: Float) =
+        TextBox(left / scale, top / scale, width / scale, height / scale, radius / scale, color.toArgb())
 
     /**
      * Where [formula] is drawn in its placeholder [rect]: its baseline on the bottom of the
@@ -201,30 +245,47 @@ public class ComposeTextTileAdapter(
 
     private data class WordStyle(val face: TextFace, val sizePx: Float, val color: Int, val strikethrough: Boolean)
 
-    /** The style of the character [index] of [shown] (its spans over the base style of the block). */
-    private fun styleAt(shown: AnnotatedString, index: Int, baseColor: Int, baseSizePx: Float): WordStyle {
-        var bold = false
-        var italic = false
-        var mono = false
-        var sizePx = baseSizePx
-        var color = baseColor
-        var strikethrough = false
-        for (span in shown.spanStyles) {
-            if (index < span.start || index >= span.end) continue
-            val style = span.item
-            style.fontWeight?.let { bold = it.weight >= FontWeight.SemiBold.weight }
-            style.fontStyle?.let { italic = it == FontStyle.Italic }
-            style.fontFamily?.let { mono = it == fonts.monospace || it == FontFamily.Monospace }
-            if (style.fontSize.isSp) sizePx = style.fontSize.value
-            if (style.color.isSpecified) color = style.color.toArgb()
-            style.textDecoration?.let { strikethrough = it.contains(TextDecoration.LineThrough) }
+    /**
+     * The style of every character of [shown]: its spans over the base style of the block ([baseColor],
+     * [baseSizePx], in the monospace when [mono]), a later span over an earlier one. The spans are
+     * applied once each: the spans of a text nest only a few deep, so the work is linear.
+     */
+    private inner class CharStyles(shown: AnnotatedString, baseColor: Int, baseSizePx: Float, mono: Boolean) {
+        private val bold = BooleanArray(shown.length)
+        private val italic = BooleanArray(shown.length)
+        private val monospace = BooleanArray(shown.length) { mono }
+        private val strikethrough = BooleanArray(shown.length)
+        private val sizePx = FloatArray(shown.length) { baseSizePx }
+        private val color = IntArray(shown.length) { baseColor }
+
+        init {
+            for (span in shown.spanStyles) {
+                val style = span.item
+                val weight = style.fontWeight?.let { it.weight >= FontWeight.SemiBold.weight }
+                val slant = style.fontStyle?.let { it == FontStyle.Italic }
+                val family = style.fontFamily?.let { it == fonts.monospace || it == FontFamily.Monospace }
+                val size = if (style.fontSize.isSp) style.fontSize.value else null
+                val argb = if (style.color.isSpecified) style.color.toArgb() else null
+                val strike = style.textDecoration?.let { it.contains(TextDecoration.LineThrough) }
+                for (i in span.start.coerceAtLeast(0) until span.end.coerceAtMost(shown.length)) {
+                    if (weight != null) bold[i] = weight
+                    if (slant != null) italic[i] = slant
+                    if (family != null) monospace[i] = family
+                    if (size != null) sizePx[i] = size
+                    if (argb != null) color[i] = argb
+                    if (strike != null) strikethrough[i] = strike
+                }
+            }
         }
-        val face = when {
-            mono -> if (bold) TextFace.MONO_BOLD else TextFace.MONO
-            bold -> if (italic) TextFace.BOLD_ITALIC else TextFace.BOLD
-            else -> if (italic) TextFace.ITALIC else TextFace.REGULAR
+
+        fun at(index: Int): WordStyle {
+            val face = when {
+                monospace[index] -> if (bold[index]) TextFace.MONO_BOLD else TextFace.MONO
+                bold[index] -> if (italic[index]) TextFace.BOLD_ITALIC else TextFace.BOLD
+                else -> if (italic[index]) TextFace.ITALIC else TextFace.REGULAR
+            }
+            return WordStyle(face, sizePx[index], color[index], strikethrough[index])
         }
-        return WordStyle(face, sizePx, color, strikethrough)
     }
 
     private fun Char.isPlaceholder() =
@@ -263,8 +324,18 @@ public class ComposeTextTileAdapter(
 
         canvas.save()
         canvas.concat(toCanvas.toComposeMatrix())
+        if (prepared.chips.isNotEmpty()) {
+            chipPaint.color = prepared.chipColor
+            for (chip in prepared.chips) {
+                canvas.drawRoundRect(chip.rect.left, chip.rect.top, chip.rect.right, chip.rect.bottom, chip.radius, chip.radius, chipPaint)
+            }
+        }
         TextPainter.paint(canvas, prepared.layout)
         val rects = prepared.layout.placeholderRects
+        for (block in prepared.codeBlocks) {
+            val rect = rects.getOrNull(block.placeholderIndex) ?: continue
+            block.layout.draw(canvas, rect.left, rect.top)
+        }
         for (formula in prepared.formulas) {
             val box = formulaBox(formula, rects.getOrNull(formula.placeholderIndex) ?: continue)
             val image = formula.image
@@ -296,7 +367,10 @@ public class ComposeTextTileAdapter(
             fontSizePx = fontPx,
             fontAscentPx = fontAscent(baseStyle, fontPx),
             lineWidthPx = widthPx.toFloat(),
-            monospace = fonts.monospace
+            monospace = fonts.monospace,
+            layoutCodeBlock = { code, language, indent ->
+                CodeBlockLayout.layout(measurer, fonts.monospace, code, language, indent, fontPx, widthPx.toFloat(), color, this.code)
+            }
         ) { latex, sizePx ->
             formulaImages.render(latex, sizePx, text.color)?.let {
                 MarkdownTextUtil.RenderedFormula(it.bitmap, it.bitmap.width.toFloat(), it.bitmap.height.toFloat(), it.baselineRatio)
@@ -315,7 +389,30 @@ public class ComposeTextTileAdapter(
             constraints = Constraints.fixedWidth(widthPx),
             skipCache = true
         )
-        return PreparedText(layout, canvasText.formulas, fontPx)
+        return PreparedText(layout, canvasText.formulas, fontPx, canvasText.codeBlocks, chips(layout, canvasText.inlineCode), CodeTheme.of(color).background)
+    }
+
+    /**
+     * The backgrounds of the code in the line of [layout]: one per line of each code, from the
+     * left of its first character to the right of its last one on the line, a little beyond, around
+     * the letters of its font.
+     */
+    private fun chips(layout: TextLayoutResult, inlineCode: List<MarkdownTextUtil.InlineCode>): List<Chip> {
+        if (inlineCode.isEmpty()) return emptyList()
+        val chips = mutableListOf<Chip>()
+        for (code in inlineCode) {
+            val first = layout.getLineForOffset(code.start)
+            val last = layout.getLineForOffset(code.end - 1)
+            val padding = code.fontSizePx * CHIP_PADDING
+            for (line in first..last) {
+                val left = if (line == first) layout.getBoundingBox(code.start).left else layout.getLineLeft(line)
+                val right = if (line == last) layout.getBoundingBox(code.end - 1).right else layout.getLineRight(line)
+                val baseline = layout.getLineBaseline(line)
+                val rect = Rect(left - padding, baseline - code.fontSizePx * CHIP_ASCENT, right + padding, baseline + code.fontSizePx * CHIP_DESCENT)
+                chips += Chip(rect, code.fontSizePx * CHIP_RADIUS)
+            }
+        }
+        return chips
     }
 
     /** Ascent of the base font, used to reserve the descent of the formulas. */
@@ -332,6 +429,15 @@ public class ComposeTextTileAdapter(
 
         /** Resolution of the layouts of [layout] and [measure]. */
         private const val LAYOUT_PX_PER_MM = 20f
+
+        /**
+         * The background of code in the line, relative to its font: beyond its characters on the
+         * sides, above and below its baseline, its corners.
+         */
+        private const val CHIP_PADDING = 0.15f
+        private const val CHIP_ASCENT = 0.9f
+        private const val CHIP_DESCENT = 0.25f
+        private const val CHIP_RADIUS = 0.2f
     }
 }
 

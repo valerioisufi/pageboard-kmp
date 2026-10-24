@@ -8,4 +8,5 @@ of the pages, the conversions between screen and page millimeters) and its `Coll
 The optional engines are ports given in `DrawViewEngines`: the PDF pages (`PdfTileAdapter`, see
 `drawview-pdf`), the formulas (`FormulaRenderer`, see `drawview-latex`) and the element types of
 the application (`ElementRenderers` of `ElementRenderer`s); without one, a PDF page is blank and a
-formula shows its source.
+formula shows its source. The colors of the code of the texts come from a `CodeHighlighter`
+(`BuiltInCodeHighlighter` of `drawview-model` unless the application gives another one).

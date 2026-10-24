@@ -155,7 +155,7 @@ private fun DrawScreenContent(
     val notesFonts = rememberNotesFonts()
     DisposableEffect(controller, fontFamilyResolver, notesFonts) {
         if (controller.textAdapter == null) {
-            controller.textAdapter = ComposeTextTileAdapter(fontFamilyResolver, notesFonts, controller.engines.formulas)
+            controller.textAdapter = ComposeTextTileAdapter(fontFamilyResolver, notesFonts, controller.engines.formulas, controller.engines.code)
         }
         onDispose { }
     }

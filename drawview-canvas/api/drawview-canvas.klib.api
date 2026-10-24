@@ -788,8 +788,10 @@ final class io.github.valerioisufi.drawview.canvas.render.tile/FormulaImage { //
 }
 
 final class io.github.valerioisufi.drawview.canvas.render.tile/TextBlockLayout { // io.github.valerioisufi.drawview.canvas.render.tile/TextBlockLayout|null[0]
-    constructor <init>(kotlin.collections/List<io.github.valerioisufi.drawview.canvas.render.tile/TextWord>, kotlin.collections/List<io.github.valerioisufi.drawview.canvas.render.tile/TextFormula>, kotlin/Float) // io.github.valerioisufi.drawview.canvas.render.tile/TextBlockLayout.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.drawview.canvas.render.tile.TextWord>;kotlin.collections.List<io.github.valerioisufi.drawview.canvas.render.tile.TextFormula>;kotlin.Float){}[0]
+    constructor <init>(kotlin.collections/List<io.github.valerioisufi.drawview.canvas.render.tile/TextWord>, kotlin.collections/List<io.github.valerioisufi.drawview.canvas.render.tile/TextFormula>, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.drawview.canvas.render.tile/TextBox> = ...) // io.github.valerioisufi.drawview.canvas.render.tile/TextBlockLayout.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.drawview.canvas.render.tile.TextWord>;kotlin.collections.List<io.github.valerioisufi.drawview.canvas.render.tile.TextFormula>;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.drawview.canvas.render.tile.TextBox>){}[0]
 
+    final val boxes // io.github.valerioisufi.drawview.canvas.render.tile/TextBlockLayout.boxes|{}boxes[0]
+        final fun <get-boxes>(): kotlin.collections/List<io.github.valerioisufi.drawview.canvas.render.tile/TextBox> // io.github.valerioisufi.drawview.canvas.render.tile/TextBlockLayout.boxes.<get-boxes>|<get-boxes>(){}[0]
     final val formulas // io.github.valerioisufi.drawview.canvas.render.tile/TextBlockLayout.formulas|{}formulas[0]
         final fun <get-formulas>(): kotlin.collections/List<io.github.valerioisufi.drawview.canvas.render.tile/TextFormula> // io.github.valerioisufi.drawview.canvas.render.tile/TextBlockLayout.formulas.<get-formulas>|<get-formulas>(){}[0]
     final val height // io.github.valerioisufi.drawview.canvas.render.tile/TextBlockLayout.height|{}height[0]
@@ -805,6 +807,23 @@ final class io.github.valerioisufi.drawview.canvas.render.tile/TextBlockSize { /
         final fun <get-height>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/TextBlockSize.height.<get-height>|<get-height>(){}[0]
     final val width // io.github.valerioisufi.drawview.canvas.render.tile/TextBlockSize.width|{}width[0]
         final fun <get-width>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/TextBlockSize.width.<get-width>|<get-width>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.canvas.render.tile/TextBox { // io.github.valerioisufi.drawview.canvas.render.tile/TextBox|null[0]
+    constructor <init>(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Int) // io.github.valerioisufi.drawview.canvas.render.tile/TextBox.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Int){}[0]
+
+    final val color // io.github.valerioisufi.drawview.canvas.render.tile/TextBox.color|{}color[0]
+        final fun <get-color>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/TextBox.color.<get-color>|<get-color>(){}[0]
+    final val height // io.github.valerioisufi.drawview.canvas.render.tile/TextBox.height|{}height[0]
+        final fun <get-height>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/TextBox.height.<get-height>|<get-height>(){}[0]
+    final val left // io.github.valerioisufi.drawview.canvas.render.tile/TextBox.left|{}left[0]
+        final fun <get-left>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/TextBox.left.<get-left>|<get-left>(){}[0]
+    final val radius // io.github.valerioisufi.drawview.canvas.render.tile/TextBox.radius|{}radius[0]
+        final fun <get-radius>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/TextBox.radius.<get-radius>|<get-radius>(){}[0]
+    final val top // io.github.valerioisufi.drawview.canvas.render.tile/TextBox.top|{}top[0]
+        final fun <get-top>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/TextBox.top.<get-top>|<get-top>(){}[0]
+    final val width // io.github.valerioisufi.drawview.canvas.render.tile/TextBox.width|{}width[0]
+        final fun <get-width>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/TextBox.width.<get-width>|<get-width>(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.canvas.render.tile/TextFormula { // io.github.valerioisufi.drawview.canvas.render.tile/TextFormula|null[0]
@@ -945,8 +964,10 @@ final class io.github.valerioisufi.drawview.canvas.render.tile/TileRenderer { //
 }
 
 final class io.github.valerioisufi.drawview.canvas.render/DrawViewEngines { // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines|null[0]
-    constructor <init>(kotlin/Function0<io.github.valerioisufi.drawview.canvas.render.tile/PdfTileAdapter?> = ..., io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer? = ..., io.github.valerioisufi.drawview.canvas.render/ElementRenderers = ...) // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.<init>|<init>(kotlin.Function0<io.github.valerioisufi.drawview.canvas.render.tile.PdfTileAdapter?>;io.github.valerioisufi.drawview.canvas.render.tile.FormulaRenderer?;io.github.valerioisufi.drawview.canvas.render.ElementRenderers){}[0]
+    constructor <init>(kotlin/Function0<io.github.valerioisufi.drawview.canvas.render.tile/PdfTileAdapter?> = ..., io.github.valerioisufi.drawview.canvas.render.tile/FormulaRenderer? = ..., io.github.valerioisufi.drawview.canvas.render/ElementRenderers = ..., io.github.valerioisufi.drawview.model.text.code/CodeHighlighter? = ...) // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.<init>|<init>(kotlin.Function0<io.github.valerioisufi.drawview.canvas.render.tile.PdfTileAdapter?>;io.github.valerioisufi.drawview.canvas.render.tile.FormulaRenderer?;io.github.valerioisufi.drawview.canvas.render.ElementRenderers;io.github.valerioisufi.drawview.model.text.code.CodeHighlighter?){}[0]
 
+    final val code // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.code|{}code[0]
+        final fun <get-code>(): io.github.valerioisufi.drawview.model.text.code/CodeHighlighter? // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.code.<get-code>|<get-code>(){}[0]
     final val elements // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.elements|{}elements[0]
         final fun <get-elements>(): io.github.valerioisufi.drawview.canvas.render/ElementRenderers // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.elements.<get-elements>|<get-elements>(){}[0]
     final val formulas // io.github.valerioisufi.drawview.canvas.render/DrawViewEngines.formulas|{}formulas[0]
@@ -1126,6 +1147,7 @@ final val io.github.valerioisufi.drawview.canvas.history/io_github_valerioisufi_
 final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockSize$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockSize$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_TextBlockSize$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBox$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBox$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_TextBox$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextFormula$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextFormula$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_TextFormula$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextLineMetrics$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextLineMetrics$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_TextLineMetrics$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextWord$stableprop // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextWord$stableprop|#static{}io_github_valerioisufi_drawview_canvas_render_tile_TextWord$stableprop[0]
@@ -1185,6 +1207,7 @@ final fun io.github.valerioisufi.drawview.canvas.render.tile/fitPdfPage(kotlin/D
 final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_FormulaImage$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_TextBlockLayout$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockSize$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBlockSize$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_TextBlockSize$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBox$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextBox$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_TextBox$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextFormula$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextFormula$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_TextFormula$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextLineMetrics$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextLineMetrics$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_TextLineMetrics$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextWord$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/io_github_valerioisufi_drawview_canvas_render_tile_TextWord$stableprop_getter|io_github_valerioisufi_drawview_canvas_render_tile_TextWord$stableprop_getter(){}[0]

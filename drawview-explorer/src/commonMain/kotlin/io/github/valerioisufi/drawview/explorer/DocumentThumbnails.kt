@@ -171,7 +171,7 @@ public fun rememberDocumentThumbnails(
     val fontFamilyResolver = LocalFontFamilyResolver.current
     val notesFonts = rememberNotesFonts()
     return remember(documents, directory, fontFamilyResolver, notesFonts, engines) {
-        val textAdapter = ComposeTextTileAdapter(fontFamilyResolver, notesFonts, engines.formulas)
+        val textAdapter = ComposeTextTileAdapter(fontFamilyResolver, notesFonts, engines.formulas, engines.code)
         DocumentThumbnails(documents, textAdapter, directory, pdfTiles = engines.pdfTiles, elements = engines.elements)
     }
 }

@@ -846,7 +846,7 @@ private fun LectureTabs(assistant: LectureAssistant, lecture: Lecture, controlle
     val fontFamilyResolver = LocalFontFamilyResolver.current
     val notesFonts = rememberNotesFonts()
     val inserter = remember(fontFamilyResolver, notesFonts, controller.engines) {
-        NoteInserter(ComposeTextTileAdapter(fontFamilyResolver, notesFonts, controller.engines.formulas))
+        NoteInserter(ComposeTextTileAdapter(fontFamilyResolver, notesFonts, controller.engines.formulas, controller.engines.code))
     }
 
     SegmentedChoice(

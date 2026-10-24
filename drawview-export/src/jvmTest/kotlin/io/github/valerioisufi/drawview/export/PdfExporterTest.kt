@@ -163,6 +163,33 @@ class PdfExporterTest {
     }
 
     @Test
+    fun theCodeIsTextOnItsBackgroundAsTheEditorDrawsIt() = runBlocking {
+        val document = DrawDocument(title = "Codice")
+        document.pages[0].add(DrawText().apply {
+            text = "```kotlin\nfun squares(n: Int) = (1..n).map { it * it }\n```\nand `inline` code"
+            x = 15f; y = 20f; width = 170f; height = 40f; fontSize = 24f
+        })
+        val pdf = tempFile("code", ".pdf")
+        PdfExporter(textAdapter, fontFiles).export(DocumentContent.of(document), ExportOptions(), pdf.path)
+
+        val bytes = pdf.readBytes().decodeToString(throwOnInvalidSequence = false)
+        assertTrue(!Regex("/Subtype\\s*/Image").containsMatchIn(bytes), "no picture: real text and vectors")
+        PdfiumEngine.open(pdf.path).use { exported ->
+            val read = exported.getPageText(0).orEmpty().replace(Regex("\\s+"), " ")
+            assertTrue("fun squares(n: Int)" in read && "inline" in read, read)
+        }
+
+        val exported = render(pdf, 0)
+        val editor = renderEditor(document, exported.width, exported.height)
+        // The top of the block, away from its words: its faint background
+        val background = exported.mm(25f, 20.6f)
+        assertColor(editor.at(background), exported.at(background), tolerance = 6)
+        assertTrue((exported.at(background) and 0xFF) in 200..250, "a faint background, not the paper: ${(exported.at(background) and 0xFF)}")
+        val similarity = inkOverlap(exported, editor, Rect(15f, 20f, 185f, 50f))
+        assertTrue(similarity > 0.75f, "overlap of the ink $similarity")
+    }
+
+    @Test
     fun theCharactersOutOfTheFontAreImagesOfTheirWords() = runBlocking {
         val document = DrawDocument(title = "Emoji")
         document.pages[0].add(DrawText().apply { text = "ciao \uD83D\uDE00 mondo"; x = 15f; y = 20f; width = 170f; height = 20f; fontSize = 24f })
