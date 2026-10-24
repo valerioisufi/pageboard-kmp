@@ -357,8 +357,8 @@ public final class io/github/valerioisufi/drawview/ui/components/ToolSettingsKt 
 public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;
-	public final fun toCanvasText-8V94_ZQ (Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
-	public static synthetic fun toCanvasText-8V94_ZQ$default (Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
+	public final fun toCanvasText-8V94_ZQ (Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
+	public static synthetic fun toCanvasText-8V94_ZQ$default (Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
 	public final fun toLiveAnnotatedString-5_Xnia0 (Ljava/lang/String;JJJLandroidx/compose/ui/text/font/FontFamily;)Landroidx/compose/ui/text/AnnotatedString;
 	public static synthetic fun toLiveAnnotatedString-5_Xnia0$default (Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;Ljava/lang/String;JJJLandroidx/compose/ui/text/font/FontFamily;ILjava/lang/Object;)Landroidx/compose/ui/text/AnnotatedString;
 }
@@ -717,6 +717,7 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getText_editor_action_code_block (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_heading (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_italic (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getText_editor_action_line_numbers (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_math (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_numbered_list (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_editor_action_save (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -781,6 +782,26 @@ public final class io/github/valerioisufi/drawview/ui/render/CodeBlockLayout {
 	public final fun getHeightPx ()F
 	public final fun getNaturalWidthPx ()F
 	public final fun getWidthPx ()F
+}
+
+public final class io/github/valerioisufi/drawview/ui/render/CodeBlockSource {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;IZF)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()I
+	public final fun component4 ()Z
+	public final fun component5 ()F
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;IZF)Lio/github/valerioisufi/drawview/ui/render/CodeBlockSource;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/ui/render/CodeBlockSource;Ljava/lang/String;Ljava/lang/String;IZFILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/render/CodeBlockSource;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCode ()Ljava/lang/String;
+	public final fun getIndent ()I
+	public final fun getLanguage ()Ljava/lang/String;
+	public final fun getNumbered ()Z
+	public final fun getWidthPx ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/ui/render/ComposeTextTileAdapter : io/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter {

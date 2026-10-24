@@ -276,4 +276,22 @@ class CommandTest {
         clipboard = clipboard,
         actions = EditorScreenActions(close = {}, importPdf = {}, importImage = {}, editDocumentBackground = {}, showAbout = {})
     )
+
+    @Test
+    fun theLineNumbersOfTheBlockAreToggledByTheirShortcut() {
+        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val commands = editorCommands(controller)
+        val host = CommandHost().apply { register(commands.all) }
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 10f, 10f)
+        editor.updateValue(TextFieldValue("x = 1", TextRange(0)))
+        assertFalse(commands.lineNumbers.isEnabled(), "not out of a block")
+
+        editor.updateValue(TextFieldValue("```py\nx = 1\n```", TextRange(7)))
+        assertTrue(commands.lineNumbers.isEnabled())
+        assertFalse(commands.lineNumbers.isChecked!!.invoke())
+        assertTrue(host.dispatch(press(Key.L, meta = true, alt = true), apple))
+        assertEquals("```py showLineNumbers\nx = 1\n```", editor.value.text)
+        assertTrue(commands.lineNumbers.isChecked!!.invoke())
+    }
 }

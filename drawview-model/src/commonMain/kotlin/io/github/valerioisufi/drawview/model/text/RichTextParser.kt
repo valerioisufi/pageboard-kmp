@@ -35,7 +35,9 @@ public object RichTextParser {
      * @property ordered whether a list item is ordered (numbered).
      * @property number the sequence number of an ordered list item.
      * @property language the language of a block of code, the first word after its opening fence
-     *   (empty when there is none).
+     *   that is not [numbered] (empty when there is none).
+     * @property numbered a block of code asking for the numbers of its lines, by a word after its
+     *   opening fence (see [LINE_NUMBERS]).
      */
     public data class Span(
         val kind: Kind,
@@ -48,7 +50,8 @@ public object RichTextParser {
         val block: Boolean = false,
         val ordered: Boolean = false,
         val number: Int = 0,
-        val language: String = ""
+        val language: String = "",
+        val numbered: Boolean = false
     ) {
         /** The delimiters, hidden when the text is drawn: before and after the content. */
         val delimiters: List<IntRange>
@@ -221,9 +224,12 @@ public object RichTextParser {
      */
     private fun codeBlock(text: String, start: Int, fence: Fence): Span {
         val openingEnd = text.indexOf('\n', fence.end).let { if (it < 0) text.length else it }
-        val language = text.substring(fence.end, openingEnd).trim()
-            .substringBefore(' ').substringBefore('\t')
-            .trimStart('{', '.').trimEnd('}')
+        // The words of the information, without the braces and the dots of the attributes of Pandoc
+        val words = text.substring(fence.end, openingEnd).split(' ', '\t')
+            .map { it.trimStart('{', '.').trimEnd('}') }
+            .filter { it.isNotEmpty() }
+        val numbered = words.any { it.lowercase() in LINE_NUMBERS }
+        val language = words.firstOrNull { it.lowercase() !in LINE_NUMBERS }.orEmpty()
         val indent = fence.end - fence.length - start
         val contentStart = min(openingEnd + 1, text.length)
         var line = contentStart
@@ -232,13 +238,13 @@ public object RichTextParser {
             if (closingEnd >= 0) {
                 // The line break before the closing fence belongs to it
                 val contentEnd = if (line > contentStart) line - 1 else contentStart
-                return Span(Kind.CODE_BLOCK, start, closingEnd, contentStart, contentEnd, level = indent, language = language)
+                return Span(Kind.CODE_BLOCK, start, closingEnd, contentStart, contentEnd, level = indent, language = language, numbered = numbered)
             }
             val next = text.indexOf('\n', line)
             if (next < 0) break
             line = next + 1
         }
-        return Span(Kind.CODE_BLOCK, start, text.length, contentStart, text.length, level = indent, language = language)
+        return Span(Kind.CODE_BLOCK, start, text.length, contentStart, text.length, level = indent, language = language, numbered = numbered)
     }
 
     /**
@@ -443,6 +449,13 @@ public object RichTextParser {
 
     /** The punctuation an escape writes as it is. */
     private const val ESCAPABLE = """\`*_{}[]()#+-.!${'$'}~|<>"""
+
+    /**
+     * The words after a fence asking for the numbers of the lines of its block, in lowercase:
+     * `showLineNumbers` (written by the editor), `numberLines` of Pandoc (also `.numberLines`,
+     * `{.numberLines}`), `linenums`.
+     */
+    public val LINE_NUMBERS: Set<String> = setOf("showlinenumbers", "numberlines", "linenums")
 
     /** The fewest backticks or tildes of a fence, and the most spaces before it. */
     private const val MIN_FENCE = 3

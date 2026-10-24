@@ -175,7 +175,11 @@ public class ComposeTextTileAdapter(
                 val block = codeBlock.layout
                 boxes += Rect(rect.left, rect.top, rect.left + block.widthPx, rect.top + block.heightPx).toBox(block.radiusPx, block.theme.background, scale)
                 val code = CharStyles(block.code.layoutInput.text, text.color, block.fontPx, mono = true)
-                addWords(block.code, code, scale, rect.left + block.paddingPx, rect.top + block.codeTopPx, words)
+                addWords(block.code, code, scale, rect.left + block.codeLeftPx, rect.top + block.codeTopPx, words)
+                for (number in block.numbers) {
+                    val styles = CharStyles(number.layout.layoutInput.text, block.theme.label.toArgb(), block.fontPx, mono = true)
+                    addWords(number.layout, styles, scale, rect.left + number.left, rect.top + number.top, words)
+                }
                 val label = block.label ?: continue
                 val labelStyles = CharStyles(label.layoutInput.text, block.theme.label.toArgb(), label.layoutInput.style.fontSize.value, mono = true)
                 addWords(label, labelStyles, scale, rect.left + block.labelLeftPx, rect.top + block.labelTopPx, words)
@@ -368,9 +372,7 @@ public class ComposeTextTileAdapter(
             fontAscentPx = fontAscent(baseStyle, fontPx),
             lineWidthPx = widthPx.toFloat(),
             monospace = fonts.monospace,
-            layoutCodeBlock = { code, language, indent ->
-                CodeBlockLayout.layout(measurer, fonts.monospace, code, language, indent, fontPx, widthPx.toFloat(), color, this.code, paperColor)
-            }
+            layoutCodeBlock = { source -> CodeBlockLayout.layout(measurer, fonts.monospace, source, fontPx, color, this.code, paperColor) }
         ) { latex, sizePx ->
             formulaImages.render(latex, sizePx, text.color)?.let {
                 MarkdownTextUtil.RenderedFormula(it.bitmap, it.bitmap.width.toFloat(), it.bitmap.height.toFloat(), it.baselineRatio)

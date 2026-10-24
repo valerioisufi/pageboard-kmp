@@ -316,4 +316,20 @@ class RichTextEditingTest {
         assertEquals("````\na ``` b\n````", RichTextEditing.toggleCodeBlock(at("a ``` b", 0)).text, "a fence longer than the backticks of the code")
         assertEquals("```\na\nb\n```", RichTextEditing.toggle(TextFieldValue("a\nb", TextRange(0, 3)), RichTextEditing.Format.CODE).text, "code over several lines")
     }
+
+    @Test
+    fun theLineNumbersOfABlockAreAskedAndTakenOff() {
+        val text = "```kotlin\nval a = 1\n```\nafter"
+        val caret = text.indexOf("a = 1")
+        val numbered = RichTextEditing.toggleLineNumbers(at(text, caret))
+        assertEquals("```kotlin showLineNumbers\nval a = 1\n```\nafter", numbered.text)
+        assertEquals(TextRange(caret + 16), numbered.selection, "the caret on the same character")
+        val plain = RichTextEditing.toggleLineNumbers(numbered)
+        assertEquals(text, plain.text)
+        assertEquals(TextRange(caret), plain.selection)
+
+        assertEquals("```showLineNumbers\nx\n```", RichTextEditing.toggleLineNumbers(at("```\nx\n```", 4)).text, "without a language")
+        assertEquals("``` {.python}\nx\n```", RichTextEditing.toggleLineNumbers(at("``` {.python .numberLines}\nx\n```", 30)).text, "the attributes of Pandoc")
+        assertEquals("plain text", RichTextEditing.toggleLineNumbers(at("plain text", 3)).text, "nothing outside a block")
+    }
 }

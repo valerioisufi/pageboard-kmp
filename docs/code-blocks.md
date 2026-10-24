@@ -231,7 +231,7 @@ Four of the things left for later after phase 5, asked by the user on 2026-10-24
 | 4 | Writing code: `RichTextEditing` (Enter, Tab, ⇧Tab and the formats in a block, the fence closed, the block toggled, ⌘E on several lines), `EditorCommands.codeBlock` (⌘⌥C, Format menu, tooltip), the button of `TextFormatBar` and its icon, the strings in the 7 languages; tests of the editing and of the command | Done |
 | 5 | Lecture assistant: `MARKDOWN_RULE` and the reading of the handwriting with the fenced blocks; the fence stripped by `LectureAnalysis` checked with answers holding code; tests | Done |
 | 6 | The paper: the paper color given with the texts to `drawText` and `layout` by every caller (tiles, selection, drafts, preview, exports, editor), `CodeTheme.of(text, paper)` opaque; tests, screenshots (ruled paper); ABI of `drawview-canvas`, `drawview-ui` | Done |
-| 7 | Line numbers: `Span.numbered`, the column of the numbers in `CodeBlockLayout` (canvas, editor, PDF, taps after it, natural width), `toggleLineNumbers` and its command, button and strings; tests, screenshots; ABI | To do |
+| 7 | Line numbers: `Span.numbered`, the column of the numbers in `CodeBlockLayout` (canvas, editor, PDF, taps after it, natural width), `toggleLineNumbers` and its command, button and strings; tests, screenshots; ABI | Done |
 | 8 | Blocks in list items: the items open at each line in the parser, `Span.listItem`, fences and closing fences of an item; a block drawn with its item (canvas, editor, measure, PDF); the texts of the user measured again on load as in phase 2; tests (bounds included), screenshots; ABI of `drawview-model` | To do |
 | 9 | The panel: `MarkdownText` of `drawview-ui` (formulas, blocks at its width, code in the line), used by `LecturePanel` for the notes, the outline and the review; tests, screenshots of the panel; ABI of `drawview-ui` | To do |
 
@@ -415,6 +415,36 @@ schema stay as they are.
   (`text-saved-code`, `text-writing-code`, `text-writing-code-source`).
 * The ABI of `drawview-canvas` (the parameter of `drawText` and `layout`, `NO_PAPER`) and of
   `drawview-ui` (the adapter) recorded again.
+
+### Phase 7 results
+
+* `RichTextParser` reads the words after a fence: `Span.numbered` when one of them asks for the line
+  numbers (`RichTextParser.LINE_NUMBERS`: `showLineNumbers`, `numberLines`, `linenums`, in any
+  case, the braces and the dots of the attributes of Pandoc taken off); the language is the first
+  other word.
+* A block is laid out from a `CodeBlockSource` (its code, language, indentation, numbers and
+  width: the callbacks of `toCanvasText` and `toEditorText` take it, the width ready for the lists
+  of phase 8). `CodeBlockLayout` puts the numbers in a column on the left (as many digits as the
+  last line, then a free one), right aligned, in the color of the label, each on the baseline of
+  the first line of its line of code: a wrapped line has none, an empty line has its number. The
+  code starts after the column (`codeLeftPx`): drawn, tapped, laid out for the export, the column
+  counted in the natural width. The numbers are words of the layout, so text in the PDF.
+* `RichTextEditing.toggleLineNumbers` writes `showLineNumbers` after the information of the fence,
+  or takes the words off (a brace of Pandoc kept closed), the selection on the same characters;
+  `codeBlockAt` tells the block of the selection. `TextFormatTarget.codeLineNumbers` and
+  `toggleLineNumbers` (the text being written: the block of the selection read once per value).
+  `EditorCommands.lineNumbers` ("Line numbers", ⌘⌥L or Ctrl+Alt+L, menu Format, checked when the
+  block has them, enabled in a block) and its button in the bar, with the icon `Hash`, shown while
+  the caret is in a block. Its label in the seven languages.
+* Tests: the words asking for the numbers and the language among them (`CodeBlocksTest`); the
+  numbers asked and taken off (`RichTextEditingTest`); the command by its shortcut, enabled and
+  checked (`CommandTest`); the column, a number per line of code, on its baseline, a tap after the
+  column (`EditorCodeTest`); the numbers as words before the code (`ComposeTextTileAdapterTest`);
+  a block with its numbers in the screenshot `text-saved-code`, the bar with its button in
+  `text-writing-code-source`.
+* The ABI of `drawview-model` (`Span.numbered`, `LINE_NUMBERS`), `drawview-canvas` (the target,
+  `RichTextEditing.codeBlockAt`, `toggleLineNumbers`) and `drawview-ui` (`CodeBlockSource`, the
+  callbacks of `toCanvasText`, the string) recorded again.
 
 ## Decisions
 

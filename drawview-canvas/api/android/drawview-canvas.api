@@ -439,6 +439,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public final fun getBoxWidth ()F
 	public final fun getBoxX ()F
 	public final fun getBoxY ()F
+	public fun getCodeLineNumbers ()Z
 	public fun getColor ()I
 	public fun getFontSize ()F
 	public fun getFormatsCharacters ()Z
@@ -467,6 +468,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public fun toggleBulletList ()V
 	public fun toggleCodeBlock ()V
 	public fun toggleHeading ()V
+	public fun toggleLineNumbers ()V
 	public fun toggleNumberedList ()V
 	public final fun updateValue (Landroidx/compose/ui/text/input/TextFieldValue;)V
 	public final fun updateValue (Landroidx/compose/ui/text/input/TextFieldValue;Z)V
@@ -477,6 +479,7 @@ public abstract interface class io/github/valerioisufi/drawview/canvas/controlle
 	public abstract fun changeColor (I)V
 	public abstract fun changeFontSize (F)V
 	public abstract fun getAlignment ()Lio/github/valerioisufi/drawview/model/TextAlignment;
+	public fun getCodeLineNumbers ()Z
 	public abstract fun getColor ()I
 	public abstract fun getFontSize ()F
 	public fun getFormatsCharacters ()Z
@@ -487,10 +490,12 @@ public abstract interface class io/github/valerioisufi/drawview/canvas/controlle
 	public fun toggleBulletList ()V
 	public fun toggleCodeBlock ()V
 	public fun toggleHeading ()V
+	public fun toggleLineNumbers ()V
 	public fun toggleNumberedList ()V
 }
 
 public final class io/github/valerioisufi/drawview/canvas/controller/TextFormatTarget$DefaultImpls {
+	public static fun getCodeLineNumbers (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getFormatsCharacters (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getInCodeBlock (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun indent (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
@@ -499,6 +504,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextFormatT
 	public static fun toggleBulletList (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
 	public static fun toggleCodeBlock (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
 	public static fun toggleHeading (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
+	public static fun toggleLineNumbers (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
 	public static fun toggleNumberedList (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
 }
 
@@ -942,6 +948,7 @@ public final class io/github/valerioisufi/drawview/canvas/snap/SnapGuide {
 public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing;
+	public final fun codeBlockAt (Landroidx/compose/ui/text/input/TextFieldValue;)Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
 	public final fun handleEnter (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun handleSmartNewline (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun inCodeBlock (Landroidx/compose/ui/text/input/TextFieldValue;)Z
@@ -951,6 +958,7 @@ public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing {
 	public final fun toggleBulletList (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleCodeBlock (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleHeading (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun toggleLineNumbers (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleNumberedList (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 }
 

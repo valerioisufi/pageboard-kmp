@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import io.github.valerioisufi.drawview.model.text.code.BuiltInCodeHighlighter
 import io.github.valerioisufi.drawview.ui.render.CodeBlockLayout
+import io.github.valerioisufi.drawview.ui.render.CodeBlockSource
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -23,8 +24,8 @@ class EditorCodeTest {
 
     private val measurer = TextMeasurer(createFontFamilyResolver(), Density(1f, 1f), LayoutDirection.Ltr, cacheSize = 0)
 
-    private fun layout(code: String, language: String = "kotlin", indent: Int = 0, widthPx: Float = 600f) =
-        CodeBlockLayout.layout(measurer, FontFamily.Monospace, code, language, indent, 20f, widthPx, Color.Black, BuiltInCodeHighlighter, 0xFFFFFFFF.toInt())
+    private fun layout(code: String, language: String = "kotlin", indent: Int = 0, widthPx: Float = 600f, numbered: Boolean = false) =
+        CodeBlockLayout.layout(measurer, FontFamily.Monospace, CodeBlockSource(code, language, indent, numbered, widthPx), 20f, Color.Black, BuiltInCodeHighlighter, 0xFFFFFFFF.toInt())
 
     private fun shown(text: String, caret: Int) = MarkdownTextUtil.toEditorText<Unit>(
         text = text,
@@ -37,7 +38,7 @@ class EditorCodeTest {
         textFont = FontFamily.Default,
         monospace = FontFamily.Monospace,
         highlighter = BuiltInCodeHighlighter,
-        layoutCodeBlock = { code, language, indent -> layout(code, language, indent) }
+        layoutCodeBlock = { source -> layout(source.code, source.language, source.indent, source.widthPx, source.numbered) }
     ) { _, _ -> null }
 
     private val text = "Code:\n```kotlin\nfun f() = 1\n```\nafter"
@@ -101,5 +102,23 @@ class EditorCodeTest {
         assertEquals(code.indexOf('\n'), block.codeOffsetAt(endOfFirst), "before the line break")
         val v = lines.getBoundingBox(lines.layoutInput.text.text.indexOf('v'))
         assertEquals(code.indexOf('v'), block.codeOffsetAt(Offset(block.paddingPx + v.left + 1f, block.codeTopPx + v.center.y)))
+    }
+
+    @Test
+    fun aBlockShowsTheNumbersOfItsLinesInAColumn() {
+        val code = "a\n\n" + "word ".repeat(40).trim() + "\nb"
+        val plain = layout(code, widthPx = 400f)
+        val block = layout(code, widthPx = 400f, numbered = true)
+        assertEquals(listOf("1", "2", "3", "4"), block.numbers.map { it.layout.layoutInput.text.text }, "a number per line of the code, not per wrapped line")
+        assertTrue(block.codeLeftPx > plain.codeLeftPx, "the code after the column")
+        assertTrue(block.numbers.all { it.left + it.layout.size.width <= block.codeLeftPx }, "the numbers before the code")
+        // Each number on the baseline of the first line of its line of code
+        val lines = block.code
+        val third = lines.getLineForOffset(lines.layoutInput.text.text.indexOf("word"))
+        assertEquals(block.codeTopPx + lines.getLineBaseline(third), block.numbers[2].top + block.numbers[2].layout.firstBaseline, 0.5f)
+        assertTrue(block.numbers[3].top > block.numbers[2].top + 2 * (lines.getLineBottom(0) - lines.getLineTop(0)), "the wrapped lines have no number")
+        // A tap on the code, after the column
+        val b = lines.getBoundingBox(lines.layoutInput.text.text.lastIndexOf('b'))
+        assertEquals(code.lastIndexOf('b'), block.codeOffsetAt(Offset(block.codeLeftPx + b.center.x, block.codeTopPx + b.center.y)))
     }
 }

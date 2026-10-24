@@ -83,7 +83,8 @@ class TextScreenshotTest {
     /**
      * Code drawn by the page (docs/code-blocks.md): in the line on its background, a block in the
      * colors of its language with a long line wrapped under its indentation, a tab and an empty
-     * line, a block without a language at the start of a centered text.
+     * line, a block without a language at the start of a centered text, a block with the numbers
+     * of its lines.
      */
     @Test
     fun textSavedCode() = capture("text-saved-code", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
@@ -93,6 +94,12 @@ class TextScreenshotTest {
         write(viewModels, 20f, 20f, kotlin, drawnWidthMm = 120f)
         save(viewModels)
         write(viewModels, 20f, 125f, "Centered\n```\nno language: one color\n```", TextAlignment.CENTER, drawnWidthMm = 90f)
+        save(viewModels)
+        write(
+            viewModels, 20f, 150f,
+            "```python showLineNumbers\ndef area(r):\n    return 3.14159 * r * r  # the area of a circle of radius r, a long comment\n\nprint(area(2))\n```",
+            drawnWidthMm = 120f
+        )
         save(viewModels)
     }
 

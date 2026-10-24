@@ -195,4 +195,15 @@ class ComposeTextTileAdapterTest {
         })
         assertNotNull(failing.layout(text("```kotlin\nfun f\n```"), TextTileAdapter.NO_PAPER))
     }
+
+    @Test
+    fun theLineNumbersAreWordsOfTheLayout() {
+        val words = words(text("```kotlin showLineNumbers\nval a = 1\nval b = 2\n```"))
+        // The numbers, not the digits of the code
+        val one = words.filter { it.text.trim() == "1" }.minBy { it.left }
+        val two = words.filter { it.text.trim() == "2" }.minBy { it.left }
+        assertEquals(TextFace.MONO, one.face)
+        assertTrue(one.left < words.word("val").left, "before the code")
+        assertTrue(two.baseline > one.baseline)
+    }
 }

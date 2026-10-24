@@ -75,6 +75,8 @@ abstract interface io.github.valerioisufi.drawview.canvas.controller/TextFormatT
         abstract fun <get-color>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.color.<get-color>|<get-color>(){}[0]
     abstract val fontSize // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.fontSize|{}fontSize[0]
         abstract fun <get-fontSize>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.fontSize.<get-fontSize>|<get-fontSize>(){}[0]
+    open val codeLineNumbers // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.codeLineNumbers|{}codeLineNumbers[0]
+        open fun <get-codeLineNumbers>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.codeLineNumbers.<get-codeLineNumbers>|<get-codeLineNumbers>(){}[0]
     open val formatsCharacters // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.formatsCharacters|{}formatsCharacters[0]
         open fun <get-formatsCharacters>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.formatsCharacters.<get-formatsCharacters>|<get-formatsCharacters>(){}[0]
     open val inCodeBlock // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.inCodeBlock|{}inCodeBlock[0]
@@ -89,6 +91,7 @@ abstract interface io.github.valerioisufi.drawview.canvas.controller/TextFormatT
     open fun toggleBulletList() // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.toggleBulletList|toggleBulletList(){}[0]
     open fun toggleCodeBlock() // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.toggleCodeBlock|toggleCodeBlock(){}[0]
     open fun toggleHeading() // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.toggleHeading|toggleHeading(){}[0]
+    open fun toggleLineNumbers() // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.toggleLineNumbers|toggleLineNumbers(){}[0]
     open fun toggleNumberedList() // io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget.toggleNumberedList|toggleNumberedList(){}[0]
 }
 
@@ -578,6 +581,8 @@ final class io.github.valerioisufi.drawview.canvas.controller/SnapManager { // i
 final class io.github.valerioisufi.drawview.canvas.controller/TextEditorManager : io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget { // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager|null[0]
     constructor <init>(io.github.valerioisufi.drawview.canvas.controller/DrawViewController) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.<init>|<init>(io.github.valerioisufi.drawview.canvas.controller.DrawViewController){}[0]
 
+    final val codeLineNumbers // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.codeLineNumbers|{}codeLineNumbers[0]
+        final fun <get-codeLineNumbers>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.codeLineNumbers.<get-codeLineNumbers>|<get-codeLineNumbers>(){}[0]
     final val formatsCharacters // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.formatsCharacters|{}formatsCharacters[0]
         final fun <get-formatsCharacters>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.formatsCharacters.<get-formatsCharacters>|<get-formatsCharacters>(){}[0]
     final val inCodeBlock // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.inCodeBlock|{}inCodeBlock[0]
@@ -630,6 +635,7 @@ final class io.github.valerioisufi.drawview.canvas.controller/TextEditorManager 
     final fun toggleBulletList() // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.toggleBulletList|toggleBulletList(){}[0]
     final fun toggleCodeBlock() // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.toggleCodeBlock|toggleCodeBlock(){}[0]
     final fun toggleHeading() // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.toggleHeading|toggleHeading(){}[0]
+    final fun toggleLineNumbers() // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.toggleLineNumbers|toggleLineNumbers(){}[0]
     final fun toggleNumberedList() // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.toggleNumberedList|toggleNumberedList(){}[0]
     final fun updateValue(androidx.compose.ui.text.input/TextFieldValue) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.updateValue|updateValue(androidx.compose.ui.text.input.TextFieldValue){}[0]
     final fun updateValue(androidx.compose.ui.text.input/TextFieldValue, kotlin/Boolean) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.updateValue|updateValue(androidx.compose.ui.text.input.TextFieldValue;kotlin.Boolean){}[0]
@@ -1092,6 +1098,7 @@ final class io.github.valerioisufi.drawview.canvas/SelectionFrame { // io.github
 }
 
 final object io.github.valerioisufi.drawview.canvas.text/RichTextEditing { // io.github.valerioisufi.drawview.canvas.text/RichTextEditing|null[0]
+    final fun codeBlockAt(androidx.compose.ui.text.input/TextFieldValue): io.github.valerioisufi.drawview.model.text/RichTextParser.Span? // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.codeBlockAt|codeBlockAt(androidx.compose.ui.text.input.TextFieldValue){}[0]
     final fun handleEnter(androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue? // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.handleEnter|handleEnter(androidx.compose.ui.text.input.TextFieldValue){}[0]
     final fun handleSmartNewline(androidx.compose.ui.text.input/TextFieldValue, androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue? // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.handleSmartNewline|handleSmartNewline(androidx.compose.ui.text.input.TextFieldValue;androidx.compose.ui.text.input.TextFieldValue){}[0]
     final fun inCodeBlock(androidx.compose.ui.text.input/TextFieldValue): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.inCodeBlock|inCodeBlock(androidx.compose.ui.text.input.TextFieldValue){}[0]
@@ -1101,6 +1108,7 @@ final object io.github.valerioisufi.drawview.canvas.text/RichTextEditing { // io
     final fun toggleBulletList(androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.toggleBulletList|toggleBulletList(androidx.compose.ui.text.input.TextFieldValue){}[0]
     final fun toggleCodeBlock(androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.toggleCodeBlock|toggleCodeBlock(androidx.compose.ui.text.input.TextFieldValue){}[0]
     final fun toggleHeading(androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.toggleHeading|toggleHeading(androidx.compose.ui.text.input.TextFieldValue){}[0]
+    final fun toggleLineNumbers(androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.toggleLineNumbers|toggleLineNumbers(androidx.compose.ui.text.input.TextFieldValue){}[0]
     final fun toggleNumberedList(androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.toggleNumberedList|toggleNumberedList(androidx.compose.ui.text.input.TextFieldValue){}[0]
 
     final enum class Format : kotlin/Enum<io.github.valerioisufi.drawview.canvas.text/RichTextEditing.Format> { // io.github.valerioisufi.drawview.canvas.text/RichTextEditing.Format|null[0]

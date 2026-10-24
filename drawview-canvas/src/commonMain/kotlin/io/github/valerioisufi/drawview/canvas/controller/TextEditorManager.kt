@@ -22,6 +22,7 @@ import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.model.change.toData
 import io.github.valerioisufi.drawview.model.geometry.Point
 import io.github.valerioisufi.drawview.model.newElementId
+import io.github.valerioisufi.drawview.model.text.RichTextParser
 import io.github.valerioisufi.drawview.model.text.TextDefaults
 import io.github.valerioisufi.drawview.model.text.TextSizes
 import kotlin.math.abs
@@ -85,20 +86,25 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
 
     override val formatsCharacters: Boolean get() = true
 
-    /** The value whose selection [inCodeBlock] last told, and what it told. */
+    /** The value whose block of code of the selection was last read, and that block. */
     private var codeBlockValue: TextFieldValue? = null
-    private var codeBlockSelected = false
+    private var codeBlockSelected: RichTextParser.Span? = null
 
-    override val inCodeBlock: Boolean
+    /** The block of code of the selection, read once per value. */
+    private val selectedCodeBlock: RichTextParser.Span?
         get() {
-            if (!isEditing) return false
+            if (!isEditing) return null
             val current = value
             if (current != codeBlockValue) {
-                codeBlockSelected = RichTextEditing.inCodeBlock(current)
+                codeBlockSelected = RichTextEditing.codeBlockAt(current)
                 codeBlockValue = current
             }
             return codeBlockSelected
         }
+
+    override val inCodeBlock: Boolean get() = selectedCodeBlock != null
+
+    override val codeLineNumbers: Boolean get() = selectedCodeBlock?.numbered == true
 
     /** Rotation of the text in degrees (kept: the editor does not turn a text). */
     public val rotation: Float get() = activeTextItem?.rotation ?: 0f
@@ -380,6 +386,9 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
 
     /** Puts the lines of the selection in a block of code, or takes the block of the selection out of its fences. */
     override fun toggleCodeBlock(): Unit = updateValue(RichTextEditing.toggleCodeBlock(value), smartNewline = false)
+
+    /** Asks for the numbers of the lines of the block of code of the selection, or not any more. */
+    override fun toggleLineNumbers(): Unit = updateValue(RichTextEditing.toggleLineNumbers(value), smartNewline = false)
 
     /** Makes the lines of the selection bullet list items, or plain text again. */
     override fun toggleBulletList(): Unit = updateValue(RichTextEditing.toggleBulletList(value), smartNewline = false)

@@ -27,6 +27,9 @@ public interface TextFormatTarget {
      */
     public val inCodeBlock: Boolean get() = false
 
+    /** Whether the block of code of the selection shows the numbers of its lines. */
+    public val codeLineNumbers: Boolean get() = false
+
     /** Adds or removes [format] around the selection of the text being written. */
     public fun toggle(format: RichTextEditing.Format) {}
 
@@ -35,6 +38,9 @@ public interface TextFormatTarget {
 
     /** Puts the lines of the selection in a block of code, or takes the block of the selection out of its fences. */
     public fun toggleCodeBlock() {}
+
+    /** Asks for the numbers of the lines of the block of code of the selection, or not any more. */
+    public fun toggleLineNumbers() {}
 
     /** Makes the lines of the selection bullet list items, or plain text again. */
     public fun toggleBulletList() {}

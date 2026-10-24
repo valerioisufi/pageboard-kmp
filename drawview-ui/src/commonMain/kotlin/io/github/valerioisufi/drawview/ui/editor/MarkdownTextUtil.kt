@@ -20,6 +20,7 @@ import io.github.valerioisufi.drawview.model.text.RichTextParser.Kind
 import io.github.valerioisufi.drawview.model.text.RichTextParser.Span
 import io.github.valerioisufi.drawview.model.text.code.CodeHighlighter
 import io.github.valerioisufi.drawview.ui.render.CodeBlockLayout
+import io.github.valerioisufi.drawview.ui.render.CodeBlockSource
 import io.github.valerioisufi.drawview.ui.render.CodeTheme
 import kotlin.math.max
 import kotlin.math.min
@@ -137,7 +138,7 @@ public object MarkdownTextUtil {
         textFont: FontFamily,
         monospace: FontFamily = FontFamily.Monospace,
         highlighter: CodeHighlighter? = null,
-        layoutCodeBlock: ((code: String, language: String, indent: Int) -> CodeBlockLayout)? = null,
+        layoutCodeBlock: ((CodeBlockSource) -> CodeBlockLayout)? = null,
         renderFormula: (latex: String, fontSizePx: Float) -> RenderedFormula<T>?
     ): EditorText<T> {
         val selMin = min(selection.start, selection.end)
@@ -159,7 +160,7 @@ public object MarkdownTextUtil {
                 if (touched || layoutCodeBlock == null) {
                     sources += span
                 } else {
-                    blocks += ConcealedBlock(span, layoutCodeBlock(text.substring(span.contentStart, span.contentEnd), span.language, span.level))
+                    blocks += ConcealedBlock(span, layoutCodeBlock(codeBlockSource(text, span, lineWidthPx)))
                 }
                 continue
             }
@@ -295,6 +296,10 @@ public object MarkdownTextUtil {
         }
     }
 
+    /** What the block of code [span] of [text] is laid out from, in lines of [lineWidthPx]. */
+    private fun codeBlockSource(text: String, span: Span, lineWidthPx: Float) =
+        CodeBlockSource(text.substring(span.contentStart, span.contentEnd), span.language, span.level, span.numbered, lineWidthPx)
+
     /** The source MicroTeX renders for the formula [span] of [text]: in display style when written `$$…$$`. */
     internal fun formulaSource(text: String, span: Span): String {
         val content = text.substring(span.contentStart, span.contentEnd)
@@ -388,8 +393,7 @@ public object MarkdownTextUtil {
      * @param fontAscentPx ascent of the base font, used to reserve the descent of the formulas.
      * @param lineWidthPx width of the lines, `null` when the text has none (block formulas then
      *   stay in the line).
-     * @param layoutCodeBlock lays out the code of a block (its lines between its fences, its
-     *   language, the spaces before its fence) on the width of the lines; `null`, or without
+     * @param layoutCodeBlock lays out a block of code (see [CodeBlockSource]); `null`, or without
      *   [lineWidthPx], a block is drawn as code in the line.
      */
     public fun <T> toCanvasText(
@@ -399,7 +403,7 @@ public object MarkdownTextUtil {
         fontAscentPx: Float,
         lineWidthPx: Float? = null,
         monospace: FontFamily = FontFamily.Monospace,
-        layoutCodeBlock: ((code: String, language: String, indent: Int) -> CodeBlockLayout)? = null,
+        layoutCodeBlock: ((CodeBlockSource) -> CodeBlockLayout)? = null,
         renderFormula: (latex: String, fontSizePx: Float) -> RenderedFormula<T>?
     ): CanvasText<T> {
         val spans = RichTextParser.parse(text)
@@ -409,7 +413,7 @@ public object MarkdownTextUtil {
         val blockAt = HashMap<Int, Pair<Span, CodeBlockLayout>>()
         for (span in spans) {
             if (span.kind == Kind.CODE_BLOCK && layoutCodeBlock != null && lineWidthPx != null) {
-                blockAt[span.start] = span to layoutCodeBlock(text.substring(span.contentStart, span.contentEnd), span.language, span.level)
+                blockAt[span.start] = span to layoutCodeBlock(codeBlockSource(text, span, lineWidthPx))
                 continue
             }
             when (span.kind) {

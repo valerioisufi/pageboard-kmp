@@ -4,6 +4,7 @@ import io.github.valerioisufi.drawview.model.text.RichTextParser.Kind
 import io.github.valerioisufi.drawview.model.text.RichTextParser.Span
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -130,5 +131,19 @@ class CodeBlocksTest {
     fun theNotationAroundABlockIsRead() {
         val text = "```\nx\n```\n# Title\n- item \$y\$"
         assertEquals(listOf(Kind.CODE_BLOCK, Kind.HEADING, Kind.LIST_ITEM, Kind.FORMULA), RichTextParser.parse(text).map { it.kind })
+    }
+
+    @Test
+    fun aBlockAsksForItsLineNumbersByAWordAfterItsFence() {
+        for (info in listOf("kotlin showLineNumbers", "{.kotlin .numberLines}", "kotlin {.numberLines}", "kotlin linenums", "KOTLIN NumberLines")) {
+            val text = "```$info\nx\n```"
+            val block = block(text)
+            assertTrue(block.numbered, info)
+            assertEquals("kotlin", block.language.lowercase(), info)
+        }
+        val alone = "```showLineNumbers\nx\n```"
+        assertTrue(block(alone).numbered)
+        assertEquals("", block(alone).language, "no language")
+        assertFalse(block("```kotlin title\nx\n```").numbered)
     }
 }

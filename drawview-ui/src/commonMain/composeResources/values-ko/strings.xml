@@ -94,6 +94,7 @@
     <string name="text_editor_action_strikethrough">취소선</string>
     <string name="text_editor_action_code">코드</string>
     <string name="text_editor_action_code_block">코드 블록</string>
+    <string name="text_editor_action_line_numbers">줄 번호</string>
     <string name="text_editor_action_heading">제목</string>
     <string name="text_editor_action_bullet_list">글머리 기호</string>
     <string name="text_editor_action_numbered_list">번호 매기기</string>

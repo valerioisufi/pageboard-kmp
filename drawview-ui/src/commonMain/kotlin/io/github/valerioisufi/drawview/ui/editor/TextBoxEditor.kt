@@ -66,6 +66,7 @@ import io.github.valerioisufi.drawview.model.text.TextSizes.PT_TO_MM
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_formula_invalid
 import io.github.valerioisufi.drawview.ui.render.CodeBlockLayout
+import io.github.valerioisufi.drawview.ui.render.CodeBlockSource
 import io.github.valerioisufi.drawview.ui.render.CodeTheme
 import io.github.valerioisufi.drawview.ui.render.FormulaImages
 import io.github.valerioisufi.drawview.ui.render.LruCache
@@ -148,9 +149,9 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
             textFont = notesFonts.text,
             monospace = notesFonts.monospace,
             highlighter = highlighter,
-            layoutCodeBlock = { code, language, indent ->
-                codeLayouts.getOrPut(CodeKey(code, language, indent, fontSizePx, widthPx, editor.color, paper)) {
-                    CodeBlockLayout.layout(codeMeasurer, notesFonts.monospace, code, language, indent, fontSizePx, widthPx.toFloat(), textColor, highlighter, paper)
+            layoutCodeBlock = { source ->
+                codeLayouts.getOrPut(CodeKey(source, fontSizePx, editor.color, paper)) {
+                    CodeBlockLayout.layout(codeMeasurer, notesFonts.monospace, source, fontSizePx, textColor, highlighter, paper)
                 }
             }
         ) { latex, sizePx -> renderAtBucket(images, latex, sizePx, editor.color) }
@@ -311,7 +312,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
 }
 
 /** What a block of code is laid out from: the same key, the same layout. */
-private data class CodeKey(val code: String, val language: String, val indent: Int, val fontPx: Float, val widthPx: Int, val color: Int, val paper: Int)
+private data class CodeKey(val source: CodeBlockSource, val fontPx: Float, val color: Int, val paper: Int)
 
 /** Where [block] is drawn in its line of [layout]: centered in it, as the page draws it. */
 private fun codeBlockTop(layout: TextLayoutResult, block: MarkdownTextUtil.EditorCodeBlock): Float {

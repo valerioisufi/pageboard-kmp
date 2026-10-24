@@ -67,6 +67,7 @@ import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_code_block
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_heading
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_italic
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_line_numbers
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_math
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_numbered_list
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_strikethrough
@@ -353,6 +354,14 @@ internal class EditorCommands internal constructor(
         shortcuts = listOf(Shortcut(Key.C, primary = true, alt = true)),
         isEnabled = { textTarget?.formatsCharacters == true }
     ) { textTarget?.toggleCodeBlock() }
+
+    val lineNumbers = Command(
+        "format-line-numbers", label(Res.string.text_editor_action_line_numbers), CommandGroup.FORMAT,
+        icon = { rememberVectorPainter(DrawViewIcons.Hash) },
+        shortcuts = listOf(Shortcut(Key.L, primary = true, alt = true)),
+        isEnabled = { textTarget?.inCodeBlock == true },
+        isChecked = { textTarget?.codeLineNumbers == true }
+    ) { textTarget?.toggleLineNumbers() }
     val formula = characterFormat(Format.FORMULA, Res.string.text_editor_action_math, DrawViewIcons.Sigma, Shortcut(Key.M, primary = true, shift = true))
 
     val heading = Command(
@@ -394,7 +403,7 @@ internal class EditorCommands internal constructor(
 
     /** The commands of the formatting bars and of the menu Format. */
     val formats: List<Command> = listOf(
-        bold, italic, strikethrough, code, codeBlock, heading, bulletList, numberedList, formula,
+        bold, italic, strikethrough, code, codeBlock, lineNumbers, heading, bulletList, numberedList, formula,
         alignStart, alignCenter, alignEnd, largerText, smallerText
     )
 

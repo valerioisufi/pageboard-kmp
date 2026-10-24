@@ -36,7 +36,7 @@ public object RichTextEditing {
     }
 
     /** The block of code the selection of [value] is in, its fences included, or `null`. */
-    private fun codeBlockAt(value: TextFieldValue): RichTextParser.Span? {
+    public fun codeBlockAt(value: TextFieldValue): RichTextParser.Span? {
         val start = min(value.selection.start, value.selection.end)
         val end = max(value.selection.start, value.selection.end)
         return RichTextParser.parse(value.text).firstOrNull { it.kind == RichTextParser.Kind.CODE_BLOCK && start >= it.start && end <= it.end }
@@ -88,6 +88,43 @@ public object RichTextEditing {
         return value.copy(
             text = text.substring(0, firstLineStart) + opening + code + closing + text.substring(lastLineEnd),
             selection = TextRange(moved(sel.start), moved(sel.end))
+        )
+    }
+
+    /**
+     * Adds `showLineNumbers` after the opening fence of the block of the selection, or takes off
+     * the words asking for its line numbers ([RichTextParser.LINE_NUMBERS]), the selection on the
+     * same characters. Nothing outside a block.
+     */
+    public fun toggleLineNumbers(value: TextFieldValue): TextFieldValue {
+        val block = codeBlockAt(value) ?: return value
+        val text = value.text
+        // The information after the characters of the fence, to the end of its line
+        var infoStart = block.start + block.level
+        val fence = text[infoStart]
+        while (infoStart < text.length && text[infoStart] == fence) infoStart++
+        val infoEnd = text.indexOf('\n', infoStart).let { if (it < 0) text.length else it }
+        val info = text.substring(infoStart, infoEnd)
+        val newInfo = if (block.numbered) {
+            val kept = info.split(' ', '\t')
+                .filter { it.isNotEmpty() && it.trimStart('{', '.').trimEnd('}').lowercase() !in RichTextParser.LINE_NUMBERS }
+                .joinToString(" ")
+            // The brace closing the attributes, gone with the word it was written after
+            val closed = if ('{' in kept && '}' !in kept) "$kept}" else kept
+            if (closed.isEmpty()) "" else info.takeWhile { it == ' ' || it == '\t' } + closed
+        } else {
+            val written = info.trimEnd()
+            if (written.isBlank()) LINE_NUMBERS_WORD else "$written $LINE_NUMBERS_WORD"
+        }
+        val shift = newInfo.length - info.length
+        fun moved(offset: Int) = when {
+            offset <= infoStart -> offset
+            offset <= infoEnd -> min(offset, infoStart + newInfo.length)
+            else -> offset + shift
+        }
+        return value.copy(
+            text = text.substring(0, infoStart) + newInfo + text.substring(infoEnd),
+            selection = TextRange(moved(value.selection.start), moved(value.selection.end))
         )
     }
 
@@ -507,4 +544,7 @@ public object RichTextEditing {
 
     /** The fewest backticks of a fence. */
     private const val MIN_FENCE = 3
+
+    /** The word asking for the line numbers of a block, as the editor writes it. */
+    private const val LINE_NUMBERS_WORD = "showLineNumbers"
 }

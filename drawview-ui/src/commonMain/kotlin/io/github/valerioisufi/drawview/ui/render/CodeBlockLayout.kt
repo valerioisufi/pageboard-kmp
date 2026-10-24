@@ -84,11 +84,25 @@ internal class CodeTheme private constructor(val text: Color, paper: Color?, pri
 }
 
 /**
+ * What a block of code is laid out from: its [code] (the lines between its fences), its
+ * [language], the [indent] spaces of its fence taken off its lines, whether it shows the numbers of
+ * its lines ([numbered]), and the [widthPx] it takes in its text.
+ */
+public data class CodeBlockSource(
+    val code: String,
+    val language: String,
+    val indent: Int,
+    val numbered: Boolean,
+    val widthPx: Float
+)
+
+/**
  * A block of code laid out on the width of its text ([widthPx] x [heightPx] in pixels of the
  * destination): its code in the monospace of the notes and in the colors of its language, its
  * lines wrapped on the width less the padding, a wrapped line continuing under the start of its
- * code; on its background with rounded corners, the name of its language in its top-right corner.
- * The canvas and the editor draw a block with the same layout.
+ * code; on its background with rounded corners, the name of its language in its top-right corner,
+ * the numbers of its lines in a column on its left when it asks for them. The canvas and the
+ * editor draw a block with the same layout.
  *
  * @property naturalWidthPx the width of its longest line with the padding, unwrapped: what a text
  *   of automatic width grows to.
@@ -105,7 +119,9 @@ public class CodeBlockLayout internal constructor(
     internal val labelTopPx: Float,
     internal val radiusPx: Float,
     internal val theme: CodeTheme,
-    internal val fontPx: Float
+    internal val fontPx: Float,
+    internal val codeLeftPx: Float,
+    internal val numbers: List<LineNumber>
 ) {
     private val backgroundPaint = Paint().apply {
         isAntiAlias = true
@@ -120,7 +136,7 @@ public class CodeBlockLayout internal constructor(
      * where a tap on the block puts the caret.
      */
     internal fun codeOffsetAt(point: Offset): Int {
-        val local = Offset(point.x - paddingPx, point.y - codeTopPx)
+        val local = Offset(point.x - codeLeftPx, point.y - codeTopPx)
         val shown = code.getOffsetForPosition(local)
         // At the end of a line, before its line break: the next line starts at the same offset drawn
         val atLineEnd = shown == code.getLineEnd(code.getLineForVerticalPosition(local.y))
@@ -142,15 +158,24 @@ public class CodeBlockLayout internal constructor(
     internal fun draw(canvas: Canvas, left: Float, top: Float) {
         canvas.drawRoundRect(left, top, left + widthPx, top + heightPx, radiusPx, radiusPx, backgroundPaint)
         canvas.save()
-        canvas.translate(left + paddingPx, top + codeTopPx)
+        canvas.translate(left + codeLeftPx, top + codeTopPx)
         TextPainter.paint(canvas, code)
         canvas.restore()
+        for (number in numbers) {
+            canvas.save()
+            canvas.translate(left + number.left, top + number.top)
+            TextPainter.paint(canvas, number.layout)
+            canvas.restore()
+        }
         val label = label ?: return
         canvas.save()
         canvas.translate(left + labelLeftPx, top + labelTopPx)
         TextPainter.paint(canvas, label)
         canvas.restore()
     }
+
+    /** The number of a line of the code, laid out, its top-left corner at [left], [top] of the block. */
+    internal class LineNumber(val layout: TextLayoutResult, val left: Float, val top: Float)
 
     internal companion object {
         /** The size of the code of a block, and of the name of its language, relative to the text. */
@@ -172,34 +197,36 @@ public class CodeBlockLayout internal constructor(
         fun cornerRadius(textFontPx: Float): Float = textFontPx * CODE_SCALE * RADIUS
 
         /**
-         * Lays out [code] written in [language] (its lines without the [indent] spaces of its
-         * fence) in a text of [textFontPx] and [color] whose lines are [widthPx] wide, on the paper
-         * of [paperColor], its tokens told by [highlighter] (`null`: in one color).
+         * Lays out the block of [source] in a text of [textFontPx] and [color], on the paper of
+         * [paperColor], its tokens told by [highlighter] (`null`: in one color).
          */
         fun layout(
             measurer: TextMeasurer,
             monospace: FontFamily,
-            code: String,
-            language: String,
-            indent: Int,
+            source: CodeBlockSource,
             textFontPx: Float,
-            widthPx: Float,
             color: Color,
             highlighter: CodeHighlighter?,
             paperColor: Int
         ): CodeBlockLayout {
+            val code = source.code
+            val language = source.language
+            val widthPx = source.widthPx
             val fontPx = textFontPx * CODE_SCALE
             val theme = CodeTheme.of(color, paperColor)
             val style = TextStyle(color = color, fontSize = fontPx.sp, fontFamily = monospace, letterSpacing = 0.sp, textAlign = TextAlign.Start)
             val advance = advance(measurer, style)
-            val shownCode = shownCode(code, indent, advance, tokens(highlighter, code, language), theme)
+            val shownCode = shownCode(code, source.indent, advance, tokens(highlighter, code, language), theme)
             val shown = shownCode.text
             val padding = fontPx * PADDING_X
+            // The column of the numbers: as many digits as the last line has, then one free
+            val lineCount = shownCode.lineStarts.size
+            val gutter = if (source.numbered) (lineCount.toString().length + 1) * advance else 0f
             val layout = measurer.measure(
                 text = shown,
                 style = style,
                 softWrap = true,
-                constraints = Constraints.fixedWidth((widthPx - 2f * padding).toInt().coerceAtLeast(1)),
+                constraints = Constraints.fixedWidth((widthPx - 2f * padding - gutter).toInt().coerceAtLeast(1)),
                 skipCache = true
             )
             val name = if (language.length > MAX_LABEL) language.take(MAX_LABEL) + "…" else language
@@ -209,20 +236,55 @@ public class CodeBlockLayout internal constructor(
             val paddingY = fontPx * PADDING_Y
             val labelTop = paddingY * 0.5f
             val codeTop = if (label != null) labelTop + label.size.height + paddingY * 0.25f else paddingY
+            val numbers = if (source.numbered) {
+                lineNumbers(measurer, layout, shownCode.lineStarts, style.copy(color = theme.label), padding + gutter - advance, codeTop)
+            } else {
+                emptyList()
+            }
             return CodeBlockLayout(
                 code = layout,
                 shownOffsets = shownCode.shownOffsets,
                 label = label,
                 widthPx = widthPx,
                 heightPx = codeTop + layout.size.height + paddingY,
-                naturalWidthPx = max(layout.multiParagraph.intrinsics.maxIntrinsicWidth, label?.size?.width?.toFloat() ?: 0f) + 2f * padding,
+                naturalWidthPx = max(layout.multiParagraph.intrinsics.maxIntrinsicWidth + gutter, label?.size?.width?.toFloat() ?: 0f) + 2f * padding,
                 paddingPx = padding,
                 codeTopPx = codeTop,
                 labelTopPx = labelTop,
                 radiusPx = fontPx * RADIUS,
                 theme = theme,
-                fontPx = fontPx
+                fontPx = fontPx,
+                codeLeftPx = padding + gutter,
+                numbers = numbers
             )
+        }
+
+        /**
+         * The numbers of the lines of the code laid out in [layout] (its paragraphs starting at
+         * [lineStarts]), right aligned on [right], each on the first line of its paragraph (a
+         * wrapped line has none), its baseline on the one of the code, the code [codeTop] below the
+         * top of the block.
+         */
+        private fun lineNumbers(
+            measurer: TextMeasurer,
+            layout: TextLayoutResult,
+            lineStarts: IntArray,
+            style: TextStyle,
+            right: Float,
+            codeTop: Float
+        ): List<LineNumber> {
+            val numbers = ArrayList<LineNumber>(lineStarts.size)
+            // The lines of the layout in order: a line starting where the next paragraph starts is its first one
+            var paragraph = 0
+            for (line in 0 until layout.lineCount) {
+                if (line > 0) {
+                    if (paragraph + 1 >= lineStarts.size || layout.getLineStart(line) != lineStarts[paragraph + 1]) continue
+                    paragraph++
+                }
+                val number = measurer.measure(AnnotatedString((paragraph + 1).toString()), style, softWrap = false, skipCache = true)
+                numbers += LineNumber(number, right - number.size.width, codeTop + layout.getLineBaseline(line) - number.firstBaseline)
+            }
+            return numbers
         }
 
         /** The width of a character of the monospace of [style]. */
@@ -255,13 +317,15 @@ public class CodeBlockLayout internal constructor(
          * their colors.
          */
         private fun shownCode(code: String, indent: Int, advance: Float, tokens: List<CodeToken>, theme: CodeTheme): ShownCode {
-            // Where each offset of the code is drawn
+            // Where each offset of the code is drawn, and each of its lines starts
             val offsets = IntArray(code.length + 1)
+            val lineStarts = ArrayList<Int>()
             val text = buildAnnotatedString {
                 var lineStart = 0
                 while (true) {
                     val lineEnd = code.indexOf('\n', lineStart).let { if (it < 0) code.length else it }
                     val paragraphStart = length
+                    lineStarts += paragraphStart
                     var i = lineStart
                     var removed = 0
                     while (i < lineEnd && removed < indent && code[i] == ' ') {
@@ -296,11 +360,14 @@ public class CodeBlockLayout internal constructor(
                     if (end > start) addStyle(SpanStyle(color = theme.color(token.kind)), start, end)
                 }
             }
-            return ShownCode(text, offsets)
+            return ShownCode(text, offsets, lineStarts.toIntArray())
         }
 
-        /** The code as it is drawn, and where every offset of the code is in [text]. */
-        private class ShownCode(val text: AnnotatedString, val shownOffsets: IntArray)
+        /**
+         * The code as it is drawn, where every offset of the code is in [text], and where each of
+         * its lines (a paragraph) starts in [text].
+         */
+        private class ShownCode(val text: AnnotatedString, val shownOffsets: IntArray, val lineStarts: IntArray)
     }
 }
 
