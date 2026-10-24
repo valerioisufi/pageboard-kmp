@@ -240,7 +240,7 @@ up to an hour ahead".
 | 2. Signed operations | `OperationProof`, `SealedOperation.signature`; the engine signing, checking, keeping and giving on the proofs; `Membership.keyHash` and `adoptKey`; the snapshot from the owner; `KnownVersions` of the sender; the resources checked against their hash and received in parts; `PROTOCOL_VERSION` back to 1 and `ProtocolFormatTest`. Tests: a reader writing as an editor, a member writing as another, an operation given on through a member, a wrong key, a snapshot of a member, versions said for another, a wrong file | done |
 | 3. Nothing makes a device fail | `SyncEngine.run` closing the connection on any failure of a message; `SyncCodec` never throwing but `SyncException`; tests with random bytes, changed frames, changed operations and snapshots (a fixed seed, on the JVM and the iOS simulator), and what they find fixed | done |
 | 4. Stamps bounded in the model | `HybridClock.admits`, `MAX_AHEAD_MS`, `next` without overflow; `DocumentChange.stamps()`; `DocumentSession.admits`, `receive` refusing; `latestStamp()` with the title; the ABI of `drawview-model` recorded again (additions), the consumer checks; the operations of the tests of the engine stamped now (`forged`, 35 000 years ahead until now: refused from this phase). Tests (`FutureStampTest`): the end of time, the greatest counter a minute ahead, a century ahead, a text said to include the future, an order, a version and a removal after the stamp of their operation, in a composite change too, the stamp of another replica, at the bound and a millisecond past it, negative parts, a document loaded with stamps ahead of the wall clock; every operation `ConvergenceTest` exchanges admitted | done |
-| 5. Refused by the engine | `SyncEngine.onOperations` closing the connection before keeping or applying anything; `docs/collaboration.md`. Tests (`SyncEngineTest`): `anOperationStampedFarAheadIsRefused`; a member ten minutes ahead, taken, the next changes of the others after it; an order or a version after the stamp, refused; an operation of a member stamped ahead given on by another one, refused; `aMemberSendingAnythingStopsNothing` as before. The check on a copy of the database of the user | approved |
+| 5. Refused by the engine | `SyncEngine.onOperations` closing the connection before keeping or applying anything; `docs/collaboration.md`. Tests (`SyncEngineTest`): `anOperationStampedFarAheadIsRefused`; a member ten minutes ahead, taken, the next changes of the others after it; an order or a version after the stamp, refused; an operation of a member stamped ahead given on by another one, refused; `aMemberSendingAnythingStopsNothing` as before. The check on a copy of the database of the user | done, but the check on the real notes (waiting for the copy) |
 
 Every phase ends with the checks of `CLAUDE.md`, the Rust tests when the bridge changes, and the
 tests of the sync modules on the iOS simulator.
@@ -374,6 +374,31 @@ tests of the sync modules on the iOS simulator.
 * The ABI of `drawview-model` is recorded again: additions only (`admits`, `MAX_AHEAD_MS`,
   `stamps()`).
 
+### Phase 5 results
+
+* `SyncEngine.onOperations`: once the signatures and the roles are checked, an operation of the
+  batch not admitted by the session (`DocumentSession.admits`) closes the connection, before the
+  proofs are kept, the strokes modeled or anything applied: the operations of the batch before it
+  are not applied either.
+* `docs/collaboration.md`: the rule, in the convergence and in the protocol; "a clock far ahead
+  wins" becomes "a clock up to an hour ahead".
+* Tests (`SyncEngineTest`):
+  * `anOperationStampedFarAheadIsRefused`: an operation stamped now and one a century ahead in the
+    same batch, neither applied nor its proof kept (in phase 4, the first one was applied and both
+    proofs kept);
+  * `anOperationOfAClockAFewMinutesAheadIsTaken`: ten minutes ahead, taken by the owner, given on to
+    the third device, and the renaming that one makes after it wins;
+  * `anOperationCarryingAStampAfterItsOwnIsRefused`: the versions of a text and the order of a
+    placement a millisecond after the stamp of the operation, refused;
+  * `anOperationStampedAheadGivenOnByAnotherMemberIsRefused`: signed by its author, two hours
+    ahead, given on by another member, refused.
+* `devicesChangingADocumentThroughEachOtherConverge` compares the document shown and the
+  operations applied, not what was removed (`assertSameShown`): the check, a step more before the
+  operations are applied, made the owner drop its hidden content for good before the others, and
+  `SyncEngine.compact` drops it only when the base of the log moves on (see Left for later). Before,
+  the order of the steps of the test happened to make them drop the same.
+* Left: the check on a copy of the database of the user, waiting for the copy.
+
 ## Decisions
 
 ### Taken by the user (2026-10-22)
@@ -454,6 +479,10 @@ tests of the sync modules on the iOS simulator.
 * A device whose clock is off by more than an hour stops syncing that document silently: telling
   the user ("the date of this device, or of that one, is wrong") needs the reason of the closing
   up to the interface.
+* `SyncEngine.compact` drops the hidden content for good (`purge`) only when the base of the log
+  moves on: a device that compacted up to a base before every member had everything never drops
+  what was removed until then. The devices keep different hidden content (more, never less), the
+  document shown is the same. A plan of its own (it deletes for good).
 * The lecture records have stamps of their own (the `Stamp` of `drawview-lecture`), not bounded
   either: with their signature.
 * The stacking order (`docs/z-order.md`, proposed): its new keys will not be stamps. Then

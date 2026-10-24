@@ -1192,6 +1192,13 @@ public class SyncEngine(
         }
         val allowed = known.filter { membership.mayWrite(it.operation.id.replica, it.operation.id.sequence) }
         if (allowed.isEmpty()) return
+        // Stamped by its replica, at most an hour ahead of the clock here, carrying no stamp after
+        // its own: the connection carrying one that is not is closed, before anything of it is kept
+        val refused = sync.open.edit { session -> allowed.firstOrNull { !session.admits(it.operation) } }
+        if (refused != null) {
+            val id = refused.operation.id
+            throw SyncException("An operation ${id.replica}/${id.sequence} stamped ${refused.operation.stamp}, ahead or carrying stamps after its own")
+        }
         // Kept to give them on, as they came
         val proofs = allowed.filter { it.operation.id.replica != replica() }.associate { it.operation.id to it.proof }
         if (proofs.isNotEmpty()) {

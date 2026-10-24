@@ -89,6 +89,10 @@ The origin of a change decides what the observers do:
   its state (`DrawPage.isHidden`), whatever the order the devices see the changes in.
 * The operations of a replica are applied in their order (`DocumentSession.receive` refuses the
   others); the protocol sends them in causal order (stamp order).
+* An operation of another device is received only stamped by its replica, at most an hour ahead
+  of the wall clock here (`HybridClock.admits`), and carrying no stamp after its own (the orders,
+  versions and what a removal saw of its change: `DocumentChange.stamps()`), see
+  [untrusted-members.md](untrusted-members.md), phases 4 and 5.
 
 ### Protocol
 
@@ -107,6 +111,10 @@ The origin of a change decides what the observers do:
   back to the device they came from).
 * Operations are identified by (replica, sequence number): the duplicates are dropped, an
   operation arriving before the ones it follows waits for them.
+* An operation stamped more than an hour ahead of the clock of the device receiving it, or
+  carrying stamps after its own, closes the connection that carried it, before anything of its
+  batch is kept or applied (`SyncEngine.onOperations`, `DocumentSession.admits`). The format does
+  not change (protocol 1): the operations of the applications all pass.
 * The files of the resources are asked for by identifier and sent in chunks of 256 KiB; a file
   the device has already (the same SHA-256, in any document) is not asked for, and a download
   interrupted goes on from where it stopped (`ResourceAsk.from`).
@@ -414,7 +422,7 @@ The application is not released yet, so the stored documents are not migrated:
   * a text changed on two devices keeps the most recent content, the other one in a copy under
     it (to compare and choose);
   * the pages moved on two devices are each where its most recent move put it;
-  * "most recent" is by the clocks of the devices (a clock far ahead wins).
+  * "most recent" is by the clocks of the devices (a clock up to an hour ahead wins; further ahead, its changes are refused).
 * What it costs: every stroke received is modeled again from its inputs (most of the time), the
   missed operations travel in batches of 200 and are applied as they come (the editor stays
   usable, the strokes appear little by little). Measured with `OfflineWorkBenchmark` (run by

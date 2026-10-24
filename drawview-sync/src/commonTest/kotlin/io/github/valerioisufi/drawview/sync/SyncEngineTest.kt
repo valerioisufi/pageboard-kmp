@@ -1,5 +1,8 @@
 package io.github.valerioisufi.drawview.sync
 
+import io.github.valerioisufi.drawview.model.change.BoxPlacement
+import io.github.valerioisufi.drawview.model.ElementOrder
+import io.github.valerioisufi.drawview.model.Versions
 import io.github.valerioisufi.drawview.model.AttachmentChange
 import io.github.valerioisufi.drawview.model.AttachmentReceiver
 import io.github.valerioisufi.drawview.model.AttachmentSource
@@ -386,6 +389,24 @@ class SyncEngineTest {
         }
     }
 
+    /**
+     * [devices] applied the same operations, and show the same document: what they removed may
+     * differ, a device dropping it for good when it compacts its log, at its own time (see
+     * `SyncEngine.compact`).
+     */
+    private suspend fun assertSameShown(documentId: String, devices: List<Device>) {
+        fun DocumentSnapshot.shown() = copy(
+            removedPages = emptyList(),
+            pages = pages.map { page -> page.copy(removedElements = emptyList(), versions = page.versions.filterKeys { id -> page.data.elements.any { it.id == id } }) }
+        )
+        val expected = devices[0].snapshot(documentId).shown()
+        val vector = devices[0].versionVector(documentId)
+        for (device in devices.drop(1)) {
+            assertEquals(vector, device.versionVector(documentId), "the operations applied on ${device.name}")
+            assertEquals(expected, device.snapshot(documentId).shown(), "the document on ${device.name}")
+        }
+    }
+
     private suspend fun assertSame(documentId: String, devices: List<Device>) {
         val expected = devices[0].snapshot(documentId)
         val vector = devices[0].versionVector(documentId)
@@ -617,7 +638,7 @@ class SyncEngineTest {
         // Everyone with Ada (some also with each other)
         for (device in devices) if (device !== ada) device.join(invitation, "ada")
         advanceUntilIdle()
-        assertSame(document.id, devices)
+        assertSameShown(document.id, devices)
     }
 
     @Test
@@ -1011,19 +1032,19 @@ class SyncEngineTest {
         val key = bob.engine.connectionKeys().first { it.first == document.id }.second
         val bobReplica = bob.store.replicaId()
 
-        // Bob, an editor, stamps its renaming a century ahead: signed as it should be, refused,
-        // and Bob is not worked with anymore
+        // Bob, an editor, stamps its renaming a century ahead: signed as it should be, refused
+        // with the operation before it in the same batch, nothing of them kept, and Bob is not
+        // worked with anymore
         val century = 100L * 365 * 24 * 60 * 60 * 1000
         val ahead = impostor(bob, ada, document.id)
-        ahead.send(
-            SyncCodec.encode(
-                Operations(listOf(forged(document.id, key, bobReplica, 1, RenameDocument("Ahead"), bob.identity, Stamp(currentTimeMillis() + century, 0, bobReplica))))
-            )
-        )
+        val first = forged(document.id, key, bobReplica, 1, RenameDocument("First"), bob.identity, Stamp(currentTimeMillis(), 1, bobReplica))
+        val far = forged(document.id, key, bobReplica, 2, RenameDocument("Ahead"), bob.identity, Stamp(currentTimeMillis() + century, 0, bobReplica))
+        ahead.send(SyncCodec.encode(Operations(listOf(first, far))))
         assertTrue(isClosed(ahead))
         advanceUntilIdle()
         assertEquals("Physics", ada.title(document.id))
         assertEquals("Physics", cy.title(document.id))
+        assertTrue(ada.store.proofs(document.id, listOf(OperationId(bobReplica, 1), OperationId(bobReplica, 2))).isEmpty())
 
         // The clocks of Ada and Cy are not pushed: their next changes are stamped now
         ada.change(document.id) { RenameDocument("Optics") }
@@ -1033,6 +1054,86 @@ class SyncEngineTest {
         assertTrue(ada.snapshot(document.id).titleVersion.time < currentTimeMillis() + day)
         assertTrue(cy.snapshot(document.id).pages.all { it.added.time < currentTimeMillis() + day })
         assertSame(document.id, listOf(ada, cy))
+    }
+
+    @Test
+    fun anOperationOfAClockAFewMinutesAheadIsTaken() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Physics")
+        val invitation = ada.share(document.id, "Physics")
+        bob.join(invitation, "ada")
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+        val key = bob.engine.connectionKeys().first { it.first == document.id }.second
+        val bobReplica = bob.store.replicaId()
+
+        // The clock of Bob ten minutes ahead: within the hour, taken by Ada and given on to Cy
+        val ahead = Stamp(currentTimeMillis() + 10 * 60 * 1000L, 0, bobReplica)
+        val channel = impostor(bob, ada, document.id)
+        channel.send(SyncCodec.encode(Operations(listOf(forged(document.id, key, bobReplica, 1, RenameDocument("Ahead"), bob.identity, ahead)))))
+        advanceUntilIdle()
+        assertFalse(isClosed(channel))
+        assertEquals("Ahead", ada.title(document.id))
+        assertEquals("Ahead", cy.title(document.id))
+
+        // The renaming Cy makes after it wins
+        cy.change(document.id) { RenameDocument("Optics") }
+        advanceUntilIdle()
+        assertEquals("Optics", ada.title(document.id))
+        assertTrue(ada.snapshot(document.id).titleVersion > ahead)
+    }
+
+    @Test
+    fun anOperationCarryingAStampAfterItsOwnIsRefused() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob) = listOf("ada", "bob").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Physics")
+        ada.change(document.id) { AddElements.of(it.document.pages[0], listOf(text("waves"))) }
+        val invitation = ada.share(document.id, "Physics")
+        bob.join(invitation, "ada")
+        advanceUntilIdle()
+        val key = bob.engine.connectionKeys().first { it.first == document.id }.second
+        val bobReplica = bob.store.replicaId()
+        val adaReplica = ada.store.replicaId()
+        val page = ada.snapshot(document.id).pages[0]
+        val text = page.data.elements.single() as TextData
+        val stamp = Stamp(currentTimeMillis(), 0, bobReplica)
+        val after = Stamp(stamp.time + 1, 0, adaReplica)
+
+        // Saying it included a change of Ada made after it, or with an order after it: refused
+        for (change in listOf(
+            UpdateTexts(page.data.id, listOf(text.copy(text = "particles", versions = Versions(mapOf(adaReplica to after))))),
+            PlaceElements(page.data.id, listOf(BoxPlacement(text.id, 1f, 2f, 40f, 10f, 0f, order = ElementOrder(after, 0))))
+        )) {
+            val channel = impostor(bob, ada, document.id)
+            channel.send(SyncCodec.encode(Operations(listOf(forged(document.id, key, bobReplica, 1, change, bob.identity, stamp)))))
+            assertTrue(isClosed(channel))
+        }
+        advanceUntilIdle()
+        assertEquals("waves", (ada.snapshot(document.id).pages[0].data.elements.single() as TextData).text)
+        assertEquals(0L, ada.versionVector(document.id)[bobReplica] ?: 0L)
+    }
+
+    @Test
+    fun anOperationStampedAheadGivenOnByAnotherMemberIsRefused() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Physics")
+        val invitation = ada.share(document.id, "Physics")
+        bob.join(invitation, "ada")
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+        val key = bob.engine.connectionKeys().first { it.first == document.id }.second
+        val bobReplica = bob.store.replicaId()
+
+        // Signed by Bob, two hours ahead, given on by Cy (a device of before would have taken it)
+        val ahead = Stamp(currentTimeMillis() + 2 * 60 * 60 * 1000L, 0, bobReplica)
+        val channel = impostor(cy, ada, document.id)
+        channel.send(SyncCodec.encode(Operations(listOf(forged(document.id, key, bobReplica, 1, RenameDocument("Ahead"), bob.identity, ahead)))))
+        assertTrue(isClosed(channel))
+        advanceUntilIdle()
+        assertEquals("Physics", ada.title(document.id))
     }
 
     @Test
