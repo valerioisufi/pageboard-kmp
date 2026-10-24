@@ -89,10 +89,11 @@ public object MarkdownTextUtil {
 
     /**
      * A block of code drawn over the field of the editor, on the character [offset] of its text
-     * standing for its source, in the whole line: its [layout], the code of its source starting at
-     * [codeStart] of the text written.
+     * standing for its source, in the whole line: its [layout], [leftPx] from the left of the line
+     * (the text of its list item), the code of its source starting at [codeStart] of the text
+     * written.
      */
-    internal class EditorCodeBlock(val offset: Int, val layout: CodeBlockLayout, val codeStart: Int)
+    internal class EditorCodeBlock(val offset: Int, val layout: CodeBlockLayout, val codeStart: Int, val leftPx: Float = 0f)
 
     /**
      * The text shown by the field of the editor: [text] with the formulas and the blocks of code
@@ -139,6 +140,7 @@ public object MarkdownTextUtil {
         monospace: FontFamily = FontFamily.Monospace,
         highlighter: CodeHighlighter? = null,
         layoutCodeBlock: ((CodeBlockSource) -> CodeBlockLayout)? = null,
+        listPrefixWidth: ((prefix: String) -> Float)? = null,
         renderFormula: (latex: String, fontSizePx: Float) -> RenderedFormula<T>?
     ): EditorText<T> {
         val selMin = min(selection.start, selection.end)
@@ -148,7 +150,7 @@ public object MarkdownTextUtil {
         val faded = SpanStyle(color = defaultColor.copy(alpha = 0.45f), fontSize = (fontSizePx * 0.9f).toSp())
 
         class Concealed(val span: Span, val rendered: RenderedFormula<T>, val widthPx: Float, val heightPx: Float, val block: Boolean)
-        class ConcealedBlock(val span: Span, val layout: CodeBlockLayout)
+        class ConcealedBlock(val span: Span, val layout: CodeBlockLayout, val leftPx: Float)
         val concealed = mutableListOf<Concealed>()
         val blocks = mutableListOf<ConcealedBlock>()
         val sources = mutableListOf<Span>()
@@ -160,7 +162,8 @@ public object MarkdownTextUtil {
                 if (touched || layoutCodeBlock == null) {
                     sources += span
                 } else {
-                    blocks += ConcealedBlock(span, layoutCodeBlock(codeBlockSource(text, span, lineWidthPx)))
+                    val left = codeBlockLeft(span, fontSizePx, lineWidthPx, listPrefixWidth)
+                    blocks += ConcealedBlock(span, layoutCodeBlock(codeBlockSource(text, span, lineWidthPx - left)), left)
                 }
                 continue
             }
@@ -263,7 +266,7 @@ public object MarkdownTextUtil {
             for (block in blocks) {
                 val offset = mapping.originalToTransformed(block.span.start)
                 room(offset, block.layout.heightPx / (room.ascent + room.descent), lineWidthPx * LINE_FILL)
-                codeBlocks += EditorCodeBlock(offset, block.layout, block.span.contentStart)
+                codeBlocks += EditorCodeBlock(offset, block.layout, block.span.contentStart, block.leftPx)
             }
         }
         return EditorText(annotated, mapping, formulas, atCaret, codeBlocks, codeSources, inlineCode)
@@ -296,9 +299,19 @@ public object MarkdownTextUtil {
         }
     }
 
-    /** What the block of code [span] of [text] is laid out from, in lines of [lineWidthPx]. */
-    private fun codeBlockSource(text: String, span: Span, lineWidthPx: Float) =
-        CodeBlockSource(text.substring(span.contentStart, span.contentEnd), span.language, span.level, span.numbered, lineWidthPx)
+    /**
+     * Where the block of code [span] starts from the left of its line in a text of [fontSizePx]:
+     * at the text of its list item, its prefix measured by [prefixWidth] (or approximated), the
+     * block keeping half the line at least.
+     */
+    private fun codeBlockLeft(span: Span, fontSizePx: Float, lineWidthPx: Float, prefixWidth: ((String) -> Float)?): Float =
+        span.listItem?.let { item ->
+            min(prefixWidth?.invoke(listPrefix(item)) ?: listPrefixWidthPx(item, fontSizePx), lineWidthPx / 2f)
+        } ?: 0f
+
+    /** What the block of code [span] of [text] is laid out from, [widthPx] wide. */
+    private fun codeBlockSource(text: String, span: Span, widthPx: Float) =
+        CodeBlockSource(text.substring(span.contentStart, span.contentEnd), span.language, span.level, span.numbered, widthPx)
 
     /** The source MicroTeX renders for the formula [span] of [text]: in display style when written `$$…$$`. */
     internal fun formulaSource(text: String, span: Span): String {
@@ -361,9 +374,10 @@ public object MarkdownTextUtil {
 
     /**
      * A block of code of a text drawn on the canvas: its [layout], drawn in the placeholder
-     * [placeholderIndex] of [CanvasText.placeholders], a line of its own.
+     * [placeholderIndex] of [CanvasText.placeholders], a line of its own, [leftPx] from its left
+     * (the text of its list item).
      */
-    public class CanvasCodeBlock(public val layout: CodeBlockLayout, public val placeholderIndex: Int)
+    public class CanvasCodeBlock(public val layout: CodeBlockLayout, public val placeholderIndex: Int, public val leftPx: Float = 0f)
 
     /**
      * Code in the line, from [start] to [end] of [CanvasText.text], in a font of [fontSizePx]:
@@ -395,6 +409,8 @@ public object MarkdownTextUtil {
      *   stay in the line).
      * @param layoutCodeBlock lays out a block of code (see [CodeBlockSource]); `null`, or without
      *   [lineWidthPx], a block is drawn as code in the line.
+     * @param listPrefixWidth the width of the prefix of a list item drawn (its indentation, its
+     *   bullet or number): where the blocks of code of the item start; `null`, an approximation.
      */
     public fun <T> toCanvasText(
         text: String,
@@ -404,16 +420,19 @@ public object MarkdownTextUtil {
         lineWidthPx: Float? = null,
         monospace: FontFamily = FontFamily.Monospace,
         layoutCodeBlock: ((CodeBlockSource) -> CodeBlockLayout)? = null,
+        listPrefixWidth: ((prefix: String) -> Float)? = null,
         renderFormula: (latex: String, fontSizePx: Float) -> RenderedFormula<T>?
     ): CanvasText<T> {
         val spans = RichTextParser.parse(text)
         val hidden = BooleanArray(text.length)
         val formulaAt = HashMap<Int, Span>()
         val listItemAt = HashMap<Int, Span>()
-        val blockAt = HashMap<Int, Pair<Span, CodeBlockLayout>>()
+        class LaidOutBlock(val span: Span, val layout: CodeBlockLayout, val leftPx: Float)
+        val blockAt = HashMap<Int, LaidOutBlock>()
         for (span in spans) {
             if (span.kind == Kind.CODE_BLOCK && layoutCodeBlock != null && lineWidthPx != null) {
-                blockAt[span.start] = span to layoutCodeBlock(codeBlockSource(text, span, lineWidthPx))
+                val left = codeBlockLeft(span, fontSizePx, lineWidthPx, listPrefixWidth)
+                blockAt[span.start] = LaidOutBlock(span, layoutCodeBlock(codeBlockSource(text, span, lineWidthPx - left)), left)
                 continue
             }
             when (span.kind) {
@@ -446,11 +465,12 @@ public object MarkdownTextUtil {
         val offsets = IntArray(text.length + 1)
         val annotated = buildAnnotatedString {
             /** The block of code [block] as a placeholder of its line, its offsets on it. */
-            fun appendCodeBlock(block: Span, layout: CodeBlockLayout) {
+            fun appendCodeBlock(laidOut: LaidOutBlock) {
+                val block = laidOut.span
                 val start = length
                 append(OBJECT_REPLACEMENT)
-                placeholders += PlaceholderSpec(start, start + 1, (lineWidthPx ?: 0f) * LINE_FILL, layout.heightPx, PlaceholderVerticalAlign.Center)
-                codeBlocks += CanvasCodeBlock(layout, placeholders.size - 1)
+                placeholders += PlaceholderSpec(start, start + 1, (lineWidthPx ?: 0f) * LINE_FILL, laidOut.layout.heightPx, PlaceholderVerticalAlign.Center)
+                codeBlocks += CanvasCodeBlock(laidOut.layout, placeholders.size - 1, laidOut.leftPx)
                 offsets[block.start] = start
                 for (k in block.start + 1..block.end) offsets[k] = length
             }
@@ -461,8 +481,8 @@ public object MarkdownTextUtil {
                     offsets[i] = length
                     val block = blockAt[i]
                     if (block != null) {
-                        appendCodeBlock(block.first, block.second)
-                        i = block.first.end
+                        appendCodeBlock(block)
+                        i = block.span.end
                         continue
                     }
                     val formula = formulaAt[i]
@@ -482,10 +502,10 @@ public object MarkdownTextUtil {
                     val block = blockAt[lineStart]
                     if (block != null) {
                         val pStart = length
-                        appendCodeBlock(block.first, block.second)
+                        appendCodeBlock(block)
                         addStyle(ParagraphStyle(), pStart, length)
-                        if (block.first.end >= text.length) break
-                        lineStart = block.first.end + 1
+                        if (block.span.end >= text.length) break
+                        lineStart = block.span.end + 1
                         continue
                     }
                     val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0) text.length else it }

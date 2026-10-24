@@ -47,7 +47,9 @@ class RichTextParserBoundsTest {
             // Blocks closed, a fence never closed, fences of backticks that are not (a backtick after them)
             "```\na\n```\n", "~~~~\na\n~~~\n", "```a\n", "``` `\n", "```` ``\n", "   ```\n",
             // Display formulas and emphasis meeting blocks
-            "\$\$\n```\n", "\$\$a\n```\n```\n", "**a\n```\n```\n", "*a ```\n"
+            "\$\$\n```\n", "\$\$a\n```\n```\n", "**a\n```\n```\n", "*a ```\n",
+            // Blocks under list items, nested, closed by a line less indented
+            "- a\n  ```\n  x\n  ```\n", "- a\n  - b\n    ```\n", "1. a\n   ```\nx\n", "- a\n" + "  ".repeat(8) + "- b\n"
         )
         for (pattern in patterns) assertLinear(pattern)
     }

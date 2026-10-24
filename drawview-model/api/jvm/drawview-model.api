@@ -2501,12 +2501,13 @@ public final class io/github/valerioisufi/drawview/model/text/RichTextParser$Kin
 }
 
 public final class io/github/valerioisufi/drawview/model/text/RichTextParser$Span {
-	public fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZZILjava/lang/String;Z)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZZILjava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZZILjava/lang/String;ZLio/github/valerioisufi/drawview/model/text/RichTextParser$Span;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZZILjava/lang/String;ZLio/github/valerioisufi/drawview/model/text/RichTextParser$Span;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
 	public final fun component10 ()I
 	public final fun component11 ()Ljava/lang/String;
 	public final fun component12 ()Z
+	public final fun component13 ()Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
 	public final fun component2 ()I
 	public final fun component3 ()I
 	public final fun component4 ()I
@@ -2515,8 +2516,8 @@ public final class io/github/valerioisufi/drawview/model/text/RichTextParser$Spa
 	public final fun component7 ()Z
 	public final fun component8 ()Z
 	public final fun component9 ()Z
-	public final fun copy (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZZILjava/lang/String;Z)Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZZILjava/lang/String;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
+	public final fun copy (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZZILjava/lang/String;ZLio/github/valerioisufi/drawview/model/text/RichTextParser$Span;)Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;IIIIIZZZILjava/lang/String;ZLio/github/valerioisufi/drawview/model/text/RichTextParser$Span;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getBlock ()Z
 	public final fun getContentEnd ()I
@@ -2527,6 +2528,7 @@ public final class io/github/valerioisufi/drawview/model/text/RichTextParser$Spa
 	public final fun getKind ()Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
 	public final fun getLanguage ()Ljava/lang/String;
 	public final fun getLevel ()I
+	public final fun getListItem ()Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
 	public final fun getNumber ()I
 	public final fun getNumbered ()Z
 	public final fun getOrdered ()Z

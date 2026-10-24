@@ -153,6 +153,11 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                 codeLayouts.getOrPut(CodeKey(source, fontSizePx, editor.color, paper)) {
                     CodeBlockLayout.layout(codeMeasurer, notesFonts.monospace, source, fontSizePx, textColor, highlighter, paper)
                 }
+            },
+            // The blocks of the list items where the page draws them
+            listPrefixWidth = { prefix ->
+                codeMeasurer.measure(AnnotatedString(prefix), TextStyle(fontSize = fontSizePx.sp, fontFamily = notesFonts.text, letterSpacing = 0.sp), softWrap = false, skipCache = true)
+                    .getHorizontalPosition(prefix.length, usePrimaryDirection = true)
             }
         ) { latex, sizePx -> renderAtBucket(images, latex, sizePx, editor.color) }
     }
@@ -239,7 +244,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                     drawContent()
                     if (current == null) return@drawWithContent
                     for (block in shown.codeBlocks) {
-                        drawIntoCanvas { block.layout.draw(it, 0f, codeBlockTop(current, block)) }
+                        drawIntoCanvas { block.layout.draw(it, block.leftPx, codeBlockTop(current, block)) }
                     }
                     for (formula in shown.formulas) {
                         val line = current.getLineForOffset(formula.offset)
@@ -327,8 +332,9 @@ private fun codeBlockTop(layout: TextLayoutResult, block: MarkdownTextUtil.Edito
 private fun codeOffsetAt(layout: TextLayoutResult, shown: MarkdownTextUtil.EditorText<*>, point: Offset): Int? {
     for (block in shown.codeBlocks) {
         val top = codeBlockTop(layout, block)
-        if (point.y < top || point.y > top + block.layout.heightPx || point.x < 0f || point.x > block.layout.widthPx) continue
-        return block.codeStart + block.layout.codeOffsetAt(Offset(point.x, point.y - top))
+        val left = block.leftPx
+        if (point.y < top || point.y > top + block.layout.heightPx || point.x < left || point.x > left + block.layout.widthPx) continue
+        return block.codeStart + block.layout.codeOffsetAt(Offset(point.x - left, point.y - top))
     }
     return null
 }

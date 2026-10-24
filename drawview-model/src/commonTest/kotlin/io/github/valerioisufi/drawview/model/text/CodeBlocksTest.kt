@@ -5,6 +5,7 @@ import io.github.valerioisufi.drawview.model.text.RichTextParser.Span
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
@@ -145,5 +146,45 @@ class CodeBlocksTest {
         assertTrue(block(alone).numbered)
         assertEquals("", block(alone).language, "no language")
         assertFalse(block("```kotlin title\nx\n```").numbered)
+    }
+
+    @Test
+    fun aBlockIndentedUnderAListItemIsTheBlockOfTheItem() {
+        val text = "- Compile:\n  ```c\n  int x;\n  ```\nafter"
+        val block = block(text)
+        assertEquals("  int x;", block.content(text))
+        assertEquals(2, block.level, "the spaces taken off its lines")
+        val item = assertNotNull(block.listItem)
+        assertEquals("Compile:", text.substring(item.contentStart, item.contentEnd))
+        assertEquals(text.indexOf("\nafter"), block.end, "closed by its fence, indented as its item")
+    }
+
+    @Test
+    fun aNestedItemHasItsBlocksToo() {
+        val text = "- a\n  - b\n    ```\n    x\n    ```"
+        val block = block(text)
+        assertEquals(1, assertNotNull(block.listItem).level, "the item b")
+        assertEquals("    x", block.content(text))
+        val deeper = "1. one\n   ```py\n   y\n   ```"
+        val numbered = assertNotNull(block(deeper).listItem)
+        assertTrue(numbered.ordered, "under a numbered item, its text 3 columns in")
+        assertEquals(1, numbered.number)
+    }
+
+    @Test
+    fun aLineLessIndentedThanItsItemEndsTheBlock() {
+        val text = "- a\n  ```\n  x\nout\n```"
+        val spans = RichTextParser.parse(text).filter { it.kind == Kind.CODE_BLOCK }
+        val first = spans.first()
+        assertEquals("  x", first.content(text))
+        assertEquals(text.indexOf("\nout"), first.end)
+        assertEquals(null, spans.last().listItem, "the fence after it opens a block of its own")
+    }
+
+    @Test
+    fun outOfTheListsAFenceHasThreeSpacesAtMost() {
+        assertEquals(null, block("   ```\nx\n   ```").listItem)
+        assertTrue(RichTextParser.parse("    ```\nx").none { it.kind == Kind.CODE_BLOCK })
+        assertTrue(RichTextParser.parse("- a\n      ```\nx").none { it.kind == Kind.CODE_BLOCK }, "more than 3 spaces past the text of the item")
     }
 }

@@ -103,6 +103,15 @@ class TextScreenshotTest {
         save(viewModels)
     }
 
+    /** Blocks of code under the items of a list, nested too, aligned with the text of their item. */
+    @Test
+    fun textSavedCodeInList() = capture("text-saved-code-list", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        val list = "- Compile it:\n  ```sh\n  gcc main.c -o main\n  ```\n- Then:\n  - run it\n    ```sh\n    ./main --verbose\n    ```\n  - and read what it prints\nThe end."
+        write(viewModels, 20f, 20f, list, drawnWidthMm = 120f)
+        save(viewModels)
+    }
+
     /** A text selected: the frame of the selection. */
     @Test
     fun textSelected() = WINDOWS.forEach { window ->

@@ -133,7 +133,7 @@ public class ComposeTextTileAdapter(
             }
             for (block in prepared.codeBlocks) {
                 val rect = layout.placeholderRects.getOrNull(block.placeholderIndex) ?: continue
-                blockLines[layout.getLineForVerticalPosition(rect.center.y)] = block.layout.naturalWidthPx
+                blockLines[layout.getLineForVerticalPosition(rect.center.y)] = block.leftPx + block.layout.naturalWidthPx
             }
             var longest = 0f
             for (line in 0 until layout.lineCount) {
@@ -171,7 +171,7 @@ public class ComposeTextTileAdapter(
                 TextFormula(formula.latex, text.color, box.left / scale, box.top / scale, box.width / scale, box.height / scale)
             }
             for (codeBlock in prepared.codeBlocks) {
-                val rect = rects.getOrNull(codeBlock.placeholderIndex) ?: continue
+                val rect = rects.getOrNull(codeBlock.placeholderIndex)?.translate(codeBlock.leftPx, 0f) ?: continue
                 val block = codeBlock.layout
                 boxes += Rect(rect.left, rect.top, rect.left + block.widthPx, rect.top + block.heightPx).toBox(block.radiusPx, block.theme.background, scale)
                 val code = CharStyles(block.code.layoutInput.text, text.color, block.fontPx, mono = true)
@@ -338,7 +338,7 @@ public class ComposeTextTileAdapter(
         val rects = prepared.layout.placeholderRects
         for (block in prepared.codeBlocks) {
             val rect = rects.getOrNull(block.placeholderIndex) ?: continue
-            block.layout.draw(canvas, rect.left, rect.top)
+            block.layout.draw(canvas, rect.left + block.leftPx, rect.top)
         }
         for (formula in prepared.formulas) {
             val box = formulaBox(formula, rects.getOrNull(formula.placeholderIndex) ?: continue)
@@ -372,7 +372,11 @@ public class ComposeTextTileAdapter(
             fontAscentPx = fontAscent(baseStyle, fontPx),
             lineWidthPx = widthPx.toFloat(),
             monospace = fonts.monospace,
-            layoutCodeBlock = { source -> CodeBlockLayout.layout(measurer, fonts.monospace, source, fontPx, color, this.code, paperColor) }
+            layoutCodeBlock = { source -> CodeBlockLayout.layout(measurer, fonts.monospace, source, fontPx, color, this.code, paperColor) },
+            listPrefixWidth = { prefix ->
+                measurer.measure(AnnotatedString(prefix), baseStyle.copy(textAlign = TextAlign.Start), softWrap = false, skipCache = true)
+                    .getHorizontalPosition(prefix.length, usePrimaryDirection = true)
+            }
         ) { latex, sizePx ->
             formulaImages.render(latex, sizePx, text.color)?.let {
                 MarkdownTextUtil.RenderedFormula(it.bitmap, it.bitmap.width.toFloat(), it.bitmap.height.toFloat(), it.baselineRatio)

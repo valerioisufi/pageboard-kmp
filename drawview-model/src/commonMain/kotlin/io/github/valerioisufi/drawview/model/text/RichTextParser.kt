@@ -38,6 +38,8 @@ public object RichTextParser {
      *   that is not [numbered] (empty when there is none).
      * @property numbered a block of code asking for the numbers of its lines, by a word after its
      *   opening fence (see [LINE_NUMBERS]).
+     * @property listItem the list item a block of code belongs to (its fence indented under the
+     *   text of the item), or `null`.
      */
     public data class Span(
         val kind: Kind,
@@ -51,7 +53,8 @@ public object RichTextParser {
         val ordered: Boolean = false,
         val number: Int = 0,
         val language: String = "",
-        val numbered: Boolean = false
+        val numbered: Boolean = false,
+        val listItem: Span? = null
     ) {
         /** The delimiters, hidden when the text is drawn: before and after the content. */
         val delimiters: List<IntRange>
@@ -108,12 +111,14 @@ public object RichTextParser {
     private fun scanVerbatim(text: String): List<Span> {
         val spans = mutableListOf<Span>()
         val inline = InlineClosings(text)
+        val items = OpenItems()
         var i = 0
         while (i < text.length) {
             if (i == 0 || text[i - 1] == '\n') {
-                val fence = openingFence(text, i)
+                items.read(text, i)
+                val fence = openingFence(text, i, items.column)
                 if (fence != null) {
-                    val block = codeBlock(text, i, fence)
+                    val block = codeBlock(text, i, fence, items.innermost)
                     spans += block
                     i = block.end
                     continue
@@ -176,19 +181,75 @@ public object RichTextParser {
     }
 
     /**
-     * The opening fence of a block of code: its [char] (a backtick or a tilde) repeated [length]
-     * times, ending at [end] of the text.
+     * The list items open at the lines of a text, read line after line: each with the column of its
+     * text (the spaces before its marker, its marker and the spaces after it, a tab counted as 2).
+     * A line not blank and less indented than the text of an item closes the item (there is no lazy
+     * continuation of CommonMark).
      */
-    internal class Fence(val char: Char, val length: Int, val end: Int)
+    private class OpenItems {
+        private val columns = ArrayList<Int>()
+        private val items = ArrayList<Span>()
+
+        /** The innermost item open, under which a line is indented. */
+        val innermost: Span? get() = items.lastOrNull()
+
+        /** The column of the text of [innermost], or 0. */
+        val column: Int get() = columns.lastOrNull() ?: 0
+
+        /** Reads the line starting at [lineStart] of [text]: the items it closes, the item it opens. */
+        fun read(text: String, lineStart: Int) {
+            var i = lineStart
+            var indent = 0
+            while (i < text.length && (text[i] == ' ' || text[i] == '\t')) {
+                indent += if (text[i] == '\t') 2 else 1
+                i++
+            }
+            if (i == text.length || text[i] == '\n') return
+            while (columns.isNotEmpty() && columns.last() > indent) {
+                columns.removeAt(columns.lastIndex)
+                items.removeAt(items.lastIndex)
+            }
+            // A marker: "-", "*" or "+", or digits and ".", then a space or a tab
+            var marker = i
+            val ordered = text[i].isDigit()
+            if (ordered) {
+                while (marker < text.length && text[marker].isDigit()) marker++
+                if (text.getOrNull(marker) != '.') return
+            } else if (text[i] != '-' && text[i] != '*' && text[i] != '+') {
+                return
+            }
+            marker++
+            if (text.getOrNull(marker) != ' ' && text.getOrNull(marker) != '\t') return
+            var contentStart = marker
+            var column = indent + (marker - i)
+            while (contentStart < text.length && (text[contentStart] == ' ' || text[contentStart] == '\t')) {
+                column += if (text[contentStart] == '\t') 2 else 1
+                contentStart++
+            }
+            val lineEnd = text.indexOf('\n', i).let { if (it < 0) text.length else it }
+            val number = if (ordered) text.substring(i, marker - 1).toIntOrNull() ?: 1 else 0
+            columns += column
+            items += Span(Kind.LIST_ITEM, lineStart, lineEnd, contentStart, lineEnd, level = indent / 2, ordered = ordered, number = number)
+        }
+    }
+
+    /**
+     * The opening fence of a block of code: its [char] (a backtick or a tilde) repeated [length]
+     * times, ending at [end] of the text, under the text of a list item at the column [base] (0
+     * out of the lists).
+     */
+    internal class Fence(val char: Char, val length: Int, val end: Int, val base: Int = 0)
 
     /**
      * The fence opening a block of code on the line starting at [lineStart] of [text], or `null`:
-     * up to 3 spaces, then at least three backticks or tildes; after backticks, no backtick on the
-     * rest of the line (it would be code in the line).
+     * the spaces of the column [base] of the list item it is under (0 out of the lists) and up to 3
+     * more, then at least three backticks or tildes; after backticks, no backtick on the rest of
+     * the line (it would be code in the line).
      */
-    internal fun openingFence(text: String, lineStart: Int): Fence? {
+    internal fun openingFence(text: String, lineStart: Int, base: Int = 0): Fence? {
         var i = lineStart
-        while (i < text.length && i - lineStart < MAX_FENCE_INDENT && text[i] == ' ') i++
+        while (i < text.length && i - lineStart < base + MAX_FENCE_INDENT && text[i] == ' ') i++
+        if (i - lineStart < base) return null
         val char = text.getOrNull(i) ?: return null
         if (char != '`' && char != '~') return null
         var j = i
@@ -201,16 +262,17 @@ public object RichTextParser {
                 k++
             }
         }
-        return Fence(char, j - i, j)
+        return Fence(char, j - i, j, base)
     }
 
     /**
-     * Where the line starting at [lineStart] of [text] ends when it closes [fence] (up to 3 spaces,
-     * at least as many characters of the fence, then spaces only), or -1.
+     * Where the line starting at [lineStart] of [text] ends when it closes [fence] (up to 3 spaces
+     * more than the column of its list item, at least as many characters of the fence, then spaces
+     * only), or -1.
      */
     private fun closingFenceEnd(text: String, lineStart: Int, fence: Fence): Int {
         var i = lineStart
-        while (i < text.length && i - lineStart < MAX_FENCE_INDENT && text[i] == ' ') i++
+        while (i < text.length && i - lineStart < fence.base + MAX_FENCE_INDENT && text[i] == ' ') i++
         var j = i
         while (j < text.length && text[j] == fence.char) j++
         if (j - i < fence.length) return -1
@@ -219,10 +281,11 @@ public object RichTextParser {
     }
 
     /**
-     * The block of code opened by [fence] on the line starting at [start] of [text]: to the line
-     * closing it, or to the end of the text when none does. Each line is read once.
+     * The block of code opened by [fence] on the line starting at [start] of [text], under the list
+     * item [item] if any: to the line closing it, to the line before one less indented than the
+     * text of its item, or to the end of the text. Each line is read once.
      */
-    private fun codeBlock(text: String, start: Int, fence: Fence): Span {
+    private fun codeBlock(text: String, start: Int, fence: Fence, item: Span?): Span {
         val openingEnd = text.indexOf('\n', fence.end).let { if (it < 0) text.length else it }
         // The words of the information, without the braces and the dots of the attributes of Pandoc
         val words = text.substring(fence.end, openingEnd).split(' ', '\t')
@@ -238,13 +301,29 @@ public object RichTextParser {
             if (closingEnd >= 0) {
                 // The line break before the closing fence belongs to it
                 val contentEnd = if (line > contentStart) line - 1 else contentStart
-                return Span(Kind.CODE_BLOCK, start, closingEnd, contentStart, contentEnd, level = indent, language = language, numbered = numbered)
+                return Span(Kind.CODE_BLOCK, start, closingEnd, contentStart, contentEnd, level = indent, language = language, numbered = numbered, listItem = item)
+            }
+            if (fence.base > 0 && isLessIndented(text, line, fence.base)) {
+                // The item ends, and its block with it, before the line
+                val end = line - 1
+                return Span(Kind.CODE_BLOCK, start, end, min(contentStart, end), end, level = indent, language = language, numbered = numbered, listItem = item)
             }
             val next = text.indexOf('\n', line)
             if (next < 0) break
             line = next + 1
         }
-        return Span(Kind.CODE_BLOCK, start, text.length, contentStart, text.length, level = indent, language = language, numbered = numbered)
+        return Span(Kind.CODE_BLOCK, start, text.length, contentStart, text.length, level = indent, language = language, numbered = numbered, listItem = item)
+    }
+
+    /** Whether the line starting at [lineStart] of [text] is not blank and indented less than [column] (a tab counted as 2). */
+    private fun isLessIndented(text: String, lineStart: Int, column: Int): Boolean {
+        var i = lineStart
+        var indent = 0
+        while (i < text.length && indent < column && (text[i] == ' ' || text[i] == '\t')) {
+            indent += if (text[i] == '\t') 2 else 1
+            i++
+        }
+        return indent < column && i < text.length && text[i] != '\n'
     }
 
     /**

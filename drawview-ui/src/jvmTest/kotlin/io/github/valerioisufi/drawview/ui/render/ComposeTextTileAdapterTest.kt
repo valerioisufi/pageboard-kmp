@@ -206,4 +206,16 @@ class ComposeTextTileAdapterTest {
         assertTrue(one.left < words.word("val").left, "before the code")
         assertTrue(two.baseline > one.baseline)
     }
+
+    @Test
+    fun aBlockOfAListItemIsAlignedWithTheTextOfItsItem() {
+        val layout = assertNotNull(adapter.layout(text("- Compile:\n  ```c\n  int x;\n  ```\nafter"), TextTileAdapter.NO_PAPER))
+        val item = layout.words.first { it.text.trim() == "Compile:" }
+        val box = layout.boxes.single()
+        assertEquals(item.left, box.left, 0.5f, "at the text of the item")
+        assertEquals(100f, box.left + box.width, 0.5f, "to the end of the line")
+        assertTrue(layout.words.first { it.text.trim() == "int" }.left > box.left)
+        val top = assertNotNull(adapter.layout(text("Compile:\n```c\nint x;\n```"), TextTileAdapter.NO_PAPER)).boxes.single()
+        assertEquals(0f, top.left, 0.01f, "out of a list, at the left of the box")
+    }
 }

@@ -357,16 +357,18 @@ public final class io/github/valerioisufi/drawview/ui/components/ToolSettingsKt 
 public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;
-	public final fun toCanvasText-8V94_ZQ (Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
-	public static synthetic fun toCanvasText-8V94_ZQ$default (Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
+	public final fun toCanvasText-OadGlvw (Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
+	public static synthetic fun toCanvasText-OadGlvw$default (Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
 	public final fun toLiveAnnotatedString-5_Xnia0 (Ljava/lang/String;JJJLandroidx/compose/ui/text/font/FontFamily;)Landroidx/compose/ui/text/AnnotatedString;
 	public static synthetic fun toLiveAnnotatedString-5_Xnia0$default (Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;Ljava/lang/String;JJJLandroidx/compose/ui/text/font/FontFamily;ILjava/lang/Object;)Landroidx/compose/ui/text/AnnotatedString;
 }
 
 public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasCodeBlock {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/ui/render/CodeBlockLayout;I)V
+	public fun <init> (Lio/github/valerioisufi/drawview/ui/render/CodeBlockLayout;IF)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/ui/render/CodeBlockLayout;IFILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getLayout ()Lio/github/valerioisufi/drawview/ui/render/CodeBlockLayout;
+	public final fun getLeftPx ()F
 	public final fun getPlaceholderIndex ()I
 }
 

@@ -121,4 +121,15 @@ class EditorCodeTest {
         val b = lines.getBoundingBox(lines.layoutInput.text.text.lastIndexOf('b'))
         assertEquals(code.lastIndexOf('b'), block.codeOffsetAt(Offset(block.codeLeftPx + b.center.x, block.codeTopPx + b.center.y)))
     }
+
+    @Test
+    fun aBlockOfAListItemIsDrawnAtTheTextOfItsItem() {
+        val text = "- a\n  ```\n  x\n  ```\nafter"
+        val block = shown(text, caret = text.length).codeBlocks.single()
+        assertTrue(block.leftPx > 0f)
+        assertEquals(600f - block.leftPx, block.layout.widthPx, 0.01f, "as wide as the rest of the line")
+        // A tap on its code, after the left of the item
+        val x = block.layout.code.getBoundingBox(block.layout.code.layoutInput.text.text.indexOf('x'))
+        assertEquals(0, block.layout.codeOffsetAt(Offset(block.layout.codeLeftPx + x.center.x, block.layout.codeTopPx + x.center.y)) - 2, "the x after the 2 spaces taken off")
+    }
 }

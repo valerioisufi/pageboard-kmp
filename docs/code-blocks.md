@@ -232,7 +232,7 @@ Four of the things left for later after phase 5, asked by the user on 2026-10-24
 | 5 | Lecture assistant: `MARKDOWN_RULE` and the reading of the handwriting with the fenced blocks; the fence stripped by `LectureAnalysis` checked with answers holding code; tests | Done |
 | 6 | The paper: the paper color given with the texts to `drawText` and `layout` by every caller (tiles, selection, drafts, preview, exports, editor), `CodeTheme.of(text, paper)` opaque; tests, screenshots (ruled paper); ABI of `drawview-canvas`, `drawview-ui` | Done |
 | 7 | Line numbers: `Span.numbered`, the column of the numbers in `CodeBlockLayout` (canvas, editor, PDF, taps after it, natural width), `toggleLineNumbers` and its command, button and strings; tests, screenshots; ABI | Done |
-| 8 | Blocks in list items: the items open at each line in the parser, `Span.listItem`, fences and closing fences of an item; a block drawn with its item (canvas, editor, measure, PDF); the texts of the user measured again on load as in phase 2; tests (bounds included), screenshots; ABI of `drawview-model` | To do |
+| 8 | Blocks in list items: the items open at each line in the parser, `Span.listItem`, fences and closing fences of an item; a block drawn with its item (canvas, editor, measure, PDF); the texts of the user measured again on load as in phase 2; tests (bounds included), screenshots; ABI of `drawview-model` | Done |
 | 9 | The panel: `MarkdownText` of `drawview-ui` (formulas, blocks at its width, code in the line), used by `LecturePanel` for the notes, the outline and the review; tests, screenshots of the panel; ABI of `drawview-ui` | To do |
 
 No phase touches the sync modules nor the stored formats: `ProtocolFormatTest` and the Room
@@ -445,6 +445,33 @@ schema stay as they are.
 * The ABI of `drawview-model` (`Span.numbered`, `LINE_NUMBERS`), `drawview-canvas` (the target,
   `RichTextEditing.codeBlockAt`, `toggleLineNumbers`) and `drawview-ui` (`CodeBlockSource`, the
   callbacks of `toCanvasText`, the string) recorded again.
+
+### Phase 8 results
+
+* `RichTextParser` follows the list items open at each line while it scans the verbatim parts
+  (`OpenItems`: the column of the text of each item, the spaces before its marker, its marker and
+  the spaces after it, a tab counted as 2; a line not blank and less indented closes it). A fence
+  indented as the text of the innermost item and up to 3 spaces more opens a block of that item
+  (`Span.listItem`, the item as the parser reads it); its closing fence likewise; a line less
+  indented than the text of the item ends the block with the item (the block is then not
+  closed). Out of the lists a fence keeps its 3 spaces at most. Each line is read once more at most.
+* A block of an item is drawn where the text of its item starts, as wide as the rest of the line
+  (`CanvasCodeBlock.leftPx`, `EditorCodeBlock.leftPx`; its layout made on that width): on the
+  canvas, in the editor (its tap mapped after it), in the measure (its natural width counted from
+  there) and in the export. The prefix of the item (its indentation, its bullet or number) is
+  measured in the font of the text (`listPrefixWidth` of `toCanvasText` and `toEditorText`):
+  `listPrefixWidthPx`, the approximation of the lists for their wrapped lines, put the blocks
+  about 1 mm to the right of the text of their item. The wrapped lines of the items keep it, so
+  that the texts already written keep their lines.
+* The five texts of the user with a block under an item are drawn narrower, so higher: measured
+  again when their document opens (phase 2).
+* Tests: a block under an item, under a nested item and under a numbered one, a line less indented
+  ending it, the fences out of the lists (`CodeBlocksTest`); lists and fences at 1 MiB in linear
+  time (`RichTextParserBoundsTest`, also on the iOS simulator); a block aligned with the text of
+  its item and to the end of the line (`ComposeTextTileAdapterTest`); in the editor, at the text
+  of its item and tapped (`EditorCodeTest`); the screenshot `text-saved-code-list`.
+* The ABI of `drawview-model` (`Span.listItem`) and of `drawview-ui` (`CanvasCodeBlock.leftPx`, the
+  parameter `listPrefixWidth`) recorded again.
 
 ## Decisions
 
