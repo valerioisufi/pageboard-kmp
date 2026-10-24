@@ -179,7 +179,7 @@ Variations).
 | — | Before phase 1, on its own branch: the parsing of `RichTextParser` made linear, its rules and tests unchanged ([linear-parsing.md](./linear-parsing.md)) | Done |
 | 1 | Notation and highlighting: `Kind.CODE_BLOCK` and `Span.language` (fences, language, content as it is, a fence not closed), `CodeHighlighter`, `BuiltInCodeHighlighter` and the grammars; tests of the rules (the notation not read inside, `#` and `-` in a block, the fences of CommonMark), of every grammar on real snippets, of the bounds (random input, unclosed strings and comments at every place, long code in linear time); ABI of `drawview-model` | Done |
 | 2 | On the page: `CodeTheme`, `CodeBlockLayout`, the blocks and the code in the line in `toCanvasText`, drawn, measured and laid out by the adapter (`TextBlockLayout.boxes`), `DrawViewEngines.code`; the PDF export of the backgrounds; the automatic width; the texts with fences counted on a copy of the database of the user (asked first, the original untouched), and measured again on load if any; tests (layout, wrapping, tabs, empty lines, alignment, PDF), screenshots; ABI of `drawview-canvas`, `drawview-ui` | Done |
-| 3 | In the editor: the block away from the caret drawn as on the page over its character, its source under the caret on its background and in its colors, the code in the line on its background, the caret on the tapped character of a block; tests of the offsets, screenshots | To do |
+| 3 | In the editor: the block away from the caret drawn as on the page over its character, its source under the caret on its background and in its colors, the code in the line on its background, the caret on the tapped character of a block; tests of the offsets, screenshots | Done |
 | 4 | Writing code: `RichTextEditing` (Enter, Tab, ⇧Tab and the formats in a block, the fence closed, the block toggled, ⌘E on several lines), `EditorCommands.codeBlock` (⌘⌥C, Format menu, tooltip), the button of `TextFormatBar` and its icon, the strings in the 7 languages; tests of the editing and of the command | To do |
 | 5 | Lecture assistant: `MARKDOWN_RULE` and the reading of the handwriting with the fenced blocks; the fence stripped by `LectureAnalysis` checked with answers holding code; tests | To do |
 
@@ -263,6 +263,36 @@ schema stay as they are.
   `drawview-ui` (`CodeBlockLayout`, `CanvasText.codeBlocks` and `inlineCode`, the parameter of
   `toCanvasText` and of `ComposeTextTileAdapter`) recorded again.
 
+### Phase 3 results
+
+* `MarkdownTextUtil.toEditorText` takes the highlighter and `layoutCodeBlock`. A block away from
+  the caret stands as one character as wide as the line and as high as the block (its font size
+  and its letter spacing, as a formula alone on its line), in the mapping of the offsets with the
+  formulas; the editor draws over it the `CodeBlockLayout` the page draws. The block of the caret
+  (the caret on it, its fences included) shows its source: its fences faded, its code in the
+  monospace at 0.9 times the text and in the colors of its language, on its background
+  (`EditorText.codeSources`, from the top of its first line to the bottom of its last one, the
+  width of the box).
+* The code in the line is on its background in the editor too (`EditorText.inlineCode`; the
+  backgrounds computed by `codeChips`, shared with the canvas).
+* The caret goes on the character tapped in a block: when a text is opened by a tap
+  (`takeCaretRequest`), and when a block drawn in the field is tapped while writing (a gesture
+  before the field's own, which would put the caret at an end of the character).
+  `CodeBlockLayout.codeOffsetAt` maps the tap back to the code (the tabs and the indentation taken
+  off, the end of a line before its line break).
+* The editor keeps the blocks it laid out (16, the LRU cache of the adapter): typing outside a
+  block does not lay it out again.
+* A tall block ([Risks](#risks)): on the JVM a character of 20 000 px (a block of about 800 lines)
+  is laid out in 0.2 ms and drawn ten times in 0.2 ms, its line as high as its size says; iOS
+  draws with Skia too. Android, with a text engine of its own, is to be checked on a device.
+* In the source a tab is as wide as the field draws it, narrower than the four columns of the
+  page.
+* Tests: a block away from the caret as one character as high as the block and its offsets, the
+  block of the caret as its source in its colors with its fences faded, the code in the line in
+  the offsets shown, a tap on a block on the character tapped (`EditorCodeTest`); the screenshots
+  `text-writing-code` and `text-writing-code-source`.
+* The public API does not change.
+
 ## Decisions
 
 Proposed with the plan and approved by the user on 2026-10-22, every one revertible:
@@ -312,6 +342,8 @@ Proposed with the plan and approved by the user on 2026-10-22, every one reverti
 
 ## Left for later
 
+* On devices: the caret, the input methods and the selection handles of a field showing a block
+  of code as one character (Android, iOS), and a tall block on Android.
 * An opaque background, in the color of the paper: the lines of a lined page show through the
   background of the code, which is translucent because the adapter of the texts does not know the
   page it draws on.

@@ -106,12 +106,10 @@ public class ComposeTextTileAdapter(
         val formulas: List<MarkdownTextUtil.InlineFormula<ImageBitmap>>,
         val fontPx: Float,
         val codeBlocks: List<MarkdownTextUtil.CanvasCodeBlock>,
-        val chips: List<Chip>,
+        val chips: List<CodeChip>,
         val chipColor: Color
     )
 
-    /** The background of code in the line on one line: [rect], its corners of [radius]. */
-    private class Chip(val rect: Rect, val radius: Float)
 
     override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D) {
         val scale = mmToCanvas.scaleFactor
@@ -389,30 +387,7 @@ public class ComposeTextTileAdapter(
             constraints = Constraints.fixedWidth(widthPx),
             skipCache = true
         )
-        return PreparedText(layout, canvasText.formulas, fontPx, canvasText.codeBlocks, chips(layout, canvasText.inlineCode), CodeTheme.of(color).background)
-    }
-
-    /**
-     * The backgrounds of the code in the line of [layout]: one per line of each code, from the
-     * left of its first character to the right of its last one on the line, a little beyond, around
-     * the letters of its font.
-     */
-    private fun chips(layout: TextLayoutResult, inlineCode: List<MarkdownTextUtil.InlineCode>): List<Chip> {
-        if (inlineCode.isEmpty()) return emptyList()
-        val chips = mutableListOf<Chip>()
-        for (code in inlineCode) {
-            val first = layout.getLineForOffset(code.start)
-            val last = layout.getLineForOffset(code.end - 1)
-            val padding = code.fontSizePx * CHIP_PADDING
-            for (line in first..last) {
-                val left = if (line == first) layout.getBoundingBox(code.start).left else layout.getLineLeft(line)
-                val right = if (line == last) layout.getBoundingBox(code.end - 1).right else layout.getLineRight(line)
-                val baseline = layout.getLineBaseline(line)
-                val rect = Rect(left - padding, baseline - code.fontSizePx * CHIP_ASCENT, right + padding, baseline + code.fontSizePx * CHIP_DESCENT)
-                chips += Chip(rect, code.fontSizePx * CHIP_RADIUS)
-            }
-        }
-        return chips
+        return PreparedText(layout, canvasText.formulas, fontPx, canvasText.codeBlocks, layout.codeChips(canvasText.inlineCode), CodeTheme.of(color).background)
     }
 
     /** Ascent of the base font, used to reserve the descent of the formulas. */
@@ -429,15 +404,6 @@ public class ComposeTextTileAdapter(
 
         /** Resolution of the layouts of [layout] and [measure]. */
         private const val LAYOUT_PX_PER_MM = 20f
-
-        /**
-         * The background of code in the line, relative to its font: beyond its characters on the
-         * sides, above and below its baseline, its corners.
-         */
-        private const val CHIP_PADDING = 0.15f
-        private const val CHIP_ASCENT = 0.9f
-        private const val CHIP_DESCENT = 0.25f
-        private const val CHIP_RADIUS = 0.2f
     }
 }
 
@@ -451,7 +417,7 @@ internal fun TextAlignment.toTextAlign(): TextAlign = when (this) {
 /**
  * Minimal LRU cache (not thread-safe: guarded by the caller).
  */
-private class LruCache<K, V>(private val maxSize: Int) {
+internal class LruCache<K, V>(private val maxSize: Int) {
     private val map = LinkedHashMap<K, V>()
 
     fun getOrPut(key: K, create: () -> V): V {

@@ -1,6 +1,9 @@
 package io.github.valerioisufi.drawview.ui.editor
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -22,11 +25,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -34,6 +40,8 @@ import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
@@ -56,7 +64,11 @@ import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.model.text.TextSizes.PT_TO_MM
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_formula_invalid
+import io.github.valerioisufi.drawview.ui.render.CodeBlockLayout
+import io.github.valerioisufi.drawview.ui.render.CodeTheme
 import io.github.valerioisufi.drawview.ui.render.FormulaImages
+import io.github.valerioisufi.drawview.ui.render.LruCache
+import io.github.valerioisufi.drawview.ui.render.codeChips
 import io.github.valerioisufi.drawview.ui.render.toTextAlign
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import kotlin.math.ceil
@@ -116,8 +128,12 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
     val formulas = controller.engines.formulas
     val images = remember(formulas) { FormulaImages(formulas, maxSize = 32) }
     val latexReady by remember(formulas) { formulas?.isReady ?: MutableStateFlow(false) }.collectAsState()
+    // The blocks of code laid out as the page lays them out, those not changed kept while typing
+    val highlighter = controller.engines.code
+    val codeMeasurer = remember(resolver) { TextMeasurer(resolver, Density(1f, 1f), LayoutDirection.Ltr, cacheSize = 0) }
+    val codeLayouts = remember(codeMeasurer, notesFonts, highlighter) { LruCache<CodeKey, CodeBlockLayout>(MAX_CODE_LAYOUTS) }
     val value = editor.value
-    val shown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, room, latexReady) {
+    val shown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, room, latexReady, codeLayouts) {
         MarkdownTextUtil.toEditorText(
             text = value.text,
             selection = value.selection,
@@ -127,9 +143,16 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
             lineWidthPx = widthPx.toFloat(),
             room = room,
             textFont = notesFonts.text,
-            monospace = notesFonts.monospace
+            monospace = notesFonts.monospace,
+            highlighter = highlighter,
+            layoutCodeBlock = { code, language, indent ->
+                codeLayouts.getOrPut(CodeKey(code, language, indent, fontSizePx, widthPx, editor.color)) {
+                    CodeBlockLayout.layout(codeMeasurer, notesFonts.monospace, code, language, indent, fontSizePx, widthPx.toFloat(), textColor, highlighter)
+                }
+            }
         ) { latex, sizePx -> renderAtBucket(images, latex, sizePx, editor.color) }
     }
+    val codeTheme = remember(editor.color) { CodeTheme.of(textColor) }
     val currentShown by rememberUpdatedState(shown)
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
 
@@ -157,6 +180,21 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                     transformOrigin = TransformOrigin.Center
                 }
                 .focusRequester(focusRequester)
+                // A tap on a block of code puts the caret on the character tapped (the field would
+                // put it at an end of the character standing for the block)
+                .pointerInput(Unit) {
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                        val current = layout ?: return@awaitEachGesture
+                        val text = currentShown
+                        if (current.layoutInput.text.text != text.text.text) return@awaitEachGesture
+                        val offset = codeOffsetAt(current, text, down.position) ?: return@awaitEachGesture
+                        down.consume()
+                        val up = waitForUpOrCancellation(PointerEventPass.Initial) ?: return@awaitEachGesture
+                        up.consume()
+                        editor.updateValue(editor.value.copy(selection = TextRange(offset)))
+                    }
+                }
                 .onPreviewKeyEvent { event ->
                     if (event.type == KeyEventType.KeyDown) {
                         if (event.key == Key.Tab) {
@@ -181,9 +219,24 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                     false
                 }
                 .drawWithContent {
+                    val current = layout?.takeIf { it.layoutInput.text.text == shown.text.text }
+                    // Under the text: the backgrounds of the code in the line and of the block of the caret
+                    if (current != null) {
+                        val radius = CornerRadius(CodeBlockLayout.cornerRadius(fontSizePx))
+                        for (source in shown.codeSources) {
+                            val top = current.getLineTop(current.getLineForOffset(source.first))
+                            val bottom = current.getLineBottom(current.getLineForOffset(max(source.first, source.last)))
+                            drawRoundRect(codeTheme.background, topLeft = Offset(0f, top), size = Size(size.width, bottom - top), cornerRadius = radius)
+                        }
+                        for (chip in current.codeChips(shown.inlineCode)) {
+                            drawRoundRect(codeTheme.background, topLeft = chip.rect.topLeft, size = chip.rect.size, cornerRadius = CornerRadius(chip.radius))
+                        }
+                    }
                     drawContent()
-                    val current = layout ?: return@drawWithContent
-                    if (current.layoutInput.text.text != shown.text.text) return@drawWithContent
+                    if (current == null) return@drawWithContent
+                    for (block in shown.codeBlocks) {
+                        drawIntoCanvas { block.layout.draw(it, 0f, codeBlockTop(current, block)) }
+                    }
                     for (formula in shown.formulas) {
                         val line = current.getLineForOffset(formula.offset)
                         val left = if (formula.block) (size.width - formula.widthPx) / 2f else current.getHorizontalPosition(formula.offset, usePrimaryDirection = true)
@@ -216,8 +269,10 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                 editor.reportLayoutHeight(result.size.height / currentScale)
                 // The caret on the character the user touched
                 editor.takeCaretRequest()?.let { local ->
-                    val offset = result.getOffsetForPosition(Offset(local.x * currentScale, local.y * currentScale))
-                    editor.updateValue(editor.value.copy(selection = TextRange(currentShown.offsetMapping.transformedToOriginal(offset))))
+                    val point = Offset(local.x * currentScale, local.y * currentScale)
+                    val offset = codeOffsetAt(result, currentShown, point)
+                        ?: currentShown.offsetMapping.transformedToOriginal(result.getOffsetForPosition(point))
+                    editor.updateValue(editor.value.copy(selection = TextRange(offset)))
                 }
             }
         )
@@ -250,6 +305,28 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
         focusRequester.requestFocus()
         keyboardController?.show()
     }
+}
+
+/** What a block of code is laid out from: the same key, the same layout. */
+private data class CodeKey(val code: String, val language: String, val indent: Int, val fontPx: Float, val widthPx: Int, val color: Int)
+
+/** Where [block] is drawn in its line of [layout]: centered in it, as the page draws it. */
+private fun codeBlockTop(layout: TextLayoutResult, block: MarkdownTextUtil.EditorCodeBlock): Float {
+    val line = layout.getLineForOffset(block.offset)
+    return (layout.getLineTop(line) + layout.getLineBottom(line) - block.layout.heightPx) / 2f
+}
+
+/**
+ * The offset of the text written under [point] of the field when it is on a block of code drawn
+ * away from the caret, or `null`.
+ */
+private fun codeOffsetAt(layout: TextLayoutResult, shown: MarkdownTextUtil.EditorText<*>, point: Offset): Int? {
+    for (block in shown.codeBlocks) {
+        val top = codeBlockTop(layout, block)
+        if (point.y < top || point.y > top + block.layout.heightPx || point.x < 0f || point.x > block.layout.widthPx) continue
+        return block.codeStart + block.layout.codeOffsetAt(Offset(point.x, point.y - top))
+    }
+    return null
 }
 
 /** The formula under the caret: its [image], or a word saying it cannot be read. */
@@ -294,6 +371,9 @@ private fun fontRoom(resolver: FontFamily.Resolver, font: FontFamily): MarkdownT
     val ascent = line.firstBaseline
     return MarkdownTextUtil.FontRoom(ascent / size, (line.getLineBottom(0) - ascent) / size, line.getBoundingBox(0).width / size)
 }
+
+/** The blocks of code laid out kept by the editor. */
+private const val MAX_CODE_LAYOUTS = 16
 
 /** Ratio between the sizes the formulas of the editor are rendered at. */
 private const val SIZE_STEP = 1.08f

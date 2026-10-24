@@ -18,7 +18,9 @@ import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.model.text.RichTextParser
 import io.github.valerioisufi.drawview.model.text.RichTextParser.Kind
 import io.github.valerioisufi.drawview.model.text.RichTextParser.Span
+import io.github.valerioisufi.drawview.model.text.code.CodeHighlighter
 import io.github.valerioisufi.drawview.ui.render.CodeBlockLayout
+import io.github.valerioisufi.drawview.ui.render.CodeTheme
 import kotlin.math.max
 import kotlin.math.min
 
@@ -85,16 +87,28 @@ public object MarkdownTextUtil {
     )
 
     /**
-     * The text shown by the field of the editor: [text] with the formulas away from the caret
-     * standing as one character each (see [toEditorText]), [offsetMapping] between the offsets of
-     * the text written and of [text], the [formulas] to draw over their characters, and the
-     * formula under the caret ([formulaAtCaret], its source shown), if any.
+     * A block of code drawn over the field of the editor, on the character [offset] of its text
+     * standing for its source, in the whole line: its [layout], the code of its source starting at
+     * [codeStart] of the text written.
+     */
+    internal class EditorCodeBlock(val offset: Int, val layout: CodeBlockLayout, val codeStart: Int)
+
+    /**
+     * The text shown by the field of the editor: [text] with the formulas and the blocks of code
+     * away from the caret standing as one character each (see [toEditorText]), [offsetMapping]
+     * between the offsets of the text written and of [text], the [formulas] and the [codeBlocks]
+     * to draw over their characters, the formula under the caret ([formulaAtCaret], its source
+     * shown), if any; the parts of [text] that are blocks of code showing their source
+     * ([codeSources]) and code in the line ([inlineCode]), drawn on a background.
      */
     internal class EditorText<T>(
         val text: AnnotatedString,
         val offsetMapping: OffsetMapping,
         val formulas: List<EditorFormula<T>>,
-        val formulaAtCaret: Span?
+        val formulaAtCaret: Span?,
+        val codeBlocks: List<EditorCodeBlock> = emptyList(),
+        val codeSources: List<IntRange> = emptyList(),
+        val inlineCode: List<InlineCode> = emptyList()
     )
 
     /**
@@ -103,7 +117,10 @@ public object MarkdownTextUtil {
      * [renderFormula] and standing as one transparent character exactly as wide as its image and
      * giving its line room for it, the image drawn over it by the editor (no placeholder in a text
      * field); the formula under the caret shows its source. A formula that cannot be rendered is
-     * red italic source, as on the page.
+     * red italic source, as on the page. Likewise every block of code away from the caret, laid
+     * out by [layoutCodeBlock], stands as one character as wide as the line and as high as the
+     * block; the block of the caret shows its source, its fences faded, its code in the colors told
+     * by [highlighter].
      *
      * @param fontSizePx size of the text in pixels; [density] pixels per sp.
      * @param lineWidthPx width of the lines (a block formula takes a line).
@@ -119,6 +136,8 @@ public object MarkdownTextUtil {
         room: FontRoom,
         textFont: FontFamily,
         monospace: FontFamily = FontFamily.Monospace,
+        highlighter: CodeHighlighter? = null,
+        layoutCodeBlock: ((code: String, language: String, indent: Int) -> CodeBlockLayout)? = null,
         renderFormula: (latex: String, fontSizePx: Float) -> RenderedFormula<T>?
     ): EditorText<T> {
         val selMin = min(selection.start, selection.end)
@@ -128,12 +147,23 @@ public object MarkdownTextUtil {
         val faded = SpanStyle(color = defaultColor.copy(alpha = 0.45f), fontSize = (fontSizePx * 0.9f).toSp())
 
         class Concealed(val span: Span, val rendered: RenderedFormula<T>, val widthPx: Float, val heightPx: Float, val block: Boolean)
+        class ConcealedBlock(val span: Span, val layout: CodeBlockLayout)
         val concealed = mutableListOf<Concealed>()
+        val blocks = mutableListOf<ConcealedBlock>()
+        val sources = mutableListOf<Span>()
         val errors = mutableListOf<Span>()
         var atCaret: Span? = null
         for (span in spans) {
-            if (span.kind != Kind.FORMULA) continue
             val touched = selMin <= span.end && selMax >= span.start
+            if (span.kind == Kind.CODE_BLOCK) {
+                if (touched || layoutCodeBlock == null) {
+                    sources += span
+                } else {
+                    blocks += ConcealedBlock(span, layoutCodeBlock(text.substring(span.contentStart, span.contentEnd), span.language, span.level))
+                }
+                continue
+            }
+            if (span.kind != Kind.FORMULA) continue
             if (touched) {
                 if (atCaret == null) atCaret = span
                 continue
@@ -148,14 +178,19 @@ public object MarkdownTextUtil {
                 else -> concealed += Concealed(span, rendered, rendered.widthPx, rendered.heightPx, block = false)
             }
         }
-        val mapping = ConcealMapping(concealed.map { it.span.start until it.span.end })
+        // What stands as one character, in the order of the text (the spans never overlap)
+        val hidden = (concealed.map { it.span } + blocks.map { it.span }).sortedBy { it.start }
+        val mapping = ConcealMapping(hidden.map { it.start until it.end })
 
         val formulas = mutableListOf<EditorFormula<T>>()
+        val codeBlocks = mutableListOf<EditorCodeBlock>()
+        val codeSources = mutableListOf<IntRange>()
+        val inlineCode = mutableListOf<InlineCode>()
         val annotated = buildAnnotatedString {
             var last = 0
-            for (formula in concealed) {
-                append(text, last, formula.span.start)
-                last = formula.span.end
+            for (span in hidden) {
+                append(text, last, span.start)
+                last = span.end
                 append(OBJECT_REPLACEMENT)
             }
             append(text, last, text.length)
@@ -165,9 +200,14 @@ public object MarkdownTextUtil {
                 val to = mapping.originalToTransformed(end)
                 if (to > from) addStyle(style, from, to)
             }
-            val concealedSpans = concealed.map { it.span }.toSet()
+            val hiddenSpans = hidden.toHashSet()
+            val errorSpans = errors.toHashSet()
+            // The spans still open, the innermost last: the size of the code in a heading
+            val open = ArrayList<Span>()
             for (span in spans) {
-                if (span in concealedSpans || span in errors) continue
+                while (open.isNotEmpty() && open.last().end <= span.start) open.removeAt(open.lastIndex)
+                open += span
+                if (span in hiddenSpans || span in errorSpans) continue
                 val touched = selMin <= span.end && selMax >= span.start
                 for (delimiter in span.delimiters) style(if (touched) faded else CONCEALED, delimiter.first, delimiter.last + 1)
                 val content = when (span.kind) {
@@ -175,10 +215,39 @@ public object MarkdownTextUtil {
                     else -> contentStyle(span, fontSizePx / density, monospace)
                 }
                 if (content != null) style(content, span.contentStart, span.contentEnd)
+                if (span.kind == Kind.CODE) {
+                    val heading = open.lastOrNull { it.kind == Kind.HEADING }
+                    val from = mapping.originalToTransformed(span.contentStart)
+                    val to = mapping.originalToTransformed(span.contentEnd)
+                    if (to > from) inlineCode += InlineCode(from, to, fontSizePx * (heading?.let { headingScale(it.level) } ?: 1f))
+                }
             }
             for (span in errors) style(SpanStyle(color = ERROR_COLOR, fontStyle = FontStyle.Italic), span.start, span.end)
 
-            // Last: the room of every formula overrides the styles around it
+            // The source of the block of the caret in the colors of its language, on its background
+            val theme = CodeTheme.of(defaultColor)
+            for (span in sources) {
+                val code = text.substring(span.contentStart, span.contentEnd)
+                for (token in CodeBlockLayout.tokens(highlighter, code, span.language)) {
+                    style(SpanStyle(color = theme.color(token.kind)), span.contentStart + token.start, span.contentStart + token.end)
+                }
+                codeSources += mapping.originalToTransformed(span.start) until mapping.originalToTransformed(span.end)
+            }
+
+            // Last: the room of every formula and block overrides the styles around it
+            fun room(offset: Int, size: Float, width: Float) = addStyle(
+                SpanStyle(
+                    color = Color.Transparent,
+                    fontSize = size.coerceAtLeast(MIN_ROOM_PX).toSp(),
+                    fontFamily = textFont,
+                    fontWeight = FontWeight.Normal,
+                    fontStyle = FontStyle.Normal,
+                    letterSpacing = (width - size.coerceAtLeast(MIN_ROOM_PX) * room.advance).toSp(),
+                    textDecoration = TextDecoration.None
+                ),
+                offset,
+                offset + 1
+            )
             for (formula in concealed) {
                 val offset = mapping.originalToTransformed(formula.span.start)
                 val size = if (formula.block) {
@@ -186,25 +255,17 @@ public object MarkdownTextUtil {
                 } else {
                     val ascent = formula.heightPx * formula.rendered.baselineRatio
                     max(ascent / room.ascent, (formula.heightPx - ascent) / room.descent)
-                }.coerceAtLeast(MIN_ROOM_PX)
-                val width = if (formula.block) lineWidthPx * LINE_FILL else formula.widthPx
-                addStyle(
-                    SpanStyle(
-                        color = Color.Transparent,
-                        fontSize = size.toSp(),
-                        fontFamily = textFont,
-                        fontWeight = FontWeight.Normal,
-                        fontStyle = FontStyle.Normal,
-                        letterSpacing = (width - size * room.advance).toSp(),
-                        textDecoration = TextDecoration.None
-                    ),
-                    offset,
-                    offset + 1
-                )
+                }
+                room(offset, size, if (formula.block) lineWidthPx * LINE_FILL else formula.widthPx)
                 formulas += EditorFormula(offset, formula.rendered.image, formula.widthPx, formula.heightPx, formula.rendered.baselineRatio, formula.block)
             }
+            for (block in blocks) {
+                val offset = mapping.originalToTransformed(block.span.start)
+                room(offset, block.layout.heightPx / (room.ascent + room.descent), lineWidthPx * LINE_FILL)
+                codeBlocks += EditorCodeBlock(offset, block.layout, block.span.contentStart)
+            }
         }
-        return EditorText(annotated, mapping, formulas, atCaret)
+        return EditorText(annotated, mapping, formulas, atCaret, codeBlocks, codeSources, inlineCode)
     }
 
     /**
@@ -248,7 +309,8 @@ public object MarkdownTextUtil {
         Kind.BOLD -> SpanStyle(fontWeight = FontWeight.Bold)
         Kind.ITALIC -> SpanStyle(fontStyle = FontStyle.Italic)
         Kind.STRIKE -> SpanStyle(textDecoration = TextDecoration.LineThrough)
-        Kind.CODE, Kind.CODE_BLOCK -> SpanStyle(fontFamily = monospace)
+        Kind.CODE -> SpanStyle(fontFamily = monospace)
+        Kind.CODE_BLOCK -> SpanStyle(fontFamily = monospace, fontSize = (baseFontSize * CodeBlockLayout.CODE_SCALE).sp)
         Kind.HEADING -> SpanStyle(fontWeight = FontWeight.Bold, fontSize = (baseFontSize * headingScale(span.level)).sp)
         Kind.FORMULA, Kind.ESCAPE, Kind.LIST_ITEM -> null
     }

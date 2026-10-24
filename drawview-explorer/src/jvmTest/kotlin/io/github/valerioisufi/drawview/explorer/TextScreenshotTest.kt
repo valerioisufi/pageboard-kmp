@@ -45,6 +45,21 @@ class TextScreenshotTest {
         caretAfter(viewModels, "\\pi r")
     }
 
+    /** A block of code away from the caret, drawn as the page draws it, and code in the line on its background. */
+    @Test
+    fun textWritingCode() = capture("text-writing-code", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 30f, CODE, drawnWidthMm = 120f)
+    }
+
+    /** The caret in a block of code: its source, its fences faded, in the colors of its language on its background. */
+    @Test
+    fun textWritingCodeSource() = capture("text-writing-code-source", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 30f, CODE, drawnWidthMm = 120f)
+        caretAfter(viewModels, "squares(")
+    }
+
     /** A formula that cannot be read: red source in the line, and the reason above it when the caret is in it. */
     @Test
     fun textWritingInvalidFormula() = capture("text-writing-invalid-formula", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
@@ -175,5 +190,9 @@ class TextScreenshotTest {
 
     private companion object {
         val WINDOWS = listOf(ReferenceWindow.PHONE, ReferenceWindow.TABLET_PORTRAIT, ReferenceWindow.DESKTOP)
+
+        /** A text with a block of code and code in the line. */
+        const val CODE = "Squares:\n```kotlin\nfun squares(n: Int) = (1..n).map { it * it }\n\tval list = squares(10) // a comment\n```\nThen `run` it."
+
     }
 }

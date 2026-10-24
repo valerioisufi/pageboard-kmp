@@ -1,5 +1,7 @@
 package io.github.valerioisufi.drawview.ui.render
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
@@ -20,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.model.text.code.CodeHighlighter
 import io.github.valerioisufi.drawview.model.text.code.CodeToken
 import io.github.valerioisufi.drawview.model.text.code.CodeTokenKind
+import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
 import kotlin.math.max
 
 /**
@@ -83,6 +86,7 @@ internal class CodeTheme private constructor(val text: Color, private val tokens
  */
 public class CodeBlockLayout internal constructor(
     internal val code: TextLayoutResult,
+    private val shownOffsets: IntArray,
     internal val label: TextLayoutResult?,
     public val widthPx: Float,
     public val heightPx: Float,
@@ -101,6 +105,29 @@ public class CodeBlockLayout internal constructor(
 
     /** Where the label is drawn from the left of the block. */
     internal val labelLeftPx: Float get() = widthPx - paddingPx - (label?.size?.width ?: 0)
+
+    /**
+     * The offset in the code of the character at [point] of the block (from its top-left corner):
+     * where a tap on the block puts the caret.
+     */
+    internal fun codeOffsetAt(point: Offset): Int {
+        val local = Offset(point.x - paddingPx, point.y - codeTopPx)
+        val shown = code.getOffsetForPosition(local)
+        // At the end of a line, before its line break: the next line starts at the same offset drawn
+        val atLineEnd = shown == code.getLineEnd(code.getLineForVerticalPosition(local.y))
+        // The offsets drawn of the code only grow: the first one at or after, the last one at or before
+        var low = 0
+        var high = shownOffsets.lastIndex
+        while (low < high) {
+            val middle = (low + high + if (atLineEnd) 0 else 1) / 2
+            if (atLineEnd) {
+                if (shownOffsets[middle] >= shown) high = middle else low = middle + 1
+            } else {
+                if (shownOffsets[middle] <= shown) low = middle else high = middle - 1
+            }
+        }
+        return low
+    }
 
     /** Draws the block on [canvas], its top-left corner at [left], [top]. */
     internal fun draw(canvas: Canvas, left: Float, top: Float) {
@@ -132,6 +159,9 @@ public class CodeBlockLayout internal constructor(
         /** The longest name of a language shown. */
         private const val MAX_LABEL = 24
 
+        /** The corners of the background of a block, or of its source, in a text of [textFontPx]. */
+        fun cornerRadius(textFontPx: Float): Float = textFontPx * CODE_SCALE * RADIUS
+
         /**
          * Lays out [code] written in [language] (its lines without the [indent] spaces of its
          * fence) in a text of [textFontPx] and [color] whose lines are [widthPx] wide, its tokens
@@ -152,7 +182,8 @@ public class CodeBlockLayout internal constructor(
             val theme = CodeTheme.of(color)
             val style = TextStyle(color = color, fontSize = fontPx.sp, fontFamily = monospace, letterSpacing = 0.sp, textAlign = TextAlign.Start)
             val advance = advance(measurer, style)
-            val shown = shownCode(code, indent, advance, tokens(highlighter, code, language), theme)
+            val shownCode = shownCode(code, indent, advance, tokens(highlighter, code, language), theme)
+            val shown = shownCode.text
             val padding = fontPx * PADDING_X
             val layout = measurer.measure(
                 text = shown,
@@ -170,6 +201,7 @@ public class CodeBlockLayout internal constructor(
             val codeTop = if (label != null) labelTop + label.size.height + paddingY * 0.25f else paddingY
             return CodeBlockLayout(
                 code = layout,
+                shownOffsets = shownCode.shownOffsets,
                 label = label,
                 widthPx = widthPx,
                 heightPx = codeTop + layout.size.height + paddingY,
@@ -193,7 +225,7 @@ public class CodeBlockLayout internal constructor(
          * The tokens of [code], those of an engine kept only sorted, apart and in the code (an
          * engine failing draws the code in one color).
          */
-        private fun tokens(highlighter: CodeHighlighter?, code: String, language: String): List<CodeToken> {
+        fun tokens(highlighter: CodeHighlighter?, code: String, language: String): List<CodeToken> {
             if (highlighter == null || language.isEmpty() || code.length > CodeHighlighter.MAX_HIGHLIGHTED) return emptyList()
             val tokens = try {
                 highlighter.tokens(code, language)
@@ -212,10 +244,10 @@ public class CodeBlockLayout internal constructor(
          * next column of [TAB_WIDTH], a wrapped line indented as far as its code, the [tokens] in
          * their colors.
          */
-        private fun shownCode(code: String, indent: Int, advance: Float, tokens: List<CodeToken>, theme: CodeTheme): AnnotatedString {
+        private fun shownCode(code: String, indent: Int, advance: Float, tokens: List<CodeToken>, theme: CodeTheme): ShownCode {
             // Where each offset of the code is drawn
             val offsets = IntArray(code.length + 1)
-            return buildAnnotatedString {
+            val text = buildAnnotatedString {
                 var lineStart = 0
                 while (true) {
                     val lineEnd = code.indexOf('\n', lineStart).let { if (it < 0) code.length else it }
@@ -254,6 +286,47 @@ public class CodeBlockLayout internal constructor(
                     if (end > start) addStyle(SpanStyle(color = theme.color(token.kind)), start, end)
                 }
             }
+            return ShownCode(text, offsets)
         }
+
+        /** The code as it is drawn, and where every offset of the code is in [text]. */
+        private class ShownCode(val text: AnnotatedString, val shownOffsets: IntArray)
     }
 }
+
+/** The background of code in the line on one line of a text: [rect], its corners of [radius]. */
+internal class CodeChip(val rect: Rect, val radius: Float)
+
+/**
+ * The backgrounds of [inlineCode] in this layout: one per line of each code, from the left of its
+ * first character to the right of its last one on the line and a little beyond, around the letters
+ * of its font; they take no room. The canvas and the editor draw them the same way.
+ */
+internal fun TextLayoutResult.codeChips(inlineCode: List<MarkdownTextUtil.InlineCode>): List<CodeChip> {
+    if (inlineCode.isEmpty()) return emptyList()
+    val chips = mutableListOf<CodeChip>()
+    val length = layoutInput.text.length
+    for (code in inlineCode) {
+        if (code.start < 0 || code.end > length || code.end <= code.start) continue
+        val first = getLineForOffset(code.start)
+        val last = getLineForOffset(code.end - 1)
+        val padding = code.fontSizePx * CHIP_PADDING
+        for (line in first..last) {
+            val left = if (line == first) getBoundingBox(code.start).left else getLineLeft(line)
+            val right = if (line == last) getBoundingBox(code.end - 1).right else getLineRight(line)
+            val baseline = getLineBaseline(line)
+            val rect = Rect(left - padding, baseline - code.fontSizePx * CHIP_ASCENT, right + padding, baseline + code.fontSizePx * CHIP_DESCENT)
+            chips += CodeChip(rect, code.fontSizePx * CHIP_RADIUS)
+        }
+    }
+    return chips
+}
+
+/**
+ * The background of code in the line, relative to its font: beyond its characters on the sides,
+ * above and below its baseline, its corners.
+ */
+private const val CHIP_PADDING = 0.15f
+private const val CHIP_ASCENT = 0.9f
+private const val CHIP_DESCENT = 0.25f
+private const val CHIP_RADIUS = 0.2f
