@@ -59,7 +59,9 @@ internal fun capture(
     actions: DesktopComposeUiTest.(viewModels: ViewModelStoreOwner) -> Unit = {}
 ) = runDesktopComposeUiTest(width = window.width.value.toInt(), height = window.height.value.toInt()) {
     val storeScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = storeScope, clock = { FIXED_TIME })
+    // The same dates and the same folders (their tones follow their ids) at every run
+    var folders = 0
+    val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = storeScope, clock = { FIXED_TIME }, newFolderId = { "folder-${++folders}" })
     store.createFolder("Analysis", parentId = null)
     store.createFolder("Physics", parentId = null)
     store.createDocument(NOTE, background = PageBackground.Ruled())

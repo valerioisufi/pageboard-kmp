@@ -83,13 +83,16 @@ public class InMemoryKeyValueStorage : KeyValueStorage {
  *
  * @param clock the time of the changes, in milliseconds: a fixed time makes the dates shown by a
  *   test the same at every run.
+ * @param newFolderId the id of a new folder (random): ids given make the folders shown by a test
+ *   the same at every run (the tone of a folder follows its id).
  */
 public class KeyValueDocumentStore(
     private val storage: KeyValueStorage,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
     private val saveDelayMs: Long = 400L,
     private val clock: () -> Long = ::currentTimeMillis,
-    override val strokeModeller: StrokeModeller = KotlinStrokeModeller
+    override val strokeModeller: StrokeModeller = KotlinStrokeModeller,
+    private val newFolderId: () -> String = ::newElementId
 ) : DocumentStore, DocumentPersistence, PreferenceStore {
 
     private val json = Json {
@@ -269,7 +272,7 @@ public class KeyValueDocumentStore(
             if (parentId != null && index.folders.none { it.id == parentId }) return false
             if (index.folders.any { it.parentId == parentId && it.name == name }) return false
             val now = clock()
-            val folder = StoredFolder(newElementId(), name, parentId, createdAt = now, modifiedAt = now)
+            val folder = StoredFolder(newFolderId(), name, parentId, createdAt = now, modifiedAt = now)
             index = index.copy(folders = index.folders + folder)
             writeIndexLocked()
         }

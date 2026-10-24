@@ -99,8 +99,8 @@ public final class io/github/valerioisufi/drawview/store/InMemoryKeyValueStorage
 
 public final class io/github/valerioisufi/drawview/store/KeyValueDocumentStore : io/github/valerioisufi/drawview/model/change/DocumentPersistence, io/github/valerioisufi/drawview/store/DocumentStore, io/github/valerioisufi/drawview/store/PreferenceStore {
 	public static final field Companion Lio/github/valerioisufi/drawview/store/KeyValueDocumentStore$Companion;
-	public fun <init> (Lio/github/valerioisufi/drawview/store/KeyValueStorage;Lkotlinx/coroutines/CoroutineScope;JLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/KeyValueStorage;Lkotlinx/coroutines/CoroutineScope;JLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/model/StrokeModeller;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/store/KeyValueStorage;Lkotlinx/coroutines/CoroutineScope;JLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/model/StrokeModeller;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/KeyValueStorage;Lkotlinx/coroutines/CoroutineScope;JLkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/model/StrokeModeller;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun appendOperation (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/change/Operation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun closeDocument (Ljava/lang/String;)V
 	public fun compactOperations (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
