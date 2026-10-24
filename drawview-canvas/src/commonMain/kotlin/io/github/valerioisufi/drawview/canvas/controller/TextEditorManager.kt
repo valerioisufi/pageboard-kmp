@@ -85,6 +85,21 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
 
     override val formatsCharacters: Boolean get() = true
 
+    /** The value whose selection [inCodeBlock] last told, and what it told. */
+    private var codeBlockValue: TextFieldValue? = null
+    private var codeBlockSelected = false
+
+    override val inCodeBlock: Boolean
+        get() {
+            if (!isEditing) return false
+            val current = value
+            if (current != codeBlockValue) {
+                codeBlockSelected = RichTextEditing.inCodeBlock(current)
+                codeBlockValue = current
+            }
+            return codeBlockSelected
+        }
+
     /** Rotation of the text in degrees (kept: the editor does not turn a text). */
     public val rotation: Float get() = activeTextItem?.rotation ?: 0f
 
@@ -362,6 +377,9 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
 
     /** Makes the line of the caret a heading, or plain text again. */
     override fun toggleHeading(): Unit = updateValue(RichTextEditing.toggleHeading(value), smartNewline = false)
+
+    /** Puts the lines of the selection in a block of code, or takes the block of the selection out of its fences. */
+    override fun toggleCodeBlock(): Unit = updateValue(RichTextEditing.toggleCodeBlock(value), smartNewline = false)
 
     /** Makes the lines of the selection bullet list items, or plain text again. */
     override fun toggleBulletList(): Unit = updateValue(RichTextEditing.toggleBulletList(value), smartNewline = false)

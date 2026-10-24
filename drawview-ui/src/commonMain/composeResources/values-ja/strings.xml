@@ -93,6 +93,7 @@
     <string name="message_pdf_page_without_text">このページには選択できるテキストがありません（スキャンかもしれません）</string>
     <string name="text_editor_action_strikethrough">取り消し線</string>
     <string name="text_editor_action_code">コード</string>
+    <string name="text_editor_action_code_block">コードブロック</string>
     <string name="text_editor_action_heading">見出し</string>
     <string name="text_editor_action_bullet_list">箇条書き</string>
     <string name="text_editor_action_numbered_list">段落番号</string>

@@ -93,6 +93,7 @@
     <string name="message_pdf_page_without_text">Diese Seite hat keinen auswählbaren Text (vielleicht ein Scan)</string>
     <string name="text_editor_action_strikethrough">Durchgestrichen</string>
     <string name="text_editor_action_code">Code</string>
+    <string name="text_editor_action_code_block">Codeblock</string>
     <string name="text_editor_action_heading">Überschrift</string>
     <string name="text_editor_action_bullet_list">Aufzählung</string>
     <string name="text_editor_action_numbered_list">Nummerierte Liste</string>

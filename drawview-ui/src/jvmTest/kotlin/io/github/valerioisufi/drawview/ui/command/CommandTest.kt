@@ -241,6 +241,27 @@ class CommandTest {
         assertEquals("My item", editor.value.text)
     }
 
+    @Test
+    fun theBlockOfCodeIsToggledByItsShortcutAndStopsTheFormats() {
+        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val commands = editorCommands(controller)
+        val host = CommandHost().apply { register(commands.all) }
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 10f, 10f)
+        editor.updateValue(TextFieldValue("x = 1", TextRange(0)))
+        assertTrue(commands.bold.isEnabled())
+
+        assertTrue(host.dispatch(press(Key.C, meta = true, alt = true), apple))
+        assertEquals("```\nx = 1\n```", editor.value.text)
+        assertFalse(commands.bold.isEnabled(), "no format in a block of code")
+        assertFalse(commands.heading.isEnabled())
+        assertTrue(commands.codeBlock.isEnabled(), "the block can be taken out")
+
+        assertTrue(host.dispatch(press(Key.C, meta = true, alt = true), apple))
+        assertEquals("x = 1", editor.value.text)
+        assertTrue(commands.bold.isEnabled())
+    }
+
     /** The clipboard of the system in a test: the text set last. */
     private class FakeClipboard : ClipboardManager {
         var text: String? = null

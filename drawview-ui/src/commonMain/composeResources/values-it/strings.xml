@@ -93,6 +93,7 @@
     <string name="message_pdf_page_without_text">Questa pagina non ha testo selezionabile (forse è una scansione)</string>
     <string name="text_editor_action_strikethrough">Barrato</string>
     <string name="text_editor_action_code">Codice</string>
+    <string name="text_editor_action_code_block">Blocco di codice</string>
     <string name="text_editor_action_heading">Titolo</string>
     <string name="text_editor_action_bullet_list">Elenco puntato</string>
     <string name="text_editor_action_numbered_list">Elenco numerato</string>

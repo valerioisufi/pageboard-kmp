@@ -93,6 +93,7 @@
     <string name="message_pdf_page_without_text">이 페이지에는 선택할 수 있는 텍스트가 없습니다(스캔일 수 있습니다)</string>
     <string name="text_editor_action_strikethrough">취소선</string>
     <string name="text_editor_action_code">코드</string>
+    <string name="text_editor_action_code_block">코드 블록</string>
     <string name="text_editor_action_heading">제목</string>
     <string name="text_editor_action_bullet_list">글머리 기호</string>
     <string name="text_editor_action_numbered_list">번호 매기기</string>

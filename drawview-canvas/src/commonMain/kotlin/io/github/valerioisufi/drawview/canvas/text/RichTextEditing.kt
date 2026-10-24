@@ -8,7 +8,9 @@ import kotlin.math.min
 
 /**
  * The formatting of a text being written, as changes of its notation (see [RichTextParser]): the
- * delimiters around the selection, the heading of a line.
+ * delimiters around the selection, the heading of a line, the lists, the blocks of code. Inside a
+ * block of code the text is code: the formats do not apply, Enter keeps the indentation of the
+ * line and continues no list, Tab moves by the columns of the code.
  */
 public object RichTextEditing {
 
@@ -21,8 +23,87 @@ public object RichTextEditing {
         FORMULA("$")
     }
 
-    /** Adds or removes the delimiters of [format] around the selection (see [toggleDelimiters]). */
-    public fun toggle(value: TextFieldValue, format: Format): TextFieldValue = toggleDelimiters(value, format.delimiter, format.delimiter)
+    /**
+     * Adds or removes the delimiters of [format] around the selection (see [toggleDelimiters]);
+     * code over several lines is a block of code ([toggleCodeBlock]). Nothing in a block of code.
+     */
+    public fun toggle(value: TextFieldValue, format: Format): TextFieldValue {
+        if (inCodeBlock(value)) return value
+        val start = min(value.selection.start, value.selection.end)
+        val end = max(value.selection.start, value.selection.end)
+        if (format == Format.CODE && value.text.substring(start, end).contains('\n')) return toggleCodeBlock(value)
+        return toggleDelimiters(value, format.delimiter, format.delimiter)
+    }
+
+    /** The block of code the selection of [value] is in, its fences included, or `null`. */
+    private fun codeBlockAt(value: TextFieldValue): RichTextParser.Span? {
+        val start = min(value.selection.start, value.selection.end)
+        val end = max(value.selection.start, value.selection.end)
+        return RichTextParser.parse(value.text).firstOrNull { it.kind == RichTextParser.Kind.CODE_BLOCK && start >= it.start && end <= it.end }
+    }
+
+    /** Whether the selection of [value] is in a block of code (its fences included). */
+    public fun inCodeBlock(value: TextFieldValue): Boolean = codeBlockAt(value) != null
+
+    /**
+     * Removes the fences of the block of code of the selection, or puts the lines of the selection
+     * between fences (longer than any run of backticks in them), the selection on the same
+     * characters.
+     */
+    public fun toggleCodeBlock(value: TextFieldValue): TextFieldValue {
+        val text = value.text
+        val sel = value.selection
+        val block = codeBlockAt(value)
+        if (block != null) {
+            val before = block.contentStart - block.start
+            val after = block.end - block.contentEnd
+            fun moved(offset: Int) = when {
+                offset <= block.start -> offset
+                offset <= block.contentStart -> block.start
+                offset <= block.contentEnd -> offset - before
+                offset <= block.end -> block.contentEnd - before
+                else -> offset - before - after
+            }
+            return value.copy(
+                text = text.substring(0, block.start) + text.substring(block.contentStart, block.contentEnd) + text.substring(block.end),
+                selection = TextRange(moved(sel.start), moved(sel.end))
+            )
+        }
+        val (firstLineStart, lastLineEnd) = selectedLines(text, sel)
+        val code = text.substring(firstLineStart, lastLineEnd)
+        var longest = 0
+        var run = 0
+        for (c in code) {
+            run = if (c == '`') run + 1 else 0
+            longest = max(longest, run)
+        }
+        val fence = "`".repeat(max(MIN_FENCE, longest + 1))
+        val opening = fence + "\n"
+        val closing = "\n" + fence
+        fun moved(offset: Int) = when {
+            offset < firstLineStart -> offset
+            offset <= lastLineEnd -> offset + opening.length
+            else -> offset + opening.length + closing.length
+        }
+        return value.copy(
+            text = text.substring(0, firstLineStart) + opening + code + closing + text.substring(lastLineEnd),
+            selection = TextRange(moved(sel.start), moved(sel.end))
+        )
+    }
+
+    /** Where the lines of [selection] start and end in [text] (a selection ending at a line break leaves the next line out). */
+    private fun selectedLines(text: String, selection: TextRange): Pair<Int, Int> {
+        val selMin = min(selection.start, selection.end)
+        val selMax = max(selection.start, selection.end)
+        val firstLineStart = text.lastIndexOf('\n', selMin - 1) + 1
+        val lastLineEnd = if (selMax == selMin) {
+            text.indexOf('\n', selMin).let { if (it < 0) text.length else it }
+        } else {
+            val endBound = if (selMax > 0 && text[selMax - 1] == '\n') selMax - 1 else selMax
+            text.indexOf('\n', endBound).let { if (it < 0) text.length else it }
+        }
+        return firstLineStart to lastLineEnd
+    }
 
     /**
      * Adds or removes the delimiters around the selection, or inserts them at the cursor (placing
@@ -58,6 +139,7 @@ public object RichTextEditing {
      * plain text again: the `#` and the spaces after them at the start of the line.
      */
     public fun toggleHeading(value: TextFieldValue): TextFieldValue {
+        if (inCodeBlock(value)) return value
         val text = value.text
         val sel = value.selection
         val lineStart = text.lastIndexOf('\n', min(sel.start, sel.end) - 1) + 1
@@ -90,6 +172,7 @@ public object RichTextEditing {
     public fun toggleNumberedList(value: TextFieldValue): TextFieldValue = toggleListLines(value, ordered = true)
 
     private fun toggleListLines(value: TextFieldValue, ordered: Boolean): TextFieldValue {
+        if (inCodeBlock(value)) return value
         val text = value.text
         val sel = value.selection
         val selMin = min(sel.start, sel.end)
@@ -193,6 +276,7 @@ public object RichTextEditing {
      *   standard newline should be inserted).
      */
     public fun handleEnter(value: TextFieldValue): TextFieldValue? {
+        codeEnter(value)?.let { return it }
         val start = min(value.selection.start, value.selection.end)
         val end = max(value.selection.start, value.selection.end)
         val text = if (start != end) {
@@ -252,6 +336,33 @@ public object RichTextEditing {
     }
 
     /**
+     * Enter in a block of code (the selection replaced): in its code, a new line indented as the
+     * line of the caret; at the end of the opening fence of a block not closed, the block closed
+     * under the caret. `null` elsewhere, on the fences of a block closed too (a plain line break).
+     */
+    private fun codeEnter(value: TextFieldValue): TextFieldValue? {
+        val start = min(value.selection.start, value.selection.end)
+        val end = max(value.selection.start, value.selection.end)
+        val text = value.text.substring(0, start) + value.text.substring(end)
+        val block = RichTextParser.parse(text).firstOrNull { it.kind == RichTextParser.Kind.CODE_BLOCK && start >= it.start && start <= it.end } ?: return null
+        val lineStart = text.lastIndexOf('\n', start - 1) + 1
+        if (lineStart == block.start) {
+            val lineEnd = text.indexOf('\n', start).let { if (it < 0) text.length else it }
+            // Not closed: its code runs to the end of the text, no closing fence after it
+            val closed = block.contentEnd < block.end
+            if (closed || text.substring(start, lineEnd).isNotBlank()) return null
+            var fenceEnd = block.start + block.level
+            val char = text[fenceEnd]
+            while (fenceEnd < text.length && text[fenceEnd] == char) fenceEnd++
+            val fence = text.substring(block.start, fenceEnd)
+            return TextFieldValue(text.substring(0, start) + "\n\n" + fence + text.substring(start), TextRange(start + 1))
+        }
+        if (start < block.contentStart || start > block.contentEnd) return null
+        val indent = text.substring(lineStart, start).takeWhile { it == ' ' || it == '\t' }
+        return TextFieldValue(text.substring(0, start) + "\n" + indent + text.substring(start), TextRange(start + 1 + indent.length))
+    }
+
+    /**
      * Checks if [newValue] is a single newline insertion resulting from pressing Return/Enter in
      * an IME or software keyboard, and applies [handleEnter] if so. Returns `null` if not a single
      * newline insertion or if [handleEnter] does not apply.
@@ -270,25 +381,33 @@ public object RichTextEditing {
     }
 
     /**
-     * Indents the lines covered by the selection by adding 2 spaces at the beginning of each line.
+     * Indents the lines covered by the selection by adding 2 spaces at the beginning of each line;
+     * in the code of a block, by [CODE_INDENT] spaces, or at the caret up to the next column of
+     * [CODE_INDENT].
      */
     public fun indent(value: TextFieldValue): TextFieldValue {
+        if (!inCodeBlock(value)) return indentLines(value, LIST_INDENT)
+        val start = min(value.selection.start, value.selection.end)
+        if (start != max(value.selection.start, value.selection.end)) return indentLines(value, CODE_INDENT)
+        val text = value.text
+        var column = 0
+        for (i in text.lastIndexOf('\n', start - 1) + 1 until start) {
+            column = if (text[i] == '\t') (column / CODE_INDENT + 1) * CODE_INDENT else column + 1
+        }
+        val spaces = " ".repeat(CODE_INDENT - column % CODE_INDENT)
+        return value.copy(text = text.substring(0, start) + spaces + text.substring(start), selection = TextRange(start + spaces.length))
+    }
+
+    /** Adds [width] spaces at the beginning of each line covered by the selection. */
+    private fun indentLines(value: TextFieldValue, width: Int): TextFieldValue {
         val text = value.text
         val sel = value.selection
-        val selMin = min(sel.start, sel.end)
-        val selMax = max(sel.start, sel.end)
-
-        val firstLineStart = text.lastIndexOf('\n', selMin - 1) + 1
-        val lastLineEnd = if (selMax == selMin) {
-            text.indexOf('\n', selMin).let { if (it < 0) text.length else it }
-        } else {
-            val endBound = if (selMax > 0 && text[selMax - 1] == '\n') selMax - 1 else selMax
-            text.indexOf('\n', endBound).let { if (it < 0) text.length else it }
-        }
+        val (firstLineStart, lastLineEnd) = selectedLines(text, sel)
+        val unit = " ".repeat(width)
 
         val block = text.substring(firstLineStart, lastLineEnd)
         val lines = block.split('\n')
-        val newLines = lines.map { "  $it" }
+        val newLines = lines.map { "$unit$it" }
         val newBlock = newLines.joinToString("\n")
 
         fun mapOffset(offset: Int): Int {
@@ -299,9 +418,9 @@ public object RichTextEditing {
             for (line in lines) {
                 val oldLineEnd = oldPos + line.length
                 if (offset <= oldLineEnd) {
-                    return offset + added + 2
+                    return offset + added + width
                 }
-                added += 2
+                added += width
                 oldPos = oldLineEnd + 1
             }
             return offset + added
@@ -315,31 +434,21 @@ public object RichTextEditing {
     }
 
     /**
-     * Outdents the lines covered by the selection by removing up to 2 leading spaces from each line.
+     * Outdents the lines covered by the selection by removing up to 2 leading spaces from each
+     * line; in the code of a block, up to [CODE_INDENT] spaces or a tab.
      */
-    public fun outdent(value: TextFieldValue): TextFieldValue {
+    public fun outdent(value: TextFieldValue): TextFieldValue = outdentLines(value, if (inCodeBlock(value)) CODE_INDENT else LIST_INDENT)
+
+    /** Removes up to [width] leading spaces, or a tab, from each line covered by the selection. */
+    private fun outdentLines(value: TextFieldValue, width: Int): TextFieldValue {
         val text = value.text
         val sel = value.selection
-        val selMin = min(sel.start, sel.end)
-        val selMax = max(sel.start, sel.end)
-
-        val firstLineStart = text.lastIndexOf('\n', selMin - 1) + 1
-        val lastLineEnd = if (selMax == selMin) {
-            text.indexOf('\n', selMin).let { if (it < 0) text.length else it }
-        } else {
-            val endBound = if (selMax > 0 && text[selMax - 1] == '\n') selMax - 1 else selMax
-            text.indexOf('\n', endBound).let { if (it < 0) text.length else it }
-        }
+        val (firstLineStart, lastLineEnd) = selectedLines(text, sel)
 
         val block = text.substring(firstLineStart, lastLineEnd)
         val lines = block.split('\n')
         val removedSpaces = lines.map { line ->
-            when {
-                line.startsWith("  ") -> 2
-                line.startsWith(" ") -> 1
-                line.startsWith("\t") -> 1
-                else -> 0
-            }
+            if (line.startsWith("\t")) 1 else line.takeWhile { it == ' ' }.length.coerceAtMost(width)
         }
         val newLines = lines.mapIndexed { i, line -> line.substring(removedSpaces[i]) }
         val newBlock = newLines.joinToString("\n")
@@ -391,4 +500,11 @@ public object RichTextEditing {
     private val HEADING_MARKER = Regex("""^#{1,6}[ \t]+""")
     private const val BULLET_PREFIX = "- "
     private const val HEADING_PREFIX = "# "
+
+    /** The spaces of a level of a list, and of a column of the code. */
+    private const val LIST_INDENT = 2
+    private const val CODE_INDENT = 4
+
+    /** The fewest backticks of a fence. */
+    private const val MIN_FENCE = 3
 }

@@ -180,7 +180,7 @@ Variations).
 | 1 | Notation and highlighting: `Kind.CODE_BLOCK` and `Span.language` (fences, language, content as it is, a fence not closed), `CodeHighlighter`, `BuiltInCodeHighlighter` and the grammars; tests of the rules (the notation not read inside, `#` and `-` in a block, the fences of CommonMark), of every grammar on real snippets, of the bounds (random input, unclosed strings and comments at every place, long code in linear time); ABI of `drawview-model` | Done |
 | 2 | On the page: `CodeTheme`, `CodeBlockLayout`, the blocks and the code in the line in `toCanvasText`, drawn, measured and laid out by the adapter (`TextBlockLayout.boxes`), `DrawViewEngines.code`; the PDF export of the backgrounds; the automatic width; the texts with fences counted on a copy of the database of the user (asked first, the original untouched), and measured again on load if any; tests (layout, wrapping, tabs, empty lines, alignment, PDF), screenshots; ABI of `drawview-canvas`, `drawview-ui` | Done |
 | 3 | In the editor: the block away from the caret drawn as on the page over its character, its source under the caret on its background and in its colors, the code in the line on its background, the caret on the tapped character of a block; tests of the offsets, screenshots | Done |
-| 4 | Writing code: `RichTextEditing` (Enter, Tab, ⇧Tab and the formats in a block, the fence closed, the block toggled, ⌘E on several lines), `EditorCommands.codeBlock` (⌘⌥C, Format menu, tooltip), the button of `TextFormatBar` and its icon, the strings in the 7 languages; tests of the editing and of the command | To do |
+| 4 | Writing code: `RichTextEditing` (Enter, Tab, ⇧Tab and the formats in a block, the fence closed, the block toggled, ⌘E on several lines), `EditorCommands.codeBlock` (⌘⌥C, Format menu, tooltip), the button of `TextFormatBar` and its icon, the strings in the 7 languages; tests of the editing and of the command | Done |
 | 5 | Lecture assistant: `MARKDOWN_RULE` and the reading of the handwriting with the fenced blocks; the fence stripped by `LectureAnalysis` checked with answers holding code; tests | To do |
 
 No phase touches the sync modules nor the stored formats: `ProtocolFormatTest` and the Room
@@ -292,6 +292,34 @@ schema stay as they are.
   the offsets shown, a tap on a block on the character tapped (`EditorCodeTest`); the screenshots
   `text-writing-code` and `text-writing-code-source`.
 * The public API does not change.
+
+### Phase 4 results
+
+* `RichTextEditing` knows the blocks of code (`inCodeBlock`: the selection in a block, its fences
+  included). In a block the formats of the characters, the headings and the lists do nothing.
+  Enter in its code keeps the indentation of the line and continues no list (from the keyboard of
+  a phone too, through `handleSmartNewline`); at the end of the opening fence of a block not
+  closed it closes the block under the caret; on the fences of a block closed it is a plain line
+  break. Tab writes spaces up to the next column of 4 (a tab counted to its column), on a
+  selection it indents the lines by 4; ⇧Tab takes off up to 4 spaces or a tab. The lists keep 2.
+* `toggleCodeBlock` puts the whole lines of the selection between fences (one backtick longer
+  than the longest run of backticks in them, 3 at least), or takes the block of the selection out
+  of its fences, the selection on the same characters; ⌘E on a selection over several lines makes
+  a block.
+* `TextFormatTarget.inCodeBlock` and `toggleCodeBlock`, for the text being written
+  (`TextEditorManager`, which reads the notation once per value). `EditorCommands.codeBlock`
+  ("Code block", ⌘⌥C or Ctrl+Alt+C, in the menu Format after "Code") and its button in
+  `TextFormatBar`, after the code, with the icon `SquareCode` of Lucide. In a block the formats of
+  the characters, the heading and the lists are disabled (their buttons greyed), the block stays
+  enabled. Its label in the seven languages.
+* Tests: Enter in a block and from a phone, a fence closed by Enter, Tab and ⇧Tab in a block and
+  in a list, the formats in a block, a block made and taken out with its fence, ⌘E on several
+  lines (`RichTextEditingTest`); the command by its shortcut, the formats disabled in the block
+  (`CommandTest`); the screenshots of the text being written recorded again (the bar has the
+  button of the block).
+* The ABI of `drawview-canvas` (`TextFormatTarget.inCodeBlock`, `toggleCodeBlock`,
+  `RichTextEditing.inCodeBlock`, `toggleCodeBlock`) and of `drawview-ui` (the string of the
+  command) recorded again.
 
 ## Decisions
 

@@ -21,11 +21,20 @@ public interface TextFormatTarget {
     /** Whether the formats of the characters apply (bold, a formula…): to the text being written. */
     public val formatsCharacters: Boolean get() = false
 
+    /**
+     * Whether the selection of the text being written is in a block of code: its text is code,
+     * the formats of the characters, the headings and the lists do not apply there.
+     */
+    public val inCodeBlock: Boolean get() = false
+
     /** Adds or removes [format] around the selection of the text being written. */
     public fun toggle(format: RichTextEditing.Format) {}
 
     /** Makes the line of the caret a heading, or plain text again. */
     public fun toggleHeading() {}
+
+    /** Puts the lines of the selection in a block of code, or takes the block of the selection out of its fences. */
+    public fun toggleCodeBlock() {}
 
     /** Makes the lines of the selection bullet list items, or plain text again. */
     public fun toggleBulletList() {}

@@ -64,6 +64,7 @@ import io.github.valerioisufi.drawview.ui.generated.resources.text_align_start
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_bold
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_bullet_list
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_code
+import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_code_block
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_heading
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_italic
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_action_math
@@ -336,33 +337,43 @@ internal class EditorCommands internal constructor(
     /** The texts the formatting applies to: the text being written or the texts selected. */
     private val textTarget get() = controller.textFormatTarget?.takeIf { controller.isDrawingMode && writable() }
 
+    /** Whether the formats of the characters apply: to the text being written, outside its blocks of code. */
+    private val formatsText get() = textTarget.let { it != null && it.formatsCharacters && !it.inCodeBlock }
+
     val bold = characterFormat(Format.BOLD, Res.string.text_editor_action_bold, DrawViewIcons.Bold, primary(Key.B))
     val italic = characterFormat(Format.ITALIC, Res.string.text_editor_action_italic, DrawViewIcons.Italic, primary(Key.I))
     val strikethrough = characterFormat(
         Format.STRIKETHROUGH, Res.string.text_editor_action_strikethrough, DrawViewIcons.Strikethrough, Shortcut(Key.X, primary = true, shift = true)
     )
     val code = characterFormat(Format.CODE, Res.string.text_editor_action_code, DrawViewIcons.Code, primary(Key.E))
+
+    val codeBlock = Command(
+        "format-code-block", label(Res.string.text_editor_action_code_block), CommandGroup.FORMAT,
+        icon = { rememberVectorPainter(DrawViewIcons.SquareCode) },
+        shortcuts = listOf(Shortcut(Key.C, primary = true, alt = true)),
+        isEnabled = { textTarget?.formatsCharacters == true }
+    ) { textTarget?.toggleCodeBlock() }
     val formula = characterFormat(Format.FORMULA, Res.string.text_editor_action_math, DrawViewIcons.Sigma, Shortcut(Key.M, primary = true, shift = true))
 
     val heading = Command(
         "format-heading", label(Res.string.text_editor_action_heading), CommandGroup.FORMAT,
         icon = { rememberVectorPainter(DrawViewIcons.Heading) },
         shortcuts = listOf(Shortcut(Key.One, primary = true, alt = true)),
-        isEnabled = { textTarget?.formatsCharacters == true }
+        isEnabled = { formatsText }
     ) { textTarget?.toggleHeading() }
 
     val bulletList = Command(
         "format-bullet-list", label(Res.string.text_editor_action_bullet_list), CommandGroup.FORMAT,
         icon = { rememberVectorPainter(DrawViewIcons.List) },
         shortcuts = listOf(Shortcut(Key.Eight, primary = true, shift = true)),
-        isEnabled = { textTarget?.formatsCharacters == true }
+        isEnabled = { formatsText }
     ) { textTarget?.toggleBulletList() }
 
     val numberedList = Command(
         "format-numbered-list", label(Res.string.text_editor_action_numbered_list), CommandGroup.FORMAT,
         icon = { rememberVectorPainter(DrawViewIcons.ListOrdered) },
         shortcuts = listOf(Shortcut(Key.Seven, primary = true, shift = true)),
-        isEnabled = { textTarget?.formatsCharacters == true }
+        isEnabled = { formatsText }
     ) { textTarget?.toggleNumberedList() }
 
     val alignStart = alignment(TextAlignment.START, Res.string.text_align_start, DrawViewIcons.AlignLeft, Key.L)
@@ -383,7 +394,7 @@ internal class EditorCommands internal constructor(
 
     /** The commands of the formatting bars and of the menu Format. */
     val formats: List<Command> = listOf(
-        bold, italic, strikethrough, code, heading, bulletList, numberedList, formula,
+        bold, italic, strikethrough, code, codeBlock, heading, bulletList, numberedList, formula,
         alignStart, alignCenter, alignEnd, largerText, smallerText
     )
 
@@ -394,7 +405,7 @@ internal class EditorCommands internal constructor(
         group = CommandGroup.FORMAT,
         icon = { rememberVectorPainter(icon) },
         shortcuts = listOf(shortcut),
-        isEnabled = { textTarget?.formatsCharacters == true }
+        isEnabled = { formatsText }
     ) { textTarget?.toggle(format) }
 
     /** The command aligning the lines of the texts at [alignment], ⌘⇧ + [key]. */

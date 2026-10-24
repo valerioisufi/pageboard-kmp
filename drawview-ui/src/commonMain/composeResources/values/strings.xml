@@ -94,6 +94,7 @@
     <string name="message_pdf_page_without_text">This page has no selectable text (it may be a scan)</string>
     <string name="text_editor_action_strikethrough">Strikethrough</string>
     <string name="text_editor_action_code">Code</string>
+    <string name="text_editor_action_code_block">Code block</string>
     <string name="text_editor_action_heading">Heading</string>
     <string name="text_editor_action_bullet_list">Bulleted list</string>
     <string name="text_editor_action_numbered_list">Numbered list</string>

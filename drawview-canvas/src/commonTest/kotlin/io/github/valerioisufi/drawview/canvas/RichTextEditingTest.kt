@@ -5,6 +5,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.canvas.text.RichTextEditing
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /**
  * The formatting of a text being written, as changes of its notation.
@@ -238,5 +240,80 @@ class RichTextEditingTest {
 
         val charInput = TextFieldValue("- Itemx", TextRange(7))
         assertEquals(null, RichTextEditing.handleSmartNewline(oldVal, charInput))
+    }
+
+    private fun at(text: String, caret: Int) = TextFieldValue(text, TextRange(caret))
+
+    @Test
+    fun enterInABlockOfCodeKeepsTheIndentationAndContinuesNoList() {
+        val text = "```\n    - item\n```"
+        val caret = text.indexOf("item") + 4
+        val result = RichTextEditing.handleEnter(at(text, caret))!!
+        assertEquals("```\n    - item\n    \n```", result.text)
+        assertEquals(TextRange(caret + 5), result.selection)
+
+        // From the keyboard of a phone too
+        val typed = TextFieldValue(text.substring(0, caret) + "\n" + text.substring(caret), TextRange(caret + 1))
+        assertEquals(result.text, RichTextEditing.handleSmartNewline(at(text, caret), typed)!!.text)
+    }
+
+    @Test
+    fun enterAfterAFenceNotClosedClosesIt() {
+        val alone = "Intro\n```kotlin"
+        val closed = RichTextEditing.handleEnter(at(alone, alone.length))!!
+        assertEquals("Intro\n```kotlin\n\n```", closed.text)
+        assertEquals(TextRange(alone.length + 1), closed.selection, "the caret in the block")
+
+        val before = "~~~~\nold text"
+        assertEquals("~~~~\n\n~~~~\nold text", RichTextEditing.handleEnter(at(before, 4))!!.text, "the text after is out of the block")
+        assertEquals(null, RichTextEditing.handleEnter(at("```\na\n```", 3)), "a block closed: a plain line break")
+    }
+
+    @Test
+    fun tabInABlockOfCodeGoesToTheNextColumnOfFour() {
+        val text = "```\nab\n\tx\n```"
+        val ab = RichTextEditing.indent(at(text, text.indexOf("ab") + 2))
+        assertEquals("```\nab  \n\tx\n```", ab.text)
+        assertEquals(TextRange(text.indexOf("ab") + 4), ab.selection)
+        val x = RichTextEditing.indent(at(text, text.indexOf("x") + 1))
+        assertEquals("```\nab\n\tx   \n```", x.text, "after a tab, four columns then one")
+
+        val lines = RichTextEditing.indent(TextFieldValue(text, TextRange(text.indexOf("ab"), text.indexOf("x"))))
+        assertEquals("```\n    ab\n    \tx\n```", lines.text, "the lines selected by four spaces")
+        val back = RichTextEditing.outdent(TextFieldValue("```\n      ab\n\tx\n```", TextRange(4, 16)))
+        assertEquals("```\n  ab\nx\n```", back.text, "up to four spaces or a tab")
+
+        assertEquals("  - item", RichTextEditing.indent(at("- item", 0)).text, "a list still by two")
+    }
+
+    @Test
+    fun theFormatsDoNotApplyInABlockOfCode() {
+        val text = "```\nval a = 1\n```"
+        val inside = TextFieldValue(text, TextRange(text.indexOf("a ="), text.indexOf("a =") + 1))
+        assertEquals(text, RichTextEditing.toggle(inside, RichTextEditing.Format.BOLD).text)
+        assertEquals(text, RichTextEditing.toggleHeading(inside).text)
+        assertEquals(text, RichTextEditing.toggleBulletList(inside).text)
+        assertTrue(RichTextEditing.inCodeBlock(inside))
+        assertFalse(RichTextEditing.inCodeBlock(at(text + "\nafter", text.length + 3)))
+    }
+
+    @Test
+    fun theLinesOfTheSelectionGoInABlockAndComeOut() {
+        val text = "Intro\nx = 1\ny = 2\nEnd"
+        val selection = TextRange(text.indexOf("= 1"), text.indexOf("= 2"))
+        val fenced = RichTextEditing.toggleCodeBlock(TextFieldValue(text, selection))
+        assertEquals("Intro\n```\nx = 1\ny = 2\n```\nEnd", fenced.text, "whole lines")
+        assertEquals(TextRange(selection.start + 4, selection.end + 4), fenced.selection)
+
+        val unfenced = RichTextEditing.toggleCodeBlock(fenced)
+        assertEquals(text, unfenced.text)
+        assertEquals(selection, unfenced.selection)
+
+        val empty = RichTextEditing.toggleCodeBlock(at("", 0))
+        assertEquals("```\n\n```", empty.text)
+        assertEquals(TextRange(4), empty.selection, "the caret on the line of the code")
+
+        assertEquals("````\na ``` b\n````", RichTextEditing.toggleCodeBlock(at("a ``` b", 0)).text, "a fence longer than the backticks of the code")
+        assertEquals("```\na\nb\n```", RichTextEditing.toggle(TextFieldValue("a\nb", TextRange(0, 3)), RichTextEditing.Format.CODE).text, "code over several lines")
     }
 }
