@@ -20,6 +20,12 @@ import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.controller.SelectionGroup
 import io.github.valerioisufi.drawview.canvas.geometry.toCompose
 import io.github.valerioisufi.drawview.canvas.render.tile.TileRenderer
+import io.github.valerioisufi.drawview.model.DrawCustomElement
+import io.github.valerioisufi.drawview.model.DrawElement
+import io.github.valerioisufi.drawview.model.DrawImage
+import io.github.valerioisufi.drawview.model.DrawPage
+import io.github.valerioisufi.drawview.model.DrawStroke
+import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import kotlin.math.PI
 import kotlin.math.atan2
@@ -173,8 +179,9 @@ private fun Offset.normalized(): Offset {
 }
 
 /**
- * Draws the selected elements with their live transformation, plus the selection frame, and the
- * frame of the text being written.
+ * Draws the frame of the selection (its elements too, with their live transformation, while they
+ * are lifted), the elements put back in the tiles until the tiles draw them, and the frame of the
+ * text being written.
  */
 internal object SelectionOverlay {
 
@@ -186,28 +193,32 @@ internal object SelectionOverlay {
 
     fun draw(scope: DrawScope, controller: DrawViewController, selection: SelectionGroup, primary: Color) {
         val frame = SelectionFrame.compute(controller, selection) ?: return
+        if (selection.isLifted) drawElements(scope, controller, selection.elements(), selection.pageIndex, frame.mmToScreen)
+        drawFrame(scope, frame, primary, controller.viewport.density)
+    }
+
+    /** Draws the elements put back in the tiles that the tiles do not draw yet (see `SelectionManager`). */
+    fun drawSettling(scope: DrawScope, controller: DrawViewController) {
+        val settling = controller.selectionManager.settlingElements() ?: return
+        val mmToScreen = controller.viewport.pageMmToScreen(settling.pageIndex) ?: return
+        drawElements(scope, controller, settling.elements, settling.pageIndex, mmToScreen)
+    }
+
+    /** Draws [elements] of the page [pageIndex] with [mmToScreen], in the order of the stack. */
+    private fun drawElements(scope: DrawScope, controller: DrawViewController, elements: List<DrawElement>, pageIndex: Int, mmToScreen: Matrix2D) {
         val document = controller.document
         val renderer = controller.tileManager.tileRenderer
-
         scope.drawIntoCanvas { canvas ->
-            for (image in selection.images) {
-                val bitmap = renderer.imageOf(document, image) ?: continue
-                TileRenderer.drawImage(canvas, image, bitmap, frame.mmToScreen, imagePaint)
-            }
-            for (element in selection.customs) {
-                renderer.elements.draw(canvas, element, frame.mmToScreen)
-            }
-            val textAdapter = renderer.textAdapter
-            if (textAdapter != null) {
-                for (text in selection.texts) {
-                    textAdapter.drawText(canvas, text, frame.mmToScreen, controller.paperOf(selection.pageIndex))
+            for (element in elements.sortedWith(DrawPage.stackOrder)) {
+                when (element) {
+                    is DrawImage -> renderer.imageOf(document, element)?.let { TileRenderer.drawImage(canvas, element, it, mmToScreen, imagePaint) }
+                    is DrawCustomElement -> renderer.elements.draw(canvas, element, mmToScreen)
+                    is DrawText -> renderer.textAdapter?.drawText(canvas, element, mmToScreen, controller.paperOf(pageIndex))
+                    is DrawStroke -> painter.draw(canvas, element.mesh, mmToScreen)
+                    else -> Unit
                 }
             }
-            for (stroke in selection.strokes) {
-                painter.draw(canvas, stroke.mesh, frame.mmToScreen)
-            }
         }
-        drawFrame(scope, frame, primary, controller.viewport.density)
     }
 
     /** Draws the frame of the text being written (its field, over the canvas, draws the text). */

@@ -25,7 +25,6 @@ import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawElement
-import io.github.valerioisufi.drawview.model.DrawImage
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.DrawResource
 import io.github.valerioisufi.drawview.model.DrawStroke
@@ -445,23 +444,6 @@ public class DrawViewController(
             for ((page, rect) in effects.dirtyRegions) invalidatePageContent(page, rect)
         }
         requestRedraw()
-    }
-
-    /**
-     * Draws [strokes], [texts] and [images] of [page] straight into the cached tiles (used when
-     * the elements leave the live selection layer, to avoid a frame without them).
-     */
-    internal fun bakeElementsSync(page: DrawPage, strokes: List<DrawStroke>, texts: List<DrawText>, images: List<DrawImage>) {
-        val index = document.pages.indexOf(page)
-        if (index < 0) return
-        if (strokes.isNotEmpty()) {
-            tileManager.bakeStrokesDirectlySync(
-                strokesByPage = mapOf(index to strokes),
-                document = document,
-                pageRects = viewport.layout.pagesRectOnWindow,
-                cameraScale = viewport.camera.getCurrentScale()
-            )
-        }
     }
 
     // ==========================================================

@@ -25,6 +25,7 @@ import io.github.valerioisufi.drawview.model.change.PlaceElements
 import io.github.valerioisufi.drawview.model.change.Placement
 import io.github.valerioisufi.drawview.model.change.RemoveElements
 import io.github.valerioisufi.drawview.model.change.ReorderElements
+import io.github.valerioisufi.drawview.model.change.StackMove
 import io.github.valerioisufi.drawview.model.change.StrokePlacement
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.model.change.placementOf
@@ -83,11 +84,26 @@ public class SelectionGroup(
 
     public fun elements(): List<DrawElement> = strokes + texts + images + customs
 
+    /**
+     * Whether the elements are lifted over the page while they are moved, scaled or rotated: left
+     * out of the tiles and drawn live on top. Else the tiles draw them at their level in the
+     * stack, under the frame (see [SelectionManager.lift]).
+     */
+    public var isLifted: Boolean = false
+        internal set
+
     /** Leaves the elements of the selection out of the tiles of [hidden] while [dragging]. */
     internal fun setDragging(hidden: HiddenElements, dragging: Boolean) {
         hidden.setDragged(elements().map { it.id }, dragging)
     }
 }
+
+/**
+ * Elements put back in the tiles after they were lifted (see [SelectionGroup.isLifted]): drawn
+ * over the page until the tiles of [boundsMm] draw them again, so that they never disappear for a
+ * frame.
+ */
+internal class SettlingElements(val pageIndex: Int, val elements: List<DrawElement>, val boundsMm: Rect)
 
 /**
  * Lasso selection, clipboard and transformation of the selected elements.
@@ -111,6 +127,9 @@ public class SelectionManager(private val controller: DrawViewController) {
         private set
 
     public var lassoMode: LassoMode by mutableStateOf(LassoMode.ALL)
+
+    /** The elements put back in the tiles, drawn until the tiles hold them again (read when drawing). */
+    private var settling: SettlingElements? = null
 
     public fun canPaste(): Boolean = clipboard?.isEmpty() == false
 
@@ -203,7 +222,7 @@ public class SelectionManager(private val controller: DrawViewController) {
             }
             else -> selection.boundingBox = Rect(left, top, right, bottom)
         }
-        setSelection(selection, page)
+        setSelection(selection)
     }
 
     private fun isItemInsideLasso(cx: Float, cy: Float, bounds: Rect, lasso: FloatArray, lassoBox: Rect): Boolean {
@@ -217,13 +236,13 @@ public class SelectionManager(private val controller: DrawViewController) {
      */
     internal fun selectImage(pageIndex: Int, image: DrawImage) {
         clearSelection()
-        val page = controller.document.pages.getOrNull(pageIndex) ?: return
+        controller.document.pages.getOrNull(pageIndex) ?: return
         val selection = SelectionGroup(
             images = mutableListOf(image),
             boundingBox = Rect(image.x, image.y, image.x + image.width, image.y + image.height),
             pageIndex = pageIndex
         ).apply { baseRotation = image.rotation }
-        setSelection(selection, page)
+        setSelection(selection)
     }
 
     /**
@@ -231,13 +250,13 @@ public class SelectionManager(private val controller: DrawViewController) {
      */
     internal fun selectCustomElement(pageIndex: Int, element: DrawCustomElement) {
         clearSelection()
-        val page = controller.document.pages.getOrNull(pageIndex) ?: return
+        controller.document.pages.getOrNull(pageIndex) ?: return
         val selection = SelectionGroup(
             customs = mutableListOf(element),
             boundingBox = Rect(element.x, element.y, element.x + element.width, element.y + element.height),
             pageIndex = pageIndex
         ).apply { baseRotation = element.rotation }
-        setSelection(selection, page)
+        setSelection(selection)
     }
 
     /**
@@ -249,13 +268,13 @@ public class SelectionManager(private val controller: DrawViewController) {
             return
         }
         clearSelection()
-        val page = controller.document.pages.getOrNull(pageIndex) ?: return
+        controller.document.pages.getOrNull(pageIndex) ?: return
         val selection = SelectionGroup(
             texts = mutableListOf(text),
             boundingBox = Rect(text.x, text.y, text.x + text.width, text.y + text.height),
             pageIndex = pageIndex
         ).apply { baseRotation = text.rotation }
-        setSelection(selection, page)
+        setSelection(selection)
     }
 
     /** Drops a selection that changes made on another device made stale. */
@@ -265,27 +284,85 @@ public class SelectionManager(private val controller: DrawViewController) {
         if (touched) clearSelection()
     }
 
-    private fun setSelection(selection: SelectionGroup, page: DrawPage) {
+    /** Selects [selection]: the tiles keep drawing its elements at their level. */
+    private fun setSelection(selection: SelectionGroup) {
         controller.textMarkupManager.clearSelection()
-        selection.setDragging(controller.hiddenElements, true)
         currentSelection = selection
-        // The selected elements are drawn live on top: rasterize the tiles without them
-        controller.invalidatePageContent(page, selection.getEnclosingBoundingBoxMm())
+        notifyChanged()
+    }
+
+    /** Drops the selection (its elements put back in the tiles if they were lifted). */
+    public fun clearSelection() {
+        val selection = currentSelection ?: return
+        settle(selection)
+        currentSelection = null
         notifyChanged()
     }
 
     /**
-     * Drops the selection, baking its elements back into the static layers.
+     * Lifts the elements of [selection] over the page for a gesture: left out of the tiles (drawn
+     * again without them) and drawn live on top.
      */
-    public fun clearSelection() {
-        val selection = currentSelection ?: return
-        currentSelection = null
-        val page = controller.document.pages.getOrNull(selection.pageIndex)
+    private fun lift(selection: SelectionGroup) {
+        if (selection.isLifted) return
+        selection.isLifted = true
+        selection.setDragging(controller.hiddenElements, true)
+        controller.document.pages.getOrNull(selection.pageIndex)?.let { controller.invalidatePageContent(it, selection.getEnclosingBoundingBoxMm()) }
+    }
+
+    /**
+     * Puts the elements of [selection] back in the tiles at their level, drawn over the page until
+     * the tiles hold them again (see [settlingElements]).
+     */
+    private fun settle(selection: SelectionGroup) {
+        if (!selection.isLifted) return
+        selection.isLifted = false
         selection.setDragging(controller.hiddenElements, false)
-        if (page != null) {
-            controller.bakeElementsSync(page, selection.strokes, selection.texts, selection.images)
-            controller.invalidatePageContent(page, selection.getEnclosingBoundingBoxMm())
+        val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
+        val bounds = selection.getEnclosingBoundingBoxMm()
+        settling = SettlingElements(selection.pageIndex, selection.elements(), bounds)
+        controller.invalidatePageContent(page, bounds)
+    }
+
+    /**
+     * The elements put back in the tiles that the tiles do not draw yet, drawn over the page
+     * meanwhile; `null` once the tiles hold them.
+     */
+    internal fun settlingElements(): SettlingElements? {
+        val current = settling ?: return null
+        val page = controller.document.pages.getOrNull(current.pageIndex)
+        if (page == null || controller.tileManager.isRegionCurrent(page, current.boundsMm)) {
+            settling = null
+            return null
         }
+        return current
+    }
+
+    // ==========================================================
+    // Stack
+    // ==========================================================
+
+    /** The change moving the selection by [move] in the stack of its page, or `null` when it changes nothing. */
+    private fun arrangement(move: StackMove): ReorderElements? {
+        val selection = currentSelection ?: return null
+        val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return null
+        return ReorderElements.of(page, selection.elements().map { it.id }, move)
+    }
+
+    /** Whether [arrange] would change something: the selection is not above (or under) all it overlaps. */
+    public fun canArrange(move: StackMove): Boolean {
+        // Read by the composition: follows the changes of the selection
+        selectionVersion
+        return arrangement(move) != null
+    }
+
+    /**
+     * Moves the selection in the stack of its page (see [StackMove]): it stays selected, at its
+     * new level; one step of the history.
+     */
+    public fun arrange(move: StackMove) {
+        val change = arrangement(move) ?: return
+        controller.session.submit(change)
         notifyChanged()
     }
 
@@ -301,6 +378,7 @@ public class SelectionManager(private val controller: DrawViewController) {
 
     public fun beginTransformation() {
         val selection = currentSelection ?: return
+        lift(selection)
         selection.captureOriginalStates()
         moveStart = Matrix2D(selection.transform)
         moveOffset = Offset.Zero
@@ -312,6 +390,7 @@ public class SelectionManager(private val controller: DrawViewController) {
      */
     public fun moveBy(dxMm: Float, dyMm: Float, free: Boolean = false) {
         val selection = currentSelection ?: return
+        lift(selection)
         val start = moveStart ?: Matrix2D(selection.transform).also { moveStart = it }
         moveOffset += Offset(dxMm, dyMm)
         val moved = Matrix2D(start).postTranslate(moveOffset.x, moveOffset.y)
@@ -328,6 +407,7 @@ public class SelectionManager(private val controller: DrawViewController) {
     /** Translates the selection by ([dxMm], [dyMm]) in the source page space. */
     internal fun translateBy(dxMm: Float, dyMm: Float) {
         val selection = currentSelection ?: return
+        lift(selection)
         selection.transform.postTranslate(dxMm, dyMm)
         notifyChanged()
     }
@@ -338,6 +418,7 @@ public class SelectionManager(private val controller: DrawViewController) {
      */
     internal fun scaleBy(factor: Float) {
         val selection = currentSelection ?: return
+        lift(selection)
         if (!(factor > 0f) || !factor.isFinite()) return
         var applied = factor
         if (selection.texts.isNotEmpty()) {
@@ -354,6 +435,7 @@ public class SelectionManager(private val controller: DrawViewController) {
     /** Rotates the selection by [degrees] around its (transformed) center. */
     public fun rotateBy(degrees: Float) {
         val selection = currentSelection ?: return
+        lift(selection)
         val c = selection.transform.mapPoint(selection.boundingBox.center.x, selection.boundingBox.center.y)
         selection.transform.postRotate(degrees, c.x, c.y)
         notifyChanged()
@@ -367,6 +449,7 @@ public class SelectionManager(private val controller: DrawViewController) {
     internal fun resizeText(touchMm: Offset, isRightEdge: Boolean, free: Boolean = false) {
         val selection = currentSelection ?: return
         val text = selection.texts.singleOrNull() ?: return
+        lift(selection)
         val inverse = Matrix2D()
         if (!selection.transform.invert(inverse)) return
         val local = inverse.mapPoint(touchMm.x, touchMm.y)
@@ -400,10 +483,19 @@ public class SelectionManager(private val controller: DrawViewController) {
 
     /**
      * Applies the live transformation to the selected elements, moving them to the page under
-     * the selection center when needed (one change of the document).
+     * the selection center when needed (one change of the document), and puts them back at their
+     * level in the tiles.
      */
     public fun applyTransformation() {
         val selection = currentSelection ?: return
+        try {
+            transform(selection)
+        } finally {
+            settle(selection)
+        }
+    }
+
+    private fun transform(selection: SelectionGroup) {
         val doc = controller.document
         val oldPage = doc.pages.getOrNull(selection.pageIndex) ?: return
         val original = selection.originalPlacements ?: return
@@ -509,6 +601,7 @@ public class SelectionManager(private val controller: DrawViewController) {
         val selection = currentSelection ?: return
         val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
         currentSelection = null
+        selection.isLifted = false
         selection.setDragging(controller.hiddenElements, false)
         controller.session.submit(RemoveElements.of(page, selection.elements()))
         notifyChanged()
@@ -564,44 +657,45 @@ public class SelectionManager(private val controller: DrawViewController) {
         }
         val offset = Matrix2D().postTranslate(offsetX, offsetY)
 
-        val pastedStrokes = copied.strokes.map { original ->
-            DrawStroke(
-                mesh = original.baseMesh,
-                brushConfig = original.baseBrush,
-                transform = original.transform.then(offset)
-            )
-        }
-        val pastedTexts = copied.texts.map { original ->
-            DrawText().apply {
-                copyFrom(original)
-                x = original.x + offsetX
-                y = original.y + offsetY
+        // In the order of what was copied: on top of the page, in the same order among themselves
+        val pasted = copied.elements().sortedWith(DrawPage.stackOrder).map { original ->
+            when (original) {
+                is DrawStroke -> DrawStroke(
+                    mesh = original.baseMesh,
+                    brushConfig = original.baseBrush,
+                    transform = original.transform.then(offset)
+                )
+                is DrawText -> DrawText().apply {
+                    copyFrom(original)
+                    x = original.x + offsetX
+                    y = original.y + offsetY
+                }
+                is DrawImage -> DrawImage().apply {
+                    resourceId = original.resourceId
+                    x = original.x + offsetX
+                    y = original.y + offsetY
+                    width = original.width
+                    height = original.height
+                    rotation = original.rotation
+                }
+                is DrawCustomElement -> DrawCustomElement(original.type).apply {
+                    version = original.version
+                    payload = original.payload
+                    x = original.x + offsetX
+                    y = original.y + offsetY
+                    width = original.width
+                    height = original.height
+                    rotation = original.rotation
+                }
+                else -> error("Not selectable: $original")
             }
         }
-        val pastedImages = copied.images.map { original ->
-            DrawImage().apply {
-                resourceId = original.resourceId
-                x = original.x + offsetX
-                y = original.y + offsetY
-                width = original.width
-                height = original.height
-                rotation = original.rotation
-            }
-        }
+        val pastedStrokes = pasted.filterIsInstance<DrawStroke>()
+        val pastedTexts = pasted.filterIsInstance<DrawText>()
+        val pastedImages = pasted.filterIsInstance<DrawImage>()
+        val pastedCustoms = pasted.filterIsInstance<DrawCustomElement>()
 
-        val pastedCustoms = copied.customs.map { original ->
-            DrawCustomElement(original.type).apply {
-                version = original.version
-                payload = original.payload
-                x = original.x + offsetX
-                y = original.y + offsetY
-                width = original.width
-                height = original.height
-                rotation = original.rotation
-            }
-        }
-
-        controller.session.submit(AddElements.of(targetPage, pastedStrokes + pastedTexts + pastedImages + pastedCustoms))
+        controller.session.submit(AddElements.of(targetPage, pasted))
 
         val selection = SelectionGroup(
             strokes = pastedStrokes.toMutableList(),
@@ -611,7 +705,7 @@ public class SelectionManager(private val controller: DrawViewController) {
             pageIndex = targetIndex,
             customs = pastedCustoms.toMutableList()
         ).apply { baseRotation = copied.baseRotation }
-        setSelection(selection, targetPage)
+        setSelection(selection)
     }
 
     // ==========================================================

@@ -165,6 +165,7 @@ public fun DrawCanvas(
         }
 
         // 4. Live selection, or the frame of the text being written (its field draws the text over it)
+        SelectionOverlay.drawSettling(this, controller)
         controller.selectionManager.currentSelection?.let { selection ->
             SelectionOverlay.draw(this, controller, selection, Color(theme.primaryColor))
         }

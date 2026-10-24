@@ -676,6 +676,18 @@ public class TileManager(
     }
 
     /**
+     * Whether the tiles drawn in the last frame over [mmRect] (millimeters of [page]) show its
+     * content as it is now: none of them stale (e.g. elements put back in the tiles, drawn over
+     * them until then, see `SelectionManager`).
+     */
+    internal fun isRegionCurrent(page: DrawPage, mmRect: io.github.valerioisufi.drawview.model.geometry.Rect): Boolean {
+        val onScreen = pageTiles[page.renderKey] ?: return true
+        if (page.widthMm <= 0f || page.heightMm <= 0f) return true
+        val region = Rect(mmRect.left / page.widthMm, mmRect.top / page.heightMm, mmRect.right / page.widthMm, mmRect.bottom / page.heightMm)
+        return onScreen.drawn.none { it.coverage.overlaps(region) && it.tile.state != TileState.READY }
+    }
+
+    /**
      * Invalidates every tile of the page identified by [pageKey].
      */
     internal fun invalidatePage(pageKey: Long) {

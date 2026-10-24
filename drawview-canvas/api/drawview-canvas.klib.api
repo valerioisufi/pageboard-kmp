@@ -528,6 +528,8 @@ final class io.github.valerioisufi.drawview.canvas.controller/SelectionGroup { /
     final val transform // io.github.valerioisufi.drawview.canvas.controller/SelectionGroup.transform|{}transform[0]
         final fun <get-transform>(): io.github.valerioisufi.drawview.model.geometry/Matrix2D // io.github.valerioisufi.drawview.canvas.controller/SelectionGroup.transform.<get-transform>|<get-transform>(){}[0]
 
+    final var isLifted // io.github.valerioisufi.drawview.canvas.controller/SelectionGroup.isLifted|{}isLifted[0]
+        final fun <get-isLifted>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/SelectionGroup.isLifted.<get-isLifted>|<get-isLifted>(){}[0]
     final var pageIndex // io.github.valerioisufi.drawview.canvas.controller/SelectionGroup.pageIndex|{}pageIndex[0]
         final fun <get-pageIndex>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/SelectionGroup.pageIndex.<get-pageIndex>|<get-pageIndex>(){}[0]
         final fun <set-pageIndex>(kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/SelectionGroup.pageIndex.<set-pageIndex>|<set-pageIndex>(kotlin.Int){}[0]
@@ -555,7 +557,9 @@ final class io.github.valerioisufi.drawview.canvas.controller/SelectionManager {
         final fun <get-selectionVersion>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.selectionVersion.<get-selectionVersion>|<get-selectionVersion>(){}[0]
 
     final fun applyTransformation() // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.applyTransformation|applyTransformation(){}[0]
+    final fun arrange(io.github.valerioisufi.drawview.model.change/StackMove) // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.arrange|arrange(io.github.valerioisufi.drawview.model.change.StackMove){}[0]
     final fun beginTransformation() // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.beginTransformation|beginTransformation(){}[0]
+    final fun canArrange(io.github.valerioisufi.drawview.model.change/StackMove): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.canArrange|canArrange(io.github.valerioisufi.drawview.model.change.StackMove){}[0]
     final fun canPaste(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.canPaste|canPaste(){}[0]
     final fun clearSelection() // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.clearSelection|clearSelection(){}[0]
     final fun copySelection() // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.copySelection|copySelection(){}[0]

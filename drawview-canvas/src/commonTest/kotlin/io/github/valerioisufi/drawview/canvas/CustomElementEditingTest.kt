@@ -7,6 +7,7 @@ import io.github.valerioisufi.drawview.model.decode
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
 import kotlin.test.assertSame
@@ -41,9 +42,9 @@ class CustomElementEditingTest {
 
         val element = assertNotNull(controller.customElementManager.add(NoteType, Note("a"), 0, Rect(20f, 20f, 60f, 40f)))
         assertSame(element, page.customElements.single())
-        // Selected, drawn over the tiles meanwhile
+        // Selected, drawn by the tiles at its level until it is moved
         assertSame(element, selection.currentSelection?.customs?.single())
-        assertTrue(controller.hiddenElements.isDragged(element.id))
+        assertFalse(controller.hiddenElements.isDragged(element.id))
 
         // Moved by its box
         selection.beginTransformation()

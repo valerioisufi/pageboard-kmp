@@ -24,6 +24,7 @@ import io.github.valerioisufi.drawview.canvas.geometry.toCompose
 import io.github.valerioisufi.drawview.canvas.render.tile.TileRenderer
 import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawImage
+import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.DrawStroke
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
@@ -96,7 +97,7 @@ internal class CollaboratorsOverlay {
         // Moved: drawn here, hidden from the content meanwhile
         if (moved != null) {
             drawIntoCanvas { canvas ->
-                for (element in collaborator.selection) {
+                for (element in collaborator.selection.sortedWith(DrawPage.stackOrder)) {
                     when (element) {
                         is DrawImage -> controller.tileManager.tileRenderer.imageOf(controller.document, element)?.let {
                             TileRenderer.drawImage(canvas, element, it, mmToScreen, imagePaint)

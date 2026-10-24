@@ -388,6 +388,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/SelectionGr
 	public final fun getTexts ()Ljava/util/List;
 	public final fun getTransform ()Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
 	public final fun isEmpty ()Z
+	public final fun isLifted ()Z
 	public final fun isSingleText ()Z
 	public final fun setPageIndex (I)V
 }
@@ -396,7 +397,9 @@ public final class io/github/valerioisufi/drawview/canvas/controller/SelectionMa
 	public static final field $stable I
 	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
 	public final fun applyTransformation ()V
+	public final fun arrange (Lio/github/valerioisufi/drawview/model/change/StackMove;)V
 	public final fun beginTransformation ()V
+	public final fun canArrange (Lio/github/valerioisufi/drawview/model/change/StackMove;)Z
 	public final fun canPaste ()Z
 	public final fun clearSelection ()V
 	public final fun copySelection ()V

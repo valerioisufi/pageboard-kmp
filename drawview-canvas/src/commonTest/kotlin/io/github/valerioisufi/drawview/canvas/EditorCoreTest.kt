@@ -323,11 +323,14 @@ class EditorCoreTest {
         controller.selectionManager.selectWithLasso(0, floatArrayOf(10f, 10f, 40f, 10f, 40f, 40f, 10f, 40f))
         val selection = assertNotNull(controller.selectionManager.currentSelection)
         assertEquals(listOf(target), selection.strokes.toList())
-        assertTrue(controller.hiddenElements.isDragged(target.id))
+        // Drawn by the tiles at its level until it is moved
+        assertFalse(controller.hiddenElements.isDragged(target.id))
 
         controller.selectionManager.beginTransformation()
+        assertTrue(controller.hiddenElements.isDragged(target.id))
         controller.selectionManager.translateBy(30f, 5f)
         controller.selectionManager.applyTransformation()
+        assertFalse(controller.hiddenElements.isDragged(target.id))
         assertEquals(50f, target.bounds.left, 1e-3f)
         assertEquals(25f, target.bounds.top, 1e-3f)
         assertEquals(50f, target.mesh.points.first().x, 1e-3f)

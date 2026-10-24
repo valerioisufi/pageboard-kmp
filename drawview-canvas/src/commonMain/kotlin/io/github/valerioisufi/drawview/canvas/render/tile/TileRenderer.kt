@@ -147,7 +147,7 @@ public class TileRenderer(
         canvas.save()
         canvas.clipRect(visibleRect)
 
-        // --- 2. Layers: PDF pages, marks of their text, images, texts and formulas, strokes ---
+        // --- 2. The PDF pages and the marks of their text, then the content in its stack ---
         val pdf = pdfAdapter
         val text = textAdapter
         val markupPaint = Paint()

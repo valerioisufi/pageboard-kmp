@@ -185,7 +185,7 @@ elements.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | The order of the model, stored and synchronized: `ElementOrder` keys (layers of the orders before, on top, between, bounds, form), the stack of a page and `paintOrder`, the register `ordered` and `ElementVersions.ordered`, `ReorderElements` with `StackMove`, moves and texts leaving the order, `admits` checking the orders, `latestStamp`; Room 20 (`Migration19To20` tested with `MigrationTestHelper`), the key-value store; `ProtocolFormatTest` recorded again under version 1, `ConvergenceTest` with reorders, `docs/collaboration.md`; the editor putting what it moves to another page on top there; tests (the look of the pages before, keys between their bounds, moves of a selection, undo, a move and a reorder apart, refused orders), the sync modules on the iOS simulator; ABI of `drawview-model` | Done |
-| 2 | Canvas: the paint order of the tiles and of the overlay, the selection at its level and lifted during a gesture, `isRegionCurrent`, the topmost element under a long press, `SelectionManager.arrange` and `canArrange`, the order of pasted elements; tests; ABI of `drawview-canvas` | Planned |
+| 2 | Canvas: the paint order of the tiles and of the overlay, the selection at its level and lifted during a gesture, `isRegionCurrent`, the topmost element under a long press, `SelectionManager.arrange` and `canArrange`, the order of pasted elements; tests; ABI of `drawview-canvas` | Done |
 | 3 | Interface: the four commands and `CommandGroup.ARRANGE` (menu bar, shortcuts, tooltips), the button and its menu in the selection bar, the context menu of a selection, the icons, the strings in the 7 languages; tests of the commands, screenshots; ABI of `drawview-ui`; the desktop application on a scratch directory | Planned |
 
 The model, its stores and the format of what travels change together: a phase stores and sends
@@ -244,6 +244,34 @@ updated together, after a last synchronization).
   a move to another page, the orders received checked). ABI of `drawview-model` recorded again on
   purpose: `ElementOrder` replaced, `ReorderElements`, `ElementOrdering`, `StackMove`,
   `DrawElement.ordered`, `DrawPage.stack`, `PageContentSnapshot.stack`, `DocumentChange.orders`.
+
+### Phase 2 results
+
+* The selection is drawn at its level: `setSelection` no longer leaves it out of the tiles. It is
+  lifted (`SelectionGroup.isLifted`: hidden from the tiles, drawn live by the overlay) by
+  `beginTransformation` and by every live change (`moveBy`, `translateBy`, `scaleBy`,
+  `rotateBy`, `resizeText`, whoever calls them), and put back by `applyTransformation` (also after
+  a press without a move) and `clearSelection`. Put back, its elements are drawn by the overlay
+  until the tiles of their region are drawn again (`SettlingElements`,
+  `TileManager.isRegionCurrent`: none of the tiles drawn there in the frame stale), so that they
+  never disappear for a frame; the bake of `clearSelection` (`bakeElementsSync`) is gone: it drew
+  the strokes on top, right only for the topmost ones.
+* The overlay draws the lifted and the settling elements in the order of the stack, as the
+  overlay of the collaborators draws what they move; the tiles, the thumbnails and the export
+  paint `paintOrder` (phase 1).
+* `SelectionManager.arrange(StackMove)` and `canArrange` (read by the composition: it follows the
+  selection): one change, one step of the history, the selection kept at its new level.
+* The context menu (long press, secondary click) on the selection keeps it and opens its menu;
+  elsewhere it selects the topmost image, element of an application or text under the pointer in
+  the stack (`DrawPage.stack`), or drops the selection for the menu of the page. A long press on
+  the selection (not with a mouse) puts it back at its level and opens its menu, the text of a PDF
+  under it left alone.
+* Pasted elements keep the order of what was copied among themselves, on top of the page.
+* Tests: `ArrangeTest` (the selection at its level until moved, lifted while moved and after a
+  press, arranged, undone and redone, elements moved to another page on top there, pasted in their
+  order), `EditorCoreTest` and `CustomElementEditingTest` (a selection lifted only while it
+  moves). ABI of `drawview-canvas` recorded again on purpose: `SelectionGroup.isLifted`,
+  `SelectionManager.arrange`, `canArrange`.
 
 ## Decisions
 

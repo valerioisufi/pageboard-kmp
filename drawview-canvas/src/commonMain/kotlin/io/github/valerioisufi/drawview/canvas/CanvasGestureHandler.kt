@@ -30,6 +30,9 @@ import io.github.valerioisufi.drawview.canvas.geometry.toCompose
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.model.BrushConfig
+import io.github.valerioisufi.drawview.model.DrawCustomElement
+import io.github.valerioisufi.drawview.model.DrawImage
+import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.InputToolType
 import io.github.valerioisufi.drawview.model.StrokeMesh
 import kotlin.math.abs
@@ -403,6 +406,8 @@ internal class CanvasGestureHandler(
                 if (hitMode != null) {
                     mode = hitMode
                     controller.selectionManager.beginTransformation()
+                    // A long press on the selection opens its menu
+                    longPressCandidate = hitMode == Mode.SELECTION_MOVE && change.type != PointerType.Mouse
                     return
                 }
             }
@@ -829,6 +834,7 @@ internal class CanvasGestureHandler(
     private fun onLongPress() {
         longPressCandidate = false
         if (movedBeyondSlop) return
+        val onSelection = mode == Mode.SELECTION_MOVE
         when (mode) {
             Mode.INK, Mode.LASSO -> {
                 engine.cancelStroke()
@@ -838,31 +844,46 @@ internal class CanvasGestureHandler(
             Mode.ERASE -> controller.eraserManager.commitGesture()
             Mode.PAN -> controller.viewport.camera.onRelease(0f, 0f)
             Mode.MARKUP -> controller.textMarkupManager.cancelMarking()
+            // Not moved: put back at its level
+            Mode.SELECTION_MOVE -> controller.selectionManager.applyTransformation()
             else -> {}
         }
         mode = Mode.IGNORED
-        // A mark or the text of a PDF under the finger: select it
+        // A mark or the text of a PDF under the finger (not under the selection): select it
         clearTextSelectionOnUp = false
-        if (controller.textMarkupManager.selectAt(downPosition, textTolerancePx(activeType))) {
+        if (!onSelection && controller.textMarkupManager.selectAt(downPosition, textTolerancePx(activeType))) {
             controller.viewport.camera.stopAllAnimations()
             return
         }
         if (controller.isDrawingMode && !controller.toolManager.isPanTool) showContextMenu(downPosition)
     }
 
+    /**
+     * Opens the context menu at [position]: the menu of the selection over it, or of the element
+     * under it (the topmost image, element of an application or text, selected), else of the page.
+     */
     private fun showContextMenu(position: Offset) {
         val pageIndex = controller.viewport.findPageIndexAtScreen(position) ?: return
         controller.pageManager.contextMenuTargetPageIndex = pageIndex
         val page = controller.document.pages.getOrNull(pageIndex)
         val mm = controller.viewport.screenToPageMm(pageIndex, position)
-        if (page != null && mm != null) {
-            // The elements of the applications are painted over the images: looked for first
+        val selection = controller.selectionManager.currentSelection
+        val onSelection = selection != null && SelectionFrame.compute(controller, selection)?.contains(position) == true
+        if (!onSelection && page != null && mm != null) {
             val elements = controller.engines.elements
-            val custom = page.customElements.lastOrNull { elements.hits(it, mm.x, mm.y) }
-            val image = if (custom == null) page.images.lastOrNull { it.containsPoint(mm.x, mm.y) } else null
-            when {
-                custom != null -> controller.selectionManager.selectCustomElement(pageIndex, custom)
-                image != null -> controller.selectionManager.selectImage(pageIndex, image)
+            val hit = page.stack.lastOrNull { element ->
+                when (element) {
+                    is DrawCustomElement -> elements.hits(element, mm.x, mm.y)
+                    is DrawImage -> element.containsPoint(mm.x, mm.y)
+                    is DrawText -> element.containsPoint(mm.x, mm.y)
+                    else -> false
+                }
+            }
+            when (hit) {
+                is DrawCustomElement -> controller.selectionManager.selectCustomElement(pageIndex, hit)
+                is DrawImage -> controller.selectionManager.selectImage(pageIndex, hit)
+                is DrawText -> controller.selectionManager.selectText(pageIndex, hit)
+                else -> controller.selectionManager.clearSelection()
             }
         }
         controller.contextMenuPosition = position
