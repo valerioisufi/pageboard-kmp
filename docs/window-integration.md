@@ -119,9 +119,30 @@ Variations).
 
 * On macOS, `apple.awt.fullWindowContent` places the content under the title bar, while
   `apple.awt.transparentTitleBar` removes the title bar's solid background.
+* The title bar of AWT is 28 points tall, with the traffic lights centered at 14 points from the
+  top: high above the middle of the bars of the applications (64 dp for the editor, 52 dp when
+  compact, 56 dp for the library). `MacWindowHelper` gives the window an empty `NSToolbar` in the
+  unified style (`NSWindowToolbarStyleUnified`, no separator): macOS then makes the title bar 52
+  points tall, as in Notes or Freeform, with the traffic lights centered at 26 points and 19 points
+  from the edge (they end at 73 points, inside the 78 dp of the insets). The toolbar has no items:
+  the clicks out of the traffic lights still reach the content (`AWTView`), and the window is
+  dragged by `WindowDraggableArea` as before.
+  * AWT has no property for the toolbar, so `MacWindowHelper` calls AppKit through JNA
+    (`objc_msgSend`), on the handle of the window (`ComposeWindow.windowHandle`, an `NSWindow`).
+  * AppKit takes the change on its main thread only: from the thread of AWT, where a
+    `LaunchedEffect` runs, it throws `NSInternalInconsistencyException` and the process ends, which
+    no `catch` stops. So the change is sent to the main thread (`dispatch_async_f`), and it only
+    touches an `NSWindow` that answers `setToolbarStyle:` (macOS 11).
+* The applications set `apple.awt.application.appearance=system` before AWT starts: the JDK
+  otherwise forces the light appearance (`NSAppearanceNameAqua`) on the native parts of the windows
+  (the title bar, the traffic lights of a window in the background, menus and dialogs), while the
+  theme of the applications follows the system. It is a property of the system, read once: a
+  client property of the window does nothing.
 * `WindowDecorInsets.current`:
-  * Returns `PaddingValues(start = 78.dp, top = 0.dp)` when running on macOS and the window is
-    not in fullscreen.
+  * Returns `PaddingValues(start = 78.dp, top = 52.dp)` when running on macOS and the window is
+    not in fullscreen: the traffic lights take the corner where the two meet. A bar along the top
+    starts after the start inset (`EditorTopBar`, `LibraryAppBar`); a column along the leading
+    edge starts below the top inset, the title bar (the navigation pane of the library).
   * Returns `PaddingValues(0.dp)` on Windows, Linux, or when in macOS native fullscreen.
 * Draggable regions: Compose Desktop provides `WindowDraggableArea` within `FrameWindowScope`.
   The empty regions of the top bars are wrapped in `WindowDraggableArea` so that the window
@@ -210,6 +231,7 @@ Variations).
 | 2. Mobile Insets & Gestures | Android `setSystemGestureExclusionRects` for edge drawing safety; iOS `SystemBarsHidden` (status bar & home indicator auto-hide); safe area padding validation | Done |
 | 3. Desktop Multi-Window | `DesktopWindowManager`, "Open in New Window" command & shortcuts in library, independent document windows with per-document `rememberDrawViewWindowState`, session flushing, macOS modified dot | Done |
 | 4. Mobile Multi-Window | Android `documentLaunchMode` & multi-window intent handling (tablet split-screen, DeX); iPadOS `WindowGroup(for:)` scene support | Done |
+| 5. macOS title bar of a toolbar | `MacWindowHelper`: an empty unified `NSToolbar` (52 points, traffic lights centered at 26 points) set on the main thread of AppKit through JNA (a dependency of `drawview-ui` on the JVM); the appearance of the system for the native parts of the windows (`apple.awt.application.appearance`) | Done |
 
 ### Decisions
 
@@ -220,6 +242,20 @@ Variations).
 * **macOS Unified Titlebar via standard AWT properties**: Use `apple.awt.fullWindowContent` and
   `apple.awt.transparentTitleBar`, which preserve native window resizing, double-click to zoom,
   and native traffic light behaviors while letting Compose draw directly behind the titlebar.
+* **macOS title bar of a toolbar, not traffic lights moved by hand** (revertible): the unified
+  toolbar is how macOS draws the title bar of its own applications, and AppKit lays it out
+  itself, through resizing, fullscreen and the versions of macOS. Moving the buttons (`trafficLightPosition` of
+  Electron) must be done again after every layout of AppKit. The custom title bar of the
+  JetBrains Runtime takes any height, but the applications run on any JDK. The height is the one
+  of macOS (52 points; the expanded style gives 44, and the display modes change nothing): the
+  traffic lights are centered with the compact bar of the editor (52 dp) and 2 dp above the
+  middle of the bar of a narrow library (56 dp), 6 dp above the one of the bar of the editor
+  (64 dp) and 10 dp above the one of the bar of a library in a grid (56 dp under 8 dp of margin).
+  Before, they were 12 to 22 dp above.
+* **JNA, a dependency of `drawview-ui` on the JVM** (revertible): a module runs with what it
+  declares, and the reflection on JNA found nothing, since no module brought it (the title bar of
+  Windows was never dark). The alternative is a JNI library of `drawview-ui`, built for macOS
+  and Windows.
 * **Per-window `CommandHost`**: Each desktop window holds its own `CommandHost` instance,
   ensuring that keyboard shortcuts and menu bar actions always target the focused window's
   active screen and document session.

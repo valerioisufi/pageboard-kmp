@@ -10,7 +10,9 @@ import androidx.compose.ui.unit.dp
 
 /**
  * Insets required for platform window controls, such as macOS traffic lights (close,
- * minimize, zoom) when unified full window content is enabled.
+ * minimize, zoom) when unified full window content is enabled. The controls take the corner
+ * where the two meet: a bar along the top of the window starts after the start inset, a column
+ * along the leading edge starts below the top inset (the height of the title bar).
  */
 public val LocalWindowDecorInsets: ProvidableCompositionLocal<PaddingValues> =
     staticCompositionLocalOf { PaddingValues(0.dp) }

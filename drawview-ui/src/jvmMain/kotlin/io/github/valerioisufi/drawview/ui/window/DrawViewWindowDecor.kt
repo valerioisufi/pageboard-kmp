@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
@@ -55,8 +56,9 @@ internal object WindowsDwmHelper {
 }
 
 /**
- * Configures the platform window chrome (macOS unified title bar with full window content,
- * Windows DWM dark mode title bar) and provides [LocalWindowDecorInsets] and [LocalWindowDraggableArea].
+ * Configures the platform window chrome (macOS unified title bar with full window content, as tall
+ * as a toolbar with the traffic lights centered in it; Windows DWM dark mode title bar) and
+ * provides [LocalWindowDecorInsets] and [LocalWindowDraggableArea].
  *
  * @param state the [WindowState] of the window, used to detect fullscreen placement.
  * @param isDark whether the active theme is dark, used to synchronize the native title bar on Windows.
@@ -77,6 +79,10 @@ public fun FrameWindowScope.DrawViewWindowDecor(
             window.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
             window.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
             window.rootPane.putClientProperty("apple.awt.windowTitleVisible", false)
+            // The NSWindow comes with the native window, before it is shown: the title bar is
+            // set before the first frame on the screen
+            while (window.windowHandle == 0L) withFrameNanos { }
+            MacWindowHelper.useUnifiedToolbar(window.windowHandle)
         }
     }
 
@@ -89,7 +95,9 @@ public fun FrameWindowScope.DrawViewWindowDecor(
     val isFullscreen = state.placement == WindowPlacement.Fullscreen
     val insets = remember(isMac, isFullscreen) {
         if (isMac && !isFullscreen) {
-            PaddingValues(start = 78.dp, top = 0.dp, end = 0.dp, bottom = 0.dp)
+            // The traffic lights end at 73 points from the edge, in the title bar of a toolbar
+            // (52 points)
+            PaddingValues(start = 78.dp, top = 52.dp, end = 0.dp, bottom = 0.dp)
         } else {
             PaddingValues(0.dp)
         }

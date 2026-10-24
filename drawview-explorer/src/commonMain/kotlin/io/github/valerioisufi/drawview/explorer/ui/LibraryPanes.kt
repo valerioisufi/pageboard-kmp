@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
@@ -27,7 +26,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.ui.window.LocalWindowDecorInsets
@@ -96,8 +94,8 @@ internal fun LibraryNavigationPane(
 ) {
     val rootFolder = viewModel.currentRootFolderId
     val section = viewModel.section
-    val decorStartPad = LocalWindowDecorInsets.current.calculateStartPadding(LocalLayoutDirection.current)
-    val hasTrafficLights = decorStartPad > 0.dp
+    // The pane is under the traffic lights of macOS: it starts below the title bar
+    val decorTopPad = LocalWindowDecorInsets.current.calculateTopPadding()
     Column(
         modifier = modifier
             .width(LibraryLayout.NavigationWidth)
@@ -107,7 +105,7 @@ internal fun LibraryNavigationPane(
             .padding(
                 start = 12.dp,
                 end = 12.dp,
-                top = if (hasTrafficLights) 38.dp else 20.dp,
+                top = decorTopPad.coerceAtLeast(20.dp),
                 bottom = 16.dp
             )
     ) {

@@ -31,6 +31,9 @@ fun main() {
 
     // The menus in the bar of the system on macOS
     System.setProperty("apple.laf.useScreenMenuBar", "true")
+    // The native parts of the windows on macOS (title bar, menus, dialogs) light or dark as the
+    // system, like the theme: the JDK keeps them light otherwise. Read once, before AWT starts
+    System.setProperty("apple.awt.application.appearance", "system")
 
     application {
         val windowManager = rememberDesktopWindowManager()

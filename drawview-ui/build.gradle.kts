@@ -37,6 +37,11 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
         }
+        jvmMain.dependencies {
+            // The title bars of the windows, set through the APIs of macOS and Windows
+            // (MacWindowHelper, WindowsDwmHelper)
+            implementation(libs.jna)
+        }
         jvmTest.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.compose.uiTest)
