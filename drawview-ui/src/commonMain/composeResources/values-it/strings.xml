@@ -135,6 +135,7 @@
     <string name="menu_view">Vista</string>
     <string name="menu_insert">Inserisci</string>
     <string name="menu_format">Formato</string>
+    <string name="menu_arrange">Disponi</string>
     <string name="menu_tools">Strumenti</string>
     <string name="menu_help">Aiuto</string>
     <string name="command_close">Chiudi documento</string>
@@ -146,6 +147,10 @@
     <string name="command_previous_page">Pagina precedente</string>
     <string name="command_previous_tool">Strumento precedente</string>
     <string name="command_snapping">Aggancia alle guide</string>
+    <string name="command_bring_to_front">Porta in primo piano</string>
+    <string name="command_bring_forward">Porta avanti</string>
+    <string name="command_send_backward">Porta indietro</string>
+    <string name="command_send_to_back">Porta sullo sfondo</string>
     <string name="tool_pen">Penna</string>
     <string name="tool_highlighter">Evidenziatore</string>
     <string name="tool_eraser">Gomma</string>

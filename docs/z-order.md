@@ -117,7 +117,7 @@ Variations).
 | Refusing an order received that is malformed, too long, or after the stamp of its operation | `DocumentSession.admits` with `DocumentChange.orders()` | Information Expert, Protected Variations |
 | Keeping the order register (stored, snapshot) | the Room entities and `Migration19To20`, `ElementVersions.ordered` (`KeyValueDocumentStore`, snapshots) | Information Expert |
 | The use case "arrange the selection": submitting the change, keeping the selection | `SelectionManager.arrange`, `canArrange` (`drawview-canvas`) | Controller |
-| The selection at its level, lifted during a gesture, drawn until the tiles hold it again | `SelectionGroup.lifted`, `SelectionManager` (lift, settle), `TileManager.isRegionCurrent` | Information Expert, Low Coupling |
+| The selection at its level, lifted during a gesture, drawn until the tiles hold it again | `SelectionGroup.isLifted`, `SelectionManager` (lift, settle), `TileManager.isRegionCurrent` | Information Expert, Low Coupling |
 | The element under a point, the topmost in the stack | `DrawPage.stack` (the canvas taking the last one its hit test finds) | Information Expert |
 | The four commands, their shortcuts, menu and icons | `EditorCommands` (`CommandGroup.ARRANGE`), `SelectionActionBar`, `CanvasContextMenu` | Controller, Polymorphism (the presenters of `Command`) |
 
@@ -186,7 +186,7 @@ elements.
 |---|---|---|
 | 1 | The order of the model, stored and synchronized: `ElementOrder` keys (layers of the orders before, on top, between, bounds, form), the stack of a page and `paintOrder`, the register `ordered` and `ElementVersions.ordered`, `ReorderElements` with `StackMove`, moves and texts leaving the order, `admits` checking the orders, `latestStamp`; Room 20 (`Migration19To20` tested with `MigrationTestHelper`), the key-value store; `ProtocolFormatTest` recorded again under version 1, `ConvergenceTest` with reorders, `docs/collaboration.md`; the editor putting what it moves to another page on top there; tests (the look of the pages before, keys between their bounds, moves of a selection, undo, a move and a reorder apart, refused orders), the sync modules on the iOS simulator; ABI of `drawview-model` | Done |
 | 2 | Canvas: the paint order of the tiles and of the overlay, the selection at its level and lifted during a gesture, `isRegionCurrent`, the topmost element under a long press, `SelectionManager.arrange` and `canArrange`, the order of pasted elements; tests; ABI of `drawview-canvas` | Done |
-| 3 | Interface: the four commands and `CommandGroup.ARRANGE` (menu bar, shortcuts, tooltips), the button and its menu in the selection bar, the context menu of a selection, the icons, the strings in the 7 languages; tests of the commands, screenshots; ABI of `drawview-ui`; the desktop application on a scratch directory | Planned |
+| 3 | Interface: the four commands and `CommandGroup.ARRANGE` (menu bar, shortcuts, tooltips), the button and its menu in the selection bar, the context menu of a selection, the icons, the strings in the 7 languages; tests of the commands, screenshots; ABI of `drawview-ui`; the desktop application on a scratch directory | Done |
 
 The model, its stores and the format of what travels change together: a phase stores and sends
 the register it adds, so that its checks pass.
@@ -272,6 +272,33 @@ updated together, after a last synchronization).
   order), `EditorCoreTest` and `CustomElementEditingTest` (a selection lifted only while it
   moves). ABI of `drawview-canvas` recorded again on purpose: `SelectionGroup.isLifted`,
   `SelectionManager.arrange`, `canArrange`.
+
+### Phase 3 results
+
+* `EditorCommands.bringToFront`, `bringForward`, `sendBackward`, `sendToBack` (`arrangements`):
+  enabled with a selection that can move (`SelectionManager.canArrange`), in the document that can
+  be written; the shortcuts of Keynote and Pages first (⇧⌘F, ⌥⇧⌘F, ⌥⇧⌘B, ⇧⌘B; Ctrl+Shift+F,
+  Ctrl+Shift+Alt+F, Ctrl+Shift+Alt+B, Ctrl+Shift+B elsewhere), the brackets of Figma after them
+  (⌥⌘], ⌘], ⌘[, ⌥⌘[), run but not shown; `keyName` writes `[` and `]`.
+* `CommandGroup.ARRANGE` (after `FORMAT`, the menu "Arrange", "Disponi"): the menu bar of the
+  desktop, the list of the shortcuts of Android and the labels of the menus of the system take it
+  from the commands.
+* The selection bar: a button "Arrange" (the icon of the layers) after delete, opening the
+  `CommandMenu` of the four commands, their shortcuts written where there is a keyboard.
+* The context menu of a selection (`CanvasContextMenu`): cut, copy, delete, then the four
+  commands, with their icons, their shortcuts and their states; elsewhere the menu of the page.
+* Icons `ArrowUpToLine` and `ArrowDownToLine` (Lucide) for the front and the back, the chevrons
+  for one step; the strings in the 7 languages (the words of Keynote and Office: "Porta in primo
+  piano", "Porta avanti", "Porta indietro", "Porta sullo sfondo").
+* Tests: `CommandTest` (the commands disabled without a selection, enabled by what the selection
+  overlaps, run by ⇧⌘F, ⌥⇧⌘F, Ctrl+Shift+B and Ctrl+[, written as each platform writes them, one
+  step of the history each; every key named and no shortcut shared). Screenshots: the menu of a
+  selection over another text (`selection-menu`), the selection bars recorded again with their new
+  button. ABI of `drawview-ui` recorded again on purpose (`CommandGroup.ARRANGE`, the strings).
+* The desktop application run on a scratch directory (`-Ddrawview.dataDir`): it starts, makes its
+  database at version 20, no error. Its window was not driven by hand: the screenshots and the
+  tests above show the menus and the commands; trying them on the user's devices is left to the
+  user.
 
 ## Decisions
 

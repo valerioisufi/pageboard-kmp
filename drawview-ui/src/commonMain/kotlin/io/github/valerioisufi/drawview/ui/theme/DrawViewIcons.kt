@@ -19,10 +19,12 @@ public object DrawViewIcons {
     internal val AlignLeft: ImageVector by lazy { icon("AlignLeft", "M15 12H3", "M17 18H3", "M21 6H3") }
     internal val AlignRight: ImageVector by lazy { icon("AlignRight", "M21 12H9", "M21 18H7", "M21 6H3") }
     internal val ArrowDown: ImageVector by lazy { icon("ArrowDown", "M12 5v14", "m19 12-7 7-7-7") }
+    internal val ArrowDownToLine: ImageVector by lazy { icon("ArrowDownToLine", "M12 17V3", "m6 11 6 6 6-6", "M19 21H5") }
     internal val ArrowLeft: ImageVector by lazy { icon("ArrowLeft", "M12 19L5 12L12 5", "M19 12H5") }
     internal val ArrowRight: ImageVector by lazy { icon("ArrowRight", "M5 12H19", "M12 5L19 12L12 19") }
     public val ArrowUp: ImageVector by lazy { icon("ArrowUp", "M5 12L12 5L19 12", "M12 19V5") }
     public val ArrowUpDown: ImageVector by lazy { icon("ArrowUpDown", "M21 16L17 20L13 16", "M17 20V4", "M3 8L7 4L11 8", "M7 4V20") }
+    internal val ArrowUpToLine: ImageVector by lazy { icon("ArrowUpToLine", "M5 3h14", "m18 13-6-6-6 6", "M12 7v14") }
     internal val AtSign: ImageVector by lazy { icon("AtSign", "M8 12a4 4 0 1 0 8 0a4 4 0 1 0 -8 0", "M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8") }
     public val Bold: ImageVector by lazy { icon("Bold", "M6 12H15C16.0609 12 17.0783 12.4214 17.8284 13.1716C18.5786 13.9217 19 14.9391 19 16C19 17.0609 18.5786 18.0783 17.8284 18.8284C17.0783 19.5786 16.0609 20 15 20H7C6.73478 20 6.48043 19.8946 6.29289 19.7071C6.10536 19.5196 6 19.2652 6 19V5C6 4.73478 6.10536 4.48043 6.29289 4.29289C6.48043 4.10536 6.73478 4 7 4H14C15.0609 4 16.0783 4.42143 16.8284 5.17157C17.5786 5.92172 18 6.93913 18 8C18 9.06087 17.5786 10.0783 16.8284 10.8284C16.0783 11.5786 15.0609 12 14 12") }
     public val BookOpen: ImageVector by lazy { icon("BookOpen", "M12 7V21", "M3 18C2.73478 18 2.48043 17.8946 2.29289 17.7071C2.10536 17.5196 2 17.2652 2 17V4C2 3.73478 2.10536 3.48043 2.29289 3.29289C2.48043 3.10536 2.73478 3 3 3H8C9.06087 3 10.0783 3.42143 10.8284 4.17157C11.5786 4.92172 12 5.93913 12 7C12 5.93913 12.4214 4.92172 13.1716 4.17157C13.9217 3.42143 14.9391 3 16 3H21C21.2652 3 21.5196 3.10536 21.7071 3.29289C21.8946 3.48043 22 3.73478 22 4V17C22 17.2652 21.8946 17.5196 21.7071 17.7071C21.5196 17.8946 21.2652 18 21 18H15C14.2044 18 13.4413 18.3161 12.8787 18.8787C12.3161 19.4413 12 20.2044 12 21C12 20.2044 11.6839 19.4413 11.1213 18.8787C10.5587 18.3161 9.79565 18 9 18H3Z") }

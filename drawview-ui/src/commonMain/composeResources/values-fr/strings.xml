@@ -135,6 +135,7 @@
     <string name="menu_view">Présentation</string>
     <string name="menu_insert">Insertion</string>
     <string name="menu_format">Format</string>
+    <string name="menu_arrange">Disposition</string>
     <string name="menu_tools">Outils</string>
     <string name="menu_help">Aide</string>
     <string name="command_close">Fermer le document</string>
@@ -146,6 +147,10 @@
     <string name="command_previous_page">Page précédente</string>
     <string name="command_previous_tool">Outil précédent</string>
     <string name="command_snapping">Aligner sur les repères</string>
+    <string name="command_bring_to_front">Mettre au premier plan</string>
+    <string name="command_bring_forward">Avancer</string>
+    <string name="command_send_backward">Reculer</string>
+    <string name="command_send_to_back">Mettre à l\'arrière-plan</string>
     <string name="tool_pen">Stylo</string>
     <string name="tool_highlighter">Surligneur</string>
     <string name="tool_eraser">Gomme</string>

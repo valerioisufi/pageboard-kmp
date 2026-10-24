@@ -20,7 +20,9 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.text.RichTextEditing.Format
+import io.github.valerioisufi.drawview.canvas.controller.SelectionManager
 import io.github.valerioisufi.drawview.canvas.tool.Tool
+import io.github.valerioisufi.drawview.model.change.StackMove
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.text.TextSizes
 import io.github.valerioisufi.drawview.ui.command.Command
@@ -28,11 +30,15 @@ import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.command.Shortcut
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.about_dialog_title
+import io.github.valerioisufi.drawview.ui.generated.resources.command_bring_forward
+import io.github.valerioisufi.drawview.ui.generated.resources.command_bring_to_front
 import io.github.valerioisufi.drawview.ui.generated.resources.command_close
 import io.github.valerioisufi.drawview.ui.generated.resources.command_fit_width
 import io.github.valerioisufi.drawview.ui.generated.resources.command_next_page
 import io.github.valerioisufi.drawview.ui.generated.resources.command_previous_page
 import io.github.valerioisufi.drawview.ui.generated.resources.command_previous_tool
+import io.github.valerioisufi.drawview.ui.generated.resources.command_send_backward
+import io.github.valerioisufi.drawview.ui.generated.resources.command_send_to_back
 import io.github.valerioisufi.drawview.ui.generated.resources.command_snapping
 import io.github.valerioisufi.drawview.ui.generated.resources.command_zoom_in
 import io.github.valerioisufi.drawview.ui.generated.resources.command_zoom_out
@@ -285,6 +291,42 @@ internal class EditorCommands internal constructor(
         isEnabled = writable
     ) { actions.editDocumentBackground() }
 
+    // ----- Arrange -----
+
+    /**
+     * The commands moving the selection in the stack of its page, with the shortcuts of Keynote and
+     * Pages (letters: the same keys on every layout); the brackets of Figma run them too.
+     */
+    val bringToFront = arrangement(
+        StackMove.FRONT, Res.string.command_bring_to_front, DrawViewIcons.ArrowUpToLine,
+        Shortcut(Key.F, primary = true, shift = true), Shortcut(Key.RightBracket, primary = true, alt = true)
+    )
+    val bringForward = arrangement(
+        StackMove.FORWARD, Res.string.command_bring_forward, DrawViewIcons.ChevronUp,
+        Shortcut(Key.F, primary = true, shift = true, alt = true), primary(Key.RightBracket)
+    )
+    val sendBackward = arrangement(
+        StackMove.BACKWARD, Res.string.command_send_backward, DrawViewIcons.ChevronDown,
+        Shortcut(Key.B, primary = true, shift = true, alt = true), primary(Key.LeftBracket)
+    )
+    val sendToBack = arrangement(
+        StackMove.BACK, Res.string.command_send_to_back, DrawViewIcons.ArrowDownToLine,
+        Shortcut(Key.B, primary = true, shift = true), Shortcut(Key.LeftBracket, primary = true, alt = true)
+    )
+
+    /** The commands of the menu Arrange, of the selection bar and of the context menu of a selection. */
+    val arrangements: List<Command> = listOf(bringToFront, bringForward, sendBackward, sendToBack)
+
+    /** The command moving the selection by [move] in the stack of its page (see [SelectionManager.arrange]). */
+    private fun arrangement(move: StackMove, title: StringResource, icon: ImageVector, vararg shortcuts: Shortcut) = Command(
+        id = "arrange-${move.name.lowercase()}",
+        label = label(title),
+        group = CommandGroup.ARRANGE,
+        icon = { rememberVectorPainter(icon) },
+        shortcuts = shortcuts.toList(),
+        isEnabled = { hasSelection && writable() && controller.selectionManager.canArrange(move) }
+    ) { controller.selectionManager.arrange(move) }
+
     // ----- Tools -----
 
     val drawingMode = Command(
@@ -440,6 +482,7 @@ internal class EditorCommands internal constructor(
         zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, snapping,
         addPage, importPdf, importImage,
         documentBackground,
+        bringToFront, bringForward, sendBackward, sendToBack,
         drawingMode, pen, highlighter, textMarkup, eraser, text, lasso, pan, previousTool,
         about
     ) + formats

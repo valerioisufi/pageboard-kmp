@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.explorer
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.test.DesktopComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -9,6 +10,8 @@ import androidx.compose.ui.text.TextRange
 import androidx.lifecycle.ViewModelStoreOwner
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.change.BoxPlacement
+import io.github.valerioisufi.drawview.model.change.PlaceElements
 import io.github.valerioisufi.drawview.ui.adaptive.ReferenceWindow
 import java.util.Locale
 import java.util.TimeZone
@@ -124,6 +127,31 @@ class TextScreenshotTest {
                 controller.selectTool(Tool.LAZO)
                 controller.selectionManager.selectText(0, controller.document.pages[0].texts.single())
             }
+        }
+    }
+
+    /**
+     * The long press on a text selected over another one (the click of the secondary button on
+     * it): cut, copy, delete and the commands arranging it in the stack of its page, the shortcuts
+     * written; "Send Backward" and "Send to Back" on, nothing over it.
+     */
+    @Test
+    fun selectionMenu() = capture("selection-menu", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 30f, "Area of a circle: \$\\pi r^2\$")
+        save(viewModels)
+        write(viewModels, 20f, 90f, "Radius")
+        save(viewModels)
+        runOnIdle {
+            val controller = viewModels.controller()
+            val page = controller.document.pages[0]
+            val (under, text) = page.texts
+            // Moved over the first one
+            controller.session.submit(PlaceElements(page.id, listOf(BoxPlacement(text.id, under.x + 30f, under.y + 2f, text.width, text.height, 0f))))
+            controller.selectTool(Tool.LAZO)
+            controller.selectionManager.selectText(0, text)
+            val center = checkNotNull(controller.viewport.pageMmToScreen(0)).mapPoint(text.centerX, text.centerY)
+            controller.contextMenuPosition = Offset(center.x, center.y)
         }
     }
 

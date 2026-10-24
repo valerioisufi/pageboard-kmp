@@ -73,6 +73,8 @@ internal fun keyName(key: Key, apple: Boolean): String {
         Key.Equals -> "="
         Key.Period -> "."
         Key.Comma -> ","
+        Key.LeftBracket -> "["
+        Key.RightBracket -> "]"
         Key.DirectionUp -> "↑"
         Key.DirectionDown -> "↓"
         Key.DirectionLeft -> "←"

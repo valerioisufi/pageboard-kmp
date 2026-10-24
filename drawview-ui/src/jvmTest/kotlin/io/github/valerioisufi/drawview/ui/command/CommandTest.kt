@@ -11,7 +11,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.ui.adaptive.PlatformConventions
 import io.github.valerioisufi.drawview.ui.adaptive.ShortcutModifier
 import io.github.valerioisufi.drawview.ui.platform.PencilAction
@@ -219,6 +221,46 @@ class CommandTest {
         // Each shortcut runs one command only
         val shortcuts = commands.all.flatMap { command -> command.shortcuts.map { it to command.id } }
         assertEquals(shortcuts.size, shortcuts.map { it.first }.toSet().size, shortcuts.groupBy { it.first }.filter { it.value.size > 1 }.toString())
+    }
+
+    @Test
+    fun theArrangeCommandsMoveTheSelectionInTheStackOfItsPage() {
+        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val commands = editorCommands(controller)
+        val host = CommandHost().apply { register(commands.all) }
+        val page = controller.document.pages[0]
+        val (under, over) = List(2) { i ->
+            DrawText().apply {
+                text = "wave $i"
+                x = i * 5f; y = 0f; width = 20f; height = 20f
+            }
+        }
+        controller.session.submit(AddElements.of(page, listOf(under, over)))
+        // Nothing selected
+        assertTrue(commands.arrangements.none { it.isEnabled() })
+
+        controller.selectionManager.selectText(0, under)
+        assertTrue(commands.bringToFront.isEnabled())
+        assertTrue(commands.bringForward.isEnabled())
+        assertFalse(commands.sendBackward.isEnabled())
+        assertFalse(commands.sendToBack.isEnabled())
+
+        // ⇧⌘F on a Mac, Ctrl+Shift+F elsewhere; ⌘[ as in Figma too
+        assertTrue(host.dispatch(press(Key.F, meta = true, shift = true), apple))
+        assertEquals(listOf(over, under), page.stack)
+        assertFalse(commands.bringToFront.isEnabled())
+        assertTrue(host.dispatch(press(Key.LeftBracket, ctrl = true), others))
+        assertEquals(listOf(under, over), page.stack)
+        assertTrue(host.dispatch(press(Key.F, meta = true, shift = true, alt = true), apple))
+        assertEquals(listOf(over, under), page.stack)
+        assertTrue(host.dispatch(press(Key.B, ctrl = true, shift = true), others))
+        assertEquals(listOf(under, over), page.stack)
+        assertEquals("⇧⌘F", commands.bringToFront.shortcutLabel(apple))
+        assertEquals("Ctrl+Shift+Alt+B", commands.sendBackward.shortcutLabel(others))
+
+        // One step of the history each
+        controller.undo()
+        assertEquals(listOf(over, under), page.stack)
     }
 
     @Test

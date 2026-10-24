@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -30,6 +31,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
+import io.github.valerioisufi.drawview.ui.command.CommandMenu
 import io.github.valerioisufi.drawview.ui.command.MenuDivider
 import io.github.valerioisufi.drawview.ui.command.MenuItem
 import io.github.valerioisufi.drawview.ui.generated.resources.*
@@ -40,8 +42,9 @@ import io.github.valerioisufi.drawview.ui.theme.elevation
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * Floating contextual action bar of the lasso selection: cut, copy, delete and, for texts,
- * edit and their style (size, color, alignment: the controls of the formatting bar).
+ * Floating contextual action bar of the lasso selection: cut, copy, delete, the menu arranging
+ * it in the stack of its page and, for texts, edit and their style (size, color, alignment: the
+ * controls of the formatting bar).
  *
  * @param commands the commands of the editor, whose tooltips the buttons show.
  */
@@ -75,6 +78,10 @@ internal fun SelectionActionBar(
             BarAction(DrawViewIcons.Scissors, stringResource(Res.string.common_action_cut), { selectionManager.cutSelection() }, command = commands?.cut)
             BarAction(DrawViewIcons.Copy, stringResource(Res.string.common_action_copy), { selectionManager.copySelection() }, command = commands?.copy)
             BarAction(DrawViewIcons.Trash, stringResource(Res.string.common_action_delete), { selectionManager.deleteSelection() }, command = commands?.delete, tint = MaterialTheme.colorScheme.error)
+            if (commands != null) {
+                BarDivider()
+                ArrangeAction(commands)
+            }
             if (hasTexts) {
                 BarDivider()
                 // Size, color and alignment of the selected texts, as in the editor
@@ -87,10 +94,24 @@ internal fun SelectionActionBar(
 }
 
 /**
- * Long-press context menu of the canvas: paste, page management (add after, delete, move) and
- * background of the page.
+ * The button of the selection bar opening the commands that move the selection in the stack of
+ * its page (one button: the bar of a phone has no room for four).
+ */
+@Composable
+private fun ArrangeAction(commands: EditorCommands) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        BarAction(DrawViewIcons.Layers, stringResource(Res.string.menu_arrange), { expanded = true })
+        CommandMenu(commands.arrangements, expanded = expanded, onDismissRequest = { expanded = false })
+    }
+}
+
+/**
+ * Long-press context menu of the canvas: on a selection (or on an element, selected by the
+ * press), cut, copy, delete and the commands arranging it in the stack; elsewhere, paste, page
+ * management (add after, delete, move) and background of the page.
  *
- * @param commands the commands of the editor (the paste of the menu is theirs).
+ * @param commands the commands of the editor (the paste and the items of a selection are theirs).
  * @param onEditPageBackground opens the template configurator of the targeted page.
  */
 @Composable
@@ -130,6 +151,10 @@ internal fun CanvasContextMenu(
                 .background(MaterialTheme.colorScheme.surfaceContainer, shape)
                 .padding(8.dp)
         ) {
+            if (controller.selectionManager.currentSelection != null) {
+                SelectionMenuItems(controller, commands)
+                return@Column
+            }
             // What was copied here or in another application, where the menu was opened
             if (remember(position) { commands.canPaste() }) {
                 MenuItem(
@@ -175,6 +200,29 @@ internal fun CanvasContextMenu(
                 onClick = {
                     controller.contextMenuPosition = null
                     onEditPageBackground()
+                }
+            )
+        }
+    }
+}
+
+/** The items of the context menu of a selection: cut, copy, delete, then the stack. */
+@Composable
+private fun SelectionMenuItems(controller: DrawViewController, commands: EditorCommands) {
+    val adaptive = currentAdaptiveInfo()
+    val conventions = adaptive.conventions.takeIf { adaptive.input.hasKeyboard }
+    for ((index, section) in listOf(listOf(commands.cut, commands.copy, commands.delete), commands.arrangements).withIndex()) {
+        if (index > 0) MenuDivider()
+        for (command in section) {
+            MenuItem(
+                text = command.label(),
+                icon = command.icon?.invoke(),
+                shortcut = conventions?.let { command.shortcutLabel(it) },
+                enabled = command.isEnabled(),
+                destructive = command.destructive,
+                onClick = {
+                    controller.contextMenuPosition = null
+                    command.performIfEnabled()
                 }
             )
         }

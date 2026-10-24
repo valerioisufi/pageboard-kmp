@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import io.github.valerioisufi.drawview.ui.adaptive.PlatformConventions
 
 /** The menu listing a command (the menu bar of the desktop, the menus of the platforms). */
-public enum class CommandGroup { FILE, EDIT, VIEW, INSERT, FORMAT, TOOLS, HELP }
+public enum class CommandGroup { FILE, EDIT, VIEW, INSERT, FORMAT, ARRANGE, TOOLS, HELP }
 
 /**
  * An action of the interface, defined once and shown in many ways: a button of a bar (with its

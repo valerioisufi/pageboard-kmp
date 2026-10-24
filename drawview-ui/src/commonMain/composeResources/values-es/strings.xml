@@ -135,6 +135,7 @@
     <string name="menu_view">Visualización</string>
     <string name="menu_insert">Insertar</string>
     <string name="menu_format">Formato</string>
+    <string name="menu_arrange">Organizar</string>
     <string name="menu_tools">Herramientas</string>
     <string name="menu_help">Ayuda</string>
     <string name="command_close">Cerrar documento</string>
@@ -146,6 +147,10 @@
     <string name="command_previous_page">Página anterior</string>
     <string name="command_previous_tool">Herramienta anterior</string>
     <string name="command_snapping">Ajustar a las guías</string>
+    <string name="command_bring_to_front">Traer al frente</string>
+    <string name="command_bring_forward">Traer adelante</string>
+    <string name="command_send_backward">Enviar atrás</string>
+    <string name="command_send_to_back">Enviar al fondo</string>
     <string name="tool_pen">Bolígrafo</string>
     <string name="tool_highlighter">Resaltador</string>
     <string name="tool_eraser">Borrador</string>

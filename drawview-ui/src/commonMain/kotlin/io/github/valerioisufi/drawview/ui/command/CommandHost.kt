@@ -29,6 +29,7 @@ import io.github.valerioisufi.drawview.ui.adaptive.PlatformConventions
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.adaptive.platformConventions
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
+import io.github.valerioisufi.drawview.ui.generated.resources.menu_arrange
 import io.github.valerioisufi.drawview.ui.generated.resources.menu_edit
 import io.github.valerioisufi.drawview.ui.generated.resources.menu_file
 import io.github.valerioisufi.drawview.ui.generated.resources.menu_format
@@ -160,6 +161,7 @@ internal val CommandGroup.title: StringResource
         CommandGroup.VIEW -> Res.string.menu_view
         CommandGroup.INSERT -> Res.string.menu_insert
         CommandGroup.FORMAT -> Res.string.menu_format
+        CommandGroup.ARRANGE -> Res.string.menu_arrange
         CommandGroup.TOOLS -> Res.string.menu_tools
         CommandGroup.HELP -> Res.string.menu_help
     }
