@@ -789,8 +789,8 @@ public final class io/github/valerioisufi/drawview/ui/render/ComposeTextTileAdap
 	public fun <init> (Landroidx/compose/ui/text/font/FontFamily$Resolver;Lio/github/valerioisufi/drawview/ui/theme/NotesFonts;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/drawview/model/text/code/CodeHighlighter;)V
 	public synthetic fun <init> (Landroidx/compose/ui/text/font/FontFamily$Resolver;Lio/github/valerioisufi/drawview/ui/theme/NotesFonts;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/drawview/model/text/code/CodeHighlighter;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun clearCaches ()V
-	public fun drawText (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/drawview/model/DrawText;Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;)V
-	public fun layout (Lio/github/valerioisufi/drawview/model/DrawText;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockLayout;
+	public fun drawText (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/drawview/model/DrawText;Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;I)V
+	public fun layout (Lio/github/valerioisufi/drawview/model/DrawText;I)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockLayout;
 	public fun lineMetrics (F)Lio/github/valerioisufi/drawview/canvas/render/tile/TextLineMetrics;
 	public fun measure (Lio/github/valerioisufi/drawview/model/DrawText;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockSize;
 }

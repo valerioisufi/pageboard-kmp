@@ -193,7 +193,7 @@ public class TileRenderer(
                     if (text == null || isHidden(element.id)) continue
                     if (!element.getRotatedBounds().overlaps(visibleMmBounds)) continue
                     try {
-                        text.drawText(canvas, element, mmToCanvas)
+                        text.drawText(canvas, element, mmToCanvas, content.background.backgroundColor)
                     } catch (_: Throwable) {
                     }
                 }

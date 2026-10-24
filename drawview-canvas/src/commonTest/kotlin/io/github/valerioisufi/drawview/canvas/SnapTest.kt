@@ -68,7 +68,7 @@ class SnapTest {
 
     /** Lines 0.5 mm per point high, their baseline 0.4 mm per point from their top. */
     private class FakeTextAdapter : TextTileAdapter {
-        override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D) {}
+        override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, paperColor: Int) {}
         override fun measure(text: DrawText) = TextBlockSize(minOf(text.width, text.text.length * text.fontSize * 0.5f), text.fontSize * 0.5f)
         override fun lineMetrics(fontSize: Float) = TextLineMetrics(fontSize * 0.5f, fontSize * 0.4f)
     }

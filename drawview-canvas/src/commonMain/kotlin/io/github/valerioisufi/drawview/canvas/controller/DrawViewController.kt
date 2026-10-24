@@ -337,6 +337,9 @@ public class DrawViewController(
     /** The size of [text] as the renderer lays it out, or `null` without a text adapter. */
     public fun measureText(text: DrawText): TextBlockSize? = tileManager.tileRenderer.textAdapter?.measure(text)
 
+    /** The color of the paper of the page [pageIndex] (the backgrounds of the code of its texts are opaque on it). */
+    internal fun paperOf(pageIndex: Int): Int = document.pages.getOrNull(pageIndex)?.background?.backgroundColor ?: TextTileAdapter.NO_PAPER
+
     /** A line of a text of [fontSize] points as the renderer lays it out, or `null` without a text adapter. */
     internal fun textLineMetrics(fontSize: Float): TextLineMetrics? = tileManager.tileRenderer.textAdapter?.lineMetrics(fontSize)
 

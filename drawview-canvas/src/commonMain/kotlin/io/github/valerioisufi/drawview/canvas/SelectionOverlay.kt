@@ -200,7 +200,7 @@ internal object SelectionOverlay {
             val textAdapter = renderer.textAdapter
             if (textAdapter != null) {
                 for (text in selection.texts) {
-                    textAdapter.drawText(canvas, text, frame.mmToScreen)
+                    textAdapter.drawText(canvas, text, frame.mmToScreen, controller.paperOf(selection.pageIndex))
                 }
             }
             for (stroke in selection.strokes) {

@@ -230,7 +230,7 @@ Four of the things left for later after phase 5, asked by the user on 2026-10-24
 | 3 | In the editor: the block away from the caret drawn as on the page over its character, its source under the caret on its background and in its colors, the code in the line on its background, the caret on the tapped character of a block; tests of the offsets, screenshots | Done |
 | 4 | Writing code: `RichTextEditing` (Enter, Tab, ⇧Tab and the formats in a block, the fence closed, the block toggled, ⌘E on several lines), `EditorCommands.codeBlock` (⌘⌥C, Format menu, tooltip), the button of `TextFormatBar` and its icon, the strings in the 7 languages; tests of the editing and of the command | Done |
 | 5 | Lecture assistant: `MARKDOWN_RULE` and the reading of the handwriting with the fenced blocks; the fence stripped by `LectureAnalysis` checked with answers holding code; tests | Done |
-| 6 | The paper: the paper color given with the texts to `drawText` and `layout` by every caller (tiles, selection, drafts, preview, exports, editor), `CodeTheme.of(text, paper)` opaque; tests, screenshots (ruled paper); ABI of `drawview-canvas`, `drawview-ui` | To do |
+| 6 | The paper: the paper color given with the texts to `drawText` and `layout` by every caller (tiles, selection, drafts, preview, exports, editor), `CodeTheme.of(text, paper)` opaque; tests, screenshots (ruled paper); ABI of `drawview-canvas`, `drawview-ui` | Done |
 | 7 | Line numbers: `Span.numbered`, the column of the numbers in `CodeBlockLayout` (canvas, editor, PDF, taps after it, natural width), `toggleLineNumbers` and its command, button and strings; tests, screenshots; ABI | To do |
 | 8 | Blocks in list items: the items open at each line in the parser, `Span.listItem`, fences and closing fences of an item; a block drawn with its item (canvas, editor, measure, PDF); the texts of the user measured again on load as in phase 2; tests (bounds included), screenshots; ABI of `drawview-model` | To do |
 | 9 | The panel: `MarkdownText` of `drawview-ui` (formulas, blocks at its width, code in the line), used by `LecturePanel` for the notes, the outline and the review; tests, screenshots of the panel; ABI of `drawview-ui` | To do |
@@ -398,6 +398,23 @@ schema stay as they are.
   it is written with LaTeX and bullets repaired around it, a fence around the answer closed or not
   (`LectureAnalysisTest`).
 * The public API does not change.
+
+### Phase 6 results
+
+* `TextTileAdapter.drawText` and `layout` take the color of the paper under the text
+  (`paperColor`; `TextTileAdapter.NO_PAPER`, a color of no alpha, when there is none). Every caller
+  passes the background of its page: the tiles (and so the thumbnails and the PNG export), the
+  selection being moved, the drafts and the selections of the other devices, the preview of a note
+  being placed, the PDF export (the layouts and the images of the texts), the editor.
+* `CodeTheme.of(text, paperColor)`: the background of the code is the color of the text at 7 %
+  composited over the paper, opaque: the lines of a ruled or squared page do not show through the
+  blocks nor the code in the line; on white paper the color is the one of before. Without a paper
+  the background stays translucent. The adapter keeps its layouts by paper too.
+* Tests: the backgrounds opaque on white and on a colored paper, translucent without one
+  (`ComposeTextTileAdapterTest`); the screenshots of the code on ruled paper recorded again
+  (`text-saved-code`, `text-writing-code`, `text-writing-code-source`).
+* The ABI of `drawview-canvas` (the parameter of `drawText` and `layout`, `NO_PAPER`) and of
+  `drawview-ui` (the adapter) recorded again.
 
 ## Decisions
 

@@ -275,7 +275,7 @@ private fun DrawScope.drawPlacementPreview(
         style = Stroke(width = 2f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 6f)))
     )
     controller.tileManager.tileRenderer.textAdapter?.let { adapter ->
-        drawIntoCanvas { canvas -> adapter.drawText(canvas, preview, mmToScreen) }
+        drawIntoCanvas { canvas -> adapter.drawText(canvas, preview, mmToScreen, controller.paperOf(pageIndex)) }
     }
 }
 

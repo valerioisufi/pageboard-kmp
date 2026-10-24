@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.canvas.render.tile.TextFace
+import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.canvas.render.tile.TextWord
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.TextAlignment
@@ -41,7 +42,7 @@ class ComposeTextTileAdapterTest {
 
     /** Left and right of the words of [text] in millimeters of its box. */
     private fun extent(text: DrawText): Pair<Float, Float> {
-        val words = assertNotNull(adapter.layout(text)).words
+        val words = assertNotNull(adapter.layout(text, TextTileAdapter.NO_PAPER)).words
         return words.minOf { it.left } to words.maxOf { it.left + it.width }
     }
 
@@ -80,12 +81,12 @@ class ComposeTextTileAdapterTest {
     @Test
     fun listItemsRenderWithBulletsAndHangingIndent() {
         val bulletText = text("- First bullet item\n- Second bullet item")
-        val layout = assertNotNull(adapter.layout(bulletText))
+        val layout = assertNotNull(adapter.layout(bulletText, TextTileAdapter.NO_PAPER))
         val firstWord = layout.words.first()
         assertEquals("• ", firstWord.text)
 
         val longItem = text("- " + "word ".repeat(30).trim(), width = 40f)
-        val longLayout = assertNotNull(adapter.layout(longItem))
+        val longLayout = assertNotNull(adapter.layout(longItem, TextTileAdapter.NO_PAPER))
         assertTrue(longLayout.words.size > 5)
         val laterLineWords = longLayout.words.filter { it.baseline > longLayout.words[0].baseline }
         assertTrue(laterLineWords.isNotEmpty())
@@ -93,13 +94,13 @@ class ComposeTextTileAdapterTest {
     }
 
     /** The words of [text] that are not spaces, with their text trimmed. */
-    private fun words(text: DrawText) = assertNotNull(adapter.layout(text)).words.filter { it.text.isNotBlank() }
+    private fun words(text: DrawText) = assertNotNull(adapter.layout(text, TextTileAdapter.NO_PAPER)).words.filter { it.text.isNotBlank() }
 
     private fun List<TextWord>.word(text: String) = first { it.text.trim() == text }
 
     @Test
     fun aBlockOfCodeIsInTheMonospaceAndTheColorsOfItsLanguageOnItsBackground() {
-        val layout = assertNotNull(adapter.layout(text("Code:\n```kotlin\nfun f() = 1\n```\nafter")))
+        val layout = assertNotNull(adapter.layout(text("Code:\n```kotlin\nfun f() = 1\n```\nafter"), TextTileAdapter.NO_PAPER))
         val keyword = layout.words.first { it.text.trim() == "fun" }
         assertEquals(TextFace.MONO, keyword.face)
         assertEquals(0xFFCF222E.toInt(), keyword.color, "a keyword in its color")
@@ -112,6 +113,19 @@ class ComposeTextTileAdapterTest {
         val after = layout.words.first { it.text.trim() == "after" }
         assertTrue(after.lineTop >= box.top + box.height - 0.1f, "the text goes on under the block")
         assertTrue(layout.words.first { it.text.trim() == "Code:" }.lineBottom <= box.top + 0.1f)
+    }
+
+    @Test
+    fun theBackgroundsOfTheCodeAreOpaqueOnTheirPaper() {
+        val text = text("```\nx = 1\n```\nand `y`")
+        val white = assertNotNull(adapter.layout(text, 0xFFFFFFFF.toInt())).boxes
+        assertEquals(2, white.size)
+        // The color of the text at 7 % over white: opaque, the lines of the paper hidden
+        for (box in white) assertEquals(0xFFEDEDED.toInt(), box.color, Integer.toHexString(box.color))
+        val yellow = assertNotNull(adapter.layout(text, 0xFFFFF4C2.toInt())).boxes.first()
+        assertEquals(0xFF, yellow.color ushr 24)
+        assertTrue((yellow.color and 0xFF) < 0xC2, "the paper shows its tone through the color of the text")
+        assertTrue(assertNotNull(adapter.layout(text, TextTileAdapter.NO_PAPER)).boxes.all { it.color ushr 24 < 0x40 }, "translucent without a paper")
     }
 
     @Test
@@ -157,7 +171,7 @@ class ComposeTextTileAdapterTest {
     @Test
     fun codeInTheLineIsOnABackgroundTakingNoRoom() {
         val plain = words(text("a code b"))
-        val code = assertNotNull(adapter.layout(text("a `code` b")))
+        val code = assertNotNull(adapter.layout(text("a `code` b"), TextTileAdapter.NO_PAPER))
         val word = code.words.first { it.text.trim() == "code" }
         assertEquals(TextFace.MONO, word.face)
         val box = code.boxes.single()
@@ -174,11 +188,11 @@ class ComposeTextTileAdapterTest {
                 CodeToken(CodeTokenKind.KEYWORD, 1, 2), CodeToken(CodeTokenKind.KEYWORD, 4, 1_000)
             )
         })
-        val layout = assertNotNull(wrong.layout(text("```kotlin\nfun f\n```")))
+        val layout = assertNotNull(wrong.layout(text("```kotlin\nfun f\n```"), TextTileAdapter.NO_PAPER))
         assertEquals(0xFFCF222E.toInt(), layout.words.first { it.text.trim() == "fun" }.color, "the tokens in order and in the code are kept")
         val failing = ComposeTextTileAdapter(createFontFamilyResolver(), code = object : CodeHighlighter {
             override fun tokens(code: String, language: String): List<CodeToken> = throw IllegalStateException()
         })
-        assertNotNull(failing.layout(text("```kotlin\nfun f\n```")))
+        assertNotNull(failing.layout(text("```kotlin\nfun f\n```"), TextTileAdapter.NO_PAPER))
     }
 }

@@ -79,8 +79,9 @@ internal class CollaboratorsOverlay {
     }
 
     private fun DrawScope.drawText(controller: DrawViewController, collaborator: Collaborator, text: DrawText, labels: TextMeasurer) {
-        val mmToScreen = controller.viewport.pageMmToScreen(pageIndexOf(controller, collaborator.textPageId)) ?: return
-        drawIntoCanvas { canvas -> controller.tileManager.tileRenderer.textAdapter?.drawText(canvas, text, mmToScreen) }
+        val pageIndex = pageIndexOf(controller, collaborator.textPageId)
+        val mmToScreen = controller.viewport.pageMmToScreen(pageIndex) ?: return
+        drawIntoCanvas { canvas -> controller.tileManager.tileRenderer.textAdapter?.drawText(canvas, text, mmToScreen, controller.paperOf(pageIndex)) }
         val box = Rect(text.x, text.y, text.x + text.width, text.y + text.height)
         val corners = drawFrame(box, text.rotation, mmToScreen, collaborator.color, dashed = false)
         drawName(collaborator, corners[0] - Offset(0f, 22.dp.toPx()), labels)
@@ -100,7 +101,7 @@ internal class CollaboratorsOverlay {
                         is DrawImage -> controller.tileManager.tileRenderer.imageOf(controller.document, element)?.let {
                             TileRenderer.drawImage(canvas, element, it, mmToScreen, imagePaint)
                         }
-                        is DrawText -> controller.tileManager.tileRenderer.textAdapter?.drawText(canvas, element, mmToScreen)
+                        is DrawText -> controller.tileManager.tileRenderer.textAdapter?.drawText(canvas, element, mmToScreen, page.background.backgroundColor)
                         is DrawStroke -> painter.draw(canvas, element.mesh, mmToScreen)
                         is DrawCustomElement -> controller.tileManager.tileRenderer.elements.draw(canvas, element, mmToScreen)
                         else -> Unit

@@ -42,7 +42,7 @@ class TextEditingTest {
 
     /** Lines 0.5 mm per point high; a character 0.5 mm per point wide, wrapped on the width. */
     private class FakeTextAdapter : TextTileAdapter {
-        override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D) {}
+        override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, paperColor: Int) {}
 
         override fun measure(text: DrawText): TextBlockSize {
             val charWidth = text.fontSize * 0.5f

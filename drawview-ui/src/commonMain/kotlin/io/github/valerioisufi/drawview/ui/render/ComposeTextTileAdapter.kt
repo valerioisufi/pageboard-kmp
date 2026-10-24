@@ -94,7 +94,8 @@ public class ComposeTextTileAdapter(
         val fontPxKey: Int,
         val widthPx: Int,
         val color: Int,
-        val alignment: TextAlignment
+        val alignment: TextAlignment,
+        val paper: Int
     )
 
     /**
@@ -111,17 +112,17 @@ public class ComposeTextTileAdapter(
     )
 
 
-    override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D) {
+    override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, paperColor: Int) {
         val scale = mmToCanvas.scaleFactor
         if (scale <= 0f || text.width <= 0f) return
-        syncLock(lock) { drawRichText(canvas, text, mmToCanvas, scale) }
+        syncLock(lock) { drawRichText(canvas, text, mmToCanvas, scale, paperColor) }
     }
 
     override fun measure(text: DrawText): TextBlockSize? {
         if (text.width <= 0f) return null
         return syncLock(lock) {
             val scale = LAYOUT_PX_PER_MM
-            val prepared = prepare(text, text.fontSize * PT_TO_MM * scale, (text.width * scale).toInt().coerceAtLeast(1))
+            val prepared = prepare(text, text.fontSize * PT_TO_MM * scale, (text.width * scale).toInt().coerceAtLeast(1), TextTileAdapter.NO_PAPER)
             val layout = prepared.layout
             // A formula alone on its line and a block of code take the line: their own width counts
             val blockLines = HashMap<Int, Float>()
@@ -152,13 +153,13 @@ public class ComposeTextTileAdapter(
     }
 
     /** The words, the formulas and the backgrounds of a text, laid out as [drawRichText] does. */
-    override fun layout(text: DrawText): TextBlockLayout? {
+    override fun layout(text: DrawText, paperColor: Int): TextBlockLayout? {
         if (text.width <= 0f || text.text.isBlank()) return null
         return syncLock(lock) {
             // At a resolution where the rounding of the width is negligible
             val scale = LAYOUT_PX_PER_MM
             val fontPx = text.fontSize * PT_TO_MM * scale
-            val prepared = prepare(text, fontPx, (text.width * scale).toInt().coerceAtLeast(1))
+            val prepared = prepare(text, fontPx, (text.width * scale).toInt().coerceAtLeast(1), paperColor)
             val layout = prepared.layout
             val words = mutableListOf<TextWord>()
             val boxes = mutableListOf<TextBox>()
@@ -297,7 +298,7 @@ public class ComposeTextTileAdapter(
         formulaImages.clear()
     }
 
-    private fun drawRichText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, scale: Float) {
+    private fun drawRichText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, scale: Float, paperColor: Int) {
         val fontPx = text.fontSize * PT_TO_MM * scale
         if (fontPx < 0.5f) return
         // Exact width used for the word wrapping, as in the editor
@@ -309,9 +310,10 @@ public class ComposeTextTileAdapter(
             fontPxKey = (fontPx * 100f).roundToInt(),
             widthPx = widthPx,
             color = text.color,
-            alignment = text.alignment
+            alignment = text.alignment,
+            paper = paperColor
         )
-        val prepared = layouts.getOrPut(key) { prepare(text, fontPx, widthPx) }
+        val prepared = layouts.getOrPut(key) { prepare(text, fontPx, widthPx, paperColor) }
 
         val ratio = fontPx / prepared.fontPx
         val toCanvas = Matrix2D()
@@ -356,7 +358,7 @@ public class ComposeTextTileAdapter(
         textAlign = align
     )
 
-    private fun prepare(text: DrawText, fontPx: Float, widthPx: Int): PreparedText {
+    private fun prepare(text: DrawText, fontPx: Float, widthPx: Int, paperColor: Int): PreparedText {
         val color = Color(text.color)
         val baseStyle = baseStyle(color, fontPx, text.alignment.toTextAlign())
         val canvasText = MarkdownTextUtil.toCanvasText(
@@ -367,7 +369,7 @@ public class ComposeTextTileAdapter(
             lineWidthPx = widthPx.toFloat(),
             monospace = fonts.monospace,
             layoutCodeBlock = { code, language, indent ->
-                CodeBlockLayout.layout(measurer, fonts.monospace, code, language, indent, fontPx, widthPx.toFloat(), color, this.code)
+                CodeBlockLayout.layout(measurer, fonts.monospace, code, language, indent, fontPx, widthPx.toFloat(), color, this.code, paperColor)
             }
         ) { latex, sizePx ->
             formulaImages.render(latex, sizePx, text.color)?.let {
@@ -387,7 +389,7 @@ public class ComposeTextTileAdapter(
             constraints = Constraints.fixedWidth(widthPx),
             skipCache = true
         )
-        return PreparedText(layout, canvasText.formulas, fontPx, canvasText.codeBlocks, layout.codeChips(canvasText.inlineCode), CodeTheme.of(color).background)
+        return PreparedText(layout, canvasText.formulas, fontPx, canvasText.codeBlocks, layout.codeChips(canvasText.inlineCode), CodeTheme.of(color, paperColor).background)
     }
 
     /** Ascent of the base font, used to reserve the descent of the formulas. */

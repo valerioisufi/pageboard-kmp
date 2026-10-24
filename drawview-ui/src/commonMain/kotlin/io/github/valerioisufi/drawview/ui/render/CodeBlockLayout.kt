@@ -5,6 +5,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ParagraphStyle
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.sp
+import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.model.text.code.CodeHighlighter
 import io.github.valerioisufi.drawview.model.text.code.CodeToken
 import io.github.valerioisufi.drawview.model.text.code.CodeTokenKind
@@ -26,14 +28,15 @@ import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
 import kotlin.math.max
 
 /**
- * The colors of the code of a text of [text] color: its tokens, its background, the label of its
- * language. A dark text has the palette made for light paper, a light text the one made for dark
- * paper; the background is the color of the text, faint, so that it reads on every paper.
+ * The colors of the code of a text of [text] color on its [paper]: its tokens, its background, the
+ * label of its language. A dark text has the palette made for light paper, a light text the one
+ * made for dark paper; the background is the color of the text, faint, over the paper (opaque: the
+ * lines of the paper do not show through), or translucent when the paper is not known.
  */
-internal class CodeTheme private constructor(val text: Color, private val tokens: Map<CodeTokenKind, Color>) {
+internal class CodeTheme private constructor(val text: Color, paper: Color?, private val tokens: Map<CodeTokenKind, Color>) {
 
     /** The background of the code, in the line and in the blocks. */
-    val background: Color = text.copy(alpha = text.alpha * BACKGROUND_ALPHA)
+    val background: Color = text.copy(alpha = text.alpha * BACKGROUND_ALPHA).let { faint -> paper?.let { faint.compositeOver(it) } ?: faint }
 
     /** The name of the language of a block. */
     val label: Color = text.copy(alpha = text.alpha * LABEL_ALPHA)
@@ -69,8 +72,14 @@ internal class CodeTheme private constructor(val text: Color, private val tokens
             CodeTokenKind.PROPERTY to Color(0xFF79C0FF)
         )
 
-        /** The colors of the code of a text drawn in [text]. */
-        fun of(text: Color): CodeTheme = CodeTheme(text, if (text.luminance() > 0.5f) DARK_PAPER else LIGHT_PAPER)
+        /**
+         * The colors of the code of a text drawn in [text] on the paper of [paperColor] (ARGB, or
+         * no paper: a color of no alpha).
+         */
+        fun of(text: Color, paperColor: Int = TextTileAdapter.NO_PAPER): CodeTheme {
+            val paper = Color(paperColor).takeIf { it.alpha > 0f }
+            return CodeTheme(text, paper, if (text.luminance() > 0.5f) DARK_PAPER else LIGHT_PAPER)
+        }
     }
 }
 
@@ -164,8 +173,8 @@ public class CodeBlockLayout internal constructor(
 
         /**
          * Lays out [code] written in [language] (its lines without the [indent] spaces of its
-         * fence) in a text of [textFontPx] and [color] whose lines are [widthPx] wide, its tokens
-         * told by [highlighter] (`null`: in one color).
+         * fence) in a text of [textFontPx] and [color] whose lines are [widthPx] wide, on the paper
+         * of [paperColor], its tokens told by [highlighter] (`null`: in one color).
          */
         fun layout(
             measurer: TextMeasurer,
@@ -176,10 +185,11 @@ public class CodeBlockLayout internal constructor(
             textFontPx: Float,
             widthPx: Float,
             color: Color,
-            highlighter: CodeHighlighter?
+            highlighter: CodeHighlighter?,
+            paperColor: Int
         ): CodeBlockLayout {
             val fontPx = textFontPx * CODE_SCALE
-            val theme = CodeTheme.of(color)
+            val theme = CodeTheme.of(color, paperColor)
             val style = TextStyle(color = color, fontSize = fontPx.sp, fontFamily = monospace, letterSpacing = 0.sp, textAlign = TextAlign.Start)
             val advance = advance(measurer, style)
             val shownCode = shownCode(code, indent, advance, tokens(highlighter, code, language), theme)

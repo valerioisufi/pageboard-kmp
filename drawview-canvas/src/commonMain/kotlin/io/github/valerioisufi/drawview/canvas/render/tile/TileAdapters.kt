@@ -69,15 +69,18 @@ public fun fitPdfPage(pdfWidth: Double, pdfHeight: Double, pageRect: Rect): Rect
  */
 public interface TextTileAdapter {
     /**
-     * Draws [text] on [canvas], mapping page millimeters to canvas pixels through [mmToCanvas].
+     * Draws [text] on [canvas], mapping page millimeters to canvas pixels through [mmToCanvas], on
+     * the paper of [paperColor] (ARGB, the background of its page: the backgrounds of its code are
+     * opaque on it; [NO_PAPER] when there is none, and they are translucent).
      */
-    public fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D)
+    public fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, paperColor: Int)
 
     /**
-     * [text] as [drawText] lays it out (its words, their style and place, its formulas), e.g. to
-     * write it in a PDF; `null` when the adapter cannot tell it.
+     * [text] as [drawText] lays it out on the paper of [paperColor] (its words, their style and
+     * place, its formulas, the backgrounds of its code), e.g. to write it in a PDF; `null` when
+     * the adapter cannot tell it.
      */
-    public fun layout(text: DrawText): TextBlockLayout? = null
+    public fun layout(text: DrawText, paperColor: Int): TextBlockLayout? = null
 
     /**
      * The size of [text] as [drawText] lays it out on its width; `null` when the adapter cannot
@@ -90,6 +93,11 @@ public interface TextTileAdapter {
 
     /** Drops what the adapter keeps of the texts it laid out (e.g. its formulas became renderable). */
     public fun clearCaches() {}
+
+    public companion object {
+        /** No paper under a text (a color of no alpha): the backgrounds of its code are translucent. */
+        public const val NO_PAPER: Int = 0
+    }
 }
 
 /**

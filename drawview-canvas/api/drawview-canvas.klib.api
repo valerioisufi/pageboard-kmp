@@ -110,11 +110,16 @@ abstract interface io.github.valerioisufi.drawview.canvas.render.tile/PdfTileAda
 }
 
 abstract interface io.github.valerioisufi.drawview.canvas.render.tile/TextTileAdapter { // io.github.valerioisufi.drawview.canvas.render.tile/TextTileAdapter|null[0]
-    abstract fun drawText(androidx.compose.ui.graphics/Canvas, io.github.valerioisufi.drawview.model/DrawText, io.github.valerioisufi.drawview.model.geometry/Matrix2D) // io.github.valerioisufi.drawview.canvas.render.tile/TextTileAdapter.drawText|drawText(androidx.compose.ui.graphics.Canvas;io.github.valerioisufi.drawview.model.DrawText;io.github.valerioisufi.drawview.model.geometry.Matrix2D){}[0]
+    abstract fun drawText(androidx.compose.ui.graphics/Canvas, io.github.valerioisufi.drawview.model/DrawText, io.github.valerioisufi.drawview.model.geometry/Matrix2D, kotlin/Int) // io.github.valerioisufi.drawview.canvas.render.tile/TextTileAdapter.drawText|drawText(androidx.compose.ui.graphics.Canvas;io.github.valerioisufi.drawview.model.DrawText;io.github.valerioisufi.drawview.model.geometry.Matrix2D;kotlin.Int){}[0]
     open fun clearCaches() // io.github.valerioisufi.drawview.canvas.render.tile/TextTileAdapter.clearCaches|clearCaches(){}[0]
-    open fun layout(io.github.valerioisufi.drawview.model/DrawText): io.github.valerioisufi.drawview.canvas.render.tile/TextBlockLayout? // io.github.valerioisufi.drawview.canvas.render.tile/TextTileAdapter.layout|layout(io.github.valerioisufi.drawview.model.DrawText){}[0]
+    open fun layout(io.github.valerioisufi.drawview.model/DrawText, kotlin/Int): io.github.valerioisufi.drawview.canvas.render.tile/TextBlockLayout? // io.github.valerioisufi.drawview.canvas.render.tile/TextTileAdapter.layout|layout(io.github.valerioisufi.drawview.model.DrawText;kotlin.Int){}[0]
     open fun lineMetrics(kotlin/Float): io.github.valerioisufi.drawview.canvas.render.tile/TextLineMetrics? // io.github.valerioisufi.drawview.canvas.render.tile/TextTileAdapter.lineMetrics|lineMetrics(kotlin.Float){}[0]
     open fun measure(io.github.valerioisufi.drawview.model/DrawText): io.github.valerioisufi.drawview.canvas.render.tile/TextBlockSize? // io.github.valerioisufi.drawview.canvas.render.tile/TextTileAdapter.measure|measure(io.github.valerioisufi.drawview.model.DrawText){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.canvas.render.tile/TextTileAdapter.Companion|null[0]
+        final const val NO_PAPER // io.github.valerioisufi.drawview.canvas.render.tile/TextTileAdapter.Companion.NO_PAPER|{}NO_PAPER[0]
+            final fun <get-NO_PAPER>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.render.tile/TextTileAdapter.Companion.NO_PAPER.<get-NO_PAPER>|<get-NO_PAPER>(){}[0]
+    }
 }
 
 final class io.github.valerioisufi.drawview.canvas.camera/CalcPage { // io.github.valerioisufi.drawview.canvas.camera/CalcPage|null[0]

@@ -99,7 +99,7 @@ public class PdfExporter(
         // The texts laid out once, the characters of their words embedded once per face
         val layouts = HashMap<DrawText, TextBlockLayout?>()
         for (content in contents) {
-            for (page in content.pages) for (text in page.texts) layouts[text] = textAdapter?.layout(text)
+            for (page in content.pages) for (text in page.texts) layouts[text] = textAdapter?.layout(text, page.background.backgroundColor)
         }
         val faces = loadFaces(layouts.values.filterNotNull())
         var skipped = 0
@@ -203,14 +203,14 @@ public class PdfExporter(
             }
         }
 
-        /** Writes [text] placed by [mmToPt] on its page; returns whether it could. */
-        fun write(text: DrawText, mmToPt: Matrix2D): Boolean {
-            val layout = layouts[text] ?: return writeImage(text, mmToPt)
+        /** Writes [text] placed by [mmToPt] on its page of [paperColor]; returns whether it could. */
+        fun write(text: DrawText, mmToPt: Matrix2D, paperColor: Int): Boolean {
+            val layout = layouts[text] ?: return writeImage(text, mmToPt, paperColor)
             val toBlock = Matrix2D()
                 .postRotate(text.rotation, text.width / 2f, layout.height / 2f)
                 .postTranslate(text.x, text.y)
                 .postConcat(mmToPt)
-            val raster = BlockRaster(text, toBlock)
+            val raster = BlockRaster(text, toBlock, paperColor)
             // The backgrounds of the code, under its words
             for (box in layout.boxes) writer.fillPath(roundedRect(box, toBlock), box.color)
             for (word in layout.words) {
@@ -291,21 +291,21 @@ public class PdfExporter(
         }
 
         /** [text] as an image, the way the editor draws it (without a layout). */
-        private fun writeImage(text: DrawText, mmToPt: Matrix2D): Boolean {
+        private fun writeImage(text: DrawText, mmToPt: Matrix2D, paperColor: Int): Boolean {
             val adapter = textAdapter ?: return true
             if (text.width <= 0f || text.text.isBlank()) return true
             val toBlock = Matrix2D()
                 .postRotate(text.rotation, text.width / 2f, text.height / 2f)
                 .postTranslate(text.x, text.y)
                 .postConcat(mmToPt)
-            return BlockRaster(text, toBlock).draw(Rect(0f, 0f, text.width, text.height))
+            return BlockRaster(text, toBlock, paperColor).draw(Rect(0f, 0f, text.width, text.height))
         }
 
         /**
          * The image of [text] without its rotation at 300 dpi, drawn by the adapter when a part of
-         * it is first needed; [toBlock] places the block.
+         * it is first needed, on the paper of [paperColor]; [toBlock] places the block.
          */
-        private inner class BlockRaster(private val text: DrawText, private val toBlock: Matrix2D) {
+        private inner class BlockRaster(private val text: DrawText, private val toBlock: Matrix2D, private val paperColor: Int) {
             private var pixels: IntArray? = null
             private var width = 0
             private var height = 0
@@ -343,7 +343,7 @@ public class PdfExporter(
                     .postRotate(-text.rotation, text.x + text.width / 2f, text.y + text.height / 2f)
                     .postTranslate(-text.x, -text.y)
                     .postScale(scale, scale)
-                adapter.drawText(canvas, text, toBitmap)
+                adapter.drawText(canvas, text, toBitmap, paperColor)
                 return IntArray(width * height).also { bitmap.readPixels(it); pixels = it }
             }
         }
@@ -471,7 +471,7 @@ public class PdfExporter(
             return writer.drawImage(pixels, bitmap.width, bitmap.height, toPage)
         }
 
-        private fun writeText(text: DrawText): Boolean = texts.write(text, mmToPt)
+        private fun writeText(text: DrawText): Boolean = texts.write(text, mmToPt, page.background.backgroundColor)
 
         private fun writeStroke(stroke: DrawStroke): Boolean {
             val outline = outlineOf(stroke)

@@ -797,16 +797,22 @@ public final class io/github/valerioisufi/drawview/canvas/render/tile/TextLineMe
 }
 
 public abstract interface class io/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter {
+	public static final field Companion Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter$Companion;
+	public static final field NO_PAPER I
 	public fun clearCaches ()V
-	public abstract fun drawText (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/drawview/model/DrawText;Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;)V
-	public fun layout (Lio/github/valerioisufi/drawview/model/DrawText;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockLayout;
+	public abstract fun drawText (Landroidx/compose/ui/graphics/Canvas;Lio/github/valerioisufi/drawview/model/DrawText;Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;I)V
+	public fun layout (Lio/github/valerioisufi/drawview/model/DrawText;I)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockLayout;
 	public fun lineMetrics (F)Lio/github/valerioisufi/drawview/canvas/render/tile/TextLineMetrics;
 	public fun measure (Lio/github/valerioisufi/drawview/model/DrawText;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockSize;
 }
 
+public final class io/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter$Companion {
+	public static final field NO_PAPER I
+}
+
 public final class io/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter$DefaultImpls {
 	public static fun clearCaches (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;)V
-	public static fun layout (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Lio/github/valerioisufi/drawview/model/DrawText;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockLayout;
+	public static fun layout (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Lio/github/valerioisufi/drawview/model/DrawText;I)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockLayout;
 	public static fun lineMetrics (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;F)Lio/github/valerioisufi/drawview/canvas/render/tile/TextLineMetrics;
 	public static fun measure (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;Lio/github/valerioisufi/drawview/model/DrawText;)Lio/github/valerioisufi/drawview/canvas/render/tile/TextBlockSize;
 }

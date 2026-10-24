@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.model.text.TextSizes.PT_TO_MM
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_formula_invalid
@@ -132,8 +133,10 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
     val highlighter = controller.engines.code
     val codeMeasurer = remember(resolver) { TextMeasurer(resolver, Density(1f, 1f), LayoutDirection.Ltr, cacheSize = 0) }
     val codeLayouts = remember(codeMeasurer, notesFonts, highlighter) { LruCache<CodeKey, CodeBlockLayout>(MAX_CODE_LAYOUTS) }
+    // The code on the paper of its page, as the page draws it
+    val paper = controller.document.pages.getOrNull(editor.activeTextPageIndex)?.background?.backgroundColor ?: TextTileAdapter.NO_PAPER
     val value = editor.value
-    val shown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, room, latexReady, codeLayouts) {
+    val shown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, room, latexReady, codeLayouts, paper) {
         MarkdownTextUtil.toEditorText(
             text = value.text,
             selection = value.selection,
@@ -146,13 +149,13 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
             monospace = notesFonts.monospace,
             highlighter = highlighter,
             layoutCodeBlock = { code, language, indent ->
-                codeLayouts.getOrPut(CodeKey(code, language, indent, fontSizePx, widthPx, editor.color)) {
-                    CodeBlockLayout.layout(codeMeasurer, notesFonts.monospace, code, language, indent, fontSizePx, widthPx.toFloat(), textColor, highlighter)
+                codeLayouts.getOrPut(CodeKey(code, language, indent, fontSizePx, widthPx, editor.color, paper)) {
+                    CodeBlockLayout.layout(codeMeasurer, notesFonts.monospace, code, language, indent, fontSizePx, widthPx.toFloat(), textColor, highlighter, paper)
                 }
             }
         ) { latex, sizePx -> renderAtBucket(images, latex, sizePx, editor.color) }
     }
-    val codeTheme = remember(editor.color) { CodeTheme.of(textColor) }
+    val codeTheme = remember(editor.color, paper) { CodeTheme.of(textColor, paper) }
     val currentShown by rememberUpdatedState(shown)
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
 
@@ -308,7 +311,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
 }
 
 /** What a block of code is laid out from: the same key, the same layout. */
-private data class CodeKey(val code: String, val language: String, val indent: Int, val fontPx: Float, val widthPx: Int, val color: Int)
+private data class CodeKey(val code: String, val language: String, val indent: Int, val fontPx: Float, val widthPx: Int, val color: Int, val paper: Int)
 
 /** Where [block] is drawn in its line of [layout]: centered in it, as the page draws it. */
 private fun codeBlockTop(layout: TextLayoutResult, block: MarkdownTextUtil.EditorCodeBlock): Float {

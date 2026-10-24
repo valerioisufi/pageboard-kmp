@@ -24,7 +24,7 @@ class EditorCodeTest {
     private val measurer = TextMeasurer(createFontFamilyResolver(), Density(1f, 1f), LayoutDirection.Ltr, cacheSize = 0)
 
     private fun layout(code: String, language: String = "kotlin", indent: Int = 0, widthPx: Float = 600f) =
-        CodeBlockLayout.layout(measurer, FontFamily.Monospace, code, language, indent, 20f, widthPx, Color.Black, BuiltInCodeHighlighter)
+        CodeBlockLayout.layout(measurer, FontFamily.Monospace, code, language, indent, 20f, widthPx, Color.Black, BuiltInCodeHighlighter, 0xFFFFFFFF.toInt())
 
     private fun shown(text: String, caret: Int) = MarkdownTextUtil.toEditorText<Unit>(
         text = text,
