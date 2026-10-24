@@ -64,8 +64,9 @@ The origin of a change decides what the observers do:
   of the document keeps the stamp of its last change and is changed only by a more recent one
   (last-writer-wins), so that the devices applying the same operations in any causal order end
   up with the same document:
-  * an element: its presence (`added`, `removed`), its placement (`placed`: page, stacking
-    order, transform or box) and its content (`updated`: text and format, style of a mark);
+  * an element: its presence (`added`, `removed`), its placement (`placed`: page, transform or
+    box), its order in the stack of its page (`ordered`, see [z-order.md](./z-order.md)) and its
+    content (`updated`: text and format, style of a mark);
   * a page: its presence, its position (`orderVersion`) and its format (`formatVersion`);
   * the document: its defaults (`defaultsVersion`).
 * Nothing is destroyed: a removed page or element stays, hidden (`DrawDocument.removedPages`,
@@ -73,9 +74,11 @@ The origin of a change decides what the observers do:
   it is the same on every device. Its rows stay in the database with the stamp of the removal.
 * A stroke keeps its original geometry and an absolute affine transform: moving 500 strokes is
   a small message, and concurrent moves converge (deltas would not).
-* The elements of a page are stacked by `ElementOrder` (the stamp of the change placing them on
-  top, its position in the change); the pages are ordered by a fractional key (`FractionalIndex`,
-  then by id); a reorder moves the fewest pages.
+* The content of a page is one stack ordered by `ElementOrder` (then by id): keys compared as
+  text, a key on top made from the stamp of the change, keys between two made by the editor, the
+  orders written before the one stack read in the layer of their kind (see
+  [z-order.md](./z-order.md)); the pages are ordered by a fractional key (`FractionalIndex`, then
+  by id); a reorder moves the fewest pages.
 * Text: last-writer-wins on its placement. Its content keeps the changes it includes
   (`Versions`: for every replica, the stamp of its last one; a change of a text carries the
   versions of the content it was made from, the editor the ones of when the editing started): of
@@ -250,8 +253,10 @@ The application is not released yet, so the stored documents are not migrated:
 * Every change applies itself with the stamp of its operation, piece by piece (see
   Convergence). A change of another device applies to the pieces it is the most recent for: the
   elements are found on any page (another device may have moved them), shown or hidden.
-* The editor gives the stacking order of what it moves on the same page; what goes on top gets
-  the order of the change (`Placement.order`, `ElementData.order`).
+* The order of an element changes with `ReorderElements` only (and with the elements added):
+  a move keeps it, a move to another page goes with a `ReorderElements` putting the elements on
+  top there, in one change; whether a change writes the order never depends on where the element
+  is on a device (`Placement.order` is no longer read).
 * `MovePages` gives the pages their new fractional keys (it replaces `SetPageOrder`): two
   devices moving different pages at the same time keep both moves.
 * `DrawPersistence` only saves (rows with their stamps and their removal) and appends the

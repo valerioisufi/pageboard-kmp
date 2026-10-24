@@ -131,12 +131,12 @@ internal class DrawDocumentRepository(
                 page.contentVersions = pageEntity.contentVersions
                 page.removalSaw = pageEntity.removalSaw
 
-                val elements = pageWithContent.strokes.map { e -> mapStroke(e).stored(e.orderKey, e.added, e.removed, e.placed, e.updated) } +
-                    pageWithContent.texts.map { e -> mapText(e).stored(e.orderKey, e.added, e.removed, e.placed, e.updated) } +
-                    pageWithContent.images.map { e -> mapImage(e).stored(e.orderKey, e.added, e.removed, e.placed, e.updated) } +
-                    pageWithContent.pdfs.map { e -> mapPdf(e).stored(e.orderKey, e.added, e.removed, e.placed, e.updated) } +
-                    pageWithContent.markups.mapNotNull { e -> mapTextMarkup(e)?.stored(e.orderKey, e.added, e.removed, e.placed, e.updated) } +
-                    pageWithContent.customs.map { e -> mapCustomElement(e).stored(e.orderKey, e.added, e.removed, e.placed, e.updated) }
+                val elements = pageWithContent.strokes.map { e -> mapStroke(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
+                    pageWithContent.texts.map { e -> mapText(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
+                    pageWithContent.images.map { e -> mapImage(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
+                    pageWithContent.pdfs.map { e -> mapPdf(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
+                    pageWithContent.markups.mapNotNull { e -> mapTextMarkup(e)?.stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
+                    pageWithContent.customs.map { e -> mapCustomElement(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) }
                 // The removed elements are kept, hidden
                 for (element in elements.sortedBy { it.order }) {
                     if (element.removed != null) page.removedElements.add(element) else page.add(element)
@@ -148,12 +148,13 @@ internal class DrawDocumentRepository(
         }
     }
 
-    private fun <T : DrawElement> T.stored(order: ElementOrder, added: Stamp, removed: Stamp?, placed: Stamp, updated: Stamp): T =
+    private fun <T : DrawElement> T.stored(order: ElementOrder, added: Stamp, removed: Stamp?, placed: Stamp, ordered: Stamp, updated: Stamp): T =
         apply {
             this.order = order
             this.added = added
             this.removed = removed
             this.placed = placed
+            this.ordered = ordered
             this.updated = updated
         }
 
@@ -416,6 +417,7 @@ internal class DrawDocumentRepository(
         added = added,
         removed = removed,
         placed = placed,
+        ordered = ordered,
         updated = updated
     )
 
@@ -443,6 +445,7 @@ internal class DrawDocumentRepository(
                 added = text.added,
                 removed = text.removed,
                 placed = text.placed,
+                ordered = text.ordered,
                 updated = text.updated,
                 contentVersions = text.contentVersions
             )
@@ -464,6 +467,7 @@ internal class DrawDocumentRepository(
                 added = image.added,
                 removed = image.removed,
                 placed = image.placed,
+                ordered = image.ordered,
                 updated = image.updated
             )
         )
@@ -486,6 +490,7 @@ internal class DrawDocumentRepository(
                 added = element.added,
                 removed = element.removed,
                 placed = element.placed,
+                ordered = element.ordered,
                 updated = element.updated
             )
         )
@@ -502,6 +507,7 @@ internal class DrawDocumentRepository(
                 added = pdf.added,
                 removed = pdf.removed,
                 placed = pdf.placed,
+                ordered = pdf.ordered,
                 updated = pdf.updated
             )
         )
@@ -526,6 +532,7 @@ internal class DrawDocumentRepository(
                 added = markup.added,
                 removed = markup.removed,
                 placed = markup.placed,
+                ordered = markup.ordered,
                 updated = markup.updated
             )
         )

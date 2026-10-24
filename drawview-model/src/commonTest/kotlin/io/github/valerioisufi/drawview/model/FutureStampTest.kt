@@ -148,7 +148,7 @@ class FutureStampTest {
 
         // The changes carrying [carried]: an order, the versions of a text, what a removal saw
         fun changes(carried: Stamp): List<DocumentChange> {
-            val order = ElementOrder(carried, 0)
+            val order = ElementOrder.onTop(carried, 0)
             val added = TextData("added", "x", x = 0f, y = 0f, width = 10f, height = 10f, color = 0, fontSize = 16f, order = order)
             val placed = PlaceElements(page.id, listOf(BoxPlacement(text.id, 1f, 2f, 40f, 10f, 0f, order = order)))
             return listOf(

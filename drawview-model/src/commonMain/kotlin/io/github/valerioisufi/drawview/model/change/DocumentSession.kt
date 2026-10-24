@@ -129,14 +129,17 @@ public class DocumentSession(
     /**
      * Whether [operation], made on another device, may be received: stamped by its replica, at
      * most [HybridClock.MAX_AHEAD_MS] ahead of the wall clock here ([HybridClock.admits]), and
-     * carrying no stamp after its own ([DocumentChange.stamps]: its author had seen them all). The
-     * operation of a member stamping its changes as it likes would win over the changes made
-     * after it, or make the changes of another device count as included already.
+     * carrying no stamp after its own ([DocumentChange.stamps]: its author had seen them all), its
+     * orders well formed and none after its stamp ([DocumentChange.orders]). The operation of a
+     * member stamping its changes as it likes would win over the changes made after it, or make
+     * the changes of another device count as included already; its orders would put an element
+     * above every element put on top after it.
      */
     public fun admits(operation: Operation): Boolean {
         val stamp = operation.stamp
         return stamp.replica == operation.id.replica && clock.admits(stamp) &&
-            operation.change.stamps().all { clock.admits(it) && it <= stamp }
+            operation.change.stamps().all { clock.admits(it) && it <= stamp } &&
+            operation.change.orders().all { it.isWellFormed && it.isNotAfter(stamp) }
     }
 
     /**

@@ -89,13 +89,23 @@ public data class PageSnapshot(
     }
 }
 
-/** The stamps of the last changes of an element (see [DrawElement]). */
+/**
+ * The stamps of the last changes of an element (see [DrawElement]); [ordered] `null` (a snapshot
+ * made before the order had its own register): the stamp of its placement, which held the order.
+ */
 @Serializable
-public data class ElementVersions(val added: Stamp, val removed: Stamp? = null, val placed: Stamp, val updated: Stamp) {
+public data class ElementVersions(
+    val added: Stamp,
+    val removed: Stamp? = null,
+    val placed: Stamp,
+    val updated: Stamp,
+    val ordered: Stamp? = null
+) {
     public fun applyTo(element: DrawElement) {
         element.added = added
         element.removed = removed
         element.placed = placed
+        element.ordered = ordered ?: placed
         element.updated = updated
     }
 }
@@ -123,7 +133,7 @@ public fun DrawPage.snapshot(): PageSnapshot = PageSnapshot(
     formatVersion = formatVersion,
     // In a canonical order: the same state has the same snapshot
     removedElements = removedElements.sortedBy { it.id }.map { it.toData() },
-    versions = (elements() + removedElements).associate { it.id to ElementVersions(it.added, it.removed, it.placed, it.updated) },
+    versions = (elements() + removedElements).associate { it.id to ElementVersions(it.added, it.removed, it.placed, it.updated, it.ordered) },
     contentVersions = contentVersions,
     removalSaw = removalSaw
 )

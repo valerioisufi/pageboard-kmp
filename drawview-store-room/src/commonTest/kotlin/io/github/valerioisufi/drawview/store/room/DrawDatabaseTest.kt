@@ -144,6 +144,7 @@ class DrawDatabaseTest {
             added = Stamp.ZERO,
             removed = null,
             placed = Stamp.ZERO,
+            ordered = Stamp.ZERO,
             updated = Stamp.ZERO
         )
 

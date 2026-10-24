@@ -62,11 +62,21 @@ public sealed interface DocumentChange {
      * [DocumentSession.admits]).
      */
     public fun stamps(): Sequence<Stamp> = emptySequence()
+
+    /**
+     * The orders it gives its elements (none by default): each one must be well formed and not
+     * after its stamp (see [DocumentSession.admits]), so that no element goes above the next one
+     * put on top.
+     */
+    public fun orders(): Sequence<ElementOrder> = emptySequence()
 }
 
-/** The stamps [this] carries (see [DocumentChange.stamps]): its order and the versions of a text. */
+/**
+ * The stamps [this] carries (see [DocumentChange.stamps]): the stamp of an order written before
+ * the one stack and the versions of a text.
+ */
 private fun ElementData.stamps(): Sequence<Stamp> = sequence {
-    order?.let { yield(it.stamp) }
+    order?.legacyStamp?.let { yield(it) }
     if (this@stamps is TextData) yieldAll(versions.stamps.values)
 }
 
@@ -84,7 +94,7 @@ public class ChangeContext internal constructor(
 /**
  * Adds [elements] to the page [pageId] (an element without order gets the order of this change: on
  * top). An element already there (e.g. removed before, and put back by undo) is added again with
- * the placement and the content of this change, unless more recent ones.
+ * the placement, the order and the content of this change, unless more recent ones.
  *
  * [lostVersions]: the copies of contents of texts lost to others (see [UpdateTexts]), made by the
  * devices as they merge their changes; they keep no removed page (see [DrawPage.isHidden]).
@@ -102,6 +112,8 @@ public data class AddElements(val pageId: String, val elements: List<ElementData
 
     override fun stamps(): Sequence<Stamp> = elements.asSequence().flatMap { it.stamps() }
 
+    override fun orders(): Sequence<ElementOrder> = elements.asSequence().mapNotNull { it.order }
+
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         val stamp = context.stamp
@@ -112,7 +124,7 @@ public data class AddElements(val pageId: String, val elements: List<ElementData
         val previous = LinkedHashMap<DrawPage, MutableList<ElementData>>()
         var changed = false
         for ((i, data) in elements.withIndex()) {
-            val order = data.order ?: ElementOrder(stamp, i)
+            val order = data.order ?: ElementOrder.onTop(stamp, i)
             val found = document.findAnyElement(data.id, page)
             if (found == null) {
                 val element = local[data.id] ?: data.toElement(document.strokeModeller)
@@ -120,6 +132,7 @@ public data class AddElements(val pageId: String, val elements: List<ElementData
                 element.added = stamp
                 element.removed = null
                 element.placed = stamp
+                element.ordered = stamp
                 element.updated = stamp
                 if (element is DrawText && data is TextData) element.contentVersions = data.versions + stamp
                 page.add(element)
@@ -142,14 +155,15 @@ public data class AddElements(val pageId: String, val elements: List<ElementData
                 shown.add(data.id)
                 touched = true
             }
-            // Its placement and its content: the ones of this change, unless more recent ones
+            // Its placement, its order and its content: the ones of this change, unless more recent ones
             var holder = from
             var valuesChanged = false
             if (element.placed < stamp) {
-                context.place(from, element, data.placement(), page, order)
+                context.place(from, element, data.placement(), page)
                 holder = page
                 valuesChanged = true
             }
+            if (context.reorder(holder, element, order)) valuesChanged = true
             val contentChanged = when {
                 element is DrawText && data is TextData -> context.writeText(holder, element, data)
                 element.updated < stamp -> {
@@ -312,24 +326,46 @@ private fun ChangeContext.writeText(page: DrawPage, text: DrawText, data: TextDa
 }
 
 /**
- * Writes [placement] (if any) into [element] of the page [from], and moves it to the page [to] with
- * [order]: the placement of the change of this context.
+ * Writes [placement] (if any) into [element] of the page [from], and moves it to the page [to]:
+ * the placement of the change of this context. Its order stays (it is apart from the placement,
+ * see [DrawElement.ordered]): on another page it takes its place in the stack by its order, and a
+ * change putting it on top there goes with the move (see [ReorderElements.onTop]).
  */
-private fun ChangeContext.place(from: DrawPage, element: DrawElement, placement: Placement?, to: DrawPage, order: ElementOrder) {
+private fun ChangeContext.place(from: DrawPage, element: DrawElement, placement: Placement?, to: DrawPage) {
     val shown = element.removed == null
     if (shown) effects.dirty(from, from.boundsOf(element))
     placement?.applyTo(element)
-    if (from !== to || order != element.order) {
+    if (from !== to) {
         if (shown) from.remove(element) else from.removedElements.remove(element)
-        element.order = order
         if (shown) to.add(element) else to.removedElements.add(element)
     }
     element.placed = stamp
 }
 
 /**
- * Where an element is placed (absolute), and its stacking [order] on its page (`null`: on top,
- * the order of the change).
+ * Writes [order] into [element] of [page], the order of the change of this context, unless its
+ * order was changed by a more recent change; whether it did (the same order written again counts:
+ * the change is the most recent one now).
+ */
+private fun ChangeContext.reorder(page: DrawPage, element: DrawElement, order: ElementOrder): Boolean {
+    if (element.ordered >= stamp) return false
+    if (order != element.order) {
+        if (element.removed == null) {
+            page.remove(element)
+            element.order = order
+            page.add(element)
+        } else {
+            element.order = order
+        }
+    }
+    element.ordered = stamp
+    return true
+}
+
+/**
+ * Where an element is placed (absolute). [order] is no longer read: the order of an element is
+ * changed apart from its placement (see [ReorderElements]); the changes made before the order had
+ * its own register carry it.
  */
 @Serializable
 public sealed interface Placement {
@@ -397,16 +433,16 @@ public data class BoxPlacement(
 
 /** Where [element] is placed now (with its order), or `null` for an element not placed freely. */
 public fun placementOf(element: DrawElement): Placement? = when (element) {
-    is DrawStroke -> StrokePlacement(element.id, element.transform, element.order)
-    is DrawText -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation, element.fontSize, element.order, element.autoWidth)
-    is DrawImage -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation, order = element.order)
-    is DrawCustomElement -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation, order = element.order)
+    is DrawStroke -> StrokePlacement(element.id, element.transform)
+    is DrawText -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation, element.fontSize, autoWidth = element.autoWidth)
+    is DrawImage -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation)
+    is DrawCustomElement -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation)
     else -> null
 }
 
 /**
  * Places elements (of the page [pageId], or of the page another device moved them to) on the page
- * [toPageId]: moves, scales or rotates them, with their order (see [Placement.order]).
+ * [toPageId]: moves, scales or rotates them, their orders as they are (see [place]).
  */
 @Serializable
 @SerialName("placeElements")
@@ -415,28 +451,29 @@ public data class PlaceElements(
     val placements: List<Placement>,
     val toPageId: String = pageId
 ) : DocumentChange {
-    override fun stamps(): Sequence<Stamp> = placements.asSequence().mapNotNull { it.order?.stamp }
+    override fun stamps(): Sequence<Stamp> = placements.asSequence().mapNotNull { it.order?.legacyStamp }
+
+    override fun orders(): Sequence<ElementOrder> = placements.asSequence().mapNotNull { it.order }
 
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         val hint = document.anyPage(pageId)
         val to = document.anyPage(toPageId) ?: return null
-        // The elements to place, with their page, their new and their current placement (and
-        // their position in this change: their order on another page, the same on every device)
-        val targets = placements.withIndex().mapNotNull { (i, placement) ->
+        // The elements to place, with their page, their new and their current placement
+        val targets = placements.mapNotNull { placement ->
             val (from, element) = document.findAnyElement(placement.id, hint) ?: return@mapNotNull null
             if (element.placed >= context.stamp) return@mapNotNull null
             val current = placementOf(element) ?: return@mapNotNull null
             if ((current is StrokePlacement) != (placement is StrokePlacement)) return@mapNotNull null
-            Target(from, element, placement, current, i)
+            Target(from, element, placement, current)
         }
         if (targets.isEmpty()) {
             context.contentChanged(to, null)
             return null
         }
 
-        for ((from, element, placement, _, i) in targets) {
-            context.place(from, element, placement, to, placement.order ?: ElementOrder(context.stamp, i))
+        for ((from, element, placement) in targets) {
+            context.place(from, element, placement, to)
             context.effects.saved(to, element)
         }
         // Back to the page each one came from
@@ -448,32 +485,84 @@ public data class PlaceElements(
         val from: DrawPage,
         val element: DrawElement,
         val placement: Placement,
-        val current: Placement,
-        val index: Int
+        val current: Placement
     )
+}
+
+/** An element and its new order (`null`: on top, the order of the change; see [ReorderElements]). */
+@Serializable
+public data class ElementOrdering(val id: String, val order: ElementOrder? = null)
+
+/**
+ * Changes the order of elements (of the page [pageId], or of the page another device moved them
+ * to) in the stack of their page: each one takes its order (see [ElementOrdering]) unless its
+ * order was changed by a more recent change. Undone by their previous orders.
+ */
+@Serializable
+@SerialName("reorderElements")
+public data class ReorderElements(val pageId: String, val orders: List<ElementOrdering>) : DocumentChange {
+    override fun stamps(): Sequence<Stamp> = orders.asSequence().mapNotNull { it.order?.legacyStamp }
+
+    override fun orders(): Sequence<ElementOrder> = orders.asSequence().mapNotNull { it.order }
+
+    override fun applyTo(context: ChangeContext): DocumentChange? {
+        val document = context.document
+        val hint = document.anyPage(pageId)
+        val previous = LinkedHashMap<DrawPage, MutableList<ElementOrdering>>()
+        for ((i, entry) in orders.withIndex()) {
+            val (page, element) = document.findAnyElement(entry.id, hint) ?: continue
+            val before = element.order
+            if (!context.reorder(page, element, entry.order ?: ElementOrder.onTop(context.stamp, i))) continue
+            previous.getOrPut(page) { mutableListOf() }.add(ElementOrdering(element.id, before))
+            context.effects.saved(page, element)
+        }
+        val inverses = previous.map { (page, old) -> ReorderElements(page.id, old) }
+        val inverse = if (inverses.size <= 1) inverses.singleOrNull() else CompositeChange(inverses)
+        // The page of the change, whatever the devices found (the same versions on every device)
+        hint?.let { context.contentChanged(it, inverse) }
+        return inverse
+    }
+
+    public companion object {
+        /**
+         * The change moving the elements [ids] of [page] in its stack by [move] (see [StackMove]),
+         * as a block keeping their order among themselves: the fewest elements take a new order.
+         * `null` when nothing would change (e.g. already above everything they overlap).
+         */
+        public fun of(page: DrawPage, ids: Collection<String>, move: StackMove): ReorderElements? =
+            StackMoves.of(page, ids.toSet(), move)?.let { ReorderElements(page.id, it) }
+
+        /**
+         * Puts the elements [ids] (in this order) on top of the stack of the page [pageId]: e.g.
+         * with the move of elements to that page, in one change.
+         */
+        public fun onTop(pageId: String, ids: List<String>): ReorderElements = ReorderElements(pageId, ids.map { ElementOrdering(it) })
+    }
 }
 
 /**
  * Replaces text blocks (of the page [pageId], or of the page another device moved them to): their
- * content and their placement on the page [pageId].
+ * content and their placement on the page [pageId], their orders as they are (see [place]).
  */
 @Serializable
 @SerialName("updateTexts")
 public data class UpdateTexts(val pageId: String, val texts: List<TextData>) : DocumentChange {
     override fun stamps(): Sequence<Stamp> = texts.asSequence().flatMap { it.stamps() }
 
+    override fun orders(): Sequence<ElementOrder> = texts.asSequence().mapNotNull { it.order }
+
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         val page = document.anyPage(pageId) ?: return null
         val previous = LinkedHashMap<DrawPage, MutableList<TextData>>()
-        for ((i, data) in texts.withIndex()) {
+        for (data in texts) {
             val (from, element) = document.findAnyElement(data.id, page) ?: continue
             val text = element as? DrawText ?: continue
             val before = text.toData()
             var holder = from
             var changed = false
             if (text.placed < context.stamp) {
-                context.place(from, text, data.placement(), page, data.order ?: ElementOrder(context.stamp, i))
+                context.place(from, text, data.placement(), page)
                 holder = page
                 changed = true
             }
@@ -561,6 +650,8 @@ public data class AddPage(val page: PageData) : DocumentChange {
 
     override fun stamps(): Sequence<Stamp> = page.elements.asSequence().flatMap { it.stamps() }
 
+    override fun orders(): Sequence<ElementOrder> = page.elements.asSequence().mapNotNull { it.order }
+
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         val existing = document.anyPage(page.id)
@@ -587,9 +678,10 @@ public data class AddPage(val page: PageData) : DocumentChange {
         newPage.orderVersion = context.stamp
         newPage.formatVersion = context.stamp
         for ((i, element) in newPage.elements().withIndex()) {
-            if (element.order == ElementOrder.UNASSIGNED) element.order = ElementOrder(context.stamp, i)
+            if (element.order == ElementOrder.UNASSIGNED) element.order = ElementOrder.onTop(context.stamp, i)
             element.added = context.stamp
             element.placed = context.stamp
+            element.ordered = context.stamp
             element.updated = context.stamp
             if (element is DrawText) element.contentVersions += context.stamp
         }
@@ -789,6 +881,8 @@ public data class CompositeChange(val changes: List<DocumentChange>) : DocumentC
     override fun prepare(modeller: StrokeModeller): Unit = changes.forEach { it.prepare(modeller) }
 
     override fun stamps(): Sequence<Stamp> = changes.asSequence().flatMap { it.stamps() }
+
+    override fun orders(): Sequence<ElementOrder> = changes.asSequence().flatMap { it.orders() }
 
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val inverses = changes.mapNotNull { it.applyTo(context) }

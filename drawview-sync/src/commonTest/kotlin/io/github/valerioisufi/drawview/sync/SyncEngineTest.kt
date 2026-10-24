@@ -1109,7 +1109,7 @@ class SyncEngineTest {
         // Saying it included a change of Ada made after it, or with an order after it: refused
         for (change in listOf(
             UpdateTexts(page.data.id, listOf(text.copy(text = "particles", versions = Versions(mapOf(adaReplica to after))))),
-            PlaceElements(page.data.id, listOf(BoxPlacement(text.id, 1f, 2f, 40f, 10f, 0f, order = ElementOrder(after, 0))))
+            PlaceElements(page.data.id, listOf(BoxPlacement(text.id, 1f, 2f, 40f, 10f, 0f, order = ElementOrder.onTop(after, 0))))
         )) {
             val channel = impostor(bob, ada, document.id)
             channel.send(SyncCodec.encode(Operations(listOf(forged(document.id, key, bobReplica, 1, change, bob.identity, stamp)))))

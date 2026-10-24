@@ -4,9 +4,11 @@ import androidx.room.Room
 import androidx.room.testing.MigrationTestHelper
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
+import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.change.OperationId
 import io.github.valerioisufi.drawview.store.room.db.DRAW_DATABASE_MIGRATIONS
 import io.github.valerioisufi.drawview.store.room.db.Migration18To19
+import io.github.valerioisufi.drawview.store.room.db.Migration19To20
 import io.github.valerioisufi.drawview.store.room.db.DrawDatabase
 import io.github.valerioisufi.drawview.store.room.db.createDrawDatabase
 import java.nio.file.Files
@@ -17,7 +19,8 @@ import kotlinx.serialization.json.Json
 
 /**
  * The migrations of the database: a database of every version from 16 keeps its documents and its
- * preferences, a database without a migration is not opened (and not dropped).
+ * preferences (its pages their look), a database without a migration is not opened (and not
+ * dropped).
  */
 class DrawDatabaseMigrationTest {
 
@@ -111,6 +114,69 @@ class DrawDatabaseMigrationTest {
     }
 
     @Test
+    fun theElementsOfVersion19KeepTheirStackAndGetTheirOrderRegister() = runTest {
+        // An element of every kind, stamped so that the stamps mix the kinds: the newest is a
+        // PDF page, the oldest a stroke (each kind was painted in its layer)
+        fun order(time: Long) = "${stamp(time)}/00000000"
+        helper.createDatabase(19).use { connection ->
+            connection.execSQL(
+                "INSERT INTO documents (id, name, folderId, createdAt, modifiedAt, lastOpenedAt, defaultBackground, " +
+                    "defaultWidth, defaultHeight, defaultsVersion, titleVersion) VALUES ('$DOCUMENT', 'Lectures', NULL, " +
+                    "1, 2, NULL, '{\"type\":\"Solid\"}', 210.0, 297.0, '$STAMP', '$STAMP')"
+            )
+            connection.execSQL(
+                "INSERT INTO pages (id, documentId, orderKey, width, height, background, added, removed, orderVersion, " +
+                    "formatVersion, contentVersions, removalSaw) VALUES ('$PAGE', '$DOCUMENT', 'k', 210.0, 297.0, NULL, " +
+                    "'$STAMP', NULL, '$STAMP', '$STAMP', '', NULL)"
+            )
+            connection.execSQL(
+                "INSERT INTO strokes (id, pageId, orderKey, color, size, toolType, brushFamily, inputs, transform, added, " +
+                    "removed, placed, updated) VALUES ('stroke', '$PAGE', '${order(100)}', -16777216, 0.5, 'STYLUS', " +
+                    "'PRESSURE_PEN', X'', '1.0,0.0,0.0,1.0,0.0,0.0', '${stamp(100)}', NULL, '${stamp(150)}', '${stamp(100)}')"
+            )
+            connection.execSQL(
+                "INSERT INTO texts (id, pageId, orderKey, text, x, y, width, height, rotation, color, fontSize, alignment, " +
+                    "autoWidth, added, removed, placed, updated, contentVersions) VALUES ('text', '$PAGE', '${order(200)}', " +
+                    "'waves', 0.0, 0.0, 40.0, 10.0, 0.0, -16777216, 16.0, 'START', 0, '${stamp(200)}', NULL, '${stamp(200)}', " +
+                    "'${stamp(200)}', '')"
+            )
+            connection.execSQL(
+                "INSERT INTO images (id, pageId, orderKey, resourceId, x, y, width, height, rotation, added, removed, " +
+                    "placed, updated) VALUES ('image', '$PAGE', '${order(500)}', 'r', 0.0, 0.0, 20.0, 20.0, 0.0, " +
+                    "'${stamp(500)}', NULL, '${stamp(500)}', '${stamp(500)}')"
+            )
+            connection.execSQL(
+                "INSERT INTO custom_elements (id, pageId, orderKey, type, version, payload, x, y, width, height, rotation, " +
+                    "added, removed, placed, updated) VALUES ('custom', '$PAGE', '${order(300)}', 'com.example.shape', 1, " +
+                    "X'', 0.0, 0.0, 20.0, 20.0, 0.0, '${stamp(300)}', NULL, '${stamp(300)}', '${stamp(300)}')"
+            )
+            connection.execSQL(
+                "INSERT INTO pdfs (id, pageId, orderKey, resourceId, pdfPageIndex, added, removed, placed, updated) " +
+                    "VALUES ('pdf', '$PAGE', '${order(600)}', 'r', 0, '${stamp(600)}', NULL, '${stamp(600)}', '${stamp(600)}')"
+            )
+            connection.execSQL(
+                "INSERT INTO text_markups (id, pageId, orderKey, resourceId, pdfPageIndex, pdfWidth, pdfHeight, startIndex, " +
+                    "endIndex, text, rects, kind, color, added, removed, placed, updated) VALUES ('markup', '$PAGE', " +
+                    "'${order(50)}', 'r', 0, 595.0, 842.0, 0, 4, 'wave', '[0.0,0.0,10.0,10.0]', 'HIGHLIGHT', 0, " +
+                    "'${stamp(50)}', NULL, '${stamp(50)}', '${stamp(50)}')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(20, listOf(Migration19To20)).close()
+
+        val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
+        try {
+            val page = assertNotNull(RoomDocumentStore(database).loadDocument(DOCUMENT)).pages.single()
+            // The look it had: each kind in its layer
+            assertEquals(listOf("pdf", "markup", "image", "custom", "text", "stroke"), page.snapshotContent().paintOrder.map { it.id })
+            for (element in page.elements()) assertEquals(element.placed, element.ordered, element.id)
+            assertEquals(stamp(150), page.find("stroke")?.ordered)
+        } finally {
+            database.close()
+        }
+    }
+
+    @Test
     fun aDatabaseWithoutItsMigrationIsKept() = runTest {
         BundledSQLiteDriver().open(databaseFile.toString()).use { connection ->
             connection.execSQL("CREATE TABLE notes (text TEXT)")
@@ -134,6 +200,8 @@ class DrawDatabaseMigrationTest {
     }
 
     private companion object {
+        fun stamp(time: Long) = Stamp(time, 0, "a10804a2-6191-46be-950d-3394ba97cfef")
+
         const val DOCUMENT = "eb419115-8ec7-4602-a552-75bfebb25f5e"
         const val PAGE = "ba66823c-4af6-40d2-bfa6-aa0f907b5d1d"
         const val STAMP = "01a11f9462ac.00000000.a10804a2-6191-46be-950d-3394ba97cfef"

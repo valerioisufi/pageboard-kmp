@@ -38,15 +38,17 @@ import kotlinx.serialization.Serializable
 /**
  * An element of a page: a stroke, a text block, an image, a PDF page or a mark of its text.
  *
- * [id] identifies the element on every device (see [newElementId]); [order] is its stacking
- * order among the elements of its kind on its page. Each piece of an element is changed by the
- * most recent change of it on every device (last-writer-wins), whatever the order the changes
- * arrive in:
+ * [id] identifies the element on every device (see [newElementId]); [order] is its position in
+ * the stack of its page (see [DrawPage.stack]), an order written before the one stack read in
+ * the layer of its kind (see [ElementOrder]). Each piece of an element is changed by the most
+ * recent change of it on every device (last-writer-wins), whatever the order the changes arrive
+ * in:
  * - its presence: [added] and [removed] are the stamps of the last addition and of the last
  *   removal (removed when [removed] is set: kept hidden on its page, see
  *   [DrawPage.removedElements]);
- * - its placement (page, order, position, size, rotation): [placed] is the stamp of its last
- *   change;
+ * - its placement (page, position, size, rotation): [placed] is the stamp of its last change;
+ * - its order: [ordered] is the stamp of its last change (apart from the placement, so that a
+ *   move and a change of order made apart both stay);
  * - its content (a text and its format, the style of a mark): [updated] is the stamp of its last
  *   change.
  */
@@ -56,6 +58,7 @@ public sealed interface DrawElement {
     public var added: Stamp
     public var removed: Stamp?
     public var placed: Stamp
+    public var ordered: Stamp
     public var updated: Stamp
 }
 
@@ -74,9 +77,13 @@ public class DrawStroke(
     transform: AffineTransform = AffineTransform.IDENTITY
 ) : DrawElement {
     override var order: ElementOrder = ElementOrder.UNASSIGNED
+        set(value) {
+            field = value.inLayer(ElementOrder.STROKE_LAYER)
+        }
     override var added: Stamp = Stamp.ZERO
     override var removed: Stamp? = null
     override var placed: Stamp = Stamp.ZERO
+    override var ordered: Stamp = Stamp.ZERO
     override var updated: Stamp = Stamp.ZERO
 
     /** Geometry of the stroke as it was drawn. */
@@ -176,9 +183,13 @@ public interface RotatableItem {
  */
 public class DrawText(override val id: String = newElementId()) : RotatableItem, DrawElement {
     override var order: ElementOrder = ElementOrder.UNASSIGNED
+        set(value) {
+            field = value.inLayer(ElementOrder.TEXT_LAYER)
+        }
     override var added: Stamp = Stamp.ZERO
     override var removed: Stamp? = null
     override var placed: Stamp = Stamp.ZERO
+    override var ordered: Stamp = Stamp.ZERO
     override var updated: Stamp = Stamp.ZERO
 
     /**
@@ -240,9 +251,13 @@ public class DrawText(override val id: String = newElementId()) : RotatableItem,
  */
 public class DrawImage(override val id: String = newElementId()) : RotatableItem, DrawElement {
     override var order: ElementOrder = ElementOrder.UNASSIGNED
+        set(value) {
+            field = value.inLayer(ElementOrder.IMAGE_LAYER)
+        }
     override var added: Stamp = Stamp.ZERO
     override var removed: Stamp? = null
     override var placed: Stamp = Stamp.ZERO
+    override var ordered: Stamp = Stamp.ZERO
     override var updated: Stamp = Stamp.ZERO
     public var resourceId: String = ""
 
@@ -270,9 +285,13 @@ public class DrawCustomElement(
     override val id: String = newElementId()
 ) : RotatableItem, DrawElement {
     override var order: ElementOrder = ElementOrder.UNASSIGNED
+        set(value) {
+            field = value.inLayer(ElementOrder.CUSTOM_LAYER)
+        }
     override var added: Stamp = Stamp.ZERO
     override var removed: Stamp? = null
     override var placed: Stamp = Stamp.ZERO
+    override var ordered: Stamp = Stamp.ZERO
     override var updated: Stamp = Stamp.ZERO
 
     /** The format of [payload] ([ElementType.version] when it was written). */
@@ -289,6 +308,7 @@ public class DrawCustomElement(
 
     /** A copy of this element, the same on every device (e.g. a page copied while it is exported). */
     public fun copy(): DrawCustomElement = DrawCustomElement(type, id).also {
+        it.order = order
         it.version = version
         it.payload = payload
         it.x = x
@@ -307,9 +327,13 @@ public class DrawCustomElement(
  */
 public class DrawPdf(public var pdfPageIndex: Int = 0, override val id: String = newElementId()) : DrawElement {
     override var order: ElementOrder = ElementOrder.UNASSIGNED
+        set(value) {
+            field = value.inLayer(ElementOrder.PDF_LAYER)
+        }
     override var added: Stamp = Stamp.ZERO
     override var removed: Stamp? = null
     override var placed: Stamp = Stamp.ZERO
+    override var ordered: Stamp = Stamp.ZERO
     override var updated: Stamp = Stamp.ZERO
     public var resourceId: String = ""
 }
@@ -404,6 +428,13 @@ public class DrawPage(
     /** The elements of the kinds added by the applications ([ElementType]). */
     public val customElements: List<DrawCustomElement> get() = content.customs
 
+    /**
+     * The content of the page in its stack, from the bottom: the images, the elements of the
+     * applications, the texts and the strokes, by their order (see [stackOrder]). The PDF pages and
+     * the marks of their text are under it, apart (the paper).
+     */
+    public val stack: List<DrawElement> get() = content.stack
+
     /** Incremented on every content change (used by thumbnails and caches). */
     @Volatile public var contentVersion: Int = 0
         private set
@@ -437,17 +468,18 @@ public class DrawPage(
     }
 
     /**
-     * Adds [element] among the elements of its kind, in its stacking order (after the elements
-     * of the same order). An element without order (a page being built, outside of the changes)
-     * gets the next order of the elements built so, below the ones of the changes.
+     * Adds [element] among the elements of its kind, in its stacking order (see [stackOrder]). An
+     * element without order (a page being built, outside of the changes) gets the next order of
+     * the elements of its kind built so, below the ones of the changes.
      */
     public fun add(element: DrawElement) {
         fun <T : DrawElement> List<T>.inserted(item: T): List<T> {
             if (item.order == ElementOrder.UNASSIGNED) {
-                item.order = ElementOrder(Stamp.ZERO, count { it.order.stamp == Stamp.ZERO })
+                val layer = ElementOrder.layerOf(item)
+                item.order = ElementOrder.built(layer, count { ElementOrder.isBuilt(it.order, layer) })
             }
             var position = size
-            while (position > 0 && this[position - 1].order > item.order) position--
+            while (position > 0 && stackOrder.compare(this[position - 1], item) > 0) position--
             return toMutableList().apply { add(position, item) }
         }
         val c = content
@@ -513,8 +545,14 @@ public class DrawPage(
             widthMm = widthMm,
             heightMm = heightMm,
             markups = c.markups,
-            customs = c.customs
+            customs = c.customs,
+            stack = c.stack
         )
+    }
+
+    public companion object {
+        /** The order of the stack of a page: by order, then by identifier (the same orders made apart). */
+        public val stackOrder: Comparator<DrawElement> = compareBy<DrawElement>({ it.order }, { it.id })
     }
 }
 
@@ -526,7 +564,18 @@ private data class PageElements(
     val pdfs: List<DrawPdf> = emptyList(),
     val markups: List<DrawTextMarkup> = emptyList(),
     val customs: List<DrawCustomElement> = emptyList()
-)
+) {
+    /** The content in its stack (see [DrawPage.stack]), made once when it is read. */
+    val stack: List<DrawElement> by lazy { stackOf(images, customs, texts, strokes) }
+}
+
+/** [images], [customs], [texts] and [strokes] (each in its order) as one stack (see [DrawPage.stack]). */
+private fun stackOf(
+    images: List<DrawImage>,
+    customs: List<DrawCustomElement>,
+    texts: List<DrawText>,
+    strokes: List<DrawStroke>
+): List<DrawElement> = (images + customs + texts + strokes).sortedWith(DrawPage.stackOrder)
 
 /**
  * Immutable view of the content of a [DrawPage].
@@ -541,26 +590,36 @@ public class PageContentSnapshot(
     public val heightMm: Float,
     public val markups: List<DrawTextMarkup> = emptyList(),
     /** The elements of the kinds added by the applications. */
-    public val customs: List<DrawCustomElement> = emptyList()
+    public val customs: List<DrawCustomElement> = emptyList(),
+    /** The content in its stack (see [DrawPage.stack]); `null`: made from the lists of the kinds. */
+    stack: List<DrawElement>? = null
 ) {
     public fun rect(): Rect = Rect(0f, 0f, widthMm, heightMm)
 
+    /** The content in its stack, from the bottom (see [DrawPage.stack]). */
+    public val stack: List<DrawElement> = stack ?: stackOf(images, customs, texts, strokes)
+
     /**
      * The elements in the order they are painted, from the bottom: the PDF pages, the marks of
-     * their text, the images, the elements of the applications, the texts and the strokes (the
-     * writing over everything else), each kind in its stacking order.
+     * their text (the paper), then the content in its [stack].
      */
-    public val paintOrder: List<DrawElement> get() = pdfs + markups + images + customs + texts + strokes
+    public val paintOrder: List<DrawElement> get() = pdfs + markups + stack
 
     /**
      * A copy of this content whose elements are copies too: the elements of a page are changed in
      * place, this copy stays as it is (e.g. while a document is exported).
      */
     public fun detached(): PageContentSnapshot = PageContentSnapshot(
-        strokes = strokes.map { DrawStroke(it.id, it.baseMesh, it.baseBrush, it.transform) },
-        texts = texts.map { text -> DrawText(text.id).also { it.copyFrom(text) } },
+        strokes = strokes.map { stroke -> DrawStroke(stroke.id, stroke.baseMesh, stroke.baseBrush, stroke.transform).also { it.order = stroke.order } },
+        texts = texts.map { text ->
+            DrawText(text.id).also {
+                it.copyFrom(text)
+                it.order = text.order
+            }
+        },
         images = images.map { image ->
             DrawImage(image.id).also {
+                it.order = image.order
                 it.resourceId = image.resourceId
                 it.x = image.x
                 it.y = image.y
@@ -569,12 +628,20 @@ public class PageContentSnapshot(
                 it.rotation = image.rotation
             }
         },
-        pdfs = pdfs.map { pdf -> DrawPdf(pdf.pdfPageIndex, pdf.id).also { it.resourceId = pdf.resourceId } },
+        pdfs = pdfs.map { pdf ->
+            DrawPdf(pdf.pdfPageIndex, pdf.id).also {
+                it.resourceId = pdf.resourceId
+                it.order = pdf.order
+            }
+        },
         background = background,
         widthMm = widthMm,
         heightMm = heightMm,
-        markups = markups.map {
-            DrawTextMarkup(it.id, it.resourceId, it.pdfPageIndex, it.pdfWidthPt, it.pdfHeightPt, it.startIndex, it.endIndex, it.text, it.rects, it.kind, it.color)
+        markups = markups.map { markup ->
+            DrawTextMarkup(
+                markup.id, markup.resourceId, markup.pdfPageIndex, markup.pdfWidthPt, markup.pdfHeightPt, markup.startIndex, markup.endIndex,
+                markup.text, markup.rects, markup.kind, markup.color
+            ).also { it.order = markup.order }
         },
         customs = customs.map { it.copy() }
     )
@@ -761,7 +828,7 @@ public class DrawDocument(
                 sequenceOf(page.added, page.removed ?: Stamp.ZERO, page.orderVersion, page.formatVersion) +
                     // The changes that changed nothing are among the versions only
                     page.contentVersions.stamps.values + (page.elements() + page.removedElements).asSequence().flatMap {
-                        sequenceOf(it.added, it.removed ?: Stamp.ZERO, it.placed, it.updated, it.order.stamp) +
+                        sequenceOf(it.added, it.removed ?: Stamp.ZERO, it.placed, it.ordered, it.updated) +
                             ((it as? DrawText)?.contentVersions?.stamps?.values ?: emptyList())
                     }
             }

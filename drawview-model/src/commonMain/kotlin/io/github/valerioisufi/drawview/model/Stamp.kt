@@ -46,36 +46,3 @@ internal object StampSerializer : KSerializer<Stamp> {
     override fun serialize(encoder: Encoder, value: Stamp) = encoder.encodeString(value.toString())
     override fun deserialize(decoder: Decoder): Stamp = Stamp.parse(decoder.decodeString()) ?: Stamp.ZERO
 }
-
-/**
- * The stacking order of an element on its page: the stamp of the change that put it there and
- * its position in that change (elements added or moved later are on top). The same on every
- * device; written as `stamp/index` (text order = stacking order).
- */
-@Serializable(with = ElementOrderSerializer::class)
-public data class ElementOrder(val stamp: Stamp, val index: Int) : Comparable<ElementOrder> {
-    override fun compareTo(other: ElementOrder): Int =
-        compareValuesBy(this, other, { it.stamp }, { it.index })
-
-    override fun toString(): String = "$stamp/" + index.toString(16).padStart(8, '0')
-
-    public companion object {
-        /** The order of an element not on a page yet (assigned when it is added). */
-        public val UNASSIGNED: ElementOrder = ElementOrder(Stamp.ZERO, -1)
-
-        public fun parse(text: String): ElementOrder? {
-            val slash = text.lastIndexOf('/')
-            if (slash < 0) return null
-            val stamp = Stamp.parse(text.substring(0, slash)) ?: return null
-            val index = text.substring(slash + 1).toIntOrNull(16) ?: return null
-            return ElementOrder(stamp, index)
-        }
-    }
-}
-
-internal object ElementOrderSerializer : KSerializer<ElementOrder> {
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("ElementOrder", PrimitiveKind.STRING)
-    override fun serialize(encoder: Encoder, value: ElementOrder) = encoder.encodeString(value.toString())
-    override fun deserialize(decoder: Decoder): ElementOrder = ElementOrder.parse(decoder.decodeString()) ?: ElementOrder.UNASSIGNED
-}
-

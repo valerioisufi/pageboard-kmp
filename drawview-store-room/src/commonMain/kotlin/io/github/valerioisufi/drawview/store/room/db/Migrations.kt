@@ -26,7 +26,7 @@ import kotlinx.serialization.json.putJsonObject
  */
 
 /** The migrations from version 16 to [DrawDatabase]'s version. */
-internal val DRAW_DATABASE_MIGRATIONS: Array<Migration> = arrayOf(Migration16To17, Migration17To18, Migration18To19)
+internal val DRAW_DATABASE_MIGRATIONS: Array<Migration> = arrayOf(Migration16To17, Migration17To18, Migration18To19, Migration19To20)
 
 /** 17: the elements of the types added by the applications. */
 internal object Migration16To17 : Migration(16, 17) {
@@ -133,5 +133,19 @@ internal object Migration18To19 : Migration(18, 19) {
                 "`sequence` INTEGER NOT NULL, `proof` BLOB NOT NULL, PRIMARY KEY(`documentId`, `replica`, `sequence`), " +
                 "FOREIGN KEY(`documentId`) REFERENCES `documents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
         )
+    }
+}
+
+/**
+ * 20: the order of every element has its own register (`ordered`, see `DrawElement.ordered`): the
+ * stamp of its placement, which held its order until then. The orders themselves are kept as they
+ * are (an element reads them in the layer of its kind, see `ElementOrder`).
+ */
+internal object Migration19To20 : Migration(19, 20) {
+    override fun migrate(connection: SQLiteConnection) {
+        for (table in listOf("strokes", "texts", "images", "custom_elements", "pdfs", "text_markups")) {
+            connection.execSQL("ALTER TABLE `$table` ADD COLUMN `ordered` TEXT NOT NULL DEFAULT ''")
+            connection.execSQL("UPDATE `$table` SET `ordered` = `placed`")
+        }
     }
 }

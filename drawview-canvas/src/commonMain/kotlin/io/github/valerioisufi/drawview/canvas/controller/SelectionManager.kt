@@ -20,9 +20,11 @@ import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.BoxPlacement
 import io.github.valerioisufi.drawview.model.change.ChangeEffects
+import io.github.valerioisufi.drawview.model.change.CompositeChange
 import io.github.valerioisufi.drawview.model.change.PlaceElements
 import io.github.valerioisufi.drawview.model.change.Placement
 import io.github.valerioisufi.drawview.model.change.RemoveElements
+import io.github.valerioisufi.drawview.model.change.ReorderElements
 import io.github.valerioisufi.drawview.model.change.StrokePlacement
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.model.change.placementOf
@@ -431,10 +433,9 @@ public class SelectionManager(private val controller: DrawViewController) {
         // --- The new placements (on another page, on top of its elements) ---
         val scale = finalTransform.scaleFactor
         val angle = finalTransform.rotationDegrees
-        fun orderOf(element: DrawElement) = element.order.takeIf { newPage === oldPage }
         val placements = mutableListOf<Placement>()
         for (stroke in selection.strokes) {
-            placements.add(StrokePlacement(stroke.id, stroke.transform.then(finalTransform), orderOf(stroke)))
+            placements.add(StrokePlacement(stroke.id, stroke.transform.then(finalTransform)))
         }
         for (text in selection.texts) {
             val c = finalTransform.mapPoint(text.centerX, text.centerY)
@@ -442,7 +443,7 @@ public class SelectionManager(private val controller: DrawViewController) {
             val height = text.height * scale
             placements.add(
                 BoxPlacement(
-                    text.id, c.x - width / 2f, c.y - height / 2f, width, height, (text.rotation + angle) % 360f, text.fontSize * scale, orderOf(text),
+                    text.id, c.x - width / 2f, c.y - height / 2f, width, height, (text.rotation + angle) % 360f, text.fontSize * scale,
                     // A width set by its handles no longer follows the text
                     autoWidth = text.autoWidth && !textResized
                 )
@@ -452,7 +453,7 @@ public class SelectionManager(private val controller: DrawViewController) {
             val c = finalTransform.mapPoint(item.centerX, item.centerY)
             val width = item.width * scale
             val height = item.height * scale
-            placements.add(BoxPlacement(item.id, c.x - width / 2f, c.y - height / 2f, width, height, (item.rotation + angle) % 360f, order = orderOf(item as DrawElement)))
+            placements.add(BoxPlacement(item.id, c.x - width / 2f, c.y - height / 2f, width, height, (item.rotation + angle) % 360f))
         }
         // A text resized live goes back to where the change starts from (its undo)
         if (textResized) {
@@ -461,7 +462,10 @@ public class SelectionManager(private val controller: DrawViewController) {
                 text.x = it.x; text.y = it.y; text.width = it.width; text.height = it.height
             }
         }
-        controller.session.submit(PlaceElements(oldPage.id, placements, newPage.id))
+        val move = PlaceElements(oldPage.id, placements, newPage.id)
+        // On another page: on top of its elements, in their order
+        val ids = selection.elements().sortedWith(DrawPage.stackOrder).map { it.id }
+        controller.session.submit(if (newPage === oldPage) move else CompositeChange(listOf(move, ReorderElements.onTop(newPage.id, ids))))
         selection.pageIndex = doc.pages.indexOf(newPage)
 
         // --- New frame ---

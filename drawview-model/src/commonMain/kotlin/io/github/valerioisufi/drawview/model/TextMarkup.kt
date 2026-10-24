@@ -47,9 +47,13 @@ public class DrawTextMarkup(
     color: Int
 ) : DrawElement {
     override var order: ElementOrder = ElementOrder.UNASSIGNED
+        set(value) {
+            field = value.inLayer(ElementOrder.MARKUP_LAYER)
+        }
     override var added: Stamp = Stamp.ZERO
     override var removed: Stamp? = null
     override var placed: Stamp = Stamp.ZERO
+    override var ordered: Stamp = Stamp.ZERO
     override var updated: Stamp = Stamp.ZERO
 
     @Volatile

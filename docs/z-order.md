@@ -118,7 +118,7 @@ Variations).
 | Keeping the order register (stored, snapshot) | the Room entities and `Migration19To20`, `ElementVersions.ordered` (`KeyValueDocumentStore`, snapshots) | Information Expert |
 | The use case "arrange the selection": submitting the change, keeping the selection | `SelectionManager.arrange`, `canArrange` (`drawview-canvas`) | Controller |
 | The selection at its level, lifted during a gesture, drawn until the tiles hold it again | `SelectionGroup.lifted`, `SelectionManager` (lift, settle), `TileManager.isRegionCurrent` | Information Expert, Low Coupling |
-| The element under a point, the topmost in the stack | `DrawPage.topmostAt` (the canvas asking with its hit tests) | Information Expert |
+| The element under a point, the topmost in the stack | `DrawPage.stack` (the canvas taking the last one its hit test finds) | Information Expert |
 | The four commands, their shortcuts, menu and icons | `EditorCommands` (`CommandGroup.ARRANGE`), `SelectionActionBar`, `CanvasContextMenu` | Controller, Polymorphism (the presenters of `Command`) |
 
 ### Keys
@@ -148,11 +148,12 @@ characters, never ending with `!`:
 ### The order register
 
 `DrawElement.ordered` is the stamp of the last change of its order. `ReorderElements` writes the
-order of the elements it names whose `ordered` is older, `AddElements` and `AddPage` write it with
-the elements they add or put back, `PlaceElements` and `UpdateTexts` write it only when they move
-an element to another page (on top there, or at the order the change gives). A move on the same
-page and an edit of a text leave the order alone. The elements stored before get `ordered` =
-`placed` (Room migration, snapshots without it): for them nothing changes.
+order of the elements it names whose `ordered` is older; `AddElements` and `AddPage` write it with
+the elements they add or put back. `PlaceElements` and `UpdateTexts` never write it, a move to
+another page included: the editor sends that move with a `ReorderElements.onTop` of the page it
+goes to, in one change (writing the order only when the element changes page would depend on
+where the element is on each device, and the devices would part). The elements stored before get
+`ordered` = `placed` (Room migration, snapshots without it): for them nothing changes.
 
 ### Stack moves
 
@@ -176,22 +177,73 @@ elements.
   (`TileManager.isRegionCurrent`), so that it never disappears for a frame. The bake of
   `clearSelection` is no longer needed.
 * The overlay draws the selected elements (lifted) in the order of the stack.
-* A long press takes the topmost element under it (`DrawPage.topmostAt`).
+* A long press takes the topmost element under it (the last one of `DrawPage.stack`).
 * Pasted elements keep their order among themselves.
 
 ## Plan
 
 | Phase | Content | Status |
 |---|---|---|
-| 1 | Model: `ElementOrder` keys (layers of the orders before, on top, between, bounds, form), the stack of a page and `paintOrder`, the register `ordered` and `ElementVersions.ordered`, `ReorderElements` with `StackMove`, `PlaceElements` and `UpdateTexts` writing the order on a change of page only, `admits` checking the orders, `latestStamp`; tests (the look of the pages before, keys between their bounds, moves of a selection, undo, a move and a reorder apart, refused orders); ABI of `drawview-model` | Planned |
-| 2 | Stores: Room 20 (`ordered` in the tables of the elements, `Migration19To20` tested with `MigrationTestHelper` on a database of version 19 holding every kind: same stack, `ordered` = `placed`), the key-value store (a document stored before keeps its look and gets `ordered` = `placed`) | Planned |
-| 3 | Sync: `ProtocolFormatTest` recorded again under version 1, `ConvergenceTest` with reorders (front, back, between, made apart with moves), `docs/collaboration.md`; the tests of the sync modules on the iOS simulator | Planned |
-| 4 | Canvas: the paint order of the tiles and of the overlay, the selection at its level and lifted during a gesture, `isRegionCurrent`, the topmost element under a long press, `SelectionManager.arrange` and `canArrange`, the order of pasted elements; tests; ABI of `drawview-canvas` | Planned |
-| 5 | Interface: the four commands and `CommandGroup.ARRANGE` (menu bar, shortcuts, tooltips), the button and its menu in the selection bar, the context menu of a selection, the icons, the strings in the 7 languages; tests of the commands, screenshots; ABI of `drawview-ui`; the desktop application on a scratch directory | Planned |
+| 1 | The order of the model, stored and synchronized: `ElementOrder` keys (layers of the orders before, on top, between, bounds, form), the stack of a page and `paintOrder`, the register `ordered` and `ElementVersions.ordered`, `ReorderElements` with `StackMove`, moves and texts leaving the order, `admits` checking the orders, `latestStamp`; Room 20 (`Migration19To20` tested with `MigrationTestHelper`), the key-value store; `ProtocolFormatTest` recorded again under version 1, `ConvergenceTest` with reorders, `docs/collaboration.md`; the editor putting what it moves to another page on top there; tests (the look of the pages before, keys between their bounds, moves of a selection, undo, a move and a reorder apart, refused orders), the sync modules on the iOS simulator; ABI of `drawview-model` | Done |
+| 2 | Canvas: the paint order of the tiles and of the overlay, the selection at its level and lifted during a gesture, `isRegionCurrent`, the topmost element under a long press, `SelectionManager.arrange` and `canArrange`, the order of pasted elements; tests; ABI of `drawview-canvas` | Planned |
+| 3 | Interface: the four commands and `CommandGroup.ARRANGE` (menu bar, shortcuts, tooltips), the button and its menu in the selection bar, the context menu of a selection, the icons, the strings in the 7 languages; tests of the commands, screenshots; ABI of `drawview-ui`; the desktop application on a scratch directory | Planned |
+
+The model, its stores and the format of what travels change together: a phase stores and sends
+the register it adds, so that its checks pass.
 
 The format of what travels changes (keys, `reorderElements`, `ElementVersions.ordered`): it is a
 change of the protocol, recorded again under version 1 as agreed (the two devices of the user
 updated together, after a last synchronization).
+
+### Phase 1 results
+
+* `ElementOrder` (`drawview-model`) is a key of printable ASCII compared as text (`key`, at most
+  `MAX_LENGTH` = 256 characters): `parse` (a malformed text is no order), `onTop(stamp, index)`
+  (`V`, the stamp, the position), `between(below, above[, count])` (base 94, by halves), and
+  internally `inLayer` (an order `stamp/index` written before read as the letter of its kind
+  followed by it: `P` PDF pages, `Q` marks, `R` images, `S` elements of the applications, `T`
+  texts, `U` strokes), `built` (a page built outside of the changes, as it always was),
+  `spread` (a stack keyed again), `isWellFormed`, `isNotAfter(stamp)`. Every element reads its
+  order in its layer when it is set.
+* `DrawPage.stack` (the images, the elements of the applications, the texts and the strokes by
+  `DrawPage.stackOrder`: order, then id), made once per content; `PageContentSnapshot.stack` and
+  `paintOrder` = PDF pages + marks + stack, so the tiles, the thumbnails and the PDF export paint
+  the stack; `detached` keeps the orders.
+* The register `DrawElement.ordered`, in `latestStamp` (instead of the stamps of the orders), in
+  the snapshots (`ElementVersions.ordered`, `null` read as `placed`).
+* `ReorderElements(pageId, orders: List<ElementOrdering>)`: each element takes its order (`null`:
+  on top, the order of the change) when its `ordered` is older, its previous orders as its
+  inverse; the page of the change is versioned whatever the devices find, as `PlaceElements`.
+  `ReorderElements.of(page, ids, StackMove)` (`StackMoves`, Pure Fabrication) moves a selection
+  as a block past what its bounds overlap, `null` when nothing would change, the stack keyed again
+  when the keys would be too long; `ReorderElements.onTop(pageId, ids)`.
+* `PlaceElements`, `UpdateTexts` (and `AddElements` placing an element again) never change the
+  order; `placementOf` no longer gives one. `AddElements` writes the register of the elements it
+  adds or puts back. The first run of `ConvergenceTest` with reorders found that writing the order
+  only on a change of page made the devices part (where an element is differs between devices
+  while changes travel): a move to another page now goes with `ReorderElements.onTop`, as the
+  editor sends it (`SelectionManager.applyTransformation`).
+* `DocumentChange.orders()`: `DocumentSession.admits` refuses an operation carrying a malformed
+  order, or one after the greatest key of its stamp (`V` + stamp + `/~`); an order written before
+  keeps the check of its stamp (`stamps()`).
+* Room 20: the column `ordered` in the six tables of the elements, `Migration19To20` (the column
+  added, filled with `placed`); `DrawDatabaseMigrationTest` checks on a database of version 19
+  holding every kind, with stamps mixing the kinds, that the page is painted as before and that
+  every element gets `ordered` = `placed`. The key-value store reads a document stored before (its
+  orders `stamp/index`, no register) with the same stack and `ordered` = `placed`.
+* `ProtocolFormatTest` recorded again under version 1: `reorderElements`, `ElementOrdering`,
+  `ElementVersions.ordered`. `ConvergenceTest` makes reorders (the four moves, keys between two
+  made apart, moves to another page put on top) and compares the register: 30 seeds of 150 steps
+  in the build, verified on 600 seeds of 300 steps.
+* Tests: `ElementOrderTest` (a page written before keeps its look, a page built keeps its layers,
+  a new element on top of everything, keys between their bounds on 3000 random cases, on top above
+  the keys before it, the versions before reading every new key as no order, malformed keys, the
+  stack keyed again), `StackMoveTest` (forward, backward, front, back, blocks, moves that change
+  nothing, undo, the same moves on two devices, the same key made apart, a move and a reorder
+  apart both kept, undo leaving the move of another device, an edit of a text keeping its order,
+  a move to another page, the orders received checked). ABI of `drawview-model` recorded again on
+  purpose: `ElementOrder` replaced, `ReorderElements`, `ElementOrdering`, `StackMove`,
+  `DrawElement.ordered`, `DrawPage.stack`, `PageContentSnapshot.stack`, `DocumentChange.orders`.
 
 ## Decisions
 

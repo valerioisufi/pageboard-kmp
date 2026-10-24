@@ -120,6 +120,8 @@ internal data class StrokeEntity(
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,
+    /** The stamp of the last change of its order (see `DrawElement.ordered`). */
+    val ordered: Stamp,
     val updated: Stamp
 ) {
     override fun equals(other: Any?): Boolean {
@@ -128,7 +130,7 @@ internal data class StrokeEntity(
         return id == other.id && pageId == other.pageId && orderKey == other.orderKey && color == other.color &&
             size == other.size && toolType == other.toolType && brushFamily == other.brushFamily &&
             inputs.contentEquals(other.inputs) && transform == other.transform && added == other.added &&
-            removed == other.removed && placed == other.placed && updated == other.updated
+            removed == other.removed && placed == other.placed && ordered == other.ordered && updated == other.updated
     }
 
     override fun hashCode(): Int {
@@ -175,6 +177,8 @@ internal data class TextEntity(
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,
+    /** The stamp of the last change of its order (see `DrawElement.ordered`). */
+    val ordered: Stamp,
     val updated: Stamp,
     val contentVersions: Versions = Versions.NONE
 )
@@ -204,6 +208,8 @@ internal data class ImageEntity(
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,
+    /** The stamp of the last change of its order (see `DrawElement.ordered`). */
+    val ordered: Stamp,
     val updated: Stamp
 )
 
@@ -238,6 +244,8 @@ internal class CustomElementEntity(
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,
+    /** The stamp of the last change of its order (see `DrawElement.ordered`). */
+    val ordered: Stamp,
     val updated: Stamp
 )
 
@@ -262,6 +270,8 @@ internal data class PdfEntity(
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,
+    /** The stamp of the last change of its order (see `DrawElement.ordered`). */
+    val ordered: Stamp,
     val updated: Stamp
 )
 
@@ -301,6 +311,8 @@ internal data class TextMarkupEntity(
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,
+    /** The stamp of the last change of its order (see `DrawElement.ordered`). */
+    val ordered: Stamp,
     val updated: Stamp
 )
 

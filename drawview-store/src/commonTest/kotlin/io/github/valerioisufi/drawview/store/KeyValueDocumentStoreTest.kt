@@ -164,6 +164,34 @@ class KeyValueDocumentStoreTest {
     }
 
     @Test
+    fun aDocumentStoredBeforeTheOneStackKeepsItsLook() = runTest {
+        val storage = InMemoryKeyValueStorage()
+        val store = KeyValueDocumentStore(storage, scope = backgroundScope)
+        val document = store.createDocument("Notes", 210f, 297f, PageBackground.Solid())
+        store.flush()
+        // The document as the versions before the one stack wrote it: its orders `stamp/index`
+        // mixing the kinds (the newest an image, the oldest a stroke), no register of the order
+        fun stamp(time: Long) = Stamp(time, 0, "ada").toString()
+        fun order(time: Long) = "${stamp(time)}/00000000"
+        fun versions(time: Long) = """{"added":"${stamp(time)}","placed":"${stamp(time + 1)}","updated":"${stamp(time)}"}"""
+        storage.set(
+            "drawview.document.${document.id}",
+            """
+            {"pages":[{"data":{"id":"page","orderKey":"V","widthMm":210.0,"heightMm":297.0,"elements":[
+              {"type":"image","id":"image","resourceId":"r","x":0.0,"y":0.0,"width":20.0,"height":20.0,"order":"${order(300)}"},
+              {"type":"stroke","id":"stroke","points":[{"x":1.0,"y":1.0},{"x":5.0,"y":5.0}],"tool":"PRESSURE_PEN","size":0.5,"color":-16777216,"order":"${order(100)}"},
+              {"type":"text","id":"text","text":"waves","x":0.0,"y":0.0,"width":20.0,"height":10.0,"color":-16777216,"fontSize":16.0,"order":"${order(200)}"}
+            ]},"versions":{"image":${versions(300)},"stroke":${versions(100)},"text":${versions(200)}}}]}
+            """.trimIndent()
+        )
+
+        val reloaded = KeyValueDocumentStore(storage, scope = backgroundScope)
+        val page = assertNotNull(reloaded.loadDocument(document.id)).pages.single()
+        assertEquals(listOf("image", "text", "stroke"), page.stack.map { it.id })
+        for (element in page.elements()) assertEquals(element.placed, element.ordered, element.id)
+    }
+
+    @Test
     fun renameAndDelete() = runTest {
         val storage = InMemoryKeyValueStorage()
         val store = KeyValueDocumentStore(storage, scope = backgroundScope)

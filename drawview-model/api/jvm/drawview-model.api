@@ -94,6 +94,7 @@ public final class io/github/valerioisufi/drawview/model/DrawCustomElement : io/
 	public fun getHeight ()F
 	public fun getId ()Ljava/lang/String;
 	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public fun getOrdered ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public final fun getPayload ()[B
 	public fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
@@ -108,6 +109,7 @@ public final class io/github/valerioisufi/drawview/model/DrawCustomElement : io/
 	public fun setAdded (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setHeight (F)V
 	public fun setOrder (Lio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public fun setOrdered (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public final fun setPayload ([B)V
 	public fun setPlaced (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setRemoved (Lio/github/valerioisufi/drawview/model/Stamp;)V
@@ -172,11 +174,13 @@ public abstract interface class io/github/valerioisufi/drawview/model/DrawElemen
 	public abstract fun getAdded ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public abstract fun getId ()Ljava/lang/String;
 	public abstract fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public abstract fun getOrdered ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public abstract fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public abstract fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public abstract fun getUpdated ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public abstract fun setAdded (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public abstract fun setOrder (Lio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public abstract fun setOrdered (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public abstract fun setPlaced (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public abstract fun setRemoved (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public abstract fun setUpdated (Lio/github/valerioisufi/drawview/model/Stamp;)V
@@ -193,6 +197,7 @@ public final class io/github/valerioisufi/drawview/model/DrawImage : io/github/v
 	public fun getHeight ()F
 	public fun getId ()Ljava/lang/String;
 	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public fun getOrdered ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public final fun getResourceId ()Ljava/lang/String;
@@ -205,6 +210,7 @@ public final class io/github/valerioisufi/drawview/model/DrawImage : io/github/v
 	public fun setAdded (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setHeight (F)V
 	public fun setOrder (Lio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public fun setOrdered (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setPlaced (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setRemoved (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public final fun setResourceId (Ljava/lang/String;)V
@@ -217,6 +223,7 @@ public final class io/github/valerioisufi/drawview/model/DrawImage : io/github/v
 }
 
 public final class io/github/valerioisufi/drawview/model/DrawPage {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/DrawPage$Companion;
 	public fun <init> ()V
 	public fun <init> (IFFLio/github/valerioisufi/drawview/model/PageBackground;Ljava/lang/String;Ljava/lang/String;)V
 	public synthetic fun <init> (IFFLio/github/valerioisufi/drawview/model/PageBackground;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -244,6 +251,7 @@ public final class io/github/valerioisufi/drawview/model/DrawPage {
 	public final fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public final fun getRemovedElements ()Ljava/util/List;
 	public final fun getRenderKey ()J
+	public final fun getStack ()Ljava/util/List;
 	public final fun getStrokes ()Ljava/util/List;
 	public final fun getTexts ()Ljava/util/List;
 	public final fun getWidthMm ()F
@@ -265,6 +273,10 @@ public final class io/github/valerioisufi/drawview/model/DrawPage {
 	public final fun snapshotContent ()Lio/github/valerioisufi/drawview/model/PageContentSnapshot;
 }
 
+public final class io/github/valerioisufi/drawview/model/DrawPage$Companion {
+	public final fun getStackOrder ()Ljava/util/Comparator;
+}
+
 public final class io/github/valerioisufi/drawview/model/DrawPdf : io/github/valerioisufi/drawview/model/DrawElement {
 	public fun <init> ()V
 	public fun <init> (ILjava/lang/String;)V
@@ -272,6 +284,7 @@ public final class io/github/valerioisufi/drawview/model/DrawPdf : io/github/val
 	public fun getAdded ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun getId ()Ljava/lang/String;
 	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public fun getOrdered ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public final fun getPdfPageIndex ()I
 	public fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
@@ -279,6 +292,7 @@ public final class io/github/valerioisufi/drawview/model/DrawPdf : io/github/val
 	public fun getUpdated ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun setAdded (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setOrder (Lio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public fun setOrdered (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public final fun setPdfPageIndex (I)V
 	public fun setPlaced (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setRemoved (Lio/github/valerioisufi/drawview/model/Stamp;)V
@@ -316,6 +330,7 @@ public final class io/github/valerioisufi/drawview/model/DrawStroke : io/github/
 	public fun getId ()Ljava/lang/String;
 	public final fun getMesh ()Lio/github/valerioisufi/drawview/model/StrokeMesh;
 	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public fun getOrdered ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public final fun getTransform ()Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;
@@ -323,6 +338,7 @@ public final class io/github/valerioisufi/drawview/model/DrawStroke : io/github/
 	public final fun place (Lio/github/valerioisufi/drawview/model/geometry/AffineTransform;)V
 	public fun setAdded (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setOrder (Lio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public fun setOrdered (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setPlaced (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setRemoved (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setUpdated (Lio/github/valerioisufi/drawview/model/Stamp;)V
@@ -345,6 +361,7 @@ public final class io/github/valerioisufi/drawview/model/DrawText : io/github/va
 	public fun getHeight ()F
 	public fun getId ()Ljava/lang/String;
 	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public fun getOrdered ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun getRotatedBounds ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
@@ -364,6 +381,7 @@ public final class io/github/valerioisufi/drawview/model/DrawText : io/github/va
 	public final fun setFontSize (F)V
 	public fun setHeight (F)V
 	public fun setOrder (Lio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public fun setOrdered (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setPlaced (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setRemoved (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setRotation (F)V
@@ -389,6 +407,7 @@ public final class io/github/valerioisufi/drawview/model/DrawTextMarkup : io/git
 	public fun getId ()Ljava/lang/String;
 	public final fun getKind ()Lio/github/valerioisufi/drawview/model/TextMarkupKind;
 	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public fun getOrdered ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public final fun getPdfHeightPt ()F
 	public final fun getPdfPageIndex ()I
 	public final fun getPdfWidthPt ()F
@@ -405,6 +424,7 @@ public final class io/github/valerioisufi/drawview/model/DrawTextMarkup : io/git
 	public final fun setColor (I)V
 	public final fun setKind (Lio/github/valerioisufi/drawview/model/TextMarkupKind;)V
 	public fun setOrder (Lio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public fun setOrdered (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setPlaced (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setRemoved (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setUpdated (Lio/github/valerioisufi/drawview/model/Stamp;)V
@@ -412,22 +432,20 @@ public final class io/github/valerioisufi/drawview/model/DrawTextMarkup : io/git
 
 public final class io/github/valerioisufi/drawview/model/ElementOrder : java/lang/Comparable {
 	public static final field Companion Lio/github/valerioisufi/drawview/model/ElementOrder$Companion;
-	public fun <init> (Lio/github/valerioisufi/drawview/model/Stamp;I)V
+	public static final field MAX_LENGTH I
 	public fun compareTo (Lio/github/valerioisufi/drawview/model/ElementOrder;)I
 	public synthetic fun compareTo (Ljava/lang/Object;)I
-	public final fun component1 ()Lio/github/valerioisufi/drawview/model/Stamp;
-	public final fun component2 ()I
-	public final fun copy (Lio/github/valerioisufi/drawview/model/Stamp;I)Lio/github/valerioisufi/drawview/model/ElementOrder;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/ElementOrder;Lio/github/valerioisufi/drawview/model/Stamp;IILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/ElementOrder;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getIndex ()I
-	public final fun getStamp ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getKey ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/model/ElementOrder$Companion {
+	public final fun between (Lio/github/valerioisufi/drawview/model/ElementOrder;Lio/github/valerioisufi/drawview/model/ElementOrder;)Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun between (Lio/github/valerioisufi/drawview/model/ElementOrder;Lio/github/valerioisufi/drawview/model/ElementOrder;I)Ljava/util/List;
 	public final fun getUNASSIGNED ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun onTop (Lio/github/valerioisufi/drawview/model/Stamp;I)Lio/github/valerioisufi/drawview/model/ElementOrder;
 	public final fun parse (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/ElementOrder;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
@@ -645,8 +663,8 @@ public final class io/github/valerioisufi/drawview/model/PageBackground$Solid$Co
 }
 
 public final class io/github/valerioisufi/drawview/model/PageContentSnapshot {
-	public fun <init> (Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/PageBackground;FFLjava/util/List;Ljava/util/List;)V
-	public synthetic fun <init> (Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/PageBackground;FFLjava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/PageBackground;FFLjava/util/List;Ljava/util/List;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/model/PageBackground;FFLjava/util/List;Ljava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun detached ()Lio/github/valerioisufi/drawview/model/PageContentSnapshot;
 	public final fun getBackground ()Lio/github/valerioisufi/drawview/model/PageBackground;
 	public final fun getCustoms ()Ljava/util/List;
@@ -655,6 +673,7 @@ public final class io/github/valerioisufi/drawview/model/PageContentSnapshot {
 	public final fun getMarkups ()Ljava/util/List;
 	public final fun getPaintOrder ()Ljava/util/List;
 	public final fun getPdfs ()Ljava/util/List;
+	public final fun getStack ()Ljava/util/List;
 	public final fun getStrokes ()Ljava/util/List;
 	public final fun getTexts ()Ljava/util/List;
 	public final fun getWidthMm ()F
@@ -957,6 +976,7 @@ public final class io/github/valerioisufi/drawview/model/change/AddElements : io
 	public final fun getLostVersions ()Z
 	public final fun getPageId ()Ljava/lang/String;
 	public fun hashCode ()I
+	public fun orders ()Lkotlin/sequences/Sequence;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
@@ -988,6 +1008,7 @@ public final class io/github/valerioisufi/drawview/model/change/AddPage : io/git
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getPage ()Lio/github/valerioisufi/drawview/model/change/PageData;
 	public fun hashCode ()I
+	public fun orders ()Lkotlin/sequences/Sequence;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
@@ -1019,6 +1040,7 @@ public final class io/github/valerioisufi/drawview/model/change/AddResource : io
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getResource ()Lio/github/valerioisufi/drawview/model/change/ResourceData;
 	public fun hashCode ()I
+	public fun orders ()Lkotlin/sequences/Sequence;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
@@ -1140,6 +1162,7 @@ public final class io/github/valerioisufi/drawview/model/change/CompositeChange 
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getChanges ()Ljava/util/List;
 	public fun hashCode ()I
+	public fun orders ()Lkotlin/sequences/Sequence;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
@@ -1201,6 +1224,7 @@ public final class io/github/valerioisufi/drawview/model/change/CustomElementDat
 public abstract interface class io/github/valerioisufi/drawview/model/change/DocumentChange {
 	public static final field Companion Lio/github/valerioisufi/drawview/model/change/DocumentChange$Companion;
 	public abstract fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public fun orders ()Lkotlin/sequences/Sequence;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public fun stamps ()Lkotlin/sequences/Sequence;
 }
@@ -1210,6 +1234,7 @@ public final class io/github/valerioisufi/drawview/model/change/DocumentChange$C
 }
 
 public final class io/github/valerioisufi/drawview/model/change/DocumentChange$DefaultImpls {
+	public static fun orders (Lio/github/valerioisufi/drawview/model/change/DocumentChange;)Lkotlin/sequences/Sequence;
 	public static fun prepare (Lio/github/valerioisufi/drawview/model/change/DocumentChange;Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public static fun stamps (Lio/github/valerioisufi/drawview/model/change/DocumentChange;)Lkotlin/sequences/Sequence;
 }
@@ -1352,19 +1377,51 @@ public final class io/github/valerioisufi/drawview/model/change/ElementDataKt {
 	public static final fun toData (Lio/github/valerioisufi/drawview/model/DrawTextMarkup;)Lio/github/valerioisufi/drawview/model/change/TextMarkupData;
 }
 
+public final class io/github/valerioisufi/drawview/model/change/ElementOrdering {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/ElementOrdering$Companion;
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/ElementOrder;)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/ElementOrder;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/ElementOrder;)Lio/github/valerioisufi/drawview/model/change/ElementOrdering;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/ElementOrdering;Ljava/lang/String;Lio/github/valerioisufi/drawview/model/ElementOrder;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/ElementOrdering;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Ljava/lang/String;
+	public final fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/ElementOrdering$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/ElementOrdering$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/ElementOrdering;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/ElementOrdering;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/ElementOrdering$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public final class io/github/valerioisufi/drawview/model/change/ElementVersions {
 	public static final field Companion Lio/github/valerioisufi/drawview/model/change/ElementVersions$Companion;
-	public fun <init> (Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun applyTo (Lio/github/valerioisufi/drawview/model/DrawElement;)V
 	public final fun component1 ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public final fun component2 ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public final fun component3 ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public final fun component4 ()Lio/github/valerioisufi/drawview/model/Stamp;
-	public final fun copy (Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;)Lio/github/valerioisufi/drawview/model/change/ElementVersions;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/ElementVersions;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/ElementVersions;
+	public final fun component5 ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun copy (Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;)Lio/github/valerioisufi/drawview/model/change/ElementVersions;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/ElementVersions;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;Lio/github/valerioisufi/drawview/model/Stamp;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/ElementVersions;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAdded ()Lio/github/valerioisufi/drawview/model/Stamp;
+	public final fun getOrdered ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public final fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public final fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public final fun getUpdated ()Lio/github/valerioisufi/drawview/model/Stamp;
@@ -1486,6 +1543,7 @@ public final class io/github/valerioisufi/drawview/model/change/MovePages : io/g
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getMoves ()Ljava/util/List;
 	public fun hashCode ()I
+	public fun orders ()Lkotlin/sequences/Sequence;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
@@ -1755,6 +1813,7 @@ public final class io/github/valerioisufi/drawview/model/change/PlaceElements : 
 	public final fun getPlacements ()Ljava/util/List;
 	public final fun getToPageId ()Ljava/lang/String;
 	public fun hashCode ()I
+	public fun orders ()Lkotlin/sequences/Sequence;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
@@ -1798,6 +1857,7 @@ public final class io/github/valerioisufi/drawview/model/change/RemoveElements :
 	public final fun getIds ()Ljava/util/List;
 	public final fun getPageId ()Ljava/lang/String;
 	public fun hashCode ()I
+	public fun orders ()Lkotlin/sequences/Sequence;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
@@ -1832,6 +1892,7 @@ public final class io/github/valerioisufi/drawview/model/change/RemovePage : io/
 	public final fun getPageId ()Ljava/lang/String;
 	public final fun getSaw ()Lio/github/valerioisufi/drawview/model/Versions;
 	public fun hashCode ()I
+	public fun orders ()Lkotlin/sequences/Sequence;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public final fun setSaw (Lio/github/valerioisufi/drawview/model/Versions;)V
 	public fun stamps ()Lkotlin/sequences/Sequence;
@@ -1863,6 +1924,7 @@ public final class io/github/valerioisufi/drawview/model/change/RenameDocument :
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getTitle ()Ljava/lang/String;
 	public fun hashCode ()I
+	public fun orders ()Lkotlin/sequences/Sequence;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
@@ -1880,6 +1942,41 @@ public final synthetic class io/github/valerioisufi/drawview/model/change/Rename
 }
 
 public final class io/github/valerioisufi/drawview/model/change/RenameDocument$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/ReorderElements : io/github/valerioisufi/drawview/model/change/DocumentChange {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/ReorderElements$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/util/List;)V
+	public fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/ReorderElements;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/change/ReorderElements;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/ReorderElements;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getOrders ()Ljava/util/List;
+	public final fun getPageId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun orders ()Lkotlin/sequences/Sequence;
+	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun stamps ()Lkotlin/sequences/Sequence;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/drawview/model/change/ReorderElements$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/change/ReorderElements$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/drawview/model/change/ReorderElements;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/drawview/model/change/ReorderElements;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/ReorderElements$Companion {
+	public final fun of (Lio/github/valerioisufi/drawview/model/DrawPage;Ljava/util/Collection;Lio/github/valerioisufi/drawview/model/change/StackMove;)Lio/github/valerioisufi/drawview/model/change/ReorderElements;
+	public final fun onTop (Ljava/lang/String;Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/ReorderElements;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -1927,6 +2024,7 @@ public final class io/github/valerioisufi/drawview/model/change/RestyleMarkups :
 	public final fun getPageId ()Ljava/lang/String;
 	public final fun getStyles ()Ljava/util/List;
 	public fun hashCode ()I
+	public fun orders ()Lkotlin/sequences/Sequence;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
@@ -1961,6 +2059,7 @@ public final class io/github/valerioisufi/drawview/model/change/SetDocumentDefau
 	public final fun getHeightMm ()F
 	public final fun getWidthMm ()F
 	public fun hashCode ()I
+	public fun orders ()Lkotlin/sequences/Sequence;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
@@ -1997,6 +2096,7 @@ public final class io/github/valerioisufi/drawview/model/change/SetPageFormat : 
 	public final fun getPageId ()Ljava/lang/String;
 	public final fun getWidthMm ()F
 	public fun hashCode ()I
+	public fun orders ()Lkotlin/sequences/Sequence;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
@@ -2015,6 +2115,16 @@ public final synthetic class io/github/valerioisufi/drawview/model/change/SetPag
 
 public final class io/github/valerioisufi/drawview/model/change/SetPageFormat$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/StackMove : java/lang/Enum {
+	public static final field BACK Lio/github/valerioisufi/drawview/model/change/StackMove;
+	public static final field BACKWARD Lio/github/valerioisufi/drawview/model/change/StackMove;
+	public static final field FORWARD Lio/github/valerioisufi/drawview/model/change/StackMove;
+	public static final field FRONT Lio/github/valerioisufi/drawview/model/change/StackMove;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/change/StackMove;
+	public static fun values ()[Lio/github/valerioisufi/drawview/model/change/StackMove;
 }
 
 public final class io/github/valerioisufi/drawview/model/change/StrokeData : io/github/valerioisufi/drawview/model/change/ElementData {
@@ -2211,6 +2321,7 @@ public final class io/github/valerioisufi/drawview/model/change/UpdateElementCon
 	public final fun getPayload ()[B
 	public final fun getVersion ()I
 	public fun hashCode ()I
+	public fun orders ()Lkotlin/sequences/Sequence;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
@@ -2243,6 +2354,7 @@ public final class io/github/valerioisufi/drawview/model/change/UpdateTexts : io
 	public final fun getPageId ()Ljava/lang/String;
 	public final fun getTexts ()Ljava/util/List;
 	public fun hashCode ()I
+	public fun orders ()Lkotlin/sequences/Sequence;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;

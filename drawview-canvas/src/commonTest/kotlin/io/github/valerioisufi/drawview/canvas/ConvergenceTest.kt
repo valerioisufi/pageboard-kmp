@@ -12,6 +12,7 @@ import io.github.valerioisufi.drawview.model.DrawPdf
 import io.github.valerioisufi.drawview.model.DrawStroke
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.DrawTextMarkup
+import io.github.valerioisufi.drawview.model.ElementOrder
 import io.github.valerioisufi.drawview.model.FractionalIndex
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.Stamp
@@ -23,8 +24,10 @@ import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.AddPage
 import io.github.valerioisufi.drawview.model.change.BoxPlacement
 import io.github.valerioisufi.drawview.model.change.ChangeOrigin
+import io.github.valerioisufi.drawview.model.change.CompositeChange
 import io.github.valerioisufi.drawview.model.change.DocumentChange
 import io.github.valerioisufi.drawview.model.change.DocumentSession
+import io.github.valerioisufi.drawview.model.change.ElementOrdering
 import io.github.valerioisufi.drawview.model.change.HybridClock
 import io.github.valerioisufi.drawview.model.change.MarkupStyle
 import io.github.valerioisufi.drawview.model.change.MovePages
@@ -34,9 +37,11 @@ import io.github.valerioisufi.drawview.model.change.PlaceElements
 import io.github.valerioisufi.drawview.model.change.RemoveElements
 import io.github.valerioisufi.drawview.model.change.RemovePage
 import io.github.valerioisufi.drawview.model.change.RenameDocument
+import io.github.valerioisufi.drawview.model.change.ReorderElements
 import io.github.valerioisufi.drawview.model.change.RestyleMarkups
 import io.github.valerioisufi.drawview.model.change.SetDocumentDefaults
 import io.github.valerioisufi.drawview.model.change.SetPageFormat
+import io.github.valerioisufi.drawview.model.change.StackMove
 import io.github.valerioisufi.drawview.model.change.StrokePlacement
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.model.change.toData
@@ -219,14 +224,14 @@ class ConvergenceTest {
             }
 
     private fun element(element: DrawElement) =
-        "${element.toData()} ${element.added} ${element.removed} ${element.placed} ${element.updated}"
+        "${element.toData()} ${element.added} ${element.removed} ${element.placed} ${element.ordered} ${element.updated}"
 
     private fun randomChange(document: DrawDocument, random: Random): DocumentChange? {
         if (document.pages.isEmpty()) return AddPage.of(DrawPage(orderKey = document.orderKeyAt(0)))
         val page = document.pages[random.nextInt(document.pages.size)]
         val elements = page.elements()
         fun someElements(): List<DrawElement> = elements.shuffled(random).take(random.nextInt(1, 4))
-        return when (random.nextInt(12)) {
+        return when (random.nextInt(14)) {
             0, 1 -> AddElements.of(page, List(random.nextInt(1, 3)) { stroke(random.nextFloat() * 100f, random.nextFloat() * 100f) } + text("t${random.nextInt(100)}"))
             2 -> if (elements.isEmpty()) null else RemoveElements.of(page, someElements())
             3 -> {
@@ -239,7 +244,13 @@ class ConvergenceTest {
                     }
                 }
                 val target = document.pages[random.nextInt(document.pages.size)]
-                if (placements.isEmpty()) null else PlaceElements(page.id, placements, target.id)
+                val move = PlaceElements(page.id, placements, target.id)
+                when {
+                    placements.isEmpty() -> null
+                    // On top of the page they go to, as the editor moves them
+                    target !== page && random.nextBoolean() -> CompositeChange(listOf(move, ReorderElements.onTop(target.id, placements.map { it.id })))
+                    else -> move
+                }
             }
             4 -> page.texts.firstOrNull()?.let { UpdateTexts(page.id, listOf(it.toData().copy(text = "u${random.nextInt(100)}"))) }
             5 -> AddPage.of(DrawPage(orderKey = document.orderKeyAt(random.nextInt(document.pages.size + 1))).apply { add(stroke(5f, 5f)) })
@@ -248,6 +259,16 @@ class ConvergenceTest {
             8 -> SetPageFormat(page.id, 100f + random.nextInt(100), 100f + random.nextInt(100), if (random.nextBoolean()) PageBackground.Ruled() else null)
             9 -> SetDocumentDefaults(150f + random.nextInt(100), 200f, if (random.nextBoolean()) PageBackground.Grid() else PageBackground.Solid())
             10 -> RenameDocument("Notes ${random.nextInt(100)}")
+            11 -> ReorderElements.of(page, someElements().map { it.id }, StackMove.entries.random(random))
+            12 -> {
+                // An order between two of the stack, made apart on several devices
+                val stack = page.stack
+                if (stack.size < 2) null else {
+                    val at = random.nextInt(1, stack.size)
+                    val (below, above) = stack[at - 1].order to stack[at].order
+                    if (below >= above) null else ReorderElements(page.id, listOf(ElementOrdering(stack.random(random).id, ElementOrder.between(below, above))))
+                }
+            }
             else -> page.markups.firstOrNull()?.let {
                 RestyleMarkups(page.id, listOf(MarkupStyle(it.id, TextMarkupKind.entries.random(random), random.nextInt(10))))
             }

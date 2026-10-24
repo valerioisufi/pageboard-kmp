@@ -20,6 +20,19 @@ final enum class io.github.valerioisufi.drawview.model.change/ChangeOrigin : kot
     final fun values(): kotlin/Array<io.github.valerioisufi.drawview.model.change/ChangeOrigin> // io.github.valerioisufi.drawview.model.change/ChangeOrigin.values|values#static(){}[0]
 }
 
+final enum class io.github.valerioisufi.drawview.model.change/StackMove : kotlin/Enum<io.github.valerioisufi.drawview.model.change/StackMove> { // io.github.valerioisufi.drawview.model.change/StackMove|null[0]
+    enum entry BACK // io.github.valerioisufi.drawview.model.change/StackMove.BACK|null[0]
+    enum entry BACKWARD // io.github.valerioisufi.drawview.model.change/StackMove.BACKWARD|null[0]
+    enum entry FORWARD // io.github.valerioisufi.drawview.model.change/StackMove.FORWARD|null[0]
+    enum entry FRONT // io.github.valerioisufi.drawview.model.change/StackMove.FRONT|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.model.change/StackMove.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.model.change/StackMove> // io.github.valerioisufi.drawview.model.change/StackMove.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.model.change/StackMove // io.github.valerioisufi.drawview.model.change/StackMove.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.model.change/StackMove> // io.github.valerioisufi.drawview.model.change/StackMove.values|values#static(){}[0]
+}
+
 final enum class io.github.valerioisufi.drawview.model.text.code/CodeTokenKind : kotlin/Enum<io.github.valerioisufi.drawview.model.text.code/CodeTokenKind> { // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind|null[0]
     enum entry ANNOTATION // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind.ANNOTATION|null[0]
     enum entry COMMENT // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind.COMMENT|null[0]
@@ -231,6 +244,7 @@ abstract interface io.github.valerioisufi.drawview.model/StrokeEngineDelegate { 
 
 sealed interface io.github.valerioisufi.drawview.model.change/DocumentChange { // io.github.valerioisufi.drawview.model.change/DocumentChange|null[0]
     abstract fun applyTo(io.github.valerioisufi.drawview.model.change/ChangeContext): io.github.valerioisufi.drawview.model.change/DocumentChange? // io.github.valerioisufi.drawview.model.change/DocumentChange.applyTo|applyTo(io.github.valerioisufi.drawview.model.change.ChangeContext){}[0]
+    open fun orders(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/ElementOrder> // io.github.valerioisufi.drawview.model.change/DocumentChange.orders|orders(){}[0]
     open fun prepare(io.github.valerioisufi.drawview.model/StrokeModeller) // io.github.valerioisufi.drawview.model.change/DocumentChange.prepare|prepare(io.github.valerioisufi.drawview.model.StrokeModeller){}[0]
     open fun stamps(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/Stamp> // io.github.valerioisufi.drawview.model.change/DocumentChange.stamps|stamps(){}[0]
 
@@ -278,6 +292,9 @@ sealed interface io.github.valerioisufi.drawview.model/DrawElement { // io.githu
     abstract var order // io.github.valerioisufi.drawview.model/DrawElement.order|{}order[0]
         abstract fun <get-order>(): io.github.valerioisufi.drawview.model/ElementOrder // io.github.valerioisufi.drawview.model/DrawElement.order.<get-order>|<get-order>(){}[0]
         abstract fun <set-order>(io.github.valerioisufi.drawview.model/ElementOrder) // io.github.valerioisufi.drawview.model/DrawElement.order.<set-order>|<set-order>(io.github.valerioisufi.drawview.model.ElementOrder){}[0]
+    abstract var ordered // io.github.valerioisufi.drawview.model/DrawElement.ordered|{}ordered[0]
+        abstract fun <get-ordered>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model/DrawElement.ordered.<get-ordered>|<get-ordered>(){}[0]
+        abstract fun <set-ordered>(io.github.valerioisufi.drawview.model/Stamp) // io.github.valerioisufi.drawview.model/DrawElement.ordered.<set-ordered>|<set-ordered>(io.github.valerioisufi.drawview.model.Stamp){}[0]
     abstract var placed // io.github.valerioisufi.drawview.model/DrawElement.placed|{}placed[0]
         abstract fun <get-placed>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model/DrawElement.placed.<get-placed>|<get-placed>(){}[0]
         abstract fun <set-placed>(io.github.valerioisufi.drawview.model/Stamp) // io.github.valerioisufi.drawview.model/DrawElement.placed.<set-placed>|<set-placed>(io.github.valerioisufi.drawview.model.Stamp){}[0]
@@ -306,6 +323,7 @@ final class io.github.valerioisufi.drawview.model.change/AddElements : io.github
     final fun copy(kotlin/String = ..., kotlin.collections/List<io.github.valerioisufi.drawview.model.change/ElementData> = ..., kotlin/Boolean = ...): io.github.valerioisufi.drawview.model.change/AddElements // io.github.valerioisufi.drawview.model.change/AddElements.copy|copy(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.model.change.ElementData>;kotlin.Boolean){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/AddElements.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.change/AddElements.hashCode|hashCode(){}[0]
+    final fun orders(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/ElementOrder> // io.github.valerioisufi.drawview.model.change/AddElements.orders|orders(){}[0]
     final fun prepare(io.github.valerioisufi.drawview.model/StrokeModeller) // io.github.valerioisufi.drawview.model.change/AddElements.prepare|prepare(io.github.valerioisufi.drawview.model.StrokeModeller){}[0]
     final fun stamps(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/Stamp> // io.github.valerioisufi.drawview.model.change/AddElements.stamps|stamps(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.change/AddElements.toString|toString(){}[0]
@@ -338,6 +356,7 @@ final class io.github.valerioisufi.drawview.model.change/AddPage : io.github.val
     final fun copy(io.github.valerioisufi.drawview.model.change/PageData = ...): io.github.valerioisufi.drawview.model.change/AddPage // io.github.valerioisufi.drawview.model.change/AddPage.copy|copy(io.github.valerioisufi.drawview.model.change.PageData){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/AddPage.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.change/AddPage.hashCode|hashCode(){}[0]
+    final fun orders(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/ElementOrder> // io.github.valerioisufi.drawview.model.change/AddPage.orders|orders(){}[0]
     final fun stamps(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/Stamp> // io.github.valerioisufi.drawview.model.change/AddPage.stamps|stamps(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.change/AddPage.toString|toString(){}[0]
 
@@ -491,6 +510,7 @@ final class io.github.valerioisufi.drawview.model.change/CompositeChange : io.gi
     final fun copy(kotlin.collections/List<io.github.valerioisufi.drawview.model.change/DocumentChange> = ...): io.github.valerioisufi.drawview.model.change/CompositeChange // io.github.valerioisufi.drawview.model.change/CompositeChange.copy|copy(kotlin.collections.List<io.github.valerioisufi.drawview.model.change.DocumentChange>){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/CompositeChange.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.change/CompositeChange.hashCode|hashCode(){}[0]
+    final fun orders(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/ElementOrder> // io.github.valerioisufi.drawview.model.change/CompositeChange.orders|orders(){}[0]
     final fun prepare(io.github.valerioisufi.drawview.model/StrokeModeller) // io.github.valerioisufi.drawview.model.change/CompositeChange.prepare|prepare(io.github.valerioisufi.drawview.model.StrokeModeller){}[0]
     final fun stamps(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/Stamp> // io.github.valerioisufi.drawview.model.change/CompositeChange.stamps|stamps(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.change/CompositeChange.toString|toString(){}[0]
@@ -637,11 +657,42 @@ final class io.github.valerioisufi.drawview.model.change/DocumentSnapshot { // i
     }
 }
 
+final class io.github.valerioisufi.drawview.model.change/ElementOrdering { // io.github.valerioisufi.drawview.model.change/ElementOrdering|null[0]
+    constructor <init>(kotlin/String, io.github.valerioisufi.drawview.model/ElementOrder? = ...) // io.github.valerioisufi.drawview.model.change/ElementOrdering.<init>|<init>(kotlin.String;io.github.valerioisufi.drawview.model.ElementOrder?){}[0]
+
+    final val id // io.github.valerioisufi.drawview.model.change/ElementOrdering.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.model.change/ElementOrdering.id.<get-id>|<get-id>(){}[0]
+    final val order // io.github.valerioisufi.drawview.model.change/ElementOrdering.order|{}order[0]
+        final fun <get-order>(): io.github.valerioisufi.drawview.model/ElementOrder? // io.github.valerioisufi.drawview.model.change/ElementOrdering.order.<get-order>|<get-order>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.model.change/ElementOrdering.component1|component1(){}[0]
+    final fun component2(): io.github.valerioisufi.drawview.model/ElementOrder? // io.github.valerioisufi.drawview.model.change/ElementOrdering.component2|component2(){}[0]
+    final fun copy(kotlin/String = ..., io.github.valerioisufi.drawview.model/ElementOrder? = ...): io.github.valerioisufi.drawview.model.change/ElementOrdering // io.github.valerioisufi.drawview.model.change/ElementOrdering.copy|copy(kotlin.String;io.github.valerioisufi.drawview.model.ElementOrder?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/ElementOrdering.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.change/ElementOrdering.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.change/ElementOrdering.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.model.change/ElementOrdering> { // io.github.valerioisufi.drawview.model.change/ElementOrdering.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.model.change/ElementOrdering.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.model.change/ElementOrdering.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.model.change/ElementOrdering.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.model.change/ElementOrdering // io.github.valerioisufi.drawview.model.change/ElementOrdering.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.model.change/ElementOrdering) // io.github.valerioisufi.drawview.model.change/ElementOrdering.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.model.change.ElementOrdering){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.model.change/ElementOrdering.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.model.change/ElementOrdering> // io.github.valerioisufi.drawview.model.change/ElementOrdering.Companion.serializer|serializer(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.drawview.model.change/ElementVersions { // io.github.valerioisufi.drawview.model.change/ElementVersions|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.model/Stamp, io.github.valerioisufi.drawview.model/Stamp? = ..., io.github.valerioisufi.drawview.model/Stamp, io.github.valerioisufi.drawview.model/Stamp) // io.github.valerioisufi.drawview.model.change/ElementVersions.<init>|<init>(io.github.valerioisufi.drawview.model.Stamp;io.github.valerioisufi.drawview.model.Stamp?;io.github.valerioisufi.drawview.model.Stamp;io.github.valerioisufi.drawview.model.Stamp){}[0]
+    constructor <init>(io.github.valerioisufi.drawview.model/Stamp, io.github.valerioisufi.drawview.model/Stamp? = ..., io.github.valerioisufi.drawview.model/Stamp, io.github.valerioisufi.drawview.model/Stamp, io.github.valerioisufi.drawview.model/Stamp? = ...) // io.github.valerioisufi.drawview.model.change/ElementVersions.<init>|<init>(io.github.valerioisufi.drawview.model.Stamp;io.github.valerioisufi.drawview.model.Stamp?;io.github.valerioisufi.drawview.model.Stamp;io.github.valerioisufi.drawview.model.Stamp;io.github.valerioisufi.drawview.model.Stamp?){}[0]
 
     final val added // io.github.valerioisufi.drawview.model.change/ElementVersions.added|{}added[0]
         final fun <get-added>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model.change/ElementVersions.added.<get-added>|<get-added>(){}[0]
+    final val ordered // io.github.valerioisufi.drawview.model.change/ElementVersions.ordered|{}ordered[0]
+        final fun <get-ordered>(): io.github.valerioisufi.drawview.model/Stamp? // io.github.valerioisufi.drawview.model.change/ElementVersions.ordered.<get-ordered>|<get-ordered>(){}[0]
     final val placed // io.github.valerioisufi.drawview.model.change/ElementVersions.placed|{}placed[0]
         final fun <get-placed>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model.change/ElementVersions.placed.<get-placed>|<get-placed>(){}[0]
     final val removed // io.github.valerioisufi.drawview.model.change/ElementVersions.removed|{}removed[0]
@@ -654,7 +705,8 @@ final class io.github.valerioisufi.drawview.model.change/ElementVersions { // io
     final fun component2(): io.github.valerioisufi.drawview.model/Stamp? // io.github.valerioisufi.drawview.model.change/ElementVersions.component2|component2(){}[0]
     final fun component3(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model.change/ElementVersions.component3|component3(){}[0]
     final fun component4(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model.change/ElementVersions.component4|component4(){}[0]
-    final fun copy(io.github.valerioisufi.drawview.model/Stamp = ..., io.github.valerioisufi.drawview.model/Stamp? = ..., io.github.valerioisufi.drawview.model/Stamp = ..., io.github.valerioisufi.drawview.model/Stamp = ...): io.github.valerioisufi.drawview.model.change/ElementVersions // io.github.valerioisufi.drawview.model.change/ElementVersions.copy|copy(io.github.valerioisufi.drawview.model.Stamp;io.github.valerioisufi.drawview.model.Stamp?;io.github.valerioisufi.drawview.model.Stamp;io.github.valerioisufi.drawview.model.Stamp){}[0]
+    final fun component5(): io.github.valerioisufi.drawview.model/Stamp? // io.github.valerioisufi.drawview.model.change/ElementVersions.component5|component5(){}[0]
+    final fun copy(io.github.valerioisufi.drawview.model/Stamp = ..., io.github.valerioisufi.drawview.model/Stamp? = ..., io.github.valerioisufi.drawview.model/Stamp = ..., io.github.valerioisufi.drawview.model/Stamp = ..., io.github.valerioisufi.drawview.model/Stamp? = ...): io.github.valerioisufi.drawview.model.change/ElementVersions // io.github.valerioisufi.drawview.model.change/ElementVersions.copy|copy(io.github.valerioisufi.drawview.model.Stamp;io.github.valerioisufi.drawview.model.Stamp?;io.github.valerioisufi.drawview.model.Stamp;io.github.valerioisufi.drawview.model.Stamp;io.github.valerioisufi.drawview.model.Stamp?){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/ElementVersions.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.change/ElementVersions.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.change/ElementVersions.toString|toString(){}[0]
@@ -1050,6 +1102,7 @@ final class io.github.valerioisufi.drawview.model.change/PlaceElements : io.gith
     final fun copy(kotlin/String = ..., kotlin.collections/List<io.github.valerioisufi.drawview.model.change/Placement> = ..., kotlin/String = ...): io.github.valerioisufi.drawview.model.change/PlaceElements // io.github.valerioisufi.drawview.model.change/PlaceElements.copy|copy(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.model.change.Placement>;kotlin.String){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/PlaceElements.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.change/PlaceElements.hashCode|hashCode(){}[0]
+    final fun orders(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/ElementOrder> // io.github.valerioisufi.drawview.model.change/PlaceElements.orders|orders(){}[0]
     final fun stamps(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/Stamp> // io.github.valerioisufi.drawview.model.change/PlaceElements.stamps|stamps(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.change/PlaceElements.toString|toString(){}[0]
 
@@ -1159,6 +1212,42 @@ final class io.github.valerioisufi.drawview.model.change/RenameDocument : io.git
 
     final object Companion { // io.github.valerioisufi.drawview.model.change/RenameDocument.Companion|null[0]
         final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.model.change/RenameDocument> // io.github.valerioisufi.drawview.model.change/RenameDocument.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.model.change/ReorderElements : io.github.valerioisufi.drawview.model.change/DocumentChange { // io.github.valerioisufi.drawview.model.change/ReorderElements|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.model.change/ElementOrdering>) // io.github.valerioisufi.drawview.model.change/ReorderElements.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.model.change.ElementOrdering>){}[0]
+
+    final val orders // io.github.valerioisufi.drawview.model.change/ReorderElements.orders|{}orders[0]
+        final fun <get-orders>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.change/ElementOrdering> // io.github.valerioisufi.drawview.model.change/ReorderElements.orders.<get-orders>|<get-orders>(){}[0]
+    final val pageId // io.github.valerioisufi.drawview.model.change/ReorderElements.pageId|{}pageId[0]
+        final fun <get-pageId>(): kotlin/String // io.github.valerioisufi.drawview.model.change/ReorderElements.pageId.<get-pageId>|<get-pageId>(){}[0]
+
+    final fun applyTo(io.github.valerioisufi.drawview.model.change/ChangeContext): io.github.valerioisufi.drawview.model.change/DocumentChange? // io.github.valerioisufi.drawview.model.change/ReorderElements.applyTo|applyTo(io.github.valerioisufi.drawview.model.change.ChangeContext){}[0]
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.model.change/ReorderElements.component1|component1(){}[0]
+    final fun component2(): kotlin.collections/List<io.github.valerioisufi.drawview.model.change/ElementOrdering> // io.github.valerioisufi.drawview.model.change/ReorderElements.component2|component2(){}[0]
+    final fun copy(kotlin/String = ..., kotlin.collections/List<io.github.valerioisufi.drawview.model.change/ElementOrdering> = ...): io.github.valerioisufi.drawview.model.change/ReorderElements // io.github.valerioisufi.drawview.model.change/ReorderElements.copy|copy(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.model.change.ElementOrdering>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/ReorderElements.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.change/ReorderElements.hashCode|hashCode(){}[0]
+    final fun orders(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/ElementOrder> // io.github.valerioisufi.drawview.model.change/ReorderElements.orders|orders(){}[0]
+    final fun stamps(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/Stamp> // io.github.valerioisufi.drawview.model.change/ReorderElements.stamps|stamps(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.change/ReorderElements.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.model.change/ReorderElements> { // io.github.valerioisufi.drawview.model.change/ReorderElements.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.drawview.model.change/ReorderElements.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.drawview.model.change/ReorderElements.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.drawview.model.change/ReorderElements.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.drawview.model.change/ReorderElements // io.github.valerioisufi.drawview.model.change/ReorderElements.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.drawview.model.change/ReorderElements) // io.github.valerioisufi.drawview.model.change/ReorderElements.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.drawview.model.change.ReorderElements){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.model.change/ReorderElements.Companion|null[0]
+        final val $childSerializers // io.github.valerioisufi.drawview.model.change/ReorderElements.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun of(io.github.valerioisufi.drawview.model/DrawPage, kotlin.collections/Collection<kotlin/String>, io.github.valerioisufi.drawview.model.change/StackMove): io.github.valerioisufi.drawview.model.change/ReorderElements? // io.github.valerioisufi.drawview.model.change/ReorderElements.Companion.of|of(io.github.valerioisufi.drawview.model.DrawPage;kotlin.collections.Collection<kotlin.String>;io.github.valerioisufi.drawview.model.change.StackMove){}[0]
+        final fun onTop(kotlin/String, kotlin.collections/List<kotlin/String>): io.github.valerioisufi.drawview.model.change/ReorderElements // io.github.valerioisufi.drawview.model.change/ReorderElements.Companion.onTop|onTop(kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.model.change/ReorderElements> // io.github.valerioisufi.drawview.model.change/ReorderElements.Companion.serializer|serializer(){}[0]
     }
 }
 
@@ -1557,6 +1646,7 @@ final class io.github.valerioisufi.drawview.model.change/UpdateTexts : io.github
     final fun copy(kotlin/String = ..., kotlin.collections/List<io.github.valerioisufi.drawview.model.change/TextData> = ...): io.github.valerioisufi.drawview.model.change/UpdateTexts // io.github.valerioisufi.drawview.model.change/UpdateTexts.copy|copy(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.model.change.TextData>){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/UpdateTexts.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.change/UpdateTexts.hashCode|hashCode(){}[0]
+    final fun orders(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/ElementOrder> // io.github.valerioisufi.drawview.model.change/UpdateTexts.orders|orders(){}[0]
     final fun stamps(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/Stamp> // io.github.valerioisufi.drawview.model.change/UpdateTexts.stamps|stamps(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.change/UpdateTexts.toString|toString(){}[0]
 
@@ -1965,6 +2055,9 @@ final class io.github.valerioisufi.drawview.model/DrawCustomElement : io.github.
     final var order // io.github.valerioisufi.drawview.model/DrawCustomElement.order|{}order[0]
         final fun <get-order>(): io.github.valerioisufi.drawview.model/ElementOrder // io.github.valerioisufi.drawview.model/DrawCustomElement.order.<get-order>|<get-order>(){}[0]
         final fun <set-order>(io.github.valerioisufi.drawview.model/ElementOrder) // io.github.valerioisufi.drawview.model/DrawCustomElement.order.<set-order>|<set-order>(io.github.valerioisufi.drawview.model.ElementOrder){}[0]
+    final var ordered // io.github.valerioisufi.drawview.model/DrawCustomElement.ordered|{}ordered[0]
+        final fun <get-ordered>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model/DrawCustomElement.ordered.<get-ordered>|<get-ordered>(){}[0]
+        final fun <set-ordered>(io.github.valerioisufi.drawview.model/Stamp) // io.github.valerioisufi.drawview.model/DrawCustomElement.ordered.<set-ordered>|<set-ordered>(io.github.valerioisufi.drawview.model.Stamp){}[0]
     final var payload // io.github.valerioisufi.drawview.model/DrawCustomElement.payload|{}payload[0]
         final fun <get-payload>(): kotlin/ByteArray // io.github.valerioisufi.drawview.model/DrawCustomElement.payload.<get-payload>|<get-payload>(){}[0]
         final fun <set-payload>(kotlin/ByteArray) // io.github.valerioisufi.drawview.model/DrawCustomElement.payload.<set-payload>|<set-payload>(kotlin.ByteArray){}[0]
@@ -2074,6 +2167,9 @@ final class io.github.valerioisufi.drawview.model/DrawImage : io.github.valerioi
     final var order // io.github.valerioisufi.drawview.model/DrawImage.order|{}order[0]
         final fun <get-order>(): io.github.valerioisufi.drawview.model/ElementOrder // io.github.valerioisufi.drawview.model/DrawImage.order.<get-order>|<get-order>(){}[0]
         final fun <set-order>(io.github.valerioisufi.drawview.model/ElementOrder) // io.github.valerioisufi.drawview.model/DrawImage.order.<set-order>|<set-order>(io.github.valerioisufi.drawview.model.ElementOrder){}[0]
+    final var ordered // io.github.valerioisufi.drawview.model/DrawImage.ordered|{}ordered[0]
+        final fun <get-ordered>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model/DrawImage.ordered.<get-ordered>|<get-ordered>(){}[0]
+        final fun <set-ordered>(io.github.valerioisufi.drawview.model/Stamp) // io.github.valerioisufi.drawview.model/DrawImage.ordered.<set-ordered>|<set-ordered>(io.github.valerioisufi.drawview.model.Stamp){}[0]
     final var placed // io.github.valerioisufi.drawview.model/DrawImage.placed|{}placed[0]
         final fun <get-placed>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model/DrawImage.placed.<get-placed>|<get-placed>(){}[0]
         final fun <set-placed>(io.github.valerioisufi.drawview.model/Stamp) // io.github.valerioisufi.drawview.model/DrawImage.placed.<set-placed>|<set-placed>(io.github.valerioisufi.drawview.model.Stamp){}[0]
@@ -2121,6 +2217,8 @@ final class io.github.valerioisufi.drawview.model/DrawPage { // io.github.valeri
         final fun <get-removedElements>(): kotlin.collections/MutableList<io.github.valerioisufi.drawview.model/DrawElement> // io.github.valerioisufi.drawview.model/DrawPage.removedElements.<get-removedElements>|<get-removedElements>(){}[0]
     final val renderKey // io.github.valerioisufi.drawview.model/DrawPage.renderKey|{}renderKey[0]
         final fun <get-renderKey>(): kotlin/Long // io.github.valerioisufi.drawview.model/DrawPage.renderKey.<get-renderKey>|<get-renderKey>(){}[0]
+    final val stack // io.github.valerioisufi.drawview.model/DrawPage.stack|{}stack[0]
+        final fun <get-stack>(): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawElement> // io.github.valerioisufi.drawview.model/DrawPage.stack.<get-stack>|<get-stack>(){}[0]
     final val strokes // io.github.valerioisufi.drawview.model/DrawPage.strokes|{}strokes[0]
         final fun <get-strokes>(): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawStroke> // io.github.valerioisufi.drawview.model/DrawPage.strokes.<get-strokes>|<get-strokes>(){}[0]
     final val texts // io.github.valerioisufi.drawview.model/DrawPage.texts|{}texts[0]
@@ -2172,6 +2270,11 @@ final class io.github.valerioisufi.drawview.model/DrawPage { // io.github.valeri
     final fun rect(): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.model/DrawPage.rect|rect(){}[0]
     final fun remove(io.github.valerioisufi.drawview.model/DrawElement): kotlin/Int // io.github.valerioisufi.drawview.model/DrawPage.remove|remove(io.github.valerioisufi.drawview.model.DrawElement){}[0]
     final fun snapshotContent(): io.github.valerioisufi.drawview.model/PageContentSnapshot // io.github.valerioisufi.drawview.model/DrawPage.snapshotContent|snapshotContent(){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.model/DrawPage.Companion|null[0]
+        final val stackOrder // io.github.valerioisufi.drawview.model/DrawPage.Companion.stackOrder|{}stackOrder[0]
+            final fun <get-stackOrder>(): kotlin/Comparator<io.github.valerioisufi.drawview.model/DrawElement> // io.github.valerioisufi.drawview.model/DrawPage.Companion.stackOrder.<get-stackOrder>|<get-stackOrder>(){}[0]
+    }
 }
 
 final class io.github.valerioisufi.drawview.model/DrawPdf : io.github.valerioisufi.drawview.model/DrawElement { // io.github.valerioisufi.drawview.model/DrawPdf|null[0]
@@ -2186,6 +2289,9 @@ final class io.github.valerioisufi.drawview.model/DrawPdf : io.github.valerioisu
     final var order // io.github.valerioisufi.drawview.model/DrawPdf.order|{}order[0]
         final fun <get-order>(): io.github.valerioisufi.drawview.model/ElementOrder // io.github.valerioisufi.drawview.model/DrawPdf.order.<get-order>|<get-order>(){}[0]
         final fun <set-order>(io.github.valerioisufi.drawview.model/ElementOrder) // io.github.valerioisufi.drawview.model/DrawPdf.order.<set-order>|<set-order>(io.github.valerioisufi.drawview.model.ElementOrder){}[0]
+    final var ordered // io.github.valerioisufi.drawview.model/DrawPdf.ordered|{}ordered[0]
+        final fun <get-ordered>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model/DrawPdf.ordered.<get-ordered>|<get-ordered>(){}[0]
+        final fun <set-ordered>(io.github.valerioisufi.drawview.model/Stamp) // io.github.valerioisufi.drawview.model/DrawPdf.ordered.<set-ordered>|<set-ordered>(io.github.valerioisufi.drawview.model.Stamp){}[0]
     final var pdfPageIndex // io.github.valerioisufi.drawview.model/DrawPdf.pdfPageIndex|{}pdfPageIndex[0]
         final fun <get-pdfPageIndex>(): kotlin/Int // io.github.valerioisufi.drawview.model/DrawPdf.pdfPageIndex.<get-pdfPageIndex>|<get-pdfPageIndex>(){}[0]
         final fun <set-pdfPageIndex>(kotlin/Int) // io.github.valerioisufi.drawview.model/DrawPdf.pdfPageIndex.<set-pdfPageIndex>|<set-pdfPageIndex>(kotlin.Int){}[0]
@@ -2252,6 +2358,9 @@ final class io.github.valerioisufi.drawview.model/DrawStroke : io.github.valerio
     final var order // io.github.valerioisufi.drawview.model/DrawStroke.order|{}order[0]
         final fun <get-order>(): io.github.valerioisufi.drawview.model/ElementOrder // io.github.valerioisufi.drawview.model/DrawStroke.order.<get-order>|<get-order>(){}[0]
         final fun <set-order>(io.github.valerioisufi.drawview.model/ElementOrder) // io.github.valerioisufi.drawview.model/DrawStroke.order.<set-order>|<set-order>(io.github.valerioisufi.drawview.model.ElementOrder){}[0]
+    final var ordered // io.github.valerioisufi.drawview.model/DrawStroke.ordered|{}ordered[0]
+        final fun <get-ordered>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model/DrawStroke.ordered.<get-ordered>|<get-ordered>(){}[0]
+        final fun <set-ordered>(io.github.valerioisufi.drawview.model/Stamp) // io.github.valerioisufi.drawview.model/DrawStroke.ordered.<set-ordered>|<set-ordered>(io.github.valerioisufi.drawview.model.Stamp){}[0]
     final var placed // io.github.valerioisufi.drawview.model/DrawStroke.placed|{}placed[0]
         final fun <get-placed>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model/DrawStroke.placed.<get-placed>|<get-placed>(){}[0]
         final fun <set-placed>(io.github.valerioisufi.drawview.model/Stamp) // io.github.valerioisufi.drawview.model/DrawStroke.placed.<set-placed>|<set-placed>(io.github.valerioisufi.drawview.model.Stamp){}[0]
@@ -2297,6 +2406,9 @@ final class io.github.valerioisufi.drawview.model/DrawText : io.github.valeriois
     final var order // io.github.valerioisufi.drawview.model/DrawText.order|{}order[0]
         final fun <get-order>(): io.github.valerioisufi.drawview.model/ElementOrder // io.github.valerioisufi.drawview.model/DrawText.order.<get-order>|<get-order>(){}[0]
         final fun <set-order>(io.github.valerioisufi.drawview.model/ElementOrder) // io.github.valerioisufi.drawview.model/DrawText.order.<set-order>|<set-order>(io.github.valerioisufi.drawview.model.ElementOrder){}[0]
+    final var ordered // io.github.valerioisufi.drawview.model/DrawText.ordered|{}ordered[0]
+        final fun <get-ordered>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model/DrawText.ordered.<get-ordered>|<get-ordered>(){}[0]
+        final fun <set-ordered>(io.github.valerioisufi.drawview.model/Stamp) // io.github.valerioisufi.drawview.model/DrawText.ordered.<set-ordered>|<set-ordered>(io.github.valerioisufi.drawview.model.Stamp){}[0]
     final var placed // io.github.valerioisufi.drawview.model/DrawText.placed|{}placed[0]
         final fun <get-placed>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model/DrawText.placed.<get-placed>|<get-placed>(){}[0]
         final fun <set-placed>(io.github.valerioisufi.drawview.model/Stamp) // io.github.valerioisufi.drawview.model/DrawText.placed.<set-placed>|<set-placed>(io.github.valerioisufi.drawview.model.Stamp){}[0]
@@ -2364,6 +2476,9 @@ final class io.github.valerioisufi.drawview.model/DrawTextMarkup : io.github.val
     final var order // io.github.valerioisufi.drawview.model/DrawTextMarkup.order|{}order[0]
         final fun <get-order>(): io.github.valerioisufi.drawview.model/ElementOrder // io.github.valerioisufi.drawview.model/DrawTextMarkup.order.<get-order>|<get-order>(){}[0]
         final fun <set-order>(io.github.valerioisufi.drawview.model/ElementOrder) // io.github.valerioisufi.drawview.model/DrawTextMarkup.order.<set-order>|<set-order>(io.github.valerioisufi.drawview.model.ElementOrder){}[0]
+    final var ordered // io.github.valerioisufi.drawview.model/DrawTextMarkup.ordered|{}ordered[0]
+        final fun <get-ordered>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model/DrawTextMarkup.ordered.<get-ordered>|<get-ordered>(){}[0]
+        final fun <set-ordered>(io.github.valerioisufi.drawview.model/Stamp) // io.github.valerioisufi.drawview.model/DrawTextMarkup.ordered.<set-ordered>|<set-ordered>(io.github.valerioisufi.drawview.model.Stamp){}[0]
     final var placed // io.github.valerioisufi.drawview.model/DrawTextMarkup.placed|{}placed[0]
         final fun <get-placed>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model/DrawTextMarkup.placed.<get-placed>|<get-placed>(){}[0]
         final fun <set-placed>(io.github.valerioisufi.drawview.model/Stamp) // io.github.valerioisufi.drawview.model/DrawTextMarkup.placed.<set-placed>|<set-placed>(io.github.valerioisufi.drawview.model.Stamp){}[0]
@@ -2382,25 +2497,24 @@ final class io.github.valerioisufi.drawview.model/DrawTextMarkup : io.github.val
 }
 
 final class io.github.valerioisufi.drawview.model/ElementOrder : kotlin/Comparable<io.github.valerioisufi.drawview.model/ElementOrder> { // io.github.valerioisufi.drawview.model/ElementOrder|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.model/Stamp, kotlin/Int) // io.github.valerioisufi.drawview.model/ElementOrder.<init>|<init>(io.github.valerioisufi.drawview.model.Stamp;kotlin.Int){}[0]
-
-    final val index // io.github.valerioisufi.drawview.model/ElementOrder.index|{}index[0]
-        final fun <get-index>(): kotlin/Int // io.github.valerioisufi.drawview.model/ElementOrder.index.<get-index>|<get-index>(){}[0]
-    final val stamp // io.github.valerioisufi.drawview.model/ElementOrder.stamp|{}stamp[0]
-        final fun <get-stamp>(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model/ElementOrder.stamp.<get-stamp>|<get-stamp>(){}[0]
+    final val key // io.github.valerioisufi.drawview.model/ElementOrder.key|{}key[0]
+        final fun <get-key>(): kotlin/String // io.github.valerioisufi.drawview.model/ElementOrder.key.<get-key>|<get-key>(){}[0]
 
     final fun compareTo(io.github.valerioisufi.drawview.model/ElementOrder): kotlin/Int // io.github.valerioisufi.drawview.model/ElementOrder.compareTo|compareTo(io.github.valerioisufi.drawview.model.ElementOrder){}[0]
-    final fun component1(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model/ElementOrder.component1|component1(){}[0]
-    final fun component2(): kotlin/Int // io.github.valerioisufi.drawview.model/ElementOrder.component2|component2(){}[0]
-    final fun copy(io.github.valerioisufi.drawview.model/Stamp = ..., kotlin/Int = ...): io.github.valerioisufi.drawview.model/ElementOrder // io.github.valerioisufi.drawview.model/ElementOrder.copy|copy(io.github.valerioisufi.drawview.model.Stamp;kotlin.Int){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model/ElementOrder.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model/ElementOrder.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model/ElementOrder.toString|toString(){}[0]
 
     final object Companion { // io.github.valerioisufi.drawview.model/ElementOrder.Companion|null[0]
+        final const val MAX_LENGTH // io.github.valerioisufi.drawview.model/ElementOrder.Companion.MAX_LENGTH|{}MAX_LENGTH[0]
+            final fun <get-MAX_LENGTH>(): kotlin/Int // io.github.valerioisufi.drawview.model/ElementOrder.Companion.MAX_LENGTH.<get-MAX_LENGTH>|<get-MAX_LENGTH>(){}[0]
+
         final val UNASSIGNED // io.github.valerioisufi.drawview.model/ElementOrder.Companion.UNASSIGNED|{}UNASSIGNED[0]
             final fun <get-UNASSIGNED>(): io.github.valerioisufi.drawview.model/ElementOrder // io.github.valerioisufi.drawview.model/ElementOrder.Companion.UNASSIGNED.<get-UNASSIGNED>|<get-UNASSIGNED>(){}[0]
 
+        final fun between(io.github.valerioisufi.drawview.model/ElementOrder?, io.github.valerioisufi.drawview.model/ElementOrder): io.github.valerioisufi.drawview.model/ElementOrder // io.github.valerioisufi.drawview.model/ElementOrder.Companion.between|between(io.github.valerioisufi.drawview.model.ElementOrder?;io.github.valerioisufi.drawview.model.ElementOrder){}[0]
+        final fun between(io.github.valerioisufi.drawview.model/ElementOrder?, io.github.valerioisufi.drawview.model/ElementOrder, kotlin/Int): kotlin.collections/List<io.github.valerioisufi.drawview.model/ElementOrder> // io.github.valerioisufi.drawview.model/ElementOrder.Companion.between|between(io.github.valerioisufi.drawview.model.ElementOrder?;io.github.valerioisufi.drawview.model.ElementOrder;kotlin.Int){}[0]
+        final fun onTop(io.github.valerioisufi.drawview.model/Stamp, kotlin/Int): io.github.valerioisufi.drawview.model/ElementOrder // io.github.valerioisufi.drawview.model/ElementOrder.Companion.onTop|onTop(io.github.valerioisufi.drawview.model.Stamp;kotlin.Int){}[0]
         final fun parse(kotlin/String): io.github.valerioisufi.drawview.model/ElementOrder? // io.github.valerioisufi.drawview.model/ElementOrder.Companion.parse|parse(kotlin.String){}[0]
         final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.model/ElementOrder> // io.github.valerioisufi.drawview.model/ElementOrder.Companion.serializer|serializer(){}[0]
     }
@@ -2434,7 +2548,7 @@ final class io.github.valerioisufi.drawview.model/MeshPartition { // io.github.v
 }
 
 final class io.github.valerioisufi.drawview.model/PageContentSnapshot { // io.github.valerioisufi.drawview.model/PageContentSnapshot|null[0]
-    constructor <init>(kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawStroke>, kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawText>, kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawImage>, kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawPdf>, io.github.valerioisufi.drawview.model/PageBackground, kotlin/Float, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawTextMarkup> = ..., kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawCustomElement> = ...) // io.github.valerioisufi.drawview.model/PageContentSnapshot.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawStroke>;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawText>;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawImage>;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawPdf>;io.github.valerioisufi.drawview.model.PageBackground;kotlin.Float;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawTextMarkup>;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawCustomElement>){}[0]
+    constructor <init>(kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawStroke>, kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawText>, kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawImage>, kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawPdf>, io.github.valerioisufi.drawview.model/PageBackground, kotlin/Float, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawTextMarkup> = ..., kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawCustomElement> = ..., kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawElement>? = ...) // io.github.valerioisufi.drawview.model/PageContentSnapshot.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawStroke>;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawText>;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawImage>;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawPdf>;io.github.valerioisufi.drawview.model.PageBackground;kotlin.Float;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawTextMarkup>;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawCustomElement>;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawElement>?){}[0]
 
     final val background // io.github.valerioisufi.drawview.model/PageContentSnapshot.background|{}background[0]
         final fun <get-background>(): io.github.valerioisufi.drawview.model/PageBackground // io.github.valerioisufi.drawview.model/PageContentSnapshot.background.<get-background>|<get-background>(){}[0]
@@ -2450,6 +2564,8 @@ final class io.github.valerioisufi.drawview.model/PageContentSnapshot { // io.gi
         final fun <get-paintOrder>(): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawElement> // io.github.valerioisufi.drawview.model/PageContentSnapshot.paintOrder.<get-paintOrder>|<get-paintOrder>(){}[0]
     final val pdfs // io.github.valerioisufi.drawview.model/PageContentSnapshot.pdfs|{}pdfs[0]
         final fun <get-pdfs>(): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawPdf> // io.github.valerioisufi.drawview.model/PageContentSnapshot.pdfs.<get-pdfs>|<get-pdfs>(){}[0]
+    final val stack // io.github.valerioisufi.drawview.model/PageContentSnapshot.stack|{}stack[0]
+        final fun <get-stack>(): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawElement> // io.github.valerioisufi.drawview.model/PageContentSnapshot.stack.<get-stack>|<get-stack>(){}[0]
     final val strokes // io.github.valerioisufi.drawview.model/PageContentSnapshot.strokes|{}strokes[0]
         final fun <get-strokes>(): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawStroke> // io.github.valerioisufi.drawview.model/PageContentSnapshot.strokes.<get-strokes>|<get-strokes>(){}[0]
     final val texts // io.github.valerioisufi.drawview.model/PageContentSnapshot.texts|{}texts[0]
