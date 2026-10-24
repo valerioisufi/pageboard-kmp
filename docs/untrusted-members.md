@@ -240,7 +240,7 @@ up to an hour ahead".
 | 2. Signed operations | `OperationProof`, `SealedOperation.signature`; the engine signing, checking, keeping and giving on the proofs; `Membership.keyHash` and `adoptKey`; the snapshot from the owner; `KnownVersions` of the sender; the resources checked against their hash and received in parts; `PROTOCOL_VERSION` back to 1 and `ProtocolFormatTest`. Tests: a reader writing as an editor, a member writing as another, an operation given on through a member, a wrong key, a snapshot of a member, versions said for another, a wrong file | done |
 | 3. Nothing makes a device fail | `SyncEngine.run` closing the connection on any failure of a message; `SyncCodec` never throwing but `SyncException`; tests with random bytes, changed frames, changed operations and snapshots (a fixed seed, on the JVM and the iOS simulator), and what they find fixed | done |
 | 4. Stamps bounded in the model | `HybridClock.admits`, `MAX_AHEAD_MS`, `next` without overflow; `DocumentChange.stamps()`; `DocumentSession.admits`, `receive` refusing; `latestStamp()` with the title; the ABI of `drawview-model` recorded again (additions), the consumer checks; the operations of the tests of the engine stamped now (`forged`, 35 000 years ahead until now: refused from this phase). Tests (`FutureStampTest`): the end of time, the greatest counter a minute ahead, a century ahead, a text said to include the future, an order, a version and a removal after the stamp of their operation, in a composite change too, the stamp of another replica, at the bound and a millisecond past it, negative parts, a document loaded with stamps ahead of the wall clock; every operation `ConvergenceTest` exchanges admitted | done |
-| 5. Refused by the engine | `SyncEngine.onOperations` closing the connection before keeping or applying anything; `docs/collaboration.md`. Tests (`SyncEngineTest`): `anOperationStampedFarAheadIsRefused`; a member ten minutes ahead, taken, the next changes of the others after it; an order or a version after the stamp, refused; an operation of a member stamped ahead given on by another one, refused; `aMemberSendingAnythingStopsNothing` as before. The check on a copy of the database of the user | done, but the check on the real notes (waiting for the copy) |
+| 5. Refused by the engine | `SyncEngine.onOperations` closing the connection before keeping or applying anything; `docs/collaboration.md`. Tests (`SyncEngineTest`): `anOperationStampedFarAheadIsRefused`; a member ten minutes ahead, taken, the next changes of the others after it; an order or a version after the stamp, refused; an operation of a member stamped ahead given on by another one, refused; `aMemberSendingAnythingStopsNothing` as before. The check on a copy of the database of the user | done |
 
 Every phase ends with the checks of `CLAUDE.md`, the Rust tests when the bridge changes, and the
 tests of the sync modules on the iOS simulator.
@@ -399,7 +399,11 @@ tests of the sync modules on the iOS simulator.
   when a connection starts), so the ones that did not connect again after every member had
   everything keep it (see Left for later). Before, the order of the steps of the test happened to
   make them drop the same.
-* Left: the check on a copy of the database of the user, waiting for the copy.
+* Checked on a copy of the database of PencilNotes of the user (2026-10-25, the original
+  untouched; 12 documents, 588 pages): the 2199 operations of its log, decoded as the store does
+  and given to `DocumentSession.admits`, all admitted (every stamp of its replica, none ahead,
+  none carried after the stamp of its operation); the 13 095 stamps of its tables none negative
+  and none ahead of the time of the check (the latest of the day before).
 
 ## Decisions
 
