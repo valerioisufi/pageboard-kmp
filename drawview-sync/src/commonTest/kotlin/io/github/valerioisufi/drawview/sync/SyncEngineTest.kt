@@ -39,6 +39,7 @@ import io.github.valerioisufi.drawview.model.change.snapshot
 import io.github.valerioisufi.drawview.model.change.toData
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import io.github.valerioisufi.drawview.platform.Sha256
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
@@ -939,9 +940,17 @@ class SyncEngineTest {
         return channel
     }
 
-    /** The operation [sequence] of [replica] making [change] in [documentId], sealed with [key] and signed by [signer]. */
-    private fun forged(documentId: String, key: DocumentKey, replica: String, sequence: Long, change: DocumentChange, signer: DeviceIdentity): SealedOperation {
-        val operation = Operation(OperationId(replica, sequence), Stamp(1L shl 50, sequence.toInt(), replica), change)
+    /** The operation [sequence] of [replica] making [change] in [documentId] with [stamp], sealed with [key] and signed by [signer]. */
+    private fun forged(
+        documentId: String,
+        key: DocumentKey,
+        replica: String,
+        sequence: Long,
+        change: DocumentChange,
+        signer: DeviceIdentity,
+        stamp: Stamp = Stamp(1L shl 50, sequence.toInt(), replica)
+    ): SealedOperation {
+        val operation = Operation(OperationId(replica, sequence), stamp, change)
         return OperationSeal(key).seal(replica, sequence, OperationProof.sign(signer, documentId, replica, sequence, SyncCodec.encodeOperation(operation)))
     }
 
@@ -988,6 +997,42 @@ class SyncEngineTest {
         reader.send(SyncCodec.encode(Operations(listOf(forged(document.id, key, cyReplica, 1, RenameDocument("By Cy"), cy.identity)))))
         advanceUntilIdle()
         assertEquals("By Cy", ada.title(document.id))
+    }
+
+    @Test
+    fun anOperationStampedFarAheadIsRefused() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Physics")
+        val invitation = ada.share(document.id, "Physics")
+        bob.join(invitation, "ada")
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+        val key = bob.engine.connectionKeys().first { it.first == document.id }.second
+        val bobReplica = bob.store.replicaId()
+
+        // Bob, an editor, stamps its renaming a century ahead: signed as it should be, refused,
+        // and Bob is not worked with anymore
+        val century = 100L * 365 * 24 * 60 * 60 * 1000
+        val ahead = impostor(bob, ada, document.id)
+        ahead.send(
+            SyncCodec.encode(
+                Operations(listOf(forged(document.id, key, bobReplica, 1, RenameDocument("Ahead"), bob.identity, Stamp(currentTimeMillis() + century, 0, bobReplica))))
+            )
+        )
+        assertTrue(isClosed(ahead))
+        advanceUntilIdle()
+        assertEquals("Physics", ada.title(document.id))
+        assertEquals("Physics", cy.title(document.id))
+
+        // The clocks of Ada and Cy are not pushed: their next changes are stamped now
+        ada.change(document.id) { RenameDocument("Optics") }
+        cy.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(1))) }
+        advanceUntilIdle()
+        val day = 24L * 60 * 60 * 1000
+        assertTrue(ada.snapshot(document.id).titleVersion.time < currentTimeMillis() + day)
+        assertTrue(cy.snapshot(document.id).pages.all { it.added.time < currentTimeMillis() + day })
+        assertSame(document.id, listOf(ada, cy))
     }
 
     @Test
