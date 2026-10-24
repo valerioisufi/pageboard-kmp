@@ -958,6 +958,7 @@ public final class io/github/valerioisufi/drawview/model/change/AddElements : io
 	public final fun getPageId ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -988,6 +989,7 @@ public final class io/github/valerioisufi/drawview/model/change/AddPage : io/git
 	public final fun getPage ()Lio/github/valerioisufi/drawview/model/change/PageData;
 	public fun hashCode ()I
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1018,6 +1020,7 @@ public final class io/github/valerioisufi/drawview/model/change/AddResource : io
 	public final fun getResource ()Lio/github/valerioisufi/drawview/model/change/ResourceData;
 	public fun hashCode ()I
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1138,6 +1141,7 @@ public final class io/github/valerioisufi/drawview/model/change/CompositeChange 
 	public final fun getChanges ()Ljava/util/List;
 	public fun hashCode ()I
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1198,6 +1202,7 @@ public abstract interface class io/github/valerioisufi/drawview/model/change/Doc
 	public static final field Companion Lio/github/valerioisufi/drawview/model/change/DocumentChange$Companion;
 	public abstract fun applyTo (Lio/github/valerioisufi/drawview/model/change/ChangeContext;)Lio/github/valerioisufi/drawview/model/change/DocumentChange;
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun stamps ()Lkotlin/sequences/Sequence;
 }
 
 public final class io/github/valerioisufi/drawview/model/change/DocumentChange$Companion {
@@ -1206,6 +1211,7 @@ public final class io/github/valerioisufi/drawview/model/change/DocumentChange$C
 
 public final class io/github/valerioisufi/drawview/model/change/DocumentChange$DefaultImpls {
 	public static fun prepare (Lio/github/valerioisufi/drawview/model/change/DocumentChange;Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public static fun stamps (Lio/github/valerioisufi/drawview/model/change/DocumentChange;)Lkotlin/sequences/Sequence;
 }
 
 public final class io/github/valerioisufi/drawview/model/change/DocumentChangeKt {
@@ -1250,6 +1256,7 @@ public final class io/github/valerioisufi/drawview/model/change/DocumentSession 
 	public fun <init> (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;)V
 	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun addObserver (Lio/github/valerioisufi/drawview/model/change/ChangeObserver;)V
+	public final fun admits (Lio/github/valerioisufi/drawview/model/change/Operation;)Z
 	public final fun getClock ()Lio/github/valerioisufi/drawview/model/change/HybridClock;
 	public final fun getDocument ()Lio/github/valerioisufi/drawview/model/DrawDocument;
 	public final fun getReadOnly ()Lkotlinx/coroutines/flow/StateFlow;
@@ -1381,11 +1388,17 @@ public final class io/github/valerioisufi/drawview/model/change/ElementVersions$
 }
 
 public final class io/github/valerioisufi/drawview/model/change/HybridClock {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/change/HybridClock$Companion;
+	public static final field MAX_AHEAD_MS J
 	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
 	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun admits (Lio/github/valerioisufi/drawview/model/Stamp;)Z
 	public final fun getReplica ()Ljava/lang/String;
 	public final fun next ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public final fun observe (Lio/github/valerioisufi/drawview/model/Stamp;)V
+}
+
+public final class io/github/valerioisufi/drawview/model/change/HybridClock$Companion {
 }
 
 public final class io/github/valerioisufi/drawview/model/change/ImageData : io/github/valerioisufi/drawview/model/change/ElementData {
@@ -1474,6 +1487,7 @@ public final class io/github/valerioisufi/drawview/model/change/MovePages : io/g
 	public final fun getMoves ()Ljava/util/List;
 	public fun hashCode ()I
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1742,6 +1756,7 @@ public final class io/github/valerioisufi/drawview/model/change/PlaceElements : 
 	public final fun getToPageId ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1784,6 +1799,7 @@ public final class io/github/valerioisufi/drawview/model/change/RemoveElements :
 	public final fun getPageId ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1818,6 +1834,7 @@ public final class io/github/valerioisufi/drawview/model/change/RemovePage : io/
 	public fun hashCode ()I
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
 	public final fun setSaw (Lio/github/valerioisufi/drawview/model/Versions;)V
+	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1847,6 +1864,7 @@ public final class io/github/valerioisufi/drawview/model/change/RenameDocument :
 	public final fun getTitle ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1910,6 +1928,7 @@ public final class io/github/valerioisufi/drawview/model/change/RestyleMarkups :
 	public final fun getStyles ()Ljava/util/List;
 	public fun hashCode ()I
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1943,6 +1962,7 @@ public final class io/github/valerioisufi/drawview/model/change/SetDocumentDefau
 	public final fun getWidthMm ()F
 	public fun hashCode ()I
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1978,6 +1998,7 @@ public final class io/github/valerioisufi/drawview/model/change/SetPageFormat : 
 	public final fun getWidthMm ()F
 	public fun hashCode ()I
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -2191,6 +2212,7 @@ public final class io/github/valerioisufi/drawview/model/change/UpdateElementCon
 	public final fun getVersion ()I
 	public fun hashCode ()I
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -2222,6 +2244,7 @@ public final class io/github/valerioisufi/drawview/model/change/UpdateTexts : io
 	public final fun getTexts ()Ljava/util/List;
 	public fun hashCode ()I
 	public fun prepare (Lio/github/valerioisufi/drawview/model/StrokeModeller;)V
+	public fun stamps ()Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
 }
 

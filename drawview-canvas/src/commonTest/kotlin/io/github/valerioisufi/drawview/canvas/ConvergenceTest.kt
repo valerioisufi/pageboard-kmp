@@ -118,6 +118,15 @@ class ConvergenceTest {
             }
         }
 
+        /**
+         * Applies [operation], made on another device: admitted, as every operation the editor and
+         * the history make (see [DocumentSession.admits]).
+         */
+        fun receive(operation: Operation): Boolean {
+            assertTrue(session.admits(operation), "not admitted: ${operation.id} ${operation.stamp} ${operation.change}")
+            return session.receive(operation)
+        }
+
         /** Whether [operation] (made after [dependencies]) can be applied here now. */
         fun canReceive(operation: Operation, dependencies: Map<String, Long>): Boolean {
             val vector = session.versionVector
@@ -142,7 +151,7 @@ class ConvergenceTest {
                 val candidates = devices.filter { it !== device }.flatMap { it.made }.filter { (operation, dependencies) ->
                     device.canReceive(operation, dependencies)
                 }
-                candidates.randomOrNull(random)?.let { (operation) -> device.session.receive(operation) }
+                candidates.randomOrNull(random)?.let { (operation) -> device.receive(operation) }
             } else {
                 when (random.nextInt(10)) {
                     0 -> device.history.undo()
@@ -182,7 +191,7 @@ class ConvergenceTest {
             for (device in devices) {
                 for ((operation, dependencies) in devices.filter { it !== device }.flatMap { it.made }) {
                     if (device.canReceive(operation, dependencies)) {
-                        assertTrue(device.session.receive(operation))
+                        assertTrue(device.receive(operation))
                         delivered = true
                     }
                 }

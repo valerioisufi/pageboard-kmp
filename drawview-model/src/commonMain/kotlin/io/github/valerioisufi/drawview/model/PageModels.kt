@@ -756,7 +756,7 @@ public class DrawDocument(
 
     /** The most recent stamp of the document (what its clock must stay after). */
     internal fun latestStamp(): Stamp {
-        val stamps = sequenceOf(defaultsVersion) +
+        val stamps = sequenceOf(defaultsVersion, titleVersion) +
             allPages().asSequence().flatMap { page ->
                 sequenceOf(page.added, page.removed ?: Stamp.ZERO, page.orderVersion, page.formatVersion) +
                     // The changes that changed nothing are among the versions only

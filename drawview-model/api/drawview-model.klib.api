@@ -232,6 +232,7 @@ abstract interface io.github.valerioisufi.drawview.model/StrokeEngineDelegate { 
 sealed interface io.github.valerioisufi.drawview.model.change/DocumentChange { // io.github.valerioisufi.drawview.model.change/DocumentChange|null[0]
     abstract fun applyTo(io.github.valerioisufi.drawview.model.change/ChangeContext): io.github.valerioisufi.drawview.model.change/DocumentChange? // io.github.valerioisufi.drawview.model.change/DocumentChange.applyTo|applyTo(io.github.valerioisufi.drawview.model.change.ChangeContext){}[0]
     open fun prepare(io.github.valerioisufi.drawview.model/StrokeModeller) // io.github.valerioisufi.drawview.model.change/DocumentChange.prepare|prepare(io.github.valerioisufi.drawview.model.StrokeModeller){}[0]
+    open fun stamps(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/Stamp> // io.github.valerioisufi.drawview.model.change/DocumentChange.stamps|stamps(){}[0]
 
     final object Companion : kotlinx.serialization.internal/SerializerFactory { // io.github.valerioisufi.drawview.model.change/DocumentChange.Companion|null[0]
         final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.model.change/DocumentChange> // io.github.valerioisufi.drawview.model.change/DocumentChange.Companion.serializer|serializer(){}[0]
@@ -306,6 +307,7 @@ final class io.github.valerioisufi.drawview.model.change/AddElements : io.github
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/AddElements.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.change/AddElements.hashCode|hashCode(){}[0]
     final fun prepare(io.github.valerioisufi.drawview.model/StrokeModeller) // io.github.valerioisufi.drawview.model.change/AddElements.prepare|prepare(io.github.valerioisufi.drawview.model.StrokeModeller){}[0]
+    final fun stamps(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/Stamp> // io.github.valerioisufi.drawview.model.change/AddElements.stamps|stamps(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.change/AddElements.toString|toString(){}[0]
 
     final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.model.change/AddElements> { // io.github.valerioisufi.drawview.model.change/AddElements.$serializer|null[0]
@@ -336,6 +338,7 @@ final class io.github.valerioisufi.drawview.model.change/AddPage : io.github.val
     final fun copy(io.github.valerioisufi.drawview.model.change/PageData = ...): io.github.valerioisufi.drawview.model.change/AddPage // io.github.valerioisufi.drawview.model.change/AddPage.copy|copy(io.github.valerioisufi.drawview.model.change.PageData){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/AddPage.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.change/AddPage.hashCode|hashCode(){}[0]
+    final fun stamps(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/Stamp> // io.github.valerioisufi.drawview.model.change/AddPage.stamps|stamps(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.change/AddPage.toString|toString(){}[0]
 
     final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.model.change/AddPage> { // io.github.valerioisufi.drawview.model.change/AddPage.$serializer|null[0]
@@ -489,6 +492,7 @@ final class io.github.valerioisufi.drawview.model.change/CompositeChange : io.gi
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/CompositeChange.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.change/CompositeChange.hashCode|hashCode(){}[0]
     final fun prepare(io.github.valerioisufi.drawview.model/StrokeModeller) // io.github.valerioisufi.drawview.model.change/CompositeChange.prepare|prepare(io.github.valerioisufi.drawview.model.StrokeModeller){}[0]
+    final fun stamps(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/Stamp> // io.github.valerioisufi.drawview.model.change/CompositeChange.stamps|stamps(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.change/CompositeChange.toString|toString(){}[0]
 
     final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.model.change/CompositeChange> { // io.github.valerioisufi.drawview.model.change/CompositeChange.$serializer|null[0]
@@ -570,6 +574,7 @@ final class io.github.valerioisufi.drawview.model.change/DocumentSession { // io
         final fun <set-isReadOnly>(kotlin/Boolean) // io.github.valerioisufi.drawview.model.change/DocumentSession.isReadOnly.<set-isReadOnly>|<set-isReadOnly>(kotlin.Boolean){}[0]
 
     final fun addObserver(io.github.valerioisufi.drawview.model.change/ChangeObserver) // io.github.valerioisufi.drawview.model.change/DocumentSession.addObserver|addObserver(io.github.valerioisufi.drawview.model.change.ChangeObserver){}[0]
+    final fun admits(io.github.valerioisufi.drawview.model.change/Operation): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/DocumentSession.admits|admits(io.github.valerioisufi.drawview.model.change.Operation){}[0]
     final fun lastApplied(kotlin/String): kotlin/Long // io.github.valerioisufi.drawview.model.change/DocumentSession.lastApplied|lastApplied(kotlin.String){}[0]
     final fun receive(io.github.valerioisufi.drawview.model.change/Operation): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/DocumentSession.receive|receive(io.github.valerioisufi.drawview.model.change.Operation){}[0]
     final fun removeObserver(io.github.valerioisufi.drawview.model.change/ChangeObserver) // io.github.valerioisufi.drawview.model.change/DocumentSession.removeObserver|removeObserver(io.github.valerioisufi.drawview.model.change.ChangeObserver){}[0]
@@ -674,8 +679,14 @@ final class io.github.valerioisufi.drawview.model.change/HybridClock { // io.git
     final val replica // io.github.valerioisufi.drawview.model.change/HybridClock.replica|{}replica[0]
         final fun <get-replica>(): kotlin/String // io.github.valerioisufi.drawview.model.change/HybridClock.replica.<get-replica>|<get-replica>(){}[0]
 
+    final fun admits(io.github.valerioisufi.drawview.model/Stamp): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/HybridClock.admits|admits(io.github.valerioisufi.drawview.model.Stamp){}[0]
     final fun next(): io.github.valerioisufi.drawview.model/Stamp // io.github.valerioisufi.drawview.model.change/HybridClock.next|next(){}[0]
     final fun observe(io.github.valerioisufi.drawview.model/Stamp) // io.github.valerioisufi.drawview.model.change/HybridClock.observe|observe(io.github.valerioisufi.drawview.model.Stamp){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.model.change/HybridClock.Companion|null[0]
+        final const val MAX_AHEAD_MS // io.github.valerioisufi.drawview.model.change/HybridClock.Companion.MAX_AHEAD_MS|{}MAX_AHEAD_MS[0]
+            final fun <get-MAX_AHEAD_MS>(): kotlin/Long // io.github.valerioisufi.drawview.model.change/HybridClock.Companion.MAX_AHEAD_MS.<get-MAX_AHEAD_MS>|<get-MAX_AHEAD_MS>(){}[0]
+    }
 }
 
 final class io.github.valerioisufi.drawview.model.change/ImageData : io.github.valerioisufi.drawview.model.change/ElementData { // io.github.valerioisufi.drawview.model.change/ImageData|null[0]
@@ -1039,6 +1050,7 @@ final class io.github.valerioisufi.drawview.model.change/PlaceElements : io.gith
     final fun copy(kotlin/String = ..., kotlin.collections/List<io.github.valerioisufi.drawview.model.change/Placement> = ..., kotlin/String = ...): io.github.valerioisufi.drawview.model.change/PlaceElements // io.github.valerioisufi.drawview.model.change/PlaceElements.copy|copy(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.model.change.Placement>;kotlin.String){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/PlaceElements.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.change/PlaceElements.hashCode|hashCode(){}[0]
+    final fun stamps(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/Stamp> // io.github.valerioisufi.drawview.model.change/PlaceElements.stamps|stamps(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.change/PlaceElements.toString|toString(){}[0]
 
     final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.model.change/PlaceElements> { // io.github.valerioisufi.drawview.model.change/PlaceElements.$serializer|null[0]
@@ -1106,6 +1118,7 @@ final class io.github.valerioisufi.drawview.model.change/RemovePage : io.github.
     final fun copy(kotlin/String = ..., io.github.valerioisufi.drawview.model/Versions? = ...): io.github.valerioisufi.drawview.model.change/RemovePage // io.github.valerioisufi.drawview.model.change/RemovePage.copy|copy(kotlin.String;io.github.valerioisufi.drawview.model.Versions?){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/RemovePage.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.change/RemovePage.hashCode|hashCode(){}[0]
+    final fun stamps(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/Stamp> // io.github.valerioisufi.drawview.model.change/RemovePage.stamps|stamps(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.change/RemovePage.toString|toString(){}[0]
 
     final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.model.change/RemovePage> { // io.github.valerioisufi.drawview.model.change/RemovePage.$serializer|null[0]
@@ -1544,6 +1557,7 @@ final class io.github.valerioisufi.drawview.model.change/UpdateTexts : io.github
     final fun copy(kotlin/String = ..., kotlin.collections/List<io.github.valerioisufi.drawview.model.change/TextData> = ...): io.github.valerioisufi.drawview.model.change/UpdateTexts // io.github.valerioisufi.drawview.model.change/UpdateTexts.copy|copy(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.model.change.TextData>){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/UpdateTexts.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.change/UpdateTexts.hashCode|hashCode(){}[0]
+    final fun stamps(): kotlin.sequences/Sequence<io.github.valerioisufi.drawview.model/Stamp> // io.github.valerioisufi.drawview.model.change/UpdateTexts.stamps|stamps(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.change/UpdateTexts.toString|toString(){}[0]
 
     final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.drawview.model.change/UpdateTexts> { // io.github.valerioisufi.drawview.model.change/UpdateTexts.$serializer|null[0]

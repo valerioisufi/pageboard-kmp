@@ -127,16 +127,32 @@ public class DocumentSession(
     }
 
     /**
+     * Whether [operation], made on another device, may be received: stamped by its replica, at
+     * most [HybridClock.MAX_AHEAD_MS] ahead of the wall clock here ([HybridClock.admits]), and
+     * carrying no stamp after its own ([DocumentChange.stamps]: its author had seen them all). The
+     * operation of a member stamping its changes as it likes would win over the changes made
+     * after it, or make the changes of another device count as included already.
+     */
+    public fun admits(operation: Operation): Boolean {
+        val stamp = operation.stamp
+        return stamp.replica == operation.id.replica && clock.admits(stamp) &&
+            operation.change.stamps().all { clock.admits(it) && it <= stamp }
+    }
+
+    /**
      * Applies [operation], made on another device, unless it has been applied already. The
      * operations of a replica are applied in their order: one that does not follow the last one
      * of its replica is not applied.
      *
      * @return `true` when it has been applied (even if it changed nothing: it was made before
      *   more recent changes).
+     * @throws IllegalArgumentException when it follows the last one of its replica but may not be
+     *   received (see [admits]).
      */
     public fun receive(operation: Operation): Boolean {
         val id = operation.id
         if (id.sequence != (applied[id.replica] ?: 0L) + 1) return false
+        require(admits(operation)) { "The operation ${id.replica}/${id.sequence} is stamped ahead, or carries stamps after its own" }
         clock.observe(operation.stamp)
         val effects = ChangeEffects(document)
         val inverse = operation.change.applyTo(ChangeContext(document, effects, operation.stamp, received = true))

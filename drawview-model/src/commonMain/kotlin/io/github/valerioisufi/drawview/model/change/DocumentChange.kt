@@ -54,6 +54,20 @@ public sealed interface DocumentChange {
      * thread for a change received: it is applied sooner then.
      */
     public fun prepare(modeller: StrokeModeller) {}
+
+    /**
+     * The stamps it carries from the document it was made from (none by default): the orders of
+     * its elements, the versions of the contents of its texts, what a removal of a page saw. Its
+     * author had seen them all: none is after the stamp of its operation (see
+     * [DocumentSession.admits]).
+     */
+    public fun stamps(): Sequence<Stamp> = emptySequence()
+}
+
+/** The stamps [this] carries (see [DocumentChange.stamps]): its order and the versions of a text. */
+private fun ElementData.stamps(): Sequence<Stamp> = sequence {
+    order?.let { yield(it.stamp) }
+    if (this@stamps is TextData) yieldAll(versions.stamps.values)
 }
 
 /**
@@ -85,6 +99,8 @@ public data class AddElements(val pageId: String, val elements: List<ElementData
     override fun prepare(modeller: StrokeModeller) {
         if (local.isEmpty()) local = elements.associate { it.id to it.toElement(modeller) }
     }
+
+    override fun stamps(): Sequence<Stamp> = elements.asSequence().flatMap { it.stamps() }
 
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
@@ -399,6 +415,8 @@ public data class PlaceElements(
     val placements: List<Placement>,
     val toPageId: String = pageId
 ) : DocumentChange {
+    override fun stamps(): Sequence<Stamp> = placements.asSequence().mapNotNull { it.order?.stamp }
+
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         val hint = document.anyPage(pageId)
@@ -442,6 +460,8 @@ public data class PlaceElements(
 @Serializable
 @SerialName("updateTexts")
 public data class UpdateTexts(val pageId: String, val texts: List<TextData>) : DocumentChange {
+    override fun stamps(): Sequence<Stamp> = texts.asSequence().flatMap { it.stamps() }
+
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         val page = document.anyPage(pageId) ?: return null
@@ -539,6 +559,8 @@ public data class AddPage(val page: PageData) : DocumentChange {
     @Transient
     private var local: DrawPage? = null
 
+    override fun stamps(): Sequence<Stamp> = page.elements.asSequence().flatMap { it.stamps() }
+
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         val existing = document.anyPage(page.id)
@@ -593,6 +615,8 @@ public data class AddPage(val page: PageData) : DocumentChange {
 @Serializable
 @SerialName("removePage")
 public data class RemovePage(val pageId: String, var saw: Versions? = null) : DocumentChange {
+    override fun stamps(): Sequence<Stamp> = saw?.stamps?.values?.asSequence() ?: emptySequence()
+
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val document = context.document
         val page = document.anyPage(pageId) ?: return null
@@ -763,6 +787,8 @@ internal data object NoChange : DocumentChange {
 @SerialName("composite")
 public data class CompositeChange(val changes: List<DocumentChange>) : DocumentChange {
     override fun prepare(modeller: StrokeModeller): Unit = changes.forEach { it.prepare(modeller) }
+
+    override fun stamps(): Sequence<Stamp> = changes.asSequence().flatMap { it.stamps() }
 
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val inverses = changes.mapNotNull { it.applyTo(context) }

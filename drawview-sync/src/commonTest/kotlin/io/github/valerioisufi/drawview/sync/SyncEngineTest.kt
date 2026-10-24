@@ -948,7 +948,7 @@ class SyncEngineTest {
         sequence: Long,
         change: DocumentChange,
         signer: DeviceIdentity,
-        stamp: Stamp = Stamp(1L shl 50, sequence.toInt(), replica)
+        stamp: Stamp = Stamp(currentTimeMillis(), sequence.toInt(), replica)
     ): SealedOperation {
         val operation = Operation(OperationId(replica, sequence), stamp, change)
         return OperationSeal(key).seal(replica, sequence, OperationProof.sign(signer, documentId, replica, sequence, SyncCodec.encodeOperation(operation)))

@@ -239,8 +239,8 @@ up to an hour ahead".
 | 1. Stored proofs | `OperationLog.proofs` / `saveProofs`; `KeyValueDocumentStore`; Room schema 19 with `Migration18To19` (`MigrationTestHelper`); compaction and deletion. Tests: kept, read again after a restart, removed with the operations, a store of before read | done |
 | 2. Signed operations | `OperationProof`, `SealedOperation.signature`; the engine signing, checking, keeping and giving on the proofs; `Membership.keyHash` and `adoptKey`; the snapshot from the owner; `KnownVersions` of the sender; the resources checked against their hash and received in parts; `PROTOCOL_VERSION` back to 1 and `ProtocolFormatTest`. Tests: a reader writing as an editor, a member writing as another, an operation given on through a member, a wrong key, a snapshot of a member, versions said for another, a wrong file | done |
 | 3. Nothing makes a device fail | `SyncEngine.run` closing the connection on any failure of a message; `SyncCodec` never throwing but `SyncException`; tests with random bytes, changed frames, changed operations and snapshots (a fixed seed, on the JVM and the iOS simulator), and what they find fixed | done |
-| 4. Stamps bounded in the model | `HybridClock.admits`, `MAX_AHEAD_MS`, `next` without overflow; `DocumentChange.stamps()`; `DocumentSession.admits`, `receive` refusing; `latestStamp()` with the title; the ABI of `drawview-model` recorded again (additions), the consumer checks. Tests (`FutureStampTest`): the end of time, the greatest counter a minute ahead, a century ahead, a text said to include the future, an order, a version and a removal after the stamp of their operation, in a composite change too, the stamp of another replica, at the bound and a millisecond past it, negative parts, a document loaded with stamps ahead of the wall clock; every operation `ConvergenceTest` exchanges admitted | approved |
-| 5. Refused by the engine | `SyncEngine.onOperations` closing the connection before keeping or applying anything; the operations of the tests stamped now (`forged`, 35 000 years ahead until now); `docs/collaboration.md`. Tests (`SyncEngineTest`): `anOperationStampedFarAheadIsRefused`; a member ten minutes ahead, taken, the next changes of the others after it; an order or a version after the stamp, refused; an operation of a member stamped ahead given on by another one, refused; `aMemberSendingAnythingStopsNothing` as before. The check on a copy of the database of the user | approved |
+| 4. Stamps bounded in the model | `HybridClock.admits`, `MAX_AHEAD_MS`, `next` without overflow; `DocumentChange.stamps()`; `DocumentSession.admits`, `receive` refusing; `latestStamp()` with the title; the ABI of `drawview-model` recorded again (additions), the consumer checks; the operations of the tests of the engine stamped now (`forged`, 35 000 years ahead until now: refused from this phase). Tests (`FutureStampTest`): the end of time, the greatest counter a minute ahead, a century ahead, a text said to include the future, an order, a version and a removal after the stamp of their operation, in a composite change too, the stamp of another replica, at the bound and a millisecond past it, negative parts, a document loaded with stamps ahead of the wall clock; every operation `ConvergenceTest` exchanges admitted | done |
+| 5. Refused by the engine | `SyncEngine.onOperations` closing the connection before keeping or applying anything; `docs/collaboration.md`. Tests (`SyncEngineTest`): `anOperationStampedFarAheadIsRefused`; a member ten minutes ahead, taken, the next changes of the others after it; an order or a version after the stamp, refused; an operation of a member stamped ahead given on by another one, refused; `aMemberSendingAnythingStopsNothing` as before. The check on a copy of the database of the user | approved |
 
 Every phase ends with the checks of `CLAUDE.md`, the Rust tests when the bridge changes, and the
 tests of the sync modules on the iOS simulator.
@@ -340,6 +340,39 @@ tests of the sync modules on the iOS simulator.
 
   Without the new catches, the first and the third fail; without the check of the nesting, the
   last one.
+
+### Phase 4 results
+
+* `HybridClock.admits(stamp)`: at most `MAX_AHEAD_MS` (an hour) ahead of the wall clock of the
+  clock, with no negative part. `next()` moves to the next millisecond when its counter is at its
+  greatest.
+* `DocumentChange.stamps()`, overridden by `AddElements`, `PlaceElements`, `UpdateTexts`,
+  `AddPage`, `RemovePage` and `CompositeChange`: the orders of the elements and of the
+  placements, the versions of the texts, what a removal saw.
+* `DocumentSession.admits(operation)`. `receive` throws an `IllegalArgumentException` for an
+  operation that follows the last one of its replica but is not admitted, before its stamp is
+  observed or anything applied.
+* `DrawDocument.latestStamp()` reads `titleVersion`.
+* Until phase 5, the engine meets the refusal inside its edit: a failure handling a message closes
+  the connection (phase 3), so `anOperationStampedFarAheadIsRefused` passes already. But the
+  proofs of the batch are kept before, and the operations of the batch before the one refused are
+  applied.
+* Tests:
+  * `FutureStampTest` (10): the four of the starting point, now passing; a stamp at the bound and
+    a millisecond past it, negative parts; the counter at its greatest; an operation a minute past
+    the hour refused, one a minute within it taken and the change made here after it winning; the
+    stamp of another replica; an order, a placement, the versions of a text, what a removal saw, a
+    page added and a composite change in a composite change, each carrying a stamp a millisecond
+    after the one of its operation, refused, and taken carrying the stamp of its operation or an
+    older one; a document stored with stamps two days ahead (an element and the title), changed
+    after them.
+  * Each check has a test failing without it (checked by removing it): the stamps carried, the
+    replica, the counter, the title, the bound.
+  * `ConvergenceTest`: every operation the three devices exchange (30 seeds of 150 random changes,
+    undo and redo among them, through JSON) is admitted.
+  * The tests of the engine forge their operations stamped now.
+* The ABI of `drawview-model` is recorded again: additions only (`admits`, `MAX_AHEAD_MS`,
+  `stamps()`).
 
 ## Decisions
 
