@@ -181,7 +181,7 @@ Variations).
 | 2 | On the page: `CodeTheme`, `CodeBlockLayout`, the blocks and the code in the line in `toCanvasText`, drawn, measured and laid out by the adapter (`TextBlockLayout.boxes`), `DrawViewEngines.code`; the PDF export of the backgrounds; the automatic width; the texts with fences counted on a copy of the database of the user (asked first, the original untouched), and measured again on load if any; tests (layout, wrapping, tabs, empty lines, alignment, PDF), screenshots; ABI of `drawview-canvas`, `drawview-ui` | Done |
 | 3 | In the editor: the block away from the caret drawn as on the page over its character, its source under the caret on its background and in its colors, the code in the line on its background, the caret on the tapped character of a block; tests of the offsets, screenshots | Done |
 | 4 | Writing code: `RichTextEditing` (Enter, Tab, ⇧Tab and the formats in a block, the fence closed, the block toggled, ⌘E on several lines), `EditorCommands.codeBlock` (⌘⌥C, Format menu, tooltip), the button of `TextFormatBar` and its icon, the strings in the 7 languages; tests of the editing and of the command | Done |
-| 5 | Lecture assistant: `MARKDOWN_RULE` and the reading of the handwriting with the fenced blocks; the fence stripped by `LectureAnalysis` checked with answers holding code; tests | To do |
+| 5 | Lecture assistant: `MARKDOWN_RULE` and the reading of the handwriting with the fenced blocks; the fence stripped by `LectureAnalysis` checked with answers holding code; tests | Done |
 
 No phase touches the sync modules nor the stored formats: `ProtocolFormatTest` and the Room
 schema stay as they are.
@@ -321,6 +321,32 @@ schema stay as they are.
   `RichTextEditing.inCodeBlock`, `toggleCodeBlock`) and of `drawview-ui` (the string of the
   command) recorded again.
 
+### Phase 5 results
+
+* The rule of the Markdown given to the models (`LecturePrompts.MARKDOWN_RULE`, in the live
+  suggestions and in the final review) names the code in the line and the blocks of code between
+  fences with their language; the notes and the final review ask for the code in blocks of code.
+  The reading of the handwriting writes the code written by hand between fences, with its
+  language when it is clear and its indentation.
+* The answers holding code are read as they are written (`LectureAnalysis`):
+  * `repairLatexEscapes`: in a block of code of a string (between fences at the start of its
+    lines) only the escapes that are not valid are doubled: a tab before a word stays a tab, `\nu`
+    a new line before "u". Outside the code, LaTeX is repaired as before.
+  * `normalizeMarkdown` leaves the blocks of code as they are: the ` * ` of a comment is not a
+    bullet, the `\n` of a string not a line break, a `<br>` code of HTML.
+  * The fence around an answer in JSON is taken off when it closes at the end of the answer or
+    does not close: before, the last fence of the answer was taken, which could be the one of the
+    code in a string.
+* No request to a model was made: the prompts changed in their words only (the evaluation of the
+  assistant, on `feat/lecture-eval`, measures them).
+* The panel of the assistant shows the code of a suggestion as code in the line (it lays its
+  texts out without the blocks, see [Left for later](#left-for-later)); a note inserted in the
+  page is drawn with its blocks.
+* Tests: the prompts asking for blocks of code (`LecturePromptsTest`); the code of a note kept as
+  it is written with LaTeX and bullets repaired around it, a fence around the answer closed or not
+  (`LectureAnalysisTest`).
+* The public API does not change.
+
 ## Decisions
 
 Proposed with the plan and approved by the user on 2026-10-22, every one revertible:
@@ -375,6 +401,8 @@ Proposed with the plan and approved by the user on 2026-10-22, every one reverti
 * An opaque background, in the color of the paper: the lines of a lined page show through the
   background of the code, which is translucent because the adapter of the texts does not know the
   page it draws on.
+* The blocks of the suggestions in the panel of the lecture assistant (its `toCanvasText` with
+  `layoutCodeBlock`).
 * Line numbers.
 * Blocks inside list items.
 * The language detected from the code; the names of the languages completed while typed.

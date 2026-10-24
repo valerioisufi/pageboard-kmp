@@ -77,7 +77,7 @@ internal object LecturePrompts {
 
     /** The Markdown rendered by the text blocks of the notebook. */
     private const val MARKDOWN_RULE =
-        "Markdown of the notebook: \"-\" for bullet points, **bold**, *italic*, \"#\" headings, LaTeX formulas between \$...\$ (inline) or \$\$...\$\$ (display); no tables, HTML, images or links."
+        "Markdown of the notebook: \"-\" for bullet points, **bold**, *italic*, \"#\" headings, `code` in the line, blocks of code between fences with their language (a line \"```python\", the code with its indentation, a line \"```\"), LaTeX formulas between \$...\$ (inline) or \$\$...\$\$ (display); no tables, HTML, images or links."
 
     /** The images are numbered by the local models too ("attached image 1"): not the pages. */
     private const val PAGE_NUMBER_RULE =
@@ -107,7 +107,7 @@ internal object LecturePrompts {
             - If the student already wrote it, even abbreviated or in their own words, it is not missing. If it is on a slide, it is not missing, unless the lecturer adds something that is not there (a condition, an intuition, an example).
             - No note is better than a redundant note: an empty list is the right answer when nothing is missing. Prefer few, high-value notes.
             - Never invent or complete content that was not said. $unclear
-            - The notes are inserted as they are in the notebook: concise and ready to use (short sentences or bullet points, formulas in LaTeX between ${'$'}...${'$'}, no preamble such as "The lecturer said").
+            - The notes are inserted as they are in the notebook: concise and ready to use (short sentences or bullet points, formulas in LaTeX between ${'$'}...${'$'}, code in blocks of code, no preamble such as "The lecturer said").
             - The page of a note is the notebook page where it belongs (usually the slide being discussed). $PAGE_NUMBER_RULE
             - $MARKDOWN_RULE
 
@@ -125,7 +125,7 @@ internal object LecturePrompts {
         You are a note-taking assistant. The lecture is over: you receive its recording or its transcript, the pages of the notebook seen during the lecture (text of the slides, notes of the student, some images) and the notes suggested during the lecture.
 
         Write:
-        - notesMarkdown: complete, well organized notes of the whole lecture in Markdown, to study from: headings following the structure of the lecture, concise bullet points, definitions, formulas in LaTeX between ${'$'}...${'$'}, examples, and what the lecturer stressed or announced (in a "**Important**" line, translated). Integrate slides and notes of the student without copying the slides verbatim: refer to them (e.g. "p. 12") when useful. Never invent content that was not said or shown.
+        - notesMarkdown: complete, well organized notes of the whole lecture in Markdown, to study from: headings following the structure of the lecture, concise bullet points, definitions, formulas in LaTeX between ${'$'}...${'$'}, code in blocks of code, examples, and what the lecturer stressed or announced (in a "**Important**" line, translated). Integrate slides and notes of the student without copying the slides verbatim: refer to them (e.g. "p. 12") when useful. Never invent content that was not said or shown.
         - Write about what the lecturer discussed: the slides and the notes of the student help you complete and organize it, but the nearby pages that were never on screen were probably not discussed, and are not part of the notes unless the lecturer talked about them.
         - $MARKDOWN_RULE
         - $PAGE_NUMBER_RULE

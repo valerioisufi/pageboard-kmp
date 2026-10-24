@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.lecture
 
+import io.github.valerioisufi.drawview.model.text.RichTextParser
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -81,10 +82,25 @@ internal object LectureAnalysis {
      * Bullet points as "- ": the canvas reads a single `*` as italic, and the models (the small
      * local ones in particular) often write "*   item"; line breaks written in HTML (`<br>`) or
      * escaped twice in the JSON (a "\\n" left in the text, not followed by a letter as the LaTeX
-     * commands are) as new lines.
+     * commands are) as new lines. The blocks of code are left as they are: a ` * ` of a comment, a
+     * `\\n` of a string and a `<br>` of HTML are code there.
      */
-    internal fun normalizeMarkdown(markdown: String): String =
-        markdown.replace(LINE_BREAK, "\n").replace(LITERAL_NEW_LINE, "\n").replace(BULLET, "$1- ")
+    internal fun normalizeMarkdown(markdown: String): String {
+        val blocks = RichTextParser.parse(markdown).filter { it.kind == RichTextParser.Kind.CODE_BLOCK }
+        if (blocks.isEmpty()) return normalizeProse(markdown)
+        return buildString {
+            var from = 0
+            for (block in blocks) {
+                append(normalizeProse(markdown.substring(from, block.start)))
+                append(markdown, block.start, block.end)
+                from = block.end
+            }
+            append(normalizeProse(markdown.substring(from)))
+        }
+    }
+
+    private fun normalizeProse(text: String): String =
+        text.replace(LINE_BREAK, "\n").replace(LITERAL_NEW_LINE, "\n").replace(BULLET, "$1- ")
 
     private val BULLET = Regex("""(?m)^([ \t]*)[*+][ \t]+""")
     private val LINE_BREAK = Regex("""[ \t]*<br\s*/?>[ \t]*""", RegexOption.IGNORE_CASE)
@@ -98,14 +114,30 @@ internal object LectureAnalysis {
      * The backslash is doubled when it does not start a valid escape, when `\b`, `\f`, `\r` or
      * `\t` is followed by a letter (a backspace, form feed, carriage return or tab before a letter
      * is never meant), and when `\n` starts a LaTeX command (a new line before a word is common).
+     * In a block of code of a string (between fences at the start of its lines) only the escapes
+     * that are not valid are doubled: a tab before a word is a tab there, `\nu` a new line.
      */
     internal fun repairLatexEscapes(json: String): String {
         val out = StringBuilder(json.length + 16)
         var inString = false
+        // A block of code of the string, and the start of one of its lines (after a new line)
+        var inCode = false
+        var lineStart = false
         var i = 0
         while (i < json.length) {
             val c = json[i]
-            if (c == '"') inString = !inString
+            if (c == '"') {
+                inString = !inString
+                inCode = false
+                lineStart = inString
+                out.append(c)
+                i++
+                continue
+            }
+            if (inString && lineStart) {
+                lineStart = false
+                if (fenceAt(json, i)) inCode = !inCode
+            }
             if (!inString || c != '\\') {
                 out.append(c)
                 i++
@@ -115,13 +147,18 @@ internal object LectureAnalysis {
             var end = i + 1
             while (end < json.length && json[end].isLetter()) end++
             val word = json.substring(i + 1, end)
-            val isLatex = when (next) {
-                null -> false
-                '"', '\\', '/' -> false
-                'u' -> json.length < i + 6 || !json.substring(i + 2, i + 6).all { it in HEX_DIGITS }
-                'b', 'f', 'r', 't' -> word.length > 1
-                'n' -> word in LATEX_N_COMMANDS
-                else -> true
+            val validEscape = when (next) {
+                null -> true
+                '"', '\\', '/', 'b', 'f', 'n', 'r', 't' -> true
+                'u' -> json.length >= i + 6 && json.substring(i + 2, i + 6).all { it in HEX_DIGITS }
+                else -> false
+            }
+            val isLatex = when {
+                !validEscape -> next != null
+                inCode -> false
+                next == 'b' || next == 'f' || next == 'r' || next == 't' -> word.length > 1
+                next == 'n' -> word in LATEX_N_COMMANDS
+                else -> false
             }
             if (isLatex) {
                 out.append("\\\\")
@@ -131,9 +168,18 @@ internal object LectureAnalysis {
                 out.append(c)
                 if (next != null) out.append(next)
                 i += 2
+                if (next == 'n') lineStart = true
             }
         }
         return out.toString()
+    }
+
+    /** Whether a fence of code (up to 3 spaces, then 3 backticks or tildes) is at [index] of [json]. */
+    private fun fenceAt(json: String, index: Int): Boolean {
+        var i = index
+        while (i < json.length && i - index < 3 && json[i] == ' ') i++
+        val c = json.getOrNull(i) ?: return false
+        return (c == '`' || c == '~') && json.startsWith(c.toString().repeat(3), i)
     }
 
     private const val HEX_DIGITS = "0123456789abcdefABCDEF"
@@ -144,11 +190,15 @@ internal object LectureAnalysis {
         "nsubseteq", "nsupseteq", "nparallel", "newline", "nolimits", "nonumber", "natural", "nearrow", "nwarrow"
     )
 
-    /** Decodes a JSON answer, tolerating a Markdown code fence around it. */
+    /**
+     * Decodes a JSON answer, tolerating a Markdown code fence around it: closed at the end of the
+     * answer, or not closed (the fences of the code in the strings of the JSON are not it).
+     */
     private fun <T> parse(text: String, serializer: KSerializer<T>): T {
         val trimmed = text.trim()
         val body = if (trimmed.startsWith("```")) {
-            trimmed.substringAfter('\n').substringBeforeLast("```").trim()
+            val inside = trimmed.substringAfter('\n', "")
+            (if (inside.endsWith("```")) inside.removeSuffix("```") else inside).trim()
         } else {
             trimmed
         }

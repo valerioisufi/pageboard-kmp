@@ -254,6 +254,14 @@ class LecturePromptsTest {
         val schema = request.generationConfig?.responseJsonSchema as JsonObject
         assertEquals(listOf("notesMarkdown", "missing"), (schema["required"] as JsonArray).map { it.jsonPrimitive.content })
     }
+
+    @Test
+    fun theModelsWriteTheCodeInBlocksOfCode() {
+        val settings = AssistantSettings()
+        for (instruction in listOf(LecturePrompts.chunkSystemInstruction(settings), LecturePrompts.finalReviewSystemInstruction(settings))) {
+            assertTrue("blocks of code between fences with their language" in instruction, instruction)
+        }
+    }
 }
 
 class LectureAnalysisTest {
@@ -301,6 +309,27 @@ class LectureAnalysisTest {
             "\$\\frac{a}{b} \\neq \\alpha \\times \\rightarrow \\beta \\underline{x}\$\nNuova riga\ne poi \"citato\" è\\\\",
             analysis.notes.single().content
         )
+    }
+
+    @Test
+    fun theCodeOfTheNotesIsKeptAsItIsWritten() {
+        // In the code a tab before a word, a new line before "u", the backslash and "n" of a string,
+        // a " * " of a comment and a "<br>" are code; around it LaTeX and bullets are repaired as before
+        val analysis = LectureAnalysis.parseChunk(
+            """{"notes":[{"kind":"OTHER","title":"C","importance":2,
+               "content":"Prova \frac{a}{b}:\n```c\n/**\n * doc\n */\nint main() {\n\tprintf(\"%d\\n\", x);<br>\n}\nu = 1;\n```\n*   punto"}]}"""
+        )
+        assertEquals(
+            "Prova \\frac{a}{b}:\n```c\n/**\n * doc\n */\nint main() {\n\tprintf(\"%d\\n\", x);<br>\n}\nu = 1;\n```\n- punto",
+            analysis.notes.single().content
+        )
+    }
+
+    @Test
+    fun aFenceAroundTheAnswerIsNotTheOneOfItsCode() {
+        val note = """{"notes":[{"kind":"OTHER","title":"C","importance":2,"content":"```py\nx = 1\n```"}]}"""
+        assertEquals("```py\nx = 1\n```", LectureAnalysis.parseChunk("```json\n$note\n```").notes.single().content)
+        assertEquals("```py\nx = 1\n```", LectureAnalysis.parseChunk("```json\n$note").notes.single().content, "a fence not closed")
     }
 
     @Test

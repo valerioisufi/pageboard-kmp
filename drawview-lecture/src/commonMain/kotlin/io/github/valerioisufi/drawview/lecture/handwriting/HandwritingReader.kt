@@ -205,6 +205,7 @@ internal class HandwritingReader(
             You transcribe the handwritten notes of a university student, taken during a lecture. Every image shows one block of handwriting.
             Write exactly what is written in each image:
             - the text in Markdown, keeping its lines and bullet points ("-"); formulas in LaTeX between ${'$'}...${'$'};
+            - code written by hand between fences with its language when it is clear (a line "```c", the code with its indentation, a line "```");
             - arrows as →, drawings and diagrams as [figure: a few words on what it shows];
             - illegible words as [?].
             Do not correct, complete, translate or explain anything. An image with nothing readable: an empty text.
