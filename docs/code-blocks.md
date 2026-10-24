@@ -172,6 +172,54 @@ Variations).
   Neither changes the lines: the texts already written with code in the line keep their layout
   and their height.
 
+### Stage 2: the paper, the line numbers, the lists, the panel
+
+Four of the things left for later after phase 5, asked by the user on 2026-10-24.
+
+**Where they start.**
+
+* The background of the code is the color of the text at 7 %, translucent: the adapter draws a
+  text without knowing its page (`TextTileAdapter.drawText(canvas, text, mmToCanvas)`), so the
+  lines of a ruled or squared page show through. The callers know the page and its paper
+  (`PageBackground.backgroundColor`): the tiles (`PageContentSnapshot.background`), the selection
+  being moved, the drafts of the other devices, the preview of a note being placed, the PDF and
+  PNG exports.
+* The information after the fence gives the language only; there are no line numbers.
+* A fence counts with up to 3 spaces before it, so a block under a nested list item (4 spaces and
+  more) is text; a block under a first-level item (`  ```c`, five of the seven texts of the user)
+  is drawn at the left edge and as wide as the box, not with its item. A list item is one line for
+  the parser.
+* The panel of the lecture assistant shows the Markdown of its notes with a composable of its own
+  (`MarkdownText` in `LecturePanel`): `toCanvasText` without `layoutCodeBlock` (a block is code in
+  the line) and the formulas as inline content; it does not know its width before it is laid
+  out.
+
+**The design.**
+
+| Responsibility | Class (module) | GRASP |
+|---|---|---|
+| The paper under a text, given with it to whatever draws or lays it out | `TextTileAdapter.drawText(…, paperColor)`, `layout(text, paperColor)` (`drawview-canvas`), every caller passing the background of its page (0 when it has none) | Information Expert (the page), Indirection |
+| The background of the code on its paper: the color of the text at 7 % over the paper, opaque | `CodeTheme.of(text, paper)` (`drawview-ui`) | Information Expert |
+| The blocks asking for their line numbers | `RichTextParser`: `Span.numbered` (`showLineNumbers`, `numberLines`, `.numberLines`, `{.numberLines}`, `linenums` among the words after the fence, in any case; the language is the first other word) | Information Expert |
+| The numbers of the lines of a block: a column on its left, the numbers right aligned on the first line of each line of the code (not on the wrapped ones), in the color of the label; the code after it | `CodeBlockLayout` (`drawview-ui`) | Information Expert, High Cohesion |
+| Asking for the numbers, or not: `showLineNumbers` added to the opening fence or its words taken off | `RichTextEditing.toggleLineNumbers`, `TextFormatTarget.toggleLineNumbers`, `EditorCommands.lineNumbers` (⌘⌥L, menu Format, checked when the block has them), a button of `TextFormatBar` shown while the caret is in a block | Controller, Information Expert |
+| The list items a line belongs to, and the blocks of code under an item | `RichTextParser`: the items open at each line (the column of their text), a fence indented at least as their text and at most 3 spaces more is a block of the item (`Span.listItem`); its closing fence likewise | Information Expert |
+| A block of an item aligned with the text of its item, as wide as the rest of the line | `MarkdownTextUtil` (`toCanvasText`, `toEditorText`), `CodeBlockLayout`, `ComposeTextTileAdapter` | Information Expert |
+| The Markdown of a note out of the page, as the page draws it: formulas, blocks laid out at its width, code in the line on its background | `MarkdownText` (`drawview-ui`, public), used by the panel of the lecture assistant in place of its own | Pure Fabrication, High Cohesion, Low Coupling |
+
+**The experience.**
+
+* On paper with lines, a block and the code in the line hide the lines under them; on plain paper
+  they look as before. Whatever is under a block (strokes, a page of PDF) is hidden as under any
+  opaque background.
+* A block with `showLineNumbers` has its numbers in a column on the left; "Line numbers" (⌘⌥L, the
+  menu Format, a button of the bar while the caret is in a block) adds or takes them off. In the
+  source under the caret the block shows its fence with the word, without the column.
+* A block under a list item (its fence indented as the text of the item) is drawn with its item,
+  aligned with its text; a nested item can have its blocks too.
+* The notes, the outline and the review in the panel of the lecture assistant show the code as the
+  page does: blocks in their colors, code in the line on its background.
+
 ## Plan
 
 | Phase | Content | Status |
@@ -182,6 +230,10 @@ Variations).
 | 3 | In the editor: the block away from the caret drawn as on the page over its character, its source under the caret on its background and in its colors, the code in the line on its background, the caret on the tapped character of a block; tests of the offsets, screenshots | Done |
 | 4 | Writing code: `RichTextEditing` (Enter, Tab, ⇧Tab and the formats in a block, the fence closed, the block toggled, ⌘E on several lines), `EditorCommands.codeBlock` (⌘⌥C, Format menu, tooltip), the button of `TextFormatBar` and its icon, the strings in the 7 languages; tests of the editing and of the command | Done |
 | 5 | Lecture assistant: `MARKDOWN_RULE` and the reading of the handwriting with the fenced blocks; the fence stripped by `LectureAnalysis` checked with answers holding code; tests | Done |
+| 6 | The paper: the paper color given with the texts to `drawText` and `layout` by every caller (tiles, selection, drafts, preview, exports, editor), `CodeTheme.of(text, paper)` opaque; tests, screenshots (ruled paper); ABI of `drawview-canvas`, `drawview-ui` | To do |
+| 7 | Line numbers: `Span.numbered`, the column of the numbers in `CodeBlockLayout` (canvas, editor, PDF, taps after it, natural width), `toggleLineNumbers` and its command, button and strings; tests, screenshots; ABI | To do |
+| 8 | Blocks in list items: the items open at each line in the parser, `Span.listItem`, fences and closing fences of an item; a block drawn with its item (canvas, editor, measure, PDF); the texts of the user measured again on load as in phase 2; tests (bounds included), screenshots; ABI of `drawview-model` | To do |
+| 9 | The panel: `MarkdownText` of `drawview-ui` (formulas, blocks at its width, code in the line), used by `LecturePanel` for the notes, the outline and the review; tests, screenshots of the panel; ABI of `drawview-ui` | To do |
 
 No phase touches the sync modules nor the stored formats: `ProtocolFormatTest` and the Room
 schema stay as they are.
@@ -355,7 +407,7 @@ Proposed with the plan and approved by the user on 2026-10-22, every one reverti
    list items).
 2. A fence not closed runs to the end of the text (CommonMark); the editor closes the fences it
    sees typed.
-3. Blocks at the top level only, not inside list items.
+3. Blocks at the top level only, not inside list items (changed by 17).
 4. The long lines wrap, their indentation kept: no horizontal scroll on paper, and shrinking the
    code as a formula would make it unreadable.
 5. A lexer of our own, linear and bounded, behind `CodeHighlighter`, rather than a library
@@ -373,9 +425,27 @@ Proposed with the plan and approved by the user on 2026-10-22, every one reverti
    formulas).
 10. Tab in a block is 4 spaces; Enter keeps the indentation, without knowing the language.
 11. ⌘⌥C (Ctrl+Alt+C elsewhere) for the block; ⌘E on several lines makes a block.
-12. No line numbers for now.
+12. No line numbers for now (changed by 15).
 13. The texts whose fences are drawn as blocks are measured again when their document opens, with
     a change of their height only, if the count on the copy of the database finds any.
+
+Proposed with stage 2 and approved by the user on 2026-10-24, every one revertible:
+
+14. The paper comes with the text to the adapter (`drawText`, `layout`): the background of the
+    code is opaque on its paper; without a paper (0) it stays translucent. What is under a block is
+    hidden, as under any opaque background.
+15. Line numbers per block, asked by a word after the fence (`showLineNumbers`, also `numberLines`,
+    `.numberLines`, `{.numberLines}`, `linenums`): the notation keeps them with the text, on every
+    device and in the export. The command writes `showLineNumbers`. The numbering starts at 1 (a
+    start of its own left for later).
+16. The numbers are text in the PDF (searchable, copied with the code), in the color of the label.
+17. A block belongs to a list item when its fence is indented at least as the text of the item and
+    at most 3 spaces more; it is drawn aligned with the text of the item. A line not blank and less
+    indented than the text of an item closes the item (no lazy continuation of CommonMark).
+18. "Line numbers": ⌘⌥L (Ctrl+Alt+L elsewhere), the menu Format, and a button of the bar shown
+    only while the caret is in a block.
+19. `MarkdownText` is public in `drawview-ui`: the panel of the lecture assistant uses it, and so can
+    an application showing notes out of the page.
 
 ## Risks
 
@@ -393,18 +463,17 @@ Proposed with the plan and approved by the user on 2026-10-22, every one reverti
   is tested on real snippets; what it reads wrong is a color, never the text.
 * **The source shown under the caret** moves the lines of the block when the caret enters it (its
   fences appear), as a formula does.
+* **The lists in the parser** (stage 2): the items open at each line are followed while the
+  verbatim parts are scanned, every line read once; the bounds tests take nested lists and fences
+  at every indentation.
+* **The texts already written** with a block under an item (five of the user) get narrower and
+  higher: measured again on load as in phase 2.
 
 ## Left for later
 
 * On devices: the caret, the input methods and the selection handles of a field showing a block
   of code as one character (Android, iOS), and a tall block on Android.
-* An opaque background, in the color of the paper: the lines of a lined page show through the
-  background of the code, which is translucent because the adapter of the texts does not know the
-  page it draws on.
-* The blocks of the suggestions in the panel of the lecture assistant (its `toCanvasText` with
-  `layoutCodeBlock`).
-* Line numbers.
-* Blocks inside list items.
 * The language detected from the code; the names of the languages completed while typed.
 * Copying the code of a block alone (the selection copies the text with its notation).
 * Indentation that knows the language (after `{`, `:`).
+* A number to start the lines from (`startFrom` of Pandoc).
