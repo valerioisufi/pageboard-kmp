@@ -1,6 +1,5 @@
 package io.github.valerioisufi.drawview.lecture.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,10 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -28,8 +25,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.InlineTextContent
-import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -58,23 +53,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.Placeholder
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
-import io.github.valerioisufi.drawview.canvas.render.tile.FormulaRenderer
 import io.github.valerioisufi.drawview.lecture.AssistantSettings
 import io.github.valerioisufi.drawview.lecture.AudioDownload
 import io.github.valerioisufi.drawview.lecture.ImportStep
@@ -105,23 +91,21 @@ import io.github.valerioisufi.drawview.ui.command.MenuItem
 import io.github.valerioisufi.drawview.ui.components.BadgeTone
 import io.github.valerioisufi.drawview.ui.components.DesignIconButton
 import io.github.valerioisufi.drawview.ui.components.LabelBadge
+import io.github.valerioisufi.drawview.ui.components.MarkdownText
 import io.github.valerioisufi.drawview.ui.components.OutlineButton
 import io.github.valerioisufi.drawview.ui.components.SegmentedChoice
 import io.github.valerioisufi.drawview.ui.components.TonalButton
-import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
 import io.github.valerioisufi.drawview.ui.extension.EditorPanel
 import io.github.valerioisufi.drawview.ui.generated.resources.Res as UiRes
 import io.github.valerioisufi.drawview.ui.generated.resources.date_months_short
 import io.github.valerioisufi.drawview.ui.platform.rememberFileSaver
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
-import io.github.valerioisufi.drawview.ui.render.LocalDrawViewEngines
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import io.github.valerioisufi.drawview.ui.util.formatShortDateTime
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
@@ -984,7 +968,7 @@ internal fun SuggestionCard(
         }
         Spacer(Modifier.height(6.dp))
         SelectionContainer {
-            MarkdownText(note.content, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            MarkdownText(note.content, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
         }
         if (placing) {
             Spacer(Modifier.height(8.dp))
@@ -1193,7 +1177,7 @@ private fun OutlineTab(assistant: LectureAssistant, lecture: Lecture) {
                             )
                         }
                     }
-                    MarkdownText(lecture.outline)
+                    MarkdownText(lecture.outline, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyMedium)
                 }
             }
         }
@@ -1310,7 +1294,7 @@ private fun ReviewTab(
                     )
                     if (canRegenerate) RegenerateReviewButton(assistant, lecture)
                 }
-                PanelCard(outlined = true) { SelectionContainer { MarkdownText(review) } }
+                PanelCard(outlined = true) { SelectionContainer { MarkdownText(review, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyMedium) } }
                 InsertPagesCard(controller) { afterPageIndex -> inserter.insertPages(controller, review, afterPageIndex) }
             }
             // Written by a device with the models
@@ -1536,81 +1520,6 @@ internal fun privacyNote(settings: AssistantSettings): String {
         )
     }
     return stringResource(Res.string.lecture_privacy_online, parts.joinToString(", "))
-}
-
-/**
- * Markdown of the notes, formatted as on the canvas: delimiters hidden and, once the formula
- * renderer of the editor is ready, the formulas rendered inline.
- */
-@Composable
-private fun MarkdownText(markdown: String, color: Color = MaterialTheme.colorScheme.onSurface) {
-    val style = MaterialTheme.typography.bodyMedium
-    val density = LocalDensity.current
-    val formulas = LocalDrawViewEngines.current.formulas
-    val latexReady by remember(formulas) { formulas?.isReady ?: MutableStateFlow(false) }.collectAsState()
-    val content = remember(markdown, color, style, density, formulas, latexReady) {
-        try {
-            if (formulas != null && latexReady) markdownWithFormulas(markdown, color, style, density, formulas) else null
-        } catch (_: Throwable) {
-            null
-        } ?: (
-            MarkdownTextUtil.toLiveAnnotatedString(
-                text = markdown,
-                selection = TextRange(markdown.length + 1),
-                defaultColor = color
-            ) to emptyMap()
-        )
-    }
-    Text(content.first, inlineContent = content.second, style = style, color = color)
-}
-
-/** The Markdown text with its formulas as inline images (see [MarkdownTextUtil.toCanvasText]). */
-private fun markdownWithFormulas(
-    markdown: String,
-    color: Color,
-    style: TextStyle,
-    density: Density,
-    formulas: FormulaRenderer
-): Pair<AnnotatedString, Map<String, InlineTextContent>> {
-    val fontPx = with(density) { style.fontSize.toPx() }
-    val canvasText = MarkdownTextUtil.toCanvasText(markdown, color, fontPx, fontAscentPx = fontPx * 0.8f) { latex, sizePx ->
-        formulas.render(formulas.sanitize(latex), sizePx, color.toArgb())?.let {
-            MarkdownTextUtil.RenderedFormula(it.bitmap, it.bitmap.width.toFloat(), it.bitmap.height.toFloat(), it.baselineRatio)
-        }
-    }
-    val inline = mutableMapOf<String, InlineTextContent>()
-    val text = buildAnnotatedString {
-        var last = 0
-        canvasText.placeholders.forEachIndexed { index, placeholder ->
-            append(canvasText.text.subSequence(last, placeholder.start))
-            val id = "formula$index"
-            appendInlineContent(id)
-            last = placeholder.end
-            val formula = canvasText.formulas.firstOrNull { it.placeholderIndex == index }
-            inline[id] = InlineTextContent(
-                with(density) {
-                    Placeholder(
-                        width = placeholder.widthPx.toSp(),
-                        height = placeholder.heightPx.toSp(),
-                        placeholderVerticalAlign = placeholder.verticalAlign
-                    )
-                }
-            ) {
-                if (formula != null) {
-                    // The body placeholder holds the ascent: the descent hangs below it
-                    Image(
-                        bitmap = formula.image,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .wrapContentSize(Alignment.TopStart, unbounded = true)
-                            .requiredSize(with(density) { formula.widthPx.toDp() }, with(density) { formula.heightPx.toDp() })
-                    )
-                }
-            }
-        }
-        append(canvasText.text.subSequence(last, canvasText.text.length))
-    }
-    return text to inline
 }
 
 /** "04/10/2026 14:30" in the local time zone. */

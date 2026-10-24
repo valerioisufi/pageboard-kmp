@@ -8,3 +8,7 @@ layout (`AdaptiveRoot`) and the theme (`DrawViewTheme`).
 An application adds its own content to the editor with an `EditorExtension` (top bar actions,
 panels, commands, overlays), which receives the `EditorContext` of the document shown. No store:
 see `drawview-session` for the documents of a store.
+
+The texts of the pages are drawn by `ComposeTextTileAdapter` (Markdown, formulas, blocks of code
+laid out by `CodeBlockLayout`); `MarkdownText` shows the Markdown of a note out of the page as the
+page draws it.

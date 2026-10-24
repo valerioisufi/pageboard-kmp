@@ -30,6 +30,7 @@ import io.github.valerioisufi.drawview.ui.command.MenuDivider
 import io.github.valerioisufi.drawview.ui.command.MenuItem
 import io.github.valerioisufi.drawview.ui.command.MenuLabel
 import io.github.valerioisufi.drawview.ui.components.HybridScale
+import io.github.valerioisufi.drawview.ui.components.MarkdownText
 import io.github.valerioisufi.drawview.ui.components.PageTemplateConfigurator
 import io.github.valerioisufi.drawview.ui.screen.EraserSettings
 import io.github.valerioisufi.drawview.ui.screen.InkSettings
@@ -73,6 +74,25 @@ class ComponentScreenshotTest {
             waitForIdle()
             captureToImage().captureRoboImage("screenshots/$name.png")
         }
+
+    /**
+     * The Markdown of a note out of the page (the panel of the lecture assistant): a heading, code in
+     * the line, a block with the numbers of its lines, a list with a block under an item.
+     */
+    @Test
+    fun markdownText() = capture("markdown-text", width = 520, height = 560) {
+        Column(
+            modifier = Modifier.width(460.dp).background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp)).padding(16.dp)
+        ) {
+            MarkdownText(
+                "# Pointers\nA pointer holds an address: `&x` takes it, `*p` reads it.\n" +
+                    "```c showLineNumbers\nint x = 42;\nint *p = &x;\nprintf(\"%d\\n\", *p); // the value pointed to, 42\n```\n" +
+                    "- Compile it:\n  ```sh\n  gcc main.c -o main\n  ```\n- Then run `./main`.",
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
 
     /** The popovers of the tools: the pen and the highlighter, the eraser, the lasso, the text, the marks of the PDFs. */
     @Test

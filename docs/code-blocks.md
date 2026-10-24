@@ -233,7 +233,7 @@ Four of the things left for later after phase 5, asked by the user on 2026-10-24
 | 6 | The paper: the paper color given with the texts to `drawText` and `layout` by every caller (tiles, selection, drafts, preview, exports, editor), `CodeTheme.of(text, paper)` opaque; tests, screenshots (ruled paper); ABI of `drawview-canvas`, `drawview-ui` | Done |
 | 7 | Line numbers: `Span.numbered`, the column of the numbers in `CodeBlockLayout` (canvas, editor, PDF, taps after it, natural width), `toggleLineNumbers` and its command, button and strings; tests, screenshots; ABI | Done |
 | 8 | Blocks in list items: the items open at each line in the parser, `Span.listItem`, fences and closing fences of an item; a block drawn with its item (canvas, editor, measure, PDF); the texts of the user measured again on load as in phase 2; tests (bounds included), screenshots; ABI of `drawview-model` | Done |
-| 9 | The panel: `MarkdownText` of `drawview-ui` (formulas, blocks at its width, code in the line), used by `LecturePanel` for the notes, the outline and the review; tests, screenshots of the panel; ABI of `drawview-ui` | To do |
+| 9 | The panel: `MarkdownText` of `drawview-ui` (formulas, blocks at its width, code in the line), used by `LecturePanel` for the notes, the outline and the review; tests, screenshots of the panel; ABI of `drawview-ui` | Done |
 
 No phase touches the sync modules nor the stored formats: `ProtocolFormatTest` and the Room
 schema stay as they are.
@@ -473,6 +473,29 @@ schema stay as they are.
 * The ABI of `drawview-model` (`Span.listItem`) and of `drawview-ui` (`CanvasCodeBlock.leftPx`, the
   parameter `listPrefixWidth`) recorded again.
 
+### Phase 9 results
+
+* `MarkdownText` (`drawview-ui`, `ui.components`, public): the Markdown of a note out of the page
+  as the page draws it, laid out by `toCanvasText` at the width given to it (`BoxWithConstraints`):
+  the formulas of `LocalDrawViewEngines` in their placeholders, the blocks of code drawn in theirs
+  (their colors, their numbers, under their list item), the code in the line on its background
+  (`codeChips`). A text with formulas the engine cannot render yet shows its notation styled, as
+  before; a text without formulas is drawn at once, also without a formula engine.
+* `LecturePanel` shows its notes, the outline and the review with it, in place of its own
+  composable: the code of the notes of the assistant in blocks.
+* `toCanvasText` takes the `density` of where the text is shown: the sizes of its styles are in sp.
+  The panel gave it pixels, so its headings were as many times larger as the density of the
+  screen (twice on a Retina display); on the canvas the density stays 1.
+* Tests: the sizes of the styles in sp (`MarkdownTextUtilTest`); the screenshot `markdown-text`
+  (a heading, code in the line, a block with its numbers, a block under a list item); the
+  screenshots of the panel recorded again (`lecture-outline`, `lecture-review`: in the tests, without
+  the formula engine, the panel showed the notation of the lists and its headings at another
+  size; now as the page draws them).
+* The ABI of `drawview-ui` (`MarkdownText`, the `density` of `toCanvasText`) recorded again.
+* Seen in the checks, not from this work: the screenshot `editor-context-menu` of the explorer
+  shows "Paste" only when the clipboard of the computer running the tests holds a text, so it
+  fails on a computer whose clipboard has none (left for later).
+
 ## Decisions
 
 Proposed with the plan and approved by the user on 2026-10-22, every one revertible:
@@ -551,3 +574,5 @@ Proposed with stage 2 and approved by the user on 2026-10-24, every one revertib
 * Copying the code of a block alone (the selection copies the text with its notation).
 * Indentation that knows the language (after `{`, `:`).
 * A number to start the lines from (`startFrom` of Pandoc).
+* The screenshot of the context menu of the editor independent of the clipboard of the computer
+  running the tests (a clipboard of the test, as `CommandTest` has).

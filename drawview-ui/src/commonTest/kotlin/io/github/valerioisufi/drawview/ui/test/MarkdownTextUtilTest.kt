@@ -234,4 +234,17 @@ class MarkdownTextUtilTest {
         assertTrue(canvas.codeBlocks.isEmpty())
         assertTrue(canvas.text.spanStyles.any { it.item.fontFamily == FontFamily.Monospace && canvas.text.text.substring(it.start, it.end) == "val x = 1" })
     }
+
+    @Test
+    fun theSizesOfTheStylesAreInSpWhereTheTextIsShown() {
+        // 40 px on a screen of 2 pixels per sp: a heading of 1.4 times 20 sp
+        val canvas = MarkdownTextUtil.toCanvasText<Unit>(
+            text = "# Title",
+            baseColor = Color.Black,
+            fontSizePx = 40f,
+            fontAscentPx = 32f,
+            density = 2f
+        ) { _, _ -> null }
+        assertEquals(28f, canvas.text.spanStyles.first { it.item.fontSize.isSp }.item.fontSize.value, 0.01f)
+    }
 }

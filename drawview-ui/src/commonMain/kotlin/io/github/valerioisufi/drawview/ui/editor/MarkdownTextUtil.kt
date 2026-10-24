@@ -411,6 +411,8 @@ public object MarkdownTextUtil {
      *   [lineWidthPx], a block is drawn as code in the line.
      * @param listPrefixWidth the width of the prefix of a list item drawn (its indentation, its
      *   bullet or number): where the blocks of code of the item start; `null`, an approximation.
+     * @param density pixels per sp where the text is shown: the sizes of its styles (headings,
+     *   code) are in sp (1 on the canvas, which lays its texts out in pixels).
      */
     public fun <T> toCanvasText(
         text: String,
@@ -421,6 +423,7 @@ public object MarkdownTextUtil {
         monospace: FontFamily = FontFamily.Monospace,
         layoutCodeBlock: ((CodeBlockSource) -> CodeBlockLayout)? = null,
         listPrefixWidth: ((prefix: String) -> Float)? = null,
+        density: Float = 1f,
         renderFormula: (latex: String, fontSizePx: Float) -> RenderedFormula<T>?
     ): CanvasText<T> {
         val spans = RichTextParser.parse(text)
@@ -570,7 +573,7 @@ public object MarkdownTextUtil {
                 while (open.isNotEmpty() && open.last().end <= span.start) open.removeAt(open.lastIndex)
                 open += span
                 if (span.kind == Kind.LIST_ITEM || (span.kind == Kind.CODE_BLOCK && span.start in blockAt)) continue
-                val style = contentStyle(span, fontSizePx, monospace) ?: continue
+                val style = contentStyle(span, fontSizePx / density, monospace) ?: continue
                 val start = offsets[span.contentStart]
                 val end = offsets[span.contentEnd]
                 if (end <= start) continue

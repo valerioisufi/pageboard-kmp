@@ -330,6 +330,10 @@ public final class io/github/valerioisufi/drawview/ui/components/IconButtonStyle
 	public static fun values ()[Lio/github/valerioisufi/drawview/ui/components/IconButtonStyle;
 }
 
+public final class io/github/valerioisufi/drawview/ui/components/MarkdownTextKt {
+	public static final fun MarkdownText-cf5BqRc (Ljava/lang/String;Landroidx/compose/ui/Modifier;JLandroidx/compose/ui/text/TextStyle;Landroidx/compose/runtime/Composer;II)V
+}
+
 public final class io/github/valerioisufi/drawview/ui/components/ThirdPartyLicense {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
@@ -357,8 +361,8 @@ public final class io/github/valerioisufi/drawview/ui/components/ToolSettingsKt 
 public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;
-	public final fun toCanvasText-OadGlvw (Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
-	public static synthetic fun toCanvasText-OadGlvw$default (Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
+	public final fun toCanvasText-oC9nPe0 (Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;FLkotlin/jvm/functions/Function2;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
+	public static synthetic fun toCanvasText-oC9nPe0$default (Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;FLkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
 	public final fun toLiveAnnotatedString-5_Xnia0 (Ljava/lang/String;JJJLandroidx/compose/ui/text/font/FontFamily;)Landroidx/compose/ui/text/AnnotatedString;
 	public static synthetic fun toLiveAnnotatedString-5_Xnia0$default (Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;Ljava/lang/String;JJJLandroidx/compose/ui/text/font/FontFamily;ILjava/lang/Object;)Landroidx/compose/ui/text/AnnotatedString;
 }
