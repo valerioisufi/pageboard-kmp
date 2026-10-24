@@ -42,6 +42,17 @@ class RichTextParserBoundsTest {
     }
 
     @Test
+    fun blocksOfCodeTakeLinearTime() {
+        val patterns = listOf(
+            // Blocks closed, a fence never closed, fences of backticks that are not (a backtick after them)
+            "```\na\n```\n", "~~~~\na\n~~~\n", "```a\n", "``` `\n", "```` ``\n", "   ```\n",
+            // Display formulas and emphasis meeting blocks
+            "\$\$\n```\n", "\$\$a\n```\n```\n", "**a\n```\n```\n", "*a ```\n"
+        )
+        for (pattern in patterns) assertLinear(pattern)
+    }
+
+    @Test
     fun randomTextsNeverMakeItThrow() {
         val random = Random(20261022)
         repeat(2_000) {
@@ -167,7 +178,7 @@ class RichTextParserBoundsTest {
         for (span in sorted) {
             val fits = kept.all { other ->
                 span.end <= other.start || span.start >= other.end ||
-                    (other.kind != Kind.CODE && other.kind != Kind.FORMULA && other.kind != Kind.ESCAPE &&
+                    (other.kind != Kind.CODE && other.kind != Kind.CODE_BLOCK && other.kind != Kind.FORMULA && other.kind != Kind.ESCAPE &&
                         span.start >= other.contentStart && span.end <= other.contentEnd)
             }
             if (fits) kept += span
@@ -182,10 +193,10 @@ class RichTextParserBoundsTest {
         val BOUND = 10.seconds
         const val MASK = ''
 
-        /** The parts of the random texts: the delimiters often, an emoji, a lone surrogate, spaces of Unicode. */
+        /** The parts of the random texts: the delimiters often, fences, an emoji, a lone surrogate, spaces of Unicode. */
         val PARTS = listOf(
             "*", "*", "*", "_", "_", "_", "~", "~", "`", "$", "$", "\\", "#", "-", "+", "1", ".",
-            "a", "b", "é", " ", " ", "\t", "\n", " ", "😀", "\uD800"
+            "a", "b", "é", " ", " ", "\t", "\n", " ", "😀", "\uD800", "```", "\n```", "~~~"
         )
 
         // The content touches its delimiters; [\s\S]: any character, the line breaks included

@@ -20,6 +20,24 @@ final enum class io.github.valerioisufi.drawview.model.change/ChangeOrigin : kot
     final fun values(): kotlin/Array<io.github.valerioisufi.drawview.model.change/ChangeOrigin> // io.github.valerioisufi.drawview.model.change/ChangeOrigin.values|values#static(){}[0]
 }
 
+final enum class io.github.valerioisufi.drawview.model.text.code/CodeTokenKind : kotlin/Enum<io.github.valerioisufi.drawview.model.text.code/CodeTokenKind> { // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind|null[0]
+    enum entry ANNOTATION // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind.ANNOTATION|null[0]
+    enum entry COMMENT // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind.COMMENT|null[0]
+    enum entry FUNCTION // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind.FUNCTION|null[0]
+    enum entry KEYWORD // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind.KEYWORD|null[0]
+    enum entry LITERAL // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind.LITERAL|null[0]
+    enum entry NUMBER // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind.NUMBER|null[0]
+    enum entry PROPERTY // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind.PROPERTY|null[0]
+    enum entry STRING // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind.STRING|null[0]
+    enum entry TYPE // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind.TYPE|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.model.text.code/CodeTokenKind> // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.model.text.code/CodeTokenKind // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.model.text.code/CodeTokenKind> // io.github.valerioisufi.drawview.model.text.code/CodeTokenKind.values|values#static(){}[0]
+}
+
 final enum class io.github.valerioisufi.drawview.model/InputToolType : kotlin/Enum<io.github.valerioisufi.drawview.model/InputToolType> { // io.github.valerioisufi.drawview.model/InputToolType|null[0]
     enum entry MOUSE // io.github.valerioisufi.drawview.model/InputToolType.MOUSE|null[0]
     enum entry STYLUS // io.github.valerioisufi.drawview.model/InputToolType.STYLUS|null[0]
@@ -130,6 +148,15 @@ abstract interface io.github.valerioisufi.drawview.model.change/DocumentPersiste
     open suspend fun touchDocument(io.github.valerioisufi.drawview.model/DrawDocument, kotlin/Long) // io.github.valerioisufi.drawview.model.change/DocumentPersistence.touchDocument|touchDocument(io.github.valerioisufi.drawview.model.DrawDocument;kotlin.Long){}[0]
     open suspend fun updateDocumentDefaults(io.github.valerioisufi.drawview.model/DrawDocument) // io.github.valerioisufi.drawview.model.change/DocumentPersistence.updateDocumentDefaults|updateDocumentDefaults(io.github.valerioisufi.drawview.model.DrawDocument){}[0]
     open suspend fun updateDocumentTitle(io.github.valerioisufi.drawview.model/DrawDocument) // io.github.valerioisufi.drawview.model.change/DocumentPersistence.updateDocumentTitle|updateDocumentTitle(io.github.valerioisufi.drawview.model.DrawDocument){}[0]
+}
+
+abstract interface io.github.valerioisufi.drawview.model.text.code/CodeHighlighter { // io.github.valerioisufi.drawview.model.text.code/CodeHighlighter|null[0]
+    abstract fun tokens(kotlin/String, kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.model.text.code/CodeToken> // io.github.valerioisufi.drawview.model.text.code/CodeHighlighter.tokens|tokens(kotlin.String;kotlin.String){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.model.text.code/CodeHighlighter.Companion|null[0]
+        final const val MAX_HIGHLIGHTED // io.github.valerioisufi.drawview.model.text.code/CodeHighlighter.Companion.MAX_HIGHLIGHTED|{}MAX_HIGHLIGHTED[0]
+            final fun <get-MAX_HIGHLIGHTED>(): kotlin/Int // io.github.valerioisufi.drawview.model.text.code/CodeHighlighter.Companion.MAX_HIGHLIGHTED.<get-MAX_HIGHLIGHTED>|<get-MAX_HIGHLIGHTED>(){}[0]
+    }
 }
 
 abstract interface io.github.valerioisufi.drawview.model/AttachmentReceiver { // io.github.valerioisufi.drawview.model/AttachmentReceiver|null[0]
@@ -1792,6 +1819,25 @@ final class io.github.valerioisufi.drawview.model.geometry/Rect { // io.github.v
     }
 }
 
+final class io.github.valerioisufi.drawview.model.text.code/CodeToken { // io.github.valerioisufi.drawview.model.text.code/CodeToken|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.model.text.code/CodeTokenKind, kotlin/Int, kotlin/Int) // io.github.valerioisufi.drawview.model.text.code/CodeToken.<init>|<init>(io.github.valerioisufi.drawview.model.text.code.CodeTokenKind;kotlin.Int;kotlin.Int){}[0]
+
+    final val end // io.github.valerioisufi.drawview.model.text.code/CodeToken.end|{}end[0]
+        final fun <get-end>(): kotlin/Int // io.github.valerioisufi.drawview.model.text.code/CodeToken.end.<get-end>|<get-end>(){}[0]
+    final val kind // io.github.valerioisufi.drawview.model.text.code/CodeToken.kind|{}kind[0]
+        final fun <get-kind>(): io.github.valerioisufi.drawview.model.text.code/CodeTokenKind // io.github.valerioisufi.drawview.model.text.code/CodeToken.kind.<get-kind>|<get-kind>(){}[0]
+    final val start // io.github.valerioisufi.drawview.model.text.code/CodeToken.start|{}start[0]
+        final fun <get-start>(): kotlin/Int // io.github.valerioisufi.drawview.model.text.code/CodeToken.start.<get-start>|<get-start>(){}[0]
+
+    final fun component1(): io.github.valerioisufi.drawview.model.text.code/CodeTokenKind // io.github.valerioisufi.drawview.model.text.code/CodeToken.component1|component1(){}[0]
+    final fun component2(): kotlin/Int // io.github.valerioisufi.drawview.model.text.code/CodeToken.component2|component2(){}[0]
+    final fun component3(): kotlin/Int // io.github.valerioisufi.drawview.model.text.code/CodeToken.component3|component3(){}[0]
+    final fun copy(io.github.valerioisufi.drawview.model.text.code/CodeTokenKind = ..., kotlin/Int = ..., kotlin/Int = ...): io.github.valerioisufi.drawview.model.text.code/CodeToken // io.github.valerioisufi.drawview.model.text.code/CodeToken.copy|copy(io.github.valerioisufi.drawview.model.text.code.CodeTokenKind;kotlin.Int;kotlin.Int){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.text.code/CodeToken.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.text.code/CodeToken.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.text.code/CodeToken.toString|toString(){}[0]
+}
+
 final class io.github.valerioisufi.drawview.model.text/TextDefaults { // io.github.valerioisufi.drawview.model.text/TextDefaults|null[0]
     constructor <init>(kotlin/Float = ..., kotlin/Int = ..., io.github.valerioisufi.drawview.model/TextAlignment = ...) // io.github.valerioisufi.drawview.model.text/TextDefaults.<init>|<init>(kotlin.Float;kotlin.Int;io.github.valerioisufi.drawview.model.TextAlignment){}[0]
 
@@ -2761,12 +2807,20 @@ final object io.github.valerioisufi.drawview.model.geometry/HitTesting { // io.g
     final fun rectIntersectsCapsule(io.github.valerioisufi.drawview.model.geometry/Rect, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float): kotlin/Boolean // io.github.valerioisufi.drawview.model.geometry/HitTesting.rectIntersectsCapsule|rectIntersectsCapsule(io.github.valerioisufi.drawview.model.geometry.Rect;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
 }
 
+final object io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighlighter : io.github.valerioisufi.drawview.model.text.code/CodeHighlighter { // io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighlighter|null[0]
+    final val languages // io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighlighter.languages|{}languages[0]
+        final fun <get-languages>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighlighter.languages.<get-languages>|<get-languages>(){}[0]
+
+    final fun tokens(kotlin/String, kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.model.text.code/CodeToken> // io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighlighter.tokens|tokens(kotlin.String;kotlin.String){}[0]
+}
+
 final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.github.valerioisufi.drawview.model.text/RichTextParser|null[0]
     final fun parse(kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.model.text/RichTextParser.Span> // io.github.valerioisufi.drawview.model.text/RichTextParser.parse|parse(kotlin.String){}[0]
 
     final enum class Kind : kotlin/Enum<io.github.valerioisufi.drawview.model.text/RichTextParser.Kind> { // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind|null[0]
         enum entry BOLD // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.BOLD|null[0]
         enum entry CODE // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.CODE|null[0]
+        enum entry CODE_BLOCK // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.CODE_BLOCK|null[0]
         enum entry ESCAPE // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.ESCAPE|null[0]
         enum entry FORMULA // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.FORMULA|null[0]
         enum entry HEADING // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.HEADING|null[0]
@@ -2782,7 +2836,7 @@ final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.g
     }
 
     final class Span { // io.github.valerioisufi.drawview.model.text/RichTextParser.Span|null[0]
-        constructor <init>(io.github.valerioisufi.drawview.model.text/RichTextParser.Kind, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Int = ...) // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.<init>|<init>(io.github.valerioisufi.drawview.model.text.RichTextParser.Kind;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Int){}[0]
+        constructor <init>(io.github.valerioisufi.drawview.model.text/RichTextParser.Kind, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Int = ..., kotlin/String = ...) // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.<init>|<init>(io.github.valerioisufi.drawview.model.text.RichTextParser.Kind;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Int;kotlin.String){}[0]
 
         final val block // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.block|{}block[0]
             final fun <get-block>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.block.<get-block>|<get-block>(){}[0]
@@ -2798,6 +2852,8 @@ final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.g
             final fun <get-end>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.end.<get-end>|<get-end>(){}[0]
         final val kind // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.kind|{}kind[0]
             final fun <get-kind>(): io.github.valerioisufi.drawview.model.text/RichTextParser.Kind // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.kind.<get-kind>|<get-kind>(){}[0]
+        final val language // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.language|{}language[0]
+            final fun <get-language>(): kotlin/String // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.language.<get-language>|<get-language>(){}[0]
         final val level // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.level|{}level[0]
             final fun <get-level>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.level.<get-level>|<get-level>(){}[0]
         final val number // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.number|{}number[0]
@@ -2809,6 +2865,7 @@ final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.g
 
         final fun component1(): io.github.valerioisufi.drawview.model.text/RichTextParser.Kind // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component1|component1(){}[0]
         final fun component10(): kotlin/Int // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component10|component10(){}[0]
+        final fun component11(): kotlin/String // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component11|component11(){}[0]
         final fun component2(): kotlin/Int // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component2|component2(){}[0]
         final fun component3(): kotlin/Int // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component3|component3(){}[0]
         final fun component4(): kotlin/Int // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component4|component4(){}[0]
@@ -2817,7 +2874,7 @@ final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.g
         final fun component7(): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component7|component7(){}[0]
         final fun component8(): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component8|component8(){}[0]
         final fun component9(): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.component9|component9(){}[0]
-        final fun copy(io.github.valerioisufi.drawview.model.text/RichTextParser.Kind = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Int = ...): io.github.valerioisufi.drawview.model.text/RichTextParser.Span // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.copy|copy(io.github.valerioisufi.drawview.model.text.RichTextParser.Kind;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Int){}[0]
+        final fun copy(io.github.valerioisufi.drawview.model.text/RichTextParser.Kind = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Int = ..., kotlin/String = ...): io.github.valerioisufi.drawview.model.text/RichTextParser.Span // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.copy|copy(io.github.valerioisufi.drawview.model.text.RichTextParser.Kind;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Int;kotlin.String){}[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.toString|toString(){}[0]

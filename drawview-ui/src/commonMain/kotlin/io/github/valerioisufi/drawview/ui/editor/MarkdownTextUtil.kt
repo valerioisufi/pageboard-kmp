@@ -247,7 +247,7 @@ public object MarkdownTextUtil {
         Kind.BOLD -> SpanStyle(fontWeight = FontWeight.Bold)
         Kind.ITALIC -> SpanStyle(fontStyle = FontStyle.Italic)
         Kind.STRIKE -> SpanStyle(textDecoration = TextDecoration.LineThrough)
-        Kind.CODE -> SpanStyle(fontFamily = monospace)
+        Kind.CODE, Kind.CODE_BLOCK -> SpanStyle(fontFamily = monospace)
         Kind.HEADING -> SpanStyle(fontWeight = FontWeight.Bold, fontSize = (baseFontSize * headingScale(span.level)).sp)
         Kind.FORMULA, Kind.ESCAPE, Kind.LIST_ITEM -> null
     }

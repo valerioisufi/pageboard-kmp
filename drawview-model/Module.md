@@ -10,3 +10,7 @@ stored through the `DocumentPersistence` port and sent to the other devices as a
 The strokes are modeled from their inputs by a `StrokeModeller` (`KotlinStrokeModeller` here,
 Google Ink in `drawview-ink`). The geometry is in page millimeters (`Rect`, `Point`, `Matrix2D`,
 `AffineTransform`).
+
+The texts are Markdown with formulas and blocks of code, read by `RichTextParser`; the tokens of
+the code, for its colors, come from a `CodeHighlighter` (`BuiltInCodeHighlighter` here, for the
+common languages).

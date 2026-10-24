@@ -1,31 +1,41 @@
 package io.github.valerioisufi.drawview.model.text
 
+import kotlin.math.min
+
 /**
- * The notation of the texts: Markdown (bold, italic, strikethrough, code, headings) with formulas,
- * `$…$` in the line and `$$…$$` in display style (on a line of their own when nothing else is on
- * their lines), and the escapes `\*` of the punctuation.
+ * The notation of the texts: Markdown (bold, italic, strikethrough, code, blocks of code,
+ * headings) with formulas, `$…$` in the line and `$$…$$` in display style (on a line of their own
+ * when nothing else is on their lines), and the escapes `\*` of the punctuation.
  *
  * The rules follow Pandoc for the formulas (a `$` opening a formula is followed by a character
  * other than a space, the one closing it follows such a character and is not followed by a
  * digit: `$5 and $10` is plain text) and CommonMark for the emphasis (the delimiters touch the
- * text they surround; `_` does not work inside a word: `file_name_here` is plain text).
- * Formatting nests (`**bold *italic***`, a formula in a heading); the code and the formulas are
- * written as they are.
+ * text they surround; `_` does not work inside a word: `file_name_here` is plain text) and for the
+ * fences of the blocks of code. Formatting nests (`**bold *italic***`, a formula in a heading);
+ * the code and the formulas are written as they are.
  */
 public object RichTextParser {
 
     /** A kind of [Span]. */
-    public enum class Kind { BOLD, ITALIC, STRIKE, CODE, HEADING, FORMULA, ESCAPE, LIST_ITEM }
+    public enum class Kind { BOLD, ITALIC, STRIKE, CODE, HEADING, FORMULA, ESCAPE, LIST_ITEM, CODE_BLOCK }
 
     /**
      * A part of a text written with the notation: from [start] to [end] (the delimiters
      * included), its content from [contentStart] to [contentEnd].
      *
-     * @property level the level of a heading (the number of its `#`) or of a list item (indentation depth).
+     * A block of code goes from the start of the line of its opening fence to the end of the line
+     * of its closing fence (or of the text, when no fence closes it); its content is the lines
+     * between them, without the line breaks around it.
+     *
+     * @property level the level of a heading (the number of its `#`) or of a list item (indentation
+     *   depth); for a block of code, the spaces before its opening fence, taken off its lines when
+     *   it is drawn.
      * @property display a formula written `$$…$$`, drawn in display style.
      * @property block a display formula alone on its lines: a centered line of its own.
      * @property ordered whether a list item is ordered (numbered).
      * @property number the sequence number of an ordered list item.
+     * @property language the language of a block of code, the first word after its opening fence
+     *   (empty when there is none).
      */
     public data class Span(
         val kind: Kind,
@@ -37,7 +47,8 @@ public object RichTextParser {
         val display: Boolean = false,
         val block: Boolean = false,
         val ordered: Boolean = false,
-        val number: Int = 0
+        val number: Int = 0,
+        val language: String = ""
     ) {
         /** The delimiters, hidden when the text is drawn: before and after the content. */
         val delimiters: List<IntRange>
@@ -53,7 +64,7 @@ public object RichTextParser {
         // The other delimiters are looked for outside the code and the formulas
         val masked = mask(text, verbatim)
         val candidates = verbatim.toMutableList()
-        candidates += emphasis(masked, text)
+        candidates += emphasisBetween(verbatim.filter { it.kind == Kind.CODE_BLOCK }, masked, text)
         for (match in HEADING.findAll(masked)) {
             val start = match.range.first
             val end = match.range.last + 1
@@ -88,14 +99,23 @@ public object RichTextParser {
     }
 
     /**
-     * The escapes, the code and the formulas, scanned from the start: what is inside them is not
-     * notation.
+     * The escapes, the code, the blocks of code and the formulas, scanned from the start: what is
+     * inside them is not notation.
      */
     private fun scanVerbatim(text: String): List<Span> {
         val spans = mutableListOf<Span>()
         val inline = InlineClosings(text)
         var i = 0
         while (i < text.length) {
+            if (i == 0 || text[i - 1] == '\n') {
+                val fence = openingFence(text, i)
+                if (fence != null) {
+                    val block = codeBlock(text, i, fence)
+                    spans += block
+                    i = block.end
+                    continue
+                }
+            }
             val c = text[i]
             when {
                 c == '\\' && i + 1 < text.length && text[i + 1] in ESCAPABLE -> {
@@ -134,7 +154,10 @@ public object RichTextParser {
         return spans
     }
 
-    /** Where the `$$` closing a display formula whose content starts at [from] is, or -1. */
+    /**
+     * Where the `$$` closing a display formula whose content starts at [from] is, or -1; a formula
+     * does not go past the opening fence of a block of code.
+     */
     private fun closingDisplay(text: String, from: Int): Int {
         var j = from
         while (j < text.length - 1) {
@@ -142,10 +165,80 @@ public object RichTextParser {
                 j += 2
                 continue
             }
+            if (text[j] == '\n' && openingFence(text, j + 1) != null) return -1
             if (text[j] == '$' && text[j + 1] == '$') return if (text.substring(from, j).isBlank()) -1 else j
             j++
         }
         return -1
+    }
+
+    /**
+     * The opening fence of a block of code: its [char] (a backtick or a tilde) repeated [length]
+     * times, ending at [end] of the text.
+     */
+    internal class Fence(val char: Char, val length: Int, val end: Int)
+
+    /**
+     * The fence opening a block of code on the line starting at [lineStart] of [text], or `null`:
+     * up to 3 spaces, then at least three backticks or tildes; after backticks, no backtick on the
+     * rest of the line (it would be code in the line).
+     */
+    internal fun openingFence(text: String, lineStart: Int): Fence? {
+        var i = lineStart
+        while (i < text.length && i - lineStart < MAX_FENCE_INDENT && text[i] == ' ') i++
+        val char = text.getOrNull(i) ?: return null
+        if (char != '`' && char != '~') return null
+        var j = i
+        while (j < text.length && text[j] == char) j++
+        if (j - i < MIN_FENCE) return null
+        if (char == '`') {
+            var k = j
+            while (k < text.length && text[k] != '\n') {
+                if (text[k] == '`') return null
+                k++
+            }
+        }
+        return Fence(char, j - i, j)
+    }
+
+    /**
+     * Where the line starting at [lineStart] of [text] ends when it closes [fence] (up to 3 spaces,
+     * at least as many characters of the fence, then spaces only), or -1.
+     */
+    private fun closingFenceEnd(text: String, lineStart: Int, fence: Fence): Int {
+        var i = lineStart
+        while (i < text.length && i - lineStart < MAX_FENCE_INDENT && text[i] == ' ') i++
+        var j = i
+        while (j < text.length && text[j] == fence.char) j++
+        if (j - i < fence.length) return -1
+        while (j < text.length && text[j] != '\n' && text[j].isSpace()) j++
+        return if (j == text.length || text[j] == '\n') j else -1
+    }
+
+    /**
+     * The block of code opened by [fence] on the line starting at [start] of [text]: to the line
+     * closing it, or to the end of the text when none does. Each line is read once.
+     */
+    private fun codeBlock(text: String, start: Int, fence: Fence): Span {
+        val openingEnd = text.indexOf('\n', fence.end).let { if (it < 0) text.length else it }
+        val language = text.substring(fence.end, openingEnd).trim()
+            .substringBefore(' ').substringBefore('\t')
+            .trimStart('{', '.').trimEnd('}')
+        val indent = fence.end - fence.length - start
+        val contentStart = min(openingEnd + 1, text.length)
+        var line = contentStart
+        while (line < text.length) {
+            val closingEnd = closingFenceEnd(text, line, fence)
+            if (closingEnd >= 0) {
+                // The line break before the closing fence belongs to it
+                val contentEnd = if (line > contentStart) line - 1 else contentStart
+                return Span(Kind.CODE_BLOCK, start, closingEnd, contentStart, contentEnd, level = indent, language = language)
+            }
+            val next = text.indexOf('\n', line)
+            if (next < 0) break
+            line = next + 1
+        }
+        return Span(Kind.CODE_BLOCK, start, text.length, contentStart, text.length, level = indent, language = language)
     }
 
     /**
@@ -209,6 +302,27 @@ public object RichTextParser {
         return spans
     }
 
+    /**
+     * The emphasis of [text] between its [blocks] of code (sorted): an emphasis does not go from
+     * one side of a block to the other, as in CommonMark, where the blocks come before the
+     * emphasis of the paragraphs around them.
+     */
+    private fun emphasisBetween(blocks: List<Span>, masked: String, text: String): List<Span> {
+        if (blocks.isEmpty()) return emphasis(masked, text)
+        val spans = mutableListOf<Span>()
+        var from = 0
+        for (index in 0..blocks.size) {
+            val to = blocks.getOrNull(index)?.start ?: text.length
+            if (to > from) {
+                for (span in emphasis(masked.substring(from, to), text.substring(from, to))) {
+                    spans += span.copy(start = span.start + from, end = span.end + from, contentStart = span.contentStart + from, contentEnd = span.contentEnd + from)
+                }
+            }
+            from = blocks.getOrNull(index)?.end ?: break
+        }
+        return spans
+    }
+
     /** [text] with the characters of [spans] replaced, the offsets kept. */
     private fun mask(text: String, spans: List<Span>): String {
         if (spans.isEmpty()) return text
@@ -238,7 +352,7 @@ public object RichTextParser {
             val outer = open.lastOrNull()
             val fits = outer == null ||
                 // Inside the content of a span whose content is notation
-                (outer.kind != Kind.CODE && outer.kind != Kind.FORMULA && outer.kind != Kind.ESCAPE &&
+                (outer.kind != Kind.CODE && outer.kind != Kind.CODE_BLOCK && outer.kind != Kind.FORMULA && outer.kind != Kind.ESCAPE &&
                     span.start >= outer.contentStart && span.end <= outer.contentEnd)
             if (fits) {
                 kept += span
@@ -329,6 +443,10 @@ public object RichTextParser {
 
     /** The punctuation an escape writes as it is. */
     private const val ESCAPABLE = """\`*_{}[]()#+-.!${'$'}~|<>"""
+
+    /** The fewest backticks or tildes of a fence, and the most spaces before it. */
+    private const val MIN_FENCE = 3
+    private const val MAX_FENCE_INDENT = 3
 
     private const val MASK = ''
 }

@@ -177,7 +177,7 @@ Variations).
 | Phase | Content | Status |
 |---|---|---|
 | — | Before phase 1, on its own branch: the parsing of `RichTextParser` made linear, its rules and tests unchanged ([linear-parsing.md](./linear-parsing.md)) | Done |
-| 1 | Notation and highlighting: `Kind.CODE_BLOCK` and `Span.language` (fences, language, content as it is, a fence not closed), `CodeHighlighter`, `BuiltInCodeHighlighter` and the grammars; tests of the rules (the notation not read inside, `#` and `-` in a block, the fences of CommonMark), of every grammar on real snippets, of the bounds (random input, unclosed strings and comments at every place, a block of 1 MiB in linear time); ABI of `drawview-model` | To do |
+| 1 | Notation and highlighting: `Kind.CODE_BLOCK` and `Span.language` (fences, language, content as it is, a fence not closed), `CodeHighlighter`, `BuiltInCodeHighlighter` and the grammars; tests of the rules (the notation not read inside, `#` and `-` in a block, the fences of CommonMark), of every grammar on real snippets, of the bounds (random input, unclosed strings and comments at every place, long code in linear time); ABI of `drawview-model` | Done |
 | 2 | On the page: `CodeTheme`, `CodeBlockLayout`, the blocks and the code in the line in `toCanvasText`, drawn, measured and laid out by the adapter (`TextBlockLayout.boxes`), `DrawViewEngines.code`; the PDF export of the backgrounds; the automatic width; the texts with fences counted on a copy of the database of the user (asked first, the original untouched), and measured again on load if any; tests (layout, wrapping, tabs, empty lines, alignment, PDF), screenshots; ABI of `drawview-canvas`, `drawview-ui` | To do |
 | 3 | In the editor: the block away from the caret drawn as on the page over its character, its source under the caret on its background and in its colors, the code in the line on its background, the caret on the tapped character of a block; tests of the offsets, screenshots | To do |
 | 4 | Writing code: `RichTextEditing` (Enter, Tab, ⇧Tab and the formats in a block, the fence closed, the block toggled, ⌘E on several lines), `EditorCommands.codeBlock` (⌘⌥C, Format menu, tooltip), the button of `TextFormatBar` and its icon, the strings in the 7 languages; tests of the editing and of the command | To do |
@@ -185,6 +185,36 @@ Variations).
 
 No phase touches the sync modules nor the stored formats: `ProtocolFormatTest` and the Room
 schema stay as they are.
+
+### Phase 1 results
+
+* `RichTextParser` reads the blocks of code (`Kind.CODE_BLOCK`): an opening fence of three or
+  more backticks or tildes at the start of a line (up to 3 spaces before it, kept in
+  `Span.level`; after backticks, no backtick on the rest of the line), its language
+  (`Span.language`: the first word of its information, `{.python}` read as `python`), its
+  content up to the line of a closing fence of the same character, at least as long and with
+  spaces only after it, or up to the end of the text. The blocks are scanned with the code and
+  the formulas, before the rest of the notation: nothing inside them is notation, an emphasis is
+  looked for between them (it does not go across a block), a display formula stops at the fence
+  of a block. Each line is read once.
+* `CodeHighlighter` (`drawview-model`, `model.text.code`) tells the tokens of a code
+  (`CodeToken`, of the nine kinds of `CodeTokenKind`), none for a language not known nor beyond
+  `MAX_HIGHLIGHTED` (64 KiB). `BuiltInCodeHighlighter` reads the code once with `CodeLexer`, the
+  languages being data (`CodeGrammar`, `CodeGrammars`): Kotlin, Java, C, C++, C#, JavaScript,
+  TypeScript, Swift, Go, Rust, Python, shell, SQL, JSON and YAML, under 50 names and aliases.
+* Until phase 2 lays them out, the presenters draw a block as the code in the line: in the
+  monospace, its fences hidden (`MarkdownTextUtil.contentStyle`).
+* Tests: the fences (their characters and lengths, the indentation, the spaces after the
+  closing one, a backtick after an opening one, a fence not closed, an empty block, the
+  language), the notation inside and around a block, an emphasis and a display formula meeting a
+  block (`CodeBlocksTest`); every language on code as it is written (`CodeHighlighterTest`);
+  every opening never closed read in linear time, repeated up to 256 KiB (four times the code
+  highlighted) by every grammar and up to 1 MiB by the parser, random code and random texts with
+  fences never making them throw (`CodeHighlighterBoundsTest`, `RichTextParserBoundsTest`). The
+  bounds of the lexer took 307 s on the iOS simulator at 1 MiB, hence 256 KiB, where a quadratic
+  time would still take minutes.
+* The ABI of `drawview-model` recorded again: `Kind.CODE_BLOCK`, `Span.language` (the
+  constructor and `copy` of `Span` change), the highlighter added.
 
 ## Decisions
 
