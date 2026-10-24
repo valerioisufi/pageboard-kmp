@@ -46,6 +46,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.zIndex
@@ -140,9 +141,13 @@ internal object ToolbarLayout {
     /** The buttons of the top bar besides the title and the extensions: back, page grid, more. */
     const val TopButtons = 3
 
-    /** The width of the top bar without the tools: its buttons, the actions of the extensions, the title. */
-    fun topWidth(button: Dp, extensionsWidth: Dp, buttons: Int = TopButtons): Dp =
-        BarPadding + button * buttons + extensionsWidth + TitleMinWidth
+    /**
+     * The width of the top bar without the tools: its buttons, the actions of the extensions, the
+     * title, and the controls of the window at its start [decorWidth] wide (the traffic lights of
+     * macOS, `LocalWindowDecorInsets`).
+     */
+    fun topWidth(button: Dp, extensionsWidth: Dp, buttons: Int = TopButtons, decorWidth: Dp = 0.dp): Dp =
+        BarPadding + decorWidth + button * buttons + extensionsWidth + TitleMinWidth
 
     /** The width of the group of [tools] buttons of tools in [groups] groups, buttons [button] wide at least. */
     fun toolsWidth(button: Dp, tools: Int, groups: Int): Dp =
@@ -150,17 +155,36 @@ internal object ToolbarLayout {
 
     /**
      * The arrangement of the tools in an editor [width] wide, in a window of [heightClass], with
-     * buttons [button] wide, the actions of the extensions [extensionsWidth] wide and [tools]
-     * buttons of tools in [groups] groups.
+     * buttons [button] wide, the actions of the extensions [extensionsWidth] wide, [tools]
+     * buttons of tools in [groups] groups and the controls of the window [decorWidth] wide at the
+     * start of the top bar.
      */
-    fun arrange(width: Dp, heightClass: HeightClass, button: Dp, extensionsWidth: Dp, tools: Int, groups: Int): ToolbarArrangement = when {
+    fun arrange(
+        width: Dp,
+        heightClass: HeightClass,
+        button: Dp,
+        extensionsWidth: Dp,
+        tools: Int,
+        groups: Int,
+        decorWidth: Dp = 0.dp
+    ): ToolbarArrangement = when {
         width < WindowLayout.MediumWidth || heightClass == HeightClass.COMPACT -> ToolbarArrangement.FLOATING_TOOLS
-        topWidth(button, extensionsWidth) + toolsWidth(button, tools, groups) <= width -> ToolbarArrangement.ONE_BAR
+        topWidth(button, extensionsWidth, decorWidth = decorWidth) + toolsWidth(button, tools, groups) <= width -> ToolbarArrangement.ONE_BAR
         else -> ToolbarArrangement.TWO_BARS
     }
 
+    /**
+     * The widest title beside the tools in one bar: the room they leave in a bar [width] wide, up
+     * to [TitleMaxWidth], so that a long title never pushes the buttons after the tools out of
+     * the bar.
+     */
+    fun titleMaxWidth(width: Dp, button: Dp, extensionsWidth: Dp, tools: Int, groups: Int, decorWidth: Dp = 0.dp): Dp =
+        (width - topWidth(button, extensionsWidth, decorWidth = decorWidth) - toolsWidth(button, tools, groups) + TitleMinWidth)
+            .coerceIn(TitleMinWidth, TitleMaxWidth)
+
     /** Whether the page grid keeps its button in the top bar (else it goes to the "more" menu). */
-    fun pageGridFits(width: Dp, button: Dp, extensionsWidth: Dp): Boolean = topWidth(button, extensionsWidth) <= width
+    fun pageGridFits(width: Dp, button: Dp, extensionsWidth: Dp, decorWidth: Dp = 0.dp): Boolean =
+        topWidth(button, extensionsWidth, decorWidth = decorWidth) <= width
 }
 
 /**
@@ -168,6 +192,8 @@ internal object ToolbarLayout {
  * what it holds, the tools in their group when they fit in one bar, the actions of the extensions
  * and the "more" menu with the commands left out of the bars.
  *
+ * @param toolsMaxWidth the widest group of the tools, or "Read only", in the top bar.
+ * @param titleMaxWidth the widest title beside the tools in the top bar.
  * @param location where the document is (its folder), shown under its title.
  * @param onExtensionsWidth the width the actions of the extensions take, measured.
  * @param readOnlyNote why the document may only be read, beside "Read only" where the tools would be.
@@ -180,6 +206,7 @@ internal fun EditorTopBar(
     arrangement: ToolbarArrangement,
     showPageGrid: Boolean,
     toolsMaxWidth: Dp,
+    titleMaxWidth: Dp,
     toolbarActions: @Composable RowScope.() -> Unit,
     onExtensionsWidth: (Dp) -> Unit,
     location: String? = null,
@@ -213,7 +240,11 @@ internal fun EditorTopBar(
             document = if (isLoading) null else controller.document,
             subtitle = subtitle,
             location = location,
-            modifier = if (toolsInBar || readOnlyInBar) Modifier.widthIn(max = ToolbarLayout.TitleMaxWidth) else Modifier.weight(1f)
+            modifier = when {
+                toolsInBar -> Modifier.widthIn(max = titleMaxWidth)
+                readOnlyInBar -> Modifier.widthIn(max = ToolbarLayout.TitleMaxWidth)
+                else -> Modifier.weight(1f)
+            }
         )
 
         if (toolsInBar) {

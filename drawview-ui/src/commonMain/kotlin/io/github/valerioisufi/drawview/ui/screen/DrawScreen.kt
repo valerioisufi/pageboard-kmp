@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
@@ -44,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalFontFamilyResolver
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.zIndex
@@ -78,6 +80,7 @@ import io.github.valerioisufi.drawview.ui.render.LocalDrawViewEngines
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.LocalCanvasColors
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
+import io.github.valerioisufi.drawview.ui.window.LocalWindowDecorInsets
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
@@ -218,9 +221,12 @@ private fun DrawScreenContent(
                 val pdfTools = if (controller.tileManager.tileRenderer.pdfAdapter != null) 1 else 0
                 val textMarkupShown = pdfTools == 1 && controller.document.pages.any { it.pdfs.isNotEmpty() }
                 val toolCount = 2 + 6 + (if (textMarkupShown) 1 else 0) + 1 + pdfTools
-                val arrangement = ToolbarLayout.arrange(maxWidth, window.heightClass, button, extensionsWidth, toolCount, groups = 3)
-                val showPageGrid = arrangement != ToolbarArrangement.FLOATING_TOOLS || ToolbarLayout.pageGridFits(maxWidth, button, extensionsWidth)
-                val toolsMaxWidth = (maxWidth - ToolbarLayout.topWidth(button, extensionsWidth)).coerceAtLeast(0.dp)
+                // The top bar starts after the controls of the window (the traffic lights of macOS)
+                val decorWidth = LocalWindowDecorInsets.current.calculateStartPadding(LocalLayoutDirection.current)
+                val arrangement = ToolbarLayout.arrange(maxWidth, window.heightClass, button, extensionsWidth, toolCount, groups = 3, decorWidth)
+                val showPageGrid = arrangement != ToolbarArrangement.FLOATING_TOOLS || ToolbarLayout.pageGridFits(maxWidth, button, extensionsWidth, decorWidth)
+                val toolsMaxWidth = (maxWidth - ToolbarLayout.topWidth(button, extensionsWidth, decorWidth = decorWidth)).coerceAtLeast(0.dp)
+                val titleMaxWidth = ToolbarLayout.titleMaxWidth(maxWidth, button, extensionsWidth, toolCount, groups = 3, decorWidth)
 
                 Column(modifier = Modifier.fillMaxSize()) {
                     Column(
@@ -237,6 +243,7 @@ private fun DrawScreenContent(
                                 arrangement = arrangement,
                                 showPageGrid = showPageGrid,
                                 toolsMaxWidth = toolsMaxWidth,
+                                titleMaxWidth = titleMaxWidth,
                                 toolbarActions = toolbarActions,
                                 onExtensionsWidth = { extensionsWidth = it },
                                 location = location,

@@ -46,6 +46,31 @@ class ToolbarLayoutTest {
     }
 
     @Test
+    fun theControlsOfTheWindowTakeTheirWidthFromTheTopBar() {
+        // A window of a desktop as wide as the bars, with the traffic lights of macOS at the start
+        val button = 40.dp
+        val decor = 78.dp
+        val width = ToolbarLayout.topWidth(button, 0.dp) + ToolbarLayout.toolsWidth(button, 10, 3)
+        assertEquals(ToolbarArrangement.TWO_BARS, ToolbarLayout.arrange(width, HeightClass.MEDIUM, button, 0.dp, 10, 3, decor))
+        assertEquals(ToolbarArrangement.ONE_BAR, ToolbarLayout.arrange(width + decor, HeightClass.MEDIUM, button, 0.dp, 10, 3, decor))
+        // The width of the window still decides whether the tools float
+        assertEquals(ToolbarArrangement.TWO_BARS, ToolbarLayout.arrange(620.dp, HeightClass.MEDIUM, button, 0.dp, 10, 3, decor))
+        assertFalse(ToolbarLayout.pageGridFits(ToolbarLayout.topWidth(button, 0.dp), button, 0.dp, decor))
+    }
+
+    @Test
+    fun theTitleBesideTheToolsTakesTheRoomTheyLeave() {
+        val button = 40.dp
+        val width = ToolbarLayout.topWidth(button, 0.dp) + ToolbarLayout.toolsWidth(button, 10, 3)
+        // Just wide enough for one bar, the title keeps its least width; wider, it grows to its widest
+        assertEquals(ToolbarLayout.TitleMinWidth, ToolbarLayout.titleMaxWidth(width, button, 0.dp, 10, 3))
+        assertEquals(ToolbarLayout.TitleMinWidth + 50.dp, ToolbarLayout.titleMaxWidth(width + 50.dp, button, 0.dp, 10, 3))
+        assertEquals(ToolbarLayout.TitleMaxWidth, ToolbarLayout.titleMaxWidth(width + 500.dp, button, 0.dp, 10, 3))
+        // The traffic lights take their part of the room
+        assertEquals(ToolbarLayout.TitleMinWidth, ToolbarLayout.titleMaxWidth(width + 50.dp, button, 0.dp, 10, 3, decorWidth = 78.dp))
+    }
+
+    @Test
     fun thePageGridGoesToTheMenuWhenTheTitleWouldBeTooShort() {
         val button = 48.dp
         assertTrue(ToolbarLayout.pageGridFits(ReferenceWindow.PHONE.width, button, extensionsWidth = 0.dp))

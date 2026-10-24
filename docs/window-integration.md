@@ -143,6 +143,12 @@ Variations).
     not in fullscreen: the traffic lights take the corner where the two meet. A bar along the top
     starts after the start inset (`EditorTopBar`, `LibraryAppBar`); a column along the leading
     edge starts below the top inset, the title bar (the navigation pane of the library).
+* The editor chooses where its tools go (`ToolbarLayout`) by the width of its top bar less the
+  start inset, since the bar starts after the traffic lights (`EditorTopBar`). With the inset left
+  out, one bar was chosen up to 78 dp too narrow on macOS, and the last buttons of the bar (the
+  actions of the extensions, "more") were squeezed out of the window. The title beside the tools
+  takes only the room they leave (`ToolbarLayout.titleMaxWidth`), up to 280 dp: a title wider than
+  the 160 dp counted pushed them out the same way.
   * Returns `PaddingValues(0.dp)` on Windows, Linux, or when in macOS native fullscreen.
 * Draggable regions: Compose Desktop provides `WindowDraggableArea` within `FrameWindowScope`.
   The empty regions of the top bars are wrapped in `WindowDraggableArea` so that the window
@@ -232,6 +238,7 @@ Variations).
 | 3. Desktop Multi-Window | `DesktopWindowManager`, "Open in New Window" command & shortcuts in library, independent document windows with per-document `rememberDrawViewWindowState`, session flushing, macOS modified dot | Done |
 | 4. Mobile Multi-Window | Android `documentLaunchMode` & multi-window intent handling (tablet split-screen, DeX); iPadOS `WindowGroup(for:)` scene support | Done |
 | 5. macOS title bar of a toolbar | `MacWindowHelper`: an empty unified `NSToolbar` (52 points, traffic lights centered at 26 points) set on the main thread of AppKit through JNA (a dependency of `drawview-ui` on the JVM); the appearance of the system for the native parts of the windows (`apple.awt.application.appearance`) | Done |
+| 6. Bars beside the traffic lights | `ToolbarLayout` counts the start inset of the window controls (78 dp on macOS) when it chooses one bar, keeps the button of the page grid and bounds the tools; the title beside the tools takes only the room they leave | Done |
 
 ### Decisions
 

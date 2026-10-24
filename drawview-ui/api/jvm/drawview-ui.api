@@ -845,11 +845,11 @@ public final class io/github/valerioisufi/drawview/ui/screen/ComposableSingleton
 public final class io/github/valerioisufi/drawview/ui/screen/ComposableSingletons$EditorToolbarKt {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/screen/ComposableSingletons$EditorToolbarKt;
 	public fun <init> ()V
-	public final fun getLambda$-1105431035$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-1663931570$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$1301150839$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-2047263456$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-247985929$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1160477865$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1574344384$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$364959240$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$775446766$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
 }
 
 public final class io/github/valerioisufi/drawview/ui/screen/EditorScreenKt {
