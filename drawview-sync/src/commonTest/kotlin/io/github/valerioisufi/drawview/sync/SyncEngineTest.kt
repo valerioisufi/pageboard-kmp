@@ -1225,6 +1225,33 @@ class SyncEngineTest {
     }
 
     @Test
+    fun theMembersStayingConnectedCompactTheirLogs() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val devices = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val (ada, bob, cy) = devices
+        val document = ada.store.createDocument("Notes")
+        val invitation = ada.share(document.id, "Notes")
+        bob.join(invitation, "ada")
+        cy.join(invitation, "ada")
+        // Bob and Cy with each other too: every one knows from every other one what it has
+        cy.join(invitation, "bob")
+        advanceUntilIdle()
+
+        repeat(3) { i -> bob.change(document.id) { AddElements.of(it.document.pages[0], listOf(stroke(i * 5f, 50f))) } }
+        advanceUntilIdle()
+        cy.change(document.id) { session -> RemoveElements.of(session.document.pages[0], session.document.pages[0].strokes.take(2)) }
+        advanceUntilIdle()
+        assertSame(document.id, devices)
+
+        // Every one has everything, and they stay connected: the logs compacted, what was
+        // removed gone for good, on every device
+        for (device in devices) {
+            assertEquals(device.versionVector(document.id), device.compactedOperations(document.id), "the log of ${device.name}")
+            assertTrue(device.snapshot(document.id).pages[0].removedElements.isEmpty(), "what ${device.name} keeps removed")
+        }
+    }
+
+    @Test
     fun whatAMemberHasIsSaidByThatMember() = syncTest { work ->
         val network = InMemoryNetwork()
         val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
