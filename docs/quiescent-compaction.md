@@ -96,10 +96,34 @@ stays as it is and `PROTOCOL_VERSION` stays 1.
 
 | Phase | Content | Status |
 |---|---|---|
-| 1. Told again while connected | `DocumentSync` marking the changes, the job sending `KnownVersions` after `QUIET_MS` on the connections caught up told another vector, `Link.toldVersions`; `docs/collaboration.md`. Tests (`SyncEngineTest`): `theMembersStayingConnectedCompactTheirLogs`; nothing sent when nothing changed, one message after a burst; a member connected to the owner only keeps what was removed; a removal undone after the purge, back on every device; `theOperationsEveryMemberHasLeaveTheLog` without connecting Bob again; the relay test ending with every device connected to every other one, compared whole (`assertSame`); the iOS simulator | approved |
+| 1. Told again while connected | `DocumentSync` marking the changes, the job sending `KnownVersions` after `QUIET_MS` on the connections caught up told another vector, `Link.toldVersions`; `docs/collaboration.md`. Tests (`SyncEngineTest`): `theMembersStayingConnectedCompactTheirLogs`; nothing sent when nothing changed, one message after a burst; a member connected to the owner only keeps what was removed; a removal undone after the purge, back on every device; `theOperationsEveryMemberHasLeaveTheLog` without connecting Bob again; the relay test ending with every device connected to every other one, compared whole (`assertSame`); the iOS simulator | done |
 
 The phase ends with the checks of `CLAUDE.md` and the tests of the sync modules on the iOS
 simulator.
+
+### Phase 1 results
+
+* `DocumentSync.tellLater`: its observer of the changes starts again a wait of `QUIET_MS` (2
+  seconds) at every operation applied; then `SyncEngine.tellVersions` sends `KnownVersions` (the
+  vector of this device) on each connection of the document caught up whose `toldVersions` is
+  another vector. `catchUp` records the vector it says when the connection starts. The wait is
+  cancelled when the document is released.
+* `docs/collaboration.md`: the compaction says it.
+* Tests (`SyncEngineTest`), each failing without the change (checked by removing it):
+  * `theMembersStayingConnectedCompactTheirLogs`: three members connected to each other, every
+    log compacted and what was removed dropped on every device;
+  * `whatADeviceHasIsSaidAgainOnceAfterABurstOfChanges`: five changes in a row, one
+    `KnownVersions` with the vector after them; a minute without changes, none;
+  * `aMemberNotConnectedToEveryOtherOneKeepsWhatWasRemoved`: Bob and Cy connected to Ada only,
+    Ada drops the element removed, Bob and Cy keep it, the document shown the same;
+  * `aRemovalUndoneAfterItWasDroppedPutsTheContentBackEverywhere`: a text removed, dropped on both
+    devices, the removal undone: the text back on both, the documents the same;
+  * `theOperationsEveryMemberHasLeaveTheLog`: the log of Ada compacted without connecting Bob
+    again;
+  * `devicesChangingADocumentThroughEachOtherConverge`: compared shown when everyone is with Ada,
+    then whole (`assertSame`) once Bob and Cy are connected too.
+* `aMemberSendingAnythingStopsNothing` compares Ada and Cy shown: Cy, never connected to Bob, keeps
+  what Ada drops (requirement 3).
 
 ## Decisions
 

@@ -31,6 +31,7 @@ import io.github.valerioisufi.drawview.model.change.MovePages
 import io.github.valerioisufi.drawview.model.change.Operation
 import io.github.valerioisufi.drawview.model.change.OperationId
 import io.github.valerioisufi.drawview.model.change.PlaceElements
+import io.github.valerioisufi.drawview.model.change.ChangeOrigin
 import io.github.valerioisufi.drawview.model.change.RemoveElements
 import io.github.valerioisufi.drawview.model.change.RemovePage
 import io.github.valerioisufi.drawview.model.change.RenameDocument
@@ -635,10 +636,14 @@ class SyncEngineTest {
             }
             if (random.nextInt(4) == 0) advanceUntilIdle()
         }
-        // Everyone with Ada (some also with each other)
+        // Everyone with Ada (some also with each other): the same document shown
         for (device in devices) if (device !== ada) device.join(invitation, "ada")
         advanceUntilIdle()
         assertSameShown(document.id, devices)
+        // Bob and Cy with each other too: every one knows what the others have, and drops the same
+        cy.join(invitation, "bob")
+        advanceUntilIdle()
+        assertSame(document.id, devices)
     }
 
     @Test
@@ -1233,7 +1238,9 @@ class SyncEngineTest {
         val invitation = ada.share(document.id, "Notes")
         bob.join(invitation, "ada")
         cy.join(invitation, "ada")
-        // Bob and Cy with each other too: every one knows from every other one what it has
+        advanceUntilIdle()
+        // Bob and Cy with each other too (Cy a member now): every one knows from every other one
+        // what it has
         cy.join(invitation, "bob")
         advanceUntilIdle()
 
@@ -1249,6 +1256,73 @@ class SyncEngineTest {
             assertEquals(device.versionVector(document.id), device.compactedOperations(document.id), "the log of ${device.name}")
             assertTrue(device.snapshot(document.id).pages[0].removedElements.isEmpty(), "what ${device.name} keeps removed")
         }
+    }
+
+    @Test
+    fun whatADeviceHasIsSaidAgainOnceAfterABurstOfChanges() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val (ada, bob) = listOf("ada", "bob").map { Device(it, work, this, network) }
+        val document = ada.store.createDocument("Notes")
+        val invitation = ada.share(document.id, "Notes")
+        bob.join(invitation, "ada")
+        advanceUntilIdle()
+        val channel = impostor(bob, ada, document.id)
+        advanceUntilIdle()
+        // Said when the connection starts
+        assertEquals(1, messages(channel).count { it is KnownVersions })
+
+        repeat(5) { i -> ada.change(document.id) { AddElements.of(it.document.pages[0], listOf(stroke(i * 5f, 1f))) } }
+        advanceUntilIdle()
+        val said = messages(channel).filterIsInstance<KnownVersions>()
+        assertEquals(listOf(ada.versionVector(document.id)), said.map { it.versions.getValue(ada.engine.device) })
+        // Nothing changed: nothing said
+        advanceTimeBy(60_000)
+        advanceUntilIdle()
+        assertTrue(messages(channel).none { it is KnownVersions })
+    }
+
+    @Test
+    fun aMemberNotConnectedToEveryOtherOneKeepsWhatWasRemoved() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val devices = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }
+        val (ada, bob, cy) = devices
+        val document = ada.store.createDocument("Notes")
+        ada.change(document.id) { AddElements.of(it.document.pages[0], listOf(stroke(1f, 1f), stroke(10f, 1f))) }
+        val invitation = ada.share(document.id, "Notes")
+        bob.join(invitation, "ada")
+        cy.join(invitation, "ada")
+        advanceUntilIdle()
+
+        bob.change(document.id) { session -> RemoveElements.of(session.document.pages[0], session.document.pages[0].strokes.take(1)) }
+        advanceUntilIdle()
+        // Ada met both: dropped; Bob and Cy never met, each one does not know what the other has
+        assertTrue(ada.snapshot(document.id).pages[0].removedElements.isEmpty())
+        for (device in listOf(bob, cy)) assertEquals(1, device.snapshot(document.id).pages[0].removedElements.size, device.name)
+        assertSameShown(document.id, devices)
+    }
+
+    @Test
+    fun aRemovalUndoneAfterItWasDroppedPutsTheContentBackEverywhere() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val devices = listOf("ada", "bob").map { Device(it, work, this, network) }
+        val (ada, bob) = devices
+        val document = ada.store.createDocument("Notes")
+        ada.change(document.id) { AddElements.of(it.document.pages[0], listOf(stroke(1f, 1f), text("waves"))) }
+        val invitation = ada.share(document.id, "Notes")
+        bob.join(invitation, "ada")
+        advanceUntilIdle()
+
+        // Bob removes the text, keeping the change undoing it (as its history does)
+        val open = assertNotNull(bob.documents.open(document.id))
+        val undo = open.edit { session -> session.submit(RemoveElements.of(session.document.pages[0], session.document.pages[0].texts.toList())) }
+        advanceUntilIdle()
+        for (device in devices) assertTrue(device.snapshot(document.id).pages[0].removedElements.isEmpty(), "dropped on ${device.name}")
+
+        open.edit { session -> session.submit(assertNotNull(undo), ChangeOrigin.UNDO) }
+        bob.documents.close(open)
+        advanceUntilIdle()
+        assertSame(document.id, devices)
+        assertEquals("waves", ada.snapshot(document.id).pages[0].data.elements.filterIsInstance<TextData>().single().text)
     }
 
     @Test
@@ -1424,10 +1498,11 @@ class SyncEngineTest {
             advanceUntilIdle()
         }
 
-        // Ada and Cy go on: the changes of Cy reach Ada, and the document is the same on both
+        // Ada and Cy go on: the changes of Cy reach Ada, and the document is the same on both (Cy,
+        // not connected to Bob, keeps what was removed: Ada drops it)
         cy.change(document.id) { AddPage.of(DrawPage(orderKey = it.document.orderKeyAt(0))) }
         advanceUntilIdle()
-        assertSame(document.id, listOf(ada, cy))
+        assertSameShown(document.id, listOf(ada, cy))
         // And it is read again from the store of Ada as it is
         ada.store.flush()
         assertNotNull(KeyValueDocumentStore(ada.storage, scope = work).loadDocument(document.id))
@@ -1654,11 +1729,7 @@ class SyncEngineTest {
         advanceUntilIdle()
         bob.change(document.id) { session -> RemoveElements.of(session.document.pages[0], session.document.pages[0].strokes.take(2)) }
         advanceUntilIdle()
-        assertEquals(2, ada.snapshot(document.id).pages[0].removedElements.size)
-        // Told again what each one has (it travels with the connections)
-        bob.disconnect()
-        bob.join(invitation, "ada")
-        advanceUntilIdle()
+        // Each one says again what it has as it changes: the log of Ada compacted, connected as they are
         assertTrue(ada.store.compactedOperations(document.id).isNotEmpty(), "the log of Ada compacted")
         assertTrue(ada.store.operationsAfter(document.id, emptyMap()).size < 9)
         // Nothing can bring back what was removed: gone for good

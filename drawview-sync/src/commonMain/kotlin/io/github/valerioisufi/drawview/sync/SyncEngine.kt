@@ -456,6 +456,19 @@ public class SyncEngine(
         val observer = ChangeObserver { committed ->
             // The ones this device makes meanwhile (e.g. merging them, see ChangeOrigin.MERGE) go to it too
             for (link in links) if (link !== receivingFrom || committed.origin != ChangeOrigin.REMOTE) link.offer(committed.operation)
+            tellLater()
+        }
+
+        /** Says again what this device has, once the changes stop for [QUIET_MS] (see [tellVersions]). */
+        var telling: Job? = null
+
+        /** Starts again the wait before saying what this device has (on the thread of the document). */
+        fun tellLater() {
+            telling?.cancel()
+            telling = scope.launch {
+                delay(QUIET_MS)
+                tellVersions(this@DocumentSync)
+            }
         }
 
         /**
@@ -515,11 +528,30 @@ public class SyncEngine(
             (sync.users == 0).also { if (it) syncs.remove(sync.open.document.id) }
         }
         if (!last) return
-        sync.open.edit { it.removeObserver(sync.observer) }
+        sync.open.edit {
+            it.removeObserver(sync.observer)
+            sync.telling?.cancel()
+        }
         documents.close(sync.open)
     }
 
     private suspend fun linksOf(documentId: String): List<Link> = mutex.withLock { links.filter { it.documentId == documentId } }
+
+    /**
+     * Says what this device has of the document of [sync] (its version vector) on its connections
+     * caught up that were told another one: the members staying connected compact their logs (see
+     * [compact]) without waiting to connect again.
+     */
+    private suspend fun tellVersions(sync: DocumentSync) {
+        sync.open.edit { session ->
+            val vector = session.versionVector
+            for (link in sync.links) {
+                if (!link.caughtUp || link.toldVersions == vector) continue
+                link.toldVersions = vector
+                link.trySend(KnownVersions(mapOf(device to vector)))
+            }
+        }
+    }
 
     // ==========================================================
     // Connections
@@ -564,6 +596,9 @@ public class SyncEngine(
         // On the thread of the document:
         /** The operations made here are sent as they are made (the missed ones were sent). */
         var caughtUp = false
+
+        /** What this device last said it has of the document on this connection (see [tellVersions]). */
+        var toldVersions: Map<String, Long>? = null
         val waiting = mutableListOf<Operation>()
 
         /** Operations received before the ones they follow. */
@@ -1139,8 +1174,10 @@ public class SyncEngine(
             link.waiting.clear()
         }
         requestResources(link, sync)
-        // What this device has, for the compaction of the log (each device says its own)
-        link.send(KnownVersions(mapOf(device to sync.open.edit { it.versionVector })))
+        // What this device has, for the compaction of the log (each device says its own); said again
+        // as it changes (see tellVersions)
+        val vector = sync.open.edit { session -> session.versionVector.also { link.toldVersions = it } }
+        link.send(KnownVersions(mapOf(device to vector)))
         // Then the items beside the document
         attachments?.let { link.send(AttachmentVersions(it.versions(link.documentId))) }
     }
@@ -1498,6 +1535,12 @@ public class SyncEngine(
 
         /** The proofs of the last operations kept in memory by document (see [DocumentSync.proofsOf]). */
         const val RECENT_PROOFS = 1024
+
+        /**
+         * How long the changes of a document stop before this device says again what it has (see
+         * [tellVersions]): one message after a burst of changes.
+         */
+        const val QUIET_MS = 2_000L
 
         /**
          * The largest frame of a device not authorized yet (see [Link.authorized]): its hello, a

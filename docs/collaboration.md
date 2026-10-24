@@ -542,7 +542,9 @@ The application is not released yet, so the stored documents are not migrated:
   joining gets the snapshot with that base, then the rest of the log. When every member has all
   the operations of the others as they said them, nothing made without seeing a removal is on its
   way: the pages and the elements removed until then are deleted for good
-  (`DrawDocument.purgeHidden`).
+  (`DrawDocument.purgeHidden`). Each device says what it has when a connection starts, and again
+  on its connections once its changes stop for 2 seconds (`SyncEngine.tellVersions`): the members
+  staying connected compact while connected ([quiescent-compaction.md](quiescent-compaction.md)).
 * While connected to other devices, the application goes on in the background: a foreground
   service (data synchronization, with its notification) on Android, the time the system gives on
   iOS (`BackgroundSync`).
