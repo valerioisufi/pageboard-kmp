@@ -6,6 +6,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.test.DesktopComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasScrollToNodeAction
@@ -16,6 +18,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.runDesktopComposeUiTest
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
@@ -49,6 +52,9 @@ import kotlinx.coroutines.cancel
 /**
  * Shows a library with folders and notes in [window], does [actions] and records the window
  * once the pages are drawn, as `screenshots/<screen>-<window>-<theme>.png`.
+ *
+ * @param clipboard the text in the clipboard of the scene, which has its own: what the computer
+ * holds is neither shown (the paste of the menus) nor replaced.
  */
 @OptIn(ExperimentalTestApi::class)
 internal fun capture(
@@ -56,6 +62,7 @@ internal fun capture(
     window: ReferenceWindow,
     dark: Boolean,
     extension: EditorExtension? = null,
+    clipboard: String? = null,
     actions: DesktopComposeUiTest.(viewModels: ViewModelStoreOwner) -> Unit = {}
 ) = runDesktopComposeUiTest(width = window.width.value.toInt(), height = window.height.value.toInt()) {
     val storeScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -74,9 +81,12 @@ internal fun capture(
     // documents read on the thread asking (the scene of a test has no main thread)
     val documents = OpenDocuments(store, dispatcher = Dispatchers.Unconfined)
     val thumbnails = ThumbnailsHolder()
+    // The clipboard read by the editor (the one of every platform)
+    @Suppress("DEPRECATION")
+    val sceneClipboard = LocalClipboardManager provides SceneClipboard(clipboard)
 
     setContent {
-        CompositionLocalProvider(LocalViewModelStoreOwner provides viewModels) {
+        CompositionLocalProvider(LocalViewModelStoreOwner provides viewModels, sceneClipboard) {
             DrawViewTheme(darkTheme = dark, dynamicColor = false) {
                 // The shortcuts written as on a Mac on every system
                 AdaptiveRoot(hints = window.input, conventions = PlatformConventions(ShortcutModifier.COMMAND)) {
@@ -128,6 +138,16 @@ private val ENGINES = DrawViewEngines(pdfTiles = PdfiumEngine::createTileAdapter
 /** The thumbnails of the library of a test. */
 private class ThumbnailsHolder {
     var value: DocumentThumbnails? = null
+}
+
+/** The clipboard of a scene: [text] at first, then the text set last. */
+@Suppress("DEPRECATION")
+private class SceneClipboard(private var text: String?) : ClipboardManager {
+    override fun setText(annotatedString: AnnotatedString) {
+        text = annotatedString.text
+    }
+
+    override fun getText(): AnnotatedString? = text?.let(::AnnotatedString)
 }
 
 /** Waits for the tiles of the open document (if any) and the thumbnails of the grid to be drawn. */

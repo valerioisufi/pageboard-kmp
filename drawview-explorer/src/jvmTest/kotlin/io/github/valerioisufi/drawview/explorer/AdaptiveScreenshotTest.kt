@@ -106,9 +106,12 @@ class AdaptiveScreenshotTest {
         }
     }
 
-    /** The long press on a page (the click of the secondary button): paste, the page and its background. */
+    /**
+     * The long press on a page (the click of the secondary button): paste (a text copied in
+     * another application), the page and its background.
+     */
     @Test
-    fun editorContextMenu() = capture("editor-context-menu", ReferenceWindow.TABLET_LANDSCAPE, dark = false) { viewModels ->
+    fun editorContextMenu() = capture("editor-context-menu", ReferenceWindow.TABLET_LANDSCAPE, dark = false, clipboard = "Copied elsewhere") { viewModels ->
         openNote(viewModels)
         runOnIdle { viewModels.controller().contextMenuPosition = Offset(760f, 420f) }
     }
