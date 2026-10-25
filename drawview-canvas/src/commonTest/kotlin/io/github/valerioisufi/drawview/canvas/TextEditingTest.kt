@@ -598,4 +598,20 @@ class TextEditingTest {
         assertEquals("- Item\n", editor.value.text)
         assertEquals(TextRange(7), editor.value.selection)
     }
+
+    @Test
+    fun theMarkersOfTheListItemsAreNoPlaceForTheCaret() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 50f, 50f)
+        editor.type("a\n- Item")
+        // The arrow left from the text of the item: to the end of the line before, not into the marker
+        editor.updateValue(TextFieldValue("a\n- Item", TextRange(4)))
+        editor.updateValue(TextFieldValue("a\n- Item", TextRange(3)))
+        assertEquals(TextRange(1), editor.value.selection)
+        // Backspace at the start of the text of the item takes its marker away
+        editor.updateValue(TextFieldValue("a\n- Item", TextRange(4)))
+        editor.updateValue(TextFieldValue("a\n-Item", TextRange(3)))
+        assertEquals(TextFieldValue("a\nItem", TextRange(2)), editor.value)
+    }
 }

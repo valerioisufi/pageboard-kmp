@@ -362,10 +362,12 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
     public fun updateValue(newValue: TextFieldValue, smartNewline: Boolean) {
         if (!isEditing) return
         val textChanged = newValue.text != value.text
-        val applied = if (textChanged && smartNewline) {
-            RichTextEditing.handleSmartNewline(value, newValue) ?: newValue
-        } else {
-            newValue
+        val applied = when {
+            textChanged && smartNewline -> RichTextEditing.handleSmartNewline(value, newValue)
+                ?: RichTextEditing.handleConcealedDeletion(value, newValue)
+                ?: newValue
+            textChanged -> newValue
+            else -> RichTextEditing.keepCaretOutOfMarkers(value, newValue) ?: newValue
         }
         val reallyChanged = applied.text != value.text
         value = applied

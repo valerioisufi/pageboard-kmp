@@ -332,4 +332,29 @@ class RichTextEditingTest {
         assertEquals("``` {.python}\nx\n```", RichTextEditing.toggleLineNumbers(at("``` {.python .numberLines}\nx\n```", 30)).text, "the attributes of Pandoc")
         assertEquals("plain text", RichTextEditing.toggleLineNumbers(at("plain text", 3)).text, "nothing outside a block")
     }
+
+    @Test
+    fun theCaretStaysOutOfTheMarkersOfTheListItems() {
+        val text = "intro\n  - item"
+        val content = text.indexOf("item")
+        fun moved(from: Int, to: Int) = RichTextEditing.keepCaretOutOfMarkers(TextFieldValue(text, TextRange(from)), TextFieldValue(text, TextRange(to)))?.selection
+        assertEquals(TextRange(text.indexOf('\n')), moved(content, content - 1), "backwards from the text: to the end of the line before")
+        assertEquals(TextRange(content), moved(0, text.indexOf('-')), "anywhere else in the marker: to the text")
+        assertEquals(TextRange(content), moved(text.length, text.indexOf('\n') + 1), "the start of its line is in the marker")
+        assertEquals(null, moved(0, content), "already out")
+        val first = "- a"
+        assertEquals(TextRange(2), RichTextEditing.keepCaretOutOfMarkers(TextFieldValue(first, TextRange(2)), TextFieldValue(first, TextRange(1)))?.selection, "no line before: stays at the text")
+    }
+
+    @Test
+    fun backspaceAtTheStartOfAnItemTakesItsMarkerAway() {
+        val text = "intro\n  1. item"
+        val content = text.indexOf("item")
+        val deleted = TextFieldValue(text.removeRange(content - 1, content), TextRange(content - 1))
+        val result = RichTextEditing.handleConcealedDeletion(TextFieldValue(text, TextRange(content)), deleted)
+        assertEquals(TextFieldValue("intro\nitem", TextRange(6)), result)
+        // Any other deletion is a deletion
+        val elsewhere = TextFieldValue(text.removeRange(content, content + 1), TextRange(content))
+        assertEquals(null, RichTextEditing.handleConcealedDeletion(TextFieldValue(text, TextRange(content + 1)), elsewhere))
+    }
 }

@@ -127,7 +127,7 @@ struts fall back to the character of the text font scaled as today: both sides s
 |---|---|---|
 | 1 | Parity test: the editor and the canvas lay out a set of texts (special characters, emphasis, headings, inline and display formulas, blocks of code, nested lists, alignments) with nothing revealed, and their lines, baselines and indents are compared; the differences found today recorded as ignored tests, each phase enabling its own | Done |
 | 2 | One presentation: the strut fonts, `RichTextPresenter` with the mapping, the lines as paragraphs, the delimiters removed, the formulas and the blocks of code as struts, the list items with their bullet or number and their hanging indent measured; the canvas, the export, `MarkdownText` and the editor on it (`toEditorText`, `toCanvasText` and the placeholders removed) | Done |
-| 3 | Lists while written: the caret kept out of the markers, Backspace at the start of an item taking its marker away | Planned |
+| 3 | Lists while written: the caret kept out of the markers, Backspace at the start of an item taking its marker away | Done |
 | 4 | Reveal without vertical moves: the delimiters faded by their color only, the `#` of a heading revealed near them only, the room of a formula kept while its source is shown, a block of code written as a block (struts, chrome, fences hidden, Backspace revealing the opening fence) | Planned |
 | 5 | Checks: the screenshots recorded again where the page changed (the line breaks of every text are now paragraphs, a block of code takes exactly its height), the desktop application on a scratch directory | Planned |
 
@@ -167,6 +167,19 @@ struts fall back to the character of the text font scaled as today: both sides s
 * The public API of `drawview-ui` changed (recorded with `updateKotlinAbi`): `MarkdownTextUtil`
   keeps `toLiveAnnotatedString`, `InlineCode` and `RenderedFormula`; `NotesFonts` takes the strut
   fonts.
+
+### Phase 3 results
+
+* `RichTextEditing.keepCaretOutOfMarkers` (`drawview-canvas`): a caret moved into the marker of a
+  list item goes to the text of the item, or, moved backwards from that text, to the end of the line
+  before; `TextEditorManager.updateValue` applies it to every move of the caret. Without it the
+  arrows would walk through the marker without the caret moving on the screen, and a character
+  typed there would break the item.
+* `RichTextEditing.handleConcealedDeletion`: Backspace at the start of the text of an item, which
+  deletes the space of its marker (not shown), takes the whole marker away; applied to what the
+  user types (not to the formatting commands).
+* Tests: the moves of the caret and the deletion, by themselves and through the editor.
+* The public API of `drawview-canvas` gains the two functions (recorded with `updateKotlinAbi`).
 
 ## Decisions
 

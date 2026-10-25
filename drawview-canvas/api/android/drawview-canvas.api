@@ -967,10 +967,12 @@ public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing;
 	public final fun codeBlockAt (Landroidx/compose/ui/text/input/TextFieldValue;)Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
+	public final fun handleConcealedDeletion (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun handleEnter (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun handleSmartNewline (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun inCodeBlock (Landroidx/compose/ui/text/input/TextFieldValue;)Z
 	public final fun indent (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun keepCaretOutOfMarkers (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun outdent (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggle (Landroidx/compose/ui/text/input/TextFieldValue;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggleBulletList (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;

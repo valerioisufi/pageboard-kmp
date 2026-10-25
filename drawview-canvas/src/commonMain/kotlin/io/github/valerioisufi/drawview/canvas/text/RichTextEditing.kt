@@ -418,6 +418,39 @@ public object RichTextEditing {
     }
 
     /**
+     * [newValue] with its caret out of the markers of the list items, which are shown as their
+     * bullet or number and are no place for the caret: a caret moved into a marker from the text of
+     * its item goes to the end of the line before (backwards), any other to the text of the item.
+     * `null` when [newValue] needs no change (its text changed, a selection, no marker).
+     */
+    public fun keepCaretOutOfMarkers(oldValue: TextFieldValue, newValue: TextFieldValue): TextFieldValue? {
+        if (oldValue.text != newValue.text || !newValue.selection.collapsed) return null
+        val caret = newValue.selection.start
+        val item = listItemMarkerAt(newValue.text, caret) ?: return null
+        val backwards = oldValue.selection.collapsed && oldValue.selection.start == item.contentStart && caret < item.contentStart
+        val target = if (backwards && item.start > 0) item.start - 1 else item.contentStart
+        return newValue.copy(selection = TextRange(target))
+    }
+
+    /**
+     * What a deletion of [oldValue] into [newValue] does when it deletes a character that is not
+     * shown: Backspace at the start of the text of a list item deletes the last character of its
+     * marker, and takes the whole marker away instead. `null` when [newValue] is not such a deletion.
+     */
+    public fun handleConcealedDeletion(oldValue: TextFieldValue, newValue: TextFieldValue): TextFieldValue? {
+        val old = oldValue.text
+        if (!oldValue.selection.collapsed || newValue.text.length != old.length - 1) return null
+        val caret = oldValue.selection.start
+        if (caret == 0 || newValue.text != old.removeRange(caret - 1, caret)) return null
+        val item = RichTextParser.parse(old).firstOrNull { it.kind == RichTextParser.Kind.LIST_ITEM && it.contentStart == caret && it.start < caret } ?: return null
+        return TextFieldValue(old.removeRange(item.start, item.contentStart), TextRange(item.start))
+    }
+
+    /** The list item of [text] whose marker (its indent, its bullet or number, the space after it) has [offset], or `null`. */
+    private fun listItemMarkerAt(text: String, offset: Int): RichTextParser.Span? =
+        RichTextParser.parse(text).firstOrNull { it.kind == RichTextParser.Kind.LIST_ITEM && offset >= it.start && offset < it.contentStart }
+
+    /**
      * Indents the lines covered by the selection by adding 2 spaces at the beginning of each line;
      * in the code of a block, by [CODE_INDENT] spaces, or at the caret up to the next column of
      * [CODE_INDENT].
