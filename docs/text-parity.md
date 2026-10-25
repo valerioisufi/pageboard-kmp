@@ -1,0 +1,179 @@
+# Text parity
+
+A text being written looks exactly as the page draws it: the same lines, the same heights, the
+same indents. Today the field of the editor and the canvas build the same text in two different
+ways, and the text moves when the editor opens, closes, or the caret walks through it. This
+document follows [text-editing.md](text-editing.md) (phases 1–9, done) and designs the parity with
+the GRASP principles.
+
+## Starting point
+
+The notation is read once (`RichTextParser`, `drawview-model`), then presented twice by
+`MarkdownTextUtil` (`drawview-ui`):
+
+1. **The editor** (`toEditorText`, shown by `TextBoxEditor` through a `VisualTransformation`):
+   the source as it is written, the delimiters kept in the text at a size of 0.001 sp, shown faded
+   at 0.9 times the size when the caret touches their span; every formula and block of code away
+   from the caret one transparent character whose font size is chosen to give its line the room
+   of the image (a font has its ascent and its descent in a fixed ratio, so the size is the larger
+   of the two needs: `max(ascent / fontAscent, descent / fontDescent)`); the list items as written
+   (`- `), with no bullet and no indent.
+2. **The canvas** (`toCanvasText`, laid out by `ComposeTextTileAdapter`, shown by `MarkdownText`
+   out of the pages): the delimiters removed; every formula two Compose placeholders (its body
+   above the baseline, and a zero-width one hanging its descent below the top of the font); every
+   block of code one placeholder centered in its line; the list items a bullet or a number and a
+   hanging indent approximated from the size of the font (`listPrefixWidthPx`), each line of a text
+   with lists a paragraph of its own, its line break dropped.
+
+### What the user sees
+
+| # | Problem | Cause |
+|---|---|---|
+| P1 | Special characters move the text while it is written | The delimiters are in the field: 0.001 sp away from the caret, 0.9 times the size near it; the line of a heading moves as soon as the caret enters it, its `# ` shown |
+| P2 | The formulas leave different margins in the editor and on the page, also when they are not edited | Two models of the room of a formula: one character scaled for the larger need (a tall fraction gets a deep descent too, and the other way round), two placeholders with the ascent of the font guessed from `Hg` |
+| P3 | A block of code moves the text by a line | The block of the caret shows its fences as two lines more; away from the caret its line is a scaled character in the editor and a centered placeholder on the canvas |
+| P4 | The list items are not indented while written | `toEditorText` ignores `LIST_ITEM`; on the page the indent of the wrapped lines is approximated, not measured |
+
+## Requirements
+
+* What is not under the caret is laid out in the editor **exactly** as on the page: the same
+  lines, line heights, baselines and indents, by construction rather than by care.
+* What the caret reveals never moves the lines vertically: no line appears or disappears, no line
+  changes height. A horizontal move inside the line of the caret is accepted for now (see
+  [Left for later](#left-for-later)).
+* The list items show their bullet or number and their hanging indent while written; the caret
+  never enters a marker, Backspace at the start of an item takes its marker away.
+* A block of code stays a block while its code is written: no fence lines, its background, its
+  label and its numbers in place.
+* No stored format changes: the source of a text is the same Markdown, so no migration, no change
+  of the synchronization.
+
+## Design
+
+### One presentation
+
+The text is presented **once**, by one expert, for every place that shows it: the canvas (tiles
+and PDF export), `MarkdownText` and the editor. The editor only says what the caret reveals; with
+nothing revealed the presentation is the canvas one, character by character.
+
+| Responsibility | Class (module) | GRASP |
+|---|---|---|
+| Present a text: what is shown of every character of the source (kept, hidden, replaced by an object, preceded by a prefix), the styles, the paragraphs, the objects and the offsets between the source and what is shown | `RichTextPresenter` → `PresentedText` (`drawview-ui`, `editor`), replacing `toEditorText` and `toCanvasText` | Information Expert, Pure Fabrication |
+| The offsets between the source and the text shown, both ways | `PresentedText.mapping` (`SourceMapping`: two arrays filled while presenting) | Information Expert |
+| The room of an object (formula, block of code) in its line: exactly so much above and below the baseline, so wide | `Struts` (`drawview-ui`, `editor`), from the strut fonts of `NotesFonts` | Pure Fabrication, Protected Variations |
+| Where an object is drawn, from the layout of the text | `PresentedText.formulas` / `codeBlocks` with their offset; the canvas, `MarkdownText` and the editor read the line of that offset | Information Expert |
+| What the caret reveals | `Reveal` (the selection of the editor; none on the canvas) | Information Expert |
+| Keep the caret out of what is not shown, Backspace on a concealed marker | `RichTextEditing.snapCaret`, `handleConcealedDeletion` (`drawview-canvas`), called by `TextEditorManager.updateValue` | Information Expert, Controller |
+
+### Lines are paragraphs
+
+Compose adds an empty line around the line break of a paragraph (seen in phase 2 of
+text-editing.md and measured again: a paragraph `abc\n` lays out three lines with the next one).
+So **every line of the source is a paragraph**, its line break shown as a zero-width space
+(U+200B) ending it: one character for one, so the caret before the break is at the end of the
+line, after it at the start of the next paragraph. The last line break of a text stays a line
+break, which gives the empty last line where the caret goes. The canvas, which dropped the breaks
+of the texts with lists only, now presents every text the same way.
+
+### Struts: the exact room of an object
+
+A character of a text font cannot give its line some room above the baseline without some room
+below (P2). Two fonts made for it can: `strut_above.ttf` and `strut_below.ttf`
+(`tools/fonts/make_struts.py`), one empty glyph for U+FFFC, 1 em wide, all of the line above the
+baseline or all below; U+2060 and U+200B map to a zero-width glyph. An object of width `w`,
+ascent `a` and descent `d` is shown as three characters:
+
+```
+U+FFFC in strut_above at a px, letter spacing w − a   (a above the baseline, w wide)
+U+2060 (word joiner: the line never breaks inside the object)
+U+FFFC in strut_below at d px, letter spacing −d      (d below the baseline, no width)
+```
+
+Measured on the desktop: a line of 50 px above and 15 px below, the object 30 px wide, exactly.
+Being plain characters, struts work in a text field (which accepts no placeholders), so the editor
+and the canvas lay out **the same string**. Without the strut fonts (`NotesFonts.System`) the
+struts fall back to the character of the text font scaled as today: both sides still agree.
+
+* An inline formula: its image's ascent and descent, its width; drawn with its baseline on the
+  baseline of its line.
+* A formula alone on its line (`$$…$$`): the same, as wide as the line, drawn in its middle.
+* A block of code: as high as its block (its descent the descent of the font, so the line is
+  exactly the block), as wide as the line; drawn from the top of its line.
+
+### What the caret reveals
+
+* **Delimiters** (`**`, `_`, `~~`, `` ` ``, `\`): hidden; shown faded (the color only, at the size
+  of their text) when the caret touches their span. The `#` of a heading only when the caret is on
+  them or right after them, not anywhere in the heading.
+* **A formula**: its source in the line, the formula rendered above it (as today); before the
+  source a zero-width strut keeps the room of the image, so the line keeps its height.
+* **A block of code**: with the caret in its code, its code is shown in the line as text laid out
+  as in the block: each line a paragraph indented to the code of the block (its column of numbers
+  included), the tabs as spaces, the spaces of its list item taken off, a strut on its first line
+  for the top of the block (padding and label) and one on its last for its bottom. The editor draws
+  the background, the label and the numbers of the block (`CodeBlockLayout.drawChrome`). The fences
+  are hidden; they are revealed when the caret is on one of their lines: moved there by the arrows,
+  or by Backspace at the start of the code (which reveals the opening fence instead of joining it to
+  the first line of code).
+* **A list marker**: never revealed. The source of the marker (its indent, `-`, `*`, `+` or the
+  number, the space) is replaced by the bullet or the number as the page draws it; the paragraph
+  of the item has the hanging indent of that prefix, measured with the font. The caret is kept out
+  of the marker; Backspace at the start of the text of an item takes its marker away.
+
+## Phases
+
+| Phase | Content | Status |
+|---|---|---|
+| 1 | Parity test: the editor and the canvas lay out a set of texts (special characters, emphasis, headings, inline and display formulas, blocks of code, nested lists, alignments) with nothing revealed, and their lines, baselines and indents are compared; the differences found today recorded as ignored tests, each phase enabling its own | Done |
+| 2 | One presentation: the strut fonts, `RichTextPresenter` with the mapping, the lines as paragraphs, the delimiters removed, the formulas and the blocks of code as struts; the canvas, the export, `MarkdownText` and the editor on it (`toEditorText`, `toCanvasText` and the placeholders removed) | Planned |
+| 3 | Lists while written: the markers replaced by their bullet or number, the hanging indent measured on the canvas and in the editor, the caret kept out of the markers, Backspace taking a marker away | Planned |
+| 4 | Reveal without vertical moves: the delimiters faded by their color only, the `#` of a heading revealed near them only, the room of a formula kept while its source is shown, a block of code written as a block (struts, chrome, fences hidden, Backspace revealing the opening fence) | Planned |
+| 5 | Checks: the screenshots recorded again where the page changed (the line breaks of every text are now paragraphs, a block of code takes exactly its height), the desktop application on a scratch directory | Planned |
+
+### Phase 1 results
+
+* `TextParityTest` (`drawview-ui`, desktop) lays a text out as the canvas does and as the field of
+  the editor does with nothing revealed, with the fonts of the notes, at 20 px on 320 px, and
+  compares every line (top, baseline, bottom, left and right ends, within half a pixel).
+* The same today: plain text, alignments, emphasis and escapes, headings.
+* Different today (ignored until their phase): a line with a fraction is 53 px high on the page
+  and 111 px in the editor (P2); a display formula and a block of code have their baseline 9 and
+  15 px lower in the editor (P2, P3: drawn centered, so not seen, but the parity of the struts needs
+  it); a list item wraps under its marker in the editor, 19 px left of the page (P4); a block of
+  code in a list item is 27 px high on the page and 40 px in the editor (P3, P4).
+
+## Decisions
+
+Approved by the user on 2026-10-25 ("Va bene per il momento quello che ha deciso tu"), who asked for the whole plan to be implemented in a worktree:
+
+1. The presentation of the page is the reference: the editor follows it, and the page changes only
+   where it was approximated (the indent of the list items, the height of a line with a block of
+   code, the line breaks as paragraphs).
+2. Inline delimiters are revealed when the caret touches their span, at the size of their text.
+3. The fences of a block of code are hidden while its code is written; the label of the block
+   stays drawn.
+4. The list markers are never revealed.
+
+Taken while designing, revertible:
+
+5. **Strut fonts** in the resources of `drawview-ui` (two files of about 1 KB each, generated by a
+   script kept in the repository) rather than a placeholder model in the canvas only: the field of
+   the editor accepts no placeholders, and two models cannot agree by construction.
+6. Every line is a paragraph, also in the texts without lists, so that one presentation serves all.
+7. `MarkdownTextUtil.toCanvasText`, `CanvasText`, `PlaceholderSpec`, `InlineFormula`,
+   `CanvasCodeBlock` leave the public API of `drawview-ui` (not released yet: `0.1.0-SNAPSHOT`);
+   `NotesFonts` takes the strut fonts as two more optional families.
+8. Backspace at the start of the text of a list item removes the whole marker (its indent
+   included), not one level of indent.
+
+## Left for later
+
+* **Horizontal moves while writing**: revealing the delimiters of the span under the caret still
+  widens its line, and a line close to the right edge can wrap differently while written than on
+  the page. To study: revealing only the delimiter next to the caret, drawing the delimiters over
+  the text without room (as the formulas), or formatting without visible delimiters.
+* The right padding of a block of code written as text: its lines wrap on the width of the line,
+  not of the block minus its padding (a line of code within a few characters of the edge only).
+* On real devices: the struts and the zero-width line breaks with the caret, the selection handles
+  and the input methods of Android and iOS (the layout itself is the same engine on every
+  platform, but the field there is not tested by the desktop tests).
