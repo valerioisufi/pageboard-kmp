@@ -99,6 +99,7 @@ public final class io/github/valerioisufi/drawview/model/DrawCustomElement : io/
 	public fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun getRotatedBounds ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public fun getRotatedBounds (F)Lio/github/valerioisufi/drawview/model/geometry/Rect;
 	public fun getRotation ()F
 	public final fun getType ()Ljava/lang/String;
 	public fun getUpdated ()Lio/github/valerioisufi/drawview/model/Stamp;
@@ -202,6 +203,7 @@ public final class io/github/valerioisufi/drawview/model/DrawImage : io/github/v
 	public fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public final fun getResourceId ()Ljava/lang/String;
 	public fun getRotatedBounds ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public fun getRotatedBounds (F)Lio/github/valerioisufi/drawview/model/geometry/Rect;
 	public fun getRotation ()F
 	public fun getUpdated ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun getWidth ()F
@@ -365,6 +367,7 @@ public final class io/github/valerioisufi/drawview/model/DrawText : io/github/va
 	public fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun getRemoved ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun getRotatedBounds ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public fun getRotatedBounds (F)Lio/github/valerioisufi/drawview/model/geometry/Rect;
 	public fun getRotation ()F
 	public final fun getText ()Ljava/lang/String;
 	public fun getUpdated ()Lio/github/valerioisufi/drawview/model/Stamp;
@@ -713,6 +716,7 @@ public abstract interface class io/github/valerioisufi/drawview/model/RotatableI
 	public fun getCenterY ()F
 	public abstract fun getHeight ()F
 	public fun getRotatedBounds ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public fun getRotatedBounds (F)Lio/github/valerioisufi/drawview/model/geometry/Rect;
 	public abstract fun getRotation ()F
 	public abstract fun getWidth ()F
 	public abstract fun getX ()F
@@ -730,6 +734,7 @@ public final class io/github/valerioisufi/drawview/model/RotatableItem$DefaultIm
 	public static fun getCenterX (Lio/github/valerioisufi/drawview/model/RotatableItem;)F
 	public static fun getCenterY (Lio/github/valerioisufi/drawview/model/RotatableItem;)F
 	public static fun getRotatedBounds (Lio/github/valerioisufi/drawview/model/RotatableItem;)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public static fun getRotatedBounds (Lio/github/valerioisufi/drawview/model/RotatableItem;F)Lio/github/valerioisufi/drawview/model/geometry/Rect;
 	public static fun toLocal (Lio/github/valerioisufi/drawview/model/RotatableItem;FF)Lio/github/valerioisufi/drawview/model/geometry/Point;
 }
 

@@ -79,6 +79,7 @@ public class ComposeTextTileAdapter(
     private val measurer = TextMeasurer(fontFamilyResolver, Density(1f, 1f), LayoutDirection.Ltr, cacheSize = 0)
 
     private val layouts = LruCache<LayoutKey, PreparedText>(MAX_LAYOUTS)
+    private val sizes = LruCache<SizeKey, TextBlockSize>(MAX_LAYOUTS)
     private val formulaImages = FormulaImages(formulas)
     private val ascentCache = mutableMapOf<Int, Float>()
 
@@ -98,6 +99,9 @@ public class ComposeTextTileAdapter(
         val alignment: TextAlignment,
         val paper: Int
     )
+
+    /** What the size of a text depends on (see [measure]). */
+    private data class SizeKey(val content: String, val fontSize: Float, val width: Float, val alignment: TextAlignment)
 
     /**
      * A text laid out: its [layout], its [formulas] and [codeBlocks] in its placeholders, the
@@ -120,29 +124,33 @@ public class ComposeTextTileAdapter(
         syncLock(lock) { drawRichText(canvas, text, mmToCanvas, scale, paperColor) }
     }
 
+    /** The size of [text] as [drawText] lays it out, kept for the next texts of the same content and size. */
     override fun measure(text: DrawText): TextBlockSize? {
         if (text.width <= 0f) return null
-        return syncLock(lock) {
-            val scale = LAYOUT_PX_PER_MM
-            val prepared = prepare(text, text.fontSize * PT_TO_MM * scale, (text.width * scale).toInt().coerceAtLeast(1), TextTileAdapter.NO_PAPER)
-            val layout = prepared.layout
-            // A formula alone on its line and a block of code take the line: their own width counts
-            val blockLines = HashMap<Int, Float>()
-            for (formula in prepared.formulas) {
-                if (!formula.block) continue
-                val rect = layout.placeholderRects.getOrNull(formula.placeholderIndex) ?: continue
-                blockLines[layout.getLineForVerticalPosition(rect.center.y)] = formula.widthPx
-            }
-            for (block in prepared.codeBlocks) {
-                val rect = layout.placeholderRects.getOrNull(block.placeholderIndex) ?: continue
-                blockLines[layout.getLineForVerticalPosition(rect.center.y)] = block.leftPx + block.layout.naturalWidthPx
-            }
-            var longest = 0f
-            for (line in 0 until layout.lineCount) {
-                longest = max(longest, blockLines[line] ?: (layout.getLineRight(line) - layout.getLineLeft(line)))
-            }
-            TextBlockSize(longest / scale, layout.size.height / scale)
+        val key = SizeKey(text.text, text.fontSize, text.width, text.alignment)
+        return syncLock(lock) { sizes.getOrPut(key) { measureLayout(text) } }
+    }
+
+    private fun measureLayout(text: DrawText): TextBlockSize {
+        val scale = LAYOUT_PX_PER_MM
+        val prepared = prepare(text, text.fontSize * PT_TO_MM * scale, (text.width * scale).toInt().coerceAtLeast(1), TextTileAdapter.NO_PAPER)
+        val layout = prepared.layout
+        // A formula alone on its line and a block of code take the line: their own width counts
+        val blockLines = HashMap<Int, Float>()
+        for (formula in prepared.formulas) {
+            if (!formula.block) continue
+            val rect = layout.placeholderRects.getOrNull(formula.placeholderIndex) ?: continue
+            blockLines[layout.getLineForVerticalPosition(rect.center.y)] = formula.widthPx
         }
+        for (block in prepared.codeBlocks) {
+            val rect = layout.placeholderRects.getOrNull(block.placeholderIndex) ?: continue
+            blockLines[layout.getLineForVerticalPosition(rect.center.y)] = block.leftPx + block.layout.naturalWidthPx
+        }
+        var longest = 0f
+        for (line in 0 until layout.lineCount) {
+            longest = max(longest, blockLines[line] ?: (layout.getLineRight(line) - layout.getLineLeft(line)))
+        }
+        return TextBlockSize(longest / scale, layout.size.height / scale)
     }
 
     override fun lineMetrics(fontSize: Float): TextLineMetrics? {
@@ -301,6 +309,7 @@ public class ComposeTextTileAdapter(
      */
     override fun clearCaches(): Unit = syncLock(lock) {
         layouts.clear()
+        sizes.clear()
         formulaImages.clear()
     }
 

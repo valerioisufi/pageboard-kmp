@@ -152,8 +152,8 @@ The version is to be agreed (see [Decisions](#decisions)).
 | Phase | Content | Status |
 |---|---|---|
 | 1 | One layout at every zoom: `drawText` lays a text out at the resolution of `measure` (20 px/mm) and draws it scaled, the formulas rendered again at their size on the tile; tests (`TextHeightTest`: the note drawn at 0.75 to 64 px/mm ends within a pixel of its measured height); the screenshots of the explorer recorded again (the glyphs a fraction of a pixel apart) | Done |
-| 2 | The height laid out: `TextBoxes`; `DrawText.height` an estimate until laid out; the tiles by the layout of the adapter (cached); nothing writes a height any more (editor, handles, font size, scaling, lecture assistant); `measureTextsWithCode` removed; the height still in the format (written, never read back) until phase 3; tests (a text laid out when its page is needed and when it changes, from this device and from another; the tiles of its old and new box invalidated; the frame, the lasso, the snapping by the laid out box; a thumbnail with a text taller than its old box) | Planned |
-| 3 | The format: the height out of `TextData`, `BoxPlacement` (texts) and `texts`; the corner as the pivot of a text; Room 21 and its migration of `texts` and `operations`; the protocol (`ProtocolFormatTest`); ABI of `drawview-model`, `drawview-canvas`; tests (`MigrationTestHelper` as above; a turned text drawn, selected, exported at the same place; the copy of a lost text placed below it) | Planned |
+| 2 | The height laid out: `TextBoxes`; `DrawText.height` the height of its lines once laid out; the tiles by the layout of the adapter (sizes cached); `measureTextsWithCode` removed; the format unchanged (the height still written, the writers as they are) until phase 3; tests (`TextEditingTest`: the texts as high as their lines once the adapter is set, with no change of the document; a changed text as high as its new lines whatever height it carries; `TileEngineTest`: a tile under the old box of a text draws its lines, not below them) | Done |
+| 3 | The format: the height out of `TextData`, `BoxPlacement` (texts) and `texts`; nothing writes a height any more (editor, handles, font size, scaling of a selection, lecture assistant); the corner as the pivot of a text; Room 21 and its migration of `texts` and `operations`; the protocol (`ProtocolFormatTest`); ABI of `drawview-model`, `drawview-canvas`; tests (`MigrationTestHelper` as above; a turned text drawn, selected, exported at the same place; the copy of a lost text placed below it) | Planned |
 | 4 | A width that follows the text, laid out (if approved): its room kept, its box from its lines; in the migration of phase 3 (one schema, one change of the protocol); tests (each alignment, a wider font not wrapping, the editor growing the box as today) | Planned |
 
 The commits of the first plan that corrected the stored heights (on opening, when scaled) are
@@ -162,6 +162,18 @@ dropped from the branch: phase 1 is the commit that remains. Each phase is one c
 and iOS builds, the sync modules on the iOS simulator (phase 3), the screenshots, the desktop
 application on a scratch directory and on a copy of the database of the user (phase 3, asked
 first, the original untouched).
+
+### Phase 2 results
+
+* `TextBoxes` (`drawview-canvas`, internal) lays every text out when the adapter is set or the
+  texts are drawn differently (`textRenderingChanged`), off the main thread, keeping a height only
+  for a text still as it was copied; it lays out again the texts a change saved, and every text
+  when the pages are laid out again (pages that came); a new height invalidates the tiles of the
+  old and the new box. It runs first in the observer of the controller, before the frames.
+* `ComposeTextTileAdapter.measure` keeps the sizes it laid out (by content, font size, width,
+  alignment; dropped with the other caches).
+* `RotatableItem.getRotatedBounds(height)`: the tiles choose a text by the height of its layout
+  (ABI of `drawview-model`).
 
 ## Decisions
 

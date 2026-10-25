@@ -143,14 +143,19 @@ public interface RotatableItem {
     /**
      * Axis-aligned bounding box in page millimeters, taking the rotation into account.
      */
-    public fun getRotatedBounds(): Rect {
+    public fun getRotatedBounds(): Rect = getRotatedBounds(height)
+
+    /** [getRotatedBounds] of the item were it [height] high. */
+    public fun getRotatedBounds(height: Float): Rect {
         if (rotation == 0f) return Rect(x, y, x + width, y + height)
         val rad = rotation * PI.toFloat() / 180f
         val c = abs(cos(rad))
         val s = abs(sin(rad))
         val halfW = (width / 2f) * c + (height / 2f) * s
         val halfH = (width / 2f) * s + (height / 2f) * c
-        return Rect(centerX - halfW, centerY - halfH, centerX + halfW, centerY + halfH)
+        val middleX = x + width / 2f
+        val middleY = y + height / 2f
+        return Rect(middleX - halfW, middleY - halfH, middleX + halfW, middleY + halfH)
     }
 
     /**
@@ -210,6 +215,12 @@ public class DrawText(override val id: String = newElementId()) : RotatableItem,
     @Volatile override var x: Float = 0f
     @Volatile override var y: Float = 0f
     @Volatile override var width: Float = 50f
+
+    /**
+     * The height its lines take as this device lays them out (kept by the editor, see
+     * `TextBoxes`), not what the device that wrote it measured: the height it was stored with
+     * until it is laid out.
+     */
     @Volatile override var height: Float = 20f
     @Volatile override var rotation: Float = 0f
 

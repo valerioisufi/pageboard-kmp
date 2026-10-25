@@ -104,6 +104,33 @@ class TileEngineTest {
     }
 
     @Test
+    fun aTileDrawsTheLinesOfATextBelowItsOldBox() {
+        // Every text laid out 40 mm high; the text says 5 mm (a height of an older layout)
+        val drawn = mutableListOf<String>()
+        val renderer = TileRenderer(textAdapter = object : TextTileAdapter {
+            override fun drawText(canvas: androidx.compose.ui.graphics.Canvas, text: DrawText, mmToCanvas: io.github.valerioisufi.drawview.model.geometry.Matrix2D, paperColor: Int) {
+                drawn += text.id
+            }
+
+            override fun measure(text: DrawText) = TextBlockSize(text.width, 40f)
+        })
+        val doc = DrawDocument("test_doc", "Test Document")
+        val page = doc.pages[0]
+        val text = DrawText().apply { this.text = "lines"; x = 10f; y = 10f; width = 50f; height = 5f }
+        page.add(text)
+
+        // 1 px per mm, the region from 30 mm down: under the old box, over the lines
+        val canvas = androidx.compose.ui.graphics.Canvas(ImageBitmap(210, 297))
+        val mmToCanvas = io.github.valerioisufi.drawview.model.geometry.Matrix2D()
+        renderer.renderPageContent(canvas, doc, page.snapshotContent(), mmToCanvas, Rect(0f, 30f, 210f, 297f))
+        assertEquals(listOf(text.id), drawn)
+
+        drawn.clear()
+        renderer.renderPageContent(canvas, doc, page.snapshotContent(), mmToCanvas, Rect(0f, 60f, 210f, 297f))
+        assertTrue(drawn.isEmpty(), "below its lines")
+    }
+
+    @Test
     fun testSynchronousBaking() {
         val manager = TileManager()
         val doc = DrawDocument("test_doc", "Test Document")

@@ -226,6 +226,7 @@ abstract interface io.github.valerioisufi.drawview.model/RotatableItem { // io.g
 
     open fun containsPoint(kotlin/Float, kotlin/Float): kotlin/Boolean // io.github.valerioisufi.drawview.model/RotatableItem.containsPoint|containsPoint(kotlin.Float;kotlin.Float){}[0]
     open fun getRotatedBounds(): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.model/RotatableItem.getRotatedBounds|getRotatedBounds(){}[0]
+    open fun getRotatedBounds(kotlin/Float): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.model/RotatableItem.getRotatedBounds|getRotatedBounds(kotlin.Float){}[0]
     open fun toLocal(kotlin/Float, kotlin/Float): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model/RotatableItem.toLocal|toLocal(kotlin.Float;kotlin.Float){}[0]
 }
 

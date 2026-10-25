@@ -191,7 +191,9 @@ public class TileRenderer(
 
                 is DrawText -> {
                     if (text == null || isHidden(element.id)) continue
-                    if (!element.getRotatedBounds().overlaps(visibleMmBounds)) continue
+                    // As high as its lines are laid out, which is what is drawn
+                    val height = text.measure(element)?.height ?: element.height
+                    if (!element.getRotatedBounds(height).overlaps(visibleMmBounds)) continue
                     try {
                         text.drawText(canvas, element, mmToCanvas, content.background.backgroundColor)
                     } catch (_: Throwable) {

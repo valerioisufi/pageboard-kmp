@@ -19,6 +19,9 @@ import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.change.ChangeObserver
+import io.github.valerioisufi.drawview.model.change.UpdateTexts
+import io.github.valerioisufi.drawview.model.change.toData
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.text.TextDefaults
 import io.github.valerioisufi.drawview.model.text.TextSizes
@@ -63,19 +66,36 @@ class TextEditingTest {
     private fun TextEditorManager.type(text: String) = updateValue(TextFieldValue(text, TextRange(text.length)))
 
     @Test
-    fun theTextsWithCodeAreMeasuredAgainOutOfTheHistory() = runTest(UnconfinedTestDispatcher()) {
+    fun theTextsAreAsHighAsTheirLinesWithoutAChange() = runTest(UnconfinedTestDispatcher()) {
         val document = DrawDocument()
-        val code = DrawText().apply { text = "Code:\n```\nval a = 1\n```"; width = 400f; height = 3f; fontSize = 20f }
-        val plain = DrawText().apply { text = "plain"; width = 400f; height = 3f; fontSize = 20f }
-        document.pages[0].add(code)
-        document.pages[0].add(plain)
+        // At 20 points a line is 10 mm high: one box lower than its line, one higher
+        val low = DrawText().apply { text = "Code:\n```\nval a = 1\n```"; width = 400f; height = 3f; fontSize = 20f }
+        val high = DrawText().apply { text = "plain"; width = 400f; height = 30f; fontSize = 20f }
+        document.pages[0].add(low)
+        document.pages[0].add(high)
         val controller = DrawViewController(document = document, coroutineScope = backgroundScope)
+        var changes = 0
+        controller.session.addObserver(ChangeObserver { changes++ })
+        controller.textBoxes.dispatcher = UnconfinedTestDispatcher(testScheduler)
         controller.textAdapter = FakeTextAdapter()
 
         val page = controller.document.pages[0]
-        assertEquals(10f, page.texts.single { it.id == code.id }.height, "the height of its layout")
-        assertEquals(3f, page.texts.single { it.id == plain.id }.height, "a text without code is left as it is")
-        assertFalse(controller.historyManager.canUndo, "not something the user did")
+        assertEquals(10f, page.texts.single { it.id == low.id }.height, "the height of its lines")
+        assertEquals(10f, page.texts.single { it.id == high.id }.height)
+        assertFalse(controller.historyManager.canUndo, "nothing the user did")
+        assertEquals(0, changes, "nothing changed in the document")
+    }
+
+    @Test
+    fun aChangedTextIsAsHighAsItsNewLines() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val page = controller.document.pages[0]
+        val text = DrawText().apply { text = "one line"; width = 100f; height = 10f; fontSize = 20f }
+        page.add(text)
+
+        // Three lines of 100 mm (10 mm a character), the height it carries left behind
+        controller.session.submit(UpdateTexts(page.id, listOf(text.toData().copy(text = "x".repeat(25), height = 3f))))
+        assertEquals(30f, page.texts.single().height)
     }
 
     @Test

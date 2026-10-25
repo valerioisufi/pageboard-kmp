@@ -41,16 +41,12 @@ import io.github.valerioisufi.drawview.model.change.DocumentChange
 import io.github.valerioisufi.drawview.model.change.DocumentPersistence
 import io.github.valerioisufi.drawview.model.change.DocumentSession
 import io.github.valerioisufi.drawview.model.change.NoOpDocumentPersistence
-import io.github.valerioisufi.drawview.model.change.UpdateTexts
-import io.github.valerioisufi.drawview.model.change.toData
 import io.github.valerioisufi.drawview.model.change.PersistenceQueue
-import io.github.valerioisufi.drawview.model.change.TextData
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Rect as MmRect
 import io.github.valerioisufi.drawview.model.text.TextDefaults
 import io.github.valerioisufi.drawview.model.text.TextSizes
-import kotlin.math.abs
 import kotlin.math.hypot
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineScope
@@ -190,6 +186,9 @@ public class DrawViewController(
     /** Set while a change whose elements are already drawn in the tiles is submitted. */
     private var changeAlreadyDrawn = false
     private val changeObserver = ChangeObserver(::onChangeCommitted)
+
+    /** The heights of the texts as this device lays them out (before any change is observed). */
+    internal val textBoxes: TextBoxes = TextBoxes(this)
 
     /** Draws the texts again when the formula renderer becomes ready (see [textRenderingChanged]). */
     private val formulasWatch: Job? = engines.formulas?.let { formulas ->
@@ -345,7 +344,7 @@ public class DrawViewController(
     /**
      * What draws the texts (Markdown and formulas) in the tiles, the thumbnails and the overlays:
      * set by the UI, which owns the fonts. The tiles are drawn again when it changes, and the
-     * texts with blocks of code are measured again (see [measureTextsWithCode]).
+     * texts are laid out again (see [TextBoxes]).
      */
     public var textAdapter: TextTileAdapter?
         get() = tileManager.tileRenderer.textAdapter
@@ -353,31 +352,15 @@ public class DrawViewController(
             if (tileManager.tileRenderer.textAdapter === value) return
             tileManager.tileRenderer.textAdapter = value
             textRenderingChanged()
-            if (value != null) measureTextsWithCode()
         }
-
-    /**
-     * Measures again the texts with fences of code, drawn as plain text before the blocks of code
-     * (docs/code-blocks.md): a height other than the stored one is corrected, one change per page,
-     * out of the history (it is how this device draws them, not something the user did).
-     */
-    private fun measureTextsWithCode() {
-        for (page in document.pages) {
-            val corrected = page.texts.mapNotNull { text ->
-                if (!text.text.contains("```") && !text.text.contains("~~~")) return@mapNotNull null
-                val height = measureText(text)?.height ?: return@mapNotNull null
-                if (abs(height - text.height) <= HEIGHT_TOLERANCE_MM) null else text.toData().copy(height = height)
-            }
-            if (corrected.isNotEmpty()) session.submit(UpdateTexts(page.id, corrected), ChangeOrigin.MERGE)
-        }
-    }
 
     /**
      * The texts are drawn differently (e.g. the formula renderer became ready): what the text
-     * adapter kept of them is dropped and the tiles are drawn again.
+     * adapter kept of them is dropped, they are laid out again and the tiles are drawn again.
      */
     internal fun textRenderingChanged() {
         tileManager.tileRenderer.textAdapter?.clearCaches()
+        textBoxes.adapterChanged(textAdapter)
         tileManager.invalidateAll()
         requestRedraw()
     }
@@ -428,6 +411,8 @@ public class DrawViewController(
     /** Draws again what a change of the document touched, and leaves the states it made stale. */
     private fun onChangeCommitted(committed: CommittedChange) {
         val effects = committed.effects
+        // Before the frames and the snapping read the boxes of the texts
+        textBoxes.onChange(effects)
         if (committed.origin == ChangeOrigin.REMOTE) {
             textEditorManager.onChange(effects)
             selectionManager.onChange(effects)
@@ -522,12 +507,10 @@ public class DrawViewController(
     public fun dispose() {
         formulasWatch?.cancel()
         readOnlyWatch.cancel()
+        textBoxes.dispose()
         // The session may go on without the editor (e.g. synchronized with other devices)
         session.removeObserver(changeObserver)
         historyManager.dispose()
         tileManager.cleanup()
     }
 }
-
-/** The difference of the heights of a text measured again taken as none (the rounding of the layout). */
-private const val HEIGHT_TOLERANCE_MM = 0.1f
