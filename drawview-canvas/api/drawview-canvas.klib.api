@@ -504,6 +504,7 @@ final class io.github.valerioisufi.drawview.canvas.controller/PageManager { // i
     final fun deletePages(kotlin.collections/Collection<kotlin/String>) // io.github.valerioisufi.drawview.canvas.controller/PageManager.deletePages|deletePages(kotlin.collections.Collection<kotlin.String>){}[0]
     final fun finishPageReorderMode() // io.github.valerioisufi.drawview.canvas.controller/PageManager.finishPageReorderMode|finishPageReorderMode(){}[0]
     final fun jumpToPage(kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/PageManager.jumpToPage|jumpToPage(kotlin.Int){}[0]
+    final fun moveBlockDuringReorder(kotlin.collections/Collection<kotlin/String>, kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/PageManager.moveBlockDuringReorder|moveBlockDuringReorder(kotlin.collections.Collection<kotlin.String>;kotlin.Int){}[0]
     final fun movePage(kotlin/Int, kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/PageManager.movePage|movePage(kotlin.Int;kotlin.Int){}[0]
     final fun movePageDuringReorder(kotlin/Int, kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/PageManager.movePageDuringReorder|movePageDuringReorder(kotlin.Int;kotlin.Int){}[0]
     final fun movePages(kotlin.collections/Collection<kotlin/String>, kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/PageManager.movePages|movePages(kotlin.collections.Collection<kotlin.String>;kotlin.Int){}[0]

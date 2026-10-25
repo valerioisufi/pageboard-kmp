@@ -370,6 +370,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/PageManager
 	public final fun getContextMenuTargetPageIndex ()I
 	public final fun getSelection ()Lio/github/valerioisufi/drawview/canvas/controller/PageSelection;
 	public final fun jumpToPage (I)V
+	public final fun moveBlockDuringReorder (Ljava/util/Collection;I)V
 	public final fun movePage (II)V
 	public final fun movePageDuringReorder (II)V
 	public final fun movePages (Ljava/util/Collection;I)V

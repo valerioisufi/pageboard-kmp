@@ -169,4 +169,25 @@ class PageSelectionTest {
         controller.pageManager.copyPages(ids)
         assertEquals(2, assertIs<CopiedPages>(clipboard.content).pages.size)
     }
+
+    @Test
+    fun aSelectionDraggedInTheGridIsOneChangeAtTheDrop() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val moves = mutableListOf<MovePages>()
+        controller.session.addObserver { (it.change as? MovePages)?.let(moves::add) }
+        val pages = controller.pageManager
+        val block = controller.ids("2", "4")
+        pages.startPageReorderMode()
+        // Gathered where the drag starts, then moved over the others as it goes
+        pages.moveBlockDuringReorder(block, 1)
+        assertEquals(listOf("1", "2", "4", "3", "5"), controller.names())
+        pages.moveBlockDuringReorder(block, 3)
+        assertEquals(listOf("1", "3", "5", "2", "4"), controller.names())
+        assertTrue(moves.isEmpty(), "nothing recorded while dragging")
+        pages.finishPageReorderMode()
+        assertEquals(listOf("1", "3", "5", "2", "4"), controller.names())
+        assertEquals(1, moves.size)
+        controller.undo()
+        assertEquals(listOf("1", "2", "3", "4", "5"), controller.names())
+    }
 }

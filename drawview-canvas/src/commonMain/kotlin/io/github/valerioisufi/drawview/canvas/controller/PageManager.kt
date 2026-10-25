@@ -243,6 +243,22 @@ public class PageManager(private val controller: DrawViewController) {
         controller.requestRedraw()
     }
 
+    /**
+     * Puts the pages [ids] together, in their order, at [toIndex] among the other pages, while a
+     * reorder session is active (the page grid dragging a selection): the whole reordering is
+     * recorded as a single change by [finishPageReorderMode]. Without a session, [movePages].
+     */
+    public fun moveBlockDuringReorder(ids: Collection<String>, toIndex: Int) {
+        if (!isReorderingPages) return movePages(ids, toIndex)
+        val block = pagesOf(ids).takeIf { it.isNotEmpty() } ?: return
+        val others = document.pages.filter { it !in block }
+        val order = others.toMutableList().apply { addAll(toIndex.coerceIn(0, others.size), block) }
+        if (order == document.pages) return
+        document.restorePageOrder(order)
+        controller.viewport.updatePageLayout()
+        controller.requestRedraw()
+    }
+
     internal fun releaseDraggedPage() {
         draggedPageIndex = -1
         floatingPageRect = null

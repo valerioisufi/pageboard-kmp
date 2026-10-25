@@ -104,7 +104,7 @@ The functions of one page stay and call these (`deletePage(index)` → `deletePa
 |---|---|---|
 | 1 | `PageSelection` and the actions on several pages in `PageManager` (copy, paste after, format, delete, move as a block, one change each), the single-page functions calling them; tests in `drawview-canvas` (selection in the order of the document, ranges, all, pruned when a page is removed here or by another device, kept across a move; each action on several pages, one undo; delete never every page; read-only); ABI recorded on purpose | Done |
 | 2 | The grid: Select / Done, the taps, ⌘/Ctrl+click and Shift+click, Escape, checks and rings, the bar of the selection with its actions, the menu of a card on the selection, the configurator on several pages; the strings in the seven languages; screenshots of the grid in selection (compact and wide, light and dark) | Done |
-| 3 | Dragging the selection as one block in the grid; tests of the order given by the drop; the desktop application on a scratch directory | Planned |
+| 3 | Dragging the selection as one block in the grid; tests of the order given by the drop; the desktop application on a scratch directory | Done |
 
 ### Phase 1 results
 
@@ -159,6 +159,30 @@ The functions of one page stay and call these (`deletePage(index)` → `deletePa
   grid, the count, Delete of the two pages, Delete disabled after Select all, Done). Screenshots:
   `editor-page-grid-selection` (tablet light and dark, phone light) new; `editor-page-grid`
   (tablet, phone) recorded again with Select in the top bar.
+
+### Phase 3 results
+
+* `PageManager.moveBlockDuringReorder(ids, toIndex)` (`drawview-canvas`): during a reorder session
+  it puts the pages together, in their order, at `toIndex` among the others, live
+  (`DrawDocument.restorePageOrder`); `finishPageReorderMode` records the whole drag as one
+  `MovePages`, as for one page. Without a session, `movePages`.
+* The grid (`PageGridOverlay`): a long press on a card of a selection of several pages drags the
+  block: at the start the block is gathered around that card (the pages of the block before it
+  just before it), then over another page it goes before it going up, after it going down; the
+  card dragged keeps following the finger where it lands. A card not selected, or alone in the
+  selection, is dragged as before.
+* Tests: `PageSelectionTest.aSelectionDraggedInTheGridIsOneChangeAtTheDrop` (`drawview-canvas`:
+  gathered, moved, nothing recorded while dragging, one change at the drop, undone),
+  `PageGridSelectionTest.aSelectedPageDragsTheSelectionAsOneBlock` (`drawview-ui`: a long press
+  and a drag of the third page of a selection of the first and the third over the fourth gives
+  2, 4, 1, 3, the selection kept, undone in one step).
+* ABI of `drawview-canvas` recorded again on purpose: `moveBlockDuringReorder`.
+* Checks: `jvmTest`, `checkKotlinAbi`, `verifyRoborazziJvm` of the five UI modules, the Android
+  and iOS compilations, the two Android applications, the consumer checks. PencilNotes desktop run
+  on a scratch directory (`-Ddrawview.dataDir`): it starts, its database at version 21, no error.
+  Its window was not driven by hand: the tests of the grid drive its taps and its drag; trying it
+  with ⌘/Ctrl+click and Shift+click on the user's devices is left to the user (the clicks with
+  modifiers are not driven by the tests).
 
 ## Decisions
 

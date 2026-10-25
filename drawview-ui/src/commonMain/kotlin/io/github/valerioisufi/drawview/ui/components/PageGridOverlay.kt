@@ -188,6 +188,8 @@ internal fun PageGridOverlay(
         val currentPage = remember { controller.viewport.mostVisiblePageIndex() ?: 0 }
         var draggedIndex by remember { mutableStateOf<Int?>(null) }
         var dragOffset by remember { mutableStateOf(Offset.Zero) }
+        // The pages selected dragged with the card (a card of a selection of several), in their order
+        var draggedBlock by remember { mutableStateOf<List<String>?>(null) }
 
         LazyVerticalGrid(
             state = gridState,
@@ -204,14 +206,24 @@ internal fun PageGridOverlay(
                                 offset.x.toInt() in item.offset.x..(item.offset.x + item.size.width) &&
                                     offset.y.toInt() in item.offset.y..(item.offset.y + item.size.height)
                             }?.let { item ->
-                                draggedIndex = item.index
                                 pageManager.startPageReorderMode()
+                                val page = document.pages.getOrNull(item.index) ?: return@let
+                                val block = selection.pageIds.takeIf { page.id in it && it.size > 1 }
+                                draggedBlock = block
+                                draggedIndex = item.index
+                                if (block != null) {
+                                    // Gathered around the card dragged: the pages before it in the block go just before it
+                                    val before = document.pages.take(item.index).count { it.id !in block }
+                                    pageManager.moveBlockDuringReorder(block, before)
+                                    draggedIndex = document.pages.indexOfFirst { it.id == page.id }
+                                }
                             }
                         },
                         onDragEnd = {
                             if (draggedIndex != null) {
                                 pageManager.finishPageReorderMode()
                                 draggedIndex = null
+                                draggedBlock = null
                                 dragOffset = Offset.Zero
                             }
                         },
@@ -219,6 +231,7 @@ internal fun PageGridOverlay(
                             if (draggedIndex != null) {
                                 pageManager.finishPageReorderMode()
                                 draggedIndex = null
+                                draggedBlock = null
                                 dragOffset = Offset.Zero
                             }
                         },
@@ -238,7 +251,24 @@ internal fun PageGridOverlay(
                                         currentCenterY.toInt() in item.offset.y..(item.offset.y + item.size.height)
                                 }
 
-                                if (targetItem != null && targetItem.index != draggedIdx) {
+                                val block = draggedBlock
+                                val target = targetItem?.let { document.pages.getOrNull(it.index) }
+                                if (targetItem != null && target != null && block != null && target.id !in block) {
+                                    // The block over another page: before it when going up, after it going down
+                                    val dragged = document.pages[draggedIdx]
+                                    val others = document.pages.filter { it.id !in block }
+                                    val toIndex = others.indexOf(target) + if (targetItem.index > draggedIdx) 1 else 0
+                                    pageManager.moveBlockDuringReorder(block, toIndex)
+                                    val newIndex = document.pages.indexOf(dragged)
+                                    // The dragged card keeps following the finger, where it goes now
+                                    gridState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == newIndex }?.let { landing ->
+                                        dragOffset += Offset(
+                                            (draggedItem.offset.x - landing.offset.x).toFloat(),
+                                            (draggedItem.offset.y - landing.offset.y).toFloat()
+                                        )
+                                    }
+                                    draggedIndex = newIndex
+                                } else if (targetItem != null && block == null && targetItem.index != draggedIdx) {
                                     // The dragged card keeps following the finger after the swap
                                     val offsetXFix = draggedItem.offset.x - targetItem.offset.x
                                     val offsetYFix = draggedItem.offset.y - targetItem.offset.y

@@ -5,6 +5,8 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
@@ -51,5 +53,37 @@ class PageGridSelectionTest {
         onNodeWithContentDescription("Done").performClick()
         assertFalse(controller.pageManager.selection.isActive)
         onNodeWithText("Notes · ${pages.size - 2} pages").assertExists()
+    }
+
+    @Test
+    fun aSelectedPageDragsTheSelectionAsOneBlock() = runDesktopComposeUiTest {
+        val document = DrawDocument(title = "Notes").apply { repeat(3) { addPage() } }
+        val controller = DrawViewController(document = document, coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        controller.isPageGridVisible = true
+        val pages = document.pages.map { it.id }
+        setContent {
+            DrawViewTheme(dynamicColor = false) {
+                PageGridOverlay(controller)
+            }
+        }
+        val selection = controller.pageManager.selection
+        runOnIdle {
+            selection.toggle(pages[0])
+            selection.toggle(pages[2])
+        }
+        val from = onNodeWithContentDescription("Page 3").fetchSemanticsNode().boundsInRoot.center
+        val to = onNodeWithContentDescription("Page 4").fetchSemanticsNode().boundsInRoot.center
+        onRoot().performTouchInput {
+            down(from)
+            advanceEventTime(1000)
+            moveTo(from + (to - from) / 2f)
+            moveTo(to)
+            up()
+        }
+        // Gathered around the card dragged, then after the fourth page, in one change
+        assertEquals(listOf(pages[1], pages[3], pages[0], pages[2]), document.pages.map { it.id })
+        assertEquals(listOf(pages[0], pages[2]), selection.pageIds, "still selected")
+        runOnIdle { controller.undo() }
+        assertEquals(pages, document.pages.map { it.id })
     }
 }
