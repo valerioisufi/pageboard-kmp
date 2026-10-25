@@ -29,7 +29,8 @@ public class CalcPage(
     internal val pagesRectOnWindow = mutableListOf<Rect>()
 
     /**
-     * Bounding box encompassing all laid-out pages including their margins.
+     * Bounding box encompassing all laid-out pages including their margins: the bounds of the
+     * camera.
      */
     internal var contentRect: Rect = Rect.Zero
 
@@ -75,9 +76,6 @@ public class CalcPage(
         val availableWidth = (windowRect.width - horizontalPadding * 2).coerceIn(10f, maxOf(10f, options.maxPageWidth * density))
         val scaleFactor = availableWidth / maxPageWidthMm
 
-        var leftMostPosition = horizontalPadding
-        var rightMostPosition = windowRect.width - horizontalPadding
-
         for (page in pages) {
             val pageWidth = page.dimension.width.mm * scaleFactor
             val pageHeight = page.dimension.calcHeightFromWidthPx(pageWidth.px)
@@ -87,20 +85,15 @@ public class CalcPage(
             val right = left + pageWidth
             val bottom = top + pageHeight
 
-            val rect = Rect(left, top, right, bottom)
-            if (rect.left < leftMostPosition) leftMostPosition = rect.left
-            if (rect.right > rightMostPosition) rightMostPosition = rect.right
-
-            pagesRectOnWindow.add(rect)
+            pagesRectOnWindow.add(Rect(left, top, right, bottom))
         }
 
-        val bottomMost = if (pagesRectOnWindow.isNotEmpty()) pagesRectOnWindow.last().bottom + bottomPadding else windowRect.height
-
+        // The pages with their margin, not the window: a wide window keeps the desk beside them out of it
         contentRect = Rect(
-            left = leftMostPosition - horizontalPadding,
+            left = pagesRectOnWindow.minOf { it.left } - horizontalPadding,
             top = 0f,
-            right = rightMostPosition + horizontalPadding,
-            bottom = bottomMost
+            right = pagesRectOnWindow.maxOf { it.right } + horizontalPadding,
+            bottom = pagesRectOnWindow.last().bottom + bottomPadding
         )
         needToBeUpdated = false
     }

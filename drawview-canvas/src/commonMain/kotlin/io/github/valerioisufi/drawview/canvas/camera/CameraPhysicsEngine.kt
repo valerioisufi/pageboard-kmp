@@ -54,9 +54,6 @@ public class CameraPhysicsEngine(
     internal val maxScale: Float
         get() = maxDpPerMm * density
 
-    /** Horizontal padding around document content in pixels. */
-    internal var horizontalPaddingPx: Float = 40f
-
     /** Top padding around document content in pixels. */
     internal var topPaddingPx: Float = 40f
 
@@ -288,6 +285,12 @@ public class CameraPhysicsEngine(
         return outMatrix
     }
 
+    /**
+     * Bounds of the translation for the current scale. Horizontally, content not wider than the
+     * viewport is held at its center, and wider content moves until its edges (the margin of the
+     * pages included) reach the edges of the viewport: at the width of the viewport both give the
+     * same translation, so the bounds change continuously with the zoom.
+     */
     private fun updateDynamicBoundaries() {
         if (viewportRect.isEmpty) return
         val content = getContentRect()
@@ -297,13 +300,14 @@ public class CameraPhysicsEngine(
         val scaledWidth = content.width * currentScale
         val scaledHeight = content.height * currentScale
 
-        if (scaledWidth <= viewportRect.width - (horizontalPaddingPx * 2)) {
-            val centeredX = (viewportRect.width - scaledWidth) / 2f
+        // Within a pixel: the layout rounds the pages, and on a phone they fill the width
+        if (scaledWidth <= viewportRect.width + 1f) {
+            val centeredX = (viewportRect.width - scaledWidth) / 2f - content.left * currentScale
             axisX.minValue = centeredX
             axisX.maxValue = centeredX
         } else {
-            axisX.minValue = viewportRect.width - scaledWidth - horizontalPaddingPx
-            axisX.maxValue = horizontalPaddingPx
+            axisX.minValue = viewportRect.width - content.right * currentScale
+            axisX.maxValue = -content.left * currentScale
         }
 
         if (scaledHeight <= viewportRect.height - (topPaddingPx + bottomPaddingPx)) {

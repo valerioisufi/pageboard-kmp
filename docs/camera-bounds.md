@@ -130,12 +130,34 @@ the canvas pushed as far as it goes to the left and to the right):
 
 | Phase | Content | Status |
 |---|---|---|
-| 1 | Bounds from the pages: `contentRect` from the pages and their margin; `updateDynamicBoundaries` with the origin of the content, locked at the center when the content fits (within a pixel), else its edges; `horizontalPaddingPx` removed; tests (`CameraBoundsTest`: a wide window at 1×, 1.25×, 1.5× keeping the page centered after a pan to each side, at 2× and 3× stopping at the edges with their margin, a phone at 1× without wobble, a zoom across the width without jump, mixed page widths, a pinch springing back to the center); the screenshots checked unchanged; the desktop application on a scratch directory | To do |
+| 1 | Bounds from the pages: `contentRect` from the pages and their margin; `updateDynamicBoundaries` with the origin of the content, locked at the center when the content fits (within a pixel), else its edges; `horizontalPaddingPx` removed; tests (`CameraBoundsTest`: a wide window at 1×, 1.25×, 1.5× keeping the page centered after a pan to each side, at 2× and 3× stopping at the edges with their margin, a phone at 1× without wobble, a zoom across the width without jump, mixed page widths, a pinch springing back to the center); the screenshots checked unchanged; the desktop application on a scratch directory | Done |
 | 2 | Predominant axis: `ScrollAxisLock`; `CanvasGestureHandler` feeding it for the macOS trackpad (phases), the trackpads of Android and iOS (`Pan*` events) and the wheel without phases (pause), the fling from the filtered deltas; tests (`ScrollAxisLockTest`: vertical, horizontal, diagonal, deltas held back, a short scroll; `TrackpadGesturesTest`: a mostly vertical scroll of a zoomed page and its fling moving vertically only, a new gesture choosing again, a wheel after a pause, the touch pan left free); the desktop application on a scratch directory | To do |
 
 Each phase is one commit on `feat/camera-bounds`, with the checks of `CLAUDE.md` (`jvmTest`,
 `checkKotlinAbi`, the Android and iOS builds, `verifyRoborazziJvm`). The ABI is not expected to
 change.
+
+### Phase 1 results
+
+* `CalcPage.contentRect` is the union of the pages with their margin (`horizontalPadding` on each
+  side); its top and bottom are as before.
+* `CameraPhysicsEngine.updateDynamicBoundaries` reads the origin of the content: content not wider
+  than the viewport (within a pixel) is held at its center, wider content moves from its right
+  edge on the right edge of the viewport to its left edge on the left edge. `horizontalPaddingPx`
+  is removed; the vertical bounds are unchanged.
+* `CameraBoundsTest` (`commonTest`): a window of 1440 dp at 2× keeps the page centered at 1×,
+  1.25× and 1.5× after a pan to each side, and stops it at its edges with their margin at 2× and
+  3×; the left edge moves by less than 2 px per step of 0.001 while the zoom crosses the width of
+  the window; a phone of 390 dp at 3× and one of 1080 px at 2.625× keep their pages still at the
+  zoom of the opening; a portrait and a landscape page are bounded by the landscape one; a pinch
+  and a pull off the center spring back to it. Run on the code before this phase, five of the six
+  fail (the one on the continuity passes: the old bounds were free, not jumping).
+* The other tests pass unchanged, and so do the screenshots (`verifyRoborazziJvm` of explorer,
+  ui, sync-ui, lecture-ui, export-ui): the zoom of the opening shows the pages where it did. The
+  ABI is unchanged.
+* The desktop application ran on a scratch directory (`-Ddrawview.dataDir`): it starts, makes its
+  database, no error. Its window was not driven by hand; trying the zoom and the scroll on the
+  user's devices is left to the user.
 
 ## Decisions
 
