@@ -220,19 +220,22 @@ class TrackpadGesturesTest {
     }
 
     @Test
-    fun aDiagonalScrollOfAMacTrackpadStaysFree() = withCanvas(pages = 5) { scene, controller ->
+    fun aDiagonalScrollOfAMacTrackpadBreaksFreeAfterAShortMove() = withCanvas(pages = 5) { scene, controller ->
         val camera = controller.viewport.camera
         controller.zoomIn()
         val before = camera.getCurrentTranslation()
         val unit = scrollUnitPx(1f)
 
         MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.FINGERS_DOWN, 1_000L)
-        scene.scroll(Offset(1f, 1f), timeMillis = 1_000L)
-        scene.scroll(Offset(0.5f, 0f), timeMillis = 1_010L)
-        scene.scroll(Offset(0f, 0.5f), timeMillis = 1_015L)
+        // AWT reports the two axes apart: the first event, vertical, chooses the axis...
+        for (i in 0..5) {
+            scene.scroll(Offset(0f, 0.5f), timeMillis = 1_000L + i * 10L)
+            scene.scroll(Offset(0.5f, 0f), timeMillis = 1_005L + i * 10L)
+        }
+        // ...and 15 px across break the gesture free: the last four horizontal events move it
         val after = camera.getCurrentTranslation()
-        assertEquals(before.x - 1.5f * unit, after.x, 1e-3f)
-        assertEquals(before.y - 1.5f * unit, after.y, 1e-3f)
+        assertEquals(before.y - 3f * unit, after.y, 1e-3f)
+        assertEquals(before.x - 2f * unit, after.x, 1e-3f)
         MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.FINGERS_UP, 1_200L)
     }
 

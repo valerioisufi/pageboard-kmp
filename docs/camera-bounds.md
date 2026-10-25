@@ -61,7 +61,8 @@ the canvas pushed as far as it goes to the left and to the right):
 4. **No wobble at the zoom of the opening**, on the phone too, where the pages fill the width.
 5. **A scroll of a wheel or of a trackpad follows the axis it started on** (the predominant axis,
    as `NSScrollView` does by default on macOS): a vertical scroll of a zoomed page does not drift
-   sideways, its fling neither. A scroll started clearly diagonal stays free.
+   sideways, its fling neither. A scroll that goes on across its axis breaks free of it easily
+   (phase 3: tried by the user on a MacBook, a free scroll was hard to start).
 6. **Touch and stylus are free**, as in the note-taking applications of the iPad: the lock is for
    the wheel and the trackpads only.
 7. **Nothing else changes**: the vertical bounds, the zoom limits, the rubber band, the fling and
@@ -94,22 +95,22 @@ the canvas pushed as far as it goes to the left and to the right):
 
 ### The axis of a scroll
 
-* `ScrollAxisLock` (new, internal, Pure Fabrication) decides the axis of one gesture from its
-  deltas, which it filters:
-  * it adds the deltas up until their length passes a slop (8 dp for a trackpad), holding them
-    back meanwhile;
-  * then it locks the axis whose part is greater, when the other is at most half of it (within
-    about 27° of the axis), or leaves the gesture free;
-  * the deltas held back are given once the axis is chosen, filtered; a gesture ending before
-    that gives them as they are, so that a short scroll still moves;
+* `ScrollAxisLock` (new, internal, Pure Fabrication) keeps one gesture on its axis, filtering its
+  deltas (as redesigned in phase 3):
+  * the first delta chooses the axis, its greater part; nothing is held back;
+  * the move across the axis is added with its sign (the sideways shake of the fingers goes both
+    ways, a move across goes one way), the move along it as a length, both on the last 64 dp of
+    the gesture;
+  * the gesture breaks free of its axis, until it ends, when the move across passes 12 dp and
+    0.4 of the move along (about 22° off the axis);
   * an axis the content cannot move on (`CameraPhysicsEngine.canMoveX`, `canMoveY`) is left out:
     its rubber band would only show the sideways parts of the fingers, and a gesture locked on it
     would not move at all. With one axis left there is nothing to choose.
 
-  It works on the deltas added up, not on single events, since AWT reports the two axes of a
-  macOS trackpad in separate events. A wheel without phases has no slop: its end is known only
-  from the next scroll, so nothing is held back, and its first delta chooses (on the desktop each
-  of its events carries one axis).
+  AWT reports the two axes of a macOS trackpad in separate events: a choice of free or locked
+  made at the start (phase 2) rested on one event, of one axis, and a scroll was hardly ever free.
+  Breaking free later reads the direction on many events. The wheel without phases uses the same
+  lock: a vertical turn of the wheel right after Shift + wheel breaks free within a notch or two.
 * `CanvasGestureHandler` stays the controller of the input and tells the lock where a gesture
   starts and ends:
   * a macOS trackpad: `FINGERS_DOWN` and `FINGERS_UP` (the inertia of the system is already
@@ -138,6 +139,7 @@ the canvas pushed as far as it goes to the left and to the right):
 |---|---|---|
 | 1 | Bounds from the pages: `contentRect` from the pages and their margin; `updateDynamicBoundaries` with the origin of the content, locked at the center when the content fits (within a pixel), else its edges; `horizontalPaddingPx` removed; tests (`CameraBoundsTest`: a wide window at 1×, 1.25×, 1.5× keeping the page centered after a pan to each side, at 2× and 3× stopping at the edges with their margin, a phone at 1× without wobble, a zoom across the width without jump, mixed page widths, a pinch springing back to the center); the screenshots checked unchanged; the desktop application on a scratch directory | Done |
 | 2 | Predominant axis: `ScrollAxisLock`; `CanvasGestureHandler` feeding it for the macOS trackpad (phases), the trackpads of Android and iOS (`Pan*` events) and the wheel without phases (pause), the fling from the filtered deltas; tests (`ScrollAxisLockTest`: vertical, horizontal, diagonal, deltas held back, a short scroll; `TrackpadGesturesTest`: a mostly vertical scroll of a zoomed page and its fling moving vertically only, a new gesture choosing again, a wheel after a pause, the touch pan left free); the desktop application on a scratch directory | Done |
+| 3 | A free scroll easy to start (the user, on the trackpad of a MacBook): `ScrollAxisLock` choosing the axis on the first delta and breaking free on the move across, read with its sign on the last part of the gesture; nothing held back; tests (`ScrollAxisLockTest`: no delta held back, the shake of a vertical scroll never breaking it, a diagonal in separate events breaking free after a short move, a turn later in the gesture; `TrackpadGesturesTest`: a diagonal scroll of a macOS trackpad in separate events) | Done |
 
 Each phase is one commit on `feat/camera-bounds`, with the checks of `CLAUDE.md` (`jvmTest`,
 `checkKotlinAbi`, the Android and iOS builds, `verifyRoborazziJvm`). The ABI is not expected to
@@ -196,6 +198,25 @@ change.
   Its window was not driven by hand; trying the scroll on the trackpad of the user is left to the
   user.
 
+### Phase 3 results
+
+* Tried by the user on the trackpad of a MacBook: a free scroll, off the axes, was hard to start.
+  The cause: AWT gives the vertical and the horizontal part of a trackpad scroll in separate
+  events, and one event (a unit is 20 px on a Retina screen) passed the slop of 8 dp, so the axis
+  was chosen on a single event, of one axis: locked, almost always.
+* `ScrollAxisLock` redesigned: the first delta chooses the axis and nothing is held back (no slop,
+  no `end`); the move across is added with its sign, the move along as a length, both scaled down
+  to the last `WINDOW_DP` = 64 dp of the gesture; the gesture breaks free when the move across
+  passes `BREAK_DP` = 12 dp and `MAX_CROSS_RATIO` = 0.4 of the move along. One lock for the
+  trackpads and for the wheel without phases, the density read when it is needed.
+* `CanvasGestureHandler`: nothing given when a gesture ends (nothing is held back).
+* Tests: `ScrollAxisLockTest` (the first move choosing at once, the shake of a vertical scroll back
+  and forth over 200 events never breaking it, a diagonal in separate events breaking free after
+  15 px across, a turn across later in a long gesture breaking free within three events, a new
+  gesture, a fixed axis left out); `TrackpadGesturesTest` (a diagonal scroll of a macOS trackpad
+  in separate events: locked for its first 10 px across, then free). The other tests of phase 2
+  pass unchanged.
+
 ## Decisions
 
 Proposed on 2026-10-25 and taken by the user on 2026-10-25 ("write the plan with the two phases"),
@@ -210,12 +231,13 @@ Taken alone while writing the plan, revertible:
    the opening, growing with the zoom), not a margin of the screen: a margin of the screen wider
    than the one of the layout would make the pages that fill the width of a phone wobble, and the
    bounds jump when the zoom crosses the width of the canvas.
-4. A gesture locks within about 27° of an axis (the smaller part at most half the greater); a
-   diagonal start stays free, as the directional lock of `UIScrollView`.
-5. The deltas within the slop are held back until the axis is chosen; the slop is 8 dp (phase 2:
-   the 18 dp of the desktop held back too much).
-6. A pause of 300 ms separates two gestures of a wheel without phases, whose first delta chooses
-   its axis (phase 2: its end is known too late to hold anything back).
+4. A gesture goes on the axis of its first delta and breaks free when the move across, on its last
+   64 dp, passes 12 dp and 0.4 of the move along (about 22° off the axis). Phase 3 replaced the
+   choice made at the start within about 27° of an axis, after the user found a free scroll hard
+   to start.
+5. Nothing is held back at the start of a gesture (phase 3; phase 2 held back 8 dp, the 18 dp of
+   the desktop being too much).
+6. A pause of 300 ms separates two gestures of a wheel without phases, locked like the trackpads.
 7. The vertical bounds and their margins in pixels are left as they are.
 8. An axis the content cannot move on is left out of a scroll of a wheel or a trackpad, its rubber
    band included, as `NSScrollView` does with an automatic elasticity (phase 2: a gesture locked on
@@ -226,10 +248,12 @@ Taken alone while writing the plan, revertible:
 * **Zooming with Ctrl + wheel while the page fits** keeps it centered: the point under the pointer
   moves sideways (as in Preview). Beyond the width, the zoom keeps the point under the pointer as
   today.
-* **Panning diagonally on a trackpad**, zoomed in, needs a diagonal start; a gesture started along
-  an axis stays on it until the fingers are lifted.
-* **A mouse wheel turned right after Shift + wheel** (within 300 ms) is left out, its gesture
-  being horizontal; the touchpads of Windows and Linux cannot be told apart from a mouse.
+* **Panning diagonally on a trackpad**, zoomed in, loses its first 12 dp or so across the axis
+  before breaking free; a sideways arc of the fingers more than about 22° off a vertical scroll
+  breaks it free too.
+* **A vertical turn of a mouse wheel right after Shift + wheel** (within 300 ms) breaks the
+  gesture free within a notch or two; the touchpads of Windows and Linux cannot be told apart
+  from a mouse.
 * **A short document that fits the window** no longer bounces vertically under a scroll of a wheel
   or a trackpad (decision 8); touch still bounces it.
 * **Tests assuming the old bounds** (a horizontal pan at the zoom of the opening) are corrected in

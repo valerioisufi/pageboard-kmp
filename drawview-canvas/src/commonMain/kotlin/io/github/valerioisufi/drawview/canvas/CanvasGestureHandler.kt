@@ -183,9 +183,9 @@ internal class CanvasGestureHandler(
     private var trackpadFingersDown = false
     private var trackpadMomentum = false
 
-    // The axis of a trackpad gesture, chosen past a slop; the one of a wheel without phases, on its first delta
-    private val trackpadAxis = ScrollAxisLock { ScrollAxisLock.SLOP_DP * controller.viewport.density }
-    private val wheelAxis = ScrollAxisLock { 0f }
+    // The axis of a trackpad gesture, and the one of a wheel without phases (ended by a pause)
+    private val trackpadAxis = ScrollAxisLock { controller.viewport.density }
+    private val wheelAxis = ScrollAxisLock { controller.viewport.density }
     private var lastWheelTime = 0L
 
     private val isDrawingTool: Boolean
@@ -1027,8 +1027,8 @@ internal class CanvasGestureHandler(
     }
 
     /**
-     * Moves the canvas with the fingers, beyond its edges too (rubber band), on the axis the
-     * gesture started on.
+     * Moves the canvas with the fingers, beyond its edges too (rubber band), on the axis of the
+     * gesture until it breaks free of it.
      */
     private fun trackpadPanBy(delta: Offset, change: PointerInputChange) {
         val camera = controller.viewport.camera
@@ -1048,9 +1048,6 @@ internal class CanvasGestureHandler(
     private fun endTrackpadPan(timeMillis: Long) {
         if (!isTrackpadPanning) return
         isTrackpadPanning = false
-        // A gesture shorter than the slop of its axis moves the canvas when it ends
-        val rest = trackpadAxis.end()
-        if (rest != Offset.Zero) controller.viewport.camera.onDrag(rest.x, rest.y)
         // Where the fingers were lifted: no fling if they had stopped before
         if (timeMillis > lastTrackpadSampleTime) {
             trackpadVelocityTracker.addPosition(timeMillis, trackpadPanPosition)

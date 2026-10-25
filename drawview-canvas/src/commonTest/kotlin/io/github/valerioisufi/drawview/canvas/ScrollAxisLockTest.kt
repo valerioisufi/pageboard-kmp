@@ -3,46 +3,63 @@ package io.github.valerioisufi.drawview.canvas
 import androidx.compose.ui.geometry.Offset
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
-/** The axis of a scroll gesture (`docs/camera-bounds.md`, phase 2). */
+/** The axis of a scroll gesture (`docs/camera-bounds.md`, phases 2 and 3), at 1 pixel per dp. */
 class ScrollAxisLockTest {
 
-    private fun lock(slop: Float = 8f) = ScrollAxisLock { slop }.apply { begin() }
+    private fun lock() = ScrollAxisLock { 1f }.apply { begin() }
 
     private fun ScrollAxisLock.free(delta: Offset) = filter(delta, canMoveX = true, canMoveY = true)
 
     @Test
-    fun aMostlyVerticalStartLocksTheVerticalAxis() {
+    fun aScrollGoesOnTheAxisOfItsFirstMoveAtOnce() {
         val lock = lock()
-        // Within the slop: held back
-        assertEquals(Offset.Zero, lock.free(Offset(1f, 5f)))
-        // Past it: what was held back, on the axis chosen
-        assertEquals(Offset(0f, 10f), lock.free(Offset(1f, 5f)))
+        // Nothing held back
+        assertEquals(Offset(0f, 5f), lock.free(Offset(1f, 5f)))
         assertEquals(Offset(0f, 6f), lock.free(Offset(3f, 6f)))
-        assertEquals(Offset.Zero, lock.free(Offset(4f, 0f)))
+        assertEquals(Offset(0f, 8f), lock.free(Offset(-2f, 8f)))
     }
 
     @Test
-    fun aMostlyHorizontalStartLocksTheHorizontalAxis() {
+    fun aHorizontalFirstMoveGoesOnTheHorizontalAxis() {
         val lock = lock()
         assertEquals(Offset(-12f, 0f), lock.free(Offset(-12f, 5f)))
-        assertEquals(Offset(-3f, 0f), lock.free(Offset(-3f, 9f)))
+        assertEquals(Offset(-3f, 0f), lock.free(Offset(-3f, 4f)))
     }
 
     @Test
-    fun aDiagonalStartStaysFree() {
+    fun theSidewaysShakeOfAVerticalScrollNeverBreaksIt() {
         val lock = lock()
-        assertEquals(Offset(6f, -7f), lock.free(Offset(6f, -7f)))
-        assertEquals(Offset(5f, 0f), lock.free(Offset(5f, 0f)))
+        // Back and forth, drifting a little one way
+        repeat(200) { i ->
+            val moved = lock.free(Offset(if (i % 2 == 0) 4f else -3f, 10f))
+            assertEquals(0f, moved.x, "event $i")
+        }
+    }
+
+    @Test
+    fun aDiagonalScrollBreaksFreeAfterAShortMove() {
+        val lock = lock()
+        // As AWT reports a macOS trackpad: the two axes in separate events
         assertEquals(Offset(0f, 5f), lock.free(Offset(0f, 5f)))
+        assertEquals(Offset.Zero, lock.free(Offset(5f, 0f)))
+        assertEquals(Offset(0f, 5f), lock.free(Offset(0f, 5f)))
+        assertEquals(Offset.Zero, lock.free(Offset(5f, 0f)))
+        assertEquals(Offset(0f, 5f), lock.free(Offset(0f, 5f)))
+        // 15 across, 15 along: free, until the gesture ends
+        assertEquals(Offset(5f, 0f), lock.free(Offset(5f, 0f)))
+        assertEquals(Offset(1f, 10f), lock.free(Offset(1f, 10f)))
     }
 
     @Test
-    fun aScrollShorterThanTheSlopMovesWhenItEnds() {
+    fun aTurnAcrossTheAxisLaterInTheGestureBreaksFree() {
         val lock = lock()
-        assertEquals(Offset.Zero, lock.free(Offset(2f, 3f)))
-        assertEquals(Offset(2f, 3f), lock.end())
-        assertEquals(Offset.Zero, lock.end())
+        repeat(30) { lock.free(Offset(0f, 10f)) }
+        // The direction is read on the last part of the gesture, not on all of it
+        assertEquals(Offset.Zero, lock.free(Offset(10f, 0f)))
+        val turned = (0 until 4).map { lock.free(Offset(10f, 0f)) }
+        assertTrue(turned.any { it.x == 10f }, turned.toString())
     }
 
     @Test
@@ -61,13 +78,5 @@ class ScrollAxisLockTest {
         assertEquals(Offset.Zero, lock.filter(Offset(5f, 0f), canMoveX = false, canMoveY = true))
         lock.begin()
         assertEquals(Offset(4f, 0f), lock.filter(Offset(4f, 30f), canMoveX = true, canMoveY = false))
-    }
-
-    @Test
-    fun withoutASlopTheFirstDeltaChoosesTheAxis() {
-        // A wheel without phases: its end is known only from the next scroll, nothing is held back
-        val lock = lock(slop = 0f)
-        assertEquals(Offset(0f, 48f), lock.free(Offset(0f, 48f)))
-        assertEquals(Offset.Zero, lock.free(Offset(48f, 0f)))
     }
 }
