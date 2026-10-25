@@ -52,8 +52,9 @@ import kotlin.math.roundToInt
 
 /**
  * Draws the text blocks of the pages (the `TextLayerRenderer` of the original app): Markdown laid
- * out with the Compose text engine at the pixel size of the destination (word wrapping on the
- * width of the block, as in the editor), its formulas rendered by MicroTeX in the lines or, alone
+ * out with the Compose text engine once, at the resolution it is measured at, and drawn scaled at
+ * every zoom (word wrapping on the width of the block; its lines, and so its height, the same at
+ * every zoom), its formulas rendered by MicroTeX at the size they are drawn in the lines or, alone
  * on their lines, centered on a line of their own, its blocks of code on lines of their own (see
  * [CodeBlockLayout]) and its code in the line on a background.
  *
@@ -100,15 +101,16 @@ public class ComposeTextTileAdapter(
 
     /**
      * A text laid out: its [layout], its [formulas] and [codeBlocks] in its placeholders, the
-     * backgrounds of its code in the line ([chips], in [chipColor]).
+     * backgrounds of its code in the line ([chips], in [chipColor]), the size each image of its
+     * formulas was rendered at ([formulaSizes], to render them again at the size they are drawn).
      */
     private class PreparedText(
         val layout: TextLayoutResult,
         val formulas: List<MarkdownTextUtil.InlineFormula<ImageBitmap>>,
-        val fontPx: Float,
         val codeBlocks: List<MarkdownTextUtil.CanvasCodeBlock>,
         val chips: List<CodeChip>,
-        val chipColor: Color
+        val chipColor: Color,
+        val formulaSizes: Map<ImageBitmap, Float>
     )
 
 
@@ -303,10 +305,11 @@ public class ComposeTextTileAdapter(
     }
 
     private fun drawRichText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, scale: Float, paperColor: Int) {
-        val fontPx = text.fontSize * PT_TO_MM * scale
-        if (fontPx < 0.5f) return
-        // Exact width used for the word wrapping, as in the editor
-        val widthPx = (text.width * scale).toInt().coerceAtLeast(1)
+        if (text.fontSize * PT_TO_MM * scale < 0.5f) return
+        // Laid out as it is measured, then scaled: at the pixels of each zoom the lines would
+        // wrap and round their heights differently, out of the box of the text
+        val fontPx = text.fontSize * PT_TO_MM * LAYOUT_PX_PER_MM
+        val widthPx = (text.width * LAYOUT_PX_PER_MM).toInt().coerceAtLeast(1)
         val key = LayoutKey(
             textId = text.id,
             version = text.version,
@@ -319,9 +322,8 @@ public class ComposeTextTileAdapter(
         )
         val prepared = layouts.getOrPut(key) { prepare(text, fontPx, widthPx, paperColor) }
 
-        val ratio = fontPx / prepared.fontPx
         val toCanvas = Matrix2D()
-            .postScale(1f / scale * ratio, 1f / scale * ratio)
+            .postScale(1f / LAYOUT_PX_PER_MM, 1f / LAYOUT_PX_PER_MM)
             .postRotate(text.rotation, text.width / 2f, text.height / 2f)
             .postTranslate(text.x, text.y)
             .postConcat(mmToCanvas)
@@ -342,7 +344,10 @@ public class ComposeTextTileAdapter(
         }
         for (formula in prepared.formulas) {
             val box = formulaBox(formula, rects.getOrNull(formula.placeholderIndex) ?: continue)
-            val image = formula.image
+            // Rendered again at the size it is drawn, sharp at every zoom
+            val image = prepared.formulaSizes[formula.image]
+                ?.let { formulaImages.render(formula.latex, it * scale / LAYOUT_PX_PER_MM, text.color)?.bitmap }
+                ?: formula.image
             canvas.drawImageRect(
                 image,
                 srcSize = IntSize(image.width, image.height),
@@ -365,6 +370,7 @@ public class ComposeTextTileAdapter(
     private fun prepare(text: DrawText, fontPx: Float, widthPx: Int, paperColor: Int): PreparedText {
         val color = Color(text.color)
         val baseStyle = baseStyle(color, fontPx, text.alignment.toTextAlign())
+        val formulaSizes = HashMap<ImageBitmap, Float>()
         val canvasText = MarkdownTextUtil.toCanvasText(
             text = text.text,
             baseColor = color,
@@ -379,6 +385,7 @@ public class ComposeTextTileAdapter(
             }
         ) { latex, sizePx ->
             formulaImages.render(latex, sizePx, text.color)?.let {
+                formulaSizes[it.bitmap] = sizePx
                 MarkdownTextUtil.RenderedFormula(it.bitmap, it.bitmap.width.toFloat(), it.bitmap.height.toFloat(), it.baselineRatio)
             }
         }
@@ -395,7 +402,7 @@ public class ComposeTextTileAdapter(
             constraints = Constraints.fixedWidth(widthPx),
             skipCache = true
         )
-        return PreparedText(layout, canvasText.formulas, fontPx, canvasText.codeBlocks, layout.codeChips(canvasText.inlineCode), CodeTheme.of(color, paperColor).background)
+        return PreparedText(layout, canvasText.formulas, canvasText.codeBlocks, layout.codeChips(canvasText.inlineCode), CodeTheme.of(color, paperColor).background, formulaSizes)
     }
 
     /** Ascent of the base font, used to reserve the descent of the formulas. */
@@ -410,7 +417,7 @@ public class ComposeTextTileAdapter(
     public companion object {
         private const val MAX_LAYOUTS = 256
 
-        /** Resolution of the layouts of [layout] and [measure]. */
+        /** Resolution of the layouts of [drawText], [layout] and [measure]. */
         private const val LAYOUT_PX_PER_MM = 20f
     }
 }
