@@ -40,6 +40,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -887,15 +888,23 @@ class LectureRecorderTest {
         recording.finish()
 
         val running = java.util.concurrent.atomic.AtomicInteger()
+        val started = java.util.concurrent.atomic.AtomicInteger()
         var mostAtOnce = 0
+        // The third piece is cut only once the whole recording is read: on a busy machine the first
+        // transcription could end before then, so every transcription waits for the third to start
+        val allStarted = CompletableDeferred<Unit>()
         val transcriber = object : Transcriber {
             override val parallelism = 3
             override suspend fun transcribe(wav: ByteArray, hints: SpeechHints): Transcription {
+                val order = started.incrementAndGet()
                 val now = running.incrementAndGet()
                 synchronized(this) { mostAtOnce = maxOf(mostAtOnce, now) }
+                if (now == parallelism) allStarted.complete(Unit)
+                // Bounded: a transcriber running fewer at once fails the test instead of hanging it
+                withTimeoutOrNull(5_000L) { allStarted.await() }
                 val seconds = (wav.size - Wav.HEADER_SIZE) / 2 / LECTURE_SAMPLE_RATE
-                // The first chunks are the slowest
-                delay(300L - seconds)
+                // The first chunks are the slowest: they end after the later ones
+                delay((400L - 100L * order).coerceAtLeast(0L))
                 running.decrementAndGet()
                 return Transcription(listOf(TranscriptSegment(0, seconds * 1000L, "${hints.courseContext} $seconds s")), TokenUsage(requests = 1))
             }
