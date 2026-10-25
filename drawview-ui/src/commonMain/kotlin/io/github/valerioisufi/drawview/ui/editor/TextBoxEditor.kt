@@ -51,7 +51,6 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
@@ -68,6 +67,7 @@ import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_formul
 import io.github.valerioisufi.drawview.ui.render.CodeBlockLayout
 import io.github.valerioisufi.drawview.ui.render.CodeBlockSource
 import io.github.valerioisufi.drawview.ui.render.CodeTheme
+import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.render.FormulaImages
 import io.github.valerioisufi.drawview.ui.render.LruCache
 import io.github.valerioisufi.drawview.ui.render.codeChips
@@ -84,9 +84,8 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * The field of the text being written, over the canvas where the text is on its page, as the page
  * draws it: the size and the place follow the zoom and the camera, the lines wrap on the width of
- * the box, the Markdown delimiters away from the caret are concealed, the formulas away from the
- * caret are drawn (see [MarkdownTextUtil.toEditorText]); the formula under the caret shows its
- * source, rendered above it.
+ * the box, the text presented as the page presents it (see [RichTextPresenter]), the caret revealing
+ * the source of what it touches; the formula under the caret shows its source, rendered above it.
  *
  * It shows and changes the state of the [io.github.valerioisufi.drawview.canvas.controller.TextEditorManager]
  * of [controller]; the height it lays the text out is reported to it. Its frame is the one of a
@@ -124,29 +123,26 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
     val widthPx = (editor.boxWidth * scale).toInt().coerceAtLeast(1)
     val widthDp = with(unscaledDensity) { widthPx.toDp() }
 
-    // The formulas drawn as the page draws them
+    // The formulas drawn as the page draws them, in the room the page gives them
     val resolver = LocalFontFamilyResolver.current
-    val room = remember(resolver, notesFonts) { fontRoom(resolver, notesFonts.text) }
+    val codeMeasurer = remember(resolver) { TextMeasurer(resolver, Density(1f, 1f), LayoutDirection.Ltr, cacheSize = 0) }
+    val struts = remember(codeMeasurer, notesFonts) { notesFonts.struts(codeMeasurer) }
     val formulas = controller.engines.formulas
     val images = remember(formulas) { FormulaImages(formulas, maxSize = 32) }
     val latexReady by remember(formulas) { formulas?.isReady ?: MutableStateFlow(false) }.collectAsState()
     // The blocks of code laid out as the page lays them out, those not changed kept while typing
     val highlighter = controller.engines.code
-    val codeMeasurer = remember(resolver) { TextMeasurer(resolver, Density(1f, 1f), LayoutDirection.Ltr, cacheSize = 0) }
     val codeLayouts = remember(codeMeasurer, notesFonts, highlighter) { LruCache<CodeKey, CodeBlockLayout>(MAX_CODE_LAYOUTS) }
     // The code on the paper of its page, as the page draws it
     val paper = controller.document.pages.getOrNull(editor.activeTextPageIndex)?.background?.backgroundColor ?: TextTileAdapter.NO_PAPER
     val value = editor.value
-    val shown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, room, latexReady, codeLayouts, paper) {
-        MarkdownTextUtil.toEditorText(
-            text = value.text,
-            selection = value.selection,
-            defaultColor = textColor,
+    val shown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, struts, latexReady, codeLayouts, paper) {
+        val presentation = Presentation(
             fontSizePx = fontSizePx,
+            color = textColor,
+            struts = struts,
             density = unscaledDensity.density,
             lineWidthPx = widthPx.toFloat(),
-            room = room,
-            textFont = notesFonts.text,
             monospace = notesFonts.monospace,
             highlighter = highlighter,
             layoutCodeBlock = { source ->
@@ -154,12 +150,13 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                     CodeBlockLayout.layout(codeMeasurer, notesFonts.monospace, source, fontSizePx, textColor, highlighter, paper)
                 }
             },
-            // The blocks of the list items where the page draws them
-            listPrefixWidth = { prefix ->
+            // The list items and their blocks where the page draws them
+            measurePrefix = { prefix ->
                 codeMeasurer.measure(AnnotatedString(prefix), TextStyle(fontSize = fontSizePx.sp, fontFamily = notesFonts.text, letterSpacing = 0.sp), softWrap = false, skipCache = true)
                     .getHorizontalPosition(prefix.length, usePrimaryDirection = true)
             }
-        ) { latex, sizePx -> renderAtBucket(images, latex, sizePx, editor.color) }
+        ) { latex, sizePx -> renderAtBucket(images, latex, sizePx, editor.color, scale / ComposeTextTileAdapter.LAYOUT_PX_PER_MM) }
+        RichTextPresenter.present(value.text, presentation, reveal = value.selection)
     }
     val codeTheme = remember(editor.color, paper) { CodeTheme.of(textColor, paper) }
     val currentShown by rememberUpdatedState(shown)
@@ -245,20 +242,15 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                     drawContent()
                     if (current == null) return@drawWithContent
                     for (block in shown.codeBlocks) {
-                        drawIntoCanvas { block.layout.draw(it, block.leftPx, codeBlockTop(current, block)) }
+                        val origin = current.codeBlockOrigin(block)
+                        drawIntoCanvas { block.layout.draw(it, origin.x, origin.y) }
                     }
                     for (formula in shown.formulas) {
-                        val line = current.getLineForOffset(formula.offset)
-                        val left = if (formula.block) (size.width - formula.widthPx) / 2f else current.getHorizontalPosition(formula.offset, usePrimaryDirection = true)
-                        val top = if (formula.block) {
-                            (current.getLineTop(line) + current.getLineBottom(line) - formula.heightPx) / 2f
-                        } else {
-                            current.getLineBaseline(line) - formula.heightPx * formula.baselineRatio
-                        }
+                        val box = current.formulaRect(formula)
                         drawImage(
                             formula.image,
                             srcSize = IntSize(formula.image.width, formula.image.height),
-                            dstOffset = IntOffset(left.roundToInt(), top.roundToInt()),
+                            dstOffset = IntOffset(box.left.roundToInt(), box.top.roundToInt()),
                             dstSize = IntSize(formula.widthPx.roundToInt().coerceAtLeast(1), formula.heightPx.roundToInt().coerceAtLeast(1))
                         )
                     }
@@ -272,7 +264,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                 textAlign = editor.alignment.toTextAlign()
             ),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-            visualTransformation = { TransformedText(currentShown.text, currentShown.offsetMapping) },
+            visualTransformation = { TransformedText(currentShown.text, currentShown.mapping) },
             onTextLayout = { result ->
                 layout = result
                 onLayout(result)
@@ -281,7 +273,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                 editor.takeCaretRequest()?.let { local ->
                     val point = Offset(local.x * currentScale, local.y * currentScale)
                     val offset = codeOffsetAt(result, currentShown, point)
-                        ?: currentShown.offsetMapping.transformedToOriginal(result.getOffsetForPosition(point))
+                        ?: currentShown.mapping.transformedToOriginal(result.getOffsetForPosition(point))
                     editor.updateValue(editor.value.copy(selection = TextRange(offset)))
                 }
             }
@@ -291,7 +283,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
         val atCaret = shown.formulaAtCaret
         val current = layout
         if (atCaret != null && current != null && latexReady && current.layoutInput.text.text == shown.text.text) {
-            val start = shown.offsetMapping.originalToTransformed(atCaret.start).coerceIn(0, shown.text.length)
+            val start = shown.mapping.originalToTransformed(atCaret.start).coerceIn(0, shown.text.length)
             val anchorX = origin.x + current.getHorizontalPosition(start, usePrimaryDirection = true)
             val anchorY = origin.y + current.getLineTop(current.getLineForOffset(start))
             val previewPx = max(fontSizePx, with(unscaledDensity) { MIN_PREVIEW_TEXT.toPx() })
@@ -320,20 +312,13 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
 /** What a block of code is laid out from: the same key, the same layout. */
 private data class CodeKey(val source: CodeBlockSource, val fontPx: Float, val color: Int, val paper: Int)
 
-/** Where [block] is drawn in its line of [layout]: centered in it, as the page draws it. */
-private fun codeBlockTop(layout: TextLayoutResult, block: MarkdownTextUtil.EditorCodeBlock): Float {
-    val line = layout.getLineForOffset(block.offset)
-    return (layout.getLineTop(line) + layout.getLineBottom(line) - block.layout.heightPx) / 2f
-}
-
 /**
  * The offset of the text written under [point] of the field when it is on a block of code drawn
  * away from the caret, or `null`.
  */
-private fun codeOffsetAt(layout: TextLayoutResult, shown: MarkdownTextUtil.EditorText<*>, point: Offset): Int? {
+private fun codeOffsetAt(layout: TextLayoutResult, shown: PresentedText<*>, point: Offset): Int? {
     for (block in shown.codeBlocks) {
-        val top = codeBlockTop(layout, block)
-        val left = block.leftPx
+        val (left, top) = layout.codeBlockOrigin(block)
         if (point.y < top || point.y > top + block.layout.heightPx || point.x < left || point.x > left + block.layout.widthPx) continue
         return block.codeStart + block.layout.codeOffsetAt(Offset(point.x - left, point.y - top))
     }
@@ -364,23 +349,16 @@ private fun FormulaPreview(image: ImageBitmap?, modifier: Modifier) {
 
 /**
  * [latex] rendered by [images] at the size of the steps of [SIZE_STEP] above [sizePx] (fewer
- * images while the zoom changes), reported at [sizePx].
+ * images while the zoom changes), with the room of the image the canvas renders: its size at the
+ * resolution of the canvas, [screenPerCanvas] screen pixels per pixel of the canvas, so that the
+ * lines are those of the page.
  */
-private fun renderAtBucket(images: FormulaImages, latex: String, sizePx: Float, color: Int): MarkdownTextUtil.RenderedFormula<ImageBitmap>? {
-    if (sizePx <= 0f) return null
+internal fun renderAtBucket(images: FormulaImages, latex: String, sizePx: Float, color: Int, screenPerCanvas: Float): MarkdownTextUtil.RenderedFormula<ImageBitmap>? {
+    if (sizePx <= 0f || screenPerCanvas <= 0f) return null
     val bucket = SIZE_STEP.pow(ceil(ln(sizePx) / ln(SIZE_STEP)))
     val image = images.render(latex, bucket, color) ?: return null
-    val k = sizePx / bucket
-    return MarkdownTextUtil.RenderedFormula(image.bitmap, image.bitmap.width * k, image.bitmap.height * k, image.baselineRatio)
-}
-
-/** The font [font] per pixel of its size (see [MarkdownTextUtil.FontRoom]). */
-private fun fontRoom(resolver: FontFamily.Resolver, font: FontFamily): MarkdownTextUtil.FontRoom {
-    val measurer = TextMeasurer(resolver, Density(1f, 1f), LayoutDirection.Ltr, cacheSize = 0)
-    val size = 1000f
-    val line = measurer.measure(AnnotatedString(MarkdownTextUtil.OBJECT_REPLACEMENT), TextStyle(fontSize = size.sp, fontFamily = font, letterSpacing = 0.sp))
-    val ascent = line.firstBaseline
-    return MarkdownTextUtil.FontRoom(ascent / size, (line.getLineBottom(0) - ascent) / size, line.getBoundingBox(0).width / size)
+    val page = images.render(latex, sizePx / screenPerCanvas, color) ?: return null
+    return MarkdownTextUtil.RenderedFormula(image.bitmap, page.bitmap.width * screenPerCanvas, page.bitmap.height * screenPerCanvas, page.baselineRatio)
 }
 
 /** The blocks of code laid out kept by the editor. */

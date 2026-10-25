@@ -14,6 +14,8 @@ import io.github.valerioisufi.drawview.ui.generated.resources.noto_sans_italic
 import io.github.valerioisufi.drawview.ui.generated.resources.noto_sans_mono_bold
 import io.github.valerioisufi.drawview.ui.generated.resources.noto_sans_mono_regular
 import io.github.valerioisufi.drawview.ui.generated.resources.noto_sans_regular
+import io.github.valerioisufi.drawview.ui.generated.resources.strut_above
+import io.github.valerioisufi.drawview.ui.generated.resources.strut_below
 import org.jetbrains.compose.resources.Font
 
 /**
@@ -22,16 +24,24 @@ import org.jetbrains.compose.resources.Font
  *
  * @param text the text (Noto Sans).
  * @param monospace the code (Noto Sans Mono).
+ * @param strutAbove a font whose lines have all their room above the baseline, and [strutBelow]
+ *   all below: the room of the formulas and of the blocks of code in the lines, exact with them
+ *   (approximated with [text] without them).
  */
 @Immutable
-public class NotesFonts(public val text: FontFamily, public val monospace: FontFamily) {
+public class NotesFonts(
+    public val text: FontFamily,
+    public val monospace: FontFamily,
+    public val strutAbove: FontFamily? = null,
+    public val strutBelow: FontFamily? = null
+) {
     public companion object {
         /** The fonts of the system: every platform draws the texts with its own. */
         public val System: NotesFonts = NotesFonts(FontFamily.Default, FontFamily.Monospace)
     }
 }
 
-/** The fonts of the notes, Noto Sans and Noto Sans Mono (shipped with DrawView). */
+/** The fonts of the notes, Noto Sans and Noto Sans Mono, and the strut fonts (shipped with DrawView). */
 @Composable
 public fun rememberNotesFonts(): NotesFonts {
     val regular = Font(Res.font.noto_sans_regular, FontWeight.Normal, FontStyle.Normal)
@@ -40,8 +50,10 @@ public fun rememberNotesFonts(): NotesFonts {
     val boldItalic = Font(Res.font.noto_sans_bold_italic, FontWeight.Bold, FontStyle.Italic)
     val mono = Font(Res.font.noto_sans_mono_regular, FontWeight.Normal)
     val monoBold = Font(Res.font.noto_sans_mono_bold, FontWeight.Bold)
-    return remember(regular, italic, bold, boldItalic, mono, monoBold) {
-        NotesFonts(FontFamily(regular, italic, bold, boldItalic), FontFamily(mono, monoBold))
+    val above = Font(Res.font.strut_above)
+    val below = Font(Res.font.strut_below)
+    return remember(regular, italic, bold, boldItalic, mono, monoBold, above, below) {
+        NotesFonts(FontFamily(regular, italic, bold, boldItalic), FontFamily(mono, monoBold), FontFamily(above), FontFamily(below))
     }
 }
 

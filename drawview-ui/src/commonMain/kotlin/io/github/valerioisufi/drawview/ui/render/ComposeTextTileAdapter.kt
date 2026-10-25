@@ -10,7 +10,6 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextPainter
@@ -46,6 +45,13 @@ import io.github.valerioisufi.drawview.model.text.code.CodeHighlighter
 import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.syncLock
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
+import io.github.valerioisufi.drawview.ui.editor.PresentedCodeBlock
+import io.github.valerioisufi.drawview.ui.editor.PresentedFormula
+import io.github.valerioisufi.drawview.ui.editor.Presentation
+import io.github.valerioisufi.drawview.ui.editor.RichTextPresenter
+import io.github.valerioisufi.drawview.ui.editor.codeBlockOrigin
+import io.github.valerioisufi.drawview.ui.editor.formulaRect
+import io.github.valerioisufi.drawview.ui.editor.struts
 import io.github.valerioisufi.drawview.ui.theme.NotesFonts
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import kotlin.math.max
@@ -82,7 +88,8 @@ public class ComposeTextTileAdapter(
     private val layouts = LruCache<LayoutKey, PreparedText>(MAX_LAYOUTS)
     private val sizes = LruCache<SizeKey, TextBlockSize>(MAX_LAYOUTS)
     private val formulaImages = FormulaImages(formulas)
-    private val ascentCache = mutableMapOf<Int, Float>()
+    // The room of the formulas and of the blocks of code in the lines, as the editor gives it
+    private val struts by lazy { fonts.struts(measurer) }
 
     private val imagePaint = Paint().apply {
         isAntiAlias = true
@@ -105,14 +112,14 @@ public class ComposeTextTileAdapter(
     private data class SizeKey(val content: String, val fontSize: Float, val width: Float, val alignment: TextAlignment)
 
     /**
-     * A text laid out: its [layout], its [formulas] and [codeBlocks] in its placeholders, the
+     * A text laid out: its [layout], its [formulas] and [codeBlocks] over their characters, the
      * backgrounds of its code in the line ([chips], in [chipColor]), the size each image of its
      * formulas was rendered at ([formulaSizes], to render them again at the size they are drawn).
      */
     private class PreparedText(
         val layout: TextLayoutResult,
-        val formulas: List<MarkdownTextUtil.InlineFormula<ImageBitmap>>,
-        val codeBlocks: List<MarkdownTextUtil.CanvasCodeBlock>,
+        val formulas: List<PresentedFormula<ImageBitmap>>,
+        val codeBlocks: List<PresentedCodeBlock>,
         val chips: List<CodeChip>,
         val chipColor: Color,
         val formulaSizes: Map<ImageBitmap, Float>
@@ -167,13 +174,10 @@ public class ComposeTextTileAdapter(
         // A formula alone on its line and a block of code take the line: their own width counts
         val blockLines = HashMap<Int, Float>()
         for (formula in prepared.formulas) {
-            if (!formula.block) continue
-            val rect = layout.placeholderRects.getOrNull(formula.placeholderIndex) ?: continue
-            blockLines[layout.getLineForVerticalPosition(rect.center.y)] = formula.widthPx
+            if (formula.block) blockLines[layout.getLineForOffset(formula.offset)] = formula.widthPx
         }
         for (block in prepared.codeBlocks) {
-            val rect = layout.placeholderRects.getOrNull(block.placeholderIndex) ?: continue
-            blockLines[layout.getLineForVerticalPosition(rect.center.y)] = block.leftPx + block.layout.naturalWidthPx
+            blockLines[layout.getLineForOffset(block.offset)] = block.leftPx + block.layout.naturalWidthPx
         }
         var longest = 0f
         for (line in 0 until layout.lineCount) {
@@ -207,13 +211,13 @@ public class ComposeTextTileAdapter(
             val boxes = mutableListOf<TextBox>()
             for (chip in prepared.chips) boxes += chip.rect.translate(left, 0f).toBox(chip.radius, prepared.chipColor, scale)
             addWords(layout, CharStyles(layout.layoutInput.text, text.color, fontPx, mono = false), scale, left, 0f, words)
-            val rects = layout.placeholderRects
-            val formulas = prepared.formulas.mapNotNull { formula ->
-                val box = formulaBox(formula, rects.getOrNull(formula.placeholderIndex) ?: return@mapNotNull null).translate(left, 0f)
+            val formulas = prepared.formulas.map { formula ->
+                val box = layout.formulaRect(formula).translate(left, 0f)
                 TextFormula(formula.latex, text.color, box.left / scale, box.top / scale, box.width / scale, box.height / scale)
             }
             for (codeBlock in prepared.codeBlocks) {
-                val rect = rects.getOrNull(codeBlock.placeholderIndex)?.translate(codeBlock.leftPx + left, 0f) ?: continue
+                val origin = layout.codeBlockOrigin(codeBlock)
+                val rect = Rect(origin.x + left, origin.y, origin.x + left + codeBlock.layout.widthPx, origin.y + codeBlock.layout.heightPx)
                 val block = codeBlock.layout
                 boxes += Rect(rect.left, rect.top, rect.left + block.widthPx, rect.top + block.heightPx).toBox(block.radiusPx, block.theme.background, scale)
                 val code = CharStyles(block.code.layoutInput.text, text.color, block.fontPx, mono = true)
@@ -231,7 +235,7 @@ public class ComposeTextTileAdapter(
     }
 
     /**
-     * Adds to [words] the words of [layout] (its placeholders left out) in the styles of their
+     * Adds to [words] the words of [layout] (its struts and line breaks left out) in the styles of their
      * characters, [left], [top] its origin, [scale] pixels per millimeter.
      */
     private fun addWords(layout: TextLayoutResult, styles: CharStyles, scale: Float, left: Float, top: Float, words: MutableList<TextWord>) {
@@ -276,17 +280,6 @@ public class ComposeTextTileAdapter(
     /** [this] rectangle in pixels as a background of [color] in millimeters, its corners of [radius] pixels. */
     private fun Rect.toBox(radius: Float, color: Color, scale: Float) =
         TextBox(left / scale, top / scale, width / scale, height / scale, radius / scale, color.toArgb())
-
-    /**
-     * Where [formula] is drawn in its placeholder [rect]: its baseline on the bottom of the
-     * placeholder of its body, or centered in the line of a block formula.
-     */
-    private fun formulaBox(formula: MarkdownTextUtil.InlineFormula<*>, rect: Rect?): Rect {
-        if (rect == null) return Rect.Zero
-        val left = if (formula.block) rect.left + (rect.width - formula.widthPx) / 2f else rect.left
-        val top = if (formula.block) rect.top + (rect.height - formula.heightPx) / 2f else rect.bottom - formula.heightPx * formula.baselineRatio
-        return Rect(left, top, left + formula.widthPx, top + formula.heightPx)
-    }
 
     private data class WordStyle(val face: TextFace, val sizePx: Float, val color: Int, val strikethrough: Boolean)
 
@@ -333,8 +326,7 @@ public class ComposeTextTileAdapter(
         }
     }
 
-    private fun Char.isPlaceholder() =
-        this == MarkdownTextUtil.OBJECT_REPLACEMENT[0] || this == MarkdownTextUtil.WORD_JOINER[0]
+    private fun Char.isPlaceholder() = RichTextPresenter.isInvisible(this)
 
     /**
      * Drops the cached layouts and formulas (e.g. when the LaTeX engine becomes available).
@@ -378,13 +370,12 @@ public class ComposeTextTileAdapter(
             }
         }
         TextPainter.paint(canvas, prepared.layout)
-        val rects = prepared.layout.placeholderRects
         for (block in prepared.codeBlocks) {
-            val rect = rects.getOrNull(block.placeholderIndex) ?: continue
-            block.layout.draw(canvas, rect.left + block.leftPx, rect.top)
+            val origin = prepared.layout.codeBlockOrigin(block)
+            block.layout.draw(canvas, origin.x, origin.y)
         }
         for (formula in prepared.formulas) {
-            val box = formulaBox(formula, rects.getOrNull(formula.placeholderIndex) ?: continue)
+            val box = prepared.layout.formulaRect(formula)
             // Rendered again at the size it is drawn, sharp at every zoom
             val image = prepared.formulaSizes[formula.image]
                 ?.let { formulaImages.render(formula.latex, it * scale / LAYOUT_PX_PER_MM, text.color)?.bitmap }
@@ -412,15 +403,15 @@ public class ComposeTextTileAdapter(
         val color = Color(text.color)
         val baseStyle = baseStyle(color, fontPx, text.alignment.toTextAlign())
         val formulaSizes = HashMap<ImageBitmap, Float>()
-        val canvasText = MarkdownTextUtil.toCanvasText(
-            text = text.text,
-            baseColor = color,
+        val presentation = Presentation(
             fontSizePx = fontPx,
-            fontAscentPx = fontAscent(baseStyle, fontPx),
+            color = color,
+            struts = struts,
             lineWidthPx = widthPx.toFloat(),
             monospace = fonts.monospace,
+            highlighter = code,
             layoutCodeBlock = { source -> CodeBlockLayout.layout(measurer, fonts.monospace, source, fontPx, color, this.code, paperColor) },
-            listPrefixWidth = { prefix ->
+            measurePrefix = { prefix ->
                 measurer.measure(AnnotatedString(prefix), baseStyle.copy(textAlign = TextAlign.Start), softWrap = false, skipCache = true)
                     .getHorizontalPosition(prefix.length, usePrimaryDirection = true)
             }
@@ -430,36 +421,24 @@ public class ComposeTextTileAdapter(
                 MarkdownTextUtil.RenderedFormula(it.bitmap, it.bitmap.width.toFloat(), it.bitmap.height.toFloat(), it.baselineRatio)
             }
         }
-        val placeholders = canvasText.placeholders.map { spec ->
-            AnnotatedString.Range(Placeholder(width = spec.widthPx.sp, height = spec.heightPx.sp, placeholderVerticalAlign = spec.verticalAlign), spec.start, spec.end)
-        }
+        val shown = RichTextPresenter.present(text.text, presentation)
         val layout = measurer.measure(
-            text = canvasText.text,
+            text = shown.text,
             style = baseStyle,
             softWrap = true,
-            placeholders = placeholders,
             // The whole width of the block: the lines are aligned in it (with a maximum width only,
             // the layout would take the width of its longest line)
             constraints = Constraints.fixedWidth(widthPx),
             skipCache = true
         )
-        return PreparedText(layout, canvasText.formulas, canvasText.codeBlocks, layout.codeChips(canvasText.inlineCode), CodeTheme.of(color, paperColor).background, formulaSizes)
-    }
-
-    /** Ascent of the base font, used to reserve the descent of the formulas. */
-    private fun fontAscent(style: TextStyle, fontPx: Float): Float {
-        val bucket = fontPx.roundToInt().coerceAtLeast(1)
-        return ascentCache.getOrPut(bucket) {
-            measurer.measure(text = AnnotatedString("Hg"), style = style.copy(fontSize = bucket.toFloat().sp), skipCache = true)
-                .firstBaseline * fontPx / bucket
-        }
+        return PreparedText(layout, shown.formulas, shown.codeBlocks, layout.codeChips(shown.inlineCode), CodeTheme.of(color, paperColor).background, formulaSizes)
     }
 
     public companion object {
         private const val MAX_LAYOUTS = 256
 
         /** Resolution of the layouts of [drawText], [layout] and [measure]. */
-        private const val LAYOUT_PX_PER_MM = 20f
+        internal const val LAYOUT_PX_PER_MM = 20f
     }
 }
 

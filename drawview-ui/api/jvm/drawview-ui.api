@@ -362,30 +362,8 @@ public final class io/github/valerioisufi/drawview/ui/components/ToolSettingsKt 
 public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;
-	public final fun toCanvasText-oC9nPe0 (Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;FLkotlin/jvm/functions/Function2;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
-	public static synthetic fun toCanvasText-oC9nPe0$default (Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;Ljava/lang/String;JFFLjava/lang/Float;Landroidx/compose/ui/text/font/FontFamily;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;FLkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText;
 	public final fun toLiveAnnotatedString-5_Xnia0 (Ljava/lang/String;JJJLandroidx/compose/ui/text/font/FontFamily;)Landroidx/compose/ui/text/AnnotatedString;
 	public static synthetic fun toLiveAnnotatedString-5_Xnia0$default (Lio/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil;Ljava/lang/String;JJJLandroidx/compose/ui/text/font/FontFamily;ILjava/lang/Object;)Landroidx/compose/ui/text/AnnotatedString;
-}
-
-public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasCodeBlock {
-	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/ui/render/CodeBlockLayout;IF)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/ui/render/CodeBlockLayout;IFILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getLayout ()Lio/github/valerioisufi/drawview/ui/render/CodeBlockLayout;
-	public final fun getLeftPx ()F
-	public final fun getPlaceholderIndex ()I
-}
-
-public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$CanvasText {
-	public static final field $stable I
-	public fun <init> (Landroidx/compose/ui/text/AnnotatedString;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
-	public synthetic fun <init> (Landroidx/compose/ui/text/AnnotatedString;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getCodeBlocks ()Ljava/util/List;
-	public final fun getFormulas ()Ljava/util/List;
-	public final fun getInlineCode ()Ljava/util/List;
-	public final fun getPlaceholders ()Ljava/util/List;
-	public final fun getText ()Landroidx/compose/ui/text/AnnotatedString;
 }
 
 public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$InlineCode {
@@ -394,29 +372,6 @@ public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$In
 	public final fun getEnd ()I
 	public final fun getFontSizePx ()F
 	public final fun getStart ()I
-}
-
-public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$InlineFormula {
-	public static final field $stable I
-	public fun <init> (Ljava/lang/Object;FFFILjava/lang/String;Z)V
-	public synthetic fun <init> (Ljava/lang/Object;FFFILjava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getBaselineRatio ()F
-	public final fun getBlock ()Z
-	public final fun getHeightPx ()F
-	public final fun getImage ()Ljava/lang/Object;
-	public final fun getLatex ()Ljava/lang/String;
-	public final fun getPlaceholderIndex ()I
-	public final fun getWidthPx ()F
-}
-
-public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$PlaceholderSpec {
-	public static final field $stable I
-	public synthetic fun <init> (IIFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getEnd ()I
-	public final fun getHeightPx ()F
-	public final fun getStart ()I
-	public final fun getVerticalAlign-J6kI3mc ()I
-	public final fun getWidthPx ()F
 }
 
 public final class io/github/valerioisufi/drawview/ui/editor/MarkdownTextUtil$RenderedFormula {
@@ -555,6 +510,8 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/Font0_
 	public static final fun getPlus_jakarta_sans_medium (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
 	public static final fun getPlus_jakarta_sans_regular (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
 	public static final fun getPlus_jakarta_sans_semibold (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getStrut_above (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
+	public static final fun getStrut_below (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$font;)Lorg/jetbrains/compose/resources/FontResource;
 }
 
 public final class io/github/valerioisufi/drawview/ui/generated/resources/Plurals0_commonMainKt {
@@ -1017,8 +974,11 @@ public final class io/github/valerioisufi/drawview/ui/theme/NotesFontFiles {
 public final class io/github/valerioisufi/drawview/ui/theme/NotesFonts {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/ui/theme/NotesFonts$Companion;
-	public fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;)V
+	public fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;)V
+	public synthetic fun <init> (Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;Landroidx/compose/ui/text/font/FontFamily;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getMonospace ()Landroidx/compose/ui/text/font/FontFamily;
+	public final fun getStrutAbove ()Landroidx/compose/ui/text/font/FontFamily;
+	public final fun getStrutBelow ()Landroidx/compose/ui/text/font/FontFamily;
 	public final fun getText ()Landroidx/compose/ui/text/font/FontFamily;
 }
 

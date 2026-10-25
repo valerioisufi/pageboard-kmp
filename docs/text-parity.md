@@ -80,12 +80,13 @@ of the texts with lists only, now presents every text the same way.
 A character of a text font cannot give its line some room above the baseline without some room
 below (P2). Two fonts made for it can: `strut_above.ttf` and `strut_below.ttf`
 (`tools/fonts/make_struts.py`), one empty glyph for U+FFFC, 1 em wide, all of the line above the
-baseline or all below; U+2060 and U+200B map to a zero-width glyph. An object of width `w`,
-ascent `a` and descent `d` is shown as three characters:
+baseline or all below (nothing else: Skia aborts on a word joiner or a zero-width space mapped
+to a glyph of such a font). An object of width `w`, ascent `a` and descent `d` is shown as three
+characters:
 
 ```
 U+FFFC in strut_above at a px, letter spacing w − a   (a above the baseline, w wide)
-U+2060 (word joiner: the line never breaks inside the object)
+U+2060 in the text font (word joiner: the line never breaks inside the object)
 U+FFFC in strut_below at d px, letter spacing −d      (d below the baseline, no width)
 ```
 
@@ -125,8 +126,8 @@ struts fall back to the character of the text font scaled as today: both sides s
 | Phase | Content | Status |
 |---|---|---|
 | 1 | Parity test: the editor and the canvas lay out a set of texts (special characters, emphasis, headings, inline and display formulas, blocks of code, nested lists, alignments) with nothing revealed, and their lines, baselines and indents are compared; the differences found today recorded as ignored tests, each phase enabling its own | Done |
-| 2 | One presentation: the strut fonts, `RichTextPresenter` with the mapping, the lines as paragraphs, the delimiters removed, the formulas and the blocks of code as struts; the canvas, the export, `MarkdownText` and the editor on it (`toEditorText`, `toCanvasText` and the placeholders removed) | Planned |
-| 3 | Lists while written: the markers replaced by their bullet or number, the hanging indent measured on the canvas and in the editor, the caret kept out of the markers, Backspace taking a marker away | Planned |
+| 2 | One presentation: the strut fonts, `RichTextPresenter` with the mapping, the lines as paragraphs, the delimiters removed, the formulas and the blocks of code as struts, the list items with their bullet or number and their hanging indent measured; the canvas, the export, `MarkdownText` and the editor on it (`toEditorText`, `toCanvasText` and the placeholders removed) | Done |
+| 3 | Lists while written: the caret kept out of the markers, Backspace at the start of an item taking its marker away | Planned |
 | 4 | Reveal without vertical moves: the delimiters faded by their color only, the `#` of a heading revealed near them only, the room of a formula kept while its source is shown, a block of code written as a block (struts, chrome, fences hidden, Backspace revealing the opening fence) | Planned |
 | 5 | Checks: the screenshots recorded again where the page changed (the line breaks of every text are now paragraphs, a block of code takes exactly its height), the desktop application on a scratch directory | Planned |
 
@@ -141,6 +142,31 @@ struts fall back to the character of the text font scaled as today: both sides s
   15 px lower in the editor (P2, P3: drawn centered, so not seen, but the parity of the struts needs
   it); a list item wraps under its marker in the editor, 19 px left of the page (P4); a block of
   code in a list item is 27 px high on the page and 40 px in the editor (P3, P4).
+
+### Phase 2 results
+
+* `RichTextPresenter.present` presents a text once for the canvas (`ComposeTextTileAdapter`, so the
+  tiles and the PDF export), `MarkdownText` and the editor (`TextBoxEditor`, through its
+  `VisualTransformation`): `toEditorText`, `toCanvasText` and the Compose placeholders are gone. The
+  list items are presented by it too, so their bullets and hanging indent came with this phase in
+  the editor (phase 3 keeps the behaviors of the markers).
+* `SourceMapping` maps the offsets both ways from two arrays filled while presenting: a hidden
+  character at the next one shown, an inserted one (a bullet) at the offset it stands for, a tap on
+  the second half of a formula after it.
+* The strut fonts (`strut_above.ttf`, `strut_below.ttf`, 668 bytes each) are in `NotesFonts`
+  (`strutAbove`, `strutBelow`); without them (`NotesFonts.System`) the struts are approximated in
+  the font of the text, the same way on both sides. Skia aborts the process when a word joiner or a
+  zero-width space is drawn in a font that maps them: they stay in the font of the text.
+* The editor renders its formulas at steps of size (fewer images while zooming) but gives them the
+  room of the image the canvas renders, at the resolution of the canvas scaled to the zoom: the
+  rounding of the images no longer moves the lines.
+* `TextParityTest` now compares the real canvas (`ComposeTextTileAdapter.layout`, as the export
+  reads it) with the field of the editor, at the resolution of the canvas (20 px per mm): lines,
+  formulas, blocks of code and the backgrounds of the code in the line agree within half a pixel
+  for every case, the formulas, the blocks of code and the lists included.
+* The public API of `drawview-ui` changed (recorded with `updateKotlinAbi`): `MarkdownTextUtil`
+  keeps `toLiveAnnotatedString`, `InlineCode` and `RenderedFormula`; `NotesFonts` takes the strut
+  fonts.
 
 ## Decisions
 

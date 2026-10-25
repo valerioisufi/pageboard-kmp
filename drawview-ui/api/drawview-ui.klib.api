@@ -522,10 +522,14 @@ final class io.github.valerioisufi.drawview.ui.theme/CanvasColors { // io.github
 }
 
 final class io.github.valerioisufi.drawview.ui.theme/NotesFonts { // io.github.valerioisufi.drawview.ui.theme/NotesFonts|null[0]
-    constructor <init>(androidx.compose.ui.text.font/FontFamily, androidx.compose.ui.text.font/FontFamily) // io.github.valerioisufi.drawview.ui.theme/NotesFonts.<init>|<init>(androidx.compose.ui.text.font.FontFamily;androidx.compose.ui.text.font.FontFamily){}[0]
+    constructor <init>(androidx.compose.ui.text.font/FontFamily, androidx.compose.ui.text.font/FontFamily, androidx.compose.ui.text.font/FontFamily? = ..., androidx.compose.ui.text.font/FontFamily? = ...) // io.github.valerioisufi.drawview.ui.theme/NotesFonts.<init>|<init>(androidx.compose.ui.text.font.FontFamily;androidx.compose.ui.text.font.FontFamily;androidx.compose.ui.text.font.FontFamily?;androidx.compose.ui.text.font.FontFamily?){}[0]
 
     final val monospace // io.github.valerioisufi.drawview.ui.theme/NotesFonts.monospace|{}monospace[0]
         final fun <get-monospace>(): androidx.compose.ui.text.font/FontFamily // io.github.valerioisufi.drawview.ui.theme/NotesFonts.monospace.<get-monospace>|<get-monospace>(){}[0]
+    final val strutAbove // io.github.valerioisufi.drawview.ui.theme/NotesFonts.strutAbove|{}strutAbove[0]
+        final fun <get-strutAbove>(): androidx.compose.ui.text.font/FontFamily? // io.github.valerioisufi.drawview.ui.theme/NotesFonts.strutAbove.<get-strutAbove>|<get-strutAbove>(){}[0]
+    final val strutBelow // io.github.valerioisufi.drawview.ui.theme/NotesFonts.strutBelow|{}strutBelow[0]
+        final fun <get-strutBelow>(): androidx.compose.ui.text.font/FontFamily? // io.github.valerioisufi.drawview.ui.theme/NotesFonts.strutBelow.<get-strutBelow>|<get-strutBelow>(){}[0]
     final val text // io.github.valerioisufi.drawview.ui.theme/NotesFonts.text|{}text[0]
         final fun <get-text>(): androidx.compose.ui.text.font/FontFamily // io.github.valerioisufi.drawview.ui.theme/NotesFonts.text.<get-text>|<get-text>(){}[0]
 
@@ -536,42 +540,7 @@ final class io.github.valerioisufi.drawview.ui.theme/NotesFonts { // io.github.v
 }
 
 final object io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil { // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil|null[0]
-    final fun <#A1: kotlin/Any?> toCanvasText(kotlin/String, androidx.compose.ui.graphics/Color, kotlin/Float, kotlin/Float, kotlin/Float? = ..., androidx.compose.ui.text.font/FontFamily = ..., kotlin/Function1<io.github.valerioisufi.drawview.ui.render/CodeBlockSource, io.github.valerioisufi.drawview.ui.render/CodeBlockLayout>? = ..., kotlin/Function1<kotlin/String, kotlin/Float>? = ..., kotlin/Float = ..., kotlin/Function2<kotlin/String, kotlin/Float, io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.RenderedFormula<#A1>?>): io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasText<#A1> // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.toCanvasText|toCanvasText(kotlin.String;androidx.compose.ui.graphics.Color;kotlin.Float;kotlin.Float;kotlin.Float?;androidx.compose.ui.text.font.FontFamily;kotlin.Function1<io.github.valerioisufi.drawview.ui.render.CodeBlockSource,io.github.valerioisufi.drawview.ui.render.CodeBlockLayout>?;kotlin.Function1<kotlin.String,kotlin.Float>?;kotlin.Float;kotlin.Function2<kotlin.String,kotlin.Float,io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil.RenderedFormula<0:0>?>){0§<kotlin.Any?>}[0]
     final fun toLiveAnnotatedString(kotlin/String, androidx.compose.ui.text/TextRange, androidx.compose.ui.graphics/Color, androidx.compose.ui.unit/TextUnit = ..., androidx.compose.ui.text.font/FontFamily = ...): androidx.compose.ui.text/AnnotatedString // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.toLiveAnnotatedString|toLiveAnnotatedString(kotlin.String;androidx.compose.ui.text.TextRange;androidx.compose.ui.graphics.Color;androidx.compose.ui.unit.TextUnit;androidx.compose.ui.text.font.FontFamily){}[0]
-
-    final class <#A1: kotlin/Any?> CanvasText { // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasText|null[0]
-        constructor <init>(androidx.compose.ui.text/AnnotatedString, kotlin.collections/List<io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.PlaceholderSpec>, kotlin.collections/List<io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula<#A1>>, kotlin.collections/List<io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasCodeBlock> = ..., kotlin.collections/List<io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineCode> = ...) // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasText.<init>|<init>(androidx.compose.ui.text.AnnotatedString;kotlin.collections.List<io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil.PlaceholderSpec>;kotlin.collections.List<io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil.InlineFormula<1:0>>;kotlin.collections.List<io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil.CanvasCodeBlock>;kotlin.collections.List<io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil.InlineCode>){}[0]
-
-        final val codeBlocks // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasText.codeBlocks|{}codeBlocks[0]
-            final fun <get-codeBlocks>(): kotlin.collections/List<io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasCodeBlock> // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasText.codeBlocks.<get-codeBlocks>|<get-codeBlocks>(){}[0]
-        final val formulas // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasText.formulas|{}formulas[0]
-            final fun <get-formulas>(): kotlin.collections/List<io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula<#A1>> // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasText.formulas.<get-formulas>|<get-formulas>(){}[0]
-        final val inlineCode // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasText.inlineCode|{}inlineCode[0]
-            final fun <get-inlineCode>(): kotlin.collections/List<io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineCode> // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasText.inlineCode.<get-inlineCode>|<get-inlineCode>(){}[0]
-        final val placeholders // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasText.placeholders|{}placeholders[0]
-            final fun <get-placeholders>(): kotlin.collections/List<io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.PlaceholderSpec> // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasText.placeholders.<get-placeholders>|<get-placeholders>(){}[0]
-        final val text // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasText.text|{}text[0]
-            final fun <get-text>(): androidx.compose.ui.text/AnnotatedString // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasText.text.<get-text>|<get-text>(){}[0]
-    }
-
-    final class <#A1: kotlin/Any?> InlineFormula { // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula|null[0]
-        constructor <init>(#A1, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Int, kotlin/String = ..., kotlin/Boolean = ...) // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula.<init>|<init>(1:0;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Int;kotlin.String;kotlin.Boolean){}[0]
-
-        final val baselineRatio // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula.baselineRatio|{}baselineRatio[0]
-            final fun <get-baselineRatio>(): kotlin/Float // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula.baselineRatio.<get-baselineRatio>|<get-baselineRatio>(){}[0]
-        final val block // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula.block|{}block[0]
-            final fun <get-block>(): kotlin/Boolean // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula.block.<get-block>|<get-block>(){}[0]
-        final val heightPx // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula.heightPx|{}heightPx[0]
-            final fun <get-heightPx>(): kotlin/Float // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula.heightPx.<get-heightPx>|<get-heightPx>(){}[0]
-        final val image // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula.image|{}image[0]
-            final fun <get-image>(): #A1 // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula.image.<get-image>|<get-image>(){}[0]
-        final val latex // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula.latex|{}latex[0]
-            final fun <get-latex>(): kotlin/String // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula.latex.<get-latex>|<get-latex>(){}[0]
-        final val placeholderIndex // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula.placeholderIndex|{}placeholderIndex[0]
-            final fun <get-placeholderIndex>(): kotlin/Int // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula.placeholderIndex.<get-placeholderIndex>|<get-placeholderIndex>(){}[0]
-        final val widthPx // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula.widthPx|{}widthPx[0]
-            final fun <get-widthPx>(): kotlin/Float // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineFormula.widthPx.<get-widthPx>|<get-widthPx>(){}[0]
-    }
 
     final class <#A1: kotlin/Any?> RenderedFormula { // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.RenderedFormula|null[0]
         constructor <init>(#A1, kotlin/Float, kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.RenderedFormula.<init>|<init>(1:0;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
@@ -586,17 +555,6 @@ final object io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil { // io.
             final fun <get-widthPx>(): kotlin/Float // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.RenderedFormula.widthPx.<get-widthPx>|<get-widthPx>(){}[0]
     }
 
-    final class CanvasCodeBlock { // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasCodeBlock|null[0]
-        constructor <init>(io.github.valerioisufi.drawview.ui.render/CodeBlockLayout, kotlin/Int, kotlin/Float = ...) // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasCodeBlock.<init>|<init>(io.github.valerioisufi.drawview.ui.render.CodeBlockLayout;kotlin.Int;kotlin.Float){}[0]
-
-        final val layout // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasCodeBlock.layout|{}layout[0]
-            final fun <get-layout>(): io.github.valerioisufi.drawview.ui.render/CodeBlockLayout // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasCodeBlock.layout.<get-layout>|<get-layout>(){}[0]
-        final val leftPx // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasCodeBlock.leftPx|{}leftPx[0]
-            final fun <get-leftPx>(): kotlin/Float // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasCodeBlock.leftPx.<get-leftPx>|<get-leftPx>(){}[0]
-        final val placeholderIndex // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasCodeBlock.placeholderIndex|{}placeholderIndex[0]
-            final fun <get-placeholderIndex>(): kotlin/Int // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.CanvasCodeBlock.placeholderIndex.<get-placeholderIndex>|<get-placeholderIndex>(){}[0]
-    }
-
     final class InlineCode { // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineCode|null[0]
         constructor <init>(kotlin/Int, kotlin/Int, kotlin/Float) // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineCode.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.Float){}[0]
 
@@ -606,21 +564,6 @@ final object io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil { // io.
             final fun <get-fontSizePx>(): kotlin/Float // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineCode.fontSizePx.<get-fontSizePx>|<get-fontSizePx>(){}[0]
         final val start // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineCode.start|{}start[0]
             final fun <get-start>(): kotlin/Int // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.InlineCode.start.<get-start>|<get-start>(){}[0]
-    }
-
-    final class PlaceholderSpec { // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.PlaceholderSpec|null[0]
-        constructor <init>(kotlin/Int, kotlin/Int, kotlin/Float, kotlin/Float, androidx.compose.ui.text/PlaceholderVerticalAlign) // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.PlaceholderSpec.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.Float;kotlin.Float;androidx.compose.ui.text.PlaceholderVerticalAlign){}[0]
-
-        final val end // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.PlaceholderSpec.end|{}end[0]
-            final fun <get-end>(): kotlin/Int // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.PlaceholderSpec.end.<get-end>|<get-end>(){}[0]
-        final val heightPx // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.PlaceholderSpec.heightPx|{}heightPx[0]
-            final fun <get-heightPx>(): kotlin/Float // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.PlaceholderSpec.heightPx.<get-heightPx>|<get-heightPx>(){}[0]
-        final val start // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.PlaceholderSpec.start|{}start[0]
-            final fun <get-start>(): kotlin/Int // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.PlaceholderSpec.start.<get-start>|<get-start>(){}[0]
-        final val verticalAlign // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.PlaceholderSpec.verticalAlign|{}verticalAlign[0]
-            final fun <get-verticalAlign>(): androidx.compose.ui.text/PlaceholderVerticalAlign // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.PlaceholderSpec.verticalAlign.<get-verticalAlign>|<get-verticalAlign>(){}[0]
-        final val widthPx // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.PlaceholderSpec.widthPx|{}widthPx[0]
-            final fun <get-widthPx>(): kotlin/Float // io.github.valerioisufi.drawview.ui.editor/MarkdownTextUtil.PlaceholderSpec.widthPx.<get-widthPx>|<get-widthPx>(){}[0]
     }
 }
 
@@ -844,11 +787,7 @@ final val io.github.valerioisufi.drawview.ui.components/LocalAboutAppInfo // io.
 final val io.github.valerioisufi.drawview.ui.components/io_github_valerioisufi_drawview_ui_components_AboutAppInfo$stableprop // io.github.valerioisufi.drawview.ui.components/io_github_valerioisufi_drawview_ui_components_AboutAppInfo$stableprop|#static{}io_github_valerioisufi_drawview_ui_components_AboutAppInfo$stableprop[0]
 final val io.github.valerioisufi.drawview.ui.components/io_github_valerioisufi_drawview_ui_components_ThirdPartyLicense$stableprop // io.github.valerioisufi.drawview.ui.components/io_github_valerioisufi_drawview_ui_components_ThirdPartyLicense$stableprop|#static{}io_github_valerioisufi_drawview_ui_components_ThirdPartyLicense$stableprop[0]
 final val io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil$stableprop // io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil$stableprop|#static{}io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil$stableprop[0]
-final val io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_CanvasCodeBlock$stableprop // io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_CanvasCodeBlock$stableprop|#static{}io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_CanvasCodeBlock$stableprop[0]
-final val io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_CanvasText$stableprop // io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_CanvasText$stableprop|#static{}io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_CanvasText$stableprop[0]
 final val io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_InlineCode$stableprop // io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_InlineCode$stableprop|#static{}io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_InlineCode$stableprop[0]
-final val io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_InlineFormula$stableprop // io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_InlineFormula$stableprop|#static{}io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_InlineFormula$stableprop[0]
-final val io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_PlaceholderSpec$stableprop // io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_PlaceholderSpec$stableprop|#static{}io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_PlaceholderSpec$stableprop[0]
 final val io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_RenderedFormula$stableprop // io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_RenderedFormula$stableprop|#static{}io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_RenderedFormula$stableprop[0]
 final val io.github.valerioisufi.drawview.ui.extension/io_github_valerioisufi_drawview_ui_extension_DocumentAction$stableprop // io.github.valerioisufi.drawview.ui.extension/io_github_valerioisufi_drawview_ui_extension_DocumentAction$stableprop|#static{}io_github_valerioisufi_drawview_ui_extension_DocumentAction$stableprop[0]
 final val io.github.valerioisufi.drawview.ui.extension/io_github_valerioisufi_drawview_ui_extension_DocumentTag$stableprop // io.github.valerioisufi.drawview.ui.extension/io_github_valerioisufi_drawview_ui_extension_DocumentTag$stableprop|#static{}io_github_valerioisufi_drawview_ui_extension_DocumentTag$stableprop[0]
@@ -1179,6 +1118,10 @@ final val io.github.valerioisufi.drawview.ui.generated.resources/plus_jakarta_sa
     final fun (io.github.valerioisufi.drawview.ui.generated.resources/Res.font).<get-plus_jakarta_sans_semibold>(): org.jetbrains.compose.resources/FontResource // io.github.valerioisufi.drawview.ui.generated.resources/plus_jakarta_sans_semibold.<get-plus_jakarta_sans_semibold>|<get-plus_jakarta_sans_semibold>@io.github.valerioisufi.drawview.ui.generated.resources.Res.font(){}[0]
 final val io.github.valerioisufi.drawview.ui.generated.resources/ruler // io.github.valerioisufi.drawview.ui.generated.resources/ruler|@io.github.valerioisufi.drawview.ui.generated.resources.Res.drawable{}ruler[0]
     final fun (io.github.valerioisufi.drawview.ui.generated.resources/Res.drawable).<get-ruler>(): org.jetbrains.compose.resources/DrawableResource // io.github.valerioisufi.drawview.ui.generated.resources/ruler.<get-ruler>|<get-ruler>@io.github.valerioisufi.drawview.ui.generated.resources.Res.drawable(){}[0]
+final val io.github.valerioisufi.drawview.ui.generated.resources/strut_above // io.github.valerioisufi.drawview.ui.generated.resources/strut_above|@io.github.valerioisufi.drawview.ui.generated.resources.Res.font{}strut_above[0]
+    final fun (io.github.valerioisufi.drawview.ui.generated.resources/Res.font).<get-strut_above>(): org.jetbrains.compose.resources/FontResource // io.github.valerioisufi.drawview.ui.generated.resources/strut_above.<get-strut_above>|<get-strut_above>@io.github.valerioisufi.drawview.ui.generated.resources.Res.font(){}[0]
+final val io.github.valerioisufi.drawview.ui.generated.resources/strut_below // io.github.valerioisufi.drawview.ui.generated.resources/strut_below|@io.github.valerioisufi.drawview.ui.generated.resources.Res.font{}strut_below[0]
+    final fun (io.github.valerioisufi.drawview.ui.generated.resources/Res.font).<get-strut_below>(): org.jetbrains.compose.resources/FontResource // io.github.valerioisufi.drawview.ui.generated.resources/strut_below.<get-strut_below>|<get-strut_below>@io.github.valerioisufi.drawview.ui.generated.resources.Res.font(){}[0]
 final val io.github.valerioisufi.drawview.ui.generated.resources/stylus_mode_activated // io.github.valerioisufi.drawview.ui.generated.resources/stylus_mode_activated|@io.github.valerioisufi.drawview.ui.generated.resources.Res.string{}stylus_mode_activated[0]
     final fun (io.github.valerioisufi.drawview.ui.generated.resources/Res.string).<get-stylus_mode_activated>(): org.jetbrains.compose.resources/StringResource // io.github.valerioisufi.drawview.ui.generated.resources/stylus_mode_activated.<get-stylus_mode_activated>|<get-stylus_mode_activated>@io.github.valerioisufi.drawview.ui.generated.resources.Res.string(){}[0]
 final val io.github.valerioisufi.drawview.ui.generated.resources/text_align_center // io.github.valerioisufi.drawview.ui.generated.resources/text_align_center|@io.github.valerioisufi.drawview.ui.generated.resources.Res.string{}text_align_center[0]
@@ -1303,11 +1246,7 @@ final fun io.github.valerioisufi.drawview.ui.components/TonalButton(kotlin/Funct
 final fun io.github.valerioisufi.drawview.ui.components/io_github_valerioisufi_drawview_ui_components_AboutAppInfo$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.ui.components/io_github_valerioisufi_drawview_ui_components_AboutAppInfo$stableprop_getter|io_github_valerioisufi_drawview_ui_components_AboutAppInfo$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.ui.components/io_github_valerioisufi_drawview_ui_components_ThirdPartyLicense$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.ui.components/io_github_valerioisufi_drawview_ui_components_ThirdPartyLicense$stableprop_getter|io_github_valerioisufi_drawview_ui_components_ThirdPartyLicense$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil$stableprop_getter|io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil$stableprop_getter(){}[0]
-final fun io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_CanvasCodeBlock$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_CanvasCodeBlock$stableprop_getter|io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_CanvasCodeBlock$stableprop_getter(){}[0]
-final fun io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_CanvasText$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_CanvasText$stableprop_getter|io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_CanvasText$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_InlineCode$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_InlineCode$stableprop_getter|io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_InlineCode$stableprop_getter(){}[0]
-final fun io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_InlineFormula$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_InlineFormula$stableprop_getter|io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_InlineFormula$stableprop_getter(){}[0]
-final fun io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_PlaceholderSpec$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_PlaceholderSpec$stableprop_getter|io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_PlaceholderSpec$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_RenderedFormula$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.ui.editor/io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_RenderedFormula$stableprop_getter|io_github_valerioisufi_drawview_ui_editor_MarkdownTextUtil_RenderedFormula$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.ui.extension/io_github_valerioisufi_drawview_ui_extension_DocumentAction$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.ui.extension/io_github_valerioisufi_drawview_ui_extension_DocumentAction$stableprop_getter|io_github_valerioisufi_drawview_ui_extension_DocumentAction$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.ui.extension/io_github_valerioisufi_drawview_ui_extension_DocumentTag$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.ui.extension/io_github_valerioisufi_drawview_ui_extension_DocumentTag$stableprop_getter|io_github_valerioisufi_drawview_ui_extension_DocumentTag$stableprop_getter(){}[0]
