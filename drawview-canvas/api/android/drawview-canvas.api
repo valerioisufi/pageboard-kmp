@@ -358,18 +358,39 @@ public final class io/github/valerioisufi/drawview/canvas/controller/PageManager
 	public final fun addNewPageAtBottom (Lio/github/valerioisufi/drawview/model/DrawPage;)Lio/github/valerioisufi/drawview/model/DrawPage;
 	public static synthetic fun addNewPageAtBottom$default (Lio/github/valerioisufi/drawview/canvas/controller/PageManager;Lio/github/valerioisufi/drawview/model/DrawPage;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/DrawPage;
 	public final fun applyDocumentTemplateChange (Lio/github/valerioisufi/drawview/model/geometry/Dimension;Lio/github/valerioisufi/drawview/model/PageBackground;Z)V
+	public final fun canDeletePages (Ljava/util/Collection;)Z
 	public final fun canPastePages ()Z
+	public final fun changePagesTemplate (Ljava/util/Collection;Lio/github/valerioisufi/drawview/model/geometry/Dimension;Lio/github/valerioisufi/drawview/model/PageBackground;)V
 	public final fun changeSinglePageTemplate (ILio/github/valerioisufi/drawview/model/geometry/Dimension;Lio/github/valerioisufi/drawview/model/PageBackground;)V
 	public final fun copyPage (I)V
+	public final fun copyPages (Ljava/util/Collection;)V
 	public final fun deletePage (I)V
+	public final fun deletePages (Ljava/util/Collection;)V
 	public final fun finishPageReorderMode ()V
 	public final fun getContextMenuTargetPageIndex ()I
+	public final fun getSelection ()Lio/github/valerioisufi/drawview/canvas/controller/PageSelection;
 	public final fun jumpToPage (I)V
 	public final fun movePage (II)V
 	public final fun movePageDuringReorder (II)V
+	public final fun movePages (Ljava/util/Collection;I)V
 	public final fun pastePages (I)V
+	public final fun pastePagesAfter (Ljava/util/Collection;)V
 	public final fun setContextMenuTargetPageIndex (I)V
 	public final fun startPageReorderMode ()V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/PageSelection {
+	public static final field $stable I
+	public final fun clear ()V
+	public final fun getCount ()I
+	public final fun getPageIds ()Ljava/util/List;
+	public final fun isActive ()Z
+	public final fun isSelected (Ljava/lang/String;)Z
+	public final fun selectAll ()V
+	public final fun selectRange (Ljava/lang/String;)V
+	public final fun setActive (Z)V
+	public final fun start ()V
+	public final fun toggle (Ljava/lang/String;)V
 }
 
 public final class io/github/valerioisufi/drawview/canvas/controller/PlacementManager {

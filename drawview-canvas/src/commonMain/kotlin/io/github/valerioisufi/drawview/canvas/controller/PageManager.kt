@@ -11,6 +11,7 @@ import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.change.AddPage
 import io.github.valerioisufi.drawview.model.change.CompositeChange
 import io.github.valerioisufi.drawview.model.change.CopiedPages
+import io.github.valerioisufi.drawview.model.change.DocumentChange
 import io.github.valerioisufi.drawview.model.change.MovePages
 import io.github.valerioisufi.drawview.model.change.RemovePage
 import io.github.valerioisufi.drawview.model.change.SetDocumentDefaults
@@ -24,6 +25,9 @@ import io.github.valerioisufi.drawview.model.geometry.Dimension
  * or in the page grid), templates and navigation.
  */
 public class PageManager(private val controller: DrawViewController) {
+
+    /** The pages selected in the page grid. */
+    public val selection: PageSelection = PageSelection(controller.document)
 
     /** Page targeted by the context menu / page grid actions. */
     public var contextMenuTargetPageIndex: Int by mutableIntStateOf(-1)
@@ -88,18 +92,52 @@ public class PageManager(private val controller: DrawViewController) {
      * Deletes the page at [pageIndex] (the last page of a document cannot be deleted).
      */
     public fun deletePage(pageIndex: Int) {
-        if (document.pages.size <= 1 || pageIndex !in document.pages.indices) return
-        controller.selectionManager.clearSelection()
-        if (controller.textEditorManager.activeTextPageIndex == pageIndex) {
-            controller.textEditorManager.cancelEditing()
-        }
-        controller.session.submit(RemovePage(document.pages[pageIndex].id))
+        val page = document.pages.getOrNull(pageIndex) ?: return
+        deletePages(listOf(page.id))
     }
+
+    /** The pages [ids] shown, in the order of the document. */
+    private fun pagesOf(ids: Collection<String>): List<DrawPage> = ids.toSet().let { wanted -> document.pages.filter { it.id in wanted } }
+
+    /** [changes] as one change (one step to undo), or `null` for none. */
+    private fun oneChange(changes: List<DocumentChange>): DocumentChange? = when (changes.size) {
+        0 -> null
+        1 -> changes[0]
+        else -> CompositeChange(changes)
+    }
+
+    /**
+     * Deletes the pages [ids] in one change, unless they are every page of the document (a
+     * document keeps a page).
+     */
+    public fun deletePages(ids: Collection<String>) {
+        val pages = pagesOf(ids)
+        if (pages.isEmpty() || pages.size >= document.pages.size) return
+        controller.selectionManager.clearSelection()
+        val editing = controller.textEditorManager.activeTextPageIndex
+        if (pages.any { document.pages.indexOf(it) == editing }) controller.textEditorManager.cancelEditing()
+        oneChange(pages.map { RemovePage(it.id) })?.let { controller.session.submit(it) }
+    }
+
+    /** Whether the pages [ids] can be deleted: some, not every page of the document. */
+    public fun canDeletePages(ids: Collection<String>): Boolean = pagesOf(ids).size in 1 until document.pages.size
 
     /** Copies the page at [pageIndex] with all its content into the clipboard of the application (see [EditorClipboard]). */
     public fun copyPage(pageIndex: Int) {
         val page = document.pages.getOrNull(pageIndex) ?: return
-        controller.clipboard.content = document.copyPages(listOf(page))
+        copyPages(listOf(page.id))
+    }
+
+    /** Copies the pages [ids] with all their content, in the order of the document, into the clipboard of the application. */
+    public fun copyPages(ids: Collection<String>) {
+        val pages = pagesOf(ids).takeIf { it.isNotEmpty() } ?: return
+        controller.clipboard.content = document.copyPages(pages)
+    }
+
+    /** Pastes the pages of the clipboard after the last of the pages [ids] (see [pastePages]). */
+    public fun pastePagesAfter(ids: Collection<String>) {
+        val last = pagesOf(ids).lastOrNull() ?: return
+        pastePages(document.pages.indexOf(last))
     }
 
     /** Whether pages were copied, in this document or another one (see [EditorClipboard]). */
@@ -118,6 +156,18 @@ public class PageManager(private val controller: DrawViewController) {
         if (pasted.leftOut > 0) controller.emitMessage(DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES)
         controller.session.submit(pasted.change ?: return) ?: return
         jumpToPage(document.pages.indexOf(pasted.pages.first()))
+    }
+
+    /**
+     * Moves the pages [ids] as one block, in their order, to [toIndex] among the other pages (0:
+     * before all of them), in one change; pages selected apart are gathered.
+     */
+    public fun movePages(ids: Collection<String>, toIndex: Int) {
+        val block = pagesOf(ids).map { it.id }.takeIf { it.isNotEmpty() } ?: return
+        controller.selectionManager.clearSelection()
+        val others = document.pages.map { it.id }.filter { it !in block }
+        val order = others.toMutableList().apply { addAll(toIndex.coerceIn(0, others.size), block) }
+        MovePages.toOrder(document, order)?.let { controller.session.submit(it) }
     }
 
     /**
@@ -245,8 +295,13 @@ public class PageManager(private val controller: DrawViewController) {
      */
     public fun changeSinglePageTemplate(pageIndex: Int, dimension: Dimension, background: PageBackground) {
         val page = document.pages.getOrNull(pageIndex) ?: return
+        changePagesTemplate(listOf(page.id), dimension, background)
+    }
+
+    /** Gives the pages [ids] the format of [dimension] and [background], in one change. */
+    public fun changePagesTemplate(ids: Collection<String>, dimension: Dimension, background: PageBackground) {
         val custom = background.takeIf { it != document.defaultBackground }
-        controller.session.submit(SetPageFormat(page.id, dimension.width.mm, dimension.height.mm, custom))
+        oneChange(pagesOf(ids).map { SetPageFormat(it.id, dimension.width.mm, dimension.height.mm, custom) })?.let { controller.session.submit(it) }
     }
 
     /**
