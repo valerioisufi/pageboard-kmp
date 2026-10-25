@@ -342,8 +342,10 @@ public final class io/github/valerioisufi/drawview/canvas/controller/MediaManage
 public final class io/github/valerioisufi/drawview/canvas/controller/PageManager {
 	public static final field $stable I
 	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
-	public final fun addNewPageAfter (I)Lio/github/valerioisufi/drawview/model/DrawPage;
-	public final fun addNewPageAtBottom ()Lio/github/valerioisufi/drawview/model/DrawPage;
+	public final fun addNewPageAfter (ILio/github/valerioisufi/drawview/model/DrawPage;)Lio/github/valerioisufi/drawview/model/DrawPage;
+	public static synthetic fun addNewPageAfter$default (Lio/github/valerioisufi/drawview/canvas/controller/PageManager;ILio/github/valerioisufi/drawview/model/DrawPage;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/DrawPage;
+	public final fun addNewPageAtBottom (Lio/github/valerioisufi/drawview/model/DrawPage;)Lio/github/valerioisufi/drawview/model/DrawPage;
+	public static synthetic fun addNewPageAtBottom$default (Lio/github/valerioisufi/drawview/canvas/controller/PageManager;Lio/github/valerioisufi/drawview/model/DrawPage;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/DrawPage;
 	public final fun applyDocumentTemplateChange (Lio/github/valerioisufi/drawview/model/geometry/Dimension;Lio/github/valerioisufi/drawview/model/PageBackground;Z)V
 	public final fun changeSinglePageTemplate (ILio/github/valerioisufi/drawview/model/geometry/Dimension;Lio/github/valerioisufi/drawview/model/PageBackground;)V
 	public final fun deletePage (I)V

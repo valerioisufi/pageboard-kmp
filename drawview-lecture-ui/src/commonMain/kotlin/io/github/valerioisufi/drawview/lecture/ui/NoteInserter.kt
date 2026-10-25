@@ -101,11 +101,12 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
 
         var previousIndex = afterPageIndex?.takeIf { it in document.pages.indices }
         var firstIndex = -1
-        // Undone at once
+        // Undone at once; of the format of the document, which the text is laid out on (not the
+        // one of the page they follow)
         controller.historyManager.group {
             for (content in pages) {
-                val page = previousIndex?.let { controller.pageManager.addNewPageAfter(it) }
-                    ?: controller.pageManager.addNewPageAtBottom()
+                val page = previousIndex?.let { controller.pageManager.addNewPageAfter(it, template = null) }
+                    ?: controller.pageManager.addNewPageAtBottom(template = null)
                 if (previousIndex != null) previousIndex = page.index
                 if (firstIndex < 0) firstIndex = page.index
                 val text = newText(content, widthMm, measureHeightMm(content, REVIEW_FONT_PT, widthMm), REVIEW_FONT_PT).apply {

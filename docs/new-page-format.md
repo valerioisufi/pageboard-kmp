@@ -103,14 +103,44 @@ public fun addNewPageAtBottom(template: DrawPage? = document.pages.lastOrNull())
 
 | Phase | Content | Status |
 |---|---|---|
-| 1 | `PageManager.addNewPageAfter` and `addNewPageAtBottom` with their `template`, `newPage` taking the size and the background with its link; `NoteInserter.insertPages` with `template = null`; tests in `drawview-canvas` (after a page of a size and background of its own, after a page following the background of the document and the document changed after, after a PDF page, an invalid index, at the end, without template, undo, the `PageData` sent) and in `drawview-lecture-ui` (the review after a page of another format, on the format of the document); ABI of `drawview-canvas` recorded again on purpose; the consumer checks; the desktop application on a scratch directory | Proposed |
+| 1 | `PageManager.addNewPageAfter` and `addNewPageAtBottom` with their `template`, `newPage` taking the size and the background with its link; `NoteInserter.insertPages` with `template = null`; tests in `drawview-canvas` (after a page of a size and background of its own, after a page following the background of the document and the document changed after, after a PDF page, an invalid index, at the end, without template, undo, the `PageData` sent) and in `drawview-lecture-ui` (the review after a page of another format, on the format of the document); ABI of `drawview-canvas` recorded again on purpose; the consumer checks; the desktop application on a scratch directory | Done |
 
 No screenshot should change: the menus and the grid look the same (`verifyRoborazziJvm` of ui,
 explorer and lecture-ui).
 
+### Phase 1 results
+
+* `PageManager.newPage(index, template)` takes the size of the template, and its background only
+  when it is its own (`hasCustomBackground` copied); without a template, the defaults of the
+  document. `pageBefore(pageIndex)` is the page a new page follows: the page at the index, the
+  last page when the index is not a page.
+* `addNewPageAfter(pageIndex, template = pageBefore(pageIndex))` and
+  `addNewPageAtBottom(template = the last page)`: the context menu of a page, the page grid and the
+  command Add Page did not change, the default being the page they add after. `DrawViewController`
+  adding the first page of an empty document gets the defaults, there being no page.
+* `NoteInserter.insertPages` adds its pages with `template = null`: the format of the document,
+  which it lays its text out on.
+* Tests: `NewPageTest` (`drawview-canvas`: after a page of its own size and background, sent with
+  it and kept when the document changes; after a page following the background of the document,
+  sent with `background = null` and following the document changed after; after a PDF page, its
+  size, the paper of the document, no PDF; at the end, from the grid, an invalid index and
+  `addNewPageAtBottom` like the last page; without a template the format of the document; undo),
+  `NoteInserterTest` (`drawview-lecture-ui`: the review after a slide-sized page of its own
+  background, on pages of the format of the document). ABI of `drawview-canvas` recorded again on
+  purpose: `addNewPageAfter` and `addNewPageAtBottom` take a `template`.
+* Nothing stored or sent changed: `PageData`, `AddPage`, the Room schema and `ProtocolFormatTest`
+  are as they were.
+* Checks: `jvmTest`, `checkKotlinAbi`, the Android and iOS compilations and the two Android
+  applications, the screenshots of ui, explorer, lecture-ui, sync-ui and export-ui unchanged
+  (`verifyRoborazziJvm`), the consumer checks. The desktop application run on a scratch directory
+  (`-Ddrawview.dataDir`): it starts, makes its database at version 20, no error. Its window was not
+  driven by hand: the tests above go through the same `PageManager` calls as the menus; trying
+  them on the user's devices is left to the user.
+
 ## Decisions
 
-Proposed on 2026-10-25, every one revertible:
+Proposed on 2026-10-25 and approved by the user the same day ("implement phase 1"), every one
+revertible:
 
 1. **The page it follows.** The new page is like the page it is put after, everywhere: the button
    of the page grid, which adds at the end, takes the last page, not the page ringed in the grid

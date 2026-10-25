@@ -38,27 +38,45 @@ public class PageManager(private val controller: DrawViewController) {
 
     private val document get() = controller.document
 
-    private fun newPage(index: Int): DrawPage = DrawPage(
-        index = index,
-        widthMm = document.defaultWidthMm,
-        heightMm = document.defaultHeightMm,
-        background = document.defaultBackground,
-        orderKey = document.orderKeyAt(index)
-    )
-
-    public fun addNewPageAtBottom(): DrawPage = insertPage(document.pages.size)
-
     /**
-     * Inserts a new page right after [pageIndex] (at the end when the index is invalid).
+     * A new page at [index] of the format of [template]: its size, and its background when it is
+     * its own (else the page follows the background of the document, as [template] does). Without
+     * a template, the format of the document.
      */
-    public fun addNewPageAfter(pageIndex: Int): DrawPage {
-        val target = if (pageIndex in document.pages.indices) pageIndex + 1 else document.pages.size
-        return insertPage(target)
+    private fun newPage(index: Int, template: DrawPage?): DrawPage {
+        val ownBackground = template?.takeIf { it.hasCustomBackground }?.background
+        return DrawPage(
+            index = index,
+            widthMm = template?.widthMm ?: document.defaultWidthMm,
+            heightMm = template?.heightMm ?: document.defaultHeightMm,
+            background = ownBackground ?: document.defaultBackground,
+            orderKey = document.orderKeyAt(index)
+        ).apply { hasCustomBackground = ownBackground != null }
     }
 
-    private fun insertPage(index: Int): DrawPage {
+    /** The page a new page put after [pageIndex] follows: that page, or the last one when it is not a page. */
+    private fun pageBefore(pageIndex: Int): DrawPage? = document.pages.getOrNull(pageIndex) ?: document.pages.lastOrNull()
+
+    /**
+     * Inserts a new page at the end, of the format of [template] (by default the last page; `null`:
+     * the format of the document).
+     */
+    public fun addNewPageAtBottom(template: DrawPage? = document.pages.lastOrNull()): DrawPage =
+        insertPage(document.pages.size, template)
+
+    /**
+     * Inserts a new page right after [pageIndex] (at the end when the index is invalid), of the
+     * format of [template]: by default the page it follows, so that a page added after another one
+     * is like it; `null`: the format of the document.
+     */
+    public fun addNewPageAfter(pageIndex: Int, template: DrawPage? = pageBefore(pageIndex)): DrawPage {
+        val target = if (pageIndex in document.pages.indices) pageIndex + 1 else document.pages.size
+        return insertPage(target, template)
+    }
+
+    private fun insertPage(index: Int, template: DrawPage?): DrawPage {
         controller.selectionManager.clearSelection()
-        val page = newPage(index)
+        val page = newPage(index, template)
         controller.session.submit(AddPage.of(page))
         return page
     }
