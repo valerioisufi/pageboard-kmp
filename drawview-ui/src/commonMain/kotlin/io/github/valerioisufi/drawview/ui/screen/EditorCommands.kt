@@ -190,7 +190,7 @@ internal class EditorCommands internal constructor(
     fun pasteAt(position: Offset?) {
         val text = clipboard.getText()?.text
         val content = controller.clipboard.content
-        if (!text.isNullOrBlank() && (content == null || text != controller.clipboard.systemText)) {
+        if (!text.isNullOrBlank() && isNewerThanCopied(text)) {
             controller.textEditorManager.pasteText(text, position)
             return
         }
@@ -204,6 +204,17 @@ internal class EditorCommands internal constructor(
             )
             null -> Unit
         }
+    }
+
+    /** Whether [text] of the clipboard of the system was copied after what was copied in the editors (see [EditorClipboard.systemText]). */
+    private fun isNewerThanCopied(text: String): Boolean =
+        controller.clipboard.content == null || text != controller.clipboard.systemText
+
+    /** Whether a paste puts pages (copied last), not elements or a text (see [pasteAt]). */
+    fun pastesPages(): Boolean {
+        if (controller.clipboard.content !is CopiedPages) return false
+        val text = clipboard.getText()?.text
+        return text.isNullOrBlank() || !isNewerThanCopied(text)
     }
 
     /** Whether there is something to paste: elements or pages copied in any document, or a text of the clipboard. */

@@ -366,6 +366,7 @@ private fun DrawScreenContent(
         ) {
             PageGridOverlay(
                 controller = controller,
+                commands = commands,
                 onEditPageBackground = { showSinglePageConfigurator = true }
             )
         }

@@ -60,6 +60,7 @@ import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.DesignMenu
 import io.github.valerioisufi.drawview.ui.command.MenuDivider
 import io.github.valerioisufi.drawview.ui.command.MenuItem
+import io.github.valerioisufi.drawview.ui.screen.EditorCommands
 import io.github.valerioisufi.drawview.ui.generated.resources.*
 import io.github.valerioisufi.drawview.ui.theme.DrawViewElevation
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
@@ -71,8 +72,10 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * Full-screen grid of the pages of the document: thumbnails, jump to a page, page actions
- * (add after, delete, background) and reordering by drag & drop after a long press.
+ * (add after, copy, paste after, delete, background) and reordering by drag & drop after a long
+ * press.
  *
+ * @param commands the commands of the editor, copying and pasting the pages (none: no copy).
  * @param onEditPageBackground opens the template configurator of the page at the given index.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,6 +83,7 @@ import org.jetbrains.compose.resources.stringResource
 internal fun PageGridOverlay(
     controller: DrawViewController,
     modifier: Modifier = Modifier,
+    commands: EditorCommands? = null,
     onEditPageBackground: (Int) -> Unit = {}
 ) {
     val document = controller.document
@@ -303,6 +307,28 @@ internal fun PageGridOverlay(
                                             pageManager.addNewPageAfter(index)
                                         }
                                     )
+                                    if (commands != null) {
+                                        MenuItem(
+                                            text = stringResource(Res.string.context_menu_action_copy_page),
+                                            icon = rememberVectorPainter(DrawViewIcons.Copy),
+                                            onClick = {
+                                                menuExpanded = false
+                                                pageManager.contextMenuTargetPageIndex = index
+                                                commands.copyPage(index)
+                                            }
+                                        )
+                                        if (commands.canPastePages()) {
+                                            MenuItem(
+                                                text = stringResource(Res.string.context_menu_action_paste_page),
+                                                icon = rememberVectorPainter(DrawViewIcons.Clipboard),
+                                                onClick = {
+                                                    menuExpanded = false
+                                                    pageManager.contextMenuTargetPageIndex = index
+                                                    commands.pastePagesAfter(index)
+                                                }
+                                            )
+                                        }
+                                    }
                                     MenuItem(
                                         text = stringResource(Res.string.context_menu_action_edit_background),
                                         icon = rememberVectorPainter(DrawViewIcons.Grid),

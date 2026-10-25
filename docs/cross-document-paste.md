@@ -168,7 +168,7 @@ public class EditorClipboard {
 | 1 | `KeyValueDocumentStore` keeps the files other documents point at when a document is deleted; test in `drawview-store` (two documents with the same image, one deleted, the file kept; the last deleted, the file deleted) | Done |
 | 2 | `CopiedContent`, `CopiedResource`, `ContentPaste` in `drawview-model`: copying elements and pages into values, the changes pasting them (ids, offsets, order on top, order keys, resources mapped by hash or added on the same file, elements of a missing file left out); tests in `drawview-model` (into another document and the same, images, PDF pages with their marks, custom elements, background kept, undo, what the changes send); ABI recorded on purpose | Done |
 | 3 | `EditorClipboard` in `drawview-canvas`, given to `DrawViewController` and `DocumentEditorViewModel`; `SelectionManager` copy, cut and paste through it (placement in another document); `PageManager.copyPage`, `pastePages`; `EditorCommands` choosing what to paste by the last copy; tests in `drawview-canvas` (two controllers on one clipboard: elements, an image, a page; read-only target; the last copy wins); ABI recorded on purpose | Done |
-| 4 | The menus: "Copy page" and "Paste page" in the context menu of a page and in the page grid, the strings in every language; PencilNotes and the sample sharing one clipboard (all the desktop windows); screenshots recorded again where the menus change; the desktop application on a scratch directory, copying between two windows | Planned |
+| 4 | The menus: "Copy page" and "Paste page" in the context menu of a page and in the page grid, the strings in every language; PencilNotes and the sample sharing one clipboard (all the desktop windows); screenshots recorded again where the menus change; the desktop application on a scratch directory, copying between two windows | Done |
 
 ### Phase 1 results
 
@@ -265,6 +265,29 @@ public class EditorClipboard {
 * ABI recorded again on purpose: `drawview-canvas` (`EditorClipboard`, the parameter of the
   controller, the message, the page functions; `SelectionManager.clipboard` removed),
   `drawview-session` (the parameter of the model), `drawview-ui` (the strings only).
+
+### Phase 4 results
+
+* The context menu of a page (`CanvasContextMenu`): "Copy page" after "Add page after"; the item
+  Paste is named "Paste page after" when what a paste puts is pages (`EditorCommands.pastesPages`:
+  pages copied last, no text of another application copied after), and puts them after the page
+  of the menu.
+* The menu of a page in the grid (`PageGridOverlay`, given the commands of the editor by
+  `DrawScreen`): "Copy page", and "Paste page after" once pages were copied.
+* `DocumentLibrary(clipboard = …)` (`drawview-explorer`) gives it to the editor of the library.
+  PencilNotes and the sample keep one `EditorClipboard` for the process (a private value of
+  `PencilNotesApp.kt` and `App.kt`, outside the activities of Android), given to the library and
+  to every document window of the desktop: the editors of all the windows share it.
+* Screenshots: `editor-context-menu-tablet-landscape-light` (`drawview-explorer`) recorded again,
+  with "Copy page"; the others of explorer, ui, sync-ui, lecture-ui and export-ui unchanged.
+* ABI recorded again on purpose: `drawview-explorer` (the parameter of `DocumentLibrary`),
+  `drawview-ui` (a `ComposableSingletons` lambda named again by the compiler, nothing public).
+* Checks: `jvmTest`, `checkKotlinAbi`, `verifyRoborazziJvm` of the five UI modules, the Android
+  and iOS compilations, the two Android applications, the consumer checks. PencilNotes desktop run
+  on a scratch directory (`-Ddrawview.dataDir`): it starts, its database at version 21, no error
+  in its output. Its windows were not driven by hand: the copy between two windows goes through
+  the same `EditorClipboard` the tests share between two editors; trying it on the user's devices
+  is left to the user.
 
 ## Decisions
 

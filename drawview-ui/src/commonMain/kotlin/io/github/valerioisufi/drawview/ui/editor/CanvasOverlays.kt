@@ -155,10 +155,12 @@ internal fun CanvasContextMenu(
                 SelectionMenuItems(controller, commands)
                 return@Column
             }
-            // What was copied here or in another application, where the menu was opened
+            // What was copied in any document or in another application, where the menu was
+            // opened (pages after this page)
             if (remember(position) { commands.canPaste() }) {
+                val pastesPages = remember(position) { commands.pastesPages() }
                 MenuItem(
-                    text = stringResource(Res.string.common_action_paste),
+                    text = stringResource(if (pastesPages) Res.string.context_menu_action_paste_page else Res.string.common_action_paste),
                     icon = rememberVectorPainter(DrawViewIcons.Clipboard),
                     shortcut = commands.paste.shortcutLabel(currentAdaptiveInfo().conventions).takeIf { currentAdaptiveInfo().input.hasKeyboard },
                     onClick = {
@@ -174,6 +176,14 @@ internal fun CanvasContextMenu(
                 onClick = {
                     controller.contextMenuPosition = null
                     pageManager.addNewPageAfter(pageManager.contextMenuTargetPageIndex)
+                }
+            )
+            MenuItem(
+                text = stringResource(Res.string.context_menu_action_copy_page),
+                icon = rememberVectorPainter(DrawViewIcons.Copy),
+                onClick = {
+                    controller.contextMenuPosition = null
+                    commands.copyPage(pageManager.contextMenuTargetPageIndex)
                 }
             )
             MenuItem(

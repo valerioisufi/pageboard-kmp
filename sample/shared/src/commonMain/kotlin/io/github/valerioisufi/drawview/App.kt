@@ -8,6 +8,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.valerioisufi.drawview.canvas.controller.EditorClipboard
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.canvas.render.ElementRenderers
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
@@ -24,6 +25,13 @@ import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.app_name
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import org.jetbrains.compose.resources.stringResource
+
+/**
+ * What is copied and pasted in the editors of the sample: one for the process, shared by the editors
+ * of all its documents and windows, so that what is copied in a document is pasted in another one
+ * (it outlives the activities of Android, recreated on a rotation).
+ */
+private val editorClipboard = EditorClipboard()
 
 /**
  * DrawView sample application: the document library and the editor of the open document, with
@@ -58,6 +66,7 @@ fun App(
                 thumbnails = rememberDocumentThumbnails(documents, DocumentThumbnails.defaultDirectory(), engines),
                 editorExtension = shapes,
                 onOpenDocumentInNewWindow = onOpenDocumentInNewWindow,
+                clipboard = editorClipboard,
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -85,7 +94,7 @@ fun SampleDocumentWindow(
     val documents = DrawViewStore.documents
     DrawViewTheme {
         val editorViewModel = viewModel(key = "sample-doc-$documentId") {
-            DocumentEditorViewModel(documents, engines).apply {
+            DocumentEditorViewModel(documents, engines, clipboard = editorClipboard).apply {
                 openDocument(documentId)
             }
         }

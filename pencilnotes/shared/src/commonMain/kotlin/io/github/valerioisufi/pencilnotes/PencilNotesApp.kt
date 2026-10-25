@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.valerioisufi.drawview.canvas.controller.EditorClipboard
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
 import io.github.valerioisufi.drawview.explorer.DocumentThumbnails
@@ -58,6 +59,13 @@ import io.github.valerioisufi.pencilnotes.generated.resources.app_name
 import io.github.valerioisufi.pencilnotes.ui.theme.PencilNotesTheme
 import io.github.valerioisufi.pencilnotes.ui.theme.cherryBombOneFontFamily
 import org.jetbrains.compose.resources.stringResource
+
+/**
+ * What is copied and pasted in the editors of PencilNotes: one for the process, shared by the editors
+ * of all its documents and windows, so that what is copied in a document is pasted in another one
+ * (it outlives the activities of Android, recreated on a rotation).
+ */
+private val editorClipboard = EditorClipboard()
 
 /**
  * PencilNotes: the DrawView document library with the PencilNotes identity.
@@ -136,6 +144,7 @@ fun PencilNotesApp(
                             )
                         },
                         onOpenDocumentInNewWindow = onOpenDocumentInNewWindow,
+                        clipboard = editorClipboard,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
@@ -201,7 +210,7 @@ fun PencilNotesDocumentWindow(
         val export = rememberDocumentExportUi(documents, appName = "PencilNotes")
         val engines = remember { DrawViewEngines(pdfTiles = PdfiumEngine::createTileAdapter, formulas = LatexEngine.formulaRenderer) }
         val editorViewModel = viewModel(key = "doc-$documentId") {
-            DocumentEditorViewModel(documents, engines).apply {
+            DocumentEditorViewModel(documents, engines, clipboard = editorClipboard).apply {
                 openDocument(documentId)
             }
         }

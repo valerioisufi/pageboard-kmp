@@ -9,6 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.valerioisufi.drawview.canvas.controller.EditorClipboard
 import io.github.valerioisufi.drawview.canvas.controller.MediaManager
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.canvas.render.tile.TextFace
@@ -60,6 +61,9 @@ import kotlinx.coroutines.withContext
  * @param thumbnails the thumbnails of the documents (the first pages of the grid of a wider
  *   window): in memory by default; [DocumentThumbnails.defaultDirectory] keeps those of a store
  *   that outlives the application.
+ * @param clipboard what is copied and pasted in the editor: the one of the application, shared
+ *   with its other windows, so that what is copied in a document is pasted in another one (by
+ *   default, the editor of this library only).
  */
 @Composable
 public fun DocumentLibrary(
@@ -75,10 +79,11 @@ public fun DocumentLibrary(
     tags: List<DocumentTag> = emptyList(),
     engines: DrawViewEngines = DrawViewEngines.None,
     thumbnails: DocumentThumbnails = rememberDocumentThumbnails(documents, engines = engines),
-    onOpenDocumentInNewWindow: ((String) -> Unit)? = null
+    onOpenDocumentInNewWindow: ((String) -> Unit)? = null,
+    clipboard: EditorClipboard = remember { EditorClipboard() }
 ) {
     val fileExplorerViewModel = viewModel { FileExplorerViewModel(documents) }
-    val editorViewModel = viewModel { DocumentEditorViewModel(documents, engines) }
+    val editorViewModel = viewModel { DocumentEditorViewModel(documents, engines, clipboard = clipboard) }
 
     // The formula engine may unpack its fonts at the first start: off the main thread. The text
     // of the formulas (\text{}) is in the font of the notes, as their text
