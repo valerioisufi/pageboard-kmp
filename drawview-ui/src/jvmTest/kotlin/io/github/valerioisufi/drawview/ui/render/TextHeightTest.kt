@@ -6,7 +6,9 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.text.font.createFontFamilyResolver
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.text.TextRoom
 import kotlin.math.ceil
 import kotlin.test.Test
 import kotlin.test.assertNotNull
@@ -52,6 +54,24 @@ class TextHeightTest {
             val bottom = drawnBottom(note, measured * 1.5f, pxPerMm)
             assertTrue(bottom <= measured + 1f / pxPerMm, "at $pxPerMm px/mm the lines end at $bottom mm, below the box of $measured mm")
             assertTrue(bottom > measured - line, "at $pxPerMm px/mm the last line is drawn ($bottom mm of $measured mm)")
+        }
+    }
+
+    @Test
+    fun aTextFollowingItsWidthIsDrawnInItsBox() {
+        val pxPerMm = 4f
+        for (alignment in TextAlignment.entries) {
+            val text = DrawText().apply { this.text = "A short line"; width = 150f; fontSize = 11f; autoWidth = true; this.alignment = alignment }
+            val natural = assertNotNull(adapter.measure(text)).width
+            val box = TextRoom.boxWidth(natural, text.width)
+            val left = TextRoom.boxLeft(box, text.width, alignment)
+
+            val bitmap = ImageBitmap(ceil(text.width * pxPerMm).toInt(), 40)
+            adapter.drawText(Canvas(bitmap), text, Matrix2D().postScale(pxPerMm, pxPerMm), TextTileAdapter.NO_PAPER)
+            val pixels = bitmap.toPixelMap()
+            val inked = (0 until pixels.width).filter { x -> (0 until pixels.height).any { y -> pixels[x, y].alpha > 0f } }
+            assertTrue(inked.first() / pxPerMm >= left - 0.5f, "$alignment: its lines start in its box")
+            assertTrue((inked.last() + 1) / pxPerMm <= left + box + 0.5f, "$alignment: its lines end in its box")
         }
     }
 }

@@ -154,7 +154,7 @@ The version is to be agreed (see [Decisions](#decisions)).
 | 1 | One layout at every zoom: `drawText` lays a text out at the resolution of `measure` (20 px/mm) and draws it scaled, the formulas rendered again at their size on the tile; tests (`TextHeightTest`: the note drawn at 0.75 to 64 px/mm ends within a pixel of its measured height); the screenshots of the explorer recorded again (the glyphs a fraction of a pixel apart) | Done |
 | 2 | The height laid out: `TextBoxes`; `DrawText.height` the height of its lines once laid out; the tiles by the layout of the adapter (sizes cached); `measureTextsWithCode` removed; the format unchanged (the height still written, the writers as they are) until phase 3; tests (`TextEditingTest`: the texts as high as their lines once the adapter is set, with no change of the document; a changed text as high as its new lines whatever height it carries; `TileEngineTest`: a tile under the old box of a text draws its lines, not below them) | Done |
 | 3 | The format: the height out of `TextData`, `BoxPlacement` (texts) and `texts`; nothing writes a height any more (editor, handles, font size, scaling of a selection, lecture assistant); the corner as the pivot of a text; Room 21 and its migration of `texts` and `operations`; the protocol (`ProtocolFormatTest`); ABI of `drawview-model`; tests (`MigrationTestHelper` as above; a turned text scaled around the middle of its frame; a point of a turned text taken from its corner) | Done |
-| 4 | A width that follows the text, laid out (if approved): its room kept, its box from its lines; in the migration of phase 3 (one schema, one change of the protocol); tests (each alignment, a wider font not wrapping, the editor growing the box as today) | Planned |
+| 4 | A width that follows the text, laid out (if approved): its room kept, its box from its lines; in the migration of phase 3 (one schema, one change of the protocol); tests (each alignment, a wider font not wrapping, the editor growing the box as today) | Done |
 
 The commits of the first plan that corrected the stored heights (on opening, when scaled) are
 dropped from the branch: phase 1 is the commit that remains. Each phase is one commit on
@@ -194,6 +194,30 @@ first, the original untouched).
 * The protocol stays at version 1, its format recorded again (`ProtocolFormats`).
 * The screenshot of a turned text being written recorded again (`text-writing-turned`): the text
   of the test, placed by its corner now, is a few pixels lower, the bar of the editor with it.
+
+### Phase 4 results
+
+* `TextRoom` (`drawview-model`, `model.text`) holds the rules the editor had: the room of a box
+  from the side of its alignment to the margin (never narrower than the box), the width of the
+  box from the longest line and the caret, where the box is in the room.
+* `DrawText.width` is the room of a text following its width; `naturalWidth` (laid out by
+  `TextBoxes`, `NaN` until then), `boxWidth`, `boxLeft`, `boxX`, `boxY` give its box, which its
+  bounds, its middle, `toLocal` and `containsPoint` are of. `cornerFor` takes where the box is in
+  the room.
+* The editor opens on the box, grows it with `TextRoom` and writes the room (`inItsRoom`); a text
+  opened and left as it was makes no change. Pasting writes the room. The handles of the width
+  turn the room into the box before moving its edge; the selection places a scaled text by the
+  corner of its room. The frame of the other devices is the box.
+* The adapter measures a text following its width in its room (its longest line) and lays it out
+  and draws it on its box, at its place in the room (`inItsBox`): its lines wrap and its block
+  formulas are centered as in the editor. Laid out on the room, a block formula went to the middle
+  of the room, out of the box and cut by the tiles (seen on the screenshot `text-saved`).
+* `Migration20To21` gives the texts following their width the room of their box on their page;
+  the log keeps their box, drawn the same as a room (its lines wrap on it as they did).
+* Tests: `TextEditingTest` (the room kept and the box shown, nothing changed when left as it was,
+  a wider layout not wrapping a line with room, the box in each alignment); `TextHeightTest` (a
+  text following its width drawn in its box, in each alignment);
+  `DrawDatabaseMigrationTest` (the room of a box in each alignment).
 
 ## Decisions
 

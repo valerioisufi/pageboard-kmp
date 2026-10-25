@@ -84,10 +84,10 @@ internal class CollaboratorsOverlay {
         val mmToScreen = controller.viewport.pageMmToScreen(pageIndex) ?: return
         val adapter = controller.tileManager.tileRenderer.textAdapter
         drawIntoCanvas { canvas -> adapter?.drawText(canvas, text, mmToScreen, controller.paperOf(pageIndex)) }
-        // As high as its lines are laid out here
-        val height = adapter?.measure(text)?.height ?: text.height
-        val box = Rect(text.x, text.y, text.x + text.width, text.y + height)
-        val corners = drawFrame(box, text.rotation, mmToScreen, collaborator.color, dashed = false)
+        // Its box as its lines are laid out here, turned around its corner
+        adapter?.measure(text)?.let { text.height = it.height; text.naturalWidth = it.width }
+        val box = Rect(text.x + text.boxLeft, text.y, text.x + text.boxLeft + text.boxWidth, text.y + text.height)
+        val corners = drawFrame(box, text.rotation, Offset(text.x, text.y), mmToScreen, collaborator.color, dashed = false)
         drawName(collaborator, corners[0] - Offset(0f, 22.dp.toPx()), labels)
     }
 
@@ -116,15 +116,15 @@ internal class CollaboratorsOverlay {
         val bounds = collaborator.selection.mapNotNull { page.boundsOf(it) }
         if (bounds.isEmpty()) return
         val box = Rect(bounds.minOf { it.left }, bounds.minOf { it.top }, bounds.maxOf { it.right }, bounds.maxOf { it.bottom })
-        val corners = drawFrame(box, 0f, mmToScreen, collaborator.color, dashed = true)
+        val corners = drawFrame(box, 0f, Offset(box.left, box.top), mmToScreen, collaborator.color, dashed = true)
         drawName(collaborator, corners[0] - Offset(0f, 22.dp.toPx()), labels)
     }
 
     /**
-     * Draws the frame of [box] (page millimeters, rotated by [rotation] around its top-left corner,
-     * as a text turns); returns its corners on the screen.
+     * Draws the frame of [box] (page millimeters, rotated by [rotation] around [pivot], as a text
+     * turns around its corner); returns its corners on the screen.
      */
-    private fun DrawScope.drawFrame(box: Rect, rotation: Float, mmToScreen: Matrix2D, color: Color, dashed: Boolean): List<Offset> {
+    private fun DrawScope.drawFrame(box: Rect, rotation: Float, pivot: Offset, mmToScreen: Matrix2D, color: Color, dashed: Boolean): List<Offset> {
         val padding = 1f
         val points = floatArrayOf(
             box.left - padding, box.top - padding,
@@ -132,7 +132,7 @@ internal class CollaboratorsOverlay {
             box.right + padding, box.bottom + padding,
             box.left - padding, box.bottom + padding
         )
-        if (rotation != 0f) Matrix2D().postRotate(rotation, box.left, box.top).mapPoints(points)
+        if (rotation != 0f) Matrix2D().postRotate(rotation, pivot.x, pivot.y).mapPoints(points)
         mmToScreen.mapPoints(points)
         val corners = (0 until 4).map { Offset(points[it * 2], points[it * 2 + 1]) }
         val path = Path().apply {

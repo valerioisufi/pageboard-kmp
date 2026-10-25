@@ -12,7 +12,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.canvas.geometry.toModel
 import io.github.valerioisufi.drawview.canvas.text.RichTextEditing
 import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.text.TextRoom
 import io.github.valerioisufi.drawview.model.Versions
 import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.ChangeEffects
@@ -20,13 +22,13 @@ import io.github.valerioisufi.drawview.model.change.RemoveElements
 import io.github.valerioisufi.drawview.model.change.TextData
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.model.change.toData
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Point
 import io.github.valerioisufi.drawview.model.newElementId
 import io.github.valerioisufi.drawview.model.text.RichTextParser
 import io.github.valerioisufi.drawview.model.text.TextDefaults
 import io.github.valerioisufi.drawview.model.text.TextSizes
 import kotlin.math.abs
-import kotlin.math.min
 
 /**
  * The use case "write a text": the text being written (its content, its style and its box), its
@@ -187,7 +189,8 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
             controller.presence.refuseEdit(writer)
             return
         }
-        open(item, pageIndex, item.x, item.y, item.width, caretAt, item.autoWidth)
+        // On its box (the part of its room its lines take, when it follows them)
+        open(item, pageIndex, item.boxX, item.boxY, item.boxWidth, caretAt, item.autoWidth)
     }
 
     private fun open(item: DrawText?, pageIndex: Int, xMm: Float, yMm: Float, widthMm: Float, caretAt: Offset?, autoWidth: Boolean) {
@@ -244,13 +247,14 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
             x = 0f, y = 0f, width = most, color = defaults.color, fontSize = defaults.fontSize
         )
         val size = controller.measureText(probe.toElement())
-        val width = ((size?.width ?: most) + AUTO_SLACK_MM).coerceIn(AUTO_MIN_WIDTH_MM, most)
-        val height = controller.measureText(probe.copy(width = width).toElement())?.height ?: (size?.height ?: MIN_HEIGHT_MM)
-        val text = probe.copy(
+        val width = TextRoom.boxWidth(size?.width ?: most, most)
+        val height = size?.height ?: MIN_HEIGHT_MM
+        val box = probe.copy(
             x = (middle.x - width / 2f).coerceIn(PAGE_MARGIN_MM, (page.widthMm - PAGE_MARGIN_MM - width).coerceAtLeast(PAGE_MARGIN_MM)),
             y = (middle.y - height / 2f).coerceIn(0f, (page.heightMm - height).coerceAtLeast(0f)),
             width = width
-        ).toElement()
+        )
+        val text = inItsRoom(box, page).toElement()
         controller.session.submit(AddElements.of(page, listOf(text)))
         controller.selectionManager.selectText(pageIndex, text)
     }
@@ -292,7 +296,13 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
             return
         }
 
-        val data = draft(versions = editedFrom?.versions ?: Versions.NONE)
+        val data = inItsRoom(draft(versions = editedFrom?.versions ?: Versions.NONE), page).let { placed ->
+            // Its room as it was when only the rounding of its box differs
+            val from = editedFrom
+            if (from != null && placed.copy(x = from.x, y = from.y, width = from.width) == from &&
+                abs(placed.x - from.x) < ROUNDING_MM && abs(placed.y - from.y) < ROUNDING_MM && abs(placed.width - from.width) < ROUNDING_MM
+            ) from else placed
+        }
         if (existing != null) {
             controller.hiddenElements.setDragged(listOf(existing.id), false)
             // Shown again even when nothing changed
@@ -499,19 +509,26 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         val page = controller.document.pages.getOrNull(activeTextPageIndex) ?: return
         val left = boxX
         val right = boxX + boxWidth
-        val most = when (alignment) {
-            TextAlignment.START -> page.widthMm - PAGE_MARGIN_MM - left
-            TextAlignment.CENTER -> 2f * min((left + right) / 2f - PAGE_MARGIN_MM, page.widthMm - PAGE_MARGIN_MM - (left + right) / 2f)
-            TextAlignment.END -> right - PAGE_MARGIN_MM
-        }.coerceAtLeast(MIN_WIDTH_MM)
+        val (_, most) = TextRoom.of(left, right, alignment, page.widthMm)
         val natural = controller.measureText(draft().copy(width = most).toElement())?.width ?: return
-        val width = (natural + AUTO_SLACK_MM).coerceIn(AUTO_MIN_WIDTH_MM, most)
+        val width = TextRoom.boxWidth(natural, most)
         boxX = when (alignment) {
             TextAlignment.START -> left
             TextAlignment.CENTER -> (left + right) / 2f - width / 2f
             TextAlignment.END -> right - width
         }
         boxWidth = width
+    }
+
+    /**
+     * [box], the box of the text written, placed by its room when its width follows it (see
+     * [TextRoom]): the room of the box on [page], its corner moved along its lines.
+     */
+    private fun inItsRoom(box: TextData, page: DrawPage): TextData {
+        if (!box.autoWidth) return box
+        val (left, width) = TextRoom.of(box.x, box.x + box.width, box.alignment, page.widthMm)
+        val corner = Matrix2D().postRotate(box.rotation).mapPoint(left - box.x, 0f)
+        return box.copy(x = box.x + corner.x, y = box.y + corner.y, width = width)
     }
 
     /** The text being written as it is now. */
@@ -537,21 +554,21 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
 
     private companion object {
         /** The least width of a box set by hand, and of a box following its text. */
-        const val MIN_WIDTH_MM = 20f
-        const val AUTO_MIN_WIDTH_MM = 5f
-
-        /** Room for the caret after the longest line of a box following its text. */
-        const val AUTO_SLACK_MM = 1f
+        const val MIN_WIDTH_MM = TextRoom.MIN_WIDTH_MM
+        const val AUTO_MIN_WIDTH_MM = TextRoom.MIN_BOX_WIDTH_MM
         const val MAX_WIDTH_MM = 350f
         const val MIN_HEIGHT_MM = 4f
 
-        /** Room left between a text following its width and the right edge of its page. */
-        const val PAGE_MARGIN_MM = 5f
+        /** Room left between a text following its width and the edges of its page. */
+        const val PAGE_MARGIN_MM = TextRoom.PAGE_MARGIN_MM
 
         /** Millimeters of a moved box that always stay on its page. */
         const val MIN_VISIBLE_MM = 5f
 
         /** A change of the laid out height smaller than this is not reported. */
         const val HEIGHT_EPSILON_MM = 0.01f
+
+        /** A difference of the room of a text written again within the rounding of its box. */
+        const val ROUNDING_MM = 0.001f
     }
 }

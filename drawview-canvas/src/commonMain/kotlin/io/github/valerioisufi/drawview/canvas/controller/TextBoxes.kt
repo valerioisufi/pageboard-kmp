@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.canvas.controller
 
+import io.github.valerioisufi.drawview.canvas.render.tile.TextBlockSize
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.DrawText
@@ -13,9 +14,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * The heights of the texts of the document of [controller] as this device lays them out
- * ([DrawText.height]): the box of a text is what its lines take, never what a version of the
- * application measured when it wrote it (docs/text-heights.md).
+ * The boxes of the texts of the document of [controller] as this device lays them out (their
+ * [DrawText.height], the [DrawText.naturalWidth] a box following its text takes): the box of a
+ * text is what its lines take, never what a version of the application measured when it wrote
+ * it (docs/text-heights.md).
  *
  * Every text is laid out when the text adapter is set, off the main thread, and again when a
  * change reaches it, made here or on another device (the adapter keeps the sizes it laid out, so
@@ -36,12 +38,12 @@ internal class TextBoxes(private val controller: DrawViewController) {
         val texts = controller.document.pages.flatMap { page -> page.texts.map { page to it.toData() } }
         layingOut = controller.coroutineScope.launch {
             val heights = withContext(dispatcher) {
-                texts.mapNotNull { (page, data) -> adapter.measure(data.toElement())?.let { Triple(page, data, it.height) } }
+                texts.mapNotNull { (page, data) -> adapter.measure(data.toElement())?.let { Triple(page, data, it) } }
             }
-            for ((page, data, height) in heights) {
+            for ((page, data, size) in heights) {
                 // A text changed meanwhile was laid out by its change
                 val text = page.texts.firstOrNull { it.id == data.id } ?: continue
-                if (text.toData() == data) apply(page, text, height)
+                if (text.toData() == data) apply(page, text, size)
             }
         }
     }
@@ -62,19 +64,21 @@ internal class TextBoxes(private val controller: DrawViewController) {
     }
 
     private fun layOut(page: DrawPage, text: DrawText) {
-        val height = controller.textAdapter?.measure(text)?.height ?: return
-        apply(page, text, height)
+        val size = controller.textAdapter?.measure(text) ?: return
+        apply(page, text, size)
     }
 
-    private fun apply(page: DrawPage, text: DrawText, height: Float) {
-        if (abs(height - text.height) <= HEIGHT_EPSILON_MM) return
+    private fun apply(page: DrawPage, text: DrawText, size: TextBlockSize) {
+        val sameWidth = abs(size.width - text.naturalWidth) <= SIZE_EPSILON_MM
+        if (abs(size.height - text.height) <= SIZE_EPSILON_MM && sameWidth) return
         val before = text.getRotatedBounds()
-        text.height = height
+        text.height = size.height
+        text.naturalWidth = size.width
         controller.invalidatePageContent(page, before.union(text.getRotatedBounds()))
     }
 
     private companion object {
-        /** A difference of height smaller than this is the rounding of the layout. */
-        const val HEIGHT_EPSILON_MM = 0.01f
+        /** A difference of size smaller than this is the rounding of the layout. */
+        const val SIZE_EPSILON_MM = 0.01f
     }
 }

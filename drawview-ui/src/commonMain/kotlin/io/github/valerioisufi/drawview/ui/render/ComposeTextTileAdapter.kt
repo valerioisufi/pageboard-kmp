@@ -39,6 +39,7 @@ import io.github.valerioisufi.drawview.canvas.render.tile.TextWord
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.text.TextRoom
 import io.github.valerioisufi.drawview.model.text.TextSizes.PT_TO_MM
 import io.github.valerioisufi.drawview.model.text.code.BuiltInCodeHighlighter
 import io.github.valerioisufi.drawview.model.text.code.CodeHighlighter
@@ -121,14 +122,42 @@ public class ComposeTextTileAdapter(
     override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, paperColor: Int) {
         val scale = mmToCanvas.scaleFactor
         if (scale <= 0f || text.width <= 0f) return
-        syncLock(lock) { drawRichText(canvas, text, mmToCanvas, scale, paperColor) }
+        syncLock(lock) { drawRichText(canvas, inItsBox(text).first, mmToCanvas, scale, paperColor) }
     }
 
-    /** The size of [text] as [drawText] lays it out, kept for the next texts of the same content and size. */
+    /**
+     * The size of [text] as [drawText] lays it out, kept for the next texts of the same content and
+     * size: for a text following its width, its longest line in its room and the height of its box.
+     */
     override fun measure(text: DrawText): TextBlockSize? {
         if (text.width <= 0f) return null
-        val key = SizeKey(text.text, text.fontSize, text.width, text.alignment)
-        return syncLock(lock) { sizes.getOrPut(key) { measureLayout(text) } }
+        return syncLock(lock) {
+            val size = sizeOf(text)
+            if (!text.autoWidth) size else TextBlockSize(size.width, sizeOf(inItsBox(text).first).height)
+        }
+    }
+
+    private fun sizeOf(text: DrawText): TextBlockSize =
+        sizes.getOrPut(SizeKey(text.text, text.fontSize, text.width, text.alignment)) { measureLayout(text) }
+
+    /**
+     * [text] as it is laid out and drawn, with where its box is along its lines: a text following
+     * its width (see [TextRoom]) on the width of its box, at its place in the room, its lines wrapping
+     * and its block formulas centered in it as in the editor; any other text as it is.
+     */
+    private fun inItsBox(text: DrawText): Pair<DrawText, Float> {
+        if (!text.autoWidth) return text to 0f
+        val width = TextRoom.boxWidth(sizeOf(text).width, text.width)
+        val left = TextRoom.boxLeft(width, text.width, text.alignment)
+        val turned = Matrix2D().postRotate(text.rotation).mapPoint(left, 0f)
+        val box = DrawText(text.id).apply {
+            copyFrom(text)
+            autoWidth = false
+            x = text.x + turned.x
+            y = text.y + turned.y
+            this.width = width
+        }
+        return box to left
     }
 
     private fun measureLayout(text: DrawText): TextBlockSize {
@@ -169,19 +198,22 @@ public class ComposeTextTileAdapter(
             // At a resolution where the rounding of the width is negligible
             val scale = LAYOUT_PX_PER_MM
             val fontPx = text.fontSize * PT_TO_MM * scale
-            val prepared = prepare(text, fontPx, (text.width * scale).toInt().coerceAtLeast(1), paperColor)
+            // In its box, from the corner of the text
+            val (placed, boxLeft) = inItsBox(text)
+            val left = boxLeft * scale
+            val prepared = prepare(placed, fontPx, (placed.width * scale).toInt().coerceAtLeast(1), paperColor)
             val layout = prepared.layout
             val words = mutableListOf<TextWord>()
             val boxes = mutableListOf<TextBox>()
-            for (chip in prepared.chips) boxes += chip.rect.toBox(chip.radius, prepared.chipColor, scale)
-            addWords(layout, CharStyles(layout.layoutInput.text, text.color, fontPx, mono = false), scale, 0f, 0f, words)
+            for (chip in prepared.chips) boxes += chip.rect.translate(left, 0f).toBox(chip.radius, prepared.chipColor, scale)
+            addWords(layout, CharStyles(layout.layoutInput.text, text.color, fontPx, mono = false), scale, left, 0f, words)
             val rects = layout.placeholderRects
             val formulas = prepared.formulas.mapNotNull { formula ->
-                val box = formulaBox(formula, rects.getOrNull(formula.placeholderIndex) ?: return@mapNotNull null)
+                val box = formulaBox(formula, rects.getOrNull(formula.placeholderIndex) ?: return@mapNotNull null).translate(left, 0f)
                 TextFormula(formula.latex, text.color, box.left / scale, box.top / scale, box.width / scale, box.height / scale)
             }
             for (codeBlock in prepared.codeBlocks) {
-                val rect = rects.getOrNull(codeBlock.placeholderIndex)?.translate(codeBlock.leftPx, 0f) ?: continue
+                val rect = rects.getOrNull(codeBlock.placeholderIndex)?.translate(codeBlock.leftPx + left, 0f) ?: continue
                 val block = codeBlock.layout
                 boxes += Rect(rect.left, rect.top, rect.left + block.widthPx, rect.top + block.heightPx).toBox(block.radiusPx, block.theme.background, scale)
                 val code = CharStyles(block.code.layoutInput.text, text.color, block.fontPx, mono = true)

@@ -8,6 +8,10 @@ import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.StrokeTool
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.TextMarkupKind
+import io.github.valerioisufi.drawview.model.text.TextRoom
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -162,6 +166,10 @@ internal object Migration19To20 : Migration(19, 20) {
  * around now, computed with the height it had: it stays where it is. The texts and the placements
  * of texts in the log of the operations are rewritten the same way (a placement of a text becomes
  * a `TextPlacement`), so that they are given to the other devices as they are applied here.
+ *
+ * A text whose width follows it keeps the room its lines may take (`TextRoom`) instead of the box
+ * they took: its lines, aligned in the room, stay where they are. In the log its box is left as
+ * it was: taken as its room, it is drawn as it was (its lines wrap on it as they did).
  */
 internal object Migration20To21 : Migration(20, 21) {
     private const val COLUMNS = "`id`, `pageId`, `orderKey`, `text`, `x`, `y`, `width`, `rotation`, `color`, `fontSize`, " +
@@ -182,6 +190,33 @@ internal object Migration20To21 : Migration(20, 21) {
                 update.bindDouble(1, x.toDouble())
                 update.bindDouble(2, y.toDouble())
                 update.bindText(3, id)
+                update.step()
+                update.reset()
+            }
+        }
+        val rooms = mutableListOf<Triple<String, Pair<Float, Float>, Float>>()
+        connection.prepare(
+            "SELECT t.`id`, t.`x`, t.`y`, t.`width`, t.`alignment`, t.`rotation`, p.`width` FROM `texts` t " +
+                "JOIN `pages` p ON p.`id` = t.`pageId` WHERE t.`autoWidth` != 0"
+        ).use { row ->
+            while (row.step()) {
+                val x = row.getDouble(1).toFloat()
+                val y = row.getDouble(2).toFloat()
+                val alignment = TextAlignment.fromName(row.getText(4)) ?: TextAlignment.START
+                val rotation = row.getDouble(5).toFloat()
+                val (left, width) = TextRoom.of(x, x + row.getDouble(3).toFloat(), alignment, row.getDouble(6).toFloat())
+                // Its corner moved along its lines to the start of the room
+                val rad = rotation * PI.toFloat() / 180f
+                val along = left - x
+                rooms += Triple(row.getText(0), (x + along * cos(rad)) to (y + along * sin(rad)), width)
+            }
+        }
+        connection.prepare("UPDATE `texts` SET `x` = ?, `y` = ?, `width` = ? WHERE `id` = ?").use { update ->
+            for ((id, corner, width) in rooms) {
+                update.bindDouble(1, corner.first.toDouble())
+                update.bindDouble(2, corner.second.toDouble())
+                update.bindDouble(3, width.toDouble())
+                update.bindText(4, id)
                 update.step()
                 update.reset()
             }

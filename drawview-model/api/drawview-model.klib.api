@@ -2420,6 +2420,14 @@ final class io.github.valerioisufi.drawview.model/DrawStroke : io.github.valerio
 final class io.github.valerioisufi.drawview.model/DrawText : io.github.valerioisufi.drawview.model/DrawElement, io.github.valerioisufi.drawview.model/RotatableItem { // io.github.valerioisufi.drawview.model/DrawText|null[0]
     constructor <init>(kotlin/String = ...) // io.github.valerioisufi.drawview.model/DrawText.<init>|<init>(kotlin.String){}[0]
 
+    final val boxLeft // io.github.valerioisufi.drawview.model/DrawText.boxLeft|{}boxLeft[0]
+        final fun <get-boxLeft>(): kotlin/Float // io.github.valerioisufi.drawview.model/DrawText.boxLeft.<get-boxLeft>|<get-boxLeft>(){}[0]
+    final val boxWidth // io.github.valerioisufi.drawview.model/DrawText.boxWidth|{}boxWidth[0]
+        final fun <get-boxWidth>(): kotlin/Float // io.github.valerioisufi.drawview.model/DrawText.boxWidth.<get-boxWidth>|<get-boxWidth>(){}[0]
+    final val boxX // io.github.valerioisufi.drawview.model/DrawText.boxX|{}boxX[0]
+        final fun <get-boxX>(): kotlin/Float // io.github.valerioisufi.drawview.model/DrawText.boxX.<get-boxX>|<get-boxX>(){}[0]
+    final val boxY // io.github.valerioisufi.drawview.model/DrawText.boxY|{}boxY[0]
+        final fun <get-boxY>(): kotlin/Float // io.github.valerioisufi.drawview.model/DrawText.boxY.<get-boxY>|<get-boxY>(){}[0]
     final val centerX // io.github.valerioisufi.drawview.model/DrawText.centerX|{}centerX[0]
         final fun <get-centerX>(): kotlin/Float // io.github.valerioisufi.drawview.model/DrawText.centerX.<get-centerX>|<get-centerX>(){}[0]
     final val centerY // io.github.valerioisufi.drawview.model/DrawText.centerY|{}centerY[0]
@@ -2448,6 +2456,9 @@ final class io.github.valerioisufi.drawview.model/DrawText : io.github.valeriois
     final var height // io.github.valerioisufi.drawview.model/DrawText.height|{}height[0]
         final fun <get-height>(): kotlin/Float // io.github.valerioisufi.drawview.model/DrawText.height.<get-height>|<get-height>(){}[0]
         final fun <set-height>(kotlin/Float) // io.github.valerioisufi.drawview.model/DrawText.height.<set-height>|<set-height>(kotlin.Float){}[0]
+    final var naturalWidth // io.github.valerioisufi.drawview.model/DrawText.naturalWidth|{}naturalWidth[0]
+        final fun <get-naturalWidth>(): kotlin/Float // io.github.valerioisufi.drawview.model/DrawText.naturalWidth.<get-naturalWidth>|<get-naturalWidth>(){}[0]
+        final fun <set-naturalWidth>(kotlin/Float) // io.github.valerioisufi.drawview.model/DrawText.naturalWidth.<set-naturalWidth>|<set-naturalWidth>(kotlin.Float){}[0]
     final var order // io.github.valerioisufi.drawview.model/DrawText.order|{}order[0]
         final fun <get-order>(): io.github.valerioisufi.drawview.model/ElementOrder // io.github.valerioisufi.drawview.model/DrawText.order.<get-order>|<get-order>(){}[0]
         final fun <set-order>(io.github.valerioisufi.drawview.model/ElementOrder) // io.github.valerioisufi.drawview.model/DrawText.order.<set-order>|<set-order>(io.github.valerioisufi.drawview.model.ElementOrder){}[0]
@@ -2481,13 +2492,14 @@ final class io.github.valerioisufi.drawview.model/DrawText : io.github.valeriois
         final fun <get-y>(): kotlin/Float // io.github.valerioisufi.drawview.model/DrawText.y.<get-y>|<get-y>(){}[0]
         final fun <set-y>(kotlin/Float) // io.github.valerioisufi.drawview.model/DrawText.y.<set-y>|<set-y>(kotlin.Float){}[0]
 
+    final fun containsPoint(kotlin/Float, kotlin/Float): kotlin/Boolean // io.github.valerioisufi.drawview.model/DrawText.containsPoint|containsPoint(kotlin.Float;kotlin.Float){}[0]
     final fun copyFrom(io.github.valerioisufi.drawview.model/DrawText) // io.github.valerioisufi.drawview.model/DrawText.copyFrom|copyFrom(io.github.valerioisufi.drawview.model.DrawText){}[0]
     final fun getRotatedBounds(kotlin/Float): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.model/DrawText.getRotatedBounds|getRotatedBounds(kotlin.Float){}[0]
     final fun markDirty() // io.github.valerioisufi.drawview.model/DrawText.markDirty|markDirty(){}[0]
     final fun toLocal(kotlin/Float, kotlin/Float): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model/DrawText.toLocal|toLocal(kotlin.Float;kotlin.Float){}[0]
 
     final object Companion { // io.github.valerioisufi.drawview.model/DrawText.Companion|null[0]
-        final fun cornerFor(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model/DrawText.Companion.cornerFor|cornerFor(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+        final fun cornerFor(kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float = ...): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model/DrawText.Companion.cornerFor|cornerFor(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
     }
 }
 
@@ -3069,6 +3081,21 @@ final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.g
         final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.toString|toString(){}[0]
     }
+}
+
+final object io.github.valerioisufi.drawview.model.text/TextRoom { // io.github.valerioisufi.drawview.model.text/TextRoom|null[0]
+    final const val CARET_MM // io.github.valerioisufi.drawview.model.text/TextRoom.CARET_MM|{}CARET_MM[0]
+        final fun <get-CARET_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.text/TextRoom.CARET_MM.<get-CARET_MM>|<get-CARET_MM>(){}[0]
+    final const val MIN_BOX_WIDTH_MM // io.github.valerioisufi.drawview.model.text/TextRoom.MIN_BOX_WIDTH_MM|{}MIN_BOX_WIDTH_MM[0]
+        final fun <get-MIN_BOX_WIDTH_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.text/TextRoom.MIN_BOX_WIDTH_MM.<get-MIN_BOX_WIDTH_MM>|<get-MIN_BOX_WIDTH_MM>(){}[0]
+    final const val MIN_WIDTH_MM // io.github.valerioisufi.drawview.model.text/TextRoom.MIN_WIDTH_MM|{}MIN_WIDTH_MM[0]
+        final fun <get-MIN_WIDTH_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.text/TextRoom.MIN_WIDTH_MM.<get-MIN_WIDTH_MM>|<get-MIN_WIDTH_MM>(){}[0]
+    final const val PAGE_MARGIN_MM // io.github.valerioisufi.drawview.model.text/TextRoom.PAGE_MARGIN_MM|{}PAGE_MARGIN_MM[0]
+        final fun <get-PAGE_MARGIN_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.text/TextRoom.PAGE_MARGIN_MM.<get-PAGE_MARGIN_MM>|<get-PAGE_MARGIN_MM>(){}[0]
+
+    final fun boxLeft(kotlin/Float, kotlin/Float, io.github.valerioisufi.drawview.model/TextAlignment): kotlin/Float // io.github.valerioisufi.drawview.model.text/TextRoom.boxLeft|boxLeft(kotlin.Float;kotlin.Float;io.github.valerioisufi.drawview.model.TextAlignment){}[0]
+    final fun boxWidth(kotlin/Float, kotlin/Float): kotlin/Float // io.github.valerioisufi.drawview.model.text/TextRoom.boxWidth|boxWidth(kotlin.Float;kotlin.Float){}[0]
+    final fun of(kotlin/Float, kotlin/Float, io.github.valerioisufi.drawview.model/TextAlignment, kotlin/Float): kotlin/Pair<kotlin/Float, kotlin/Float> // io.github.valerioisufi.drawview.model.text/TextRoom.of|of(kotlin.Float;kotlin.Float;io.github.valerioisufi.drawview.model.TextAlignment;kotlin.Float){}[0]
 }
 
 final object io.github.valerioisufi.drawview.model.text/TextSizes { // io.github.valerioisufi.drawview.model.text/TextSizes|null[0]

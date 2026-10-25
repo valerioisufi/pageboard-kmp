@@ -356,6 +356,10 @@ public final class io/github/valerioisufi/drawview/model/DrawText : io/github/va
 	public fun getAdded ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public final fun getAlignment ()Lio/github/valerioisufi/drawview/model/TextAlignment;
 	public final fun getAutoWidth ()Z
+	public final fun getBoxLeft ()F
+	public final fun getBoxWidth ()F
+	public final fun getBoxX ()F
+	public final fun getBoxY ()F
 	public fun getCenterX ()F
 	public fun getCenterY ()F
 	public final fun getColor ()I
@@ -363,6 +367,7 @@ public final class io/github/valerioisufi/drawview/model/DrawText : io/github/va
 	public final fun getFontSize ()F
 	public fun getHeight ()F
 	public fun getId ()Ljava/lang/String;
+	public final fun getNaturalWidth ()F
 	public fun getOrder ()Lio/github/valerioisufi/drawview/model/ElementOrder;
 	public fun getOrdered ()Lio/github/valerioisufi/drawview/model/Stamp;
 	public fun getPlaced ()Lio/github/valerioisufi/drawview/model/Stamp;
@@ -384,6 +389,7 @@ public final class io/github/valerioisufi/drawview/model/DrawText : io/github/va
 	public final fun setContentVersions (Lio/github/valerioisufi/drawview/model/Versions;)V
 	public final fun setFontSize (F)V
 	public fun setHeight (F)V
+	public final fun setNaturalWidth (F)V
 	public fun setOrder (Lio/github/valerioisufi/drawview/model/ElementOrder;)V
 	public fun setOrdered (Lio/github/valerioisufi/drawview/model/Stamp;)V
 	public fun setPlaced (Lio/github/valerioisufi/drawview/model/Stamp;)V
@@ -398,7 +404,8 @@ public final class io/github/valerioisufi/drawview/model/DrawText : io/github/va
 }
 
 public final class io/github/valerioisufi/drawview/model/DrawText$Companion {
-	public final fun cornerFor (FFFFF)Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun cornerFor (FFFFFF)Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public static synthetic fun cornerFor$default (Lio/github/valerioisufi/drawview/model/DrawText$Companion;FFFFFFILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/geometry/Point;
 }
 
 public final class io/github/valerioisufi/drawview/model/DrawTextMarkup : io/github/valerioisufi/drawview/model/DrawElement {
@@ -2751,6 +2758,17 @@ public final synthetic class io/github/valerioisufi/drawview/model/text/TextDefa
 
 public final class io/github/valerioisufi/drawview/model/text/TextDefaults$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/text/TextRoom {
+	public static final field CARET_MM F
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/TextRoom;
+	public static final field MIN_BOX_WIDTH_MM F
+	public static final field MIN_WIDTH_MM F
+	public static final field PAGE_MARGIN_MM F
+	public final fun boxLeft (FFLio/github/valerioisufi/drawview/model/TextAlignment;)F
+	public final fun boxWidth (FF)F
+	public final fun of (FFLio/github/valerioisufi/drawview/model/TextAlignment;F)Lkotlin/Pair;
 }
 
 public final class io/github/valerioisufi/drawview/model/text/TextSizes {

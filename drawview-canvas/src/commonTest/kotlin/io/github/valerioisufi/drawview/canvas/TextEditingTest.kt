@@ -43,12 +43,12 @@ import kotlinx.coroutines.test.runTest
  */
 class TextEditingTest {
 
-    /** Lines 0.5 mm per point high; a character 0.5 mm per point wide, wrapped on the width. */
-    private class FakeTextAdapter : TextTileAdapter {
+    /** Lines 0.5 mm per point high; a character [wide] mm per point wide, wrapped on the width. */
+    private class FakeTextAdapter(private val wide: Float = 0.5f) : TextTileAdapter {
         override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, paperColor: Int) {}
 
         override fun measure(text: DrawText): TextBlockSize {
-            val charWidth = text.fontSize * 0.5f
+            val charWidth = text.fontSize * wide
             val lines = ceil(text.text.length * charWidth / text.width).coerceAtLeast(1f)
             return TextBlockSize(minOf(text.width, text.text.length * charWidth), lines * text.fontSize * 0.5f)
         }
@@ -406,6 +406,67 @@ class TextEditingTest {
         editor.finishEditing()
         assertFalse(text.autoWidth)
         assertEquals(page.widthMm - 35f - 40f, text.width, 0.01f)
+    }
+
+    @Test
+    fun aTextFollowingItsWidthKeepsItsRoomAndShowsItsBox() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val page = controller.document.pages[0]
+        val editor = controller.textEditorManager
+        var changes = 0
+        controller.session.addObserver(ChangeObserver { changes++ })
+
+        editor.startNewText(0, 30f, 50f)
+        // 2 characters of 8 mm
+        editor.type("Hi")
+        editor.finishEditing()
+        val text = page.texts.single()
+        assertEquals(30f, text.x)
+        assertEquals(page.widthMm - 30f - 5f, text.width, 0.01f, "the room of its lines, up to the margin")
+        assertEquals(17f, text.boxWidth, 0.01f, "its box: its line and room for the caret")
+        assertEquals(30f, text.getRotatedBounds().left)
+        assertFalse(text.containsPoint(60f, 52f), "the room beyond its line is not the text")
+
+        // Opened on its box; left as it was, nothing changes
+        editor.startEditing(text, 0)
+        assertEquals(30f, editor.boxX)
+        assertEquals(17f, editor.boxWidth, 0.01f)
+        val before = changes
+        editor.finishEditing()
+        assertEquals(before, changes)
+    }
+
+    @Test
+    fun aWiderLayoutDoesNotWrapALineThatHasRoom() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val page = controller.document.pages[0]
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 10f, 50f)
+        // 20 characters of 8 mm: 160 mm in a room of 195 mm (to the margin of the page)
+        editor.type("x".repeat(20))
+        editor.finishEditing()
+        val text = page.texts.single()
+        assertEquals(8f, text.height)
+
+        // Fonts 4% wider: 166.4 mm, still one line (a box of 161 mm would wrap it)
+        controller.textBoxes.dispatcher = UnconfinedTestDispatcher(testScheduler)
+        controller.textAdapter = FakeTextAdapter(wide = 0.52f)
+        assertEquals(8f, text.height, "one line")
+        assertEquals(167.4f, text.boxWidth, 0.01f)
+    }
+
+    @Test
+    fun theBoxOfATextFollowingItsWidthIsOnTheSideOfItsAlignment() {
+        fun text(alignment: TextAlignment) = DrawText().apply {
+            x = 10f; y = 20f; width = 100f; height = 10f; autoWidth = true; naturalWidth = 29f; this.alignment = alignment
+        }
+        assertEquals(10f, text(TextAlignment.START).getRotatedBounds().left)
+        assertEquals(10f + 35f, text(TextAlignment.CENTER).getRotatedBounds().left)
+        assertEquals(10f + 70f, text(TextAlignment.END).getRotatedBounds().left)
+        assertEquals(30f, text(TextAlignment.END).boxWidth)
+        assertEquals(10f + 85f, text(TextAlignment.END).centerX)
+        // Not yet laid out: its room
+        assertEquals(100f, text(TextAlignment.CENTER).apply { naturalWidth = Float.NaN }.boxWidth)
     }
 
     @Test

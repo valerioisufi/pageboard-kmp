@@ -19,6 +19,7 @@ import io.github.valerioisufi.drawview.model.geometry.Dimension
 import io.github.valerioisufi.drawview.model.geometry.Point
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.model.geometry.mm
+import io.github.valerioisufi.drawview.model.text.TextRoom
 import kotlin.concurrent.Volatile
 import kotlin.math.PI
 import kotlin.math.abs
@@ -211,14 +212,36 @@ public class DrawText(override val id: String = newElementId()) : RotatableItem,
     @Volatile public var alignment: TextAlignment = TextAlignment.START
 
     /**
-     * Whether [width] follows the text (a text started by a tap: its box grows with its longest
-     * line up to the margin of the page, then the lines wrap), or was set (drawn, resized).
+     * Whether its box follows the text (a text started by a tap: [width] is the room its lines
+     * may take, up to the margin of the page, and its box the part they take, see [TextRoom]), or
+     * was set (drawn, resized: its box is [width] wide).
      */
     @Volatile public var autoWidth: Boolean = false
 
     @Volatile override var x: Float = 0f
     @Volatile override var y: Float = 0f
+
+    /** The width its lines wrap on (the room of a text whose box follows it, see [autoWidth]). */
     @Volatile override var width: Float = 50f
+
+    /**
+     * The width of its longest line as this device lays it out (kept by the editor, see
+     * `TextBoxes`), not stored; `NaN` until it is laid out.
+     */
+    @Volatile public var naturalWidth: Float = Float.NaN
+
+    /** The width of its box: [width], or the part its lines take when it follows them. */
+    public val boxWidth: Float
+        get() = if (!autoWidth || naturalWidth.isNaN()) width else TextRoom.boxWidth(naturalWidth, width)
+
+    /** Where its box starts along its lines, from its corner. */
+    public val boxLeft: Float get() = if (!autoWidth) 0f else TextRoom.boxLeft(boxWidth, width, alignment)
+
+    /** The top-left corner of its box (its corner moved by [boxLeft] along its lines). */
+    public val boxX: Float get() = x + turned(boxLeft, 0f).x
+
+    /** See [boxX]. */
+    public val boxY: Float get() = y + turned(boxLeft, 0f).y
 
     /**
      * The height its lines take as this device lays them out (kept by the editor, see
@@ -230,23 +253,32 @@ public class DrawText(override val id: String = newElementId()) : RotatableItem,
     /** Rotation in degrees around its top-left corner ([x], [y]). */
     @Volatile override var rotation: Float = 0f
 
-    override val centerX: Float get() = x + turned(width / 2f, height / 2f).x
-    override val centerY: Float get() = y + turned(width / 2f, height / 2f).y
+    override val centerX: Float get() = x + turned(boxLeft + boxWidth / 2f, height / 2f).x
+    override val centerY: Float get() = y + turned(boxLeft + boxWidth / 2f, height / 2f).y
 
+    /** The bounds of its box (see [boxWidth]) were it [height] high. */
     override fun getRotatedBounds(height: Float): Rect {
-        if (rotation == 0f) return Rect(x, y, x + width, y + height)
-        val corners = listOf(turned(0f, 0f), turned(width, 0f), turned(0f, height), turned(width, height))
+        val left = boxLeft
+        val right = left + boxWidth
+        if (rotation == 0f) return Rect(x + left, y, x + right, y + height)
+        val corners = listOf(turned(left, 0f), turned(right, 0f), turned(left, height), turned(right, height))
         return Rect(x + corners.minOf { it.x }, y + corners.minOf { it.y }, x + corners.maxOf { it.x }, y + corners.maxOf { it.y })
     }
 
+    /** The point ([px], [py]) of the page from the top-left corner of its box, before its rotation. */
     override fun toLocal(px: Float, py: Float): Point {
-        if (rotation == 0f) return Point(px - x, py - y)
+        val dx = px - x
+        val dy = py - y
+        if (rotation == 0f) return Point(dx - boxLeft, dy)
         val rad = rotation * PI.toFloat() / 180f
         val c = cos(rad)
         val s = sin(rad)
-        val dx = px - x
-        val dy = py - y
-        return Point(dx * c + dy * s, -dx * s + dy * c)
+        return Point(dx * c + dy * s - boxLeft, -dx * s + dy * c)
+    }
+
+    override fun containsPoint(px: Float, py: Float): Boolean {
+        val local = toLocal(px, py)
+        return local.x >= 0f && local.x <= boxWidth && local.y >= 0f && local.y <= height
     }
 
     /** The point ([dx], [dy]) of the text before its rotation, turned around its corner. */
@@ -269,11 +301,12 @@ public class DrawText(override val id: String = newElementId()) : RotatableItem,
 
     public companion object {
         /**
-         * The corner of a text [width] x [height] turned by [rotation] degrees whose middle is
-         * ([centerX], [centerY]): where its lines start (see [DrawText]).
+         * The corner of a text whose box [width] x [height] (at [boxLeft] along its lines, see
+         * [DrawText.boxLeft]) is turned by [rotation] degrees around the middle ([centerX],
+         * [centerY]): where its lines start (see [DrawText]).
          */
-        public fun cornerFor(centerX: Float, centerY: Float, width: Float, height: Float, rotation: Float): Point {
-            val half = turn(width / 2f, height / 2f, rotation)
+        public fun cornerFor(centerX: Float, centerY: Float, width: Float, height: Float, rotation: Float, boxLeft: Float = 0f): Point {
+            val half = turn(boxLeft + width / 2f, height / 2f, rotation)
             return Point(centerX - half.x, centerY - half.y)
         }
 
@@ -294,6 +327,7 @@ public class DrawText(override val id: String = newElementId()) : RotatableItem,
         y = other.y
         width = other.width
         height = other.height
+        naturalWidth = other.naturalWidth
         rotation = other.rotation
         color = other.color
         fontSize = other.fontSize

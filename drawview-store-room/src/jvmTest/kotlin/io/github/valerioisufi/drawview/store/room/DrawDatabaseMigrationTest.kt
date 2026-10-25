@@ -205,6 +205,15 @@ class DrawDatabaseMigrationTest {
                         "NULL, '$STAMP', '$STAMP', '$STAMP', '')"
                 )
             }
+            // Following their width, a box of 30 mm on a page of 210 mm, in each alignment
+            for ((id, x, alignment) in listOf(Triple("start", 10.0, "START"), Triple("center", 90.0, "CENTER"), Triple("end", 150.0, "END"))) {
+                connection.execSQL(
+                    "INSERT INTO texts (id, pageId, orderKey, text, x, y, width, height, rotation, color, fontSize, alignment, " +
+                        "autoWidth, added, removed, placed, ordered, updated, contentVersions) VALUES ('$id', '$PAGE', " +
+                        "'$STAMP/00000000', 'waves', $x, 100.0, 30.0, 10.0, 0.0, -16777216, 16.0, '$alignment', 1, '$STAMP', " +
+                        "NULL, '$STAMP', '$STAMP', '$STAMP', '')"
+                )
+            }
             val changes = listOf(
                 """{"type":"addElements","pageId":"$PAGE","elements":[{"type":"text","id":"turned","text":"waves","x":10.0,""" +
                     """"y":50.0,"width":40.0,"height":10.0,"rotation":90.0,"color":-16777216,"fontSize":16.0}]}""",
@@ -238,6 +247,12 @@ class DrawDatabaseMigrationTest {
             turned.height = 10f
             assertEquals(30f, turned.centerX, 1e-4f, "its box where it was, as high as before")
             assertEquals(55f, turned.centerY, 1e-4f)
+
+            // Their room, from the side of their alignment to the margin: their lines where they were
+            fun room(id: String) = page.texts.single { it.id == id }.let { it.x to it.width }
+            assertEquals(10f to 195f, room("start"))
+            assertEquals(5f to 200f, room("center"), "as wide on both sides of its middle (105 mm)")
+            assertEquals(5f to 175f, room("end"), "up to its right edge (180 mm)")
 
             val (added, placed, updated) = store.operationsAfter(DOCUMENT, emptyMap()).map { it.change }
             val text = assertIs<TextData>(assertIs<AddElements>(added).elements.single())

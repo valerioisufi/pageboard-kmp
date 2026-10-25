@@ -454,6 +454,15 @@ public class SelectionManager(private val controller: DrawViewController) {
         val inverse = Matrix2D()
         if (!selection.transform.invert(inverse)) return
         val point = inverse.mapPoint(touchMm.x, touchMm.y)
+        // A box set by hand from now on: as wide as it was, from its corner
+        if (text.autoWidth) {
+            val boxX = text.boxX
+            val boxY = text.boxY
+            text.width = text.boxWidth
+            text.x = boxX
+            text.y = boxY
+            text.autoWidth = false
+        }
         // Along the lines of the text, from its corner (its rotation undone)
         val x = text.toLocal(point.x, point.y).x
         // The handle is on the frame, its padding away from the text
@@ -534,7 +543,7 @@ public class SelectionManager(private val controller: DrawViewController) {
             val c = finalTransform.mapPoint(text.centerX, text.centerY)
             val width = text.width * scale
             val rotation = (text.rotation + angle) % 360f
-            val corner = DrawText.cornerFor(c.x, c.y, width, text.height * scale, rotation)
+            val corner = DrawText.cornerFor(c.x, c.y, text.boxWidth * scale, text.height * scale, rotation, text.boxLeft * scale)
             placements.add(
                 TextPlacement(
                     text.id, corner.x, corner.y, width, rotation, text.fontSize * scale,
@@ -553,7 +562,7 @@ public class SelectionManager(private val controller: DrawViewController) {
         if (textResized) {
             val text = selection.texts[0]
             (original[text.id] as? TextPlacement)?.let {
-                text.x = it.x; text.y = it.y; text.width = it.width
+                text.x = it.x; text.y = it.y; text.width = it.width; text.autoWidth = it.autoWidth
             }
         }
         val move = PlaceElements(oldPage.id, placements, newPage.id)
@@ -775,4 +784,4 @@ public class SelectionManager(private val controller: DrawViewController) {
  * The frame of the selection of [this] text: its box before its rotation, placed so that turning
  * it around its middle (as the frame of a selection turns) puts it on the text.
  */
-private fun DrawText.frame(): Rect = Rect(centerX - width / 2f, centerY - height / 2f, centerX + width / 2f, centerY + height / 2f)
+private fun DrawText.frame(): Rect = Rect(centerX - boxWidth / 2f, centerY - height / 2f, centerX + boxWidth / 2f, centerY + height / 2f)
