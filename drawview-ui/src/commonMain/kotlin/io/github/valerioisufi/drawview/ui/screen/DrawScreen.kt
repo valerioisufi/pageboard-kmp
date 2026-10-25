@@ -82,6 +82,7 @@ import io.github.valerioisufi.drawview.ui.theme.LocalCanvasColors
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import io.github.valerioisufi.drawview.ui.window.LocalWindowDecorInsets
 import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -187,6 +188,8 @@ private fun DrawScreenContent(
     }
     // Template dialogs
     var showSinglePageConfigurator by remember { mutableStateOf(false) }
+    // The pages selected in the grid the configurator gives a format to (none: the page of the menu)
+    var configuredPageIds by remember { mutableStateOf<List<String>?>(null) }
     var showDocumentConfigurator by remember { mutableStateOf(false) }
     var pendingDocumentTemplate by remember { mutableStateOf<Pair<Dimension, PageBackground>?>(null) }
     var showAboutDialog by remember { mutableStateOf(false) }
@@ -367,7 +370,8 @@ private fun DrawScreenContent(
             PageGridOverlay(
                 controller = controller,
                 commands = commands,
-                onEditPageBackground = { showSinglePageConfigurator = true }
+                onEditPageBackground = { configuredPageIds = null; showSinglePageConfigurator = true },
+                onEditPagesBackground = { ids -> configuredPageIds = ids; showSinglePageConfigurator = true }
             )
         }
     }
@@ -376,21 +380,32 @@ private fun DrawScreenContent(
     // BACKGROUND TEMPLATE DIALOGS
     // =========================================================
 
-    // 1. Single page (the page targeted by the context menu or the page grid)
+    // 1. Pages: the page targeted by the context menu or the page grid, or the pages selected in
+    // the grid (from the format of the first one)
     if (showSinglePageConfigurator) {
+        val pageIds = configuredPageIds
         val targetIndex = controller.pageManager.contextMenuTargetPageIndex
-        val targetPage = controller.document.pages.getOrNull(targetIndex)
+        val targetPage = pageIds?.firstOrNull()?.let { controller.document.pageById(it) } ?: controller.document.pages.getOrNull(targetIndex)
+        val close = { showSinglePageConfigurator = false; configuredPageIds = null }
 
-        AdaptiveSheet(onDismissRequest = { showSinglePageConfigurator = false }, maxWidth = 760.dp) {
+        AdaptiveSheet(onDismissRequest = close, maxWidth = 760.dp) {
             PageTemplateConfigurator(
-                subtitle = stringResource(Res.string.page_config_subtitle_page, targetIndex + 1, controller.document.name),
+                subtitle = if (pageIds != null) {
+                    pluralStringResource(Res.plurals.page_config_subtitle_pages, pageIds.size, pageIds.size, controller.document.name)
+                } else {
+                    stringResource(Res.string.page_config_subtitle_page, targetIndex + 1, controller.document.name)
+                },
                 initialDimension = targetPage?.dimension ?: Dimension.A4(),
                 initialBackground = targetPage?.background ?: PageBackground.Solid(),
                 onApply = { newDimension, newBackground ->
-                    controller.pageManager.changeSinglePageTemplate(targetIndex, newDimension, newBackground)
-                    showSinglePageConfigurator = false
+                    if (pageIds != null) {
+                        controller.pageManager.changePagesTemplate(pageIds, newDimension, newBackground)
+                    } else {
+                        controller.pageManager.changeSinglePageTemplate(targetIndex, newDimension, newBackground)
+                    }
+                    close()
                 },
-                onCancel = { showSinglePageConfigurator = false }
+                onCancel = close
             )
         }
     }

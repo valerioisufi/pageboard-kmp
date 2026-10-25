@@ -226,6 +226,17 @@ internal class EditorCommands internal constructor(
         shareCopied(null)
     }
 
+    /** Copies the pages [ids] with their content, in the order of the document (see [PageManager.copyPages]). */
+    fun copyPages(ids: Collection<String>) {
+        controller.pageManager.copyPages(ids)
+        shareCopied(null)
+    }
+
+    /** Pastes the pages copied after the last of the pages [ids]. */
+    fun pastePagesAfter(ids: Collection<String>) {
+        if (writable()) controller.pageManager.pastePagesAfter(ids)
+    }
+
     /** Whether pages were copied, to be pasted after a page (see [PageManager.pastePages]). */
     fun canPastePages(): Boolean = writable() && controller.pageManager.canPastePages()
 

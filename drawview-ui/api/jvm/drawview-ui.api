@@ -275,7 +275,7 @@ public final class io/github/valerioisufi/drawview/ui/components/ComposableSingl
 public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$PageGridOverlayKt {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$PageGridOverlayKt;
 	public fun <init> ()V
-	public final fun getLambda$1780910366$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-888502059$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$PageTemplateConfiguratorKt {
@@ -516,6 +516,8 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/Font0_
 
 public final class io/github/valerioisufi/drawview/ui/generated/resources/Plurals0_commonMainKt {
 	public static final fun getEditor_pages_count (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
+	public static final fun getPage_config_subtitle_pages (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
+	public static final fun getPage_grid_selected_count (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$plurals;)Lorg/jetbrains/compose/resources/PluralStringResource;
 }
 
 public final class io/github/valerioisufi/drawview/ui/generated/resources/Res {
@@ -675,6 +677,9 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getPage_config_value_spacing (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getPage_config_value_thickness (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getPage_grid_action_close (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_action_done (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_action_select (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getPage_grid_action_select_all (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getPage_grid_content_desc_options (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getPage_grid_content_desc_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getPage_grid_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;

@@ -71,6 +71,9 @@
     <string name="page_grid_action_close">그리드 닫기</string>
     <string name="page_grid_content_desc_page">페이지 %1$d</string>
     <string name="page_grid_content_desc_options">페이지 옵션</string>
+    <string name="page_grid_action_select">선택</string>
+    <string name="page_grid_action_done">완료</string>
+    <string name="page_grid_action_select_all">모두 선택</string>
     <string name="context_menu_action_add_page_after">다음에 페이지 추가</string>
     <string name="context_menu_action_copy_page">페이지 복사</string>
     <string name="context_menu_action_paste_page">다음에 페이지 붙여넣기</string>
@@ -173,5 +176,11 @@
         <item quantity="other">%1$d페이지</item>
     </plurals>
     <string name="page_config_subtitle_page">“%2$s”의 %1$d페이지</string>
+    <plurals name="page_grid_selected_count">
+        <item quantity="other">%1$d페이지 선택됨</item>
+    </plurals>
+    <plurals name="page_config_subtitle_pages">
+        <item quantity="other">“%2$s”의 %1$d페이지</item>
+    </plurals>
     <string name="page_config_subtitle_document">“%1$s”의 페이지</string>
 </resources>

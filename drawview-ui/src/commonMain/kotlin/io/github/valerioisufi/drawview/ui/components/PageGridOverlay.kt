@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -27,6 +28,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -46,16 +48,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerKeyboardModifiers
+import androidx.compose.ui.input.pointer.isCtrlPressed
+import androidx.compose.ui.input.pointer.isMetaPressed
+import androidx.compose.ui.input.pointer.isShiftPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.controller.PageSelection
 import io.github.valerioisufi.drawview.canvas.observeChanges
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.ui.adaptive.ShortcutModifier
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.DesignMenu
 import io.github.valerioisufi.drawview.ui.command.MenuDivider
@@ -73,10 +86,14 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * Full-screen grid of the pages of the document: thumbnails, jump to a page, page actions
  * (add after, copy, paste after, delete, background) and reordering by drag & drop after a long
- * press.
+ * press. Several pages are selected (see `docs/page-selection.md`) with Select and a tap, or with
+ * ⌘/Ctrl+click and Shift+click; the bar of the selection and the menu of a page selected act on
+ * all of them.
  *
  * @param commands the commands of the editor, copying and pasting the pages (none: no copy).
  * @param onEditPageBackground opens the template configurator of the page at the given index.
+ * @param onEditPagesBackground opens the template configurator of several pages (their
+ *   identifiers, the grid closed then).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,12 +101,23 @@ internal fun PageGridOverlay(
     controller: DrawViewController,
     modifier: Modifier = Modifier,
     commands: EditorCommands? = null,
-    onEditPageBackground: (Int) -> Unit = {}
+    onEditPageBackground: (Int) -> Unit = {},
+    onEditPagesBackground: (List<String>) -> Unit = {}
 ) {
     val document = controller.document
     // The pages, their formats and their content as they change
     document.observeChanges()
     val pageManager = controller.pageManager
+    val selection = pageManager.selection
+    val writable = !controller.isReadOnly
+    /** The background of the pages [ids]: one page as before, several with their own configurator. */
+    val editBackground: (List<String>) -> Unit = { ids ->
+        val single = ids.singleOrNull()?.let { id -> document.pages.indexOfFirst { it.id == id } }
+        if (single != null) pageManager.contextMenuTargetPageIndex = single
+        // The grid is closed to show the configurator
+        controller.togglePageGrid()
+        if (single != null) onEditPageBackground(single) else onEditPagesBackground(ids)
+    }
     val interactionSource = remember { MutableInteractionSource() }
 
     Column(
@@ -104,8 +132,19 @@ internal fun PageGridOverlay(
             )
             .windowInsetsPadding(WindowInsets.safeDrawing)
     ) {
-        // --- Top bar of the grid: close, the title with the document and its pages, adding a page ---
-        Row(
+        // --- Top bar of the grid: close, the title with the document and its pages, selecting, adding a page ---
+        if (selection.isActive) {
+            PageSelectionBar(
+                selection = selection,
+                writable = writable,
+                canPaste = commands?.canPastePages() == true,
+                canDelete = pageManager.canDeletePages(selection.pageIds),
+                onCopy = commands?.let { { it.copyPages(selection.pageIds) } },
+                onPaste = { commands?.pastePagesAfter(selection.pageIds) },
+                onEditBackground = { editBackground(selection.pageIds) },
+                onDelete = { pageManager.deletePages(selection.pageIds) }
+            )
+        } else Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 12.dp, end = 24.dp, top = 8.dp, bottom = 8.dp),
@@ -128,7 +167,8 @@ internal fun PageGridOverlay(
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            if (!controller.isReadOnly) {
+            DesignIconButton(DrawViewIcons.SquareCheckBig, stringResource(Res.string.page_grid_action_select), { selection.start() }, tint = MaterialTheme.colorScheme.onSurface)
+            if (writable) {
                 val addPage: () -> Unit = { pageManager.addNewPageAfter(document.pages.lastIndex) }
                 if (currentAdaptiveInfo().window.isCompact) {
                     DesignIconButton(DrawViewIcons.FilePlus2, stringResource(Res.string.context_menu_action_add_page), addPage, selected = true)
@@ -215,11 +255,14 @@ internal fun PageGridOverlay(
                     )
                 }
         ) {
+            // The pages as this composition shows them: the document may change before its items are
+            // composed (pages removed), and an item reads the list it was counted from
+            val pages = document.pages
             items(
-                count = document.pages.size,
-                key = { index -> document.pages[index].id }
+                count = pages.size,
+                key = { index -> pages[index].id }
             ) { index ->
-                val page = document.pages[index]
+                val page = pages[index]
                 var menuExpanded by remember { mutableStateOf(false) }
                 val isDragged = index == draggedIndex
 
@@ -227,6 +270,9 @@ internal fun PageGridOverlay(
                 val aspectRatio = if (page.heightMm > 0f) page.widthMm / page.heightMm else (1f / 1.414f)
 
                 val current = index == currentPage
+                val selected = selection.isSelected(page.id)
+                // What the menu of the card acts on: the selection when the page is in it
+                val targets = if (selected) selection.pageIds else listOf(page.id)
                 val colors = MaterialTheme.colorScheme
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -254,8 +300,20 @@ internal fun PageGridOverlay(
                             .then(if (isDragged) Modifier.elevation(DrawViewElevation.Level3, wellShape) else Modifier)
                             .clip(wellShape)
                             .background(if (isDragged) colors.surfaceContainerLowest else colors.surfaceContainer)
-                            .then(if (current) Modifier.border(2.dp, colors.primary, wellShape) else Modifier)
-                            .clickable(onClickLabel = stringResource(Res.string.page_grid_content_desc_page, index + 1)) { pageManager.jumpToPage(index) }
+                            .then(
+                                when {
+                                    selected -> Modifier.border(3.dp, colors.primary, wellShape)
+                                    current -> Modifier.border(2.dp, colors.primary, wellShape)
+                                    else -> Modifier
+                                }
+                            )
+                            .pageClicks(
+                                label = stringResource(Res.string.page_grid_content_desc_page, index + 1),
+                                selected = selected,
+                                onToggle = { selection.toggle(page.id) },
+                                onRange = { selection.selectRange(page.id) },
+                                onClick = { if (selection.isActive) selection.toggle(page.id) else pageManager.jumpToPage(index) }
+                            )
                             .padding(16.dp)
                     ) {
                         BoxWithConstraints(
@@ -275,11 +333,26 @@ internal fun PageGridOverlay(
                             if (thumbnail != null) {
                                 Image(
                                     bitmap = thumbnail,
-                                    contentDescription = stringResource(Res.string.page_grid_content_desc_page, index + 1),
+                                    // Described by its card
+                                    contentDescription = null,
                                     modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Fit
                                 )
                             }
+                        }
+                        if (selected) {
+                            Icon(
+                                DrawViewIcons.CheckCircle,
+                                contentDescription = null,
+                                tint = colors.onPrimary,
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = 8.dp, y = (-8).dp)
+                                    .size(24.dp)
+                                    .clip(CircleShape)
+                                    .background(colors.primary)
+                                    .padding(2.dp)
+                            )
                         }
                     }
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 6.dp)) {
@@ -314,7 +387,7 @@ internal fun PageGridOverlay(
                                             onClick = {
                                                 menuExpanded = false
                                                 pageManager.contextMenuTargetPageIndex = index
-                                                commands.copyPage(index)
+                                                commands.copyPages(targets)
                                             }
                                         )
                                         if (commands.canPastePages()) {
@@ -324,7 +397,7 @@ internal fun PageGridOverlay(
                                                 onClick = {
                                                     menuExpanded = false
                                                     pageManager.contextMenuTargetPageIndex = index
-                                                    commands.pastePagesAfter(index)
+                                                    commands.pastePagesAfter(targets)
                                                 }
                                             )
                                         }
@@ -334,13 +407,10 @@ internal fun PageGridOverlay(
                                         icon = rememberVectorPainter(DrawViewIcons.Grid),
                                         onClick = {
                                             menuExpanded = false
-                                            pageManager.contextMenuTargetPageIndex = index
-                                            // The grid is closed to show the configurator
-                                            controller.togglePageGrid()
-                                            onEditPageBackground(index)
+                                            editBackground(targets)
                                         }
                                     )
-                                    if (document.pages.size > 1) {
+                                    if (pageManager.canDeletePages(targets)) {
                                         MenuDivider()
                                         MenuItem(
                                             text = stringResource(Res.string.context_menu_action_delete_page),
@@ -349,7 +419,7 @@ internal fun PageGridOverlay(
                                             onClick = {
                                                 menuExpanded = false
                                                 pageManager.contextMenuTargetPageIndex = index
-                                                pageManager.deletePage(index)
+                                                pageManager.deletePages(targets)
                                             }
                                         )
                                     }
@@ -459,3 +529,128 @@ internal fun PageThumbnailBackground(
 }
 
 private const val MAX_THUMBNAIL_WIDTH_PX = 600
+
+/** The keys held at the last press of a pointer on a page (read by its click). */
+private class HeldKeys {
+    var value: PointerKeyboardModifiers? = null
+}
+
+/**
+ * The clicks on a page of the grid: with the modifier of the shortcuts (⌘ or Ctrl) the page is
+ * added to the selection or taken out of it ([onToggle]), with Shift the selection extends to it
+ * ([onRange]), as in the files of the systems; else [onClick].
+ */
+@Composable
+private fun Modifier.pageClicks(
+    label: String,
+    selected: Boolean,
+    onToggle: () -> Unit,
+    onRange: () -> Unit,
+    onClick: () -> Unit
+): Modifier {
+    val held = remember { HeldKeys() }
+    val apple = currentAdaptiveInfo().conventions.shortcutModifier == ShortcutModifier.COMMAND
+    return this
+        .pointerInput(held) {
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent(PointerEventPass.Initial)
+                    if (event.type == PointerEventType.Press) held.value = event.keyboardModifiers
+                }
+            }
+        }
+        .semantics {
+            contentDescription = label
+            this.selected = selected
+        }
+        .clickable(onClickLabel = label) {
+            val keys = held.value
+            held.value = null
+            when {
+                keys != null && keys.isShiftPressed -> onRange()
+                keys != null && (if (apple) keys.isMetaPressed else keys.isCtrlPressed) -> onToggle()
+                else -> onClick()
+            }
+        }
+}
+
+/**
+ * The top bar of the grid while selecting: Done, how many pages are selected, Select all, and the
+ * actions on all of them (in a read-only document, copying only).
+ */
+@Composable
+private fun PageSelectionBar(
+    selection: PageSelection,
+    writable: Boolean,
+    canPaste: Boolean,
+    canDelete: Boolean,
+    onCopy: (() -> Unit)?,
+    onPaste: () -> Unit,
+    onEditBackground: () -> Unit,
+    onDelete: () -> Unit
+) {
+    val colors = MaterialTheme.colorScheme
+    val count = selection.count
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 12.dp, end = 24.dp, top = 8.dp, bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        DesignIconButton(DrawViewIcons.Check, stringResource(Res.string.page_grid_action_done), { selection.clear() }, tint = colors.onSurface)
+        Text(
+            text = pluralStringResource(Res.plurals.page_grid_selected_count, count, count),
+            style = MaterialTheme.typography.titleMedium,
+            color = colors.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+        val some = count > 0
+        // In a compact window, Select all, Paste after and Background in a menu
+        val compact = currentAdaptiveInfo().window.isCompact
+        if (!compact) {
+            DesignIconButton(DrawViewIcons.CheckCheck, stringResource(Res.string.page_grid_action_select_all), { selection.selectAll() }, tint = colors.onSurface)
+        }
+        if (onCopy != null) {
+            DesignIconButton(DrawViewIcons.Copy, stringResource(Res.string.common_action_copy), onCopy, enabled = some, tint = colors.onSurface)
+        }
+        if (writable && !compact) {
+            if (canPaste) {
+                DesignIconButton(DrawViewIcons.Clipboard, stringResource(Res.string.context_menu_action_paste_page), onPaste, enabled = some, tint = colors.onSurface)
+            }
+            DesignIconButton(DrawViewIcons.Grid, stringResource(Res.string.context_menu_action_edit_background), onEditBackground, enabled = some, tint = colors.onSurface)
+        }
+        if (writable) {
+            DesignIconButton(DrawViewIcons.Trash, stringResource(Res.string.common_action_delete), onDelete, enabled = canDelete, tint = colors.error)
+        }
+        if (compact) {
+            var expanded by remember { mutableStateOf(false) }
+            Box {
+                DesignIconButton(DrawViewIcons.MoreVertical, stringResource(Res.string.common_action_more_options), { expanded = true }, tint = colors.onSurface)
+                DesignMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    MenuItem(
+                        text = stringResource(Res.string.page_grid_action_select_all),
+                        icon = rememberVectorPainter(DrawViewIcons.CheckCheck),
+                        onClick = { expanded = false; selection.selectAll() }
+                    )
+                    if (writable && some) {
+                        if (canPaste) {
+                            MenuItem(
+                                text = stringResource(Res.string.context_menu_action_paste_page),
+                                icon = rememberVectorPainter(DrawViewIcons.Clipboard),
+                                onClick = { expanded = false; onPaste() }
+                            )
+                        }
+                        MenuItem(
+                            text = stringResource(Res.string.context_menu_action_edit_background),
+                            icon = rememberVectorPainter(DrawViewIcons.Grid),
+                            onClick = { expanded = false; onEditBackground() }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}

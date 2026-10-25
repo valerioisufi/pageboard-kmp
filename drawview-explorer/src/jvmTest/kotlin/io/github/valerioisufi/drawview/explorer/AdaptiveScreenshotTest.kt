@@ -130,6 +130,25 @@ class AdaptiveScreenshotTest {
         }
     }
 
+    /** The grid selecting pages: their checks, the bar with how many and the actions on all of them. */
+    @Test
+    fun editorPageGridSelection() = listOf(
+        ReferenceWindow.TABLET_LANDSCAPE to false, ReferenceWindow.PHONE to false, ReferenceWindow.TABLET_LANDSCAPE to true
+    ).forEach { (window, dark) ->
+        capture("editor-page-grid-selection", window, dark = dark) { viewModels ->
+            openNote(viewModels)
+            runOnIdle {
+                val controller = viewModels.controller()
+                controller.pageManager.addNewPageAfter(0)
+                controller.pageManager.addNewPageAfter(1)
+                controller.togglePageGrid()
+                val pages = controller.document.pages
+                controller.pageManager.selection.toggle(pages[0].id)
+                controller.pageManager.selection.toggle(pages[2].id)
+            }
+        }
+    }
+
     /** A search without results: why, under the field. */
     @Test
     fun librarySearch() = capture("library-search", ReferenceWindow.PHONE, dark = false) {

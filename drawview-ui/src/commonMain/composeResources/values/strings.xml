@@ -78,6 +78,9 @@
     <string name="page_grid_action_close">Close Grid</string>
     <string name="page_grid_content_desc_page">Page %1$d</string>
     <string name="page_grid_content_desc_options">Page Options</string>
+    <string name="page_grid_action_select">Select</string>
+    <string name="page_grid_action_done">Done</string>
+    <string name="page_grid_action_select_all">Select all</string>
     <string name="context_menu_action_add_page_after">Add page after</string>
     <string name="context_menu_action_copy_page">Copy page</string>
     <string name="context_menu_action_paste_page">Paste page after</string>
@@ -175,5 +178,13 @@
         <item quantity="other">%1$d pages</item>
     </plurals>
     <string name="page_config_subtitle_page">Page %1$d of “%2$s”</string>
+    <plurals name="page_grid_selected_count">
+        <item quantity="one">%1$d page selected</item>
+        <item quantity="other">%1$d pages selected</item>
+    </plurals>
+    <plurals name="page_config_subtitle_pages">
+        <item quantity="one">%1$d page of “%2$s”</item>
+        <item quantity="other">%1$d pages of “%2$s”</item>
+    </plurals>
     <string name="page_config_subtitle_document">The pages of “%1$s”</string>
 </resources>

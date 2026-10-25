@@ -71,6 +71,9 @@
     <string name="page_grid_action_close">グリッドを閉じる</string>
     <string name="page_grid_content_desc_page">ページ %1$d</string>
     <string name="page_grid_content_desc_options">ページオプション</string>
+    <string name="page_grid_action_select">選択</string>
+    <string name="page_grid_action_done">完了</string>
+    <string name="page_grid_action_select_all">すべて選択</string>
     <string name="context_menu_action_add_page_after">後にページを追加</string>
     <string name="context_menu_action_copy_page">ページをコピー</string>
     <string name="context_menu_action_paste_page">後にページを貼り付け</string>
@@ -173,5 +176,11 @@
         <item quantity="other">%1$d ページ</item>
     </plurals>
     <string name="page_config_subtitle_page">「%2$s」の %1$d ページ</string>
+    <plurals name="page_grid_selected_count">
+        <item quantity="other">%1$d ページを選択中</item>
+    </plurals>
+    <plurals name="page_config_subtitle_pages">
+        <item quantity="other">「%2$s」の %1$d ページ</item>
+    </plurals>
     <string name="page_config_subtitle_document">「%1$s」のページ</string>
 </resources>

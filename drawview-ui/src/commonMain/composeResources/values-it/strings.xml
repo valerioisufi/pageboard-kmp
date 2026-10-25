@@ -77,6 +77,9 @@
     <string name="page_grid_action_close">Chiudi Griglia</string>
     <string name="page_grid_content_desc_page">Pagina %1$d</string>
     <string name="page_grid_content_desc_options">Opzioni Pagina</string>
+    <string name="page_grid_action_select">Seleziona</string>
+    <string name="page_grid_action_done">Fine</string>
+    <string name="page_grid_action_select_all">Seleziona tutto</string>
     <string name="context_menu_action_add_page_after">Aggiungi pagina dopo</string>
     <string name="context_menu_action_copy_page">Copia pagina</string>
     <string name="context_menu_action_paste_page">Incolla pagina dopo</string>
@@ -174,5 +177,13 @@
         <item quantity="other">%1$d pagine</item>
     </plurals>
     <string name="page_config_subtitle_page">Pagina %1$d di “%2$s”</string>
+    <plurals name="page_grid_selected_count">
+        <item quantity="one">%1$d pagina selezionata</item>
+        <item quantity="other">%1$d pagine selezionate</item>
+    </plurals>
+    <plurals name="page_config_subtitle_pages">
+        <item quantity="one">%1$d pagina di “%2$s”</item>
+        <item quantity="other">%1$d pagine di “%2$s”</item>
+    </plurals>
     <string name="page_config_subtitle_document">Le pagine di “%1$s”</string>
 </resources>

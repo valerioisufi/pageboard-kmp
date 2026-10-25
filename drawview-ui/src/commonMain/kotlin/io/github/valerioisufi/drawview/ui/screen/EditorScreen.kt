@@ -55,7 +55,7 @@ public fun EditorScreen(
 
 /**
  * System back (Android back gesture, Escape on the desktop, ...): cancels a pending placement,
- * closes the page grid, the text editor (saving the text), the context menu, the selected text
+ * leaves the selection of the pages, closes the page grid, the text editor (saving the text), the context menu, the selected text
  * of the PDFs or the selection, then the document.
  */
 @Composable
@@ -68,6 +68,7 @@ private fun EditorBackHandler(controller: DrawViewController, onClose: () -> Uni
         onBackCompleted = {
             when {
                 controller.placementManager.isActive -> controller.placementManager.cancel()
+                controller.isPageGridVisible && controller.pageManager.selection.isActive -> controller.pageManager.selection.clear()
                 controller.isPageGridVisible -> controller.togglePageGrid()
                 controller.textEditorManager.isEditing -> controller.textEditorManager.finishEditing()
                 controller.contextMenuPosition != null -> controller.contextMenuPosition = null

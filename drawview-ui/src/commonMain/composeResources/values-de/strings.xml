@@ -71,6 +71,9 @@
     <string name="page_grid_action_close">Raster schließen</string>
     <string name="page_grid_content_desc_page">Seite %1$d</string>
     <string name="page_grid_content_desc_options">Seitenoptionen</string>
+    <string name="page_grid_action_select">Auswählen</string>
+    <string name="page_grid_action_done">Fertig</string>
+    <string name="page_grid_action_select_all">Alle auswählen</string>
     <string name="context_menu_action_add_page_after">Seite danach hinzufügen</string>
     <string name="context_menu_action_copy_page">Seite kopieren</string>
     <string name="context_menu_action_paste_page">Seite danach einfügen</string>
@@ -174,5 +177,13 @@
         <item quantity="other">%1$d Seiten</item>
     </plurals>
     <string name="page_config_subtitle_page">Seite %1$d von „%2$s“</string>
+    <plurals name="page_grid_selected_count">
+        <item quantity="one">%1$d Seite ausgewählt</item>
+        <item quantity="other">%1$d Seiten ausgewählt</item>
+    </plurals>
+    <plurals name="page_config_subtitle_pages">
+        <item quantity="one">%1$d Seite von „%2$s“</item>
+        <item quantity="other">%1$d Seiten von „%2$s“</item>
+    </plurals>
     <string name="page_config_subtitle_document">Die Seiten von „%1$s“</string>
 </resources>

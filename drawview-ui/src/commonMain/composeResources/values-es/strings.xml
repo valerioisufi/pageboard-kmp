@@ -71,6 +71,9 @@
     <string name="page_grid_action_close">Cerrar Cuadrícula</string>
     <string name="page_grid_content_desc_page">Página %1$d</string>
     <string name="page_grid_content_desc_options">Opciones de Página</string>
+    <string name="page_grid_action_select">Seleccionar</string>
+    <string name="page_grid_action_done">Listo</string>
+    <string name="page_grid_action_select_all">Seleccionar todo</string>
     <string name="context_menu_action_add_page_after">Añadir página después</string>
     <string name="context_menu_action_copy_page">Copiar página</string>
     <string name="context_menu_action_paste_page">Pegar página después</string>
@@ -174,5 +177,13 @@
         <item quantity="other">%1$d páginas</item>
     </plurals>
     <string name="page_config_subtitle_page">Página %1$d de «%2$s»</string>
+    <plurals name="page_grid_selected_count">
+        <item quantity="one">%1$d página seleccionada</item>
+        <item quantity="other">%1$d páginas seleccionadas</item>
+    </plurals>
+    <plurals name="page_config_subtitle_pages">
+        <item quantity="one">%1$d página de «%2$s»</item>
+        <item quantity="other">%1$d páginas de «%2$s»</item>
+    </plurals>
     <string name="page_config_subtitle_document">Las páginas de «%1$s»</string>
 </resources>

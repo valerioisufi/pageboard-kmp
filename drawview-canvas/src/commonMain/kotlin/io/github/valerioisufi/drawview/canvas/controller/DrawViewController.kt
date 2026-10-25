@@ -246,6 +246,8 @@ public class DrawViewController(
 
     public fun togglePageGrid() {
         isPageGridVisible = !isPageGridVisible
+        // The selection of the pages lives in the grid
+        pageManager.selection.clear()
         if (isPageGridVisible) {
             selectionManager.clearSelection()
             textMarkupManager.clearSelection()

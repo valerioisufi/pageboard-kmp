@@ -103,7 +103,7 @@ The functions of one page stay and call these (`deletePage(index)` → `deletePa
 | Phase | Content | Status |
 |---|---|---|
 | 1 | `PageSelection` and the actions on several pages in `PageManager` (copy, paste after, format, delete, move as a block, one change each), the single-page functions calling them; tests in `drawview-canvas` (selection in the order of the document, ranges, all, pruned when a page is removed here or by another device, kept across a move; each action on several pages, one undo; delete never every page; read-only); ABI recorded on purpose | Done |
-| 2 | The grid: Select / Done, the taps, ⌘/Ctrl+click and Shift+click, Escape, checks and rings, the bar of the selection with its actions, the menu of a card on the selection, the configurator on several pages; the strings in the seven languages; screenshots of the grid in selection (compact and wide, light and dark) | Planned |
+| 2 | The grid: Select / Done, the taps, ⌘/Ctrl+click and Shift+click, Escape, checks and rings, the bar of the selection with its actions, the menu of a card on the selection, the configurator on several pages; the strings in the seven languages; screenshots of the grid in selection (compact and wide, light and dark) | Done |
 | 3 | Dragging the selection as one block in the grid; tests of the order given by the drop; the desktop application on a scratch directory | Planned |
 
 ### Phase 1 results
@@ -126,6 +126,39 @@ The functions of one page stay and call these (`deletePage(index)` → `deletePa
   first of the others in one change, to the end and to the start, undone; a read-only document
   copied only.
 * ABI of `drawview-canvas` recorded again on purpose: `PageSelection` and the new functions only.
+
+### Phase 2 results
+
+* `PageGridOverlay` (`drawview-ui`): Select (a checked square) in the top bar; while selecting,
+  `PageSelectionBar`: Done, "N pages selected", Select all, Copy, Paste page after (once pages were
+  copied), Edit Background, Delete (disabled for every page); in a compact window Select all,
+  Paste after and Background go in a menu (⋯), so that the count is not cut. A read-only document
+  selects and copies only.
+* The clicks of a card (`pageClicks`, the pattern of the files of the library): the keys held at
+  the press are read by the click: Shift → `selectRange`, ⌘ (Apple) or Ctrl (the others) →
+  `toggle`, else a tap toggles while selecting, shows the page otherwise. The long press stays the
+  drag.
+* A card selected: ringed in 3 dp, a check at its corner, `selected` in its semantics; the card
+  carries the description "Page N" (the thumbnail none: it was the only one, and only once drawn).
+* The menu of a card on a page selected acts on all of them: Copy page, Paste page after, Edit
+  Background, Delete Page (shown when they can be deleted); Add page after stays on the page.
+  `EditorCommands.copyPages(ids)` and `pastePagesAfter(ids)` (the text of the system kept as for
+  one page).
+* The configurator (`DrawScreen`): opened from the grid on several pages (`onEditPagesBackground`,
+  their identifiers taken before the grid closes), "N pages of “document”", from the format of
+  the first one, `changePagesTemplate` on Apply.
+* Leaving the selection: Done, the back of the system (Escape on the desktop, before closing the
+  grid: `EditorBackHandler`), closing the grid (`togglePageGrid`) or showing a page (`jumpToPage`).
+* Found by the test of the grid: its items read `document.pages` when composed, after the count
+  of an earlier composition; pages removed meanwhile (two at once) gave an index out of the list.
+  The grid reads the list once and its items read that list.
+* The strings in the seven languages: `page_grid_action_select`, `page_grid_action_done`,
+  `page_grid_action_select_all`, the plurals `page_grid_selected_count` and
+  `page_config_subtitle_pages`.
+* Tests: `PageGridSelectionTest` (`drawview-ui`: Select, two taps selecting without leaving the
+  grid, the count, Delete of the two pages, Delete disabled after Select all, Done). Screenshots:
+  `editor-page-grid-selection` (tablet light and dark, phone light) new; `editor-page-grid`
+  (tablet, phone) recorded again with Select in the top bar.
 
 ## Decisions
 

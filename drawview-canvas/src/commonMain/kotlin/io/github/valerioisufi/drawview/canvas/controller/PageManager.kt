@@ -283,6 +283,7 @@ public class PageManager(private val controller: DrawViewController) {
         )
         controller.viewport.camera.restoreToBounds(animated = false)
         controller.isPageGridVisible = false
+        selection.clear()
         controller.requestRedraw()
     }
 
