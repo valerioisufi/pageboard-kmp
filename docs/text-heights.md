@@ -219,6 +219,21 @@ first, the original untouched).
   text following its width drawn in its box, in each alignment);
   `DrawDatabaseMigrationTest` (the room of a box in each alignment).
 
+### The migration on a copy of the database of the user
+
+Asked first, on 2026-10-25, the original untouched (`~/.pencilnotes`, PencilNotes closed; copied
+without its keys, and the application not started on the copy, which would reach the network):
+
+* Schema 20, 527 texts (517 shown: none turned, 169 following their width, all aligned at the
+  start), 2201 operations, no proofs.
+* Opened by Room: schema 21, `integrity_check` ok, no broken foreign key, the 527 texts kept. Every
+  text shown at its corner of before; the 348 of a width set kept it, the 169 following their width
+  got the room to the margin of their page. The 2201 operations decoded; none keeps a height in a
+  text nor a placement of a text as a box.
+* The note of the screenshots (24.3 mm wide, 4 pt, scaled down by the user): its lines laid out
+  with the fonts of the notes take 26.6 mm (14 lines of 1.9 mm); its stored height was 22.8 mm,
+  the 12 lines of before 2026-10-20.
+
 ## Decisions
 
 To be approved by the user:
