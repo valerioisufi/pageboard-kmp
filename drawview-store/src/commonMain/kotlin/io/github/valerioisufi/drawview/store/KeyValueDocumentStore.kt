@@ -587,10 +587,22 @@ public class KeyValueDocumentStore(
         index = index.copy(folders = index.folders.map { if (it.id == folderId) transform(it) else it })
     }
 
-    /** Removes a document, its stored content and its resources (the caller writes the index). */
+    /** The files of the resources of every document but [documentId] (the same content is kept once). */
+    private fun pathsOfOtherDocumentsLocked(documentId: String): Set<String> =
+        index.documents.asSequence().filter { it.id != documentId }.flatMap { summary ->
+            openDocuments[summary.id]?.resources?.map { it.path }
+                ?: storage.get(documentKey(summary.id))?.let { decodeOrNull<StoredDocument>(it) }?.resources?.map { it.uri }
+                ?: emptyList()
+        }.toSet()
+
+    /**
+     * Removes a document, its stored content and its resources, but the files other documents
+     * point at too (the caller writes the index).
+     */
     private fun deleteDocumentLocked(documentId: String) {
         val stored = storage.get(documentKey(documentId))?.let { decodeOrNull<StoredDocument>(it) }
-        stored?.resources?.forEach { resource ->
+        val shared = stored?.resources?.takeIf { it.isNotEmpty() }?.let { pathsOfOtherDocumentsLocked(documentId) }.orEmpty()
+        stored?.resources?.filter { it.uri.isNotEmpty() && it.uri !in shared }?.forEach { resource ->
             storage.remove(resourceKey(resource.uri))
             try {
                 PlatformFiles.delete(resource.uri)
