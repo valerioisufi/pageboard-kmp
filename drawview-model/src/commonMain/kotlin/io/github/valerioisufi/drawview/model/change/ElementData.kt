@@ -24,6 +24,7 @@ import io.github.valerioisufi.drawview.model.Versions
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.model.remodelingBrush
+import io.github.valerioisufi.drawview.model.text.TextSizes
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -98,14 +99,17 @@ public data class TextData(
     val x: Float,
     val y: Float,
     val width: Float,
-    val height: Float,
     val rotation: Float = 0f,
     val color: Int,
     val fontSize: Float,
     override val order: ElementOrder? = null,
     val versions: Versions = Versions.NONE
 ) : ElementData {
-    override fun toElement(modeller: StrokeModeller): DrawText = DrawText(id).also { applyTo(it) }.withOrder(order)
+    override fun toElement(modeller: StrokeModeller): DrawText =
+        DrawText(id).also { applyTo(it); it.height = estimatedHeight() }.withOrder(order)
+
+    /** The height of its lines guessed without laying them out (see `DrawText.height`). */
+    public fun estimatedHeight(): Float = TextSizes.estimatedHeightMm(text, fontSize)
 
     /** Whether its content (the text and its format) is the one of [other]. */
     internal fun hasContentOf(other: TextData): Boolean =
@@ -120,7 +124,6 @@ public data class TextData(
         text.x = x
         text.y = y
         text.width = width
-        text.height = height
         text.rotation = rotation
         text.color = color
         text.fontSize = fontSize
@@ -305,7 +308,6 @@ public fun DrawText.toData(): TextData = TextData(
     x = x,
     y = y,
     width = width,
-    height = height,
     rotation = rotation,
     color = color,
     fontSize = fontSize,
@@ -364,7 +366,7 @@ public fun DrawPage.toData(): PageData = PageData(
  */
 public fun ElementData.placement(): Placement? = when (this) {
     is StrokeData -> StrokePlacement(id, transform, order)
-    is TextData -> BoxPlacement(id, x, y, width, height, rotation, fontSize, order, autoWidth)
+    is TextData -> TextPlacement(id, x, y, width, rotation, fontSize, autoWidth, order)
     is ImageData -> BoxPlacement(id, x, y, width, height, rotation, order = order)
     is CustomElementData -> BoxPlacement(id, x, y, width, height, rotation, order = order)
     is PdfData, is TextMarkupData -> null

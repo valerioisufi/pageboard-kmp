@@ -241,7 +241,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         val most = (page.widthMm - 2f * PAGE_MARGIN_MM).coerceAtLeast(MIN_WIDTH_MM)
         val probe = TextData(
             id = newElementId(), text = content, alignment = defaults.alignment, autoWidth = true,
-            x = 0f, y = 0f, width = most, height = 0f, color = defaults.color, fontSize = defaults.fontSize
+            x = 0f, y = 0f, width = most, color = defaults.color, fontSize = defaults.fontSize
         )
         val size = controller.measureText(probe.toElement())
         val width = ((size?.width ?: most) + AUTO_SLACK_MM).coerceIn(AUTO_MIN_WIDTH_MM, most)
@@ -249,8 +249,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         val text = probe.copy(
             x = (middle.x - width / 2f).coerceIn(PAGE_MARGIN_MM, (page.widthMm - PAGE_MARGIN_MM - width).coerceAtLeast(PAGE_MARGIN_MM)),
             y = (middle.y - height / 2f).coerceIn(0f, (page.heightMm - height).coerceAtLeast(0f)),
-            width = width,
-            height = height.coerceAtLeast(MIN_HEIGHT_MM)
+            width = width
         ).toElement()
         controller.session.submit(AddElements.of(page, listOf(text)))
         controller.selectionManager.selectText(pageIndex, text)
@@ -293,8 +292,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
             return
         }
 
-        val laidOut = draft(versions = editedFrom?.versions ?: Versions.NONE)
-        val data = laidOut.copy(height = (controller.measureText(laidOut.toElement())?.height ?: boxHeight).coerceAtLeast(MIN_HEIGHT_MM))
+        val data = draft(versions = editedFrom?.versions ?: Versions.NONE)
         if (existing != null) {
             controller.hiddenElements.setDragged(listOf(existing.id), false)
             // Shown again even when nothing changed
@@ -525,7 +523,6 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         x = boxX,
         y = boxY,
         width = boxWidth,
-        height = boxHeight.coerceAtLeast(MIN_HEIGHT_MM),
         rotation = rotation,
         color = color,
         fontSize = fontSize,

@@ -19,6 +19,7 @@ import io.github.valerioisufi.drawview.model.SelectionActivity
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.BoxPlacement
+import io.github.valerioisufi.drawview.model.change.TextPlacement
 import io.github.valerioisufi.drawview.model.change.ChangeEffects
 import io.github.valerioisufi.drawview.model.change.CompositeChange
 import io.github.valerioisufi.drawview.model.change.PlaceElements
@@ -207,7 +208,7 @@ public class SelectionManager(private val controller: DrawViewController) {
         when {
             selection.isSingleText -> {
                 val t = selection.texts[0]
-                selection.boundingBox = Rect(t.x, t.y, t.x + t.width, t.y + t.height)
+                selection.boundingBox = t.frame()
                 selection.baseRotation = t.rotation
             }
             selection.isSingleImage -> {
@@ -271,7 +272,7 @@ public class SelectionManager(private val controller: DrawViewController) {
         controller.document.pages.getOrNull(pageIndex) ?: return
         val selection = SelectionGroup(
             texts = mutableListOf(text),
-            boundingBox = Rect(text.x, text.y, text.x + text.width, text.y + text.height),
+            boundingBox = text.frame(),
             pageIndex = pageIndex
         ).apply { baseRotation = text.rotation }
         setSelection(selection)
@@ -452,32 +453,31 @@ public class SelectionManager(private val controller: DrawViewController) {
         lift(selection)
         val inverse = Matrix2D()
         if (!selection.transform.invert(inverse)) return
-        val local = inverse.mapPoint(touchMm.x, touchMm.y)
-        // Undo the base rotation around the text center
-        val x = if (selection.baseRotation != 0f) {
-            Matrix2D().postRotate(-selection.baseRotation, text.centerX, text.centerY).mapPoint(local.x, local.y).x
-        } else local.x
+        val point = inverse.mapPoint(touchMm.x, touchMm.y)
+        // Along the lines of the text, from its corner (its rotation undone)
+        val x = text.toLocal(point.x, point.y).x
         // The handle is on the frame, its padding away from the text
         val padding = FrameStyle.PADDING_DP * controller.viewport.density / max(controller.viewport.pixelsPerMm(selection.pageIndex), 0.01f) / max(selection.transform.scaleFactor, 0.01f)
         var edge = if (isRightEdge) x - padding else x + padding
         // An edge of a text not turned nor moved snaps to what is around it
         if (selection.baseRotation == 0f && selection.transform.isIdentity) {
-            edge += controller.snapManager.snapEdge(selection.pageIndex, edge, text.y, text.y + text.height, selection.elements(), free)
+            edge += controller.snapManager.snapEdge(selection.pageIndex, text.x + edge, text.y, text.y + text.height, selection.elements(), free)
         }
         val minWidth = 20f
         if (isRightEdge) {
-            text.width = max(minWidth, edge - text.x)
-        } else {
-            val rightEdge = text.x + text.width
-            if (rightEdge - edge >= minWidth) {
-                text.x = edge
-                text.width = rightEdge - edge
-            }
+            text.width = max(minWidth, edge)
+        } else if (text.width - edge >= minWidth) {
+            // The corner moves along the lines, the right edge stays
+            val corner = DrawText.cornerFor(text.centerX, text.centerY, text.width, text.height, text.rotation)
+            val moved = Matrix2D().postRotate(text.rotation).mapPoint(edge, 0f)
+            text.x = corner.x + moved.x
+            text.y = corner.y + moved.y
+            text.width -= edge
         }
         // The lines wrap again on the new width
         controller.measureText(text)?.let { text.height = it.height }
         text.markDirty()
-        selection.boundingBox = Rect(text.x, text.y, text.x + text.width, text.y + text.height)
+        selection.boundingBox = text.frame()
         notifyChanged()
     }
 
@@ -530,12 +530,14 @@ public class SelectionManager(private val controller: DrawViewController) {
             placements.add(StrokePlacement(stroke.id, stroke.transform.then(finalTransform)))
         }
         for (text in selection.texts) {
+            // Its box scaled and turned around the middle of the selection: its corner follows
             val c = finalTransform.mapPoint(text.centerX, text.centerY)
             val width = text.width * scale
-            val height = text.height * scale
+            val rotation = (text.rotation + angle) % 360f
+            val corner = DrawText.cornerFor(c.x, c.y, width, text.height * scale, rotation)
             placements.add(
-                BoxPlacement(
-                    text.id, c.x - width / 2f, c.y - height / 2f, width, height, (text.rotation + angle) % 360f, text.fontSize * scale,
+                TextPlacement(
+                    text.id, corner.x, corner.y, width, rotation, text.fontSize * scale,
                     // A width set by its handles no longer follows the text
                     autoWidth = text.autoWidth && !textResized
                 )
@@ -550,8 +552,8 @@ public class SelectionManager(private val controller: DrawViewController) {
         // A text resized live goes back to where the change starts from (its undo)
         if (textResized) {
             val text = selection.texts[0]
-            (original[text.id] as? BoxPlacement)?.let {
-                text.x = it.x; text.y = it.y; text.width = it.width; text.height = it.height
+            (original[text.id] as? TextPlacement)?.let {
+                text.x = it.x; text.y = it.y; text.width = it.width
             }
         }
         val move = PlaceElements(oldPage.id, placements, newPage.id)
@@ -564,7 +566,7 @@ public class SelectionManager(private val controller: DrawViewController) {
         when {
             selection.isSingleText -> {
                 val t = selection.texts[0]
-                selection.boundingBox = Rect(t.x, t.y, t.x + t.width, t.y + t.height)
+                selection.boundingBox = t.frame()
                 selection.baseRotation = t.rotation
             }
             selection.isSingleImage -> {
@@ -751,15 +753,11 @@ public class SelectionManager(private val controller: DrawViewController) {
         val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
         val clamped = TextSizes.clamp(fontSize)
         // The text box grows with the font, its lines wrapping again on the same width
-        val texts = selection.texts.map {
-            val resized = it.toData().copy(fontSize = clamped)
-            val height = controller.measureText(resized.toElement())?.height ?: (it.height * clamped / it.fontSize.coerceAtLeast(0.1f))
-            resized.copy(height = height)
-        }
+        val texts = selection.texts.map { it.toData().copy(fontSize = clamped) }
         controller.session.submit(UpdateTexts(page.id, texts))
         if (selection.isSingleText) {
             val t = selection.texts[0]
-            selection.boundingBox = Rect(t.x, t.y, t.x + t.width, t.y + t.height)
+            selection.boundingBox = t.frame()
         }
         notifyChanged()
     }
@@ -772,3 +770,9 @@ public class SelectionManager(private val controller: DrawViewController) {
         notifyChanged()
     }
 }
+
+/**
+ * The frame of the selection of [this] text: its box before its rotation, placed so that turning
+ * it around its middle (as the frame of a selection turns) puts it on the text.
+ */
+private fun DrawText.frame(): Rect = Rect(centerX - width / 2f, centerY - height / 2f, centerX + width / 2f, centerY + height / 2f)

@@ -10,7 +10,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.lifecycle.ViewModelStoreOwner
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.TextAlignment
-import io.github.valerioisufi.drawview.model.change.BoxPlacement
+import io.github.valerioisufi.drawview.model.change.TextPlacement
 import io.github.valerioisufi.drawview.model.change.PlaceElements
 import io.github.valerioisufi.drawview.ui.adaptive.ReferenceWindow
 import java.util.Locale
@@ -147,7 +147,7 @@ class TextScreenshotTest {
             val page = controller.document.pages[0]
             val (under, text) = page.texts
             // Moved over the first one
-            controller.session.submit(PlaceElements(page.id, listOf(BoxPlacement(text.id, under.x + 30f, under.y + 2f, text.width, text.height, 0f))))
+            controller.session.submit(PlaceElements(page.id, listOf(TextPlacement(text.id, under.x + 30f, under.y + 2f, text.width, 0f, text.fontSize, text.autoWidth))))
             controller.selectTool(Tool.LAZO)
             controller.selectionManager.selectText(0, text)
             val center = checkNotNull(controller.viewport.pageMmToScreen(0)).mapPoint(text.centerX, text.centerY)

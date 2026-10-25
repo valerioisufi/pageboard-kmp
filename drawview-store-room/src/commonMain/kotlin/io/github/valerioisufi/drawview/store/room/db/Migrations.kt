@@ -4,14 +4,19 @@ import androidx.room.migration.Migration
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.SQLiteStatement
 import androidx.sqlite.execSQL
+import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.StrokeTool
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.TextMarkupKind
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.floatOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
@@ -26,7 +31,8 @@ import kotlinx.serialization.json.putJsonObject
  */
 
 /** The migrations from version 16 to [DrawDatabase]'s version. */
-internal val DRAW_DATABASE_MIGRATIONS: Array<Migration> = arrayOf(Migration16To17, Migration17To18, Migration18To19, Migration19To20)
+internal val DRAW_DATABASE_MIGRATIONS: Array<Migration> =
+    arrayOf(Migration16To17, Migration17To18, Migration18To19, Migration19To20, Migration20To21)
 
 /** 17: the elements of the types added by the applications. */
 internal object Migration16To17 : Migration(16, 17) {
@@ -146,6 +152,107 @@ internal object Migration19To20 : Migration(19, 20) {
         for (table in listOf("strokes", "texts", "images", "custom_elements", "pdfs", "text_markups")) {
             connection.execSQL("ALTER TABLE `$table` ADD COLUMN `ordered` TEXT NOT NULL DEFAULT ''")
             connection.execSQL("UPDATE `$table` SET `ordered` = `placed`")
+        }
+    }
+}
+
+/**
+ * 21: the box of a text is laid out, not stored (docs/text-heights.md). The height of the texts is
+ * dropped, and a turned text, which turned around the middle of its box, gets the corner it turns
+ * around now, computed with the height it had: it stays where it is. The texts and the placements
+ * of texts in the log of the operations are rewritten the same way (a placement of a text becomes
+ * a `TextPlacement`), so that they are given to the other devices as they are applied here.
+ */
+internal object Migration20To21 : Migration(20, 21) {
+    private const val COLUMNS = "`id`, `pageId`, `orderKey`, `text`, `x`, `y`, `width`, `rotation`, `color`, `fontSize`, " +
+        "`alignment`, `autoWidth`, `added`, `removed`, `placed`, `ordered`, `updated`, `contentVersions`"
+
+    private val json = Json
+
+    override fun migrate(connection: SQLiteConnection) {
+        val corners = mutableListOf<Triple<String, Float, Float>>()
+        connection.prepare("SELECT `id`, `x`, `y`, `width`, `height`, `rotation` FROM `texts` WHERE `rotation` != 0").use { row ->
+            while (row.step()) {
+                val corner = corner(row.getDouble(1).toFloat(), row.getDouble(2).toFloat(), row.getDouble(3).toFloat(), row.getDouble(4).toFloat(), row.getDouble(5).toFloat())
+                corners += Triple(row.getText(0), corner.first, corner.second)
+            }
+        }
+        connection.prepare("UPDATE `texts` SET `x` = ?, `y` = ? WHERE `id` = ?").use { update ->
+            for ((id, x, y) in corners) {
+                update.bindDouble(1, x.toDouble())
+                update.bindDouble(2, y.toDouble())
+                update.bindText(3, id)
+                update.step()
+                update.reset()
+            }
+        }
+        connection.execSQL(
+            "CREATE TABLE `texts_new` (`id` TEXT NOT NULL, `pageId` TEXT NOT NULL, `orderKey` TEXT NOT NULL, `text` TEXT NOT NULL, " +
+                "`x` REAL NOT NULL, `y` REAL NOT NULL, `width` REAL NOT NULL, `rotation` REAL NOT NULL, `color` INTEGER NOT NULL, " +
+                "`fontSize` REAL NOT NULL, `alignment` TEXT NOT NULL, `autoWidth` INTEGER NOT NULL, `added` TEXT NOT NULL, " +
+                "`removed` TEXT, `placed` TEXT NOT NULL, `ordered` TEXT NOT NULL, `updated` TEXT NOT NULL, " +
+                "`contentVersions` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`pageId`) REFERENCES `pages`(`id`) " +
+                "ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
+        connection.execSQL("INSERT INTO `texts_new` ($COLUMNS) SELECT $COLUMNS FROM `texts`")
+        connection.execSQL("DROP TABLE `texts`")
+        connection.execSQL("ALTER TABLE `texts_new` RENAME TO `texts`")
+        connection.execSQL("CREATE INDEX IF NOT EXISTS `index_texts_pageId` ON `texts` (`pageId`)")
+
+        val changes = mutableListOf<Pair<List<Any>, String>>()
+        connection.prepare("SELECT `documentId`, `replica`, `sequence`, `change` FROM `operations`").use { row ->
+            while (row.step()) {
+                val change = row.getText(3)
+                val rewritten = laidOut(json.parseToJsonElement(change)).toString()
+                if (rewritten != change) changes += listOf<Any>(row.getText(0), row.getText(1), row.getLong(2)) to rewritten
+            }
+        }
+        connection.prepare("UPDATE `operations` SET `change` = ? WHERE `documentId` = ? AND `replica` = ? AND `sequence` = ?").use { update ->
+            for ((key, change) in changes) {
+                update.bindText(1, change)
+                update.bindText(2, key[0] as String)
+                update.bindText(3, key[1] as String)
+                update.bindLong(4, key[2] as Long)
+                update.step()
+                update.reset()
+            }
+        }
+    }
+
+    /** The corner of a text [width] x [height] at ([x], [y]) turned by [rotation] around its middle. */
+    private fun corner(x: Float, y: Float, width: Float, height: Float, rotation: Float): Pair<Float, Float> {
+        if (rotation == 0f) return x to y
+        val corner = DrawText.cornerFor(x + width / 2f, y + height / 2f, width, height, rotation)
+        return corner.x to corner.y
+    }
+
+    /** [element] with its texts (`TextData`) and the placements of its texts as they are written now. */
+    internal fun laidOut(element: JsonElement): JsonElement = when (element) {
+        is JsonArray -> JsonArray(element.map { laidOut(it) })
+        is JsonObject -> {
+            // A text (with its type among elements, without it in `updateTexts`) or the placement
+            // of a text (a box with a font size): the only values with a height and a font size
+            val text = "height" in element && element["fontSize"].let { it != null && it !is JsonNull }
+            if (text) laidOutText(element, placement = (element["type"] as? JsonPrimitive)?.contentOrNull == "box")
+            else JsonObject(element.mapValues { laidOut(it.value) })
+        }
+        else -> element
+    }
+
+    private fun laidOutText(text: JsonObject, placement: Boolean): JsonObject {
+        fun float(key: String) = (text[key] as? JsonPrimitive)?.floatOrNull ?: 0f
+        val (x, y) = corner(float("x"), float("y"), float("width"), float("height"), float("rotation"))
+        return buildJsonObject {
+            for ((key, value) in text) {
+                when (key) {
+                    "height" -> Unit
+                    "x" -> put("x", x)
+                    "y" -> put("y", y)
+                    "type" -> put("type", "text")
+                    else -> put(key, value)
+                }
+            }
+            if (placement && text["autoWidth"].let { it == null || it is JsonNull }) put("autoWidth", false)
         }
     }
 }

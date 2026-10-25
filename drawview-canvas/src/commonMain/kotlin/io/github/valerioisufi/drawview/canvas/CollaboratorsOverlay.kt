@@ -82,8 +82,11 @@ internal class CollaboratorsOverlay {
     private fun DrawScope.drawText(controller: DrawViewController, collaborator: Collaborator, text: DrawText, labels: TextMeasurer) {
         val pageIndex = pageIndexOf(controller, collaborator.textPageId)
         val mmToScreen = controller.viewport.pageMmToScreen(pageIndex) ?: return
-        drawIntoCanvas { canvas -> controller.tileManager.tileRenderer.textAdapter?.drawText(canvas, text, mmToScreen, controller.paperOf(pageIndex)) }
-        val box = Rect(text.x, text.y, text.x + text.width, text.y + text.height)
+        val adapter = controller.tileManager.tileRenderer.textAdapter
+        drawIntoCanvas { canvas -> adapter?.drawText(canvas, text, mmToScreen, controller.paperOf(pageIndex)) }
+        // As high as its lines are laid out here
+        val height = adapter?.measure(text)?.height ?: text.height
+        val box = Rect(text.x, text.y, text.x + text.width, text.y + height)
         val corners = drawFrame(box, text.rotation, mmToScreen, collaborator.color, dashed = false)
         drawName(collaborator, corners[0] - Offset(0f, 22.dp.toPx()), labels)
     }
@@ -117,7 +120,10 @@ internal class CollaboratorsOverlay {
         drawName(collaborator, corners[0] - Offset(0f, 22.dp.toPx()), labels)
     }
 
-    /** Draws the frame of [box] (page millimeters, rotated by [rotation]); returns its corners on the screen. */
+    /**
+     * Draws the frame of [box] (page millimeters, rotated by [rotation] around its top-left corner,
+     * as a text turns); returns its corners on the screen.
+     */
     private fun DrawScope.drawFrame(box: Rect, rotation: Float, mmToScreen: Matrix2D, color: Color, dashed: Boolean): List<Offset> {
         val padding = 1f
         val points = floatArrayOf(
@@ -126,7 +132,7 @@ internal class CollaboratorsOverlay {
             box.right + padding, box.bottom + padding,
             box.left - padding, box.bottom + padding
         )
-        if (rotation != 0f) Matrix2D().postRotate(rotation, box.center.x, box.center.y).mapPoints(points)
+        if (rotation != 0f) Matrix2D().postRotate(rotation, box.left, box.top).mapPoints(points)
         mmToScreen.mapPoints(points)
         val corners = (0 until 4).map { Offset(points[it * 2], points[it * 2 + 1]) }
         val path = Path().apply {

@@ -184,6 +184,10 @@ public interface RotatableItem {
 /**
  * A text block placed on a page: Markdown with formulas (see `RichTextParser`).
  *
+ * Its document keeps where its lines may go: its top-left corner ([x], [y]), the width they wrap
+ * on, its rotation around that corner (its lines go along its turned axes from there, whatever
+ * their height). Its [height] is what its lines take.
+ *
  * [id] identifies the block on every device (see [newElementId]).
  */
 public class DrawText(override val id: String = newElementId()) : RotatableItem, DrawElement {
@@ -222,7 +226,31 @@ public class DrawText(override val id: String = newElementId()) : RotatableItem,
      * until it is laid out.
      */
     @Volatile override var height: Float = 20f
+
+    /** Rotation in degrees around its top-left corner ([x], [y]). */
     @Volatile override var rotation: Float = 0f
+
+    override val centerX: Float get() = x + turned(width / 2f, height / 2f).x
+    override val centerY: Float get() = y + turned(width / 2f, height / 2f).y
+
+    override fun getRotatedBounds(height: Float): Rect {
+        if (rotation == 0f) return Rect(x, y, x + width, y + height)
+        val corners = listOf(turned(0f, 0f), turned(width, 0f), turned(0f, height), turned(width, height))
+        return Rect(x + corners.minOf { it.x }, y + corners.minOf { it.y }, x + corners.maxOf { it.x }, y + corners.maxOf { it.y })
+    }
+
+    override fun toLocal(px: Float, py: Float): Point {
+        if (rotation == 0f) return Point(px - x, py - y)
+        val rad = rotation * PI.toFloat() / 180f
+        val c = cos(rad)
+        val s = sin(rad)
+        val dx = px - x
+        val dy = py - y
+        return Point(dx * c + dy * s, -dx * s + dy * c)
+    }
+
+    /** The point ([dx], [dy]) of the text before its rotation, turned around its corner. */
+    private fun turned(dx: Float, dy: Float): Point = turn(dx, dy, rotation)
 
     /** ARGB color. */
     @Volatile public var color: Int = 0xFF000000.toInt()
@@ -237,6 +265,25 @@ public class DrawText(override val id: String = newElementId()) : RotatableItem,
 
     public fun markDirty() {
         version++
+    }
+
+    public companion object {
+        /**
+         * The corner of a text [width] x [height] turned by [rotation] degrees whose middle is
+         * ([centerX], [centerY]): where its lines start (see [DrawText]).
+         */
+        public fun cornerFor(centerX: Float, centerY: Float, width: Float, height: Float, rotation: Float): Point {
+            val half = turn(width / 2f, height / 2f, rotation)
+            return Point(centerX - half.x, centerY - half.y)
+        }
+
+        private fun turn(dx: Float, dy: Float, rotation: Float): Point {
+            if (rotation == 0f) return Point(dx, dy)
+            val rad = rotation * PI.toFloat() / 180f
+            val c = cos(rad)
+            val s = sin(rad)
+            return Point(dx * c - dy * s, dx * s + dy * c)
+        }
     }
 
     public fun copyFrom(other: DrawText) {

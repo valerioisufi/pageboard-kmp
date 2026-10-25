@@ -315,7 +315,7 @@ private fun ChangeContext.writeText(page: DrawPage, text: DrawText, data: TextDa
         if (!data.hasContentOf(kept)) {
             // Made apart: the one lost is kept, as the same copy on every device
             val (lost, lostAt) = if (newer) kept to text.updated else data.copy(versions = incoming) to stamp
-            effects.versionLost(page, lost.copy(id = "${text.id}~$lostAt", y = lost.y + lost.height + LOST_VERSION_GAP_MM, order = null))
+            effects.versionLost(page, lost.copy(id = "${text.id}~$lostAt", y = lost.y + lost.estimatedHeight() + LOST_VERSION_GAP_MM, order = null))
         }
     }
     if (!newer) return false
@@ -389,9 +389,7 @@ public data class StrokePlacement(
     }
 }
 
-/**
- * A text block or an image, by its (rotated) box; [fontSize] for a text (`null` for an image).
- */
+/** An image or an element of an application, by its box turned around its middle. */
 @Serializable
 @SerialName("box")
 public data class BoxPlacement(
@@ -401,21 +399,10 @@ public data class BoxPlacement(
     val width: Float,
     val height: Float,
     val rotation: Float,
-    val fontSize: Float? = null,
-    override val order: ElementOrder? = null,
-    /** Whether the width of a text follows its text (see `DrawText.autoWidth`). */
-    val autoWidth: Boolean? = null
+    override val order: ElementOrder? = null
 ) : Placement {
     override fun applyTo(element: DrawElement) {
         when (element) {
-            is DrawText -> {
-                element.x = x; element.y = y
-                element.width = width; element.height = height
-                element.rotation = rotation
-                fontSize?.let { element.fontSize = it }
-                autoWidth?.let { element.autoWidth = it }
-                element.markDirty()
-            }
             is DrawImage -> {
                 element.x = x; element.y = y
                 element.width = width; element.height = height
@@ -431,10 +418,39 @@ public data class BoxPlacement(
     }
 }
 
+/**
+ * A text block, by where its lines may go: its corner, the width they wrap on, its rotation around
+ * its corner (see `DrawText`), its font size and whether its width follows it. Its height is what
+ * its lines take.
+ */
+@Serializable
+@SerialName("text")
+public data class TextPlacement(
+    override val id: String,
+    val x: Float,
+    val y: Float,
+    val width: Float,
+    val rotation: Float,
+    val fontSize: Float,
+    /** Whether the width of the text follows its text (see `DrawText.autoWidth`). */
+    val autoWidth: Boolean,
+    override val order: ElementOrder? = null
+) : Placement {
+    override fun applyTo(element: DrawElement) {
+        if (element !is DrawText) return
+        element.x = x; element.y = y
+        element.width = width
+        element.rotation = rotation
+        element.fontSize = fontSize
+        element.autoWidth = autoWidth
+        element.markDirty()
+    }
+}
+
 /** Where [element] is placed now (with its order), or `null` for an element not placed freely. */
 public fun placementOf(element: DrawElement): Placement? = when (element) {
     is DrawStroke -> StrokePlacement(element.id, element.transform)
-    is DrawText -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation, element.fontSize, autoWidth = element.autoWidth)
+    is DrawText -> TextPlacement(element.id, element.x, element.y, element.width, element.rotation, element.fontSize, element.autoWidth)
     is DrawImage -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation)
     is DrawCustomElement -> BoxPlacement(element.id, element.x, element.y, element.width, element.height, element.rotation)
     else -> null

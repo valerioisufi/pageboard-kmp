@@ -23,6 +23,7 @@ import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.AddPage
 import io.github.valerioisufi.drawview.model.change.AddResource
 import io.github.valerioisufi.drawview.model.change.BoxPlacement
+import io.github.valerioisufi.drawview.model.change.TextPlacement
 import io.github.valerioisufi.drawview.model.change.ChangeOrigin
 import io.github.valerioisufi.drawview.model.change.ChangePersister
 import io.github.valerioisufi.drawview.model.change.CompositeChange
@@ -168,7 +169,7 @@ class DocumentChangeTest {
             first.id,
             listOf(
                 StrokePlacement(stroke.id, AffineTransform(a = 2f, d = 2f, tx = 5f)),
-                BoxPlacement(text.id, 1f, 2f, 80f, 20f, 90f, fontSize = 32f),
+                TextPlacement(text.id, 1f, 2f, 80f, 90f, 32f, autoWidth = false),
                 BoxPlacement(image.id, 3f, 4f, 10f, 10f, 0f)
             )
         )
@@ -299,7 +300,8 @@ class DocumentChangeTest {
                 val placements = someElements().mapNotNull { element ->
                     when (element) {
                         is DrawStroke -> StrokePlacement(element.id, AffineTransform(tx = random.nextFloat() * 10f, ty = random.nextFloat() * 10f))
-                        is DrawText, is DrawImage -> BoxPlacement(element.id, random.nextFloat() * 50f, random.nextFloat() * 50f, 30f, 10f, random.nextFloat() * 90f)
+                        is DrawText -> TextPlacement(element.id, random.nextFloat() * 50f, random.nextFloat() * 50f, 30f, random.nextFloat() * 90f, 16f, autoWidth = false)
+                        is DrawImage -> BoxPlacement(element.id, random.nextFloat() * 50f, random.nextFloat() * 50f, 30f, 10f, random.nextFloat() * 90f)
                         else -> null
                     }
                 }

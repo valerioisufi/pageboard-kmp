@@ -2,7 +2,7 @@ package io.github.valerioisufi.drawview.model
 
 import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.AddPage
-import io.github.valerioisufi.drawview.model.change.BoxPlacement
+import io.github.valerioisufi.drawview.model.change.TextPlacement
 import io.github.valerioisufi.drawview.model.change.CompositeChange
 import io.github.valerioisufi.drawview.model.change.DocumentChange
 import io.github.valerioisufi.drawview.model.change.DocumentSession
@@ -149,8 +149,8 @@ class FutureStampTest {
         // The changes carrying [carried]: an order, the versions of a text, what a removal saw
         fun changes(carried: Stamp): List<DocumentChange> {
             val order = ElementOrder.onTop(carried, 0)
-            val added = TextData("added", "x", x = 0f, y = 0f, width = 10f, height = 10f, color = 0, fontSize = 16f, order = order)
-            val placed = PlaceElements(page.id, listOf(BoxPlacement(text.id, 1f, 2f, 40f, 10f, 0f, order = order)))
+            val added = TextData("added", "x", x = 0f, y = 0f, width = 10f, color = 0, fontSize = 16f, order = order)
+            val placed = PlaceElements(page.id, listOf(TextPlacement(text.id, 1f, 2f, 40f, 0f, 16f, autoWidth = false, order = order)))
             return listOf(
                 AddElements(page.id, listOf(added)),
                 placed,
@@ -187,7 +187,7 @@ class FutureStampTest {
         val session = DocumentSession(document, replica = "ada")
 
         session.submit(RenameDocument("Optics"))
-        session.submit(PlaceElements(document.pages[0].id, listOf(BoxPlacement(text.id, 50f, 60f, 40f, 10f, 0f))))
+        session.submit(PlaceElements(document.pages[0].id, listOf(TextPlacement(text.id, 50f, 60f, 40f, 0f, text.fontSize, autoWidth = false))))
         assertEquals("Optics", document.title)
         assertEquals(50f, text.x)
     }

@@ -111,8 +111,8 @@ public class TextLineMetrics(public val height: Float, public val baseline: Floa
 
 /**
  * A text block as a [TextTileAdapter] lays it out, in millimeters of the block (from its top-left
- * corner, before its rotation, which turns it around its middle, [height] being the height it is
- * drawn): its [words], its [formulas] and the [boxes] drawn under them (the backgrounds of its
+ * corner, before its rotation, which turns it around that corner, [height] being the height its
+ * lines take): its [words], its [formulas] and the [boxes] drawn under them (the backgrounds of its
  * code).
  */
 public class TextBlockLayout(

@@ -94,7 +94,7 @@ class TextEditingTest {
         page.add(text)
 
         // Three lines of 100 mm (10 mm a character), the height it carries left behind
-        controller.session.submit(UpdateTexts(page.id, listOf(text.toData().copy(text = "x".repeat(25), height = 3f))))
+        controller.session.submit(UpdateTexts(page.id, listOf(text.toData().copy(text = "x".repeat(25)))))
         assertEquals(30f, page.texts.single().height)
     }
 
@@ -128,13 +128,35 @@ class TextEditingTest {
     @Test
     fun aPointOfARotatedTextIsTakenBeforeItsRotation() {
         val text = DrawText().apply { x = 0f; y = 0f; width = 40f; height = 10f; rotation = 90f }
-        // Turned around its middle (20, 5): its top-left corner is now at (25, -15)
-        val corner = text.toLocal(25f, -15f)
+        // Turned around its top-left corner (0, 0): its lines go down, their bottom on the left
+        val corner = text.toLocal(0f, 0f)
         assertEquals(0f, corner.x, 1e-3f)
         assertEquals(0f, corner.y, 1e-3f)
-        val end = text.toLocal(15f, 25f)
+        val end = text.toLocal(-10f, 40f)
         assertEquals(40f, end.x, 1e-3f)
         assertEquals(10f, end.y, 1e-3f)
+    }
+
+    @Test
+    fun aTurnedTextIsScaledAroundTheMiddleOfItsFrame() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val page = controller.document.pages[0]
+        // One line of 10 mm at 20 points, turned by a quarter around its corner (80, 50)
+        val text = DrawText().apply { this.text = "abc"; x = 80f; y = 50f; width = 60f; height = 10f; fontSize = 20f; rotation = 90f }
+        page.add(text)
+        val centerX = text.centerX
+        val centerY = text.centerY
+
+        controller.selectionManager.selectText(0, text)
+        controller.selectionManager.beginTransformation()
+        controller.selectionManager.scaleBy(2f)
+        controller.selectionManager.applyTransformation()
+
+        assertEquals(120f, text.width)
+        assertEquals(40f, text.fontSize)
+        assertEquals(20f, text.height, "its line at 40 points")
+        assertEquals(centerX, text.centerX, 1e-3f, "the middle of its frame where it was")
+        assertEquals(centerY, text.centerY, 1e-3f)
     }
 
     @Test

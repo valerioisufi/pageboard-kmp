@@ -32,6 +32,13 @@ public object TextSizes {
      */
     public fun estimatedLineHeightMm(fontSize: Float): Float = fontSize * PT_TO_MM * 1.2f
 
+    /**
+     * Height of [text] in millimeters when it cannot be laid out: a line of [fontSize] points for
+     * each of its lines (the lines it wraps into are not counted).
+     */
+    public fun estimatedHeightMm(text: String, fontSize: Float): Float =
+        (text.count { it == '\n' } + 1) * estimatedLineHeightMm(fontSize)
+
     private const val EPSILON = 0.01f
 }
 

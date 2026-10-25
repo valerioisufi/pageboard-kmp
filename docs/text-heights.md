@@ -153,7 +153,7 @@ The version is to be agreed (see [Decisions](#decisions)).
 |---|---|---|
 | 1 | One layout at every zoom: `drawText` lays a text out at the resolution of `measure` (20 px/mm) and draws it scaled, the formulas rendered again at their size on the tile; tests (`TextHeightTest`: the note drawn at 0.75 to 64 px/mm ends within a pixel of its measured height); the screenshots of the explorer recorded again (the glyphs a fraction of a pixel apart) | Done |
 | 2 | The height laid out: `TextBoxes`; `DrawText.height` the height of its lines once laid out; the tiles by the layout of the adapter (sizes cached); `measureTextsWithCode` removed; the format unchanged (the height still written, the writers as they are) until phase 3; tests (`TextEditingTest`: the texts as high as their lines once the adapter is set, with no change of the document; a changed text as high as its new lines whatever height it carries; `TileEngineTest`: a tile under the old box of a text draws its lines, not below them) | Done |
-| 3 | The format: the height out of `TextData`, `BoxPlacement` (texts) and `texts`; nothing writes a height any more (editor, handles, font size, scaling of a selection, lecture assistant); the corner as the pivot of a text; Room 21 and its migration of `texts` and `operations`; the protocol (`ProtocolFormatTest`); ABI of `drawview-model`, `drawview-canvas`; tests (`MigrationTestHelper` as above; a turned text drawn, selected, exported at the same place; the copy of a lost text placed below it) | Planned |
+| 3 | The format: the height out of `TextData`, `BoxPlacement` (texts) and `texts`; nothing writes a height any more (editor, handles, font size, scaling of a selection, lecture assistant); the corner as the pivot of a text; Room 21 and its migration of `texts` and `operations`; the protocol (`ProtocolFormatTest`); ABI of `drawview-model`; tests (`MigrationTestHelper` as above; a turned text scaled around the middle of its frame; a point of a turned text taken from its corner) | Done |
 | 4 | A width that follows the text, laid out (if approved): its room kept, its box from its lines; in the migration of phase 3 (one schema, one change of the protocol); tests (each alignment, a wider font not wrapping, the editor growing the box as today) | Planned |
 
 The commits of the first plan that corrected the stored heights (on opening, when scaled) are
@@ -174,6 +174,26 @@ first, the original untouched).
   alignment; dropped with the other caches).
 * `RotatableItem.getRotatedBounds(height)`: the tiles choose a text by the height of its layout
   (ABI of `drawview-model`).
+
+### Phase 3 results
+
+* `TextData` and the table `texts` have no height; `TextPlacement` (`text`) places a text by its
+  corner, its width, its rotation, its font size and whether its width follows it; `BoxPlacement`
+  is for the images and the elements of the applications only. A text read or received has the
+  estimate of `TextSizes.estimatedHeightMm` until `TextBoxes` lays it out; the copy of a lost text
+  is placed below its estimate.
+* `DrawText` turns around its corner: `centerX`, `centerY`, `getRotatedBounds(height)`, `toLocal`
+  and `DrawText.cornerFor` (the corner of a box from its middle). The selection keeps its frame
+  around the middle of a text (`frame`) and places a text back by its corner; the handles of the
+  width move the corner along the lines; the editor (`TextBoxEditor`), the adapter, the export
+  and the frame of the other devices turn a text around its corner, as high as it is laid out.
+* `Migration20To21`: the turned texts get their corner from their middle and their height, the
+  table is rebuilt without the height; the log of the operations is rewritten the same way (a text
+  is told by its height and its font size, with its type among elements and without it in
+  `updateTexts`; a placement of a text becomes `text`). Tested on a database of version 20.
+* The protocol stays at version 1, its format recorded again (`ProtocolFormats`).
+* The screenshot of a turned text being written recorded again (`text-writing-turned`): the text
+  of the test, placed by its corner now, is a few pixels lower, the bar of the editor with it.
 
 ## Decisions
 

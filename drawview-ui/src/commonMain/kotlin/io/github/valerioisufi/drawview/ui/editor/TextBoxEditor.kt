@@ -185,8 +185,9 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                 .offset { IntOffset(origin.x.roundToInt(), origin.y.roundToInt()) }
                 .width(widthDp)
                 .graphicsLayer {
+                    // A text turns around its top-left corner (see DrawText)
                     rotationZ = editor.rotation
-                    transformOrigin = TransformOrigin.Center
+                    transformOrigin = TransformOrigin(0f, 0f)
                 }
                 .focusRequester(focusRequester)
                 // A tap on a block of code puts the caret on the character tapped (the field would

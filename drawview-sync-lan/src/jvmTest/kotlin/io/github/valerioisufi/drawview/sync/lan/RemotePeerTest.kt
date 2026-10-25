@@ -101,7 +101,7 @@ class RemotePeerTest {
                 val written = "Ciao! Sto scrivendo anch'io su questa pagina."
                 val textId = newElementId()
                 fun draft(length: Int) = TextData(
-                    id = textId, text = written.take(length), x = 25f, y = waveY + 30f, width = 150f, height = 8f,
+                    id = textId, text = written.take(length), x = 25f, y = waveY + 30f, width = 150f,
                     color = 0xFF6D4C41.toInt(), fontSize = 16f
                 )
                 println("PEER writing")

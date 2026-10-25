@@ -163,10 +163,11 @@ internal data class TextEntity(
     val pageId: String,
     val orderKey: ElementOrder,
     val text: String,
+    /** Its top-left corner, which it turns around (see `DrawText`). */
     val x: Float, // mm
     val y: Float, // mm
+    /** The width its lines wrap on (its height is what they take, laid out). */
     val width: Float, // mm
-    val height: Float, // mm
     val rotation: Float, // degrees
     val color: Int,
     val fontSize: Float,

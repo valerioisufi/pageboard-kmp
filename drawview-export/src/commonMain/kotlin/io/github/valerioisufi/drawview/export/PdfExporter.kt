@@ -207,7 +207,7 @@ public class PdfExporter(
         fun write(text: DrawText, mmToPt: Matrix2D, paperColor: Int): Boolean {
             val layout = layouts[text] ?: return writeImage(text, mmToPt, paperColor)
             val toBlock = Matrix2D()
-                .postRotate(text.rotation, text.width / 2f, layout.height / 2f)
+                .postRotate(text.rotation)
                 .postTranslate(text.x, text.y)
                 .postConcat(mmToPt)
             val raster = BlockRaster(text, toBlock, paperColor)
@@ -295,10 +295,11 @@ public class PdfExporter(
             val adapter = textAdapter ?: return true
             if (text.width <= 0f || text.text.isBlank()) return true
             val toBlock = Matrix2D()
-                .postRotate(text.rotation, text.width / 2f, text.height / 2f)
+                .postRotate(text.rotation)
                 .postTranslate(text.x, text.y)
                 .postConcat(mmToPt)
-            return BlockRaster(text, toBlock, paperColor).draw(Rect(0f, 0f, text.width, text.height))
+            val height = adapter.measure(text)?.height ?: text.height
+            return BlockRaster(text, toBlock, paperColor).draw(Rect(0f, 0f, text.width, height))
         }
 
         /**
@@ -332,7 +333,8 @@ public class PdfExporter(
 
             private fun render(): IntArray? {
                 val adapter = textAdapter ?: return null
-                val blockHeight = max(text.height, 0.1f)
+                // As high as its lines are laid out
+                val blockHeight = max(adapter.measure(text)?.height ?: text.height, 0.1f)
                 scale = minOf(TEXT_PX_PER_MM, MAX_TEXT_SIDE / max(text.width, blockHeight))
                 width = ceil(text.width * scale).toInt().coerceAtLeast(1)
                 height = ceil(blockHeight * scale).toInt().coerceAtLeast(1)
@@ -340,8 +342,8 @@ public class PdfExporter(
                 val canvas = Canvas(bitmap)
                 canvas.drawRect(ComposeRect(0f, 0f, width.toFloat(), height.toFloat()), Paint().apply { blendMode = BlendMode.Clear })
                 val toBitmap = Matrix2D()
-                    .postRotate(-text.rotation, text.x + text.width / 2f, text.y + text.height / 2f)
                     .postTranslate(-text.x, -text.y)
+                    .postRotate(-text.rotation)
                     .postScale(scale, scale)
                 adapter.drawText(canvas, text, toBitmap, paperColor)
                 return IntArray(width * height).also { bitmap.readPixels(it); pixels = it }

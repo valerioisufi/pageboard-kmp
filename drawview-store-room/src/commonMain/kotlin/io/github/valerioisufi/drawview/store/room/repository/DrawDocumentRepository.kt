@@ -28,6 +28,7 @@ import io.github.valerioisufi.drawview.model.change.StrokeData
 import io.github.valerioisufi.drawview.model.change.TextMarkupData
 import io.github.valerioisufi.drawview.model.change.toData
 import io.github.valerioisufi.drawview.model.newElementId
+import io.github.valerioisufi.drawview.model.text.TextSizes
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.store.room.db.CustomElementEntity
 import io.github.valerioisufi.drawview.store.room.db.DocumentEntity
@@ -196,10 +197,11 @@ internal class DrawDocumentRepository(
         x = entity.x
         y = entity.y
         width = entity.width
-        height = entity.height
         rotation = entity.rotation
         color = entity.color
         fontSize = entity.fontSize
+        // Until it is laid out
+        height = TextSizes.estimatedHeightMm(entity.text, entity.fontSize)
         contentVersions = entity.contentVersions
     }
 
@@ -436,7 +438,6 @@ internal class DrawDocumentRepository(
                 x = text.x,
                 y = text.y,
                 width = text.width,
-                height = text.height,
                 rotation = text.rotation,
                 color = text.color,
                 fontSize = text.fontSize,

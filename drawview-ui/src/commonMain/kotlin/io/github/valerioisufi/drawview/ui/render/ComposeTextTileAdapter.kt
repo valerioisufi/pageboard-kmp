@@ -194,7 +194,7 @@ public class ComposeTextTileAdapter(
                 val labelStyles = CharStyles(label.layoutInput.text, block.theme.label.toArgb(), label.layoutInput.style.fontSize.value, mono = true)
                 addWords(label, labelStyles, scale, rect.left + block.labelLeftPx, rect.top + block.labelTopPx, words)
             }
-            TextBlockLayout(words, formulas, text.height, boxes)
+            TextBlockLayout(words, formulas, layout.size.height / scale, boxes)
         }
     }
 
@@ -333,7 +333,7 @@ public class ComposeTextTileAdapter(
 
         val toCanvas = Matrix2D()
             .postScale(1f / LAYOUT_PX_PER_MM, 1f / LAYOUT_PX_PER_MM)
-            .postRotate(text.rotation, text.width / 2f, text.height / 2f)
+            .postRotate(text.rotation)
             .postTranslate(text.x, text.y)
             .postConcat(mmToCanvas)
 

@@ -5,10 +5,17 @@ import androidx.room.testing.MigrationTestHelper
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
 import io.github.valerioisufi.drawview.model.Stamp
+import io.github.valerioisufi.drawview.model.change.AddElements
+import io.github.valerioisufi.drawview.model.change.BoxPlacement
 import io.github.valerioisufi.drawview.model.change.OperationId
+import io.github.valerioisufi.drawview.model.change.PlaceElements
+import io.github.valerioisufi.drawview.model.change.TextData
+import io.github.valerioisufi.drawview.model.change.TextPlacement
+import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.store.room.db.DRAW_DATABASE_MIGRATIONS
 import io.github.valerioisufi.drawview.store.room.db.Migration18To19
 import io.github.valerioisufi.drawview.store.room.db.Migration19To20
+import io.github.valerioisufi.drawview.store.room.db.Migration20To21
 import io.github.valerioisufi.drawview.store.room.db.DrawDatabase
 import io.github.valerioisufi.drawview.store.room.db.createDrawDatabase
 import java.nio.file.Files
@@ -171,6 +178,74 @@ class DrawDatabaseMigrationTest {
             assertEquals(listOf("pdf", "markup", "image", "custom", "text", "stroke"), page.snapshotContent().paintOrder.map { it.id })
             for (element in page.elements()) assertEquals(element.placed, element.ordered, element.id)
             assertEquals(stamp(150), page.find("stroke")?.ordered)
+        } finally {
+            database.close()
+        }
+    }
+
+    @Test
+    fun theTextsOfVersion20StayWhereTheyAreWithoutTheirHeight() = runTest {
+        helper.createDatabase(20).use { connection ->
+            connection.execSQL(
+                "INSERT INTO documents (id, name, folderId, createdAt, modifiedAt, lastOpenedAt, defaultBackground, " +
+                    "defaultWidth, defaultHeight, defaultsVersion, titleVersion) VALUES ('$DOCUMENT', 'Lectures', NULL, " +
+                    "1, 2, NULL, '{\"type\":\"Solid\"}', 210.0, 297.0, '$STAMP', '$STAMP')"
+            )
+            connection.execSQL(
+                "INSERT INTO pages (id, documentId, orderKey, width, height, background, added, removed, orderVersion, " +
+                    "formatVersion, contentVersions, removalSaw) VALUES ('$PAGE', '$DOCUMENT', 'k', 210.0, 297.0, NULL, " +
+                    "'$STAMP', NULL, '$STAMP', '$STAMP', '', NULL)"
+            )
+            // Upright, and turned by a quarter around the middle of its box of 40 x 10 mm
+            for ((id, y, rotation) in listOf(Triple("upright", 20.0, 0.0), Triple("turned", 50.0, 90.0))) {
+                connection.execSQL(
+                    "INSERT INTO texts (id, pageId, orderKey, text, x, y, width, height, rotation, color, fontSize, alignment, " +
+                        "autoWidth, added, removed, placed, ordered, updated, contentVersions) VALUES ('$id', '$PAGE', " +
+                        "'$STAMP/00000000', 'waves', 10.0, $y, 40.0, 10.0, $rotation, -16777216, 16.0, 'START', 0, '$STAMP', " +
+                        "NULL, '$STAMP', '$STAMP', '$STAMP', '')"
+                )
+            }
+            val changes = listOf(
+                """{"type":"addElements","pageId":"$PAGE","elements":[{"type":"text","id":"turned","text":"waves","x":10.0,""" +
+                    """"y":50.0,"width":40.0,"height":10.0,"rotation":90.0,"color":-16777216,"fontSize":16.0}]}""",
+                """{"type":"placeElements","pageId":"$PAGE","placements":[{"type":"box","id":"turned","x":10.0,"y":50.0,""" +
+                    """"width":40.0,"height":10.0,"rotation":90.0,"fontSize":16.0,"autoWidth":true},{"type":"box","id":"image",""" +
+                    """"x":1.0,"y":2.0,"width":3.0,"height":4.0,"rotation":90.0}]}""",
+                """{"type":"updateTexts","pageId":"$PAGE","texts":[{"id":"upright","text":"changed","x":10.0,""" +
+                    """"y":20.0,"width":40.0,"height":10.0,"color":-16777216,"fontSize":16.0}]}"""
+            )
+            for ((sequence, change) in changes.withIndex()) {
+                connection.execSQL(
+                    "INSERT INTO operations (documentId, replica, sequence, stamp, change) VALUES ('$DOCUMENT', 'bob', " +
+                        "${sequence + 1}, '$STAMP', '$change')"
+                )
+            }
+        }
+
+        helper.runMigrationsAndValidate(21, listOf(Migration20To21)).close()
+
+        val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
+        try {
+            val store = RoomDocumentStore(database)
+            val page = assertNotNull(store.loadDocument(DOCUMENT)).pages.single()
+            val upright = page.texts.single { it.id == "upright" }
+            assertEquals(10f to 20f, upright.x to upright.y, "an upright text where it was")
+            // Its middle was (30, 55): its corner, turned by a quarter, is 5 mm right of it and 20 mm above
+            val turned = page.texts.single { it.id == "turned" }
+            assertEquals(35f, turned.x, 1e-4f)
+            assertEquals(35f, turned.y, 1e-4f)
+            assertEquals(90f, turned.rotation)
+            turned.height = 10f
+            assertEquals(30f, turned.centerX, 1e-4f, "its box where it was, as high as before")
+            assertEquals(55f, turned.centerY, 1e-4f)
+
+            val (added, placed, updated) = store.operationsAfter(DOCUMENT, emptyMap()).map { it.change }
+            val text = assertIs<TextData>(assertIs<AddElements>(added).elements.single())
+            assertEquals(35f to 35f, text.x to text.y)
+            val (textPlacement, imagePlacement) = assertIs<PlaceElements>(placed).placements
+            assertEquals(TextPlacement("turned", 35f, 35f, 40f, 90f, 16f, autoWidth = true), textPlacement)
+            assertEquals(BoxPlacement("image", 1f, 2f, 3f, 4f, 90f), imagePlacement, "an image as it was")
+            assertEquals(10f to 20f, assertIs<UpdateTexts>(updated).texts.single().let { it.x to it.y })
         } finally {
             database.close()
         }

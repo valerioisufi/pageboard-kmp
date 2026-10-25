@@ -23,6 +23,7 @@ import io.github.valerioisufi.drawview.model.TextMarkupKind
 import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.AddPage
 import io.github.valerioisufi.drawview.model.change.BoxPlacement
+import io.github.valerioisufi.drawview.model.change.TextPlacement
 import io.github.valerioisufi.drawview.model.change.ChangeOrigin
 import io.github.valerioisufi.drawview.model.change.CompositeChange
 import io.github.valerioisufi.drawview.model.change.DocumentChange
@@ -238,7 +239,7 @@ class ConvergenceTest {
                 val placements = someElements().mapNotNull { element ->
                     when (element) {
                         is DrawStroke -> StrokePlacement(element.id, AffineTransform(tx = random.nextInt(10).toFloat(), ty = random.nextInt(10).toFloat()))
-                        is DrawText -> BoxPlacement(element.id, random.nextInt(50).toFloat(), random.nextInt(50).toFloat(), 30f, 10f, 0f, 10f + random.nextInt(10))
+                        is DrawText -> TextPlacement(element.id, random.nextInt(50).toFloat(), random.nextInt(50).toFloat(), 30f, 0f, 10f + random.nextInt(10), autoWidth = false)
                         is DrawImage -> BoxPlacement(element.id, random.nextInt(50).toFloat(), random.nextInt(50).toFloat(), 30f, 10f, 0f)
                         else -> null
                     }
