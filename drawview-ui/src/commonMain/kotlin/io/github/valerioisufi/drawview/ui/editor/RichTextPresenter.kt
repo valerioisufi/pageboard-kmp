@@ -144,10 +144,18 @@ internal class PresentedFormula<T>(
 internal class PresentedCodeBlock(val offset: Int, val layout: CodeBlockLayout, val codeStart: Int, val leftPx: Float)
 
 /**
+ * A block of code whose code is being written: its code is in the text, laid out as in the block;
+ * the rest of the block (its background, label and numbers: [CodeBlockLayout.drawChrome]) is drawn
+ * from the top of the line of [offset] (its first line of code), [leftPx] from the left.
+ */
+internal class WrittenCodeBlock(val offset: Int, val layout: CodeBlockLayout, val leftPx: Float)
+
+/**
  * A text as it is shown (see [RichTextPresenter]): the [text] laid out, the [mapping] of its
  * offsets and those of the source, its [formulas] and [codeBlocks] to draw over their characters,
  * its code in the line ([inlineCode]) and the blocks of code whose source is shown ([codeSources])
- * to draw on a background, the formula under the caret ([formulaAtCaret]) whose source is shown.
+ * to draw on a background, the blocks whose code is written ([writtenBlocks]), the formula under
+ * the caret ([formulaAtCaret]) whose source is shown.
  */
 internal class PresentedText<T>(
     val text: AnnotatedString,
@@ -156,7 +164,8 @@ internal class PresentedText<T>(
     val codeBlocks: List<PresentedCodeBlock>,
     val inlineCode: List<MarkdownTextUtil.InlineCode>,
     val codeSources: List<IntRange>,
-    val formulaAtCaret: Span?
+    val formulaAtCaret: Span?,
+    val writtenBlocks: List<WrittenCodeBlock> = emptyList()
 )
 
 /**
@@ -178,10 +187,14 @@ internal class SourceMapping(private val toShown: IntArray, private val toSource
  * * Every line of the source is a paragraph, its line break shown as a zero-width space ending it
  *   (Compose adds an empty line around the line break of a paragraph); the last line break of a
  *   text stays one, for the empty line after it.
- * * The delimiters are hidden; shown faded when the caret touches their span.
+ * * The delimiters are hidden; shown faded (their color only) when the caret touches their span,
+ *   the `#` of a heading only when the caret is on them or right after them.
  * * A formula is an object ([Struts]) drawn over its characters, or its source when the caret
- *   touches it or it cannot be rendered (in red then); alone on its lines, it takes its line.
- * * A block of code is an object taking its line, or its source when the caret touches it.
+ *   touches it or it cannot be rendered (in red then); alone on its lines, it takes its line. The
+ *   source of a formula the caret touches keeps the room of the formula: its line does not move.
+ * * A block of code is an object taking its line. With the caret in its code, its code is written
+ *   in the text, laid out as in the block (its fences hidden, struts for its top and its bottom);
+ *   with the caret on a fence, its source is shown.
  * * A list item shows its bullet or its number instead of its marker, its paragraph indented so
  *   that its wrapped lines start under its text.
  */
@@ -194,6 +207,12 @@ internal object RichTextPresenter {
         val selMin = reveal?.let { min(it.start, it.end) }
         val selMax = reveal?.let { max(it.start, it.end) }
         fun touched(span: Span) = selMin != null && selMax != null && selMin <= span.end && selMax >= span.start
+        // The delimiters the caret reveals: those of the span it touches, of a heading only near its #
+        fun revealed(span: Span) = if (span.kind == Kind.HEADING) {
+            selMin != null && selMax != null && selMin <= span.contentStart && selMax >= span.start
+        } else {
+            touched(span)
+        }
 
         // What each part of the source becomes
         val hidden = BooleanArray(text.length)
@@ -203,6 +222,9 @@ internal object RichTextPresenter {
         val listItemAt = HashMap<Int, Span>()
         val errors = mutableListOf<Span>()
         val sources = mutableListOf<Span>()
+        val written = mutableListOf<Pair<Span, CodeBlockLayout>>()
+        // The formulas whose source is shown, with the room they keep
+        val keptRoomAt = HashMap<Int, Pair<Span, MarkdownTextUtil.RenderedFormula<T>>>()
         var atCaret: Span? = null
         for (span in spans) {
             val touched = touched(span)
@@ -210,22 +232,35 @@ internal object RichTextPresenter {
                 Kind.LIST_ITEM -> listItemAt[span.start] = span
                 Kind.CODE_BLOCK -> {
                     val layout = p.layoutCodeBlock
-                    if (!touched && layout != null && p.lineWidthPx != null) {
-                        val left = codeBlockLeft(span, p)
-                        blockLeft[span.start] = left
-                        blockAt[span.start] = span to layout(codeBlockSource(text, span, p.lineWidthPx - left))
-                    } else {
-                        if (touched) sources += span
-                        if (!touched) for (delimiter in span.delimiters) for (i in delimiter) hidden[i] = true
+                    // The caret on a fence: the end of the opening line, or from the start of the closing one
+                    val onFence = touched && (selMin!! < span.contentStart || selMax!! > span.contentEnd && span.contentEnd < span.end)
+                    when {
+                        !touched && layout != null && p.lineWidthPx != null -> {
+                            val left = codeBlockLeft(span, p)
+                            blockLeft[span.start] = left
+                            blockAt[span.start] = span to layout(codeBlockSource(text, span, p.lineWidthPx - left))
+                        }
+                        touched && !onFence && layout != null && p.lineWidthPx != null && span.contentStart < span.contentEnd -> {
+                            // Its code written as in the block, the fences hidden
+                            val left = codeBlockLeft(span, p)
+                            blockLeft[span.start] = left
+                            written += span to layout(codeBlockSource(text, span, p.lineWidthPx - left))
+                            sources += span
+                            for (k in span.start until span.contentStart) hidden[k] = true
+                            for (k in span.contentEnd until span.end) hidden[k] = true
+                        }
+                        touched -> sources += span
+                        else -> for (delimiter in span.delimiters) for (i in delimiter) hidden[i] = true
                     }
                 }
                 Kind.FORMULA -> {
-                    if (touched) {
-                        if (atCaret == null) atCaret = span
-                        continue
-                    }
                     val rendered = p.renderFormula(MarkdownTextUtil.formulaSource(text, span), MarkdownTextUtil.formulaSizePx(span, p.fontSizePx))
                         ?.takeIf { it.widthPx > 0f && it.heightPx > 0f }
+                    if (touched) {
+                        if (atCaret == null) atCaret = span
+                        if (rendered != null) keptRoomAt[span.start] = span to rendered
+                        continue
+                    }
                     if (rendered == null) {
                         errors += span
                         continue
@@ -239,9 +274,10 @@ internal object RichTextPresenter {
                         while (i < text.length && text[i] != '\n' && text[i].isWhitespace()) hidden[i++] = true
                     }
                 }
-                else -> if (!touched) for (delimiter in span.delimiters) for (i in delimiter) hidden[i] = true
+                else -> if (!revealed(span)) for (delimiter in span.delimiters) for (i in delimiter) hidden[i] = true
             }
         }
+        val writtenSpans = written.map { it.first }.toHashSet()
 
         val shown = Shown(text.length)
         val formulas = mutableListOf<PresentedFormula<T>>()
@@ -250,10 +286,46 @@ internal object RichTextPresenter {
         class Room(val offset: Int, val widthPx: Float, val ascentPx: Float, val descentPx: Float)
         val rooms = mutableListOf<Room>()
         val lineWidth = p.lineWidthPx ?: 0f
+        val writtenBlocks = mutableListOf<WrittenCodeBlock>()
+        /** The struts of a block whose code is written: the room of its bottom, after its last line. */
+        fun bottomOf(span: Span, layout: CodeBlockLayout) {
+            val offset = shown.insert(OBJECT_CHARS, span.contentEnd)
+            val code = layout.code
+            rooms += Room(offset, 0f, 0f, layout.heightPx - layout.codeTopPx - code.getLineBaseline(code.lineCount - 1))
+        }
+        // The column of the code of a block being written, for its tabs
+        var column = 0
 
         var i = 0
         var lineStart = true
         while (i < text.length) {
+            val writing = written.firstOrNull { (span, _) -> i >= span.contentStart && i <= span.contentEnd }
+            if (writing != null && i == writing.first.contentEnd) bottomOf(writing.first, writing.second)
+            if (lineStart && writing != null && i < writing.first.contentEnd) {
+                lineStart = false
+                val (span, layout) = writing
+                val left = blockLeft.getValue(span.start)
+                if (i == span.contentStart) {
+                    // The top of the block above its first line of code, the rest of the block drawn from there
+                    val offset = shown.insert(OBJECT_CHARS, i)
+                    rooms += Room(offset, 0f, layout.codeTopPx + layout.code.getLineBaseline(0), 0f)
+                    writtenBlocks += WrittenCodeBlock(offset, layout, left)
+                }
+                // The spaces of its list item taken off, the line at the code of the block, wrapped under its indent
+                var k = i
+                while (k < i + span.level && k < text.length && text[k] == ' ') shown.hide(k++)
+                column = 0
+                var leading = 0
+                var m = k
+                while (m < text.length && (text[m] == ' ' || text[m] == '\t')) {
+                    leading = if (text[m] == '\t') (leading / TAB_WIDTH + 1) * TAB_WIDTH else leading + 1
+                    m++
+                }
+                val first = left + layout.codeLeftPx
+                shown.paragraph = ParagraphStyle(textIndent = TextIndent(firstLine = (first / p.density).sp, restLine = ((first + leading * layout.advancePx) / p.density).sp))
+                i = k
+                continue
+            }
             if (lineStart) {
                 lineStart = false
                 val item = listItemAt[i]
@@ -294,7 +366,26 @@ internal object RichTextPresenter {
                 i = span.end
                 continue
             }
+            val kept = keptRoomAt[i]
+            if (kept != null) {
+                // The room of the formula before its source: its line keeps its height
+                val (span, rendered) = kept
+                val fit = if (span.block && p.lineWidthPx != null) min(1f, p.lineWidthPx / rendered.widthPx) else 1f
+                val height = rendered.heightPx * fit
+                val offset = shown.insert(OBJECT_CHARS, i)
+                rooms += Room(offset, 0f, height * rendered.baselineRatio, height * (1f - rendered.baselineRatio))
+            }
             val c = text[i]
+            if (writing != null && c == '\t' && !hidden[i]) {
+                // A tab as the spaces up to the next column of the code, as the block draws it
+                val spaces = TAB_WIDTH - column % TAB_WIDTH
+                shown.keep(i, ' ')
+                shown.insert(" ".repeat(spaces - 1), i + 1)
+                column += spaces
+                i++
+                continue
+            }
+            if (writing != null && c != '\n' && !hidden[i]) column++
             when {
                 c == '\n' && hidden[i] -> shown.hide(i)
                 c == '\n' && i == text.lastIndex -> shown.keep(i, '\n')
@@ -308,6 +399,8 @@ internal object RichTextPresenter {
             if (c == '\n') lineStart = true
             i++
         }
+        // A block written at the end of the text, without its closing fence
+        written.firstOrNull { (span, _) -> span.contentEnd == text.length }?.let { (span, layout) -> bottomOf(span, layout) }
         val mapping = shown.finish()
 
         // The styles, mapped on what is shown
@@ -318,7 +411,8 @@ internal object RichTextPresenter {
             if (to > from) out.addStyle(style, from, to)
         }
         out.addStyle(SpanStyle(color = p.color), 0, out.length)
-        val faded = SpanStyle(color = p.color.copy(alpha = p.color.alpha * FADED_ALPHA), fontSize = (p.fontSizePx * FADED_SCALE / p.density).sp)
+        // At the size of their text: the line does not change height
+        val faded = SpanStyle(color = p.color.copy(alpha = p.color.alpha * FADED_ALPHA))
         val inlineCode = mutableListOf<MarkdownTextUtil.InlineCode>()
         val codeSources = mutableListOf<IntRange>()
         val errorSpans = errors.toHashSet()
@@ -329,7 +423,7 @@ internal object RichTextPresenter {
             open += span
             if (span.kind == Kind.LIST_ITEM || span.start in blockAt && span.kind == Kind.CODE_BLOCK) continue
             if (span.kind == Kind.FORMULA && (span.start in formulaAt || span in errorSpans)) continue
-            if (touched(span)) for (delimiter in span.delimiters) style(faded, delimiter.first, delimiter.last + 1)
+            if (revealed(span)) for (delimiter in span.delimiters) style(faded, delimiter.first, delimiter.last + 1)
             val content = when (span.kind) {
                 Kind.FORMULA -> SpanStyle(fontStyle = FontStyle.Italic, fontFamily = FontFamily.Serif, color = FORMULA_COLOR)
                 else -> MarkdownTextUtil.contentStyle(span, p.fontSizePx / p.density, p.monospace)
@@ -350,14 +444,21 @@ internal object RichTextPresenter {
             for (token in CodeBlockLayout.tokens(p.highlighter, code, span.language)) {
                 style(SpanStyle(color = theme.color(token.kind)), span.contentStart + token.start, span.contentStart + token.end)
             }
-            codeSources += mapping.originalToTransformed(span.start) until mapping.originalToTransformed(span.end)
+            if (span !in writtenSpans) codeSources += mapping.originalToTransformed(span.start) until mapping.originalToTransformed(span.end)
+        }
+        // The code being written in the font of the code from its top to the end of its last line,
+        // its line breaks and joiners included: its lines are as high as those of the block
+        for ((block, written) in written.map { it.first }.zip(writtenBlocks)) {
+            val codeStyle = MarkdownTextUtil.contentStyle(block, p.fontSizePx / p.density, p.monospace) ?: continue
+            val end = mapping.originalToTransformed(block.end) + if (block.end < text.length && text[block.end] == '\n') 1 else 0
+            if (end > written.offset) out.addStyle(codeStyle, written.offset, end)
         }
         for (room in rooms) {
             for ((k, strut) in p.struts.styles(room.widthPx, room.ascentPx, room.descentPx, p.density).withIndex()) {
                 out.addStyle(strut, room.offset + k, room.offset + k + 1)
             }
         }
-        return PresentedText(out.toAnnotatedString(), mapping, formulas, codeBlocks, inlineCode, codeSources, atCaret)
+        return PresentedText(out.toAnnotatedString(), mapping, formulas, codeBlocks, inlineCode, codeSources, atCaret, writtenBlocks)
     }
 
     /**
@@ -385,10 +486,12 @@ internal object RichTextPresenter {
             toShown[i] = builder.length
         }
 
-        /** [s], standing for the offset [at] of the source. */
-        fun insert(s: String, at: Int) {
+        /** [s], standing for the offset [at] of the source: where it starts. */
+        fun insert(s: String, at: Int): Int {
+            val offset = builder.length
             repeat(s.length) { toSource += at }
             builder.append(s)
+            return offset
         }
 
         /** The source from [start] to [end] shown as the three characters of an object: where they start. */
@@ -447,15 +550,20 @@ internal object RichTextPresenter {
     /** The zero-width space ending a paragraph, standing for its line break. */
     const val LINE_BREAK: Char = '​'
 
+    /** The three characters of the struts of an object. */
+    private const val OBJECT_CHARS: String = OBJECT + WORD_JOINER + OBJECT
+
+    /** The columns of a tab in a block of code (see [CodeBlockLayout]). */
+    private const val TAB_WIDTH = 4
+
     /** Whether [c] stands for no text: a strut, a joiner, a line break shown as a zero-width space. */
     fun isInvisible(c: Char): Boolean = c == OBJECT[0] || c == WORD_JOINER[0] || c == LINE_BREAK
 
     /** Share of the line an object taking its line takes: all of it, without wrapping on a rounding. */
     private const val LINE_FILL = 0.999f
 
-    /** The delimiters near the caret: faded, a little smaller. */
+    /** The delimiters near the caret: faded. */
     private const val FADED_ALPHA = 0.45f
-    private const val FADED_SCALE = 0.9f
 
     private val FORMULA_COLOR = Color(0xFF1E88E5)
     private val ERROR_COLOR = Color(0xFFD32F2F)

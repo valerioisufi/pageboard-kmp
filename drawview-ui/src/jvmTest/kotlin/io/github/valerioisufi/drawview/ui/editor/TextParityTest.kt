@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
@@ -34,6 +35,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlin.test.fail
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -96,8 +98,11 @@ class TextParityTest {
 
     private fun Rect.px() = Rect(left * PX_PER_MM, top * PX_PER_MM, right * PX_PER_MM, bottom * PX_PER_MM)
 
-    /** [text] as the field of the editor shows it, at the zoom where the screen is the canvas (see `TextBoxEditor`). */
-    private fun editor(text: DrawText): Drawn {
+    /**
+     * [text] laid out by the field of the editor with the caret at [caret] (`null`: revealing
+     * nothing), at the zoom where the screen is the canvas (see `TextBoxEditor`).
+     */
+    private fun field(text: DrawText, caret: Int? = null): Pair<TextLayoutResult, PresentedText<ImageBitmap>> {
         val fontSizePx = text.fontSize * PT_TO_MM * PX_PER_MM
         val widthPx = (text.width * PX_PER_MM).toInt()
         val images = FormulaImages(renderer, maxSize = 32)
@@ -108,15 +113,20 @@ class TextParityTest {
             lineWidthPx = widthPx.toFloat(),
             monospace = fonts.monospace,
             highlighter = BuiltInCodeHighlighter,
-            layoutCodeBlock = { source -> CodeBlockLayout.layout(measurer, fonts.monospace, source, fontSizePx, Color.Black, BuiltInCodeHighlighter, TextTileAdapter.NO_PAPER) },
+            layoutCodeBlock = { source -> CodeBlockLayout.layout(measurer, fonts.monospace, source, fontSizePx, Color.Black, BuiltInCodeHighlighter, TextTileAdapter.NO_PAPER, fonts.text) },
             measurePrefix = { prefix ->
                 measurer.measure(AnnotatedString(prefix), TextStyle(fontSize = fontSizePx.sp, fontFamily = fonts.text, letterSpacing = 0.sp), softWrap = false, skipCache = true)
                     .getHorizontalPosition(prefix.length, usePrimaryDirection = true)
             }
         ) { latex, sizePx -> renderAtBucket(images, latex, sizePx, text.color, screenPerCanvas = 1f) }
-        val shown = RichTextPresenter.present(text.text, presentation, reveal = TextRange(text.text.length + 1))
+        val shown = RichTextPresenter.present(text.text, presentation, reveal = TextRange(caret ?: (text.text.length + 1)))
         val style = TextStyle(fontSize = fontSizePx.sp, fontFamily = fonts.text, letterSpacing = 0.sp, lineHeight = TextUnit.Unspecified, textAlign = text.alignment.toTextAlign())
-        val layout = measurer.measure(shown.text, style, constraints = Constraints.fixedWidth(widthPx), skipCache = true)
+        return measurer.measure(shown.text, style, constraints = Constraints.fixedWidth(widthPx), skipCache = true) to shown
+    }
+
+    /** [text] as the field of the editor shows it, revealing nothing. */
+    private fun editor(text: DrawText): Drawn {
+        val (layout, shown) = field(text)
         val chars = shown.text.text
         val lines = (0 until layout.lineCount).mapNotNull { line ->
             val first = (layout.getLineStart(line) until layout.getLineEnd(line)).firstOrNull { !RichTextPresenter.isInvisible(chars[it]) && !chars[it].isWhitespace() }
@@ -184,6 +194,70 @@ class TextParityTest {
     @Test
     fun blockOfCodeInAListItem() = assertSame("- an item\n  ```\n  x = 1\n  ```\nafter")
 
+    /**
+     * The tops of the lines of [source] laid out by the editor with the caret at [caret], from the
+     * line of the offset [from] of the source: the same as with the caret revealing nothing.
+     */
+    private fun assertNoVerticalMove(source: String, caret: Int, from: Int) {
+        val text = text(source, TextAlignment.START)
+        fun tops(caret: Int?): List<Float> {
+            val (layout, shown) = field(text, caret)
+            val first = layout.getLineForOffset(shown.mapping.originalToTransformed(from))
+            return (first until layout.lineCount).map { layout.getLineTop(it) }
+        }
+        val still = tops(null)
+        val revealed = tops(caret)
+        assertEquals(still.size, revealed.size, "the lines from offset $from of \"$source\", caret at $caret: $still, $revealed")
+        for ((a, b) in still.zip(revealed)) if (abs(a - b) > LINE_ROUNDING_PX) fail("the lines from offset $from of \"$source\" move with the caret at $caret: $still, $revealed")
+    }
+
+    @Test
+    fun theSourceOfAFormulaKeepsItsRoom() {
+        val source = "The area \$\\frac{a}{b}\$ of it\nnext line"
+        assertNoVerticalMove(source, caret = source.indexOf("frac"), from = 0)
+        val block = "Before\n\$\$\\frac{x^2}{2}\$\$\nAfter"
+        assertNoVerticalMove(block, caret = block.indexOf("frac"), from = block.indexOf("After"))
+    }
+
+    @Test
+    fun theCodeOfABlockIsWrittenAsInTheBlock() {
+        val source = "Code:\n```kotlin\nfun f() = 1\n\tval g = 2\n```\nafter"
+        val caret = source.indexOf("f()")
+        assertNoVerticalMove(source, caret, from = source.indexOf("after"))
+        // Its code on the lines of the block, the fences hidden, the rest of the block drawn around it
+        val text = text(source, TextAlignment.START)
+        val (still, stillShown) = field(text)
+        val (layout, shown) = field(text, caret)
+        assertTrue("```" !in shown.text.text)
+        val block = stillShown.codeBlocks.single()
+        val top = still.codeBlockOrigin(block).y
+        val written = shown.writtenBlocks.single()
+        val chrome = layout.getLineTop(layout.getLineForOffset(written.offset))
+        assertEquals(top, chrome, LINE_ROUNDING_PX, "drawn from the top of the block")
+        // The code on the baselines of the code of the block drawn around it
+        val fn = layout.getLineForOffset(shown.mapping.originalToTransformed(caret))
+        assertEquals(chrome + block.layout.codeTopPx + block.layout.code.getLineBaseline(0), layout.getLineBaseline(fn), LINE_ROUNDING_PX, "the first line of code on its baseline in the block")
+        val v = layout.getLineForOffset(shown.mapping.originalToTransformed(source.indexOf("val")))
+        assertEquals(chrome + block.layout.codeTopPx + block.layout.code.getLineBaseline(1), layout.getLineBaseline(v), LINE_ROUNDING_PX, "the second one too")
+        val codeLeft = block.layout.codeLeftPx
+        assertEquals(codeLeft + 4 * block.layout.advancePx, layout.getHorizontalPosition(shown.mapping.originalToTransformed(source.indexOf("val")), true), TOLERANCE_PX, "after its tab, at the column of the block")
+    }
+
+    @Test
+    fun aHeadingShowsItsHashesOnlyNearThem() {
+        val source = "## Title\nnext"
+        val text = text(source, TextAlignment.START)
+        assertEquals("Title", field(text, caret = source.indexOf("tle")).second.text.text.substringBefore('\u200B'))
+        assertEquals("## Title", field(text, caret = 2).second.text.text.substringBefore('\u200B'))
+        assertNoVerticalMove(source, caret = 2, from = 0)
+    }
+
+    @Test
+    fun theDelimitersNearTheCaretKeepTheHeightOfTheirLine() {
+        val source = "Some **bold** words\nnext"
+        assertNoVerticalMove(source, caret = source.indexOf("old"), from = 0)
+    }
+
     private companion object {
         /** The resolution the canvas lays its texts out at (`ComposeTextTileAdapter`). */
         const val PX_PER_MM = 20f
@@ -191,5 +265,8 @@ class TextParityTest {
         const val WIDTH_MM = 60f
 
         const val TOLERANCE_PX = 0.5f
+
+        /** The lines of Skia are whole pixels: a line rebuilt of other parts may round the other way. */
+        const val LINE_ROUNDING_PX = 1f
     }
 }

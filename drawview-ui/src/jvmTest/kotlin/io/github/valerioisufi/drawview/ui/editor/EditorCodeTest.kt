@@ -63,8 +63,8 @@ class EditorCodeTest {
     }
 
     @Test
-    fun theBlockOfTheCaretShowsItsSourceInItsColors() {
-        val shown = shown(text, caret = text.indexOf("f()"))
+    fun theBlockWithTheCaretOnAFenceShowsItsSourceInItsColors() {
+        val shown = shown(text, caret = text.indexOf("```") + 2)
         assertEquals(text.replace('\n', '\u200B'), shown.text.text, "the source as it is written, its lines paragraphs")
         assertTrue(shown.codeBlocks.isEmpty())
         assertEquals(text.indexOf("```") until text.indexOf("\nafter"), shown.codeSources.single())

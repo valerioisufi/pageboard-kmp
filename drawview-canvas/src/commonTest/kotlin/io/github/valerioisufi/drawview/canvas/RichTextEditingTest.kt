@@ -357,4 +357,12 @@ class RichTextEditingTest {
         val elsewhere = TextFieldValue(text.removeRange(content, content + 1), TextRange(content))
         assertEquals(null, RichTextEditing.handleConcealedDeletion(TextFieldValue(text, TextRange(content + 1)), elsewhere))
     }
+
+    @Test
+    fun backspaceAtTheStartOfTheCodeOfABlockShowsItsFence() {
+        val text = "```kotlin\nval x = 1\n```"
+        val content = text.indexOf("val")
+        val deleted = TextFieldValue(text.removeRange(content - 1, content), TextRange(content - 1))
+        assertEquals(TextFieldValue(text, TextRange(content - 1)), RichTextEditing.handleConcealedDeletion(TextFieldValue(text, TextRange(content)), deleted))
+    }
 }

@@ -121,10 +121,10 @@ class RichTextPresenterTest {
     @Test
     fun theFormulaUnderTheCaretShowsItsSource() {
         val presented = present("a \$x+1\$ b", reveal = TextRange(4))
-        assertEquals("a \$x+1\$ b", presented.shown)
+        assertEquals("a \uFFFC\u2060\uFFFC\$x+1\$ b", presented.shown, "after the struts keeping its room")
         assertTrue(presented.formulas.isEmpty())
         assertEquals(2, presented.formulaAtCaret?.start)
-        assertEquals(4, presented.mapping.originalToTransformed(4))
+        assertEquals(7, presented.mapping.originalToTransformed(4))
     }
 
     @Test
@@ -180,5 +180,25 @@ class RichTextPresenterTest {
         assertEquals("• Item with bold text", presented.shown)
         val bold = presented.shown.indexOf("bold")
         assertTrue(presented.text.spanStyles.any { bold >= it.start && bold + 4 <= it.end && it.item.fontWeight == FontWeight.Bold })
+    }
+
+    @Test
+    fun theDelimitersNearTheCaretAreFadedAtTheSizeOfTheirText() {
+        val presented = present("a **b** c", reveal = TextRange(4))
+        assertEquals("a **b** c", presented.shown)
+        val delimiter = presented.text.spanStyles.filter { it.start <= 2 && it.end >= 4 }.map { it.item }
+        assertTrue(delimiter.any { it.color.alpha < 0.5f }, "faded")
+        assertTrue(delimiter.none { it.fontSize.isSp }, "no size of their own")
+    }
+
+    @Test
+    fun theSourceOfAFormulaUnderTheCaretKeepsItsRoom() {
+        val presented = present("a \$x\$ b", reveal = TextRange(3), struts = exact)
+        assertEquals("a \uFFFC\u2060\uFFFC\$x\$ b", presented.shown, "struts of no width before the source")
+        val above = presented.text.spanStyles.last { it.start == 2 }.item
+        assertEquals(24f, above.fontSize.value, 0.01f)
+        assertEquals(-24f, above.letterSpacing.value, 0.01f)
+        assertEquals(5, presented.mapping.originalToTransformed(2), "the caret before the source after the struts")
+        assertEquals(2, presented.mapping.transformedToOriginal(3))
     }
 }

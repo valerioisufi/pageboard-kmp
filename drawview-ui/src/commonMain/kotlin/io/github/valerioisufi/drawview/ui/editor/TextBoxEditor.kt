@@ -147,7 +147,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
             highlighter = highlighter,
             layoutCodeBlock = { source ->
                 codeLayouts.getOrPut(CodeKey(source, fontSizePx, editor.color, paper)) {
-                    CodeBlockLayout.layout(codeMeasurer, notesFonts.monospace, source, fontSizePx, textColor, highlighter, paper)
+                    CodeBlockLayout.layout(codeMeasurer, notesFonts.monospace, source, fontSizePx, textColor, highlighter, paper, notesFonts.text)
                 }
             },
             // The list items and their blocks where the page draws them
@@ -237,6 +237,11 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                         }
                         for (chip in current.codeChips(shown.inlineCode)) {
                             drawRoundRect(codeTheme.background, topLeft = chip.rect.topLeft, size = chip.rect.size, cornerRadius = CornerRadius(chip.radius))
+                        }
+                        // Around the code being written of a block: the rest of the block
+                        for (block in shown.writtenBlocks) {
+                            val top = current.getLineTop(current.getLineForOffset(block.offset))
+                            drawIntoCanvas { block.layout.drawChrome(it, block.leftPx, top) }
                         }
                     }
                     drawContent()

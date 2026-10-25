@@ -435,14 +435,18 @@ public object RichTextEditing {
     /**
      * What a deletion of [oldValue] into [newValue] does when it deletes a character that is not
      * shown: Backspace at the start of the text of a list item deletes the last character of its
-     * marker, and takes the whole marker away instead. `null` when [newValue] is not such a deletion.
+     * marker, and takes the whole marker away instead; Backspace at the start of the code of a block
+     * deletes the line break of its opening fence (hidden while the code is written), and moves the
+     * caret onto the fence instead, which shows it. `null` when [newValue] is not such a deletion.
      */
     public fun handleConcealedDeletion(oldValue: TextFieldValue, newValue: TextFieldValue): TextFieldValue? {
         val old = oldValue.text
         if (!oldValue.selection.collapsed || newValue.text.length != old.length - 1) return null
         val caret = oldValue.selection.start
         if (caret == 0 || newValue.text != old.removeRange(caret - 1, caret)) return null
-        val item = RichTextParser.parse(old).firstOrNull { it.kind == RichTextParser.Kind.LIST_ITEM && it.contentStart == caret && it.start < caret } ?: return null
+        val spans = RichTextParser.parse(old)
+        if (spans.any { it.kind == RichTextParser.Kind.CODE_BLOCK && it.contentStart == caret && it.start < caret }) return TextFieldValue(old, TextRange(caret - 1))
+        val item = spans.firstOrNull { it.kind == RichTextParser.Kind.LIST_ITEM && it.contentStart == caret && it.start < caret } ?: return null
         return TextFieldValue(old.removeRange(item.start, item.contentStart), TextRange(item.start))
     }
 

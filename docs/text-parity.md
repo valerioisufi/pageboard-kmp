@@ -128,7 +128,7 @@ struts fall back to the character of the text font scaled as today: both sides s
 | 1 | Parity test: the editor and the canvas lay out a set of texts (special characters, emphasis, headings, inline and display formulas, blocks of code, nested lists, alignments) with nothing revealed, and their lines, baselines and indents are compared; the differences found today recorded as ignored tests, each phase enabling its own | Done |
 | 2 | One presentation: the strut fonts, `RichTextPresenter` with the mapping, the lines as paragraphs, the delimiters removed, the formulas and the blocks of code as struts, the list items with their bullet or number and their hanging indent measured; the canvas, the export, `MarkdownText` and the editor on it (`toEditorText`, `toCanvasText` and the placeholders removed) | Done |
 | 3 | Lists while written: the caret kept out of the markers, Backspace at the start of an item taking its marker away | Done |
-| 4 | Reveal without vertical moves: the delimiters faded by their color only, the `#` of a heading revealed near them only, the room of a formula kept while its source is shown, a block of code written as a block (struts, chrome, fences hidden, Backspace revealing the opening fence) | Planned |
+| 4 | Reveal without vertical moves: the delimiters faded by their color only, the `#` of a heading revealed near them only, the room of a formula kept while its source is shown, a block of code written as a block (struts, chrome, fences hidden, Backspace revealing the opening fence) | Done |
 | 5 | Checks: the screenshots recorded again where the page changed (the line breaks of every text are now paragraphs, a block of code takes exactly its height), the desktop application on a scratch directory | Planned |
 
 ### Phase 1 results
@@ -180,6 +180,32 @@ struts fall back to the character of the text font scaled as today: both sides s
   user types (not to the formatting commands).
 * Tests: the moves of the caret and the deletion, by themselves and through the editor.
 * The public API of `drawview-canvas` gains the two functions (recorded with `updateKotlinAbi`).
+
+### Phase 4 results
+
+* The delimiters the caret reveals are faded by their color only, at the size of their text; the
+  `#` of a heading only with the caret on them or right after them, so that walking in a heading
+  does not move its text.
+* The source of a formula under the caret comes after three struts of no width with the room of
+  the formula: the line keeps its height (and a formula alone on its line, its line).
+* A block of code with the caret in its code is written as a block: its fence lines hidden, each
+  line of code a paragraph at the column of the code of the block (its numbers included), wrapped
+  under its indent, its tabs as the spaces of the block, the spaces of its list item taken off; a
+  strut on its first line for the top of the block (padding and label) and one after its last line
+  for its bottom; the editor draws the rest of the block around it (`CodeBlockLayout.drawChrome`).
+  The fences are shown with the caret on one of them; Backspace at the start of the code moves the
+  caret onto the opening fence instead of joining it to the first line
+  (`RichTextEditing.handleConcealedDeletion`).
+* Found while measuring: Compose gives the first line of every paragraph the room of the font of
+  the paragraph (the font of the text) above it, also when all its characters are in the font of
+  the code. The code of a block is now laid out in paragraphs of the font of the text too
+  (`CodeBlockLayout.layout(textFont)`), on the page as in the editor: the lines of a block of code
+  are a little further apart than before (11 px at 20 px per mm for a 12 pt text), and the code written in
+  the editor lies on the lines of the block drawn around it.
+* Tests: no line moves vertically when the caret reveals a formula, a display formula, the code of a
+  block, the `#` of a heading or the delimiters of an emphasis (within a pixel: Skia rounds its lines
+  to whole pixels, and a line rebuilt of other parts may round the other way); the written code on
+  the baselines and the columns of the block; Backspace at the start of the code.
 
 ## Decisions
 

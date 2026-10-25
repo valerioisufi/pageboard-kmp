@@ -121,7 +121,8 @@ public class CodeBlockLayout internal constructor(
     internal val theme: CodeTheme,
     internal val fontPx: Float,
     internal val codeLeftPx: Float,
-    internal val numbers: List<LineNumber>
+    internal val numbers: List<LineNumber>,
+    internal val advancePx: Float = 0f
 ) {
     private val backgroundPaint = Paint().apply {
         isAntiAlias = true
@@ -156,11 +157,19 @@ public class CodeBlockLayout internal constructor(
 
     /** Draws the block on [canvas], its top-left corner at [left], [top]. */
     internal fun draw(canvas: Canvas, left: Float, top: Float) {
-        canvas.drawRoundRect(left, top, left + widthPx, top + heightPx, radiusPx, radiusPx, backgroundPaint)
+        drawChrome(canvas, left, top)
         canvas.save()
         canvas.translate(left + codeLeftPx, top + codeTopPx)
         TextPainter.paint(canvas, code)
         canvas.restore()
+    }
+
+    /**
+     * Draws the block without its code (its background, the numbers of its lines, its label) on
+     * [canvas], its top-left corner at [left], [top]: around its code being written in the editor.
+     */
+    internal fun drawChrome(canvas: Canvas, left: Float, top: Float) {
+        canvas.drawRoundRect(left, top, left + widthPx, top + heightPx, radiusPx, radiusPx, backgroundPaint)
         for (number in numbers) {
             canvas.save()
             canvas.translate(left + number.left, top + number.top)
@@ -198,7 +207,9 @@ public class CodeBlockLayout internal constructor(
 
         /**
          * Lays out the block of [source] in a text of [textFontPx] and [color], on the paper of
-         * [paperColor], its tokens told by [highlighter] (`null`: in one color).
+         * [paperColor], its tokens told by [highlighter] (`null`: in one color). Its code is laid
+         * out in paragraphs of the text in [textFont], as when it is written in the editor (Compose
+         * gives the first line of a paragraph the room of the font of the paragraph above it).
          */
         fun layout(
             measurer: TextMeasurer,
@@ -207,7 +218,8 @@ public class CodeBlockLayout internal constructor(
             textFontPx: Float,
             color: Color,
             highlighter: CodeHighlighter?,
-            paperColor: Int
+            paperColor: Int,
+            textFont: FontFamily = FontFamily.Default
         ): CodeBlockLayout {
             val code = source.code
             val language = source.language
@@ -223,8 +235,11 @@ public class CodeBlockLayout internal constructor(
             val lineCount = shownCode.lineStarts.size
             val gutter = if (source.numbered) (lineCount.toString().length + 1) * advance else 0f
             val layout = measurer.measure(
-                text = shown,
-                style = style,
+                text = buildAnnotatedString {
+                    append(shown)
+                    addStyle(SpanStyle(fontFamily = monospace, fontSize = fontPx.sp), 0, length)
+                },
+                style = style.copy(fontFamily = textFont, fontSize = textFontPx.sp),
                 softWrap = true,
                 constraints = Constraints.fixedWidth((widthPx - 2f * padding - gutter).toInt().coerceAtLeast(1)),
                 skipCache = true
@@ -255,7 +270,8 @@ public class CodeBlockLayout internal constructor(
                 theme = theme,
                 fontPx = fontPx,
                 codeLeftPx = padding + gutter,
-                numbers = numbers
+                numbers = numbers,
+                advancePx = advance
             )
         }
 

@@ -137,7 +137,7 @@ private fun markdownContent(
     val fontSize = if (style.fontSize.isSpecified) style.fontSize else DEFAULT_SIZE
     val fontPx = with(density) { fontSize.toPx() }
     val prefixStyle = style.copy(fontSize = fontPx.sp, letterSpacing = 0.sp)
-    // The struts in the font of this text: the room of its lines is the one of its font
+    // The struts and the blocks of code in the font of this text: the room of its lines is the one of its font
     val textFont = style.fontFamily ?: androidx.compose.ui.text.font.FontFamily.Default
     val presentation = Presentation(
         fontSizePx = fontPx,
@@ -147,7 +147,7 @@ private fun markdownContent(
         lineWidthPx = widthPx,
         monospace = fonts.monospace,
         highlighter = engines.code,
-        layoutCodeBlock = { source -> CodeBlockLayout.layout(measurer, fonts.monospace, source, fontPx, color, engines.code, TextTileAdapter.NO_PAPER) },
+        layoutCodeBlock = { source -> CodeBlockLayout.layout(measurer, fonts.monospace, source, fontPx, color, engines.code, TextTileAdapter.NO_PAPER, textFont) },
         measurePrefix = { prefix ->
             measurer.measure(AnnotatedString(prefix), prefixStyle, softWrap = false, skipCache = true).getHorizontalPosition(prefix.length, usePrimaryDirection = true)
         }
