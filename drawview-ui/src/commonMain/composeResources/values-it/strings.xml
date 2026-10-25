@@ -78,6 +78,8 @@
     <string name="page_grid_content_desc_page">Pagina %1$d</string>
     <string name="page_grid_content_desc_options">Opzioni Pagina</string>
     <string name="context_menu_action_add_page_after">Aggiungi pagina dopo</string>
+    <string name="context_menu_action_copy_page">Copia pagina</string>
+    <string name="context_menu_action_paste_page">Incolla pagina dopo</string>
     <string name="context_menu_action_edit_background">Modifica Sfondo</string>
     <string name="draw_menu_settings">Impostazioni</string>
     <string name="draw_menu_stylus_only">Modalità solo Stylus</string>
@@ -88,6 +90,7 @@
     <string name="dialog_override_bg_dismiss">Solo Default</string>
     <string name="stylus_mode_activated">Modalità penna attivata</string>
     <string name="message_import_image_failed">Impossibile importare l\'immagine</string>
+    <string name="message_pasted_without_missing_files">Alcune immagini o PDF non sono ancora su questo dispositivo: non sono stati incollati</string>
     <string name="message_import_pdf_failed">Impossibile importare il PDF</string>
     <string name="message_pdf_not_supported">L\'importazione dei PDF non è disponibile su questa piattaforma</string>
     <string name="message_pdf_page_without_text">Questa pagina non ha testo selezionabile (forse è una scansione)</string>

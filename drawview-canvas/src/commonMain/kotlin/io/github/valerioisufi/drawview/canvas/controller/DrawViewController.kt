@@ -83,7 +83,12 @@ public class DrawViewController(
      */
     sharedSession: DocumentSession? = null,
     /** The engines drawing the PDF pages and the formulas (none: drawn blank and as their source). */
-    public val engines: DrawViewEngines = DrawViewEngines.None
+    public val engines: DrawViewEngines = DrawViewEngines.None,
+    /**
+     * What is copied and pasted: the one of the application, shared by the editors of all its
+     * documents (by default this editor's own).
+     */
+    public val clipboard: EditorClipboard = EditorClipboard()
 ) {
     public val session: DocumentSession = sharedSession ?: DocumentSession(document)
     private val storesChanges = sharedSession == null
@@ -173,8 +178,11 @@ public class DrawViewController(
     public val canUndo: Boolean get() = historyManager.canUndo
     public val canRedo: Boolean get() = historyManager.canRedo
 
-    /** One-shot messages for the UI (snackbars/toasts). */
-    public enum class Message { STYLUS_MODE_ACTIVATED, IMPORT_IMAGE_FAILED, IMPORT_PDF_FAILED, PDF_NOT_SUPPORTED, PDF_PAGE_WITHOUT_TEXT }
+    /**
+     * One-shot messages for the UI (snackbars/toasts); [PASTED_WITHOUT_MISSING_FILES]: elements of
+     * an image or a PDF not on this device were left out of a paste.
+     */
+    public enum class Message { STYLUS_MODE_ACTIVATED, IMPORT_IMAGE_FAILED, IMPORT_PDF_FAILED, PDF_NOT_SUPPORTED, PDF_PAGE_WITHOUT_TEXT, PASTED_WITHOUT_MISSING_FILES }
 
     private val _messages = MutableSharedFlow<Message>(extraBufferCapacity = 8, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     public val messages: SharedFlow<Message> = _messages.asSharedFlow()

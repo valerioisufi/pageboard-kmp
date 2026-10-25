@@ -10,15 +10,18 @@ import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.change.AddPage
 import io.github.valerioisufi.drawview.model.change.CompositeChange
+import io.github.valerioisufi.drawview.model.change.CopiedPages
 import io.github.valerioisufi.drawview.model.change.MovePages
 import io.github.valerioisufi.drawview.model.change.RemovePage
 import io.github.valerioisufi.drawview.model.change.SetDocumentDefaults
 import io.github.valerioisufi.drawview.model.change.SetPageFormat
+import io.github.valerioisufi.drawview.model.change.copyPages
+import io.github.valerioisufi.drawview.model.change.pasteInto
 import io.github.valerioisufi.drawview.model.geometry.Dimension
 
 /**
- * Page management: insertion, deletion, reordering (drag & drop on the canvas or in the page
- * grid), templates and navigation.
+ * Page management: insertion, deletion, copy and paste, reordering (drag & drop on the canvas
+ * or in the page grid), templates and navigation.
  */
 public class PageManager(private val controller: DrawViewController) {
 
@@ -91,6 +94,30 @@ public class PageManager(private val controller: DrawViewController) {
             controller.textEditorManager.cancelEditing()
         }
         controller.session.submit(RemovePage(document.pages[pageIndex].id))
+    }
+
+    /** Copies the page at [pageIndex] with all its content into the clipboard of the application (see [EditorClipboard]). */
+    public fun copyPage(pageIndex: Int) {
+        val page = document.pages.getOrNull(pageIndex) ?: return
+        controller.clipboard.content = document.copyPages(listOf(page))
+    }
+
+    /** Whether pages were copied, in this document or another one (see [EditorClipboard]). */
+    public fun canPastePages(): Boolean = controller.clipboard.content is CopiedPages
+
+    /**
+     * Pastes the pages of the clipboard right after [pageIndex] (at the end when the index is
+     * invalid), with all their content, and shows the first one. The elements of a file not on
+     * this device are left out (see [DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES]).
+     */
+    public fun pastePages(pageIndex: Int) {
+        val copied = controller.clipboard.content as? CopiedPages ?: return
+        controller.selectionManager.clearSelection()
+        val index = if (pageIndex in document.pages.indices) pageIndex + 1 else document.pages.size
+        val pasted = copied.pasteInto(document, index)
+        if (pasted.leftOut > 0) controller.emitMessage(DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES)
+        controller.session.submit(pasted.change ?: return) ?: return
+        jumpToPage(document.pages.indexOf(pasted.pages.first()))
     }
 
     /**

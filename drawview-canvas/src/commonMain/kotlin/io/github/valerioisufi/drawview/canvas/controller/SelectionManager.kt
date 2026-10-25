@@ -22,6 +22,7 @@ import io.github.valerioisufi.drawview.model.change.BoxPlacement
 import io.github.valerioisufi.drawview.model.change.TextPlacement
 import io.github.valerioisufi.drawview.model.change.ChangeEffects
 import io.github.valerioisufi.drawview.model.change.CompositeChange
+import io.github.valerioisufi.drawview.model.change.CopiedElements
 import io.github.valerioisufi.drawview.model.change.PlaceElements
 import io.github.valerioisufi.drawview.model.change.Placement
 import io.github.valerioisufi.drawview.model.change.RemoveElements
@@ -29,6 +30,8 @@ import io.github.valerioisufi.drawview.model.change.ReorderElements
 import io.github.valerioisufi.drawview.model.change.StackMove
 import io.github.valerioisufi.drawview.model.change.StrokePlacement
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
+import io.github.valerioisufi.drawview.model.change.copyElements
+import io.github.valerioisufi.drawview.model.change.pasteInto
 import io.github.valerioisufi.drawview.model.change.placementOf
 import io.github.valerioisufi.drawview.model.change.toData
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
@@ -124,15 +127,13 @@ public class SelectionManager(private val controller: DrawViewController) {
     public var selectionVersion: Int by mutableIntStateOf(0)
         private set
 
-    public var clipboard: SelectionGroup? by mutableStateOf(null)
-        private set
-
     public var lassoMode: LassoMode by mutableStateOf(LassoMode.ALL)
 
     /** The elements put back in the tiles, drawn until the tiles hold them again (read when drawing). */
     private var settling: SettlingElements? = null
 
-    public fun canPaste(): Boolean = clipboard?.isEmpty() == false
+    /** Whether elements were copied, in this document or another one (see [EditorClipboard]). */
+    public fun canPaste(): Boolean = controller.clipboard.content is CopiedElements
 
     internal fun notifyChanged() {
         selectionVersion++
@@ -570,8 +571,13 @@ public class SelectionManager(private val controller: DrawViewController) {
         val ids = selection.elements().sortedWith(DrawPage.stackOrder).map { it.id }
         controller.session.submit(if (newPage === oldPage) move else CompositeChange(listOf(move, ReorderElements.onTop(newPage.id, ids))))
         selection.pageIndex = doc.pages.indexOf(newPage)
+        fitFrame(selection)
+        selection.transform.reset()
+        notifyChanged()
+    }
 
-        // --- New frame ---
+    /** The frame of [selection] around its elements as they are, with its rotation. */
+    private fun fitFrame(selection: SelectionGroup) {
         when {
             selection.isSingleText -> {
                 val t = selection.texts[0]
@@ -600,8 +606,6 @@ public class SelectionManager(private val controller: DrawViewController) {
                 )
             }
         }
-        selection.transform.reset()
-        notifyChanged()
     }
 
     // ==========================================================
@@ -618,105 +622,75 @@ public class SelectionManager(private val controller: DrawViewController) {
         notifyChanged()
     }
 
+    /** Copies the selection into the clipboard of the application (see [EditorClipboard]). */
     public fun copySelection() {
-        val selection = currentSelection ?: return
-        clipboard = SelectionGroup(
-            strokes = selection.strokes.toMutableList(),
-            texts = selection.texts.toMutableList(),
-            images = selection.images.toMutableList(),
-            boundingBox = selection.boundingBox,
-            pageIndex = selection.pageIndex,
-            customs = selection.customs.toMutableList()
-        ).apply { baseRotation = selection.baseRotation }
+        putInClipboard()
         clearSelection()
     }
 
+    /** Copies the selection into the clipboard of the application, then deletes it. */
     public fun cutSelection() {
-        val selection = currentSelection ?: return
-        clipboard = SelectionGroup(
-            strokes = selection.strokes.toMutableList(),
-            texts = selection.texts.toMutableList(),
-            images = selection.images.toMutableList(),
-            boundingBox = selection.boundingBox,
-            pageIndex = selection.pageIndex,
-            customs = selection.customs.toMutableList()
-        ).apply { baseRotation = selection.baseRotation }
+        putInClipboard()
         deleteSelection()
     }
 
+    private fun putInClipboard() {
+        val selection = currentSelection ?: return
+        val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
+        controller.clipboard.content = controller.document.copyElements(page, selection.elements(), selection.boundingBox, selection.baseRotation)
+    }
+
     /**
-     * Pastes the clipboard centered at [targetScreen] (or with a small offset from the copied
-     * position when `null`), selecting the pasted elements.
+     * Pastes the elements of the clipboard centered at [targetScreen], selecting them. Without a
+     * point: on the page shown, 10 mm away from where they were in their own document, where they
+     * were on their page in another one (kept inside the page). The elements of a file not on
+     * this device are left out (see [DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES]).
      */
     public fun pasteSelection(targetScreen: Offset? = null) {
-        val copied = clipboard ?: return
+        val copied = controller.clipboard.content as? CopiedElements ?: return
         val doc = controller.document
+        val sameDocument = copied.sourceDocumentId == doc.id
         val targetIndex = targetScreen?.let { controller.viewport.findPageIndexAtScreen(it) }
             ?: controller.viewport.firstVisiblePageIndex()
-            ?: copied.pageIndex
+            ?: doc.pages.indexOfFirst { sameDocument && it.id == copied.sourcePageId }.coerceAtLeast(0)
         val targetPage = doc.pages.getOrNull(targetIndex) ?: return
         clearSelection()
 
-        var offsetX = 10f
-        var offsetY = 10f
+        val bounds = copied.bounds
+        var offsetX = if (sameDocument) 10f else inside(bounds.left, bounds.right, targetPage.widthMm)
+        var offsetY = if (sameDocument) 10f else inside(bounds.top, bounds.bottom, targetPage.heightMm)
         if (targetScreen != null) {
             val mm = controller.viewport.screenToPageMm(targetIndex, targetScreen)
             if (mm != null) {
-                offsetX = mm.x - copied.boundingBox.center.x
-                offsetY = mm.y - copied.boundingBox.center.y
+                offsetX = mm.x - bounds.center.x
+                offsetY = mm.y - bounds.center.y
             }
         }
-        val offset = Matrix2D().postTranslate(offsetX, offsetY)
 
-        // In the order of what was copied: on top of the page, in the same order among themselves
-        val pasted = copied.elements().sortedWith(DrawPage.stackOrder).map { original ->
-            when (original) {
-                is DrawStroke -> DrawStroke(
-                    mesh = original.baseMesh,
-                    brushConfig = original.baseBrush,
-                    transform = original.transform.then(offset)
-                )
-                is DrawText -> DrawText().apply {
-                    copyFrom(original)
-                    x = original.x + offsetX
-                    y = original.y + offsetY
-                }
-                is DrawImage -> DrawImage().apply {
-                    resourceId = original.resourceId
-                    x = original.x + offsetX
-                    y = original.y + offsetY
-                    width = original.width
-                    height = original.height
-                    rotation = original.rotation
-                }
-                is DrawCustomElement -> DrawCustomElement(original.type).apply {
-                    version = original.version
-                    payload = original.payload
-                    x = original.x + offsetX
-                    y = original.y + offsetY
-                    width = original.width
-                    height = original.height
-                    rotation = original.rotation
-                }
-                else -> error("Not selectable: $original")
-            }
-        }
-        val pastedStrokes = pasted.filterIsInstance<DrawStroke>()
-        val pastedTexts = pasted.filterIsInstance<DrawText>()
-        val pastedImages = pasted.filterIsInstance<DrawImage>()
-        val pastedCustoms = pasted.filterIsInstance<DrawCustomElement>()
+        // On top of the page, in the order of what was copied
+        val pasted = copied.pasteInto(doc, targetPage, offsetX, offsetY)
+        if (pasted.leftOut > 0) controller.emitMessage(DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES)
+        controller.session.submit(pasted.change ?: return)
 
-        controller.session.submit(AddElements.of(targetPage, pasted))
-
+        val elements = pasted.elements
         val selection = SelectionGroup(
-            strokes = pastedStrokes.toMutableList(),
-            texts = pastedTexts.toMutableList(),
-            images = pastedImages.toMutableList(),
-            boundingBox = copied.boundingBox.translate(offsetX, offsetY),
+            strokes = elements.filterIsInstance<DrawStroke>().toMutableList(),
+            texts = elements.filterIsInstance<DrawText>().toMutableList(),
+            images = elements.filterIsInstance<DrawImage>().toMutableList(),
+            boundingBox = pasted.bounds,
             pageIndex = targetIndex,
-            customs = pastedCustoms.toMutableList()
-        ).apply { baseRotation = copied.baseRotation }
+            customs = elements.filterIsInstance<DrawCustomElement>().toMutableList()
+        ).apply { baseRotation = pasted.baseRotation }
+        // Some left out: the frame around the others
+        if (pasted.leftOut > 0) fitFrame(selection)
         setSelection(selection)
+    }
+
+    /** The shift keeping [start]..[end] inside 0..[length] (none when it fits; to 0 when larger). */
+    private fun inside(start: Float, end: Float, length: Float): Float = when {
+        end - start >= length || start < 0f -> -start
+        end > length -> length - end
+        else -> 0f
     }
 
     // ==========================================================

@@ -3,12 +3,14 @@ package io.github.valerioisufi.drawview.model.change
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawElement
 import io.github.valerioisufi.drawview.model.DrawPage
+import io.github.valerioisufi.drawview.model.DrawStroke
 import io.github.valerioisufi.drawview.model.ElementOrder
 import io.github.valerioisufi.drawview.model.FractionalIndex
 import io.github.valerioisufi.drawview.model.Versions
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.model.newElementId
+import io.github.valerioisufi.drawview.model.remodelingBrush
 import io.github.valerioisufi.drawview.platform.PlatformFiles
 
 /*
@@ -56,10 +58,9 @@ public fun CopiedElements.pasteInto(
 ): PastedElements {
     val resources = ResourceMapping(document, this.resources, fileIsHere)
     val move = Matrix2D().postTranslate(dx, dy)
-    val pasted = elements.mapNotNull { data -> resources.pasted(data, dx, dy, move) }
-    val models = pasted.map { it.toElement(document.strokeModeller) }
+    val models = elements.mapNotNull { data -> resources.pasted(data, dx, dy, move)?.let { modelOf(data, it, document) } }
     val change = if (models.isEmpty()) null else resources.with(AddElements.of(page, models))
-    return PastedElements(change, models, bounds.translate(dx, dy), baseRotation, elements.size - pasted.size)
+    return PastedElements(change, models, bounds.translate(dx, dy), baseRotation, elements.size - models.size)
 }
 
 /**
@@ -76,16 +77,35 @@ public fun CopiedPages.pasteInto(
     val keys = orderKeys(document, index.coerceIn(0, document.pages.size), this.pages.size)
     var leftOut = 0
     val pages = this.pages.mapIndexed { i, data ->
-        val elements = data.elements.mapNotNull { resources.pasted(it, 0f, 0f, null) }
+        val elements = data.elements.mapNotNull { source -> resources.pasted(source, 0f, 0f, null)?.let { source to it } }
         leftOut += data.elements.size - elements.size
         // Their stack as it was, under what is put on top later; the PDF pages and their marks
         // outside of the stack
-        val orders = ElementOrder.spread(elements.count { it.isStacked }).iterator()
-        val ordered = elements.map { if (it.isStacked) it.withOrder(orders.next()) else it }
-        PageData(newElementId(), keys[i], data.widthMm, data.heightMm, data.background, ordered).toPage(document)
+        val orders = ElementOrder.spread(elements.count { it.second.isStacked }).iterator()
+        DrawPage(
+            widthMm = data.widthMm,
+            heightMm = data.heightMm,
+            background = data.background ?: document.defaultBackground,
+            id = newElementId(),
+            orderKey = keys[i]
+        ).apply {
+            hasCustomBackground = data.background != null
+            for ((source, copy) in elements) add(modelOf(source, if (copy.isStacked) copy.withOrder(orders.next()) else copy, document))
+        }
     }
     val change = if (pages.isEmpty()) null else resources.with(CompositeChange(pages.map { AddPage.of(it) }))
     return PastedPages(change, pages, leftOut)
+}
+
+/**
+ * The model element of [copy], pasted from [source]: a stroke with the mesh it was copied with
+ * (see [CopiedContent.strokeMeshes]), not modeled again; the others made from their values.
+ */
+private fun CopiedContent.modelOf(source: ElementData, copy: ElementData, document: DrawDocument): DrawElement {
+    val mesh = strokeMeshes[source.id]
+    if (copy !is StrokeData || mesh == null) return copy.toElement(document.strokeModeller)
+    return DrawStroke(id = copy.id, mesh = mesh, brushConfig = remodelingBrush(copy.tool, copy.size, copy.color), transform = copy.transform)
+        .also { stroke -> copy.order?.let { stroke.order = it } }
 }
 
 /** [count] increasing order keys for pages inserted at [index] of [document] (see [DrawDocument.orderKeyAt]). */
@@ -133,7 +153,8 @@ private class ResourceMapping(
         if (sourceId in ids) return ids[sourceId]
         val resource = copied.firstOrNull { it.resource.id == sourceId }
         val id = when {
-            resource == null -> null
+            // Not a resource of its document (an image of no file): as it was
+            resource == null -> sourceId
             document.findResource(sourceId) != null -> sourceId
             else -> {
                 val data = resource.resource

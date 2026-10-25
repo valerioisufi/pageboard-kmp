@@ -299,12 +299,14 @@ final class io.github.valerioisufi.drawview.canvas.controller/DrawPreferences { 
 }
 
 final class io.github.valerioisufi.drawview.canvas.controller/DrawViewController { // io.github.valerioisufi.drawview.canvas.controller/DrawViewController|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.model/DrawDocument = ..., kotlinx.coroutines/CoroutineScope, kotlin/Float = ..., io.github.valerioisufi.drawview.model.change/DocumentPersistence = ..., kotlinx.coroutines/CoroutineScope = ..., io.github.valerioisufi.drawview.model.change/DocumentSession? = ..., io.github.valerioisufi.drawview.canvas.render/DrawViewEngines = ...) // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.<init>|<init>(io.github.valerioisufi.drawview.model.DrawDocument;kotlinx.coroutines.CoroutineScope;kotlin.Float;io.github.valerioisufi.drawview.model.change.DocumentPersistence;kotlinx.coroutines.CoroutineScope;io.github.valerioisufi.drawview.model.change.DocumentSession?;io.github.valerioisufi.drawview.canvas.render.DrawViewEngines){}[0]
+    constructor <init>(io.github.valerioisufi.drawview.model/DrawDocument = ..., kotlinx.coroutines/CoroutineScope, kotlin/Float = ..., io.github.valerioisufi.drawview.model.change/DocumentPersistence = ..., kotlinx.coroutines/CoroutineScope = ..., io.github.valerioisufi.drawview.model.change/DocumentSession? = ..., io.github.valerioisufi.drawview.canvas.render/DrawViewEngines = ..., io.github.valerioisufi.drawview.canvas.controller/EditorClipboard = ...) // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.<init>|<init>(io.github.valerioisufi.drawview.model.DrawDocument;kotlinx.coroutines.CoroutineScope;kotlin.Float;io.github.valerioisufi.drawview.model.change.DocumentPersistence;kotlinx.coroutines.CoroutineScope;io.github.valerioisufi.drawview.model.change.DocumentSession?;io.github.valerioisufi.drawview.canvas.render.DrawViewEngines;io.github.valerioisufi.drawview.canvas.controller.EditorClipboard){}[0]
 
     final val canRedo // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.canRedo|{}canRedo[0]
         final fun <get-canRedo>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.canRedo.<get-canRedo>|<get-canRedo>(){}[0]
     final val canUndo // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.canUndo|{}canUndo[0]
         final fun <get-canUndo>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.canUndo.<get-canUndo>|<get-canUndo>(){}[0]
+    final val clipboard // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.clipboard|{}clipboard[0]
+        final fun <get-clipboard>(): io.github.valerioisufi.drawview.canvas.controller/EditorClipboard // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.clipboard.<get-clipboard>|<get-clipboard>(){}[0]
     final val coroutineScope // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.coroutineScope|{}coroutineScope[0]
         final fun <get-coroutineScope>(): kotlinx.coroutines/CoroutineScope // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.coroutineScope.<get-coroutineScope>|<get-coroutineScope>(){}[0]
     final val customElementManager // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.customElementManager|{}customElementManager[0]
@@ -395,6 +397,7 @@ final class io.github.valerioisufi.drawview.canvas.controller/DrawViewController
     final enum class Message : kotlin/Enum<io.github.valerioisufi.drawview.canvas.controller/DrawViewController.Message> { // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.Message|null[0]
         enum entry IMPORT_IMAGE_FAILED // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.Message.IMPORT_IMAGE_FAILED|null[0]
         enum entry IMPORT_PDF_FAILED // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.Message.IMPORT_PDF_FAILED|null[0]
+        enum entry PASTED_WITHOUT_MISSING_FILES // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES|null[0]
         enum entry PDF_NOT_SUPPORTED // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.Message.PDF_NOT_SUPPORTED|null[0]
         enum entry PDF_PAGE_WITHOUT_TEXT // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.Message.PDF_PAGE_WITHOUT_TEXT|null[0]
         enum entry STYLUS_MODE_ACTIVATED // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.Message.STYLUS_MODE_ACTIVATED|null[0]
@@ -452,6 +455,17 @@ final class io.github.valerioisufi.drawview.canvas.controller/EditorActivity { /
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.canvas.controller/EditorActivity.toString|toString(){}[0]
 }
 
+final class io.github.valerioisufi.drawview.canvas.controller/EditorClipboard { // io.github.valerioisufi.drawview.canvas.controller/EditorClipboard|null[0]
+    constructor <init>() // io.github.valerioisufi.drawview.canvas.controller/EditorClipboard.<init>|<init>(){}[0]
+
+    final var content // io.github.valerioisufi.drawview.canvas.controller/EditorClipboard.content|{}content[0]
+        final fun <get-content>(): io.github.valerioisufi.drawview.model.change/CopiedContent? // io.github.valerioisufi.drawview.canvas.controller/EditorClipboard.content.<get-content>|<get-content>(){}[0]
+        final fun <set-content>(io.github.valerioisufi.drawview.model.change/CopiedContent?) // io.github.valerioisufi.drawview.canvas.controller/EditorClipboard.content.<set-content>|<set-content>(io.github.valerioisufi.drawview.model.change.CopiedContent?){}[0]
+    final var systemText // io.github.valerioisufi.drawview.canvas.controller/EditorClipboard.systemText|{}systemText[0]
+        final fun <get-systemText>(): kotlin/String? // io.github.valerioisufi.drawview.canvas.controller/EditorClipboard.systemText.<get-systemText>|<get-systemText>(){}[0]
+        final fun <set-systemText>(kotlin/String?) // io.github.valerioisufi.drawview.canvas.controller/EditorClipboard.systemText.<set-systemText>|<set-systemText>(kotlin.String?){}[0]
+}
+
 final class io.github.valerioisufi.drawview.canvas.controller/MediaManager { // io.github.valerioisufi.drawview.canvas.controller/MediaManager|null[0]
     constructor <init>(io.github.valerioisufi.drawview.canvas.controller/DrawViewController) // io.github.valerioisufi.drawview.canvas.controller/MediaManager.<init>|<init>(io.github.valerioisufi.drawview.canvas.controller.DrawViewController){}[0]
 
@@ -477,12 +491,15 @@ final class io.github.valerioisufi.drawview.canvas.controller/PageManager { // i
     final fun addNewPageAfter(kotlin/Int, io.github.valerioisufi.drawview.model/DrawPage? = ...): io.github.valerioisufi.drawview.model/DrawPage // io.github.valerioisufi.drawview.canvas.controller/PageManager.addNewPageAfter|addNewPageAfter(kotlin.Int;io.github.valerioisufi.drawview.model.DrawPage?){}[0]
     final fun addNewPageAtBottom(io.github.valerioisufi.drawview.model/DrawPage? = ...): io.github.valerioisufi.drawview.model/DrawPage // io.github.valerioisufi.drawview.canvas.controller/PageManager.addNewPageAtBottom|addNewPageAtBottom(io.github.valerioisufi.drawview.model.DrawPage?){}[0]
     final fun applyDocumentTemplateChange(io.github.valerioisufi.drawview.model.geometry/Dimension, io.github.valerioisufi.drawview.model/PageBackground, kotlin/Boolean) // io.github.valerioisufi.drawview.canvas.controller/PageManager.applyDocumentTemplateChange|applyDocumentTemplateChange(io.github.valerioisufi.drawview.model.geometry.Dimension;io.github.valerioisufi.drawview.model.PageBackground;kotlin.Boolean){}[0]
+    final fun canPastePages(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/PageManager.canPastePages|canPastePages(){}[0]
     final fun changeSinglePageTemplate(kotlin/Int, io.github.valerioisufi.drawview.model.geometry/Dimension, io.github.valerioisufi.drawview.model/PageBackground) // io.github.valerioisufi.drawview.canvas.controller/PageManager.changeSinglePageTemplate|changeSinglePageTemplate(kotlin.Int;io.github.valerioisufi.drawview.model.geometry.Dimension;io.github.valerioisufi.drawview.model.PageBackground){}[0]
+    final fun copyPage(kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/PageManager.copyPage|copyPage(kotlin.Int){}[0]
     final fun deletePage(kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/PageManager.deletePage|deletePage(kotlin.Int){}[0]
     final fun finishPageReorderMode() // io.github.valerioisufi.drawview.canvas.controller/PageManager.finishPageReorderMode|finishPageReorderMode(){}[0]
     final fun jumpToPage(kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/PageManager.jumpToPage|jumpToPage(kotlin.Int){}[0]
     final fun movePage(kotlin/Int, kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/PageManager.movePage|movePage(kotlin.Int;kotlin.Int){}[0]
     final fun movePageDuringReorder(kotlin/Int, kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/PageManager.movePageDuringReorder|movePageDuringReorder(kotlin.Int;kotlin.Int){}[0]
+    final fun pastePages(kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/PageManager.pastePages|pastePages(kotlin.Int){}[0]
     final fun startPageReorderMode() // io.github.valerioisufi.drawview.canvas.controller/PageManager.startPageReorderMode|startPageReorderMode(){}[0]
 }
 
@@ -546,8 +563,6 @@ final class io.github.valerioisufi.drawview.canvas.controller/SelectionManager {
     final val selectedTexts // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.selectedTexts|{}selectedTexts[0]
         final fun <get-selectedTexts>(): io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget? // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.selectedTexts.<get-selectedTexts>|<get-selectedTexts>(){}[0]
 
-    final var clipboard // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.clipboard|{}clipboard[0]
-        final fun <get-clipboard>(): io.github.valerioisufi.drawview.canvas.controller/SelectionGroup? // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.clipboard.<get-clipboard>|<get-clipboard>(){}[0]
     final var currentSelection // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.currentSelection|{}currentSelection[0]
         final fun <get-currentSelection>(): io.github.valerioisufi.drawview.canvas.controller/SelectionGroup? // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.currentSelection.<get-currentSelection>|<get-currentSelection>(){}[0]
     final var lassoMode // io.github.valerioisufi.drawview.canvas.controller/SelectionManager.lassoMode|{}lassoMode[0]
@@ -1153,6 +1168,7 @@ final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisu
 final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_DrawPreferences_$serializer$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_DrawPreferences_$serializer$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_DrawPreferences_$serializer$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_DrawViewController$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_DrawViewController$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_DrawViewController$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_EditorActivity$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_EditorActivity$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_EditorActivity$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_EditorClipboard$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_EditorClipboard$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_EditorClipboard$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_MediaManager$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_MediaManager$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_MediaManager$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_PageManager$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_PageManager$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_PageManager$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_PlacementManager$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_PlacementManager$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_PlacementManager$stableprop[0]
@@ -1207,6 +1223,7 @@ final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisu
 final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_DrawPreferences_$serializer$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_DrawPreferences_$serializer$stableprop_getter|io_github_valerioisufi_drawview_canvas_controller_DrawPreferences_$serializer$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_DrawViewController$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_DrawViewController$stableprop_getter|io_github_valerioisufi_drawview_canvas_controller_DrawViewController$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_EditorActivity$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_EditorActivity$stableprop_getter|io_github_valerioisufi_drawview_canvas_controller_EditorActivity$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_EditorClipboard$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_EditorClipboard$stableprop_getter|io_github_valerioisufi_drawview_canvas_controller_EditorClipboard$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_MediaManager$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_MediaManager$stableprop_getter|io_github_valerioisufi_drawview_canvas_controller_MediaManager$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_PageManager$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_PageManager$stableprop_getter|io_github_valerioisufi_drawview_canvas_controller_PageManager$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_PlacementManager$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_PlacementManager$stableprop_getter|io_github_valerioisufi_drawview_canvas_controller_PlacementManager$stableprop_getter(){}[0]

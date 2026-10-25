@@ -167,7 +167,7 @@ public class EditorClipboard {
 |---|---|---|
 | 1 | `KeyValueDocumentStore` keeps the files other documents point at when a document is deleted; test in `drawview-store` (two documents with the same image, one deleted, the file kept; the last deleted, the file deleted) | Done |
 | 2 | `CopiedContent`, `CopiedResource`, `ContentPaste` in `drawview-model`: copying elements and pages into values, the changes pasting them (ids, offsets, order on top, order keys, resources mapped by hash or added on the same file, elements of a missing file left out); tests in `drawview-model` (into another document and the same, images, PDF pages with their marks, custom elements, background kept, undo, what the changes send); ABI recorded on purpose | Done |
-| 3 | `EditorClipboard` in `drawview-canvas`, given to `DrawViewController` and `DocumentEditorViewModel`; `SelectionManager` copy, cut and paste through it (placement in another document); `PageManager.copyPage`, `pastePages`; `EditorCommands` choosing what to paste by the last copy; tests in `drawview-canvas` (two controllers on one clipboard: elements, an image, a page; read-only target; the last copy wins); ABI recorded on purpose | Planned |
+| 3 | `EditorClipboard` in `drawview-canvas`, given to `DrawViewController` and `DocumentEditorViewModel`; `SelectionManager` copy, cut and paste through it (placement in another document); `PageManager.copyPage`, `pastePages`; `EditorCommands` choosing what to paste by the last copy; tests in `drawview-canvas` (two controllers on one clipboard: elements, an image, a page; read-only target; the last copy wins); ABI recorded on purpose | Done |
 | 4 | The menus: "Copy page" and "Paste page" in the context menu of a page and in the page grid, the strings in every language; PencilNotes and the sample sharing one clipboard (all the desktop windows); screenshots recorded again where the menus change; the desktop application on a scratch directory, copying between two windows | Planned |
 
 ### Phase 1 results
@@ -224,6 +224,47 @@ public class EditorClipboard {
 * ABI of `drawview-model` recorded again on purpose: the new classes and functions only.
 * Nothing stored or sent changed: the paste is made of `AddResource`, `AddElements` and
   `AddPage` as they are.
+
+### Phase 3 results
+
+* `EditorClipboard` (`drawview-canvas`): `content` (the `CopiedContent` copied last) and
+  `systemText`, Compose state. `DrawViewController(clipboard = EditorClipboard())` and
+  `DocumentEditorViewModel(clipboard = EditorClipboard())`: an editor given none keeps its own,
+  as before.
+* `SelectionManager`: `clipboard` (a `SelectionGroup` of the model objects) is gone; `copySelection`
+  and `cutSelection` put `document.copyElements(…)` in the clipboard of the application;
+  `pasteSelection(targetScreen)` pastes it with `pasteInto`. Without a point: 10 mm away in its own
+  document, as before; in another document at the place it had on its page, shifted inside the
+  page when it would cross its edges. Some elements left out: the message
+  `PASTED_WITHOUT_MISSING_FILES`, the frame fitted around the others (`fitFrame`, taken out of
+  `applyTransformation`). `canPaste()` is about elements only.
+* `PageManager`: `copyPage(pageIndex)`, `canPastePages()`, `pastePages(pageIndex)` (after the page,
+  at the end for an invalid index; the first page pasted shown, the message when elements are
+  left out).
+* `EditorCommands` (`drawview-ui`): `copiedText` is gone; after a copy (`shareCopied`) the text of
+  the texts copied goes to the clipboard of the system, and what the system holds then is kept in
+  `EditorClipboard.systemText`. `pasteAt` takes a text of the system that differs from it (copied
+  after in another application), else the content: elements at the point, or pages after the page
+  of the context menu (after the page shown without a point). `copyPage`, `canPastePages`,
+  `pastePagesAfter` for the menus of phase 4. The message is shown by `DrawScreen`; its string and
+  the strings of the menus of phase 4 in the seven languages.
+* Tests: `CrossDocumentPasteTest` (`drawview-canvas`: elements copied in a document pasted in
+  another at their place, selected, undone in one step, the source as it was; in their own
+  document 10 mm away; on a smaller page inside it; an image whose file is not here left out with
+  the message, the frame around the others; a page pasted in a document of another paper with its
+  own and its content, undone; a read-only document takes nothing; editors given no clipboard keep
+  their own), `CommandTest.theLastCopyWinsAcrossTheDocumentsAndTheOtherApplications`
+  (`drawview-ui`: a page copied after a text of another application wins, a text copied after in
+  another application wins, texts copied in a document reach the system and their elements are
+  pasted in the other).
+* Two behaviors of the paste of before kept, found by `ArrangeTest` and `EditorChangesTest`
+  (`drawview-model`, `ContentPaste`): a stroke pasted takes the mesh it was copied with
+  (`CopiedContent.strokeMeshes`, internal: the meshes never change), not modeled again, also in a
+  page pasted; an element naming a resource its own document does not have (an image of no file)
+  is pasted with that name as it was, not left out.
+* ABI recorded again on purpose: `drawview-canvas` (`EditorClipboard`, the parameter of the
+  controller, the message, the page functions; `SelectionManager.clipboard` removed),
+  `drawview-session` (the parameter of the model), `drawview-ui` (the strings only).
 
 ## Decisions
 

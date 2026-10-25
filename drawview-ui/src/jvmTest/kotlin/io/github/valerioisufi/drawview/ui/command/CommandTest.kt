@@ -9,6 +9,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.controller.EditorClipboard
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawText
@@ -170,6 +171,40 @@ class CommandTest {
         clipboard.text = "From another app"
         commands.paste.perform()
         assertEquals(listOf("Copied **here**", "Copied **here**", "From another app"), page.texts.map { it.text })
+    }
+
+    @Test
+    fun theLastCopyWinsAcrossTheDocumentsAndTheOtherApplications() {
+        val shared = EditorClipboard()
+        val clipboard = FakeClipboard()
+        fun editor() = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined), clipboard = shared)
+        val first = editor()
+        val second = editor()
+        first.textEditorManager.startNewText(0, 20f, 20f)
+        first.textEditorManager.updateValue(TextFieldValue("On the page", TextRange(11)))
+        first.textEditorManager.finishEditing()
+        val firstCommands = editorCommands(first, clipboard)
+        val secondCommands = editorCommands(second, clipboard)
+
+        // A text of another application copied before: the page copied after wins
+        clipboard.text = "Older text"
+        firstCommands.copyPage(0)
+        assertTrue(secondCommands.canPastePages())
+        secondCommands.paste.perform()
+        assertEquals(2, second.document.pages.size)
+        assertEquals(listOf("On the page"), second.document.pages[1].texts.map { it.text })
+
+        // A text copied after in another application wins
+        clipboard.text = "Newer text"
+        secondCommands.paste.perform()
+        assertEquals(listOf("Newer text"), second.document.pages.flatMap { it.texts }.map { it.text }.filter { it != "On the page" })
+
+        // The texts copied in a document: their text in the system, their elements pasted in the other
+        first.selectionManager.selectText(0, first.document.pages[0].texts.single())
+        firstCommands.copy.perform()
+        assertEquals("On the page", clipboard.text)
+        secondCommands.paste.perform()
+        assertEquals(2, second.document.pages.flatMap { it.texts }.count { it.text == "On the page" })
     }
 
     @Test

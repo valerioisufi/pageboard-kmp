@@ -72,6 +72,8 @@
     <string name="page_grid_content_desc_page">Página %1$d</string>
     <string name="page_grid_content_desc_options">Opciones de Página</string>
     <string name="context_menu_action_add_page_after">Añadir página después</string>
+    <string name="context_menu_action_copy_page">Copiar página</string>
+    <string name="context_menu_action_paste_page">Pegar página después</string>
     <string name="context_menu_action_edit_background">Editar Fondo</string>
     <string name="draw_menu_settings">Ajustes</string>
     <string name="draw_menu_stylus_only">Modo solo Lápiz</string>
@@ -88,6 +90,7 @@
     <string name="draw_toolbar_action_decrease_font_size">Reducir tamaño de fuente</string>
     <string name="draw_toolbar_action_increase_font_size">Aumentar tamaño de fuente</string>
     <string name="message_import_image_failed">No se pudo importar la imagen</string>
+    <string name="message_pasted_without_missing_files">Algunas imágenes o PDF aún no están en este dispositivo: no se han pegado</string>
     <string name="message_import_pdf_failed">No se pudo importar el PDF</string>
     <string name="message_pdf_not_supported">La importación de PDF no está disponible en esta plataforma</string>
     <string name="message_pdf_page_without_text">Esta página no tiene texto seleccionable (quizá es un escaneo)</string>

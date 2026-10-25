@@ -19,9 +19,13 @@ import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.controller.EditorClipboard
+import io.github.valerioisufi.drawview.canvas.controller.PageManager
 import io.github.valerioisufi.drawview.canvas.text.RichTextEditing.Format
 import io.github.valerioisufi.drawview.canvas.controller.SelectionManager
 import io.github.valerioisufi.drawview.canvas.tool.Tool
+import io.github.valerioisufi.drawview.model.change.CopiedElements
+import io.github.valerioisufi.drawview.model.change.CopiedPages
 import io.github.valerioisufi.drawview.model.change.StackMove
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.text.TextSizes
@@ -134,14 +138,14 @@ internal class EditorCommands internal constructor(
     private val hasTextSelection get() = controller.textMarkupManager.hasSelection
 
     /**
-     * The text of the texts copied last in the editor, also put in the clipboard of the system:
-     * pasted again, it pastes the elements copied with them (another text came from elsewhere).
+     * After a copy into the clipboard of the application ([EditorClipboard]): puts [text] (the
+     * text of the texts copied) in the clipboard of the system, for the other applications, and
+     * remembers what the system holds then, so that a text copied after in another application
+     * wins (see [EditorClipboard.systemText]).
      */
-    private var copiedText: String? = null
-
-    /** Puts the text of the texts selected in the clipboard of the system, for the other applications. */
-    private fun shareSelectedText() {
-        copiedText = controller.selectionManager.selectedPlainText?.also { clipboard.setText(AnnotatedString(it)) }
+    private fun shareCopied(text: String?) {
+        if (text != null) clipboard.setText(AnnotatedString(text))
+        controller.clipboard.systemText = clipboard.getText()?.text
     }
 
     val cut = Command(
@@ -150,8 +154,9 @@ internal class EditorCommands internal constructor(
         shortcuts = listOf(primary(Key.X)),
         isEnabled = { hasSelection && writable() }
     ) {
-        shareSelectedText()
+        val text = controller.selectionManager.selectedPlainText
         controller.selectionManager.cutSelection()
+        shareCopied(text)
     }
 
     val copy = Command(
@@ -164,8 +169,9 @@ internal class EditorCommands internal constructor(
         if (hasTextSelection) {
             if (!text.isNullOrEmpty()) clipboard.setText(AnnotatedString(text))
         } else {
-            shareSelectedText()
+            val copied = controller.selectionManager.selectedPlainText
             controller.selectionManager.copySelection()
+            shareCopied(copied)
         }
     }
 
@@ -177,20 +183,45 @@ internal class EditorCommands internal constructor(
     ) { pasteAt(null) }
 
     /**
-     * Pastes at [position] of the canvas (the middle of the page shown when `null`): a text copied
-     * in another application becomes a new text; else what was copied here.
+     * Pastes what was copied last at [position] of the canvas (the page shown when `null`): a text
+     * copied in another application becomes a new text; elements copied in any document are put
+     * there; pages copied go after the page there.
      */
     fun pasteAt(position: Offset?) {
         val text = clipboard.getText()?.text
-        if (!text.isNullOrBlank() && text != copiedText) {
+        val content = controller.clipboard.content
+        if (!text.isNullOrBlank() && (content == null || text != controller.clipboard.systemText)) {
             controller.textEditorManager.pasteText(text, position)
-        } else {
-            controller.selectionManager.pasteSelection(position)
+            return
+        }
+        when (content) {
+            is CopiedElements -> controller.selectionManager.pasteSelection(position)
+            // At a point: after the page of the context menu opened there
+            is CopiedPages -> controller.pageManager.pastePages(
+                controller.pageManager.contextMenuTargetPageIndex.takeIf { position != null && it in controller.document.pages.indices }
+                    ?: controller.viewport.mostVisiblePageIndex()
+                    ?: (controller.document.pages.size - 1)
+            )
+            null -> Unit
         }
     }
 
-    /** Whether there is something to paste: elements copied here or a text of the clipboard. */
-    fun canPaste(): Boolean = controller.selectionManager.canPaste() || clipboard.getText()?.text?.isNotBlank() == true
+    /** Whether there is something to paste: elements or pages copied in any document, or a text of the clipboard. */
+    fun canPaste(): Boolean = controller.clipboard.content != null || clipboard.getText()?.text?.isNotBlank() == true
+
+    /** Copies the page at [pageIndex] with its content (see [PageManager.copyPage]). */
+    fun copyPage(pageIndex: Int) {
+        controller.pageManager.copyPage(pageIndex)
+        shareCopied(null)
+    }
+
+    /** Whether pages were copied, to be pasted after a page (see [PageManager.pastePages]). */
+    fun canPastePages(): Boolean = writable() && controller.pageManager.canPastePages()
+
+    /** Pastes the pages copied after the page at [pageIndex]. */
+    fun pastePagesAfter(pageIndex: Int) {
+        if (writable()) controller.pageManager.pastePages(pageIndex)
+    }
 
     val delete = Command(
         "delete", label(Res.string.common_action_delete), CommandGroup.EDIT, section = 1,

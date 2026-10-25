@@ -3,6 +3,8 @@ package io.github.valerioisufi.drawview.model.change
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawElement
 import io.github.valerioisufi.drawview.model.DrawPage
+import io.github.valerioisufi.drawview.model.DrawStroke
+import io.github.valerioisufi.drawview.model.StrokeMesh
 import io.github.valerioisufi.drawview.model.geometry.Rect
 
 /*
@@ -21,6 +23,12 @@ public class CopiedResource(public val resource: ResourceData, public val path: 
 public sealed class CopiedContent {
     public abstract val sourceDocumentId: String
     public abstract val resources: List<CopiedResource>
+
+    /**
+     * The meshes of the strokes copied, by the identifier of their stroke (values that never
+     * change): a stroke pasted takes its mesh instead of being modeled again.
+     */
+    internal var strokeMeshes: Map<String, StrokeMesh> = emptyMap()
 }
 
 /**
@@ -67,8 +75,11 @@ private fun DrawDocument.resourcesOf(elements: List<ElementData>): List<CopiedRe
  */
 public fun DrawDocument.copyElements(page: DrawPage, elements: List<DrawElement>, bounds: Rect, baseRotation: Float = 0f): CopiedElements {
     val values = elements.sortedWith(DrawPage.stackOrder).map { it.toData() }
-    return CopiedElements(id, page.id, values, bounds, baseRotation, resourcesOf(values))
+    return CopiedElements(id, page.id, values, bounds, baseRotation, resourcesOf(values)).also { it.strokeMeshes = meshesOf(elements) }
 }
+
+private fun meshesOf(elements: List<DrawElement>): Map<String, StrokeMesh> =
+    elements.filterIsInstance<DrawStroke>().associate { it.id to it.baseMesh }
 
 /**
  * Copies [pages] of this document with all their content, each with the background it shows
@@ -82,5 +93,7 @@ public fun DrawDocument.copyPages(pages: List<DrawPage>): CopiedPages {
         val others = page.elements().filter { it !in inStack }
         page.toData().copy(background = page.background, elements = (stack + others).map { it.toData() })
     }
-    return CopiedPages(id, values, resourcesOf(values.flatMap { it.elements }))
+    return CopiedPages(id, values, resourcesOf(values.flatMap { it.elements })).also { copied ->
+        copied.strokeMeshes = meshesOf(pages.flatMap { it.strokes })
+    }
 }

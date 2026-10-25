@@ -17,6 +17,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 /**
@@ -227,6 +228,7 @@ class ContentPasteTest {
         assertEquals("/files/b.pdf", assertNotNull(target.document.findResource(pdf.resourceId)).path)
         assertEquals("words", markup.text)
         assertEquals(listOf(DrawStroke::class, DrawText::class), copy.stack.map { it::class }, "the stack as it was")
+        assertSame(page.strokes.single().baseMesh, copy.strokes.single().baseMesh, "not modeled again")
 
         // Undone in one step
         target.session.submit(assertNotNull(inverse), ChangeOrigin.UNDO)

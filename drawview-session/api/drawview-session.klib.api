@@ -7,8 +7,10 @@
 
 // Library unique name: <DrawView-KMP:drawview-session>
 final class io.github.valerioisufi.drawview.session/DocumentEditorViewModel : androidx.lifecycle/ViewModel { // io.github.valerioisufi.drawview.session/DocumentEditorViewModel|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.store/OpenDocuments, io.github.valerioisufi.drawview.canvas.render/DrawViewEngines = ..., io.github.valerioisufi.drawview.store/PreferenceStore? = ...) // io.github.valerioisufi.drawview.session/DocumentEditorViewModel.<init>|<init>(io.github.valerioisufi.drawview.store.OpenDocuments;io.github.valerioisufi.drawview.canvas.render.DrawViewEngines;io.github.valerioisufi.drawview.store.PreferenceStore?){}[0]
+    constructor <init>(io.github.valerioisufi.drawview.store/OpenDocuments, io.github.valerioisufi.drawview.canvas.render/DrawViewEngines = ..., io.github.valerioisufi.drawview.store/PreferenceStore? = ..., io.github.valerioisufi.drawview.canvas.controller/EditorClipboard = ...) // io.github.valerioisufi.drawview.session/DocumentEditorViewModel.<init>|<init>(io.github.valerioisufi.drawview.store.OpenDocuments;io.github.valerioisufi.drawview.canvas.render.DrawViewEngines;io.github.valerioisufi.drawview.store.PreferenceStore?;io.github.valerioisufi.drawview.canvas.controller.EditorClipboard){}[0]
 
+    final val clipboard // io.github.valerioisufi.drawview.session/DocumentEditorViewModel.clipboard|{}clipboard[0]
+        final fun <get-clipboard>(): io.github.valerioisufi.drawview.canvas.controller/EditorClipboard // io.github.valerioisufi.drawview.session/DocumentEditorViewModel.clipboard.<get-clipboard>|<get-clipboard>(){}[0]
     final val documents // io.github.valerioisufi.drawview.session/DocumentEditorViewModel.documents|{}documents[0]
         final fun <get-documents>(): io.github.valerioisufi.drawview.store/OpenDocuments // io.github.valerioisufi.drawview.session/DocumentEditorViewModel.documents.<get-documents>|<get-documents>(){}[0]
     final val engines // io.github.valerioisufi.drawview.session/DocumentEditorViewModel.engines|{}engines[0]

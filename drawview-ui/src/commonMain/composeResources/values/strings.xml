@@ -79,6 +79,8 @@
     <string name="page_grid_content_desc_page">Page %1$d</string>
     <string name="page_grid_content_desc_options">Page Options</string>
     <string name="context_menu_action_add_page_after">Add page after</string>
+    <string name="context_menu_action_copy_page">Copy page</string>
+    <string name="context_menu_action_paste_page">Paste page after</string>
     <string name="context_menu_action_edit_background">Edit Background</string>
     <string name="draw_menu_settings">Settings</string>
     <string name="draw_menu_stylus_only">Stylus Only Mode</string>
@@ -89,6 +91,7 @@
     <string name="dialog_override_bg_dismiss">Default Only</string>
     <string name="stylus_mode_activated">Stylus mode activated</string>
     <string name="message_import_image_failed">Unable to import the image</string>
+    <string name="message_pasted_without_missing_files">Some images or PDFs are not on this device yet: they were not pasted</string>
     <string name="message_import_pdf_failed">Unable to import the PDF</string>
     <string name="message_pdf_not_supported">PDF import is not available on this platform</string>
     <string name="message_pdf_page_without_text">This page has no selectable text (it may be a scan)</string>

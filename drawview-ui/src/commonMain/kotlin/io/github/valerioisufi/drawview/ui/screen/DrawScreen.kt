@@ -173,6 +173,7 @@ private fun DrawScreenContent(
                 DrawViewController.Message.IMPORT_PDF_FAILED -> getString(Res.string.message_import_pdf_failed)
                 DrawViewController.Message.PDF_NOT_SUPPORTED -> getString(Res.string.message_pdf_not_supported)
                 DrawViewController.Message.PDF_PAGE_WITHOUT_TEXT -> getString(Res.string.message_pdf_page_without_text)
+                DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES -> getString(Res.string.message_pasted_without_missing_files)
             }
             snackbarHostState.showSnackbar(text)
         }

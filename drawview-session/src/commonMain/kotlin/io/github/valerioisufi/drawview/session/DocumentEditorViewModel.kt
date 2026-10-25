@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.valerioisufi.drawview.canvas.controller.DrawPreferences
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.controller.EditorClipboard
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.platform.SyncLock
 import io.github.valerioisufi.drawview.platform.syncLock
@@ -65,7 +66,12 @@ public class DocumentEditorViewModel(
     /** The engines of the editors (PDF pages, formulas). */
     public val engines: DrawViewEngines = DrawViewEngines.None,
     /** Where the preferences of the user are kept (by default, in the store when it keeps them). */
-    public val preferences: PreferenceStore? = documents.store as? PreferenceStore
+    public val preferences: PreferenceStore? = documents.store as? PreferenceStore,
+    /**
+     * What is copied and pasted in its editors: the one of the application, so that what is copied
+     * in a document is pasted in another one, in any window (by default, the editors of this model only).
+     */
+    public val clipboard: EditorClipboard = EditorClipboard()
 ) : ViewModel() {
     private val store: DocumentStore get() = documents.store
 
@@ -125,7 +131,8 @@ public class DocumentEditorViewModel(
             persistence = store.persistence,
             persistenceScope = session.persistenceScope,
             sharedSession = open.session,
-            engines = engines
+            engines = engines,
+            clipboard = clipboard
         ).apply {
             kept?.let(::applyPreferences)
         }
