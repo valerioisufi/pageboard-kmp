@@ -166,7 +166,7 @@ public class EditorClipboard {
 | Phase | Content | Status |
 |---|---|---|
 | 1 | `KeyValueDocumentStore` keeps the files other documents point at when a document is deleted; test in `drawview-store` (two documents with the same image, one deleted, the file kept; the last deleted, the file deleted) | Done |
-| 2 | `CopiedContent`, `CopiedResource`, `ContentPaste` in `drawview-model`: copying elements and pages into values, the changes pasting them (ids, offsets, order on top, order keys, resources mapped by hash or added on the same file, elements of a missing file left out); tests in `drawview-model` (into another document and the same, images, PDF pages with their marks, custom elements, background kept, undo, what the changes send); ABI recorded on purpose | Planned |
+| 2 | `CopiedContent`, `CopiedResource`, `ContentPaste` in `drawview-model`: copying elements and pages into values, the changes pasting them (ids, offsets, order on top, order keys, resources mapped by hash or added on the same file, elements of a missing file left out); tests in `drawview-model` (into another document and the same, images, PDF pages with their marks, custom elements, background kept, undo, what the changes send); ABI recorded on purpose | Done |
 | 3 | `EditorClipboard` in `drawview-canvas`, given to `DrawViewController` and `DocumentEditorViewModel`; `SelectionManager` copy, cut and paste through it (placement in another document); `PageManager.copyPage`, `pastePages`; `EditorCommands` choosing what to paste by the last copy; tests in `drawview-canvas` (two controllers on one clipboard: elements, an image, a page; read-only target; the last copy wins); ABI recorded on purpose | Planned |
 | 4 | The menus: "Copy page" and "Paste page" in the context menu of a page and in the page grid, the strings in every language; PencilNotes and the sample sharing one clipboard (all the desktop windows); screenshots recorded again where the menus change; the desktop application on a scratch directory, copying between two windows | Planned |
 
@@ -184,6 +184,46 @@ public class EditorClipboard {
 * Nothing stored changed: the keys and the JSON of the storage are as they were; the public API
   of `drawview-store` is as it was (`checkKotlinAbi`). Room already kept the shared files
   (`FileRepository.deleteDocument`).
+
+### Phase 2 results
+
+* `CopiedContent.kt` (`drawview-model`, `change` package): `CopiedResource`, `CopiedContent`,
+  `CopiedElements`, `CopiedPages`, and `DrawDocument.copyElements(page, elements, bounds,
+  baseRotation)` and `DrawDocument.copyPages(pages)` making them. The elements are copied in
+  their stacking order; a page is copied with its stack in its order, then its PDF pages and
+  marks (outside of the stack), with the background it shows (`PageData.background` never
+  `null`).
+* `ContentPaste.kt`: `CopiedElements.pasteInto(document, page, dx, dy, fileIsHere)` and
+  `CopiedPages.pasteInto(document, index, fileIsHere)` give `PastedElements` and `PastedPages`:
+  the change (`null` when nothing is pasted), the model objects it adds (to select the elements,
+  to show the pages), the elements left out. `fileIsHere` is `isFileHere` by default (a path not
+  empty, of a file on this device), given by the tests.
+  * Every element gets a new identifier and no order of its source: pasted elements go on top
+    (`AddElements`), in their order. The texts start a content of their own (`Versions.NONE`):
+    no stamp of the source document travels, so another device admits the paste whatever the
+    clocks of the source (`DocumentSession.admits`).
+  * The stack of a page pasted is kept with new orders under every order put on top
+    (`ElementOrder.spread`, the keys a stack gets when keyed again): `AddPage` would otherwise put
+    the kinds in their layers. The PDF pages and the marks get the order of the change.
+  * The pages get order keys between the page before [index] and the next one, after pages of
+    equal keys, as `DrawDocument.orderKeyAt` does.
+  * A resource is the same one in its own document, else the target's resource of the same hash,
+    else a new `AddResource` on the same file when it is here; a resource not here leaves out the
+    elements naming it (a PDF page pasted without its PDF keeps its writing).
+  * Resources and elements or pages are one `CompositeChange`: one step to undo.
+* Tests: `ContentPasteTest` (`drawview-model`): elements pasted in another document keep their
+  look and stack, with new identifiers, moved, the image on a new resource of the same file, the
+  source as it was; another device of the target admits and receives every operation of the
+  paste; the resource of the same content is reused; pasted in its own document an image keeps
+  its resource, on top; an image whose file is not here is left out (nothing pasted when it was
+  alone); what was copied does not follow a later change of the source; a page pasted between two
+  pages of a document of another paper keeps its size, its background (made its own), its PDF
+  page and its mark on one new resource, its stack (a text over a stroke, against the layers of
+  the kinds), and is undone in one step; a page pasted twice in its document gives two duplicates
+  on its resource; without its PDF a page keeps its writing.
+* ABI of `drawview-model` recorded again on purpose: the new classes and functions only.
+* Nothing stored or sent changed: the paste is made of `AddResource`, `AddElements` and
+  `AddPage` as they are.
 
 ## Decisions
 

@@ -1196,6 +1196,50 @@ public final class io/github/valerioisufi/drawview/model/change/CompositeChange$
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class io/github/valerioisufi/drawview/model/change/ContentPasteKt {
+	public static final fun isFileHere (Ljava/lang/String;)Z
+	public static final fun pasteInto (Lio/github/valerioisufi/drawview/model/change/CopiedElements;Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawPage;FFLkotlin/jvm/functions/Function1;)Lio/github/valerioisufi/drawview/model/change/PastedElements;
+	public static final fun pasteInto (Lio/github/valerioisufi/drawview/model/change/CopiedPages;Lio/github/valerioisufi/drawview/model/DrawDocument;ILkotlin/jvm/functions/Function1;)Lio/github/valerioisufi/drawview/model/change/PastedPages;
+	public static synthetic fun pasteInto$default (Lio/github/valerioisufi/drawview/model/change/CopiedElements;Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawPage;FFLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/PastedElements;
+	public static synthetic fun pasteInto$default (Lio/github/valerioisufi/drawview/model/change/CopiedPages;Lio/github/valerioisufi/drawview/model/DrawDocument;ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/PastedPages;
+}
+
+public abstract class io/github/valerioisufi/drawview/model/change/CopiedContent {
+	public abstract fun getResources ()Ljava/util/List;
+	public abstract fun getSourceDocumentId ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/CopiedContentKt {
+	public static final fun copyElements (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawPage;Ljava/util/List;Lio/github/valerioisufi/drawview/model/geometry/Rect;F)Lio/github/valerioisufi/drawview/model/change/CopiedElements;
+	public static synthetic fun copyElements$default (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawPage;Ljava/util/List;Lio/github/valerioisufi/drawview/model/geometry/Rect;FILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/change/CopiedElements;
+	public static final fun copyPages (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/util/List;)Lio/github/valerioisufi/drawview/model/change/CopiedPages;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/CopiedElements : io/github/valerioisufi/drawview/model/change/CopiedContent {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/geometry/Rect;FLjava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/geometry/Rect;FLjava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBaseRotation ()F
+	public final fun getBounds ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun getElements ()Ljava/util/List;
+	public fun getResources ()Ljava/util/List;
+	public fun getSourceDocumentId ()Ljava/lang/String;
+	public final fun getSourcePageId ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/CopiedPages : io/github/valerioisufi/drawview/model/change/CopiedContent {
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getPages ()Ljava/util/List;
+	public fun getResources ()Ljava/util/List;
+	public fun getSourceDocumentId ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/CopiedResource {
+	public fun <init> (Lio/github/valerioisufi/drawview/model/change/ResourceData;Ljava/lang/String;)V
+	public final fun getPath ()Ljava/lang/String;
+	public final fun getResource ()Lio/github/valerioisufi/drawview/model/change/ResourceData;
+}
+
 public final class io/github/valerioisufi/drawview/model/change/CustomElementData : io/github/valerioisufi/drawview/model/change/ElementData {
 	public static final field Companion Lio/github/valerioisufi/drawview/model/change/CustomElementData$Companion;
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;I[BFFFFFLio/github/valerioisufi/drawview/model/ElementOrder;)V
@@ -1767,6 +1811,22 @@ public final synthetic class io/github/valerioisufi/drawview/model/change/PageSn
 
 public final class io/github/valerioisufi/drawview/model/change/PageSnapshot$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/model/change/PastedElements {
+	public fun <init> (Lio/github/valerioisufi/drawview/model/change/DocumentChange;Ljava/util/List;Lio/github/valerioisufi/drawview/model/geometry/Rect;FI)V
+	public final fun getBaseRotation ()F
+	public final fun getBounds ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun getChange ()Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun getElements ()Ljava/util/List;
+	public final fun getLeftOut ()I
+}
+
+public final class io/github/valerioisufi/drawview/model/change/PastedPages {
+	public fun <init> (Lio/github/valerioisufi/drawview/model/change/DocumentChange;Ljava/util/List;I)V
+	public final fun getChange ()Lio/github/valerioisufi/drawview/model/change/DocumentChange;
+	public final fun getLeftOut ()I
+	public final fun getPages ()Ljava/util/List;
 }
 
 public final class io/github/valerioisufi/drawview/model/change/PdfData : io/github/valerioisufi/drawview/model/change/ElementData {

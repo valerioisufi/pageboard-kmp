@@ -526,6 +526,43 @@ final class io.github.valerioisufi.drawview.model.change/CompositeChange : io.gi
     }
 }
 
+final class io.github.valerioisufi.drawview.model.change/CopiedElements : io.github.valerioisufi.drawview.model.change/CopiedContent { // io.github.valerioisufi.drawview.model.change/CopiedElements|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.model.change/ElementData>, io.github.valerioisufi.drawview.model.geometry/Rect, kotlin/Float = ..., kotlin.collections/List<io.github.valerioisufi.drawview.model.change/CopiedResource> = ...) // io.github.valerioisufi.drawview.model.change/CopiedElements.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.model.change.ElementData>;io.github.valerioisufi.drawview.model.geometry.Rect;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.drawview.model.change.CopiedResource>){}[0]
+
+    final val baseRotation // io.github.valerioisufi.drawview.model.change/CopiedElements.baseRotation|{}baseRotation[0]
+        final fun <get-baseRotation>(): kotlin/Float // io.github.valerioisufi.drawview.model.change/CopiedElements.baseRotation.<get-baseRotation>|<get-baseRotation>(){}[0]
+    final val bounds // io.github.valerioisufi.drawview.model.change/CopiedElements.bounds|{}bounds[0]
+        final fun <get-bounds>(): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.model.change/CopiedElements.bounds.<get-bounds>|<get-bounds>(){}[0]
+    final val elements // io.github.valerioisufi.drawview.model.change/CopiedElements.elements|{}elements[0]
+        final fun <get-elements>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.change/ElementData> // io.github.valerioisufi.drawview.model.change/CopiedElements.elements.<get-elements>|<get-elements>(){}[0]
+    final val resources // io.github.valerioisufi.drawview.model.change/CopiedElements.resources|{}resources[0]
+        final fun <get-resources>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.change/CopiedResource> // io.github.valerioisufi.drawview.model.change/CopiedElements.resources.<get-resources>|<get-resources>(){}[0]
+    final val sourceDocumentId // io.github.valerioisufi.drawview.model.change/CopiedElements.sourceDocumentId|{}sourceDocumentId[0]
+        final fun <get-sourceDocumentId>(): kotlin/String // io.github.valerioisufi.drawview.model.change/CopiedElements.sourceDocumentId.<get-sourceDocumentId>|<get-sourceDocumentId>(){}[0]
+    final val sourcePageId // io.github.valerioisufi.drawview.model.change/CopiedElements.sourcePageId|{}sourcePageId[0]
+        final fun <get-sourcePageId>(): kotlin/String // io.github.valerioisufi.drawview.model.change/CopiedElements.sourcePageId.<get-sourcePageId>|<get-sourcePageId>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.model.change/CopiedPages : io.github.valerioisufi.drawview.model.change/CopiedContent { // io.github.valerioisufi.drawview.model.change/CopiedPages|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.model.change/PageData>, kotlin.collections/List<io.github.valerioisufi.drawview.model.change/CopiedResource> = ...) // io.github.valerioisufi.drawview.model.change/CopiedPages.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.model.change.PageData>;kotlin.collections.List<io.github.valerioisufi.drawview.model.change.CopiedResource>){}[0]
+
+    final val pages // io.github.valerioisufi.drawview.model.change/CopiedPages.pages|{}pages[0]
+        final fun <get-pages>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.change/PageData> // io.github.valerioisufi.drawview.model.change/CopiedPages.pages.<get-pages>|<get-pages>(){}[0]
+    final val resources // io.github.valerioisufi.drawview.model.change/CopiedPages.resources|{}resources[0]
+        final fun <get-resources>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.change/CopiedResource> // io.github.valerioisufi.drawview.model.change/CopiedPages.resources.<get-resources>|<get-resources>(){}[0]
+    final val sourceDocumentId // io.github.valerioisufi.drawview.model.change/CopiedPages.sourceDocumentId|{}sourceDocumentId[0]
+        final fun <get-sourceDocumentId>(): kotlin/String // io.github.valerioisufi.drawview.model.change/CopiedPages.sourceDocumentId.<get-sourceDocumentId>|<get-sourceDocumentId>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.model.change/CopiedResource { // io.github.valerioisufi.drawview.model.change/CopiedResource|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.model.change/ResourceData, kotlin/String) // io.github.valerioisufi.drawview.model.change/CopiedResource.<init>|<init>(io.github.valerioisufi.drawview.model.change.ResourceData;kotlin.String){}[0]
+
+    final val path // io.github.valerioisufi.drawview.model.change/CopiedResource.path|{}path[0]
+        final fun <get-path>(): kotlin/String // io.github.valerioisufi.drawview.model.change/CopiedResource.path.<get-path>|<get-path>(){}[0]
+    final val resource // io.github.valerioisufi.drawview.model.change/CopiedResource.resource|{}resource[0]
+        final fun <get-resource>(): io.github.valerioisufi.drawview.model.change/ResourceData // io.github.valerioisufi.drawview.model.change/CopiedResource.resource.<get-resource>|<get-resource>(){}[0]
+}
+
 final class io.github.valerioisufi.drawview.model.change/CustomElementData : io.github.valerioisufi.drawview.model.change/ElementData { // io.github.valerioisufi.drawview.model.change/CustomElementData|null[0]
     constructor <init>(kotlin/String, kotlin/String, kotlin/Int, kotlin/ByteArray, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float = ..., io.github.valerioisufi.drawview.model/ElementOrder? = ...) // io.github.valerioisufi.drawview.model.change/CustomElementData.<init>|<init>(kotlin.String;kotlin.String;kotlin.Int;kotlin.ByteArray;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;io.github.valerioisufi.drawview.model.ElementOrder?){}[0]
 
@@ -1035,6 +1072,32 @@ final class io.github.valerioisufi.drawview.model.change/PageSnapshot { // io.gi
 
         final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.drawview.model.change/PageSnapshot> // io.github.valerioisufi.drawview.model.change/PageSnapshot.Companion.serializer|serializer(){}[0]
     }
+}
+
+final class io.github.valerioisufi.drawview.model.change/PastedElements { // io.github.valerioisufi.drawview.model.change/PastedElements|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.model.change/DocumentChange?, kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawElement>, io.github.valerioisufi.drawview.model.geometry/Rect, kotlin/Float, kotlin/Int) // io.github.valerioisufi.drawview.model.change/PastedElements.<init>|<init>(io.github.valerioisufi.drawview.model.change.DocumentChange?;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawElement>;io.github.valerioisufi.drawview.model.geometry.Rect;kotlin.Float;kotlin.Int){}[0]
+
+    final val baseRotation // io.github.valerioisufi.drawview.model.change/PastedElements.baseRotation|{}baseRotation[0]
+        final fun <get-baseRotation>(): kotlin/Float // io.github.valerioisufi.drawview.model.change/PastedElements.baseRotation.<get-baseRotation>|<get-baseRotation>(){}[0]
+    final val bounds // io.github.valerioisufi.drawview.model.change/PastedElements.bounds|{}bounds[0]
+        final fun <get-bounds>(): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.model.change/PastedElements.bounds.<get-bounds>|<get-bounds>(){}[0]
+    final val change // io.github.valerioisufi.drawview.model.change/PastedElements.change|{}change[0]
+        final fun <get-change>(): io.github.valerioisufi.drawview.model.change/DocumentChange? // io.github.valerioisufi.drawview.model.change/PastedElements.change.<get-change>|<get-change>(){}[0]
+    final val elements // io.github.valerioisufi.drawview.model.change/PastedElements.elements|{}elements[0]
+        final fun <get-elements>(): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawElement> // io.github.valerioisufi.drawview.model.change/PastedElements.elements.<get-elements>|<get-elements>(){}[0]
+    final val leftOut // io.github.valerioisufi.drawview.model.change/PastedElements.leftOut|{}leftOut[0]
+        final fun <get-leftOut>(): kotlin/Int // io.github.valerioisufi.drawview.model.change/PastedElements.leftOut.<get-leftOut>|<get-leftOut>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.model.change/PastedPages { // io.github.valerioisufi.drawview.model.change/PastedPages|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.model.change/DocumentChange?, kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawPage>, kotlin/Int) // io.github.valerioisufi.drawview.model.change/PastedPages.<init>|<init>(io.github.valerioisufi.drawview.model.change.DocumentChange?;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawPage>;kotlin.Int){}[0]
+
+    final val change // io.github.valerioisufi.drawview.model.change/PastedPages.change|{}change[0]
+        final fun <get-change>(): io.github.valerioisufi.drawview.model.change/DocumentChange? // io.github.valerioisufi.drawview.model.change/PastedPages.change.<get-change>|<get-change>(){}[0]
+    final val leftOut // io.github.valerioisufi.drawview.model.change/PastedPages.leftOut|{}leftOut[0]
+        final fun <get-leftOut>(): kotlin/Int // io.github.valerioisufi.drawview.model.change/PastedPages.leftOut.<get-leftOut>|<get-leftOut>(){}[0]
+    final val pages // io.github.valerioisufi.drawview.model.change/PastedPages.pages|{}pages[0]
+        final fun <get-pages>(): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawPage> // io.github.valerioisufi.drawview.model.change/PastedPages.pages.<get-pages>|<get-pages>(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.model.change/PdfData : io.github.valerioisufi.drawview.model.change/ElementData { // io.github.valerioisufi.drawview.model.change/PdfData|null[0]
@@ -2847,6 +2910,13 @@ final class io.github.valerioisufi.drawview.model/Versions { // io.github.valeri
     }
 }
 
+sealed class io.github.valerioisufi.drawview.model.change/CopiedContent { // io.github.valerioisufi.drawview.model.change/CopiedContent|null[0]
+    abstract val resources // io.github.valerioisufi.drawview.model.change/CopiedContent.resources|{}resources[0]
+        abstract fun <get-resources>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.change/CopiedResource> // io.github.valerioisufi.drawview.model.change/CopiedContent.resources.<get-resources>|<get-resources>(){}[0]
+    abstract val sourceDocumentId // io.github.valerioisufi.drawview.model.change/CopiedContent.sourceDocumentId|{}sourceDocumentId[0]
+        abstract fun <get-sourceDocumentId>(): kotlin/String // io.github.valerioisufi.drawview.model.change/CopiedContent.sourceDocumentId.<get-sourceDocumentId>|<get-sourceDocumentId>(){}[0]
+}
+
 sealed class io.github.valerioisufi.drawview.model/PageBackground { // io.github.valerioisufi.drawview.model/PageBackground|null[0]
     abstract val backgroundColor // io.github.valerioisufi.drawview.model/PageBackground.backgroundColor|{}backgroundColor[0]
         abstract fun <get-backgroundColor>(): kotlin/Int // io.github.valerioisufi.drawview.model/PageBackground.backgroundColor.<get-backgroundColor>|<get-backgroundColor>(){}[0]
@@ -3150,8 +3220,12 @@ final val io.github.valerioisufi.drawview.model.geometry/px // io.github.valerio
 final val io.github.valerioisufi.drawview.model.geometry/px // io.github.valerioisufi.drawview.model.geometry/px|@kotlin.Int{}px[0]
     final inline fun (kotlin/Int).<get-px>(): io.github.valerioisufi.drawview.model.geometry/Px // io.github.valerioisufi.drawview.model.geometry/px.<get-px>|<get-px>@kotlin.Int(){}[0]
 
+final fun (io.github.valerioisufi.drawview.model.change/CopiedElements).io.github.valerioisufi.drawview.model.change/pasteInto(io.github.valerioisufi.drawview.model/DrawDocument, io.github.valerioisufi.drawview.model/DrawPage, kotlin/Float, kotlin/Float, kotlin/Function1<kotlin/String, kotlin/Boolean> = ...): io.github.valerioisufi.drawview.model.change/PastedElements // io.github.valerioisufi.drawview.model.change/pasteInto|pasteInto@io.github.valerioisufi.drawview.model.change.CopiedElements(io.github.valerioisufi.drawview.model.DrawDocument;io.github.valerioisufi.drawview.model.DrawPage;kotlin.Float;kotlin.Float;kotlin.Function1<kotlin.String,kotlin.Boolean>){}[0]
+final fun (io.github.valerioisufi.drawview.model.change/CopiedPages).io.github.valerioisufi.drawview.model.change/pasteInto(io.github.valerioisufi.drawview.model/DrawDocument, kotlin/Int, kotlin/Function1<kotlin/String, kotlin/Boolean> = ...): io.github.valerioisufi.drawview.model.change/PastedPages // io.github.valerioisufi.drawview.model.change/pasteInto|pasteInto@io.github.valerioisufi.drawview.model.change.CopiedPages(io.github.valerioisufi.drawview.model.DrawDocument;kotlin.Int;kotlin.Function1<kotlin.String,kotlin.Boolean>){}[0]
 final fun (io.github.valerioisufi.drawview.model.change/ElementData).io.github.valerioisufi.drawview.model.change/placement(): io.github.valerioisufi.drawview.model.change/Placement? // io.github.valerioisufi.drawview.model.change/placement|placement@io.github.valerioisufi.drawview.model.change.ElementData(){}[0]
 final fun (io.github.valerioisufi.drawview.model/DrawCustomElement).io.github.valerioisufi.drawview.model.change/toData(): io.github.valerioisufi.drawview.model.change/CustomElementData // io.github.valerioisufi.drawview.model.change/toData|toData@io.github.valerioisufi.drawview.model.DrawCustomElement(){}[0]
+final fun (io.github.valerioisufi.drawview.model/DrawDocument).io.github.valerioisufi.drawview.model.change/copyElements(io.github.valerioisufi.drawview.model/DrawPage, kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawElement>, io.github.valerioisufi.drawview.model.geometry/Rect, kotlin/Float = ...): io.github.valerioisufi.drawview.model.change/CopiedElements // io.github.valerioisufi.drawview.model.change/copyElements|copyElements@io.github.valerioisufi.drawview.model.DrawDocument(io.github.valerioisufi.drawview.model.DrawPage;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawElement>;io.github.valerioisufi.drawview.model.geometry.Rect;kotlin.Float){}[0]
+final fun (io.github.valerioisufi.drawview.model/DrawDocument).io.github.valerioisufi.drawview.model.change/copyPages(kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawPage>): io.github.valerioisufi.drawview.model.change/CopiedPages // io.github.valerioisufi.drawview.model.change/copyPages|copyPages@io.github.valerioisufi.drawview.model.DrawDocument(kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawPage>){}[0]
 final fun (io.github.valerioisufi.drawview.model/DrawDocument).io.github.valerioisufi.drawview.model.change/snapshot(): io.github.valerioisufi.drawview.model.change/DocumentSnapshot // io.github.valerioisufi.drawview.model.change/snapshot|snapshot@io.github.valerioisufi.drawview.model.DrawDocument(){}[0]
 final fun (io.github.valerioisufi.drawview.model/DrawElement).io.github.valerioisufi.drawview.model.change/toData(): io.github.valerioisufi.drawview.model.change/ElementData // io.github.valerioisufi.drawview.model.change/toData|toData@io.github.valerioisufi.drawview.model.DrawElement(){}[0]
 final fun (io.github.valerioisufi.drawview.model/DrawImage).io.github.valerioisufi.drawview.model.change/toData(): io.github.valerioisufi.drawview.model.change/ImageData // io.github.valerioisufi.drawview.model.change/toData|toData@io.github.valerioisufi.drawview.model.DrawImage(){}[0]
@@ -3164,6 +3238,7 @@ final fun (io.github.valerioisufi.drawview.model/DrawTextMarkup).io.github.valer
 final fun (io.github.valerioisufi.drawview.model/StrokeMesh).io.github.valerioisufi.drawview.model/triangleOutline(): io.github.valerioisufi.drawview.model/StrokeOutline // io.github.valerioisufi.drawview.model/triangleOutline|triangleOutline@io.github.valerioisufi.drawview.model.StrokeMesh(){}[0]
 final fun <#A: kotlin/Any> (io.github.valerioisufi.drawview.model/ElementType<#A>).io.github.valerioisufi.drawview.model/decode(io.github.valerioisufi.drawview.model/DrawCustomElement): #A? // io.github.valerioisufi.drawview.model/decode|decode@io.github.valerioisufi.drawview.model.ElementType<0:0>(io.github.valerioisufi.drawview.model.DrawCustomElement){0§<kotlin.Any>}[0]
 final fun <#A: kotlin/Any> (io.github.valerioisufi.drawview.model/ElementType<#A>).io.github.valerioisufi.drawview.model/encode(#A): kotlin/ByteArray // io.github.valerioisufi.drawview.model/encode|encode@io.github.valerioisufi.drawview.model.ElementType<0:0>(0:0){0§<kotlin.Any>}[0]
+final fun io.github.valerioisufi.drawview.model.change/isFileHere(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/isFileHere|isFileHere(kotlin.String){}[0]
 final fun io.github.valerioisufi.drawview.model.change/placementOf(io.github.valerioisufi.drawview.model/DrawElement): io.github.valerioisufi.drawview.model.change/Placement? // io.github.valerioisufi.drawview.model.change/placementOf|placementOf(io.github.valerioisufi.drawview.model.DrawElement){}[0]
 final fun io.github.valerioisufi.drawview.model.geometry/fitPdfPage(kotlin/Double, kotlin/Double, io.github.valerioisufi.drawview.model.geometry/Rect): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.model.geometry/fitPdfPage|fitPdfPage(kotlin.Double;kotlin.Double;io.github.valerioisufi.drawview.model.geometry.Rect){}[0]
 final fun io.github.valerioisufi.drawview.model/newElementId(): kotlin/String // io.github.valerioisufi.drawview.model/newElementId|newElementId(){}[0]
