@@ -96,14 +96,20 @@ the canvas pushed as far as it goes to the left and to the right):
 
 * `ScrollAxisLock` (new, internal, Pure Fabrication) decides the axis of one gesture from its
   deltas, which it filters:
-  * it adds the deltas up until their length passes the touch slop, holding them back meanwhile;
+  * it adds the deltas up until their length passes a slop (8 dp for a trackpad), holding them
+    back meanwhile;
   * then it locks the axis whose part is greater, when the other is at most half of it (within
     about 27° of the axis), or leaves the gesture free;
   * the deltas held back are given once the axis is chosen, filtered; a gesture ending before
-    that gives them as they are, so that a short scroll still moves.
+    that gives them as they are, so that a short scroll still moves;
+  * an axis the content cannot move on (`CameraPhysicsEngine.canMoveX`, `canMoveY`) is left out:
+    its rubber band would only show the sideways parts of the fingers, and a gesture locked on it
+    would not move at all. With one axis left there is nothing to choose.
 
   It works on the deltas added up, not on single events, since AWT reports the two axes of a
-  macOS trackpad in separate events.
+  macOS trackpad in separate events. A wheel without phases has no slop: its end is known only
+  from the next scroll, so nothing is held back, and its first delta chooses (on the desktop each
+  of its events carries one axis).
 * `CanvasGestureHandler` stays the controller of the input and tells the lock where a gesture
   starts and ends:
   * a macOS trackpad: `FINGERS_DOWN` and `FINGERS_UP` (the inertia of the system is already
@@ -131,7 +137,7 @@ the canvas pushed as far as it goes to the left and to the right):
 | Phase | Content | Status |
 |---|---|---|
 | 1 | Bounds from the pages: `contentRect` from the pages and their margin; `updateDynamicBoundaries` with the origin of the content, locked at the center when the content fits (within a pixel), else its edges; `horizontalPaddingPx` removed; tests (`CameraBoundsTest`: a wide window at 1×, 1.25×, 1.5× keeping the page centered after a pan to each side, at 2× and 3× stopping at the edges with their margin, a phone at 1× without wobble, a zoom across the width without jump, mixed page widths, a pinch springing back to the center); the screenshots checked unchanged; the desktop application on a scratch directory | Done |
-| 2 | Predominant axis: `ScrollAxisLock`; `CanvasGestureHandler` feeding it for the macOS trackpad (phases), the trackpads of Android and iOS (`Pan*` events) and the wheel without phases (pause), the fling from the filtered deltas; tests (`ScrollAxisLockTest`: vertical, horizontal, diagonal, deltas held back, a short scroll; `TrackpadGesturesTest`: a mostly vertical scroll of a zoomed page and its fling moving vertically only, a new gesture choosing again, a wheel after a pause, the touch pan left free); the desktop application on a scratch directory | To do |
+| 2 | Predominant axis: `ScrollAxisLock`; `CanvasGestureHandler` feeding it for the macOS trackpad (phases), the trackpads of Android and iOS (`Pan*` events) and the wheel without phases (pause), the fling from the filtered deltas; tests (`ScrollAxisLockTest`: vertical, horizontal, diagonal, deltas held back, a short scroll; `TrackpadGesturesTest`: a mostly vertical scroll of a zoomed page and its fling moving vertically only, a new gesture choosing again, a wheel after a pause, the touch pan left free); the desktop application on a scratch directory | Done |
 
 Each phase is one commit on `feat/camera-bounds`, with the checks of `CLAUDE.md` (`jvmTest`,
 `checkKotlinAbi`, the Android and iOS builds, `verifyRoborazziJvm`). The ABI is not expected to
@@ -159,6 +165,37 @@ change.
   database, no error. Its window was not driven by hand; trying the zoom and the scroll on the
   user's devices is left to the user.
 
+### Phase 2 results
+
+* `ScrollAxisLock` (`drawview-canvas`, internal): `begin`, `filter(delta, canMoveX, canMoveY)`,
+  `end`; the slop read in pixels when it is needed (the density of the canvas may change),
+  `MAX_CROSS_RATIO` = 0.5, `SLOP_DP` = 8, `WHEEL_GESTURE_PAUSE_MS` = 300.
+* `CameraPhysicsEngine.canMoveX` and `canMoveY`: whether the bounds let the content move on an
+  axis.
+* `CanvasGestureHandler`: the trackpad gesture (`startTrackpadPan`, `trackpadPanBy`,
+  `endTrackpadPan`, for the fingers of a macOS trackpad and the `Pan*` events of Android and iOS)
+  goes through `trackpadAxis`, whose filtered deltas feed the camera and the velocity tracker, so
+  the fling follows the axis; what a short gesture held back moves the canvas when it ends. The
+  wheel without phases goes through `wheelAxis`, begun again after a pause of 300 ms. The zoom
+  with Ctrl or ⌘, the inertia of the system and the touch pans are as before.
+* The slop is 8 dp, not the touch slop of the platform: on the desktop it is 18 dp (36 px on a
+  Retina screen), which would hold back the start of every scroll.
+* Tests: `ScrollAxisLockTest` (`commonTest`: vertical, horizontal, diagonal, held back then given,
+  a scroll shorter than the slop, a new gesture, a fixed axis left out, no slop);
+  `TrackpadGesturesTest` (a mostly vertical scroll of a macOS trackpad with sideways deltas apart,
+  its fling vertical too; a new gesture choosing again; a diagonal scroll free; a page that fits
+  not following the sideways part, without rubber band; a wheel without phases keeping its axis
+  until a pause; the two-finger pan of Android and iOS on its axis); `TouchGesturesTest` (a
+  two-finger drag of a zoomed page moving on both axes). With the lock disabled, the five tests
+  of the trackpad and of the wheel that expect it fail; the diagonal and the touch pass.
+* The other tests, the screenshots and the ABI are unchanged.
+  `LectureRecorderTest.aRecordingIsTranscribedInParallelAndInOrder` (`drawview-lecture`, which
+  does not depend on the canvas) failed once in the first build of the worktree and once in three
+  runs after it: it depends on timing, apart from this work.
+* The desktop application ran on a scratch directory: it starts, makes its database, no error.
+  Its window was not driven by hand; trying the scroll on the trackpad of the user is left to the
+  user.
+
 ## Decisions
 
 Proposed on 2026-10-25 and taken by the user on 2026-10-25 ("write the plan with the two phases"),
@@ -175,9 +212,14 @@ Taken alone while writing the plan, revertible:
    bounds jump when the zoom crosses the width of the canvas.
 4. A gesture locks within about 27° of an axis (the smaller part at most half the greater); a
    diagonal start stays free, as the directional lock of `UIScrollView`.
-5. The deltas within the touch slop are held back until the axis is chosen.
-6. A pause of 300 ms separates two gestures of a wheel without phases.
+5. The deltas within the slop are held back until the axis is chosen; the slop is 8 dp (phase 2:
+   the 18 dp of the desktop held back too much).
+6. A pause of 300 ms separates two gestures of a wheel without phases, whose first delta chooses
+   its axis (phase 2: its end is known too late to hold anything back).
 7. The vertical bounds and their margins in pixels are left as they are.
+8. An axis the content cannot move on is left out of a scroll of a wheel or a trackpad, its rubber
+   band included, as `NSScrollView` does with an automatic elasticity (phase 2: a gesture locked on
+   it would not move, and its rubber band showed the sideways parts of the fingers).
 
 ## Risks
 
@@ -186,6 +228,10 @@ Taken alone while writing the plan, revertible:
   today.
 * **Panning diagonally on a trackpad**, zoomed in, needs a diagonal start; a gesture started along
   an axis stays on it until the fingers are lifted.
+* **A mouse wheel turned right after Shift + wheel** (within 300 ms) is left out, its gesture
+  being horizontal; the touchpads of Windows and Linux cannot be told apart from a mouse.
+* **A short document that fits the window** no longer bounces vertically under a scroll of a wheel
+  or a trackpad (decision 8); touch still bounces it.
 * **Tests assuming the old bounds** (a horizontal pan at the zoom of the opening) are corrected in
   the phase that changes them, saying why.
 

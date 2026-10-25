@@ -163,6 +163,130 @@ class TrackpadGesturesTest {
         MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.MOMENTUM_END, 1_500L)
     }
 
+    /** Zooms in around the center, so that the page can move on both axes. */
+    private fun DrawViewController.zoomIn() {
+        viewport.camera.onDrag(0f, 0f, 3f, center.x, center.y)
+        viewport.camera.restoreToBounds(animated = false)
+        assertTrue(viewport.camera.canMoveX && viewport.camera.canMoveY)
+    }
+
+    @Test
+    fun aMostlyVerticalScrollOfAMacTrackpadStaysVerticalWithItsFling() = withCanvas(pages = 5) { scene, controller ->
+        val camera = controller.viewport.camera
+        controller.zoomIn()
+        val before = camera.getCurrentTranslation()
+        val unit = scrollUnitPx(1f)
+
+        MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.FINGERS_DOWN, 1_000L)
+        // AWT reports the sideways part of the fingers apart, as horizontal deltas
+        for (i in 0..9) {
+            scene.scroll(Offset(0f, 1f), timeMillis = 1_000L + i * 10L)
+            scene.scroll(Offset(0.2f, 0f), timeMillis = 1_005L + i * 10L)
+        }
+        val moved = camera.getCurrentTranslation()
+        assertEquals(before.x, moved.x, 1e-3f)
+        assertEquals(before.y - 10f * unit, moved.y, 1e-3f)
+
+        // Lifted while moving: the fling stays vertical too
+        MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.FINGERS_UP, 1_095L)
+        assertTrue(camera.isAnimating())
+        repeat(120) { scene.render((it + 1) * 16_000_000L) }
+        val flung = camera.getCurrentTranslation()
+        assertEquals(before.x, flung.x, 1e-3f)
+        assertTrue(flung.y < moved.y, "${flung.y} after ${moved.y}")
+    }
+
+    @Test
+    fun aNewGestureOfAMacTrackpadChoosesItsAxisAgain() = withCanvas(pages = 5) { scene, controller ->
+        val camera = controller.viewport.camera
+        controller.zoomIn()
+        val unit = scrollUnitPx(1f)
+
+        MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.FINGERS_DOWN, 1_000L)
+        scene.scroll(Offset(0f, 1f), timeMillis = 1_000L)
+        scene.scroll(Offset(0f, 1f), timeMillis = 1_010L)
+        // Lifted after a pause: no fling
+        MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.FINGERS_UP, 1_200L)
+        val before = camera.getCurrentTranslation()
+
+        MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.FINGERS_DOWN, 2_000L)
+        scene.scroll(Offset(1f, 0f), timeMillis = 2_000L)
+        scene.scroll(Offset(0f, 0.3f), timeMillis = 2_005L)
+        scene.scroll(Offset(1f, 0f), timeMillis = 2_010L)
+        val after = camera.getCurrentTranslation()
+        assertEquals(before.x - 2f * unit, after.x, 1e-3f)
+        assertEquals(before.y, after.y, 1e-3f)
+        MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.FINGERS_UP, 2_200L)
+    }
+
+    @Test
+    fun aDiagonalScrollOfAMacTrackpadStaysFree() = withCanvas(pages = 5) { scene, controller ->
+        val camera = controller.viewport.camera
+        controller.zoomIn()
+        val before = camera.getCurrentTranslation()
+        val unit = scrollUnitPx(1f)
+
+        MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.FINGERS_DOWN, 1_000L)
+        scene.scroll(Offset(1f, 1f), timeMillis = 1_000L)
+        scene.scroll(Offset(0.5f, 0f), timeMillis = 1_010L)
+        scene.scroll(Offset(0f, 0.5f), timeMillis = 1_015L)
+        val after = camera.getCurrentTranslation()
+        assertEquals(before.x - 1.5f * unit, after.x, 1e-3f)
+        assertEquals(before.y - 1.5f * unit, after.y, 1e-3f)
+        MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.FINGERS_UP, 1_200L)
+    }
+
+    @Test
+    fun aPageThatFitsDoesNotFollowTheSidewaysPartOfAScroll() = withCanvas(pages = 5) { scene, controller ->
+        val camera = controller.viewport.camera
+        // At the zoom of the opening the page fills the width: it cannot move sideways
+        assertFalse(camera.canMoveX)
+        val before = camera.getCurrentTranslation()
+        val unit = scrollUnitPx(1f)
+
+        MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.FINGERS_DOWN, 1_000L)
+        scene.scroll(Offset(1f, 0f), timeMillis = 1_000L)
+        // No rubber band sideways while the fingers are down
+        assertEquals(before.x, camera.getCurrentTranslation().x, 1e-3f)
+        scene.scroll(Offset(0f, 1f), timeMillis = 1_010L)
+        assertEquals(before.y - unit, camera.getCurrentTranslation().y, 1e-3f)
+        MacTrackpad.dispatchScrollPhase(TrackpadScrollPhase.FINGERS_UP, 1_200L)
+    }
+
+    @Test
+    fun aWheelWithoutPhasesKeepsItsAxisUntilAPause() = withCanvas(pages = 5) { scene, controller ->
+        val camera = controller.viewport.camera
+        controller.zoomIn()
+        val before = camera.getCurrentTranslation()
+        val unit = scrollUnitPx(1f)
+
+        scene.scroll(Offset(0f, 1f), timeMillis = 1_000L)
+        assertEquals(before.y - unit, camera.getCurrentTranslation().y, 1e-3f)
+        // Within the gesture the other axis is left out...
+        scene.scroll(Offset(1f, 0f), timeMillis = 1_100L)
+        assertEquals(before.x, camera.getCurrentTranslation().x, 1e-3f)
+        // ...after a pause it starts a gesture of its own
+        scene.scroll(Offset(1f, 0f), timeMillis = 1_500L)
+        assertEquals(before.x - unit, camera.getCurrentTranslation().x, 1e-3f)
+        assertEquals(before.y - unit, camera.getCurrentTranslation().y, 1e-3f)
+    }
+
+    @Test
+    fun theTwoFingerPanOfATrackpadFollowsTheAxisItStartedOn() = withCanvas(pages = 5) { scene, controller ->
+        val camera = controller.viewport.camera
+        controller.zoomIn()
+        val before = camera.getCurrentTranslation()
+
+        scene.sendGesture(PointerEventType.PanStart)
+        scene.sendGesture(PointerEventType.PanMove, panOffset = Offset(3f, 30f))
+        scene.sendGesture(PointerEventType.PanMove, panOffset = Offset(4f, 0f))
+
+        val after = camera.getCurrentTranslation()
+        assertEquals(before.x, after.x, 1e-3f)
+        assertEquals(before.y - 30f, after.y, 1e-3f)
+        scene.sendGesture(PointerEventType.PanEnd)
+    }
+
     @Test
     fun pinchOfAMacTrackpadZoomsAroundThePointerAndSpringsBackIntoTheLimits() = withCanvas(pages = 1) { scene, controller ->
         val camera = controller.viewport.camera

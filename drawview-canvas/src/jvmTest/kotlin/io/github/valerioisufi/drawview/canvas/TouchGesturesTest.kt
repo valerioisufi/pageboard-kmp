@@ -96,6 +96,28 @@ class TouchGesturesTest {
     }
 
     @Test
+    fun twoFingerDragOfAZoomedPageMovesFreely() = withCanvas { scene, controller ->
+        val camera = controller.viewport.camera
+        camera.onDrag(0f, 0f, 3f, 400f, 600f)
+        camera.restoreToBounds(animated = false)
+        val before = camera.getCurrentTranslation()
+
+        // The axis of a scroll is for the wheel and the trackpads: touch stays free
+        var time = 1_000L
+        val p1 = Offset(300f, 400f)
+        val p2 = Offset(500f, 400f)
+        scene.touch(PointerEventType.Press, listOf(0L to p1, 1L to p2), time)
+        time += 16L
+        val move = Offset(12f, 60f)
+        scene.touch(PointerEventType.Move, listOf(0L to p1 + move, 1L to p2 + move), time)
+
+        assertEquals(before.x + 12f, camera.getCurrentTranslation().x, 1f)
+        assertEquals(before.y + 60f, camera.getCurrentTranslation().y, 1f)
+        time += 16L
+        scene.touch(PointerEventType.Release, listOf(0L to p1 + move, 1L to p2 + move), time)
+    }
+
+    @Test
     fun twoFingerPanWithinZoomSlopMaintainsScale() = withCanvas { scene, controller ->
         val camera = controller.viewport.camera
         val initialScale = camera.getCurrentScale()

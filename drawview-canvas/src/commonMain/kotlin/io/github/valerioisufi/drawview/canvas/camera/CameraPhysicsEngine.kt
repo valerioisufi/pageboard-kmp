@@ -122,6 +122,14 @@ public class CameraPhysicsEngine(
 
     internal fun getCurrentTranslation(): Offset = Offset(axisX.position, axisY.position)
 
+    /** Whether the content can move horizontally within its bounds (it is wider than the viewport). */
+    internal val canMoveX: Boolean
+        get() = axisX.minValue < axisX.maxValue
+
+    /** Whether the content can move vertically within its bounds (it is taller than the viewport). */
+    internal val canMoveY: Boolean
+        get() = axisY.minValue < axisY.maxValue
+
     internal fun isAnimating(): Boolean {
         return !isUserDragging && (
             axisX.state != PhysicsState.IDLE ||
