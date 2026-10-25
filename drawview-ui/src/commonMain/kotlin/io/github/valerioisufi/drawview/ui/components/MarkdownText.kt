@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
@@ -85,7 +86,9 @@ public fun MarkdownText(
         var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
         Text(
             content?.text ?: MarkdownTextUtil.toLiveAnnotatedString(markdown, TextRange(markdown.length + 1), color),
-            style = style,
+            // The lines with formulas or blocks of code take the room of their struts, as on the page:
+            // a height of line set by the style would leave them on the text around them
+            style = if (content != null && (content.formulas.isNotEmpty() || content.codeBlocks.isNotEmpty())) style.copy(lineHeight = TextUnit.Unspecified) else style,
             color = color,
             onTextLayout = { layout = it },
             modifier = Modifier.drawWithContent {

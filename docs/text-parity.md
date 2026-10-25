@@ -129,7 +129,7 @@ struts fall back to the character of the text font scaled as today: both sides s
 | 2 | One presentation: the strut fonts, `RichTextPresenter` with the mapping, the lines as paragraphs, the delimiters removed, the formulas and the blocks of code as struts, the list items with their bullet or number and their hanging indent measured; the canvas, the export, `MarkdownText` and the editor on it (`toEditorText`, `toCanvasText` and the placeholders removed) | Done |
 | 3 | Lists while written: the caret kept out of the markers, Backspace at the start of an item taking its marker away | Done |
 | 4 | Reveal without vertical moves: the delimiters faded by their color only, the `#` of a heading revealed near them only, the room of a formula kept while its source is shown, a block of code written as a block (struts, chrome, fences hidden, Backspace revealing the opening fence) | Done |
-| 5 | Checks: the screenshots recorded again where the page changed (the line breaks of every text are now paragraphs, a block of code takes exactly its height), the desktop application on a scratch directory | Planned |
+| 5 | Checks: the screenshots recorded again where the page changed (the line breaks of every text are now paragraphs, a block of code takes exactly its height), the desktop application on a scratch directory | Done |
 
 ### Phase 1 results
 
@@ -206,6 +206,24 @@ struts fall back to the character of the text font scaled as today: both sides s
   block, the `#` of a heading or the delimiters of an emphasis (within a pixel: Skia rounds its lines
   to whole pixels, and a line rebuilt of other parts may round the other way); the written code on
   the baselines and the columns of the block; Backspace at the start of the code.
+
+### Phase 5 results
+
+* The screenshots that changed, each seen before recording it again: the texts being written with a
+  formula (the line of a fraction no longer has the margin of the old model), a block of code (its
+  code written in the block, its lines a little further apart), a list item with a block of code, a
+  formula that cannot be read, the phone (a formula no longer makes its line wrap), `MarkdownText`
+  and the review of the lecture assistant (the lines of its text are paragraphs: 3 or 4 px closer
+  with the height of line of the theme).
+* Found by the screenshots: `MarkdownText` takes the style of its theme, whose height of line is
+  fixed and ignored the struts (its blocks of code fell on the text around them). A text with
+  formulas or blocks of code is laid out with the natural height of its lines, as on the page.
+* Checks: `jvmTest checkKotlinAbi`, Android and iOS (`compileAndroidMain`,
+  `compileKotlinIosSimulatorArm64`, both applications assembled), `verifyRoborazziJvm` of explorer,
+  ui, sync-ui, lecture-ui and export-ui, `consumer-checks/check.sh`.
+* The desktop application started on a scratch directory, without errors; not driven by hand (the
+  editor itself is covered by the parity tests on the desktop, the platforms with a touch keyboard
+  are left for later).
 
 ## Decisions
 
