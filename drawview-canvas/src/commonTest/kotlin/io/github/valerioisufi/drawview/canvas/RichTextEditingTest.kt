@@ -16,7 +16,7 @@ class RichTextEditingTest {
     @Test
     fun wrapsTheSelectionWithDelimiters() {
         val original = TextFieldValue(text = "Hello World", selection = TextRange(6, 11))
-        val wrapped = RichTextEditing.toggleDelimiters(original, "**", "**")
+        val wrapped = RichTextEditing.toggle(original, RichTextEditing.Format.BOLD)
         assertEquals("Hello **World**", wrapped.text)
         assertEquals(TextRange(8, 13), wrapped.selection)
     }
@@ -24,14 +24,14 @@ class RichTextEditingTest {
     @Test
     fun unwrapsWhenTheSelectionIsAlreadyWrapped() {
         val original = TextFieldValue(text = "Hello **World**", selection = TextRange(8, 13))
-        val unwrapped = RichTextEditing.toggleDelimiters(original, "**", "**")
+        val unwrapped = RichTextEditing.toggle(original, RichTextEditing.Format.BOLD)
         assertEquals("Hello World", unwrapped.text)
     }
 
     @Test
     fun insertsDelimitersAtTheCursor() {
         val original = TextFieldValue(text = "E = mc", selection = TextRange(6))
-        val result = RichTextEditing.toggleDelimiters(original, "$", "$")
+        val result = RichTextEditing.toggle(original, RichTextEditing.Format.FORMULA)
         assertEquals("E = mc$$", result.text)
         assertEquals(TextRange(7), result.selection)
     }

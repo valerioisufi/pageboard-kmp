@@ -24,15 +24,16 @@ public object RichTextEditing {
     }
 
     /**
-     * Adds or removes the delimiters of [format] around the selection (see [toggleDelimiters]);
-     * code over several lines is a block of code ([toggleCodeBlock]). Nothing in a block of code.
+     * Adds [format] to the selection or takes it off, by the spans of the notation (see
+     * [InlineFormatting.toggle]); code over several lines is a block of code ([toggleCodeBlock]).
+     * Nothing in a block of code.
      */
     public fun toggle(value: TextFieldValue, format: Format): TextFieldValue {
         if (inCodeBlock(value)) return value
         val start = min(value.selection.start, value.selection.end)
         val end = max(value.selection.start, value.selection.end)
         if (format == Format.CODE && value.text.substring(start, end).contains('\n')) return toggleCodeBlock(value)
-        return toggleDelimiters(value, format.delimiter, format.delimiter)
+        return InlineFormatting.toggle(value, format)
     }
 
     /** The block of code the selection of [value] is in, its fences included, or `null`. */
@@ -140,35 +141,6 @@ public object RichTextEditing {
             text.indexOf('\n', endBound).let { if (it < 0) text.length else it }
         }
         return firstLineStart to lastLineEnd
-    }
-
-    /**
-     * Adds or removes the delimiters around the selection, or inserts them at the cursor (placing
-     * the cursor between them).
-     */
-    internal fun toggleDelimiters(value: TextFieldValue, prefix: String, suffix: String): TextFieldValue {
-        val text = value.text
-        val start = min(value.selection.start, value.selection.end)
-        val end = max(value.selection.start, value.selection.end)
-        if (start == end) {
-            val cursor = start + prefix.length
-            return value.copy(text = text.substring(0, start) + prefix + suffix + text.substring(start), selection = TextRange(cursor))
-        }
-        val selected = text.substring(start, end)
-        // Already wrapped: remove the delimiters
-        val wrapped = start >= prefix.length && end + suffix.length <= text.length &&
-            text.startsWith(prefix, start - prefix.length) && text.startsWith(suffix, end)
-        return if (wrapped) {
-            value.copy(
-                text = text.substring(0, start - prefix.length) + selected + text.substring(end + suffix.length),
-                selection = TextRange(start - prefix.length, end - prefix.length)
-            )
-        } else {
-            value.copy(
-                text = text.substring(0, start) + prefix + selected + suffix + text.substring(end),
-                selection = TextRange(start + prefix.length, end + prefix.length)
-            )
-        }
     }
 
     /**
