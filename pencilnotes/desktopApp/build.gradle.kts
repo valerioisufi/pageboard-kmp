@@ -32,6 +32,7 @@ compose.desktop {
             packageVersion = "3.0.0"
 
             macOS {
+                iconFile.set(project.file("src/main/resources/icons/icon.icns"))
                 // Lecture assistant: recording of the lectures
                 infoPlist {
                     extraKeysRawXml = """
@@ -39,6 +40,12 @@ compose.desktop {
                         <string>PencilNotes records the lectures for the lecture assistant.</string>
                     """.trimIndent()
                 }
+            }
+            windows {
+                iconFile.set(project.file("src/main/resources/icons/icon.ico"))
+            }
+            linux {
+                iconFile.set(project.file("src/main/resources/icons/icon.png"))
             }
         }
     }

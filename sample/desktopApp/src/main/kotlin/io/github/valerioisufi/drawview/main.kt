@@ -10,9 +10,11 @@ import androidx.compose.ui.window.application
 import io.github.valerioisufi.drawview.session.DrawViewSessions
 import io.github.valerioisufi.drawview.ui.command.CommandHost
 import io.github.valerioisufi.drawview.ui.command.DrawViewMenuBar
+import io.github.valerioisufi.drawview.ui.window.DesktopAppIcon
 import io.github.valerioisufi.drawview.ui.window.DrawViewWindowDecor
 import io.github.valerioisufi.drawview.ui.window.SetWindowDocumentModified
 import io.github.valerioisufi.drawview.ui.window.WindowMinimumSize
+import io.github.valerioisufi.drawview.ui.window.rememberDesktopIcon
 import io.github.valerioisufi.drawview.ui.window.rememberDesktopWindowManager
 import io.github.valerioisufi.drawview.ui.window.rememberDrawViewWindowState
 import kotlinx.coroutines.runBlocking
@@ -23,8 +25,13 @@ fun main() {
     // The native parts of the windows on macOS (title bar, menus, dialogs) light or dark as the
     // system, like the theme: the JDK keeps them light otherwise. Read once, before AWT starts
     System.setProperty("apple.awt.application.appearance", "system")
+
+    // The application icon in the macOS Dock
+    DesktopAppIcon.setDockIcon(DesktopAppIcon.loadIconImage("/icons/icon_mac.png"))
+
     application {
         val windowManager = rememberDesktopWindowManager()
+        val appIcon = rememberDesktopIcon("/icons/icon.png")
 
         // The primary library window
         if (windowManager.isLibraryOpen) {
@@ -40,6 +47,7 @@ fun main() {
                 },
                 state = libraryWindowState,
                 title = "DrawView",
+                icon = appIcon,
                 onKeyEvent = { libraryCommands.dispatch(it) }
             ) {
                 DrawViewWindowDecor(state = libraryWindowState) {
@@ -72,6 +80,7 @@ fun main() {
                     },
                     state = docWindowState,
                     title = docTitle,
+                    icon = appIcon,
                     onKeyEvent = { docCommands.dispatch(it) }
                 ) {
                     SetWindowDocumentModified(isDirty)

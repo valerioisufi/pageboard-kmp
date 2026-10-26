@@ -13,9 +13,11 @@ import io.github.valerioisufi.drawview.platform.DRAWVIEW_DATA_DIRECTORY_PROPERTY
 import io.github.valerioisufi.drawview.session.DrawViewSessions
 import io.github.valerioisufi.drawview.ui.command.CommandHost
 import io.github.valerioisufi.drawview.ui.command.DrawViewMenuBar
+import io.github.valerioisufi.drawview.ui.window.DesktopAppIcon
 import io.github.valerioisufi.drawview.ui.window.DrawViewWindowDecor
 import io.github.valerioisufi.drawview.ui.window.SetWindowDocumentModified
 import io.github.valerioisufi.drawview.ui.window.WindowMinimumSize
+import io.github.valerioisufi.drawview.ui.window.rememberDesktopIcon
 import io.github.valerioisufi.drawview.ui.window.rememberDesktopWindowManager
 import io.github.valerioisufi.drawview.ui.window.rememberDrawViewWindowState
 import io.github.valerioisufi.pencilnotes.ui.theme.PencilNotesTheme
@@ -35,8 +37,12 @@ fun main() {
     // system, like the theme: the JDK keeps them light otherwise. Read once, before AWT starts
     System.setProperty("apple.awt.application.appearance", "system")
 
+    // The application icon in the macOS Dock
+    DesktopAppIcon.setDockIcon(DesktopAppIcon.loadIconImage("/icons/icon_mac.png"))
+
     application {
         val windowManager = rememberDesktopWindowManager()
+        val appIcon = rememberDesktopIcon("/icons/icon.png")
         var confirmExit by remember { mutableStateOf(false) }
 
         fun exit() {
@@ -65,6 +71,7 @@ fun main() {
                 },
                 state = windowState,
                 title = "PencilNotes",
+                icon = appIcon,
                 onKeyEvent = { commands.dispatch(it) }
             ) {
                 DrawViewWindowDecor(state = windowState) {
@@ -102,6 +109,7 @@ fun main() {
                     },
                     state = docWindowState,
                     title = docTitle,
+                    icon = appIcon,
                     onKeyEvent = { docCommands.dispatch(it) }
                 ) {
                     DrawViewWindowDecor(state = docWindowState) {
