@@ -483,12 +483,16 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public fun getColor ()I
 	public fun getFontSize ()F
 	public fun getFormatsCharacters ()Z
+	public fun getInBulletList ()Z
 	public fun getInCodeBlock ()Z
+	public fun getInHeading ()Z
+	public fun getInNumberedList ()Z
 	public final fun getRotation ()F
 	public final fun getSessionId ()I
 	public final fun getValue ()Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun handleEnter ()Z
 	public fun indent ()V
+	public fun isActive (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Z
 	public final fun isEditing ()Z
 	public final fun moveBy (FF)V
 	public final fun moveTo (FFZ)V
@@ -523,8 +527,12 @@ public abstract interface class io/github/valerioisufi/drawview/canvas/controlle
 	public abstract fun getColor ()I
 	public abstract fun getFontSize ()F
 	public fun getFormatsCharacters ()Z
+	public fun getInBulletList ()Z
 	public fun getInCodeBlock ()Z
+	public fun getInHeading ()Z
+	public fun getInNumberedList ()Z
 	public fun indent ()V
+	public fun isActive (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Z
 	public fun outdent ()V
 	public fun toggle (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
 	public fun toggleBulletList ()V
@@ -537,8 +545,12 @@ public abstract interface class io/github/valerioisufi/drawview/canvas/controlle
 public final class io/github/valerioisufi/drawview/canvas/controller/TextFormatTarget$DefaultImpls {
 	public static fun getCodeLineNumbers (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getFormatsCharacters (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
+	public static fun getInBulletList (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getInCodeBlock (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
+	public static fun getInHeading (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
+	public static fun getInNumberedList (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun indent (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
+	public static fun isActive (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Z
 	public static fun outdent (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
 	public static fun toggle (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)V
 	public static fun toggleBulletList (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
@@ -992,7 +1004,10 @@ public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing {
 	public final fun handleConcealedDeletion (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun handleEnter (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun handleSmartNewline (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun inBulletList (Landroidx/compose/ui/text/input/TextFieldValue;)Z
 	public final fun inCodeBlock (Landroidx/compose/ui/text/input/TextFieldValue;)Z
+	public final fun inHeading (Landroidx/compose/ui/text/input/TextFieldValue;)Z
+	public final fun inNumberedList (Landroidx/compose/ui/text/input/TextFieldValue;)Z
 	public final fun indent (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun keepCaretOutOfMarkers (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun outdent (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;

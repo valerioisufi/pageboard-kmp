@@ -10,6 +10,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.canvas.geometry.toModel
+import io.github.valerioisufi.drawview.canvas.text.InlineFormatting
 import io.github.valerioisufi.drawview.canvas.text.RichTextEditing
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.DrawPage
@@ -107,6 +108,26 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
     override val inCodeBlock: Boolean get() = selectedCodeBlock != null
 
     override val codeLineNumbers: Boolean get() = selectedCodeBlock?.numbered == true
+
+    /** The value whose inline formats were last read, and those formats. */
+    private var formatsValue: TextFieldValue? = null
+    private var activeFormats: Set<RichTextEditing.Format> = emptySet()
+
+    override fun isActive(format: RichTextEditing.Format): Boolean {
+        if (!isEditing || inCodeBlock) return false
+        val current = value
+        if (current != formatsValue) {
+            activeFormats = InlineFormatting.formatsAt(current)
+            formatsValue = current
+        }
+        return format in activeFormats
+    }
+
+    override val inHeading: Boolean get() = isEditing && RichTextEditing.inHeading(value)
+
+    override val inBulletList: Boolean get() = isEditing && RichTextEditing.inBulletList(value)
+
+    override val inNumberedList: Boolean get() = isEditing && RichTextEditing.inNumberedList(value)
 
     /** Rotation of the text in degrees (kept: the editor does not turn a text). */
     public val rotation: Float get() = activeTextItem?.rotation ?: 0f

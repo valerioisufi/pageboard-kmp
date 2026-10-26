@@ -447,7 +447,8 @@ internal class EditorCommands internal constructor(
         "format-code-block", label(Res.string.text_editor_action_code_block), CommandGroup.FORMAT,
         icon = { rememberVectorPainter(DrawViewIcons.SquareCode) },
         shortcuts = listOf(Shortcut(Key.C, primary = true, alt = true)),
-        isEnabled = { textTarget?.formatsCharacters == true }
+        isEnabled = { textTarget?.formatsCharacters == true },
+        isChecked = { textTarget?.inCodeBlock == true }
     ) { textTarget?.toggleCodeBlock() }
 
     val lineNumbers = Command(
@@ -463,21 +464,24 @@ internal class EditorCommands internal constructor(
         "format-heading", label(Res.string.text_editor_action_heading), CommandGroup.FORMAT,
         icon = { rememberVectorPainter(DrawViewIcons.Heading) },
         shortcuts = listOf(Shortcut(Key.One, primary = true, alt = true)),
-        isEnabled = { formatsText }
+        isEnabled = { formatsText },
+        isChecked = { textTarget?.inHeading == true }
     ) { textTarget?.toggleHeading() }
 
     val bulletList = Command(
         "format-bullet-list", label(Res.string.text_editor_action_bullet_list), CommandGroup.FORMAT,
         icon = { rememberVectorPainter(DrawViewIcons.List) },
         shortcuts = listOf(Shortcut(Key.Eight, primary = true, shift = true)),
-        isEnabled = { formatsText }
+        isEnabled = { formatsText },
+        isChecked = { textTarget?.inBulletList == true }
     ) { textTarget?.toggleBulletList() }
 
     val numberedList = Command(
         "format-numbered-list", label(Res.string.text_editor_action_numbered_list), CommandGroup.FORMAT,
         icon = { rememberVectorPainter(DrawViewIcons.ListOrdered) },
         shortcuts = listOf(Shortcut(Key.Seven, primary = true, shift = true)),
-        isEnabled = { formatsText }
+        isEnabled = { formatsText },
+        isChecked = { textTarget?.inNumberedList == true }
     ) { textTarget?.toggleNumberedList() }
 
     val alignStart = alignment(TextAlignment.START, Res.string.text_align_start, DrawViewIcons.AlignLeft, Key.L)
@@ -509,7 +513,8 @@ internal class EditorCommands internal constructor(
         group = CommandGroup.FORMAT,
         icon = { rememberVectorPainter(icon) },
         shortcuts = listOf(shortcut),
-        isEnabled = { formatsText }
+        isEnabled = { formatsText },
+        isChecked = { textTarget?.isActive(format) == true }
     ) { textTarget?.toggle(format) }
 
     /** The command aligning the lines of the texts at [alignment], ⌘⇧ + [key]. */

@@ -129,8 +129,10 @@ class CommandTest {
         // The text being written: its characters, its style
         editor.startNewText(0, 20f, 20f)
         editor.updateValue(TextFieldValue("Hello world", TextRange(6, 11)))
+        assertFalse(commands.bold.isChecked!!.invoke())
         assertTrue(host.dispatch(press(Key.B, meta = true), apple))
         assertEquals("Hello **world**", editor.value.text)
+        assertTrue(commands.bold.isChecked!!.invoke())
         assertTrue(host.dispatch(press(Key.C, meta = true, shift = true), apple))
         assertEquals(TextAlignment.CENTER, editor.alignment)
         assertTrue(commands.alignCenter.isChecked!!.invoke())
@@ -310,12 +312,21 @@ class CommandTest {
 
         commands.bulletList.perform()
         assertEquals("- My item", editor.value.text)
+        assertTrue(commands.bulletList.isChecked!!.invoke())
+        assertFalse(commands.numberedList.isChecked!!.invoke())
 
         commands.numberedList.perform()
         assertEquals("1. My item", editor.value.text)
+        assertFalse(commands.bulletList.isChecked!!.invoke())
+        assertTrue(commands.numberedList.isChecked!!.invoke())
 
         commands.numberedList.perform()
         assertEquals("My item", editor.value.text)
+        assertFalse(commands.numberedList.isChecked!!.invoke())
+
+        commands.heading.perform()
+        assertEquals("# My item", editor.value.text)
+        assertTrue(commands.heading.isChecked!!.invoke())
     }
 
     @Test
@@ -333,6 +344,7 @@ class CommandTest {
         assertFalse(commands.bold.isEnabled(), "no format in a block of code")
         assertFalse(commands.heading.isEnabled())
         assertTrue(commands.codeBlock.isEnabled(), "the block can be taken out")
+        assertTrue(commands.codeBlock.isChecked!!.invoke())
 
         assertTrue(host.dispatch(press(Key.C, meta = true, alt = true), apple))
         assertEquals("x = 1", editor.value.text)

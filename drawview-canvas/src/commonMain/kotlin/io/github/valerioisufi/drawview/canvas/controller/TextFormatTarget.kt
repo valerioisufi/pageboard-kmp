@@ -30,6 +30,18 @@ public interface TextFormatTarget {
     /** Whether the block of code of the selection shows the numbers of its lines. */
     public val codeLineNumbers: Boolean get() = false
 
+    /** Whether the selection of the text being written has [format]. */
+    public fun isActive(format: RichTextEditing.Format): Boolean = false
+
+    /** Whether the line of the caret (of the start of the selection) is a heading. */
+    public val inHeading: Boolean get() = false
+
+    /** Whether the lines of the selection are bullet list items. */
+    public val inBulletList: Boolean get() = false
+
+    /** Whether the lines of the selection are numbered list items. */
+    public val inNumberedList: Boolean get() = false
+
     /** Adds or removes [format] around the selection of the text being written. */
     public fun toggle(format: RichTextEditing.Format) {}
 

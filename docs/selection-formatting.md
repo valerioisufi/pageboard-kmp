@@ -96,7 +96,7 @@ Branch `feat/selection-formatting`, one commit per phase.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | `InlineFormatting`: formats of a range, toggle by the spans (P1–P6), `RichTextEditing.toggle` delegating; tests in `drawview-canvas` (each problem, nesting with the parser, line by line, caret) | Done |
-| 2 | State of the buttons: `TextFormatTarget.isActive`, `inHeading`, `inBulletList`, `inNumberedList`; `isChecked` of the commands; tests of the target and of the commands (`CommandTest`), screenshot of the bar with bold active | Planned |
+| 2 | State of the buttons: `TextFormatTarget.isActive`, `inHeading`, `inBulletList`, `inNumberedList`; `isChecked` of the commands; tests of the target and of the commands (`CommandTest`), screenshot of the bar with bold active | Done |
 | 3 | Surround on typing: `SelectionInput.surround` in `updateValue`; tests of the function (delimiters, pairs, spaces, code, formula, composition, twice `*`) and of the use case (`TextEditingTest`); a desktop test typing over a selection in the field, and its undo | Planned |
 | 4 | Links: `Kind.LINK` in the parser, concealed and underlined in the editor, the canvas and the export; `SelectionInput.link` on a paste; tests of the parser, the presenter, the parity editor/canvas (`TextParityTest`), screenshots | Planned |
 

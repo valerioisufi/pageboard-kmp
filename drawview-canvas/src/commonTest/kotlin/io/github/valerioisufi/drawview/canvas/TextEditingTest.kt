@@ -246,10 +246,19 @@ class TextEditingTest {
 
         editor.toggle(RichTextEditing.Format.FORMULA)
         assertEquals("Area \$pi r^2\$", editor.value.text)
+        assertTrue(editor.isActive(RichTextEditing.Format.FORMULA))
         editor.toggle(RichTextEditing.Format.FORMULA)
         assertEquals("Area pi r^2", editor.value.text)
+        assertFalse(editor.isActive(RichTextEditing.Format.FORMULA))
         editor.toggleHeading()
         assertEquals("# Area pi r^2", editor.value.text)
+        assertTrue(editor.inHeading)
+        editor.toggleBulletList()
+        assertTrue(editor.inBulletList)
+        assertFalse(editor.inHeading)
+        editor.toggleNumberedList()
+        assertTrue(editor.inNumberedList)
+        assertFalse(editor.inBulletList)
     }
 
     @Test

@@ -143,6 +143,31 @@ public object RichTextEditing {
         return firstLineStart to lastLineEnd
     }
 
+    /** Whether the line of the caret (of the start of the selection) of [value] is a heading. */
+    public fun inHeading(value: TextFieldValue): Boolean {
+        if (inCodeBlock(value)) return false
+        val text = value.text
+        val lineStart = text.lastIndexOf('\n', min(value.selection.start, value.selection.end) - 1) + 1
+        val lineEnd = text.indexOf('\n', lineStart).let { if (it < 0) text.length else it }
+        return HEADING_MARKER.containsMatchIn(text.substring(lineStart, lineEnd))
+    }
+
+    /** Whether every line of the selection of [value] is a bullet list item. */
+    public fun inBulletList(value: TextFieldValue): Boolean = inListLines(value, ordered = false)
+
+    /** Whether every line of the selection of [value] is a numbered list item. */
+    public fun inNumberedList(value: TextFieldValue): Boolean = inListLines(value, ordered = true)
+
+    private fun inListLines(value: TextFieldValue, ordered: Boolean): Boolean {
+        if (inCodeBlock(value)) return false
+        val (firstLineStart, lastLineEnd) = selectedLines(value.text, value.selection)
+        val lines = value.text.substring(firstLineStart, lastLineEnd).split('\n')
+        return lines.isNotEmpty() && lines.all { line ->
+            val rest = line.dropWhile { it == ' ' || it == '\t' }
+            if (ordered) NUMBERED_MARKER.containsMatchIn(rest) else rest.startsWith("- ") || rest.startsWith("* ") || rest.startsWith("+ ")
+        }
+    }
+
     /**
      * Makes the line of the caret (of the start of the selection) a heading, or a heading line
      * plain text again: the `#` and the spaces after them at the start of the line.
