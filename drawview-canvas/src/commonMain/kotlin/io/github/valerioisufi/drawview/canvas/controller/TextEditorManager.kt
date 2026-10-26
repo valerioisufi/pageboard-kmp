@@ -12,6 +12,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.drawview.canvas.geometry.toModel
 import io.github.valerioisufi.drawview.canvas.text.InlineFormatting
 import io.github.valerioisufi.drawview.canvas.text.RichTextEditing
+import io.github.valerioisufi.drawview.canvas.text.SelectionInput
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.TextAlignment
@@ -112,6 +113,14 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
     /** The value whose inline formats were last read, and those formats. */
     private var formatsValue: TextFieldValue? = null
     private var activeFormats: Set<RichTextEditing.Format> = emptySet()
+
+    /**
+     * A change made by [SelectionInput] on top of what the field typed: [before] the selection
+     * was replaced, the [intermediate] value the field produced, and the value [after] surrounding.
+     */
+    private class SelectionStep(val before: TextFieldValue, val intermediate: TextFieldValue, val after: TextFieldValue)
+
+    private val selectionSteps = mutableListOf<SelectionStep>()
 
     override fun isActive(format: RichTextEditing.Format): Boolean {
         if (!isEditing || inCodeBlock) return false
@@ -362,6 +371,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         activeTextItem = null
         activeTextPageIndex = -1
         caretRequest = null
+        selectionSteps.clear()
         value = TextFieldValue()
         controller.presence.reportTextDraft(null, null)
         controller.requestRedraw()
@@ -382,8 +392,23 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
      */
     public fun updateValue(newValue: TextFieldValue, smartNewline: Boolean) {
         if (!isEditing) return
+        val lastStep = selectionSteps.lastOrNull()
+        if (lastStep != null && value == lastStep.after && isFieldUndoOf(lastStep, newValue)) {
+            selectionSteps.removeAt(selectionSteps.lastIndex)
+            value = lastStep.before
+            fitWidth()
+            reportDraft()
+            return
+        }
         val textChanged = newValue.text != value.text
+        val surrounded = if (textChanged && smartNewline) SelectionInput.surround(value, newValue) else null
+        if (surrounded != null) {
+            selectionSteps += SelectionStep(before = value, intermediate = newValue, after = surrounded)
+        } else if (textChanged) {
+            selectionSteps.clear()
+        }
         val applied = when {
+            surrounded != null -> surrounded
             textChanged && smartNewline -> RichTextEditing.handleSmartNewline(value, newValue)
                 ?: RichTextEditing.handleConcealedDeletion(value, newValue)
                 ?: newValue
@@ -396,6 +421,18 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
             fitWidth()
             reportDraft()
         }
+    }
+
+    /**
+     * Whether [newValue] is the undo of the field after [step]: the field reverts either to the
+     * [SelectionStep.intermediate] value it had produced before [SelectionInput] ran, or (when the
+     * text before the step had been typed within the snapshot window of the field) to an earlier
+     * prefix of [SelectionStep.before].
+     */
+    private fun isFieldUndoOf(step: SelectionStep, newValue: TextFieldValue): Boolean {
+        val beforeMin = minOf(step.before.selection.start, step.before.selection.end)
+        return newValue.text == step.intermediate.text ||
+            (newValue.selection.collapsed && newValue.selection.start <= beforeMin && step.before.text.startsWith(newValue.text))
     }
 
     /**

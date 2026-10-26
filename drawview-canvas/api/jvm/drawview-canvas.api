@@ -1031,6 +1031,12 @@ public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing$F
 	public static fun values ()[Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;
 }
 
+public final class io/github/valerioisufi/drawview/canvas/text/SelectionInput {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/canvas/text/SelectionInput;
+	public final fun surround (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
+}
+
 public final class io/github/valerioisufi/drawview/canvas/tool/LassoMode : java/lang/Enum {
 	public static final field ALL Lio/github/valerioisufi/drawview/canvas/tool/LassoMode;
 	public static final field IMAGES_ONLY Lio/github/valerioisufi/drawview/canvas/tool/LassoMode;

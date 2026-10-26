@@ -1,19 +1,33 @@
 package io.github.valerioisufi.drawview.ui.editor
 
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.createFontFamilyResolver
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
+import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.text.code.BuiltInCodeHighlighter
+import io.github.valerioisufi.drawview.ui.adaptive.ShortcutModifier
+import io.github.valerioisufi.drawview.ui.adaptive.platformConventions
 import io.github.valerioisufi.drawview.ui.render.CodeBlockLayout
 import io.github.valerioisufi.drawview.ui.render.CodeBlockSource
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 /**
  * The code in the field of the editor: a block away from the caret as an object drawn over,
@@ -128,5 +142,29 @@ class EditorCodeTest {
         // A tap on its code, after the left of the item
         val x = block.layout.code.getBoundingBox(block.layout.code.layoutInput.text.text.indexOf('x'))
         assertEquals(0, block.layout.codeOffsetAt(Offset(block.layout.codeLeftPx + x.center.x, block.layout.codeTopPx + x.center.y)) - 2, "the x after the 2 spaces taken off")
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun typingADelimiterInTheFieldSurroundsTheSelectionAndIsUndoneInOneStep() = runDesktopComposeUiTest {
+        val controller = DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 10f, 10f)
+        setContent {
+            BasicTextField(value = editor.value, onValueChange = { editor.updateValue(it) })
+        }
+        onNode(hasSetTextAction()).performTextInput("Hello world")
+        runOnIdle { editor.updateValue(editor.value.copy(selection = TextRange(6, 11))) }
+        onNode(hasSetTextAction()).performTextInput("*")
+        runOnIdle { assertEquals("Hello *world*", editor.value.text) }
+
+        // Undone by the undo of the field
+        val primary = if (platformConventions.shortcutModifier == ShortcutModifier.COMMAND) Key.MetaLeft else Key.CtrlLeft
+        onNode(hasSetTextAction()).performKeyInput {
+            keyDown(primary)
+            pressKey(Key.Z)
+            keyUp(primary)
+        }
+        runOnIdle { assertEquals("Hello world", editor.value.text) }
     }
 }

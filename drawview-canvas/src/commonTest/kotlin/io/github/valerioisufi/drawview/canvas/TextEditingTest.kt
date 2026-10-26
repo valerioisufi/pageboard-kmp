@@ -623,4 +623,20 @@ class TextEditingTest {
         editor.updateValue(TextFieldValue("a\n-Item", TextRange(3)))
         assertEquals(TextFieldValue("a\nItem", TextRange(2)), editor.value)
     }
+
+    @Test
+    fun typingADelimiterOverTheSelectionSurroundsIt() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 50f, 50f)
+        editor.updateValue(TextFieldValue("Hello world", TextRange(6, 11)))
+        // First *: italic
+        editor.updateValue(TextFieldValue("Hello *", TextRange(7)))
+        assertEquals(TextFieldValue("Hello *world*", TextRange(7, 12)), editor.value)
+        assertTrue(editor.isActive(RichTextEditing.Format.ITALIC))
+        // Second * (replacing the selected "world" at 7..12 in "Hello *world*"): bold
+        editor.updateValue(TextFieldValue("Hello ***", TextRange(8)))
+        assertEquals(TextFieldValue("Hello **world**", TextRange(8, 13)), editor.value)
+        assertTrue(editor.isActive(RichTextEditing.Format.BOLD))
+    }
 }
