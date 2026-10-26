@@ -1013,6 +1013,18 @@ public final class io/github/valerioisufi/drawview/ui/window/ComposableSingleton
 	public final fun getLambda$-671818452$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function4;
 }
 
+public final class io/github/valerioisufi/drawview/ui/window/DesktopAppIcon {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/window/DesktopAppIcon;
+	public final fun loadIconImage (Ljava/lang/String;)Ljava/awt/image/BufferedImage;
+	public final fun loadIconPainter (Ljava/lang/String;)Landroidx/compose/ui/graphics/painter/Painter;
+	public final fun setDockIcon (Ljava/awt/Image;)V
+}
+
+public final class io/github/valerioisufi/drawview/ui/window/DesktopAppIconKt {
+	public static final fun rememberDesktopIcon (Ljava/lang/String;Landroidx/compose/runtime/Composer;I)Landroidx/compose/ui/graphics/painter/Painter;
+}
+
 public final class io/github/valerioisufi/drawview/ui/window/DesktopWindowManager {
 	public static final field $stable I
 	public fun <init> ()V
