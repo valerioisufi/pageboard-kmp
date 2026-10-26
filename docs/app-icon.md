@@ -101,7 +101,7 @@ Compose Multiplatform's `Window` composable accepts `icon: Painter?`.
 | 1. Icon asset generation | Generate multi-resolution icons (.icns, .ico, .png) for PencilNotes (`PencilNotesMark`) and DrawView (`logo.webp`) | Done |
 | 2. Desktop runtime icon support | `DesktopAppIcon` in `drawview-ui` (jvmMain) setting macOS Dock icon and loading window icons | Done |
 | 3. Application wiring | Wire window icons and macOS Dock setup in `pencilnotes-desktop` and `sample-desktop`; configure `nativeDistributions` in build scripts | Done |
-| 4. Verification | Test runtime dock and window icons, verify ABI with `checkKotlinAbi`, run tests with `jvmTest` | Pending |
+| 4. Verification | Test runtime dock and window icons, verify ABI with `checkKotlinAbi`, run tests with `jvmTest` | Done |
 
 ### Decisions
 
