@@ -101,7 +101,11 @@ internal object InlineFormatting {
             val edits = listOf(Edit(span.start, span.contentStart, ""), Edit(span.contentEnd, span.end, ""))
             return TextFieldValue(apply(text, edits), TextRange(map(edits, at, after = false)))
         }
-        if (spans.any { it.isVerbatim && it.kind != format.kind && at > it.contentStart && at < it.contentEnd }) return value
+        if (spans.any {
+                (it.isVerbatim && it.kind != format.kind && at > it.contentStart && at < it.contentEnd) ||
+                    (it.kind == Kind.LINK && at > it.contentEnd && at < it.end)
+            }
+        ) return value
         val delimiter = delimiterFor(text, format, at, at)
         return TextFieldValue(text.substring(0, at) + delimiter + delimiter + text.substring(at), TextRange(at + delimiter.length))
     }
@@ -156,9 +160,12 @@ internal object InlineFormatting {
     private fun spanAtCaret(spans: List<Span>, kind: Kind, at: Int): Span? =
         spans.lastOrNull { it.kind == kind && it.contentStart <= at && at <= it.contentEnd }
 
-    /** Whether [part] is inside the code or the formula of a span of a kind other than [kind]. */
+    /** Whether [part] is inside the code or the formula of a span of a kind other than [kind], or in a link's address. */
     private fun inOtherVerbatim(spans: List<Span>, kind: Kind, part: IntRange): Boolean =
-        spans.any { it.isVerbatim && it.kind != kind && it.contentStart <= part.first && part.last + 1 <= it.contentEnd }
+        spans.any {
+            (it.isVerbatim && it.kind != kind && it.contentStart <= part.first && part.last + 1 <= it.contentEnd) ||
+                (it.kind == Kind.LINK && part.last + 1 > it.contentEnd && part.first < it.end)
+        }
 
     private val Span.isVerbatim get() = kind == Kind.CODE || kind == Kind.FORMULA || kind == Kind.CODE_BLOCK
 

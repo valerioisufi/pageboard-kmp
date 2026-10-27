@@ -127,4 +127,29 @@ class RichTextParserTest {
         assertEquals("bold", text.substring(parsed[1].contentStart, parsed[1].contentEnd))
         assertEquals("x^2", text.substring(parsed[2].contentStart, parsed[2].contentEnd))
     }
+
+    @Test
+    fun linksHaveTheirTextAndAddress() {
+        val text = "Read [the guide](https://example.com/a_b_(1)) now"
+        val link = RichTextParser.parse(text).single()
+        assertEquals(Kind.LINK, link.kind)
+        assertEquals("the guide", text.substring(link.contentStart, link.contentEnd))
+        assertEquals("https://example.com/a_b_(1)", RichTextParser.linkUrl(text, link))
+        assertEquals(listOf(5 until 6, 15 until 45), link.delimiters)
+    }
+
+    @Test
+    fun linksNestWithEmphasisAndLeaveAddressesVerbatim() {
+        assertEquals(
+            listOf(Kind.LINK to "**bold** and \$x\$", Kind.BOLD to "bold", Kind.FORMULA to "x"),
+            spans("[**bold** and \$x\$](https://example.com/a_b_c)")
+        )
+        assertEquals(
+            listOf(Kind.BOLD to "[link](https://example.com)", Kind.LINK to "link"),
+            spans("**[link](https://example.com)**")
+        )
+        assertTrue(spans("![image](https://example.com)").isEmpty(), "an image is not a link")
+        assertTrue(spans("[](https://example.com)").isEmpty(), "a link has text")
+        assertTrue(spans("[text]()").isEmpty(), "a link has an address")
+    }
 }

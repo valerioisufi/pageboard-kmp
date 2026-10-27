@@ -931,7 +931,7 @@ final class io.github.valerioisufi.drawview.canvas.render.tile/TextLineMetrics {
 }
 
 final class io.github.valerioisufi.drawview.canvas.render.tile/TextWord { // io.github.valerioisufi.drawview.canvas.render.tile/TextWord|null[0]
-    constructor <init>(kotlin/String, io.github.valerioisufi.drawview.canvas.render.tile/TextFace, kotlin/Float, kotlin/Int, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.canvas.render.tile/TextWord.<init>|<init>(kotlin.String;io.github.valerioisufi.drawview.canvas.render.tile.TextFace;kotlin.Float;kotlin.Int;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Boolean){}[0]
+    constructor <init>(kotlin/String, io.github.valerioisufi.drawview.canvas.render.tile/TextFace, kotlin/Float, kotlin/Int, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Boolean = ..., kotlin/Boolean = ...) // io.github.valerioisufi.drawview.canvas.render.tile/TextWord.<init>|<init>(kotlin.String;io.github.valerioisufi.drawview.canvas.render.tile.TextFace;kotlin.Float;kotlin.Int;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Boolean;kotlin.Boolean){}[0]
 
     final val baseline // io.github.valerioisufi.drawview.canvas.render.tile/TextWord.baseline|{}baseline[0]
         final fun <get-baseline>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/TextWord.baseline.<get-baseline>|<get-baseline>(){}[0]
@@ -951,6 +951,8 @@ final class io.github.valerioisufi.drawview.canvas.render.tile/TextWord { // io.
         final fun <get-strikethrough>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.render.tile/TextWord.strikethrough.<get-strikethrough>|<get-strikethrough>(){}[0]
     final val text // io.github.valerioisufi.drawview.canvas.render.tile/TextWord.text|{}text[0]
         final fun <get-text>(): kotlin/String // io.github.valerioisufi.drawview.canvas.render.tile/TextWord.text.<get-text>|<get-text>(){}[0]
+    final val underline // io.github.valerioisufi.drawview.canvas.render.tile/TextWord.underline|{}underline[0]
+        final fun <get-underline>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.render.tile/TextWord.underline.<get-underline>|<get-underline>(){}[0]
     final val width // io.github.valerioisufi.drawview.canvas.render.tile/TextWord.width|{}width[0]
         final fun <get-width>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.render.tile/TextWord.width.<get-width>|<get-width>(){}[0]
 }
@@ -1195,6 +1197,7 @@ final object io.github.valerioisufi.drawview.canvas.text/RichTextEditing { // io
 }
 
 final object io.github.valerioisufi.drawview.canvas.text/SelectionInput { // io.github.valerioisufi.drawview.canvas.text/SelectionInput|null[0]
+    final fun link(androidx.compose.ui.text.input/TextFieldValue, androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue? // io.github.valerioisufi.drawview.canvas.text/SelectionInput.link|link(androidx.compose.ui.text.input.TextFieldValue;androidx.compose.ui.text.input.TextFieldValue){}[0]
     final fun surround(androidx.compose.ui.text.input/TextFieldValue, androidx.compose.ui.text.input/TextFieldValue): androidx.compose.ui.text.input/TextFieldValue? // io.github.valerioisufi.drawview.canvas.text/SelectionInput.surround|surround(androidx.compose.ui.text.input.TextFieldValue;androidx.compose.ui.text.input.TextFieldValue){}[0]
 }
 

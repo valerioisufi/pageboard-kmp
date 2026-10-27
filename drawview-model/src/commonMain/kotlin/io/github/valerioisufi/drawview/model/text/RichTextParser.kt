@@ -17,7 +17,7 @@ import kotlin.math.min
 public object RichTextParser {
 
     /** A kind of [Span]. */
-    public enum class Kind { BOLD, ITALIC, STRIKE, CODE, HEADING, FORMULA, ESCAPE, LIST_ITEM, CODE_BLOCK }
+    public enum class Kind { BOLD, ITALIC, STRIKE, CODE, HEADING, FORMULA, ESCAPE, LIST_ITEM, CODE_BLOCK, LINK }
 
     /**
      * A part of a text written with the notation: from [start] to [end] (the delimiters
@@ -67,9 +67,12 @@ public object RichTextParser {
      */
     public fun parse(text: String): List<Span> {
         val verbatim = scanVerbatim(text)
-        // The other delimiters are looked for outside the code and the formulas
-        val masked = mask(text, verbatim)
-        val candidates = verbatim.toMutableList()
+        // The other delimiters are looked for outside the code and the formulas, and the emphasis
+        // outside the addresses of the links
+        val withoutVerbatim = mask(text, verbatim)
+        val links = scanLinks(withoutVerbatim, text)
+        val masked = maskDelimiters(withoutVerbatim, links)
+        val candidates = (verbatim + links).toMutableList()
         candidates += emphasisBetween(verbatim.filter { it.kind == Kind.CODE_BLOCK }, masked, text)
         for (match in HEADING.findAll(masked)) {
             val start = match.range.first
@@ -414,6 +417,62 @@ public object RichTextParser {
         val chars = text.toCharArray()
         for (span in spans) for (i in span.start until span.end) chars[i] = MASK
         return chars.concatToString()
+    }
+
+    /** [text] with the delimiters of [spans] replaced, their content kept. */
+    private fun maskDelimiters(text: String, spans: List<Span>): String {
+        if (spans.isEmpty()) return text
+        val chars = text.toCharArray()
+        for (span in spans) for (range in span.delimiters) for (i in range) chars[i] = MASK
+        return chars.concatToString()
+    }
+
+    /** The address of a [Kind.LINK] [span] of [text]. */
+    public fun linkUrl(text: String, span: Span): String = text.substring(span.contentEnd + 2, span.end - 1)
+
+    /**
+     * The `[text](url)` links in [masked] (code, formulas and escapes masked): on a single line,
+     * neither the text nor the address empty, the address without spaces and with balanced
+     * parentheses; `![image](url)` is left out.
+     */
+    private fun scanLinks(masked: String, text: String): List<Span> {
+        val spans = mutableListOf<Span>()
+        var i = 0
+        var open = -1
+        while (i < masked.length) {
+            val c = masked[i]
+            when {
+                text[i] == '\n' -> open = -1
+                c == '[' && masked.getOrNull(i - 1) != '!' -> open = i
+                c == ']' && open >= 0 && i > open + 1 && masked.getOrNull(i + 1) == '(' -> {
+                    val end = closingLinkUrl(masked, text, i + 2)
+                    if (end > 0) {
+                        spans += Span(Kind.LINK, open, end, open + 1, i)
+                        open = -1
+                        i = end
+                        continue
+                    }
+                    open = -1
+                }
+            }
+            i++
+        }
+        return spans
+    }
+
+    /** The offset after the `)` closing a link address starting at [urlStart], or -1. */
+    private fun closingLinkUrl(masked: String, text: String, urlStart: Int): Int {
+        var depth = 0
+        var k = urlStart
+        while (k < masked.length) {
+            if (text[k] == '\n' || text[k].isSpace()) return -1
+            when (masked[k]) {
+                '(' -> depth++
+                ')' -> if (depth == 0) return if (k > urlStart) k + 1 else -1 else depth--
+            }
+            k++
+        }
+        return -1
     }
 
     private fun String.isWordAt(index: Int) = getOrNull(index)?.isLetterOrDigit() == true

@@ -66,6 +66,16 @@ public class TrueTypeFont(private val data: ByteArray) {
         return s16(os2.offset + 28) to s16(os2.offset + 26)
     }
 
+    /**
+     * Place of the underline relative to the baseline (negative below it) and its thickness, in
+     * font units (from the `post` table), or `null`.
+     */
+    public fun underline(): Pair<Int, Int>? {
+        val post = tables["post"] ?: return null
+        if (post.length < 12) return null
+        return s16(post.offset + 8) to s16(post.offset + 10)
+    }
+
     /** Whether the font has a glyph for [codePoint]. */
     public fun covers(codePoint: Int): Boolean = glyphId(codePoint) != 0
 

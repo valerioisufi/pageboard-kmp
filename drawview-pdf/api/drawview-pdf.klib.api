@@ -132,6 +132,7 @@ final class io.github.valerioisufi.drawview.pdf/TrueTypeFont { // io.github.vale
     final fun outline(kotlin/Int): kotlin.collections/List<io.github.valerioisufi.drawview.pdf/GlyphContour> // io.github.valerioisufi.drawview.pdf/TrueTypeFont.outline|outline(kotlin.Int){}[0]
     final fun strikeout(): kotlin/Pair<kotlin/Int, kotlin/Int>? // io.github.valerioisufi.drawview.pdf/TrueTypeFont.strikeout|strikeout(){}[0]
     final fun subset(kotlin.collections/Set<kotlin/Int>): kotlin/ByteArray // io.github.valerioisufi.drawview.pdf/TrueTypeFont.subset|subset(kotlin.collections.Set<kotlin.Int>){}[0]
+    final fun underline(): kotlin/Pair<kotlin/Int, kotlin/Int>? // io.github.valerioisufi.drawview.pdf/TrueTypeFont.underline|underline(){}[0]
 }
 
 final object io.github.valerioisufi.drawview.pdf/PdfiumEngine { // io.github.valerioisufi.drawview.pdf/PdfiumEngine|null[0]

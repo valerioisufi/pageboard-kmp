@@ -150,7 +150,8 @@ public class TextWord(
     public val width: Float,
     public val lineTop: Float,
     public val lineBottom: Float,
-    public val strikethrough: Boolean = false
+    public val strikethrough: Boolean = false,
+    public val underline: Boolean = false
 )
 
 /**

@@ -3081,6 +3081,7 @@ final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.g
     final val LINE_NUMBERS // io.github.valerioisufi.drawview.model.text/RichTextParser.LINE_NUMBERS|{}LINE_NUMBERS[0]
         final fun <get-LINE_NUMBERS>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.model.text/RichTextParser.LINE_NUMBERS.<get-LINE_NUMBERS>|<get-LINE_NUMBERS>(){}[0]
 
+    final fun linkUrl(kotlin/String, io.github.valerioisufi.drawview.model.text/RichTextParser.Span): kotlin/String // io.github.valerioisufi.drawview.model.text/RichTextParser.linkUrl|linkUrl(kotlin.String;io.github.valerioisufi.drawview.model.text.RichTextParser.Span){}[0]
     final fun parse(kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.model.text/RichTextParser.Span> // io.github.valerioisufi.drawview.model.text/RichTextParser.parse|parse(kotlin.String){}[0]
 
     final enum class Kind : kotlin/Enum<io.github.valerioisufi.drawview.model.text/RichTextParser.Kind> { // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind|null[0]
@@ -3091,6 +3092,7 @@ final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.g
         enum entry FORMULA // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.FORMULA|null[0]
         enum entry HEADING // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.HEADING|null[0]
         enum entry ITALIC // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.ITALIC|null[0]
+        enum entry LINK // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.LINK|null[0]
         enum entry LIST_ITEM // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.LIST_ITEM|null[0]
         enum entry STRIKE // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.STRIKE|null[0]
 

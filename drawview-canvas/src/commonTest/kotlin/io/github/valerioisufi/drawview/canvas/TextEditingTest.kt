@@ -639,4 +639,17 @@ class TextEditingTest {
         assertEquals(TextFieldValue("Hello **world**", TextRange(8, 13)), editor.value)
         assertTrue(editor.isActive(RichTextEditing.Format.BOLD))
     }
+
+    @Test
+    fun pastingAnAddressOverTheSelectionMakesItALinkAndUndoesAtOnce() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 50f, 50f)
+        editor.updateValue(TextFieldValue("Read the guide", TextRange(5, 14)))
+        editor.updateValue(TextFieldValue("Read https://example.com", TextRange(24)))
+        assertEquals(TextFieldValue("Read [the guide](https://example.com)", TextRange(6, 15)), editor.value)
+        // BasicTextField undo restores what was before the paste
+        editor.updateValue(TextFieldValue("", TextRange(0)))
+        assertEquals(TextFieldValue("Read the guide", TextRange(5, 14)), editor.value)
+    }
 }

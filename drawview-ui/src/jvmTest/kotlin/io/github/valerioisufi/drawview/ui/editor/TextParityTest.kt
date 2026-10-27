@@ -174,7 +174,12 @@ class TextParityTest {
     }
 
     @Test
-    fun emphasisAndEscapes() = assertSame("Some **bold**, _italic_, ~~struck~~, `code` and \\* escaped characters in a text that wraps.")
+    fun emphasisAndEscapes() {
+        val source = "Some **bold**, _italic_, ~~struck~~, [linked](https://example.com), `code` and \\* escaped characters in a text that wraps."
+        assertSame(source)
+        val layout = adapter.layout(text(source, TextAlignment.START), TextTileAdapter.NO_PAPER) ?: fail("nothing laid out")
+        assertTrue(layout.words.any { "linked" in it.text && it.underline })
+    }
 
     @Test
     fun headings() = assertSame("# Title\n## Subtitle with `code`\nText under them.")

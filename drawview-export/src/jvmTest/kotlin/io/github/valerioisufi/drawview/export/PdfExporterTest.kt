@@ -136,7 +136,7 @@ class PdfExporterTest {
         val document = DrawDocument(title = "Testo")
         val page = document.pages[0]
         page.add(DrawText().apply {
-            text = "Hash αβγ **grassetto** _corsivo_ `codice` ~~barrato~~ e \$x^2+1\$ fine"
+            text = "Hash αβγ **grassetto** _corsivo_ `codice` ~~barrato~~ [sito](https://example.com) e \$x^2+1\$ fine"
             x = 15f; y = 20f; width = 170f; height = 40f; fontSize = 24f
         })
         page.add(DrawText().apply {
@@ -150,7 +150,7 @@ class PdfExporterTest {
         assertTrue(!Regex("/Subtype\\s*/Image").containsMatchIn(bytes), "no picture: real text and vectors")
         PdfiumEngine.open(pdf.path).use { exported ->
             val read = exported.getPageText(0).orEmpty().replace(Regex("\\s+"), " ")
-            assertTrue("Hash αβγ grassetto corsivo codice barrato" in read, read)
+            assertTrue("Hash αβγ grassetto corsivo codice barrato sito" in read && "example.com" !in read, read)
         }
 
         // Drawn by the PDF as by the editor

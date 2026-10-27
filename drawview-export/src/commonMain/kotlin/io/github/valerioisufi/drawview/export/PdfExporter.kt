@@ -226,6 +226,7 @@ public class PdfExporter(
                     raster.draw(Rect(word.left, word.lineTop, word.left + word.width, word.lineBottom))
                 }
                 if (word.strikethrough) strike(word, faces[word.face], toBlock)
+                if (word.underline) underline(word, faces[word.face], toBlock)
             }
             for (formula in layout.formulas) {
                 val drawing = LatexEngine.drawing(formula.latex, FORMULA_PX, formula.color)
@@ -283,6 +284,18 @@ public class PdfExporter(
             val (position, thickness) = font?.strikeout()?.let { (p, t) ->
                 p.toFloat() / font.unitsPerEm to t.toFloat() / font.unitsPerEm
             } ?: (0.3f to 0.05f)
+            lineOf(word, position, thickness, toBlock)
+        }
+
+        /** The line under [word], where its font underlines. */
+        private fun underline(word: TextWord, font: TrueTypeFont?, toBlock: Matrix2D) {
+            val (position, thickness) = font?.underline()?.takeIf { (_, t) -> t > 0 }?.let { (p, t) ->
+                p.toFloat() / font.unitsPerEm to t.toFloat() / font.unitsPerEm
+            } ?: (-0.1f to 0.05f)
+            lineOf(word, position, thickness, toBlock)
+        }
+
+        private fun lineOf(word: TextWord, position: Float, thickness: Float, toBlock: Matrix2D) {
             val y = word.baseline - position * word.fontSize
             val half = thickness * word.fontSize / 2f
             val corners = floatArrayOf(word.left, y - half, word.left + word.width, y - half, word.left + word.width, y + half, word.left, y + half)

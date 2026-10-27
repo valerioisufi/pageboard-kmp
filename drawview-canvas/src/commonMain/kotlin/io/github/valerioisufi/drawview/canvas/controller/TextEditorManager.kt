@@ -401,7 +401,11 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
             return
         }
         val textChanged = newValue.text != value.text
-        val surrounded = if (textChanged && smartNewline) SelectionInput.surround(value, newValue) else null
+        val surrounded = if (textChanged && smartNewline) {
+            SelectionInput.surround(value, newValue) ?: SelectionInput.link(value, newValue)
+        } else {
+            null
+        }
         if (surrounded != null) {
             selectionSteps += SelectionStep(before = value, intermediate = newValue, after = surrounded)
         } else if (textChanged) {

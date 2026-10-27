@@ -5,6 +5,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.ui.editor.FontRoom
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
@@ -200,5 +201,18 @@ class RichTextPresenterTest {
         assertEquals(-24f, above.letterSpacing.value, 0.01f)
         assertEquals(5, presented.mapping.originalToTransformed(2), "the caret before the source after the struts")
         assertEquals(2, presented.mapping.transformedToOriginal(3))
+    }
+
+    @Test
+    fun aLinkUnderlinesItsTextAndHidesItsAddressAwayFromTheCaret() {
+        val hidden = present("Read [the guide](https://example.com) now")
+        assertEquals("Read the guide now", hidden.shown)
+        val guide = hidden.shown.indexOf("the guide")
+        assertTrue(hidden.text.spanStyles.any { guide >= it.start && guide + 9 <= it.end && it.item.textDecoration?.contains(TextDecoration.Underline) == true })
+
+        val revealed = present("Read [the guide](https://example.com) now", reveal = TextRange(8))
+        assertEquals("Read [the guide](https://example.com) now", revealed.shown)
+        val address = revealed.shown.indexOf("](https://example.com)")
+        assertTrue(revealed.text.spanStyles.any { address >= it.start && address + 22 <= it.end && it.item.color.alpha < 0.5f })
     }
 }

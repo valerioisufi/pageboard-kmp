@@ -131,5 +131,6 @@ public final class io/github/valerioisufi/drawview/pdf/TrueTypeFont {
 	public final fun outline (I)Ljava/util/List;
 	public final fun strikeout ()Lkotlin/Pair;
 	public final fun subset (Ljava/util/Set;)[B
+	public final fun underline ()Lkotlin/Pair;
 }
 

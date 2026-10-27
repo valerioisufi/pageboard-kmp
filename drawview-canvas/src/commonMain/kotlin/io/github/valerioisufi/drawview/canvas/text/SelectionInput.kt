@@ -10,7 +10,8 @@ import kotlin.math.min
 /**
  * What the input of the user does to a selection of the text being written, recognized from the
  * [TextFieldValue] before and after the change (hardware and software keyboards alike): a
- * delimiter typed over a selection surrounds it instead of replacing it.
+ * delimiter typed over a selection surrounds it instead of replacing it, and a link pasted over a
+ * selection makes it a link `[selection](link)`.
  */
 public object SelectionInput {
 
@@ -61,6 +62,53 @@ public object SelectionInput {
             selection = TextRange(from + 1, to + 1)
         )
     }
+
+    /**
+     * When [newValue] replaces the non-empty selection of [oldValue] (on a single line, not a link
+     * itself, not in code or a formula) with a link address (`http://`, `https://`, `mailto:` or
+     * `www.` without spaces), writes `[selection](address)` with the selection kept on the text;
+     * otherwise `null`.
+     */
+    public fun link(oldValue: TextFieldValue, newValue: TextFieldValue): TextFieldValue? {
+        val oldMin = min(oldValue.selection.start, oldValue.selection.end)
+        val oldMax = max(oldValue.selection.start, oldValue.selection.end)
+        if (oldMin == oldMax || newValue.composition != null || !newValue.selection.collapsed) return null
+        val oldText = oldValue.text
+        val newText = newValue.text
+        val insertedLength = newText.length - (oldText.length - (oldMax - oldMin))
+        if (insertedLength <= 0 || newValue.selection.start != oldMin + insertedLength) return null
+        if (!newText.startsWith(oldText.substring(0, oldMin)) || !newText.endsWith(oldText.substring(oldMax))) return null
+
+        val address = newText.substring(oldMin, oldMin + insertedLength).trim()
+        if (!isLinkAddress(address)) return null
+
+        var from = oldMin
+        var to = oldMax
+        while (from < to && oldText[from].isWhitespace()) from++
+        while (to > from && oldText[to - 1].isWhitespace()) to--
+        if (from >= to) return null
+        val selected = oldText.substring(from, to)
+        if ('\n' in selected || isLinkAddress(selected)) return null
+
+        val spans = RichTextParser.parse(oldText)
+        val forbidden = spans.any {
+            (it.kind == Kind.CODE_BLOCK && oldMin >= it.start && oldMax <= it.end) ||
+                ((it.kind == Kind.CODE || it.kind == Kind.FORMULA) && oldMin >= it.contentStart && oldMax <= it.contentEnd) ||
+                (it.kind == Kind.LINK && oldMin < it.end && oldMax > it.start)
+        }
+        if (forbidden) return null
+
+        return TextFieldValue(
+            text = oldText.substring(0, from) + "[" + selected + "](" + address + ")" + oldText.substring(to),
+            selection = TextRange(from + 1, to + 1)
+        )
+    }
+
+    private fun isLinkAddress(text: String): Boolean =
+        text.isNotEmpty() && text.none { it.isWhitespace() } &&
+            LINK_PREFIXES.any { text.startsWith(it, ignoreCase = true) && text.length > it.length }
+
+    private val LINK_PREFIXES = listOf("https://", "http://", "mailto:", "www.")
 
     private const val NOTATION_DELIMITERS = "*_~`$"
     private const val BRACKETS = "([{"

@@ -94,6 +94,8 @@ class InlineFormattingTest {
         assertEquals("\$x+y\$", InlineFormatting.toggle(select("\$x+y\$", "x+y"), Format.ITALIC).text)
         assertEquals("`code`", InlineFormatting.toggle(TextFieldValue("`code`", TextRange(3)), Format.BOLD).text)
         assertEquals("code", InlineFormatting.toggle(select("`code`", "code"), Format.CODE).text, "its own format is taken off")
+        assertEquals("[**guide**](https://a.org)", InlineFormatting.toggle(select("[guide](https://a.org)", "guide"), Format.BOLD).text)
+        assertEquals("[guide](https://a.org)", InlineFormatting.toggle(select("[guide](https://a.org)", "https"), Format.BOLD).text, "not in the address")
     }
 
     @Test

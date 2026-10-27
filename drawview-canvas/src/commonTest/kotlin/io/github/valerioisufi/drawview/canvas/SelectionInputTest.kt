@@ -88,4 +88,35 @@ class SelectionInputTest {
         assertNull(SelectionInput.surround(before, TextFieldValue("H'o", TextRange(2), composition = TextRange(1, 2))), "dead key composition")
         assertNull(SelectionInput.surround(TextFieldValue("Hello", TextRange(2)), TextFieldValue("He*llo", TextRange(3))), "no selection")
     }
+
+    /** Simulates pasting [pasted] over the selection of [before]. */
+    private fun paste(before: TextFieldValue, pasted: String): TextFieldValue {
+        val min = minOf(before.selection.start, before.selection.end)
+        val max = maxOf(before.selection.start, before.selection.end)
+        val after = TextFieldValue(
+            text = before.text.substring(0, min) + pasted + before.text.substring(max),
+            selection = TextRange(min + pasted.length)
+        )
+        return SelectionInput.link(before, after) ?: after
+    }
+
+    @Test
+    fun pastingAnAddressOverTheSelectionMakesItALink() {
+        val linked = paste(select("Read the guide now", "the guide "), "https://example.com")
+        assertEquals("Read [the guide](https://example.com) now", linked.text, "trailing space stays outside the link")
+        assertEquals(TextRange(6, 15), linked.selection, "selection stays on the linked text")
+        assertEquals("http://a.org", RichTextParser.linkUrl(paste(select("site", "site"), "http://a.org").text, RichTextParser.parse(paste(select("site", "site"), "http://a.org").text).single()))
+        assertEquals("Read [mail](mailto:me@example.com)", paste(select("Read mail", "mail"), "mailto:me@example.com").text)
+        assertEquals("Visit [us](www.example.com)", paste(select("Visit us", "us"), "www.example.com").text)
+    }
+
+    @Test
+    fun pastingPlainTextOrAnAddressOverAnAddressReplacesTheSelection() {
+        assertEquals("Hello there", paste(select("Hello world", "world"), "there").text)
+        assertEquals("https://new.org", paste(select("https://old.org", "https://old.org"), "https://new.org").text, "replacing a URL with a URL")
+        assertEquals("https://a.org", paste(select("line 1\nline 2", "line 1\nline 2"), "https://a.org").text, "multiline selection")
+        assertEquals("`https://a.org`", paste(select("`code`", "code"), "https://a.org").text, "inside code")
+        assertEquals("\$https://a.org\$", paste(select("\$x\$", "x"), "https://a.org").text, "inside formula")
+        assertEquals("[https://b.org](https://a.org)", paste(select("[old](https://a.org)", "old"), "https://b.org").text, "already inside a link")
+    }
 }

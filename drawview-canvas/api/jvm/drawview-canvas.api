@@ -877,8 +877,8 @@ public final class io/github/valerioisufi/drawview/canvas/render/tile/TextTileAd
 
 public final class io/github/valerioisufi/drawview/canvas/render/tile/TextWord {
 	public static final field $stable I
-	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;FIFFFFFZ)V
-	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;FIFFFFFZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;FIFFFFFZZ)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;FIFFFFFZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getBaseline ()F
 	public final fun getColor ()I
 	public final fun getFace ()Lio/github/valerioisufi/drawview/canvas/render/tile/TextFace;
@@ -888,6 +888,7 @@ public final class io/github/valerioisufi/drawview/canvas/render/tile/TextWord {
 	public final fun getLineTop ()F
 	public final fun getStrikethrough ()Z
 	public final fun getText ()Ljava/lang/String;
+	public final fun getUnderline ()Z
 	public final fun getWidth ()F
 }
 
@@ -1034,6 +1035,7 @@ public final class io/github/valerioisufi/drawview/canvas/text/RichTextEditing$F
 public final class io/github/valerioisufi/drawview/canvas/text/SelectionInput {
 	public static final field $stable I
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/canvas/text/SelectionInput;
+	public final fun link (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun surround (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 }
 

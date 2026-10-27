@@ -270,7 +270,8 @@ public class ComposeTextTileAdapter(
                     width = (wordRight - wordLeft) / scale,
                     lineTop = (top + layout.getLineTop(line)) / scale,
                     lineBottom = (top + layout.getLineBottom(line)) / scale,
-                    strikethrough = style.strikethrough
+                    strikethrough = style.strikethrough,
+                    underline = style.underline
                 )
                 start = stop
             }
@@ -281,7 +282,7 @@ public class ComposeTextTileAdapter(
     private fun Rect.toBox(radius: Float, color: Color, scale: Float) =
         TextBox(left / scale, top / scale, width / scale, height / scale, radius / scale, color.toArgb())
 
-    private data class WordStyle(val face: TextFace, val sizePx: Float, val color: Int, val strikethrough: Boolean)
+    private data class WordStyle(val face: TextFace, val sizePx: Float, val color: Int, val strikethrough: Boolean, val underline: Boolean)
 
     /**
      * The style of every character of [shown]: its spans over the base style of the block ([baseColor],
@@ -293,6 +294,7 @@ public class ComposeTextTileAdapter(
         private val italic = BooleanArray(shown.length)
         private val monospace = BooleanArray(shown.length) { mono }
         private val strikethrough = BooleanArray(shown.length)
+        private val underline = BooleanArray(shown.length)
         private val sizePx = FloatArray(shown.length) { baseSizePx }
         private val color = IntArray(shown.length) { baseColor }
 
@@ -305,6 +307,7 @@ public class ComposeTextTileAdapter(
                 val size = if (style.fontSize.isSp) style.fontSize.value else null
                 val argb = if (style.color.isSpecified) style.color.toArgb() else null
                 val strike = style.textDecoration?.let { it.contains(TextDecoration.LineThrough) }
+                val under = style.textDecoration?.let { it.contains(TextDecoration.Underline) }
                 for (i in span.start.coerceAtLeast(0) until span.end.coerceAtMost(shown.length)) {
                     if (weight != null) bold[i] = weight
                     if (slant != null) italic[i] = slant
@@ -312,6 +315,7 @@ public class ComposeTextTileAdapter(
                     if (size != null) sizePx[i] = size
                     if (argb != null) color[i] = argb
                     if (strike != null) strikethrough[i] = strike
+                    if (under != null) underline[i] = under
                 }
             }
         }
@@ -322,7 +326,7 @@ public class ComposeTextTileAdapter(
                 bold[index] -> if (italic[index]) TextFace.BOLD_ITALIC else TextFace.BOLD
                 else -> if (italic[index]) TextFace.ITALIC else TextFace.REGULAR
             }
-            return WordStyle(face, sizePx[index], color[index], strikethrough[index])
+            return WordStyle(face, sizePx[index], color[index], strikethrough[index], underline[index])
         }
     }
 

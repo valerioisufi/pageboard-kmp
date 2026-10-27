@@ -79,6 +79,7 @@ public object MarkdownTextUtil {
         Kind.BOLD -> SpanStyle(fontWeight = FontWeight.Bold)
         Kind.ITALIC -> SpanStyle(fontStyle = FontStyle.Italic)
         Kind.STRIKE -> SpanStyle(textDecoration = TextDecoration.LineThrough)
+        Kind.LINK -> SpanStyle(textDecoration = TextDecoration.Underline)
         Kind.CODE -> SpanStyle(fontFamily = monospace)
         Kind.CODE_BLOCK -> SpanStyle(fontFamily = monospace, fontSize = (baseFontSize * CodeBlockLayout.CODE_SCALE).sp)
         Kind.HEADING -> SpanStyle(fontWeight = FontWeight.Bold, fontSize = (baseFontSize * headingScale(span.level)).sp)

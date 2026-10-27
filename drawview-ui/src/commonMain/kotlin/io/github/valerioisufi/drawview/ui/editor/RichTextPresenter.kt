@@ -428,7 +428,14 @@ internal object RichTextPresenter {
                 Kind.FORMULA -> SpanStyle(fontStyle = FontStyle.Italic, fontFamily = FontFamily.Serif, color = FORMULA_COLOR)
                 else -> MarkdownTextUtil.contentStyle(span, p.fontSizePx / p.density, p.monospace)
             }
-            if (content != null) style(content, span.contentStart, span.contentEnd)
+            if (content != null) {
+                val combined = if (content.textDecoration != null && open.any { it.kind == Kind.STRIKE } && open.any { it.kind == Kind.LINK }) {
+                    content.copy(textDecoration = androidx.compose.ui.text.style.TextDecoration.combine(listOf(androidx.compose.ui.text.style.TextDecoration.Underline, androidx.compose.ui.text.style.TextDecoration.LineThrough)))
+                } else {
+                    content
+                }
+                style(combined, span.contentStart, span.contentEnd)
+            }
             if (span.kind == Kind.CODE) {
                 val heading = open.lastOrNull { it.kind == Kind.HEADING }
                 val from = mapping.originalToTransformed(span.contentStart)
