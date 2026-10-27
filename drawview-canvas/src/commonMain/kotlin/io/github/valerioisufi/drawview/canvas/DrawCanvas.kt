@@ -47,8 +47,9 @@ public fun DrawCanvas(
     modifier: Modifier = Modifier,
     engine: InkStrokeEngine = remember { InkStrokeEngine() }
 ) {
+    // Set before the canvas is laid out, so that the first layout is at the density of the screen
     val density = LocalDensity.current.density
-    LaunchedEffect(density) {
+    if (controller.viewport.density != density) {
         controller.viewport.density = density
     }
 

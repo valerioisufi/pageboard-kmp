@@ -219,6 +219,51 @@ class EditorCoreTest {
     }
 
     @Test
+    fun jumpToPage71Pages() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controllerWith(71, backgroundScope)
+        controller.pageManager.jumpToPage(61)
+        assertEquals(61, controller.viewport.mostVisiblePageIndex())
+    }
+
+    @Test
+    fun densityChangeAfterLayoutPreservesTargetPage() = runTest(UnconfinedTestDispatcher()) {
+        val doc = DrawDocument().apply {
+            repeat(70) { addPage() }
+            for (p in pages) {
+                p.widthMm = 254f
+                p.heightMm = 143f
+            }
+        }
+        val controller = DrawViewController(document = doc, coroutineScope = backgroundScope)
+        controller.pageManager.jumpToPage(61)
+        controller.viewport.setSize(412f, 892f)
+
+        // Then update density and resize to landscape 1024x767
+        controller.viewport.density = 2.625f
+        controller.viewport.setSize(1024f, 767f)
+        assertEquals(61, controller.viewport.mostVisiblePageIndex())
+    }
+
+    @Test
+    fun initialAnchorHonoredWhenDensityUpdatedAfterInitialSize() = runTest(UnconfinedTestDispatcher()) {
+        val doc = DrawDocument().apply {
+            repeat(70) { addPage() }
+            for (p in pages) {
+                p.widthMm = 254f
+                p.heightMm = 143f
+            }
+        }
+        val controller = DrawViewController(document = doc, coroutineScope = backgroundScope)
+        // jumpToPage called before canvas layout
+        controller.pageManager.jumpToPage(61)
+        // Canvas layout happens with default density 1f
+        controller.viewport.setSize(1024f, 767f)
+        // Density is then updated by LaunchedEffect or composition to device density
+        controller.viewport.density = 2.625f
+        assertEquals(61, controller.viewport.mostVisiblePageIndex())
+    }
+
+    @Test
     fun jumpToPageCentersOnRequestedPage() = runTest(UnconfinedTestDispatcher()) {
         val controller = controllerWith(5, backgroundScope)
         assertEquals(0, controller.viewport.mostVisiblePageIndex())
@@ -284,6 +329,16 @@ class EditorCoreTest {
             screenWidth = viewport.width,
             screenHeight = viewport.height
         )
+    }
+
+    @Test
+    fun aPageAddedAfterAJumpAndAScrollKeepsThePageScrolledTo() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controllerWith(10, backgroundScope)
+        controller.pageManager.jumpToPage(2)
+        controller.scrollToPage(7)
+
+        controller.pageManager.addNewPageAtBottom()
+        assertEquals(7, controller.viewport.mostVisiblePageIndex())
     }
 
     @Test

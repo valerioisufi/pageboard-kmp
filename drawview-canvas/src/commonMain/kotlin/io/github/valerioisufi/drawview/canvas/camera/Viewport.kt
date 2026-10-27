@@ -43,11 +43,14 @@ public class Viewport internal constructor(
     public var density: Float = density
         set(value) {
             if (field == value) return
+            val targetAnchor = initialAnchor ?: currentAnchor()
+            val previousScale = camera.getCurrentScale()
             field = value
             layout.density = value
             camera.density = value
             layout.needToBeUpdated = true
             updatePageLayout()
+            if (centerOn(targetAnchor, previousScale)) camera.restoreToBounds(animated = false)
         }
 
     /** Width of the canvas, in pixels. */
@@ -70,36 +73,38 @@ public class Viewport internal constructor(
         initialAnchor = Triple(pageIndex, normX.coerceIn(0f, 1f), normY.coerceIn(0f, 1f))
     }
 
+    /** The page under the center of the canvas, and the point of it there (normalized), or `null`. */
+    private fun currentAnchor(): Triple<Int, Float, Float>? {
+        if (width <= 0f || layout.pagesRectOnWindow.isEmpty()) return null
+        val center = screenToWorld(Offset(width / 2f, height / 2f))
+        val rects = layout.pagesRectOnWindow
+        var target = rects.lastIndex
+        for (i in rects.indices) {
+            val zoneBottom = if (i < rects.lastIndex) rects[i + 1].top else layout.contentRect.bottom
+            if (center.y <= zoneBottom) {
+                target = i
+                break
+            }
+        }
+        val r = rects[target]
+        return Triple(
+            target,
+            ((center.x - r.left) / r.width).coerceIn(0f, 1f),
+            ((center.y - r.top) / r.height).coerceIn(0f, 1f)
+        )
+    }
+
     /**
      * Updates the size of the canvas, keeping the content under its center stable.
      */
     public fun setSize(width: Float, height: Float) {
         if (width <= 0f || height <= 0f) return
         val sizeChanged = this.width != width || this.height != height
-        if (!sizeChanged && !layout.needToBeUpdated) return
+        if (!sizeChanged && !layout.needToBeUpdated && initialAnchor == null) return
 
         // Remember which point of which page is at the center of the viewport
-        var anchor: Triple<Int, Float, Float>? = null
+        val anchor = currentAnchor()
         val previousScale = camera.getCurrentScale()
-        val hadLayout = this.width > 0f && layout.pagesRectOnWindow.isNotEmpty()
-        if (hadLayout) {
-            val center = screenToWorld(Offset(this.width / 2f, this.height / 2f))
-            val rects = layout.pagesRectOnWindow
-            var target = rects.lastIndex
-            for (i in rects.indices) {
-                val zoneBottom = if (i < rects.lastIndex) rects[i + 1].top else layout.contentRect.bottom
-                if (center.y <= zoneBottom) {
-                    target = i
-                    break
-                }
-            }
-            val r = rects[target]
-            anchor = Triple(
-                target,
-                ((center.x - r.left) / r.width).coerceIn(0f, 1f),
-                ((center.y - r.top) / r.height).coerceIn(0f, 1f)
-            )
-        }
 
         this.width = width
         this.height = height
@@ -109,16 +114,7 @@ public class Viewport internal constructor(
         updatePageLayout()
 
         val targetAnchor = initialAnchor?.also { initialAnchor = null } ?: anchor
-        if (targetAnchor != null && targetAnchor.first in layout.pagesRectOnWindow.indices) {
-            val r = layout.pagesRectOnWindow[targetAnchor.first]
-            camera.centerOnWorldPoint(
-                worldX = r.left + r.width * targetAnchor.second,
-                worldY = r.top + r.height * targetAnchor.third,
-                scale = if (anchor != null) previousScale else 1f,
-                screenWidth = width,
-                screenHeight = height
-            )
-        } else {
+        if (!centerOn(targetAnchor, scale = if (anchor != null) previousScale else 1f)) {
             // First layout: show the top of the document at 1:1 (pages fit the viewport width)
             camera.centerOnWorldPoint(
                 worldX = width / 2f,
@@ -130,6 +126,23 @@ public class Viewport internal constructor(
         }
         camera.restoreToBounds(animated = false)
         requestRedraw()
+    }
+
+    /**
+     * Centers the camera, at [scale], on the point of a page [anchor] names (its index and the
+     * point, normalized): `false` when that page is not laid out.
+     */
+    private fun centerOn(anchor: Triple<Int, Float, Float>?, scale: Float): Boolean {
+        if (anchor == null || anchor.first !in layout.pagesRectOnWindow.indices || width <= 0f || height <= 0f) return false
+        val r = layout.pagesRectOnWindow[anchor.first]
+        camera.centerOnWorldPoint(
+            worldX = r.left + r.width * anchor.second,
+            worldY = r.top + r.height * anchor.third,
+            scale = scale,
+            screenWidth = width,
+            screenHeight = height
+        )
+        return true
     }
 
     /** Lays the pages out again (their sizes, their order or the canvas changed). */
@@ -146,9 +159,12 @@ public class Viewport internal constructor(
 
     /** The pages of the document changed (added, removed, moved, resized): lays them out again. */
     internal fun markLayoutNeedsUpdate() {
+        val targetAnchor = initialAnchor ?: currentAnchor()
+        val previousScale = camera.getCurrentScale()
         layout.needToBeUpdated = true
         updatePageLayout()
         tileManager.retainDocumentPages(document)
+        centerOn(targetAnchor, previousScale)
         camera.restoreToBounds(animated = false)
         requestRedraw()
     }
