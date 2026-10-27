@@ -13,6 +13,9 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
+        androidMain.dependencies {
+            implementation(libs.litertlm.android)
+        }
         jvmMain.dependencies {
             // Its JNI libraries for every desktop platform it is built for, inside its jar
             implementation(libs.litertlm.jvm)

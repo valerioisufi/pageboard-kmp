@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -35,8 +36,14 @@ import io.github.valerioisufi.drawview.lecture.ui.documentTag
 import io.github.valerioisufi.drawview.lecture.ui.editorExtension
 import io.github.valerioisufi.drawview.lecture.ui.rememberLectureAssistant
 import io.github.valerioisufi.drawview.lecture.ui.searchSource
+import io.github.valerioisufi.drawview.ml.InstalledModels
+import io.github.valerioisufi.drawview.ml.LoadedModels
+import io.github.valerioisufi.drawview.ml.ModelDownloads
+import io.github.valerioisufi.drawview.ml.litert.LiteRtRuntime
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
+import io.github.valerioisufi.drawview.search.MutableIndexingConditions
 import io.github.valerioisufi.drawview.search.ui.rememberContentSearch
+import io.github.valerioisufi.drawview.search.ui.settingsAction
 import io.github.valerioisufi.drawview.store.room.DrawViewStore
 import io.github.valerioisufi.drawview.sync.iroh.IrohInternet
 import io.github.valerioisufi.drawview.sync.ui.CollaborationDialogs
@@ -104,14 +111,29 @@ fun PencilNotesApp(
         val export = rememberDocumentExportUi(documents, appName = "PencilNotes")
         // The PDF pages drawn by PDFium, the formulas by MicroTeX
         val engines = remember { DrawViewEngines(pdfTiles = PdfiumEngine::createTileAdapter, formulas = LatexEngine.formulaRenderer) }
-        // Search in the contents of the notes
+        // Search in the contents of the notes, and the local models (EmbeddingGemma 2, Gemma 4)
+        val liteRtRuntime = remember { LiteRtRuntime() }
+        val installedModels = remember { InstalledModels() }
+        val modelDownloads = remember(installedModels) { ModelDownloads(installedModels) }
+        val loadedModels = remember(liteRtRuntime) { LoadedModels(liteRtRuntime) }
+        val indexingConditions = remember { MutableIndexingConditions(initialCanIndex = true) }
+        LaunchedEffect(lectureAssistant, indexingConditions) {
+            snapshotFlow { !lectureAssistant.isBusy }.collect { canIndex ->
+                indexingConditions.setCanIndex(canIndex)
+            }
+        }
         val lectureSearchSource = remember(lectureAssistant, documents.store) {
             listOf(lectureAssistant.searchSource(documents.store))
         }
         val search = rememberContentSearch(
             store = documents.store,
             engines = engines,
-            extraSources = lectureSearchSource
+            extraSources = lectureSearchSource,
+            conditions = indexingConditions,
+            loadedModels = loadedModels,
+            installedModels = installedModels,
+            downloads = modelDownloads,
+            runtimeAvailable = liteRtRuntime.isAvailable
         )
         // The documents with a lecture: their badge and a filter of the library
         val lectureTag = remember(lectureAssistant) { lectureAssistant.documentTag() }
@@ -137,7 +159,7 @@ fun PencilNotesApp(
                     DocumentLibrary(
                         title = { PencilNotesBrand() },
                         documents = documents,
-                        actions = listOf(collaboration.joinAction(), aboutLibraryAction()),
+                        actions = listOf(collaboration.joinAction(), search.settingsAction(), aboutLibraryAction()),
                         fullScreenEditor = true,
                         editorExtension = editorExtension,
                         documentActions = listOf(export.documentAction),

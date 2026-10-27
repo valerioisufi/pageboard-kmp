@@ -1,4 +1,29 @@
 <resources>
     <string name="search_page_number">p. %1$d</string>
     <string name="search_indexing_status">Indexing notes (%1$d/%2$d)…</string>
+    <string name="search_embedding_status">Computing semantic vectors (%1$d remaining)…</string>
+    <string name="search_index_ready">Index up to date</string>
+    <string name="search_settings_title">Search &amp; Local Models</string>
+    <string name="search_settings_action">Search models</string>
+    <string name="search_settings_close">Close</string>
+    <string name="search_settings_privacy">The search index and your queries stay on this device and are never synchronized or sent online.</string>
+    <string name="search_settings_semantic_title">Search by meaning (EmbeddingGemma 2)</string>
+    <string name="search_settings_semantic_description">Finds passages with the same meaning even when phrased with different words or in another language.</string>
+    <string name="search_settings_answer_title">Ask your notes (Gemma 4)</string>
+    <string name="search_settings_answer_description">Answers questions from the passages found in your notes, citing the exact page or lecture minute.</string>
+    <string name="search_model_installed">Installed</string>
+    <string name="search_model_download">Download (%1$s)</string>
+    <string name="search_model_cancel">Cancel</string>
+    <string name="search_model_delete">Remove</string>
+    <string name="search_model_use">Active</string>
+    <string name="search_model_select">Use</string>
+    <string name="search_model_downloading">%1$s of %2$s (%3$d%%)</string>
+    <string name="search_model_failed">Download failed: %1$s</string>
+    <string name="search_runtime_unavailable">On-device models are not supported on this platform. Search uses full-text matching.</string>
+    <string name="search_ask_title">Ask your notes</string>
+    <string name="search_ask_button">Ask on device</string>
+    <string name="search_ask_online_button">Ask with Gemini</string>
+    <string name="search_ask_online_privacy">Selected passages from your notes will be sent to Google Gemini to answer this question.</string>
+    <string name="search_ask_thinking">Reading passages and writing answer…</string>
+    <string name="search_ask_install_hint">Install Gemma 4 in Search models to answer questions on this device.</string>
 </resources>

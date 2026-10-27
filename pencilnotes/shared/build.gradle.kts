@@ -48,6 +48,7 @@ kotlin {
             implementation(project(":drawview-sync-iroh"))
             implementation(project(":drawview-export-ui"))
             implementation(project(":drawview-search-ui"))
+            implementation(project(":drawview-ml-litert"))
             // The engines of the PDF pages and of the formulas
             implementation(project(":drawview-pdf"))
             implementation(project(":drawview-latex"))

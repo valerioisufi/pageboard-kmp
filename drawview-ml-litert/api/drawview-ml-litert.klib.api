@@ -15,4 +15,8 @@ final class io.github.valerioisufi.drawview.ml.litert/LiteRtRuntime : io.github.
     final fun supports(io.github.valerioisufi.drawview.ml/ModelSpec): kotlin/Boolean // io.github.valerioisufi.drawview.ml.litert/LiteRtRuntime.supports|supports(io.github.valerioisufi.drawview.ml.ModelSpec){}[0]
     final suspend fun embedder(io.github.valerioisufi.drawview.ml/InstalledModel, io.github.valerioisufi.drawview.ml/EmbedderOptions): io.github.valerioisufi.drawview.ml/Embedder // io.github.valerioisufi.drawview.ml.litert/LiteRtRuntime.embedder|embedder(io.github.valerioisufi.drawview.ml.InstalledModel;io.github.valerioisufi.drawview.ml.EmbedderOptions){}[0]
     final suspend fun generator(io.github.valerioisufi.drawview.ml/InstalledModel, io.github.valerioisufi.drawview.ml/GeneratorOptions): io.github.valerioisufi.drawview.ml/Generator // io.github.valerioisufi.drawview.ml.litert/LiteRtRuntime.generator|generator(io.github.valerioisufi.drawview.ml.InstalledModel;io.github.valerioisufi.drawview.ml.GeneratorOptions){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.ml.litert/LiteRtRuntime.Companion|null[0]
+        final fun defaultCacheDirectory(): kotlin/String // io.github.valerioisufi.drawview.ml.litert/LiteRtRuntime.Companion.defaultCacheDirectory|defaultCacheDirectory(){}[0]
+    }
 }

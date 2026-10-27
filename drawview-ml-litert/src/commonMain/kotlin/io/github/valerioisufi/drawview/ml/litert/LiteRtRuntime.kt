@@ -8,19 +8,20 @@ import io.github.valerioisufi.drawview.ml.InstalledModel
 import io.github.valerioisufi.drawview.ml.ModelException
 import io.github.valerioisufi.drawview.ml.ModelRuntime
 import io.github.valerioisufi.drawview.ml.ModelSpec
+import io.github.valerioisufi.drawview.platform.dataDirectory
 
 /**
  * LiteRT-LM as the [ModelRuntime] of DrawView: the `.litertlm` models (Gemma 4, EmbeddingGemma 2),
  * on the GPU when it can be used, on the processor otherwise.
  *
- * On the desktop JVM of the platforms LiteRT-LM is built for (Windows x86-64, macOS on Apple
- * silicon, Linux); elsewhere, Android and iOS for now, it supports no model ([isAvailable] is
- * false) and the applications use their other models.
+ * On Android and on the desktop JVM of the platforms LiteRT-LM is built for (Windows x86-64, macOS
+ * on Apple silicon, Linux); on iOS for now, it supports no model ([isAvailable] is false) and the
+ * applications use their other models.
  *
  * @param cacheDirectory where LiteRT-LM keeps what makes the next load of a model faster (`null`:
  *   nothing is kept).
  */
-public class LiteRtRuntime(private val cacheDirectory: String? = null) : ModelRuntime {
+public class LiteRtRuntime(private val cacheDirectory: String? = defaultCacheDirectory()) : ModelRuntime {
     private val engine: LiteRtEngine? by lazy { liteRtEngine() }
 
     /** Whether LiteRT-LM runs on this platform (its native library loaded). */
@@ -40,8 +41,11 @@ public class LiteRtRuntime(private val cacheDirectory: String? = null) : ModelRu
         return engine
     }
 
-    private companion object {
-        const val MODEL_EXTENSION = ".litertlm"
+    public companion object {
+        private const val MODEL_EXTENSION = ".litertlm"
+
+        /** `litert-cache/` of the data directory of the application. */
+        public fun defaultCacheDirectory(): String = dataDirectory() + "/litert-cache"
     }
 }
 

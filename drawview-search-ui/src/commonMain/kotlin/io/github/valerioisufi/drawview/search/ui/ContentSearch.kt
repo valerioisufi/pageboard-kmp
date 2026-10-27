@@ -16,6 +16,7 @@ import io.github.valerioisufi.drawview.ml.EmbedderOptions
 import io.github.valerioisufi.drawview.ml.InstalledModels
 import io.github.valerioisufi.drawview.ml.LoadedModels
 import io.github.valerioisufi.drawview.ml.ModelCatalog
+import io.github.valerioisufi.drawview.ml.ModelDownloads
 import io.github.valerioisufi.drawview.ml.ModelSpec
 import io.github.valerioisufi.drawview.model.ElementType
 import io.github.valerioisufi.drawview.search.DocumentSearchResult
@@ -46,10 +47,19 @@ public class ContentSearch(
     public val index: SearchIndex,
     public val indexer: SearchIndexer,
     public val engine: SearchEngine,
+    public val installedModels: InstalledModels? = null,
+    public val downloads: ModelDownloads? = null,
+    public val loadedModels: LoadedModels? = null,
+    public val embeddingSpec: ModelSpec = ModelCatalog.EMBEDDING_GEMMA_2_TEXT,
+    initialAnswerModelSpec: ModelSpec = ModelCatalog.GEMMA_4_E2B,
+    public val runtimeAvailable: Boolean = loadedModels != null,
     private val onOpenAnchor: ((SearchAnchor, openDocument: (String) -> Unit) -> Unit)? = null
 ) : LibrarySearch {
     private val queryFlow = MutableStateFlow("")
     private var resultsByDocument by mutableStateOf<Map<String, DocumentSearchResult>>(emptyMap())
+
+    /** The Gemma 4 model chosen for "Ask your notes" on this device. */
+    public var answerModelSpec: ModelSpec by mutableStateOf(initialAnswerModelSpec)
 
     override var matchedDocumentIds: List<String>? by mutableStateOf(null)
         private set
@@ -102,6 +112,19 @@ public class ContentSearch(
                 .collectLatest { trimmed ->
                     searchNow(trimmed)
                 }
+        }
+        installedModels?.let { models ->
+            launch {
+                models.installed.collect { ids ->
+                    if (answerModelSpec.id !in ids) {
+                        val fallback = listOf(ModelCatalog.GEMMA_4_E4B, ModelCatalog.GEMMA_4_E2B)
+                            .firstOrNull { it.id in ids }
+                        if (fallback != null) {
+                            answerModelSpec = fallback
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -156,6 +179,8 @@ public fun rememberContentSearch(
     conditions: IndexingConditions = IndexingConditions.Always,
     loadedModels: LoadedModels? = null,
     installedModels: InstalledModels? = null,
+    downloads: ModelDownloads? = null,
+    runtimeAvailable: Boolean = loadedModels != null,
     embeddingSpec: ModelSpec = ModelCatalog.EMBEDDING_GEMMA_2_TEXT,
     embedderOptions: EmbedderOptions = EmbedderOptions(),
     onOpenAnchor: ((SearchAnchor, openDocument: (String) -> Unit) -> Unit)? = null
@@ -174,7 +199,7 @@ public fun rememberContentSearch(
             addAll(extraSources)
         }
     }
-    val contentSearch = remember(index, store, sources, conditions, loadedModels, installedModels, embeddingSpec, embedderOptions, onOpenAnchor) {
+    val contentSearch = remember(index, store, sources, conditions, loadedModels, installedModels, downloads, runtimeAvailable, embeddingSpec, embedderOptions, onOpenAnchor) {
         val indexer = SearchIndexer(
             catalog = store,
             index = index,
@@ -192,7 +217,17 @@ public fun rememberContentSearch(
             embeddingSpec = embeddingSpec,
             embedderOptions = embedderOptions
         )
-        ContentSearch(index = index, indexer = indexer, engine = engine, onOpenAnchor = onOpenAnchor)
+        ContentSearch(
+            index = index,
+            indexer = indexer,
+            engine = engine,
+            installedModels = installedModels,
+            downloads = downloads,
+            loadedModels = loadedModels,
+            embeddingSpec = embeddingSpec,
+            runtimeAvailable = runtimeAvailable,
+            onOpenAnchor = onOpenAnchor
+        )
     }
     LaunchedEffect(contentSearch) {
         contentSearch.start(scope)

@@ -239,8 +239,8 @@ the student reached from a tablet on the local network. It is no longer the defa
 | Phase | State |
 |---|---|
 | 1. The runtime on the desktop | done |
-| 2. Measure on the desktop | in progress: the first bench done |
-| 3. Android | not started |
+| 2. Measure on the desktop | done |
+| 3. Android | done in code (the bench on the tablet left to run) |
 | 4. The assistant on the device | not started |
 | 5. The settings | not started |
 | 6. The speech on the device | not started |
