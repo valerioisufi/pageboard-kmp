@@ -36,9 +36,13 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
     ): Boolean {
         val document = controller.document
         // Sized for the page of the note (or the visible one), adapted to the page chosen
-        val reference = suggestion.resolvedPageIndex(document)?.let { document.pages.getOrNull(it) }
+        val targetIndex = suggestion.resolvedPageIndex(document)
+        val reference = targetIndex?.let { document.pages.getOrNull(it) }
             ?: controller.viewport.firstVisiblePageIndex()?.let { document.pages.getOrNull(it) }
             ?: return false
+        if (targetIndex != null && targetIndex in document.pages.indices) {
+            controller.pageManager.jumpToPage(targetIndex)
+        }
         val content = buildString {
             if (suggestion.title.isNotBlank()) appendLine("**${suggestion.title.trim()}**")
             append(suggestion.content.trim())

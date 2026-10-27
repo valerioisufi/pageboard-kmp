@@ -321,6 +321,7 @@ public class PageManager(private val controller: DrawViewController) {
             )
             controller.viewport.camera.restoreToBounds(animated = false)
         } else {
+            // Not laid out yet: centered on it at the first layout
             controller.viewport.setInitialAnchor(pageIndex, normX, normY)
         }
         controller.isPageGridVisible = false

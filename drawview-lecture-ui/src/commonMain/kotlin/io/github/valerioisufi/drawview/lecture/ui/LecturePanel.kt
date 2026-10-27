@@ -782,6 +782,7 @@ private fun ProfessorPageBanner(lecture: Lecture, controller: DrawViewController
     val visible by remember(controller) {
         derivedStateOf {
             controller.version
+            controller.viewport.camera.moveCount
             controller.viewport.visiblePages().map { it.index }
         }
     }

@@ -219,6 +219,81 @@ class EditorCoreTest {
     }
 
     @Test
+    fun jumpToPageCentersOnRequestedPage() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controllerWith(5, backgroundScope)
+        assertEquals(0, controller.viewport.mostVisiblePageIndex())
+
+        controller.pageManager.jumpToPage(2)
+        assertEquals(2, controller.viewport.mostVisiblePageIndex())
+
+        controller.pageManager.jumpToPage(4)
+        assertEquals(4, controller.viewport.mostVisiblePageIndex())
+
+        controller.pageManager.jumpToPage(0)
+        assertEquals(0, controller.viewport.mostVisiblePageIndex())
+    }
+
+    @Test
+    fun jumpToPageBeforeInitialLayoutCentersOnRequestedPage() = runTest(UnconfinedTestDispatcher()) {
+        val doc = DrawDocument().apply {
+            repeat(4) { addPage() }
+        }
+        val controller = DrawViewController(document = doc, coroutineScope = backgroundScope)
+        // Jump before any setSize call
+        controller.pageManager.jumpToPage(2)
+        controller.viewport.setSize(800f, 1200f)
+        assertEquals(2, controller.viewport.mostVisiblePageIndex())
+
+        // And if setSize is called again (e.g. window/toolbar resize)
+        controller.viewport.setSize(800f, 1140f)
+        assertEquals(2, controller.viewport.mostVisiblePageIndex())
+    }
+
+    @Test
+    fun jumpToPageThenResizePreservesTargetPage() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controllerWith(5, backgroundScope)
+        assertEquals(0, controller.viewport.mostVisiblePageIndex())
+
+        controller.pageManager.jumpToPage(3)
+        assertEquals(3, controller.viewport.mostVisiblePageIndex())
+
+        // Resize happens after jump (e.g. keyboard hides, sheet dismisses)
+        controller.viewport.setSize(800f, 1000f)
+        assertEquals(3, controller.viewport.mostVisiblePageIndex())
+    }
+
+    @Test
+    fun aResizeAfterAJumpAndAScrollKeepsThePageScrolledTo() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controllerWith(10, backgroundScope)
+        controller.pageManager.jumpToPage(2)
+        controller.scrollToPage(7)
+        assertEquals(7, controller.viewport.mostVisiblePageIndex())
+
+        // The keyboard shown: the jump is not taken again
+        controller.viewport.setSize(800f, 900f)
+        assertEquals(7, controller.viewport.mostVisiblePageIndex())
+    }
+
+    /** Centers the camera on the page [index], as a scroll does (not a jump). */
+    private fun DrawViewController.scrollToPage(index: Int) {
+        val r = viewport.layout.pagesRectOnWindow[index]
+        viewport.camera.centerOnWorldPoint(
+            worldX = r.left + r.width / 2f,
+            worldY = r.top + r.height / 2f,
+            scale = viewport.camera.getCurrentScale(),
+            screenWidth = viewport.width,
+            screenHeight = viewport.height
+        )
+    }
+
+    @Test
+    fun jumpToPageByPageNumber1Based() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controllerWith(5, backgroundScope)
+        controller.pageManager.jumpToPage(pageId = "non-existent-id", pageNumber = 4)
+        assertEquals(3, controller.viewport.mostVisiblePageIndex())
+    }
+
+    @Test
     fun strokesCrossingPagesAreDuplicatedOnEveryPage() = runTest(UnconfinedTestDispatcher()) {
         val controller = controllerWith(2, backgroundScope)
         val page0 = controller.document.pages[0]

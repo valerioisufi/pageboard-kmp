@@ -108,7 +108,7 @@ public class Viewport internal constructor(
         layout.needToBeUpdated = true
         updatePageLayout()
 
-        val targetAnchor = anchor ?: initialAnchor?.also { initialAnchor = null }
+        val targetAnchor = initialAnchor?.also { initialAnchor = null } ?: anchor
         if (targetAnchor != null && targetAnchor.first in layout.pagesRectOnWindow.indices) {
             val r = layout.pagesRectOnWindow[targetAnchor.first]
             camera.centerOnWorldPoint(

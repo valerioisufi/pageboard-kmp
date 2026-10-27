@@ -365,6 +365,7 @@ private fun BoxScope.PlacementHint(assistant: LectureAssistant, controller: Draw
     val visible by remember(controller) {
         derivedStateOf {
             controller.version
+            controller.viewport.camera.moveCount
             controller.viewport.visiblePages().map { it.index }
         }
     }
