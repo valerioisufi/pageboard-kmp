@@ -31,7 +31,8 @@ public class ModelCatalog(public val models: List<ModelSpec>) {
             url = huggingFace("gemma-4-E2B-it-litert-lm", "b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1", "gemma-4-E2B-it.litertlm"),
             sizeBytes = 2_588_147_712,
             sha256 = "181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c",
-            memoryBytes = 2_600_000_000
+            memoryBytes = 2_600_000_000,
+            maxImageTokens = 280
         )
 
         /** Gemma 4 E4B: the tablets and the computers. */
@@ -44,7 +45,8 @@ public class ModelCatalog(public val models: List<ModelSpec>) {
             url = huggingFace("gemma-4-E4B-it-litert-lm", "2eee7ac325f20eb8c9ac1d0e972f7c84663062da", "gemma-4-E4B-it.litertlm"),
             sizeBytes = 3_659_530_240,
             sha256 = "0b2a8980ce155fd97673d8e820b4d29d9c7d99b8fa6806f425d969b145bd52e0",
-            memoryBytes = 3_700_000_000
+            memoryBytes = 3_700_000_000,
+            maxImageTokens = 280
         )
 
         /** Gemma 4 12B: the review of a lecture on a computer. */
@@ -57,7 +59,8 @@ public class ModelCatalog(public val models: List<ModelSpec>) {
             url = huggingFace("gemma-4-12B-it-litert-lm", "7a0b1ce0ea821bcd01c5f72af84155e02191152f", "gemma-4-12B-it.litertlm"),
             sizeBytes = 6_883_278_368,
             sha256 = "58fd31b778ca2c21c80d634fb34fc5a89d11d563a38dfd3cbf1b40dbf252a8b6",
-            memoryBytes = 7_000_000_000
+            memoryBytes = 7_000_000_000,
+            maxImageTokens = 1120
         )
 
         /** EmbeddingGemma 2, its text encoder only (270M, int4): the search in the notes. */

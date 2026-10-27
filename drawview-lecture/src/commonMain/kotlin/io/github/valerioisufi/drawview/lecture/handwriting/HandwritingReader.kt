@@ -117,32 +117,6 @@ internal class HandwritingReader(
         usage
     }
 
-    private fun prompt(images: List<Pair<InkBlock, ByteArray>>, pages: List<PageContent>): ModelPrompt {
-        val parts = mutableListOf<PromptPart>()
-        val shownSlides = mutableSetOf<Int>()
-        images.forEachIndexed { i, (block, jpeg) ->
-            val slide = if (shownSlides.add(block.pageIndex)) {
-                pages.firstOrNull { it.index == block.pageIndex }?.slide?.text?.take(SLIDE_HINT_CHARS)
-            } else {
-                null
-            }
-            parts.add(
-                PromptPart.Text(
-                    "Image ${i + 1}: notebook page ${block.pageIndex + 1}" +
-                            (if (!slide.isNullOrBlank()) ", written over a slide that reads: \"${slide.replace('\n', ' ')}\"" else "") + "."
-                )
-            )
-            parts.add(PromptPart.Image(jpeg))
-        }
-        return ModelPrompt(
-            system = SYSTEM,
-            parts = parts,
-            schema = schema,
-            maxOutputTokens = 2048,
-            thinkingLevel = "low"
-        )
-    }
-
     private fun load(): Map<String, Entry> = readFile(path)
 
     private suspend fun save() {
@@ -200,6 +174,33 @@ internal class HandwritingReader(
 
         /** The same bytes for the same handwriting (whatever the order it was read in). */
         fun canonical(texts: Map<String, Entry>): String = encode(texts.entries.sortedBy { it.key }.associate { it.toPair() })
+
+        /** The request reading [images], the blocks with their JPEG, in their order ("Image 1", "Image 2"...). */
+        internal fun prompt(images: List<Pair<InkBlock, ByteArray>>, pages: List<PageContent>): ModelPrompt {
+            val parts = mutableListOf<PromptPart>()
+            val shownSlides = mutableSetOf<Int>()
+            images.forEachIndexed { i, (block, jpeg) ->
+                val slide = if (shownSlides.add(block.pageIndex)) {
+                    pages.firstOrNull { it.index == block.pageIndex }?.slide?.text?.take(SLIDE_HINT_CHARS)
+                } else {
+                    null
+                }
+                parts.add(
+                    PromptPart.Text(
+                        "Image ${i + 1}: notebook page ${block.pageIndex + 1}" +
+                            (if (!slide.isNullOrBlank()) ", written over a slide that reads: \"${slide.replace('\n', ' ')}\"" else "") + "."
+                    )
+                )
+                parts.add(PromptPart.Image(jpeg))
+            }
+            return ModelPrompt(
+                system = SYSTEM,
+                parts = parts,
+                schema = schema,
+                maxOutputTokens = 2048,
+                thinkingLevel = "low"
+            )
+        }
 
         private val SYSTEM = """
             You transcribe the handwritten notes of a university student, taken during a lecture. Every image shows one block of handwriting.

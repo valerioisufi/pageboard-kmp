@@ -128,12 +128,14 @@ final class io.github.valerioisufi.drawview.ml/GenerationRequest { // io.github.
 }
 
 final class io.github.valerioisufi.drawview.ml/GeneratorOptions { // io.github.valerioisufi.drawview.ml/GeneratorOptions|null[0]
-    constructor <init>(kotlin/Int = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., io.github.valerioisufi.drawview.ml/Accelerator = ...) // io.github.valerioisufi.drawview.ml/GeneratorOptions.<init>|<init>(kotlin.Int;kotlin.Boolean;kotlin.Boolean;io.github.valerioisufi.drawview.ml.Accelerator){}[0]
+    constructor <init>(kotlin/Int = ..., kotlin/Boolean = ..., kotlin/Int = ..., kotlin/Boolean = ..., io.github.valerioisufi.drawview.ml/Accelerator = ...) // io.github.valerioisufi.drawview.ml/GeneratorOptions.<init>|<init>(kotlin.Int;kotlin.Boolean;kotlin.Int;kotlin.Boolean;io.github.valerioisufi.drawview.ml.Accelerator){}[0]
 
     final val accelerator // io.github.valerioisufi.drawview.ml/GeneratorOptions.accelerator|{}accelerator[0]
         final fun <get-accelerator>(): io.github.valerioisufi.drawview.ml/Accelerator // io.github.valerioisufi.drawview.ml/GeneratorOptions.accelerator.<get-accelerator>|<get-accelerator>(){}[0]
     final val audio // io.github.valerioisufi.drawview.ml/GeneratorOptions.audio|{}audio[0]
         final fun <get-audio>(): kotlin/Boolean // io.github.valerioisufi.drawview.ml/GeneratorOptions.audio.<get-audio>|<get-audio>(){}[0]
+    final val imageTokens // io.github.valerioisufi.drawview.ml/GeneratorOptions.imageTokens|{}imageTokens[0]
+        final fun <get-imageTokens>(): kotlin/Int // io.github.valerioisufi.drawview.ml/GeneratorOptions.imageTokens.<get-imageTokens>|<get-imageTokens>(){}[0]
     final val images // io.github.valerioisufi.drawview.ml/GeneratorOptions.images|{}images[0]
         final fun <get-images>(): kotlin/Boolean // io.github.valerioisufi.drawview.ml/GeneratorOptions.images.<get-images>|<get-images>(){}[0]
     final val maxTokens // io.github.valerioisufi.drawview.ml/GeneratorOptions.maxTokens|{}maxTokens[0]
@@ -229,7 +231,7 @@ final class io.github.valerioisufi.drawview.ml/ModelException : kotlin/Exception
 }
 
 final class io.github.valerioisufi.drawview.ml/ModelSpec { // io.github.valerioisufi.drawview.ml/ModelSpec|null[0]
-    constructor <init>(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.ml/ModelKind, kotlin.collections/Set<io.github.valerioisufi.drawview.ml/ModelInput>, kotlin/String, kotlin/String, kotlin/Long, kotlin/String, kotlin/Long, kotlin/Int = ...) // io.github.valerioisufi.drawview.ml/ModelSpec.<init>|<init>(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.ml.ModelKind;kotlin.collections.Set<io.github.valerioisufi.drawview.ml.ModelInput>;kotlin.String;kotlin.String;kotlin.Long;kotlin.String;kotlin.Long;kotlin.Int){}[0]
+    constructor <init>(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.ml/ModelKind, kotlin.collections/Set<io.github.valerioisufi.drawview.ml/ModelInput>, kotlin/String, kotlin/String, kotlin/Long, kotlin/String, kotlin/Long, kotlin/Int = ..., kotlin/Int = ...) // io.github.valerioisufi.drawview.ml/ModelSpec.<init>|<init>(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.ml.ModelKind;kotlin.collections.Set<io.github.valerioisufi.drawview.ml.ModelInput>;kotlin.String;kotlin.String;kotlin.Long;kotlin.String;kotlin.Long;kotlin.Int;kotlin.Int){}[0]
 
     final val dimensions // io.github.valerioisufi.drawview.ml/ModelSpec.dimensions|{}dimensions[0]
         final fun <get-dimensions>(): kotlin/Int // io.github.valerioisufi.drawview.ml/ModelSpec.dimensions.<get-dimensions>|<get-dimensions>(){}[0]
@@ -241,6 +243,8 @@ final class io.github.valerioisufi.drawview.ml/ModelSpec { // io.github.valerioi
         final fun <get-inputs>(): kotlin.collections/Set<io.github.valerioisufi.drawview.ml/ModelInput> // io.github.valerioisufi.drawview.ml/ModelSpec.inputs.<get-inputs>|<get-inputs>(){}[0]
     final val kind // io.github.valerioisufi.drawview.ml/ModelSpec.kind|{}kind[0]
         final fun <get-kind>(): io.github.valerioisufi.drawview.ml/ModelKind // io.github.valerioisufi.drawview.ml/ModelSpec.kind.<get-kind>|<get-kind>(){}[0]
+    final val maxImageTokens // io.github.valerioisufi.drawview.ml/ModelSpec.maxImageTokens|{}maxImageTokens[0]
+        final fun <get-maxImageTokens>(): kotlin/Int // io.github.valerioisufi.drawview.ml/ModelSpec.maxImageTokens.<get-maxImageTokens>|<get-maxImageTokens>(){}[0]
     final val memoryBytes // io.github.valerioisufi.drawview.ml/ModelSpec.memoryBytes|{}memoryBytes[0]
         final fun <get-memoryBytes>(): kotlin/Long // io.github.valerioisufi.drawview.ml/ModelSpec.memoryBytes.<get-memoryBytes>|<get-memoryBytes>(){}[0]
     final val name // io.github.valerioisufi.drawview.ml/ModelSpec.name|{}name[0]

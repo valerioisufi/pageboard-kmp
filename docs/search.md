@@ -215,7 +215,7 @@ indexes again what arrives. `PROTOCOL_VERSION` does not change.
 
 | Phase | State |
 |---|---|
-| 0. Measure | not started |
+| 0. Measure | done on the computer (the tablet with phase 3 of docs/local-models.md) |
 | 1. The words | not started |
 | 2. The PDFs and the lectures | not started |
 | 3. The meaning | not started |
@@ -223,6 +223,41 @@ indexes again what arrives. `PROTOCOL_VERSION` does not change.
 | 5. The results | not started |
 | 6. Ask your notes | not started |
 | 7. Documentation | not started |
+
+### Phase 0 results (2026-10-18)
+
+On the Mac of the student (M5, 16 GB), by `SearchBench` of the bench of the assistant
+(`drawview-lecture`, see phase 2 of [docs/local-models.md](local-models.md)):
+
+* **The corpus**: the 427 pages of the 11 notebooks of the lectures of the workspace of
+  lecture-eval (a read-only copy): the text of the slides and the notes typed on them, a chunk a
+  page. Most slides are in English, the notes and the searches in Italian.
+* **The searches**: 30, in Italian, written for the bench by the assistant reading the pages (the
+  student asked for it), each with the page it should find: 14 with words of their page, 16
+  paraphrased. Written knowing the pages, they favour no method on purpose, but they are not the
+  searches of the student.
+* **Found** (the right page in the first five; within one page, for a slide continued on the
+  next; the reciprocal rank):
+
+  | Search by | First 5 | Within one page | Reciprocal rank | With the words | Paraphrased |
+  |---|---|---|---|---|---|
+  | words (BM25, as FTS5) | 63 % | 80 % | 0.45 | 92 % | 37 % |
+  | vectors, 768 dimensions | 96 % | 100 % | 0.76 | 92 % | 100 % |
+  | vectors, 512 dimensions | 96 % | 100 % | 0.76 | 92 % | 100 % |
+  | vectors, 256 dimensions | 93 % | 100 % | 0.75 | 85 % | 100 % |
+  | words + vectors 512, RRF (k = 60) | 83 % | 93 % | 0.61 | 100 % | 68 % |
+  | words × 0.5 + vectors 512, RRF | 83 % | 93 % | 0.64 | 100 % | 68 % |
+
+  The prompts of a query of the model card (`task: search result | query:`) and of the page of
+  LiteRT-LM (`task: search query | text:`) find the same (within 0.01 of reciprocal rank).
+* **The merge as designed loses**, with the words weighing half too: the words, wrong on most
+  paraphrases, push the right page out of the first five. The vectors miss one search the words find ("deadline monotonic è migliore
+  di rate monotonic": two names of algorithms the slides of that course repeat on many pages); the
+  words miss eleven the vectors find.
+* **Time**: the vectors of the 427 pages in 16.7 s on the GPU of the Mac (39 ms a page, the load
+  of the model included). The tablet in phase 3 of [docs/local-models.md](local-models.md).
+* **The handwriting**: none in the notebooks of the student; Gemma 4 on handwritten formulas is
+  measured in phase 2 of [docs/local-models.md](local-models.md).
 
 ## Checks
 
@@ -247,8 +282,11 @@ indexes again what arrives. `PROTOCOL_VERSION` does not change.
   the only data it deletes is its own, never the documents, the preferences or the lectures (to
   approve).
 * The index stays on its device; nothing travels.
-* Words and meaning merged with Reciprocal Rank Fusion; 512 dimensions in int8; compared by brute
-  force (revertible, after phase 0).
+* 512 dimensions in int8 (as good as 768 in phase 0), compared by brute force; the prompt of a
+  query of the model card (revertible).
+* The vectors rank the results; the words do not take part in Reciprocal Rank Fusion as designed,
+  which lost the paraphrases in phase 0. They find what the vectors miss (exact terms, names): how
+  they join the vectors is decided by phase 3, on the searches of phase 0 (revertible).
 * The handwriting read for the search stays in the index of the device, not in
   `handwriting.json` (revertible: sharing it changes what travels).
 * The handwriting of every notebook is read on a computer at once, on a phone or a tablet when it

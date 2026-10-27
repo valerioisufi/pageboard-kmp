@@ -30,6 +30,16 @@ class ModelCatalogTest {
     }
 
     @Test
+    fun theModelsThatReadImagesSayTheirLargestBudget() {
+        for (spec in ModelCatalog.Default.models) {
+            assertEquals(ModelInput.IMAGE in spec.inputs && spec.kind == ModelKind.GENERATION, spec.maxImageTokens > 0, spec.id)
+        }
+        // The files of E2B and E4B are built for 280 tokens an image at most (phase 2)
+        assertEquals(280, ModelCatalog.GEMMA_4_E2B.maxImageTokens)
+        assertEquals(1120, ModelCatalog.GEMMA_4_12B.maxImageTokens)
+    }
+
+    @Test
     fun twoModelsWithTheSameIdAreRefused() {
         assertFailsWith<IllegalArgumentException> {
             ModelCatalog(listOf(ModelCatalog.GEMMA_4_E2B, ModelCatalog.GEMMA_4_E2B))

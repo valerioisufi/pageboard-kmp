@@ -14,19 +14,24 @@ public enum class Accelerator {
  *
  * @param maxTokens the context: the request and the answer together.
  * @param images whether it reads images (its vision encoder is loaded).
+ * @param imageTokens the tokens of each image, for a model that takes a budget (Gemma 4: 70, 140,
+ *   280, 560 or 1,120, up to [ModelSpec.maxImageTokens] of its file): more tokens read smaller text
+ *   and take longer; 0 for the default of the model.
  * @param audio whether it hears audio (its audio encoder is loaded).
  * @param accelerator where it runs.
  */
 public class GeneratorOptions(
     public val maxTokens: Int = 8192,
     public val images: Boolean = false,
+    public val imageTokens: Int = 0,
     public val audio: Boolean = false,
     public val accelerator: Accelerator = Accelerator.GPU
 ) {
     override fun equals(other: Any?): Boolean = other is GeneratorOptions && other.maxTokens == maxTokens &&
-        other.images == images && other.audio == audio && other.accelerator == accelerator
+        other.images == images && other.imageTokens == imageTokens && other.audio == audio && other.accelerator == accelerator
 
-    override fun hashCode(): Int = ((maxTokens * 31 + images.hashCode()) * 31 + audio.hashCode()) * 31 + accelerator.hashCode()
+    override fun hashCode(): Int =
+        (((maxTokens * 31 + images.hashCode()) * 31 + imageTokens) * 31 + audio.hashCode()) * 31 + accelerator.hashCode()
 }
 
 /**

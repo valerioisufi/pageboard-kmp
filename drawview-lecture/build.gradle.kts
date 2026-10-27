@@ -69,8 +69,34 @@ kotlin {
         jvmMain.dependencies {
             implementation(libs.ktor.client.okhttp)
         }
+        jvmTest.dependencies {
+            // The bench of the models on the device
+            implementation(project(":drawview-ml-litert"))
+        }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
         }
+    }
+}
+
+// The bench of the assistant on the models of the device, never part of jvmTest: with the models of
+// <bench>/models and the material of <bench>/material, it writes <bench>/assistant-bench.md:
+//   ./gradlew :drawview-lecture:jvmTest --tests '*AssistantBench*' -Pdrawview.bench=<bench>
+//     [-Pdrawview.bench.parts=formulas,prompts,speech,search] [-Pdrawview.bench.workspace=<lecture-eval workspace>]
+val benchDirectory = providers.gradleProperty("drawview.bench")
+tasks.named<Test>("jvmTest") {
+    if (benchDirectory.isPresent) {
+        systemProperty("drawview.bench", benchDirectory.get())
+        systemProperty("drawview.bench.parts", providers.gradleProperty("drawview.bench.parts").getOrElse(""))
+        systemProperty("drawview.bench.workspace", providers.gradleProperty("drawview.bench.workspace").getOrElse(""))
+        systemProperty("drawview.bench.models", providers.gradleProperty("drawview.bench.models").getOrElse(""))
+        systemProperty("drawview.bench.modes", providers.gradleProperty("drawview.bench.modes").getOrElse(""))
+        for (name in listOf("temperature", "kinds", "lectures", "accelerator")) {
+            systemProperty("drawview.bench.$name", providers.gradleProperty("drawview.bench.$name").getOrElse(""))
+        }
+        outputs.upToDateWhen { false }
+        testLogging.showStandardStreams = true
+        // The models answer slowly on the processor
+        maxHeapSize = "4g"
     }
 }

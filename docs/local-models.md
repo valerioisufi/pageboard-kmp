@@ -310,6 +310,57 @@ by its SHA-256):
   of the assistant on its own prompts, the speech against whisper.cpp, the search (with phase 0
   of [docs/search.md](search.md)).
 
+### Phase 2: the measures on the Mac (2026-10-18)
+
+On the Mac of the student (M5, 10 processors, 16 GB), with Gemma 4 E2B, E4B and 12B and
+EmbeddingGemma 2 (13.3 GB, each verified by its SHA-256) in a scratch directory. The material:
+a read-only copy of the documents and lectures of PencilNotes (the student asked for it), the
+workspace of lecture-eval (read only), ten minutes of a lecture, and the handwritten formulas of
+MathWriting (Google, CC BY-NC-SA 4.0): the notes of the student hold six strokes, typed notes on
+slides otherwise, so they could not measure the handwriting.
+
+The bench of the assistant (`AssistantBench`, a JVM test of `drawview-lecture` run only with
+`-Pdrawview.bench`) builds the requests as the assistant builds them (`LecturePrompts`,
+`HandwritingReader`) and sends them as `DeviceBackend` will, the schema enforced or asked:
+
+```
+./gradlew :drawview-lecture:jvmTest --tests '*AssistantBench*' -Pdrawview.bench=<scratch dir>
+  -Pdrawview.bench.workspace=<lecture-eval workspace> [-Pdrawview.bench.parts=formulas,prompts,speech,search]
+  [-Pdrawview.bench.models=<ids>] [-Pdrawview.bench.modes=enforced,asked]
+```
+
+* **The GPU works on the Mac**: `litertlm-jvm` runs every model on Metal (the caches of ML Drift
+  in the cache directory), with nothing more to ship. A load in 0.2 s (E2B), 0.3 s (E4B), 0.6 s
+  (12B) once cached, 3 to 11 s the first time; a short answer in Italian in 0.7 s (E2B, 35 pieces),
+  1.9 s (E4B, 52), 4.7 s (12B, 56); three embeddings in 78 ms (140 ms on the processor).
+* **A session of LiteRT-LM ends after ten minutes** (`DEADLINE_EXCEEDED`): the 12B on the
+  processor did not finish an answer of 256 tokens. A review on a slow device may hit it.
+* **The budget of an image** (`ExperimentalFlags.visualTokenBudget`, a flag of the process like
+  the constrained decoding, now `GeneratorOptions.imageTokens`): the files of E2B and E4B are built
+  for 280 tokens an image at most (`ModelInfo.maxVisionTokenBudget`; 560 fails the load), the 12B
+  for 1,120. The budget given at the load is the most an engine takes, the one given before a
+  conversation is used by it (an image of a conversation: 80, 146 and 280 tokens at 70, 140 and
+  280 with E2B; 84 to 1,104 with the 12B). `ModelSpec.maxImageTokens` says it, and
+  `LiteRtRuntime` keeps the budget within it.
+* **Handwritten formulas** (60 of the test split of MathWriting, drawn as the editor draws a block,
+  three a request with the request of `HandwritingReader`; read exactly after the LaTeX is
+  normalized, and the characters wrong, the median and the mean with an error of 100 % at most):
+
+  | Model | Image tokens | Schema enforced | Schema asked | Time a request (asked) |
+  |---|---|---|---|---|
+  | E2B | 70 / 140 / 280 | no text (its first string spoiled) | 5–10 % exact, 35–42 % wrong (median) | 2–5 s |
+  | E4B | 70 / 140 / 280 | no text (`{"blocks":[]}` every time) | 15–16 % exact, 27–30 % wrong | 4–6 s |
+  | 12B | 280 / 560 / 1,120 | 28 / 26 / 18 % exact, 16 / 19 / 29 % wrong | 26 / 33 / 8 % exact, 16 / 13 / 28 % wrong | 16 / 25 / 40 s |
+
+  The 12B asked writes the schema back before its answer, and half the times its answer inside it
+  (`{"type": "object", ..., "required": ["blocks"]}, "blocks": [...]}`): the answer is taken from
+  the last object holding the keys of the schema, or from the first required key, closed as an
+  object (`DeviceBackend`). With it, the schema asked is as good as the enforced one, in half the
+  time; without it, the 12B asked read nothing in half the requests. More tokens than 560 do not
+  help: the 12B reads worse at 1,120. The formulas of MathWriting are hard (any field of
+  mathematics, by many writers): E4B reads a formula exactly one time in six, and about seven
+  characters in ten right.
+
 ## Checks
 
 * `./gradlew jvmTest checkKotlinAbi` and the builds of CLAUDE.md at every phase;

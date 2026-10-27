@@ -34,6 +34,7 @@ tasks.named<Test>("jvmTest") {
     if (benchDirectory.isPresent) {
         systemProperty("drawview.bench", benchDirectory.get())
         systemProperty("drawview.bench.download", benchDownloads.getOrElse(""))
+        systemProperty("drawview.bench.models", providers.gradleProperty("drawview.bench.models").getOrElse(""))
         outputs.upToDateWhen { false }
         testLogging.showStandardStreams = true
     }

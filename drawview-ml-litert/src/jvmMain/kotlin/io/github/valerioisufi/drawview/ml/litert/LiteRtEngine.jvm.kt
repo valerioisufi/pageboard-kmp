@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.ml.litert
 
+import com.google.ai.edge.litertlm.ActivationDataType
 import com.google.ai.edge.litertlm.Backend
 import com.google.ai.edge.litertlm.Content
 import com.google.ai.edge.litertlm.Contents
@@ -47,21 +48,28 @@ private val jvmEngine: LiteRtEngine? by lazy {
 internal actual fun liteRtEngine(): LiteRtEngine? = jvmEngine
 
 private object JvmLiteRtEngine : LiteRtEngine {
+    @OptIn(ExperimentalApi::class)
     override suspend fun generator(model: InstalledModel, options: GeneratorOptions, cacheDirectory: String?): Generator =
-        withContext(Dispatchers.IO) {
-            val (engine, accelerator) = load(options.accelerator) { backend ->
-                Engine(
-                    EngineConfig(
-                        modelPath = model.path,
-                        backend = backend,
-                        visionBackend = if (options.images) backend else null,
-                        audioBackend = if (options.audio) backend else null,
-                        maxNumTokens = options.maxTokens,
-                        cacheDir = cache(cacheDirectory)
-                    )
-                ).also { it.initialize() }
+        processFlags.withLock {
+            withContext(Dispatchers.IO) {
+                // At most what the file allows: a larger budget fails the load
+                val imageTokens = imageTokens(model, options)
+                ExperimentalFlags.visualTokenBudget = imageTokens.takeIf { it > 0 }
+                val (engine, accelerator) = load(options.accelerator) { backend ->
+                    Engine(
+                        EngineConfig(
+                            modelPath = model.path,
+                            backend = backend,
+                            visionBackend = if (options.images) backend else null,
+                            audioBackend = if (options.audio) backend else null,
+                            maxNumTokens = options.maxTokens,
+                            cacheDir = cache(cacheDirectory),
+                            activationDataType = activations(backend)
+                        )
+                    ).also { it.initialize() }
+                }
+                LiteRtGenerator(model, engine, accelerator, imageTokens)
             }
-            LiteRtGenerator(model, engine, accelerator)
         }
 
     override suspend fun embedder(model: InstalledModel, options: EmbedderOptions, cacheDirectory: String?): Embedder =
@@ -73,6 +81,19 @@ private object JvmLiteRtEngine : LiteRtEngine {
             val dimensions = options.dimensions.takeIf { it > 0 } ?: model.spec.dimensions
             LiteRtEmbedder(model, engine, accelerator, dimensions, outputSize = options.dimensions.takeIf { it > 0 })
         }
+
+    /**
+     * The activations of a generation model on [backend]: in 32 bits on the GPU, whose 16 bits
+     * spoil the long answers of E2B and E4B (four answers in JSON in ten valid, ten in ten in 32
+     * bits, phase 2 of docs/local-models.md); the default of the processor.
+     */
+    private fun activations(backend: Backend): ActivationDataType? = if (backend is Backend.GPU) ActivationDataType.FLOAT32 else null
+
+    /** The budget of an image of [options], within the one of the file of [model] (when the catalog says it). */
+    private fun imageTokens(model: InstalledModel, options: GeneratorOptions): Int {
+        val most = model.spec.maxImageTokens
+        return if (most > 0 && options.imageTokens > most) most else options.imageTokens
+    }
 
     /** [directory], created if missing: LiteRT-LM refuses a cache directory that does not exist. */
     private fun cache(directory: String?): String? = directory?.takeIf { File(it).apply { mkdirs() }.isDirectory }
@@ -95,23 +116,30 @@ private object JvmLiteRtEngine : LiteRtEngine {
 }
 
 /**
- * Held by a conversation of any model while it runs: its constrained decoding is a flag of the
- * whole process ([ExperimentalFlags]), and left on it cuts the answers of the conversations
- * without a schema after a few tokens.
+ * Held while LiteRT-LM reads the flags of the whole process ([ExperimentalFlags]): by the load of
+ * a model, and by a conversation of any model while it runs. The constrained decoding, left on,
+ * cuts the answers of the conversations without a schema after a few tokens; the budget of the
+ * images is the one of the model that runs.
  */
-private val conversations = Mutex()
+private val processFlags = Mutex()
 
-/** A Gemma model of LiteRT-LM: one conversation per request, closed with it. */
+/**
+ * A Gemma model of LiteRT-LM: one conversation per request, closed with it.
+ *
+ * @param imageTokens the budget of each image (0: the default of the model).
+ */
 private class LiteRtGenerator(
     override val model: InstalledModel,
     private val engine: Engine,
-    override val accelerator: Accelerator
+    override val accelerator: Accelerator,
+    private val imageTokens: Int
 ) : Generator {
     @OptIn(ExperimentalApi::class)
-    override suspend fun generate(request: GenerationRequest, onProgress: (Int) -> Unit): String = conversations.withLock {
+    override suspend fun generate(request: GenerationRequest, onProgress: (Int) -> Unit): String = processFlags.withLock {
         withContext(Dispatchers.IO) {
-            // The answer in the JSON of its schema for this request only
+            // The answer in the JSON of its schema for this request only, the images in the budget of this model
             ExperimentalFlags.enableConversationConstrainedDecoding = request.jsonSchema != null
+            ExperimentalFlags.visualTokenBudget = imageTokens.takeIf { it > 0 }
             val config = ConversationConfig(
                 systemInstruction = Contents.of(request.system),
                 samplerConfig = SamplerConfig(topK = TOP_K, topP = TOP_P, temperature = request.temperature.toDouble(), seed = 0),

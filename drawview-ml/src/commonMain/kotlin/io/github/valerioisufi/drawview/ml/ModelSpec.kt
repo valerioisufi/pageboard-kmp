@@ -25,6 +25,8 @@ public enum class ModelInput { TEXT, IMAGE, AUDIO }
  * @param sha256 the hash of its file, in hexadecimal: a download that does not match is not kept.
  * @param memoryBytes about the memory it takes when loaded, to tell whether a device can hold it.
  * @param dimensions the size of the vectors of an embedding model (0 for the others).
+ * @param maxImageTokens the most tokens an image may take in this file ([GeneratorOptions.imageTokens]):
+ *   it is loaded with no more; 0 for a model that reads no image.
  */
 public class ModelSpec(
     public val id: String,
@@ -36,7 +38,8 @@ public class ModelSpec(
     public val sizeBytes: Long,
     public val sha256: String,
     public val memoryBytes: Long,
-    public val dimensions: Int = 0
+    public val dimensions: Int = 0,
+    public val maxImageTokens: Int = 0
 ) {
     override fun equals(other: Any?): Boolean = other is ModelSpec && other.id == id && other.sha256 == sha256
 

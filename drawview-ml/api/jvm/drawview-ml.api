@@ -71,11 +71,12 @@ public final class io/github/valerioisufi/drawview/ml/Generator$DefaultImpls {
 
 public final class io/github/valerioisufi/drawview/ml/GeneratorOptions {
 	public fun <init> ()V
-	public fun <init> (IZZLio/github/valerioisufi/drawview/ml/Accelerator;)V
-	public synthetic fun <init> (IZZLio/github/valerioisufi/drawview/ml/Accelerator;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (IZIZLio/github/valerioisufi/drawview/ml/Accelerator;)V
+	public synthetic fun <init> (IZIZLio/github/valerioisufi/drawview/ml/Accelerator;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAccelerator ()Lio/github/valerioisufi/drawview/ml/Accelerator;
 	public final fun getAudio ()Z
+	public final fun getImageTokens ()I
 	public final fun getImages ()Z
 	public final fun getMaxTokens ()I
 	public fun hashCode ()I
@@ -175,14 +176,15 @@ public abstract interface class io/github/valerioisufi/drawview/ml/ModelRuntime 
 }
 
 public final class io/github/valerioisufi/drawview/ml/ModelSpec {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/ml/ModelKind;Ljava/util/Set;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JI)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/ml/ModelKind;Ljava/util/Set;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/ml/ModelKind;Ljava/util/Set;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JII)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/ml/ModelKind;Ljava/util/Set;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;JIIILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDimensions ()I
 	public final fun getFileName ()Ljava/lang/String;
 	public final fun getId ()Ljava/lang/String;
 	public final fun getInputs ()Ljava/util/Set;
 	public final fun getKind ()Lio/github/valerioisufi/drawview/ml/ModelKind;
+	public final fun getMaxImageTokens ()I
 	public final fun getMemoryBytes ()J
 	public final fun getName ()Ljava/lang/String;
 	public final fun getSha256 ()Ljava/lang/String;
