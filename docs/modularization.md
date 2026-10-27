@@ -80,7 +80,8 @@ until the release (see the release checklist at the end).
    feature (a formula shown as its source), never the build.
 2. Headless modules (no Compose): `drawview-platform`, `drawview-model`, `drawview-ink`,
    `drawview-store`, `drawview-store-room`, `drawview-sync-protocol`, `drawview-sync`,
-   `drawview-sync-lan`, `drawview-sync-iroh`; `drawview-lecture` keeps the Compose runtime only (no UI, no Skia), the
+   `drawview-sync-lan`, `drawview-sync-iroh`, `drawview-ml`, `drawview-ml-litert`,
+   `drawview-search`; `drawview-lecture` keeps the Compose runtime only (no UI, no Skia), the
    observable state of its assistant (see Feature modules).
 3. A native library ships with the module that uses it, and only with it.
 4. No global mutable state in the APIs: the engines, the stores and the registries are instances
@@ -117,6 +118,10 @@ until the release (see the release checklist at the end).
 | `drawview-lecture` | recording, audio codecs, transcription, AI backends, the lectures of the documents and their sharing, the assistant (`LectureAssistant`, its state) | model | runtime only | audio codecs, whisper.cpp (desktop) |
 | `drawview-lecture-ui` | lecture panel, settings, extension of the editor and of the library, the notebook of an editor (`ControllerNotebookSource`), the microphone permission, the file pickers | lecture, ui | yes | — |
 | `drawview-lecture-testing` | the test doubles of the assistant (microphone, notebook, secrets) | lecture | runtime only | — |
+| `drawview-ml` | local models port: catalog, downloads, `Embedder`, `Generator`, `LoadedModels` | platform | no | — |
+| `drawview-ml-litert` | LiteRT-LM runtime of the local models (desktop, Android) | ml | no | LiteRT-LM |
+| `drawview-search` | search index (FTS5 and vectors), sources, indexer, engine, `NotesAnswerer` | ml, store | no | SQLite |
+| `drawview-search-ui` | `ContentSearch` of the library, PDF source, model settings, "Ask your notes" card | search, explorer, ui | yes | — |
 | `drawview-export` | export use case, PDF and image exporters | canvas, store, pdf, latex | yes (graphics) | — |
 | `drawview-export-ui` | export dialog and extension | export, ui | yes | — |
 | `drawview-native-ink`, `-tex`, `-pdfium`, `-audio`, `-iroh` | Android shared libraries, one engine each | — | — | one each |
@@ -127,6 +132,7 @@ platform ← model ← ink ← canvas ← ui ← session ← explorer
               ├ store ← store-room                    (+ sync-lan, lecture, export)
               │   ↖ sync ← sync-lan, sync-iroh
 platform ← sync-protocol ↗          lecture → model, store;  export → canvas, pdf
+platform ← ml ← ml-litert;  ml, store ← search ← search-ui → explorer;  lecture-ui → search
 ```
 
 `drawview-native-*` are dependencies of the Android source sets only (ink → native-ink, latex →

@@ -71,7 +71,9 @@ These are in brief; the full version is in `docs/modularization.md`.
   is given by the application, and when it is missing the feature degrades, never the build.
 - **Headless modules have no Compose:**
   - `drawview-platform`, `-model`, `-ink`, `-store`, `-store-room`;
-  - `-sync-protocol`, `-sync`, `-sync-lan`, `-sync-iroh`.
+  - `-sync-protocol`, `-sync`, `-sync-lan`, `-sync-iroh`;
+  - `-ml`, `-ml-litert`, `-search` (the local models and the search in the notes, see
+    docs/local-models.md and docs/search.md).
 
   `drawview-lecture` keeps the Compose runtime only.
 - A native library ships with the module that uses it, and only with it: `drawview-native-*` on

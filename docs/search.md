@@ -222,7 +222,7 @@ indexes again what arrives. `PROTOCOL_VERSION` does not change.
 | 4. The handwriting of every notebook | left for later (to be replaced by another implementation) |
 | 5. The results | done |
 | 6. Ask your notes | done |
-| 7. Documentation | not started |
+| 7. Documentation | done (the models on iOS with phase 7 of docs/local-models.md) |
 
 ### Phase 0 results (2026-10-18)
 
