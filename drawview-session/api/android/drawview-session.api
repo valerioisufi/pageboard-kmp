@@ -17,6 +17,7 @@ public final class io/github/valerioisufi/drawview/session/DocumentEditorViewMod
 	public final fun getPreferences ()Lio/github/valerioisufi/drawview/store/PreferenceStore;
 	public final fun getSession ()Lio/github/valerioisufi/drawview/session/EditorSession;
 	public final fun openDocument (Ljava/lang/String;)V
+	public final fun openDocument (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class io/github/valerioisufi/drawview/session/DrawViewSessions {

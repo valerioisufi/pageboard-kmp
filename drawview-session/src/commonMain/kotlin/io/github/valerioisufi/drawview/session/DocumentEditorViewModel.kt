@@ -80,12 +80,29 @@ public class DocumentEditorViewModel(
 
     /** Opens the document [documentId] (closing the current one). */
     public fun openDocument(documentId: String) {
-        if (session?.documentId == documentId) return
+        openDocument(documentId) {}
+    }
+
+    /**
+     * Opens the document [documentId] (closing the current one); [then] is given its editor once
+     * open (e.g. to jump to a page and its area).
+     */
+    public fun openDocument(documentId: String, then: (DrawViewController) -> Unit) {
+        val current = session
+        if (current != null && current.documentId == documentId) {
+            current.controller?.let(then)
+            return
+        }
         closeSession()
         val newSession = EditorSession(documentId, documents)
         session = newSession
         DrawViewSessions.register(newSession)
-        viewModelScope.launch { load(newSession) }
+        viewModelScope.launch {
+            load(newSession)
+            if (this@DocumentEditorViewModel.session === newSession) {
+                newSession.controller?.let(then)
+            }
+        }
     }
 
     /**

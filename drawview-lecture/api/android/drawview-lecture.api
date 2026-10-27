@@ -366,6 +366,8 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun lecturesOf (Ljava/lang/String;)Ljava/util/List;
 	public final fun onEditorHidden (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NotebookSource;)V
 	public final fun onEditorShown (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NotebookSource;)V
+	public final fun openLectureAt (Ljava/lang/String;Ljava/lang/String;J)V
+	public static synthetic fun openLectureAt$default (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Ljava/lang/String;Ljava/lang/String;JILjava/lang/Object;)V
 	public final fun record (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NotebookSource;)V
 	public final fun recorderOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LectureRecorder;
 	public final fun refresh (Ljava/lang/String;)V

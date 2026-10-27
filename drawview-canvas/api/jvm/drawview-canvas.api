@@ -116,6 +116,7 @@ public final class io/github/valerioisufi/drawview/canvas/camera/Viewport {
 	public final fun panBy (FF)V
 	public final fun pixelsPerMm (I)F
 	public final fun setDensity (F)V
+	public final fun setSize (FF)V
 	public final fun showNextPage ()V
 	public final fun showPreviousPage ()V
 	public final fun visiblePages ()Ljava/util/List;
@@ -370,6 +371,9 @@ public final class io/github/valerioisufi/drawview/canvas/controller/PageManager
 	public final fun getContextMenuTargetPageIndex ()I
 	public final fun getSelection ()Lio/github/valerioisufi/drawview/canvas/controller/PageSelection;
 	public final fun jumpToPage (I)V
+	public final fun jumpToPage (ILio/github/valerioisufi/drawview/model/geometry/Rect;)V
+	public final fun jumpToPage (Ljava/lang/String;ILio/github/valerioisufi/drawview/model/geometry/Rect;)V
+	public static synthetic fun jumpToPage$default (Lio/github/valerioisufi/drawview/canvas/controller/PageManager;Ljava/lang/String;ILio/github/valerioisufi/drawview/model/geometry/Rect;ILjava/lang/Object;)V
 	public final fun moveBlockDuringReorder (Ljava/util/Collection;I)V
 	public final fun movePage (II)V
 	public final fun movePageDuringReorder (II)V

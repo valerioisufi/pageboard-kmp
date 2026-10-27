@@ -262,6 +262,26 @@ public class LectureAssistant(
     }
 
     /**
+     * Opens the lecture [lectureId] of [documentId] in the panel and seeks its recording to
+     * [startMs] (e.g. from a search result or a citation of "Ask your notes").
+     */
+    public fun openLectureAt(documentId: String, lectureId: String, startMs: Long = 0L) {
+        isPanelOpen = true
+        scope.launch {
+            val summaries = library.list(documentId)
+            val summary = summaries.firstOrNull {
+                it.directory.trimEnd('/').substringAfterLast('/') == lectureId
+            } ?: summaries.firstOrNull() ?: return@launch
+            val lecture = lectureIn(documentId, summary.directory) ?: return@launch
+            withContext(stateContext) {
+                if (startMs > 0L) {
+                    lecture.player?.seek(startMs)
+                }
+            }
+        }
+    }
+
+    /**
      * A lecture received from another device (with its audio, without a transcript): transcribed
      * and reviewed here at once, or offered to the user with what it would cost (see
      * [AssistantSettings.receivedLectures]).

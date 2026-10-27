@@ -60,11 +60,20 @@ public class Viewport internal constructor(
 
     private val cachedRenderMatrix = Matrix2D()
     private val cachedInverseMatrix = Matrix2D()
+    private var initialAnchor: Triple<Int, Float, Float>? = null
+
+    /**
+     * Remembers the page and normalized coordinates (`0..1`) to center on when the canvas is laid
+     * out for the first time.
+     */
+    internal fun setInitialAnchor(pageIndex: Int, normX: Float, normY: Float) {
+        initialAnchor = Triple(pageIndex, normX.coerceIn(0f, 1f), normY.coerceIn(0f, 1f))
+    }
 
     /**
      * Updates the size of the canvas, keeping the content under its center stable.
      */
-    internal fun setSize(width: Float, height: Float) {
+    public fun setSize(width: Float, height: Float) {
         if (width <= 0f || height <= 0f) return
         val sizeChanged = this.width != width || this.height != height
         if (!sizeChanged && !layout.needToBeUpdated) return
@@ -99,12 +108,13 @@ public class Viewport internal constructor(
         layout.needToBeUpdated = true
         updatePageLayout()
 
-        if (anchor != null && anchor.first in layout.pagesRectOnWindow.indices) {
-            val r = layout.pagesRectOnWindow[anchor.first]
+        val targetAnchor = anchor ?: initialAnchor?.also { initialAnchor = null }
+        if (targetAnchor != null && targetAnchor.first in layout.pagesRectOnWindow.indices) {
+            val r = layout.pagesRectOnWindow[targetAnchor.first]
             camera.centerOnWorldPoint(
-                worldX = r.left + r.width * anchor.second,
-                worldY = r.top + r.height * anchor.third,
-                scale = previousScale,
+                worldX = r.left + r.width * targetAnchor.second,
+                worldY = r.top + r.height * targetAnchor.third,
+                scale = if (anchor != null) previousScale else 1f,
                 screenWidth = width,
                 screenHeight = height
             )

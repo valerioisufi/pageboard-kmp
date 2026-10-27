@@ -24,6 +24,7 @@ final class io.github.valerioisufi.drawview.session/DocumentEditorViewModel : an
     final fun closeSession() // io.github.valerioisufi.drawview.session/DocumentEditorViewModel.closeSession|closeSession(){}[0]
     final fun createAndOpenDocument(kotlin/String, kotlin/String? = ..., kotlin/Function1<io.github.valerioisufi.drawview.canvas.controller/DrawViewController, kotlin/Unit> = ...) // io.github.valerioisufi.drawview.session/DocumentEditorViewModel.createAndOpenDocument|createAndOpenDocument(kotlin.String;kotlin.String?;kotlin.Function1<io.github.valerioisufi.drawview.canvas.controller.DrawViewController,kotlin.Unit>){}[0]
     final fun openDocument(kotlin/String) // io.github.valerioisufi.drawview.session/DocumentEditorViewModel.openDocument|openDocument(kotlin.String){}[0]
+    final fun openDocument(kotlin/String, kotlin/Function1<io.github.valerioisufi.drawview.canvas.controller/DrawViewController, kotlin/Unit>) // io.github.valerioisufi.drawview.session/DocumentEditorViewModel.openDocument|openDocument(kotlin.String;kotlin.Function1<io.github.valerioisufi.drawview.canvas.controller.DrawViewController,kotlin.Unit>){}[0]
 }
 
 final class io.github.valerioisufi.drawview.session/EditorSession { // io.github.valerioisufi.drawview.session/EditorSession|null[0]

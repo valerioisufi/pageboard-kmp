@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import io.github.valerioisufi.drawview.explorer.DocumentOpener
 import io.github.valerioisufi.drawview.explorer.DocumentThumbnails
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileItem
@@ -82,7 +83,8 @@ internal class ItemActions(
     val commands: LibraryCommands?,
     /** Shows the details of an item beside the library; `null`: in a sheet. */
     val onShowDetails: ((FileItem) -> Unit)?,
-    val onOpenDocumentInNewWindow: ((String) -> Unit)? = null
+    val onOpenDocumentInNewWindow: ((String) -> Unit)? = null,
+    val onOpenDocumentWithPlace: DocumentOpener = DocumentOpener { id, _ -> onOpenDocument(id) }
 )
 
 /**
@@ -134,7 +136,7 @@ internal fun NoteCard(item: FileItem, actions: ItemActions, modifier: Modifier =
                 SearchMatchesList(
                     matches = matches,
                     onOpenDefault = { actions.onOpenDocument(item.id) },
-                    openDocument = actions.onOpenDocument,
+                    openDocument = actions.onOpenDocumentWithPlace,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                 )
             }
@@ -250,7 +252,7 @@ internal fun NoteRow(item: FileItem, actions: ItemActions, modifier: Modifier = 
                     SearchMatchesList(
                         matches = matches,
                         onOpenDefault = { actions.onOpenDocument(item.id) },
-                        openDocument = actions.onOpenDocument,
+                        openDocument = actions.onOpenDocumentWithPlace,
                         modifier = Modifier.padding(top = 2.dp)
                     )
                 }
@@ -275,7 +277,7 @@ private fun ItemText(item: FileItem, modifier: Modifier = Modifier) {
 private fun SearchMatchesList(
     matches: List<LibrarySearchMatch>,
     onOpenDefault: () -> Unit,
-    openDocument: (String) -> Unit,
+    openDocument: DocumentOpener,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme

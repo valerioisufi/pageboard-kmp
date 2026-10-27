@@ -10,6 +10,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
+import io.github.valerioisufi.drawview.explorer.DocumentOpener
 import io.github.valerioisufi.drawview.explorer.LibrarySearch
 import io.github.valerioisufi.drawview.explorer.LibrarySearchMatch
 import io.github.valerioisufi.drawview.ml.EmbedderOptions
@@ -53,7 +54,8 @@ public class ContentSearch(
     public val embeddingSpec: ModelSpec = ModelCatalog.EMBEDDING_GEMMA_2_TEXT,
     initialAnswerModelSpec: ModelSpec = ModelCatalog.GEMMA_4_E2B,
     public val runtimeAvailable: Boolean = loadedModels != null,
-    private val onOpenAnchor: ((SearchAnchor, openDocument: (String) -> Unit) -> Unit)? = null
+    private val onOpenLecture: ((documentId: String, lectureId: String, startMs: Long) -> Unit)? = null,
+    private val onOpenAnchor: ((SearchAnchor, openDocument: DocumentOpener) -> Unit)? = null
 ) : LibrarySearch {
     private val queryFlow = MutableStateFlow("")
     private var resultsByDocument by mutableStateOf<Map<String, DocumentSearchResult>>(emptyMap())
@@ -128,18 +130,37 @@ public class ContentSearch(
         }
     }
 
+    /**
+     * Opens the document and navigates to the exact place of [anchor] (page and area, or lecture
+     * and minute).
+     */
+    public fun openAnchor(anchor: SearchAnchor, openDocument: DocumentOpener) {
+        val handler = onOpenAnchor
+        if (handler != null) {
+            handler(anchor, openDocument)
+            return
+        }
+        when (anchor) {
+            is SearchAnchor.Document -> openDocument.open(anchor.documentId)
+            is SearchAnchor.Page -> openDocument.open(anchor.documentId) { controller ->
+                controller.pageManager.jumpToPage(
+                    pageId = anchor.pageId,
+                    pageNumber = anchor.pageNumber,
+                    bounds = anchor.bounds
+                )
+            }
+            is SearchAnchor.Lecture -> {
+                openDocument.open(anchor.documentId)
+                onOpenLecture?.invoke(anchor.documentId, anchor.lectureId, anchor.startMs)
+            }
+        }
+    }
+
     private fun toLibraryMatch(hit: SearchHit): LibrarySearchMatch = LibrarySearchMatch(
         snippet = hit.snippet,
         location = formatLocation(hit.anchor),
         icon = iconForKind(hit.kind),
-        onOpen = { openDocument ->
-            val handler = onOpenAnchor
-            if (handler != null) {
-                handler(hit.anchor, openDocument)
-            } else {
-                openDocument(hit.anchor.documentId)
-            }
-        }
+        onOpen = { openDocument -> openAnchor(hit.anchor, openDocument) }
     )
 
     public companion object {
@@ -183,7 +204,8 @@ public fun rememberContentSearch(
     runtimeAvailable: Boolean = loadedModels != null,
     embeddingSpec: ModelSpec = ModelCatalog.EMBEDDING_GEMMA_2_TEXT,
     embedderOptions: EmbedderOptions = EmbedderOptions(),
-    onOpenAnchor: ((SearchAnchor, openDocument: (String) -> Unit) -> Unit)? = null
+    onOpenLecture: ((documentId: String, lectureId: String, startMs: Long) -> Unit)? = null,
+    onOpenAnchor: ((SearchAnchor, openDocument: DocumentOpener) -> Unit)? = null
 ): ContentSearch {
     val scope = rememberCoroutineScope()
     val index = remember(indexPath, embeddingSpec.id) {
@@ -199,7 +221,7 @@ public fun rememberContentSearch(
             addAll(extraSources)
         }
     }
-    val contentSearch = remember(index, store, sources, conditions, loadedModels, installedModels, downloads, runtimeAvailable, embeddingSpec, embedderOptions, onOpenAnchor) {
+    val contentSearch = remember(index, store, sources, conditions, loadedModels, installedModels, downloads, runtimeAvailable, embeddingSpec, embedderOptions, onOpenLecture, onOpenAnchor) {
         val indexer = SearchIndexer(
             catalog = store,
             index = index,
@@ -226,6 +248,7 @@ public fun rememberContentSearch(
             loadedModels = loadedModels,
             embeddingSpec = embeddingSpec,
             runtimeAvailable = runtimeAvailable,
+            onOpenLecture = onOpenLecture,
             onOpenAnchor = onOpenAnchor
         )
     }

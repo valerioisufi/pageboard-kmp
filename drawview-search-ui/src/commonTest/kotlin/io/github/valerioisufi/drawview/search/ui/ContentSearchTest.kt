@@ -2,10 +2,14 @@ package io.github.valerioisufi.drawview.search.ui
 
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
+import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.render.tile.PdfTileAdapter
+import io.github.valerioisufi.drawview.explorer.DocumentOpener
+import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawPdf
 import io.github.valerioisufi.drawview.model.DrawResource
 import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.geometry.Rect as MmRect
 import io.github.valerioisufi.drawview.search.DocumentSearchSource
 import io.github.valerioisufi.drawview.search.SearchAnchor
 import io.github.valerioisufi.drawview.search.SearchChunkKind
@@ -76,13 +80,68 @@ class ContentSearchTest {
             assertEquals("p. 1", matches.single().location)
             assertTrue("Weierstrass" in matches.single().snippet)
 
-            matches.single().onOpen?.invoke {}
+            matches.single().onOpen?.invoke(DocumentOpener { _, _ -> })
             val pageAnchor = openedAnchor as SearchAnchor.Page
             assertEquals(analisiDoc.id, pageAnchor.documentId)
             assertEquals(analisiPage.id, pageAnchor.pageId)
 
             contentSearch.onQueryChange("")
             assertNull(contentSearch.matchedDocumentIds)
+        }
+    }
+
+    @Test
+    fun opensPageAndLectureAnchorsAtTheirExactPlaces() = runTest {
+        val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)
+        val doc = DrawDocument(id = "doc-1", title = "Analisi 2").apply {
+            addPage()
+            addPage()
+        }
+        val targetPage = doc.pages[2]
+        val controller = DrawViewController(document = doc, coroutineScope = backgroundScope)
+
+        SearchIndex(SearchIndex.MEMORY_PATH).use { index ->
+            val indexer = SearchIndexer(catalog = store, index = index, sources = emptyList(), quietMillis = 0L)
+            val engine = SearchEngine(index)
+            var openedLecture: Triple<String, String, Long>? = null
+            val contentSearch = ContentSearch(
+                index = index,
+                indexer = indexer,
+                engine = engine,
+                onOpenLecture = { docId, lectureId, startMs ->
+                    openedLecture = Triple(docId, lectureId, startMs)
+                }
+            )
+
+            var openedDocId: String? = null
+            val opener = DocumentOpener { id, then ->
+                openedDocId = id
+                then(controller)
+            }
+
+            contentSearch.openAnchor(
+                SearchAnchor.Page(
+                    documentId = doc.id,
+                    pageId = targetPage.id,
+                    pageNumber = 3,
+                    bounds = MmRect(left = 20f, top = 150f, right = 180f, bottom = 200f)
+                ),
+                opener
+            )
+            assertEquals(doc.id, openedDocId)
+            // Lay out the viewport after openAnchor: it should center on page 3 (index 2), not page 1
+            controller.viewport.setSize(1000f, 800f)
+            assertEquals(2, controller.viewport.mostVisiblePageIndex())
+
+            contentSearch.openAnchor(
+                SearchAnchor.Lecture(
+                    documentId = doc.id,
+                    lectureId = "lec-42",
+                    startMs = 125_000L
+                ),
+                opener
+            )
+            assertEquals(Triple(doc.id, "lec-42", 125_000L), openedLecture)
         }
     }
 

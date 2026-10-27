@@ -2,6 +2,21 @@ package io.github.valerioisufi.drawview.explorer
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+
+/**
+ * Opens a document in the editor and runs [then] on its [DrawViewController] once loaded
+ * (e.g. to center the camera on a page and its area).
+ */
+public fun interface DocumentOpener {
+    /** Opens [documentId] and invokes [then] with its controller once loaded. */
+    public fun open(documentId: String, then: (DrawViewController) -> Unit)
+
+    /** Opens [documentId] at its default view. */
+    public fun open(documentId: String) {
+        open(documentId) {}
+    }
+}
 
 /**
  * A matching passage of a document shown under its title when searching the library.
@@ -15,7 +30,7 @@ public data class LibrarySearchMatch(
     public val snippet: String,
     public val location: String = "",
     public val icon: ImageVector? = null,
-    public val onOpen: ((openDocument: (String) -> Unit) -> Unit)? = null
+    public val onOpen: ((openDocument: DocumentOpener) -> Unit)? = null
 )
 
 /**
@@ -39,6 +54,6 @@ public interface LibrarySearch {
      * Optional composable shown above the search results when a query is entered (e.g. "Ask your
      * notes" and indexing status).
      */
-    public val headerContent: (@Composable (query: String, openDocument: (String) -> Unit) -> Unit)?
+    public val headerContent: (@Composable (query: String, openDocument: DocumentOpener) -> Unit)?
         get() = null
 }

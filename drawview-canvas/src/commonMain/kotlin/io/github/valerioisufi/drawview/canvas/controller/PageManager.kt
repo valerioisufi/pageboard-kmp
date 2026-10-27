@@ -19,6 +19,7 @@ import io.github.valerioisufi.drawview.model.change.SetPageFormat
 import io.github.valerioisufi.drawview.model.change.copyPages
 import io.github.valerioisufi.drawview.model.change.pasteInto
 import io.github.valerioisufi.drawview.model.geometry.Dimension
+import io.github.valerioisufi.drawview.model.geometry.Rect as MmRect
 
 /**
  * Page management: insertion, deletion, copy and paste, reordering (drag & drop on the canvas
@@ -287,20 +288,55 @@ public class PageManager(private val controller: DrawViewController) {
      * Centers the camera on the page [pageIndex], keeping the current zoom level.
      */
     public fun jumpToPage(pageIndex: Int) {
+        jumpToPage(pageIndex, bounds = null)
+    }
+
+    /**
+     * Centers the camera on the page [pageIndex] (and on [bounds] in page millimeters when given),
+     * keeping the current zoom level. If the canvas has not been laid out yet, remembers the place
+     * for the first layout.
+     */
+    public fun jumpToPage(pageIndex: Int, bounds: MmRect?) {
+        if (pageIndex !in document.pages.indices) return
+        val page = document.pages[pageIndex]
+        val normX = if (bounds != null && page.widthMm > 0f) {
+            ((bounds.left + bounds.right) * 0.5f / page.widthMm).coerceIn(0f, 1f)
+        } else {
+            0.5f
+        }
+        val normY = if (bounds != null && page.heightMm > 0f) {
+            ((bounds.top + bounds.bottom) * 0.5f / page.heightMm).coerceIn(0f, 1f)
+        } else {
+            0.5f
+        }
         val rects = controller.viewport.layout.pagesRectOnWindow
-        if (pageIndex !in rects.indices) return
-        val target = rects[pageIndex]
-        controller.viewport.camera.centerOnWorldPoint(
-            worldX = target.center.x,
-            worldY = target.center.y,
-            scale = controller.viewport.camera.getCurrentScale(),
-            screenWidth = controller.viewport.width,
-            screenHeight = controller.viewport.height
-        )
-        controller.viewport.camera.restoreToBounds(animated = false)
+        if (controller.viewport.width > 0f && pageIndex in rects.indices) {
+            val target = rects[pageIndex]
+            controller.viewport.camera.centerOnWorldPoint(
+                worldX = target.left + target.width * normX,
+                worldY = target.top + target.height * normY,
+                scale = controller.viewport.camera.getCurrentScale(),
+                screenWidth = controller.viewport.width,
+                screenHeight = controller.viewport.height
+            )
+            controller.viewport.camera.restoreToBounds(animated = false)
+        } else {
+            controller.viewport.setInitialAnchor(pageIndex, normX, normY)
+        }
         controller.isPageGridVisible = false
         selection.clear()
         controller.requestRedraw()
+    }
+
+    /**
+     * Centers the camera on the page identified by [pageId] (or at [pageNumber], 1-based, when
+     * [pageId] is not found) and on [bounds] in page millimeters when given.
+     */
+    public fun jumpToPage(pageId: String, pageNumber: Int = 1, bounds: MmRect? = null) {
+        if (document.pages.isEmpty()) return
+        val index = document.pages.indexOfFirst { it.id == pageId }.takeIf { it >= 0 }
+            ?: (pageNumber - 1).coerceIn(0, document.pages.lastIndex)
+        jumpToPage(index, bounds)
     }
 
     // ==========================================================

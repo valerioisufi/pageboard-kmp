@@ -133,7 +133,8 @@ fun PencilNotesApp(
             loadedModels = loadedModels,
             installedModels = installedModels,
             downloads = modelDownloads,
-            runtimeAvailable = liteRtRuntime.isAvailable
+            runtimeAvailable = liteRtRuntime.isAvailable,
+            onOpenLecture = lectureAssistant::openLectureAt
         )
         // The documents with a lecture: their badge and a filter of the library
         val lectureTag = remember(lectureAssistant) { lectureAssistant.documentTag() }

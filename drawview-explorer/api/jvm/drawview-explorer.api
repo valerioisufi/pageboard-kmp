@@ -8,6 +8,15 @@ public final class io/github/valerioisufi/drawview/explorer/DocumentLibraryKt {
 	public static final fun DocumentLibrary (Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/drawview/store/OpenDocuments;Ljava/util/List;ZLio/github/valerioisufi/drawview/ui/extension/EditorExtension;Lkotlin/jvm/functions/Function4;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;Lio/github/valerioisufi/drawview/explorer/DocumentThumbnails;Lio/github/valerioisufi/drawview/explorer/LibrarySearch;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/drawview/canvas/controller/EditorClipboard;Landroidx/compose/runtime/Composer;III)V
 }
 
+public abstract interface class io/github/valerioisufi/drawview/explorer/DocumentOpener {
+	public fun open (Ljava/lang/String;)V
+	public abstract fun open (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class io/github/valerioisufi/drawview/explorer/DocumentOpener$DefaultImpls {
+	public static fun open (Lio/github/valerioisufi/drawview/explorer/DocumentOpener;Ljava/lang/String;)V
+}
+
 public final class io/github/valerioisufi/drawview/explorer/DocumentThumbnails {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/explorer/DocumentThumbnails$Companion;

@@ -115,7 +115,7 @@ internal fun LibraryContent(
         if (activeQuery.isNotEmpty() && searchHeader != null) {
             item(key = "search-header", span = { GridItemSpan(maxLineSpan) }) {
                 Box(modifier = Modifier.padding(horizontal = if (compact) margin else 0.dp, vertical = 4.dp)) {
-                    searchHeader(activeQuery, actions.onOpenDocument)
+                    searchHeader(activeQuery, actions.onOpenDocumentWithPlace)
                 }
             }
         }

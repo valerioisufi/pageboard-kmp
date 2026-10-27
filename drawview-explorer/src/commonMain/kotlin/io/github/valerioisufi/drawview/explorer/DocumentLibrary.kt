@@ -122,6 +122,9 @@ public fun DocumentLibrary(
                         ExplorerScreen(
                             fileExplorerViewModel = fileExplorerViewModel,
                             onOpenDocument = { documentId -> editorViewModel.openDocument(documentId) },
+                            onOpenDocumentWithPlace = DocumentOpener { documentId, then ->
+                                editorViewModel.openDocument(documentId, then)
+                            },
                             title = title,
                             actions = actions,
                             documentActions = documentActions,

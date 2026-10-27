@@ -42,6 +42,7 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import io.github.valerioisufi.drawview.explorer.DocumentOpener
 import io.github.valerioisufi.drawview.explorer.DocumentThumbnails
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
@@ -110,7 +111,8 @@ internal fun ExplorerScreen(
     onFilesDropped: ((List<PickedFile>) -> Boolean)? = null,
     onImportPdf: (() -> Unit)? = null,
     onImportImage: (() -> Unit)? = null,
-    onOpenDocumentInNewWindow: ((String) -> Unit)? = null
+    onOpenDocumentInNewWindow: ((String) -> Unit)? = null,
+    onOpenDocumentWithPlace: DocumentOpener = DocumentOpener { id, _ -> onOpenDocument(id) }
 ) {
     val viewModel = fileExplorerViewModel
     LaunchedEffect(viewModel, tags) { viewModel.tags = tags }
@@ -179,6 +181,7 @@ internal fun ExplorerScreen(
             val itemActions = ItemActions(
                 viewModel = viewModel,
                 onOpenDocument = onOpenDocument,
+                onOpenDocumentWithPlace = onOpenDocumentWithPlace,
                 thumbnails = thumbnails,
                 commands = commands,
                 onShowDetails = if (layout == LibraryLayout.PANES) { item -> viewModel.selectOnly(item) } else null,
