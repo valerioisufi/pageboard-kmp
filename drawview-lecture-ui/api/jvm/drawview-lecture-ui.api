@@ -74,3 +74,23 @@ public final class io/github/valerioisufi/drawview/lecture/ui/LectureEditorExten
 	public static final fun rememberLectureAssistant (Landroidx/compose/runtime/Composer;I)Lio/github/valerioisufi/drawview/lecture/LectureAssistant;
 }
 
+public final class io/github/valerioisufi/drawview/lecture/ui/LectureSearchSource : io/github/valerioisufi/drawview/search/SearchSource {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/lecture/ui/LectureSearchSource$Companion;
+	public static final field ID Ljava/lang/String;
+	public fun <init> (Lio/github/valerioisufi/drawview/lecture/LectureLibrary;Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlinx/coroutines/flow/Flow;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/lecture/LectureLibrary;Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlinx/coroutines/flow/Flow;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun chunks (Lio/github/valerioisufi/drawview/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getChanges ()Lkotlinx/coroutines/flow/Flow;
+	public fun getId ()Ljava/lang/String;
+	public fun version (Lio/github/valerioisufi/drawview/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/lecture/ui/LectureSearchSource$Companion {
+}
+
+public final class io/github/valerioisufi/drawview/lecture/ui/LectureSearchSourceKt {
+	public static final fun searchSource (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Lio/github/valerioisufi/drawview/store/DocumentStore;)Lio/github/valerioisufi/drawview/search/SearchSource;
+	public static synthetic fun searchSource$default (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Lio/github/valerioisufi/drawview/store/DocumentStore;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/SearchSource;
+}
+

@@ -27,6 +27,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":drawview-lecture"))
+            api(project(":drawview-search"))
             api(project(":drawview-ui"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
@@ -37,6 +38,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.serialization.json)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

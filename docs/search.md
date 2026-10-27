@@ -217,7 +217,7 @@ indexes again what arrives. `PROTOCOL_VERSION` does not change.
 |---|---|
 | 0. Measure | done on the computer (the tablet with phase 3 of docs/local-models.md) |
 | 1. The words | done |
-| 2. The PDFs and the lectures | not started |
+| 2. The PDFs and the lectures | done |
 | 3. The meaning | not started |
 | 4. The handwriting of every notebook | left for later (to be replaced by another implementation) |
 | 5. The results | not started |

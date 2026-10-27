@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
+import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.explorer.LibrarySearch
 import io.github.valerioisufi.drawview.explorer.LibrarySearchMatch
 import io.github.valerioisufi.drawview.ml.EmbedderOptions
@@ -148,6 +149,7 @@ public class ContentSearch(
 @Composable
 public fun rememberContentSearch(
     store: DocumentStore,
+    engines: DrawViewEngines = DrawViewEngines.None,
     elementTypes: List<ElementType<*>> = emptyList(),
     extraSources: List<SearchSource> = emptyList(),
     indexPath: String = SearchIndex.defaultPath(),
@@ -165,8 +167,12 @@ public fun rememberContentSearch(
     DisposableEffect(index) {
         onDispose { index.close() }
     }
-    val sources = remember(store, elementTypes, extraSources) {
-        listOf(DocumentSearchSource(store, elementTypes)) + extraSources
+    val sources = remember(store, engines.pdfTiles, elementTypes, extraSources) {
+        buildList {
+            add(DocumentSearchSource(store, elementTypes))
+            add(PdfSearchSource(store, engines.pdfTiles))
+            addAll(extraSources)
+        }
     }
     val contentSearch = remember(index, store, sources, conditions, loadedModels, installedModels, embeddingSpec, embedderOptions, onOpenAnchor) {
         val indexer = SearchIndexer(

@@ -34,6 +34,7 @@ import io.github.valerioisufi.drawview.lecture.ui.LectureRecordingIndicator
 import io.github.valerioisufi.drawview.lecture.ui.documentTag
 import io.github.valerioisufi.drawview.lecture.ui.editorExtension
 import io.github.valerioisufi.drawview.lecture.ui.rememberLectureAssistant
+import io.github.valerioisufi.drawview.lecture.ui.searchSource
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import io.github.valerioisufi.drawview.search.ui.rememberContentSearch
 import io.github.valerioisufi.drawview.store.room.DrawViewStore
@@ -104,7 +105,14 @@ fun PencilNotesApp(
         // The PDF pages drawn by PDFium, the formulas by MicroTeX
         val engines = remember { DrawViewEngines(pdfTiles = PdfiumEngine::createTileAdapter, formulas = LatexEngine.formulaRenderer) }
         // Search in the contents of the notes
-        val search = rememberContentSearch(store = documents.store)
+        val lectureSearchSource = remember(lectureAssistant, documents.store) {
+            listOf(lectureAssistant.searchSource(documents.store))
+        }
+        val search = rememberContentSearch(
+            store = documents.store,
+            engines = engines,
+            extraSources = lectureSearchSource
+        )
         // The documents with a lecture: their badge and a filter of the library
         val lectureTag = remember(lectureAssistant) { lectureAssistant.documentTag() }
         val editorExtension = remember(lectureAssistant, collaboration, export) {

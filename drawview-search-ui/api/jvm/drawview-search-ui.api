@@ -18,6 +18,20 @@ public final class io/github/valerioisufi/drawview/search/ui/ContentSearch$Compa
 }
 
 public final class io/github/valerioisufi/drawview/search/ui/ContentSearchKt {
-	public static final fun rememberContentSearch (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/drawview/search/IndexingConditions;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/ModelSpec;Lio/github/valerioisufi/drawview/ml/EmbedderOptions;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)Lio/github/valerioisufi/drawview/search/ui/ContentSearch;
+	public static final fun rememberContentSearch (Lio/github/valerioisufi/drawview/store/DocumentStore;Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/drawview/search/IndexingConditions;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/ModelSpec;Lio/github/valerioisufi/drawview/ml/EmbedderOptions;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;III)Lio/github/valerioisufi/drawview/search/ui/ContentSearch;
+}
+
+public final class io/github/valerioisufi/drawview/search/ui/PdfSearchSource : io/github/valerioisufi/drawview/search/SearchSource {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/search/ui/PdfSearchSource$Companion;
+	public static final field ID Ljava/lang/String;
+	public fun <init> (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlin/jvm/functions/Function0;)V
+	public fun chunks (Lio/github/valerioisufi/drawview/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getChanges ()Lkotlinx/coroutines/flow/Flow;
+	public fun getId ()Ljava/lang/String;
+	public fun version (Lio/github/valerioisufi/drawview/store/DocumentSummary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/search/ui/PdfSearchSource$Companion {
 }
 
