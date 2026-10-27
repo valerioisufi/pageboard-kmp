@@ -34,6 +34,7 @@ import io.github.valerioisufi.drawview.lecture.ui.LectureDialogs
 import io.github.valerioisufi.drawview.lecture.ui.LectureRecordingIndicator
 import io.github.valerioisufi.drawview.lecture.ui.documentTag
 import io.github.valerioisufi.drawview.lecture.ui.editorExtension
+import io.github.valerioisufi.drawview.lecture.ui.onlineAnswerBackend
 import io.github.valerioisufi.drawview.lecture.ui.rememberLectureAssistant
 import io.github.valerioisufi.drawview.lecture.ui.searchSource
 import io.github.valerioisufi.drawview.ml.InstalledModels
@@ -125,6 +126,9 @@ fun PencilNotesApp(
         val lectureSearchSource = remember(lectureAssistant, documents.store) {
             listOf(lectureAssistant.searchSource(documents.store))
         }
+        val onlineAnswerBackend = remember(lectureAssistant) {
+            lectureAssistant.onlineAnswerBackend()
+        }
         val search = rememberContentSearch(
             store = documents.store,
             engines = engines,
@@ -134,6 +138,7 @@ fun PencilNotesApp(
             installedModels = installedModels,
             downloads = modelDownloads,
             runtimeAvailable = liteRtRuntime.isAvailable,
+            onlineBackend = onlineAnswerBackend,
             onOpenLecture = lectureAssistant::openLectureAt
         )
         // The documents with a lecture: their badge and a filter of the library

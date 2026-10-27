@@ -90,6 +90,7 @@ public final class io/github/valerioisufi/drawview/lecture/ui/LectureSearchSourc
 }
 
 public final class io/github/valerioisufi/drawview/lecture/ui/LectureSearchSourceKt {
+	public static final fun onlineAnswerBackend (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;)Lio/github/valerioisufi/drawview/search/OnlineAnswerBackend;
 	public static final fun searchSource (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Lio/github/valerioisufi/drawview/store/DocumentStore;)Lio/github/valerioisufi/drawview/search/SearchSource;
 	public static synthetic fun searchSource$default (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Lio/github/valerioisufi/drawview/store/DocumentStore;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/search/SearchSource;
 }

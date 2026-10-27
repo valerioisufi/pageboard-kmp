@@ -15,6 +15,10 @@ import io.github.valerioisufi.drawview.lecture.audio.createAudioOutput
 import io.github.valerioisufi.drawview.lecture.audio.exportRecording
 import io.github.valerioisufi.drawview.lecture.audio.samplesToMs
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
+import io.github.valerioisufi.drawview.lecture.gemini.GeminiContent
+import io.github.valerioisufi.drawview.lecture.gemini.GeminiPart
+import io.github.valerioisufi.drawview.lecture.gemini.GenerateContentRequest
+import io.github.valerioisufi.drawview.lecture.gemini.GenerationConfig
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
 import io.github.valerioisufi.drawview.lecture.local.OllamaClient
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
@@ -763,6 +767,26 @@ public class LectureAssistant(
             }
         }
         return true
+    }
+
+    /** Whether a Gemini API key is configured, so that Gemini can answer a question on request. */
+    public val canAnswerWithGemini: Boolean get() = settingsStore.hasApiKey
+
+    /**
+     * Answers [prompt] with [systemInstruction] through the Gemini model chosen for live notes,
+     * returning the answer text paired with the model name.
+     */
+    public suspend fun answerWithGemini(systemInstruction: String, prompt: String): Pair<String, String> {
+        val apiKey = settingsStore.apiKey
+        if (apiKey.isEmpty()) throw IllegalStateException("Gemini API key not set")
+        val model = settingsStore.settings.task(LectureTask.LIVE_NOTES).gemini
+        val request = GenerateContentRequest(
+            contents = listOf(GeminiContent(role = "user", parts = listOf(GeminiPart.text(prompt)))),
+            systemInstruction = GeminiContent(parts = listOf(GeminiPart.text(systemInstruction))),
+            generationConfig = GenerationConfig(maxOutputTokens = 4096)
+        )
+        val response = client.generateContent(apiKey, model, request)
+        return response.text() to model
     }
 
     /** Runs [block] holding the generation of [lecture] (refreshed meanwhile, released at the end). */

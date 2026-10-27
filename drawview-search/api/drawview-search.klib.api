@@ -35,6 +35,17 @@ abstract interface io.github.valerioisufi.drawview.search/IndexingConditions { /
     }
 }
 
+abstract interface io.github.valerioisufi.drawview.search/OnlineAnswerBackend { // io.github.valerioisufi.drawview.search/OnlineAnswerBackend|null[0]
+    open val isAvailable // io.github.valerioisufi.drawview.search/OnlineAnswerBackend.isAvailable|{}isAvailable[0]
+        open fun <get-isAvailable>(): kotlin/Boolean // io.github.valerioisufi.drawview.search/OnlineAnswerBackend.isAvailable.<get-isAvailable>|<get-isAvailable>(){}[0]
+
+    abstract suspend fun generate(kotlin/String, kotlin/String): kotlin/Pair<kotlin/String, kotlin/String> // io.github.valerioisufi.drawview.search/OnlineAnswerBackend.generate|generate(kotlin.String;kotlin.String){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.search/OnlineAnswerBackend.Companion|null[0]
+        final fun invoke(kotlin/Function0<kotlin/Boolean> = ..., kotlin.coroutines/SuspendFunction2<kotlin/String, kotlin/String, kotlin/Pair<kotlin/String, kotlin/String>>): io.github.valerioisufi.drawview.search/OnlineAnswerBackend // io.github.valerioisufi.drawview.search/OnlineAnswerBackend.Companion.invoke|invoke(kotlin.Function0<kotlin.Boolean>;kotlin.coroutines.SuspendFunction2<kotlin.String,kotlin.String,kotlin.Pair<kotlin.String,kotlin.String>>){}[0]
+    }
+}
+
 abstract interface io.github.valerioisufi.drawview.search/SearchSource { // io.github.valerioisufi.drawview.search/SearchSource|null[0]
     abstract val id // io.github.valerioisufi.drawview.search/SearchSource.id|{}id[0]
         abstract fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.search/SearchSource.id.<get-id>|<get-id>(){}[0]
@@ -102,6 +113,22 @@ sealed interface io.github.valerioisufi.drawview.search/SearchAnchor { // io.git
         final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.search/SearchAnchor.Page.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // io.github.valerioisufi.drawview.search/SearchAnchor.Page.toString|toString(){}[0]
     }
+}
+
+final class io.github.valerioisufi.drawview.search/CitedPassage { // io.github.valerioisufi.drawview.search/CitedPassage|null[0]
+    constructor <init>(kotlin/Int, io.github.valerioisufi.drawview.search/SearchHit) // io.github.valerioisufi.drawview.search/CitedPassage.<init>|<init>(kotlin.Int;io.github.valerioisufi.drawview.search.SearchHit){}[0]
+
+    final val hit // io.github.valerioisufi.drawview.search/CitedPassage.hit|{}hit[0]
+        final fun <get-hit>(): io.github.valerioisufi.drawview.search/SearchHit // io.github.valerioisufi.drawview.search/CitedPassage.hit.<get-hit>|<get-hit>(){}[0]
+    final val number // io.github.valerioisufi.drawview.search/CitedPassage.number|{}number[0]
+        final fun <get-number>(): kotlin/Int // io.github.valerioisufi.drawview.search/CitedPassage.number.<get-number>|<get-number>(){}[0]
+
+    final fun component1(): kotlin/Int // io.github.valerioisufi.drawview.search/CitedPassage.component1|component1(){}[0]
+    final fun component2(): io.github.valerioisufi.drawview.search/SearchHit // io.github.valerioisufi.drawview.search/CitedPassage.component2|component2(){}[0]
+    final fun copy(kotlin/Int = ..., io.github.valerioisufi.drawview.search/SearchHit = ...): io.github.valerioisufi.drawview.search/CitedPassage // io.github.valerioisufi.drawview.search/CitedPassage.copy|copy(kotlin.Int;io.github.valerioisufi.drawview.search.SearchHit){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.search/CitedPassage.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.search/CitedPassage.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.search/CitedPassage.toString|toString(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.search/DocumentSearchResult { // io.github.valerioisufi.drawview.search/DocumentSearchResult|null[0]
@@ -191,6 +218,40 @@ final class io.github.valerioisufi.drawview.search/MutableIndexingConditions : i
         final fun <get-canIndex>(): kotlinx.coroutines.flow/StateFlow<kotlin/Boolean> // io.github.valerioisufi.drawview.search/MutableIndexingConditions.canIndex.<get-canIndex>|<get-canIndex>(){}[0]
 
     final fun setCanIndex(kotlin/Boolean) // io.github.valerioisufi.drawview.search/MutableIndexingConditions.setCanIndex|setCanIndex(kotlin.Boolean){}[0]
+}
+
+final class io.github.valerioisufi.drawview.search/NotesAnswer { // io.github.valerioisufi.drawview.search/NotesAnswer|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.search/CitedPassage>, kotlin.collections/List<io.github.valerioisufi.drawview.search/SearchHit>, kotlin/String) // io.github.valerioisufi.drawview.search/NotesAnswer.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.search.CitedPassage>;kotlin.collections.List<io.github.valerioisufi.drawview.search.SearchHit>;kotlin.String){}[0]
+
+    final val citations // io.github.valerioisufi.drawview.search/NotesAnswer.citations|{}citations[0]
+        final fun <get-citations>(): kotlin.collections/List<io.github.valerioisufi.drawview.search/CitedPassage> // io.github.valerioisufi.drawview.search/NotesAnswer.citations.<get-citations>|<get-citations>(){}[0]
+    final val modelName // io.github.valerioisufi.drawview.search/NotesAnswer.modelName|{}modelName[0]
+        final fun <get-modelName>(): kotlin/String // io.github.valerioisufi.drawview.search/NotesAnswer.modelName.<get-modelName>|<get-modelName>(){}[0]
+    final val passages // io.github.valerioisufi.drawview.search/NotesAnswer.passages|{}passages[0]
+        final fun <get-passages>(): kotlin.collections/List<io.github.valerioisufi.drawview.search/SearchHit> // io.github.valerioisufi.drawview.search/NotesAnswer.passages.<get-passages>|<get-passages>(){}[0]
+    final val question // io.github.valerioisufi.drawview.search/NotesAnswer.question|{}question[0]
+        final fun <get-question>(): kotlin/String // io.github.valerioisufi.drawview.search/NotesAnswer.question.<get-question>|<get-question>(){}[0]
+    final val text // io.github.valerioisufi.drawview.search/NotesAnswer.text|{}text[0]
+        final fun <get-text>(): kotlin/String // io.github.valerioisufi.drawview.search/NotesAnswer.text.<get-text>|<get-text>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.search/NotesAnswer.component1|component1(){}[0]
+    final fun component2(): kotlin/String // io.github.valerioisufi.drawview.search/NotesAnswer.component2|component2(){}[0]
+    final fun component3(): kotlin.collections/List<io.github.valerioisufi.drawview.search/CitedPassage> // io.github.valerioisufi.drawview.search/NotesAnswer.component3|component3(){}[0]
+    final fun component4(): kotlin.collections/List<io.github.valerioisufi.drawview.search/SearchHit> // io.github.valerioisufi.drawview.search/NotesAnswer.component4|component4(){}[0]
+    final fun component5(): kotlin/String // io.github.valerioisufi.drawview.search/NotesAnswer.component5|component5(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin.collections/List<io.github.valerioisufi.drawview.search/CitedPassage> = ..., kotlin.collections/List<io.github.valerioisufi.drawview.search/SearchHit> = ..., kotlin/String = ...): io.github.valerioisufi.drawview.search/NotesAnswer // io.github.valerioisufi.drawview.search/NotesAnswer.copy|copy(kotlin.String;kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.search.CitedPassage>;kotlin.collections.List<io.github.valerioisufi.drawview.search.SearchHit>;kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.search/NotesAnswer.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.search/NotesAnswer.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.search/NotesAnswer.toString|toString(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.search/NotesAnswerer { // io.github.valerioisufi.drawview.search/NotesAnswerer|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.search/SearchEngine, io.github.valerioisufi.drawview.ml/LoadedModels? = ..., io.github.valerioisufi.drawview.ml/InstalledModels? = ..., io.github.valerioisufi.drawview.ml/GeneratorOptions = ..., io.github.valerioisufi.drawview.ml/Generator? = ...) // io.github.valerioisufi.drawview.search/NotesAnswerer.<init>|<init>(io.github.valerioisufi.drawview.search.SearchEngine;io.github.valerioisufi.drawview.ml.LoadedModels?;io.github.valerioisufi.drawview.ml.InstalledModels?;io.github.valerioisufi.drawview.ml.GeneratorOptions;io.github.valerioisufi.drawview.ml.Generator?){}[0]
+
+    final suspend fun answerOnDevice(kotlin/String, io.github.valerioisufi.drawview.ml/ModelSpec = ..., kotlin/Int = ..., kotlin/Function1<kotlin/Int, kotlin/Unit> = ...): io.github.valerioisufi.drawview.search/NotesAnswer // io.github.valerioisufi.drawview.search/NotesAnswerer.answerOnDevice|answerOnDevice(kotlin.String;io.github.valerioisufi.drawview.ml.ModelSpec;kotlin.Int;kotlin.Function1<kotlin.Int,kotlin.Unit>){}[0]
+    final suspend fun answerOnline(kotlin/String, io.github.valerioisufi.drawview.search/OnlineAnswerBackend, kotlin/Int = ...): io.github.valerioisufi.drawview.search/NotesAnswer // io.github.valerioisufi.drawview.search/NotesAnswerer.answerOnline|answerOnline(kotlin.String;io.github.valerioisufi.drawview.search.OnlineAnswerBackend;kotlin.Int){}[0]
+
+    final object Companion // io.github.valerioisufi.drawview.search/NotesAnswerer.Companion|null[0]
 }
 
 final class io.github.valerioisufi.drawview.search/QuantizedVector { // io.github.valerioisufi.drawview.search/QuantizedVector|null[0]

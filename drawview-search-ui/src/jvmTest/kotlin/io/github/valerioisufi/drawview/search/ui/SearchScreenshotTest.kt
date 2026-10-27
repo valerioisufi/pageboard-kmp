@@ -24,14 +24,19 @@ import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.takahirom.roborazzi.captureRoboImage
+import io.github.valerioisufi.drawview.explorer.DocumentOpener
 import io.github.valerioisufi.drawview.explorer.LibrarySearchMatch
 import io.github.valerioisufi.drawview.ml.InstalledModels
 import io.github.valerioisufi.drawview.ml.ModelCatalog
 import io.github.valerioisufi.drawview.ml.ModelDownloads
+import io.github.valerioisufi.drawview.search.CitedPassage
+import io.github.valerioisufi.drawview.search.NotesAnswer
+import io.github.valerioisufi.drawview.search.OnlineAnswerBackend
 import io.github.valerioisufi.drawview.search.SearchAnchor
 import io.github.valerioisufi.drawview.search.SearchChunk
 import io.github.valerioisufi.drawview.search.SearchChunkKind
 import io.github.valerioisufi.drawview.search.SearchEngine
+import io.github.valerioisufi.drawview.search.SearchHit
 import io.github.valerioisufi.drawview.search.SearchIndex
 import io.github.valerioisufi.drawview.search.SearchIndexer
 import io.github.valerioisufi.drawview.search.SearchSource
@@ -186,6 +191,73 @@ class SearchScreenshotTest {
                     dark = dark
                 ) {
                     SearchSettingsContent(search = search, onDismiss = {})
+                }
+            }
+        }
+    }
+
+    @Test
+    fun askYourNotesCard() {
+        val scope = CoroutineScope(Dispatchers.Unconfined)
+        val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = scope)
+        val modelsDir = File(tempDir, "models-ask").apply { mkdirs() }
+        val gemmaSpec = ModelCatalog.GEMMA_4_E2B
+        val modelFile = File(modelsDir, gemmaSpec.id).apply { mkdirs() }.resolve(gemmaSpec.fileName)
+        java.io.RandomAccessFile(modelFile, "rw").use { it.setLength(gemmaSpec.sizeBytes) }
+        val installedModels = InstalledModels(directory = modelsDir.absolutePath)
+
+        SearchIndex(SearchIndex.MEMORY_PATH).use { index ->
+            val indexer = SearchIndexer(catalog = store, index = index, sources = emptyList(), quietMillis = 0L)
+            val engine = SearchEngine(index)
+            val onlineBackend = OnlineAnswerBackend(
+                isAvailable = { true },
+                generate = { _, _ -> "" to "Gemini" }
+            )
+            val search = ContentSearch(
+                index = index,
+                indexer = indexer,
+                engine = engine,
+                installedModels = installedModels,
+                runtimeAvailable = true,
+                onlineBackend = onlineBackend
+            )
+            val hit1 = SearchHit(
+                anchor = SearchAnchor.Page("doc-1", "p1", pageNumber = 3),
+                kind = SearchChunkKind.TEXT,
+                title = "Analisi Matematica I",
+                text = "Il teorema di Weierstrass garantisce che ogni funzione continua su un compatto ammette massimo e minimo assoluti.",
+                snippet = "Il teorema di Weierstrass garantisce che ogni funzione continua su un compatto ammette massimo e minimo assoluti.",
+                score = 0.9
+            )
+            val hit2 = SearchHit(
+                anchor = SearchAnchor.Lecture("doc-1", "lec-1", startMs = 750_000L),
+                kind = SearchChunkKind.LECTURE_TRANSCRIPT,
+                title = "Analisi Matematica I",
+                text = "L'ipotesi di compattezza (insieme chiuso e limitato in R^n) non può essere rimossa.",
+                snippet = "L'ipotesi di compattezza (insieme chiuso e limitato in R^n) non può essere rimossa.",
+                score = 0.85
+            )
+            search.currentAnswer = NotesAnswer(
+                question = "Quali sono le ipotesi del teorema di Weierstrass?",
+                text = "Il **teorema di Weierstrass** richiede che la funzione sia continua e che il dominio sia un insieme **compatto** (chiuso e limitato in $\\mathbb{R}^n$) [1]. Senza la compattezza l'esistenza di massimo e minimo assoluti non è garantita [2].",
+                citations = listOf(CitedPassage(1, hit1), CitedPassage(2, hit2)),
+                passages = listOf(hit1, hit2),
+                modelName = ModelCatalog.GEMMA_4_E2B.name
+            )
+            for (dark in listOf(false, true)) {
+                capture(
+                    name = "search-ask-${if (dark) "dark" else "light"}",
+                    width = 620,
+                    height = 300,
+                    dark = dark
+                ) {
+                    Box(modifier = Modifier.padding(16.dp)) {
+                        AskNotesCard(
+                            search = search,
+                            query = "Quali sono le ipotesi del teorema di Weierstrass?",
+                            openDocument = DocumentOpener { _, _ -> }
+                        )
+                    }
                 }
             }
         }

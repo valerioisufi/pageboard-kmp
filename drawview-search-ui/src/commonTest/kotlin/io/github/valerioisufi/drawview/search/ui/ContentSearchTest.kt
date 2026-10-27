@@ -11,6 +11,7 @@ import io.github.valerioisufi.drawview.model.DrawResource
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.geometry.Rect as MmRect
 import io.github.valerioisufi.drawview.search.DocumentSearchSource
+import io.github.valerioisufi.drawview.search.OnlineAnswerBackend
 import io.github.valerioisufi.drawview.search.SearchAnchor
 import io.github.valerioisufi.drawview.search.SearchChunkKind
 import io.github.valerioisufi.drawview.search.SearchEngine
@@ -20,9 +21,11 @@ import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 
 class ContentSearchTest {
@@ -186,5 +189,52 @@ class ContentSearchTest {
         val absentSource = PdfSearchSource(store, pdfTiles = null)
         assertNull(absentSource.version(summary))
         assertTrue(absentSource.chunks(summary).isEmpty())
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun askOnlineSynthesizesAnswerAndClearsOnNewQuery() = runTest {
+        val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)
+        val doc = store.createDocument("Analisi 1")
+        val page = doc.pages.single()
+        val text = DrawText().apply {
+            this.text = "Il teorema di Weierstrass richiede un dominio compatto."
+            x = 10f
+            y = 10f
+            width = 100f
+            height = 20f
+        }
+        page.add(text)
+        store.saveText(page, text)
+        store.flush()
+
+        SearchIndex(SearchIndex.MEMORY_PATH).use { index ->
+            val source = DocumentSearchSource(store)
+            val indexer = SearchIndexer(catalog = store, index = index, sources = listOf(source), quietMillis = 0L)
+            val engine = SearchEngine(index)
+            val backend = OnlineAnswerBackend(
+                isAvailable = { true },
+                generate = { _, _ -> "Richiede un dominio compatto [1]." to "Gemini" }
+            )
+            val contentSearch = ContentSearch(
+                index = index,
+                indexer = indexer,
+                engine = engine,
+                onlineBackend = backend
+            )
+            indexer.indexNow()
+
+            contentSearch.onQueryChange("Weierstrass")
+            contentSearch.searchNow()
+            contentSearch.askOnlineNow("Weierstrass")
+
+            val answer = assertNotNull(contentSearch.currentAnswer)
+            assertEquals("Richiede un dominio compatto [1].", answer.text)
+            assertEquals(1, answer.citations.size)
+            assertEquals("Gemini", answer.modelName)
+
+            contentSearch.onQueryChange("Altro argomento")
+            assertNull(contentSearch.currentAnswer)
+        }
     }
 }

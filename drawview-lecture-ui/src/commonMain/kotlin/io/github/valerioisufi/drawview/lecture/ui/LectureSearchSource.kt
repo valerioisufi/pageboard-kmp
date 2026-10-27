@@ -6,6 +6,7 @@ import io.github.valerioisufi.drawview.lecture.SuggestionStatus
 import io.github.valerioisufi.drawview.lecture.TranscriptSegment
 import io.github.valerioisufi.drawview.platform.PlatformFiles
 import io.github.valerioisufi.drawview.platform.Sha256
+import io.github.valerioisufi.drawview.search.OnlineAnswerBackend
 import io.github.valerioisufi.drawview.search.SearchAnchor
 import io.github.valerioisufi.drawview.search.SearchChunk
 import io.github.valerioisufi.drawview.search.SearchChunkKind
@@ -225,3 +226,12 @@ public fun LectureAssistant.searchSource(store: DocumentStore? = null): SearchSo
         store = store,
         changes = attachments.changes.map {}
     )
+
+/**
+ * [OnlineAnswerBackend] for "Ask your notes" (`drawview-search`) backed by Google Gemini when the
+ * student has configured an API key in this [LectureAssistant].
+ */
+public fun LectureAssistant.onlineAnswerBackend(): OnlineAnswerBackend = OnlineAnswerBackend(
+    isAvailable = { canAnswerWithGemini },
+    generate = { systemInstruction, prompt -> answerWithGemini(systemInstruction, prompt) }
+)

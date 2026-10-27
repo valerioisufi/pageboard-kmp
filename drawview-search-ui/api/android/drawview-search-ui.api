@@ -1,3 +1,14 @@
+public final class io/github/valerioisufi/drawview/search/ui/AskNotesCardKt {
+	public static final fun AskNotesCard (Lio/github/valerioisufi/drawview/search/ui/ContentSearch;Ljava/lang/String;Lio/github/valerioisufi/drawview/explorer/DocumentOpener;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class io/github/valerioisufi/drawview/search/ui/ComposableSingletons$AskNotesCardKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/search/ui/ComposableSingletons$AskNotesCardKt;
+	public fun <init> ()V
+	public final fun getLambda$1551203610$DrawView_KMP_drawview_search_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$815001233$DrawView_KMP_drawview_search_ui ()Lkotlin/jvm/functions/Function3;
+}
+
 public final class io/github/valerioisufi/drawview/search/ui/ComposableSingletons$SearchSettingsDialogKt {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/search/ui/ComposableSingletons$SearchSettingsDialogKt;
 	public fun <init> ()V
@@ -10,9 +21,16 @@ public final class io/github/valerioisufi/drawview/search/ui/ComposableSingleton
 public final class io/github/valerioisufi/drawview/search/ui/ContentSearch : io/github/valerioisufi/drawview/explorer/LibrarySearch {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/search/ui/ContentSearch$Companion;
-	public fun <init> (Lio/github/valerioisufi/drawview/search/SearchIndex;Lio/github/valerioisufi/drawview/search/SearchIndexer;Lio/github/valerioisufi/drawview/search/SearchEngine;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/ModelDownloads;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/ModelSpec;Lio/github/valerioisufi/drawview/ml/ModelSpec;ZLkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/search/SearchIndex;Lio/github/valerioisufi/drawview/search/SearchIndexer;Lio/github/valerioisufi/drawview/search/SearchEngine;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/ModelDownloads;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/ModelSpec;Lio/github/valerioisufi/drawview/ml/ModelSpec;ZLkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/search/SearchIndex;Lio/github/valerioisufi/drawview/search/SearchIndexer;Lio/github/valerioisufi/drawview/search/SearchEngine;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/ModelDownloads;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/ModelSpec;Lio/github/valerioisufi/drawview/ml/ModelSpec;ZLio/github/valerioisufi/drawview/search/NotesAnswerer;Lio/github/valerioisufi/drawview/search/OnlineAnswerBackend;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/search/SearchIndex;Lio/github/valerioisufi/drawview/search/SearchIndexer;Lio/github/valerioisufi/drawview/search/SearchEngine;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/ModelDownloads;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/ModelSpec;Lio/github/valerioisufi/drawview/ml/ModelSpec;ZLio/github/valerioisufi/drawview/search/NotesAnswerer;Lio/github/valerioisufi/drawview/search/OnlineAnswerBackend;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun askOnDevice (Ljava/lang/String;)V
+	public static synthetic fun askOnDevice$default (Lio/github/valerioisufi/drawview/search/ui/ContentSearch;Ljava/lang/String;ILjava/lang/Object;)V
+	public final fun askOnline (Ljava/lang/String;)V
+	public static synthetic fun askOnline$default (Lio/github/valerioisufi/drawview/search/ui/ContentSearch;Ljava/lang/String;ILjava/lang/Object;)V
+	public final fun getAnswerError ()Ljava/lang/String;
 	public final fun getAnswerModelSpec ()Lio/github/valerioisufi/drawview/ml/ModelSpec;
+	public final fun getAnswerer ()Lio/github/valerioisufi/drawview/search/NotesAnswerer;
+	public final fun getCurrentAnswer ()Lio/github/valerioisufi/drawview/search/NotesAnswer;
 	public final fun getDownloads ()Lio/github/valerioisufi/drawview/ml/ModelDownloads;
 	public final fun getEmbeddingSpec ()Lio/github/valerioisufi/drawview/ml/ModelSpec;
 	public final fun getEngine ()Lio/github/valerioisufi/drawview/search/SearchEngine;
@@ -23,7 +41,9 @@ public final class io/github/valerioisufi/drawview/search/ui/ContentSearch : io/
 	public final fun getInstalledModels ()Lio/github/valerioisufi/drawview/ml/InstalledModels;
 	public final fun getLoadedModels ()Lio/github/valerioisufi/drawview/ml/LoadedModels;
 	public fun getMatchedDocumentIds ()Ljava/util/List;
+	public final fun getOnlineBackend ()Lio/github/valerioisufi/drawview/search/OnlineAnswerBackend;
 	public final fun getRuntimeAvailable ()Z
+	public final fun isAnswering ()Z
 	public fun matchesOf (Ljava/lang/String;)Ljava/util/List;
 	public fun onQueryChange (Ljava/lang/String;)V
 	public final fun openAnchor (Lio/github/valerioisufi/drawview/search/SearchAnchor;Lio/github/valerioisufi/drawview/explorer/DocumentOpener;)V
@@ -35,7 +55,7 @@ public final class io/github/valerioisufi/drawview/search/ui/ContentSearch$Compa
 }
 
 public final class io/github/valerioisufi/drawview/search/ui/ContentSearchKt {
-	public static final fun rememberContentSearch (Lio/github/valerioisufi/drawview/store/DocumentStore;Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/drawview/search/IndexingConditions;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/ModelDownloads;ZLio/github/valerioisufi/drawview/ml/ModelSpec;Lio/github/valerioisufi/drawview/ml/EmbedderOptions;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;III)Lio/github/valerioisufi/drawview/search/ui/ContentSearch;
+	public static final fun rememberContentSearch (Lio/github/valerioisufi/drawview/store/DocumentStore;Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/drawview/search/IndexingConditions;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/ModelDownloads;ZLio/github/valerioisufi/drawview/ml/ModelSpec;Lio/github/valerioisufi/drawview/ml/EmbedderOptions;Lio/github/valerioisufi/drawview/search/OnlineAnswerBackend;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;III)Lio/github/valerioisufi/drawview/search/ui/ContentSearch;
 }
 
 public final class io/github/valerioisufi/drawview/search/ui/PdfSearchSource : io/github/valerioisufi/drawview/search/SearchSource {

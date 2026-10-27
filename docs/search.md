@@ -221,7 +221,7 @@ indexes again what arrives. `PROTOCOL_VERSION` does not change.
 | 3. The meaning | done |
 | 4. The handwriting of every notebook | left for later (to be replaced by another implementation) |
 | 5. The results | done |
-| 6. Ask your notes | not started |
+| 6. Ask your notes | done |
 | 7. Documentation | not started |
 
 ### Phase 0 results (2026-10-18)

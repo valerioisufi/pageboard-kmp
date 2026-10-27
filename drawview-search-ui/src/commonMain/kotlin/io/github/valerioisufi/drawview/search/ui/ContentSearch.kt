@@ -24,6 +24,9 @@ import io.github.valerioisufi.drawview.search.DocumentSearchResult
 import io.github.valerioisufi.drawview.search.DocumentSearchSource
 import io.github.valerioisufi.drawview.search.IndexingConditions
 import io.github.valerioisufi.drawview.search.IndexingProgress
+import io.github.valerioisufi.drawview.search.NotesAnswer
+import io.github.valerioisufi.drawview.search.NotesAnswerer
+import io.github.valerioisufi.drawview.search.OnlineAnswerBackend
 import io.github.valerioisufi.drawview.search.SearchAnchor
 import io.github.valerioisufi.drawview.search.SearchChunkKind
 import io.github.valerioisufi.drawview.search.SearchEngine
@@ -33,7 +36,9 @@ import io.github.valerioisufi.drawview.search.SearchIndexer
 import io.github.valerioisufi.drawview.search.SearchSource
 import io.github.valerioisufi.drawview.store.DocumentStore
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -42,7 +47,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Search of the contents of the notes for the document library ([LibrarySearch]), backed by
- * [SearchIndex], [SearchIndexer] and [SearchEngine] (Controller).
+ * [SearchIndex], [SearchIndexer], [SearchEngine] and [NotesAnswerer] (Controller).
  */
 public class ContentSearch(
     public val index: SearchIndex,
@@ -54,26 +59,115 @@ public class ContentSearch(
     public val embeddingSpec: ModelSpec = ModelCatalog.EMBEDDING_GEMMA_2_TEXT,
     initialAnswerModelSpec: ModelSpec = ModelCatalog.GEMMA_4_E2B,
     public val runtimeAvailable: Boolean = loadedModels != null,
+    public val answerer: NotesAnswerer = NotesAnswerer(engine, loadedModels, installedModels),
+    public val onlineBackend: OnlineAnswerBackend? = null,
     private val onOpenLecture: ((documentId: String, lectureId: String, startMs: Long) -> Unit)? = null,
     private val onOpenAnchor: ((SearchAnchor, openDocument: DocumentOpener) -> Unit)? = null
 ) : LibrarySearch {
     private val queryFlow = MutableStateFlow("")
     private var resultsByDocument by mutableStateOf<Map<String, DocumentSearchResult>>(emptyMap())
+    private var activeScope: CoroutineScope? = null
+    private var answerJob: Job? = null
 
     /** The Gemma 4 model chosen for "Ask your notes" on this device. */
     public var answerModelSpec: ModelSpec by mutableStateOf(initialAnswerModelSpec)
 
+    /** The most recent answer synthesized for the current query, or `null` if none. */
+    public var currentAnswer: NotesAnswer? by mutableStateOf(null)
+        internal set
+
+    /** `true` while an answer is being generated for the current query. */
+    public var isAnswering: Boolean by mutableStateOf(false)
+        internal set
+
+    /** Error message from the most recent answer attempt, or `null`. */
+    public var answerError: String? by mutableStateOf(null)
+        internal set
+
     override var matchedDocumentIds: List<String>? by mutableStateOf(null)
         private set
+
+    override val headerContent: (@Composable (query: String, openDocument: DocumentOpener) -> Unit) =
+        { query, openDocument ->
+            AskNotesCard(search = this, query = query, openDocument = openDocument)
+        }
 
     /** Current state of the background indexer. */
     public val indexingProgress: StateFlow<IndexingProgress> get() = indexer.progress
 
     override fun onQueryChange(query: String) {
+        val previousTrimmed = queryFlow.value.trim()
+        val nextTrimmed = query.trim()
         queryFlow.value = query
+        if (nextTrimmed != previousTrimmed) {
+            answerJob?.cancel()
+            answerJob = null
+            isAnswering = false
+            currentAnswer = null
+            answerError = null
+        }
         if (query.isBlank()) {
             matchedDocumentIds = null
             resultsByDocument = emptyMap()
+        }
+    }
+
+    /**
+     * Generates an answer to [question] on this device using [answerModelSpec] (Gemma 4).
+     */
+    public fun askOnDevice(question: String = queryFlow.value) {
+        val scope = activeScope ?: return
+        val trimmed = question.trim()
+        if (trimmed.isEmpty()) return
+        answerJob?.cancel()
+        answerJob = scope.launch {
+            askOnDeviceNow(trimmed)
+        }
+    }
+
+    /**
+     * Generates an answer to [question] with the configured [onlineBackend] (such as Google Gemini).
+     */
+    public fun askOnline(question: String = queryFlow.value) {
+        val scope = activeScope ?: return
+        val trimmed = question.trim()
+        if (trimmed.isEmpty() || onlineBackend == null) return
+        answerJob?.cancel()
+        answerJob = scope.launch {
+            askOnlineNow(trimmed)
+        }
+    }
+
+    internal suspend fun askOnDeviceNow(question: String = queryFlow.value) {
+        val trimmed = question.trim()
+        if (trimmed.isEmpty()) return
+        isAnswering = true
+        answerError = null
+        try {
+            currentAnswer = answerer.answerOnDevice(trimmed, modelSpec = answerModelSpec)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            answerError = e.message ?: e::class.simpleName ?: "Unknown error"
+        } finally {
+            isAnswering = false
+        }
+    }
+
+    internal suspend fun askOnlineNow(question: String = queryFlow.value) {
+        val backend = onlineBackend ?: return
+        val trimmed = question.trim()
+        if (trimmed.isEmpty()) return
+        isAnswering = true
+        answerError = null
+        try {
+            currentAnswer = answerer.answerOnline(trimmed, backend = backend)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            answerError = e.message ?: e::class.simpleName ?: "Unknown error"
+        } finally {
+            isAnswering = false
         }
     }
 
@@ -86,12 +180,14 @@ public class ContentSearch(
 
     /** Starts the background indexer and reacts to query and index updates in [scope]. */
     public fun start(scope: CoroutineScope) {
+        activeScope = scope
         indexer.start(scope)
         scope.launchSearchCollector()
     }
 
     /** Collects query and index changes in [scope] without starting the indexer loop. */
     internal fun observeQueries(scope: CoroutineScope) {
+        activeScope = scope
         scope.launchSearchCollector()
     }
 
@@ -204,6 +300,7 @@ public fun rememberContentSearch(
     runtimeAvailable: Boolean = loadedModels != null,
     embeddingSpec: ModelSpec = ModelCatalog.EMBEDDING_GEMMA_2_TEXT,
     embedderOptions: EmbedderOptions = EmbedderOptions(),
+    onlineBackend: OnlineAnswerBackend? = null,
     onOpenLecture: ((documentId: String, lectureId: String, startMs: Long) -> Unit)? = null,
     onOpenAnchor: ((SearchAnchor, openDocument: DocumentOpener) -> Unit)? = null
 ): ContentSearch {
@@ -221,7 +318,7 @@ public fun rememberContentSearch(
             addAll(extraSources)
         }
     }
-    val contentSearch = remember(index, store, sources, conditions, loadedModels, installedModels, downloads, runtimeAvailable, embeddingSpec, embedderOptions, onOpenLecture, onOpenAnchor) {
+    val contentSearch = remember(index, store, sources, conditions, loadedModels, installedModels, downloads, runtimeAvailable, embeddingSpec, embedderOptions, onlineBackend, onOpenLecture, onOpenAnchor) {
         val indexer = SearchIndexer(
             catalog = store,
             index = index,
@@ -248,6 +345,7 @@ public fun rememberContentSearch(
             loadedModels = loadedModels,
             embeddingSpec = embeddingSpec,
             runtimeAvailable = runtimeAvailable,
+            onlineBackend = onlineBackend,
             onOpenLecture = onOpenLecture,
             onOpenAnchor = onOpenAnchor
         )
