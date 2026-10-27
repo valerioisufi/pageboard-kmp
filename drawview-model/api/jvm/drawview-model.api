@@ -470,16 +470,19 @@ public abstract interface class io/github/valerioisufi/drawview/model/ElementTyp
 	public abstract fun getSerializer ()Lkotlinx/serialization/KSerializer;
 	public fun getVersion ()I
 	public fun migrate ([BI)Ljava/lang/Object;
+	public fun searchText (Ljava/lang/Object;)Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/model/ElementType$DefaultImpls {
 	public static fun getVersion (Lio/github/valerioisufi/drawview/model/ElementType;)I
 	public static fun migrate (Lio/github/valerioisufi/drawview/model/ElementType;[BI)Ljava/lang/Object;
+	public static fun searchText (Lio/github/valerioisufi/drawview/model/ElementType;Ljava/lang/Object;)Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/model/ElementTypeKt {
 	public static final fun decode (Lio/github/valerioisufi/drawview/model/ElementType;Lio/github/valerioisufi/drawview/model/DrawCustomElement;)Ljava/lang/Object;
 	public static final fun encode (Lio/github/valerioisufi/drawview/model/ElementType;Ljava/lang/Object;)[B
+	public static final fun searchTextOf (Lio/github/valerioisufi/drawview/model/ElementType;Lio/github/valerioisufi/drawview/model/DrawCustomElement;)Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/model/FractionalIndex {

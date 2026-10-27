@@ -34,6 +34,12 @@ public interface ElementType<T : Any> {
      * it cannot be read (the element is then drawn as a placeholder).
      */
     public fun migrate(payload: ByteArray, fromVersion: Int): T? = null
+
+    /**
+     * The text of [value] for the search of the library (Markdown, with formulas in LaTeX), or
+     * `null` when an element of this type holds no text to search.
+     */
+    public fun searchText(value: T): String? = null
 }
 
 /** [value] as the payload of an element of this type (see [DrawCustomElement.payload]). */
@@ -59,3 +65,10 @@ public fun <T : Any> ElementType<T>.decode(element: DrawCustomElement): T? {
         else -> null
     }
 }
+
+/**
+ * The text of [element] for the search of the library when it is of this type and readable,
+ * `null` otherwise.
+ */
+public fun <T : Any> ElementType<T>.searchTextOf(element: DrawCustomElement): String? =
+    decode(element)?.let(::searchText)?.takeIf { it.isNotBlank() }

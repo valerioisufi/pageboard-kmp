@@ -144,6 +144,7 @@ abstract interface <#A: kotlin/Any> io.github.valerioisufi.drawview.model/Elemen
         open fun <get-version>(): kotlin/Int // io.github.valerioisufi.drawview.model/ElementType.version.<get-version>|<get-version>(){}[0]
 
     open fun migrate(kotlin/ByteArray, kotlin/Int): #A? // io.github.valerioisufi.drawview.model/ElementType.migrate|migrate(kotlin.ByteArray;kotlin.Int){}[0]
+    open fun searchText(#A): kotlin/String? // io.github.valerioisufi.drawview.model/ElementType.searchText|searchText(1:0){}[0]
 }
 
 abstract interface io.github.valerioisufi.drawview.model.change/DocumentPersistence { // io.github.valerioisufi.drawview.model.change/DocumentPersistence|null[0]
@@ -3240,6 +3241,7 @@ final fun (io.github.valerioisufi.drawview.model/DrawTextMarkup).io.github.valer
 final fun (io.github.valerioisufi.drawview.model/StrokeMesh).io.github.valerioisufi.drawview.model/triangleOutline(): io.github.valerioisufi.drawview.model/StrokeOutline // io.github.valerioisufi.drawview.model/triangleOutline|triangleOutline@io.github.valerioisufi.drawview.model.StrokeMesh(){}[0]
 final fun <#A: kotlin/Any> (io.github.valerioisufi.drawview.model/ElementType<#A>).io.github.valerioisufi.drawview.model/decode(io.github.valerioisufi.drawview.model/DrawCustomElement): #A? // io.github.valerioisufi.drawview.model/decode|decode@io.github.valerioisufi.drawview.model.ElementType<0:0>(io.github.valerioisufi.drawview.model.DrawCustomElement){0§<kotlin.Any>}[0]
 final fun <#A: kotlin/Any> (io.github.valerioisufi.drawview.model/ElementType<#A>).io.github.valerioisufi.drawview.model/encode(#A): kotlin/ByteArray // io.github.valerioisufi.drawview.model/encode|encode@io.github.valerioisufi.drawview.model.ElementType<0:0>(0:0){0§<kotlin.Any>}[0]
+final fun <#A: kotlin/Any> (io.github.valerioisufi.drawview.model/ElementType<#A>).io.github.valerioisufi.drawview.model/searchTextOf(io.github.valerioisufi.drawview.model/DrawCustomElement): kotlin/String? // io.github.valerioisufi.drawview.model/searchTextOf|searchTextOf@io.github.valerioisufi.drawview.model.ElementType<0:0>(io.github.valerioisufi.drawview.model.DrawCustomElement){0§<kotlin.Any>}[0]
 final fun io.github.valerioisufi.drawview.model.change/isFileHere(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/isFileHere|isFileHere(kotlin.String){}[0]
 final fun io.github.valerioisufi.drawview.model.change/placementOf(io.github.valerioisufi.drawview.model/DrawElement): io.github.valerioisufi.drawview.model.change/Placement? // io.github.valerioisufi.drawview.model.change/placementOf|placementOf(io.github.valerioisufi.drawview.model.DrawElement){}[0]
 final fun io.github.valerioisufi.drawview.model.geometry/fitPdfPage(kotlin/Double, kotlin/Double, io.github.valerioisufi.drawview.model.geometry/Rect): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.model.geometry/fitPdfPage|fitPdfPage(kotlin.Double;kotlin.Double;io.github.valerioisufi.drawview.model.geometry.Rect){}[0]

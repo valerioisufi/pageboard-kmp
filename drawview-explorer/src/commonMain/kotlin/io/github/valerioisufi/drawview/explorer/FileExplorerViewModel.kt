@@ -143,6 +143,9 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
     /** What the application says of the documents (e.g. that they have a lecture), besides the built-in tags. */
     var tags by mutableStateOf(emptyList<DocumentTag>())
 
+    /** Search of the contents of the notes (`drawview-search-ui`), `null` when only names are searched. */
+    var contentSearch by mutableStateOf<LibrarySearch?>(null)
+
     private val pdfDocuments: Set<String> by derivedStateOf { documents.filter { it.hasPdf }.mapTo(mutableSetOf()) { it.id } }
     private val sharedDocuments: Set<String> by derivedStateOf { documents.filter { it.isShared }.mapTo(mutableSetOf()) { it.id } }
     private val builtInTags = pdfTag { pdfDocuments } to sharedTag { sharedDocuments }
@@ -154,16 +157,39 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
     fun tagsOf(item: FileItem): List<DocumentTag> =
         if (item.type == FileType.FOLDER) emptyList() else allTags.filter { it.contains(item.id) }
 
+    /** Matching passages of the document [item] for the active [searchQuery]. */
+    fun searchMatchesOf(item: FileItem): List<LibrarySearchMatch> =
+        if (item.type == FileType.FILE && searchQuery.isNotBlank()) {
+            contentSearch?.matchesOf(item.id).orEmpty()
+        } else {
+            emptyList()
+        }
+
     /** Whether a search, a filter or a section other than the folders changes what is shown. */
     val isNarrowed: Boolean get() = searchQuery.isNotBlank() || filter != LibraryFilter.All || section != Section.HOME
 
     /**
      * What the library shows, in the chosen order: the content of the current folder, the notes
-     * opened last or the shared ones, the items of the whole library whose name holds the text
-     * searched; only the notes of the filter (no folder).
+     * opened last or the shared ones, the items of the whole library whose name or content holds
+     * the text searched; only the notes of the filter (no folder).
      */
     val shownFiles: List<FileItem> by derivedStateOf {
         val query = searchQuery.trim()
+        if (query.isNotEmpty()) {
+            val matchedIds = contentSearch?.matchedDocumentIds
+            if (matchedIds != null) {
+                val matchingFolders = folders
+                    .filter { it.name.contains(query, ignoreCase = true) }
+                    .sortedBy { it.name }
+                    .map { it.toFileItem() }
+                val docsById = documents.associateBy { it.id }
+                val rankedDocs = matchedIds.mapNotNull { docsById[it]?.toFileItem() }
+                val nameMatchedDocs = documents
+                    .filter { it.id !in matchedIds && it.name.contains(query, ignoreCase = true) }
+                    .map { it.toFileItem() }
+                return@derivedStateOf (matchingFolders + rankedDocs + nameMatchedDocs).filterBy(filter)
+            }
+        }
         val candidates = when {
             query.isNotEmpty() -> (folders.map { it.toFileItem() } + documents.map { it.toFileItem() })
                 .filter { it.name.contains(query, ignoreCase = true) }
@@ -213,9 +239,10 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
         clearSelection()
     }
 
-    /** Searches [query] in the names of the whole library (empty: back to what was shown). */
+    /** Searches [query] in the names and contents of the whole library (empty: back to what was shown). */
     fun search(query: String) {
         searchQuery = query
+        contentSearch?.onQueryChange(query)
     }
 
     /** Shows the notes of [filter]. */

@@ -79,6 +79,7 @@ public fun DocumentLibrary(
     tags: List<DocumentTag> = emptyList(),
     engines: DrawViewEngines = DrawViewEngines.None,
     thumbnails: DocumentThumbnails = rememberDocumentThumbnails(documents, engines = engines),
+    search: LibrarySearch? = null,
     onOpenDocumentInNewWindow: ((String) -> Unit)? = null,
     clipboard: EditorClipboard = remember { EditorClipboard() }
 ) {
@@ -127,6 +128,7 @@ public fun DocumentLibrary(
                             folderActions = folderActions,
                             tags = tags,
                             thumbnails = thumbnails,
+                            search = search,
                             onFilesDropped = importFiles,
                             onImportPdf = pdfPicker,
                             onImportImage = imagePicker,

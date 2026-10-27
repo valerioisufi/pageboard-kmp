@@ -110,6 +110,15 @@ internal fun LibraryContent(
         modifier = modifier.fillMaxSize()
     ) {
         header()
+        val searchHeader = viewModel.contentSearch?.headerContent
+        val activeQuery = viewModel.searchQuery.trim()
+        if (activeQuery.isNotEmpty() && searchHeader != null) {
+            item(key = "search-header", span = { GridItemSpan(maxLineSpan) }) {
+                Box(modifier = Modifier.padding(horizontal = if (compact) margin else 0.dp, vertical = 4.dp)) {
+                    searchHeader(activeQuery, actions.onOpenDocument)
+                }
+            }
+        }
         if (folders.isNotEmpty()) {
             sectionLabel(foldersLabel, if (compact) margin else 0.dp)
             item(key = "folders", span = { GridItemSpan(maxLineSpan) }) {

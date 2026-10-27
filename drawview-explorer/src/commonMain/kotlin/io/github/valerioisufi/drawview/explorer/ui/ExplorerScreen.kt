@@ -45,6 +45,7 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import io.github.valerioisufi.drawview.explorer.DocumentThumbnails
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
+import io.github.valerioisufi.drawview.explorer.LibrarySearch
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_confirm
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_delete
@@ -105,6 +106,7 @@ internal fun ExplorerScreen(
     folderActions: List<FolderAction> = emptyList(),
     tags: List<DocumentTag> = emptyList(),
     thumbnails: DocumentThumbnails? = null,
+    search: LibrarySearch? = null,
     onFilesDropped: ((List<PickedFile>) -> Boolean)? = null,
     onImportPdf: (() -> Unit)? = null,
     onImportImage: (() -> Unit)? = null,
@@ -112,6 +114,10 @@ internal fun ExplorerScreen(
 ) {
     val viewModel = fileExplorerViewModel
     LaunchedEffect(viewModel, tags) { viewModel.tags = tags }
+    LaunchedEffect(viewModel, search) {
+        viewModel.contentSearch = search
+        search?.onQueryChange(viewModel.searchQuery)
+    }
     val gridState = rememberLazyGridState()
     val searchFocus = remember { FocusRequester() }
     // The items dragged with a mouse onto a folder

@@ -1,11 +1,11 @@
 public final class io/github/valerioisufi/drawview/explorer/ComposableSingletons$DocumentLibraryKt {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/explorer/ComposableSingletons$DocumentLibraryKt;
 	public fun <init> ()V
-	public final fun getLambda$-1998627685$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function4;
+	public final fun getLambda$-1519655150$DrawView_KMP_drawview_explorer ()Lkotlin/jvm/functions/Function4;
 }
 
 public final class io/github/valerioisufi/drawview/explorer/DocumentLibraryKt {
-	public static final fun DocumentLibrary (Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/drawview/store/OpenDocuments;Ljava/util/List;ZLio/github/valerioisufi/drawview/ui/extension/EditorExtension;Lkotlin/jvm/functions/Function4;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;Lio/github/valerioisufi/drawview/explorer/DocumentThumbnails;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/drawview/canvas/controller/EditorClipboard;Landroidx/compose/runtime/Composer;III)V
+	public static final fun DocumentLibrary (Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/Modifier;Lio/github/valerioisufi/drawview/store/OpenDocuments;Ljava/util/List;ZLio/github/valerioisufi/drawview/ui/extension/EditorExtension;Lkotlin/jvm/functions/Function4;Ljava/util/List;Ljava/util/List;Ljava/util/List;Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;Lio/github/valerioisufi/drawview/explorer/DocumentThumbnails;Lio/github/valerioisufi/drawview/explorer/LibrarySearch;Lkotlin/jvm/functions/Function1;Lio/github/valerioisufi/drawview/canvas/controller/EditorClipboard;Landroidx/compose/runtime/Composer;III)V
 }
 
 public final class io/github/valerioisufi/drawview/explorer/DocumentThumbnails {
@@ -23,6 +23,37 @@ public final class io/github/valerioisufi/drawview/explorer/DocumentThumbnails$C
 
 public final class io/github/valerioisufi/drawview/explorer/DocumentThumbnailsKt {
 	public static final fun rememberDocumentThumbnails (Lio/github/valerioisufi/drawview/store/OpenDocuments;Ljava/lang/String;Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines;Landroidx/compose/runtime/Composer;II)Lio/github/valerioisufi/drawview/explorer/DocumentThumbnails;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/explorer/LibrarySearch {
+	public fun getHeaderContent ()Lkotlin/jvm/functions/Function4;
+	public abstract fun getMatchedDocumentIds ()Ljava/util/List;
+	public fun matchesOf (Ljava/lang/String;)Ljava/util/List;
+	public abstract fun onQueryChange (Ljava/lang/String;)V
+}
+
+public final class io/github/valerioisufi/drawview/explorer/LibrarySearch$DefaultImpls {
+	public static fun getHeaderContent (Lio/github/valerioisufi/drawview/explorer/LibrarySearch;)Lkotlin/jvm/functions/Function4;
+	public static fun matchesOf (Lio/github/valerioisufi/drawview/explorer/LibrarySearch;Ljava/lang/String;)Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/drawview/explorer/LibrarySearchMatch {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun component4 ()Lkotlin/jvm/functions/Function1;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function1;)Lio/github/valerioisufi/drawview/explorer/LibrarySearchMatch;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/explorer/LibrarySearchMatch;Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/explorer/LibrarySearchMatch;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getIcon ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getLocation ()Ljava/lang/String;
+	public final fun getOnOpen ()Lkotlin/jvm/functions/Function1;
+	public final fun getSnippet ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/explorer/generated/resources/ActualResourceCollectorsKt {

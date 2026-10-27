@@ -155,6 +155,20 @@ class CustomElementTest {
         assertNull(ShapeType.decode(newer))
     }
 
+    @Test
+    fun aTypeMayGiveTheTextOfItsElementsForTheSearch() {
+        val withoutText = shape(Shape(5, RED))
+        assertNull(ShapeType.searchTextOf(withoutText))
+
+        val namedType = object : ElementType<Shape> {
+            override val id = ShapeType.id
+            override val version = ShapeType.version
+            override val serializer = Shape.serializer()
+            override fun searchText(value: Shape): String = "polygon of ${value.sides} sides"
+        }
+        assertEquals("polygon of 5 sides", namedType.searchTextOf(withoutText))
+    }
+
     private companion object {
         const val BLACK = 0xFF000000.toInt()
         const val RED = 0xFFFF0000.toInt()

@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.explorer.ui
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -43,6 +44,7 @@ import io.github.valerioisufi.drawview.explorer.DocumentThumbnails
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileItem
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
+import io.github.valerioisufi.drawview.explorer.LibrarySearchMatch
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_details
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_notes_count
@@ -126,6 +128,15 @@ internal fun NoteCard(item: FileItem, actions: ItemActions, modifier: Modifier =
             ) {
                 ItemText(item, modifier = Modifier.weight(1f))
                 if (!viewModel.selectionMode) ItemMoreButton(item, itemCommands, actions)
+            }
+            val matches = viewModel.searchMatchesOf(item)
+            if (matches.isNotEmpty()) {
+                SearchMatchesList(
+                    matches = matches,
+                    onOpenDefault = { actions.onOpenDocument(item.id) },
+                    openDocument = actions.onOpenDocument,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                )
             }
         }
         viewModel.tagsOf(item).firstOrNull()?.let { tag ->
@@ -234,6 +245,15 @@ internal fun NoteRow(item: FileItem, actions: ItemActions, modifier: Modifier = 
                     Text(itemSubtitle(item), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, maxLines = 1)
                     viewModel.tagsOf(item).firstOrNull()?.let { tag -> LabelBadge(tag.label(), tag.tone, icon = tag.icon) }
                 }
+                val matches = viewModel.searchMatchesOf(item)
+                if (matches.isNotEmpty()) {
+                    SearchMatchesList(
+                        matches = matches,
+                        onOpenDefault = { actions.onOpenDocument(item.id) },
+                        openDocument = actions.onOpenDocument,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
             }
             if (!viewModel.selectionMode) ItemMoreButton(item, itemCommands, actions)
         }
@@ -247,6 +267,59 @@ private fun ItemText(item: FileItem, modifier: Modifier = Modifier) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(item.name, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Text(itemSubtitle(item), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+    }
+}
+
+/** Matching snippets of a document shown under its name when searching the library. */
+@Composable
+private fun SearchMatchesList(
+    matches: List<LibrarySearchMatch>,
+    onOpenDefault: () -> Unit,
+    openDocument: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = MaterialTheme.colorScheme
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        for (match in matches) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(colors.surfaceContainerHighest.copy(alpha = 0.55f))
+                    .clickable {
+                        val customOpen = match.onOpen
+                        if (customOpen != null) customOpen(openDocument) else onOpenDefault()
+                    }
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                match.icon?.let { icon ->
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = colors.primary,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+                if (match.location.isNotEmpty()) {
+                    Text(
+                        text = match.location,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colors.primary,
+                        maxLines = 1
+                    )
+                }
+                Text(
+                    text = match.snippet,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
     }
 }
 

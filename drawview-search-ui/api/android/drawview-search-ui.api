@@ -1,0 +1,23 @@
+public final class io/github/valerioisufi/drawview/search/ui/ContentSearch : io/github/valerioisufi/drawview/explorer/LibrarySearch {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/search/ui/ContentSearch$Companion;
+	public fun <init> (Lio/github/valerioisufi/drawview/search/SearchIndex;Lio/github/valerioisufi/drawview/search/SearchIndexer;Lio/github/valerioisufi/drawview/search/SearchEngine;Lkotlin/jvm/functions/Function2;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/search/SearchIndex;Lio/github/valerioisufi/drawview/search/SearchIndexer;Lio/github/valerioisufi/drawview/search/SearchEngine;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getEngine ()Lio/github/valerioisufi/drawview/search/SearchEngine;
+	public fun getHeaderContent ()Lkotlin/jvm/functions/Function4;
+	public final fun getIndex ()Lio/github/valerioisufi/drawview/search/SearchIndex;
+	public final fun getIndexer ()Lio/github/valerioisufi/drawview/search/SearchIndexer;
+	public final fun getIndexingProgress ()Lkotlinx/coroutines/flow/StateFlow;
+	public fun getMatchedDocumentIds ()Ljava/util/List;
+	public fun matchesOf (Ljava/lang/String;)Ljava/util/List;
+	public fun onQueryChange (Ljava/lang/String;)V
+	public final fun start (Lkotlinx/coroutines/CoroutineScope;)V
+}
+
+public final class io/github/valerioisufi/drawview/search/ui/ContentSearch$Companion {
+}
+
+public final class io/github/valerioisufi/drawview/search/ui/ContentSearchKt {
+	public static final fun rememberContentSearch (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lio/github/valerioisufi/drawview/search/IndexingConditions;Lio/github/valerioisufi/drawview/ml/LoadedModels;Lio/github/valerioisufi/drawview/ml/InstalledModels;Lio/github/valerioisufi/drawview/ml/ModelSpec;Lio/github/valerioisufi/drawview/ml/EmbedderOptions;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)Lio/github/valerioisufi/drawview/search/ui/ContentSearch;
+}
+

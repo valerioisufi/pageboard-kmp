@@ -216,10 +216,10 @@ indexes again what arrives. `PROTOCOL_VERSION` does not change.
 | Phase | State |
 |---|---|
 | 0. Measure | done on the computer (the tablet with phase 3 of docs/local-models.md) |
-| 1. The words | not started |
+| 1. The words | done |
 | 2. The PDFs and the lectures | not started |
 | 3. The meaning | not started |
-| 4. The handwriting of every notebook | not started |
+| 4. The handwriting of every notebook | left for later (to be replaced by another implementation) |
 | 5. The results | not started |
 | 6. Ask your notes | not started |
 | 7. Documentation | not started |
@@ -279,18 +279,16 @@ On the Mac of the student (M5, 16 GB), by `SearchBench` of the bench of the assi
 * EmbeddingGemma 2 for the embeddings, Gemma 4 for the handwriting and the answers, on LiteRT-LM
   (the student, 2026-10-17).
 * The index is a database of its own, built again when its format or its embedding model changes:
-  the only data it deletes is its own, never the documents, the preferences or the lectures (to
-  approve).
+  the only data it deletes is its own, never the documents, the preferences or the lectures.
 * The index stays on its device; nothing travels.
 * 512 dimensions in int8 (as good as 768 in phase 0), compared by brute force; the prompt of a
   query of the model card (revertible).
 * The vectors rank the results; the words do not take part in Reciprocal Rank Fusion as designed,
   which lost the paraphrases in phase 0. They find what the vectors miss (exact terms, names): how
   they join the vectors is decided by phase 3, on the searches of phase 0 (revertible).
-* The handwriting read for the search stays in the index of the device, not in
-  `handwriting.json` (revertible: sharing it changes what travels).
-* The handwriting of every notebook is read on a computer at once, on a phone or a tablet when it
-  is charging and idle, and can be switched off (revertible).
+* `HandwritingRecognizer` (phase 4) is left for later, to be replaced by another implementation;
+  the handwriting read by the lectures (`handwriting.json`) is indexed by `LectureSearchSource`
+  (the student, 2026-10-27).
 * "Ask your notes" answers on the device; Gemini only when chosen.
 * `drawview-search-ui` extends the library through `LibrarySearch`; `LectureSearchSource` lives in
   `drawview-lecture-ui`, so that `drawview-lecture` does not depend on the index (revertible).

@@ -47,6 +47,7 @@ kotlin {
             // The documents shared over the internet too (iroh), once the user turns it on
             implementation(project(":drawview-sync-iroh"))
             implementation(project(":drawview-export-ui"))
+            implementation(project(":drawview-search-ui"))
             // The engines of the PDF pages and of the formulas
             implementation(project(":drawview-pdf"))
             implementation(project(":drawview-latex"))
