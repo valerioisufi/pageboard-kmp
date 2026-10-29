@@ -1,0 +1,243 @@
+# Automatic placement
+
+The notes of the lecture assistant, its review, and any text written elsewhere (pasted, imported,
+asked to a model) put by the application in a sensible place of the notebook: next to what they
+are about, in the free space of the page, in the order the page is read, without covering what
+is already there; proposed, never imposed, and undone in one step. This document starts from the
+code as it is (main at 788d14a6, 2026-10-29): how the content of the assistant is inserted today,
+then the design and the plan.
+
+The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
+Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected
+Variations).
+
+## Starting point
+
+1. **A note is placed by hand.** `NoteInserter.startPlacement` (`drawview-lecture-ui`) jumps to
+   the page of the suggestion (`NoteSuggestion.resolvedPageIndex`: by `pageId`, else by index),
+   builds a `DrawText` 90 mm wide (at most 45 % of the page), 11 pt, in the blue of the assistant
+   (`0xFF1F5AA6`), its title in bold, and starts a `PlacementRequest`: the next tap on a page puts
+   it there (`PlacementManager`, `drawview-canvas`), clamped inside the page, selected. Nothing
+   looks at what is on the page: the note can fall on the writing or on the slide.
+2. **The review goes on new pages.** `NoteInserter.insertPages` splits the Markdown of the review
+   between paragraphs and fills new pages greedily (15 mm margins), after a page chosen in
+   `InsertPagesCard` or at the end of the notebook, in one step of the history.
+3. **Pasted text goes in the middle.** `TextEditorManager.pasteText` puts a pasted text centered on
+   the point (or on the page shown), its width following the text, clamped to the margins: over
+   whatever is there.
+4. **What the assistant knows of a note.** A `NoteSuggestion` has a `kind` (`DEFINITION`,
+   `FORMULA`, `THEOREM`, `EXAMPLE`, `EXPLANATION`, `EXAM_HINT`, `ANNOUNCEMENT`, `REFERENCE`,
+   `OTHER`), a page (`pageIndex`, `pageId`), an `importance` (1 to 3) and the moment of the
+   lecture it was said (`atMs` from `LectureRecord.startedAt`). The model answers the page only
+   (`AnalysisNote.page`), not the part of the page.
+5. **What the application knows of a page.**
+   * Its elements, each with its box: `DrawStroke.bounds`, `DrawText` (box, rotation), `DrawImage`,
+     `DrawCustomElement`, the PDF page under them (`DrawPdf`); `RotatableItem.bounds` covers a
+     rotated box.
+   * The text of a PDF page, character by character with its box (`PdfTextLayout`), from the PDF
+     engine when there is one (a scanned page has none).
+   * Its background (`PageBackground.Ruled`, `Grid`, `Dotted`: the spacing of the lines).
+   * The handwriting in blocks (`groupStrokes`, `InkBlock.bounds`, 6 mm apart), transcribed by
+     `HandwritingReader` (by key of block) and sent to the model as text, from the top of the
+     page (`PageContent.handwriting`): the model sees the blocks, but without a name to point at.
+   * **When a stroke was written**: `DrawElement.added` is a `Stamp` whose `time` is the wall clock
+     of the device. With `LectureRecord.startedAt` and `NoteSuggestion.atMs`, the writing of the
+     student around the moment a note was said can be found today, with no change to the model or
+     to what is stored.
+6. **Measuring text.** `DrawViewController.measureText` and `TextTileAdapter.measure` lay a
+   `DrawText` out as the canvas draws it (Compose); `NoteInserter.measureHeightMm` uses them.
+7. **Search.** `drawview-search` indexes the pages of the notes with a local embedding model
+   (optional: without it, the search is by words); it can tell the pages closest to a text.
+8. **Formats.** Lecture records are JSON (`LectureRecords`, `ignoreUnknownKeys`), merged between
+   the devices of a notebook, told apart by a hash of their canonical form
+   (`LectureRecords.version`). Elements carry no field saying who wrote them.
+
+## Requirements
+
+1. **One tap to insert a note in a sensible place.** "Insert" shows the note already in the best
+   place found; one tap confirms it. The student can look at the other places found, or drag it
+   anywhere, before confirming; placing it by hand stays possible.
+2. **Sensible** means, in this order:
+   1. on the page the note belongs to;
+   2. next to what it is about: what the student wrote when the lecturer said it, or the part of
+      the slide it explains;
+   3. where it is read after it: to its right or below it, not above;
+   4. on free space only: never over writing, typed text, images or the text of the slide, with
+      a margin around them;
+   5. aligned with what is there (the left edge of the column of writing, the lines of a ruled
+      page), at a width that keeps it readable (it may be narrower, never under 30 mm).
+3. **When the page is full**, a new page right after it (in the format of the page it follows),
+   never at the end of the notebook; said in the preview, before confirming.
+4. **Several notes at once** ("Insert all"): placed together, none over another, in one step of
+   the history.
+5. **The review** and **long texts** (pasted, imported, written by a model) flow through the free
+   space of the pages they are about, then onto new pages right after them, split between
+   paragraphs, never in the middle of a formula, a code block or a list item.
+6. **The kind of a note decides its form and place** (stage 2): a definition in the margin next to
+   the term, a summary at the end of the section, a question to answer at the bottom of the page.
+7. **Nothing written by the student is moved, covered or changed.** Everything inserted is
+   undone in one step.
+8. **It degrades, never fails**: without a PDF engine the slide is a box; without text measuring,
+   the height is estimated; without the search engine, a text goes to the page shown.
+9. **Every platform and input**: finger, stylus, mouse, keyboard (Tab and the arrows go through
+   the places found, Return confirms, Escape cancels).
+
+## Design
+
+### The experience
+
+* **Insert a note.** The button "Insert" of a suggestion (today "Insert on p. 4") shows the page
+  and the note as a ghost in the best place, with a small bar over it: ‹ › to go through the
+  other places found (at most five, the best first; Tab and ⇧Tab, the arrows), ✓ to confirm, ✕ to
+  cancel. A tap on the ghost confirms; a tap elsewhere on a page places it there, as today; a drag
+  of the ghost moves it. When the page has no room, the ghost is on a new page drawn as a dashed
+  outline after it, "New page after p. 4".
+* **Insert all.** In the list of notes, "Insert all" (the new ones, or those of one page) shows
+  every note as a ghost at once; ✓ inserts them, ✕ cancels; one at a time can be dragged.
+* **The review.** "Insert in the notebook" places each section of the review next to the pages it
+  is about (stage 1: after the page chosen, as today, but in the free space first), shown before
+  confirming as a list: "Section 1 → p. 4 (free space), Section 2 → new page after p. 7".
+* **Long text.** Pasting a text longer than a few lines (or "Insert text…" in the menu of the
+  page, from a file or the clipboard) opens the same preview: the text flowing through the free
+  space from the page shown, or from the pages it is about when the search engine is there.
+* **The ghost** is the note as it will be (its font, color, width), 60 % opaque, with the free
+  regions faintly shaded while it is shown, so the choice can be understood.
+
+### Responsibilities
+
+| Responsibility | Class (module) | GRASP |
+|---|---|---|
+| The boxes a page holds (strokes, texts, images, elements of the applications), with a margin; the lines of the text of its PDF page as boxes, given by the caller | `PageOccupancy.of(page, pdfText)` (`drawview-model`, package `placement`) | Information Expert (the page knows its content), Low Coupling (the PDF text comes in as rectangles) |
+| The free space of a page as the largest empty rectangles, on a grid of 2 mm cells | `FreeSpace` (`drawview-model`) | Pure Fabrication |
+| The places a block of a given size can take, and their scores | `PlacementPlanner` (`drawview-model`) | Pure Fabrication, Controller of the computation |
+| What makes a place good: near the anchor, after it in reading order, aligned, margins; one per kind of content | `PlacementPolicy` (interface) with `BesideAnchor`, `EndOfSection`, `PageBottom`, `Flow` | Polymorphism, Protected Variations (new kinds without touching the planner) |
+| What a block is about on its page: a region (a box), from the writing of a moment, a block of handwriting, the slide | `PlacementAnchor` (`drawview-model`); `LectureAnchors` (`drawview-lecture`: the strokes added around `startedAt + atMs`) | Information Expert (the lecture knows when a note was said) |
+| The height of a text at a width | a function `(width) -> height` passed to the planner, built from `measureText` | Indirection, Low Coupling (the headless module has no Compose) |
+| A text split into blocks that never break a formula, a code block or a list item, flowed through the free space and onto new pages | `TextFlow` (`drawview-model`) | Pure Fabrication, High Cohesion |
+| The use case "place these blocks": the ghosts, going through the places, confirming in one change, new pages created on confirm | `PlacementManager` with `PlacementRequest.candidates` (`drawview-canvas`) | Controller |
+| Drawing the ghosts, the shaded free space, the bar ‹ › ✓ ✕ | the placement overlay (`drawview-canvas`) | Information Expert |
+| Turning a suggestion, the review or a text into blocks and asking the planner | `NoteInserter` (`drawview-lecture-ui`), `TextEditorManager.pasteText` (`drawview-canvas`) | Creator, Controller |
+
+### The free space
+
+* **The grid.** A page is a grid of 2 mm cells (an A4 page is 105 × 148 cells, 15,540): a cell is
+  taken when a box of the occupancy (with its margin, 3 mm) covers it. The page margins (10 mm)
+  are taken too, except for notes in the margin (`BesideAnchor` can use the outer margin when a
+  slide fills the page).
+* **What is taken.** Every element not removed, by its bounds (rotated boxes by their
+  `RotatableItem.bounds`); highlighter strokes too (they mark text already there). The PDF page:
+  the boxes of its lines of text (characters merged by line), and the box of every image of the
+  page when there is no text (a scanned page is taken whole, except where it is white: stage 2,
+  if needed). Without the PDF text, the whole PDF page is taken.
+* **The rectangles.** The largest empty rectangles of the grid (the histogram method, linear in
+  the cells), kept when at least 30 mm wide and one line high. Deterministic: the same page gives
+  the same places on every device.
+
+### The places and their scores
+
+The planner tries, for every free rectangle, the block at its preferred width (90 mm for a note,
+the width of the column for a flow) and narrower down to 30 mm, the height measured at each
+width, and keeps the positions where it fits: aligned on the left edge of the rectangle, on the
+left edge of the anchor, on the next line of a ruled page. Each position is scored by its policy:
+
+* `BesideAnchor` (a note): the distance from the anchor, counted more above it than below or to
+  its right (reading order); a bonus for the left edge of the anchor and for the outer margin
+  next to it; a penalty for a narrow width.
+* `EndOfSection` (a summary): below the last content of the page or of the section, full width.
+* `PageBottom` (a question): the bottom of the page.
+* `Flow` (a long text): the first free rectangle from the top, in reading order, the blocks one
+  after the other.
+
+The best five, at least 20 mm apart, are the candidates. When none fits, the candidate is a new
+page after the page of the anchor, the block at its top margin.
+
+### The anchor of a note (stage 1, no change to what is stored)
+
+The region the note is about, by the first that exists:
+
+1. the strokes and texts the student added on the page of the note between 60 s before and 30 s
+   after `startedAt + atMs` (their `added.time`), as one box: what they were writing when the
+   lecturer said it;
+2. the last block of writing added on that page during the lecture;
+3. none: the policy prefers the top of the free space of the page.
+
+The clock of a stroke is the one of the device that drew it: on another device the window may be
+off by its skew; the anchor is a preference, not a constraint, so a wrong one only makes the place
+less good.
+
+### The anchor named by the model (stage 2)
+
+The prompt names the blocks of handwriting and the lines of the slide of the visible pages
+(`[b3] the derivative of…`, `[s2] Bayes' theorem`), and a note answers `anchor: "b3"`. The block
+is found again by its key (`InkBlock.key`, stable while the strokes are the same), the line of the
+slide by its text in `PdfTextLayout`. `NoteSuggestion` gets an optional `anchor` (absent: the anchor
+of stage 1).
+
+This changes the lecture records: a field added with a default, read by the older versions
+(`ignoreUnknownKeys`); it needs the test of a record written before (read, merged, the same
+`version` when the field is absent) and a record of the new form read by the old code.
+
+### The form by kind (stage 2)
+
+| Kind | Policy | Form |
+|---|---|---|
+| `DEFINITION`, `FORMULA`, `REFERENCE` | `BesideAnchor`, margin first | narrow box (≤ 60 mm) |
+| `EXPLANATION`, `EXAMPLE`, `THEOREM` | `BesideAnchor`, below first | width of the column |
+| `ANNOUNCEMENT`, `EXAM_HINT` | `PageBottom` | one line, its title in bold |
+| the review, a summary | `EndOfSection`, then `Flow` | full width |
+| a question to answer | `PageBottom` | the answer hidden (see "Left for later") |
+
+## Phases
+
+### Stage 1: placement on what the application has
+
+| Phase | What | Status |
+|---|---|---|
+| 1 | `PageOccupancy`, `FreeSpace`, `PlacementPlanner`, `PlacementPolicy` (`BesideAnchor`, `Flow`) in `drawview-model`: tests on pages built in the tests (empty, full, a slide, ruled, rotated elements), deterministic results; `api/` recorded | planned |
+| 2 | `PlacementRequest.candidates` and the ghost in `PlacementManager`: going through the places (‹ ›, Tab, arrows), confirm, cancel, drag; the new page drawn and created on confirm; one change. Screenshots | planned |
+| 3 | `NoteInserter.startPlacement` on the planner: the anchor of the moment (`LectureAnchors`), the PDF text from the engine; "Insert all" | planned |
+| 4 | `TextFlow`: the review and long pasted texts through the free space and onto new pages after them, with the preview; "Insert text…" | planned |
+| 5 | The pages a text is about from the search engine (sections of the review and of an imported text placed by topic), degrading to the page shown | planned |
+
+### Stage 2: what the model and the stored formats add (each decided with the user first)
+
+| Phase | What | Status |
+|---|---|---|
+| 6 | The anchor named by the model: names in the prompt, `NoteSuggestion.anchor`, the tested migration of lecture records; the evaluation of the lecture assistant (`docs/lecture-eval.md`) checks that the anchors named exist | planned |
+| 7 | The policy and the form by kind (`EndOfSection`, `PageBottom`, narrow boxes) | planned |
+
+## Decisions
+
+Taken alone, revertible:
+
+1. **The engine is in `drawview-model`** (package `placement`): it needs the pages and the
+   geometry only, and is headless; text measuring and the PDF text come in from outside. A module
+   of its own would be one more artifact for a few classes.
+2. **A grid of 2 mm**, not exact geometry: simple, linear, deterministic, and more precise than
+   the placement needs.
+3. **Proposed, not imposed**: the best place is shown, never inserted without a tap.
+4. **A new page goes right after the page of the anchor**, not at the end of the notebook (as the
+   review does today): the notes stay next to what they are about.
+5. **The anchor of stage 1 comes from the time** the strokes were written, a preference only.
+6. **Stage 1 changes nothing stored nor what travels**: the elements inserted are ordinary texts,
+   as today.
+
+To agree with the user:
+
+1. The form by kind (phase 7), and whether the assistant still writes in blue.
+2. Whether the review keeps its choice "after the page / at the end" or always goes by topic.
+
+## Left for later
+
+* **Questions with a hidden answer** (active recall): a text that shows its answer when touched
+  is a new kind of content (a `DrawCustomElement` of an application, or a property of the text):
+  a stored format and a protocol change; a plan of its own.
+* **A line from a note to its anchor**: it needs the anchor kept on the element (stored, and
+  travelling): a protocol change.
+* **The layer of the assistant** (hiding or exporting without what the assistant wrote): it needs
+  the origin of an element stored and travelling: a protocol change. Until then the color tells
+  them apart.
+* **Moving the student's content to make room**: never without asking; not planned.
+* **Scanned slides** taken only where they are not white (the free space inside a scanned page).
+* **Conflicts with `feat/lecture-cost`**, which changes the prompts of `drawview-lecture`: phase 6
+  starts after it is merged.
