@@ -90,8 +90,8 @@ Variations).
   and the note as a ghost in the best place, with a small bar over it: ‹ › to go through the
   other places found (at most five, the best first; Tab and ⇧Tab, the arrows), ✓ to confirm, ✕ to
   cancel. A tap on the ghost confirms; a tap elsewhere on a page places it there, as today; a drag
-  of the ghost moves it. When the page has no room, the ghost is on a new page drawn as a dashed
-  outline after it, "New page after p. 4".
+  of the ghost moves it. When the page has no room, the bar says "New page after p. 4" and the
+  end of that page is shown (no ghost: the page does not exist yet).
 * **Insert all.** In the list of notes, "Insert all" (the new ones, or those of one page) shows
   every note as a ghost at once; ✓ inserts them, ✕ cancels; one at a time can be dragged.
 * **The review.** "Insert in the notebook" places each section of the review next to the pages it
@@ -114,7 +114,8 @@ Variations).
 | What a block is about on its page: a region (a box), from the writing of a moment, a block of handwriting, the slide | `PlacementAnchor` (`drawview-model`); `LectureAnchors` (`drawview-lecture`: the strokes added around `startedAt + atMs`) | Information Expert (the lecture knows when a note was said) |
 | The height of a text at a width | a function `(width) -> height` passed to the planner, built from `measureText` | Indirection, Low Coupling (the headless module has no Compose) |
 | A text split into blocks that never break a formula, a code block or a list item, flowed through the free space and onto new pages | `TextFlow` (`drawview-model`) | Pure Fabrication, High Cohesion |
-| The use case "place these blocks": the ghosts, going through the places, confirming in one change, new pages created on confirm | `PlacementManager` with `PlacementRequest.candidates` (`drawview-canvas`) | Controller |
+| The use case "place these blocks": the ghosts, going through the places, dragging them, confirming, new pages created on confirm; the occupancy of a page with the text of its PDF page | `PlacementManager` with `PlacementRequest(items)`, `PlacementItem`, `PlacementSpot`, `spotsFor`, `pagesFor` (`drawview-canvas`) | Controller |
+| What is placed and where, the places gone through, cancel and confirm, with the keys | `PlacementBar` (`drawview-ui`), its commands registered while a placement is pending | Controller, Polymorphism (the presenters of `Command`) |
 | Drawing the ghosts, the shaded free space, the bar ‹ › ✓ ✕ | the placement overlay (`drawview-canvas`) | Information Expert |
 | Turning a suggestion, the review or a text into blocks and asking the planner | `NoteInserter` (`drawview-lecture-ui`), `TextEditorManager.pasteText` (`drawview-canvas`) | Creator, Controller |
 
@@ -194,7 +195,7 @@ This changes the lecture records: a field added with a default, read by the olde
 | Phase | What | Status |
 |---|---|---|
 | 1 | `PageOccupancy`, `FreeSpace`, `PlacementPlanner`, `PlacementPolicy` (`BesideAnchor`, `ReadingOrder`) in `drawview-model`: tests on pages built in the tests (empty, full, a slide, ruled, rotated elements), deterministic results; `api/` recorded | done |
-| 2 | `PlacementRequest.candidates` and the ghost in `PlacementManager`: going through the places (‹ ›, Tab, arrows), confirm, cancel, drag; the new page drawn and created on confirm; one change. Screenshots | planned |
+| 2 | `PlacementRequest` of items with their places (`PlacementItem`, `PlacementSpot`) and the ghosts in `PlacementManager`: going through the places (‹ ›, Tab, arrows), confirm (Return), cancel, drag; the new page created on confirm (`pagesFor`); `PlacementBar` in `drawview-ui`. Screenshot | done |
 | 3 | `NoteInserter.startPlacement` on the planner: the anchor of the moment (`LectureAnchors`), the PDF text from the engine; "Insert all" | planned |
 | 4 | `TextFlow`: the review and long pasted texts through the free space and onto new pages after them, with the preview; "Insert text…" | planned |
 | 5 | The pages a text is about from the search engine (sections of the review and of an imported text placed by topic), degrading to the page shown | planned |
@@ -223,6 +224,10 @@ Taken alone, revertible:
 5. **The anchor of stage 1 comes from the time** the strokes were written, a preference only.
 6. **Stage 1 changes nothing stored nor what travels**: the elements inserted are ordinary texts,
    as today.
+7. **No ghost for a new page**: the page is not drawn before it exists (the layout of the pages
+   would have to make room for it); the bar names it and the end of the page it follows is shown.
+8. **The keys of the placement are commands** (Tab, ⇧Tab, the arrows, Return), registered while a
+   placement is pending and listed in the menu Edit then; Escape cancels as the system back.
 
 To agree with the user:
 

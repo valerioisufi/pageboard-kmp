@@ -120,6 +120,9 @@ internal class CanvasGestureHandler(
         SELECTION_MOVE, SELECTION_SCALE, SELECTION_ROTATE, TEXT_RESIZE_LEFT, TEXT_RESIZE_RIGHT,
         PAGE_REORDER, TEXT_TAP, PLACE_TAP, EDITOR_TAP,
 
+        /** Pressing a text waiting to be placed: a tap confirms the placement, a drag moves it. */
+        PLACE_ITEM,
+
         /** Moving the text being written by its frame, or one of its sides. */
         EDITOR_MOVE, EDITOR_RESIZE_LEFT, EDITOR_RESIZE_RIGHT,
 
@@ -142,6 +145,10 @@ internal class CanvasGestureHandler(
     private var lastPosition = Offset.Zero
     private var movedBeyondSlop = false
     private var longPressCandidate = false
+
+    /** The text waiting to be placed that is pressed, and the point of it pressed (millimeters from its corner). */
+    private var placementItem = -1
+    private var placementGrab = Offset.Zero
     private var inkPageIndex = -1
     private var inkBrush: BrushConfig? = null
 
@@ -383,8 +390,17 @@ internal class CanvasGestureHandler(
             if (controller.isStylusOnlyMode && change.type == PointerType.Touch) {
                 startPan()
             } else {
-                mode = Mode.PLACE_TAP
-                controller.placementManager.pointer = position
+                val placement = controller.placementManager
+                val item = placement.itemAt(position)
+                val grab = item?.let { placement.grabOf(it, position) }
+                if (item != null && grab != null) {
+                    mode = Mode.PLACE_ITEM
+                    placementItem = item
+                    placementGrab = grab
+                } else {
+                    mode = Mode.PLACE_TAP
+                }
+                placement.pointer = position
             }
             return
         }
@@ -610,6 +626,10 @@ internal class CanvasGestureHandler(
 
             Mode.TEXT_BOX -> live.textBoxDraft = boxBetween(downPosition, position)
 
+            Mode.PLACE_ITEM -> {
+                if (movedBeyondSlop) controller.placementManager.moveItem(placementItem, position, placementGrab)
+            }
+
             Mode.TEXT_TAP, Mode.PLACE_TAP, Mode.EDITOR_TAP -> {
                 if (movedBeyondSlop && mode == Mode.TEXT_TAP && activeType != PointerType.Touch) {
                     // A pen or a mouse draws the box of the text; a finger moves the canvas
@@ -812,6 +832,10 @@ internal class CanvasGestureHandler(
                 if (wasTap) controller.placementManager.placeAt(position)
             }
 
+            Mode.PLACE_ITEM -> {
+                if (wasTap) controller.placementManager.confirm()
+            }
+
             Mode.EDITOR_TAP -> {
                 // On another text: saves this one and opens that one; elsewhere: saves this one
                 if (wasTap && !editTextAt(position)) controller.textEditorManager.finishEditing()
@@ -825,7 +849,7 @@ internal class CanvasGestureHandler(
         if (wasTap && mode != Mode.IGNORED && mode != Mode.PAGE_REORDER && !editorMode) {
             val isDouble = up.uptimeMillis - lastTapTime <= doubleTapTimeout &&
                     (position - lastTapPosition).getDistance() <= touchSlop * 2f
-            if (isDouble && mode != Mode.TEXT_TAP && mode != Mode.PLACE_TAP) {
+            if (isDouble && mode != Mode.TEXT_TAP && mode != Mode.PLACE_TAP && mode != Mode.PLACE_ITEM) {
                 editTextAt(position)
             }
             lastTapTime = up.uptimeMillis

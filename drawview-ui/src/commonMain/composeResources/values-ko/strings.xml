@@ -192,4 +192,11 @@
     <plurals name="message_pages_deleted">
         <item quantity="other">페이지 %1$d개를 삭제했습니다</item>
     </plurals>
+    <string name="placement_hint">메모를 탭하여 배치하거나 드래그하세요</string>
+    <string name="placement_hint_tap">페이지를 탭하여 배치하세요</string>
+    <string name="placement_spot">위치 %1$d / %2$d · %3$d쪽</string>
+    <string name="placement_new_page">%1$d쪽 뒤에 새 페이지</string>
+    <string name="placement_previous">이전 위치</string>
+    <string name="placement_next">다음 위치</string>
+    <string name="placement_confirm">배치</string>
 </resources>

@@ -198,4 +198,11 @@
         <item quantity="one">%1$d page deleted</item>
         <item quantity="other">%1$d pages deleted</item>
     </plurals>
+    <string name="placement_hint">Tap the note to place it, or drag it</string>
+    <string name="placement_hint_tap">Tap a page to place it</string>
+    <string name="placement_spot">Place %1$d of %2$d · p. %3$d</string>
+    <string name="placement_new_page">New page after p. %1$d</string>
+    <string name="placement_previous">Previous place</string>
+    <string name="placement_next">Next place</string>
+    <string name="placement_confirm">Place it</string>
 </resources>

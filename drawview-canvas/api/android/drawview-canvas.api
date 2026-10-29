@@ -401,23 +401,57 @@ public final class io/github/valerioisufi/drawview/canvas/controller/PageSelecti
 	public final fun toggle (Ljava/lang/String;)V
 }
 
+public final class io/github/valerioisufi/drawview/canvas/controller/PlacementItem {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/model/DrawText;Ljava/util/List;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/DrawText;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getPreview ()Lio/github/valerioisufi/drawview/model/DrawText;
+	public final fun getSpots ()Ljava/util/List;
+}
+
 public final class io/github/valerioisufi/drawview/canvas/controller/PlacementManager {
 	public static final field $stable I
 	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
 	public final fun cancel ()V
+	public final fun confirm ()Z
+	public final fun getCanConfirm ()Z
+	public final fun getPlanner ()Lio/github/valerioisufi/drawview/model/placement/PlacementPlanner;
 	public final fun getPointer-_m7T9-E ()Landroidx/compose/ui/geometry/Offset;
+	public final fun getProposals ()Ljava/util/List;
 	public final fun getRequest ()Lio/github/valerioisufi/drawview/canvas/controller/PlacementRequest;
+	public final fun getSpotIndex ()I
+	public final fun getSpots ()Ljava/util/List;
 	public final fun isActive ()Z
+	public final fun newPageSpot (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/placement/PlacementBlock;)Lio/github/valerioisufi/drawview/canvas/controller/PlacementSpot;
+	public final fun next ()V
+	public final fun occupancyOf (ILjava/util/Set;)Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;
+	public static synthetic fun occupancyOf$default (Lio/github/valerioisufi/drawview/canvas/controller/PlacementManager;ILjava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;
+	public final fun pagesFor (Ljava/util/List;)Ljava/util/List;
+	public final fun previous ()V
+	public final fun spotsFor (ILio/github/valerioisufi/drawview/model/placement/PlacementBlock;Lio/github/valerioisufi/drawview/model/placement/PlacementPolicy;)Ljava/util/List;
 	public final fun start (Lio/github/valerioisufi/drawview/canvas/controller/PlacementRequest;)V
 }
 
 public final class io/github/valerioisufi/drawview/canvas/controller/PlacementRequest {
 	public static final field $stable I
-	public fun <init> (Lio/github/valerioisufi/drawview/model/DrawText;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function0;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/DrawText;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/model/DrawText;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Ljava/util/List;Ljava/lang/String;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/DrawText;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Ljava/util/List;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getItems ()Ljava/util/List;
+	public final fun getLabel ()Ljava/lang/String;
 	public final fun getOnCancel ()Lkotlin/jvm/functions/Function0;
-	public final fun getOnPlace ()Lkotlin/jvm/functions/Function3;
+	public final fun getOnPlace ()Lkotlin/jvm/functions/Function1;
 	public final fun getPreview ()Lio/github/valerioisufi/drawview/model/DrawText;
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/PlacementSpot {
+	public static final field $stable I
+	public fun <init> (ILio/github/valerioisufi/drawview/model/geometry/Rect;Z)V
+	public synthetic fun <init> (ILio/github/valerioisufi/drawview/model/geometry/Rect;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBox ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun getNewPageAfter ()Z
+	public final fun getPageIndex ()I
 }
 
 public final class io/github/valerioisufi/drawview/canvas/controller/SelectionGroup {

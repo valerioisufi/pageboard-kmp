@@ -2086,6 +2086,7 @@ final class io.github.valerioisufi.drawview.model.placement/PageOccupancy { // i
     final fun plus(io.github.valerioisufi.drawview.model.geometry/Rect): io.github.valerioisufi.drawview.model.placement/PageOccupancy // io.github.valerioisufi.drawview.model.placement/PageOccupancy.plus|plus(io.github.valerioisufi.drawview.model.geometry.Rect){}[0]
 
     final object Companion { // io.github.valerioisufi.drawview.model.placement/PageOccupancy.Companion|null[0]
+        final fun lineSpacingOf(io.github.valerioisufi.drawview.model/PageBackground): kotlin/Float // io.github.valerioisufi.drawview.model.placement/PageOccupancy.Companion.lineSpacingOf|lineSpacingOf(io.github.valerioisufi.drawview.model.PageBackground){}[0]
         final fun of(io.github.valerioisufi.drawview.model/DrawPage, kotlin/Function1<io.github.valerioisufi.drawview.model/DrawPdf, io.github.valerioisufi.drawview.model/PdfTextLayout?> = ..., kotlin.collections/Set<kotlin/String> = ...): io.github.valerioisufi.drawview.model.placement/PageOccupancy // io.github.valerioisufi.drawview.model.placement/PageOccupancy.Companion.of|of(io.github.valerioisufi.drawview.model.DrawPage;kotlin.Function1<io.github.valerioisufi.drawview.model.DrawPdf,io.github.valerioisufi.drawview.model.PdfTextLayout?>;kotlin.collections.Set<kotlin.String>){}[0]
     }
 }

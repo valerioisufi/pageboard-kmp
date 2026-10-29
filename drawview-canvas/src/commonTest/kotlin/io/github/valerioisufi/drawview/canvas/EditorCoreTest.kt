@@ -5,7 +5,11 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.controller.PlacementItem
 import io.github.valerioisufi.drawview.canvas.controller.PlacementRequest
+import io.github.valerioisufi.drawview.canvas.controller.PlacementSpot
+import io.github.valerioisufi.drawview.model.placement.BesideAnchor
+import io.github.valerioisufi.drawview.model.placement.PlacementBlock
 import io.github.valerioisufi.drawview.canvas.geometry.toCompose
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.BrushConfig
@@ -397,6 +401,78 @@ class EditorCoreTest {
     }
 
     @Test
+    fun proposedPlacesAreGoneThroughMovedAndConfirmed() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controllerWith(2, backgroundScope)
+        val placement = controller.placementManager
+        val block = PlacementBlock(90f) { 20f }
+        val spots = placement.spotsFor(0, block, BesideAnchor(null))
+        assertEquals(placement.planner.maxCandidates, spots.size)
+        assertEquals(MmRect(10f, 10f, 100f, 30f), spots.first().box)
+        val placed = mutableListOf<PlacementSpot>()
+        placement.start(PlacementRequest(DrawText().apply { width = 90f; height = 20f }, onPlace = { placed += it }, spots = spots))
+
+        // The first place is shown, then the others in turn, back to the first
+        assertSame(spots[0], placement.spots.single())
+        placement.next()
+        assertSame(spots[1], placement.spots.single())
+        placement.previous()
+        placement.previous()
+        assertSame(spots.last(), placement.spots.single())
+        placement.next()
+        assertEquals(0, placement.spotIndex)
+
+        // Dragged by its middle, it follows the pointer
+        val mmToScreen = assertNotNull(controller.viewport.pageMmToScreen(0))
+        val middle = mmToScreen.mapPoint(55f, 20f).toCompose()
+        assertEquals(0, placement.itemAt(middle))
+        val grab = assertNotNull(placement.grabOf(0, middle))
+        placement.moveItem(0, mmToScreen.mapPoint(105f, 120f).toCompose(), grab)
+        assertEquals(-1, placement.spotIndex)
+        val moved = assertNotNull(placement.spots.single())
+        assertEquals(60f, moved.box.left, 0.01f)
+        assertEquals(110f, moved.box.top, 0.01f)
+
+        // A tap on it confirms
+        assertTrue(placement.placeAt(mmToScreen.mapPoint(100f, 115f).toCompose()))
+        assertSame(moved, placed.single())
+        assertFalse(placement.isActive)
+    }
+
+    @Test
+    fun aFullPageProposesANewPageMadeOnConfirmation() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controllerWith(2, backgroundScope)
+        val placement = controller.placementManager
+        val first = controller.document.pages[0]
+        first.add(DrawText().apply { x = 0f; y = 0f; width = 210f; height = 297f; text = "Full" })
+        val block = PlacementBlock(90f) { 20f }
+        val spot = placement.spotsFor(0, block, BesideAnchor(null)).single()
+        assertTrue(spot.newPageAfter)
+        assertEquals(0, spot.pageIndex)
+
+        val second = controller.document.pages[1]
+        val pages = placement.pagesFor(listOf(spot, PlacementSpot(1, MmRect(10f, 10f, 20f, 20f)), spot))
+        assertEquals(3, controller.document.pages.size)
+        assertSame(controller.document.pages[1], pages[0])
+        assertSame(pages[0], pages[2])
+        assertSame(second, pages[1])
+    }
+
+    @Test
+    fun severalTextsAreConfirmedTogether() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controllerWith(1, backgroundScope)
+        val placement = controller.placementManager
+        val items = listOf(10f, 50f).map { y -> PlacementItem(DrawText(), listOf(PlacementSpot(0, MmRect(10f, y, 100f, y + 20f)))) }
+        var placed: List<PlacementSpot> = emptyList()
+        placement.start(PlacementRequest(items, onPlace = { placed = it }))
+        assertTrue(placement.proposals.isEmpty())
+        // A tap outside the texts places nothing
+        val mmToScreen = assertNotNull(controller.viewport.pageMmToScreen(0))
+        assertFalse(placement.placeAt(mmToScreen.mapPoint(150f, 200f).toCompose()))
+        assertTrue(placement.confirm())
+        assertEquals(listOf(10f, 50f), placed.map { it.box.top })
+    }
+
+    @Test
     fun pendingPlacementIsPlacedInsideTheTappedPage() = runTest(UnconfinedTestDispatcher()) {
         val controller = controllerWith(2, backgroundScope)
         val placement = controller.placementManager
@@ -407,7 +483,7 @@ class EditorCoreTest {
                 width = 50f
                 height = 20f
             },
-            onPlace = { pageIndex, x, y -> placed.add(Triple(pageIndex, x, y)) },
+            onPlace = { spot -> placed.add(Triple(spot.pageIndex, spot.box.left, spot.box.top)) },
             onCancel = { cancelled++ }
         )
 

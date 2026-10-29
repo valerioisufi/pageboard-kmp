@@ -34,6 +34,7 @@ import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.ink.InkStrokeEngine
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.geometry.Rect as MmRect
 import kotlinx.coroutines.flow.first
 
 /**
@@ -245,30 +246,53 @@ public fun DrawCanvas(
             )
         }
 
-        // 8. Element waiting to be placed, under the mouse or the hovering stylus
+        // 8. Texts waiting to be placed: where they would go (the free space of their pages faintly
+        // shown), or under the mouse or the hovering stylus when no place is proposed
         val placement = controller.placementManager
         val placementRequest = placement.request
-        val pointer = placement.pointer
-        if (placementRequest != null && pointer != null) {
-            placement.targetAt(pointer)?.let { (pageIndex, topLeft) ->
-                drawPlacementPreview(controller, placementRequest.preview, pageIndex, topLeft, Color(theme.primaryColor))
+        if (placementRequest != null) {
+            val primary = Color(theme.primaryColor)
+            for ((pageIndex, runs) in placement.freeSpace) {
+                val mmToScreen = controller.viewport.pageMmToScreen(pageIndex) ?: continue
+                for (run in runs) {
+                    val frame = mmToScreen.mapRect(Rect(run.left, run.top, run.right, run.bottom))
+                    drawRect(primary.copy(alpha = 0.05f), topLeft = frame.topLeft, size = frame.size)
+                }
+            }
+            val spots = placement.spots
+            for ((index, item) in placementRequest.items.withIndex()) {
+                val spot = spots.getOrNull(index)
+                if (spot != null) {
+                    if (!spot.newPageAfter) drawPlacementPreview(controller, item.preview, spot.pageIndex, spot.box, primary)
+                    continue
+                }
+                val pointer = placement.pointer ?: continue
+                placement.targetAt(pointer)?.let { (pageIndex, topLeft) ->
+                    val box = MmRect(topLeft.x, topLeft.y, topLeft.x + item.preview.width, topLeft.y + item.preview.height)
+                    drawPlacementPreview(controller, item.preview, pageIndex, box, primary)
+                }
             }
         }
     }
 }
 
-/** The text of a pending placement at [topLeft] (page millimeters), in a dashed frame. */
+/** The text of a pending placement in [box] (page millimeters), in a dashed frame. */
 private fun DrawScope.drawPlacementPreview(
     controller: DrawViewController,
     preview: DrawText,
     pageIndex: Int,
-    topLeft: Offset,
+    box: MmRect,
     primary: Color
 ) {
     val mmToScreen = controller.viewport.pageMmToScreen(pageIndex) ?: return
-    preview.x = topLeft.x
-    preview.y = topLeft.y
-    val frame = mmToScreen.mapRect(Rect(topLeft.x, topLeft.y, topLeft.x + preview.width, topLeft.y + preview.height))
+    preview.x = box.left
+    preview.y = box.top
+    if (preview.width != box.width || preview.height != box.height) {
+        preview.width = box.width
+        preview.height = box.height
+        preview.markDirty()
+    }
+    val frame = mmToScreen.mapRect(Rect(box.left, box.top, box.right, box.bottom))
     drawRect(primary.copy(alpha = 0.08f), topLeft = frame.topLeft, size = frame.size)
     drawRect(
         primary,

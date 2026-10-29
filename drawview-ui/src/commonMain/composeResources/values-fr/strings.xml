@@ -197,4 +197,11 @@
         <item quantity="one">%1$d page supprimée</item>
         <item quantity="other">%1$d pages supprimées</item>
     </plurals>
+    <string name="placement_hint">Touchez la note pour la placer, ou faites-la glisser</string>
+    <string name="placement_hint_tap">Touchez une page pour la placer</string>
+    <string name="placement_spot">Place %1$d sur %2$d · p. %3$d</string>
+    <string name="placement_new_page">Nouvelle page après la p. %1$d</string>
+    <string name="placement_previous">Place précédente</string>
+    <string name="placement_next">Place suivante</string>
+    <string name="placement_confirm">Placer</string>
 </resources>

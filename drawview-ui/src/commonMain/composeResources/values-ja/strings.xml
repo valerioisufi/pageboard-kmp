@@ -192,4 +192,11 @@
     <plurals name="message_pages_deleted">
         <item quantity="other">%1$d ページを削除しました</item>
     </plurals>
+    <string name="placement_hint">メモをタップして配置、またはドラッグ</string>
+    <string name="placement_hint_tap">ページをタップして配置</string>
+    <string name="placement_spot">候補 %1$d / %2$d · %3$d ページ</string>
+    <string name="placement_new_page">%1$d ページの後に新しいページ</string>
+    <string name="placement_previous">前の候補</string>
+    <string name="placement_next">次の候補</string>
+    <string name="placement_confirm">配置</string>
 </resources>

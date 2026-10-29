@@ -2779,6 +2779,7 @@ public final class io/github/valerioisufi/drawview/model/placement/PageOccupancy
 }
 
 public final class io/github/valerioisufi/drawview/model/placement/PageOccupancy$Companion {
+	public final fun lineSpacingOf (Lio/github/valerioisufi/drawview/model/PageBackground;)F
 	public final fun of (Lio/github/valerioisufi/drawview/model/DrawPage;Lkotlin/jvm/functions/Function1;Ljava/util/Set;)Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;
 	public static synthetic fun of$default (Lio/github/valerioisufi/drawview/model/placement/PageOccupancy$Companion;Lio/github/valerioisufi/drawview/model/DrawPage;Lkotlin/jvm/functions/Function1;Ljava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;
 }

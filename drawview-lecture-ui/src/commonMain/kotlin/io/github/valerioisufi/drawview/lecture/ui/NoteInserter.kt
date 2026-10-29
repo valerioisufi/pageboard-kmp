@@ -53,14 +53,15 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
         controller.placementManager.start(
             PlacementRequest(
                 preview = note,
-                onPlace = { pageIndex, x, y ->
+                onPlace = { spot ->
+                    val pageIndex = spot.pageIndex
                     val page = document.pages.getOrNull(pageIndex) ?: return@PlacementRequest
                     if (note.width > page.widthMm) {
                         note.width = noteWidthMm(page)
                         note.height = measureHeightMm(content, NOTE_FONT_PT, note.width)
                     }
-                    note.x = x.coerceIn(0f, max(0f, page.widthMm - note.width))
-                    note.y = y.coerceIn(0f, max(0f, page.heightMm - note.height))
+                    note.x = spot.box.left.coerceIn(0f, max(0f, page.widthMm - note.width))
+                    note.y = spot.box.top.coerceIn(0f, max(0f, page.heightMm - note.height))
                     addText(controller, page, note)
                     controller.selectionManager.selectText(pageIndex, note)
                     onInserted()

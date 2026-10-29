@@ -21,6 +21,11 @@ import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.dp
 import io.github.takahirom.roborazzi.captureRoboImage
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.controller.PlacementRequest
+import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.placement.BesideAnchor
+import io.github.valerioisufi.drawview.model.placement.PlacementBlock
+import io.github.valerioisufi.drawview.ui.editor.PlacementBar
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.PageBackground
@@ -143,6 +148,25 @@ class ComponentScreenshotTest {
                 ReadOnlyBadge("Valerio’s Mac decides who edits", floating = false)
             }
             ReadOnlyBadge("Valerio’s Mac decides who edits", floating = true)
+        }
+    }
+
+    /** The bar of a pending placement: a note at the second of its five places proposed, and a note going on a new page. */
+    @Test
+    fun placementBar() = capture("placement-bar", width = 560, height = 230) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf(false, true).forEach { full ->
+                val controller = remember {
+                    DrawViewController(document = DrawDocument(), coroutineScope = CoroutineScope(Dispatchers.Unconfined)).apply {
+                        viewport.setSize(800f, 1200f)
+                        if (full) document.pages[0].add(DrawText().apply { width = 210f; height = 297f; text = "Full" })
+                        val spots = placementManager.spotsFor(0, PlacementBlock(90f) { 20f }, BesideAnchor(null))
+                        placementManager.start(PlacementRequest(DrawText(), onPlace = {}, spots = spots, label = "Bayes' theorem"))
+                        if (!full) placementManager.next()
+                    }
+                }
+                PlacementBar(controller)
+            }
         }
     }
 

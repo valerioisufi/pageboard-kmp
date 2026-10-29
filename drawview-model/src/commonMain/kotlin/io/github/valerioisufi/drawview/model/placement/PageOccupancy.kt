@@ -54,12 +54,14 @@ public class PageOccupancy(
                 }
                 page.boundsOf(element)?.takeIf { !it.isEmpty }?.let { boxes += it }
             }
-            val spacing = when (val background = page.background) {
-                is PageBackground.Ruled -> background.spacingMm
-                is PageBackground.Grid -> background.spacingMm
-                else -> 0f
-            }
-            return PageOccupancy(page.widthMm, page.heightMm, boxes, spacing)
+            return PageOccupancy(page.widthMm, page.heightMm, boxes, lineSpacingOf(page.background))
+        }
+
+        /** The spacing of the lines of a ruled or squared [background], `0` for the others. */
+        public fun lineSpacingOf(background: PageBackground): Float = when (background) {
+            is PageBackground.Ruled -> background.spacingMm
+            is PageBackground.Grid -> background.spacingMm
+            else -> 0f
         }
 
         /** The lines of the text of a PDF page drawn on [page], or the whole page without text. */

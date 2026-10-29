@@ -69,6 +69,7 @@ import io.github.valerioisufi.drawview.ui.components.TonalButton
 import io.github.valerioisufi.drawview.ui.editor.CanvasContextMenu
 import io.github.valerioisufi.drawview.ui.editor.SelectionActionBar
 import io.github.valerioisufi.drawview.ui.editor.TextEditorOverlay
+import io.github.valerioisufi.drawview.ui.editor.PlacementBar
 import io.github.valerioisufi.drawview.ui.editor.TextMarkupActionBar
 import io.github.valerioisufi.drawview.ui.extension.EditorPanel
 import io.github.valerioisufi.drawview.ui.generated.resources.*
@@ -316,6 +317,11 @@ private fun DrawScreenContent(
                             )
 
                             TextMarkupActionBar(
+                                controller = controller,
+                                modifier = Modifier.align(Alignment.TopCenter)
+                            )
+
+                            PlacementBar(
                                 controller = controller,
                                 modifier = Modifier.align(Alignment.TopCenter)
                             )
