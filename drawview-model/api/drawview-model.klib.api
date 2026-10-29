@@ -2100,6 +2100,39 @@ final class io.github.valerioisufi.drawview.model.placement/PageOccupancy { // i
     }
 }
 
+final class io.github.valerioisufi.drawview.model.placement/PageTextSizes { // io.github.valerioisufi.drawview.model.placement/PageTextSizes|null[0]
+    constructor <init>(kotlin/Float? = ..., kotlin/Float? = ..., kotlin/Float? = ...) // io.github.valerioisufi.drawview.model.placement/PageTextSizes.<init>|<init>(kotlin.Float?;kotlin.Float?;kotlin.Float?){}[0]
+
+    final val handwriting // io.github.valerioisufi.drawview.model.placement/PageTextSizes.handwriting|{}handwriting[0]
+        final fun <get-handwriting>(): kotlin/Float? // io.github.valerioisufi.drawview.model.placement/PageTextSizes.handwriting.<get-handwriting>|<get-handwriting>(){}[0]
+    final val slide // io.github.valerioisufi.drawview.model.placement/PageTextSizes.slide|{}slide[0]
+        final fun <get-slide>(): kotlin/Float? // io.github.valerioisufi.drawview.model.placement/PageTextSizes.slide.<get-slide>|<get-slide>(){}[0]
+    final val typed // io.github.valerioisufi.drawview.model.placement/PageTextSizes.typed|{}typed[0]
+        final fun <get-typed>(): kotlin/Float? // io.github.valerioisufi.drawview.model.placement/PageTextSizes.typed.<get-typed>|<get-typed>(){}[0]
+
+    final fun component1(): kotlin/Float? // io.github.valerioisufi.drawview.model.placement/PageTextSizes.component1|component1(){}[0]
+    final fun component2(): kotlin/Float? // io.github.valerioisufi.drawview.model.placement/PageTextSizes.component2|component2(){}[0]
+    final fun component3(): kotlin/Float? // io.github.valerioisufi.drawview.model.placement/PageTextSizes.component3|component3(){}[0]
+    final fun copy(kotlin/Float? = ..., kotlin/Float? = ..., kotlin/Float? = ...): io.github.valerioisufi.drawview.model.placement/PageTextSizes // io.github.valerioisufi.drawview.model.placement/PageTextSizes.copy|copy(kotlin.Float?;kotlin.Float?;kotlin.Float?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.placement/PageTextSizes.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.placement/PageTextSizes.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.placement/PageTextSizes.toString|toString(){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.model.placement/PageTextSizes.Companion|null[0]
+        final const val HANDWRITING_HEIGHT_PER_POINT // io.github.valerioisufi.drawview.model.placement/PageTextSizes.Companion.HANDWRITING_HEIGHT_PER_POINT|{}HANDWRITING_HEIGHT_PER_POINT[0]
+            final fun <get-HANDWRITING_HEIGHT_PER_POINT>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/PageTextSizes.Companion.HANDWRITING_HEIGHT_PER_POINT.<get-HANDWRITING_HEIGHT_PER_POINT>|<get-HANDWRITING_HEIGHT_PER_POINT>(){}[0]
+        final const val MIN_SLIDE_CHARS // io.github.valerioisufi.drawview.model.placement/PageTextSizes.Companion.MIN_SLIDE_CHARS|{}MIN_SLIDE_CHARS[0]
+            final fun <get-MIN_SLIDE_CHARS>(): kotlin/Int // io.github.valerioisufi.drawview.model.placement/PageTextSizes.Companion.MIN_SLIDE_CHARS.<get-MIN_SLIDE_CHARS>|<get-MIN_SLIDE_CHARS>(){}[0]
+        final const val MIN_STROKES // io.github.valerioisufi.drawview.model.placement/PageTextSizes.Companion.MIN_STROKES|{}MIN_STROKES[0]
+            final fun <get-MIN_STROKES>(): kotlin/Int // io.github.valerioisufi.drawview.model.placement/PageTextSizes.Companion.MIN_STROKES.<get-MIN_STROKES>|<get-MIN_STROKES>(){}[0]
+        final const val MIN_TYPED_CHARS // io.github.valerioisufi.drawview.model.placement/PageTextSizes.Companion.MIN_TYPED_CHARS|{}MIN_TYPED_CHARS[0]
+            final fun <get-MIN_TYPED_CHARS>(): kotlin/Int // io.github.valerioisufi.drawview.model.placement/PageTextSizes.Companion.MIN_TYPED_CHARS.<get-MIN_TYPED_CHARS>|<get-MIN_TYPED_CHARS>(){}[0]
+
+        final fun of(io.github.valerioisufi.drawview.model/DrawPage, io.github.valerioisufi.drawview.model/PdfTextLayout? = ...): io.github.valerioisufi.drawview.model.placement/PageTextSizes // io.github.valerioisufi.drawview.model.placement/PageTextSizes.Companion.of|of(io.github.valerioisufi.drawview.model.DrawPage;io.github.valerioisufi.drawview.model.PdfTextLayout?){}[0]
+        final fun ofDocument(io.github.valerioisufi.drawview.model/DrawDocument): kotlin/Float? // io.github.valerioisufi.drawview.model.placement/PageTextSizes.Companion.ofDocument|ofDocument(io.github.valerioisufi.drawview.model.DrawDocument){}[0]
+    }
+}
+
 final class io.github.valerioisufi.drawview.model.placement/PlacementBlock { // io.github.valerioisufi.drawview.model.placement/PlacementBlock|null[0]
     constructor <init>(kotlin/Float, kotlin/Float = ..., kotlin/Function1<kotlin/Float, kotlin/Float>) // io.github.valerioisufi.drawview.model.placement/PlacementBlock.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Function1<kotlin.Float,kotlin.Float>){}[0]
 
@@ -3231,6 +3264,19 @@ final object io.github.valerioisufi.drawview.model.placement/PageBottom : io.git
 
 final object io.github.valerioisufi.drawview.model.placement/ReadingOrder : io.github.valerioisufi.drawview.model.placement/PlacementPolicy { // io.github.valerioisufi.drawview.model.placement/ReadingOrder|null[0]
     final fun cost(io.github.valerioisufi.drawview.model.geometry/Rect, io.github.valerioisufi.drawview.model.placement/PlacementBlock): kotlin/Float // io.github.valerioisufi.drawview.model.placement/ReadingOrder.cost|cost(io.github.valerioisufi.drawview.model.geometry.Rect;io.github.valerioisufi.drawview.model.placement.PlacementBlock){}[0]
+}
+
+final object io.github.valerioisufi.drawview.model.placement/TextSizePolicy { // io.github.valerioisufi.drawview.model.placement/TextSizePolicy|null[0]
+    final const val MAX // io.github.valerioisufi.drawview.model.placement/TextSizePolicy.MAX|{}MAX[0]
+        final fun <get-MAX>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/TextSizePolicy.MAX.<get-MAX>|<get-MAX>(){}[0]
+    final const val MIN // io.github.valerioisufi.drawview.model.placement/TextSizePolicy.MIN|{}MIN[0]
+        final fun <get-MIN>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/TextSizePolicy.MIN.<get-MIN>|<get-MIN>(){}[0]
+    final const val SLIDE_SHARE // io.github.valerioisufi.drawview.model.placement/TextSizePolicy.SLIDE_SHARE|{}SLIDE_SHARE[0]
+        final fun <get-SLIDE_SHARE>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/TextSizePolicy.SLIDE_SHARE.<get-SLIDE_SHARE>|<get-SLIDE_SHARE>(){}[0]
+
+    final fun forNote(io.github.valerioisufi.drawview.model.placement/PageTextSizes, kotlin/Float): kotlin/Float // io.github.valerioisufi.drawview.model.placement/TextSizePolicy.forNote|forNote(io.github.valerioisufi.drawview.model.placement.PageTextSizes;kotlin.Float){}[0]
+    final fun nearestPreset(kotlin/Float): kotlin/Float // io.github.valerioisufi.drawview.model.placement/TextSizePolicy.nearestPreset|nearestPreset(kotlin.Float){}[0]
+    final fun smaller(kotlin/Float): kotlin/Float // io.github.valerioisufi.drawview.model.placement/TextSizePolicy.smaller|smaller(kotlin.Float){}[0]
 }
 
 final object io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighlighter : io.github.valerioisufi.drawview.model.text.code/CodeHighlighter { // io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighlighter|null[0]

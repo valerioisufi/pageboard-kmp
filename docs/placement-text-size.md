@@ -88,7 +88,7 @@ One step only: a note much smaller than the page would be hard to read.
 
 | Phase | What | Status |
 |---|---|---|
-| 1 | `PageTextSizes` and `TextSizePolicy` in `drawview-model`: tests on pages with typed texts of several sizes, a slide shown at another scale, handwriting, too little of each | planned |
+| 1 | `PageTextSizes` and `TextSizePolicy` in `drawview-model`: tests on pages with typed texts of several sizes, a slide shown at another scale, handwriting, too little of each | done |
 | 2 | The notes at the size of their page, margin notes one step smaller; the review at the size of its page and of the notebook; the ghosts at their size. Tests of `NoteInserter`, screenshots | planned |
 
 ## Decisions
