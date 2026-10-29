@@ -15,7 +15,9 @@ import kotlinx.coroutines.runBlocking
  * * `prompts`: [PromptBench], the requests of the assistant on the lectures of the workspace of
  *   lecture-eval (`drawview.bench.workspace`, read only);
  * * `speech`: [SpeechBench], whisper.cpp and Gemma 4 on ten minutes of a lecture;
- * * `search`: [SearchBench], EmbeddingGemma 2 and the words on the pages of the workspace.
+ * * `search`: [SearchBench], EmbeddingGemma 2 and the words on the pages of the workspace;
+ * * `notes`: [NotesBench], the live notes of a whole lecture by the configurations of
+ *   `drawview.bench.notes`, a request every `drawview.bench.interval` seconds (300 by default).
  *
  * `drawview.bench.parts` chooses the parts (all by default), `drawview.bench.models` the models
  * (every model found by default), `drawview.bench.modes` the ways of giving the schema (`enforced`,
@@ -45,6 +47,9 @@ class AssistantBench {
                 "formulas" -> FormulaBench(bench).run(section)
                 "prompts" -> workspace?.let { PromptBench(bench, it, kinds = list("drawview.bench.kinds"), lectureCount = System.getProperty("drawview.bench.lectures")?.toIntOrNull()).run(section) } ?: section.appendLine("## The requests of the assistant\n\nNo workspace (drawview.bench.workspace).\n")
                 "speech" -> SpeechBench(bench).run(section)
+                "notes" -> workspace?.let {
+                    NotesBench(bench, it, configs = list("drawview.bench.notes"), intervalMs = (System.getProperty("drawview.bench.interval")?.toLongOrNull() ?: 300) * 1000, maxDollars = System.getProperty("drawview.bench.dollars")?.toDoubleOrNull() ?: 1.2).run(section)
+                } ?: section.appendLine("## The notes of a whole lecture\n\nNo workspace (drawview.bench.workspace).\n")
                 "search" -> workspace?.let { SearchBench(bench, it).run(section) } ?: section.appendLine("## Search\n\nNo workspace (drawview.bench.workspace).\n")
                 else -> section.appendLine("## $part\n\nNo such part.\n")
             }

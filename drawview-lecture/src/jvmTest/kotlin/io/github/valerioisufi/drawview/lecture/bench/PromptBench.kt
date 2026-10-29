@@ -60,7 +60,11 @@ internal class PreparedNote(
 
 /** What the bench reads of a lecture of PencilNotes (`lecture.json`): the pages seen, with their images. */
 @Serializable
-internal class RecordedLecture(val pages: List<RecordedPage> = emptyList())
+internal class RecordedLecture(val pages: List<RecordedPage> = emptyList(), val suggestions: List<RecordedSuggestion> = emptyList())
+
+/** A note that the assistant suggested during the lecture. */
+@Serializable
+internal class RecordedSuggestion(val title: String = "")
 
 @Serializable
 internal class RecordedPage(val content: RecordedContent, val image: String? = null)
@@ -75,8 +79,30 @@ internal class CourseContextFile(val text: String = "")
  * A lecture of the workspace of lecture-eval, with the pages seen and the course context of its
  * copy in `<bench>/material/pencilnotes`: the requests of the assistant as it would have built them.
  */
-internal class BenchLecture(val prepared: PreparedLecture, private val pages: Map<String, RecordedPage>, private val pagesDirectory: File, val courseContext: String) {
+internal class BenchLecture(
+    val prepared: PreparedLecture,
+    private val pages: Map<String, RecordedPage>,
+    private val pagesDirectory: File,
+    val courseContext: String,
+    private val suggestionTitles: List<String> = emptyList()
+) {
     val id: String get() = prepared.lectureId
+
+    /**
+     * This lecture as the student had it without the assistant: the notes inserted from its
+     * suggestions removed (a note inserted begins with the title of its suggestion in bold), and no
+     * images of the pages, which were taken with those notes on them.
+     */
+    fun untouched(): BenchLecture {
+        val fromAssistant = suggestionTitles.map { "**${it.trim()}**" }
+        val notes = prepared.notes.filter { note -> fromAssistant.none { note.text.trim().startsWith(it) } }
+        return BenchLecture(
+            PreparedLecture(prepared.lectureId, prepared.documentId, prepared.documentTitle, prepared.durationMs, prepared.context, notes),
+            pages.mapValues { RecordedPage(it.value.content, image = null) },
+            pagesDirectory,
+            courseContext
+        )
+    }
 
     /** The transcript, a segment a sentence. */
     val transcript: List<TranscriptSegment> = prepared.context.sentences.map { TranscriptSegment(it.startMs, it.endMs, it.text) }
@@ -102,10 +128,10 @@ internal class BenchLecture(val prepared: PreparedLecture, private val pages: Ma
     }
 
     /** The notebook [atMs]: the pages around the visible one in text, the visible one as an image (as the local models get it). */
-    fun notebook(atMs: Long): NotebookSnapshot? {
+    fun notebook(atMs: Long, before: Int = 4, after: Int = 5, found: Set<Int> = emptySet()): NotebookSnapshot? {
         val visibleId = visiblePageId(atMs) ?: return null
         val visible = pages[visibleId]?.content?.index ?: return null
-        val around = pages.values.map { it.content }.filter { it.index in (visible - 4)..(visible + 5) }.sortedBy { it.index }
+        val around = pages.values.map { it.content }.filter { it.index in (visible - before)..(visible + after) || it.index in found }.sortedBy { it.index }
         val contents = around.mapNotNull { page(it.pageId, atMs) }
         val image = pages[visibleId]?.image?.let { File(pagesDirectory, it) }?.takeIf { it.isFile }?.let { PageImage(visible, it.readBytes()) }
         return NotebookSnapshot(
@@ -116,6 +142,12 @@ internal class BenchLecture(val prepared: PreparedLecture, private val pages: Ma
             pageImages = listOfNotNull(image)
         )
     }
+
+    /** Every page of the notebook as the student had it [atMs], in its order. */
+    fun pagesAt(atMs: Long): List<PageContent> = pages.values.mapNotNull { page(it.content.pageId, atMs) }.sortedBy { it.index }
+
+    /** The index of the page the student is looking at [atMs]. */
+    fun visibleIndex(atMs: Long): Int? = visiblePageId(atMs)?.let { pages[it]?.content?.index }
 
     /** Every page seen, as at the end of the lecture, with the images of the pages that were on screen. */
     fun pagesSeen(): Pair<List<PageContent>, List<PageImage>> {
@@ -138,7 +170,7 @@ internal class BenchLecture(val prepared: PreparedLecture, private val pages: Ma
             val recorded = json.decodeFromString(RecordedLecture.serializer(), lectureFile.readText())
             val context = File(documentDirectory, "context.json").takeIf { it.isFile }
                 ?.let { json.decodeFromString(CourseContextFile.serializer(), it.readText()).text }.orEmpty()
-            return BenchLecture(prepared, recorded.pages.associateBy { it.content.pageId }, File(documentDirectory, "$id/pages"), context)
+            return BenchLecture(prepared, recorded.pages.associateBy { it.content.pageId }, File(documentDirectory, "$id/pages"), context, recorded.suggestions.map { it.title })
         }
     }
 }

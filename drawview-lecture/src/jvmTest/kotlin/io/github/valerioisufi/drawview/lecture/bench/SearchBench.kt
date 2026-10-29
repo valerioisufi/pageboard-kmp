@@ -152,7 +152,7 @@ internal class SearchBench(private val bench: Bench, private val workspace: File
     }
 
     /** BM25 as FTS5 computes it (k1 = 1.2, b = 0.75). */
-    private class Bm25(private val documents: List<List<String>>) {
+    internal class Bm25(private val documents: List<List<String>>) {
         private val frequencies = documents.map { words -> words.groupingBy { it }.eachCount() }
         private val documentsWith = HashMap<String, Int>().also { counts -> frequencies.forEach { f -> f.keys.forEach { counts[it] = (counts[it] ?: 0) + 1 } } }
         private val averageLength = documents.meanOf { it.size.toDouble() }

@@ -91,7 +91,7 @@ tasks.named<Test>("jvmTest") {
         systemProperty("drawview.bench.workspace", providers.gradleProperty("drawview.bench.workspace").getOrElse(""))
         systemProperty("drawview.bench.models", providers.gradleProperty("drawview.bench.models").getOrElse(""))
         systemProperty("drawview.bench.modes", providers.gradleProperty("drawview.bench.modes").getOrElse(""))
-        for (name in listOf("temperature", "kinds", "lectures", "accelerator")) {
+        for (name in listOf("temperature", "kinds", "lectures", "accelerator", "notes", "interval", "dollars")) {
             systemProperty("drawview.bench.$name", providers.gradleProperty("drawview.bench.$name").getOrElse(""))
         }
         outputs.upToDateWhen { false }
