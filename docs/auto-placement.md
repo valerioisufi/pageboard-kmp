@@ -168,25 +168,44 @@ less good.
 
 ### The anchor named by the model (stage 2)
 
-The prompt names the blocks of handwriting and the lines of the slide of the visible pages
-(`[b3] the derivative of…`, `[s2] Bayes' theorem`), and a note answers `anchor: "b3"`. The block
-is found again by its key (`InkBlock.key`, stable while the strokes are the same), the line of the
-slide by its text in `PdfTextLayout`. `NoteSuggestion` gets an optional `anchor` (absent: the anchor
-of stage 1).
+A note answers `anchor`: **a few exact words** (at most 8) of the slide or of the notes of the
+student on its page, that the note explains or completes; omitted when there are none. A quote
+rather than names given to the blocks in the prompt (`[b3]`): the description of the notebook does
+not change (the slides opening every request stay as they are in the explicit cache of
+`docs/lecture-cost.md`), a small local model quotes more reliably than it copies an identifier, and
+a quote survives the blocks regrouped by new strokes.
 
-This changes the lecture records: a field added with a default, read by the older versions
-(`ignoreUnknownKeys`); it needs the test of a record written before (read, merged, the same
-`version` when the field is absent) and a record of the new form read by the old code.
+The quote is found again when the note is inserted (`LectureAnchors.quoteAnchor`, Information
+Expert), comparing its words with:
+
+1. the texts typed on the page (their boxes);
+2. the blocks of handwriting of the page, by the text `HandwritingReader` keeps for them
+   (`LectureAssistant.handwritingText`);
+3. the text of its PDF page (`PdfTextLayout`): the run of words of the length of the quote that
+   shares the most words with it, its lines as the box.
+
+A match shares at least 60 % of the words of the quote; the best wins, the order above breaking
+ties. Without a match the anchor of stage 1 (the time) is used.
+
+`NoteSuggestion` gets an optional `anchor`, **never written when empty**
+(`@EncodeDefault(NEVER)`): the records stored or received before are written again byte for byte,
+their `version` unchanged, and an older version reads a new record (`ignoreUnknownKeys`). Tested:
+a record of the old form read and written again as it was, merged with its new form keeping the
+anchor.
 
 ### The form by kind (stage 2)
 
-| Kind | Policy | Form |
+The assistant keeps writing **in blue** (`0xFF1F5AA6`): what the student wrote and what was added
+for them stay apart at a glance, which matters to study from them; the color is the only mark,
+nothing stored tells them apart (see "Left for later").
+
+| Kind | Policy | Width |
 |---|---|---|
-| `DEFINITION`, `FORMULA`, `REFERENCE` | `BesideAnchor`, margin first | narrow box (≤ 60 mm) |
-| `EXPLANATION`, `EXAMPLE`, `THEOREM` | `BesideAnchor`, below first | width of the column |
-| `ANNOUNCEMENT`, `EXAM_HINT` | `PageBottom` | one line, its title in bold |
-| the review, a summary | `EndOfSection`, then `Flow` | full width |
-| a question to answer | `PageBottom` | the answer hidden (see "Left for later") |
+| `DEFINITION`, `FORMULA`, `REFERENCE` | `InMargin`: beside the anchor first (the margin or the free column next to it), else below | narrow, 60 mm |
+| `EXPLANATION`, `EXAMPLE`, `THEOREM`, `OTHER` | `BesideAnchor`: below it first | the width of the anchor (60 mm to the page), 90 mm without one |
+| `ANNOUNCEMENT`, `EXAM_HINT` | `PageBottom`: the bottom of the free space | the page |
+| the review | `ReadingOrder` through the free space (phase 4), by topic (phase 5) | the page |
+| a question to answer | — | left for later (an answer hidden) |
 
 ## Phases
 
@@ -204,8 +223,8 @@ This changes the lecture records: a field added with a default, read by the olde
 
 | Phase | What | Status |
 |---|---|---|
-| 6 | The anchor named by the model: names in the prompt, `NoteSuggestion.anchor`, the tested migration of lecture records; the evaluation of the lecture assistant (`docs/lecture-eval.md`) checks that the anchors named exist | planned |
-| 7 | The policy and the form by kind (`EndOfSection`, `PageBottom`, narrow boxes) | planned |
+| 6 | The anchor named by the model: a quote in the answer (`AnalysisNote.anchor`, the schemas and the instructions of the live notes and of the review), `NoteSuggestion.anchor` never written when empty, tested on the records of the old form; `LectureAnchors.quoteAnchor` | planned |
+| 7 | The policy and the width by kind (`InMargin`, `PageBottom`, `NotePlacement.of(kind)`) | planned |
 
 ## Decisions
 
@@ -238,11 +257,11 @@ Taken alone, revertible:
 12. **`TopicFinder` is an interface of `drawview-lecture`**: the lecture modules do not depend on
     the search; the application connects them (Indirection, Low Coupling).
 
-To agree with the user:
-
-1. The form by kind (phase 7), and whether the assistant still writes in blue.
-2. Whether the review should go by topic by default (it does when the search is there), or on the
-   page shown.
+13. **The anchor is a quote**, not a name given to the blocks in the prompt (see "The anchor named
+    by the model").
+14. **The form by kind** is a policy and a width, and the assistant keeps its blue (the user left
+    it to me, 2026-10-29). No `EndOfSection`: the review already flows by topic.
+15. **The review goes by topic by default** when the search is there.
 
 ## Left for later
 
