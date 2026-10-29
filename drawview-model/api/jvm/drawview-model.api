@@ -2740,6 +2740,97 @@ public final class io/github/valerioisufi/drawview/model/geometry/Rect$Companion
 	public final fun getZero ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
 }
 
+public final class io/github/valerioisufi/drawview/model/placement/BesideAnchor : io/github/valerioisufi/drawview/model/placement/PlacementPolicy {
+	public fun <init> (Lio/github/valerioisufi/drawview/model/geometry/Rect;)V
+	public fun cost (Lio/github/valerioisufi/drawview/model/geometry/Rect;Lio/github/valerioisufi/drawview/model/placement/PlacementBlock;)F
+	public final fun getAnchor ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+}
+
+public final class io/github/valerioisufi/drawview/model/placement/FreeSpace {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/placement/FreeSpace$Companion;
+	public static final field DEFAULT_CELL_MM F
+	public static final field DEFAULT_CLEARANCE_MM F
+	public static final field DEFAULT_PAGE_MARGIN_MM F
+	public fun <init> (Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;FFF)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;FFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun freeRuns ()Ljava/util/List;
+	public final fun getCellMm ()F
+	public final fun getClearanceMm ()F
+	public final fun getColumns ()I
+	public final fun getPageMarginMm ()F
+	public final fun getRows ()I
+	public final fun isFree (Lio/github/valerioisufi/drawview/model/geometry/Rect;)Z
+	public final fun isTaken (II)Z
+}
+
+public final class io/github/valerioisufi/drawview/model/placement/FreeSpace$Companion {
+}
+
+public final class io/github/valerioisufi/drawview/model/placement/PageOccupancy {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/placement/PageOccupancy$Companion;
+	public fun <init> (FFLjava/util/List;F)V
+	public synthetic fun <init> (FFLjava/util/List;FILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBoxes ()Ljava/util/List;
+	public final fun getHeightMm ()F
+	public final fun getLineSpacingMm ()F
+	public final fun getPageRect ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+	public final fun getWidthMm ()F
+	public final fun plus (Lio/github/valerioisufi/drawview/model/geometry/Rect;)Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;
+}
+
+public final class io/github/valerioisufi/drawview/model/placement/PageOccupancy$Companion {
+	public final fun of (Lio/github/valerioisufi/drawview/model/DrawPage;Lkotlin/jvm/functions/Function1;Ljava/util/Set;)Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;
+	public static synthetic fun of$default (Lio/github/valerioisufi/drawview/model/placement/PageOccupancy$Companion;Lio/github/valerioisufi/drawview/model/DrawPage;Lkotlin/jvm/functions/Function1;Ljava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;
+}
+
+public final class io/github/valerioisufi/drawview/model/placement/PlacementBlock {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/placement/PlacementBlock$Companion;
+	public static final field DEFAULT_MIN_WIDTH_MM F
+	public fun <init> (FFLkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> (FFLkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getHeightAt ()Lkotlin/jvm/functions/Function1;
+	public final fun getMinWidthMm ()F
+	public final fun getPreferredWidthMm ()F
+}
+
+public final class io/github/valerioisufi/drawview/model/placement/PlacementBlock$Companion {
+}
+
+public final class io/github/valerioisufi/drawview/model/placement/PlacementCandidate {
+	public fun <init> (Lio/github/valerioisufi/drawview/model/geometry/Rect;F)V
+	public final fun getCost ()F
+	public final fun getRect ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+}
+
+public final class io/github/valerioisufi/drawview/model/placement/PlacementPlanner {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/placement/PlacementPlanner$Companion;
+	public static final field DEFAULT_MAX_CANDIDATES I
+	public static final field DEFAULT_SEPARATION_MM F
+	public fun <init> ()V
+	public fun <init> (FFFIF)V
+	public synthetic fun <init> (FFFIFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun candidates (Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;Lio/github/valerioisufi/drawview/model/placement/PlacementBlock;Lio/github/valerioisufi/drawview/model/placement/PlacementPolicy;)Ljava/util/List;
+	public final fun freeSpace (Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;)Lio/github/valerioisufi/drawview/model/placement/FreeSpace;
+	public final fun getCellMm ()F
+	public final fun getClearanceMm ()F
+	public final fun getMaxCandidates ()I
+	public final fun getPageMarginMm ()F
+	public final fun getSeparationMm ()F
+	public final fun placeAll (Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;Ljava/util/List;)Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/drawview/model/placement/PlacementPlanner$Companion {
+}
+
+public abstract interface class io/github/valerioisufi/drawview/model/placement/PlacementPolicy {
+	public abstract fun cost (Lio/github/valerioisufi/drawview/model/geometry/Rect;Lio/github/valerioisufi/drawview/model/placement/PlacementBlock;)F
+}
+
+public final class io/github/valerioisufi/drawview/model/placement/ReadingOrder : io/github/valerioisufi/drawview/model/placement/PlacementPolicy {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/placement/ReadingOrder;
+	public fun cost (Lio/github/valerioisufi/drawview/model/geometry/Rect;Lio/github/valerioisufi/drawview/model/placement/PlacementBlock;)F
+}
+
 public final class io/github/valerioisufi/drawview/model/text/RichTextParser {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/RichTextParser;
 	public final fun getLINE_NUMBERS ()Ljava/util/Set;

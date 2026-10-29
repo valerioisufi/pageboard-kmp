@@ -131,6 +131,10 @@ abstract fun interface io.github.valerioisufi.drawview.model.change/ChangeObserv
     abstract fun onChange(io.github.valerioisufi.drawview.model.change/CommittedChange) // io.github.valerioisufi.drawview.model.change/ChangeObserver.onChange|onChange(io.github.valerioisufi.drawview.model.change.CommittedChange){}[0]
 }
 
+abstract fun interface io.github.valerioisufi.drawview.model.placement/PlacementPolicy { // io.github.valerioisufi.drawview.model.placement/PlacementPolicy|null[0]
+    abstract fun cost(io.github.valerioisufi.drawview.model.geometry/Rect, io.github.valerioisufi.drawview.model.placement/PlacementBlock): kotlin/Float // io.github.valerioisufi.drawview.model.placement/PlacementPolicy.cost|cost(io.github.valerioisufi.drawview.model.geometry.Rect;io.github.valerioisufi.drawview.model.placement.PlacementBlock){}[0]
+}
+
 abstract fun interface io.github.valerioisufi.drawview.model/StrokeModeller { // io.github.valerioisufi.drawview.model/StrokeModeller|null[0]
     abstract fun buildMesh(kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint>, io.github.valerioisufi.drawview.model/BrushConfig, io.github.valerioisufi.drawview.model/InputToolType): io.github.valerioisufi.drawview.model/StrokeMesh? // io.github.valerioisufi.drawview.model/StrokeModeller.buildMesh|buildMesh(kotlin.collections.List<io.github.valerioisufi.drawview.model.StrokePoint>;io.github.valerioisufi.drawview.model.BrushConfig;io.github.valerioisufi.drawview.model.InputToolType){}[0]
 }
@@ -2028,6 +2032,115 @@ final class io.github.valerioisufi.drawview.model.geometry/Rect { // io.github.v
     }
 }
 
+final class io.github.valerioisufi.drawview.model.placement/BesideAnchor : io.github.valerioisufi.drawview.model.placement/PlacementPolicy { // io.github.valerioisufi.drawview.model.placement/BesideAnchor|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.model.geometry/Rect?) // io.github.valerioisufi.drawview.model.placement/BesideAnchor.<init>|<init>(io.github.valerioisufi.drawview.model.geometry.Rect?){}[0]
+
+    final val anchor // io.github.valerioisufi.drawview.model.placement/BesideAnchor.anchor|{}anchor[0]
+        final fun <get-anchor>(): io.github.valerioisufi.drawview.model.geometry/Rect? // io.github.valerioisufi.drawview.model.placement/BesideAnchor.anchor.<get-anchor>|<get-anchor>(){}[0]
+
+    final fun cost(io.github.valerioisufi.drawview.model.geometry/Rect, io.github.valerioisufi.drawview.model.placement/PlacementBlock): kotlin/Float // io.github.valerioisufi.drawview.model.placement/BesideAnchor.cost|cost(io.github.valerioisufi.drawview.model.geometry.Rect;io.github.valerioisufi.drawview.model.placement.PlacementBlock){}[0]
+}
+
+final class io.github.valerioisufi.drawview.model.placement/FreeSpace { // io.github.valerioisufi.drawview.model.placement/FreeSpace|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.model.placement/PageOccupancy, kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ...) // io.github.valerioisufi.drawview.model.placement/FreeSpace.<init>|<init>(io.github.valerioisufi.drawview.model.placement.PageOccupancy;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+
+    final val cellMm // io.github.valerioisufi.drawview.model.placement/FreeSpace.cellMm|{}cellMm[0]
+        final fun <get-cellMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/FreeSpace.cellMm.<get-cellMm>|<get-cellMm>(){}[0]
+    final val clearanceMm // io.github.valerioisufi.drawview.model.placement/FreeSpace.clearanceMm|{}clearanceMm[0]
+        final fun <get-clearanceMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/FreeSpace.clearanceMm.<get-clearanceMm>|<get-clearanceMm>(){}[0]
+    final val columns // io.github.valerioisufi.drawview.model.placement/FreeSpace.columns|{}columns[0]
+        final fun <get-columns>(): kotlin/Int // io.github.valerioisufi.drawview.model.placement/FreeSpace.columns.<get-columns>|<get-columns>(){}[0]
+    final val pageMarginMm // io.github.valerioisufi.drawview.model.placement/FreeSpace.pageMarginMm|{}pageMarginMm[0]
+        final fun <get-pageMarginMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/FreeSpace.pageMarginMm.<get-pageMarginMm>|<get-pageMarginMm>(){}[0]
+    final val rows // io.github.valerioisufi.drawview.model.placement/FreeSpace.rows|{}rows[0]
+        final fun <get-rows>(): kotlin/Int // io.github.valerioisufi.drawview.model.placement/FreeSpace.rows.<get-rows>|<get-rows>(){}[0]
+
+    final fun freeRuns(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Rect> // io.github.valerioisufi.drawview.model.placement/FreeSpace.freeRuns|freeRuns(){}[0]
+    final fun isFree(io.github.valerioisufi.drawview.model.geometry/Rect): kotlin/Boolean // io.github.valerioisufi.drawview.model.placement/FreeSpace.isFree|isFree(io.github.valerioisufi.drawview.model.geometry.Rect){}[0]
+    final fun isTaken(kotlin/Int, kotlin/Int): kotlin/Boolean // io.github.valerioisufi.drawview.model.placement/FreeSpace.isTaken|isTaken(kotlin.Int;kotlin.Int){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.model.placement/FreeSpace.Companion|null[0]
+        final const val DEFAULT_CELL_MM // io.github.valerioisufi.drawview.model.placement/FreeSpace.Companion.DEFAULT_CELL_MM|{}DEFAULT_CELL_MM[0]
+            final fun <get-DEFAULT_CELL_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/FreeSpace.Companion.DEFAULT_CELL_MM.<get-DEFAULT_CELL_MM>|<get-DEFAULT_CELL_MM>(){}[0]
+        final const val DEFAULT_CLEARANCE_MM // io.github.valerioisufi.drawview.model.placement/FreeSpace.Companion.DEFAULT_CLEARANCE_MM|{}DEFAULT_CLEARANCE_MM[0]
+            final fun <get-DEFAULT_CLEARANCE_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/FreeSpace.Companion.DEFAULT_CLEARANCE_MM.<get-DEFAULT_CLEARANCE_MM>|<get-DEFAULT_CLEARANCE_MM>(){}[0]
+        final const val DEFAULT_PAGE_MARGIN_MM // io.github.valerioisufi.drawview.model.placement/FreeSpace.Companion.DEFAULT_PAGE_MARGIN_MM|{}DEFAULT_PAGE_MARGIN_MM[0]
+            final fun <get-DEFAULT_PAGE_MARGIN_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/FreeSpace.Companion.DEFAULT_PAGE_MARGIN_MM.<get-DEFAULT_PAGE_MARGIN_MM>|<get-DEFAULT_PAGE_MARGIN_MM>(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.model.placement/PageOccupancy { // io.github.valerioisufi.drawview.model.placement/PageOccupancy|null[0]
+    constructor <init>(kotlin/Float, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Rect>, kotlin/Float = ...) // io.github.valerioisufi.drawview.model.placement/PageOccupancy.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.Rect>;kotlin.Float){}[0]
+
+    final val boxes // io.github.valerioisufi.drawview.model.placement/PageOccupancy.boxes|{}boxes[0]
+        final fun <get-boxes>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Rect> // io.github.valerioisufi.drawview.model.placement/PageOccupancy.boxes.<get-boxes>|<get-boxes>(){}[0]
+    final val heightMm // io.github.valerioisufi.drawview.model.placement/PageOccupancy.heightMm|{}heightMm[0]
+        final fun <get-heightMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/PageOccupancy.heightMm.<get-heightMm>|<get-heightMm>(){}[0]
+    final val lineSpacingMm // io.github.valerioisufi.drawview.model.placement/PageOccupancy.lineSpacingMm|{}lineSpacingMm[0]
+        final fun <get-lineSpacingMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/PageOccupancy.lineSpacingMm.<get-lineSpacingMm>|<get-lineSpacingMm>(){}[0]
+    final val pageRect // io.github.valerioisufi.drawview.model.placement/PageOccupancy.pageRect|{}pageRect[0]
+        final fun <get-pageRect>(): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.model.placement/PageOccupancy.pageRect.<get-pageRect>|<get-pageRect>(){}[0]
+    final val widthMm // io.github.valerioisufi.drawview.model.placement/PageOccupancy.widthMm|{}widthMm[0]
+        final fun <get-widthMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/PageOccupancy.widthMm.<get-widthMm>|<get-widthMm>(){}[0]
+
+    final fun plus(io.github.valerioisufi.drawview.model.geometry/Rect): io.github.valerioisufi.drawview.model.placement/PageOccupancy // io.github.valerioisufi.drawview.model.placement/PageOccupancy.plus|plus(io.github.valerioisufi.drawview.model.geometry.Rect){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.model.placement/PageOccupancy.Companion|null[0]
+        final fun of(io.github.valerioisufi.drawview.model/DrawPage, kotlin/Function1<io.github.valerioisufi.drawview.model/DrawPdf, io.github.valerioisufi.drawview.model/PdfTextLayout?> = ..., kotlin.collections/Set<kotlin/String> = ...): io.github.valerioisufi.drawview.model.placement/PageOccupancy // io.github.valerioisufi.drawview.model.placement/PageOccupancy.Companion.of|of(io.github.valerioisufi.drawview.model.DrawPage;kotlin.Function1<io.github.valerioisufi.drawview.model.DrawPdf,io.github.valerioisufi.drawview.model.PdfTextLayout?>;kotlin.collections.Set<kotlin.String>){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.model.placement/PlacementBlock { // io.github.valerioisufi.drawview.model.placement/PlacementBlock|null[0]
+    constructor <init>(kotlin/Float, kotlin/Float = ..., kotlin/Function1<kotlin/Float, kotlin/Float>) // io.github.valerioisufi.drawview.model.placement/PlacementBlock.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Function1<kotlin.Float,kotlin.Float>){}[0]
+
+    final val heightAt // io.github.valerioisufi.drawview.model.placement/PlacementBlock.heightAt|{}heightAt[0]
+        final fun <get-heightAt>(): kotlin/Function1<kotlin/Float, kotlin/Float> // io.github.valerioisufi.drawview.model.placement/PlacementBlock.heightAt.<get-heightAt>|<get-heightAt>(){}[0]
+    final val minWidthMm // io.github.valerioisufi.drawview.model.placement/PlacementBlock.minWidthMm|{}minWidthMm[0]
+        final fun <get-minWidthMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/PlacementBlock.minWidthMm.<get-minWidthMm>|<get-minWidthMm>(){}[0]
+    final val preferredWidthMm // io.github.valerioisufi.drawview.model.placement/PlacementBlock.preferredWidthMm|{}preferredWidthMm[0]
+        final fun <get-preferredWidthMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/PlacementBlock.preferredWidthMm.<get-preferredWidthMm>|<get-preferredWidthMm>(){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.model.placement/PlacementBlock.Companion|null[0]
+        final const val DEFAULT_MIN_WIDTH_MM // io.github.valerioisufi.drawview.model.placement/PlacementBlock.Companion.DEFAULT_MIN_WIDTH_MM|{}DEFAULT_MIN_WIDTH_MM[0]
+            final fun <get-DEFAULT_MIN_WIDTH_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/PlacementBlock.Companion.DEFAULT_MIN_WIDTH_MM.<get-DEFAULT_MIN_WIDTH_MM>|<get-DEFAULT_MIN_WIDTH_MM>(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.model.placement/PlacementCandidate { // io.github.valerioisufi.drawview.model.placement/PlacementCandidate|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.model.geometry/Rect, kotlin/Float) // io.github.valerioisufi.drawview.model.placement/PlacementCandidate.<init>|<init>(io.github.valerioisufi.drawview.model.geometry.Rect;kotlin.Float){}[0]
+
+    final val cost // io.github.valerioisufi.drawview.model.placement/PlacementCandidate.cost|{}cost[0]
+        final fun <get-cost>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/PlacementCandidate.cost.<get-cost>|<get-cost>(){}[0]
+    final val rect // io.github.valerioisufi.drawview.model.placement/PlacementCandidate.rect|{}rect[0]
+        final fun <get-rect>(): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.model.placement/PlacementCandidate.rect.<get-rect>|<get-rect>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.model.placement/PlacementPlanner { // io.github.valerioisufi.drawview.model.placement/PlacementPlanner|null[0]
+    constructor <init>(kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Int = ..., kotlin/Float = ...) // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Float){}[0]
+
+    final val cellMm // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.cellMm|{}cellMm[0]
+        final fun <get-cellMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.cellMm.<get-cellMm>|<get-cellMm>(){}[0]
+    final val clearanceMm // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.clearanceMm|{}clearanceMm[0]
+        final fun <get-clearanceMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.clearanceMm.<get-clearanceMm>|<get-clearanceMm>(){}[0]
+    final val maxCandidates // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.maxCandidates|{}maxCandidates[0]
+        final fun <get-maxCandidates>(): kotlin/Int // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.maxCandidates.<get-maxCandidates>|<get-maxCandidates>(){}[0]
+    final val pageMarginMm // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.pageMarginMm|{}pageMarginMm[0]
+        final fun <get-pageMarginMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.pageMarginMm.<get-pageMarginMm>|<get-pageMarginMm>(){}[0]
+    final val separationMm // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.separationMm|{}separationMm[0]
+        final fun <get-separationMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.separationMm.<get-separationMm>|<get-separationMm>(){}[0]
+
+    final fun candidates(io.github.valerioisufi.drawview.model.placement/PageOccupancy, io.github.valerioisufi.drawview.model.placement/PlacementBlock, io.github.valerioisufi.drawview.model.placement/PlacementPolicy): kotlin.collections/List<io.github.valerioisufi.drawview.model.placement/PlacementCandidate> // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.candidates|candidates(io.github.valerioisufi.drawview.model.placement.PageOccupancy;io.github.valerioisufi.drawview.model.placement.PlacementBlock;io.github.valerioisufi.drawview.model.placement.PlacementPolicy){}[0]
+    final fun freeSpace(io.github.valerioisufi.drawview.model.placement/PageOccupancy): io.github.valerioisufi.drawview.model.placement/FreeSpace // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.freeSpace|freeSpace(io.github.valerioisufi.drawview.model.placement.PageOccupancy){}[0]
+    final fun placeAll(io.github.valerioisufi.drawview.model.placement/PageOccupancy, kotlin.collections/List<kotlin/Pair<io.github.valerioisufi.drawview.model.placement/PlacementBlock, io.github.valerioisufi.drawview.model.placement/PlacementPolicy>>): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Rect?> // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.placeAll|placeAll(io.github.valerioisufi.drawview.model.placement.PageOccupancy;kotlin.collections.List<kotlin.Pair<io.github.valerioisufi.drawview.model.placement.PlacementBlock,io.github.valerioisufi.drawview.model.placement.PlacementPolicy>>){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.Companion|null[0]
+        final const val DEFAULT_MAX_CANDIDATES // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.Companion.DEFAULT_MAX_CANDIDATES|{}DEFAULT_MAX_CANDIDATES[0]
+            final fun <get-DEFAULT_MAX_CANDIDATES>(): kotlin/Int // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.Companion.DEFAULT_MAX_CANDIDATES.<get-DEFAULT_MAX_CANDIDATES>|<get-DEFAULT_MAX_CANDIDATES>(){}[0]
+        final const val DEFAULT_SEPARATION_MM // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.Companion.DEFAULT_SEPARATION_MM|{}DEFAULT_SEPARATION_MM[0]
+            final fun <get-DEFAULT_SEPARATION_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/PlacementPlanner.Companion.DEFAULT_SEPARATION_MM.<get-DEFAULT_SEPARATION_MM>|<get-DEFAULT_SEPARATION_MM>(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.drawview.model.text.code/CodeToken { // io.github.valerioisufi.drawview.model.text.code/CodeToken|null[0]
     constructor <init>(io.github.valerioisufi.drawview.model.text.code/CodeTokenKind, kotlin/Int, kotlin/Int) // io.github.valerioisufi.drawview.model.text.code/CodeToken.<init>|<init>(io.github.valerioisufi.drawview.model.text.code.CodeTokenKind;kotlin.Int;kotlin.Int){}[0]
 
@@ -3070,6 +3183,10 @@ final object io.github.valerioisufi.drawview.model.geometry/HitTesting { // io.g
     final fun pointInPolygon(kotlin/Float, kotlin/Float, kotlin/FloatArray): kotlin/Boolean // io.github.valerioisufi.drawview.model.geometry/HitTesting.pointInPolygon|pointInPolygon(kotlin.Float;kotlin.Float;kotlin.FloatArray){}[0]
     final fun polygonBounds(kotlin/FloatArray): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.model.geometry/HitTesting.polygonBounds|polygonBounds(kotlin.FloatArray){}[0]
     final fun rectIntersectsCapsule(io.github.valerioisufi.drawview.model.geometry/Rect, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float): kotlin/Boolean // io.github.valerioisufi.drawview.model.geometry/HitTesting.rectIntersectsCapsule|rectIntersectsCapsule(io.github.valerioisufi.drawview.model.geometry.Rect;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+}
+
+final object io.github.valerioisufi.drawview.model.placement/ReadingOrder : io.github.valerioisufi.drawview.model.placement/PlacementPolicy { // io.github.valerioisufi.drawview.model.placement/ReadingOrder|null[0]
+    final fun cost(io.github.valerioisufi.drawview.model.geometry/Rect, io.github.valerioisufi.drawview.model.placement/PlacementBlock): kotlin/Float // io.github.valerioisufi.drawview.model.placement/ReadingOrder.cost|cost(io.github.valerioisufi.drawview.model.geometry.Rect;io.github.valerioisufi.drawview.model.placement.PlacementBlock){}[0]
 }
 
 final object io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighlighter : io.github.valerioisufi.drawview.model.text.code/CodeHighlighter { // io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighlighter|null[0]

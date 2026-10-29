@@ -108,9 +108,9 @@ Variations).
 | Responsibility | Class (module) | GRASP |
 |---|---|---|
 | The boxes a page holds (strokes, texts, images, elements of the applications), with a margin; the lines of the text of its PDF page as boxes, given by the caller | `PageOccupancy.of(page, pdfText)` (`drawview-model`, package `placement`) | Information Expert (the page knows its content), Low Coupling (the PDF text comes in as rectangles) |
-| The free space of a page as the largest empty rectangles, on a grid of 2 mm cells | `FreeSpace` (`drawview-model`) | Pure Fabrication |
+| The free space of a page: a grid of 2 mm cells, whether a box is free in constant time | `FreeSpace` (`drawview-model`) | Pure Fabrication |
 | The places a block of a given size can take, and their scores | `PlacementPlanner` (`drawview-model`) | Pure Fabrication, Controller of the computation |
-| What makes a place good: near the anchor, after it in reading order, aligned, margins; one per kind of content | `PlacementPolicy` (interface) with `BesideAnchor`, `EndOfSection`, `PageBottom`, `Flow` | Polymorphism, Protected Variations (new kinds without touching the planner) |
+| What makes a place good: near the anchor, after it in reading order, aligned, margins; one per kind of content | `PlacementPolicy` (interface) with `BesideAnchor`, `ReadingOrder` (stage 2: `EndOfSection`, `PageBottom`) | Polymorphism, Protected Variations (new kinds without touching the planner) |
 | What a block is about on its page: a region (a box), from the writing of a moment, a block of handwriting, the slide | `PlacementAnchor` (`drawview-model`); `LectureAnchors` (`drawview-lecture`: the strokes added around `startedAt + atMs`) | Information Expert (the lecture knows when a note was said) |
 | The height of a text at a width | a function `(width) -> height` passed to the planner, built from `measureText` | Indirection, Low Coupling (the headless module has no Compose) |
 | A text split into blocks that never break a formula, a code block or a list item, flowed through the free space and onto new pages | `TextFlow` (`drawview-model`) | Pure Fabrication, High Cohesion |
@@ -129,9 +129,9 @@ Variations).
   the boxes of its lines of text (characters merged by line), and the box of every image of the
   page when there is no text (a scanned page is taken whole, except where it is white: stage 2,
   if needed). Without the PDF text, the whole PDF page is taken.
-* **The rectangles.** The largest empty rectangles of the grid (the histogram method, linear in
-  the cells), kept when at least 30 mm wide and one line high. Deterministic: the same page gives
-  the same places on every device.
+* **Free boxes.** A table of sums of the cells taken tells whether any box is free in constant
+  time, so every position of the grid can be tried (an A4 page, four widths: about 60,000 tries,
+  a few milliseconds). Deterministic: the same page gives the same places on every device.
 
 ### The places and their scores
 
@@ -145,8 +145,8 @@ left edge of the anchor, on the next line of a ruled page. Each position is scor
   next to it; a penalty for a narrow width.
 * `EndOfSection` (a summary): below the last content of the page or of the section, full width.
 * `PageBottom` (a question): the bottom of the page.
-* `Flow` (a long text): the first free rectangle from the top, in reading order, the blocks one
-  after the other.
+* `ReadingOrder` (a long text): the first free place from the top, in reading order, the blocks
+  one after the other.
 
 The best five, at least 20 mm apart, are the candidates. When none fits, the candidate is a new
 page after the page of the anchor, the block at its top margin.
@@ -193,7 +193,7 @@ This changes the lecture records: a field added with a default, read by the olde
 
 | Phase | What | Status |
 |---|---|---|
-| 1 | `PageOccupancy`, `FreeSpace`, `PlacementPlanner`, `PlacementPolicy` (`BesideAnchor`, `Flow`) in `drawview-model`: tests on pages built in the tests (empty, full, a slide, ruled, rotated elements), deterministic results; `api/` recorded | planned |
+| 1 | `PageOccupancy`, `FreeSpace`, `PlacementPlanner`, `PlacementPolicy` (`BesideAnchor`, `ReadingOrder`) in `drawview-model`: tests on pages built in the tests (empty, full, a slide, ruled, rotated elements), deterministic results; `api/` recorded | done |
 | 2 | `PlacementRequest.candidates` and the ghost in `PlacementManager`: going through the places (‹ ›, Tab, arrows), confirm, cancel, drag; the new page drawn and created on confirm; one change. Screenshots | planned |
 | 3 | `NoteInserter.startPlacement` on the planner: the anchor of the moment (`LectureAnchors`), the PDF text from the engine; "Insert all" | planned |
 | 4 | `TextFlow`: the review and long pasted texts through the free space and onto new pages after them, with the preview; "Insert text…" | planned |
@@ -214,7 +214,9 @@ Taken alone, revertible:
    geometry only, and is headless; text measuring and the PDF text come in from outside. A module
    of its own would be one more artifact for a few classes.
 2. **A grid of 2 mm**, not exact geometry: simple, linear, deterministic, and more precise than
-   the placement needs.
+   the placement needs. Every position is tried with a table of sums, rather than listing the
+   largest empty rectangles: as fast, and the anchor and the lines of the page give positions of
+   their own.
 3. **Proposed, not imposed**: the best place is shown, never inserted without a tap.
 4. **A new page goes right after the page of the anchor**, not at the end of the notebook (as the
    review does today): the notes stay next to what they are about.
