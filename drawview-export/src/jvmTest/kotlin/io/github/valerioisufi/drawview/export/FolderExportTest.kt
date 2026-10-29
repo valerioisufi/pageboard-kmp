@@ -132,14 +132,8 @@ class FolderExportTest {
         try {
             // Test ZIP export
             val zipPath = File(tempDir, "archive.zip").absolutePath
-            val zipResult = export.exportFolder(
-                folderId = null,
-                folderName = "Home",
-                format = FolderExportFormat.ZIP,
-                options = FolderExportOptions(includeSubfolders = true),
-                pdfExporter = pdfExporter,
-                path = zipPath
-            )
+            val home = export.resolve(ExportScope.Folder(null))
+            val zipResult = export.export(home, ExportFormat.PDF_PER_DOCUMENT, ExportOptions(), ExportWriters(pdfExporter), zipPath)
 
             assertEquals(2, zipResult.documents)
             assertEquals(2, zipResult.pages)
@@ -163,14 +157,7 @@ class FolderExportTest {
 
             // Test Combined PDF export
             val pdfPath = File(tempDir, "combined.pdf").absolutePath
-            val pdfResult = export.exportFolder(
-                folderId = null,
-                folderName = "Home",
-                format = FolderExportFormat.COMBINED_PDF,
-                options = FolderExportOptions(includeSubfolders = true),
-                pdfExporter = pdfExporter,
-                path = pdfPath
-            )
+            val pdfResult = export.export(home, ExportFormat.COMBINED_PDF, ExportOptions(), ExportWriters(pdfExporter), pdfPath)
 
             assertEquals(2, pdfResult.documents)
             assertEquals(2, pdfResult.pages)

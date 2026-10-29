@@ -44,36 +44,6 @@ public class ExportOptions(
 public class ExportResult(public val pages: Int, public val skipped: Int)
 
 /**
- * The format of a folder export (see `docs/export.md`): a ZIP archive of individual PDFs, or a
- * single combined PDF document.
- */
-public enum class FolderExportFormat(public val extension: String, public val mimeType: String) {
-    ZIP("zip", "application/zip"),
-    COMBINED_PDF("pdf", "application/pdf")
-}
-
-/**
- * The choices of a folder export.
- *
- * @param includeSubfolders whether notes in subdirectories are included.
- * @param backgroundPattern whether the lines and the dots of the backgrounds are drawn.
- */
-public class FolderExportOptions(
-    public val includeSubfolders: Boolean = true,
-    public val backgroundPattern: Boolean = true
-)
-
-/**
- * What a folder export wrote: [documents] exported, total [pages], and [skipped] elements that
- * could not be read.
- */
-public class FolderExportResult(
-    public val documents: Int,
-    public val pages: Int,
-    public val skipped: Int
-)
-
-/**
  * A document to be exported from a folder or the home, with its [summary] and its [relativePath]
  * inside the archive or output.
  */

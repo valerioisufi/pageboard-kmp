@@ -283,32 +283,6 @@ public class DocumentExport(private val documents: OpenDocuments) {
         if (!PlatformFiles.writeBytes(path, bytes)) throw ExportException(ExportFailure.NOT_WRITABLE, "Cannot write $path")
     }
 
-    /**
-     * Exports all documents of [folderId] (`null`: the home/root) with [pdfExporter] to [path] in
-     * the format [format]; [progress] gets the part written, from 0 to 1.
-     */
-    public suspend fun exportFolder(
-        folderId: String?,
-        folderName: String,
-        format: FolderExportFormat,
-        options: FolderExportOptions,
-        pdfExporter: PdfExporter,
-        path: String,
-        progress: (Float) -> Unit = {}
-    ): FolderExportResult {
-        val contents = resolve(ExportScope.Folder(folderId), options.includeSubfolders).let {
-            ExportContents(it.scope, folderName, it.documents, it.pages)
-        }
-        val outcome = export(
-            contents = contents,
-            format = if (format == FolderExportFormat.ZIP) ExportFormat.PDF_PER_DOCUMENT else ExportFormat.COMBINED_PDF,
-            options = ExportOptions(backgroundPattern = options.backgroundPattern),
-            writers = ExportWriters(pdfExporter),
-            path = path
-        ) { progress(it.fraction) }
-        return FolderExportResult(documents = outcome.documents, pages = outcome.pages, skipped = outcome.skipped)
-    }
-
     private fun folderPath(folderId: String?, foldersById: Map<String, FolderSummary>): String {
         if (folderId == null) return ""
         val segments = generateSequence(foldersById[folderId]) { foldersById[it.parentId] }
@@ -333,10 +307,6 @@ public class DocumentExport(private val documents: OpenDocuments) {
         /** Name of the file of the document [title] in the format of [exporter]. */
         public fun fileName(title: String, exporter: DocumentExporter): String =
             "${sanitizeFileName(title)}.${exporter.extension}"
-
-        /** Name of the file of the folder [folderName] in the format of [format]. */
-        public fun folderFileName(folderName: String, format: FolderExportFormat): String =
-            "${sanitizeFileName(folderName)}.${format.extension}"
 
         /** Replaces characters not allowed in file names. */
         public fun sanitizeFileName(name: String): String {

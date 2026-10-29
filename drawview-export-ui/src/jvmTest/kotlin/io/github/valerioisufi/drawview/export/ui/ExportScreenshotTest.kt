@@ -18,6 +18,11 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.dp
 import io.github.takahirom.roborazzi.captureRoboImage
+import io.github.valerioisufi.drawview.export.ExportContents
+import io.github.valerioisufi.drawview.export.ExportFormat
+import io.github.valerioisufi.drawview.export.ExportScope
+import io.github.valerioisufi.drawview.export.FolderDocumentItem
+import io.github.valerioisufi.drawview.store.DocumentSummary
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import io.github.valerioisufi.drawview.ui.theme.LocalCanvasColors
 import java.util.Locale
@@ -25,11 +30,11 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /**
- * Screenshots of the export as its dialog draws it (the dialog itself opens in a window the
- * screenshots do not take): the choices, the image of a page, exporting, done, failed
- * (docs/ui-design.md).
+ * Screenshots of the export sheet as it draws its content (the sheet itself opens in a window
+ * the screenshots do not take): a note from the editor, a page range, a folder, an empty folder
+ * (docs/export-ux.md).
  *
- * `./gradlew :drawview-export:recordRoborazziJvm` records them in `screenshots/`.
+ * `./gradlew :drawview-export-ui:recordRoborazziJvm` records them in `screenshots/`.
  */
 @OptIn(ExperimentalTestApi::class)
 class ExportScreenshotTest {
@@ -39,59 +44,60 @@ class ExportScreenshotTest {
         Locale.setDefault(Locale.US)
     }
 
+    private fun summary(name: String, pages: Int) = DocumentSummary(id = name, name = name, createdAt = 0, modifiedAt = 0, lastOpenedAt = 0, pageCount = pages)
+
+    private fun note(configure: ExportSheetState.() -> Unit = {}) =
+        ExportSheetState(ExportScope.Pages("lecture"), ExportPreferences(), PageOnScreen("p3", 2)).apply {
+            contents = ExportContents(scope, "Lecture 1 — Limits", listOf(FolderDocumentItem(summary("Lecture 1 — Limits", 12), "")), 12)
+            configure()
+        }
+
+    private fun folder(notes: Int) = ExportSheetState(ExportScope.Folder("physics"), ExportPreferences()).apply {
+        val documents = (1..notes).map { FolderDocumentItem(summary("Note $it", 3), "Note $it.pdf") }
+        contents = ExportContents(scope, "Physics", documents, notes * 3)
+    }
+
     @Test
     fun states() = listOf(false, true).forEach { dark ->
-        runDesktopComposeUiTest(width = 1360, height = 1000) {
+        runDesktopComposeUiTest(width = 1440, height = 1320) {
             setContent {
                 DrawViewTheme(darkTheme = dark, dynamicColor = false) {
                     Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk).padding(24.dp)) {
                         Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
                             Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.Top) {
-                                Sheet { Body(ExportState.Choosing, ExportFormat.PDF) }
-                                Sheet { Body(ExportState.Choosing, ExportFormat.PNG, backgroundPattern = false) }
+                                Sheet(note())
+                                Sheet(note { format = ExportFormat.IMAGES; pages = PageChoice.RANGE; range = "3-20"; backgroundPattern = false })
+                                Sheet(folder(14))
                             }
                             Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.Top) {
-                                Sheet { Body(ExportState.Running(0.6f), ExportFormat.PDF) }
-                                Sheet { Body(ExportState.Done(skipped = 2), ExportFormat.PDF) }
-                                Sheet { Body(ExportState.Failed, ExportFormat.PDF) }
+                                Sheet(folder(0))
+                                Sheet(note { format = ExportFormat.IMAGES; pages = PageChoice.ON_SCREEN })
                             }
                         }
                     }
                 }
             }
             waitForIdle()
-            captureToImage().captureRoboImage("screenshots/export-states-${if (dark) "dark" else "light"}.png")
+            captureToImage().captureRoboImage("screenshots/export-sheet-${if (dark) "dark" else "light"}.png")
         }
     }
 
+    /** The sheet with its title (its buttons are the ones of the sheet). */
     @Composable
-    private fun Body(state: ExportState, format: ExportFormat, backgroundPattern: Boolean = true) = ExportBody(
-        state = state,
-        format = format,
-        onFormat = {},
-        onlyPageOnScreen = false,
-        onOnlyPageOnScreen = {},
-        backgroundPattern = backgroundPattern,
-        onBackgroundPattern = {},
-        withPageOnScreen = true
-    )
-
-    /** The dialog with its title (its buttons are the ones of the sheet). */
-    @Composable
-    private fun Sheet(content: @Composable () -> Unit) {
+    private fun Sheet(state: ExportSheetState) {
         Column(
             modifier = Modifier
-                .width(420.dp)
+                .width(440.dp)
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(28.dp))
                 .padding(vertical = 24.dp)
         ) {
             Text(
-                "Export “Lecture 1 — Limits”",
+                "Export",
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 16.dp)
             )
-            content()
+            ExportSheetContent(state, thumbnail = null, fallbackName = "Home", onSubmit = {})
         }
     }
 }

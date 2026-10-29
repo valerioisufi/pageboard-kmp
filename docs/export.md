@@ -192,6 +192,11 @@ editor give in common code: no drawing of a platform is captured.
 
 ## Export of a folder and Home
 
+> Replaced by `docs/export-ux.md`: `ExportScope`, `ExportFormat` and `DocumentExport.export` took
+> the place of `exportFolder`, `FolderExportFormat`, `FolderExportOptions` and
+> `FolderExportResult`; the export sheet took the place of `FolderExportDialog`. What follows is
+> kept as the record of the first version.
+
 Users can export all notes belonging to a specific folder or to the Home (the root of the
 library). The export produces either a ZIP archive containing individual PDF documents for each
 note (preserving directory hierarchy) or a single combined PDF document concatenating all notes.
