@@ -197,7 +197,7 @@
         <item quantity="one">%1$d Seite gelöscht</item>
         <item quantity="other">%1$d Seiten gelöscht</item>
     </plurals>
-    <string name="placement_hint">Tippe auf die Notiz, um sie einzufügen, oder ziehe sie</string>
+    <string name="placement_hint">Tippe auf den Text, um ihn einzufügen, oder ziehe ihn</string>
     <string name="placement_hint_tap">Tippe auf eine Seite, um sie einzufügen</string>
     <string name="placement_spot">Platz %1$d von %2$d · S. %3$d</string>
     <string name="placement_new_page">Neue Seite nach S. %1$d</string>

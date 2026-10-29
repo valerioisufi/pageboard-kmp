@@ -16,6 +16,7 @@ import io.github.valerioisufi.drawview.model.placement.BesideAnchor
 import io.github.valerioisufi.drawview.model.placement.PageOccupancy
 import io.github.valerioisufi.drawview.model.placement.PlacementBlock
 import io.github.valerioisufi.drawview.model.placement.ReadingOrder
+import io.github.valerioisufi.drawview.model.placement.TextFlow
 import io.github.valerioisufi.drawview.model.text.TextSizes
 import kotlin.math.max
 import kotlin.math.min
@@ -27,6 +28,8 @@ import kotlin.math.min
  * @param textAdapter lays the blocks out as the canvas draws them, to size them.
  */
 internal class NoteInserter(private val textAdapter: TextTileAdapter) {
+
+    private val textFlow = TextFlow()
 
     /**
      * Lets the student place [suggestion]: the note is shown in the best free place of its page
@@ -168,55 +171,41 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
     }
 
     /**
-     * Inserts the notes [markdown] on as many new pages as needed (split between paragraphs):
-     * after the page [afterPageIndex], or at the end of the notebook when it is `null`; then shows
-     * the first one.
+     * Lets the student place the notes [markdown] (the review of a lecture): flowed through the
+     * free space of page [startPageIndex], then onto as many new pages after it as needed (on the
+     * format of the document, which the text is laid out on), split between paragraphs, never in
+     * a formula, a code block or a list item; at the end of the notebook when [startPageIndex] is
+     * `null`. Shown before it is confirmed, undone at once; the first piece shown once inserted.
      */
-    fun insertPages(controller: DrawViewController, markdown: String, afterPageIndex: Int?): Boolean {
-        val blocks = markdown.trim().split(PARAGRAPH_SEPARATOR).map { it.trim() }.filter { it.isNotEmpty() }
-        if (blocks.isEmpty()) return false
-        controller.placementManager.cancel()
-        controller.selectionManager.clearSelection()
+    fun startReviewPlacement(controller: DrawViewController, markdown: String, startPageIndex: Int?, label: String, onInserted: () -> Unit = {}): Boolean {
         val document = controller.document
-        val widthMm = document.defaultWidthMm - 2 * MARGIN_MM
-        val maxHeightMm = document.defaultHeightMm - 2 * MARGIN_MM
-        if (widthMm <= 10f || maxHeightMm <= 10f) return false
-
-        // Fill the pages greedily; a paragraph longer than a page is split between its lines
-        val pieces = blocks.flatMap { block ->
-            if (measureHeightMm(block, REVIEW_FONT_PT, widthMm) <= maxHeightMm) listOf(block) else block.lines()
+        if (document.pages.isEmpty()) return false
+        val start = startPageIndex?.takeIf { it in document.pages.indices }
+        val anchorIndex = start ?: document.pages.lastIndex
+        val first = start?.let { controller.placementManager.occupancyOf(it) }
+        val newPage = PageOccupancy(document.defaultWidthMm, document.defaultHeightMm, emptyList(), PageOccupancy.lineSpacingOf(document.defaultBackground))
+        val pieces = textFlow.flow(markdown, first, newPage) { text, width -> measureHeightMm(text, REVIEW_FONT_PT, width) }
+        if (pieces.isEmpty()) return false
+        val items = pieces.map { piece ->
+            PlacementItem(newText(piece.text, piece.box.width, piece.box.height, REVIEW_FONT_PT), listOf(PlacementSpot(anchorIndex, piece.box, piece.newPage)))
         }
-        val pages = mutableListOf<String>()
-        var current = ""
-        for (piece in pieces) {
-            val candidate = if (current.isEmpty()) piece else current + "\n\n" + piece
-            if (current.isNotEmpty() && measureHeightMm(candidate, REVIEW_FONT_PT, widthMm) > maxHeightMm) {
-                pages.add(current)
-                current = piece
-            } else {
-                current = candidate
-            }
-        }
-        if (current.isNotEmpty()) pages.add(current)
-
-        var previousIndex = afterPageIndex?.takeIf { it in document.pages.indices }
-        var firstIndex = -1
-        // Undone at once; of the format of the document, which the text is laid out on (not the
-        // one of the page they follow)
-        controller.historyManager.group {
-            for (content in pages) {
-                val page = previousIndex?.let { controller.pageManager.addNewPageAfter(it, template = null) }
-                    ?: controller.pageManager.addNewPageAtBottom(template = null)
-                if (previousIndex != null) previousIndex = page.index
-                if (firstIndex < 0) firstIndex = page.index
-                val text = newText(content, widthMm, measureHeightMm(content, REVIEW_FONT_PT, widthMm), REVIEW_FONT_PT).apply {
-                    x = MARGIN_MM
-                    y = MARGIN_MM
+        controller.selectionManager.clearSelection()
+        controller.placementManager.start(
+            PlacementRequest(
+                items = items,
+                label = label,
+                onPlace = { spots ->
+                    val pages = controller.historyManager.group {
+                        controller.placementManager.pagesFor(spots, template = { null }).also { pages ->
+                            for ((index, spot) in spots.withIndex()) pages[index]?.let { place(controller, it, items[index].preview, spot) }
+                        }
+                    }
+                    pages.firstOrNull()?.let { showPageTop(controller, it.index) }
+                    onInserted()
                 }
-                addText(controller, page, text)
-            }
-        }
-        if (firstIndex >= 0) showPageTop(controller, firstIndex)
+            )
+        )
+        if (start == null) controller.pageManager.jumpToPage(anchorIndex)
         return true
     }
 
@@ -253,12 +242,10 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
         const val NOTE_WIDTH_MM = 90f
         const val NOTE_FONT_PT = 11f
         const val REVIEW_FONT_PT = 11f
-        const val MARGIN_MM = 15f
         const val PAGE_TOP_INSET_PX = 24f
 
         /** Blue ink of the assistant. */
         const val ASSISTANT_TEXT_COLOR = 0xFF1F5AA6.toInt()
 
-        val PARAGRAPH_SEPARATOR = Regex("""\n\s*\n""")
     }
 }

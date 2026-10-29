@@ -197,7 +197,7 @@
         <item quantity="one">%1$d página eliminada</item>
         <item quantity="other">%1$d páginas eliminadas</item>
     </plurals>
-    <string name="placement_hint">Toca la nota para colocarla, o arrástrala</string>
+    <string name="placement_hint">Toca el texto para colocarlo, o arrástralo</string>
     <string name="placement_hint_tap">Toca una página para colocarla</string>
     <string name="placement_spot">Lugar %1$d de %2$d · p. %3$d</string>
     <string name="placement_new_page">Nueva página tras la p. %1$d</string>

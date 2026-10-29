@@ -1324,7 +1324,8 @@ private fun ReviewTab(
                     if (canRegenerate) RegenerateReviewButton(assistant, lecture)
                 }
                 PanelCard(outlined = true) { SelectionContainer { MarkdownText(review, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyMedium) } }
-                InsertPagesCard(controller) { afterPageIndex -> inserter.insertPages(controller, review, afterPageIndex) }
+                val reviewLabel = stringResource(Res.string.lecture_review_placing)
+                InsertPagesCard(controller) { startPageIndex -> inserter.startReviewPlacement(controller, review, startPageIndex, reviewLabel) }
             }
             // Written by a device with the models
             !lecture.generates -> LectureNotice(DrawViewIcons.Monitor, stringResource(Res.string.lecture_review_elsewhere), NoticeTone.Info)
@@ -1445,7 +1446,7 @@ private fun UsageLines(usage: TokenUsage) {
  * the notebook, and Insert.
  */
 @Composable
-private fun InsertPagesCard(controller: DrawViewController, onInsert: (afterPageIndex: Int?) -> Unit) {
+private fun InsertPagesCard(controller: DrawViewController, onInsert: (startPageIndex: Int?) -> Unit) {
     val currentPage by remember(controller) {
         derivedStateOf {
             controller.version

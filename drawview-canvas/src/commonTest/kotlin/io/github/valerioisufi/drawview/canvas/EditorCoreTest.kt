@@ -458,6 +458,30 @@ class EditorCoreTest {
     }
 
     @Test
+    fun aLongPastedTextFlowsThroughTheFreeSpaceThenOntoNewPages() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controllerWith(1, backgroundScope)
+        val page = controller.document.pages[0]
+        page.add(DrawText().apply { x = 10f; y = 10f; width = 190f; height = 140f; text = "The student's notes" })
+        val pasted = (1..60).joinToString("\n\n") { "Paragraph $it of a text written elsewhere." }
+        controller.textEditorManager.pasteText(pasted)
+
+        val placement = controller.placementManager
+        assertTrue(placement.isActive)
+        val spots = placement.spots.map { assertNotNull(it) }
+        assertTrue(spots.first().box.top >= 150f && !spots.first().newPageAfter)
+        assertTrue(spots.last().newPageAfter)
+        assertTrue(placement.confirm())
+        assertTrue(controller.document.pages.size > 1)
+        val paragraphs = controller.document.pages.flatMap { p -> p.texts.drop(if (p === page) 1 else 0).sortedBy { it.y }.flatMap { it.text.split("\n\n") } }
+        assertEquals((1..60).map { "Paragraph $it of a text written elsewhere." }, paragraphs)
+
+        // One step of the history
+        controller.undo()
+        assertEquals(1, controller.document.pages.size)
+        assertEquals(1, page.texts.size)
+    }
+
+    @Test
     fun severalTextsAreConfirmedTogether() = runTest(UnconfinedTestDispatcher()) {
         val controller = controllerWith(1, backgroundScope)
         val placement = controller.placementManager

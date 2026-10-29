@@ -580,7 +580,7 @@ final class io.github.valerioisufi.drawview.canvas.controller/PlacementManager {
     final fun newPageSpot(io.github.valerioisufi.drawview.model/DrawPage, io.github.valerioisufi.drawview.model.placement/PlacementBlock): io.github.valerioisufi.drawview.canvas.controller/PlacementSpot? // io.github.valerioisufi.drawview.canvas.controller/PlacementManager.newPageSpot|newPageSpot(io.github.valerioisufi.drawview.model.DrawPage;io.github.valerioisufi.drawview.model.placement.PlacementBlock){}[0]
     final fun next() // io.github.valerioisufi.drawview.canvas.controller/PlacementManager.next|next(){}[0]
     final fun occupancyOf(kotlin/Int, kotlin.collections/Set<kotlin/String> = ...): io.github.valerioisufi.drawview.model.placement/PageOccupancy // io.github.valerioisufi.drawview.canvas.controller/PlacementManager.occupancyOf|occupancyOf(kotlin.Int;kotlin.collections.Set<kotlin.String>){}[0]
-    final fun pagesFor(kotlin.collections/List<io.github.valerioisufi.drawview.canvas.controller/PlacementSpot>): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawPage?> // io.github.valerioisufi.drawview.canvas.controller/PlacementManager.pagesFor|pagesFor(kotlin.collections.List<io.github.valerioisufi.drawview.canvas.controller.PlacementSpot>){}[0]
+    final fun pagesFor(kotlin.collections/List<io.github.valerioisufi.drawview.canvas.controller/PlacementSpot>, kotlin/Function1<io.github.valerioisufi.drawview.model/DrawPage, io.github.valerioisufi.drawview.model/DrawPage?> = ...): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawPage?> // io.github.valerioisufi.drawview.canvas.controller/PlacementManager.pagesFor|pagesFor(kotlin.collections.List<io.github.valerioisufi.drawview.canvas.controller.PlacementSpot>;kotlin.Function1<io.github.valerioisufi.drawview.model.DrawPage,io.github.valerioisufi.drawview.model.DrawPage?>){}[0]
     final fun previous() // io.github.valerioisufi.drawview.canvas.controller/PlacementManager.previous|previous(){}[0]
     final fun spotsFor(kotlin/Int, io.github.valerioisufi.drawview.model.placement/PlacementBlock, io.github.valerioisufi.drawview.model.placement/PlacementPolicy): kotlin.collections/List<io.github.valerioisufi.drawview.canvas.controller/PlacementSpot> // io.github.valerioisufi.drawview.canvas.controller/PlacementManager.spotsFor|spotsFor(kotlin.Int;io.github.valerioisufi.drawview.model.placement.PlacementBlock;io.github.valerioisufi.drawview.model.placement.PlacementPolicy){}[0]
     final fun start(io.github.valerioisufi.drawview.canvas.controller/PlacementRequest) // io.github.valerioisufi.drawview.canvas.controller/PlacementManager.start|start(io.github.valerioisufi.drawview.canvas.controller.PlacementRequest){}[0]
@@ -603,10 +603,13 @@ final class io.github.valerioisufi.drawview.canvas.controller/PlacementRequest {
 }
 
 final class io.github.valerioisufi.drawview.canvas.controller/PlacementSpot { // io.github.valerioisufi.drawview.canvas.controller/PlacementSpot|null[0]
-    constructor <init>(kotlin/Int, io.github.valerioisufi.drawview.model.geometry/Rect, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.canvas.controller/PlacementSpot.<init>|<init>(kotlin.Int;io.github.valerioisufi.drawview.model.geometry.Rect;kotlin.Boolean){}[0]
+    constructor <init>(kotlin/Int, io.github.valerioisufi.drawview.model.geometry/Rect, kotlin/Boolean) // io.github.valerioisufi.drawview.canvas.controller/PlacementSpot.<init>|<init>(kotlin.Int;io.github.valerioisufi.drawview.model.geometry.Rect;kotlin.Boolean){}[0]
+    constructor <init>(kotlin/Int, io.github.valerioisufi.drawview.model.geometry/Rect, kotlin/Int = ...) // io.github.valerioisufi.drawview.canvas.controller/PlacementSpot.<init>|<init>(kotlin.Int;io.github.valerioisufi.drawview.model.geometry.Rect;kotlin.Int){}[0]
 
     final val box // io.github.valerioisufi.drawview.canvas.controller/PlacementSpot.box|{}box[0]
         final fun <get-box>(): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.canvas.controller/PlacementSpot.box.<get-box>|<get-box>(){}[0]
+    final val newPage // io.github.valerioisufi.drawview.canvas.controller/PlacementSpot.newPage|{}newPage[0]
+        final fun <get-newPage>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/PlacementSpot.newPage.<get-newPage>|<get-newPage>(){}[0]
     final val newPageAfter // io.github.valerioisufi.drawview.canvas.controller/PlacementSpot.newPageAfter|{}newPageAfter[0]
         final fun <get-newPageAfter>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/PlacementSpot.newPageAfter.<get-newPageAfter>|<get-newPageAfter>(){}[0]
     final val pageIndex // io.github.valerioisufi.drawview.canvas.controller/PlacementSpot.pageIndex|{}pageIndex[0]

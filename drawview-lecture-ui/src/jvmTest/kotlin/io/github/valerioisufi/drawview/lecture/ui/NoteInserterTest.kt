@@ -103,15 +103,25 @@ class NoteInserterTest {
         // Paragraphs enough for more than one page
         val review = (1..80).joinToString("\n\n") { "Paragraph $it of the review." }
 
-        assertTrue(NoteInserter(NoLayout).insertPages(controller, review, afterPageIndex = 0))
+        assertTrue(NoteInserter(NoLayout).startReviewPlacement(controller, review, startPageIndex = 0, label = "Review"))
+        assertTrue(controller.placementManager.confirm())
 
+        // The free space of the page shown first, then new pages
+        assertTrue(document.pages[0].texts.isNotEmpty())
         val inserted = document.pages.drop(1)
         assertTrue(inserted.size > 1)
         for (page in inserted) {
             assertEquals(210f to 297f, page.widthMm to page.heightMm)
             assertEquals(PageBackground.Ruled(), page.background)
             assertFalse(page.hasCustomBackground)
-            assertEquals(1, page.texts.size)
+            assertTrue(page.texts.isNotEmpty())
         }
+        // Nothing lost, in order
+        val paragraphs = document.pages.flatMap { page -> page.texts.sortedBy { it.y }.flatMap { it.text.split("\n\n") } }
+        assertEquals((1..80).map { "Paragraph $it of the review." }, paragraphs)
+
+        controller.undo()
+        assertEquals(1, document.pages.size)
+        assertTrue(document.pages[0].texts.isEmpty())
     }
 }

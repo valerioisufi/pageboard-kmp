@@ -197,7 +197,7 @@ This changes the lecture records: a field added with a default, read by the olde
 | 1 | `PageOccupancy`, `FreeSpace`, `PlacementPlanner`, `PlacementPolicy` (`BesideAnchor`, `ReadingOrder`) in `drawview-model`: tests on pages built in the tests (empty, full, a slide, ruled, rotated elements), deterministic results; `api/` recorded | done |
 | 2 | `PlacementRequest` of items with their places (`PlacementItem`, `PlacementSpot`) and the ghosts in `PlacementManager`: going through the places (‹ ›, Tab, arrows), confirm (Return), cancel, drag; the new page created on confirm (`pagesFor`); `PlacementBar` in `drawview-ui`. Screenshot | done |
 | 3 | `NoteInserter.startPlacement` on the planner: the anchor of the moment (`LectureAnchors`), the PDF text from the engine; "Insert all" (`startPlacementAll`); the banner of the lecture replaced by `PlacementBar` | done |
-| 4 | `TextFlow`: the review and long pasted texts through the free space and onto new pages after them, with the preview; "Insert text…" | planned |
+| 4 | `TextFlow`: the review (`NoteInserter.startReviewPlacement`) and long pasted texts (`TextEditorManager.pasteText`, 600 characters and more of several paragraphs) through the free space and onto new pages after them, with the preview; `PlacementSpot.newPage` names the n-th new page | done |
 | 5 | The pages a text is about from the search engine (sections of the review and of an imported text placed by topic), degrading to the page shown | planned |
 
 ### Stage 2: what the model and the stored formats add (each decided with the user first)
@@ -226,6 +226,10 @@ Taken alone, revertible:
    as today.
 7. **No ghost for a new page**: the page is not drawn before it exists (the layout of the pages
    would have to make room for it); the bar names it and the end of the page it follows is shown.
+9. **No "Insert text…" command yet**: a long text is pasted (the clipboard covers a text written
+   by a model elsewhere); a command reading a file is left for later.
+10. **The review keeps its choice** "on the page shown / at the end": on the page shown it fills
+    its free space first, then new pages after it, of the format of the document.
 8. **The keys of the placement are commands** (Tab, ⇧Tab, the arrows, Return), registered while a
    placement is pending and listed in the menu Edit then; Escape cancels as the system back.
 

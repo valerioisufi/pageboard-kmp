@@ -15,15 +15,21 @@ import io.github.valerioisufi.drawview.model.placement.PlacementPolicy
 import io.github.valerioisufi.drawview.model.placement.ReadingOrder
 
 /**
- * A place for a block of content: its box on page [pageIndex] (page millimeters), or on a new page
- * created right after it when [newPageAfter] (the new page is made when the place is confirmed,
- * see [PlacementManager.pagesFor]).
+ * A place for a block of content: its box on page [pageIndex] (page millimeters), or on the
+ * [newPage]-th of the new pages created right after it (`0`: the page itself; the new pages are
+ * made when the place is confirmed, see [PlacementManager.pagesFor]).
  */
 public class PlacementSpot(
     public val pageIndex: Int,
     public val box: MmRect,
-    public val newPageAfter: Boolean = false
-)
+    public val newPage: Int = 0
+) {
+    /** A place on page [pageIndex], or on the first new page after it when [newPageAfter]. */
+    public constructor(pageIndex: Int, box: MmRect, newPageAfter: Boolean) : this(pageIndex, box, if (newPageAfter) 1 else 0)
+
+    /** Whether the place is on a new page. */
+    public val newPageAfter: Boolean get() = newPage > 0
+}
 
 /**
  * A text to place and the places proposed for it, the best first (empty: the student chooses the
@@ -208,18 +214,26 @@ public class PlacementManager(private val controller: DrawViewController) {
     }
 
     /**
-     * The page of every spot of [spots]: the page it is on, or a new page right after it (of its
-     * format), one for all the spots after the same page. Call it in a group of the history with
-     * the content added, so that they are undone together.
+     * The page of every spot of [spots]: the page it is on, or the new page it names after it, of
+     * the format of [template] (by default the page it follows; `null`: the format of the document),
+     * the spots naming the same new page on one page. Call it in a group of the history with the
+     * content added, so that they are undone together.
      */
-    public fun pagesFor(spots: List<PlacementSpot>): List<DrawPage?> {
+    public fun pagesFor(spots: List<PlacementSpot>, template: (DrawPage) -> DrawPage? = { it }): List<DrawPage?> {
         val pages = controller.document.pages.toList()
-        val created = mutableMapOf<Int, DrawPage>()
-        // From the last page back, so that a page added does not move the ones before it
-        for (after in spots.filter { it.newPageAfter }.map { it.pageIndex }.distinct().sortedDescending()) {
-            if (after in pages.indices) created[after] = controller.pageManager.addNewPageAfter(after)
+        val created = mutableMapOf<Pair<Int, Int>, DrawPage>()
+        // From the last page back, so that the pages added do not move the ones before them
+        val newPages = spots.filter { it.newPageAfter }.groupBy { it.pageIndex }.mapValues { (_, it) -> it.maxOf { spot -> spot.newPage } }
+        for ((after, count) in newPages.entries.sortedByDescending { it.key }) {
+            val page = pages.getOrNull(after) ?: continue
+            var previous = page.index
+            for (number in 1..count) {
+                val added = controller.pageManager.addNewPageAfter(previous, template(page))
+                created[after to number] = added
+                previous = added.index
+            }
         }
-        return spots.map { if (it.newPageAfter) created[it.pageIndex] else pages.getOrNull(it.pageIndex) }
+        return spots.map { if (it.newPageAfter) created[it.pageIndex to it.newPage] else pages.getOrNull(it.pageIndex) }
     }
 
     // ==========================================================

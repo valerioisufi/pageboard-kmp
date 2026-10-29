@@ -2142,6 +2142,35 @@ final class io.github.valerioisufi.drawview.model.placement/PlacementPlanner { /
     }
 }
 
+final class io.github.valerioisufi.drawview.model.placement/TextFlow { // io.github.valerioisufi.drawview.model.placement/TextFlow|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.model.placement/PlacementPlanner = ..., kotlin/Float = ...) // io.github.valerioisufi.drawview.model.placement/TextFlow.<init>|<init>(io.github.valerioisufi.drawview.model.placement.PlacementPlanner;kotlin.Float){}[0]
+
+    final val minWidthMm // io.github.valerioisufi.drawview.model.placement/TextFlow.minWidthMm|{}minWidthMm[0]
+        final fun <get-minWidthMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/TextFlow.minWidthMm.<get-minWidthMm>|<get-minWidthMm>(){}[0]
+    final val planner // io.github.valerioisufi.drawview.model.placement/TextFlow.planner|{}planner[0]
+        final fun <get-planner>(): io.github.valerioisufi.drawview.model.placement/PlacementPlanner // io.github.valerioisufi.drawview.model.placement/TextFlow.planner.<get-planner>|<get-planner>(){}[0]
+
+    final fun flow(kotlin/String, io.github.valerioisufi.drawview.model.placement/PageOccupancy?, io.github.valerioisufi.drawview.model.placement/PageOccupancy, kotlin/Function2<kotlin/String, kotlin/Float, kotlin/Float>): kotlin.collections/List<io.github.valerioisufi.drawview.model.placement/TextFlow.Piece> // io.github.valerioisufi.drawview.model.placement/TextFlow.flow|flow(kotlin.String;io.github.valerioisufi.drawview.model.placement.PageOccupancy?;io.github.valerioisufi.drawview.model.placement.PageOccupancy;kotlin.Function2<kotlin.String,kotlin.Float,kotlin.Float>){}[0]
+
+    final class Piece { // io.github.valerioisufi.drawview.model.placement/TextFlow.Piece|null[0]
+        constructor <init>(kotlin/String, kotlin/Int, io.github.valerioisufi.drawview.model.geometry/Rect) // io.github.valerioisufi.drawview.model.placement/TextFlow.Piece.<init>|<init>(kotlin.String;kotlin.Int;io.github.valerioisufi.drawview.model.geometry.Rect){}[0]
+
+        final val box // io.github.valerioisufi.drawview.model.placement/TextFlow.Piece.box|{}box[0]
+            final fun <get-box>(): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.model.placement/TextFlow.Piece.box.<get-box>|<get-box>(){}[0]
+        final val newPage // io.github.valerioisufi.drawview.model.placement/TextFlow.Piece.newPage|{}newPage[0]
+            final fun <get-newPage>(): kotlin/Int // io.github.valerioisufi.drawview.model.placement/TextFlow.Piece.newPage.<get-newPage>|<get-newPage>(){}[0]
+        final val text // io.github.valerioisufi.drawview.model.placement/TextFlow.Piece.text|{}text[0]
+            final fun <get-text>(): kotlin/String // io.github.valerioisufi.drawview.model.placement/TextFlow.Piece.text.<get-text>|<get-text>(){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.drawview.model.placement/TextFlow.Companion|null[0]
+        final const val DEFAULT_MIN_WIDTH_MM // io.github.valerioisufi.drawview.model.placement/TextFlow.Companion.DEFAULT_MIN_WIDTH_MM|{}DEFAULT_MIN_WIDTH_MM[0]
+            final fun <get-DEFAULT_MIN_WIDTH_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/TextFlow.Companion.DEFAULT_MIN_WIDTH_MM.<get-DEFAULT_MIN_WIDTH_MM>|<get-DEFAULT_MIN_WIDTH_MM>(){}[0]
+
+        final fun blocksOf(kotlin/String): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.model.placement/TextFlow.Companion.blocksOf|blocksOf(kotlin.String){}[0]
+    }
+}
+
 final class io.github.valerioisufi.drawview.model.text.code/CodeToken { // io.github.valerioisufi.drawview.model.text.code/CodeToken|null[0]
     constructor <init>(io.github.valerioisufi.drawview.model.text.code/CodeTokenKind, kotlin/Int, kotlin/Int) // io.github.valerioisufi.drawview.model.text.code/CodeToken.<init>|<init>(io.github.valerioisufi.drawview.model.text.code.CodeTokenKind;kotlin.Int;kotlin.Int){}[0]
 
