@@ -187,10 +187,35 @@ Variations).
 | 5 | `ExportStatusHost`: the progress and the outcome outside the sheet, in the library and the editor (Show, Open, Share, Retry); screenshots | Done |
 | 6 | Entry points: `LibraryItemsAction` and `LibrarySelection` replacing `DocumentAction` / `FolderAction`; the selection bar of every layout with a visible Export; the menu of the folder shown; ⇧⌘E and File › Export… in the library; the icon of the editor everywhere; PencilNotes and the sample; ABI | Done |
 | 7 | The page grid: `EditorExtension.pageGridActions`, Export on the pages selected; ABI | Done |
-| 8 | Verification: `verifyRoborazziJvm` (explorer, export-ui), the desktop app on a scratch data directory, Android and iOS simulators (share sheet, save to Files), a folder of many notes exported while working | Planned |
+| 8 | Verification: `verifyRoborazziJvm` (explorer, export-ui), the desktop app on a scratch data directory, Android and iOS simulators (share sheet, save to Files), a folder of many notes exported while working | Checks done; the app by hand and the simulators left to the user |
 
 Phases 1–2 (engine) and 3 (platforms) are independent; 4 needs 1 and 2; 5 needs 2 and 3; 6 and 7
 need 4.
+
+### Results
+
+* `drawview-export`: `ExportScope` (`Pages`, `Items`, `Folder`, `ofSelection`), `DocumentExport.resolve`
+  → `ExportContents` (name, notes with their paths, pages, formats, `fileName`), `ExportFormat`
+  (`PDF`, `IMAGES`, `PDF_PER_DOCUMENT`, `COMBINED_PDF`), `DocumentExport.export` (the pages of a
+  note by id or by place, the PNGs of several pages in a ZIP numbered "Title - 01.png", the notes
+  that cannot be read left out and told), `ExportFailure` read from the exceptions of the
+  platforms, `ExportJobs` (one after the other, Stop, Retry, dismiss). `exportFolder` and the
+  `FolderExport*` types are gone.
+* `drawview-ui`: `rememberFileSharer` (Android: `ACTION_SEND` through `DrawViewFileProvider`,
+  declared by the manifest of the library with the authority `<applicationId>.drawview.files`; iOS:
+  `UIActivityViewController`, a popover on the iPad), `fileReveal()` (the Finder with `open -R`,
+  the Explorer with `/select`, the file manager of Linux), the save dialog of the desktop in the
+  last folder used; `LibraryItemsAction` and `LibrarySelection`; `EditorExtension.pageGridActions`.
+* `drawview-export-ui`: `ExportSheetState` (formats, pages, range, name, problem, remembered
+  choices), `ExportSheet`, `ExportStatusHost` and `DocumentExportUi.StatusHost`,
+  `DocumentExportUi.libraryAction`; the strings rewritten in the seven languages.
+* `drawview-explorer`: one command per action of the application, on the selection or the
+  folder shown, ⇧⌘E; visible in the bar of the selection (LIST, GRID) and in the pane of the
+  selection (PANES); "⋯" beside the order of the folder shown with "Export folder…" / "Export all
+  notes…", in place of the loose icon.
+* Tests: `ExportScopeTest`, `ExportJobsTest`, `FolderExportTest` (on the new API),
+  `ExportSheetStateTest`, `LibraryCommandsTest`; screenshots `export-sheet-*` and
+  `export-status-*` of `drawview-export-ui`.
 
 ## Decisions
 
@@ -206,6 +231,14 @@ Taken alone, revertible:
 * **The progress leaves the sheet** (non-modal). A small export ends in the snackbar too, so that
   the outcome is always in one place.
 * **One icon, Share (`IosShare`)**, for the export everywhere, as in the editor today; Download no longer stands for it.
+* **On the phones the outcome has no Show or Open**: the file was given to the system (the
+  place chosen in Files, or the application it was shared with), the application keeps no copy.
+* **The thumbnail is the library's**: in the editor the sheet shows the icon of a note (the page
+  is in sight behind it).
+* **The actions of the page grid read the selection from the controller**
+  (`controller.pageManager.selection`): `pageGridActions` gives plain `Command`s, as `commands`.
+* **The exports live with `DocumentExportUi`** (its own `CoroutineScope` on `Dispatchers.Default`):
+  a window of the editor closed while exporting lets its export finish.
 * **The page range** is written as text ("3–7, 10"), checked as it is typed, rather than a
   picker of pages: the page grid already selects pages for the cases where seeing them matters.
 
