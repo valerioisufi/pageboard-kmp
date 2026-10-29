@@ -237,12 +237,22 @@ internal fun LibraryViewControls(viewModel: FileExplorerViewModel, commands: Lib
                 selected = viewModel.viewMode == ViewMode.LIST
             )
         }
-        if (viewModel.section == Section.HOME) {
-            for (entry in commands.currentFolderActions) {
-                DesignIconButton(entry.action.icon, entry.action.label(), onClick = entry.command.perform, style = IconButtonStyle.Tonal)
-            }
-        }
         SortButton(viewModel)
+        FolderActionsButton(viewModel, commands)
+    }
+}
+
+/**
+ * The menu of the folder shown (or of the Home): the actions of the application on it, e.g.
+ * "Export folder…". Nothing when there are none, or outside the folders (recent, shared, trash).
+ */
+@Composable
+internal fun FolderActionsButton(viewModel: FileExplorerViewModel, commands: LibraryCommands) {
+    if (viewModel.section != Section.HOME || commands.folderActionCommands.isEmpty()) return
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        DesignIconButton(DrawViewIcons.MoreHorizontal, stringResource(Res.string.explorer_more_actions), { expanded = true }, style = IconButtonStyle.Tonal)
+        CommandMenu(commands = commands.folderActionCommands, expanded = expanded, onDismissRequest = { expanded = false })
     }
 }
 
@@ -339,13 +349,14 @@ internal fun SelectionBar(viewModel: FileExplorerViewModel, commands: LibraryCom
                 enabled = commands.delete.isEnabled(),
                 tint = MaterialTheme.colorScheme.error
             )
-            val applicationActions = (commands.documentActionCommands + commands.folderActionCommands).filter { it.isEnabled() }
-            if (applicationActions.isNotEmpty()) {
-                var expanded by remember { mutableStateOf(false) }
-                Box {
-                    DesignIconButton(DrawViewIcons.MoreVertical, stringResource(Res.string.explorer_more_actions), { expanded = true })
-                    CommandMenu(commands = applicationActions, expanded = expanded, onDismissRequest = { expanded = false })
-                }
+            // The actions of the application (e.g. "Export…"), in sight, on all the items selected
+            commands.selectionActionCommands.forEachIndexed { index, command ->
+                DesignIconButton(
+                    icon = commands.itemsActionIcons[index],
+                    label = command.label(),
+                    onClick = { command.performIfEnabled() },
+                    enabled = command.isEnabled()
+                )
             }
         } else {
             Spacer(modifier = Modifier.width(16.dp))

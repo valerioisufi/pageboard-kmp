@@ -5,6 +5,8 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.key.Key
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel
@@ -33,8 +35,8 @@ import io.github.valerioisufi.drawview.store.TrashedItem
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.command.Shortcut
-import io.github.valerioisufi.drawview.ui.extension.DocumentAction
-import io.github.valerioisufi.drawview.ui.extension.FolderAction
+import io.github.valerioisufi.drawview.ui.extension.LibraryItemsAction
+import io.github.valerioisufi.drawview.ui.extension.LibrarySelection
 import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 import io.github.valerioisufi.drawview.ui.generated.resources.about_dialog_title
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
@@ -58,19 +60,18 @@ internal sealed interface LibraryDialog {
  * The commands of the library: of the folder shown (create, select, sort, go up), of the selected
  * items and of an item ([forItem], its context menu and its sheet). The view model is the expert
  * of the items; the screen shows the dialogs ([LibraryDialog]) and runs the actions of the
- * application on a document ([DocumentAction]).
+ * application on the items ([LibraryItemsAction]).
  */
 @Stable
 internal class LibraryCommands internal constructor(
     private val viewModel: FileExplorerViewModel,
     private val openDocument: (String) -> Unit,
-    private val documentActions: List<DocumentAction>,
-    private val folderActions: List<FolderAction> = emptyList(),
+    private val itemsActions: List<LibraryItemsAction>,
     private val showDialog: (LibraryDialog) -> Unit,
-    private val chooseAction: (DocumentAction, FileItem) -> Unit,
-    private val chooseFolderAction: (FolderAction, String?, String) -> Unit = { _, _, _ -> },
+    private val chooseAction: (LibraryItemsAction, LibrarySelection) -> Unit,
     private val focusSearch: () -> Unit,
-    private val openDocumentInNewWindow: ((String) -> Unit)? = null
+    private val openDocumentInNewWindow: ((String) -> Unit)? = null,
+    private val thumbnail: (FileItem) -> (suspend () -> ImageBitmap?)? = { null }
 ) {
     private val selection: List<FileItem> get() = viewModel.selectedItems.toList()
 
@@ -104,44 +105,66 @@ internal class LibraryCommands internal constructor(
         shortcuts = listOf(Shortcut(Key.K, primary = true), Shortcut(Key.F, primary = true))
     ) { focusSearch() }
 
-    /** The actions of the application on the document selected alone (e.g. "Export…"). */
-    val documentActionCommands: List<Command> = documentActions.mapIndexed { index, action ->
-        Command(
-            DocumentActionPrefix + index, action.label, CommandGroup.FILE, section = 1,
-            icon = { rememberVectorPainter(action.icon) },
-            isEnabled = { selectedDocument != null }
-        ) { selectedDocument?.let { chooseAction(action, it) } }
-    }
-
     private val selectedDocument: FileItem? get() = selection.singleOrNull()?.takeIf { it.type == FileType.FILE }
 
-    /** The actions of the application on the folder selected alone (e.g. "Export folder…"). */
-    val folderActionCommands: List<Command> = folderActions.mapIndexed { index, action ->
+    /** The items of [items] as the selection an action of the application runs on. */
+    private fun selectionOf(items: List<FileItem>): LibrarySelection.Items = LibrarySelection.Items(
+        documentIds = items.filter { it.type == FileType.FILE }.map { it.id },
+        folderIds = items.filter { it.type == FileType.FOLDER }.map { it.id },
+        thumbnail = items.firstOrNull { it.type == FileType.FILE }?.let(thumbnail)
+    )
+
+    /** Whether the folder shown is one of the library (not a list of recent or shared notes, nor the trash). */
+    private val showsFolder: Boolean get() = viewModel.section == FileExplorerViewModel.Section.HOME
+
+    /** The folder shown, as the selection of an action of the application. */
+    private val shownFolder: LibrarySelection.Folder get() = LibrarySelection.Folder(viewModel.currentFolder?.id)
+
+    /**
+     * The actions of the application (e.g. "Export…") in the menus and with their shortcuts: on
+     * the items selected, else on the folder shown.
+     */
+    val itemsActionCommands: List<Command> = itemsActions.mapIndexed { index, action ->
         Command(
-            FolderActionPrefix + index, action.label, CommandGroup.FILE, section = 1,
+            ItemsActionPrefix + index,
+            label = { if (selection.isEmpty()) action.folderLabel(viewModel.currentFolder == null) else action.label() },
+            group = CommandGroup.FILE,
+            section = 1,
             icon = { rememberVectorPainter(action.icon) },
-            isEnabled = { selectedFolder != null }
-        ) { selectedFolder?.let { chooseFolderAction(action, it.id, it.name) } }
-    }
-
-    private val selectedFolder: FileItem? get() = selection.singleOrNull()?.takeIf { it.type == FileType.FOLDER }
-
-    class FolderActionCommand(val action: FolderAction, val command: Command)
-
-    /** The actions of the application on the current folder or Home. */
-    val currentFolderActions: List<FolderActionCommand> = folderActions.mapIndexed { index, action ->
-        val command = Command(
-            "current-folder-action-$index", action.label, CommandGroup.FILE, section = 1,
-            icon = { rememberVectorPainter(action.icon) },
-            isEnabled = { viewModel.section == FileExplorerViewModel.Section.HOME }
+            shortcuts = listOfNotNull(action.shortcut),
+            isEnabled = { viewModel.section != FileExplorerViewModel.Section.TRASH && (selection.isNotEmpty() || showsFolder) }
         ) {
-            val current = viewModel.currentFolder
-            chooseFolderAction(action, current?.id, current?.name ?: "")
+            val items = selection
+            when {
+                items.isNotEmpty() -> chooseAction(action, selectionOf(items))
+                showsFolder -> chooseAction(action, shownFolder)
+            }
         }
-        FolderActionCommand(action, command)
     }
 
-    val currentFolderActionCommands: List<Command> = currentFolderActions.map { it.command }
+    /** The actions of the application on the items selected (the bar of the selection, the pane of the details). */
+    val selectionActionCommands: List<Command> = itemsActions.mapIndexed { index, action ->
+        Command(
+            ItemsActionPrefix + index, action.label, CommandGroup.FILE, section = 1,
+            icon = { rememberVectorPainter(action.icon) },
+            isEnabled = { selection.isNotEmpty() }
+        ) { selection.takeIf { it.isNotEmpty() }?.let { chooseAction(action, selectionOf(it)) } }
+    }
+
+    /** The icons of the actions of the application, in the order of their commands. */
+    val itemsActionIcons: List<ImageVector> = itemsActions.map { it.icon }
+
+    /** The actions of the application on the folder shown (the menu of its title), e.g. "Export folder…". */
+    val folderActionCommands: List<Command> = itemsActions.mapIndexed { index, action ->
+        Command(
+            "folder-$ItemsActionPrefix$index",
+            label = { action.folderLabel(viewModel.currentFolder == null) },
+            group = CommandGroup.FILE,
+            section = 1,
+            icon = { rememberVectorPainter(action.icon) },
+            isEnabled = { showsFolder }
+        ) { if (showsFolder) chooseAction(action, shownFolder) }
+    }
 
     // ----- Edit -----
 
@@ -216,8 +239,7 @@ internal class LibraryCommands internal constructor(
     }
 
     /** The commands of the folder shown and of the selection, in the order of the menus. */
-    val all: List<Command> = listOfNotNull(newNote, newFolder, openInNewWindow) + documentActionCommands +
-        folderActionCommands + currentFolderActionCommands +
+    val all: List<Command> = listOfNotNull(newNote, newFolder, openInNewWindow) + itemsActionCommands +
         listOf(selectAll, rename, move, delete, search, enclosingFolder) + sortBy + listOf(invertOrder, foldersOnTop, about)
 
     /**
@@ -250,19 +272,11 @@ internal class LibraryCommands internal constructor(
             Command("move", move.label, CommandGroup.EDIT, section = 1, icon = move.icon) {
                 showDialog(LibraryDialog.Move(listOf(item)))
             }
-        ) + (if (item.type == FileType.FILE) {
-            documentActions.mapIndexed { index, action ->
-                Command(DocumentActionPrefix + index, action.label, CommandGroup.FILE, section = 2, icon = { rememberVectorPainter(action.icon) }) {
-                    chooseAction(action, item)
-                }
+        ) + itemsActions.mapIndexed { index, action ->
+            Command(ItemsActionPrefix + index, action.label, CommandGroup.FILE, section = 2, icon = { rememberVectorPainter(action.icon) }) {
+                chooseAction(action, selectionOf(listOf(item)))
             }
-        } else {
-            folderActions.mapIndexed { index, action ->
-                Command(FolderActionPrefix + index, action.label, CommandGroup.FILE, section = 2, icon = { rememberVectorPainter(action.icon) }) {
-                    chooseFolderAction(action, item.id, item.name)
-                }
-            }
-        }) + Command("delete", delete.label, CommandGroup.EDIT, section = 3, icon = delete.icon, destructive = true) {
+        } + Command("delete", delete.label, CommandGroup.EDIT, section = 3, icon = delete.icon, destructive = true) {
             viewModel.deleteFiles(listOf(item))
         }
     }
@@ -274,32 +288,30 @@ private fun label(resource: StringResource): @Composable () -> String = { string
 @Composable
 internal fun rememberLibraryCommands(
     viewModel: FileExplorerViewModel,
-    documentActions: List<DocumentAction>,
-    folderActions: List<FolderAction> = emptyList(),
+    itemsActions: List<LibraryItemsAction>,
     onOpenDocument: (String) -> Unit,
     onShowDialog: (LibraryDialog) -> Unit,
-    onChooseAction: (DocumentAction, FileItem) -> Unit,
-    onChooseFolderAction: (FolderAction, String?, String) -> Unit = { _, _, _ -> },
+    onChooseAction: (LibraryItemsAction, LibrarySelection) -> Unit,
     onFocusSearch: () -> Unit,
-    onOpenDocumentInNewWindow: ((String) -> Unit)? = null
+    onOpenDocumentInNewWindow: ((String) -> Unit)? = null,
+    thumbnail: (FileItem) -> (suspend () -> ImageBitmap?)? = { null }
 ): LibraryCommands {
     val open by rememberUpdatedState(onOpenDocument)
     val openInNewWindow by rememberUpdatedState(onOpenDocumentInNewWindow)
     val show by rememberUpdatedState(onShowDialog)
     val choose by rememberUpdatedState(onChooseAction)
-    val chooseFolder by rememberUpdatedState(onChooseFolderAction)
     val focus by rememberUpdatedState(onFocusSearch)
-    return remember(viewModel, documentActions, folderActions) {
+    val thumbnailOf by rememberUpdatedState(thumbnail)
+    return remember(viewModel, itemsActions) {
         LibraryCommands(
             viewModel = viewModel,
             openDocument = { open(it) },
-            documentActions = documentActions,
-            folderActions = folderActions,
+            itemsActions = itemsActions,
             showDialog = { show(it) },
-            chooseAction = { action, item -> choose(action, item) },
-            chooseFolderAction = { action, folderId, folderName -> chooseFolder(action, folderId, folderName) },
+            chooseAction = { action, selection -> choose(action, selection) },
             focusSearch = { focus() },
-            openDocumentInNewWindow = if (onOpenDocumentInNewWindow != null) { { openInNewWindow?.invoke(it) } } else null
+            openDocumentInNewWindow = if (onOpenDocumentInNewWindow != null) { { openInNewWindow?.invoke(it) } } else null,
+            thumbnail = { thumbnailOf(it) }
         )
     }
 }

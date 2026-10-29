@@ -397,14 +397,6 @@ public final class io/github/valerioisufi/drawview/ui/extension/ComposableSingle
 	public final fun getLambda$990553456$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
 }
 
-public final class io/github/valerioisufi/drawview/ui/extension/DocumentAction {
-	public static final field $stable I
-	public fun <init> (Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function5;)V
-	public final fun getContent ()Lkotlin/jvm/functions/Function5;
-	public final fun getIcon ()Landroidx/compose/ui/graphics/vector/ImageVector;
-	public final fun getLabel ()Lkotlin/jvm/functions/Function2;
-}
-
 public final class io/github/valerioisufi/drawview/ui/extension/DocumentTag {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/graphics/vector/ImageVector;Lio/github/valerioisufi/drawview/ui/components/BadgeTone;Lkotlin/jvm/functions/Function0;)V
@@ -450,14 +442,6 @@ public final class io/github/valerioisufi/drawview/ui/extension/EditorPanel {
 	public final fun isOpen ()Lkotlin/jvm/functions/Function0;
 }
 
-public final class io/github/valerioisufi/drawview/ui/extension/FolderAction {
-	public static final field $stable I
-	public fun <init> (Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function5;)V
-	public final fun getContent ()Lkotlin/jvm/functions/Function5;
-	public final fun getIcon ()Landroidx/compose/ui/graphics/vector/ImageVector;
-	public final fun getLabel ()Lkotlin/jvm/functions/Function2;
-}
-
 public final class io/github/valerioisufi/drawview/ui/extension/LibraryAction {
 	public static final field $stable I
 	public fun <init> (Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function2;ZLkotlin/jvm/functions/Function3;)V
@@ -466,6 +450,35 @@ public final class io/github/valerioisufi/drawview/ui/extension/LibraryAction {
 	public final fun getIcon ()Landroidx/compose/ui/graphics/vector/ImageVector;
 	public final fun getLabel ()Lkotlin/jvm/functions/Function2;
 	public final fun getProminent ()Z
+}
+
+public final class io/github/valerioisufi/drawview/ui/extension/LibraryItemsAction {
+	public static final field $stable I
+	public fun <init> (Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lio/github/valerioisufi/drawview/ui/command/Shortcut;Lkotlin/jvm/functions/Function4;)V
+	public synthetic fun <init> (Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lio/github/valerioisufi/drawview/ui/command/Shortcut;Lkotlin/jvm/functions/Function4;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getContent ()Lkotlin/jvm/functions/Function4;
+	public final fun getFolderLabel ()Lkotlin/jvm/functions/Function3;
+	public final fun getIcon ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getLabel ()Lkotlin/jvm/functions/Function2;
+	public final fun getShortcut ()Lio/github/valerioisufi/drawview/ui/command/Shortcut;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/ui/extension/LibrarySelection {
+}
+
+public final class io/github/valerioisufi/drawview/ui/extension/LibrarySelection$Folder : io/github/valerioisufi/drawview/ui/extension/LibrarySelection {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;)V
+	public final fun getFolderId ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/ui/extension/LibrarySelection$Items : io/github/valerioisufi/drawview/ui/extension/LibrarySelection {
+	public static final field $stable I
+	public fun <init> (Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> (Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getDocumentIds ()Ljava/util/List;
+	public final fun getFolderIds ()Ljava/util/List;
+	public final fun getThumbnail ()Lkotlin/jvm/functions/Function1;
 }
 
 public final class io/github/valerioisufi/drawview/ui/generated/resources/ActualResourceCollectorsKt {

@@ -21,9 +21,8 @@ public final class io/github/valerioisufi/drawview/export/ui/DocumentExportUi {
 	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Ljava/lang/String;)V
 	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun StatusHost (Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
-	public final fun getDocumentAction ()Lio/github/valerioisufi/drawview/ui/extension/DocumentAction;
 	public final fun getEditorExtension ()Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;
-	public final fun getFolderAction ()Lio/github/valerioisufi/drawview/ui/extension/FolderAction;
+	public final fun getLibraryAction ()Lio/github/valerioisufi/drawview/ui/extension/LibraryItemsAction;
 }
 
 public final class io/github/valerioisufi/drawview/export/ui/DocumentExportUiKt {

@@ -21,10 +21,9 @@ import io.github.valerioisufi.drawview.session.EditorSessionScreen
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.command.CommandRoot
-import io.github.valerioisufi.drawview.ui.extension.DocumentAction
 import io.github.valerioisufi.drawview.ui.extension.DocumentTag
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
-import io.github.valerioisufi.drawview.ui.extension.FolderAction
+import io.github.valerioisufi.drawview.ui.extension.LibraryItemsAction
 import io.github.valerioisufi.drawview.ui.extension.LibraryAction
 import io.github.valerioisufi.drawview.ui.platform.PickedFile
 import io.github.valerioisufi.drawview.ui.platform.PickerType
@@ -49,9 +48,9 @@ import kotlinx.coroutines.withContext
  * @param editorExtension content contributed to the editor (top bar actions, side panel).
  * @param libraryOverlay content drawn over the library (e.g. a recording in progress), given the
  *   function opening a document.
- * @param documentActions actions of the application on a document of the library (e.g. its
- *   export), in the bar of the selection.
- * @param folderActions actions of the application on a folder of the library (e.g. its export).
+ * @param itemsActions actions of the application on the items of the library (e.g. their
+ *   export): in the bar and the pane of the selection, the menus of the items, the menu of the
+ *   folder shown, the menus of the window and their shortcuts.
  * @param tags what the application says of the documents (e.g. that they have a lecture): their
  *   badges and the filters of the library.
  * @param engines the engines drawing the PDF pages and the formulas (e.g. `PdfiumEngine` and
@@ -74,8 +73,7 @@ public fun DocumentLibrary(
     fullScreenEditor: Boolean = false,
     editorExtension: EditorExtension? = null,
     libraryOverlay: @Composable BoxScope.(openDocument: (String) -> Unit) -> Unit = {},
-    documentActions: List<DocumentAction> = emptyList(),
-    folderActions: List<FolderAction> = emptyList(),
+    itemsActions: List<LibraryItemsAction> = emptyList(),
     tags: List<DocumentTag> = emptyList(),
     engines: DrawViewEngines = DrawViewEngines.None,
     thumbnails: DocumentThumbnails = rememberDocumentThumbnails(documents, engines = engines),
@@ -130,8 +128,7 @@ public fun DocumentLibrary(
                             },
                             title = title,
                             actions = actions,
-                            documentActions = documentActions,
-                            folderActions = folderActions,
+                            itemsActions = itemsActions,
                             tags = tags,
                             thumbnails = thumbnails,
                             search = search,

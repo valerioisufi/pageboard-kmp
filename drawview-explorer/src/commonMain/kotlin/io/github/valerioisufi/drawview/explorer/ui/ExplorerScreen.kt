@@ -75,9 +75,9 @@ import io.github.valerioisufi.drawview.ui.components.AboutLicensesDialog
 import io.github.valerioisufi.drawview.ui.components.DesignIconButton
 import io.github.valerioisufi.drawview.ui.components.DesignSnackbar
 import io.github.valerioisufi.drawview.ui.components.IconButtonStyle
-import io.github.valerioisufi.drawview.ui.extension.DocumentAction
 import io.github.valerioisufi.drawview.ui.extension.DocumentTag
-import io.github.valerioisufi.drawview.ui.extension.FolderAction
+import io.github.valerioisufi.drawview.ui.extension.LibraryItemsAction
+import io.github.valerioisufi.drawview.ui.extension.LibrarySelection
 import io.github.valerioisufi.drawview.ui.extension.LibraryAction
 import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
 import io.github.valerioisufi.drawview.ui.generated.resources.about_dialog_title
@@ -96,7 +96,8 @@ import org.jetbrains.compose.resources.stringResource
  * @param title the brand of the application (its mark and its name), at the top of the library.
  * @param actions actions of the application in the library (e.g. joining a shared document, its
  *   information): its bar, or its navigation pane.
- * @param documentActions actions of the application on a selected document (e.g. its export).
+ * @param itemsActions actions of the application on the items of the library and on the folder
+ *   shown (e.g. their export).
  * @param tags what the application says of the documents (e.g. that they have a lecture): their
  *   badges and the filters of the library.
  * @param thumbnails draws the first pages of the documents; without them the library is a list.
@@ -112,8 +113,7 @@ internal fun ExplorerScreen(
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     actions: List<LibraryAction> = listOf(aboutLibraryAction()),
-    documentActions: List<DocumentAction> = emptyList(),
-    folderActions: List<FolderAction> = emptyList(),
+    itemsActions: List<LibraryItemsAction> = emptyList(),
     tags: List<DocumentTag> = emptyList(),
     thumbnails: DocumentThumbnails? = null,
     search: LibrarySearch? = null,
@@ -133,12 +133,10 @@ internal fun ExplorerScreen(
     val searchFocus = remember { FocusRequester() }
     // The items dragged with a mouse onto a folder
     val drag = remember { LibraryDrag() }
-    // The action chosen on a document, shown until it is done (the selection is cleared meanwhile)
-    var chosenAction by remember { mutableStateOf<Pair<DocumentAction, FileExplorerViewModel.FileItem>?>(null) }
-    chosenAction?.let { (action, item) -> action.content(item.id, item.name) { chosenAction = null } }
-    // The action chosen on a folder (or the home), shown until it is done
-    var chosenFolderAction by remember { mutableStateOf<Triple<FolderAction, String?, String>?>(null) }
-    chosenFolderAction?.let { (action, folderId, folderName) -> action.content(folderId, folderName) { chosenFolderAction = null } }
+    // The action of the application chosen on items or on the folder shown, shown until it is
+    // done (the selection is cleared meanwhile)
+    var chosenAction by remember { mutableStateOf<Pair<LibraryItemsAction, LibrarySelection>?>(null) }
+    chosenAction?.let { (action, selection) -> action.content(selection) { chosenAction = null } }
     // The action of the application chosen in the library, shown until it is done
     var libraryAction by remember { mutableStateOf<LibraryAction?>(null) }
     libraryAction?.let { action -> action.content { libraryAction = null } }
@@ -148,20 +146,16 @@ internal fun ExplorerScreen(
     // The commands of the library: its bars and menus, the menu bar of the window, the shortcuts
     val commands = rememberLibraryCommands(
         viewModel = viewModel,
-        documentActions = documentActions,
-        folderActions = folderActions,
+        itemsActions = itemsActions,
         onOpenDocument = onOpenDocument,
         onShowDialog = { dialog = it },
-        onChooseAction = { action, item ->
-            chosenAction = action to item
-            viewModel.clearSelection()
-        },
-        onChooseFolderAction = { action, folderId, folderName ->
-            chosenFolderAction = Triple(action, folderId, folderName)
+        onChooseAction = { action, selection ->
+            chosenAction = action to selection
             viewModel.clearSelection()
         },
         onFocusSearch = { runCatching { searchFocus.requestFocus() } },
-        onOpenDocumentInNewWindow = onOpenDocumentInNewWindow
+        onOpenDocumentInNewWindow = onOpenDocumentInNewWindow,
+        thumbnail = { item -> thumbnails?.let { thumbnails -> { thumbnails.of(item.id, item.modifiedAt, ExportThumbnailWidth) } } }
     )
     RegisterCommands(commands.all)
     var fabMenuExpanded by rememberSaveable { mutableStateOf(false) }
@@ -320,11 +314,7 @@ private fun LazyGridScope.libraryHeader(
             when (layout) {
                 LibraryLayout.LIST -> {
                     LibraryTitle(viewModel, commands, compact = true) {
-                        if (viewModel.section == FileExplorerViewModel.Section.HOME) {
-                            for (entry in commands.currentFolderActions) {
-                                DesignIconButton(entry.action.icon, entry.action.label(), onClick = entry.command.perform, style = IconButtonStyle.Tonal)
-                            }
-                        }
+                        FolderActionsButton(viewModel, commands)
                     }
                     LibrarySearchField(viewModel, commands, searchFocus, modifier = Modifier.fillMaxWidth())
                 }
@@ -491,3 +481,6 @@ private fun LibraryDialogHost(
         LibraryDialog.About -> AboutLicensesDialog(onDismiss = onDismiss)
     }
 }
+
+/** How wide the image of the first page of a note is drawn for the sheet of an action, in pixels. */
+private const val ExportThumbnailWidth = 160

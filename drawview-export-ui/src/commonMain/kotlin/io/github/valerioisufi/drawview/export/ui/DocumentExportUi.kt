@@ -16,14 +16,16 @@ import io.github.valerioisufi.drawview.export.ExportJobs
 import io.github.valerioisufi.drawview.export.ExportScope
 import io.github.valerioisufi.drawview.export.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.export.ui.generated.resources.export_action
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_all_action
+import io.github.valerioisufi.drawview.export.ui.generated.resources.export_folder_action
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.command.Shortcut
-import io.github.valerioisufi.drawview.ui.extension.DocumentAction
 import io.github.valerioisufi.drawview.ui.extension.EditorContext
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
-import io.github.valerioisufi.drawview.ui.extension.FolderAction
+import io.github.valerioisufi.drawview.ui.extension.LibraryItemsAction
+import io.github.valerioisufi.drawview.ui.extension.LibrarySelection
 import io.github.valerioisufi.drawview.ui.screen.EditorActionButton
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import kotlinx.coroutines.CoroutineScope
@@ -32,9 +34,9 @@ import kotlinx.coroutines.SupervisorJob
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * The export of the documents in an application (see `docs/export-ux.md`): "Export…" on a
- * document of the library ([documentAction]), on a folder or the Home ([folderAction]), and in
- * the editor ([editorExtension]), opening the export sheet; the exports then go on in the
+ * The export of the documents in an application (see `docs/export-ux.md`): "Export…" on the
+ * items of the library and on the folder shown ([libraryAction]), and in the editor
+ * ([editorExtension]), opening the export sheet; the exports then go on in the
  * background, shown in the editor and, where the application places it, by [StatusHost].
  *
  * @param documents the documents of the application (those of its library).
@@ -72,18 +74,27 @@ public class DocumentExportUi(documents: OpenDocuments, private val appName: Str
         )
     }
 
-    /** "Export…" on the document selected in the library (see `DocumentLibrary.documentActions`). */
-    public val documentAction: DocumentAction = DocumentAction(
+    /**
+     * "Export…" on the items of the library, one or more notes and folders, and "Export folder…"
+     * on the folder shown (see `DocumentLibrary.itemsActions`), ⇧⌘E as in the editor.
+     */
+    public val libraryAction: LibraryItemsAction = LibraryItemsAction(
         icon = DrawViewIcons.Share,
         label = { stringResource(Res.string.export_action) },
-        content = { documentId, _, onDone -> Sheet(documentId, { ExportScope.Pages(documentId) }, onDone) }
-    )
-
-    /** "Export…" on the folder or the Home selected in the library (see `DocumentLibrary.folderActions`). */
-    public val folderAction: FolderAction = FolderAction(
-        icon = DrawViewIcons.Share,
-        label = { stringResource(Res.string.export_action) },
-        content = { folderId, _, onDone -> Sheet(folderId, { ExportScope.Folder(folderId) }, onDone) }
+        folderLabel = { home -> stringResource(if (home) Res.string.export_all_action else Res.string.export_folder_action) },
+        shortcut = Shortcut(Key.E, primary = true, shift = true),
+        content = { selection, onDone ->
+            val state = remember(selection) {
+                val scope = when (selection) {
+                    is LibrarySelection.Items -> ExportScope.ofSelection(selection.documentIds, selection.folderIds)
+                    is LibrarySelection.Folder -> ExportScope.Folder(selection.folderId)
+                }
+                ExportSheetState(scope, preferences)
+            }
+            // The first page of the note, or of the first note among several
+            val thumbnail = (selection as? LibrarySelection.Items)?.thumbnail
+            ExportSheet(state, export, jobs, appName, thumbnail = thumbnail, onDismiss = onDone)
+        }
     )
 
     /**
@@ -117,13 +128,6 @@ public class DocumentExportUi(documents: OpenDocuments, private val appName: Str
     @Composable
     public fun StatusHost(modifier: Modifier = Modifier) {
         ExportStatusHost(jobs, modifier)
-    }
-
-    /** The export sheet of the scope made by [scope] for the item [key], until [onDone]. */
-    @Composable
-    private fun Sheet(key: String?, scope: () -> ExportScope, onDone: () -> Unit) {
-        val state = remember(key) { ExportSheetState(scope(), preferences) }
-        ExportSheet(state, export, jobs, appName, thumbnail = null, onDismiss = onDone)
     }
 }
 

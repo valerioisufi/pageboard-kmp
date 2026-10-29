@@ -9,12 +9,10 @@
 final class io.github.valerioisufi.drawview.export.ui/DocumentExportUi { // io.github.valerioisufi.drawview.export.ui/DocumentExportUi|null[0]
     constructor <init>(io.github.valerioisufi.drawview.store/OpenDocuments, kotlin/String? = ...) // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.<init>|<init>(io.github.valerioisufi.drawview.store.OpenDocuments;kotlin.String?){}[0]
 
-    final val documentAction // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.documentAction|{}documentAction[0]
-        final fun <get-documentAction>(): io.github.valerioisufi.drawview.ui.extension/DocumentAction // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.documentAction.<get-documentAction>|<get-documentAction>(){}[0]
     final val editorExtension // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.editorExtension|{}editorExtension[0]
         final fun <get-editorExtension>(): io.github.valerioisufi.drawview.ui.extension/EditorExtension // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.editorExtension.<get-editorExtension>|<get-editorExtension>(){}[0]
-    final val folderAction // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.folderAction|{}folderAction[0]
-        final fun <get-folderAction>(): io.github.valerioisufi.drawview.ui.extension/FolderAction // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.folderAction.<get-folderAction>|<get-folderAction>(){}[0]
+    final val libraryAction // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.libraryAction|{}libraryAction[0]
+        final fun <get-libraryAction>(): io.github.valerioisufi.drawview.ui.extension/LibraryItemsAction // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.libraryAction.<get-libraryAction>|<get-libraryAction>(){}[0]
 
     final fun StatusHost(androidx.compose.ui/Modifier?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // io.github.valerioisufi.drawview.export.ui/DocumentExportUi.StatusHost|StatusHost(androidx.compose.ui.Modifier?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
 }

@@ -172,8 +172,8 @@ private fun DetailRow(label: String, value: String) {
 @Composable
 private fun PaneActions(item: FileItem, itemCommands: List<Command>) {
     val open = itemCommands.firstOrNull { it.id == OpenCommand }
-    val applicationActions = itemCommands.filter { it.id.startsWith(DocumentActionPrefix) || it.id.startsWith(FolderActionPrefix) }
-    val others = itemCommands.filter { it.id != OpenCommand && !it.id.startsWith(DocumentActionPrefix) && !it.id.startsWith(FolderActionPrefix) }
+    val applicationActions = itemCommands.filter { it.id.startsWith(ItemsActionPrefix) }
+    val others = itemCommands.filter { it.id != OpenCommand && !it.id.startsWith(ItemsActionPrefix) }
     Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
         if (open != null) {
             Button(
@@ -255,6 +255,14 @@ private fun SelectionSummary(actions: ItemActions, commands: LibraryCommands) {
         )
         Spacer(modifier = Modifier.height(20.dp))
         Column(modifier = Modifier.width(220.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            // The actions of the application (e.g. "Export…") on all the items selected
+            for (command in commands.selectionActionCommands) {
+                TonalButton(onClick = { command.performIfEnabled() }, modifier = Modifier.fillMaxWidth()) {
+                    command.icon?.let { Icon(it(), contentDescription = null, modifier = Modifier.size(18.dp)) }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(command.label())
+                }
+            }
             TonalButton(onClick = { commands.move.performIfEnabled() }, modifier = Modifier.fillMaxWidth()) {
                 Icon(DrawViewIcons.FolderInput, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
@@ -327,7 +335,7 @@ private fun ColumnScope.DetailsSheetContent(item: FileItem, itemCommands: List<C
         ItemDetails(item, actions, previewHeight = 250)
     }
     val open = itemCommands.firstOrNull { it.id == OpenCommand }
-    val applicationActions = itemCommands.filter { it.id.startsWith(DocumentActionPrefix) || it.id.startsWith(FolderActionPrefix) }
+    val applicationActions = itemCommands.filter { it.id.startsWith(ItemsActionPrefix) }
     Row(
         modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -384,6 +392,5 @@ private fun SheetCommand(icon: androidx.compose.ui.graphics.painter.Painter?, la
     }
 }
 
-/** The prefix of the identifiers of the commands of the actions of the application on a document. */
-internal const val DocumentActionPrefix = "document-action-"
-internal const val FolderActionPrefix = "folder-action-"
+/** The prefix of the identifiers of the commands of the actions of the application on the items. */
+internal const val ItemsActionPrefix = "items-action-"
