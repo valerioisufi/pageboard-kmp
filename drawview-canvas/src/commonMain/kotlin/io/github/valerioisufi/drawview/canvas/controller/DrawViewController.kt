@@ -124,6 +124,9 @@ public class DrawViewController(
     public val pageManager: PageManager = PageManager(this)
     public val mediaManager: MediaManager = MediaManager(this)
     public val placementManager: PlacementManager = PlacementManager(this)
+
+    /** Places long texts in the notebook through the free space of the pages, by topic when it can. */
+    public val textPlacer: TextPlacer = TextPlacer(this)
     public val textMarkupManager: TextMarkupManager = TextMarkupManager(this)
     public val snapManager: SnapManager = SnapManager(this)
 

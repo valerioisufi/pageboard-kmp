@@ -14,6 +14,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -23,6 +25,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.canvas.controller.EditorClipboard
+import io.github.valerioisufi.drawview.canvas.controller.PageTopics
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
 import io.github.valerioisufi.drawview.explorer.DocumentThumbnails
@@ -33,7 +36,6 @@ import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.lecture.ui.LectureDialogs
 import io.github.valerioisufi.drawview.lecture.ui.LectureRecordingIndicator
 import io.github.valerioisufi.drawview.lecture.ui.documentTag
-import io.github.valerioisufi.drawview.lecture.TopicFinder
 import io.github.valerioisufi.drawview.lecture.ui.editorExtension
 import io.github.valerioisufi.drawview.lecture.ui.onlineAnswerBackend
 import io.github.valerioisufi.drawview.lecture.ui.rememberLectureAssistant
@@ -44,6 +46,7 @@ import io.github.valerioisufi.drawview.ml.ModelDownloads
 import io.github.valerioisufi.drawview.ml.litert.LiteRtRuntime
 import io.github.valerioisufi.drawview.pdf.PdfiumEngine
 import io.github.valerioisufi.drawview.search.MutableIndexingConditions
+import io.github.valerioisufi.drawview.search.ui.ContentSearch
 import io.github.valerioisufi.drawview.search.ui.rememberContentSearch
 import io.github.valerioisufi.drawview.search.ui.settingsAction
 import io.github.valerioisufi.drawview.store.room.DrawViewStore
@@ -114,7 +117,15 @@ fun PencilNotesApp(
         // The documents exported as PDF or as the image of a page
         val export = rememberDocumentExportUi(documents, appName = "PencilNotes")
         // The PDF pages drawn by PDFium, the formulas by MicroTeX
-        val engines = remember { DrawViewEngines(pdfTiles = PdfiumEngine::createTileAdapter, formulas = LatexEngine.formulaRenderer) }
+        // (the search, made after the engines it reads the PDFs with, is given to them once made)
+        val contentSearch = remember { mutableStateOf<ContentSearch?>(null) }
+        val engines = remember {
+            DrawViewEngines(
+                pdfTiles = PdfiumEngine::createTileAdapter,
+                formulas = LatexEngine.formulaRenderer,
+                topics = PageTopics { documentId, text -> contentSearch.value?.engine?.pagesAbout(documentId, text).orEmpty() }
+            )
+        }
         // Search in the contents of the notes, and the local models (EmbeddingGemma 2, Gemma 4)
         val liteRtRuntime = remember { LiteRtRuntime() }
         val installedModels = remember { InstalledModels() }
@@ -144,10 +155,8 @@ fun PencilNotesApp(
             onlineBackend = onlineAnswerBackend,
             onOpenLecture = lectureAssistant::openLectureAt
         )
-        // The review of a lecture placed next to the pages each section is about
-        LaunchedEffect(lectureAssistant, search) {
-            lectureAssistant.topicFinder = TopicFinder { documentId, text -> search.engine.pagesAbout(documentId, text) }
-        }
+        // A text placed next to the pages it is about (the review of a lecture, a text imported)
+        SideEffect { contentSearch.value = search }
         // The documents with a lecture: their badge and a filter of the library
         val lectureTag = remember(lectureAssistant) { lectureAssistant.documentTag() }
         val editorExtension = remember(lectureAssistant, collaboration, export) {
@@ -261,7 +270,15 @@ fun PencilNotesDocumentWindow(
     PencilNotesTheme {
         val documents = DrawViewStore.documents
         val export = rememberDocumentExportUi(documents, appName = "PencilNotes")
-        val engines = remember { DrawViewEngines(pdfTiles = PdfiumEngine::createTileAdapter, formulas = LatexEngine.formulaRenderer) }
+        // (the search, made after the engines it reads the PDFs with, is given to them once made)
+        val contentSearch = remember { mutableStateOf<ContentSearch?>(null) }
+        val engines = remember {
+            DrawViewEngines(
+                pdfTiles = PdfiumEngine::createTileAdapter,
+                formulas = LatexEngine.formulaRenderer,
+                topics = PageTopics { documentId, text -> contentSearch.value?.engine?.pagesAbout(documentId, text).orEmpty() }
+            )
+        }
         val editorViewModel = viewModel(key = "doc-$documentId") {
             DocumentEditorViewModel(documents, engines, clipboard = editorClipboard).apply {
                 openDocument(documentId)

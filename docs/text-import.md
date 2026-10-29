@@ -120,7 +120,7 @@ review), read with `LectureAnalysis` (its depth checked as every answer). The no
 | Phase | What | Status |
 |---|---|---|
 | 1 | `TextCleanup` in `drawview-model`: tests on texts copied from a PDF (broken lines, hyphens), from a chat, with bullets, numbered titles, Markdown, formulas and code left as they are | done |
-| 2 | `PageTopics` in `DrawViewEngines`, `TextPlacer` in the canvas (the review moved onto it), PencilNotes wiring; the tests of the review kept | planned |
+| 2 | `PageTopics` in `DrawViewEngines`, `TextPlacer` in the canvas (the review and the long paste moved onto it), PencilNotes wiring; the tests of the review kept | done |
 | 3 | "Import text…": `PickerType.TEXT` on every platform, the command and its shortcut, the file dropped, the sheet (where, clean, preview), the long paste opening it. Screenshots of the sheet | planned |
 | 4 | "As notes, with the assistant": `TextToNotes` (prompt, schema, estimate), the command of the lecture extension, the notes placed; tests with a fake backend. No paid request is run by the tests | planned |
 

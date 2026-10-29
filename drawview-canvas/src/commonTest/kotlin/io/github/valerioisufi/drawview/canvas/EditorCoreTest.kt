@@ -482,6 +482,33 @@ class EditorCoreTest {
     }
 
     @Test
+    fun theSectionsOfATextArePlacedNextToThePagesTheyAreAbout() = runTest(UnconfinedTestDispatcher()) {
+        val doc = DrawDocument()
+        repeat(2) { doc.addPage() }
+        val topics = io.github.valerioisufi.drawview.canvas.controller.PageTopics { documentId, text ->
+            assertEquals(doc.id, documentId)
+            when {
+                "Series" in text -> listOf(doc.pages[2].id)
+                "Limits" in text -> listOf("a page of another document", doc.pages[0].id)
+                else -> emptyList()
+            }
+        }
+        val controller = DrawViewController(
+            document = doc, coroutineScope = backgroundScope,
+            engines = io.github.valerioisufi.drawview.canvas.render.DrawViewEngines(topics = topics)
+        ).apply { viewport.setSize(800f, 1200f) }
+        assertTrue(controller.textPlacer.canPlaceByTopic)
+        val parts = controller.textPlacer.partsByTopic("## Series\nGeometric.\n\n## Limits\nOf functions.\n\n## Other\nNothing.", fallbackPage = 1)
+        assertEquals(listOf(2, 0, 1), parts.map { it.first })
+
+        assertTrue(controller.textPlacer.start(parts, color = 0xFF112233.toInt(), label = "Imported"))
+        assertTrue(controller.placementManager.confirm())
+        assertEquals(listOf(1, 1, 1), doc.pages.map { it.texts.size })
+        assertTrue(doc.pages.all { page -> page.texts.all { it.color == 0xFF112233.toInt() } })
+        assertTrue(doc.pages[2].texts.single().text.startsWith("## Series"))
+    }
+
+    @Test
     fun severalTextsAreConfirmedTogether() = runTest(UnconfinedTestDispatcher()) {
         val controller = controllerWith(1, backgroundScope)
         val placement = controller.placementManager

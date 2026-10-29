@@ -27,7 +27,6 @@ import io.github.valerioisufi.drawview.model.change.toData
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.geometry.Point
 import io.github.valerioisufi.drawview.model.newElementId
-import io.github.valerioisufi.drawview.model.placement.PageOccupancy
 import io.github.valerioisufi.drawview.model.placement.TextFlow
 import io.github.valerioisufi.drawview.model.text.RichTextParser
 import io.github.valerioisufi.drawview.model.text.TextDefaults
@@ -272,7 +271,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         val pageIndex = atScreen?.let { controller.viewport.findPageIndexAtScreen(it) } ?: controller.viewport.firstVisiblePageIndex() ?: 0
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
         // A long text is flowed through the free space of the page, then onto new pages after it
-        if (content.length >= LONG_TEXT_CHARS && TextFlow.blocksOf(content).size > 1 && startFlow(content, pageIndex, page)) return
+        if (content.length >= LONG_TEXT_CHARS && TextFlow.blocksOf(content).size > 1 && startFlow(content, pageIndex)) return
         val middle = controller.viewport.screenToPageMm(pageIndex, point) ?: Offset(page.widthMm / 2f, page.heightMm / 2f)
         val defaults = controller.textDefaults
         val most = (page.widthMm - 2f * PAGE_MARGIN_MM).coerceAtLeast(MIN_WIDTH_MM)
@@ -593,48 +592,13 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
      * [TextRoom]): the room of the box on [page], its corner moved along its lines.
      */
     /**
-     * Proposes [content] flowed through the free space of page [pageIndex] (see [TextFlow]), then onto
-     * new pages after it of its format, in the style of a new text: placed when confirmed, in one
-     * step of the history. Whether there was a place for it.
+     * Proposes [content] flowed through the free space of page [pageIndex] (see [TextPlacer]), then
+     * onto new pages after it, in the style of a new text: placed when confirmed, in one step of the
+     * history. Whether there was a place for it.
      */
-    private fun startFlow(content: String, pageIndex: Int, page: DrawPage): Boolean {
+    private fun startFlow(content: String, pageIndex: Int): Boolean {
         val defaults = controller.textDefaults
-        fun text(markdown: String, width: Float) = TextData(
-            id = newElementId(), text = markdown, alignment = defaults.alignment, autoWidth = false,
-            x = 0f, y = 0f, width = width, color = defaults.color, fontSize = defaults.fontSize
-        ).toElement()
-        val heightOf = { markdown: String, width: Float ->
-            controller.measureText(text(markdown, width))?.height ?: (markdown.lines().size * TextSizes.estimatedLineHeightMm(defaults.fontSize))
-        }
-        val placement = controller.placementManager
-        val newPage = PageOccupancy(page.widthMm, page.heightMm, emptyList(), PageOccupancy.lineSpacingOf(page.background))
-        val pieces = TextFlow(placement.planner).flow(content, placement.occupancyOf(pageIndex), newPage, heightOf)
-        if (pieces.isEmpty()) return false
-        val items = pieces.map { piece ->
-            PlacementItem(text(piece.text, piece.box.width).apply { height = piece.box.height }, listOf(PlacementSpot(pageIndex, piece.box, piece.newPage)))
-        }
-        placement.start(
-            PlacementRequest(
-                items = items,
-                onPlace = { spots ->
-                    controller.historyManager.group {
-                        val pages = placement.pagesFor(spots)
-                        for ((index, spot) in spots.withIndex()) {
-                            val target = pages[index] ?: continue
-                            val element = items[index].preview.apply {
-                                x = spot.box.left
-                                y = spot.box.top
-                                width = spot.box.width
-                                height = heightOf(this.text, spot.box.width)
-                                markDirty()
-                            }
-                            controller.session.submit(AddElements.of(target, listOf(element)))
-                        }
-                    }
-                }
-            )
-        )
-        return true
+        return controller.textPlacer.start(listOf(pageIndex to content), defaults.color, label = "", fontSize = { defaults.fontSize })
     }
 
     private fun inItsRoom(box: TextData, page: DrawPage): TextData {

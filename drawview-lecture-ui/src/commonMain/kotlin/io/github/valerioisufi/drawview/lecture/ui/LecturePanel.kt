@@ -1,9 +1,6 @@
 package io.github.valerioisufi.drawview.lecture.ui
 
-import io.github.valerioisufi.drawview.lecture.TopicFinder
-import io.github.valerioisufi.drawview.model.placement.TextFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.CancellationException
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -1328,11 +1325,10 @@ private fun ReviewTab(
                 PanelCard(outlined = true) { SelectionContainer { MarkdownText(review, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyMedium) } }
                 val reviewLabel = stringResource(Res.string.lecture_review_placing)
                 val scope = rememberCoroutineScope()
-                val finder = assistant.topicFinder
-                InsertPagesCard(controller, byTopic = finder != null) { place, pageIndex ->
-                    if (place == ReviewPlace.TOPIC && finder != null) {
+                InsertPagesCard(controller, byTopic = controller.textPlacer.canPlaceByTopic) { place, pageIndex ->
+                    if (place == ReviewPlace.TOPIC) {
                         scope.launch {
-                            val parts = reviewByTopic(finder, lecture.documentId, review, controller, pageIndex)
+                            val parts = controller.textPlacer.partsByTopic(review, fallbackPage = pageIndex)
                             inserter.startReviewPlacement(controller, parts, reviewLabel)
                         }
                     } else {
@@ -1500,24 +1496,6 @@ private enum class ReviewPlace {
     /** The end of the notebook. */
     END
 }
-
-/**
- * The sections of [review] (see [TextFlow.sectionsOf]), each with the page of the notebook it is
- * about the most ([finder]), or [fallbackPage] (the page shown) when none is found.
- */
-private suspend fun reviewByTopic(finder: TopicFinder, documentId: String, review: String, controller: DrawViewController, fallbackPage: Int?): List<Pair<Int?, String>> =
-    TextFlow.sectionsOf(review).map { section ->
-        val pageIds = try {
-            finder.pagesAbout(documentId, section)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (_: Exception) {
-            emptyList()
-        }
-        val pages = controller.document.pages
-        val pageIndex = pageIds.firstNotNullOfOrNull { id -> pages.indexOfFirst { it.id == id }.takeIf { it >= 0 } }
-        (pageIndex ?: fallbackPage) to section
-    }
 
 @Composable
 private fun InsertChoice(text: String, selected: Boolean, onSelect: () -> Unit) {

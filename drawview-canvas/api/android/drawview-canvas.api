@@ -251,6 +251,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/DrawViewCon
 	public final fun getTextEditorManager ()Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;
 	public final fun getTextFormatTarget ()Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;
 	public final fun getTextMarkupManager ()Lio/github/valerioisufi/drawview/canvas/controller/TextMarkupManager;
+	public final fun getTextPlacer ()Lio/github/valerioisufi/drawview/canvas/controller/TextPlacer;
 	public final fun getThemeColors ()Lio/github/valerioisufi/drawview/canvas/DrawThemeColors;
 	public final fun getTileManager ()Lio/github/valerioisufi/drawview/canvas/render/tile/TileManager;
 	public final fun getToolManager ()Lio/github/valerioisufi/drawview/canvas/controller/ToolManager;
@@ -399,6 +400,10 @@ public final class io/github/valerioisufi/drawview/canvas/controller/PageSelecti
 	public final fun setActive (Z)V
 	public final fun start ()V
 	public final fun toggle (Ljava/lang/String;)V
+}
+
+public abstract interface class io/github/valerioisufi/drawview/canvas/controller/PageTopics {
+	public abstract fun pagesAbout (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/drawview/canvas/controller/PlacementItem {
@@ -658,6 +663,16 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextMarkupM
 	public final fun pointsToPageMm ()Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
 }
 
+public final class io/github/valerioisufi/drawview/canvas/controller/TextPlacer {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
+	public final fun getCanPlaceByTopic ()Z
+	public final fun partsByTopic (Ljava/lang/String;Ljava/lang/Integer;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun sizeOfPage (Lio/github/valerioisufi/drawview/model/DrawPage;)F
+	public final fun start (Ljava/util/List;ILjava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Z
+	public static synthetic fun start$default (Lio/github/valerioisufi/drawview/canvas/controller/TextPlacer;Ljava/util/List;ILjava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Z
+}
+
 public final class io/github/valerioisufi/drawview/canvas/controller/ToolManager {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/canvas/controller/ToolManager$Companion;
@@ -759,12 +774,13 @@ public final class io/github/valerioisufi/drawview/canvas/render/DrawViewEngines
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/canvas/render/DrawViewEngines$Companion;
 	public fun <init> ()V
-	public fun <init> (Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lio/github/valerioisufi/drawview/model/text/code/CodeHighlighter;)V
-	public synthetic fun <init> (Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lio/github/valerioisufi/drawview/model/text/code/CodeHighlighter;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lio/github/valerioisufi/drawview/model/text/code/CodeHighlighter;Lio/github/valerioisufi/drawview/canvas/controller/PageTopics;)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;Lio/github/valerioisufi/drawview/model/text/code/CodeHighlighter;Lio/github/valerioisufi/drawview/canvas/controller/PageTopics;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getCode ()Lio/github/valerioisufi/drawview/model/text/code/CodeHighlighter;
 	public final fun getElements ()Lio/github/valerioisufi/drawview/canvas/render/ElementRenderers;
 	public final fun getFormulas ()Lio/github/valerioisufi/drawview/canvas/render/tile/FormulaRenderer;
 	public final fun getPdfTiles ()Lkotlin/jvm/functions/Function0;
+	public final fun getTopics ()Lio/github/valerioisufi/drawview/canvas/controller/PageTopics;
 }
 
 public final class io/github/valerioisufi/drawview/canvas/render/DrawViewEngines$Companion {

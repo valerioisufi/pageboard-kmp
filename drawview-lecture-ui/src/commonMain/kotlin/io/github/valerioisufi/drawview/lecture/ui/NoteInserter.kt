@@ -16,11 +16,9 @@ import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.geometry.Rect as MmRect
 import io.github.valerioisufi.drawview.model.placement.InMargin
 import io.github.valerioisufi.drawview.model.placement.PageOccupancy
-import io.github.valerioisufi.drawview.model.placement.PageTextSizes
 import io.github.valerioisufi.drawview.model.placement.PlacementBlock
 import io.github.valerioisufi.drawview.model.placement.PlacementPolicy
 import io.github.valerioisufi.drawview.model.placement.ReadingOrder
-import io.github.valerioisufi.drawview.model.placement.TextFlow
 import io.github.valerioisufi.drawview.model.placement.TextSizePolicy
 import io.github.valerioisufi.drawview.model.text.TextSizes
 import kotlin.math.max
@@ -33,8 +31,6 @@ import kotlin.math.min
  * @param textAdapter lays the blocks out as the canvas draws them, to size them.
  */
 internal class NoteInserter(private val textAdapter: TextTileAdapter) {
-
-    private val textFlow = TextFlow()
 
     /**
      * Lets the student place [suggestion]: the note is shown in the best free place of its page
@@ -175,8 +171,7 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
         PlacementBlock(NotePlacement.widthOf(kind, anchor, page.widthMm)) { width -> measureHeightMm(content, fontSize, width) }
 
     /** The size of a note on [page]: like the texts typed there, the slide, the handwriting, or a new text (see [TextSizePolicy]). */
-    private fun sizeOf(controller: DrawViewController, page: DrawPage): Float =
-        TextSizePolicy.forNote(PageTextSizes.of(page, controller.placementManager.pdfTextOf(page.index)), controller.textDefaults.fontSize)
+    private fun sizeOf(controller: DrawViewController, page: DrawPage): Float = controller.textPlacer.sizeOfPage(page)
 
     /**
      * The places [placesAt] finds for a note at [size]; for a note in the margin ([InMargin]) whose
@@ -234,61 +229,8 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
      * the pages they are about. The parts of one page are flowed together, in their order; those
      * of the end go after the last page.
      */
-    fun startReviewPlacement(controller: DrawViewController, parts: List<Pair<Int?, String>>, label: String, onInserted: () -> Unit = {}): Boolean {
-        val document = controller.document
-        if (document.pages.isEmpty()) return false
-        val newPage = PageOccupancy(document.defaultWidthMm, document.defaultHeightMm, emptyList(), PageOccupancy.lineSpacingOf(document.defaultBackground))
-        val items = mutableListOf<PlacementItem>()
-        val byPage = parts.filter { it.second.isNotBlank() }.groupBy({ it.first?.takeIf { index -> index in document.pages.indices } }, { it.second })
-        // The parts for the end after the parts of the last page, on the new pages after it
-        val atTheEnd = byPage[null].orEmpty()
-        val groups = byPage.entries.mapNotNull { (index, texts) -> index?.let { it to texts } }.sortedBy { it.first }
-        val last = document.pages.lastIndex
-        // A part flowed from a page at the size of that page (on its new pages too: a text does not
-        // change size midway), the parts of the end at the size of the notebook
-        val notebookSize = TextSizePolicy.nearestPreset(PageTextSizes.ofDocument(document) ?: controller.textDefaults.fontSize)
-        if (atTheEnd.isNotEmpty() && groups.none { it.first == last }) items += flowItems(controller, atTheEnd.joinToString("\n\n"), null, last, newPage, notebookSize)
-        for ((pageIndex, texts) in groups) {
-            val all = if (pageIndex == last) texts + atTheEnd else texts
-            items += flowItems(controller, all.joinToString("\n\n"), pageIndex, pageIndex, newPage, sizeOf(controller, document.pages[pageIndex]))
-        }
-        if (items.isEmpty()) return false
-        controller.selectionManager.clearSelection()
-        controller.placementManager.start(
-            PlacementRequest(
-                items = items,
-                label = label,
-                onPlace = { spots ->
-                    val pages = controller.historyManager.group {
-                        controller.placementManager.pagesFor(spots, template = { null }).also { pages ->
-                            for ((index, spot) in spots.withIndex()) pages[index]?.let { place(controller, it, items[index].preview, spot) }
-                        }
-                    }
-                    pages.filterNotNull().minByOrNull { it.index }?.let { showPageTop(controller, it.index) }
-                    onInserted()
-                }
-            )
-        )
-        return true
-    }
-
-    /**
-     * [markdown] at [fontSize], flowed from the free space of page [startPageIndex] (none: straight
-     * on new pages) onto new pages after [anchorIndex].
-     */
-    private fun flowItems(controller: DrawViewController, markdown: String, startPageIndex: Int?, anchorIndex: Int, newPage: PageOccupancy, fontSize: Float): List<PlacementItem> {
-        val first = startPageIndex?.let { controller.placementManager.occupancyOf(it) }
-        return textFlow.flow(markdown, first, newPage) { text, width -> measureHeightMm(text, fontSize, width) }.map { piece ->
-            PlacementItem(newText(piece.text, piece.box.width, piece.box.height, fontSize), listOf(PlacementSpot(anchorIndex, piece.box, piece.newPage)))
-        }
-    }
-
-    /** Shows page [pageIndex] with its top edge near the top of the viewport. */
-    private fun showPageTop(controller: DrawViewController, pageIndex: Int) {
-        controller.pageManager.jumpToPage(pageIndex)
-        val rect = controller.viewport.visiblePages().firstOrNull { it.index == pageIndex }?.rect ?: return
-        if (rect.height > controller.viewport.height) controller.viewport.panBy(0f, PAGE_TOP_INSET_PX - rect.top)
-    }
+    fun startReviewPlacement(controller: DrawViewController, parts: List<Pair<Int?, String>>, label: String, onInserted: () -> Unit = {}): Boolean =
+        controller.textPlacer.start(parts, ASSISTANT_TEXT_COLOR, label, measure = { textAdapter.measure(it) }, onInserted = onInserted)
 
     private fun newText(content: String, widthMm: Float, heightMm: Float, fontSizePt: Float) = DrawText().apply {
         text = content
@@ -310,7 +252,6 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
     }
 
     private companion object {
-        const val PAGE_TOP_INSET_PX = 24f
 
         /** Blue ink of the assistant. */
         const val ASSISTANT_TEXT_COLOR = 0xFF1F5AA6.toInt()
