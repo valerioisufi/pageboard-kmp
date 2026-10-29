@@ -587,22 +587,35 @@ public class KeyValueDocumentStore(
         index = index.copy(folders = index.folders.map { if (it.id == folderId) transform(it) else it })
     }
 
-    /** The files of the resources of every document but [documentId] (the same content is kept once). */
-    private fun pathsOfOtherDocumentsLocked(documentId: String): Set<String> =
-        index.documents.asSequence().filter { it.id != documentId }.flatMap { summary ->
-            openDocuments[summary.id]?.resources?.map { it.path }
-                ?: storage.get(documentKey(summary.id))?.let { decodeOrNull<StoredDocument>(it) }?.resources?.map { it.uri }
-                ?: emptyList()
-        }.toSet()
+    /**
+     * The files of the resources of every document but [documentId] (the same content is kept
+     * once), or `null` when a stored document cannot be read: its files are not known then.
+     */
+    private fun pathsOfOtherDocumentsLocked(documentId: String): Set<String>? {
+        val paths = mutableSetOf<String>()
+        for (summary in index.documents) {
+            if (summary.id == documentId) continue
+            val open = openDocuments[summary.id]
+            if (open != null) {
+                open.resources.mapTo(paths) { it.path }
+                continue
+            }
+            val value = storage.get(documentKey(summary.id)) ?: continue
+            val stored = decodeOrNull<StoredDocument>(value) ?: return null
+            stored.resources.mapTo(paths) { it.uri }
+        }
+        return paths
+    }
 
     /**
      * Removes a document, its stored content and its resources, but the files other documents
-     * point at too (the caller writes the index).
+     * point at too, and every file while a stored document cannot be read (the caller writes the
+     * index).
      */
     private fun deleteDocumentLocked(documentId: String) {
         val stored = storage.get(documentKey(documentId))?.let { decodeOrNull<StoredDocument>(it) }
-        val shared = stored?.resources?.takeIf { it.isNotEmpty() }?.let { pathsOfOtherDocumentsLocked(documentId) }.orEmpty()
-        stored?.resources?.filter { it.uri.isNotEmpty() && it.uri !in shared }?.forEach { resource ->
+        val shared = if (stored?.resources.isNullOrEmpty()) emptySet() else pathsOfOtherDocumentsLocked(documentId)
+        stored?.resources?.filter { it.uri.isNotEmpty() && shared != null && it.uri !in shared }?.forEach { resource ->
             storage.remove(resourceKey(resource.uri))
             try {
                 PlatformFiles.delete(resource.uri)

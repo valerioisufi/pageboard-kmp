@@ -62,6 +62,23 @@ class SharedResourceFilesTest {
     }
 
     @Test
+    fun aDocumentDeletedKeepsItsFilesWhileAnotherCannotBeRead() = runTest {
+        val store = KeyValueDocumentStore(storage, scope = backgroundScope)
+        val shared = file("shared.png")
+        val a = store.createDocument("A")
+        val b = store.createDocument("B")
+        store.addImage(a, shared)
+        store.addImage(b, shared)
+        store.flush()
+        // B unreadable (written by a newer version, or damaged): the files it points at are not known
+        storage.set("drawview.document." + b.id, "{ not a document")
+
+        assertTrue(KeyValueDocumentStore(storage, scope = backgroundScope).deleteDocument(a.id))
+        assertTrue(shared.exists(), "B may point at the file")
+        assertTrue(hasStoredCopy(shared))
+    }
+
+    @Test
     fun aFolderDeletedKeepsTheFilesOfTheDocumentsOutsideIt() = runTest {
         val store = KeyValueDocumentStore(storage, scope = backgroundScope)
         assertTrue(store.createFolder("Math", null))
