@@ -31,8 +31,6 @@
     <string name="explorer_root_folder">ホーム</string>
     <string name="explorer_move_empty_state">フォルダが見つかりません</string>
     <string name="explorer_move_here">ここに移動</string>
-    <string name="explorer_dialog_delete_description">削除されたアイテムは元に戻せません。</string>
-    <string name="explorer_dialog_delete_multiple_description">%1$d件のアイテムを削除しますか？</string>
     <string name="explorer_error_name_empty">名前は空にできません</string>
     <string name="explorer_error_name_invalid_chars">名前にスラッシュは使用できません</string>
     <string name="explorer_error_name_exists">この名前は既に存在します</string>
@@ -84,7 +82,6 @@
     <string name="explorer_empty_shared_title">共有ノートはありません</string>
     <string name="explorer_empty_shared_body">他のデバイスと共有したノートがここに表示されます。</string>
     <string name="explorer_move_subtitle">%1$s · %2$s から</string>
-    <string name="explorer_delete_title_one">「%1$s」を削除しますか？</string>
     <string name="explorer_delete_shared">「%1$s」は共有されています。他の人のコピーは残ります。</string>
     <string name="explorer_drop_title">ドロップしてノートにする</string>
     <string name="explorer_drop_body">PDF や画像が %1$s のノートになり、ファイル名が付きます</string>
@@ -114,4 +111,28 @@
     <string name="explorer_import_pdf_short">PDF を読み込む</string>
     <string name="explorer_import_image">画像を読み込む</string>
     <string name="explorer_delete_confirm">削除</string>
+    <string name="explorer_section_trash">ゴミ箱</string>
+    <string name="explorer_trash_moved_one">「%1$s」をゴミ箱に移動しました</string>
+    <string name="explorer_trash_undo">取り消す</string>
+    <string name="explorer_trash_restore">復元</string>
+    <string name="explorer_trash_delete_forever">完全に削除</string>
+    <string name="explorer_trash_empty">ゴミ箱を空にする</string>
+    <string name="explorer_trash_empty_title">ゴミ箱を空にしますか？</string>
+    <string name="explorer_trash_delete_forever_title">「%1$s」を完全に削除しますか？</string>
+    <string name="explorer_trash_cannot_undo">この操作は取り消せません。</string>
+    <string name="explorer_trash_retention">項目は30日後に完全に削除されます。</string>
+    <string name="explorer_trash_from">%1$s から</string>
+    <string name="explorer_trash_empty_state">ゴミ箱は空です</string>
+    <string name="explorer_trash_empty_state_body">削除したものは30日間ここに残ります。</string>
+    <string name="explorer_trash_open">ゴミ箱</string>
+    <string name="explorer_trash_restored">「%1$s」を復元しました</string>
+    <plurals name="explorer_trash_moved_many">
+        <item quantity="other">%1$d 項目をゴミ箱に移動しました</item>
+    </plurals>
+    <plurals name="explorer_trash_days_left">
+        <item quantity="other">残り %1$d 日</item>
+    </plurals>
+    <plurals name="explorer_trash_empty_description">
+        <item quantity="other">%1$d 項目が完全に削除されます。</item>
+    </plurals>
 </resources>

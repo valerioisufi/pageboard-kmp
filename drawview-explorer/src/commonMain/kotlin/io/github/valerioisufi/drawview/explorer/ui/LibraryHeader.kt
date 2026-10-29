@@ -61,6 +61,9 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sor
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sorted_by_last_modified
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sorted_by_last_opened
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sorted_by_name
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_section_trash
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_open
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_items_count
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_view_grid
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_view_list
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
@@ -81,7 +84,8 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * The bar of a narrow library: the brand of the application ([brand]), the search where there is
- * room for it ([search]), the actions of the application as icons.
+ * room for it ([search]), the Trash ([onOpenTrash], where there is no navigation pane holding it),
+ * the actions of the application as icons.
  */
 @Composable
 internal fun LibraryAppBar(
@@ -89,6 +93,7 @@ internal fun LibraryAppBar(
     actions: List<LibraryAction>,
     onAction: (LibraryAction) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenTrash: (() -> Unit)? = null,
     search: (@Composable RowScope.() -> Unit)? = null
 ) {
     Row(
@@ -98,6 +103,7 @@ internal fun LibraryAppBar(
     ) {
         Box(modifier = Modifier.weight(1f)) { brand() }
         search?.invoke(this)
+        if (onOpenTrash != null) DesignIconButton(DrawViewIcons.Trash, stringResource(Res.string.explorer_trash_open), onClick = onOpenTrash)
         for (action in actions) {
             DesignIconButton(action.icon, action.label(), onClick = { onAction(action) })
         }
@@ -139,6 +145,14 @@ internal fun LibraryTitle(
 ) {
     val folder = viewModel.currentFolder
     Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (viewModel.section == Section.TRASH) {
+            DesignIconButton(
+                icon = DrawViewIcons.ArrowUp,
+                label = stringResource(Res.string.explorer_action_back),
+                onClick = { viewModel.showFolder(null) },
+                style = IconButtonStyle.Tonal
+            )
+        }
         if (folder != null && viewModel.section == Section.HOME) {
             DesignIconButton(
                 icon = DrawViewIcons.ArrowUp,
@@ -153,6 +167,7 @@ internal fun LibraryTitle(
                 text = when {
                     viewModel.section == Section.RECENT -> stringResource(Res.string.explorer_section_recent)
                     viewModel.section == Section.SHARED -> stringResource(Res.string.explorer_section_shared)
+                    viewModel.section == Section.TRASH -> stringResource(Res.string.explorer_section_trash)
                     folder != null -> folder.name
                     else -> stringResource(Res.string.explorer_root_folder)
                 },
@@ -176,6 +191,7 @@ internal fun LibraryTitle(
 /** "7 notes · 3 folders · sorted by name", "Home › Analysis · 5 notes", "4 notes". */
 @Composable
 private fun librarySubtitle(viewModel: FileExplorerViewModel, withOrder: Boolean): String {
+    if (viewModel.section == Section.TRASH) return pluralStringResource(Res.plurals.explorer_items_count, viewModel.trash.size, viewModel.trash.size)
     val content = viewModel.currentDirectoryFiles
     val notes = if (viewModel.section == Section.HOME) content.count { it.type == FileType.FILE } else viewModel.shownFiles.size
     val folders = if (viewModel.section == Section.HOME) content.count { it.type == FileType.FOLDER } else 0
@@ -204,6 +220,8 @@ private fun librarySubtitle(viewModel: FileExplorerViewModel, withOrder: Boolean
 /** The views of the notes (cards or rows) and the button of their order, with its menu. */
 @Composable
 internal fun LibraryViewControls(viewModel: FileExplorerViewModel, commands: LibraryCommands, showViews: Boolean) {
+    // The trash has its rows, in their order
+    if (viewModel.section == Section.TRASH) return
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         if (showViews) {
             DesignIconButton(

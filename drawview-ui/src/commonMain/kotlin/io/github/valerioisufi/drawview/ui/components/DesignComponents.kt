@@ -291,7 +291,7 @@ internal fun WithContentColor(color: Color, content: @Composable () -> Unit) {
 
 /** A message of the design: the inverse surface rounded 12 dp, its action in the inverse primary. */
 @Composable
-internal fun DesignSnackbar(data: SnackbarData, modifier: Modifier = Modifier) {
+public fun DesignSnackbar(data: SnackbarData, modifier: Modifier = Modifier) {
     Snackbar(
         snackbarData = data,
         modifier = modifier,

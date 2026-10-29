@@ -31,8 +31,6 @@
     <string name="explorer_root_folder">Home</string>
     <string name="explorer_move_empty_state">Nessuna cartella trovata</string>
     <string name="explorer_move_here">Sposta qui</string>
-    <string name="explorer_dialog_delete_description">Gli elementi eliminati non sono recuperabili.</string>
-    <string name="explorer_dialog_delete_multiple_description">Vuoi eliminare %1$d elementi?</string>
     <string name="explorer_error_name_empty">Il nome non può essere vuoto</string>
     <string name="explorer_error_name_invalid_chars">Il nome non può contenere barre (slash)</string>
     <string name="explorer_error_name_exists">Questo nome esiste già</string>
@@ -84,7 +82,6 @@
     <string name="explorer_empty_shared_title">Nessuna nota condivisa</string>
     <string name="explorer_empty_shared_body">Le note condivise con altri dispositivi compaiono qui.</string>
     <string name="explorer_move_subtitle">%1$s · da %2$s</string>
-    <string name="explorer_delete_title_one">Eliminare “%1$s”?</string>
     <string name="explorer_delete_shared">“%1$s” è condivisa: gli altri conservano la loro copia.</string>
     <string name="explorer_drop_title">Rilascia per farne una nota</string>
     <string name="explorer_drop_body">Un PDF o un’immagine diventa una nota di %1$s, con il nome del file</string>
@@ -118,4 +115,31 @@
     <string name="explorer_import_pdf_short">Importa PDF</string>
     <string name="explorer_import_image">Importa immagine</string>
     <string name="explorer_delete_confirm">Elimina</string>
+    <string name="explorer_section_trash">Cestino</string>
+    <string name="explorer_trash_moved_one">“%1$s” spostato nel Cestino</string>
+    <string name="explorer_trash_undo">Annulla</string>
+    <string name="explorer_trash_restore">Ripristina</string>
+    <string name="explorer_trash_delete_forever">Elimina definitivamente</string>
+    <string name="explorer_trash_empty">Svuota Cestino</string>
+    <string name="explorer_trash_empty_title">Svuotare il Cestino?</string>
+    <string name="explorer_trash_delete_forever_title">Eliminare definitivamente “%1$s”?</string>
+    <string name="explorer_trash_cannot_undo">Non si può annullare.</string>
+    <string name="explorer_trash_retention">Gli elementi vengono eliminati definitivamente dopo 30 giorni.</string>
+    <string name="explorer_trash_from">Da %1$s</string>
+    <string name="explorer_trash_empty_state">Il Cestino è vuoto</string>
+    <string name="explorer_trash_empty_state_body">Ciò che elimini resta qui per 30 giorni.</string>
+    <string name="explorer_trash_open">Cestino</string>
+    <string name="explorer_trash_restored">“%1$s” ripristinato</string>
+    <plurals name="explorer_trash_moved_many">
+        <item quantity="one">%1$d elemento spostato nel Cestino</item>
+        <item quantity="other">%1$d elementi spostati nel Cestino</item>
+    </plurals>
+    <plurals name="explorer_trash_days_left">
+        <item quantity="one">Manca %1$d giorno</item>
+        <item quantity="other">Mancano %1$d giorni</item>
+    </plurals>
+    <plurals name="explorer_trash_empty_description">
+        <item quantity="one">%1$d elemento verrà eliminato definitivamente.</item>
+        <item quantity="other">%1$d elementi verranno eliminati definitivamente.</item>
+    </plurals>
 </resources>

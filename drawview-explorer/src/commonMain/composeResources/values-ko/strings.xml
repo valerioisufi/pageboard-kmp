@@ -31,8 +31,6 @@
     <string name="explorer_root_folder">홈</string>
     <string name="explorer_move_empty_state">폴더를 찾을 수 없습니다</string>
     <string name="explorer_move_here">여기로 이동</string>
-    <string name="explorer_dialog_delete_description">삭제된 항목은 복구할 수 없습니다.</string>
-    <string name="explorer_dialog_delete_multiple_description">%1$d개의 항목을 삭제하시겠습니까?</string>
     <string name="explorer_error_name_empty">이름은 비워 둘 수 없습니다</string>
     <string name="explorer_error_name_invalid_chars">이름에 슬래시를 포함할 수 없습니다</string>
     <string name="explorer_error_name_exists">이미 존재하는 이름입니다</string>
@@ -84,7 +82,6 @@
     <string name="explorer_empty_shared_title">공유된 노트가 없습니다</string>
     <string name="explorer_empty_shared_body">다른 기기와 공유한 노트가 여기에 표시됩니다.</string>
     <string name="explorer_move_subtitle">%1$s · %2$s에서</string>
-    <string name="explorer_delete_title_one">“%1$s”을(를) 삭제할까요?</string>
     <string name="explorer_delete_shared">“%1$s”은(는) 공유되어 있습니다. 다른 사람의 사본은 유지됩니다.</string>
     <string name="explorer_drop_title">놓아서 노트로 만들기</string>
     <string name="explorer_drop_body">PDF나 이미지가 파일 이름으로 %1$s의 노트가 됩니다</string>
@@ -114,4 +111,28 @@
     <string name="explorer_import_pdf_short">PDF 가져오기</string>
     <string name="explorer_import_image">이미지 가져오기</string>
     <string name="explorer_delete_confirm">삭제</string>
+    <string name="explorer_section_trash">휴지통</string>
+    <string name="explorer_trash_moved_one">‘%1$s’을(를) 휴지통으로 이동했습니다</string>
+    <string name="explorer_trash_undo">실행 취소</string>
+    <string name="explorer_trash_restore">복원</string>
+    <string name="explorer_trash_delete_forever">영구 삭제</string>
+    <string name="explorer_trash_empty">휴지통 비우기</string>
+    <string name="explorer_trash_empty_title">휴지통을 비울까요?</string>
+    <string name="explorer_trash_delete_forever_title">‘%1$s’을(를) 영구 삭제할까요?</string>
+    <string name="explorer_trash_cannot_undo">이 작업은 취소할 수 없습니다.</string>
+    <string name="explorer_trash_retention">항목은 30일 후 영구 삭제됩니다.</string>
+    <string name="explorer_trash_from">%1$s에서</string>
+    <string name="explorer_trash_empty_state">휴지통이 비어 있습니다</string>
+    <string name="explorer_trash_empty_state_body">삭제한 항목은 30일 동안 여기에 보관됩니다.</string>
+    <string name="explorer_trash_open">휴지통</string>
+    <string name="explorer_trash_restored">‘%1$s’을(를) 복원했습니다</string>
+    <plurals name="explorer_trash_moved_many">
+        <item quantity="other">항목 %1$d개를 휴지통으로 이동했습니다</item>
+    </plurals>
+    <plurals name="explorer_trash_days_left">
+        <item quantity="other">%1$d일 남음</item>
+    </plurals>
+    <plurals name="explorer_trash_empty_description">
+        <item quantity="other">항목 %1$d개가 영구 삭제됩니다.</item>
+    </plurals>
 </resources>

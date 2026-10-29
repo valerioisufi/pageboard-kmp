@@ -161,6 +161,28 @@ class AdaptiveScreenshotTest {
         onNodeWithText("Analysis").performClick()
     }
 
+    /** The Trash, full (a folder and a note, the message with Undo) and empty. */
+    @Test
+    fun libraryTrash() = listOf(
+        ReferenceWindow.PHONE to false, ReferenceWindow.DESKTOP to false, ReferenceWindow.DESKTOP to true, ReferenceWindow.TABLET_PORTRAIT to false
+    ).forEach { (window, dark) ->
+        capture("library-trash", window, dark = dark) { viewModels ->
+            runOnIdle {
+                val library = viewModels.library()
+                library.deleteFiles(library.currentDirectoryFiles.filter { it.name == "Physics" })
+                library.deleteFiles(library.currentDirectoryFiles.filter { it.name == "Lab report" })
+                library.showSection(FileExplorerViewModel.Section.TRASH)
+            }
+            waitForIdle()
+        }
+    }
+
+    @Test
+    fun libraryTrashEmpty() = capture("library-trash-empty", ReferenceWindow.PHONE, dark = false) { viewModels ->
+        runOnIdle { viewModels.library().showSection(FileExplorerViewModel.Section.TRASH) }
+        waitForIdle()
+    }
+
     /** An extension with a panel named after each of [titles], open, listing a few notes. */
     private fun panelsExtension(vararg titles: String) = EditorExtension(
         panels = {

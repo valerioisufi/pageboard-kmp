@@ -86,7 +86,8 @@ internal fun capture(
     val sceneClipboard = LocalClipboardManager provides SceneClipboard(clipboard)
 
     setContent {
-        CompositionLocalProvider(LocalViewModelStoreOwner provides viewModels, sceneClipboard) {
+        // Five days after the changes: what went to the trash has 25 days left
+        CompositionLocalProvider(LocalViewModelStoreOwner provides viewModels, sceneClipboard, LocalLibraryClock provides { FIXED_TIME + 5 * DAY }) {
             DrawViewTheme(darkTheme = dark, dynamicColor = false) {
                 // The shortcuts written as on a Mac on every system
                 AdaptiveRoot(hints = window.input, conventions = PlatformConventions(ShortcutModifier.COMMAND)) {
@@ -185,6 +186,10 @@ internal fun DesktopComposeUiTest.awaitInRealTime(timeoutMillis: Long = 20_000, 
 internal fun ViewModelStoreOwner.editor(): DocumentEditorViewModel? =
     viewModelStore.keys().firstNotNullOfOrNull { viewModelStore[it] as? DocumentEditorViewModel }
 
+/** The library. */
+internal fun ViewModelStoreOwner.library(): FileExplorerViewModel =
+    viewModelStore.keys().firstNotNullOf { viewModelStore[it] as? FileExplorerViewModel }
+
 /** The controller of the document open in the editor. */
 internal fun ViewModelStoreOwner.controller(): DrawViewController = checkNotNull(editor()?.session?.controller)
 
@@ -193,3 +198,6 @@ internal const val NOTE = "Lecture 1 — Limits"
 
 /** 14 September 2026, 9:30 UTC: the date of every change. */
 private const val FIXED_TIME = 1_789_378_200_000L
+
+/** A day, in milliseconds. */
+private const val DAY = 24L * 60 * 60 * 1000

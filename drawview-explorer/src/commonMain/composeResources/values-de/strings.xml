@@ -31,8 +31,6 @@
     <string name="explorer_root_folder">Startseite</string>
     <string name="explorer_move_empty_state">Keine Ordner gefunden</string>
     <string name="explorer_move_here">Hierher verschieben</string>
-    <string name="explorer_dialog_delete_description">Gelöschte Elemente können nicht wiederhergestellt werden.</string>
-    <string name="explorer_dialog_delete_multiple_description">Möchtest du %1$d Elemente löschen?</string>
     <string name="explorer_error_name_empty">Name darf nicht leer sein</string>
     <string name="explorer_error_name_invalid_chars">Name darf keine Schrägstriche enthalten</string>
     <string name="explorer_error_name_exists">Dieser Name existiert bereits</string>
@@ -84,7 +82,6 @@
     <string name="explorer_empty_shared_title">Keine geteilten Notizen</string>
     <string name="explorer_empty_shared_body">Mit anderen Geräten geteilte Notizen erscheinen hier.</string>
     <string name="explorer_move_subtitle">%1$s · aus %2$s</string>
-    <string name="explorer_delete_title_one">„%1$s“ löschen?</string>
     <string name="explorer_delete_shared">„%1$s“ ist geteilt: Die anderen behalten ihre Kopie.</string>
     <string name="explorer_drop_title">Ablegen, um eine Notiz daraus zu machen</string>
     <string name="explorer_drop_body">Ein PDF oder Bild wird zu einer Notiz in %1$s, benannt nach der Datei</string>
@@ -118,4 +115,31 @@
     <string name="explorer_import_pdf_short">PDF importieren</string>
     <string name="explorer_import_image">Bild importieren</string>
     <string name="explorer_delete_confirm">Löschen</string>
+    <string name="explorer_section_trash">Papierkorb</string>
+    <string name="explorer_trash_moved_one">„%1$s“ in den Papierkorb verschoben</string>
+    <string name="explorer_trash_undo">Rückgängig</string>
+    <string name="explorer_trash_restore">Wiederherstellen</string>
+    <string name="explorer_trash_delete_forever">Endgültig löschen</string>
+    <string name="explorer_trash_empty">Papierkorb leeren</string>
+    <string name="explorer_trash_empty_title">Papierkorb leeren?</string>
+    <string name="explorer_trash_delete_forever_title">„%1$s“ endgültig löschen?</string>
+    <string name="explorer_trash_cannot_undo">Dies kann nicht rückgängig gemacht werden.</string>
+    <string name="explorer_trash_retention">Objekte werden nach 30 Tagen endgültig gelöscht.</string>
+    <string name="explorer_trash_from">Aus %1$s</string>
+    <string name="explorer_trash_empty_state">Der Papierkorb ist leer</string>
+    <string name="explorer_trash_empty_state_body">Was du löschst, bleibt hier 30 Tage lang.</string>
+    <string name="explorer_trash_open">Papierkorb</string>
+    <string name="explorer_trash_restored">„%1$s“ wiederhergestellt</string>
+    <plurals name="explorer_trash_moved_many">
+        <item quantity="one">%1$d Objekt in den Papierkorb verschoben</item>
+        <item quantity="other">%1$d Objekte in den Papierkorb verschoben</item>
+    </plurals>
+    <plurals name="explorer_trash_days_left">
+        <item quantity="one">Noch %1$d Tag</item>
+        <item quantity="other">Noch %1$d Tage</item>
+    </plurals>
+    <plurals name="explorer_trash_empty_description">
+        <item quantity="one">%1$d Objekt wird endgültig gelöscht.</item>
+        <item quantity="other">%1$d Objekte werden endgültig gelöscht.</item>
+    </plurals>
 </resources>

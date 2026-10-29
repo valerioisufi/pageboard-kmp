@@ -31,8 +31,6 @@
     <string name="explorer_root_folder">Inicio</string>
     <string name="explorer_move_empty_state">No se encontraron carpetas</string>
     <string name="explorer_move_here">Mover aquí</string>
-    <string name="explorer_dialog_delete_description">Los elementos eliminados no se pueden recuperar.</string>
-    <string name="explorer_dialog_delete_multiple_description">¿Quieres eliminar %1$d elementos?</string>
     <string name="explorer_error_name_empty">El nombre no puede estar vacío</string>
     <string name="explorer_error_name_invalid_chars">El nombre no puede contener barras</string>
     <string name="explorer_error_name_exists">Este nombre ya existe</string>
@@ -84,7 +82,6 @@
     <string name="explorer_empty_shared_title">No hay notas compartidas</string>
     <string name="explorer_empty_shared_body">Las notas compartidas con otros dispositivos aparecen aquí.</string>
     <string name="explorer_move_subtitle">%1$s · desde %2$s</string>
-    <string name="explorer_delete_title_one">¿Eliminar «%1$s»?</string>
     <string name="explorer_delete_shared">«%1$s» está compartida: los demás conservan su copia.</string>
     <string name="explorer_drop_title">Suelta para crear una nota</string>
     <string name="explorer_drop_body">Un PDF o una imagen se convierte en una nota de %1$s, con el nombre del archivo</string>
@@ -118,4 +115,31 @@
     <string name="explorer_import_pdf_short">Importar PDF</string>
     <string name="explorer_import_image">Importar imagen</string>
     <string name="explorer_delete_confirm">Eliminar</string>
+    <string name="explorer_section_trash">Papelera</string>
+    <string name="explorer_trash_moved_one">«%1$s» movido a la papelera</string>
+    <string name="explorer_trash_undo">Deshacer</string>
+    <string name="explorer_trash_restore">Restaurar</string>
+    <string name="explorer_trash_delete_forever">Eliminar definitivamente</string>
+    <string name="explorer_trash_empty">Vaciar papelera</string>
+    <string name="explorer_trash_empty_title">¿Vaciar la papelera?</string>
+    <string name="explorer_trash_delete_forever_title">¿Eliminar «%1$s» definitivamente?</string>
+    <string name="explorer_trash_cannot_undo">No se puede deshacer.</string>
+    <string name="explorer_trash_retention">Los elementos se eliminan definitivamente tras 30 días.</string>
+    <string name="explorer_trash_from">De %1$s</string>
+    <string name="explorer_trash_empty_state">La papelera está vacía</string>
+    <string name="explorer_trash_empty_state_body">Lo que eliminas se queda aquí 30 días.</string>
+    <string name="explorer_trash_open">Papelera</string>
+    <string name="explorer_trash_restored">«%1$s» restaurado</string>
+    <plurals name="explorer_trash_moved_many">
+        <item quantity="one">%1$d elemento movido a la papelera</item>
+        <item quantity="other">%1$d elementos movidos a la papelera</item>
+    </plurals>
+    <plurals name="explorer_trash_days_left">
+        <item quantity="one">Queda %1$d día</item>
+        <item quantity="other">Quedan %1$d días</item>
+    </plurals>
+    <plurals name="explorer_trash_empty_description">
+        <item quantity="one">%1$d elemento se eliminará definitivamente.</item>
+        <item quantity="other">%1$d elementos se eliminarán definitivamente.</item>
+    </plurals>
 </resources>

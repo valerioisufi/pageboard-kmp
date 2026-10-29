@@ -84,6 +84,9 @@ public fun DocumentLibrary(
     clipboard: EditorClipboard = remember { EditorClipboard() }
 ) {
     val fileExplorerViewModel = viewModel { FileExplorerViewModel(documents) }
+    // What has been in the trash too long is deleted for good
+    val clock = LocalLibraryClock.current
+    LaunchedEffect(documents) { TrashKeeper(documents.store, clock).run() }
     val editorViewModel = viewModel { DocumentEditorViewModel(documents, engines, clipboard = clipboard) }
 
     // The formula engine may unpack its fonts at the first start: off the main thread. The text

@@ -31,8 +31,6 @@
     <string name="explorer_root_folder">Accueil</string>
     <string name="explorer_move_empty_state">Aucun dossier trouvé</string>
     <string name="explorer_move_here">Déplacer ici</string>
-    <string name="explorer_dialog_delete_description">Les éléments supprimés ne sont pas récupérables.</string>
-    <string name="explorer_dialog_delete_multiple_description">Voulez-vous supprimer %1$d éléments ?</string>
     <string name="explorer_error_name_empty">Le nom ne peut pas être vide</string>
     <string name="explorer_error_name_invalid_chars">Le nom ne peut pas contenir de barres obliques</string>
     <string name="explorer_error_name_exists">Ce nom existe déjà</string>
@@ -84,7 +82,6 @@
     <string name="explorer_empty_shared_title">Aucune note partagée</string>
     <string name="explorer_empty_shared_body">Les notes partagées avec d’autres appareils apparaissent ici.</string>
     <string name="explorer_move_subtitle">%1$s · depuis %2$s</string>
-    <string name="explorer_delete_title_one">Supprimer « %1$s » ?</string>
     <string name="explorer_delete_shared">« %1$s » est partagée : les autres gardent leur copie.</string>
     <string name="explorer_drop_title">Déposez pour en faire une note</string>
     <string name="explorer_drop_body">Un PDF ou une image devient une note de %1$s, nommée d’après le fichier</string>
@@ -118,4 +115,31 @@
     <string name="explorer_import_pdf_short">Importer un PDF</string>
     <string name="explorer_import_image">Importer une image</string>
     <string name="explorer_delete_confirm">Supprimer</string>
+    <string name="explorer_section_trash">Corbeille</string>
+    <string name="explorer_trash_moved_one">« %1$s » placé dans la corbeille</string>
+    <string name="explorer_trash_undo">Annuler</string>
+    <string name="explorer_trash_restore">Restaurer</string>
+    <string name="explorer_trash_delete_forever">Supprimer définitivement</string>
+    <string name="explorer_trash_empty">Vider la corbeille</string>
+    <string name="explorer_trash_empty_title">Vider la corbeille ?</string>
+    <string name="explorer_trash_delete_forever_title">Supprimer définitivement « %1$s » ?</string>
+    <string name="explorer_trash_cannot_undo">Cette action est irréversible.</string>
+    <string name="explorer_trash_retention">Les éléments sont supprimés définitivement après 30 jours.</string>
+    <string name="explorer_trash_from">De %1$s</string>
+    <string name="explorer_trash_empty_state">La corbeille est vide</string>
+    <string name="explorer_trash_empty_state_body">Ce que vous supprimez reste ici 30 jours.</string>
+    <string name="explorer_trash_open">Corbeille</string>
+    <string name="explorer_trash_restored">« %1$s » restauré</string>
+    <plurals name="explorer_trash_moved_many">
+        <item quantity="one">%1$d élément placé dans la corbeille</item>
+        <item quantity="other">%1$d éléments placés dans la corbeille</item>
+    </plurals>
+    <plurals name="explorer_trash_days_left">
+        <item quantity="one">%1$d jour restant</item>
+        <item quantity="other">%1$d jours restants</item>
+    </plurals>
+    <plurals name="explorer_trash_empty_description">
+        <item quantity="one">%1$d élément sera supprimé définitivement.</item>
+        <item quantity="other">%1$d éléments seront supprimés définitivement.</item>
+    </plurals>
 </resources>

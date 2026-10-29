@@ -17,12 +17,17 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -49,14 +54,17 @@ import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
 import io.github.valerioisufi.drawview.explorer.LibrarySearch
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_confirm
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_delete
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_move_to
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_action_rename
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_delete_confirm
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_delete_shared
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_delete_title_one
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_dialog_delete_description
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_dialog_delete_multiple_description
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_cannot_undo
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_delete_forever_title
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_empty_description
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_empty_title
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_moved_many
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_moved_one
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_undo
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_dialog_new_folder
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_input_name
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_items_count
@@ -65,6 +73,7 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_roo
 import io.github.valerioisufi.drawview.ui.command.RegisterCommands
 import io.github.valerioisufi.drawview.ui.components.AboutLicensesDialog
 import io.github.valerioisufi.drawview.ui.components.DesignIconButton
+import io.github.valerioisufi.drawview.ui.components.DesignSnackbar
 import io.github.valerioisufi.drawview.ui.components.IconButtonStyle
 import io.github.valerioisufi.drawview.ui.extension.DocumentAction
 import io.github.valerioisufi.drawview.ui.extension.DocumentTag
@@ -161,6 +170,21 @@ internal fun ExplorerScreen(
         if (viewModel.selectionMode) fabMenuExpanded = false
     }
 
+    // What was moved to the trash last, told with Undo
+    val snackbars = remember { SnackbarHostState() }
+    val notice = viewModel.trashNotice
+    val noticeText = notice?.let {
+        if (it.names.size == 1) stringResource(Res.string.explorer_trash_moved_one, it.names.single())
+        else pluralStringResource(Res.plurals.explorer_trash_moved_many, it.names.size, it.names.size)
+    }
+    val undoLabel = stringResource(Res.string.explorer_trash_undo)
+    LaunchedEffect(notice) {
+        if (notice == null || noticeText == null) return@LaunchedEffect
+        val result = snackbars.showSnackbar(noticeText, actionLabel = undoLabel, withDismissAction = true, duration = SnackbarDuration.Long)
+        if (result == SnackbarResult.ActionPerformed) viewModel.undoTrash(notice)
+        viewModel.trashNoticeShown(notice)
+    }
+
     ExplorerBackHandler(
         enabled = fabMenuExpanded || viewModel.canNavigateBack,
         onBack = {
@@ -203,13 +227,20 @@ internal fun ExplorerScreen(
                         LibraryLayout.LIST -> if (viewModel.selectionMode) {
                             SelectionBar(viewModel, commands, withActions = true, modifier = Modifier.padding(start = 4.dp + decorStartPad, end = 4.dp))
                         } else {
-                            LibraryAppBar(title, actions, onAction = { libraryAction = it }, modifier = Modifier.padding(start = 16.dp + decorStartPad, end = 8.dp))
+                            LibraryAppBar(
+                                title,
+                                actions,
+                                onAction = { libraryAction = it },
+                                modifier = Modifier.padding(start = 16.dp + decorStartPad, end = 8.dp),
+                                onOpenTrash = { viewModel.showSection(FileExplorerViewModel.Section.TRASH) }
+                            )
                         }
                         LibraryLayout.GRID -> LibraryAppBar(
                             brand = title,
                             actions = actions,
                             onAction = { libraryAction = it },
                             modifier = Modifier.padding(start = 28.dp + decorStartPad, end = 20.dp, top = 8.dp),
+                            onOpenTrash = { viewModel.showSection(FileExplorerViewModel.Section.TRASH) },
                             search = { LibrarySearchField(viewModel, commands, searchFocus, modifier = Modifier.width(260.dp).padding(end = 8.dp)) }
                         )
                         LibraryLayout.PANES -> Unit
@@ -231,7 +262,8 @@ internal fun ExplorerScreen(
                 }
             }
             NewItemScrim(fabMenuExpanded, onDismiss = { fabMenuExpanded = false })
-            if (!viewModel.selectionMode || layout == LibraryLayout.PANES) {
+            // Nothing is made in the trash
+            if ((!viewModel.selectionMode || layout == LibraryLayout.PANES) && viewModel.section != FileExplorerViewModel.Section.TRASH) {
                 NewItemButton(
                     commands = commands,
                     extended = !compact,
@@ -247,6 +279,15 @@ internal fun ExplorerScreen(
                         )
                 )
             }
+            SnackbarHost(
+                hostState = snackbars,
+                snackbar = { data -> DesignSnackbar(data) },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal))
+                    .padding(start = 16.dp, end = 16.dp, bottom = if (compact) 88.dp else 24.dp)
+                    .widthIn(max = 520.dp)
+            )
             LibraryDragShadow(drag, viewModel)
         }
     }
@@ -310,6 +351,7 @@ private fun LazyGridScope.libraryHeader(
             }
         }
     }
+    if (viewModel.section == FileExplorerViewModel.Section.TRASH) return
     item(key = "filters", span = { GridItemSpan(maxLineSpan) }) {
         LibraryFilterChips(
             viewModel,
@@ -421,24 +463,29 @@ private fun LibraryDialogHost(
                 subtitle = stringResource(Res.string.explorer_move_subtitle, pluralStringResource(Res.plurals.explorer_items_count, dialog.items.size, dialog.items.size), from)
             )
         }
-        is LibraryDialog.Delete -> {
-            val single = dialog.items.singleOrNull()
-            val shared = dialog.items.firstOrNull { it.isShared }
+        is LibraryDialog.DeleteForGood -> ConfirmActionDialog(
+            title = stringResource(Res.string.explorer_trash_delete_forever_title, dialog.item.name),
+            textDescription = stringResource(Res.string.explorer_trash_cannot_undo),
+            textConfirmButton = stringResource(Res.string.explorer_delete_confirm),
+            onDismissRequest = onDismiss,
+            onConfirm = {
+                viewModel.deleteForGood(dialog.item)
+                onDismiss()
+            },
+            note = if (dialog.item.isShared) stringResource(Res.string.explorer_delete_shared, dialog.item.name) else null
+        )
+        LibraryDialog.EmptyTrash -> {
+            val count = viewModel.trash.size
             ConfirmActionDialog(
-                title = if (single != null) stringResource(Res.string.explorer_delete_title_one, single.name) else stringResource(Res.string.explorer_action_delete),
-                textDescription = if (single != null) {
-                    stringResource(Res.string.explorer_dialog_delete_description)
-                } else {
-                    stringResource(Res.string.explorer_dialog_delete_multiple_description, dialog.items.size) + " " +
-                        stringResource(Res.string.explorer_dialog_delete_description)
-                },
+                title = stringResource(Res.string.explorer_trash_empty_title),
+                textDescription = pluralStringResource(Res.plurals.explorer_trash_empty_description, count, count) + " " +
+                    stringResource(Res.string.explorer_trash_cannot_undo),
                 textConfirmButton = stringResource(Res.string.explorer_delete_confirm),
                 onDismissRequest = onDismiss,
                 onConfirm = {
-                    viewModel.deleteFiles(dialog.items)
+                    viewModel.emptyTrash()
                     onDismiss()
-                },
-                note = shared?.let { stringResource(Res.string.explorer_delete_shared, it.name) }
+                }
             )
         }
         LibraryDialog.About -> AboutLicensesDialog(onDismiss = onDismiss)

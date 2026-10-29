@@ -37,6 +37,7 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_roo
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_section_folders
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_section_recent
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_section_shared
+import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_section_trash
 import io.github.valerioisufi.drawview.ui.components.DesignIconButton
 import io.github.valerioisufi.drawview.ui.components.NavigationItem
 import io.github.valerioisufi.drawview.ui.components.TonalButton
@@ -138,6 +139,15 @@ internal fun LibraryNavigationPane(
                     selected = section == Section.SHARED,
                     onClick = { viewModel.showSection(Section.SHARED) },
                     count = viewModel.sharedNoteCount
+                )
+            }
+            item(key = "trash") {
+                NavigationItem(
+                    icon = DrawViewIcons.Trash,
+                    label = stringResource(Res.string.explorer_section_trash),
+                    selected = section == Section.TRASH,
+                    onClick = { viewModel.showSection(Section.TRASH) },
+                    count = viewModel.trash.size
                 )
             }
             item(key = "folders-label") {

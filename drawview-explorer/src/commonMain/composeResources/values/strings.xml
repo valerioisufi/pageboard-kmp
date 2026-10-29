@@ -31,8 +31,6 @@
     <string name="explorer_root_folder">Home</string>
     <string name="explorer_move_empty_state">No folders found</string>
     <string name="explorer_move_here">Move here</string>
-    <string name="explorer_dialog_delete_description">Deleted items are not recoverable.</string>
-    <string name="explorer_dialog_delete_multiple_description">Do you want to delete %1$d items?</string>
     <string name="explorer_error_name_empty">Name cannot be empty</string>
     <string name="explorer_error_name_invalid_chars">Name cannot contain slashes</string>
     <string name="explorer_error_name_exists">This name already exists</string>
@@ -84,7 +82,6 @@
     <string name="explorer_empty_shared_title">No shared notes</string>
     <string name="explorer_empty_shared_body">The notes shared with other devices appear here.</string>
     <string name="explorer_move_subtitle">%1$s · from %2$s</string>
-    <string name="explorer_delete_title_one">Delete “%1$s”?</string>
     <string name="explorer_delete_shared">“%1$s” is shared: the others keep their copy.</string>
     <string name="explorer_drop_title">Drop to make a note of it</string>
     <string name="explorer_drop_body">A PDF or an image becomes a note of %1$s, named after the file</string>
@@ -118,4 +115,31 @@
     <string name="explorer_import_pdf_short">Import PDF</string>
     <string name="explorer_import_image">Import image</string>
     <string name="explorer_delete_confirm">Delete</string>
+    <string name="explorer_section_trash">Trash</string>
+    <string name="explorer_trash_moved_one">“%1$s” moved to the Trash</string>
+    <string name="explorer_trash_undo">Undo</string>
+    <string name="explorer_trash_restore">Restore</string>
+    <string name="explorer_trash_delete_forever">Delete for good</string>
+    <string name="explorer_trash_empty">Empty Trash</string>
+    <string name="explorer_trash_empty_title">Empty the Trash?</string>
+    <string name="explorer_trash_delete_forever_title">Delete “%1$s” for good?</string>
+    <string name="explorer_trash_cannot_undo">This cannot be undone.</string>
+    <string name="explorer_trash_retention">Items are deleted for good after 30 days.</string>
+    <string name="explorer_trash_from">From %1$s</string>
+    <string name="explorer_trash_empty_state">The Trash is empty</string>
+    <string name="explorer_trash_empty_state_body">What you delete stays here for 30 days.</string>
+    <string name="explorer_trash_open">Trash</string>
+    <string name="explorer_trash_restored">“%1$s” restored</string>
+    <plurals name="explorer_trash_moved_many">
+        <item quantity="one">%1$d item moved to the Trash</item>
+        <item quantity="other">%1$d items moved to the Trash</item>
+    </plurals>
+    <plurals name="explorer_trash_days_left">
+        <item quantity="one">%1$d day left</item>
+        <item quantity="other">%1$d days left</item>
+    </plurals>
+    <plurals name="explorer_trash_empty_description">
+        <item quantity="one">%1$d item will be deleted for good.</item>
+        <item quantity="other">%1$d items will be deleted for good.</item>
+    </plurals>
 </resources>

@@ -29,6 +29,7 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sor
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sort_last_modified
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sort_last_opened
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_sort_name
+import io.github.valerioisufi.drawview.store.TrashedItem
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.command.Shortcut
@@ -45,7 +46,11 @@ internal sealed interface LibraryDialog {
     class NewItem(val type: FileType) : LibraryDialog
     class Rename(val item: FileItem) : LibraryDialog
     class Move(val items: List<FileItem>) : LibraryDialog
-    class Delete(val items: List<FileItem>) : LibraryDialog
+    /** Deleting [item] of the trash for good. */
+    class DeleteForGood(val item: TrashedItem) : LibraryDialog
+
+    /** Emptying the trash. */
+    data object EmptyTrash : LibraryDialog
     data object About : LibraryDialog
 }
 
@@ -164,7 +169,13 @@ internal class LibraryCommands internal constructor(
         shortcuts = listOf(Shortcut(Key.Backspace), Shortcut(Key.Delete)),
         isEnabled = { selection.isNotEmpty() },
         destructive = true
-    ) { showDialog(LibraryDialog.Delete(selection)) }
+    ) { viewModel.deleteFiles(selection) }
+
+    /** Asks before deleting [item] of the trash for good. */
+    fun deleteForGood(item: TrashedItem) = showDialog(LibraryDialog.DeleteForGood(item))
+
+    /** Asks before emptying the trash. */
+    fun emptyTrash() = showDialog(LibraryDialog.EmptyTrash)
 
     // ----- View -----
 
@@ -252,7 +263,7 @@ internal class LibraryCommands internal constructor(
                 }
             }
         }) + Command("delete", delete.label, CommandGroup.EDIT, section = 3, icon = delete.icon, destructive = true) {
-            showDialog(LibraryDialog.Delete(listOf(item)))
+            viewModel.deleteFiles(listOf(item))
         }
     }
 }

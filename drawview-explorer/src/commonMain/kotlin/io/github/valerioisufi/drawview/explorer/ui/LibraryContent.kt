@@ -119,6 +119,10 @@ internal fun LibraryContent(
                 }
             }
         }
+        if (viewModel.section == Section.TRASH && activeQuery.isEmpty()) {
+            trashContent(viewModel, actions.commands, compact, margin = if (compact) margin else 0.dp)
+            return@LazyVerticalGrid
+        }
         if (folders.isNotEmpty()) {
             sectionLabel(foldersLabel, if (compact) margin else 0.dp)
             item(key = "folders", span = { GridItemSpan(maxLineSpan) }) {

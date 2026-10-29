@@ -17,6 +17,7 @@ import io.github.valerioisufi.drawview.store.DocumentStore
 import io.github.valerioisufi.drawview.store.DocumentSummary
 import io.github.valerioisufi.drawview.store.FolderSummary
 import io.github.valerioisufi.drawview.store.OpenDocuments
+import io.github.valerioisufi.drawview.store.TrashedItem
 import io.github.valerioisufi.drawview.ui.extension.DocumentTag
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
@@ -62,14 +63,25 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
         NAME, DATE_CREATED, DATE_MODIFIED, LAST_OPENED
     }
 
-    /** What the library shows: the folders from the root, the notes opened last, the shared ones. */
-    enum class Section { HOME, RECENT, SHARED }
+    /** What the library shows: the folders from the root, the notes opened last, the shared ones, the trash. */
+    enum class Section { HOME, RECENT, SHARED, TRASH }
+
+    /** What was moved to the trash at once: the [names] and the [ids] of the items, told with Undo. */
+    class TrashNotice(val names: List<String>, val ids: List<String>)
 
     /** How the notes are shown where there is room for both: cards with their first page, or rows. */
     enum class ViewMode { GRID, LIST }
 
     private var documents by mutableStateOf(emptyList<DocumentSummary>())
     private var folders by mutableStateOf(emptyList<FolderSummary>())
+
+    /** What is in the trash, the most recent first (see [Section.TRASH]). */
+    var trash by mutableStateOf(emptyList<TrashedItem>())
+        private set
+
+    /** What was moved to the trash last, to tell with Undo (`null` once told). */
+    var trashNotice by mutableStateOf<TrashNotice?>(null)
+        private set
 
     var sortOption by mutableStateOf(SortOption.NAME)
         private set
@@ -195,6 +207,8 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
                 .filter { it.name.contains(query, ignoreCase = true) }
             section == Section.RECENT -> return@derivedStateOf recentDocuments.filterBy(filter)
             section == Section.SHARED -> documents.filter { it.isShared }.map { it.toFileItem() }
+            // The trash shows its own items (see trash)
+            section == Section.TRASH -> return@derivedStateOf emptyList()
             else -> currentDirectoryFiles
         }
         sortFiles(candidates.filterBy(filter), sortOption, sortAscending, keepFoldersOnTop)
@@ -265,6 +279,7 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
 
     init {
         viewModelScope.launch { store.documents.collect { documents = it } }
+        viewModelScope.launch { store.trash.collect { trash = it } }
         viewModelScope.launch {
             store.folders.collect { list ->
                 folders = list
@@ -456,9 +471,9 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
         return files.none { it.type == FileType.FOLDER && it.id == targetFolderId }
     }
 
-    private suspend fun delete(file: FileItem): Boolean = when (file.type) {
-        FileType.FOLDER -> store.deleteFolder(file.id)
-        FileType.FILE -> store.deleteDocument(file.id)
+    private suspend fun trash(file: FileItem): Boolean = when (file.type) {
+        FileType.FOLDER -> store.trashFolder(file.id)
+        FileType.FILE -> store.trashDocument(file.id)
     }
 
     private suspend fun move(file: FileItem, targetFolderId: String?): Boolean = when (file.type) {
@@ -530,12 +545,43 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
 
     fun moveSelected(targetFolderId: String?) = moveFiles(selectedItems.toList(), targetFolderId)
 
-    /** Deletes [files] (the selected ones, or one of a menu), leaving the selection. */
+    /** Moves [files] (the selected ones, or one of a menu) to the trash, leaving the selection; told by [trashNotice]. */
     fun deleteFiles(files: List<FileItem>) {
         unselect(files)
         viewModelScope.launch {
-            files.forEach { delete(it) }
+            val trashed = files.filter { trash(it) }
+            if (trashed.isNotEmpty()) trashNotice = TrashNotice(trashed.map { it.name }, trashed.map { it.id })
         }
+    }
+
+    /** [notice] was told: it is not told again. */
+    fun trashNoticeShown(notice: TrashNotice) {
+        if (trashNotice === notice) trashNotice = null
+    }
+
+    /** Puts back what [notice] moved to the trash. */
+    fun undoTrash(notice: TrashNotice) {
+        viewModelScope.launch { notice.ids.forEach { store.restore(it) } }
+    }
+
+    /** Puts [item] back where it was (see `DocumentCatalog.restore`). */
+    fun restore(item: TrashedItem) {
+        viewModelScope.launch { store.restore(item.id) }
+    }
+
+    /** Deletes [item] of the trash for good. */
+    fun deleteForGood(item: TrashedItem) {
+        viewModelScope.launch {
+            when (item.kind) {
+                TrashedItem.Kind.DOCUMENT -> store.deleteDocument(item.id)
+                TrashedItem.Kind.FOLDER -> store.deleteFolder(item.id)
+            }
+        }
+    }
+
+    /** Deletes for good everything in the trash. */
+    fun emptyTrash() {
+        viewModelScope.launch { store.purgeTrash(before = Long.MAX_VALUE) }
     }
 
     /** Moves [files] into [targetFolderId] (`null`: the root), leaving the selection. */

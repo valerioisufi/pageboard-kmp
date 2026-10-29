@@ -18,6 +18,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -88,8 +90,13 @@ class LibraryCommandsTest {
         commands.selectAll.perform()
         assertEquals(2, viewModel.selectedItems.size)
         assertFalse(commands.rename.isEnabled())
+        // Deleting moves to the trash at once, without a dialog
         commands.delete.perform()
-        assertEquals(setOf("Note", "Math"), assertIs<LibraryDialog.Delete>(shown.dialog).items.map { it.name }.toSet())
+        assertNull(shown.dialog)
+        assertEquals(setOf("Note", "Math"), viewModel.trashNotice?.names?.toSet())
+        assertTrue(viewModel.currentDirectoryFiles.isEmpty())
+        viewModel.undoTrash(assertNotNull(viewModel.trashNotice))
+        assertEquals(setOf("Note", "Math"), viewModel.currentDirectoryFiles.map { it.name }.toSet())
 
         // A document selected alone: renamed, its actions
         viewModel.clearSelection()
@@ -158,6 +165,36 @@ class LibraryCommandsTest {
         assertTrue(byDate.isChecked!!.invoke())
         commands.invertOrder.perform()
         assertTrue(viewModel.sortAscending)
+    }
+
+    @Test
+    fun theTrashRestoresAndDeletesForGoodAskingFirst() = runTest {
+        val (viewModel, pair) = library()
+        val (commands, shown) = pair
+        viewModel.createFile(FileType.FILE, "Note")
+        viewModel.createFile(FileType.FOLDER, "Math")
+        viewModel.deleteFile(viewModel.item("Note"))
+        viewModel.deleteFile(viewModel.item("Math"))
+        assertEquals(listOf("Math"), viewModel.trashNotice?.names, "the last one told")
+        assertEquals(setOf("Note", "Math"), viewModel.trash.map { it.name }.toSet())
+
+        viewModel.showSection(FileExplorerViewModel.Section.TRASH)
+        assertTrue(viewModel.shownFiles.isEmpty(), "the trash shows its own items")
+        viewModel.restore(viewModel.trash.single { it.name == "Math" })
+        assertEquals(listOf("Note"), viewModel.trash.map { it.name })
+
+        commands.deleteForGood(viewModel.trash.single())
+        val asked = assertIs<LibraryDialog.DeleteForGood>(shown.dialog)
+        viewModel.deleteForGood(asked.item)
+        assertTrue(viewModel.trash.isEmpty())
+
+        viewModel.showFolder(null)
+        viewModel.deleteFile(viewModel.item("Math"))
+        commands.emptyTrash()
+        assertEquals(LibraryDialog.EmptyTrash, shown.dialog)
+        viewModel.emptyTrash()
+        assertTrue(viewModel.trash.isEmpty())
+        assertTrue(viewModel.currentDirectoryFiles.isEmpty())
     }
 
     @Test
