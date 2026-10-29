@@ -52,6 +52,10 @@ Variations).
    did not take a start of about 6,000 identical tokens, sent seconds apart: 3,906 cached tokens
    out of 148,000 in one run, none in the others.
 
+   **The grader is noisy.** The same set of notes, graded twice, got 72% and 63% of the questions,
+   and 4 notes of 16 changed verdict (9 and 8 that add to the slides). A difference of a few
+   points or of a few notes between two runs is not a result.
+
 ## Requirements
 
 1. A lecture of 90 minutes costs about $0.12 of live notes with Gemini 3.8 Flash until
@@ -72,7 +76,8 @@ Variations).
 
 | Responsibility | Class (module) | GRASP |
 |---|---|---|
-| The start of a request that does not change during a lecture: instructions, course, the text of every slide of the notebook as it was when the lecture began; the rule that restating a slide is redundant, explaining it is not | `LecturePrompts.lecturePrefix` (`drawview-lecture`) | Information Expert (it knows the prompts), High Cohesion |
+| The start of a request that does not change during a lecture: instructions, course, the text of every slide of the notebook as it was when the lecture began; the rule that restating a slide is redundant, explaining it is not | `LecturePrompts.chunkPrompt(start = …)`, `slidesText` (`drawview-lecture`) | Information Expert (it knows the prompts), High Cohesion |
+| The title and the pages of the notebook at the first request of Gemini with the notebook open | `LectureStart`, taken by `LectureRecorder.startOf` | Information Expert, Creator (the recorder has the notebook) |
 | The pages around the visible one without the text of their slide when the start holds it ("slide above"), with the notes of the student | `LecturePrompts.pagesText` | Information Expert |
 | Which leading parts of a prompt may be cached | `ModelPrompt.cachedParts` (the number of leading parts) | Protected Variations (the backends that cannot cache ignore it) |
 | The cachedContents of the API: create, extend, delete | `GeminiClient.createCache`, `extendCache`, `deleteCache` | Information Expert (the REST of Gemini) |
@@ -115,7 +120,7 @@ output ~620 tokens a request ($0.04): about $0.12.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | The bench: `NotesBench` (the notes of a whole lecture, a configuration each: Gemini on the transcript or the audio, Gemma 4 E4B on LiteRT-LM with the search of the notebook; `-cached`, `-medium`, `@<seconds>`; the notebook without the assistant, `BenchLecture.untouched`), the price with the cached tokens, a cap on the dollars; the grader `tools/notes-bench/grade_notes.py`; the results of the Starting point | Done |
-| 2 | The prompt: `lecturePrefix`, the rule on the slides, `pagesText` without the slides of the start, `ModelPrompt.cachedParts`; tests in `LecturePromptsTest` (the start the same across requests and with a page added, the slides not repeated); the bench on 3.8 Flash, every 5 minutes (about $0.15, asked first) | To do |
+| 2 | The prompt: `LectureStart` and `slidesText` (80,000 characters at most), the rule on the slides, `pagesText` without the slides of the start, `ModelPrompt.cachedParts`, the recorder taking the start for Gemini only; tests in `LecturePromptsTest` (the start the same across requests, with the notebook closed and in a catch-up; the slides not repeated, a page added keeping its text; nothing cached without slides; the bound); the bench on 3.8 Flash every 5 minutes: 16 notes, none wrong, 143,824 prompt tokens, 0 cached, $0.142 | Done |
 | 3 | The cache: `GeminiClient` (cachedContents), `GeminiPromptCache`, `GeminiBackend` with the cache, the deletion at stop; tests with the `MockEngine` (created once, reused, extended, a refusal, another model); the bench with the cache, its cost measured (about $0.10, asked first) | To do |
 | 4 | How often: `notesSeconds` in the settings, the recorder gathering the chunks, the outline at every request; "I missed something" unchanged; the setting in the panel with its strings in the seven languages; a test reading a settings file of today; tests of the recorder (`LectureRecorderTest`) for the gathering; screenshots of the panel (`verifyRoborazziJvm`) | To do |
 | 5 | Checks: the desktop application on a scratch data directory, a lecture imported with the transcript of whisper, its tokens and cached tokens in the panel; the checks of CLAUDE.md | To do |
@@ -130,10 +135,13 @@ Taken alone, revertible:
 * **The transcript, not the audio**, goes to the notes: the audio costs twice as much for worse
   notes.
 * **Low thinking**, as today for the live notes.
-* **The start holds the slides when the lecture begins**, never rebuilt during it.
+* **The start holds the slides when the lecture begins**, never rebuilt during it: those of the
+  notebook at the first request of Gemini with the notebook open, in its order, up to 80,000
+  characters (about 20,000 tokens).
 * **A ttl of 10 minutes extended at every request**, rather than one for the whole lecture,
   whose length is unknown.
-* **No cache for the local models**: LiteRT-LM and Ollama ignore `cachedParts`.
+* **No start for the local models**: they cache nothing and read a small context; their prompts
+  stay as today.
 * **The grader is a script** (`tools/notes-bench`), with the questions of the eval set of
   `feat/lecture-eval`.
 

@@ -113,6 +113,9 @@ public class LectureRecorder internal constructor(
     private val recentChunks = ArrayDeque<AudioChunk>()
     private var lastOutlineMs = Long.MIN_VALUE
 
+    /** What opens the requests of Gemini, taken from the notebook at the first of them. */
+    private var lectureStart: LectureStart? = null
+
     private class QueuedChunk(val chunk: AudioChunk?, val catchUp: Boolean)
 
     public val isRecording: Boolean get() = lecture.status == LectureStatus.RECORDING
@@ -424,10 +427,12 @@ public class LectureRecorder internal constructor(
         val settings = settingsStore.settings
         val speech = speech.speechOf(chunks) ?: return
         var includeOutline = false
-        val result = request(settings.task(LectureTask.LIVE_NOTES), settings) { notebook ->
+        val task = settings.task(LectureTask.LIVE_NOTES)
+        val start = startOf(task)
+        val result = request(task, settings) { notebook ->
             val memory = lecture.memory(speech.endMs)
             includeOutline = memory.outline.isBlank() || speech.endMs - lastOutlineMs >= OUTLINE_INTERVAL_MS
-            LecturePrompts.chunkPrompt(settings, memory, notebook, speech, includeOutline = includeOutline)
+            LecturePrompts.chunkPrompt(settings, memory, notebook, speech, includeOutline = includeOutline, start = start)
         } ?: return
         val analysis = result.analysis
         if (includeOutline && analysis.outline.isNotBlank()) lastOutlineMs = speech.endMs
@@ -461,10 +466,11 @@ public class LectureRecorder internal constructor(
         } else {
             return
         }
+        val start = startOf(task)
         val result = request(task, settings) { notebook ->
             LecturePrompts.chunkPrompt(
                 settings, lecture.memory(speech.endMs), notebook, speech,
-                catchUp = true, includeOutline = false, includeTranscript = false
+                catchUp = true, includeOutline = false, includeTranscript = false, start = start
             )
         } ?: return
         val defaultPage = result.notebook?.visiblePageIndexes?.firstOrNull()
@@ -476,6 +482,25 @@ public class LectureRecorder internal constructor(
     }
 
     private class Answer(val analysis: ChunkAnalysis, val notebook: NotebookSnapshot?, val usage: TokenUsage)
+
+    /**
+     * What opens the requests of [task]: the notebook as it is at the first request of Gemini with
+     * the notebook open, the same afterwards; none for the local models, which cache nothing.
+     */
+    private suspend fun startOf(task: TaskModel): LectureStart? {
+        if (task.provider != ModelProvider.GEMINI) return null
+        lectureStart?.let { return it }
+        val source = notebook ?: return null
+        val pages = try {
+            source.allPages()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // Read again at the next request
+            return null
+        }
+        return LectureStart(source.documentTitle, pages).also { lectureStart = it }
+    }
 
     /**
      * Sends the prompt built by [build] (given the notebook, `null` when it is closed) to the

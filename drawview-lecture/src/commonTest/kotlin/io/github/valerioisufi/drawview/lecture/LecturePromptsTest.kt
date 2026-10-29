@@ -262,6 +262,85 @@ class LecturePromptsTest {
             assertTrue("blocks of code between fences with their language" in instruction, instruction)
         }
     }
+
+    /** The notebook when the lecture began: the visible slide and one far from it. */
+    private val start = LectureStart(
+        "Analisi 1",
+        listOf(
+            PageContent(4, pageId = "15", slide = SlideText(1, 2, "Teorema ponte\nSia f: A -> R")),
+            PageContent(3, pageId = "14", slide = SlideText(1, 1, "Limiti di funzioni")),
+            PageContent(9, pageId = "20", slide = SlideText(1, 7, "Derivate e continuità")),
+            PageContent(6, pageId = "17", slide = SlideText(2, 0, ""))
+        )
+    )
+
+    private fun transcriptOf(startMs: Long, text: String) =
+        RequestTranscript(emptyList(), listOf(TranscriptSegment(startMs, startMs + 5_000, text)), startMs, 0, startMs + 60_000)
+
+    private fun ModelPrompt.texts() = parts.filterIsInstance<PromptPart.Text>().map { it.text }
+
+    @Test
+    fun theStartOpensEveryRequestOfALectureTheSame() {
+        val first = LecturePrompts.chunkPrompt(settings, memory, notebook, transcriptOf(60_000, "Il teorema ponte"), start = start)
+        val later = LecturePrompts.chunkPrompt(
+            settings,
+            LectureMemory(400_000, "- Limiti\n- Derivate", "Derivate", "le derivate", memory.suggestions, memory.courseContext),
+            // The notebook closed meanwhile
+            null,
+            transcriptOf(340_000, "La derivata"),
+            includeOutline = false,
+            start = start
+        )
+        val catchUp = LecturePrompts.chunkPrompt(settings, memory, notebook, transcriptOf(60_000, "Il teorema ponte"), catchUp = true, includeTranscript = false, start = start)
+        assertEquals(2, first.cachedParts)
+        for (prompt in listOf(later, catchUp)) {
+            assertEquals(first.system, prompt.system)
+            assertEquals(first.cachedParts, prompt.cachedParts)
+            assertEquals(first.texts().take(first.cachedParts), prompt.texts().take(prompt.cachedParts))
+        }
+        val (course, slides) = first.texts()
+        assertTrue(course.startsWith("## Course") && course.contains("Analisi 1"), course)
+        // Every slide with text, far from the visible page too, in the order of the notebook
+        assertTrue(slides.startsWith("## Slides of the notebook"), slides)
+        assertTrue(slides.indexOf("Limiti di funzioni") < slides.indexOf("Teorema ponte") && slides.contains("Derivate e continuità"), slides)
+        assertFalse(slides.contains("slide 1 of PDF 2"))
+        assertTrue(first.system.contains("Restating a slide is redundant, explaining it is not"))
+    }
+
+    @Test
+    fun thePagesDoNotRepeatTheSlidesOfTheStart() {
+        val added = PageContent(7, pageId = "30", slide = SlideText(3, 0, "Esercizi sui limiti"))
+        val withAdded = NotebookSnapshot("Analisi 1", 11, listOf(4), notebook.pages + added, notebook.pageImages)
+        val prompt = LecturePrompts.chunkPrompt(settings, memory, withAdded, transcriptOf(60_000, "Il teorema ponte"), start = start)
+        val pages = prompt.texts().single { it.startsWith("## Notebook") }
+        assertTrue(pages.contains("Slide 3 of PDF 1: its text is among the slides above."), pages)
+        assertFalse(pages.contains("Sia f: A -> R"), pages)
+        // The notes of the student are still there
+        assertTrue(pages.contains("Vale anche per x -> inf"), pages)
+        // A page added after the start keeps its text
+        assertTrue(pages.contains("Esercizi sui limiti"), pages)
+    }
+
+    @Test
+    fun withoutAStartNothingIsCached() {
+        val prompt = LecturePrompts.chunkPrompt(settings, memory, notebook, transcriptOf(60_000, "Il teorema ponte"))
+        assertEquals(0, prompt.cachedParts)
+        assertTrue(prompt.texts().none { it.startsWith("## Slides of the notebook") })
+        assertFalse(prompt.system.contains("Restating a slide"))
+        assertTrue(prompt.texts().single { it.startsWith("## Notebook") }.contains("Sia f: A -> R"))
+        // A notebook without slides of text: no start either
+        val blank = LecturePrompts.chunkPrompt(settings, memory, notebook, transcriptOf(60_000, "Il teorema ponte"), start = LectureStart("Analisi 1", listOf(PageContent(0, pageId = "1"))))
+        assertEquals(0, blank.cachedParts)
+    }
+
+    @Test
+    fun theSlidesOfTheStartAreBounded() {
+        val pages = (0 until 100).map { PageContent(it, pageId = "p$it", slide = SlideText(1, it, "x".repeat(2_000))) }
+        val slides = assertNotNull(LecturePrompts.slidesText(pages))
+        assertTrue(slides.text.length <= 80_000, "${slides.text.length}")
+        assertTrue(slides.pageIds.size in 30..39, "${slides.pageIds.size}")
+        assertTrue("p0" in slides.pageIds && "p99" !in slides.pageIds)
+    }
 }
 
 class LectureAnalysisTest {

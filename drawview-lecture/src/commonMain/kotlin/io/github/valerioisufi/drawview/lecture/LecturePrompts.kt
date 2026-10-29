@@ -50,6 +50,13 @@ internal class LectureMemory(
 )
 
 /**
+ * What opens every request of a lecture and does not change during it: the title of the notebook
+ * and its pages when the lecture began, whose slides are given whole (see
+ * [LecturePrompts.chunkPrompt]).
+ */
+internal class LectureStart(val documentTitle: String, val pages: List<PageContent>)
+
+/**
  * The requests of the assistant, as [ModelPrompt]s answered by Gemini or by a local model. The
  * parts are ordered from the most stable (instructions, course) to the most variable (memory,
  * notebook, audio): the stable prefix is reused by the implicit caching of Gemini.
@@ -86,8 +93,9 @@ internal object LecturePrompts {
     /**
      * @param withAudio the request carries the audio, which the model transcribes; otherwise its
      *   transcript.
+     * @param withSlides the request opens with the text of every slide of the notebook.
      */
-    fun chunkSystemInstruction(settings: AssistantSettings, withAudio: Boolean = true): String {
+    fun chunkSystemInstruction(settings: AssistantSettings, withAudio: Boolean = true, withSlides: Boolean = false): String {
         val source = if (withAudio) "audio" else "transcript"
         val transcriptField = if (withAudio) {
             "- transcript: faithful transcript of the new audio only (after the context part), not summarized; mark unintelligible parts as [inaudible]; empty when there is no speech.\n"
@@ -96,15 +104,16 @@ internal object LecturePrompts {
         }
         val unclear = if (withAudio) "When the audio is unclear, say so instead of guessing."
         else "The transcript may contain recognition errors: do not build on words that make no sense."
+        val slides = if (withSlides) "\n            - $SLIDES_RULE" else ""
         return """
             You are a note-taking assistant listening to a university lecture live, next to a student who takes handwritten notes in a notebook app (the lecture slides, when available, are imported as pages of the same notebook).
-            Every minute or so you receive the newest part of the lecture ($source) together with what the student is looking at and writing. Your goal: make sure the student does not miss anything important, without distracting them.
+            At every update you receive the newest part of the lecture ($source) together with what the student is looking at and writing. Your goal: make sure the student does not miss anything important, without distracting them.
             The notebook is described page by page in text (the text of the slides, what the student typed, their handwriting when transcribed), with images of the visible pages and close-ups of what the student just wrote.
 
             How to work:
             - Compare what the lecturer says in the new $source with (1) the slides and (2) what the student has already written or typed. Look carefully at the handwriting in the images too.
             - Suggest a note ONLY for important content said in the new $source that is missing from both the slides and the notes of the student, and that is not among the notes already suggested. Typical cases: definitions, formulas, theorems and their conditions, steps of worked examples, explanations that clarify a slide, anything the lecturer stresses ("this is important", "this will be in the exam"), announcements and deadlines, references (books, papers, websites), answers to the questions of the students.
-            - If the student already wrote it, even abbreviated or in their own words, it is not missing. If it is on a slide, it is not missing, unless the lecturer adds something that is not there (a condition, an intuition, an example).
+            - If the student already wrote it, even abbreviated or in their own words, it is not missing. If it is on a slide, it is not missing, unless the lecturer adds something that is not there (a condition, an intuition, an example).$slides
             - No note is better than a redundant note: an empty list is the right answer when nothing is missing. Prefer few, high-value notes.
             - Never invent or complete content that was not said. $unclear
             - The notes are inserted as they are in the notebook: concise and ready to use (short sentences or bullet points, formulas in LaTeX between ${'$'}...${'$'}, code in blocks of code, no preamble such as "The lecturer said").
@@ -134,7 +143,13 @@ internal object LecturePrompts {
         ${languageRule(settings, "notesMarkdown and missing", withTranscript = false)}
     """.trimIndent()
 
-    /** A chunk of the lecture ([catchUp]: the student asked what they missed). */
+    /**
+     * A chunk of the lecture ([catchUp]: the student asked what they missed).
+     *
+     * With [start], the request opens with the course and the text of every slide of the notebook
+     * as it was when the lecture began: the same in every request ([ModelPrompt.cachedParts]), and
+     * the pages around the visible one do not repeat it.
+     */
     fun chunkPrompt(
         settings: AssistantSettings,
         memory: LectureMemory,
@@ -142,15 +157,19 @@ internal object LecturePrompts {
         speech: RequestSpeech,
         catchUp: Boolean = false,
         includeOutline: Boolean = true,
-        includeTranscript: Boolean = speech is RequestAudio
+        includeTranscript: Boolean = speech is RequestAudio,
+        start: LectureStart? = null
     ): ModelPrompt {
         val withAudio = speech is RequestAudio
         val source = if (withAudio) "audio" else "transcript"
         val parts = mutableListOf<PromptPart>()
-        courseText(memory.courseContext, notebook?.documentTitle)?.let { parts.add(PromptPart.Text(it)) }
+        courseText(memory.courseContext, start?.documentTitle ?: notebook?.documentTitle)?.let { parts.add(PromptPart.Text(it)) }
+        val slides = start?.let { slidesText(it.pages) }
+        if (slides != null) parts.add(PromptPart.Text(slides.text))
+        val cachedParts = if (slides != null) parts.size else 0
         parts.add(PromptPart.Text(memoryText(memory)))
         if (notebook != null) {
-            parts.addAll(notebookParts(notebook))
+            parts.addAll(notebookParts(notebook, slides?.pageIds.orEmpty()))
         } else {
             parts.add(PromptPart.Text("## Notebook\nThe notebook is closed: the student is not looking at its pages now (they may be taking notes elsewhere)."))
         }
@@ -182,12 +201,36 @@ internal object LecturePrompts {
         }
 
         return ModelPrompt(
-            system = chunkSystemInstruction(settings, withAudio),
+            system = chunkSystemInstruction(settings, withAudio, withSlides = slides != null),
             parts = parts,
             schema = LectureAnalysis.chunkSchema(includeOutline, includeTranscript),
             maxOutputTokens = 8192,
-            thinkingLevel = settings.thinkingLevel
+            thinkingLevel = settings.thinkingLevel,
+            cachedParts = cachedParts
         )
+    }
+
+    /** The text of the slides opening the requests, and the pages whose slide it holds. */
+    internal class StartSlides(val text: String, val pageIds: Set<String>)
+
+    /**
+     * The slides of [pages] in text, in the order of the notebook, as long as they fit in
+     * [MAX_START_SLIDES_CHARS]; `null` when no page has a slide with text.
+     */
+    internal fun slidesText(pages: List<PageContent>): StartSlides? {
+        val pageIds = mutableSetOf<String>()
+        val text = buildString {
+            appendLine("## Slides of the notebook")
+            appendLine("The text of the slides of the notebook when the lecture began, whether they are on screen or not.")
+            for (page in pages.sortedBy { it.index }) {
+                val slide = page.slide?.takeIf { it.text.isNotBlank() } ?: continue
+                val entry = "### Page ${page.index + 1}, slide ${slide.pdfPageIndex + 1} of PDF ${slide.pdfNumber}\n${slide.text.trim()}\n"
+                if (length + entry.length > MAX_START_SLIDES_CHARS) break
+                append(entry)
+                if (page.pageId.isNotEmpty()) pageIds.add(page.pageId)
+            }
+        }.trim()
+        return text.takeIf { pageIds.isNotEmpty() }?.let { StartSlides(it, pageIds) }
     }
 
     /** The transcript of a request, with the times from its start. */
@@ -384,7 +427,8 @@ internal object LecturePrompts {
      * The pages around the visible ones in text, the same for every provider, then the images: the
      * visible pages as they look and the close-ups of what the student just wrote.
      */
-    private fun notebookParts(notebook: NotebookSnapshot): List<PromptPart> {
+    /** @param slidesAbove pages whose slide is in the text of the slides opening the request. */
+    private fun notebookParts(notebook: NotebookSnapshot, slidesAbove: Set<String> = emptySet()): List<PromptPart> {
         val parts = mutableListOf<PromptPart>()
         val withImage = notebook.pageImages.mapTo(mutableSetOf()) { it.pageIndex }
         parts.add(
@@ -392,7 +436,7 @@ internal object LecturePrompts {
                 buildString {
                     appendLine("## Notebook (${notebook.pageCount} pages)")
                     appendLine("The student is looking at page ${notebook.visiblePageIndexes.joinToString(", ") { "${it + 1}" }}. Pages around:")
-                    append(pagesText(notebook.pages, notebook.visiblePageIndexes.toSet(), withImage, MAX_NOTEBOOK_TEXT_CHARS))
+                    append(pagesText(notebook.pages, notebook.visiblePageIndexes.toSet(), withImage, MAX_NOTEBOOK_TEXT_CHARS, slidesAbove))
                 }.trim()
             )
         )
@@ -413,17 +457,19 @@ internal object LecturePrompts {
      * first.
      *
      * @param withImage pages whose image is in the request.
+     * @param slidesAbove pages whose slide is already in the request ([slidesText]): its text is
+     *   not repeated.
      */
-    internal fun pagesText(pages: List<PageContent>, visible: Set<Int>, withImage: Set<Int>, maxChars: Int): String {
+    internal fun pagesText(pages: List<PageContent>, visible: Set<Int>, withImage: Set<Int>, maxChars: Int, slidesAbove: Set<String> = emptySet()): String {
         var budget = maxChars
         return pages.map { page ->
-            val text = pageText(page, page.index in visible, page.index in withImage, budget)
+            val text = pageText(page, page.index in visible, page.index in withImage, budget, page.pageId.isNotEmpty() && page.pageId in slidesAbove)
             budget -= text.length
             page.index to text
         }.sortedBy { it.first }.joinToString("\n") { it.second }
     }
 
-    private fun pageText(page: PageContent, isVisible: Boolean, hasImage: Boolean, budget: Int): String = buildString {
+    private fun pageText(page: PageContent, isVisible: Boolean, hasImage: Boolean, budget: Int, slideAbove: Boolean = false): String = buildString {
         append("### Page ${page.index + 1}")
         if (isVisible) append(" (visible)")
         appendLine()
@@ -436,6 +482,7 @@ internal object LecturePrompts {
             val room = (budget - MIN_PAGE_CHARS).coerceAtLeast(0)
             when {
                 slide.text.isBlank() -> appendLine("$name, without text" + if (hasImage) " (see the image)." else ".")
+                slideAbove -> appendLine("$name: its text is among the slides above.")
                 room == 0 -> appendLine("$name (text left out).")
                 else -> {
                     appendLine("$name:")
@@ -471,6 +518,15 @@ internal object LecturePrompts {
 
     /** Text of the pages around the visible ones in a live request. */
     private const val MAX_NOTEBOOK_TEXT_CHARS = 3_500
+
+    /** Text of the slides opening every live request (about 20,000 tokens). */
+    private const val MAX_START_SLIDES_CHARS = 80_000
+
+    /** Why the slides open the requests: restating them is no note. */
+    private const val SLIDES_RULE =
+        "The text of every slide comes first, whether the slide is on screen or not. Restating a slide is redundant, explaining it is not: " +
+            "when the lecturer adds something to a slide (an explanation, an example, a condition, an intuition, a step of a proof, a remark), suggest it, " +
+            "even if its topic is on the slide."
 
     /** English names of the languages of the speech recognition, by ISO code. */
     private val SLIDE_WORD = Regex("""[\p{L}\p{N}][\p{L}\p{N}-]*[\p{L}\p{N}]""")

@@ -5,6 +5,7 @@ import io.github.valerioisufi.drawview.lecture.ChunkAnalysis
 import io.github.valerioisufi.drawview.lecture.LectureAnalysis
 import io.github.valerioisufi.drawview.lecture.LectureMemory
 import io.github.valerioisufi.drawview.lecture.LecturePrompts
+import io.github.valerioisufi.drawview.lecture.LectureStart
 import io.github.valerioisufi.drawview.lecture.NoteKind
 import io.github.valerioisufi.drawview.lecture.NoteSuggestion
 import io.github.valerioisufi.drawview.lecture.PageContent
@@ -62,9 +63,9 @@ internal class NotesRun(
  *   new transcript, or with the topic and the visible slide when the model hears the audio;
  * * `<gemini model>-text`, `<gemini model>-audio`: a model of the Gemini API (`GEMINI_API_KEY`),
  *   with the transcript or the audio of the interval in one piece, the notebook as the assistant
- *   sends it; no transcript is asked back. With `-cached`, the text of every slide comes first,
- *   after the instructions, so that the prefix reused by the implicit caching of Gemini is long
- *   enough; with `-medium`, the model thinks at the medium level.
+ *   sends it; no transcript is asked back. With `-cached`, the requests open with the slides of
+ *   the notebook ([LectureStart]), as the recorder sends them to Gemini; with `-medium`, the
+ *   model thinks at the medium level.
  *
  * A configuration may end with `@<seconds>`, its own interval instead of [intervalMs].
  *
@@ -121,7 +122,7 @@ internal class NotesBench(
         val audio = base.endsWith("-audio")
         val device = base.startsWith("e4b")
         val model = if (device) null else base.removeSuffix("-audio").removeSuffix("-text")
-        val slides = if (cached) slidesText(lecture) else null
+        val start = if (cached) LectureStart(lecture.prepared.documentTitle, lecture.pagesAt(0)) else null
         val gemini = if (device) null else GeminiBackend(GeminiClient()) { System.getenv("GEMINI_API_KEY").orEmpty() }
         val search = if (device) NotebookSearch.build(bench, lecture.pagesAt(lecture.prepared.durationMs)) else null
         val answers = StringBuilder()
@@ -171,9 +172,8 @@ internal class NotesBench(
             } else {
                 lecture.notebook(endMs)
             }
-            var prompt = LecturePrompts.chunkPrompt(settings, memory, notebook, speech, includeOutline = true, includeTranscript = false)
+            var prompt = LecturePrompts.chunkPrompt(settings, memory, notebook, speech, includeOutline = true, includeTranscript = false, start = start)
             if (audio && device) prompt = prompt.withAudioClips(samples)
-            if (slides != null) prompt = prompt.withSlidesFirst(slides)
             val start = TimeSource.Monotonic.markNow()
             val text: String? = if (device) {
                 val answer = bench.ask(bench.generators.first { it.spec.id == "gemma-4-e4b" }, GeneratorOptions(maxTokens = 16384, images = true, audio = audio), prompt, SchemaMode.ASKED)
@@ -265,24 +265,6 @@ internal class NotesBench(
         thinkingLevel = thinkingLevel
     )
 
-    /** The text of every slide of the lecture, the same in every request: the cached prefix. */
-    private fun slidesText(lecture: BenchLecture): String = buildString {
-        appendLine("## Slides of the notebook")
-        for (page in lecture.pagesAt(lecture.prepared.durationMs)) {
-            val text = page.slide?.text?.trim().orEmpty()
-            if (text.isNotEmpty()) appendLine("[Notebook page ${page.index + 1}] ${text.replace('\n', ' ')}")
-        }
-    }.trim()
-
-    /** [this] prompt with [slides] at the start of its parts, and the rule that tells why. */
-    private fun ModelPrompt.withSlidesFirst(slides: String): ModelPrompt = ModelPrompt(
-        system = "$system\n\n$SLIDES_RULE",
-        parts = listOf(PromptPart.Text(slides)) + parts,
-        schema = schema,
-        maxOutputTokens = maxOutputTokens,
-        thinkingLevel = thinkingLevel
-    )
-
     /**
      * The price of a run of [config] from its tokens, [cachedTokens] being part of [promptTokens]
      * (the audio as the text: the API says no other price for these models).
@@ -300,10 +282,6 @@ internal class NotesBench(
         private const val ATTEMPTS = 4
         private const val FOUND_PAGES = 3
         private const val MAX_QUERY_CHARS = 2000
-        private const val SLIDES_RULE =
-            "The text of every slide of the notebook comes first, whether the slide is on screen or not. Restating a slide is redundant, explaining it is not: " +
-                "when the lecturer adds something to a slide (an explanation, an example, a condition, an intuition, a step of a proof, a remark), suggest it, " +
-                "even if its topic is on the slide."
     }
 }
 

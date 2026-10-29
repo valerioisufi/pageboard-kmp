@@ -22,13 +22,16 @@ internal sealed interface PromptPart {
  * content (text, images and, for Gemini, audio and files) and the JSON schema of the answer.
  *
  * @param thinkingLevel reasoning of the Gemini models (low, medium, high).
+ * @param cachedParts leading [parts] that, with [system], stay the same in every request of a
+ *   lecture: a provider may cache them; the others ignore it.
  */
 internal class ModelPrompt(
     val system: String,
     val parts: List<PromptPart>,
     val schema: JsonObject,
     val maxOutputTokens: Int,
-    val thinkingLevel: String
+    val thinkingLevel: String,
+    val cachedParts: Int = 0
 )
 
 /**
