@@ -35,6 +35,10 @@ internal data class AnalysisNote(
     val anchor: String = ""
 )
 
+/** Answer of the model to a text turned into notes ([LectureAnalysis.textNotesSchema]). */
+@Serializable
+internal data class TextNotesAnswer(val notes: List<AnalysisNote> = emptyList())
+
 /** Answer of the model to the review of the whole lecture ([LectureAnalysis.finalReviewSchema]). */
 @Serializable
 internal data class FinalReview(
@@ -55,6 +59,9 @@ internal object LectureAnalysis {
             notes = analysis.notes.map { it.copy(content = normalizeMarkdown(it.content)) }
         )
     }
+
+    fun parseTextNotes(text: String): List<AnalysisNote> =
+        parse(text, TextNotesAnswer.serializer()).notes.map { it.copy(content = normalizeMarkdown(it.content)) }
 
     fun parseFinalReview(text: String): FinalReview = parse(text, FinalReview.serializer()).let { review ->
         review.copy(
@@ -284,6 +291,18 @@ internal object LectureAnalysis {
             if (includeOutline) add("outline")
             add("notes")
         }
+    }
+
+    /** JSON schema of [TextNotesAnswer]. */
+    val textNotesSchema: JsonObject = buildJsonObject {
+        put("type", "object")
+        putJsonObject("properties") {
+            putJsonObject("notes") {
+                put("type", "array")
+                put("items", noteSchema)
+            }
+        }
+        putJsonArray("required") { add("notes") }
     }
 
     /** JSON schema of [FinalReview]. */

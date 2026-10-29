@@ -240,4 +240,17 @@
     <string name="lecture_place_all_label">%1$d notes</string>
     <string name="lecture_review_placing">The review of the lecture</string>
     <string name="lecture_review_insert_topic">Each section next to the pages it is about</string>
+    <string name="lecture_text_notes_title">Notes from the text</string>
+    <string name="lecture_text_notes_back">Back to the text</string>
+    <string name="lecture_text_notes_send">Send</string>
+    <string name="lecture_text_notes_insert">Insert the notes</string>
+    <string name="lecture_text_notes_done">%1$d notes, holding about %2$d% of the words of the text.</string>
+    <string name="lecture_text_notes_left_out">The notes leave out much of the text: go back to it to insert it as text too.</string>
+    <string name="lecture_text_notes_running">The assistant is writing the notes…</string>
+    <string name="lecture_text_notes_no_editor">Open the notebook to turn a text into notes.</string>
+    <string name="lecture_text_notes_too_long">The text is too long: at most %1$d characters at a time.</string>
+    <string name="lecture_text_notes_no_key">Gemini has no key: add it in the settings of the assistant, or choose a local model.</string>
+    <string name="lecture_text_notes_cost_gemini">%1$s will read the notebook and the text: about %2$d tokens (%3$d characters), billed by Gemini.</string>
+    <string name="lecture_text_notes_cost_local">The local model %1$s will read the notebook and the text, free.</string>
+    <string name="lecture_text_notes_failed">The notes could not be written: %1$s</string>
 </resources>

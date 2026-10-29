@@ -82,14 +82,16 @@ public fun LectureAssistant.editorExtension(): EditorExtension {
         isChecked = { isPanelOpen }
     ) { isPanelOpen = !isPanelOpen }
     val panelState = LecturePanelState()
+    val textNotes = TextNotesState()
     return EditorExtension(
         toolbarActions = { context -> LectureToolbarButton(this@editorExtension, context.documentId, panel) },
         canvasOverlay = { context ->
             LectureEditorEffects(this@editorExtension, context.documentId, context.controller)
             ArrivalsBanner(this@editorExtension, context.documentId)
             LectureSettings(this@editorExtension, panelState)
+            TextNotesDialog(this@editorExtension, context.documentId, context.controller, textNotes)
         },
-        commands = { if (isRecordingSupported) listOf(panel) else emptyList() },
+        commands = { context -> (if (isRecordingSupported) listOf(panel) else emptyList()) + textToNotesCommand(textNotes, context.controller) },
         panels = { context -> listOf(lecturePanel(this@editorExtension, context.documentId, context.controller, panelState)) }
     )
 }

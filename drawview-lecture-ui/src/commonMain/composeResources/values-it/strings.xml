@@ -240,4 +240,17 @@
     <string name="lecture_place_all_label">%1$d note</string>
     <string name="lecture_review_placing">La revisione della lezione</string>
     <string name="lecture_review_insert_topic">Ogni sezione accanto alle pagine di cui parla</string>
+    <string name="lecture_text_notes_title">Note dal testo</string>
+    <string name="lecture_text_notes_back">Torna al testo</string>
+    <string name="lecture_text_notes_send">Invia</string>
+    <string name="lecture_text_notes_insert">Inserisci le note</string>
+    <string name="lecture_text_notes_done">%1$d note, con circa il %2$d% delle parole del testo.</string>
+    <string name="lecture_text_notes_left_out">Le note lasciano fuori molto del testo: torna al testo per inserirlo anche come testo.</string>
+    <string name="lecture_text_notes_running">L’assistente sta scrivendo le note…</string>
+    <string name="lecture_text_notes_no_editor">Apri il quaderno per trasformare un testo in note.</string>
+    <string name="lecture_text_notes_too_long">Il testo è troppo lungo: al massimo %1$d caratteri alla volta.</string>
+    <string name="lecture_text_notes_no_key">Gemini non ha una chiave: aggiungila nelle impostazioni dell’assistente, o scegli un modello locale.</string>
+    <string name="lecture_text_notes_cost_gemini">%1$s leggerà il quaderno e il testo: circa %2$d token (%3$d caratteri), a pagamento con Gemini.</string>
+    <string name="lecture_text_notes_cost_local">Il modello locale %1$s leggerà il quaderno e il testo, gratis.</string>
+    <string name="lecture_text_notes_failed">Non è stato possibile scrivere le note: %1$s</string>
 </resources>

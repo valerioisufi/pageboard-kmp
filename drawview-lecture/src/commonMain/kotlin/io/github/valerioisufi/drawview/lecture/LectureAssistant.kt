@@ -1,5 +1,7 @@
 package io.github.valerioisufi.drawview.lecture
 
+import io.github.valerioisufi.drawview.lecture.model.PromptPart
+import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -507,6 +509,52 @@ public class LectureAssistant(
             ModelProvider.LOCAL -> backends.local.generate(prompt, task.local, OllamaBackend.LIVE_KEEP_LOADED_SECONDS) {}
         }
         return LectureAnalysis.parseCourseContext(answer.text)
+    }
+
+    /**
+     * What turning [text] into notes for [documentId] would cost, with the model of the task of the
+     * review (see [textNotes]); `null` when the editor of the document is not shown.
+     */
+    public suspend fun estimateTextNotes(documentId: String, text: String): TextNotesEstimate? {
+        val prompt = textNotesPrompt(documentId, text) ?: return null
+        val task = settingsStore.settings.task(LectureTask.FINAL_REVIEW)
+        val chars = prompt.system.length + prompt.parts.sumOf { (it as? PromptPart.Text)?.text?.length ?: 0 }
+        return TextNotesEstimate(
+            provider = task.provider,
+            model = task.model,
+            chars = chars,
+            tokens = chars / TextNotes.CHARS_PER_TOKEN,
+            tooLong = text.length > TextNotes.MAX_TEXT_CHARS,
+            missingApiKey = task.provider == ModelProvider.GEMINI && !settingsStore.hasApiKey
+        )
+    }
+
+    /**
+     * [text] turned into notes for the notebook of [documentId] by the model of the task of the
+     * review (billed when it is Gemini: ask the student first, see [estimateTextNotes]), each with
+     * its kind, its page and the words of the page it is about.
+     *
+     * @throws IllegalStateException when the editor of the document is not shown, the text is too
+     *   long or Gemini has no key; the errors of the model as they come.
+     */
+    public suspend fun textNotes(documentId: String, text: String): TextNotes {
+        check(text.length <= TextNotes.MAX_TEXT_CHARS) { "The text is too long" }
+        val task = settingsStore.settings.task(LectureTask.FINAL_REVIEW)
+        check(task.provider != ModelProvider.GEMINI || settingsStore.hasApiKey) { "Gemini has no key" }
+        val notebook = editorNotebooks[documentId] ?: error("The editor of the document is not shown")
+        val prompt = textNotesPrompt(documentId, text) ?: error("The editor of the document is not shown")
+        val answer = backends.of(task.provider).generate(prompt, task.model)
+        return TextNotes.of(LectureAnalysis.parseTextNotes(answer.text), notebook.pageIds(), text)
+    }
+
+    /** The request turning [text] into notes for [documentId], with the notebook as the review sees it. */
+    private suspend fun textNotesPrompt(documentId: String, text: String): ModelPrompt? {
+        val notebook = editorNotebooks[documentId] ?: return null
+        val pages = notebook.allPages()
+        val reader = handwritingOf(documentId)
+        val blocks = notebook.inkBlocks(pages.filter { it.hasInk }.map { it.index })
+        val filled = pages.map { page -> reader.fill(page, blocks.filter { it.pageIndex == page.index }) }
+        return LecturePrompts.textNotesPrompt(settingsStore.settings, notebook.documentTitle, filled, text.take(TextNotes.MAX_TEXT_CHARS))
     }
 
     /** Lists the lectures of [documentId] again, showing the last one when none is shown. */

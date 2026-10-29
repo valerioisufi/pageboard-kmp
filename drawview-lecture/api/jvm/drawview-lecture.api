@@ -339,6 +339,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun dismissArrival (Lio/github/valerioisufi/drawview/lecture/LectureArrival;)V
 	public final fun editContext (Ljava/lang/String;Ljava/lang/String;)V
 	public final fun editorNotebook (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Lio/github/valerioisufi/drawview/lecture/NotebookSource;
+	public final fun estimateTextNotes (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun exportAudio (Lio/github/valerioisufi/drawview/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 	public static synthetic fun exportAudio$default (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Lio/github/valerioisufi/drawview/lecture/Lecture;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
 	public final fun forgetDocuments (Ljava/util/Set;)V
@@ -394,6 +395,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun showArrival (Lio/github/valerioisufi/drawview/lecture/LectureArrival;)V
 	public final fun shownLecture (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/Lecture;
 	public final fun start (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NotebookSource;)Z
+	public final fun textNotes (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun writeContext (Ljava/lang/String;Z)V
 	public static synthetic fun writeContext$default (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Ljava/lang/String;ZILjava/lang/Object;)V
 }
@@ -1133,6 +1135,30 @@ public final synthetic class io/github/valerioisufi/drawview/lecture/TaskModel$$
 
 public final class io/github/valerioisufi/drawview/lecture/TaskModel$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/drawview/lecture/TextNotes {
+	public static final field $stable I
+	public static final field CHARS_PER_TOKEN I
+	public static final field Companion Lio/github/valerioisufi/drawview/lecture/TextNotes$Companion;
+	public static final field MAX_TEXT_CHARS I
+	public fun <init> (Ljava/util/List;D)V
+	public final fun getCoveredShare ()D
+	public final fun getNotes ()Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/drawview/lecture/TextNotes$Companion {
+}
+
+public final class io/github/valerioisufi/drawview/lecture/TextNotesEstimate {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/lecture/ModelProvider;Ljava/lang/String;IIZZ)V
+	public final fun getChars ()I
+	public final fun getMissingApiKey ()Z
+	public final fun getModel ()Ljava/lang/String;
+	public final fun getProvider ()Lio/github/valerioisufi/drawview/lecture/ModelProvider;
+	public final fun getTokens ()I
+	public final fun getTooLong ()Z
 }
 
 public final class io/github/valerioisufi/drawview/lecture/TokenUsage {

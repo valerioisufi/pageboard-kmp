@@ -306,6 +306,34 @@ internal object LecturePrompts {
         thinkingLevel = "low"
     )
 
+    /**
+     * A text written elsewhere turned into notes for the notebook (see `docs/text-import.md`): the
+     * notebook described page by page as for the review, then the text; the answer is the notes of
+     * a kind with their page and their anchor, as the notes of a lecture.
+     */
+    fun textNotesPrompt(settings: AssistantSettings, documentTitle: String, pages: List<PageContent>, text: String): ModelPrompt = ModelPrompt(
+        system = """
+            You are a note-taking assistant. A student brings into their notebook a text written elsewhere (notes of a friend, a summary, a page of a book). Turn it into notes for this notebook:
+            - Keep everything important of the text: definitions, formulas, theorems and their conditions, steps of examples, explanations. Never add what the text does not say, and never copy what the notebook already holds (the slides, the notes of the student).
+            - One note per idea: its kind, a short title, its content concise and ready to use (short sentences or bullet points, formulas in LaTeX between ${'$'}...${'$'}, code in blocks of code).
+            - The page of a note is the notebook page about the same subject; omit it when no page is. $PAGE_NUMBER_RULE
+            - $ANCHOR_RULE
+            - $MARKDOWN_RULE
+
+            ${languageRule(settings, "the notes")}
+        """.trimIndent(),
+        parts = listOf(
+            PromptPart.Text(
+                "## Notebook: $documentTitle\n" +
+                    pagesText(pages.sortedBy { it.index }, visible = emptySet(), withImage = emptySet(), maxChars = MAX_REVIEW_NOTEBOOK_CHARS)
+            ),
+            PromptPart.Text("## The text to turn into notes\n" + text)
+        ),
+        schema = LectureAnalysis.textNotesSchema,
+        maxOutputTokens = 16384,
+        thinkingLevel = "medium"
+    )
+
     /** What helps the speech recognition: the language of [settings], the course, the slides on screen. */
     fun speechHints(settings: AssistantSettings, courseContext: String, visibleSlides: List<String>) = SpeechHints(
         language = settings.spokenLanguage,

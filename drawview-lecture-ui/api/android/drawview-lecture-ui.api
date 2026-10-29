@@ -62,6 +62,14 @@ public final class io/github/valerioisufi/drawview/lecture/ui/ComposableSingleto
 	public final fun getLambda$917317033$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 }
 
+public final class io/github/valerioisufi/drawview/lecture/ui/ComposableSingletons$TextNotesDialogKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/ui/ComposableSingletons$TextNotesDialogKt;
+	public fun <init> ()V
+	public final fun getLambda$-251997093$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$1021393284$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$899802002$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
+}
+
 public final class io/github/valerioisufi/drawview/lecture/ui/LectureEditorExtensionKt {
 	public static final fun LectureDialogs (Lio/github/valerioisufi/drawview/lecture/LectureAssistant;Landroidx/compose/runtime/Composer;I)V
 	public static final fun LectureExitDialog (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;I)V
