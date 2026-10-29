@@ -11,6 +11,8 @@ abstract interface io.github.valerioisufi.drawview.store/DocumentCatalog { // io
         abstract fun <get-documents>(): kotlinx.coroutines.flow/Flow<kotlin.collections/List<io.github.valerioisufi.drawview.store/DocumentSummary>> // io.github.valerioisufi.drawview.store/DocumentCatalog.documents.<get-documents>|<get-documents>(){}[0]
     abstract val folders // io.github.valerioisufi.drawview.store/DocumentCatalog.folders|{}folders[0]
         abstract fun <get-folders>(): kotlinx.coroutines.flow/Flow<kotlin.collections/List<io.github.valerioisufi.drawview.store/FolderSummary>> // io.github.valerioisufi.drawview.store/DocumentCatalog.folders.<get-folders>|<get-folders>(){}[0]
+    abstract val trash // io.github.valerioisufi.drawview.store/DocumentCatalog.trash|{}trash[0]
+        abstract fun <get-trash>(): kotlinx.coroutines.flow/Flow<kotlin.collections/List<io.github.valerioisufi.drawview.store/TrashedItem>> // io.github.valerioisufi.drawview.store/DocumentCatalog.trash.<get-trash>|<get-trash>(){}[0]
 
     abstract suspend fun createDocument(kotlin/String, kotlin/Float = ..., kotlin/Float = ..., io.github.valerioisufi.drawview.model/PageBackground = ..., kotlin/String? = ...): io.github.valerioisufi.drawview.model/DrawDocument // io.github.valerioisufi.drawview.store/DocumentCatalog.createDocument|createDocument(kotlin.String;kotlin.Float;kotlin.Float;io.github.valerioisufi.drawview.model.PageBackground;kotlin.String?){}[0]
     abstract suspend fun createFolder(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.drawview.store/DocumentCatalog.createFolder|createFolder(kotlin.String;kotlin.String?){}[0]
@@ -19,7 +21,11 @@ abstract interface io.github.valerioisufi.drawview.store/DocumentCatalog { // io
     abstract suspend fun isDocumentNameAvailable(kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store/DocumentCatalog.isDocumentNameAvailable|isDocumentNameAvailable(kotlin.String;kotlin.String){}[0]
     abstract suspend fun moveDocument(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.drawview.store/DocumentCatalog.moveDocument|moveDocument(kotlin.String;kotlin.String?){}[0]
     abstract suspend fun moveFolder(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.drawview.store/DocumentCatalog.moveFolder|moveFolder(kotlin.String;kotlin.String?){}[0]
+    abstract suspend fun purgeTrash(kotlin/Long) // io.github.valerioisufi.drawview.store/DocumentCatalog.purgeTrash|purgeTrash(kotlin.Long){}[0]
     abstract suspend fun renameFolder(kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store/DocumentCatalog.renameFolder|renameFolder(kotlin.String;kotlin.String){}[0]
+    abstract suspend fun restore(kotlin/String): kotlin/String? // io.github.valerioisufi.drawview.store/DocumentCatalog.restore|restore(kotlin.String){}[0]
+    abstract suspend fun trashDocument(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store/DocumentCatalog.trashDocument|trashDocument(kotlin.String){}[0]
+    abstract suspend fun trashFolder(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store/DocumentCatalog.trashFolder|trashFolder(kotlin.String){}[0]
     abstract suspend fun updateLastOpened(kotlin/String) // io.github.valerioisufi.drawview.store/DocumentCatalog.updateLastOpened|updateLastOpened(kotlin.String){}[0]
 }
 
@@ -155,6 +161,8 @@ final class io.github.valerioisufi.drawview.store/KeyValueDocumentStore : io.git
         final fun <get-persistence>(): io.github.valerioisufi.drawview.model.change/DocumentPersistence // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.persistence.<get-persistence>|<get-persistence>(){}[0]
     final val strokeModeller // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.strokeModeller|{}strokeModeller[0]
         final fun <get-strokeModeller>(): io.github.valerioisufi.drawview.model/StrokeModeller // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.strokeModeller.<get-strokeModeller>|<get-strokeModeller>(){}[0]
+    final val trash // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.trash|{}trash[0]
+        final fun <get-trash>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/List<io.github.valerioisufi.drawview.store/TrashedItem>> // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.trash.<get-trash>|<get-trash>(){}[0]
 
     final fun closeDocument(kotlin/String) // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.closeDocument|closeDocument(kotlin.String){}[0]
     final suspend fun appendOperation(io.github.valerioisufi.drawview.model/DrawDocument, io.github.valerioisufi.drawview.model.change/Operation) // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.appendOperation|appendOperation(io.github.valerioisufi.drawview.model.DrawDocument;io.github.valerioisufi.drawview.model.change.Operation){}[0]
@@ -175,8 +183,10 @@ final class io.github.valerioisufi.drawview.store/KeyValueDocumentStore : io.git
     final suspend fun operationsAfter(kotlin/String, kotlin.collections/Map<kotlin/String, kotlin/Long>): kotlin.collections/List<io.github.valerioisufi.drawview.model.change/Operation> // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.operationsAfter|operationsAfter(kotlin.String;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
     final suspend fun preference(kotlin/String): kotlin/String? // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.preference|preference(kotlin.String){}[0]
     final suspend fun proofs(kotlin/String, kotlin.collections/Collection<io.github.valerioisufi.drawview.model.change/OperationId>): kotlin.collections/Map<io.github.valerioisufi.drawview.model.change/OperationId, kotlin/ByteArray> // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.proofs|proofs(kotlin.String;kotlin.collections.Collection<io.github.valerioisufi.drawview.model.change.OperationId>){}[0]
+    final suspend fun purgeTrash(kotlin/Long) // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.purgeTrash|purgeTrash(kotlin.Long){}[0]
     final suspend fun renameFolder(kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.renameFolder|renameFolder(kotlin.String;kotlin.String){}[0]
     final suspend fun replicaId(): kotlin/String // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.replicaId|replicaId(){}[0]
+    final suspend fun restore(kotlin/String): kotlin/String? // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.restore|restore(kotlin.String){}[0]
     final suspend fun saveCustomElement(io.github.valerioisufi.drawview.model/DrawPage, io.github.valerioisufi.drawview.model/DrawCustomElement) // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.saveCustomElement|saveCustomElement(io.github.valerioisufi.drawview.model.DrawPage;io.github.valerioisufi.drawview.model.DrawCustomElement){}[0]
     final suspend fun saveImage(io.github.valerioisufi.drawview.model/DrawPage, io.github.valerioisufi.drawview.model/DrawImage) // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.saveImage|saveImage(io.github.valerioisufi.drawview.model.DrawPage;io.github.valerioisufi.drawview.model.DrawImage){}[0]
     final suspend fun savePage(io.github.valerioisufi.drawview.model/DrawDocument, io.github.valerioisufi.drawview.model/DrawPage) // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.savePage|savePage(io.github.valerioisufi.drawview.model.DrawDocument;io.github.valerioisufi.drawview.model.DrawPage){}[0]
@@ -190,12 +200,54 @@ final class io.github.valerioisufi.drawview.store/KeyValueDocumentStore : io.git
     final suspend fun setSharingSecret(kotlin/String, kotlin/String?, kotlin/Boolean) // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.setSharingSecret|setSharingSecret(kotlin.String;kotlin.String?;kotlin.Boolean){}[0]
     final suspend fun sharingSecrets(): kotlin.collections/Map<kotlin/String, kotlin/String> // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.sharingSecrets|sharingSecrets(){}[0]
     final suspend fun touchDocument(io.github.valerioisufi.drawview.model/DrawDocument, kotlin/Long) // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.touchDocument|touchDocument(io.github.valerioisufi.drawview.model.DrawDocument;kotlin.Long){}[0]
+    final suspend fun trashDocument(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.trashDocument|trashDocument(kotlin.String){}[0]
+    final suspend fun trashFolder(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.trashFolder|trashFolder(kotlin.String){}[0]
     final suspend fun updateDocumentDefaults(io.github.valerioisufi.drawview.model/DrawDocument) // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.updateDocumentDefaults|updateDocumentDefaults(io.github.valerioisufi.drawview.model.DrawDocument){}[0]
     final suspend fun updateDocumentTitle(io.github.valerioisufi.drawview.model/DrawDocument) // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.updateDocumentTitle|updateDocumentTitle(io.github.valerioisufi.drawview.model.DrawDocument){}[0]
     final suspend fun updateLastOpened(kotlin/String) // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.updateLastOpened|updateLastOpened(kotlin.String){}[0]
     final suspend fun versionVector(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/Long> // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.versionVector|versionVector(kotlin.String){}[0]
 
     final object Companion // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.Companion|null[0]
+}
+
+final class io.github.valerioisufi.drawview.store/LibraryTrash { // io.github.valerioisufi.drawview.store/LibraryTrash|null[0]
+    constructor <init>(kotlin.collections/Collection<io.github.valerioisufi.drawview.store/LibraryTrash.Entry>, kotlin.collections/Collection<io.github.valerioisufi.drawview.store/LibraryTrash.Entry>) // io.github.valerioisufi.drawview.store/LibraryTrash.<init>|<init>(kotlin.collections.Collection<io.github.valerioisufi.drawview.store.LibraryTrash.Entry>;kotlin.collections.Collection<io.github.valerioisufi.drawview.store.LibraryTrash.Entry>){}[0]
+
+    final val items // io.github.valerioisufi.drawview.store/LibraryTrash.items|{}items[0]
+        final fun <get-items>(): kotlin.collections/List<io.github.valerioisufi.drawview.store/TrashedItem> // io.github.valerioisufi.drawview.store/LibraryTrash.items.<get-items>|<get-items>(){}[0]
+
+    final fun availableDocumentName(kotlin/String, kotlin/String?, kotlin/String): kotlin/String // io.github.valerioisufi.drawview.store/LibraryTrash.availableDocumentName|availableDocumentName(kotlin.String;kotlin.String?;kotlin.String){}[0]
+    final fun availableFolderName(kotlin/String, kotlin/String?, kotlin/String): kotlin/String // io.github.valerioisufi.drawview.store/LibraryTrash.availableFolderName|availableFolderName(kotlin.String;kotlin.String?;kotlin.String){}[0]
+    final fun isDocumentLive(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store/LibraryTrash.isDocumentLive|isDocumentLive(kotlin.String){}[0]
+    final fun isFolderLive(kotlin/String?): kotlin/Boolean // io.github.valerioisufi.drawview.store/LibraryTrash.isFolderLive|isFolderLive(kotlin.String?){}[0]
+    final fun item(kotlin/String): io.github.valerioisufi.drawview.store/TrashedItem? // io.github.valerioisufi.drawview.store/LibraryTrash.item|item(kotlin.String){}[0]
+    final fun itemsInside(kotlin/String): kotlin.collections/List<io.github.valerioisufi.drawview.store/TrashedItem> // io.github.valerioisufi.drawview.store/LibraryTrash.itemsInside|itemsInside(kotlin.String){}[0]
+    final fun restoreTarget(io.github.valerioisufi.drawview.store/TrashedItem): kotlin/String? // io.github.valerioisufi.drawview.store/LibraryTrash.restoreTarget|restoreTarget(io.github.valerioisufi.drawview.store.TrashedItem){}[0]
+
+    final class Entry { // io.github.valerioisufi.drawview.store/LibraryTrash.Entry|null[0]
+        constructor <init>(kotlin/String, kotlin/String, kotlin/String?, kotlin/Long? = ..., kotlin/Boolean = ...) // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?;kotlin.Long?;kotlin.Boolean){}[0]
+
+        final val id // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.id|{}id[0]
+            final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.id.<get-id>|<get-id>(){}[0]
+        final val isShared // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.isShared|{}isShared[0]
+            final fun <get-isShared>(): kotlin/Boolean // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.isShared.<get-isShared>|<get-isShared>(){}[0]
+        final val name // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.name|{}name[0]
+            final fun <get-name>(): kotlin/String // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.name.<get-name>|<get-name>(){}[0]
+        final val parentId // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.parentId|{}parentId[0]
+            final fun <get-parentId>(): kotlin/String? // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.parentId.<get-parentId>|<get-parentId>(){}[0]
+        final val trashedAt // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.trashedAt|{}trashedAt[0]
+            final fun <get-trashedAt>(): kotlin/Long? // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.trashedAt.<get-trashedAt>|<get-trashedAt>(){}[0]
+
+        final fun component1(): kotlin/String // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.component1|component1(){}[0]
+        final fun component2(): kotlin/String // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.component2|component2(){}[0]
+        final fun component3(): kotlin/String? // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.component3|component3(){}[0]
+        final fun component4(): kotlin/Long? // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.component4|component4(){}[0]
+        final fun component5(): kotlin/Boolean // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.component5|component5(){}[0]
+        final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String? = ..., kotlin/Long? = ..., kotlin/Boolean = ...): io.github.valerioisufi.drawview.store/LibraryTrash.Entry // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.copy|copy(kotlin.String;kotlin.String;kotlin.String?;kotlin.Long?;kotlin.Boolean){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.store/LibraryTrash.Entry.toString|toString(){}[0]
+    }
 }
 
 final class io.github.valerioisufi.drawview.store/OpenDocument { // io.github.valerioisufi.drawview.store/OpenDocument|null[0]
@@ -235,4 +287,56 @@ final class io.github.valerioisufi.drawview.store/OpenDocuments { // io.github.v
     final suspend fun rename(kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store/OpenDocuments.rename|rename(kotlin.String;kotlin.String){}[0]
     final suspend fun replicaId(): kotlin/String // io.github.valerioisufi.drawview.store/OpenDocuments.replicaId|replicaId(){}[0]
     final suspend fun setReadOnly(kotlin/String, kotlin/Boolean) // io.github.valerioisufi.drawview.store/OpenDocuments.setReadOnly|setReadOnly(kotlin.String;kotlin.Boolean){}[0]
+}
+
+final class io.github.valerioisufi.drawview.store/TrashedItem { // io.github.valerioisufi.drawview.store/TrashedItem|null[0]
+    constructor <init>(kotlin/String, io.github.valerioisufi.drawview.store/TrashedItem.Kind, kotlin/String, kotlin/String?, kotlin/String?, kotlin/Long, kotlin.collections/Set<kotlin/String>, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.store/TrashedItem.<init>|<init>(kotlin.String;io.github.valerioisufi.drawview.store.TrashedItem.Kind;kotlin.String;kotlin.String?;kotlin.String?;kotlin.Long;kotlin.collections.Set<kotlin.String>;kotlin.Boolean){}[0]
+
+    final val documentIds // io.github.valerioisufi.drawview.store/TrashedItem.documentIds|{}documentIds[0]
+        final fun <get-documentIds>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.store/TrashedItem.documentIds.<get-documentIds>|<get-documentIds>(){}[0]
+    final val folderId // io.github.valerioisufi.drawview.store/TrashedItem.folderId|{}folderId[0]
+        final fun <get-folderId>(): kotlin/String? // io.github.valerioisufi.drawview.store/TrashedItem.folderId.<get-folderId>|<get-folderId>(){}[0]
+    final val folderName // io.github.valerioisufi.drawview.store/TrashedItem.folderName|{}folderName[0]
+        final fun <get-folderName>(): kotlin/String? // io.github.valerioisufi.drawview.store/TrashedItem.folderName.<get-folderName>|<get-folderName>(){}[0]
+    final val id // io.github.valerioisufi.drawview.store/TrashedItem.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.store/TrashedItem.id.<get-id>|<get-id>(){}[0]
+    final val isShared // io.github.valerioisufi.drawview.store/TrashedItem.isShared|{}isShared[0]
+        final fun <get-isShared>(): kotlin/Boolean // io.github.valerioisufi.drawview.store/TrashedItem.isShared.<get-isShared>|<get-isShared>(){}[0]
+    final val kind // io.github.valerioisufi.drawview.store/TrashedItem.kind|{}kind[0]
+        final fun <get-kind>(): io.github.valerioisufi.drawview.store/TrashedItem.Kind // io.github.valerioisufi.drawview.store/TrashedItem.kind.<get-kind>|<get-kind>(){}[0]
+    final val name // io.github.valerioisufi.drawview.store/TrashedItem.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.valerioisufi.drawview.store/TrashedItem.name.<get-name>|<get-name>(){}[0]
+    final val trashedAt // io.github.valerioisufi.drawview.store/TrashedItem.trashedAt|{}trashedAt[0]
+        final fun <get-trashedAt>(): kotlin/Long // io.github.valerioisufi.drawview.store/TrashedItem.trashedAt.<get-trashedAt>|<get-trashedAt>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.drawview.store/TrashedItem.component1|component1(){}[0]
+    final fun component2(): io.github.valerioisufi.drawview.store/TrashedItem.Kind // io.github.valerioisufi.drawview.store/TrashedItem.component2|component2(){}[0]
+    final fun component3(): kotlin/String // io.github.valerioisufi.drawview.store/TrashedItem.component3|component3(){}[0]
+    final fun component4(): kotlin/String? // io.github.valerioisufi.drawview.store/TrashedItem.component4|component4(){}[0]
+    final fun component5(): kotlin/String? // io.github.valerioisufi.drawview.store/TrashedItem.component5|component5(){}[0]
+    final fun component6(): kotlin/Long // io.github.valerioisufi.drawview.store/TrashedItem.component6|component6(){}[0]
+    final fun component7(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.store/TrashedItem.component7|component7(){}[0]
+    final fun component8(): kotlin/Boolean // io.github.valerioisufi.drawview.store/TrashedItem.component8|component8(){}[0]
+    final fun copy(kotlin/String = ..., io.github.valerioisufi.drawview.store/TrashedItem.Kind = ..., kotlin/String = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/Long = ..., kotlin.collections/Set<kotlin/String> = ..., kotlin/Boolean = ...): io.github.valerioisufi.drawview.store/TrashedItem // io.github.valerioisufi.drawview.store/TrashedItem.copy|copy(kotlin.String;io.github.valerioisufi.drawview.store.TrashedItem.Kind;kotlin.String;kotlin.String?;kotlin.String?;kotlin.Long;kotlin.collections.Set<kotlin.String>;kotlin.Boolean){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.store/TrashedItem.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.store/TrashedItem.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.store/TrashedItem.toString|toString(){}[0]
+
+    final enum class Kind : kotlin/Enum<io.github.valerioisufi.drawview.store/TrashedItem.Kind> { // io.github.valerioisufi.drawview.store/TrashedItem.Kind|null[0]
+        enum entry DOCUMENT // io.github.valerioisufi.drawview.store/TrashedItem.Kind.DOCUMENT|null[0]
+        enum entry FOLDER // io.github.valerioisufi.drawview.store/TrashedItem.Kind.FOLDER|null[0]
+
+        final val entries // io.github.valerioisufi.drawview.store/TrashedItem.Kind.entries|#static{}entries[0]
+            final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.store/TrashedItem.Kind> // io.github.valerioisufi.drawview.store/TrashedItem.Kind.entries.<get-entries>|<get-entries>#static(){}[0]
+
+        final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.store/TrashedItem.Kind // io.github.valerioisufi.drawview.store/TrashedItem.Kind.valueOf|valueOf#static(kotlin.String){}[0]
+        final fun values(): kotlin/Array<io.github.valerioisufi.drawview.store/TrashedItem.Kind> // io.github.valerioisufi.drawview.store/TrashedItem.Kind.values|values#static(){}[0]
+    }
+}
+
+final object io.github.valerioisufi.drawview.store/TrashRetention { // io.github.valerioisufi.drawview.store/TrashRetention|null[0]
+    final const val MILLIS // io.github.valerioisufi.drawview.store/TrashRetention.MILLIS|{}MILLIS[0]
+        final fun <get-MILLIS>(): kotlin/Long // io.github.valerioisufi.drawview.store/TrashRetention.MILLIS.<get-MILLIS>|<get-MILLIS>(){}[0]
+
+    final fun expiredBefore(kotlin/Long): kotlin/Long // io.github.valerioisufi.drawview.store/TrashRetention.expiredBefore|expiredBefore(kotlin.Long){}[0]
 }

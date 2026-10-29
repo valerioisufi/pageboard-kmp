@@ -6,10 +6,15 @@ public abstract interface class io/github/valerioisufi/drawview/store/DocumentCa
 	public abstract fun deleteFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getDocuments ()Lkotlinx/coroutines/flow/Flow;
 	public abstract fun getFolders ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun getTrash ()Lkotlinx/coroutines/flow/Flow;
 	public abstract fun isDocumentNameAvailable (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun moveDocument (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun moveFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun purgeTrash (JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun renameFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun restore (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun trashDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun trashFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun updateLastOpened (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
@@ -118,6 +123,8 @@ public final class io/github/valerioisufi/drawview/store/KeyValueDocumentStore :
 	public fun getFolders ()Lkotlinx/coroutines/flow/StateFlow;
 	public fun getPersistence ()Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;
 	public fun getStrokeModeller ()Lio/github/valerioisufi/drawview/model/StrokeModeller;
+	public synthetic fun getTrash ()Lkotlinx/coroutines/flow/Flow;
+	public fun getTrash ()Lkotlinx/coroutines/flow/StateFlow;
 	public fun insertDocument (Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun isDocumentNameAvailable (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun isReadOnly (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -127,8 +134,10 @@ public final class io/github/valerioisufi/drawview/store/KeyValueDocumentStore :
 	public fun operationsAfter (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun preference (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun proofs (Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun purgeTrash (JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun renameFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun replicaId (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun restore (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun saveCustomElement (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawCustomElement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun saveImage (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawImage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun savePage (Lio/github/valerioisufi/drawview/model/DrawDocument;Lio/github/valerioisufi/drawview/model/DrawPage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -142,6 +151,8 @@ public final class io/github/valerioisufi/drawview/store/KeyValueDocumentStore :
 	public fun setSharingSecret (Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sharingSecrets (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun touchDocument (Lio/github/valerioisufi/drawview/model/DrawDocument;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun trashDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun trashFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun updateDocumentDefaults (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun updateDocumentTitle (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun updateLastOpened (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -155,6 +166,38 @@ public abstract interface class io/github/valerioisufi/drawview/store/KeyValueSt
 	public abstract fun get (Ljava/lang/String;)Ljava/lang/String;
 	public abstract fun remove (Ljava/lang/String;)V
 	public abstract fun set (Ljava/lang/String;Ljava/lang/String;)Z
+}
+
+public final class io/github/valerioisufi/drawview/store/LibraryTrash {
+	public fun <init> (Ljava/util/Collection;Ljava/util/Collection;)V
+	public final fun availableDocumentName (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public final fun availableFolderName (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public final fun getItems ()Ljava/util/List;
+	public final fun isDocumentLive (Ljava/lang/String;)Z
+	public final fun isFolderLive (Ljava/lang/String;)Z
+	public final fun item (Ljava/lang/String;)Lio/github/valerioisufi/drawview/store/TrashedItem;
+	public final fun itemsInside (Ljava/lang/String;)Ljava/util/List;
+	public final fun restoreTarget (Lio/github/valerioisufi/drawview/store/TrashedItem;)Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/store/LibraryTrash$Entry {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/Long;
+	public final fun component5 ()Z
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;Z)Lio/github/valerioisufi/drawview/store/LibraryTrash$Entry;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/LibraryTrash$Entry;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/LibraryTrash$Entry;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getParentId ()Ljava/lang/String;
+	public final fun getTrashedAt ()Ljava/lang/Long;
+	public fun hashCode ()I
+	public final fun isShared ()Z
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/drawview/store/OpenDocument {
@@ -217,5 +260,45 @@ public abstract interface class io/github/valerioisufi/drawview/store/SharingSto
 
 public final class io/github/valerioisufi/drawview/store/SharingStore$DefaultImpls {
 	public static synthetic fun setSharingSecret$default (Lio/github/valerioisufi/drawview/store/SharingStore;Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class io/github/valerioisufi/drawview/store/TrashRetention {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/store/TrashRetention;
+	public static final field MILLIS J
+	public final fun expiredBefore (J)J
+}
+
+public final class io/github/valerioisufi/drawview/store/TrashedItem {
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/util/Set;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/util/Set;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()J
+	public final fun component7 ()Ljava/util/Set;
+	public final fun component8 ()Z
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/util/Set;Z)Lio/github/valerioisufi/drawview/store/TrashedItem;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/store/TrashedItem;Ljava/lang/String;Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/util/Set;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/store/TrashedItem;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDocumentIds ()Ljava/util/Set;
+	public final fun getFolderId ()Ljava/lang/String;
+	public final fun getFolderName ()Ljava/lang/String;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getKind ()Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getTrashedAt ()J
+	public fun hashCode ()I
+	public final fun isShared ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/store/TrashedItem$Kind : java/lang/Enum {
+	public static final field DOCUMENT Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;
+	public static final field FOLDER Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;
+	public static fun values ()[Lio/github/valerioisufi/drawview/store/TrashedItem$Kind;
 }
 

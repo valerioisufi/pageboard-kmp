@@ -112,6 +112,9 @@ public class KeyValueDocumentStore(
     private val _folders = MutableStateFlow(folderSummaries(index))
     override val folders: StateFlow<List<FolderSummary>> = _folders.asStateFlow()
 
+    private val _trash = MutableStateFlow(index.trash().items)
+    override val trash: StateFlow<List<TrashedItem>> = _trash.asStateFlow()
+
     override val persistence: DocumentPersistence get() = this
 
     /** `false` after a write has been rejected by the storage (e.g. quota exceeded). */
@@ -223,7 +226,8 @@ public class KeyValueDocumentStore(
 
     override suspend fun isDocumentNameAvailable(documentId: String, name: String): Boolean = syncLock(lock) {
         val summary = index.documents.firstOrNull { it.id == documentId } ?: return false
-        index.documents.none { it.id != documentId && it.folderId == summary.folderId && it.name == name }
+        val trash = index.trash()
+        index.documents.none { it.id != documentId && it.folderId == summary.folderId && it.name == name && trash.isDocumentLive(it.id) }
     }
 
     override suspend fun updateDocumentTitle(document: DrawDocument) {
@@ -233,6 +237,57 @@ public class KeyValueDocumentStore(
         }
         markDocumentModified(document)
         publishSummaries()
+    }
+
+    override suspend fun trashDocument(documentId: String): Boolean {
+        syncLock(lock) {
+            if (!index.trash().isDocumentLive(documentId)) return false
+            updateSummaryLocked(documentId) { it.copy(trashedAt = clock()) }
+            writeIndexLocked()
+        }
+        publishSummaries()
+        return true
+    }
+
+    override suspend fun trashFolder(folderId: String): Boolean {
+        syncLock(lock) {
+            if (index.folders.none { it.id == folderId } || !index.trash().isFolderLive(folderId)) return false
+            updateFolderLocked(folderId) { it.copy(trashedAt = clock()) }
+            writeIndexLocked()
+        }
+        publishSummaries()
+        return true
+    }
+
+    override suspend fun restore(itemId: String): String? {
+        val name = syncLock(lock) {
+            val trash = index.trash()
+            val item = trash.item(itemId) ?: return null
+            val target = trash.restoreTarget(item)
+            val name = when (item.kind) {
+                TrashedItem.Kind.DOCUMENT -> trash.availableDocumentName(item.name, target, item.id).also { name ->
+                    updateSummaryLocked(item.id) { it.copy(name = name, folderId = target, trashedAt = null) }
+                    openDocuments[item.id]?.title = name
+                }
+                TrashedItem.Kind.FOLDER -> trash.availableFolderName(item.name, target, item.id).also { name ->
+                    updateFolderLocked(item.id) { it.copy(name = name, parentId = target, trashedAt = null) }
+                }
+            }
+            writeIndexLocked()
+            name
+        }
+        publishSummaries()
+        return name
+    }
+
+    override suspend fun purgeTrash(before: Long) {
+        val expired = syncLock(lock) { index.trash().items.filter { it.trashedAt < before }.sortedBy { it.trashedAt } }
+        for (item in expired) {
+            when (item.kind) {
+                TrashedItem.Kind.DOCUMENT -> deleteDocument(item.id)
+                TrashedItem.Kind.FOLDER -> deleteFolder(item.id)
+            }
+        }
     }
 
     override suspend fun deleteDocument(documentId: String): Boolean {
@@ -248,8 +303,9 @@ public class KeyValueDocumentStore(
     override suspend fun moveDocument(documentId: String, folderId: String?): Boolean {
         syncLock(lock) {
             val summary = index.documents.firstOrNull { it.id == documentId } ?: return false
-            if (folderId != null && index.folders.none { it.id == folderId }) return false
-            if (index.documents.any { it.folderId == folderId && it.name == summary.name }) return false
+            val trash = index.trash()
+            if (!trash.isDocumentLive(documentId) || !trash.isFolderLive(folderId)) return false
+            if (index.documents.any { it.folderId == folderId && it.name == summary.name && trash.isDocumentLive(it.id) }) return false
             updateSummaryLocked(documentId) { it.copy(folderId = folderId, modifiedAt = clock()) }
             writeIndexLocked()
         }
@@ -269,8 +325,9 @@ public class KeyValueDocumentStore(
 
     override suspend fun createFolder(name: String, parentId: String?): Boolean {
         syncLock(lock) {
-            if (parentId != null && index.folders.none { it.id == parentId }) return false
-            if (index.folders.any { it.parentId == parentId && it.name == name }) return false
+            val trash = index.trash()
+            if (!trash.isFolderLive(parentId)) return false
+            if (index.folders.any { it.parentId == parentId && it.name == name && trash.isFolderLive(it.id) }) return false
             val now = clock()
             val folder = StoredFolder(newFolderId(), name, parentId, createdAt = now, modifiedAt = now)
             index = index.copy(folders = index.folders + folder)
@@ -283,7 +340,8 @@ public class KeyValueDocumentStore(
     override suspend fun renameFolder(folderId: String, newName: String): Boolean {
         syncLock(lock) {
             val folder = index.folders.firstOrNull { it.id == folderId } ?: return false
-            if (index.folders.any { it.parentId == folder.parentId && it.name == newName }) return false
+            val trash = index.trash()
+            if (index.folders.any { it.id != folderId && it.parentId == folder.parentId && it.name == newName && trash.isFolderLive(it.id) }) return false
             updateFolderLocked(folderId) { it.copy(name = newName, modifiedAt = clock()) }
             writeIndexLocked()
         }
@@ -294,6 +352,13 @@ public class KeyValueDocumentStore(
     override suspend fun deleteFolder(folderId: String): Boolean {
         syncLock(lock) {
             if (index.folders.none { it.id == folderId }) return false
+            // What is in the trash on its own stays there, at its root
+            for (item in index.trash().itemsInside(folderId)) {
+                when (item.kind) {
+                    TrashedItem.Kind.DOCUMENT -> updateSummaryLocked(item.id) { it.copy(folderId = null) }
+                    TrashedItem.Kind.FOLDER -> updateFolderLocked(item.id) { it.copy(parentId = null) }
+                }
+            }
             // The folder and every sub-folder, at any depth
             val deleted = mutableSetOf(folderId)
             var added = true
@@ -311,14 +376,15 @@ public class KeyValueDocumentStore(
     override suspend fun moveFolder(folderId: String, parentId: String?): Boolean {
         syncLock(lock) {
             val folder = index.folders.firstOrNull { it.id == folderId } ?: return false
-            if (parentId != null && index.folders.none { it.id == parentId }) return false
+            val trash = index.trash()
+            if (!trash.isFolderLive(folderId) || !trash.isFolderLive(parentId)) return false
             // A folder cannot be moved into itself or into one of its sub-folders
             var ancestorId = parentId
             while (ancestorId != null) {
                 if (ancestorId == folderId) return false
                 ancestorId = index.folders.firstOrNull { it.id == ancestorId }?.parentId
             }
-            if (index.folders.any { it.parentId == parentId && it.name == folder.name }) return false
+            if (index.folders.any { it.parentId == parentId && it.name == folder.name && trash.isFolderLive(it.id) }) return false
             updateFolderLocked(folderId) { it.copy(parentId = parentId, modifiedAt = clock()) }
             writeIndexLocked()
         }
@@ -639,9 +705,10 @@ public class KeyValueDocumentStore(
     }
 
     private fun publishSummaries() {
-        val (documents, folders) = syncLock(lock) { sortedSummaries(index) to folderSummaries(index) }
+        val (documents, folders, trash) = syncLock(lock) { Triple(sortedSummaries(index), folderSummaries(index), index.trash().items) }
         _documents.value = documents
         _folders.value = folders
+        _trash.value = trash
     }
 
     private fun writeIndexLocked() {
@@ -687,11 +754,16 @@ public class KeyValueDocumentStore(
         null
     }
 
-    private fun sortedSummaries(index: StoredIndex): List<DocumentSummary> =
-        index.documents.sortedByDescending { it.modifiedAt }.map { it.toSummary(isShared = it.id in index.sharingSecrets) }
+    private fun sortedSummaries(index: StoredIndex): List<DocumentSummary> {
+        val trash = index.trash()
+        return index.documents.filter { trash.isDocumentLive(it.id) }.sortedByDescending { it.modifiedAt }
+            .map { it.toSummary(isShared = it.id in index.sharingSecrets) }
+    }
 
-    private fun folderSummaries(index: StoredIndex): List<FolderSummary> =
-        index.folders.sortedBy { it.name }.map { it.toSummary() }
+    private fun folderSummaries(index: StoredIndex): List<FolderSummary> {
+        val trash = index.trash()
+        return index.folders.filter { trash.isFolderLive(it.id) }.sortedBy { it.name }.map { it.toSummary() }
+    }
 
     public companion object {
         private const val PREFIX = "drawview."
@@ -722,7 +794,13 @@ internal data class StoredIndex(
     /** The operations no longer in the logs, by document (see [DocumentStore.compactOperations]), and their stamps. */
     val operationBases: Map<String, Map<String, Long>> = emptyMap(),
     val operationBaseStamps: Map<String, Map<String, Stamp>> = emptyMap()
-)
+) {
+    /** What is in the trash and what is not (see [DocumentCatalog.trash]). */
+    fun trash(): LibraryTrash = LibraryTrash(
+        documents = documents.map { LibraryTrash.Entry(it.id, it.name, it.folderId, it.trashedAt, isShared = it.id in sharingSecrets) },
+        folders = folders.map { LibraryTrash.Entry(it.id, it.name, it.parentId, it.trashedAt) }
+    )
+}
 
 @Serializable
 internal data class StoredFolder(
@@ -730,7 +808,9 @@ internal data class StoredFolder(
     val name: String,
     val parentId: String? = null,
     val createdAt: Long,
-    val modifiedAt: Long
+    val modifiedAt: Long,
+    /** When it went to the trash itself (`null`: it did not; see [DocumentCatalog.trash]). */
+    val trashedAt: Long? = null
 ) {
     fun toSummary() = FolderSummary(id = id, name = name, parentId = parentId, createdAt = createdAt, modifiedAt = modifiedAt)
 }
@@ -747,7 +827,9 @@ internal data class StoredSummary(
     val defaultHeight: Float = 297f,
     val defaultBackground: PageBackground = PageBackground.Solid(),
     val pageCount: Int = 1,
-    val hasPdf: Boolean = false
+    val hasPdf: Boolean = false,
+    /** When it went to the trash itself (`null`: it did not; see [DocumentCatalog.trash]). */
+    val trashedAt: Long? = null
 ) {
     fun toSummary(isShared: Boolean) = DocumentSummary(
         id = id,

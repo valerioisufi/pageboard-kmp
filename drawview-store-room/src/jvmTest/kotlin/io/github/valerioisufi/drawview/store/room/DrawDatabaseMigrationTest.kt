@@ -16,11 +16,13 @@ import io.github.valerioisufi.drawview.store.room.db.DRAW_DATABASE_MIGRATIONS
 import io.github.valerioisufi.drawview.store.room.db.Migration18To19
 import io.github.valerioisufi.drawview.store.room.db.Migration19To20
 import io.github.valerioisufi.drawview.store.room.db.Migration20To21
+import io.github.valerioisufi.drawview.store.room.db.Migration21To22
 import io.github.valerioisufi.drawview.store.room.db.DrawDatabase
 import io.github.valerioisufi.drawview.store.room.db.createDrawDatabase
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.*
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 
@@ -267,6 +269,46 @@ class DrawDatabaseMigrationTest {
     }
 
     @Test
+    fun theDocumentsAndFoldersOfVersion21StayOutOfTheTrash() = runTest {
+        helper.createDatabase(21).use { connection ->
+            connection.execSQL("INSERT INTO folders (id, name, parentId, createdAt, modifiedAt) VALUES ('$FOLDER', 'Physics', NULL, 1, 2)")
+            connection.execSQL(
+                "INSERT INTO documents (id, name, folderId, createdAt, modifiedAt, lastOpenedAt, defaultBackground, " +
+                    "defaultWidth, defaultHeight, defaultsVersion, titleVersion) VALUES ('$DOCUMENT', 'Lectures', '$FOLDER', " +
+                    "1, 2, NULL, '{\"type\":\"Solid\"}', 210.0, 297.0, '$STAMP', '$STAMP')"
+            )
+            connection.execSQL(
+                "INSERT INTO pages (id, documentId, orderKey, width, height, background, added, removed, orderVersion, " +
+                    "formatVersion, contentVersions, removalSaw) VALUES ('$PAGE', '$DOCUMENT', 'k', 210.0, 297.0, NULL, " +
+                    "'$STAMP', NULL, '$STAMP', '$STAMP', '', NULL)"
+            )
+            connection.execSQL("INSERT INTO shared_documents (documentId, secret, readOnly) VALUES ('$DOCUMENT', 'secret', 0)")
+        }
+
+        helper.runMigrationsAndValidate(22, listOf(Migration21To22)).close()
+
+        val database = createDrawDatabase(Room.databaseBuilder<DrawDatabase>(databaseFile.toString()))
+        try {
+            val store = RoomDocumentStore(database)
+            val summary = store.documents.first().single()
+            assertEquals("Lectures" to FOLDER, summary.name to summary.folderId)
+            assertTrue(summary.isShared)
+            assertEquals(listOf("Physics"), store.folders.first().map { it.name })
+            assertTrue(store.trash.first().isEmpty())
+            assertEquals(listOf(PAGE), assertNotNull(store.loadDocument(DOCUMENT)).pages.map { it.id })
+            assertEquals(mapOf(DOCUMENT to "secret"), store.sharingSecrets())
+
+            // The trash works on what was migrated
+            assertTrue(store.trashFolder(FOLDER))
+            assertEquals(setOf(DOCUMENT), store.trash.first().single().documentIds)
+            assertEquals("Physics", store.restore(FOLDER))
+            assertEquals(listOf(DOCUMENT), store.documents.first().map { it.id })
+        } finally {
+            database.close()
+        }
+    }
+
+    @Test
     fun aDatabaseWithoutItsMigrationIsKept() = runTest {
         BundledSQLiteDriver().open(databaseFile.toString()).use { connection ->
             connection.execSQL("CREATE TABLE notes (text TEXT)")
@@ -294,6 +336,7 @@ class DrawDatabaseMigrationTest {
 
         const val DOCUMENT = "eb419115-8ec7-4602-a552-75bfebb25f5e"
         const val PAGE = "ba66823c-4af6-40d2-bfa6-aa0f907b5d1d"
+        const val FOLDER = "5d0e8f3a-2b7c-4e61-9a3f-8c1d2e4b6a70"
         const val STAMP = "01a11f9462ac.00000000.a10804a2-6191-46be-950d-3394ba97cfef"
     }
 }

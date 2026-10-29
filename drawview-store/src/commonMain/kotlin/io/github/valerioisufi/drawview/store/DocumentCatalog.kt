@@ -38,13 +38,23 @@ public data class FolderSummary(
 /**
  * The documents and the folders of a library, as a library shows and organizes them (see
  * [DocumentStore]).
+ *
+ * What is deleted goes to the trash first ([trashDocument], [trashFolder]): it is out of
+ * [documents] and [folders], in [trash], and can be put back ([restore]) until it is deleted for
+ * good ([deleteDocument], [deleteFolder], [purgeTrash]). See `docs/trash.md`.
  */
 public interface DocumentCatalog {
-    /** Every document, most recently modified first (updated on every change). */
+    /**
+     * Every document out of the trash (neither itself nor one of its folders in it), most recently
+     * modified first (updated on every change).
+     */
     public val documents: Flow<List<DocumentSummary>>
 
-    /** Every folder, at any depth (updated on every change). */
+    /** Every folder out of the trash, at any depth (updated on every change). */
     public val folders: Flow<List<FolderSummary>>
+
+    /** What is in the trash, the most recent first: the items deleted, not what they hold (updated on every change). */
+    public val trash: Flow<List<TrashedItem>>
 
     /** Creates a document with one page of the given format in [folderId] and returns it. */
     public suspend fun createDocument(
@@ -62,7 +72,32 @@ public interface DocumentCatalog {
      */
     public suspend fun isDocumentNameAvailable(documentId: String, name: String): Boolean
 
-    /** Deletes a document together with its resources (imported images and PDFs). */
+    /**
+     * Moves a document to the trash, as it is; `false` when it is unknown or already there (itself
+     * or one of its folders).
+     */
+    public suspend fun trashDocument(documentId: String): Boolean
+
+    /**
+     * Moves a folder to the trash with its whole content, as one item; `false` when it is unknown
+     * or already there (itself or one of its parents).
+     */
+    public suspend fun trashFolder(folderId: String): Boolean
+
+    /**
+     * Puts the item [itemId] of the trash back into its folder, at the root when that folder is
+     * gone or in the trash, renamed "name (2)", "name (3)"… when its name is taken there. Its name
+     * once back, `null` when it is not an item of the trash.
+     */
+    public suspend fun restore(itemId: String): String?
+
+    /**
+     * Deletes for good the items that went to the trash before [before] (milliseconds), as
+     * [deleteDocument] and [deleteFolder] do.
+     */
+    public suspend fun purgeTrash(before: Long)
+
+    /** Deletes a document for good, together with its resources (imported images and PDFs). */
     public suspend fun deleteDocument(documentId: String): Boolean
 
     /**
@@ -79,7 +114,10 @@ public interface DocumentCatalog {
     /** Renames a folder; `false` when the parent already holds a folder with the same name. */
     public suspend fun renameFolder(folderId: String, newName: String): Boolean
 
-    /** Deletes a folder with its whole content (sub-folders and documents). */
+    /**
+     * Deletes a folder for good with its whole content (sub-folders and documents), but what is in
+     * the trash on its own: that stays in the trash, at its root.
+     */
     public suspend fun deleteFolder(folderId: String): Boolean
 
     /**

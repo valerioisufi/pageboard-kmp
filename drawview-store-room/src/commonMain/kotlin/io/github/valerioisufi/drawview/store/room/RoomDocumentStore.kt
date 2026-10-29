@@ -14,6 +14,7 @@ import io.github.valerioisufi.drawview.store.DocumentSummary
 import io.github.valerioisufi.drawview.store.FolderSummary
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.store.PreferenceStore
+import io.github.valerioisufi.drawview.store.TrashedItem
 import io.github.valerioisufi.drawview.store.room.db.DocumentEntity
 import io.github.valerioisufi.drawview.store.room.db.DrawDatabase
 import io.github.valerioisufi.drawview.store.room.db.DrawViewDatabase
@@ -41,13 +42,23 @@ public class RoomDocumentStore(
     private val sharedDocuments = database.sharedDocumentDao()
 
     override val documents: Flow<List<DocumentSummary>> =
-        combine(fileRepository.getAllDocumentsWithContentFlow(), sharedDocuments.getIdsFlow()) { list, shared ->
+        combine(fileRepository.getAllDocumentsWithContentFlow(), fileRepository.getAllFoldersFlow(), sharedDocuments.getIdsFlow()) { list, folders, shared ->
             val sharedIds = shared.toSet()
-            list.map { it.document.toSummary(isShared = it.document.id in sharedIds, pageCount = it.pageCount, hasPdf = it.hasPdf) }
+            val trash = FileRepository.trashOf(list.map { it.document }, folders, sharedIds)
+            list.filter { trash.isDocumentLive(it.document.id) }
+                .map { it.document.toSummary(isShared = it.document.id in sharedIds, pageCount = it.pageCount, hasPdf = it.hasPdf) }
         }
 
     override val folders: Flow<List<FolderSummary>> =
-        fileRepository.getAllFoldersFlow().map { list -> list.map { it.toSummary() } }
+        combine(fileRepository.getAllDocumentsFlow(), fileRepository.getAllFoldersFlow()) { documents, list ->
+            val trash = FileRepository.trashOf(documents, list, emptySet())
+            list.filter { trash.isFolderLive(it.id) }.map { it.toSummary() }
+        }
+
+    override val trash: Flow<List<TrashedItem>> =
+        combine(fileRepository.getAllDocumentsFlow(), fileRepository.getAllFoldersFlow(), sharedDocuments.getIdsFlow()) { documents, folders, shared ->
+            FileRepository.trashOf(documents, folders, shared.toSet()).items
+        }
 
 
     override val persistence: DocumentPersistence get() = repository
@@ -71,6 +82,14 @@ public class RoomDocumentStore(
 
     override suspend fun isDocumentNameAvailable(documentId: String, name: String): Boolean =
         fileRepository.isDocumentNameAvailable(documentId, name)
+
+    override suspend fun trashDocument(documentId: String): Boolean = fileRepository.trashDocument(documentId)
+
+    override suspend fun trashFolder(folderId: String): Boolean = fileRepository.trashFolder(folderId)
+
+    override suspend fun restore(itemId: String): String? = fileRepository.restore(itemId)
+
+    override suspend fun purgeTrash(before: Long): Unit = fileRepository.purgeTrash(before)
 
     override suspend fun deleteDocument(documentId: String): Boolean = fileRepository.deleteDocument(documentId)
 

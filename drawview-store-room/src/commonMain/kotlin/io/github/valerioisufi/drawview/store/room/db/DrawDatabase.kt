@@ -26,7 +26,7 @@ import androidx.room.TypeConverters
         PreferenceEntity::class
     ],
     // Every new version comes with its migration (see DRAW_DATABASE_MIGRATIONS)
-    version = 21
+    version = 22
 )
 @TypeConverters(
     PageBackgroundConverter::class,

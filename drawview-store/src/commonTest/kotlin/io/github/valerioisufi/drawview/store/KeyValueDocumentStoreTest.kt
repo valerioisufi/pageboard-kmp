@@ -16,6 +16,7 @@ import io.github.valerioisufi.drawview.model.TextMarkupKind
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.store.testing.checkFolderOperations
+import io.github.valerioisufi.drawview.store.testing.checkTrash
 import io.github.valerioisufi.drawview.store.testing.checkOperationProofs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -216,6 +217,39 @@ class KeyValueDocumentStoreTest {
     fun foldersAreSupported() = runTest {
         val storage = InMemoryKeyValueStorage()
         checkFolderOperations(KeyValueDocumentStore(storage, scope = backgroundScope))
+    }
+
+    @Test
+    fun theTrashIsKept() = runTest {
+        checkTrash(KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope))
+    }
+
+    @Test
+    fun theTrashSurvivesAReload() = runTest {
+        val storage = InMemoryKeyValueStorage()
+        val store = KeyValueDocumentStore(storage, scope = backgroundScope, clock = { 1_000L })
+        val notes = store.createDocument("Notes")
+        assertTrue(store.trashDocument(notes.id))
+        store.flush()
+
+        val reloaded = KeyValueDocumentStore(storage, scope = backgroundScope)
+        assertTrue(reloaded.documents.first().isEmpty())
+        assertEquals(1_000L, reloaded.trash.first().single().trashedAt)
+        assertEquals("Notes", reloaded.restore(notes.id))
+    }
+
+    @Test
+    fun anIndexStoredBeforeTheTrashIsReadAsItWas() = runTest {
+        val storage = InMemoryKeyValueStorage()
+        storage.set(
+            "drawview.index",
+            """{"replicaId":"a","documents":[{"id":"d","name":"Lectures","folderId":"f","createdAt":1,"modifiedAt":2,"lastOpenedAt":3}],""" +
+                """"folders":[{"id":"f","name":"Physics","createdAt":1,"modifiedAt":2}]}"""
+        )
+        val store = KeyValueDocumentStore(storage, scope = backgroundScope)
+        assertEquals(listOf("Lectures"), store.documents.first().map { it.name })
+        assertEquals(listOf("Physics"), store.folders.first().map { it.name })
+        assertTrue(store.trash.first().isEmpty())
     }
 
     @Test

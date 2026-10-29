@@ -55,15 +55,14 @@ Variations).
    * **Restore** puts an item back where it was; when that folder is gone or in the trash, at the
      root; a name already taken gets "name (2)";
    * **Delete for good** (asked first, "cannot be undone") and **Empty Trash**;
-   * selecting several items works as in the other sections;
    * a line says that the items are deleted for good after 30 days.
 3. **What is in the trash is out of the library**: not in Home, Recent, Shared, the tags, the
    folders, the search, the export, the names taken.
 4. **Nothing of a document in the trash is lost before it is deleted for good**: its pages, its
    resources, its lectures, its sharing, its thumbnail. Deleted for good, it goes as today
    (lectures included).
-5. **A shared document in the trash stops syncing**; restored, it syncs again and catches up.
-   The trash is of this device: the others keep their copy, as today. Nothing that travels
+5. **A shared document in the trash keeps syncing**, unseen: restored, it is as the others left
+   it. The trash is of this device: the others keep their copy, as today. Nothing that travels
    changes.
 6. **Deleted for good after 30 days**: the store deletes what has been in the trash longer, when
    the application starts and once a day while it runs.
@@ -91,8 +90,9 @@ Variations).
 | How long the trash keeps things | `TrashRetention` (`drawview-store`, 30 days) | Pure Fabrication, Protected Variations |
 | Purging when the application starts and every day | `TrashKeeper` (`drawview-explorer`), started by `DocumentLibrary` | Controller, Pure Fabrication |
 | Deleting from the library, Undo, the Trash section and its actions | `FileExplorerViewModel` (`trashFiles`, `restore`, `deleteForGood`, `emptyTrash`, `Section.TRASH`), `LibraryPanes`, a `TrashContent` (`drawview-explorer`) | Controller, High Cohesion |
+| How the trash splits a library (what is out of it, the items, where one goes back, the names free) | `LibraryTrash` (`drawview-store`), built by both stores from what they keep | Pure Fabrication, Information Expert |
 | Lectures forgotten only for documents deleted for good | `PencilNotesApp` (the ids gone from documents and trash together) | Information Expert stays the catalog, Low Coupling |
-| A shared document in the trash not synced | `StoreSharedDocuments.all()` leaving out the trash, `DocumentSharing` told when the trash changes | Indirection, Protected Variations (the engine unchanged) |
+| The sharing of a shared document in the trash kept as it changes | `StoreSharedDocuments.save` knowing a document in the trash (not one still to come) | Information Expert |
 | The pages removed of a document, the most recent first | `DrawDocument.removedPages` made public as a list (`drawview-model`) | Information Expert |
 | Restoring pages | `PageManager.restorePages(ids)` (`drawview-canvas`): `AddPage.of(page)` for each, one change | Controller, Creator |
 | Keeping a page removed 30 days in the compaction, dropping the older ones of a document not shared | `OpenDocuments.compact` (`drawview-store`) and `purgeExpired`, with the time of the removal (`Stamp.time`) | Information Expert |
@@ -153,12 +153,12 @@ public interface DocumentCatalog {
 
 * **Lectures**: deleted only when a document is gone from `documents` and from the documents of
   `trash` together (the documents of a folder in the trash included).
-* **Search**: `SearchIndexer` keeps the index of the documents in the trash (indexing again the
-  handwriting of a document restored would cost); `DocumentSearchSource` searches the documents
-  of the library only.
-* **Sync**: `StoreSharedDocuments.all()` and `stateOf` leave out the documents in the trash; the
-  sharing stays stored. `DocumentSharing` drops its cache when the trash changes, so the engine
-  stops or starts the document. Joining a document that is in the trash restores it first.
+* **Search**: unchanged. `SearchIndexer` drops the documents out of `documents`, so a document
+  in the trash leaves the index and is indexed again once restored: the search finds only what
+  is in the library, without `SearchEngine` knowing the catalog.
+* **Sync**: unchanged but for `StoreSharedDocuments.save`, which kept in memory the sharing of a
+  document missing from `documents` (one joined, still to come): a document in the trash is
+  there, its sharing is stored. The engine keeps syncing it.
 * **Thumbnails**: kept; the Trash shows them.
 * **Export**: unchanged, it reads `documents`.
 
@@ -167,12 +167,12 @@ public interface DocumentCatalog {
 * Delete (menu, bar, Backspace / Delete) moves to the trash at once; `LibraryDialog.Delete` is
   left to Delete for good and Empty Trash. The snackbar of the library says what moved, with
   Undo (`restore` of each item) for as long as it shows.
-* `Section.TRASH`: last in the navigation pane, its count beside it; in the compact layout where
-  the other sections are.
-* The content of the section: rows (never the grid), each with its thumbnail or folder icon, its
-  name, "from Algebra · 12 days left"; the menu of a row: Restore, Delete for good; the bar of
-  the selection: Restore, Delete for good; the header: Empty Trash. Opening a row selects it
-  (no editor on a document in the trash).
+* `Section.TRASH`: last in the navigation pane, its count beside it. Where the pane is not
+  (a phone, a narrow window), a button of the bar of the library opens it, and the title of the
+  section has a button back.
+* The content of the section: rows (never the grid), each with its icon, its name, "from
+  Algebra · 12 days left", Restore and a menu with Delete for good; the header: Empty Trash.
+  No editor on a document in the trash.
 * The strings in the seven languages of the explorer.
 
 ### The pages
@@ -196,8 +196,8 @@ public interface DocumentCatalog {
 
 | Phase | Content | Status |
 |---|---|---|
-| 1 | The trash in the stores: `TrashedItem`, the new members of `DocumentCatalog`, `TrashRetention`; Room 22 (`trashedAt` on `documents` and `folders`) with its migration tested by `MigrationTestHelper` on a database of 21 filled with documents, folders, sharing; the index of `KeyValueDocumentStore` with `trashedAt`, an index stored before read as it was; `TrashContract` in `drawview-store-testing` (hidden from documents and folders, names, restore to the folder or the root, "name (2)", purge by date, an item inside a folder in the trash keeping its date, resources kept until the purge); ABI recorded on purpose. The library still deletes for good | Planned |
-| 2 | The watchers: lectures forgotten only when deleted for good (`PencilNotesApp`); the search keeping the index of the trash and searching the library only; a shared document in the trash not synced, and synced again once restored (`StoreSharedDocuments`, `DocumentSharing`); tests in `drawview-sync` (also on the iOS simulator), `drawview-search`, `drawview-lecture` | Planned |
+| 1 | The trash in the stores: `TrashedItem`, `LibraryTrash` (shared by the stores), the new members of `DocumentCatalog`, `TrashRetention`; Room 22 (`trashedAt` on `documents` and `folders`) with its migration tested by `MigrationTestHelper` on a database of 21 filled with documents, folders, sharing; the index of `KeyValueDocumentStore` with `trashedAt`, an index stored before read as it was; `TrashContract` in `drawview-store-testing` (hidden from documents and folders, names, restore to the folder or the root, "name (2)", purge by date, an item inside a folder in the trash keeping its date, resources kept until the purge); ABI recorded on purpose. The library still deletes for good | Done |
+| 2 | The watchers: lectures forgotten only when deleted for good (`PencilNotesApp`); the search dropping a document in the trash and indexing it again once restored; the sharing of a shared document in the trash stored as it changes (`StoreSharedDocuments`); tests in `drawview-sync` (also on the iOS simulator), `drawview-search` | Planned |
 | 3 | The library: Delete moves to the trash with the snackbar and Undo; the Trash section, its rows and actions, Delete for good and Empty Trash asked first; `TrashKeeper` purging at start and every day; the strings; tests of `FileExplorerViewModel`; screenshots (compact and wide, light and dark, empty and full); the desktop application on a scratch directory | Planned |
 | 4 | The pages: `removedPages`, `restorePages`, the compaction keeping 30 days, `purgeExpired` for documents not shared; the section of the grid and the snackbars; tests in `drawview-model`, `drawview-canvas`, `drawview-sync` (a page restored after the operations left the log, on two devices); screenshots of the grid | Planned |
 
@@ -208,8 +208,13 @@ Taken alone, revertible:
 * **30 days**, fixed. A setting (7, 30, 90 days, never) can come later on `TrashRetention`.
 * **The trash is of this device.** It does not travel: the protocol stays as it is. Trashing a
   document on one device of the user does not trash it on the others, as deleting does not today.
-* **A shared document in the trash stops syncing** rather than keep receiving changes unseen.
-* **The search index of the trash is kept**, so that a document restored is found again at once.
+* **A shared document in the trash keeps syncing**: stopping it would reach into the sharing of
+  the engine (its cache, the memberships received meanwhile) for little.
+* **The search index of the trash is dropped**, and built again on restore: the search needs no
+  filter of its own.
+* **A name taken on restore** is changed in the store only ("name (2)"), not by a change of the
+  document: on a shared document, the next rename of any device wins.
+* **The rows of the Trash have their actions each**, no selection of several items.
 * **No editor on a document in the trash**: restore it to open it.
 * **The pages have no Delete for good**: in a shared document only the compaction may drop them.
 * **Elements deleted are not in the trash**: undo covers them.
@@ -220,3 +225,4 @@ Taken alone, revertible:
 * The trash across the devices of the user (a protocol change, with its version).
 * The retention as a setting.
 * ⌘Z in the library undoing the last move to the trash.
+* Selecting several items in the Trash.

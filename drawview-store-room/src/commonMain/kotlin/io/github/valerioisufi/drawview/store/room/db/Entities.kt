@@ -28,7 +28,9 @@ internal data class FolderEntity(
     val name: String,
     val parentId: String? = null,
     val createdAt: Long = currentTimeMillis(),
-    val modifiedAt: Long = currentTimeMillis()
+    val modifiedAt: Long = currentTimeMillis(),
+    /** When it went to the trash itself (`null`: it did not; see `DocumentCatalog.trash`). */
+    val trashedAt: Long? = null
 )
 
 /**
@@ -58,7 +60,9 @@ internal data class DocumentEntity(
     val defaultWidth: Float = 210f,
     val defaultHeight: Float = 297f,
     val defaultsVersion: Stamp = Stamp.ZERO,
-    val titleVersion: Stamp = Stamp.ZERO
+    val titleVersion: Stamp = Stamp.ZERO,
+    /** When it went to the trash itself (`null`: it did not; see `DocumentCatalog.trash`). */
+    val trashedAt: Long? = null
 )
 
 /**

@@ -36,7 +36,7 @@ import kotlinx.serialization.json.putJsonObject
 
 /** The migrations from version 16 to [DrawDatabase]'s version. */
 internal val DRAW_DATABASE_MIGRATIONS: Array<Migration> =
-    arrayOf(Migration16To17, Migration17To18, Migration18To19, Migration19To20, Migration20To21)
+    arrayOf(Migration16To17, Migration17To18, Migration18To19, Migration19To20, Migration20To21, Migration21To22)
 
 /** 17: the elements of the types added by the applications. */
 internal object Migration16To17 : Migration(16, 17) {
@@ -289,5 +289,13 @@ internal object Migration20To21 : Migration(20, 21) {
             }
             if (placement && text["autoWidth"].let { it == null || it is JsonNull }) put("autoWidth", false)
         }
+    }
+}
+
+/** 22: the trash, the time a document or a folder went to it (see `DocumentCatalog.trash`); nothing is in it. */
+internal object Migration21To22 : Migration(21, 22) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL("ALTER TABLE `folders` ADD COLUMN `trashedAt` INTEGER")
+        connection.execSQL("ALTER TABLE `documents` ADD COLUMN `trashedAt` INTEGER")
     }
 }

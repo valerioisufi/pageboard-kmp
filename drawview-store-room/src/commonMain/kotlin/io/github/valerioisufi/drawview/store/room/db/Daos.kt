@@ -84,9 +84,6 @@ internal interface FolderDao {
     @Insert
     suspend fun insert(folder: FolderEntity)
 
-    @Query("SELECT * FROM folders WHERE name = :name AND (parentId = :parentId OR (parentId IS NULL AND :parentId IS NULL))")
-    suspend fun getFolderByNameAndParent(name: String, parentId: String?): FolderEntity?
-
     @Query("SELECT * FROM folders WHERE parentId = :parentId")
     suspend fun getSubFolders(parentId: String): List<FolderEntity>
 
@@ -95,6 +92,15 @@ internal interface FolderDao {
 
     @Query("SELECT * FROM folders ORDER BY name")
     fun getAllFoldersFlow(): Flow<List<FolderEntity>>
+
+    @Query("SELECT * FROM folders")
+    suspend fun getAllFolders(): List<FolderEntity>
+
+    @Query("UPDATE folders SET trashedAt = :trashedAt WHERE id = :id")
+    suspend fun setTrashedAt(id: String, trashedAt: Long?)
+
+    @Query("UPDATE folders SET name = :name, parentId = :parentId, trashedAt = NULL WHERE id = :id")
+    suspend fun restore(id: String, name: String, parentId: String?)
 
     @Query("UPDATE folders SET name = :newName, modifiedAt = :timestamp WHERE id = :id")
     suspend fun renameFolder(id: String, newName: String, timestamp: Long = currentTimeMillis())
@@ -134,9 +140,6 @@ internal interface DocumentDao {
     @Query("DELETE FROM documents WHERE id = :documentId")
     suspend fun deleteById(documentId: String)
 
-    @Query("SELECT * FROM documents WHERE name = :name AND (folderId = :folderId OR (folderId IS NULL AND :folderId IS NULL))")
-    suspend fun getDocumentByNameAndFolder(name: String, folderId: String?): DocumentEntity?
-
     @Query("SELECT * FROM documents WHERE folderId = :folderId")
     suspend fun getDocumentsInFolder(folderId: String): List<DocumentEntity>
 
@@ -148,6 +151,15 @@ internal interface DocumentDao {
 
     @Query("SELECT * FROM documents ORDER BY modifiedAt DESC")
     fun getAllDocumentsFlow(): Flow<List<DocumentEntity>>
+
+    @Query("SELECT * FROM documents")
+    suspend fun getAllDocuments(): List<DocumentEntity>
+
+    @Query("UPDATE documents SET trashedAt = :trashedAt WHERE id = :id")
+    suspend fun setTrashedAt(id: String, trashedAt: Long?)
+
+    @Query("UPDATE documents SET name = :name, folderId = :folderId, trashedAt = NULL WHERE id = :id")
+    suspend fun restore(id: String, name: String, folderId: String?)
 
     /** Every document with the number of its pages and whether one of them holds a PDF. */
     @Query(
