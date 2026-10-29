@@ -103,6 +103,39 @@ class NoteInserterTest {
     }
 
     @Test
+    fun aNoteTakesTheSizeOfTheTextsTypedOnItsPage() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        controller.write(30f, atMs = 60_000).apply { fontSize = 14f; text = "The notes the student typed at fourteen points" }
+        assertTrue(NoteInserter(NoLayout).startPlacement(controller, note("a", atMs = 60_000), lecture, onInserted = {}, onCancel = {}))
+        assertEquals(14f, assertNotNull(controller.placementManager.request?.preview).fontSize)
+        controller.placementManager.cancel()
+
+        // Nothing typed: the size of a new text
+        val empty = controller(backgroundScope)
+        empty.updateTextDefaults(empty.textDefaults.copy(fontSize = 12f))
+        assertTrue(NoteInserter(NoLayout).startPlacement(empty, note("b", atMs = 60_000), null, onInserted = {}, onCancel = {}))
+        assertEquals(12f, assertNotNull(empty.placementManager.request?.preview).fontSize)
+    }
+
+    @Test
+    fun aMarginNoteIsMadeOneSizeSmallerToStayBesideItsAnchor() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val page = controller.document.pages[0]
+        fun typed(x: Float, y: Float, width: Float, height: Float) =
+            DrawText().apply { this.x = x; this.y = y; this.width = width; this.height = height; fontSize = 14f; text = "Notes of the student at fourteen points" }.also { page.add(it) }
+        val anchor = typed(20f, 100f, 110f, 10f)
+        // The column on the right free from 100 to 128 mm only: 28 mm, a note of five lines is 29.6 mm at 14 points
+        typed(135f, 10f, 65f, 86f)
+        typed(135f, 131f, 65f, 150f)
+        val note = NoteSuggestion(id = "m", kind = NoteKind.DEFINITION, title = "Definition", content = "one\ntwo\nthree\nfour", anchor = "student at fourteen")
+        assertTrue(NoteInserter(NoLayout).startPlacement(controller, note, null, onInserted = {}, onCancel = {}))
+
+        val spot = assertNotNull(controller.placementManager.spots.single())
+        assertEquals(12f, assertNotNull(controller.placementManager.request?.preview).fontSize)
+        assertTrue(spot.box.left >= anchor.x + anchor.width && spot.box.top < anchor.y + anchor.height, "beside: ${spot.box}")
+    }
+
+    @Test
     fun allTheNotesArePlacedTogetherWithoutCoveringEachOtherAndUndoneAtOnce() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope, pages = 2)
         controller.write(30f, atMs = 60_000)

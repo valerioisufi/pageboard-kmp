@@ -44,9 +44,10 @@ Variations).
    24 points for a note.
 3. **A margin note is made one preset smaller** (never under 8 points) when that lets it stay
    beside what it is about; otherwise it keeps its size and goes below.
-4. **The review** is written at the size of the page it flows from (requirement 1), and the new
-   pages after it at the size of the texts of the notebook (the most frequent among the typed
-   texts, else `textDefaults`).
+4. **The review** is written at the size of the page it flows from (requirement 1), on the new
+   pages after it too (a text does not change size midway); a part placed at the end of the
+   notebook at the size of the texts of the notebook (the most frequent among the typed texts,
+   else `textDefaults`).
 5. **A pasted text** keeps the size of a new text: it is the student's own text.
 6. The ghost shows the note at the size it will have; nothing stored or sent changes.
 
@@ -89,7 +90,7 @@ One step only: a note much smaller than the page would be hard to read.
 | Phase | What | Status |
 |---|---|---|
 | 1 | `PageTextSizes` and `TextSizePolicy` in `drawview-model`: tests on pages with typed texts of several sizes, a slide shown at another scale, handwriting, too little of each | done |
-| 2 | The notes at the size of their page, margin notes one step smaller; the review at the size of its page and of the notebook; the ghosts at their size. Tests of `NoteInserter`, screenshots | planned |
+| 2 | The notes at the size of their page, margin notes one step smaller; the review at the size of its page and of the notebook; the ghosts at their size. Tests of `NoteInserter` | done |
 
 ## Decisions
 
@@ -102,6 +103,7 @@ Taken alone, revertible:
 3. **A pasted text keeps the size of a new text**: it is the student's text, not a note.
 4. **The size is chosen once per note**, before its places are proposed: all its places show it
    at the same size (but a margin note made smaller, see above).
+5. **A part of the review keeps one size** on its new pages, the size of the page it starts from.
 
 ## Left for later
 
