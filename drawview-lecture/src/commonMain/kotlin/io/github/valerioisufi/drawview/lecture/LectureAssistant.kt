@@ -95,8 +95,8 @@ public class LectureAssistant(
         local = OllamaBackend(localClient) { settingsStore.settings.localUrl }
     )
 
-    /** The speech recognition chosen in the settings. */
-    private val transcribers = Transcribers(backends.gemini, whisper)
+    /** The speech recognition of this computer. */
+    private val transcribers = Transcribers(whisper)
 
     /** The models on this computer (Ollama, whisper.cpp), for the settings. */
     public val localModels: LocalModels = LocalModels(settingsStore, localClient, stateContext = stateContext)
@@ -373,7 +373,7 @@ public class LectureAssistant(
             onEnd = { if (lecture.deletedElsewhere) scope.launch { follower.abandon() } else follower.stop() }
         )
         follower = LectureRecorder(
-            lecture, settingsStore, capture, editorNotebooks[documentId], transcriber, stream = transcribers.forStreaming(settings),
+            lecture, settingsStore, capture, editorNotebooks[documentId], transcriber,
             analyzes = true, follows = true, handwriting = handwritingOf(documentId), onFinished = { ended.complete(Unit) }
         )
         withContext(stateContext) {
@@ -609,7 +609,6 @@ public class LectureAssistant(
         val newRecorder = LectureRecorder(
             lecture, settingsStore, capture, notebook,
             transcriber = if (canGenerate) transcribers.forUpdates(settings) else null,
-            stream = if (canGenerate) transcribers.forStreaming(settings) else null,
             analyzes = canGenerate,
             handwriting = handwritingOf(documentId),
             onFinished = { finished(it.lecture) }
@@ -824,15 +823,14 @@ public class LectureAssistant(
             lecture.generatingElsewhere(currentTimeMillis()) == null
 
     /**
-     * Transcribes [lecture] again from its recording, by [provider] (the model of the settings,
-     * online or on this computer), in the background ([LectureRetranscriber]); the other devices
-     * leave it to this one meanwhile ([GenerationLock]).
+     * Transcribes [lecture] again from its recording, on this computer, in the background
+     * ([LectureRetranscriber]); the other devices leave it to this one meanwhile ([GenerationLock]).
      *
-     * @return  when it cannot be transcribed again now ([canRetranscribe]).
+     * @return `false` when it cannot be transcribed again now ([canRetranscribe]).
      */
-    public fun retranscribe(lecture: Lecture, provider: ModelProvider): Boolean {
+    public fun retranscribe(lecture: Lecture): Boolean {
         if (!canRetranscribe(lecture)) return false
-        val transcriber = transcribers.forRecording(settingsStore.settings, provider)
+        val transcriber = transcribers.forRecording(settingsStore.settings)
         lecture.stopPlayback()
         lecture.status = LectureStatus.IMPORTING
         lecture.importStep = ImportStep.TRANSCRIBING
@@ -849,9 +847,6 @@ public class LectureAssistant(
         }
         return true
     }
-
-    /** The model transcribing a lecture again by [provider] (online), empty on this computer. */
-    public fun retranscriptionModel(provider: ModelProvider): String = transcribers.recordingModel(settingsStore.settings, provider)
 
     /** Whether this device can transcribe (whisper.cpp built in). */
     public val canTranscribeHere: Boolean get() = WhisperTranscriber.isAvailable
@@ -937,14 +932,26 @@ public class ExportResult(public val fileName: String, public val failure: Strin
  */
 public class GenerationOffer(public val arrival: LectureArrival, public val durationMs: Long, public val provider: ModelProvider, public val live: Boolean = false) {
     /**
-     * The tokens of the requests to Gemini, about (the audio counts 32 tokens a second, read twice:
-     * transcribed, then reviewed), `0` for the local models; for a lecture followed live, an hour of it.
+     * The tokens of the requests to Gemini, about: the review reads the transcript (made on this
+     * computer) and the notebook; a lecture followed live, an hour of it, adds its notes. `0` for
+     * the local models.
      */
     public val estimatedTokens: Long
-        get() = if (provider == ModelProvider.LOCAL) 0 else (if (live) HOUR_SECONDS else durationMs / 1000) * AUDIO_TOKENS_PER_SECOND * 2
+        get() = when {
+            provider == ModelProvider.LOCAL -> 0
+            live -> LIVE_NOTES_TOKENS_PER_HOUR + REVIEW_TOKENS + HOUR_SECONDS * TRANSCRIPT_TOKENS_PER_SECOND
+            else -> REVIEW_TOKENS + durationMs / 1000 * TRANSCRIPT_TOKENS_PER_SECOND
+        }
 
     private companion object {
-        const val AUDIO_TOKENS_PER_SECOND = 32L
+        /** About 150 words a minute. */
+        const val TRANSCRIPT_TOKENS_PER_SECOND = 4L
+
+        /** The notebook, the images and the answer of a review. */
+        const val REVIEW_TOKENS = 20_000L
+
+        /** The notes of an hour, a request every 5 minutes, measured on a recorded lecture (2026-10-29). */
+        const val LIVE_NOTES_TOKENS_PER_HOUR = 130_000L
         const val HOUR_SECONDS = 3_600L
     }
 }

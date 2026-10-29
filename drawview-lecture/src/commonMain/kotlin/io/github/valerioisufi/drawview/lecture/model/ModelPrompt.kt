@@ -9,17 +9,11 @@ internal sealed interface PromptPart {
     class Text(val text: String) : PromptPart
 
     class Image(val jpeg: ByteArray) : PromptPart
-
-    /** Audio sent with the request (Gemini only). */
-    class Audio(val wav: ByteArray) : PromptPart
-
-    /** A file already uploaded to the provider (Gemini only: PDF slides, complete recording). */
-    class File(val uri: String, val mimeType: String) : PromptPart
 }
 
 /**
  * A request of the assistant, independent of the provider that answers it: instructions,
- * content (text, images and, for Gemini, audio and files) and the JSON schema of the answer.
+ * content (text and images, never audio) and the JSON schema of the answer.
  *
  * @param thinkingLevel reasoning of the Gemini models (low, medium, high).
  * @param cachedParts leading [parts] that, with [system], stay the same in every request of a

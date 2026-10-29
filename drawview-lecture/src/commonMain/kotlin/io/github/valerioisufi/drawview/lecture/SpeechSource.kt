@@ -4,40 +4,12 @@ import io.github.valerioisufi.drawview.lecture.audio.AudioChunk
 import io.github.valerioisufi.drawview.lecture.audio.Wav
 import io.github.valerioisufi.drawview.lecture.audio.samplesToMs
 import io.github.valerioisufi.drawview.lecture.transcription.SpeechHints
-import io.github.valerioisufi.drawview.lecture.transcription.StreamingTranscriber
 import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
 import kotlinx.coroutines.CancellationException
 
 /**
- * What was said in an update of a recording, for the request of the live suggestions: its audio
- * (the model transcribes it), or its transcript, made a chunk at a time ([ChunkSpeech]) or while it
- * is said ([StreamSpeech]).
- */
-internal sealed interface SpeechSource {
-    /** The recording starts. */
-    fun start() {}
-
-    /** A block of the microphone, in order (only the live transcription uses it). */
-    fun onAudio(samples: ShortArray) {}
-
-    /** The microphone stopped: what was said becomes final. */
-    fun onAudioEnd() {}
-
-    /** The speech of [chunks] (consecutive), or `null` when there is nothing to send. */
-    suspend fun speechOf(chunks: List<AudioChunk>): RequestSpeech?
-
-    /** The recording is over: frees the speech recognition. */
-    suspend fun close() {}
-}
-
-/** The audio itself: the model of the suggestions transcribes it in the same request. */
-internal object AudioSpeech : SpeechSource {
-    override suspend fun speechOf(chunks: List<AudioChunk>): RequestSpeech? = requestAudio(chunks, contextMs = null)
-}
-
-/**
- * The transcript of every update by [transcriber], added to the [lecture] right away (before the
- * suggestions), one segment per update.
+ * The transcript of every update by [transcriber] (whisper.cpp on this computer), added to the
+ * [lecture] right away (before the suggestions), one segment per update.
  *
  * @param hints what helps the recognition now (the slides on screen change).
  */
@@ -45,8 +17,9 @@ internal class ChunkSpeech(
     private val lecture: Lecture,
     private val transcriber: Transcriber,
     private val hints: () -> SpeechHints
-) : SpeechSource {
-    override suspend fun speechOf(chunks: List<AudioChunk>): RequestSpeech? {
+) {
+    /** The transcript of [chunks] (consecutive), or `null` when there is nothing to send. */
+    suspend fun speechOf(chunks: List<AudioChunk>): RequestTranscript? {
         val transcript = try {
             transcribeChunks(transcriber, chunks, hints()) ?: return null
         } catch (e: CancellationException) {
@@ -62,65 +35,8 @@ internal class ChunkSpeech(
         return RequestTranscript(emptyList(), transcript.segments, transcript.audio.newStartMs, 0L, transcript.audio.endMs)
     }
 
-    override suspend fun close() = transcriber.close()
-}
-
-/**
- * The transcript made while the lecturer speaks by [stream]: every utterance is added to the
- * [lecture] when final, the one being said is shown ([Lecture.interimTranscript]); an update waits
- * a little for the words said until its end, and takes the utterances not taken yet.
- */
-internal class StreamSpeech(
-    private val lecture: Lecture,
-    private val stream: StreamingTranscriber,
-    private val hints: () -> SpeechHints
-) : SpeechSource {
-    /** Utterances of the transcript taken by the updates (the analysis coroutine only). */
-    private var taken = 0
-
-    override fun start() = stream.start(lecture.scope, hints, listener)
-
-    override fun onAudio(samples: ShortArray) = stream.push(samples)
-
-    override fun onAudioEnd() = stream.endOfAudio()
-
-    override suspend fun speechOf(chunks: List<AudioChunk>): RequestSpeech? {
-        if (chunks.isEmpty()) return null
-        val endMs = chunks.last().endMs
-        stream.awaitFinal(endMs, AWAIT_FINAL_MS)
-        val segments = lecture.setStateResult {
-            transcript.drop(taken).takeWhile { it.startMs < endMs }.also { taken += it.size }
-        }
-        if (segments.isEmpty()) return null
-        val startMs = minOf(chunks.first().newStartMs, segments.first().startMs)
-        return RequestTranscript(emptyList(), segments, startMs, 0L, maxOf(endMs, segments.last().endMs))
-    }
-
-    override suspend fun close() = stream.close()
-
-    private val listener = object : StreamingTranscriber.Listener {
-        override suspend fun onFinal(segment: TranscriptSegment) = lecture.setState {
-            transcript.add(segment)
-            interimTranscript = ""
-        }
-
-        override suspend fun onInterim(text: String) = lecture.setState { interimTranscript = text }
-
-        override suspend fun onUsage(usage: TokenUsage) = lecture.setState { this.usage += usage }
-
-        override suspend fun onProblem(error: Exception?, retryInSeconds: Int) = lecture.setState {
-            problem = when {
-                error == null -> problem.takeUnless { it is LectureProblem.Retrying || it is LectureProblem.TranscriptionUnavailable }
-                retryInSeconds > 0 -> LectureProblem.Retrying(error.message ?: error::class.simpleName.orEmpty(), retryInSeconds)
-                else -> transcriptionProblem(error)
-            }
-        }
-    }
-
-    private companion object {
-        /** The final text of the last words arrives a second or two after a pause. */
-        const val AWAIT_FINAL_MS = 6_000L
-    }
+    /** The recording is over: frees the speech recognition. */
+    suspend fun close() = transcriber.close()
 }
 
 /**
@@ -168,18 +84,18 @@ internal suspend fun transcribeChunks(transcriber: Transcriber, chunks: List<Aud
 /** A segment ending this little after the overlap is repeated. */
 private const val OVERLAP_TOLERANCE_MS = 300L
 
-/** The problem of a failed transcription: the one of the online model, or the transcription unavailable. */
+/** The problem of a failed transcription: the transcription unavailable, unless it is another problem. */
 internal fun transcriptionProblem(e: Throwable): LectureProblem =
     Lecture.problemOf(e).takeUnless { it is LectureProblem.Failed } ?: LectureProblem.TranscriptionUnavailable(e.message ?: e::class.simpleName.orEmpty())
 
 /**
- * The audio of [chunks] (consecutive), the most recent within [MAX_REQUEST_AUDIO_MS]. [contextMs]:
+ * The audio of [chunks] (consecutive) to transcribe, the most recent within [MAX_REQUEST_AUDIO_MS]. [contextMs]:
  * leading audio already analyzed; `null` for the overlap of the first chunk with the previous one,
  * dropped when not [withContext].
  */
 public fun requestAudio(chunks: List<AudioChunk>, contextMs: Long?, withContext: Boolean = true): RequestAudio? {
     if (chunks.isEmpty()) return null
-    // The most recent audio, within the budget of a request (inline data is limited)
+    // The most recent audio, within the budget of a piece
     var budgetMs = MAX_REQUEST_AUDIO_MS
     val selected = ArrayDeque<AudioChunk>()
     for (chunk in chunks.asReversed()) {
@@ -211,5 +127,5 @@ public fun requestAudio(chunks: List<AudioChunk>, contextMs: Long?, withContext:
     )
 }
 
-/** Audio of a request (inline data: the whole request must stay under 20 MB). */
+/** Audio of a piece transcribed at once. */
 internal const val MAX_REQUEST_AUDIO_MS = 6 * 60_000L

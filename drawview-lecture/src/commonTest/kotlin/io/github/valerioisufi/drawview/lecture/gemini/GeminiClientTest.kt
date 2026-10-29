@@ -75,38 +75,4 @@ class GeminiClientTest {
         status = HttpStatusCode.ServiceUnavailable
         assertTrue(assertFailsWith<GeminiException> { client.generateContent("k", "m", request) }.isRetryable)
     }
-
-    @Test
-    fun uploadUsesTheResumableProtocolAndWaitsForProcessing() = runTest {
-        val bytes = ByteArray(100) { it.toByte() }
-        val calls = mutableListOf<String>()
-        var uploaded = ByteArray(0)
-        val client = client { request ->
-            val path = request.url.encodedPath
-            calls.add("${request.method.value} $path")
-            when {
-                path == "/upload/v1beta/files" -> {
-                    assertEquals("resumable", request.headers["X-Goog-Upload-Protocol"])
-                    assertEquals("start", request.headers["X-Goog-Upload-Command"])
-                    assertEquals("100", request.headers["X-Goog-Upload-Header-Content-Length"])
-                    assertEquals("application/pdf", request.headers["X-Goog-Upload-Header-Content-Type"])
-                    assertTrue(request.body.toByteArray().decodeToString().contains("\"displayName\":\"slides.pdf\""))
-                    respond("{}", HttpStatusCode.OK, headersOf("X-Goog-Upload-URL", "https://upload.example.test/session/1"))
-                }
-                path == "/session/1" -> {
-                    assertEquals("upload, finalize", request.headers["X-Goog-Upload-Command"])
-                    uploaded = request.body.toByteArray()
-                    respond("""{"file":{"name":"files/abc","uri":"https://x/files/abc","mimeType":"application/pdf","state":"PROCESSING"}}""", HttpStatusCode.OK, jsonHeaders)
-                }
-                request.method == HttpMethod.Get && path == "/v1beta/files/abc" ->
-                    respond("""{"name":"files/abc","uri":"https://x/files/abc","mimeType":"application/pdf","state":"ACTIVE"}""", HttpStatusCode.OK, jsonHeaders)
-                else -> respond("", HttpStatusCode.NotFound)
-            }
-        }
-        val file = client.uploadFile("k", bytes, "application/pdf", "slides.pdf")
-        assertEquals("ACTIVE", file.state)
-        assertEquals("https://x/files/abc", file.uri)
-        assertContentEquals(bytes, uploaded)
-        assertEquals(listOf("POST /upload/v1beta/files", "POST /session/1", "GET /v1beta/files/abc"), calls)
-    }
 }

@@ -482,26 +482,16 @@ private fun LectureHeader(assistant: LectureAssistant, documentId: String, lectu
                     }
                 )
             }
-            // The recording transcribed again, by another model
-            if (shown != null && !isActive && assistant.canRetranscribe(lecture)) {
+            // The recording transcribed again on this computer
+            if (shown != null && !isActive && assistant.canRetranscribe(lecture) && assistant.canTranscribeHere) {
                 MenuItem(
-                    text = stringResource(Res.string.lecture_retranscribe_online, assistant.retranscriptionModel(ModelProvider.GEMINI)),
-                    icon = rememberVectorPainter(DrawViewIcons.Globe),
+                    text = stringResource(Res.string.lecture_retranscribe_local),
+                    icon = rememberVectorPainter(DrawViewIcons.Monitor),
                     onClick = {
                         expanded = false
-                        assistant.retranscribe(lecture, ModelProvider.GEMINI)
+                        assistant.retranscribe(lecture)
                     }
                 )
-                if (assistant.canTranscribeHere) {
-                    MenuItem(
-                        text = stringResource(Res.string.lecture_retranscribe_local),
-                        icon = rememberVectorPainter(DrawViewIcons.Monitor),
-                        onClick = {
-                            expanded = false
-                            assistant.retranscribe(lecture, ModelProvider.LOCAL)
-                        }
-                    )
-                }
             }
             SharingItems(assistant, documentId, lecture)
             // Not while it is recorded on another device
@@ -1593,7 +1583,6 @@ internal fun privacyNote(settings: AssistantSettings): String {
     val parts = SharedData.entries.filter { it in shared }.map { data ->
         stringResource(
             when (data) {
-                SharedData.AUDIO -> Res.string.lecture_privacy_audio
                 SharedData.TRANSCRIPT -> Res.string.lecture_privacy_transcript
                 SharedData.NOTEBOOK -> Res.string.lecture_privacy_notebook
             }

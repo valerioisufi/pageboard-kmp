@@ -36,20 +36,16 @@ class AssistantSecretsTest {
     }
 
     @Test
-    fun withoutTheSpeechRecognitionGeminiTranscribes() {
+    fun withoutTheSpeechRecognitionTheLecturesAreRecordedOnly() {
         val local = TaskModel(provider = ModelProvider.LOCAL)
-        val all = LectureTask.entries.fold(AssistantSettings()) { settings, task -> settings.withTask(task, local) }
+        val all = LectureTask.entries.fold(AssistantSettings(generateHere = true)) { settings, task -> settings.withTask(task, local) }
 
         // A computer: everything on it
-        assertFalse(all.consistent(canTranscribe = true).sendsAudio)
-        // A phone: transcribed online, followed and reviewed by Ollama (of a computer of the network) on the transcript
-        val phone = all.consistent(canTranscribe = false)
-        assertTrue(phone.sendsAudio)
-        assertEquals(ModelProvider.LOCAL, phone.task(LectureTask.LIVE_NOTES).provider)
-        assertEquals(ModelProvider.LOCAL, phone.task(LectureTask.FINAL_REVIEW).provider)
+        assertTrue(all.consistent(canTranscribe = true).generateHere)
+        // A phone: recorded only, a computer writes the notes; the models chosen are kept
         val store = AssistantSettingsStore(File(directory, "phone.json").absolutePath, MemorySecrets(), canTranscribe = false)
         store.update(all)
-        // (Saved with the models of every request filled in)
-        assertEquals(LectureTask.entries.map { phone.task(it) }, LectureTask.entries.map { store.settings.task(it) })
+        assertFalse(store.settings.generateHere)
+        assertEquals(LectureTask.entries.map { all.task(it) }, LectureTask.entries.map { store.settings.task(it) })
     }
 }

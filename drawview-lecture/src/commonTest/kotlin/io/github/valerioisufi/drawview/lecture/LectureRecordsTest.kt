@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.lecture
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 
 class LectureRecordsTest {
     private val recorded = LectureRecord(
@@ -75,5 +76,19 @@ class LectureRecordsTest {
         val mine = recorded.copy(stamps = emptyMap(), outline = "a")
         val theirs = recorded.copy(stamps = emptyMap(), outline = "b")
         assertEquals(LectureRecords.merge(mine, theirs).outline, LectureRecords.merge(theirs, mine).outline)
+    }
+
+    @Test
+    fun aLectureTranscribedByGeminiIsReadAsItWas() {
+        // As saved on 2026-10-15: transcribed by Gemini from its audio, the audio counted in its tokens
+        val saved = """{"id":"2026-10-15_09-48-14-2ce0b6","documentId":"a41ffe77","documentTitle":"SERT","startedAt":1792054094000,"durationMs":4366000,
+            "status":"FINISHED","outline":"- Validazione","currentTopic":"EDF",
+            "transcript":[{"startMs":0,"endMs":60000,"text":"Buongiorno, oggi parliamo di validazione."},{"startMs":60000,"endMs":120000,"text":"Il fattore di utilizzazione."}],
+            "usageByDevice":{"0236e586":{"name":"Valerio pc","usage":{"requests":49,"promptTokens":326830,"outputTokens":55316,"promptByModality":{"TEXT":274990,"AUDIO":51840}}}},
+            "finalReviewProvider":"GEMINI"}"""
+        val record = assertNotNull(LectureRecords.decode(saved.encodeToByteArray()))
+        assertEquals(listOf("Buongiorno, oggi parliamo di validazione.", "Il fattore di utilizzazione."), record.transcript.map { it.text })
+        assertEquals(mapOf("TEXT" to 274_990L, "AUDIO" to 51_840L), record.usageByDevice.getValue("0236e586").usage.promptByModality)
+        assertEquals(LectureStatus.FINISHED, record.status)
     }
 }

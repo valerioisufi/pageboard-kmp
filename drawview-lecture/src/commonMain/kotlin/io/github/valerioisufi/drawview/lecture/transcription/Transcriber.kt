@@ -4,27 +4,21 @@ import io.github.valerioisufi.drawview.lecture.TokenUsage
 import io.github.valerioisufi.drawview.lecture.TranscriptSegment
 
 /**
- * What helps recognizing the words of a lecture: each model uses what it can.
+ * What helps whisper.cpp recognize the words of a lecture.
  *
  * @param language ISO code of the language spoken ("it", "en", ...) or "auto".
- * @param locales the same language in BCP-47 for the speech models of Gemini (empty: recognized).
- * @param prompt the slides on screen and the course, in a few words (whisper).
- * @param vocabulary the terms of the course and of the slides (the speech models of Gemini).
- * @param courseContext the course context (a general model of Gemini).
+ * @param prompt the slides on screen and the course, in a few words.
  */
 public class SpeechHints(
     public val language: String = "auto",
-    internal val locales: List<String> = emptyList(),
-    internal val prompt: String = "",
-    public val vocabulary: List<String> = emptyList(),
-    internal val courseContext: String = ""
+    internal val prompt: String = ""
 )
 
 /**
  * The transcript of a piece of audio.
  *
  * @param segments times from the start of the audio (one segment for the models without times).
- * @param usage the tokens billed (the online models), `null` on this computer.
+ * @param usage the tokens billed, `null` on this computer.
  */
 public class Transcription(public val segments: List<TranscriptSegment>, public val usage: TokenUsage? = null)
 
@@ -45,8 +39,7 @@ public interface Transcriber {
     /**
      * Transcribes [wav] (16-bit mono PCM at 16 kHz).
      *
-     * @throws TranscriptionException when the transcription cannot be done (or the error of the
-     *   online model, e.g. a key refused).
+     * @throws TranscriptionException when the transcription cannot be done.
      */
     public suspend fun transcribe(wav: ByteArray, hints: SpeechHints): Transcription
 

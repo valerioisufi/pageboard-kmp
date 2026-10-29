@@ -1,13 +1,12 @@
 package io.github.valerioisufi.drawview.lecture
 
-import io.github.valerioisufi.drawview.lecture.gemini.GeminiFile
 import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
 import io.github.valerioisufi.drawview.lecture.model.PromptPart
 import io.github.valerioisufi.drawview.lecture.transcription.SpeechHints
 
 /**
- * What was said in the part of the lecture of a request: its audio (Gemini transcribes it) or its
- * transcript (transcribed on this computer).
+ * What was said in a part of the lecture: its audio, which whisper.cpp transcribes on this
+ * computer, or its transcript, which the requests carry (never the audio).
  *
  * @param contextMs leading milliseconds already analyzed with the previous request (context only).
  */
@@ -18,7 +17,7 @@ internal sealed interface RequestSpeech {
     val newStartMs: Long get() = startMs + contextMs
 }
 
-/** The audio of a request. */
+/** The audio of a part of the lecture, to transcribe. */
 public class RequestAudio(
     internal val wav: ByteArray,
     override val startMs: Long,
@@ -73,13 +72,12 @@ internal object LecturePrompts {
      */
     internal fun spokenLanguage(settings: AssistantSettings): String? = LANGUAGE_NAMES[settings.spokenLanguage.trim().lowercase()]
 
-    private fun languageRule(settings: AssistantSettings, fields: String, withTranscript: Boolean): String {
+    private fun languageRule(settings: AssistantSettings, fields: String): String {
         val language = settings.notesLanguage.trim().ifEmpty {
             spokenLanguage(settings)?.let { "$it, the language of the lecture" }
                 ?: "the language spoken in the lecture (not necessarily the language of the slides)"
         }
-        return if (withTranscript) "Language: write the transcript in the language spoken; write $fields in $language."
-        else "Language: write $fields in $language."
+        return "Language: write $fields in $language."
     }
 
     /** The Markdown rendered by the text blocks of the notebook. */
@@ -91,47 +89,37 @@ internal object LecturePrompts {
         "Pages are always the notebook page numbers written in the labels (\"Notebook page 12\"), never the position of an image in the request."
 
     /**
-     * @param withAudio the request carries the audio, which the model transcribes; otherwise its
-     *   transcript.
      * @param withSlides the request opens with the text of every slide of the notebook.
      */
-    fun chunkSystemInstruction(settings: AssistantSettings, withAudio: Boolean = true, withSlides: Boolean = false): String {
-        val source = if (withAudio) "audio" else "transcript"
-        val transcriptField = if (withAudio) {
-            "- transcript: faithful transcript of the new audio only (after the context part), not summarized; mark unintelligible parts as [inaudible]; empty when there is no speech.\n"
-        } else {
-            ""
-        }
-        val unclear = if (withAudio) "When the audio is unclear, say so instead of guessing."
-        else "The transcript may contain recognition errors: do not build on words that make no sense."
+    fun chunkSystemInstruction(settings: AssistantSettings, withSlides: Boolean = false): String {
         val slides = if (withSlides) "\n            - $SLIDES_RULE" else ""
         return """
             You are a note-taking assistant listening to a university lecture live, next to a student who takes handwritten notes in a notebook app (the lecture slides, when available, are imported as pages of the same notebook).
-            At every update you receive the newest part of the lecture ($source) together with what the student is looking at and writing. Your goal: make sure the student does not miss anything important, without distracting them.
+            At every update you receive the transcript of the newest part of the lecture together with what the student is looking at and writing. Your goal: make sure the student does not miss anything important, without distracting them.
             The notebook is described page by page in text (the text of the slides, what the student typed, their handwriting when transcribed), with images of the visible pages and close-ups of what the student just wrote.
 
             How to work:
-            - Compare what the lecturer says in the new $source with (1) the slides and (2) what the student has already written or typed. Look carefully at the handwriting in the images too.
-            - Suggest a note ONLY for important content said in the new $source that is missing from both the slides and the notes of the student, and that is not among the notes already suggested. Typical cases: definitions, formulas, theorems and their conditions, steps of worked examples, explanations that clarify a slide, anything the lecturer stresses ("this is important", "this will be in the exam"), announcements and deadlines, references (books, papers, websites), answers to the questions of the students.
+            - Compare what the lecturer says in the new transcript with (1) the slides and (2) what the student has already written or typed. Look carefully at the handwriting in the images too.
+            - Suggest a note ONLY for important content said in the new transcript that is missing from both the slides and the notes of the student, and that is not among the notes already suggested. Typical cases: definitions, formulas, theorems and their conditions, steps of worked examples, explanations that clarify a slide, anything the lecturer stresses ("this is important", "this will be in the exam"), announcements and deadlines, references (books, papers, websites), answers to the questions of the students.
             - If the student already wrote it, even abbreviated or in their own words, it is not missing. If it is on a slide, it is not missing, unless the lecturer adds something that is not there (a condition, an intuition, an example).$slides
             - No note is better than a redundant note: an empty list is the right answer when nothing is missing. Prefer few, high-value notes.
-            - Never invent or complete content that was not said. $unclear
+            - Never invent or complete content that was not said. The transcript may contain recognition errors: do not build on words that make no sense.
             - The notes are inserted as they are in the notebook: concise and ready to use (short sentences or bullet points, formulas in LaTeX between ${'$'}...${'$'}, code in blocks of code, no preamble such as "The lecturer said").
             - The page of a note is the notebook page where it belongs (usually the slide being discussed). $PAGE_NUMBER_RULE
             - $MARKDOWN_RULE
 
             Fields:
-            ${transcriptField}- currentTopic: the current topic in a few words.
-            - professorPage: the notebook page the lecturer is talking about, when the $source and the slides make it clear (e.g. they moved to the next slide, they describe a figure). Omit it when unsure.
+            - currentTopic: the current topic in a few words.
+            - professorPage: the notebook page the lecturer is talking about, when the transcript and the slides make it clear (e.g. they moved to the next slide, they describe a figure). Omit it when unsure.
             - outline (only when the request asks for it, every few minutes): the updated outline of the whole lecture so far, as a Markdown bullet list of at most about 300 words. Integrate the new content into the previous outline keeping its structure, and compress older details rather than dropping topics: it is your memory of the lecture.
-            - notes: the missing content, as described above. atSeconds is measured from the start of the $source of the request.
+            - notes: the missing content, as described above. atSeconds is measured from the start of the transcript of the request.
 
-            ${languageRule(settings, "currentTopic, outline and notes", withAudio)}
+            ${languageRule(settings, "currentTopic, outline and notes")}
         """.trimIndent()
     }
 
     fun finalReviewSystemInstruction(settings: AssistantSettings): String = """
-        You are a note-taking assistant. The lecture is over: you receive its recording or its transcript, the pages of the notebook seen during the lecture (text of the slides, notes of the student, some images) and the notes suggested during the lecture.
+        You are a note-taking assistant. The lecture is over: you receive its transcript, the pages of the notebook seen during the lecture (text of the slides, notes of the student, some images) and the notes suggested during the lecture.
 
         Write:
         - notesMarkdown: complete, well organized notes of the whole lecture in Markdown, to study from: headings following the structure of the lecture, concise bullet points, definitions, formulas in LaTeX between ${'$'}...${'$'}, code in blocks of code, examples, and what the lecturer stressed or announced (in a "**Important**" line, translated). Integrate slides and notes of the student without copying the slides verbatim: refer to them (e.g. "p. 12") when useful. Never invent content that was not said or shown.
@@ -140,7 +128,7 @@ internal object LecturePrompts {
         - $PAGE_NUMBER_RULE
         - missing: the important content of the lecture that is still missing from the notebook (slides, notes of the student and suggested notes marked as inserted or already noted), in the same format as the live notes, with the notebook page where it belongs and atSeconds measured from the start of the lecture. Empty when nothing is missing.
 
-        ${languageRule(settings, "notesMarkdown and missing", withTranscript = false)}
+        ${languageRule(settings, "notesMarkdown and missing")}
     """.trimIndent()
 
     /**
@@ -154,14 +142,11 @@ internal object LecturePrompts {
         settings: AssistantSettings,
         memory: LectureMemory,
         notebook: NotebookSnapshot?,
-        speech: RequestSpeech,
+        speech: RequestTranscript,
         catchUp: Boolean = false,
         includeOutline: Boolean = true,
-        includeTranscript: Boolean = speech is RequestAudio,
         start: LectureStart? = null
     ): ModelPrompt {
-        val withAudio = speech is RequestAudio
-        val source = if (withAudio) "audio" else "transcript"
         val parts = mutableListOf<PromptPart>()
         courseText(memory.courseContext, start?.documentTitle ?: notebook?.documentTitle)?.let { parts.add(PromptPart.Text(it)) }
         val slides = start?.let { slidesText(it.pages) }
@@ -176,34 +161,25 @@ internal object LecturePrompts {
 
         val contextSeconds = speech.contextMs / 1000
         val intro = buildString {
-            appendLine("## New $source")
+            appendLine("## New transcript")
             append("Lecture time ${formatLectureTime(speech.newStartMs)}–${formatLectureTime(speech.endMs)}.")
-            if (withAudio) {
-                if (contextSeconds > 0) {
-                    append(" The first $contextSeconds s of the audio (from ${formatLectureTime(speech.startMs)}) are context, already analyzed: transcribe and analyze only what follows.")
-                }
-            } else {
-                append(" The times in brackets are measured from ${formatLectureTime(speech.startMs)}, as atSeconds.")
-                if (contextSeconds > 0) append(" The context part is already analyzed: analyze what follows it.")
-            }
+            append(" The times in brackets are measured from ${formatLectureTime(speech.startMs)}, as atSeconds.")
+            if (contextSeconds > 0) append(" The context part is already analyzed: analyze what follows it.")
             if (catchUp) {
                 append(
-                    "\nThe student pressed \"I missed something\": they lost track during the last minutes. For this request consider the whole $source, context included, " +
+                    "\nThe student pressed \"I missed something\": they lost track during the last minutes. For this request consider the whole transcript, context included, " +
                         "and suggest the notes that let them catch up (still excluding what is already in their notes, on the slides or among the notes already suggested)."
                 )
             }
             append(if (includeOutline) "\nUpdate the outline in this answer." else "\nThe outline is not updated in this answer.")
         }
         parts.add(PromptPart.Text(intro))
-        when (speech) {
-            is RequestAudio -> parts.add(PromptPart.Audio(speech.wav))
-            is RequestTranscript -> parts.add(PromptPart.Text(transcriptText(speech)))
-        }
+        parts.add(PromptPart.Text(transcriptText(speech)))
 
         return ModelPrompt(
-            system = chunkSystemInstruction(settings, withAudio, withSlides = slides != null),
+            system = chunkSystemInstruction(settings, withSlides = slides != null),
             parts = parts,
-            schema = LectureAnalysis.chunkSchema(includeOutline, includeTranscript),
+            schema = LectureAnalysis.chunkSchema(includeOutline),
             maxOutputTokens = 8192,
             thinkingLevel = settings.thinkingLevel,
             cachedParts = cachedParts
@@ -246,8 +222,7 @@ internal object LecturePrompts {
     }.trim()
 
     /**
-     * The review of the whole lecture: the complete recording ([audioFile], Gemini) when it could be
-     * uploaded, the transcript in any case.
+     * The review of the whole lecture, from its transcript.
      *
      * @param pages the pages of the notebook seen during the lecture, and those around them.
      * @param visiblePages the pages that were on screen (by index).
@@ -260,7 +235,6 @@ internal object LecturePrompts {
         transcript: List<TranscriptSegment>,
         pages: List<PageContent>,
         pageImages: List<PageImage>,
-        audioFile: GeminiFile? = null,
         visiblePages: Set<Int> = emptySet()
     ): ModelPrompt {
         val parts = mutableListOf<PromptPart>()
@@ -282,15 +256,10 @@ internal object LecturePrompts {
         if (transcript.isNotEmpty()) {
             parts.add(
                 PromptPart.Text(
-                    "## Transcript of the lecture (may contain recognition errors" +
-                        (if (audioFile != null) "; the recording below is authoritative" else "; the recording is not available") + ")\n" +
+                    "## Transcript of the lecture (may contain recognition errors)\n" +
                         transcript.joinToString("\n") { "[${formatLectureTime(it.startMs)}] ${it.text}" }
                 )
             )
-        }
-        if (audioFile != null) {
-            parts.add(PromptPart.Text("## Complete recording of the lecture (${formatLectureTime(memory.elapsedMs)})"))
-            parts.add(PromptPart.File(audioFile.uri, audioFile.mimeType.ifEmpty { "audio/wav" }))
         }
         return ModelPrompt(
             system = finalReviewSystemInstruction(settings),
@@ -331,52 +300,11 @@ internal object LecturePrompts {
         thinkingLevel = "low"
     )
 
-    /** The transcription alone of a piece of a lecture, by a general model of Gemini. */
-    fun transcriptionOnlyPrompt(settings: AssistantSettings, courseContext: String, wav: ByteArray): ModelPrompt {
-        val parts = mutableListOf<PromptPart>()
-        courseText(courseContext, null)?.let { parts.add(PromptPart.Text(it)) }
-        parts.add(PromptPart.Text("Transcribe the audio."))
-        parts.add(PromptPart.Audio(wav))
-        val language = spokenLanguage(settings)?.let { "It is spoken in $it." } ?: ""
-        return ModelPrompt(
-            system = """
-                You transcribe the recording of a university lecture. $language
-                Write a faithful transcript of what is said, not summarized, in the language spoken, with punctuation; the technical terms as the course writes them; unintelligible parts as [inaudible]. Empty when nobody speaks.
-            """.trimIndent(),
-            parts = parts,
-            schema = LectureAnalysis.transcriptSchema,
-            maxOutputTokens = 8192,
-            thinkingLevel = "low"
-        )
-    }
-
     /** What helps the speech recognition: the language of [settings], the course, the slides on screen. */
     fun speechHints(settings: AssistantSettings, courseContext: String, visibleSlides: List<String>) = SpeechHints(
         language = settings.spokenLanguage,
-        locales = settings.speechLocales,
-        prompt = transcriptionPrompt(courseContext, visibleSlides),
-        vocabulary = vocabulary(courseContext, visibleSlides),
-        courseContext = courseContext
+        prompt = transcriptionPrompt(courseContext, visibleSlides)
     )
-
-    /**
-     * The words a speech model should recognize, at most [max]: the terms listed in the course
-     * context (separated by commas or semicolons), then the technical words of the slides on screen
-     * (acronyms, words with digits or hyphens: "IND-CPA", "SHA-256").
-     */
-    fun vocabulary(courseContext: String, visibleSlides: List<String>, max: Int = 100): List<String> {
-        val terms = courseContext.lines()
-            .filter { ',' in it || ';' in it }
-            .flatMap { it.split(',', ';') }
-            .map { it.trim().trimEnd('.').trim() }
-            .filter { it.length in 2..MAX_TERM_CHARS && it.split(' ').size <= MAX_TERM_WORDS }
-        val technical = visibleSlides.flatMap { slide -> SLIDE_WORD.findAll(slide).map { it.value }.filter(::isTechnical) }
-        val seen = mutableSetOf<String>()
-        return (terms + technical).filter { seen.add(it.lowercase()) }.take(max)
-    }
-
-    private fun isTechnical(word: String): Boolean =
-        word.count { it.isUpperCase() } >= 2 || (word.any { it.isDigit() } && word.any { it.isLetter() }) || ('-' in word && word.any { it.isUpperCase() })
 
     /**
      * The prompt of the speech recognition: the slides the student is looking at (their first
@@ -529,9 +457,6 @@ internal object LecturePrompts {
             "even if its topic is on the slide."
 
     /** English names of the languages of the speech recognition, by ISO code. */
-    private val SLIDE_WORD = Regex("""[\p{L}\p{N}][\p{L}\p{N}-]*[\p{L}\p{N}]""")
-    private const val MAX_TERM_CHARS = 60
-    private const val MAX_TERM_WORDS = 4
 
     private val LANGUAGE_NAMES = mapOf(
         "it" to "Italian", "en" to "English", "es" to "Spanish", "fr" to "French", "de" to "German", "pt" to "Portuguese",

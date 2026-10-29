@@ -96,7 +96,8 @@ class LectureSharingTest {
         // Offered to be followed live (asked first: the default)
         val liveOffer = await { computer.generationOffers.firstOrNull() }
         assertTrue(liveOffer.live)
-        assertEquals(3_600L * 32 * 2, liveOffer.estimatedTokens)
+        // The notes of an hour, its transcript reviewed: never the audio
+        assertEquals(130_000L + 20_000 + 3_600 * 4, liveOffer.estimatedTokens)
         withContext(stateContext) { computer.declineGeneration(liveOffer) }
 
         withContext(stateContext) { tablet.recorder!!.stop() }
@@ -110,7 +111,7 @@ class LectureSharingTest {
         // Told: the lecture, its audio; offered to be transcribed and reviewed here, with its cost
         assertEquals(listOf(LectureArrival.Kind.LECTURE, LectureArrival.Kind.AUDIO), await { computer.arrivals.toList().takeIf { it.size == 2 } }.map { it.kind })
         val offer = await { computer.generationOffers.firstOrNull() }
-        assertEquals(12L * 32 * 2, offer.estimatedTokens)
+        assertEquals(20_000L + 12 * 4, offer.estimatedTokens)
         withContext(stateContext) { computer.declineGeneration(offer) }
 
         // Transcribed and reviewed on the computer, with the pages seen on the tablet

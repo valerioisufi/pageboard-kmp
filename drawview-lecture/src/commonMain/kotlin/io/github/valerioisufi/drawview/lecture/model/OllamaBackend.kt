@@ -35,8 +35,6 @@ internal class OllamaBackend(public val client: OllamaClient, private val url: (
                         images.add(Base64.encode(part.jpeg))
                         appendLine("[attached image ${images.size}]").appendLine()
                     }
-                    is PromptPart.Audio, is PromptPart.File ->
-                        throw OllamaException(400, "A local model receives neither audio nor files")
                 }
             }
         }.trim()

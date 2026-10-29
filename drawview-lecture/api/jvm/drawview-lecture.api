@@ -9,7 +9,6 @@ public final class io/github/valerioisufi/drawview/lecture/ArrivalNotification {
 public final class io/github/valerioisufi/drawview/lecture/AssistantSettings {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/lecture/AssistantSettings$Companion;
-	public static final field DEFAULT_SPEECH_MODEL Ljava/lang/String;
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;Z)V
 	public synthetic fun <init> (Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -36,17 +35,13 @@ public final class io/github/valerioisufi/drawview/lecture/AssistantSettings {
 	public final fun getLocalUrl ()Ljava/lang/String;
 	public final fun getNotesLanguage ()Ljava/lang/String;
 	public final fun getNotesSeconds ()I
-	public final fun getOnlineTranscription ()Lio/github/valerioisufi/drawview/lecture/TranscriptionMode;
 	public final fun getReceivedLectures ()Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;
 	public final fun getReviewAtTheEnd ()Z
 	public final fun getReviewProvider ()Lio/github/valerioisufi/drawview/lecture/ModelProvider;
-	public final fun getSendsAudio ()Z
 	public final fun getSentToGoogle ()Ljava/util/Set;
-	public final fun getSpeechLocales ()Ljava/util/List;
 	public final fun getSpokenLanguage ()Ljava/lang/String;
 	public final fun getTasks ()Ljava/util/Map;
 	public final fun getThinkingLevel ()Ljava/lang/String;
-	public final fun getTranscription ()Lio/github/valerioisufi/drawview/lecture/TranscriptionMode;
 	public final fun getWhisperModel ()Ljava/lang/String;
 	public fun hashCode ()I
 	public final fun task (Lio/github/valerioisufi/drawview/lecture/LectureTask;)Lio/github/valerioisufi/drawview/lecture/TaskModel;
@@ -71,7 +66,6 @@ public final class io/github/valerioisufi/drawview/lecture/AssistantSettings$Com
 	public final fun getCHUNK_SECONDS_RANGE ()Lkotlin/ranges/IntRange;
 	public final fun getNOTES_SECONDS_RANGE ()Lkotlin/ranges/IntRange;
 	public final fun getTHINKING_LEVELS ()Ljava/util/List;
-	public final fun recordedSpeechModel (Ljava/lang/String;)Ljava/lang/String;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -386,8 +380,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun recorderOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LectureRecorder;
 	public final fun refresh (Ljava/lang/String;)V
 	public final fun requestAudio (Lio/github/valerioisufi/drawview/lecture/Lecture;)V
-	public final fun retranscribe (Lio/github/valerioisufi/drawview/lecture/Lecture;Lio/github/valerioisufi/drawview/lecture/ModelProvider;)Z
-	public final fun retranscriptionModel (Lio/github/valerioisufi/drawview/lecture/ModelProvider;)Ljava/lang/String;
+	public final fun retranscribe (Lio/github/valerioisufi/drawview/lecture/Lecture;)Z
 	public final fun setDescribeArrival (Lkotlin/jvm/functions/Function3;)V
 	public final fun setPanelOpen (Z)V
 	public final fun setPlacingNote (Lio/github/valerioisufi/drawview/lecture/NoteSuggestion;)V
@@ -998,7 +991,6 @@ public final class io/github/valerioisufi/drawview/lecture/SeenPage$Companion {
 }
 
 public final class io/github/valerioisufi/drawview/lecture/SharedData : java/lang/Enum {
-	public static final field AUDIO Lio/github/valerioisufi/drawview/lecture/SharedData;
 	public static final field NOTEBOOK Lio/github/valerioisufi/drawview/lecture/SharedData;
 	public static final field TRANSCRIPT Lio/github/valerioisufi/drawview/lecture/SharedData;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
@@ -1211,17 +1203,6 @@ public final class io/github/valerioisufi/drawview/lecture/TranscriptSegment$Com
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class io/github/valerioisufi/drawview/lecture/TranscriptionMode : java/lang/Enum {
-	public static final field LOCAL Lio/github/valerioisufi/drawview/lecture/TranscriptionMode;
-	public static final field PROMPT_CHUNKS Lio/github/valerioisufi/drawview/lecture/TranscriptionMode;
-	public static final field SPEECH_CHUNKS Lio/github/valerioisufi/drawview/lecture/TranscriptionMode;
-	public static final field STREAMING Lio/github/valerioisufi/drawview/lecture/TranscriptionMode;
-	public static final field WITH_NOTES Lio/github/valerioisufi/drawview/lecture/TranscriptionMode;
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/TranscriptionMode;
-	public static fun values ()[Lio/github/valerioisufi/drawview/lecture/TranscriptionMode;
-}
-
 public final class io/github/valerioisufi/drawview/lecture/WhisperModel : java/lang/Enum {
 	public static final field BASE Lio/github/valerioisufi/drawview/lecture/WhisperModel;
 	public static final field LARGE_V3_TURBO Lio/github/valerioisufi/drawview/lecture/WhisperModel;
@@ -1392,10 +1373,9 @@ public final class io/github/valerioisufi/drawview/lecture/platform/LecturePlatf
 public final class io/github/valerioisufi/drawview/lecture/transcription/SpeechHints {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getLanguage ()Ljava/lang/String;
-	public final fun getVocabulary ()Ljava/util/List;
 }
 
 public abstract interface class io/github/valerioisufi/drawview/lecture/transcription/Transcriber {

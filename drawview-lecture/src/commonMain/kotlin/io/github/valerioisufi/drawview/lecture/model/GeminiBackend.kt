@@ -2,7 +2,6 @@ package io.github.valerioisufi.drawview.lecture.model
 
 import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.TokenUsage
-import io.github.valerioisufi.drawview.lecture.gemini.AudioTranscriptionConfig
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiContent
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiException
@@ -62,26 +61,6 @@ internal class GeminiBackend(public val client: GeminiClient, private val apiKey
         client.generateContent(key, model, toRequest(prompt, null, cachedContent))
     }
 
-    /**
-     * Transcribes [wav] with the speech model [model] (Gemini 3.5 Transcribe): the audio only,
-     * no instructions.
-     *
-     * @throws GeminiException also for a missing key (status 401).
-     */
-    suspend fun transcribe(wav: ByteArray, model: String, config: AudioTranscriptionConfig): ModelAnswer {
-        val key = apiKey()
-        if (key.isEmpty()) throw GeminiException(401, "API key not set")
-        val request = GenerateContentRequest(
-            contents = listOf(GeminiContent(role = "user", parts = listOf(GeminiPart.inline("audio/wav", Base64.encode(wav))))),
-            generationConfig = GenerationConfig(audioTranscriptionConfig = config)
-        )
-        val response = client.generateContent(key, model, request)
-        return ModelAnswer(response.transcriptionText(), response.usageMetadata.toTokenUsage())
-    }
-
-    /** The key of the settings, for the connections of the Live API. */
-    internal fun currentApiKey(): String = apiKey()
-
     companion object {
         /**
          * Tokens per image and PDF page: medium (560 for Gemini 3) instead of high (1120 by default
@@ -118,8 +97,6 @@ internal class GeminiBackend(public val client: GeminiClient, private val apiKey
         fun partOf(part: PromptPart): GeminiPart = when (part) {
             is PromptPart.Text -> GeminiPart.text(part.text)
             is PromptPart.Image -> GeminiPart.inline("image/jpeg", Base64.encode(part.jpeg))
-            is PromptPart.Audio -> GeminiPart.inline("audio/wav", Base64.encode(part.wav))
-            is PromptPart.File -> GeminiPart.file(part.mimeType, part.uri)
         }
 
         internal fun GeminiUsage?.toTokenUsage(): TokenUsage = TokenUsage(

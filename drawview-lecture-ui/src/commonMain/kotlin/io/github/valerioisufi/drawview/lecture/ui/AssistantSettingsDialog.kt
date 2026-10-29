@@ -55,7 +55,6 @@ import io.github.valerioisufi.drawview.lecture.LectureTask
 import io.github.valerioisufi.drawview.lecture.LocalModels
 import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.ReceivedLectures
-import io.github.valerioisufi.drawview.lecture.TranscriptionMode
 import io.github.valerioisufi.drawview.lecture.WhisperModel
 import io.github.valerioisufi.drawview.lecture.platform.isComputer
 import io.github.valerioisufi.drawview.lecture.ui.generated.resources.*
@@ -321,8 +320,7 @@ private fun LectureSection(draft: AssistantSettings, onChange: (AssistantSetting
         )
         Hint(stringResource(Res.string.lecture_settings_chunk_hint))
     }
-    // With the audio in its request, the model writes the notes at every update
-    if (draft.transcription != TranscriptionMode.WITH_NOTES) SettingsCard {
+    SettingsCard {
         Text(stringResource(Res.string.lecture_settings_notes, draft.notesSeconds / 60), style = MaterialTheme.typography.bodyLarge)
         val range = AssistantSettings.NOTES_SECONDS_RANGE
         DesignSlider(
@@ -402,20 +400,21 @@ private fun TaskModelRow(task: LectureTask, settings: AssistantSettings, localMo
         }
     }
     val choice = @Composable {
+        // The transcription is on this computer only: no choice of the provider
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (task == LectureTask.TRANSCRIPTION) {
+                TranscriptionSetup(settings, localModels, onChange)
+                return@Column
+            }
             SegmentedChoice(
                 options = ModelProvider.entries,
                 selected = model.provider,
                 label = { stringResource(if (it == ModelProvider.GEMINI) Res.string.lecture_provider_online else Res.string.lecture_provider_local) },
                 icon = { if (it == ModelProvider.GEMINI) DrawViewIcons.Globe else DrawViewIcons.Monitor },
                 textStyle = MaterialTheme.typography.labelMedium,
-                // Without the speech recognition here (the phones) Gemini transcribes: the local models read its transcript
-                enabled = { it == ModelProvider.GEMINI || localModels.canTranscribe || task != LectureTask.TRANSCRIPTION },
                 onSelect = { onChange(settings.withTask(task, model.copy(provider = it))) }
             )
             when {
-                task == LectureTask.TRANSCRIPTION && model.provider == ModelProvider.LOCAL -> TranscriptionSetup(settings, localModels, onChange)
-                task == LectureTask.TRANSCRIPTION -> SpeechModelPicker(settings, onChange)
                 model.provider == ModelProvider.GEMINI -> OutlinedTextField(
                     value = model.gemini,
                     onValueChange = { onChange(settings.withTask(task, model.copy(gemini = it))) },
@@ -544,51 +543,6 @@ private fun OllamaModelPicker(selected: String, recommended: String, localModels
                 TonalButton(onClick = { localModels.pull(selected) }) {
                     Text(stringResource(Res.string.lecture_local_download, selected))
                 }
-        }
-    }
-}
-
-/**
- * The model of Gemini transcribing the lecture: typed, or chosen among the speech models (live or
- * a piece at a time) and the model of the suggestions (which then hears the audio itself).
- */
-@Composable
-private fun SpeechModelPicker(settings: AssistantSettings, onChange: (AssistantSettings) -> Unit) {
-    val task = settings.task(LectureTask.TRANSCRIPTION)
-    val notes = settings.task(LectureTask.LIVE_NOTES)
-    val options = buildList {
-        add(AssistantSettings.DEFAULT_SPEECH_MODEL to stringResource(Res.string.lecture_speech_live) + " · " + stringResource(Res.string.lecture_local_recommended))
-        add(AssistantSettings.recordedSpeechModel(AssistantSettings.DEFAULT_SPEECH_MODEL) to stringResource(Res.string.lecture_speech_chunks))
-        if (notes.provider == ModelProvider.GEMINI) add(notes.gemini to stringResource(Res.string.lecture_speech_with_notes))
-    }
-    var expanded by remember { mutableStateOf(false) }
-    Box {
-        OutlinedTextField(
-            value = task.gemini,
-            onValueChange = { onChange(settings.withTask(LectureTask.TRANSCRIPTION, task.copy(gemini = it))) },
-            label = { Text(stringResource(Res.string.lecture_settings_speech_model)) },
-            singleLine = true,
-            trailingIcon = {
-                IconButton(onClick = { expanded = true }) { Icon(DrawViewIcons.ChevronDown, contentDescription = null, modifier = Modifier.size(20.dp)) }
-            },
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth()
-        )
-        DesignMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            for ((model, description) in options) {
-                DropdownMenuItem(
-                    text = {
-                        Column {
-                            Text(model)
-                            Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    },
-                    onClick = {
-                        expanded = false
-                        onChange(settings.withTask(LectureTask.TRANSCRIPTION, task.copy(gemini = model)))
-                    }
-                )
-            }
         }
     }
 }
@@ -768,13 +722,7 @@ private fun taskLabel(task: LectureTask): StringResource = when (task) {
 private fun taskHint(task: LectureTask, settings: AssistantSettings): StringResource? {
     val local = settings.task(task).provider == ModelProvider.LOCAL
     return when (task) {
-        LectureTask.TRANSCRIPTION -> when (settings.transcription) {
-            TranscriptionMode.LOCAL -> Res.string.lecture_hint_transcription_local
-            TranscriptionMode.STREAMING -> Res.string.lecture_hint_transcription_streaming
-            TranscriptionMode.SPEECH_CHUNKS -> Res.string.lecture_hint_transcription_chunks
-            TranscriptionMode.WITH_NOTES -> Res.string.lecture_hint_transcription_online
-            TranscriptionMode.PROMPT_CHUNKS -> Res.string.lecture_hint_transcription_prompt
-        }
+        LectureTask.TRANSCRIPTION -> Res.string.lecture_hint_transcription_local
         LectureTask.LIVE_NOTES -> if (local) Res.string.lecture_hint_live_local else null
         LectureTask.CATCH_UP -> if (local) Res.string.lecture_hint_catch_up_local else null
         LectureTask.FINAL_REVIEW -> if (local) Res.string.lecture_hint_review_local else null

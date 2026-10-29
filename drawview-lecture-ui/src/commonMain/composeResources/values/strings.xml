@@ -9,7 +9,7 @@
     <string name="lecture_action_go">Go</string>
     <string name="lecture_action_retry">Retry</string>
     <string name="lecture_action_new_recording">New recording</string>
-    <string name="lecture_idle_description">While you take notes, the assistant listens to the lecture: every minute it compares what is said with the slides and with what you wrote, and suggests what is missing.</string>
+    <string name="lecture_idle_description">While you take notes, the assistant listens to the lecture: every few minutes it compares what is said with the slides and with what you wrote, and suggests what is missing.</string>
     <string name="lecture_unsupported">The recording is available in the desktop app only, for now.</string>
     <string name="lecture_status_recording">Recording · %1$s</string>
     <string name="lecture_status_finalizing">Reviewing the whole lecture…</string>
@@ -78,7 +78,7 @@
     <string name="lecture_action_save">Save</string>
     <string name="lecture_action_cancel">Cancel</string>
     <string name="lecture_problem_local_unavailable">The local model does not answer: start Ollama and check the model in the settings (%1$s)</string>
-    <string name="lecture_problem_no_transcript">The local review uses the transcript of the lecture, which is empty: generate the review online.</string>
+    <string name="lecture_problem_no_transcript">The review reads the transcript of the lecture, which is empty: transcribe the lecture again on a computer.</string>
     <string name="lecture_review_running_local">%1$s is reviewing the lecture on this computer: %2$d tokens written. It can take 10–20 minutes.</string>
     <string name="lecture_review_by">Review by %1$s</string>
     <string name="lecture_review_regenerate">Regenerate</string>
@@ -116,7 +116,6 @@
     <string name="lecture_task_live_notes">Suggestions during the lecture</string>
     <string name="lecture_task_catch_up">I missed something</string>
     <string name="lecture_task_final_review">Final review</string>
-    <string name="lecture_hint_transcription_online">The model of the suggestions transcribes the audio in its own requests: one request at every update. The audio is sent to Google.</string>
     <string name="lecture_hint_transcription_local">whisper.cpp transcribes on this computer: the audio never leaves it, and the online models receive the transcript.</string>
     <string name="lecture_hint_live_local">Free and private, but it must keep up with the lecture: on 16 GB prefer a small model (gemma4:e4b). It reads the transcript.</string>
     <string name="lecture_hint_catch_up_local">Reads the transcript of the last minutes.</string>
@@ -126,7 +125,6 @@
     <string name="lecture_usage_local">Requests answered on this computer: %1$d</string>
     <string name="lecture_privacy_local">Everything stays on this computer: the audio, the pages and your notes. Ask the lecturer before recording.</string>
     <string name="lecture_privacy_online">Sent to Google (Gemini API): %1$s. Ask the lecturer before recording.</string>
-    <string name="lecture_privacy_audio">the audio</string>
     <string name="lecture_privacy_transcript">the transcript</string>
     <string name="lecture_privacy_notebook">the pages and the slides you are looking at</string>
     <string name="lecture_context_title">Course context</string>
@@ -140,7 +138,7 @@
     <string name="lecture_settings_whisper_file_hint">A ggml file of whisper.cpp of your own, instead of the model chosen above.</string>
     <string name="lecture_whisper_model">Speech recognition model</string>
     <string name="lecture_whisper_ready">Downloaded</string>
-    <string name="lecture_whisper_unavailable">The transcription on this computer is available in the desktop app only, for now.</string>
+    <string name="lecture_whisper_unavailable">The lectures are transcribed on a computer, in the desktop app: here they are recorded, and a computer writes their notes.</string>
     <string name="lecture_language_auto">Automatic</string>
     <string name="lecture_local_ollama_checking">Looking for Ollama…</string>
     <string name="lecture_local_ollama_running">Ollama is running (%1$s).</string>
@@ -198,7 +196,7 @@
     <string name="lecture_arrival_show">Show</string>
     <string name="lecture_offer_title">Transcribe and review the lecture?</string>
     <string name="lecture_offer_message">A lecture of %2$s recorded on %1$s arrived without a transcript.</string>
-    <string name="lecture_offer_tokens">About %1$d tokens to Gemini (the audio, transcribed then reviewed), billed as your plan says.</string>
+    <string name="lecture_offer_tokens">About %1$d tokens to Gemini (the transcript, made on this computer, and the pages, reviewed), billed as your plan says.</string>
     <string name="lecture_offer_free">With the models of this computer: free.</string>
     <string name="lecture_offer_accept">Transcribe and review</string>
     <string name="lecture_settings_received">Lectures received without a transcript</string>
@@ -211,20 +209,12 @@
     <string name="lecture_local_find">Find on the network</string>
     <string name="lecture_offer_live_title">Follow the lecture live?</string>
     <string name="lecture_offer_live_message">%1$s is recording a lecture: this computer can write its notes as it goes, from its audio arriving as it is recorded, and its review at the end.</string>
-    <string name="lecture_offer_tokens_hour">About %1$d tokens to Gemini an hour (the audio, transcribed then reviewed), billed as your plan says.</string>
+    <string name="lecture_offer_tokens_hour">About %1$d tokens to Gemini an hour (the transcript, made on this computer, and the pages: the notes and the review), billed as your plan says.</string>
     <string name="lecture_offer_follow">Follow live</string>
     <string name="lecture_followed_here">Followed live by this computer: its notes are written as its audio arrives.</string>
     <string name="lecture_review_on_request">When the recording stops you can ask for the review of the whole lecture: organized notes and what is missing from yours.</string>
     <string name="lecture_settings_review_at_end">Write it at the end of every lecture</string>
     <string name="lecture_settings_review_on_request_hint">Off: you ask for it from the Review tab, when you need it.</string>
-    <string name="lecture_settings_speech_model">Transcription model</string>
-    <string name="lecture_speech_live">Live: the words appear while they are said</string>
-    <string name="lecture_speech_chunks">A piece at every update</string>
-    <string name="lecture_speech_with_notes">The model of the suggestions: one request at every update</string>
-    <string name="lecture_hint_transcription_streaming">The transcript appears while the lecturer speaks; the suggestions read it. The audio is sent to Google.</string>
-    <string name="lecture_hint_transcription_chunks">A speech model transcribes the audio of every update; the suggestions read the transcript. One request at every update: the plans of the models in preview allow 100 a day (about an hour and a half of lecture), the live model needs far fewer. The audio is sent to Google.</string>
-    <string name="lecture_hint_transcription_prompt">This model transcribes the audio of every update in a request of its own; the suggestions read the transcript. The audio is sent to Google.</string>
-    <string name="lecture_retranscribe_online">Transcribe again online (%1$s)</string>
     <string name="lecture_retranscribe_local">Transcribe again on this computer (whisper)</string>
     <string name="lecture_problem_quota_day_in">Your Gemini plan allows no more requests to %1$s today: they come back in %2$s. Meanwhile you can transcribe on this computer (Settings). What was transcribed is kept.</string>
     <string name="lecture_problem_quota_day">Your Gemini plan allows no more requests to %1$s today. Meanwhile you can transcribe on this computer (Settings). What was transcribed is kept.</string>

@@ -4,16 +4,14 @@ public final class io/github/valerioisufi/drawview/lecture/ui/ComposableSingleto
 	public final fun getLambda$-113132601$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$-1235076866$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$-1648729485$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-181267446$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-1888423241$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$-1904342713$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$-322651756$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$-356084988$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$-404080482$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$-612190027$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$1107738190$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$115042808$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$1317696433$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$15524930$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$1752505960$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$1851157883$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$1980137693$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;

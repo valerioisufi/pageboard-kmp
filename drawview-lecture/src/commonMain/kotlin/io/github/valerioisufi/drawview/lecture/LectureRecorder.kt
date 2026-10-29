@@ -13,7 +13,6 @@ import io.github.valerioisufi.drawview.lecture.local.OllamaException
 import io.github.valerioisufi.drawview.lecture.model.GeminiPromptCache
 import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
 import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
-import io.github.valerioisufi.drawview.lecture.transcription.StreamingTranscriber
 import io.github.valerioisufi.drawview.lecture.transcription.Transcriber
 import kotlin.concurrent.Volatile
 import kotlin.math.min
@@ -32,13 +31,12 @@ import kotlinx.coroutines.withTimeoutOrNull
  * Records a [Lecture] and follows it live.
  *
  * The microphone audio is written to disk ([io.github.valerioisufi.drawview.lecture.audio.RecordingFile])
- * and cut into chunks of about [AssistantSettings.chunkSeconds] ([SpeechChunker]). The chunks are
- * analyzed one at a time, in order: every request carries the memory of the lecture (outline,
- * suggested notes and their status, end of the transcript), what the student is looking at and
- * writing ([NotebookSource]), the slides and what was said, and returns the updated outline and
- * the missing notes ([ChunkAnalysis]). What was said is the audio, transcribed by Gemini in the
- * same request, or the transcript made on this computer ([Transcriber]) when the audio must not
- * leave it. Every kind of request is answered by the provider of its [LectureTask] (Gemini or a
+ * and cut into chunks of about [AssistantSettings.chunkSeconds] ([SpeechChunker]). Every chunk is
+ * transcribed on this computer ([Transcriber], whisper.cpp): the audio never leaves it. Every
+ * [AssistantSettings.notesSeconds] the transcript gathered goes to a request of notes, which
+ * carries the memory of the lecture (outline, suggested notes and their status, end of the
+ * transcript), what the student is looking at and writing ([NotebookSource]) and the slides, and
+ * returns the updated outline and the missing notes ([ChunkAnalysis]). Every kind of request is answered by the provider of its [LectureTask] (Gemini or a
  * local model). When the analysis falls behind (slow model or missing network) the waiting chunks
  * are merged into a single request. When the recording stops, the lecture is reviewed once more
  * ([FinalReviewer]), or later on request.
@@ -47,7 +45,8 @@ import kotlinx.coroutines.withTimeoutOrNull
  * ([detachNotebook]) and the analysis works on the audio only, until the document is opened again
  * ([attachNotebook]).
  *
- * Where the lectures are not followed by models (![analyzes]: the phones and the tablets, for now)
+ * Where the lectures are not followed by models (![analyzes]: the phones and the tablets, where
+ * whisper.cpp does not run)
  * only the audio and the pages seen are recorded (the notebook is captured now and then): the
  * notes and the review are written later, e.g. by a device with the models the lecture reaches.
  *
@@ -69,7 +68,6 @@ public class LectureRecorder internal constructor(
     private val transcriber: Transcriber? = null,
     private val analyzes: Boolean = true,
     private val follows: Boolean = false,
-    private val stream: StreamingTranscriber? = null,
     private val handwriting: HandwritingReader = HandwritingReader(lecture.directory.trimEnd('/').substringBeforeLast('/') + "/handwriting.json", lecture.backends) {
         lecture.onChanged(null)
     },
@@ -80,12 +78,8 @@ public class LectureRecorder internal constructor(
 
     private val backends get() = lecture.backends
 
-    /** What was said in every update: its audio, or its transcript. */
-    private val speech: SpeechSource = when {
-        stream != null -> StreamSpeech(lecture, stream, ::speechHints)
-        transcriber != null -> ChunkSpeech(lecture, transcriber, ::speechHints)
-        else -> AudioSpeech
-    }
+    /** What was said in every update, transcribed here; `null` without a transcriber (the notes are written elsewhere). */
+    private val speech: ChunkSpeech? = transcriber?.let { ChunkSpeech(lecture, it, ::speechHints) }
 
     @Volatile
     private var notebook: NotebookSource? = notebook
@@ -181,7 +175,6 @@ public class LectureRecorder internal constructor(
             var lastShared = 0L
             for (block in audioBlocks) {
                 if (!follows) lecture.recording.append(block)
-                speech.onAudio(block)
                 totalSamples += block.size
                 if (!heardSomething && block.any { it != 0.toShort() }) heardSomething = true
                 val blockLevel = (rms(block) / LEVEL_FULL_SCALE).coerceIn(0f, 1f)
@@ -220,7 +213,6 @@ public class LectureRecorder internal constructor(
                 }
             }
             // Stopped: the last words
-            speech.onAudioEnd()
             chunker?.cutNow(minSeconds = 2f)?.let {
                 lecture.setState { pendingUpdates += 1 }
                 updates.trySend(QueuedChunk(it, catchUp = false))
@@ -235,14 +227,13 @@ public class LectureRecorder internal constructor(
             finishRecordingFile()
         }
 
-        speech.start()
         try {
             capture.start(onSamples = { samples -> audioBlocks.trySend(samples) }, onEvent = ::onCaptureEvent)
         } catch (e: Throwable) {
             audioJob?.cancel()
             analysisJob?.cancel()
             notebookJob?.cancel()
-            lecture.scope.launch { speech.close() }
+            lecture.scope.launch { speech?.close() }
             throw e
         }
         lecture.scope.launch { lecture.persist() }
@@ -327,7 +318,7 @@ public class LectureRecorder internal constructor(
         audioJob?.cancel()
         withTimeoutOrNull(2_000) { audioJob?.join() }
         finishRecordingFile()
-        withTimeoutOrNull(2_000) { speech.close() }
+        withTimeoutOrNull(2_000) { speech?.close() }
         lecture.status = LectureStatus.FINISHED
         lecture.level = 0f
         lecture.pendingUpdates = 0
@@ -352,7 +343,7 @@ public class LectureRecorder internal constructor(
     /** The speech recognition stays ready during the lecture: freed at its end. */
     private suspend fun closeTranscriber() {
         try {
-            speech.close()
+            speech?.close()
         } catch (e: Throwable) {
             println("DrawView: cannot stop the transcription: ${e.message}")
         }
@@ -439,11 +430,10 @@ public class LectureRecorder internal constructor(
 
     /**
      * The live update of [chunks]: their transcript, and the suggestions and the outline when it is
-     * time ([AssistantSettings.notesSeconds]); with the audio, all of them at once.
+     * time ([AssistantSettings.notesSeconds]).
      */
     private suspend fun analyzeChunks(chunks: List<AudioChunk>) {
-        val heard = speech.speechOf(chunks) ?: return
-        if (heard !is RequestTranscript) return askNotes(heard)
+        val heard = speech?.speechOf(chunks) ?: return
         gathered.add(heard)
         if (heard.endMs - gathered.first().newStartMs < settingsStore.settings.notesSeconds * 1000L) return
         askNotes(gathered.merged().also { gathered.clear() })
@@ -453,8 +443,8 @@ public class LectureRecorder internal constructor(
     private fun List<RequestTranscript>.merged(): RequestTranscript =
         singleOrNull() ?: RequestTranscript(emptyList(), flatMap { it.segments }, first().newStartMs, 0L, last().endMs)
 
-    /** The suggestions, the outline and (with the audio) the transcript of [speech]. */
-    private suspend fun askNotes(speech: RequestSpeech) {
+    /** The suggestions and the outline of [speech]. */
+    private suspend fun askNotes(speech: RequestTranscript) {
         val settings = settingsStore.settings
         var includeOutline = false
         val task = settings.task(LectureTask.LIVE_NOTES)
@@ -468,9 +458,6 @@ public class LectureRecorder internal constructor(
         if (includeOutline && analysis.outline.isNotBlank()) lastOutlineMs = speech.endMs
         val defaultPage = result.notebook?.visiblePageIndexes?.firstOrNull()
         lecture.setState {
-            if (speech is RequestAudio && analysis.transcript.isNotBlank()) {
-                transcript.add(TranscriptSegment(speech.newStartMs, speech.endMs, analysis.transcript.trim()))
-            }
             if (analysis.outline.isNotBlank()) outline = analysis.outline.trim()
             if (analysis.currentTopic.isNotBlank()) currentTopic = analysis.currentTopic.trim()
             analysis.professorPage?.let { it - 1 }?.takeIf { it in 0 until lastPageCount }?.let { professorPageIndex = it }
@@ -481,26 +468,20 @@ public class LectureRecorder internal constructor(
     }
 
     /**
-     * "I missed something": the notes of the last minutes ([CATCH_UP_MS]), from their audio (Gemini,
-     * when the audio may leave the device) or from their transcript.
+     * "I missed something": the notes of the last minutes ([CATCH_UP_MS]), from their transcript.
      */
     private suspend fun recapLastMinutes() {
         val settings = settingsStore.settings
         val task = settings.task(LectureTask.CATCH_UP)
         val latest = recentChunks.lastOrNull()?.endMs ?: lecture.elapsedMs
         val segments = lecture.setStateResult { transcript.filter { it.endMs > latest - CATCH_UP_MS } }
-        val speech: RequestSpeech = if (segments.isNotEmpty()) {
-            RequestTranscript(emptyList(), segments, segments.first().startMs, 0L, segments.last().endMs)
-        } else if (task.provider == ModelProvider.GEMINI && settings.sendsAudio) {
-            requestAudio(recentChunks.toList(), contextMs = 0L) ?: return
-        } else {
-            return
-        }
+        if (segments.isEmpty()) return
+        val speech = RequestTranscript(emptyList(), segments, segments.first().startMs, 0L, segments.last().endMs)
         val start = startOf(task)
         val result = request(task, settings) { notebook ->
             LecturePrompts.chunkPrompt(
                 settings, lecture.memory(speech.endMs), notebook, speech,
-                catchUp = true, includeOutline = false, includeTranscript = false, start = start
+                catchUp = true, includeOutline = false, start = start
             )
         } ?: return
         val defaultPage = result.notebook?.visiblePageIndexes?.firstOrNull()

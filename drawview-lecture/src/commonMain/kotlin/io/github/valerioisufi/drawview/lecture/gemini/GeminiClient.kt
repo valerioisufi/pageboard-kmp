@@ -3,7 +3,6 @@ package io.github.valerioisufi.drawview.lecture.gemini
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.delete
-import io.ktor.client.request.get
 import io.ktor.client.request.patch
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -11,14 +10,12 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
-import io.ktor.http.content.ByteArrayContent
 import io.ktor.http.content.TextContent
 import io.ktor.http.isSuccess
-import kotlinx.coroutines.delay
 import kotlinx.serialization.json.Json
 
 /**
- * Minimal REST client of the Gemini API: `generateContent`, the Files API and the explicit caches.
+ * Minimal REST client of the Gemini API: `generateContent` and the explicit caches.
  *
  * The API key is passed to every call (it is read from the settings, which may change).
  */
@@ -35,47 +32,6 @@ public class GeminiClient(
         val result = json.decodeFromString(GenerateContentResponse.serializer(), body)
         result.promptFeedback?.blockReason?.let { throw GeminiException(400, "Request blocked: $it") }
         return result
-    }
-
-    /**
-     * Uploads [bytes] with the resumable protocol of the Files API and waits until the file can be
-     * used in the requests.
-     */
-    internal suspend fun uploadFile(apiKey: String, bytes: ByteArray, mimeType: String, displayName: String): GeminiFile {
-        val start = httpClient.post("$baseUrl/upload/v1beta/files") {
-            header(API_KEY_HEADER, apiKey)
-            header("X-Goog-Upload-Protocol", "resumable")
-            header("X-Goog-Upload-Command", "start")
-            header("X-Goog-Upload-Header-Content-Length", bytes.size.toString())
-            header("X-Goog-Upload-Header-Content-Type", mimeType)
-            setBody(
-                TextContent(
-                    json.encodeToString(GeminiUploadStart.serializer(), GeminiUploadStart(GeminiUploadName(displayName))),
-                    ContentType.Application.Json
-                )
-            )
-        }
-        start.checked()
-        val uploadUrl = start.headers["X-Goog-Upload-URL"]
-            ?: throw GeminiException(0, "The Files API did not return an upload URL")
-
-        val upload = httpClient.post(uploadUrl) {
-            header(API_KEY_HEADER, apiKey)
-            header("X-Goog-Upload-Offset", "0")
-            header("X-Goog-Upload-Command", "upload, finalize")
-            setBody(ByteArrayContent(bytes, ContentType.parse(mimeType)))
-        }
-        var file = json.decodeFromString(GeminiFileEnvelope.serializer(), upload.checked()).file
-
-        // Large files (audio, PDF) are processed before they can be used
-        var waitedMs = 0L
-        while (file.state == "PROCESSING" && waitedMs < MAX_PROCESSING_WAIT_MS) {
-            delay(PROCESSING_POLL_MS)
-            waitedMs += PROCESSING_POLL_MS
-            file = getFile(apiKey, file.name)
-        }
-        if (file.state == "FAILED") throw GeminiException(0, "The Files API could not process $displayName")
-        return file
     }
 
     /** Creates an explicit cache of [request]: its tokens are billed once, then read at a tenth of the price. */
@@ -103,13 +59,6 @@ public class GeminiClient(
         response.checked()
     }
 
-    internal suspend fun getFile(apiKey: String, name: String): GeminiFile {
-        val response = httpClient.get("$baseUrl/v1beta/$name") {
-            header(API_KEY_HEADER, apiKey)
-        }
-        return json.decodeFromString(GeminiFile.serializer(), response.checked())
-    }
-
     private suspend fun HttpResponse.checked(): String {
         val body = bodyAsText()
         if (!status.isSuccess()) {
@@ -126,8 +75,6 @@ public class GeminiClient(
     public companion object {
         internal const val DEFAULT_BASE_URL = "https://generativelanguage.googleapis.com"
         private const val API_KEY_HEADER = "x-goog-api-key"
-        private const val PROCESSING_POLL_MS = 2_000L
-        private const val MAX_PROCESSING_WAIT_MS = 180_000L
 
         internal val json = Json {
             ignoreUnknownKeys = true
@@ -139,7 +86,7 @@ public class GeminiClient(
             expectSuccess = false
             install(HttpTimeout) {
                 connectTimeoutMillis = 20_000
-                // Long audio and thinking: the answers can take minutes
+                // Long thinking: the answers can take minutes
                 requestTimeoutMillis = 10 * 60_000
                 socketTimeoutMillis = 5 * 60_000
             }

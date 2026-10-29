@@ -24,9 +24,8 @@ private class TranscribedLecture(val transcript: List<TranscriptSegment> = empty
 /**
  * Ten minutes of a lecture of `<bench>/material/pencilnotes` (from its tenth minute), transcribed
  * by whisper.cpp (`<bench>/whisper/ggml-large-v3-turbo-q5_0.bin`, pieces of a minute cut at a
- * pause, the prompt of the course) and by every generation model of the bench (clips of at most
- * 30 seconds cut at a pause, the request of [LecturePrompts.transcriptionOnlyPrompt]), against the
- * transcript of the lecture, written by Gemini from its audio: the words wrong and the time.
+ * pause, the prompt of the course), against the transcript of the lecture written by Gemini from
+ * its audio when it was recorded: the words wrong and the time.
  */
 internal class SpeechBench(
     private val bench: Bench,
@@ -80,31 +79,6 @@ internal class SpeechBench(
             report.appendLine("| whisper.cpp | - | not available | | |")
         }
 
-        val clips = pieces(samples, targetSeconds = 25, maxSeconds = 30)
-        for (model in bench.generators.filter { it.spec.id != "gemma-4-12b" }) {
-            val options = GeneratorOptions(maxTokens = 4096, audio = true)
-            var millis = 0L
-            var failed = 0
-            val texts = clips.map { clip ->
-                val prompt = LecturePrompts.transcriptionOnlyPrompt(settings, context, Wav.encode(clip.samples))
-                val answer = bench.ask(model, options, prompt, SchemaMode.ASKED)
-                millis += answer.millis
-                try {
-                    LectureAnalysis.parseTranscript(jsonOf(answer.text, prompt.schema))
-                } catch (_: Exception) {
-                    failed++
-                    answer.error?.let { "[$it]" } ?: answer.text
-                }
-            }
-            bench.loaded.unload(model.spec.id)
-            val text = texts.joinToString(" ")
-            bench.output("speech/${model.spec.id}.txt").writeText(texts.joinToString("\n"))
-            report.appendLine(
-                "| ${model.spec.name}, schema asked | ${clips.size}${if (failed > 0) " ($failed not JSON)" else ""} | " +
-                    "${"%.1f".format(wordErrorRate(text, referenceText) * 100)} % | ${seconds(millis)} | ${"%.2f".format(millis / 1000.0 / audioSeconds)} |"
-            )
-            println("speech ${model.spec.id}: ${seconds(millis)}")
-        }
         report.appendLine()
     }
 

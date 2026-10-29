@@ -101,8 +101,6 @@ internal class GeminiPromptCache(private val client: GeminiClient, private val t
             when (part) {
                 is PromptPart.Text -> append(part.text)
                 is PromptPart.Image -> append("image ").append(part.jpeg.contentHashCode())
-                is PromptPart.Audio -> append("audio ").append(part.wav.contentHashCode())
-                is PromptPart.File -> append("file ").append(part.uri)
             }
         }
     }

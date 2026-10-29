@@ -307,7 +307,7 @@ internal class PromptBench(
         if (segments.isNotEmpty()) {
             val memory = LectureMemory(endMs, outline, topic, "", suggestions.toList(), lecture.courseContext)
             val speech = RequestTranscript(emptyList(), segments, segments.first().startMs, 0L, segments.last().endMs)
-            val prompt = LecturePrompts.chunkPrompt(settings, memory, lecture.notebook(endMs), speech, catchUp = true, includeOutline = false, includeTranscript = false)
+            val prompt = LecturePrompts.chunkPrompt(settings, memory, lecture.notebook(endMs), speech, catchUp = true, includeOutline = false)
             ask(Kind.CATCH_UP, model, options, prompt, mode, lecture.id)
         }
     }

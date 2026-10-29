@@ -1,7 +1,6 @@
 package io.github.valerioisufi.drawview.lecture
 
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
-import io.github.valerioisufi.drawview.lecture.gemini.GeminiFile
 import io.github.valerioisufi.drawview.lecture.gemini.GenerateContentRequest
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
 import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
@@ -55,7 +54,13 @@ class LecturePromptsTest {
         settings = settings,
         memory = memory,
         notebook = notebook,
-        speech = RequestAudio(byteArrayOf(9, 9, 9), startMs = 55_000, contextMs = 5_000, endMs = 125_000),
+        speech = RequestTranscript(
+            context = listOf(TranscriptSegment(55_000, 60_000, "abbiamo visto")),
+            segments = listOf(TranscriptSegment(60_000, 64_000, "Il teorema ponte")),
+            startMs = 55_000,
+            contextMs = 5_000,
+            endMs = 125_000
+        ),
         catchUp = catchUp,
         includeOutline = includeOutline
     )
@@ -73,10 +78,9 @@ class LecturePromptsTest {
         assertTrue(texts.first().startsWith("## Course"))
         assertTrue(texts.first().contains("prof. Rossi"))
         assertTrue(texts.indexOfFirst { it.startsWith("## Lecture so far") } < texts.indexOfFirst { it.startsWith("## Notebook") })
-        // No file: the slides are text
-        assertTrue(parts.none { it.fileData != null })
-        assertEquals("audio/wav", parts.last().inlineData?.mimeType)
-        assertEquals("CQkJ", parts.last().inlineData?.data)
+        // No audio: the transcript, last
+        assertTrue(parts.none { it.inlineData?.mimeType?.startsWith("audio") == true })
+        assertTrue(texts.last().contains("Il teorema ponte"), texts.last())
     }
 
     @Test
@@ -92,7 +96,7 @@ class LecturePromptsTest {
         assertTrue(texts.contains("Notebook page 5, as the student sees it:"))
         assertTrue(texts.contains("Close-up of what the student wrote on notebook page 5"))
         assertTrue(texts.contains("[p. 5, 1:00, already noted] Limite"))
-        assertTrue(texts.contains("Lecture time 1:00–2:05. The first 5 s"))
+        assertTrue(texts.contains("Lecture time 1:00–2:05. The times in brackets are measured from 0:55, as atSeconds. The context part is already analyzed"), texts)
         assertFalse(texts.contains("I missed something"))
         assertTrue(request(catchUp = true).contents.single().parts.mapNotNull { it.text }.any { it.contains("I missed something") })
     }
@@ -183,11 +187,10 @@ class LecturePromptsTest {
         assertTrue(prompt.system.contains("notesMarkdown"))
         val texts = prompt.parts.filterIsInstance<PromptPart.Text>().joinToString("\n") { it.text }
         assertTrue(texts.contains("[0:00] Buongiorno\n[1:00] Oggi i limiti"))
-        assertTrue(texts.contains("the recording is not available"))
+        assertTrue(texts.contains("## Transcript of the lecture (may contain recognition errors)"))
         assertTrue(texts.contains("## Notebook during the lecture"))
         assertTrue(texts.contains("Slide 3 of PDF 1:\nTeorema ponte"))
-        // Neither audio nor files (a local model receives text and images), images in page order
-        assertTrue(prompt.parts.none { it is PromptPart.Audio || it is PromptPart.File })
+        // Images in page order
         assertEquals(listOf(1.toByte(), 2.toByte()), prompt.parts.filterIsInstance<PromptPart.Image>().map { it.jpeg.single() })
         assertTrue(texts.indexOf("Notebook page 5:") < texts.indexOf("Notebook page 8:"))
     }
@@ -206,7 +209,6 @@ class LecturePromptsTest {
                 endMs = 120_000
             )
         )
-        assertTrue(prompt.parts.none { it is PromptPart.Audio || it is PromptPart.File })
         val texts = prompt.parts.filterIsInstance<PromptPart.Text>().joinToString("\n") { it.text }
         assertTrue(texts.contains("## New transcript"))
         // Times from the start of the request, as atSeconds
@@ -223,19 +225,18 @@ class LecturePromptsTest {
         assertEquals("low", config.getValue("thinkingConfig").jsonObject.getValue("thinkingLevel").jsonPrimitive.content)
         val schema = config.getValue("responseJsonSchema").jsonObject
         assertEquals(
-            setOf("transcript", "currentTopic", "outline", "notes"),
+            setOf("currentTopic", "outline", "notes"),
             schema.getValue("required").jsonArray.map { it.jsonPrimitive.content }.toSet()
         )
         val part = encoded.getValue("contents").jsonArray.first().jsonObject.getValue("parts").jsonArray.last().jsonObject
-        assertNotNull(part["inlineData"]?.jsonObject?.get("mimeType"))
+        assertNotNull(part["text"])
         // No null fields
-        assertFalse(part.containsKey("text"))
+        assertFalse(part.containsKey("inlineData"))
         assertNotNull(encoded["systemInstruction"])
     }
 
     @Test
-    fun finalReviewSendsTheRecordingAndTheTranscript() {
-        val audio = GeminiFile(name = "files/rec", uri = "https://example.test/files/rec", mimeType = "audio/wav", state = "ACTIVE")
+    fun finalReviewSendsTheTranscriptNotTheRecording() {
         val request = GeminiBackend.toRequest(
             LecturePrompts.finalReviewPrompt(
                 settings = settings,
@@ -243,13 +244,11 @@ class LecturePromptsTest {
                 memory = memory,
                 transcript = listOf(TranscriptSegment(0, 60_000, "Buongiorno")),
                 pages = notebook.pages,
-                pageImages = listOf(PageImage(4, byteArrayOf(1))),
-                audioFile = audio
+                pageImages = listOf(PageImage(4, byteArrayOf(1)))
             )
         )
         val parts = request.contents.single().parts
-        assertEquals("https://example.test/files/rec", parts.last().fileData?.fileUri)
-        assertEquals(1, parts.count { it.fileData != null })
+        assertEquals(listOf("image/jpeg"), parts.mapNotNull { it.inlineData?.mimeType })
         assertTrue(parts.mapNotNull { it.text }.any { it.contains("[0:00] Buongiorno") })
         val schema = request.generationConfig?.responseJsonSchema as JsonObject
         assertEquals(listOf("notesMarkdown", "missing"), (schema["required"] as JsonArray).map { it.jsonPrimitive.content })
@@ -291,7 +290,7 @@ class LecturePromptsTest {
             includeOutline = false,
             start = start
         )
-        val catchUp = LecturePrompts.chunkPrompt(settings, memory, notebook, transcriptOf(60_000, "Il teorema ponte"), catchUp = true, includeTranscript = false, start = start)
+        val catchUp = LecturePrompts.chunkPrompt(settings, memory, notebook, transcriptOf(60_000, "Il teorema ponte"), catchUp = true, start = start)
         assertEquals(2, first.cachedParts)
         for (prompt in listOf(later, catchUp)) {
             assertEquals(first.system, prompt.system)
@@ -355,7 +354,8 @@ class LectureAnalysisTest {
             ```
             """.trimIndent()
         )
-        assertEquals("Oggi parliamo di limiti", analysis.transcript)
+        // The transcript the answers carried with the audio, ignored
+        assertEquals("Limiti", analysis.currentTopic)
         assertEquals(null, analysis.professorPage)
         val note = analysis.notes.single()
         assertEquals(NoteKind.DEFINITION, NoteKind.parse(note.kind))
@@ -459,11 +459,9 @@ class AssistantSettingsTest {
     }
 
     @Test
-    fun whatIsSentToGoogle() {
+    fun whatIsSentToGoogleIsNeverTheAudio() {
         val local = TaskModel(provider = ModelProvider.LOCAL)
-        assertEquals(setOf(SharedData.AUDIO, SharedData.NOTEBOOK), AssistantSettings().sentToGoogle)
-        val localAudio = AssistantSettings().withTask(LectureTask.TRANSCRIPTION, local)
-        assertEquals(setOf(SharedData.TRANSCRIPT, SharedData.NOTEBOOK), localAudio.sentToGoogle)
+        assertEquals(setOf(SharedData.TRANSCRIPT, SharedData.NOTEBOOK), AssistantSettings().sentToGoogle)
         val onlyReviewOnline = LectureTask.entries.fold(AssistantSettings()) { s, task -> s.withTask(task, local) }
             .withTask(LectureTask.FINAL_REVIEW, TaskModel())
         assertEquals(setOf(SharedData.TRANSCRIPT, SharedData.NOTEBOOK), onlyReviewOnline.sentToGoogle)
@@ -472,54 +470,31 @@ class AssistantSettingsTest {
     }
 
     @Test
-    fun theTranscriptionFollowsTheModelsChosen() {
-        // A speech model of Gemini, live by default; saved without a model: the default one
-        assertEquals(TranscriptionMode.STREAMING, AssistantSettings().transcription)
-        val saved = AssistantSettingsStore.json.decodeFromString(AssistantSettings.serializer(), """{"tasks":{"TRANSCRIPTION":{},"LIVE_NOTES":{"local":"qwen3.5:9b"}}}""")
-        assertEquals(AssistantSettings.DEFAULT_SPEECH_MODEL, saved.task(LectureTask.TRANSCRIPTION).gemini)
-        assertEquals("qwen3.5:9b", saved.task(LectureTask.LIVE_NOTES).local)
-        assertEquals(AssistantSettings.DEFAULT_MODEL, saved.task(LectureTask.LIVE_NOTES).gemini)
-
-        fun transcribedBy(model: String, notes: TaskModel = TaskModel()) =
-            AssistantSettings().withTask(LectureTask.TRANSCRIPTION, TaskModel(gemini = model)).withTask(LectureTask.LIVE_NOTES, notes).transcription
-        assertEquals(TranscriptionMode.SPEECH_CHUNKS, transcribedBy("gemini-3.5-transcribe"))
-        assertEquals(TranscriptionMode.STREAMING, transcribedBy("gemini-3.5-transcribe-live-preview"))
-        // The model of the suggestions hears the audio in its own request
-        assertEquals(TranscriptionMode.WITH_NOTES, transcribedBy(AssistantSettings.DEFAULT_MODEL))
-        assertEquals(TranscriptionMode.PROMPT_CHUNKS, transcribedBy("gemini-3.8-flash-lite"))
-        // Local suggestions read the transcript of Gemini
-        assertEquals(TranscriptionMode.PROMPT_CHUNKS, transcribedBy(AssistantSettings.DEFAULT_MODEL, TaskModel(provider = ModelProvider.LOCAL)))
-        val local = AssistantSettings().withTask(LectureTask.TRANSCRIPTION, TaskModel(provider = ModelProvider.LOCAL))
-        assertEquals(TranscriptionMode.LOCAL, local.transcription)
-        assertEquals(TranscriptionMode.STREAMING, local.onlineTranscription)
-        assertEquals("gemini-3.5-transcribe", AssistantSettings.recordedSpeechModel("gemini-3.5-transcribe-live"))
-
-        val withLocalNotes = AssistantSettings().withTask(LectureTask.LIVE_NOTES, TaskModel(provider = ModelProvider.LOCAL))
-            .withTask(LectureTask.CATCH_UP, TaskModel(provider = ModelProvider.LOCAL))
-            .withTask(LectureTask.FINAL_REVIEW, TaskModel(provider = ModelProvider.LOCAL))
-        assertEquals(setOf(SharedData.AUDIO), withLocalNotes.sentToGoogle)
+    fun theSettingsSavedWithTheTranscriptionOfGeminiTranscribeOnTheComputer() {
+        // Saved with Gemini Transcribe live, by chunks, and with the audio in the request of the notes
+        for (model in listOf("gemini-3.5-transcribe-live", "gemini-3.5-transcribe", "gemini-3.8-flash")) {
+            val saved = AssistantSettingsStore.json.decodeFromString(
+                AssistantSettings.serializer(),
+                """{"generateHere":true,"tasks":{"TRANSCRIPTION":{"provider":"GEMINI","gemini":"$model"},"LIVE_NOTES":{"gemini":"gemini-3.8-flash","local":"qwen3.5:9b"}},"spokenLanguage":"it"}"""
+            )
+            assertEquals(ModelProvider.LOCAL, saved.task(LectureTask.TRANSCRIPTION).provider, model)
+            assertEquals("gemini-3.8-flash", saved.task(LectureTask.LIVE_NOTES).gemini)
+            assertEquals("qwen3.5:9b", saved.task(LectureTask.LIVE_NOTES).local)
+            assertEquals("it", saved.spokenLanguage)
+            assertEquals(setOf(SharedData.TRANSCRIPT, SharedData.NOTEBOOK), saved.sentToGoogle)
+            // Where whisper.cpp does not run (a phone), recorded only: a computer writes the notes
+            assertTrue(saved.consistent(canTranscribe = true).generateHere)
+            assertFalse(saved.consistent(canTranscribe = false).generateHere)
+        }
         assertEquals(AssistantSettings.DEFAULT_LOCAL_LIVE_MODEL, AssistantSettings().task(LectureTask.LIVE_NOTES).local)
     }
 
     @Test
-    fun theSpeechModelsGetTheLanguageAndTheTermsOfTheCourse() {
-        assertEquals(listOf("it-IT"), AssistantSettings(spokenLanguage = "it").speechLocales)
-        assertEquals(listOf("en-US", "en-GB"), AssistantSettings(spokenLanguage = "en").speechLocales)
-        assertTrue(AssistantSettings().speechLocales.isEmpty())
-
-        val context = "Crittografia, corso di sicurezza\nHash; MAC; cifrari a blocchi\nIND-CPA, HMAC, SHA-256, funzione di compressione di Merkle-Damgård molto lunga davvero"
+    fun whisperGetsTheLanguageAndTheSlidesOnScreen() {
+        val context = "Crittografia, corso di sicurezza\nHash; MAC; cifrari a blocchi"
         val slides = listOf("Costruzione CBC-MAC\nSicurezza EUF-CMA del MAC con chiave k", "AES128 e SHA-256")
-        val vocabulary = LecturePrompts.vocabulary(context, slides)
-        assertEquals(
-            listOf("Crittografia", "corso di sicurezza", "Hash", "MAC", "cifrari a blocchi", "IND-CPA", "HMAC", "SHA-256", "CBC-MAC", "EUF-CMA", "AES128"),
-            vocabulary
-        )
-        assertEquals(3, LecturePrompts.vocabulary(context, slides, max = 3).size)
-
         val hints = LecturePrompts.speechHints(AssistantSettings(spokenLanguage = "it"), context, slides)
         assertEquals("it", hints.language)
-        assertEquals(listOf("it-IT"), hints.locales)
-        assertEquals(vocabulary, hints.vocabulary)
         assertTrue(hints.prompt.startsWith("Costruzione CBC-MAC Sicurezza EUF-CMA"), hints.prompt)
     }
 }

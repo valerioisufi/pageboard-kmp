@@ -14,7 +14,6 @@ import kotlinx.serialization.json.putJsonObject
 /** Answer of the model to a chunk of the lecture (structured output, [LectureAnalysis.chunkSchema]). */
 @Serializable
 internal data class ChunkAnalysis(
-    val transcript: String = "",
     val currentTopic: String = "",
     /** Page of the document (1-based) the lecturer is talking about. */
     val professorPage: Int? = null,
@@ -238,21 +237,6 @@ internal object LectureAnalysis {
         }
     }
 
-    @Serializable
-    private class TranscriptAnswer(val transcript: String = "")
-
-    /** The transcript of [LecturePrompts.transcriptionOnlyPrompt]. */
-    fun parseTranscript(text: String): String = parse(text, TranscriptAnswer.serializer()).transcript.trim()
-
-    /** JSON schema of [LecturePrompts.transcriptionOnlyPrompt]. */
-    val transcriptSchema: JsonObject = buildJsonObject {
-        put("type", "object")
-        putJsonObject("properties") {
-            putJsonObject("transcript") { put("type", "string") }
-        }
-        putJsonArray("required") { add("transcript") }
-    }
-
     /** JSON schema of the course context ([LecturePrompts.courseContextPrompt]). */
     val courseContextSchema: JsonObject = buildJsonObject {
         put("type", "object")
@@ -262,26 +246,15 @@ internal object LectureAnalysis {
         putJsonArray("required") { add("text") }
     }
 
-    /**
-     * JSON schema of [ChunkAnalysis], with or without the outline (updated every few minutes) and
-     * the transcript (not asked when the audio is transcribed on this computer).
-     */
-    fun chunkSchema(includeOutline: Boolean, includeTranscript: Boolean = true): JsonObject =
-        chunkSchemas.getValue(includeOutline to includeTranscript)
+    /** JSON schema of [ChunkAnalysis], with or without the outline (updated every few minutes). */
+    fun chunkSchema(includeOutline: Boolean): JsonObject = if (includeOutline) withOutline else withoutOutline
 
-    private val chunkSchemas: Map<Pair<Boolean, Boolean>, JsonObject> = listOf(true, false).flatMap { outline ->
-        listOf(true, false).map { transcript -> (outline to transcript) to buildChunkSchema(outline, transcript) }
-    }.toMap()
+    private val withOutline = buildChunkSchema(includeOutline = true)
+    private val withoutOutline = buildChunkSchema(includeOutline = false)
 
-    private fun buildChunkSchema(includeOutline: Boolean, includeTranscript: Boolean): JsonObject = buildJsonObject {
+    private fun buildChunkSchema(includeOutline: Boolean): JsonObject = buildJsonObject {
         put("type", "object")
         putJsonObject("properties") {
-            if (includeTranscript) {
-                putJsonObject("transcript") {
-                    put("type", "string")
-                    put("description", "Faithful transcript of the new audio only.")
-                }
-            }
             putJsonObject("currentTopic") {
                 put("type", "string")
                 put("description", "Current topic in a few words.")
@@ -302,7 +275,6 @@ internal object LectureAnalysis {
             }
         }
         putJsonArray("required") {
-            if (includeTranscript) add("transcript")
             add("currentTopic")
             if (includeOutline) add("outline")
             add("notes")

@@ -55,11 +55,6 @@ internal fun ModelPrompt.toRequest(mode: SchemaMode, temperature: Float = 0.4f):
                 flush()
                 content.add(GenerationPart.Image(part.jpeg))
             }
-            is PromptPart.Audio -> {
-                flush()
-                content.add(GenerationPart.Audio(part.wav))
-            }
-            is PromptPart.File -> error("A model of the device receives no file")
         }
     }
     flush()

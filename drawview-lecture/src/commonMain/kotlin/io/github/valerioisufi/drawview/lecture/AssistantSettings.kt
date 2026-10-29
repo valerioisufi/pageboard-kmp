@@ -46,13 +46,13 @@ public enum class ReceivedLectures {
     NEVER
 }
 
-/** What a lecture can send to Google. */
-public enum class SharedData { AUDIO, TRANSCRIPT, NOTEBOOK }
+/** What a lecture can send to Google: never its audio, which whisper.cpp transcribes on the computer. */
+public enum class SharedData { TRANSCRIPT, NOTEBOOK }
 
 /** The kinds of requests of the assistant, each answered by the provider chosen for it. */
 @Serializable
 public enum class LectureTask {
-    /** Speech to text: by a model of Gemini (see [TranscriptionMode]) or by whisper.cpp (local). */
+    /** Speech to text: by whisper.cpp on a computer, always (kept for the settings saved with Gemini). */
     TRANSCRIPTION,
 
     /** The suggestions of every update during the lecture (and the outline). */
@@ -63,26 +63,6 @@ public enum class LectureTask {
 
     /** The review of the whole lecture. */
     FINAL_REVIEW
-}
-
-/**
- * How the lecture is transcribed, following from the models chosen ([AssistantSettings.transcription]).
- */
-public enum class TranscriptionMode {
-    /** whisper.cpp on this computer, a chunk at a time. */
-    LOCAL,
-
-    /** A speech model of Gemini, live: the words arrive while they are said (Gemini 3.5 Transcribe Live). */
-    STREAMING,
-
-    /** A speech model of Gemini, a request at every update (Gemini 3.5 Transcribe). */
-    SPEECH_CHUNKS,
-
-    /** The model of the live suggestions hears the audio in its own request: one request. */
-    WITH_NOTES,
-
-    /** Another general model of Gemini transcribes every chunk in a request of its own. */
-    PROMPT_CHUNKS
 }
 
 /**
@@ -105,10 +85,11 @@ public data class TaskModel(
  * @param apiKey key of the Gemini API (empty: the `GEMINI_API_KEY` environment variable), kept in
  *   the [SecretStorage], not with the other settings.
  * @param generateHere whether the models follow the lectures on this device (the computers by
- *   default); otherwise they are recorded only, and a device with the models writes their notes.
+ *   default; never where whisper.cpp does not run); otherwise they are recorded only, and a
+ *   computer writes their notes.
  * @param chunkSeconds new audio analyzed at every update.
- * @param notesSeconds how often the notes are asked, when the speech is transcribed apart (on the
- *   device or by a speech model): the transcript of the updates is gathered until then.
+ * @param notesSeconds how often the notes are asked: the transcript of the updates is gathered
+ *   until then.
  * @param notesLanguage language of the notes (empty: the language of the lecture).
  * @param tasks provider and models of every kind of request (see [task]).
  * @param localUrl address of the Ollama server (the local models).
@@ -135,6 +116,8 @@ public data class AssistantSettings(
     /** Provider and models of [task] (the defaults where not configured). */
     public fun task(task: LectureTask): TaskModel {
         val defaults = defaultTask(task)
+        // The transcription is on the computer, also where Gemini was saved for it
+        if (task == LectureTask.TRANSCRIPTION) return defaults
         val saved = tasks[task] ?: return defaults
         return saved.copy(gemini = saved.gemini.trim().ifEmpty { defaults.gemini }, local = saved.local.trim().ifEmpty { defaults.local })
     }
@@ -153,59 +136,27 @@ public data class AssistantSettings(
             .filter { it.provider == ModelProvider.LOCAL }
             .mapTo(mutableSetOf()) { it.local }
 
-    /** The audio is sent to Google only when Gemini transcribes it: otherwise it stays on this computer. */
-    val sendsAudio: Boolean get() = task(LectureTask.TRANSCRIPTION).provider == ModelProvider.GEMINI
-
-    /** How the lecture is transcribed. */
-    val transcription: TranscriptionMode
-        get() = if (task(LectureTask.TRANSCRIPTION).provider == ModelProvider.LOCAL) TranscriptionMode.LOCAL else onlineTranscription
-
-    /** How Gemini transcribes the lecture, with the model of the transcription (also when it is local now). */
-    val onlineTranscription: TranscriptionMode
-        get() {
-            val model = task(LectureTask.TRANSCRIPTION).gemini
-            val notes = task(LectureTask.LIVE_NOTES)
-            return when {
-                isSpeechModel(model) && isLiveModel(model) -> TranscriptionMode.STREAMING
-                isSpeechModel(model) -> TranscriptionMode.SPEECH_CHUNKS
-                notes.provider == ModelProvider.GEMINI && notes.gemini == model -> TranscriptionMode.WITH_NOTES
-                else -> TranscriptionMode.PROMPT_CHUNKS
-            }
-        }
-
-    /** The BCP-47 codes of the language spoken for the speech models of Gemini (empty: recognized). */
-    val speechLocales: List<String> get() = SPEECH_LOCALES[spokenLanguage].orEmpty()
-
     /** What the requests of a lecture send to Google (empty: everything stays on this computer). */
     val sentToGoogle: Set<SharedData>
         get() = buildSet {
-            if (sendsAudio) add(SharedData.AUDIO)
             val online = listOf(LectureTask.LIVE_NOTES, LectureTask.CATCH_UP, LectureTask.FINAL_REVIEW)
                 .any { task(it).provider == ModelProvider.GEMINI }
             if (online) {
-                if (!sendsAudio) add(SharedData.TRANSCRIPT)
+                add(SharedData.TRANSCRIPT)
                 add(SharedData.NOTEBOOK)
             }
         }
 
     /**
-     * These settings with the combination that cannot work corrected: where the speech is not
-     * recognized on the device ([canTranscribe] : the phones), Gemini transcribes it.
+     * These settings with the combination that cannot work corrected: where whisper.cpp does not
+     * run ([canTranscribe] false: the phones and the tablets), the lectures are recorded only, and
+     * a computer writes their notes.
      */
-    internal fun consistent(canTranscribe: Boolean = true): AssistantSettings {
-        val transcription = task(LectureTask.TRANSCRIPTION)
-        return if (!canTranscribe && transcription.provider == ModelProvider.LOCAL) {
-            withTask(LectureTask.TRANSCRIPTION, transcription.copy(provider = ModelProvider.GEMINI))
-        } else {
-            this
-        }
-    }
+    internal fun consistent(canTranscribe: Boolean = true): AssistantSettings =
+        if (!canTranscribe && generateHere) copy(generateHere = false) else this
 
     public companion object {
         internal const val DEFAULT_MODEL = "gemini-3.8-flash"
-
-        /** The speech model of Gemini transcribing live. */
-        public const val DEFAULT_SPEECH_MODEL: String = "gemini-3.5-transcribe-live"
         internal const val DEFAULT_LOCAL_MODEL = "gemma4:12b"
 
         /** Smaller local model for the requests of every minute (it must keep up with the lecture). */
@@ -216,27 +167,10 @@ public data class AssistantSettings(
         public val THINKING_LEVELS: List<String> = listOf("low", "medium", "high")
 
         public fun defaultTask(task: LectureTask): TaskModel = when (task) {
-            LectureTask.TRANSCRIPTION -> TaskModel(gemini = DEFAULT_SPEECH_MODEL)
+            LectureTask.TRANSCRIPTION -> TaskModel(provider = ModelProvider.LOCAL)
             LectureTask.LIVE_NOTES, LectureTask.CATCH_UP -> TaskModel(gemini = DEFAULT_MODEL, local = DEFAULT_LOCAL_LIVE_MODEL)
             LectureTask.FINAL_REVIEW -> TaskModel(gemini = DEFAULT_MODEL, local = DEFAULT_LOCAL_MODEL)
         }
-
-        /** A speech model of Gemini (it transcribes only: no prompt). */
-        internal fun isSpeechModel(model: String): Boolean = "transcribe" in model.lowercase()
-
-        /** A model of the Live API (a WebSocket). */
-        internal fun isLiveModel(model: String): Boolean = "-live" in model.lowercase()
-
-        /** The model for recorded audio of a live speech model (gemini-3.5-transcribe-live: gemini-3.5-transcribe). */
-        public fun recordedSpeechModel(model: String): String = model.replace("-live", "")
-
-        /** The locales of the speech models (their table), by ISO code: the variants of a language together. */
-        private val SPEECH_LOCALES = mapOf(
-            "it" to listOf("it-IT"), "en" to listOf("en-US", "en-GB"), "es" to listOf("es-ES", "es-419"), "fr" to listOf("fr-FR"),
-            "de" to listOf("de-DE"), "pt" to listOf("pt-PT", "pt-BR"), "nl" to listOf("nl-NL"), "pl" to listOf("pl-PL"),
-            "ro" to listOf("ro-RO"), "el" to listOf("el-GR"), "ru" to listOf("ru-RU"), "uk" to listOf("uk-UA"),
-            "zh" to listOf("cmn-Hans-CN"), "ja" to listOf("ja-JP"), "ar" to listOf("ar-EG")
-        )
     }
 }
 
@@ -270,7 +204,7 @@ public class AssistantSettingsStore(
             tasks = LectureTask.entries.associateWith { newSettings.task(it) },
             localUrl = newSettings.localUrl.trim().trimEnd('/').ifEmpty { AssistantSettings.DEFAULT_LOCAL_URL },
             whisperModel = newSettings.whisperModel.trim(),
-            // An ISO code ("it") or "auto": a name typed by hand is not understood by the speech models
+            // An ISO code ("it") or "auto": a name typed by hand is not understood by whisper.cpp
             spokenLanguage = newSettings.spokenLanguage.trim().lowercase().takeIf { it == "auto" || ISO_LANGUAGE.matches(it) } ?: "auto"
         ).consistent(canTranscribe)
         if (sanitized.apiKey != settings.apiKey) secrets.write(API_KEY, sanitized.apiKey.ifEmpty { null })

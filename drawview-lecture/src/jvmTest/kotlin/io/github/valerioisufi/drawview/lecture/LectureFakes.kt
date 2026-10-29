@@ -52,7 +52,7 @@ internal fun geminiAnswer(payload: String) = buildJsonObject {
                 put("tokenCount", 400)
             })
             add(buildJsonObject {
-                put("modality", "AUDIO")
+                put("modality", "IMAGE")
                 put("tokenCount", 600)
             })
         })

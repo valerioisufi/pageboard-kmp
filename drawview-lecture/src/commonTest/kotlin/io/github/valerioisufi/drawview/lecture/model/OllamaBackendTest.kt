@@ -48,11 +48,4 @@ class OllamaBackendTest {
         assertTrue(body.contains("\"keep_alive\":0"))
         assertTrue(body.contains("\"num_ctx\":8192"))
     }
-
-    @Test
-    fun audioIsRefused() = runTest {
-        val backend = OllamaBackend(OllamaClient(HttpClient(MockEngine { respond("") }))) { "http://localhost:11434" }
-        val prompt = ModelPrompt("s", listOf(PromptPart.Audio(byteArrayOf(1))), schema, 100, "low")
-        assertFailsWith<OllamaException> { backend.generate(prompt, "gemma4:e4b") }
-    }
 }

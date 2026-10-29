@@ -487,8 +487,8 @@ public class Lecture internal constructor(
             }
             return
         }
-        // A local model reads the transcript only
-        if (provider == ModelProvider.LOCAL && transcriptCopy.isEmpty()) {
+        // The review reads the transcript only: the recording never leaves the device
+        if (transcriptCopy.isEmpty()) {
             setState {
                 problem = LectureProblem.NoTranscript
                 reviewStatus = ReviewStatus.FAILED
@@ -503,41 +503,15 @@ public class Lecture internal constructor(
         }
         try {
             prepare()
-            val prompt = when (provider) {
-                ModelProvider.GEMINI -> {
-                    // Carica l'intera registrazione solo se il parlato non è già stato trascritto
-                    val transcribedMs = transcriptCopy.sumOf { (it.endMs - it.startMs).coerceAtLeast(0L) }
-                    val hasTranscript = transcriptCopy.isNotEmpty() && (elapsedMs <= 0L || transcribedMs >= elapsedMs / 4)
-                    val audioFile = if (!settings.sendsAudio || hasTranscript) null else try {
-                        recording.readEncoded()?.let { backends.gemini.client.uploadFile(apiKey, it, RecordingFile.MIME_TYPE, "lecture-$id.opus") }
-                    } catch (e: CancellationException) {
-                        throw e
-                    } catch (e: Throwable) {
-                        // Review on the transcript only
-                        println("DrawView: cannot upload the recording: ${e.message}")
-                        null
-                    }
-                    LecturePrompts.finalReviewPrompt(
-                        settings = settings,
-                        documentTitle = documentTitle,
-                        memory = memory(elapsedMs),
-                        transcript = transcriptCopy,
-                        pages = seenPages.values.map { it.content },
-                        pageImages = seenImages(MAX_REVIEW_IMAGES),
-                        audioFile = audioFile,
-                        visiblePages = visibleSeenPages()
-                    )
-                }
-                ModelProvider.LOCAL -> LecturePrompts.finalReviewPrompt(
-                    settings = settings,
-                    documentTitle = documentTitle,
-                    memory = memory(elapsedMs),
-                    transcript = transcriptCopy,
-                    pages = seenPages.values.map { it.content },
-                    pageImages = seenImages(MAX_LOCAL_REVIEW_IMAGES),
-                    visiblePages = visibleSeenPages()
-                )
-            }
+            val prompt = LecturePrompts.finalReviewPrompt(
+                settings = settings,
+                documentTitle = documentTitle,
+                memory = memory(elapsedMs),
+                transcript = transcriptCopy,
+                pages = seenPages.values.map { it.content },
+                pageImages = seenImages(if (provider == ModelProvider.GEMINI) MAX_REVIEW_IMAGES else MAX_LOCAL_REVIEW_IMAGES),
+                visiblePages = visibleSeenPages()
+            )
             val answer = generateWithRetries(backends.of(provider), prompt, model) { tokens ->
                 // Written from the network thread: a snapshot state can be
                 if (tokens % 8 == 0) reviewProgressTokens = tokens

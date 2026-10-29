@@ -9,12 +9,7 @@ import io.github.valerioisufi.drawview.lecture.LectureStart
 import io.github.valerioisufi.drawview.lecture.NoteKind
 import io.github.valerioisufi.drawview.lecture.NoteSuggestion
 import io.github.valerioisufi.drawview.lecture.PageContent
-import io.github.valerioisufi.drawview.lecture.RequestAudio
-import io.github.valerioisufi.drawview.lecture.RequestSpeech
 import io.github.valerioisufi.drawview.lecture.RequestTranscript
-import io.github.valerioisufi.drawview.lecture.audio.RecordingFile
-import io.github.valerioisufi.drawview.lecture.audio.SpeechChunker
-import io.github.valerioisufi.drawview.lecture.audio.Wav
 import io.github.valerioisufi.drawview.lecture.formatLectureTime
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiException
@@ -57,17 +52,17 @@ internal class NotesRun(
  * [intervalMs], built as the assistant builds them ([LecturePrompts.chunkPrompt]), by each
  * configuration of [configs]:
  *
- * * `e4b-text`, `e4b-audio`: Gemma 4 E4B on this computer, the schema asked, with the transcript of
- *   the lecture or its audio (clips of at most 30 seconds cut at a pause); the notebook is the
- *   visible page and those next to it, plus the pages found by searching the notebook (BM25 and
- *   EmbeddingGemma 2 merged by Reciprocal Rank Fusion, as `drawview-search` ranks them) with the
- *   new transcript, or with the topic and the visible slide when the model hears the audio;
- * * `<gemini model>-text`, `<gemini model>-audio`: a model of the Gemini API (`GEMINI_API_KEY`),
- *   with the transcript or the audio of the interval in one piece, the notebook as the assistant
- *   sends it; no transcript is asked back. With `-cached`, the requests open with the slides of
- *   the notebook ([LectureStart]) kept in an explicit cache ([GeminiPromptCache]), as the recorder
- *   sends them to Gemini; with `-medium`, the
- *   model thinks at the medium level.
+ * * `e4b-text`: Gemma 4 E4B on this computer, the schema asked, with the transcript of the
+ *   lecture; the notebook is the visible page and those next to it, plus the pages found by
+ *   searching the notebook with the new transcript (BM25 and EmbeddingGemma 2 merged by Reciprocal
+ *   Rank Fusion, as `drawview-search` ranks them);
+ * * `<gemini model>-text`: a model of the Gemini API (`GEMINI_API_KEY`), with the transcript of
+ *   the interval, the notebook as the assistant sends it. With `-cached`, the requests open with
+ *   the slides of the notebook ([LectureStart]) kept in an explicit cache ([GeminiPromptCache]),
+ *   as the recorder sends them to Gemini; with `-medium`, the model thinks at the medium level.
+ *
+ * The audio never goes to a model: the lecture is transcribed on a computer (the transcript of
+ * the workspace stands for it).
  *
  * A configuration may end with `@<seconds>`, its own interval instead of [intervalMs].
  *
@@ -96,7 +91,6 @@ internal class NotesBench(
             report.appendLine("No lecture $lectureId in $workspace and ${bench.material}/pencilnotes.").appendLine()
             return
         }
-        val recording = RecordingFile(File(bench.material, "pencilnotes/lectures/doc-${lecture.prepared.documentId}/$lectureId").path)
         report.appendLine(
             "`$lectureId` (${formatLectureTime(lecture.prepared.durationMs)}), without the assistant: ${lecture.prepared.notes.size} notes of the student " +
                 "(${recorded.prepared.notes.size - lecture.prepared.notes.size} inserted from the suggestions removed), no images of the pages."
@@ -104,7 +98,7 @@ internal class NotesBench(
         report.appendLine("| Configuration | Interval | Requests | Failed | Notes | Prompt tokens | Cached tokens | Output tokens | Time | Dollars |")
             .appendLine("|---|---|---|---|---|---|---|---|---|---|")
         for (config in configs) {
-            val run = run(config, lecture, recording)
+            val run = run(config, lecture)
             bench.output("notes/$config.json").writeText(json.encodeToString(NotesRun.serializer(), run))
             report.appendLine(
                 "| $config | ${run.intervalMs / 1000} s | ${run.requests} | ${run.failed} | ${run.notes.size} | ${run.promptTokens} | ${run.cachedTokens} | ${run.outputTokens} | " +
@@ -115,15 +109,14 @@ internal class NotesBench(
         report.appendLine()
     }
 
-    private suspend fun run(config: String, lecture: BenchLecture, recording: RecordingFile): NotesRun {
+    private suspend fun run(config: String, lecture: BenchLecture): NotesRun {
         val name = config.substringBefore('@')
         val intervalMs = config.substringAfter('@', "").toLongOrNull()?.times(1000) ?: intervalMs
         val cached = name.contains("-cached")
         val base = name.replace("-cached", "").replace("-medium", "")
         val settings = if (name.contains("-medium")) settings.copy(thinkingLevel = "medium") else settings
-        val audio = base.endsWith("-audio")
         val device = base.startsWith("e4b")
-        val model = if (device) null else base.removeSuffix("-audio").removeSuffix("-text")
+        val model = if (device) null else base.removeSuffix("-text")
         val start = if (cached) LectureStart(lecture.prepared.documentTitle, lecture.pagesAt(0)) else null
         val gemini = if (device) null else GeminiBackend(GeminiClient()) { System.getenv("GEMINI_API_KEY").orEmpty() }
         val cache = if (cached && gemini != null) GeminiPromptCache(gemini.client) else null
@@ -148,38 +141,27 @@ internal class NotesBench(
                 startMs = endMs
                 continue
             }
-            val samples = if (audio) recording.readSegment(startMs, endMs - startMs) ?: ShortArray(0) else ShortArray(0)
-            val speech: RequestSpeech = if (audio) {
-                RequestAudio(Wav.encode(samples), startMs, 0L, endMs)
-            } else {
-                RequestTranscript(emptyList(), segments, startMs, 0L, endMs)
-            }
+            val speech = RequestTranscript(emptyList(), segments, startMs, 0L, endMs)
             val memory = LectureMemory(
                 elapsedMs = endMs,
                 outline = outline,
                 currentTopic = topic,
-                // The assistant keeps the end of the transcript only when there is one
-                previousTranscript = if (audio) "" else lecture.transcript.filter { it.endMs <= startMs }.takeLast(3).joinToString(" ") { it.text }.takeLast(600),
+                previousTranscript = lecture.transcript.filter { it.endMs <= startMs }.takeLast(3).joinToString(" ") { it.text }.takeLast(600),
                 suggestions = suggestions.toList(),
                 courseContext = lecture.courseContext
             )
             val notebook = if (search != null) {
                 val visible = lecture.visibleIndex(endMs)
-                val query = if (audio) {
-                    listOf(topic, outline.lines().takeLast(4).joinToString(" "), lecture.pagesAt(endMs).firstOrNull { it.index == visible }?.let(NotebookSearch::textOf).orEmpty()).joinToString(" ")
-                } else {
-                    segments.joinToString(" ") { it.text }
-                }
+                val query = segments.joinToString(" ") { it.text }
                 val found = search.find(query.take(MAX_QUERY_CHARS), count = FOUND_PAGES, excluding = visible?.let { (it - 1)..(it + 1) }?.toSet().orEmpty())
                 lecture.notebook(endMs, before = 1, after = 1, found = found.toSet())
             } else {
                 lecture.notebook(endMs)
             }
-            var prompt = LecturePrompts.chunkPrompt(settings, memory, notebook, speech, includeOutline = true, includeTranscript = false, start = start)
-            if (audio && device) prompt = prompt.withAudioClips(samples)
+            val prompt = LecturePrompts.chunkPrompt(settings, memory, notebook, speech, includeOutline = true, start = start)
             val start = TimeSource.Monotonic.markNow()
             val text: String? = if (device) {
-                val answer = bench.ask(bench.generators.first { it.spec.id == "gemma-4-e4b" }, GeneratorOptions(maxTokens = 16384, images = true, audio = audio), prompt, SchemaMode.ASKED)
+                val answer = bench.ask(bench.generators.first { it.spec.id == "gemma-4-e4b" }, GeneratorOptions(maxTokens = 16384, images = true), prompt, SchemaMode.ASKED)
                 answer.error?.let { answers.appendLine("### ${formatLectureTime(startMs)}: error\n$it\n") }
                 answer.text.takeIf { answer.error == null }?.let { jsonOf(it, prompt.schema) }
             } else {
@@ -254,24 +236,8 @@ internal class NotesBench(
         }
 
     /**
-     * [this] prompt with its audio ([samples]) in clips of at most 30 seconds cut at a pause, as Gemma 4 takes
-     * them.
-     */
-    private fun ModelPrompt.withAudioClips(samples: ShortArray): ModelPrompt = ModelPrompt(
-        system = system,
-        parts = parts.flatMap { part ->
-            if (part !is PromptPart.Audio) return@flatMap listOf(part)
-            val chunker = SpeechChunker(25, 30, overlapSeconds = 0)
-            (chunker.push(samples) + listOfNotNull(chunker.cutNow())).map { PromptPart.Audio(Wav.encode(it.samples)) }
-        },
-        schema = schema,
-        maxOutputTokens = maxOutputTokens,
-        thinkingLevel = thinkingLevel
-    )
-
-    /**
      * The price of a run of [config] from its tokens, [cachedTokens] being part of [promptTokens]
-     * (the audio as the text: the API says no other price for these models).
+     * (the prices of text).
      */
     private fun dollars(config: String, promptTokens: Long, cachedTokens: Long, outputTokens: Long): Double {
         val (input, cached, output) = when {
