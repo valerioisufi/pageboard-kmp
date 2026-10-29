@@ -656,6 +656,15 @@ public class LectureAssistant(
     }
 
     /** The handwriting of the notebook [documentId], transcribed once for all its lectures (and shared with its devices). */
+    /**
+     * The handwriting of document [documentId] read so far, by key of block (see
+     * [io.github.valerioisufi.drawview.lecture.handwriting.blockKey]): as last saved, also by a
+     * recording going on.
+     */
+    public suspend fun handwritingTexts(documentId: String): Map<String, String> = withContext(Dispatchers.IO) {
+        HandwritingReader.readFile(library.documentDirectory(documentId) + "/handwriting.json").mapValues { it.value.text }
+    }
+
     private fun handwritingOf(documentId: String): HandwritingReader = syncLock(handwritingLock) {
         handwritingReaders.getOrPut(documentId) {
             HandwritingReader(library.documentDirectory(documentId) + "/handwriting.json", backends) { library.changed(documentId, null) }

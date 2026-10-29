@@ -428,6 +428,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/PlacementMa
 	public static synthetic fun occupancyOf$default (Lio/github/valerioisufi/drawview/canvas/controller/PlacementManager;ILjava/util/Set;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/placement/PageOccupancy;
 	public final fun pagesFor (Ljava/util/List;Lkotlin/jvm/functions/Function1;)Ljava/util/List;
 	public static synthetic fun pagesFor$default (Lio/github/valerioisufi/drawview/canvas/controller/PlacementManager;Ljava/util/List;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/util/List;
+	public final fun pdfTextOf (I)Lio/github/valerioisufi/drawview/model/PdfTextLayout;
 	public final fun previous ()V
 	public final fun spotsFor (ILio/github/valerioisufi/drawview/model/placement/PlacementBlock;Lio/github/valerioisufi/drawview/model/placement/PlacementPolicy;)Ljava/util/List;
 	public final fun start (Lio/github/valerioisufi/drawview/canvas/controller/PlacementRequest;)V

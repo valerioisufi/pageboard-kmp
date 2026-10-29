@@ -1,6 +1,8 @@
 package io.github.valerioisufi.drawview.lecture
 
 import io.github.valerioisufi.drawview.model.DrawDocument
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
 /** Kind of content suggested by the assistant. */
@@ -28,7 +30,11 @@ public enum class SuggestionStatus { NEW, INSERTED, ALREADY_NOTED, DISMISSED }
  * @param atMs time of the lecture when it was said.
  * @param fromFinalReview found by the review of the whole lecture.
  * @param statusStamp when [status] was last changed, and where (the most recent wins, see [Stamp]).
+ * @param anchor a few exact words of its page the note is about, quoted by the model (empty: none),
+ *   to place it next to them; never written when empty, so that the records written before stay
+ *   as they were.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 public data class NoteSuggestion(
     val id: String,
@@ -41,7 +47,8 @@ public data class NoteSuggestion(
     val atMs: Long = 0,
     val fromFinalReview: Boolean = false,
     val status: SuggestionStatus = SuggestionStatus.NEW,
-    val statusStamp: Stamp? = null
+    val statusStamp: Stamp? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER) val anchor: String = ""
 )
 
 /** The page of [document] where the suggestion belongs: by identifier, or by index. */

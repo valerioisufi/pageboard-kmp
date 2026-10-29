@@ -84,6 +84,10 @@ internal object LecturePrompts {
     private const val MARKDOWN_RULE =
         "Markdown of the notebook: \"-\" for bullet points, **bold**, *italic*, \"#\" headings, `code` in the line, blocks of code between fences with their language (a line \"```python\", the code with its indentation, a line \"```\"), LaTeX formulas between \$...\$ (inline) or \$\$...\$\$ (display); no tables, HTML, images or links."
 
+    /** Where a note goes on its page: next to the words it is about (see `docs/auto-placement.md`). */
+    private const val ANCHOR_RULE =
+        "The anchor of a note is a few exact words (at most 8), copied from the slide or from the notes of the student on its page, that the note explains or completes, so that it can be placed next to them; omit it when the note is about nothing on the page."
+
     /** The images are numbered by the local models too ("attached image 1"): not the pages. */
     private const val PAGE_NUMBER_RULE =
         "Pages are always the notebook page numbers written in the labels (\"Notebook page 12\"), never the position of an image in the request."
@@ -106,6 +110,7 @@ internal object LecturePrompts {
             - Never invent or complete content that was not said. The transcript may contain recognition errors: do not build on words that make no sense.
             - The notes are inserted as they are in the notebook: concise and ready to use (short sentences or bullet points, formulas in LaTeX between ${'$'}...${'$'}, code in blocks of code, no preamble such as "The lecturer said").
             - The page of a note is the notebook page where it belongs (usually the slide being discussed). $PAGE_NUMBER_RULE
+            - $ANCHOR_RULE
             - $MARKDOWN_RULE
 
             Fields:
@@ -126,6 +131,7 @@ internal object LecturePrompts {
         - Write about what the lecturer discussed: the slides and the notes of the student help you complete and organize it, but the nearby pages that were never on screen were probably not discussed, and are not part of the notes unless the lecturer talked about them.
         - $MARKDOWN_RULE
         - $PAGE_NUMBER_RULE
+        - $ANCHOR_RULE
         - missing: the important content of the lecture that is still missing from the notebook (slides, notes of the student and suggested notes marked as inserted or already noted), in the same format as the live notes, with the notebook page where it belongs and atSeconds measured from the start of the lecture. Empty when nothing is missing.
 
         ${languageRule(settings, "notesMarkdown and missing")}

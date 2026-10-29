@@ -39,6 +39,8 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
      * Placed, it is selected so that it can be moved or resized.
      *
      * @param lecture when the lecture was recorded (wall clock), to find what the note is about.
+     * @param handwriting the handwriting of the notebook read so far, by key of block, to find the
+     *   words the note quotes ([NoteSuggestion.anchor]).
      * @param onInserted called once the note is in the notebook.
      * @param onCancel called when the placement is cancelled.
      */
@@ -46,6 +48,7 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
         controller: DrawViewController,
         suggestion: NoteSuggestion,
         lecture: LongRange?,
+        handwriting: Map<String, String> = emptyMap(),
         onInserted: () -> Unit,
         onCancel: () -> Unit
     ): Boolean {
@@ -54,7 +57,7 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
         val page = document.pages.getOrNull(pageIndex) ?: return false
         val content = contentOf(suggestion)
         val block = noteBlock(content, page)
-        val spots = controller.placementManager.spotsFor(pageIndex, block, BesideAnchor(anchorOf(page, suggestion, lecture)))
+        val spots = controller.placementManager.spotsFor(pageIndex, block, BesideAnchor(anchorOf(controller, page, suggestion, lecture, handwriting)))
         val first = spots.firstOrNull()?.box
         val widthMm = first?.width ?: block.preferredWidthMm
         val note = newText(content, widthMm, measureHeightMm(content, NOTE_FONT_PT, widthMm), NOTE_FONT_PT)
@@ -92,6 +95,7 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
         suggestions: List<NoteSuggestion>,
         lecture: LongRange?,
         label: String,
+        handwriting: Map<String, String> = emptyMap(),
         onInserted: (List<NoteSuggestion>) -> Unit,
         onCancel: () -> Unit
     ): Boolean {
@@ -108,7 +112,7 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
             for (suggestion in notes.sortedBy { it.atMs }) {
                 val content = contentOf(suggestion)
                 val block = noteBlock(content, page)
-                val onPage = placement.planner.candidates(occupancy, block, BesideAnchor(anchorOf(page, suggestion, lecture))).firstOrNull()
+                val onPage = placement.planner.candidates(occupancy, block, BesideAnchor(anchorOf(controller, page, suggestion, lecture, handwriting))).firstOrNull()
                 val spot = if (onPage != null) {
                     occupancy += onPage.rect
                     PlacementSpot(page.index, onPage.rect)
@@ -154,8 +158,15 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
     private fun noteBlock(content: String, page: DrawPage) =
         PlacementBlock(noteWidthMm(page)) { width -> measureHeightMm(content, NOTE_FONT_PT, width) }
 
-    /** What [suggestion] is about on [page]: the writing of the moment it was said during [lecture]. */
-    private fun anchorOf(page: DrawPage, suggestion: NoteSuggestion, lecture: LongRange?): MmRect? {
+    /**
+     * What [suggestion] is about on [page]: the words it quotes (typed, handwritten as read in
+     * [handwriting], or of the slide), else the writing of the moment it was said during [lecture].
+     */
+    private fun anchorOf(controller: DrawViewController, page: DrawPage, suggestion: NoteSuggestion, lecture: LongRange?, handwriting: Map<String, String>): MmRect? {
+        if (suggestion.anchor.isNotBlank()) {
+            val blocks = inkBlocksOf(page.index, page.id, page.strokes).mapNotNull { block -> handwriting[block.key]?.takeIf { it.isNotBlank() }?.let { block.bounds to it } }
+            LectureAnchors.quoteAnchor(page, suggestion.anchor, blocks, controller.placementManager.pdfTextOf(page.index))?.let { return it }
+        }
         if (lecture == null || suggestion.fromFinalReview) return null
         return LectureAnchors.anchorOf(page, lecture.first + suggestion.atMs, lecture.first, lecture.last)
     }

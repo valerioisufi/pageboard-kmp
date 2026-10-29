@@ -24,6 +24,33 @@ class LectureRecordsTest {
     )
 
     @Test
+    fun aSuggestionWrittenBeforeTheAnchorsIsWrittenAgainAsItWas() {
+        // A suggestion as the versions before the anchors wrote it (every value, defaults too)
+        val before = """{"id":"n1","kind":"DEFINITION","title":"n1","content":"Content of n1","pageIndex":3,"pageId":"p3","importance":2,"atMs":12000,"fromFinalReview":false,"status":"NEW","statusStamp":null}"""
+        val json = kotlinx.serialization.json.Json { encodeDefaults = true; ignoreUnknownKeys = true }
+        val read = json.decodeFromString(NoteSuggestion.serializer(), before)
+        assertEquals("", read.anchor)
+        assertEquals(before, json.encodeToString(NoteSuggestion.serializer(), read))
+        // So the version of a record without anchors does not change
+        val record = recorded.copy(suggestions = listOf(read))
+        assertEquals(LectureRecords.version(record), LectureRecords.version(assertNotNull(LectureRecords.decode(LectureRecords.encode(record)))))
+    }
+
+    @Test
+    fun theAnchorOfASuggestionIsKeptAndMerged() {
+        val anchored = recorded.copy(suggestions = recorded.suggestions.map { it.copy(anchor = "limite di una funzione") })
+        val read = assertNotNull(LectureRecords.decode(LectureRecords.encode(anchored)))
+        assertEquals(listOf("limite di una funzione", "limite di una funzione"), read.suggestions.map { it.anchor })
+        // An older version reads it, ignoring the anchor (as it reads any key it does not know)
+        val old = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+        val suggestion = old.encodeToString(NoteSuggestion.serializer(), anchored.suggestions.first())
+        assertEquals("n1", old.decodeFromString(OldSuggestion.serializer(), suggestion).id)
+        val merged = LectureRecords.merge(recorded.withStatus("n1", SuggestionStatus.INSERTED, "tablet", 300), anchored)
+        assertEquals(SuggestionStatus.INSERTED, merged.suggestions.first().status)
+        assertNotEquals(LectureRecords.version(recorded), LectureRecords.version(anchored))
+    }
+
+    @Test
     fun eachPartKeepsItsMostRecentChange() {
         // The computer transcribes and reviews; meanwhile the tablet renames the lecture
         val computer = LectureRecords.stamped(
@@ -91,4 +118,8 @@ class LectureRecordsTest {
         assertEquals(mapOf("TEXT" to 274_990L, "AUDIO" to 51_840L), record.usageByDevice.getValue("0236e586").usage.promptByModality)
         assertEquals(LectureStatus.FINISHED, record.status)
     }
+
+    /** A suggestion as the versions before the anchors know it. */
+    @kotlinx.serialization.Serializable
+    private data class OldSuggestion(val id: String, val kind: NoteKind, val title: String, val content: String)
 }

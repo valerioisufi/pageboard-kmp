@@ -223,7 +223,7 @@ nothing stored tells them apart (see "Left for later").
 
 | Phase | What | Status |
 |---|---|---|
-| 6 | The anchor named by the model: a quote in the answer (`AnalysisNote.anchor`, the schemas and the instructions of the live notes and of the review), `NoteSuggestion.anchor` never written when empty, tested on the records of the old form; `LectureAnchors.quoteAnchor` | planned |
+| 6 | The anchor named by the model: a quote in the answer (`AnalysisNote.anchor`, the schemas and the instructions of the live notes and of the review), `NoteSuggestion.anchor` never written when empty, tested on the records of the old form; `LectureAnchors.quoteAnchor`, `LectureAssistant.handwritingTexts`, `PlacementManager.pdfTextOf` | done |
 | 7 | The policy and the width by kind (`InMargin`, `PageBottom`, `NotePlacement.of(kind)`) | planned |
 
 ## Decisions

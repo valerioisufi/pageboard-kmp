@@ -30,7 +30,9 @@ internal data class AnalysisNote(
     val page: Int? = null,
     val importance: Int = 2,
     /** Seconds from the start of the audio of the request. */
-    val atSeconds: Double = 0.0
+    val atSeconds: Double = 0.0,
+    /** A few exact words of the slide or of the notes of the student on [page] that the note is about. */
+    val anchor: String = ""
 )
 
 /** Answer of the model to the review of the whole lecture ([LectureAnalysis.finalReviewSchema]). */
@@ -227,6 +229,9 @@ internal object LectureAnalysis {
             }
             putJsonObject("atSeconds") {
                 put("type", "number")
+            }
+            putJsonObject("anchor") {
+                put("type", "string")
             }
         }
         putJsonArray("required") {

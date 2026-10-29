@@ -360,7 +360,8 @@ public class Lecture internal constructor(
                     pageId = pageIndex?.let { lastPageIds.getOrNull(it) }.orEmpty(),
                     importance = note.importance.coerceIn(1, 3),
                     atMs = (startMs + (note.atSeconds * 1000).toLong()).coerceIn(startMs, maxOf(startMs, endMs)),
-                    fromFinalReview = fromFinalReview
+                    fromFinalReview = fromFinalReview,
+                    anchor = note.anchor.trim().take(MAX_ANCHOR_CHARS)
                 )
             )
         }
@@ -681,6 +682,10 @@ public class Lecture internal constructor(
         const val MAX_LOCAL_REVIEW_IMAGES = 8
         const val MIN_REVIEW_SECONDS = 20
         const val PREVIOUS_TRANSCRIPT_CHARS = 300
+
+        /** The longest anchor kept (a few words are asked: a longer one is cut). */
+        const val MAX_ANCHOR_CHARS = 120
+
         const val MIN_WORDS_TO_COMPARE = 6
         const val REPEATED_WORDS = 0.8
         const val PLAYBACK_LEAD_MS = 3_000L

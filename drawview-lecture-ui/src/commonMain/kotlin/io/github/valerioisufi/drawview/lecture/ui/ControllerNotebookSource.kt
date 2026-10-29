@@ -112,7 +112,7 @@ internal class ControllerNotebookSource(private val controller: DrawViewControll
                 pages = pageContents,
                 pageImages = pageImages,
                 newWriting = newWriting,
-                inkBlocks = pageContents.flatMap { page -> inkBlocks(page.index, page.pageId, contents[page.index]) },
+                inkBlocks = pageContents.flatMap { page -> inkBlocksOf(page.index, page.pageId, contents[page.index].strokes) },
                 strokeIds = strokeIds,
                 pageIds = pages.map { it.id }
             )
@@ -148,7 +148,7 @@ internal class ControllerNotebookSource(private val controller: DrawViewControll
     override suspend fun inkBlocks(pageIndexes: List<Int>): List<InkBlock> {
         val pages = withContext(Dispatchers.Main) { controller.document.pages.toList() }
         return withContext(Dispatchers.Default) {
-            pageIndexes.filter { it in pages.indices }.flatMap { index -> inkBlocks(index, pages[index].id, pages[index].snapshotContent()) }
+            pageIndexes.filter { it in pages.indices }.flatMap { index -> inkBlocksOf(index, pages[index].id, pages[index].snapshotContent().strokes) }
         }
     }
 
@@ -163,17 +163,6 @@ internal class ControllerNotebookSource(private val controller: DrawViewControll
             // The ink alone, on white: the slide behind would confuse the reading
             val ink = PageContentSnapshot(strokes, emptyList(), emptyList(), emptyList(), PageBackground.Solid(), content.widthMm, content.heightMm)
             renderRegion(controller.tileManager.tileRenderer, document, ink, block.pageIndex, unionOf(strokes.map { it.bounds }))?.jpeg
-        }
-    }
-
-    /** The handwriting of a page in blocks of strokes close to each other. */
-    private fun inkBlocks(pageIndex: Int, pageId: String, content: PageContentSnapshot): List<InkBlock> {
-        val strokes = content.strokes.filter { it.isHandwriting }
-        if (strokes.isEmpty()) return emptyList()
-        return groupStrokes(strokes.map { it.bounds }).map { group ->
-            val blockStrokes = group.map { strokes[it] }
-            val ids = blockStrokes.mapTo(mutableSetOf()) { it.id }
-            InkBlock(pageIndex, pageId, blockKey(ids), ids, unionOf(blockStrokes.map { it.bounds }))
         }
     }
 
@@ -221,6 +210,20 @@ internal class ControllerNotebookSource(private val controller: DrawViewControll
         const val CROP_MARGIN_MM = 6f
         const val CROP_PX_PER_MM = 8f
         const val CROP_MAX_SIDE_PX = 1024f
+    }
+}
+
+/**
+ * The handwriting of page [pageIndex] ([pageId]) in blocks of strokes close to each other, among
+ * [strokes] (the highlights left out), each with the key its text is kept by.
+ */
+internal fun inkBlocksOf(pageIndex: Int, pageId: String, strokes: List<DrawStroke>): List<InkBlock> {
+    val writing = strokes.filter { it.isHandwriting }
+    if (writing.isEmpty()) return emptyList()
+    return groupStrokes(writing.map { it.bounds }).map { group ->
+        val blockStrokes = group.map { writing[it] }
+        val ids = blockStrokes.mapTo(mutableSetOf()) { it.id }
+        InkBlock(pageIndex, pageId, blockKey(ids), ids, unionOf(blockStrokes.map { it.bounds }))
     }
 }
 

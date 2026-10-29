@@ -962,6 +962,7 @@ final class io.github.valerioisufi.drawview.lecture/LectureAssistant { // io.git
     final fun start(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.lecture/NotebookSource): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.start|start(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.lecture.NotebookSource){}[0]
     final fun writeContext(kotlin/String, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.lecture/LectureAssistant.writeContext|writeContext(kotlin.String;kotlin.Boolean){}[0]
     final suspend fun answerWithGemini(kotlin/String, kotlin/String): kotlin/Pair<kotlin/String, kotlin/String> // io.github.valerioisufi.drawview.lecture/LectureAssistant.answerWithGemini|answerWithGemini(kotlin.String;kotlin.String){}[0]
+    final suspend fun handwritingTexts(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/String> // io.github.valerioisufi.drawview.lecture/LectureAssistant.handwritingTexts|handwritingTexts(kotlin.String){}[0]
 }
 
 final class io.github.valerioisufi.drawview.lecture/LectureLibrary { // io.github.valerioisufi.drawview.lecture/LectureLibrary|null[0]
@@ -1184,8 +1185,10 @@ final class io.github.valerioisufi.drawview.lecture/LocalModels { // io.github.v
 }
 
 final class io.github.valerioisufi.drawview.lecture/NoteSuggestion { // io.github.valerioisufi.drawview.lecture/NoteSuggestion|null[0]
-    constructor <init>(kotlin/String, io.github.valerioisufi.drawview.lecture/NoteKind, kotlin/String, kotlin/String, kotlin/Int? = ..., kotlin/String = ..., kotlin/Int = ..., kotlin/Long = ..., kotlin/Boolean = ..., io.github.valerioisufi.drawview.lecture/SuggestionStatus = ..., io.github.valerioisufi.drawview.lecture/Stamp? = ...) // io.github.valerioisufi.drawview.lecture/NoteSuggestion.<init>|<init>(kotlin.String;io.github.valerioisufi.drawview.lecture.NoteKind;kotlin.String;kotlin.String;kotlin.Int?;kotlin.String;kotlin.Int;kotlin.Long;kotlin.Boolean;io.github.valerioisufi.drawview.lecture.SuggestionStatus;io.github.valerioisufi.drawview.lecture.Stamp?){}[0]
+    constructor <init>(kotlin/String, io.github.valerioisufi.drawview.lecture/NoteKind, kotlin/String, kotlin/String, kotlin/Int? = ..., kotlin/String = ..., kotlin/Int = ..., kotlin/Long = ..., kotlin/Boolean = ..., io.github.valerioisufi.drawview.lecture/SuggestionStatus = ..., io.github.valerioisufi.drawview.lecture/Stamp? = ..., kotlin/String = ...) // io.github.valerioisufi.drawview.lecture/NoteSuggestion.<init>|<init>(kotlin.String;io.github.valerioisufi.drawview.lecture.NoteKind;kotlin.String;kotlin.String;kotlin.Int?;kotlin.String;kotlin.Int;kotlin.Long;kotlin.Boolean;io.github.valerioisufi.drawview.lecture.SuggestionStatus;io.github.valerioisufi.drawview.lecture.Stamp?;kotlin.String){}[0]
 
+    final val anchor // io.github.valerioisufi.drawview.lecture/NoteSuggestion.anchor|{}anchor[0]
+        final fun <get-anchor>(): kotlin/String // io.github.valerioisufi.drawview.lecture/NoteSuggestion.anchor.<get-anchor>|<get-anchor>(){}[0]
     final val atMs // io.github.valerioisufi.drawview.lecture/NoteSuggestion.atMs|{}atMs[0]
         final fun <get-atMs>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/NoteSuggestion.atMs.<get-atMs>|<get-atMs>(){}[0]
     final val content // io.github.valerioisufi.drawview.lecture/NoteSuggestion.content|{}content[0]
@@ -1212,6 +1215,7 @@ final class io.github.valerioisufi.drawview.lecture/NoteSuggestion { // io.githu
     final fun component1(): kotlin/String // io.github.valerioisufi.drawview.lecture/NoteSuggestion.component1|component1(){}[0]
     final fun component10(): io.github.valerioisufi.drawview.lecture/SuggestionStatus // io.github.valerioisufi.drawview.lecture/NoteSuggestion.component10|component10(){}[0]
     final fun component11(): io.github.valerioisufi.drawview.lecture/Stamp? // io.github.valerioisufi.drawview.lecture/NoteSuggestion.component11|component11(){}[0]
+    final fun component12(): kotlin/String // io.github.valerioisufi.drawview.lecture/NoteSuggestion.component12|component12(){}[0]
     final fun component2(): io.github.valerioisufi.drawview.lecture/NoteKind // io.github.valerioisufi.drawview.lecture/NoteSuggestion.component2|component2(){}[0]
     final fun component3(): kotlin/String // io.github.valerioisufi.drawview.lecture/NoteSuggestion.component3|component3(){}[0]
     final fun component4(): kotlin/String // io.github.valerioisufi.drawview.lecture/NoteSuggestion.component4|component4(){}[0]
@@ -1220,7 +1224,7 @@ final class io.github.valerioisufi.drawview.lecture/NoteSuggestion { // io.githu
     final fun component7(): kotlin/Int // io.github.valerioisufi.drawview.lecture/NoteSuggestion.component7|component7(){}[0]
     final fun component8(): kotlin/Long // io.github.valerioisufi.drawview.lecture/NoteSuggestion.component8|component8(){}[0]
     final fun component9(): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/NoteSuggestion.component9|component9(){}[0]
-    final fun copy(kotlin/String = ..., io.github.valerioisufi.drawview.lecture/NoteKind = ..., kotlin/String = ..., kotlin/String = ..., kotlin/Int? = ..., kotlin/String = ..., kotlin/Int = ..., kotlin/Long = ..., kotlin/Boolean = ..., io.github.valerioisufi.drawview.lecture/SuggestionStatus = ..., io.github.valerioisufi.drawview.lecture/Stamp? = ...): io.github.valerioisufi.drawview.lecture/NoteSuggestion // io.github.valerioisufi.drawview.lecture/NoteSuggestion.copy|copy(kotlin.String;io.github.valerioisufi.drawview.lecture.NoteKind;kotlin.String;kotlin.String;kotlin.Int?;kotlin.String;kotlin.Int;kotlin.Long;kotlin.Boolean;io.github.valerioisufi.drawview.lecture.SuggestionStatus;io.github.valerioisufi.drawview.lecture.Stamp?){}[0]
+    final fun copy(kotlin/String = ..., io.github.valerioisufi.drawview.lecture/NoteKind = ..., kotlin/String = ..., kotlin/String = ..., kotlin/Int? = ..., kotlin/String = ..., kotlin/Int = ..., kotlin/Long = ..., kotlin/Boolean = ..., io.github.valerioisufi.drawview.lecture/SuggestionStatus = ..., io.github.valerioisufi.drawview.lecture/Stamp? = ..., kotlin/String = ...): io.github.valerioisufi.drawview.lecture/NoteSuggestion // io.github.valerioisufi.drawview.lecture/NoteSuggestion.copy|copy(kotlin.String;io.github.valerioisufi.drawview.lecture.NoteKind;kotlin.String;kotlin.String;kotlin.Int?;kotlin.String;kotlin.Int;kotlin.Long;kotlin.Boolean;io.github.valerioisufi.drawview.lecture.SuggestionStatus;io.github.valerioisufi.drawview.lecture.Stamp?;kotlin.String){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/NoteSuggestion.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.lecture/NoteSuggestion.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.lecture/NoteSuggestion.toString|toString(){}[0]
@@ -1556,8 +1560,11 @@ final object io.github.valerioisufi.drawview.lecture/LectureAnchors { // io.gith
         final fun <get-AFTER_MS>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/LectureAnchors.AFTER_MS.<get-AFTER_MS>|<get-AFTER_MS>(){}[0]
     final const val BEFORE_MS // io.github.valerioisufi.drawview.lecture/LectureAnchors.BEFORE_MS|{}BEFORE_MS[0]
         final fun <get-BEFORE_MS>(): kotlin/Long // io.github.valerioisufi.drawview.lecture/LectureAnchors.BEFORE_MS.<get-BEFORE_MS>|<get-BEFORE_MS>(){}[0]
+    final const val MIN_SHARED_WORDS // io.github.valerioisufi.drawview.lecture/LectureAnchors.MIN_SHARED_WORDS|{}MIN_SHARED_WORDS[0]
+        final fun <get-MIN_SHARED_WORDS>(): kotlin/Double // io.github.valerioisufi.drawview.lecture/LectureAnchors.MIN_SHARED_WORDS.<get-MIN_SHARED_WORDS>|<get-MIN_SHARED_WORDS>(){}[0]
 
     final fun anchorOf(io.github.valerioisufi.drawview.model/DrawPage, kotlin/Long, kotlin/Long, kotlin/Long): io.github.valerioisufi.drawview.model.geometry/Rect? // io.github.valerioisufi.drawview.lecture/LectureAnchors.anchorOf|anchorOf(io.github.valerioisufi.drawview.model.DrawPage;kotlin.Long;kotlin.Long;kotlin.Long){}[0]
+    final fun quoteAnchor(io.github.valerioisufi.drawview.model/DrawPage, kotlin/String, kotlin.collections/List<kotlin/Pair<io.github.valerioisufi.drawview.model.geometry/Rect, kotlin/String>> = ..., io.github.valerioisufi.drawview.model/PdfTextLayout? = ...): io.github.valerioisufi.drawview.model.geometry/Rect? // io.github.valerioisufi.drawview.lecture/LectureAnchors.quoteAnchor|quoteAnchor(io.github.valerioisufi.drawview.model.DrawPage;kotlin.String;kotlin.collections.List<kotlin.Pair<io.github.valerioisufi.drawview.model.geometry.Rect,kotlin.String>>;io.github.valerioisufi.drawview.model.PdfTextLayout?){}[0]
 }
 
 final object io.github.valerioisufi.drawview.lecture/LectureRecordings { // io.github.valerioisufi.drawview.lecture/LectureRecordings|null[0]

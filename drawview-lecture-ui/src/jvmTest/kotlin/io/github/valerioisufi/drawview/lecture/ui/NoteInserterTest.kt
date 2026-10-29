@@ -70,6 +70,38 @@ class NoteInserterTest {
     }
 
     @Test
+    fun theWordsQuotedByTheModelWinOverTheTimeOfTheWriting() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val quoted = controller.write(40f, atMs = 60_000).apply { text = "Teorema di Bolzano" }
+        controller.write(200f, atMs = 600_000)
+        val note = note("a", atMs = 605_000).copy(anchor = "il teorema di Bolzano")
+        assertTrue(NoteInserter(NoLayout).startPlacement(controller, note, lecture, onInserted = {}, onCancel = {}))
+
+        val spot = assertNotNull(controller.placementManager.spots.single())
+        assertTrue(spot.box.top >= quoted.y + quoted.height && spot.box.top < quoted.y + 25f, "below the quoted words: ${spot.box}")
+    }
+
+    @Test
+    fun aQuotedHandwritingIsFoundByItsTextAsRead() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val page = controller.document.pages[0]
+        val stroke = io.github.valerioisufi.drawview.model.change.StrokeData(
+            id = io.github.valerioisufi.drawview.model.newElementId(),
+            points = (0 until 20).map { io.github.valerioisufi.drawview.model.StrokePoint(x = 20f + it * 5f, y = 120f + (it % 2), pressure = 0.5f, timestampMs = it * 8L) },
+            tool = io.github.valerioisufi.drawview.model.StrokeTool.PRESSURE_PEN,
+            size = 0.5f,
+            color = 0xFF000000.toInt()
+        ).toElement()
+        page.add(stroke)
+        val key = inkBlocksOf(0, page.id, page.strokes).single().key
+        val note = note("a", atMs = 605_000).copy(anchor = "la serie geometrica")
+        assertTrue(NoteInserter(NoLayout).startPlacement(controller, note, null, handwriting = mapOf(key to "serie geometrica di ragione q"), onInserted = {}, onCancel = {}))
+
+        val spot = assertNotNull(controller.placementManager.spots.single())
+        assertTrue(spot.box.top >= stroke.bounds.bottom && spot.box.top < stroke.bounds.bottom + 25f, "below the handwriting: ${spot.box}")
+    }
+
+    @Test
     fun allTheNotesArePlacedTogetherWithoutCoveringEachOtherAndUndoneAtOnce() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope, pages = 2)
         controller.write(30f, atMs = 60_000)

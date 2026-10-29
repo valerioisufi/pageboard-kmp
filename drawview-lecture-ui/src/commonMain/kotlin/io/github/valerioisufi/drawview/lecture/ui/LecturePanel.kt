@@ -861,6 +861,7 @@ private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, controller: 
     val newNotes = lecture.suggestions.filter { it.status == SuggestionStatus.NEW }.sortedByDescending { it.atMs }
     val handled = lecture.suggestions.filter { it.status != SuggestionStatus.NEW }.sortedByDescending { it.atMs }
     var showHandled by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     LazyColumn(
         contentPadding = PaddingValues(horizontal = PanelPadding, vertical = 14.dp),
@@ -876,14 +877,17 @@ private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, controller: 
                 TonalButton(
                     onClick = {
                         assistant.placingNote = null
-                        inserter.startPlacementAll(
-                            controller = controller,
-                            suggestions = newNotes,
-                            lecture = lecture.timeSpan(),
-                            label = label,
-                            onInserted = { notes -> notes.forEach { lecture.updateSuggestion(it.id, SuggestionStatus.INSERTED) } },
-                            onCancel = {}
-                        )
+                        scope.launch {
+                            inserter.startPlacementAll(
+                                controller = controller,
+                                suggestions = newNotes,
+                                lecture = lecture.timeSpan(),
+                                label = label,
+                                handwriting = assistant.handwritingTexts(lecture.documentId),
+                                onInserted = { notes -> notes.forEach { lecture.updateSuggestion(it.id, SuggestionStatus.INSERTED) } },
+                                onCancel = {}
+                            )
+                        }
                     },
                     contentPadding = PaddingValues(start = 16.dp, end = 20.dp)
                 ) {
@@ -900,17 +904,20 @@ private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, controller: 
                 canListen = lecture.canPlayAudio,
                 placing = assistant.placingNote?.id == note.id,
                 onInsert = {
-                    val started = inserter.startPlacement(
-                        controller = controller,
-                        suggestion = note,
-                        lecture = lecture.timeSpan(),
-                        onInserted = {
-                            assistant.placingNote = null
-                            lecture.updateSuggestion(note.id, SuggestionStatus.INSERTED)
-                        },
-                        onCancel = { if (assistant.placingNote?.id == note.id) assistant.placingNote = null }
-                    )
-                    if (started) assistant.placingNote = note
+                    scope.launch {
+                        val started = inserter.startPlacement(
+                            controller = controller,
+                            suggestion = note,
+                            lecture = lecture.timeSpan(),
+                            handwriting = assistant.handwritingTexts(lecture.documentId),
+                            onInserted = {
+                                assistant.placingNote = null
+                                lecture.updateSuggestion(note.id, SuggestionStatus.INSERTED)
+                            },
+                            onCancel = { if (assistant.placingNote?.id == note.id) assistant.placingNote = null }
+                        )
+                        if (started) assistant.placingNote = note
+                    }
                 },
                 onCancelPlacing = { controller.placementManager.cancel() },
                 onListen = { lecture.play(note) },

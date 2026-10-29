@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.PdfTextLayout
 import io.github.valerioisufi.drawview.model.geometry.Rect as MmRect
 import io.github.valerioisufi.drawview.model.placement.PageOccupancy
 import io.github.valerioisufi.drawview.model.placement.PlacementBlock
@@ -195,6 +196,10 @@ public class PlacementManager(private val controller: DrawViewController) {
         val page = controller.document.pages.getOrNull(pageIndex) ?: return PageOccupancy(0f, 0f, emptyList())
         return PageOccupancy.of(page, pdfText = { controller.textMarkupManager.layoutOf(it) }, excluded = excluded)
     }
+
+    /** The text of the PDF page drawn on page [pageIndex], when the PDF engine reads it. */
+    public fun pdfTextOf(pageIndex: Int): PdfTextLayout? =
+        controller.document.pages.getOrNull(pageIndex)?.pdfs?.firstOrNull()?.let { controller.textMarkupManager.layoutOf(it) }
 
     /**
      * The places for [block] on page [pageIndex] by [policy], the best first; when it fits nowhere
