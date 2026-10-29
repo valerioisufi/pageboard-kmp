@@ -63,6 +63,43 @@ abstract interface io.github.valerioisufi.drawview.export/DocumentExporter { // 
     abstract suspend fun export(io.github.valerioisufi.drawview.export/DocumentContent, io.github.valerioisufi.drawview.export/ExportOptions, kotlin/String, kotlin/Function1<kotlin/Float, kotlin/Unit> = ...): io.github.valerioisufi.drawview.export/ExportResult // io.github.valerioisufi.drawview.export/DocumentExporter.export|export(io.github.valerioisufi.drawview.export.DocumentContent;io.github.valerioisufi.drawview.export.ExportOptions;kotlin.String;kotlin.Function1<kotlin.Float,kotlin.Unit>){}[0]
 }
 
+sealed interface io.github.valerioisufi.drawview.export/ExportJobState { // io.github.valerioisufi.drawview.export/ExportJobState|null[0]
+    final class Done : io.github.valerioisufi.drawview.export/ExportJobState { // io.github.valerioisufi.drawview.export/ExportJobState.Done|null[0]
+        constructor <init>(io.github.valerioisufi.drawview.export/ExportOutcome, kotlin/String) // io.github.valerioisufi.drawview.export/ExportJobState.Done.<init>|<init>(io.github.valerioisufi.drawview.export.ExportOutcome;kotlin.String){}[0]
+
+        final val outcome // io.github.valerioisufi.drawview.export/ExportJobState.Done.outcome|{}outcome[0]
+            final fun <get-outcome>(): io.github.valerioisufi.drawview.export/ExportOutcome // io.github.valerioisufi.drawview.export/ExportJobState.Done.outcome.<get-outcome>|<get-outcome>(){}[0]
+        final val path // io.github.valerioisufi.drawview.export/ExportJobState.Done.path|{}path[0]
+            final fun <get-path>(): kotlin/String // io.github.valerioisufi.drawview.export/ExportJobState.Done.path.<get-path>|<get-path>(){}[0]
+    }
+
+    final class Failed : io.github.valerioisufi.drawview.export/ExportJobState { // io.github.valerioisufi.drawview.export/ExportJobState.Failed|null[0]
+        constructor <init>(io.github.valerioisufi.drawview.export/ExportFailure) // io.github.valerioisufi.drawview.export/ExportJobState.Failed.<init>|<init>(io.github.valerioisufi.drawview.export.ExportFailure){}[0]
+
+        final val failure // io.github.valerioisufi.drawview.export/ExportJobState.Failed.failure|{}failure[0]
+            final fun <get-failure>(): io.github.valerioisufi.drawview.export/ExportFailure // io.github.valerioisufi.drawview.export/ExportJobState.Failed.failure.<get-failure>|<get-failure>(){}[0]
+    }
+
+    final class Running : io.github.valerioisufi.drawview.export/ExportJobState { // io.github.valerioisufi.drawview.export/ExportJobState.Running|null[0]
+        constructor <init>(io.github.valerioisufi.drawview.export/ExportProgress?) // io.github.valerioisufi.drawview.export/ExportJobState.Running.<init>|<init>(io.github.valerioisufi.drawview.export.ExportProgress?){}[0]
+
+        final val progress // io.github.valerioisufi.drawview.export/ExportJobState.Running.progress|{}progress[0]
+            final fun <get-progress>(): io.github.valerioisufi.drawview.export/ExportProgress? // io.github.valerioisufi.drawview.export/ExportJobState.Running.progress.<get-progress>|<get-progress>(){}[0]
+    }
+
+    final object Cancelled : io.github.valerioisufi.drawview.export/ExportJobState { // io.github.valerioisufi.drawview.export/ExportJobState.Cancelled|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.export/ExportJobState.Cancelled.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.export/ExportJobState.Cancelled.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.export/ExportJobState.Cancelled.toString|toString(){}[0]
+    }
+
+    final object Queued : io.github.valerioisufi.drawview.export/ExportJobState { // io.github.valerioisufi.drawview.export/ExportJobState.Queued|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.export/ExportJobState.Queued.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.export/ExportJobState.Queued.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.export/ExportJobState.Queued.toString|toString(){}[0]
+    }
+}
+
 sealed interface io.github.valerioisufi.drawview.export/ExportScope { // io.github.valerioisufi.drawview.export/ExportScope|null[0]
     final class Folder : io.github.valerioisufi.drawview.export/ExportScope { // io.github.valerioisufi.drawview.export/ExportScope.Folder|null[0]
         constructor <init>(kotlin/String?) // io.github.valerioisufi.drawview.export/ExportScope.Folder.<init>|<init>(kotlin.String?){}[0]
@@ -152,6 +189,32 @@ final class io.github.valerioisufi.drawview.export/ExportException : kotlin/Exce
         final fun <get-failure>(): io.github.valerioisufi.drawview.export/ExportFailure // io.github.valerioisufi.drawview.export/ExportException.failure.<get-failure>|<get-failure>(){}[0]
 }
 
+final class io.github.valerioisufi.drawview.export/ExportJob { // io.github.valerioisufi.drawview.export/ExportJob|null[0]
+    constructor <init>(kotlin/Long, io.github.valerioisufi.drawview.export/ExportRequest, io.github.valerioisufi.drawview.export/ExportJobState) // io.github.valerioisufi.drawview.export/ExportJob.<init>|<init>(kotlin.Long;io.github.valerioisufi.drawview.export.ExportRequest;io.github.valerioisufi.drawview.export.ExportJobState){}[0]
+
+    final val id // io.github.valerioisufi.drawview.export/ExportJob.id|{}id[0]
+        final fun <get-id>(): kotlin/Long // io.github.valerioisufi.drawview.export/ExportJob.id.<get-id>|<get-id>(){}[0]
+    final val isActive // io.github.valerioisufi.drawview.export/ExportJob.isActive|{}isActive[0]
+        final fun <get-isActive>(): kotlin/Boolean // io.github.valerioisufi.drawview.export/ExportJob.isActive.<get-isActive>|<get-isActive>(){}[0]
+    final val request // io.github.valerioisufi.drawview.export/ExportJob.request|{}request[0]
+        final fun <get-request>(): io.github.valerioisufi.drawview.export/ExportRequest // io.github.valerioisufi.drawview.export/ExportJob.request.<get-request>|<get-request>(){}[0]
+    final val state // io.github.valerioisufi.drawview.export/ExportJob.state|{}state[0]
+        final fun <get-state>(): io.github.valerioisufi.drawview.export/ExportJobState // io.github.valerioisufi.drawview.export/ExportJob.state.<get-state>|<get-state>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.export/ExportJobs { // io.github.valerioisufi.drawview.export/ExportJobs|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.export/DocumentExport, kotlinx.coroutines/CoroutineScope) // io.github.valerioisufi.drawview.export/ExportJobs.<init>|<init>(io.github.valerioisufi.drawview.export.DocumentExport;kotlinx.coroutines.CoroutineScope){}[0]
+    constructor <init>(kotlinx.coroutines/CoroutineScope, kotlin.coroutines/SuspendFunction2<io.github.valerioisufi.drawview.export/ExportRequest, kotlin/Function1<io.github.valerioisufi.drawview.export/ExportProgress, kotlin/Unit>, io.github.valerioisufi.drawview.export/ExportOutcome>) // io.github.valerioisufi.drawview.export/ExportJobs.<init>|<init>(kotlinx.coroutines.CoroutineScope;kotlin.coroutines.SuspendFunction2<io.github.valerioisufi.drawview.export.ExportRequest,kotlin.Function1<io.github.valerioisufi.drawview.export.ExportProgress,kotlin.Unit>,io.github.valerioisufi.drawview.export.ExportOutcome>){}[0]
+
+    final val jobs // io.github.valerioisufi.drawview.export/ExportJobs.jobs|{}jobs[0]
+        final fun <get-jobs>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/List<io.github.valerioisufi.drawview.export/ExportJob>> // io.github.valerioisufi.drawview.export/ExportJobs.jobs.<get-jobs>|<get-jobs>(){}[0]
+
+    final fun cancel(kotlin/Long) // io.github.valerioisufi.drawview.export/ExportJobs.cancel|cancel(kotlin.Long){}[0]
+    final fun dismiss(kotlin/Long) // io.github.valerioisufi.drawview.export/ExportJobs.dismiss|dismiss(kotlin.Long){}[0]
+    final fun retry(kotlin/Long) // io.github.valerioisufi.drawview.export/ExportJobs.retry|retry(kotlin.Long){}[0]
+    final fun start(io.github.valerioisufi.drawview.export/ExportRequest): kotlin/Long // io.github.valerioisufi.drawview.export/ExportJobs.start|start(io.github.valerioisufi.drawview.export.ExportRequest){}[0]
+}
+
 final class io.github.valerioisufi.drawview.export/ExportOptions { // io.github.valerioisufi.drawview.export/ExportOptions|null[0]
     constructor <init>(kotlin.collections/Set<kotlin/String>? = ..., kotlin/Boolean = ..., kotlin.collections/Set<kotlin/Int>? = ...) // io.github.valerioisufi.drawview.export/ExportOptions.<init>|<init>(kotlin.collections.Set<kotlin.String>?;kotlin.Boolean;kotlin.collections.Set<kotlin.Int>?){}[0]
 
@@ -189,6 +252,25 @@ final class io.github.valerioisufi.drawview.export/ExportProgress { // io.github
         final fun <get-items>(): kotlin/Int // io.github.valerioisufi.drawview.export/ExportProgress.items.<get-items>|<get-items>(){}[0]
     final val name // io.github.valerioisufi.drawview.export/ExportProgress.name|{}name[0]
         final fun <get-name>(): kotlin/String? // io.github.valerioisufi.drawview.export/ExportProgress.name.<get-name>|<get-name>(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.export/ExportRequest { // io.github.valerioisufi.drawview.export/ExportRequest|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.export/ExportContents, io.github.valerioisufi.drawview.export/ExportFormat, io.github.valerioisufi.drawview.export/ExportOptions, io.github.valerioisufi.drawview.export/ExportWriters, kotlin/String, kotlin/String, kotlin.coroutines/SuspendFunction1<kotlin/String, kotlin/Unit> = ...) // io.github.valerioisufi.drawview.export/ExportRequest.<init>|<init>(io.github.valerioisufi.drawview.export.ExportContents;io.github.valerioisufi.drawview.export.ExportFormat;io.github.valerioisufi.drawview.export.ExportOptions;io.github.valerioisufi.drawview.export.ExportWriters;kotlin.String;kotlin.String;kotlin.coroutines.SuspendFunction1<kotlin.String,kotlin.Unit>){}[0]
+
+    final val contents // io.github.valerioisufi.drawview.export/ExportRequest.contents|{}contents[0]
+        final fun <get-contents>(): io.github.valerioisufi.drawview.export/ExportContents // io.github.valerioisufi.drawview.export/ExportRequest.contents.<get-contents>|<get-contents>(){}[0]
+    final val deliver // io.github.valerioisufi.drawview.export/ExportRequest.deliver|{}deliver[0]
+        final fun <get-deliver>(): kotlin.coroutines/SuspendFunction1<kotlin/String, kotlin/Unit> // io.github.valerioisufi.drawview.export/ExportRequest.deliver.<get-deliver>|<get-deliver>(){}[0]
+    final val fileName // io.github.valerioisufi.drawview.export/ExportRequest.fileName|{}fileName[0]
+        final fun <get-fileName>(): kotlin/String // io.github.valerioisufi.drawview.export/ExportRequest.fileName.<get-fileName>|<get-fileName>(){}[0]
+    final val format // io.github.valerioisufi.drawview.export/ExportRequest.format|{}format[0]
+        final fun <get-format>(): io.github.valerioisufi.drawview.export/ExportFormat // io.github.valerioisufi.drawview.export/ExportRequest.format.<get-format>|<get-format>(){}[0]
+    final val options // io.github.valerioisufi.drawview.export/ExportRequest.options|{}options[0]
+        final fun <get-options>(): io.github.valerioisufi.drawview.export/ExportOptions // io.github.valerioisufi.drawview.export/ExportRequest.options.<get-options>|<get-options>(){}[0]
+    final val path // io.github.valerioisufi.drawview.export/ExportRequest.path|{}path[0]
+        final fun <get-path>(): kotlin/String // io.github.valerioisufi.drawview.export/ExportRequest.path.<get-path>|<get-path>(){}[0]
+    final val writers // io.github.valerioisufi.drawview.export/ExportRequest.writers|{}writers[0]
+        final fun <get-writers>(): io.github.valerioisufi.drawview.export/ExportWriters // io.github.valerioisufi.drawview.export/ExportRequest.writers.<get-writers>|<get-writers>(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.export/ExportResult { // io.github.valerioisufi.drawview.export/ExportResult|null[0]
@@ -265,9 +347,17 @@ final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview
 final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_DocumentExport$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_DocumentExport$stableprop|#static{}io_github_valerioisufi_drawview_export_DocumentExport$stableprop[0]
 final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportContents$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportContents$stableprop|#static{}io_github_valerioisufi_drawview_export_ExportContents$stableprop[0]
 final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportException$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportException$stableprop|#static{}io_github_valerioisufi_drawview_export_ExportException$stableprop[0]
+final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJob$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJob$stableprop|#static{}io_github_valerioisufi_drawview_export_ExportJob$stableprop[0]
+final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Cancelled$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Cancelled$stableprop|#static{}io_github_valerioisufi_drawview_export_ExportJobState_Cancelled$stableprop[0]
+final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Done$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Done$stableprop|#static{}io_github_valerioisufi_drawview_export_ExportJobState_Done$stableprop[0]
+final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Failed$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Failed$stableprop|#static{}io_github_valerioisufi_drawview_export_ExportJobState_Failed$stableprop[0]
+final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Queued$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Queued$stableprop|#static{}io_github_valerioisufi_drawview_export_ExportJobState_Queued$stableprop[0]
+final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Running$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Running$stableprop|#static{}io_github_valerioisufi_drawview_export_ExportJobState_Running$stableprop[0]
+final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobs$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobs$stableprop|#static{}io_github_valerioisufi_drawview_export_ExportJobs$stableprop[0]
 final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportOptions$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportOptions$stableprop|#static{}io_github_valerioisufi_drawview_export_ExportOptions$stableprop[0]
 final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportOutcome$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportOutcome$stableprop|#static{}io_github_valerioisufi_drawview_export_ExportOutcome$stableprop[0]
 final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportProgress$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportProgress$stableprop|#static{}io_github_valerioisufi_drawview_export_ExportProgress$stableprop[0]
+final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportRequest$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportRequest$stableprop|#static{}io_github_valerioisufi_drawview_export_ExportRequest$stableprop[0]
 final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportResult$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportResult$stableprop|#static{}io_github_valerioisufi_drawview_export_ExportResult$stableprop[0]
 final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportScope_Folder$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportScope_Folder$stableprop|#static{}io_github_valerioisufi_drawview_export_ExportScope_Folder$stableprop[0]
 final val io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportScope_Items$stableprop // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportScope_Items$stableprop|#static{}io_github_valerioisufi_drawview_export_ExportScope_Items$stableprop[0]
@@ -283,9 +373,17 @@ final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview
 final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_DocumentExport$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_DocumentExport$stableprop_getter|io_github_valerioisufi_drawview_export_DocumentExport$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportContents$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportContents$stableprop_getter|io_github_valerioisufi_drawview_export_ExportContents$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportException$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportException$stableprop_getter|io_github_valerioisufi_drawview_export_ExportException$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJob$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJob$stableprop_getter|io_github_valerioisufi_drawview_export_ExportJob$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Cancelled$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Cancelled$stableprop_getter|io_github_valerioisufi_drawview_export_ExportJobState_Cancelled$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Done$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Done$stableprop_getter|io_github_valerioisufi_drawview_export_ExportJobState_Done$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Failed$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Failed$stableprop_getter|io_github_valerioisufi_drawview_export_ExportJobState_Failed$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Queued$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Queued$stableprop_getter|io_github_valerioisufi_drawview_export_ExportJobState_Queued$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Running$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobState_Running$stableprop_getter|io_github_valerioisufi_drawview_export_ExportJobState_Running$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobs$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportJobs$stableprop_getter|io_github_valerioisufi_drawview_export_ExportJobs$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportOptions$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportOptions$stableprop_getter|io_github_valerioisufi_drawview_export_ExportOptions$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportOutcome$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportOutcome$stableprop_getter|io_github_valerioisufi_drawview_export_ExportOutcome$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportProgress$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportProgress$stableprop_getter|io_github_valerioisufi_drawview_export_ExportProgress$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportRequest$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportRequest$stableprop_getter|io_github_valerioisufi_drawview_export_ExportRequest$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportResult$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportResult$stableprop_getter|io_github_valerioisufi_drawview_export_ExportResult$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportScope_Folder$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportScope_Folder$stableprop_getter|io_github_valerioisufi_drawview_export_ExportScope_Folder$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportScope_Items$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.export/io_github_valerioisufi_drawview_export_ExportScope_Items$stableprop_getter|io_github_valerioisufi_drawview_export_ExportScope_Items$stableprop_getter(){}[0]
