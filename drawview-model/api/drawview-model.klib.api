@@ -3368,6 +3368,7 @@ final object io.github.valerioisufi.drawview.model.text/TextCleanup { // io.gith
     final const val MAX_HEADING_CHARS // io.github.valerioisufi.drawview.model.text/TextCleanup.MAX_HEADING_CHARS|{}MAX_HEADING_CHARS[0]
         final fun <get-MAX_HEADING_CHARS>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/TextCleanup.MAX_HEADING_CHARS.<get-MAX_HEADING_CHARS>|<get-MAX_HEADING_CHARS>(){}[0]
 
+    final fun looksLikeMarkdown(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/TextCleanup.looksLikeMarkdown|looksLikeMarkdown(kotlin.String){}[0]
     final fun toMarkdown(kotlin/String): kotlin/String // io.github.valerioisufi.drawview.model.text/TextCleanup.toMarkdown|toMarkdown(kotlin.String){}[0]
 }
 

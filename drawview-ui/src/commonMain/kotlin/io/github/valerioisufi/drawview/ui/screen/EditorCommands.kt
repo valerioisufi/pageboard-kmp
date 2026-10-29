@@ -61,6 +61,7 @@ import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_actio
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_grid_view
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_highlighter
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_import_image
+import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_import_text
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_import_pdf
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_increase_font_size
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_action_ink_pen
@@ -94,6 +95,7 @@ internal class EditorScreenActions(
     val close: () -> Unit,
     val importPdf: () -> Unit,
     val importImage: () -> Unit,
+    val importText: () -> Unit,
     val editDocumentBackground: () -> Unit,
     val showAbout: () -> Unit
 )
@@ -336,6 +338,13 @@ internal class EditorCommands internal constructor(
         isEnabled = writable
     ) { actions.importImage() }
 
+    val importText = Command(
+        "import-text", label(Res.string.draw_toolbar_action_import_text), CommandGroup.INSERT, section = 1,
+        icon = { rememberVectorPainter(DrawViewIcons.FileUp) },
+        shortcuts = listOf(Shortcut(Key.T, primary = true, shift = true)),
+        isEnabled = writable
+    ) { actions.importText() }
+
     // ----- Format -----
 
     val documentBackground = Command(
@@ -538,7 +547,7 @@ internal class EditorCommands internal constructor(
         close,
         undo, redo, cut, copy, paste, delete,
         zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, snapping,
-        addPage, importPdf, importImage,
+        addPage, importPdf, importImage, importText,
         documentBackground,
         bringToFront, bringForward, sendBackward, sendToBack,
         drawingMode, pen, highlighter, textMarkup, eraser, text, lasso, pan, previousTool,
@@ -584,6 +593,7 @@ internal fun rememberEditorCommands(
     onClose: () -> Unit,
     onImportPdf: () -> Unit,
     onImportImage: () -> Unit,
+    onImportText: () -> Unit,
     onEditDocumentBackground: () -> Unit,
     onShowAbout: () -> Unit
 ): EditorCommands {
@@ -591,6 +601,7 @@ internal fun rememberEditorCommands(
     val close by rememberUpdatedState(onClose)
     val importPdf by rememberUpdatedState(onImportPdf)
     val importImage by rememberUpdatedState(onImportImage)
+    val importText by rememberUpdatedState(onImportText)
     val editDocumentBackground by rememberUpdatedState(onEditDocumentBackground)
     val showAbout by rememberUpdatedState(onShowAbout)
     return remember(controller, clipboard) {
@@ -601,6 +612,7 @@ internal fun rememberEditorCommands(
                 close = { close() },
                 importPdf = { importPdf() },
                 importImage = { importImage() },
+                importText = { importText() },
                 editDocumentBackground = { editDocumentBackground() },
                 showAbout = { showAbout() }
             )

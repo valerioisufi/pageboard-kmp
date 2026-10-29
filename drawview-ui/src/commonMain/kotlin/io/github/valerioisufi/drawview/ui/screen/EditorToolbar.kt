@@ -371,7 +371,7 @@ private fun MoreMenu(commands: EditorCommands, arrangement: ToolbarArrangement, 
         CommandMenu(
             sections = listOf(
                 listOfNotNull(commands.pageGrid.takeIf { !showPageGrid }, commands.addPage) +
-                    (if (floating) listOf(commands.importPdf, commands.importImage) else emptyList()),
+                    (if (floating) listOf(commands.importPdf, commands.importImage, commands.importText) else emptyList()),
                 listOf(commands.fitWidth, commands.stylusOnly, commands.snapping, commands.documentBackground, commands.drawingMode),
                 listOf(commands.about)
             ),

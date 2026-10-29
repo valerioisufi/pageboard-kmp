@@ -465,6 +465,11 @@ class EditorCoreTest {
         val pasted = (1..60).joinToString("\n\n") { "Paragraph $it of a text written elsewhere." }
         controller.textEditorManager.pasteText(pasted)
 
+        // Imported: the student says where it goes
+        val import = assertNotNull(controller.pendingTextImport)
+        assertEquals(0, import.pageIndex)
+        assertFalse(import.isMarkdown)
+        assertTrue(controller.textPlacer.startImport(import, io.github.valerioisufi.drawview.canvas.controller.TextImportPlace.PAGE, clean = false, label = ""))
         val placement = controller.placementManager
         assertTrue(placement.isActive)
         val spots = placement.spots.map { assertNotNull(it) }

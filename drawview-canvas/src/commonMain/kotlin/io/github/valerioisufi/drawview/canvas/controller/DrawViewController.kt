@@ -127,6 +127,9 @@ public class DrawViewController(
 
     /** Places long texts in the notebook through the free space of the pages, by topic when it can. */
     public val textPlacer: TextPlacer = TextPlacer(this)
+
+    /** A text brought into the notebook waiting for the student to say where it goes (the editor shows its sheet). */
+    public var pendingTextImport: TextImport? by mutableStateOf(null)
     public val textMarkupManager: TextMarkupManager = TextMarkupManager(this)
     public val snapManager: SnapManager = SnapManager(this)
 

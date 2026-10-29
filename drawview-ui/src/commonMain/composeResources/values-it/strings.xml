@@ -204,4 +204,17 @@
     <string name="placement_previous">Posto precedente</string>
     <string name="placement_next">Posto successivo</string>
     <string name="placement_confirm">Inserisci</string>
+    <string name="draw_toolbar_action_import_text">Importa testo…</string>
+    <string name="import_text_title">Importa testo</string>
+    <string name="import_text_where">Dove</string>
+    <string name="import_text_by_topic">Accanto alle pagine di cui parla ogni sezione</string>
+    <string name="import_text_from_page">Sulla pagina %1$d, poi su nuove pagine dopo</string>
+    <string name="import_text_at_end">In fondo al quaderno</string>
+    <string name="import_text_clean">Pulisci la formattazione</string>
+    <string name="import_text_clean_hint">Unisce le righe spezzate dalla fonte, trasforma elenchi e titoli nel Markdown del quaderno</string>
+    <string name="import_text_preview">Anteprima</string>
+    <string name="import_text_insert">Inserisci</string>
+    <string name="import_text_as_notes">Come note, con l’assistente</string>
+    <string name="import_text_as_notes_hint">L’assistente trasforma il testo in note, ognuna accanto a ciò che spiega</string>
+    <string name="import_text_label">Testo importato</string>
 </resources>

@@ -363,7 +363,7 @@ class CommandTest {
     private fun editorCommands(controller: DrawViewController, clipboard: ClipboardManager = FakeClipboard()) = EditorCommands(
         controller = controller,
         clipboard = clipboard,
-        actions = EditorScreenActions(close = {}, importPdf = {}, importImage = {}, editDocumentBackground = {}, showAbout = {})
+        actions = EditorScreenActions(close = {}, importPdf = {}, importImage = {}, importText = {}, editDocumentBackground = {}, showAbout = {})
     )
 
     @Test

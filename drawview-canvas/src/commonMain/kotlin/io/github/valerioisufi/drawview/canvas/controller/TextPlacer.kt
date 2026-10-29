@@ -8,6 +8,7 @@ import io.github.valerioisufi.drawview.model.placement.PageOccupancy
 import io.github.valerioisufi.drawview.model.placement.PageTextSizes
 import io.github.valerioisufi.drawview.model.placement.TextFlow
 import io.github.valerioisufi.drawview.model.placement.TextSizePolicy
+import io.github.valerioisufi.drawview.model.text.TextCleanup
 import io.github.valerioisufi.drawview.model.text.TextSizes
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.max
@@ -81,6 +82,24 @@ public class TextPlacer(private val controller: DrawViewController) {
             )
         )
         return true
+    }
+
+    /**
+     * Lets the student place the text of [import] (see [start]) at [place], cleaned into the
+     * Markdown of the notebook when [clean] (see [TextCleanup]), in the color of a new text, at the
+     * size of the page each part starts from. Whether there was something to place.
+     *
+     * @param label what is placed, shown by the bar of the placement.
+     */
+    public suspend fun startImport(import: TextImport, place: TextImportPlace, clean: Boolean, label: String, onInserted: () -> Unit = {}): Boolean {
+        val markdown = if (clean) TextCleanup.toMarkdown(import.text) else import.text.trim()
+        val page = import.pageIndex?.takeIf { it in controller.document.pages.indices } ?: controller.viewport.mostVisiblePageIndex()
+        val parts = when (place) {
+            TextImportPlace.TOPIC -> partsByTopic(markdown, fallbackPage = page)
+            TextImportPlace.PAGE -> listOf(page to markdown)
+            TextImportPlace.END -> listOf(null to markdown)
+        }
+        return start(parts, controller.textDefaults.color, label, onInserted = onInserted)
     }
 
     /**

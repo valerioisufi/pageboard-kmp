@@ -2967,6 +2967,7 @@ public final class io/github/valerioisufi/drawview/model/text/RichTextParser$Spa
 public final class io/github/valerioisufi/drawview/model/text/TextCleanup {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/TextCleanup;
 	public static final field MAX_HEADING_CHARS I
+	public final fun looksLikeMarkdown (Ljava/lang/String;)Z
 	public final fun toMarkdown (Ljava/lang/String;)Ljava/lang/String;
 }
 

@@ -24,6 +24,7 @@ import platform.UIKit.UIImageJPEGRepresentation
 import platform.UIKit.UIViewController
 import platform.UIKit.UIWindow
 import platform.UniformTypeIdentifiers.UTTypePDF
+import platform.UniformTypeIdentifiers.UTTypeText
 import platform.darwin.NSObject
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
@@ -54,8 +55,9 @@ public actual fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) ->
                         picker.delegate = delegate
                         presenter.presentViewController(picker, animated = true, completion = null)
                     }
-                    PickerType.PDF -> {
-                        val picker = UIDocumentPickerViewController(forOpeningContentTypes = listOf(UTTypePDF), asCopy = true)
+                    PickerType.PDF, PickerType.TEXT -> {
+                        val types = if (type == PickerType.PDF) listOf(UTTypePDF) else listOf(UTTypeText)
+                        val picker = UIDocumentPickerViewController(forOpeningContentTypes = types, asCopy = true)
                         val delegate = DocumentPickerDelegate(deliver)
                         holder.delegate = delegate
                         picker.delegate = delegate

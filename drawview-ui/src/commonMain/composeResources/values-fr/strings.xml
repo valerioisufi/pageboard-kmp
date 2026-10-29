@@ -204,4 +204,17 @@
     <string name="placement_previous">Place précédente</string>
     <string name="placement_next">Place suivante</string>
     <string name="placement_confirm">Placer</string>
+    <string name="draw_toolbar_action_import_text">Importer du texte…</string>
+    <string name="import_text_title">Importer du texte</string>
+    <string name="import_text_where">Où</string>
+    <string name="import_text_by_topic">À côté des pages dont parle chaque section</string>
+    <string name="import_text_from_page">Sur la page %1$d, puis sur de nouvelles pages après</string>
+    <string name="import_text_at_end">À la fin du cahier</string>
+    <string name="import_text_clean">Nettoyer la mise en forme</string>
+    <string name="import_text_clean_hint">Joint les lignes coupées par la source, transforme listes et titres en Markdown</string>
+    <string name="import_text_preview">Aperçu</string>
+    <string name="import_text_insert">Insérer</string>
+    <string name="import_text_as_notes">En notes, avec l’assistant</string>
+    <string name="import_text_as_notes_hint">L’assistant transforme le texte en notes, chacune à côté de ce qu’elle explique</string>
+    <string name="import_text_label">Texte importé</string>
 </resources>

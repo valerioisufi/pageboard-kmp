@@ -204,4 +204,17 @@
     <string name="placement_previous">Vorheriger Platz</string>
     <string name="placement_next">Nächster Platz</string>
     <string name="placement_confirm">Einfügen</string>
+    <string name="draw_toolbar_action_import_text">Text importieren…</string>
+    <string name="import_text_title">Text importieren</string>
+    <string name="import_text_where">Wo</string>
+    <string name="import_text_by_topic">Neben den Seiten, um die es in jedem Abschnitt geht</string>
+    <string name="import_text_from_page">Auf Seite %1$d, dann auf neuen Seiten danach</string>
+    <string name="import_text_at_end">Am Ende des Notizbuchs</string>
+    <string name="import_text_clean">Formatierung bereinigen</string>
+    <string name="import_text_clean_hint">Verbindet von der Quelle umbrochene Zeilen, macht Aufzählungen und Titel zu Markdown</string>
+    <string name="import_text_preview">Vorschau</string>
+    <string name="import_text_insert">Einfügen</string>
+    <string name="import_text_as_notes">Als Notizen, mit dem Assistenten</string>
+    <string name="import_text_as_notes_hint">Der Assistent macht aus dem Text Notizen, jede neben dem, was sie erklärt</string>
+    <string name="import_text_label">Importierter Text</string>
 </resources>

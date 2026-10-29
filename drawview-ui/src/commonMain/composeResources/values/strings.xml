@@ -205,4 +205,17 @@
     <string name="placement_previous">Previous place</string>
     <string name="placement_next">Next place</string>
     <string name="placement_confirm">Place it</string>
+    <string name="draw_toolbar_action_import_text">Import Text…</string>
+    <string name="import_text_title">Import text</string>
+    <string name="import_text_where">Where</string>
+    <string name="import_text_by_topic">Next to the pages each section is about</string>
+    <string name="import_text_from_page">On page %1$d, then on new pages after it</string>
+    <string name="import_text_at_end">At the end of the notebook</string>
+    <string name="import_text_clean">Clean the formatting</string>
+    <string name="import_text_clean_hint">Joins the lines broken by the source, turns bullets and titles into the notebook’s Markdown</string>
+    <string name="import_text_preview">Preview</string>
+    <string name="import_text_insert">Insert</string>
+    <string name="import_text_as_notes">As notes, with the assistant</string>
+    <string name="import_text_as_notes_hint">The assistant turns the text into notes, each next to what it explains</string>
+    <string name="import_text_label">Imported text</string>
 </resources>

@@ -199,4 +199,17 @@
     <string name="placement_previous">前の候補</string>
     <string name="placement_next">次の候補</string>
     <string name="placement_confirm">配置</string>
+    <string name="draw_toolbar_action_import_text">テキストをインポート…</string>
+    <string name="import_text_title">テキストをインポート</string>
+    <string name="import_text_where">挿入先</string>
+    <string name="import_text_by_topic">各セクションが扱うページの隣</string>
+    <string name="import_text_from_page">%1$d ページ、その後に新しいページ</string>
+    <string name="import_text_at_end">ノートの最後</string>
+    <string name="import_text_clean">書式を整える</string>
+    <string name="import_text_clean_hint">元の改行をつなぎ、箇条書きと見出しを Markdown にします</string>
+    <string name="import_text_preview">プレビュー</string>
+    <string name="import_text_insert">挿入</string>
+    <string name="import_text_as_notes">アシスタントでノートにする</string>
+    <string name="import_text_as_notes_hint">アシスタントがテキストをノートにし、説明する箇所の隣に置きます</string>
+    <string name="import_text_label">インポートしたテキスト</string>
 </resources>

@@ -40,6 +40,7 @@ public actual fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) ->
             when (type) {
                 PickerType.IMAGE -> "image/*"
                 PickerType.PDF -> "application/pdf"
+                PickerType.TEXT -> "text/*"
             }
         )
     }

@@ -1,5 +1,10 @@
 package io.github.valerioisufi.drawview.ui.screen
 
+import io.github.valerioisufi.drawview.ui.editor.TEXT_TO_NOTES_COMMAND_ID
+import io.github.valerioisufi.drawview.ui.editor.TextImportSheet
+import io.github.valerioisufi.drawview.model.text.TextCleanup
+import io.github.valerioisufi.drawview.canvas.controller.TextImport
+import io.github.valerioisufi.drawview.ui.platform.PickedFile
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -205,6 +210,16 @@ private fun DrawScreenContent(
     val imagePicker = rememberFilePicker(PickerType.IMAGE) { file ->
         controller.mediaManager.importImage(file.bytes, file.extension.ifBlank { "png" })
     }
+    // A text file: the student says where it goes (its sheet)
+    val importTextFile = { file: PickedFile ->
+        val text = file.text()
+        controller.pendingTextImport = TextImport(
+            text, controller.viewport.mostVisiblePageIndex(),
+            isMarkdown = file.extension == "md" || file.extension == "markdown" || TextCleanup.looksLikeMarkdown(text),
+            name = file.name.substringBeforeLast('.')
+        )
+    }
+    val textPicker = rememberFilePicker(PickerType.TEXT) { importTextFile(it) }
     // Template dialogs
     var showSinglePageConfigurator by remember { mutableStateOf(false) }
     // The pages selected in the grid the configurator gives a format to (none: the page of the menu)
@@ -219,6 +234,7 @@ private fun DrawScreenContent(
         onClose = onNavigateBack,
         onImportPdf = pdfPicker,
         onImportImage = imagePicker,
+        onImportText = textPicker,
         onEditDocumentBackground = { showDocumentConfigurator = true },
         onShowAbout = { showAboutDialog = true }
     )
@@ -295,7 +311,14 @@ private fun DrawScreenContent(
                             .weight(1f)
                             .fillMaxWidth()
                             .fileDropTarget { files ->
-                                !controller.isReadOnly && files.map { controller.mediaManager.importFile(it.bytes, it.extension) }.any { it }
+                                !controller.isReadOnly && files.map { file ->
+                                    if (file.extension in PickedFile.TEXT_EXTENSIONS) {
+                                        importTextFile(file)
+                                        true
+                                    } else {
+                                        controller.mediaManager.importFile(file.bytes, file.extension)
+                                    }
+                                }.any { it }
                             }
                     ) {
                         if (isLoading) {
@@ -418,6 +441,8 @@ private fun DrawScreenContent(
 
     // 1. Pages: the page targeted by the context menu or the page grid, or the pages selected in
     // the grid (from the format of the first one)
+    TextImportSheet(controller, asNotes = extraCommands.firstOrNull { it.id == TEXT_TO_NOTES_COMMAND_ID })
+
     if (showSinglePageConfigurator) {
         val pageIds = configuredPageIds
         val targetIndex = controller.pageManager.contextMenuTargetPageIndex

@@ -17,6 +17,15 @@ public object TextCleanup {
     /** The longest line taken for a heading. */
     public const val MAX_HEADING_CHARS: Int = 60
 
+    /**
+     * Whether [text] already looks like Markdown (headings, lists, emphasis, code, formulas, quotes):
+     * then it is not cleaned by default.
+     */
+    public fun looksLikeMarkdown(text: String): Boolean {
+        val lines = text.lines().map { it.trimStart() }
+        return lines.any { MARKDOWN_LINE.containsMatchIn(it) } || text.contains("**") || INLINE_FORMULA.containsMatchIn(text)
+    }
+
     /** [text] as the Markdown of the notebook. */
     public fun toMarkdown(text: String): String {
         val blocks = mutableListOf<String>()
@@ -111,6 +120,8 @@ public object TextCleanup {
         '\n' !in block && block.length <= MAX_HEADING_CHARS && block.isNotEmpty() && block.last() !in ENDING_SIGNS &&
             !isMarkdownLine(block) && !isItem(block) && !block.startsWith("```") && !block.startsWith("$$") && block.any { it.isLetter() }
 
+    private val MARKDOWN_LINE = Regex("""^(#{1,6}\s|- |\* |\d+\.\s|```|~~~|>\s|\|)""")
+    private val INLINE_FORMULA = Regex("""\$[^\s$][^$\n]*\$""")
     private val BULLET = Regex("""^[•◦▪‣·–—*\-]\s+(.+)$""")
     private val NUMBERED_ITEM = Regex("""^(\d{1,3})[).]\s+(.+)$""")
     private val NUMBERED_TITLE = Regex("""^(\d{1,2}(?:\.\d{1,2})+|\d{1,2})\s+\p{Lu}.*$""")

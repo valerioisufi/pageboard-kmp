@@ -238,6 +238,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/DrawViewCon
 	public final fun getMediaManager ()Lio/github/valerioisufi/drawview/canvas/controller/MediaManager;
 	public final fun getMessages ()Lkotlinx/coroutines/flow/SharedFlow;
 	public final fun getPageManager ()Lio/github/valerioisufi/drawview/canvas/controller/PageManager;
+	public final fun getPendingTextImport ()Lio/github/valerioisufi/drawview/canvas/controller/TextImport;
 	public final fun getPersistence ()Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;
 	public final fun getPlacementManager ()Lio/github/valerioisufi/drawview/canvas/controller/PlacementManager;
 	public final fun getPreferences ()Lkotlinx/coroutines/flow/StateFlow;
@@ -271,6 +272,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/DrawViewCon
 	public final fun setContextMenuPosition-_kEHs6E (Landroidx/compose/ui/geometry/Offset;)V
 	public final fun setLassoMode (Lio/github/valerioisufi/drawview/canvas/tool/LassoMode;)V
 	public final fun setPageGridVisible (Z)V
+	public final fun setPendingTextImport (Lio/github/valerioisufi/drawview/canvas/controller/TextImport;)V
 	public final fun setTextAdapter (Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;)V
 	public final fun setThemeColors (Lio/github/valerioisufi/drawview/canvas/DrawThemeColors;)V
 	public final fun toggleDrawingMode ()V
@@ -610,6 +612,25 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextFormatT
 	public static fun toggleNumberedList (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
 }
 
+public final class io/github/valerioisufi/drawview/canvas/controller/TextImport {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/lang/Integer;ZLjava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Integer;ZLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getName ()Ljava/lang/String;
+	public final fun getPageIndex ()Ljava/lang/Integer;
+	public final fun getText ()Ljava/lang/String;
+	public final fun isMarkdown ()Z
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/TextImportPlace : java/lang/Enum {
+	public static final field END Lio/github/valerioisufi/drawview/canvas/controller/TextImportPlace;
+	public static final field PAGE Lio/github/valerioisufi/drawview/canvas/controller/TextImportPlace;
+	public static final field TOPIC Lio/github/valerioisufi/drawview/canvas/controller/TextImportPlace;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/canvas/controller/TextImportPlace;
+	public static fun values ()[Lio/github/valerioisufi/drawview/canvas/controller/TextImportPlace;
+}
+
 public final class io/github/valerioisufi/drawview/canvas/controller/TextMarkupManager {
 	public static final field $stable I
 	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
@@ -671,6 +692,8 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextPlacer 
 	public final fun sizeOfPage (Lio/github/valerioisufi/drawview/model/DrawPage;)F
 	public final fun start (Ljava/util/List;ILjava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Z
 	public static synthetic fun start$default (Lio/github/valerioisufi/drawview/canvas/controller/TextPlacer;Ljava/util/List;ILjava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Z
+	public final fun startImport (Lio/github/valerioisufi/drawview/canvas/controller/TextImport;Lio/github/valerioisufi/drawview/canvas/controller/TextImportPlace;ZLjava/lang/String;Lkotlin/jvm/functions/Function0;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun startImport$default (Lio/github/valerioisufi/drawview/canvas/controller/TextPlacer;Lio/github/valerioisufi/drawview/canvas/controller/TextImport;Lio/github/valerioisufi/drawview/canvas/controller/TextImportPlace;ZLjava/lang/String;Lkotlin/jvm/functions/Function0;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/drawview/canvas/controller/ToolManager {

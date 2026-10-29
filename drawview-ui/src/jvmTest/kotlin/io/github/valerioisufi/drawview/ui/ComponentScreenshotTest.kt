@@ -26,6 +26,10 @@ import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.placement.BesideAnchor
 import io.github.valerioisufi.drawview.model.placement.PlacementBlock
 import io.github.valerioisufi.drawview.ui.editor.PlacementBar
+import io.github.valerioisufi.drawview.ui.editor.TextImportOptions
+import io.github.valerioisufi.drawview.ui.editor.previewOf
+import io.github.valerioisufi.drawview.canvas.controller.TextImport
+import io.github.valerioisufi.drawview.canvas.controller.TextImportPlace
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.PageBackground
@@ -167,6 +171,21 @@ class ComponentScreenshotTest {
                 }
                 PlacementBar(controller)
             }
+        }
+    }
+
+    /** The choices of the import of a text copied from a PDF: by topic, cleaned, its preview, the notes of the assistant offered. */
+    @Test
+    fun textImport() = capture("text-import", width = 600, height = 700) {
+        val import = TextImport(
+            "LIMITI\n\nUna funzione ha limite L in a se i suoi valori si avvi-\ncinano a L quando x si avvicina ad a.\n\n• unicità del limite\n• permanenza del segno\n\n2.1 Limiti notevoli\n\nIl più noto è sin(x)/x.",
+            pageIndex = 2, isMarkdown = false
+        )
+        Box(modifier = Modifier.width(552.dp).background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(28.dp)).padding(vertical = 24.dp)) {
+            TextImportOptions(
+                byTopic = true, page = 2, place = TextImportPlace.TOPIC, onPlace = {}, clean = true, onClean = {},
+                preview = previewOf(import, clean = true), asNotes = {}
+            )
         }
     }
 

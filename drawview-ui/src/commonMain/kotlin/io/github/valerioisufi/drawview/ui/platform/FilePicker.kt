@@ -8,10 +8,18 @@ import androidx.compose.runtime.Composable
 public class PickedFile(public val name: String, public val bytes: ByteArray) {
     /** Lowercase extension of the file name ("" when missing). */
     public val extension: String get() = name.substringAfterLast('.', "").lowercase()
+
+    /** Its content as text (UTF-8, without the mark some editors put at its start). */
+    public fun text(): String = bytes.decodeToString().removePrefix("\uFEFF")
+
+    public companion object {
+        /** The extensions of the text files that are imported as text (see `docs/text-import.md`). */
+        public val TEXT_EXTENSIONS: Set<String> = setOf("md", "markdown", "txt", "text")
+    }
 }
 
 /** The kinds of files the file pickers choose. */
-public enum class PickerType { IMAGE, PDF }
+public enum class PickerType { IMAGE, PDF, TEXT }
 
 /**
  * Remembers a launcher of the file picker of the platform (`GetContent` on Android, the file

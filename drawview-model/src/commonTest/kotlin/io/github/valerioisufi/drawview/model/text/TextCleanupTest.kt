@@ -46,4 +46,13 @@ class TextCleanupTest {
     fun windowsLineEndingsAndNonBreakingSpaces() {
         assertEquals("Una riga sola.", TextCleanup.toMarkdown("Una\r\nriga sola."))
     }
+
+    @Test
+    fun aTextLooksLikeMarkdownByItsMarks() {
+        assertEquals(true, TextCleanup.looksLikeMarkdown("# Title\nText"))
+        assertEquals(true, TextCleanup.looksLikeMarkdown("Some **bold** words"))
+        assertEquals(true, TextCleanup.looksLikeMarkdown("The formula ${'$'}x^2${'$'} is"))
+        assertEquals(false, TextCleanup.looksLikeMarkdown("It costs 5 $ and 3 $ more.\nA plain text."))
+        assertEquals(false, TextCleanup.looksLikeMarkdown("• a bullet\nplain"))
+    }
 }

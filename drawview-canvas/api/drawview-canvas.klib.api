@@ -6,6 +6,18 @@
 // - Show declarations: true
 
 // Library unique name: <DrawView-KMP:drawview-canvas>
+final enum class io.github.valerioisufi.drawview.canvas.controller/TextImportPlace : kotlin/Enum<io.github.valerioisufi.drawview.canvas.controller/TextImportPlace> { // io.github.valerioisufi.drawview.canvas.controller/TextImportPlace|null[0]
+    enum entry END // io.github.valerioisufi.drawview.canvas.controller/TextImportPlace.END|null[0]
+    enum entry PAGE // io.github.valerioisufi.drawview.canvas.controller/TextImportPlace.PAGE|null[0]
+    enum entry TOPIC // io.github.valerioisufi.drawview.canvas.controller/TextImportPlace.TOPIC|null[0]
+
+    final val entries // io.github.valerioisufi.drawview.canvas.controller/TextImportPlace.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.canvas.controller/TextImportPlace> // io.github.valerioisufi.drawview.canvas.controller/TextImportPlace.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.canvas.controller/TextImportPlace // io.github.valerioisufi.drawview.canvas.controller/TextImportPlace.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<io.github.valerioisufi.drawview.canvas.controller/TextImportPlace> // io.github.valerioisufi.drawview.canvas.controller/TextImportPlace.values|values#static(){}[0]
+}
+
 final enum class io.github.valerioisufi.drawview.canvas.render.tile/TextFace : kotlin/Enum<io.github.valerioisufi.drawview.canvas.render.tile/TextFace> { // io.github.valerioisufi.drawview.canvas.render.tile/TextFace|null[0]
     enum entry BOLD // io.github.valerioisufi.drawview.canvas.render.tile/TextFace.BOLD|null[0]
     enum entry BOLD_ITALIC // io.github.valerioisufi.drawview.canvas.render.tile/TextFace.BOLD_ITALIC|null[0]
@@ -381,6 +393,9 @@ final class io.github.valerioisufi.drawview.canvas.controller/DrawViewController
     final var lassoMode // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.lassoMode|{}lassoMode[0]
         final fun <get-lassoMode>(): io.github.valerioisufi.drawview.canvas.tool/LassoMode // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.lassoMode.<get-lassoMode>|<get-lassoMode>(){}[0]
         final fun <set-lassoMode>(io.github.valerioisufi.drawview.canvas.tool/LassoMode) // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.lassoMode.<set-lassoMode>|<set-lassoMode>(io.github.valerioisufi.drawview.canvas.tool.LassoMode){}[0]
+    final var pendingTextImport // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.pendingTextImport|{}pendingTextImport[0]
+        final fun <get-pendingTextImport>(): io.github.valerioisufi.drawview.canvas.controller/TextImport? // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.pendingTextImport.<get-pendingTextImport>|<get-pendingTextImport>(){}[0]
+        final fun <set-pendingTextImport>(io.github.valerioisufi.drawview.canvas.controller/TextImport?) // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.pendingTextImport.<set-pendingTextImport>|<set-pendingTextImport>(io.github.valerioisufi.drawview.canvas.controller.TextImport?){}[0]
     final var textAdapter // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.textAdapter|{}textAdapter[0]
         final fun <get-textAdapter>(): io.github.valerioisufi.drawview.canvas.render.tile/TextTileAdapter? // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.textAdapter.<get-textAdapter>|<get-textAdapter>(){}[0]
         final fun <set-textAdapter>(io.github.valerioisufi.drawview.canvas.render.tile/TextTileAdapter?) // io.github.valerioisufi.drawview.canvas.controller/DrawViewController.textAdapter.<set-textAdapter>|<set-textAdapter>(io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter?){}[0]
@@ -761,6 +776,19 @@ final class io.github.valerioisufi.drawview.canvas.controller/TextEditorManager 
     final fun updateValue(androidx.compose.ui.text.input/TextFieldValue, kotlin/Boolean) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.updateValue|updateValue(androidx.compose.ui.text.input.TextFieldValue;kotlin.Boolean){}[0]
 }
 
+final class io.github.valerioisufi.drawview.canvas.controller/TextImport { // io.github.valerioisufi.drawview.canvas.controller/TextImport|null[0]
+    constructor <init>(kotlin/String, kotlin/Int?, kotlin/Boolean, kotlin/String = ...) // io.github.valerioisufi.drawview.canvas.controller/TextImport.<init>|<init>(kotlin.String;kotlin.Int?;kotlin.Boolean;kotlin.String){}[0]
+
+    final val isMarkdown // io.github.valerioisufi.drawview.canvas.controller/TextImport.isMarkdown|{}isMarkdown[0]
+        final fun <get-isMarkdown>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/TextImport.isMarkdown.<get-isMarkdown>|<get-isMarkdown>(){}[0]
+    final val name // io.github.valerioisufi.drawview.canvas.controller/TextImport.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.valerioisufi.drawview.canvas.controller/TextImport.name.<get-name>|<get-name>(){}[0]
+    final val pageIndex // io.github.valerioisufi.drawview.canvas.controller/TextImport.pageIndex|{}pageIndex[0]
+        final fun <get-pageIndex>(): kotlin/Int? // io.github.valerioisufi.drawview.canvas.controller/TextImport.pageIndex.<get-pageIndex>|<get-pageIndex>(){}[0]
+    final val text // io.github.valerioisufi.drawview.canvas.controller/TextImport.text|{}text[0]
+        final fun <get-text>(): kotlin/String // io.github.valerioisufi.drawview.canvas.controller/TextImport.text.<get-text>|<get-text>(){}[0]
+}
+
 final class io.github.valerioisufi.drawview.canvas.controller/TextMarkupManager { // io.github.valerioisufi.drawview.canvas.controller/TextMarkupManager|null[0]
     constructor <init>(io.github.valerioisufi.drawview.canvas.controller/DrawViewController) // io.github.valerioisufi.drawview.canvas.controller/TextMarkupManager.<init>|<init>(io.github.valerioisufi.drawview.canvas.controller.DrawViewController){}[0]
 
@@ -849,6 +877,7 @@ final class io.github.valerioisufi.drawview.canvas.controller/TextPlacer { // io
     final fun sizeOfPage(io.github.valerioisufi.drawview.model/DrawPage): kotlin/Float // io.github.valerioisufi.drawview.canvas.controller/TextPlacer.sizeOfPage|sizeOfPage(io.github.valerioisufi.drawview.model.DrawPage){}[0]
     final fun start(kotlin.collections/List<kotlin/Pair<kotlin/Int?, kotlin/String>>, kotlin/Int, kotlin/String, kotlin/Function1<io.github.valerioisufi.drawview.model/DrawPage?, kotlin/Float>? = ..., kotlin/Function1<io.github.valerioisufi.drawview.model/DrawText, io.github.valerioisufi.drawview.canvas.render.tile/TextBlockSize?> = ..., kotlin/Function0<kotlin/Unit> = ...): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/TextPlacer.start|start(kotlin.collections.List<kotlin.Pair<kotlin.Int?,kotlin.String>>;kotlin.Int;kotlin.String;kotlin.Function1<io.github.valerioisufi.drawview.model.DrawPage?,kotlin.Float>?;kotlin.Function1<io.github.valerioisufi.drawview.model.DrawText,io.github.valerioisufi.drawview.canvas.render.tile.TextBlockSize?>;kotlin.Function0<kotlin.Unit>){}[0]
     final suspend fun partsByTopic(kotlin/String, kotlin/Int?): kotlin.collections/List<kotlin/Pair<kotlin/Int?, kotlin/String>> // io.github.valerioisufi.drawview.canvas.controller/TextPlacer.partsByTopic|partsByTopic(kotlin.String;kotlin.Int?){}[0]
+    final suspend fun startImport(io.github.valerioisufi.drawview.canvas.controller/TextImport, io.github.valerioisufi.drawview.canvas.controller/TextImportPlace, kotlin/Boolean, kotlin/String, kotlin/Function0<kotlin/Unit> = ...): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/TextPlacer.startImport|startImport(io.github.valerioisufi.drawview.canvas.controller.TextImport;io.github.valerioisufi.drawview.canvas.controller.TextImportPlace;kotlin.Boolean;kotlin.String;kotlin.Function0<kotlin.Unit>){}[0]
 }
 
 final class io.github.valerioisufi.drawview.canvas.controller/ToolManager { // io.github.valerioisufi.drawview.canvas.controller/ToolManager|null[0]
@@ -1306,6 +1335,7 @@ final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisu
 final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_SelectionManager$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_SelectionManager$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_SelectionManager$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_SnapManager$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_SnapManager$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_SnapManager$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextEditorManager$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextEditorManager$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_TextEditorManager$stableprop[0]
+final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextImport$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextImport$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_TextImport$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager_Marking$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager_Marking$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager_Marking$stableprop[0]
 final val io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager_SelectedMarkup$stableprop // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager_SelectedMarkup$stableprop|#static{}io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager_SelectedMarkup$stableprop[0]
@@ -1366,6 +1396,7 @@ final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisu
 final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_SelectionManager$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_SelectionManager$stableprop_getter|io_github_valerioisufi_drawview_canvas_controller_SelectionManager$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_SnapManager$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_SnapManager$stableprop_getter|io_github_valerioisufi_drawview_canvas_controller_SnapManager$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextEditorManager$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextEditorManager$stableprop_getter|io_github_valerioisufi_drawview_canvas_controller_TextEditorManager$stableprop_getter(){}[0]
+final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextImport$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextImport$stableprop_getter|io_github_valerioisufi_drawview_canvas_controller_TextImport$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager$stableprop_getter|io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager_Marking$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager_Marking$stableprop_getter|io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager_Marking$stableprop_getter(){}[0]
 final fun io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager_SelectedMarkup$stableprop_getter(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager_SelectedMarkup$stableprop_getter|io_github_valerioisufi_drawview_canvas_controller_TextMarkupManager_SelectedMarkup$stableprop_getter(){}[0]
