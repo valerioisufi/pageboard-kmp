@@ -21,7 +21,17 @@ import io.github.takahirom.roborazzi.captureRoboImage
 import io.github.valerioisufi.drawview.export.ExportContents
 import io.github.valerioisufi.drawview.export.ExportFormat
 import io.github.valerioisufi.drawview.export.ExportScope
+import io.github.valerioisufi.drawview.export.ExportFailure
+import io.github.valerioisufi.drawview.export.ExportJob
+import io.github.valerioisufi.drawview.export.ExportJobState
+import io.github.valerioisufi.drawview.export.ExportOptions
+import io.github.valerioisufi.drawview.export.ExportOutcome
+import io.github.valerioisufi.drawview.export.ExportProgress
+import io.github.valerioisufi.drawview.export.ExportRequest
+import io.github.valerioisufi.drawview.export.ExportWriters
 import io.github.valerioisufi.drawview.export.FolderDocumentItem
+import io.github.valerioisufi.drawview.export.PdfExporter
+import io.github.valerioisufi.drawview.ui.platform.FileReveal
 import io.github.valerioisufi.drawview.store.DocumentSummary
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import io.github.valerioisufi.drawview.ui.theme.LocalCanvasColors
@@ -31,8 +41,8 @@ import kotlin.test.Test
 
 /**
  * Screenshots of the export sheet as it draws its content (the sheet itself opens in a window
- * the screenshots do not take): a note from the editor, a page range, a folder, an empty folder
- * (docs/export-ux.md).
+ * the screenshots do not take): a note from the editor, a page range, a folder, an empty folder;
+ * the cards of the exports going on and done (docs/export-ux.md).
  *
  * `./gradlew :drawview-export-ui:recordRoborazziJvm` records them in `screenshots/`.
  */
@@ -79,6 +89,38 @@ class ExportScreenshotTest {
             }
             waitForIdle()
             captureToImage().captureRoboImage("screenshots/export-sheet-${if (dark) "dark" else "light"}.png")
+        }
+    }
+
+    private fun job(id: Long, state: ExportJobState) = ExportJob(
+        id,
+        ExportRequest(folder(3).contents!!, ExportFormat.PDF_PER_DOCUMENT, ExportOptions(), ExportWriters(PdfExporter(null)), "/tmp/Physics.zip", "Physics.zip"),
+        state
+    )
+
+    @Test
+    fun statuses() = listOf(false, true).forEach { dark ->
+        runDesktopComposeUiTest(width = 520, height = 900) {
+            val reveal = FileReveal(show = {}, open = {})
+            setContent {
+                DrawViewTheme(darkTheme = dark, dynamicColor = false) {
+                    Column(
+                        modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk).padding(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        listOf(
+                            job(1, ExportJobState.Queued),
+                            job(2, ExportJobState.Running(ExportProgress(0.4f, 5, 14, "Mechanics"))),
+                            job(3, ExportJobState.Done(ExportOutcome(14, 42, 0), "/tmp/Physics.zip")),
+                            job(4, ExportJobState.Done(ExportOutcome(13, 39, 2, skippedIn = listOf("Optics"), missing = listOf("Waves")), "/tmp/Physics.zip")),
+                            job(5, ExportJobState.Failed(ExportFailure.NO_SPACE)),
+                            job(6, ExportJobState.Cancelled)
+                        ).forEach { ExportStatusCard(it, reveal, onStop = {}, onRetry = {}, onClose = {}) }
+                    }
+                }
+            }
+            waitForIdle()
+            captureToImage().captureRoboImage("screenshots/export-status-${if (dark) "dark" else "light"}.png")
         }
     }
 

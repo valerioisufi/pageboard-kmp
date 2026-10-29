@@ -184,7 +184,7 @@ Variations).
 | 2 | `ExportJobs`: queue, progress with "n of m" and the name, cancel, retry, `ExportFailure` from the exceptions of the platforms, skipped elements per note; tests with a fake exporter | Done |
 | 3 | `drawview-ui`: `rememberFileSharer` (Android `FileProvider` + `ACTION_SEND`, iOS `UIActivityViewController`), `FileReveal` / open on the desktop, the save dialog in the last folder used | Done |
 | 4 | `drawview-export-ui`: `ExportSheetState` (tested), `ExportSheet` (summary, formats, pages and range, options, name, actions by platform), `ExportPreferences`; `ExportDialog` and `FolderExportDialog` removed; strings rewritten in the seven languages; screenshots of every state on phone, tablet, desktop, light and dark | Done |
-| 5 | `ExportStatusHost`: the progress and the outcome outside the sheet, in the library and the editor (Show, Open, Share, Retry); screenshots | Planned |
+| 5 | `ExportStatusHost`: the progress and the outcome outside the sheet, in the library and the editor (Show, Open, Share, Retry); screenshots | Done |
 | 6 | Entry points: `LibraryItemsAction` and `LibrarySelection` replacing `DocumentAction` / `FolderAction`; the selection bar of every layout with a visible Export; the menu of the folder shown; ⇧⌘E and File › Export… in the library; the icon of the editor everywhere; PencilNotes and the sample; ABI | Planned |
 | 7 | The page grid: `EditorExtension.pageGridActions`, Export on the pages selected; ABI | Planned |
 | 8 | Verification: `verifyRoborazziJvm` (explorer, export-ui), the desktop app on a scratch data directory, Android and iOS simulators (share sheet, save to Files), a folder of many notes exported while working | Planned |

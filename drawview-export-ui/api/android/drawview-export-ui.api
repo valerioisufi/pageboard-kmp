@@ -10,10 +10,17 @@ public final class io/github/valerioisufi/drawview/export/ui/ComposableSingleton
 	public final fun getLambda$-897144225$DrawView_KMP_drawview_export_ui ()Lkotlin/jvm/functions/Function2;
 }
 
+public final class io/github/valerioisufi/drawview/export/ui/ComposableSingletons$ExportStatusHostKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/export/ui/ComposableSingletons$ExportStatusHostKt;
+	public fun <init> ()V
+	public final fun getLambda$373136684$DrawView_KMP_drawview_export_ui ()Lkotlin/jvm/functions/Function2;
+}
+
 public final class io/github/valerioisufi/drawview/export/ui/DocumentExportUi {
 	public static final field $stable I
 	public fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Ljava/lang/String;)V
 	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/OpenDocuments;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun StatusHost (Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 	public final fun getDocumentAction ()Lio/github/valerioisufi/drawview/ui/extension/DocumentAction;
 	public final fun getEditorExtension ()Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;
 	public final fun getFolderAction ()Lio/github/valerioisufi/drawview/ui/extension/FolderAction;

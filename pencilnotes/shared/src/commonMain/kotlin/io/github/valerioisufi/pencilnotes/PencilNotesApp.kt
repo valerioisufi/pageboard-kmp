@@ -53,6 +53,7 @@ import io.github.valerioisufi.drawview.sync.ui.editorExtension
 import io.github.valerioisufi.drawview.sync.ui.joinAction
 import io.github.valerioisufi.drawview.sync.ui.rememberCollaboration
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
+import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.CommandHost
 import io.github.valerioisufi.drawview.ui.command.CommandRoot
 import io.github.valerioisufi.drawview.ui.components.AboutAppInfo
@@ -183,6 +184,12 @@ fun PencilNotesApp(
                                 modifier = Modifier
                                     .align(Alignment.BottomStart)
                                     .padding(16.dp)
+                            )
+                            // The exports going on, above the button of a new note on the phones
+                            export.StatusHost(
+                                Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .padding(start = 16.dp, end = 16.dp, bottom = if (currentAdaptiveInfo().window.isCompact) 88.dp else 16.dp)
                             )
                         },
                         onOpenDocumentInNewWindow = onOpenDocumentInNewWindow,

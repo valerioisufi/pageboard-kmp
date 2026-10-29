@@ -5,6 +5,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.key.Key
 import io.github.valerioisufi.drawview.export.DocumentExport
@@ -31,7 +35,7 @@ import org.jetbrains.compose.resources.stringResource
  * The export of the documents in an application (see `docs/export-ux.md`): "Export…" on a
  * document of the library ([documentAction]), on a folder or the Home ([folderAction]), and in
  * the editor ([editorExtension]), opening the export sheet; the exports then go on in the
- * background.
+ * background, shown in the editor and, where the application places it, by [StatusHost].
  *
  * @param documents the documents of the application (those of its library).
  * @param appName the name of the application, written in the PDFs as the one that made them.
@@ -92,12 +96,28 @@ public class DocumentExportUi(documents: OpenDocuments, private val appName: Str
             EditorActionButton(DrawViewIcons.Share, command.label(), onClick = command.perform)
         },
         canvasOverlay = { context ->
+            ExportStatusHost(
+                jobs,
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(start = 16.dp, end = 16.dp, bottom = 64.dp)
+            )
             editorExport?.takeIf { it.documentId == context.documentId }?.let {
                 ExportSheet(it.state, export, jobs, appName, thumbnail = null, onDismiss = { editorExport = null })
             }
         },
         commands = { context -> listOf(exportCommand(context)) }
     )
+
+    /**
+     * The exports going on and how they went, with what can be done with their files: placed by
+     * the application over its library (e.g. in `DocumentLibrary.libraryOverlay`), the editor
+     * showing them by itself.
+     */
+    @Composable
+    public fun StatusHost(modifier: Modifier = Modifier) {
+        ExportStatusHost(jobs, modifier)
+    }
 
     /** The export sheet of the scope made by [scope] for the item [key], until [onDone]. */
     @Composable
