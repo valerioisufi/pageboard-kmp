@@ -83,6 +83,20 @@ public class TextFlow(
         public const val DEFAULT_MIN_WIDTH_MM: Float = 60f
 
         /**
+         * The sections of [markdown]: its blocks (see [blocksOf]) gathered from one heading to the
+         * next (`#` to `###`), what comes before the first heading a section of its own.
+         */
+        public fun sectionsOf(markdown: String): List<String> {
+            val sections = mutableListOf<MutableList<String>>()
+            for (block in blocksOf(markdown)) {
+                if (sections.isEmpty() || HEADING.matches(block.lineSequence().first())) sections += mutableListOf(block) else sections.last() += block
+            }
+            return sections.map { it.joinToString("\n\n") }
+        }
+
+        private val HEADING = Regex("""^#{1,3}\s.*""")
+
+        /**
          * The blocks of [markdown]: its paragraphs, between blank lines, but a fenced code block
          * (` ``` `), a formula between `$$` and an item of a list with the lines under it are kept
          * whole.

@@ -49,6 +49,12 @@ class TextFlowTest {
     }
 
     @Test
+    fun sectionsGoFromOneHeadingToTheNext() {
+        val sections = TextFlow.sectionsOf("Intro.\n\n## One\nFirst.\n\nMore.\n\n```\n# not a heading\n```\n\n### Two\nSecond.")
+        assertEquals(listOf("Intro.", "## One\nFirst.\n\nMore.\n\n```\n# not a heading\n```", "### Two\nSecond."), sections)
+    }
+
+    @Test
     fun aShortTextIsOnePieceAtTheTopOfTheFreeSpace() {
         val pieces = flow.flow("One.\n\nTwo.\n\nThree.", empty(), empty(), ::heightOf)
         val piece = pieces.single()

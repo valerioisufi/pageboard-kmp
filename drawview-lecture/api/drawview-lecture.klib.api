@@ -237,6 +237,10 @@ final enum class io.github.valerioisufi.drawview.lecture/WhisperModel : kotlin/E
     final fun values(): kotlin/Array<io.github.valerioisufi.drawview.lecture/WhisperModel> // io.github.valerioisufi.drawview.lecture/WhisperModel.values|values#static(){}[0]
 }
 
+abstract fun interface io.github.valerioisufi.drawview.lecture/TopicFinder { // io.github.valerioisufi.drawview.lecture/TopicFinder|null[0]
+    abstract suspend fun pagesAbout(kotlin/String, kotlin/String): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.lecture/TopicFinder.pagesAbout|pagesAbout(kotlin.String;kotlin.String){}[0]
+}
+
 abstract interface io.github.valerioisufi.drawview.lecture.audio/AudioCapture { // io.github.valerioisufi.drawview.lecture.audio/AudioCapture|null[0]
     abstract fun start(kotlin/Function1<kotlin/ShortArray, kotlin/Unit>, kotlin/Function1<io.github.valerioisufi.drawview.lecture.audio/CaptureEvent, kotlin/Unit> = ...) // io.github.valerioisufi.drawview.lecture.audio/AudioCapture.start|start(kotlin.Function1<kotlin.ShortArray,kotlin.Unit>;kotlin.Function1<io.github.valerioisufi.drawview.lecture.audio.CaptureEvent,kotlin.Unit>){}[0]
     abstract fun stop() // io.github.valerioisufi.drawview.lecture.audio/AudioCapture.stop|stop(){}[0]
@@ -945,6 +949,9 @@ final class io.github.valerioisufi.drawview.lecture/LectureAssistant { // io.git
         final fun <set-requestMicrophone>(kotlin.coroutines/SuspendFunction0<kotlin/Boolean>) // io.github.valerioisufi.drawview.lecture/LectureAssistant.requestMicrophone.<set-requestMicrophone>|<set-requestMicrophone>(kotlin.coroutines.SuspendFunction0<kotlin.Boolean>){}[0]
     final var startError // io.github.valerioisufi.drawview.lecture/LectureAssistant.startError|{}startError[0]
         final fun <get-startError>(): kotlin/String? // io.github.valerioisufi.drawview.lecture/LectureAssistant.startError.<get-startError>|<get-startError>(){}[0]
+    final var topicFinder // io.github.valerioisufi.drawview.lecture/LectureAssistant.topicFinder|{}topicFinder[0]
+        final fun <get-topicFinder>(): io.github.valerioisufi.drawview.lecture/TopicFinder? // io.github.valerioisufi.drawview.lecture/LectureAssistant.topicFinder.<get-topicFinder>|<get-topicFinder>(){}[0]
+        final fun <set-topicFinder>(io.github.valerioisufi.drawview.lecture/TopicFinder?) // io.github.valerioisufi.drawview.lecture/LectureAssistant.topicFinder.<set-topicFinder>|<set-topicFinder>(io.github.valerioisufi.drawview.lecture.TopicFinder?){}[0]
 
     final fun acceptGeneration(io.github.valerioisufi.drawview.lecture/GenerationOffer) // io.github.valerioisufi.drawview.lecture/LectureAssistant.acceptGeneration|acceptGeneration(io.github.valerioisufi.drawview.lecture.GenerationOffer){}[0]
     final fun canRetranscribe(io.github.valerioisufi.drawview.lecture/Lecture): kotlin/Boolean // io.github.valerioisufi.drawview.lecture/LectureAssistant.canRetranscribe|canRetranscribe(io.github.valerioisufi.drawview.lecture.Lecture){}[0]

@@ -110,6 +110,9 @@ public class LectureAssistant(
     /** The suggestion the student is placing in the notebook, if any. */
     public var placingNote: NoteSuggestion? by mutableStateOf(null)
 
+    /** Finds the pages a section of a review is about (see [TopicFinder]), given by the application; `null`: none. */
+    public var topicFinder: TopicFinder? by mutableStateOf(null)
+
     /** The lecture being imported, if any. */
     public var importing: Lecture? by mutableStateOf(null)
         private set

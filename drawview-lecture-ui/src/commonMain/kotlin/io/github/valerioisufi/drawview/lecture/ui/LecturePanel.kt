@@ -1,5 +1,10 @@
 package io.github.valerioisufi.drawview.lecture.ui
 
+import io.github.valerioisufi.drawview.lecture.TopicFinder
+import io.github.valerioisufi.drawview.model.placement.TextFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -1325,7 +1330,18 @@ private fun ReviewTab(
                 }
                 PanelCard(outlined = true) { SelectionContainer { MarkdownText(review, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.bodyMedium) } }
                 val reviewLabel = stringResource(Res.string.lecture_review_placing)
-                InsertPagesCard(controller) { startPageIndex -> inserter.startReviewPlacement(controller, review, startPageIndex, reviewLabel) }
+                val scope = rememberCoroutineScope()
+                val finder = assistant.topicFinder
+                InsertPagesCard(controller, byTopic = finder != null) { place, pageIndex ->
+                    if (place == ReviewPlace.TOPIC && finder != null) {
+                        scope.launch {
+                            val parts = reviewByTopic(finder, lecture.documentId, review, controller, pageIndex)
+                            inserter.startReviewPlacement(controller, parts, reviewLabel)
+                        }
+                    } else {
+                        inserter.startReviewPlacement(controller, review, if (place == ReviewPlace.END) null else pageIndex, reviewLabel)
+                    }
+                }
             }
             // Written by a device with the models
             !lecture.generates -> LectureNotice(DrawViewIcons.Monitor, stringResource(Res.string.lecture_review_elsewhere), NoticeTone.Info)
@@ -1446,7 +1462,7 @@ private fun UsageLines(usage: TokenUsage) {
  * the notebook, and Insert.
  */
 @Composable
-private fun InsertPagesCard(controller: DrawViewController, onInsert: (startPageIndex: Int?) -> Unit) {
+private fun InsertPagesCard(controller: DrawViewController, byTopic: Boolean, onInsert: (place: ReviewPlace, pageIndex: Int?) -> Unit) {
     val currentPage by remember(controller) {
         derivedStateOf {
             controller.version
@@ -1454,23 +1470,57 @@ private fun InsertPagesCard(controller: DrawViewController, onInsert: (startPage
             controller.viewport.mostVisiblePageIndex()
         }
     }
-    var atTheEnd by remember { mutableStateOf(false) }
+    var choice by remember(byTopic) { mutableStateOf(if (byTopic) ReviewPlace.TOPIC else ReviewPlace.PAGE) }
     val page = currentPage
+    val place = if (choice == ReviewPlace.PAGE && page == null) ReviewPlace.END else choice
     PanelCard {
         Text(stringResource(Res.string.lecture_review_insert), style = MaterialTheme.typography.titleSmall)
         Spacer(Modifier.height(6.dp))
-        if (page != null) {
-            InsertChoice(stringResource(Res.string.lecture_review_insert_after, page + 1), selected = !atTheEnd) { atTheEnd = false }
+        if (byTopic) {
+            InsertChoice(stringResource(Res.string.lecture_review_insert_topic), selected = place == ReviewPlace.TOPIC) { choice = ReviewPlace.TOPIC }
         }
-        InsertChoice(stringResource(Res.string.lecture_review_insert_end), selected = atTheEnd || page == null) { atTheEnd = true }
+        if (page != null) {
+            InsertChoice(stringResource(Res.string.lecture_review_insert_after, page + 1), selected = place == ReviewPlace.PAGE) { choice = ReviewPlace.PAGE }
+        }
+        InsertChoice(stringResource(Res.string.lecture_review_insert_end), selected = place == ReviewPlace.END) { choice = ReviewPlace.END }
         Spacer(Modifier.height(8.dp))
-        Button(onClick = { onInsert(if (atTheEnd) null else page) }) {
+        Button(onClick = { onInsert(place, page) }) {
             Icon(DrawViewIcons.FilePlus, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
             Text(stringResource(Res.string.lecture_note_insert))
         }
     }
 }
+
+/** Where the review of a lecture goes in the notebook. */
+private enum class ReviewPlace {
+    /** Each section next to the pages it is about. */
+    TOPIC,
+
+    /** The page shown, then new pages after it. */
+    PAGE,
+
+    /** The end of the notebook. */
+    END
+}
+
+/**
+ * The sections of [review] (see [TextFlow.sectionsOf]), each with the page of the notebook it is
+ * about the most ([finder]), or [fallbackPage] (the page shown) when none is found.
+ */
+private suspend fun reviewByTopic(finder: TopicFinder, documentId: String, review: String, controller: DrawViewController, fallbackPage: Int?): List<Pair<Int?, String>> =
+    TextFlow.sectionsOf(review).map { section ->
+        val pageIds = try {
+            finder.pagesAbout(documentId, section)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            emptyList()
+        }
+        val pages = controller.document.pages
+        val pageIndex = pageIds.firstNotNullOfOrNull { id -> pages.indexOfFirst { it.id == id }.takeIf { it >= 0 } }
+        (pageIndex ?: fallbackPage) to section
+    }
 
 @Composable
 private fun InsertChoice(text: String, selected: Boolean, onSelect: () -> Unit) {

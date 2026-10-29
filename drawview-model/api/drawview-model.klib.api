@@ -2168,6 +2168,7 @@ final class io.github.valerioisufi.drawview.model.placement/TextFlow { // io.git
             final fun <get-DEFAULT_MIN_WIDTH_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.placement/TextFlow.Companion.DEFAULT_MIN_WIDTH_MM.<get-DEFAULT_MIN_WIDTH_MM>|<get-DEFAULT_MIN_WIDTH_MM>(){}[0]
 
         final fun blocksOf(kotlin/String): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.model.placement/TextFlow.Companion.blocksOf|blocksOf(kotlin.String){}[0]
+        final fun sectionsOf(kotlin/String): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.model.placement/TextFlow.Companion.sectionsOf|sectionsOf(kotlin.String){}[0]
     }
 }
 

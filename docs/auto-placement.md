@@ -198,7 +198,7 @@ This changes the lecture records: a field added with a default, read by the olde
 | 2 | `PlacementRequest` of items with their places (`PlacementItem`, `PlacementSpot`) and the ghosts in `PlacementManager`: going through the places (‹ ›, Tab, arrows), confirm (Return), cancel, drag; the new page created on confirm (`pagesFor`); `PlacementBar` in `drawview-ui`. Screenshot | done |
 | 3 | `NoteInserter.startPlacement` on the planner: the anchor of the moment (`LectureAnchors`), the PDF text from the engine; "Insert all" (`startPlacementAll`); the banner of the lecture replaced by `PlacementBar` | done |
 | 4 | `TextFlow`: the review (`NoteInserter.startReviewPlacement`) and long pasted texts (`TextEditorManager.pasteText`, 600 characters and more of several paragraphs) through the free space and onto new pages after them, with the preview; `PlacementSpot.newPage` names the n-th new page | done |
-| 5 | The pages a text is about from the search engine (sections of the review and of an imported text placed by topic), degrading to the page shown | planned |
+| 5 | The pages a section of the review is about (`TopicFinder` of `drawview-lecture`, given by the application from `SearchEngine.pagesAbout`; `TextFlow.sectionsOf`), each section flowed from its page, degrading to the page shown | done |
 
 ### Stage 2: what the model and the stored formats add (each decided with the user first)
 
@@ -226,17 +226,23 @@ Taken alone, revertible:
    as today.
 7. **No ghost for a new page**: the page is not drawn before it exists (the layout of the pages
    would have to make room for it); the bar names it and the end of the page it follows is shown.
-9. **No "Insert text…" command yet**: a long text is pasted (the clipboard covers a text written
-   by a model elsewhere); a command reading a file is left for later.
-10. **The review keeps its choice** "on the page shown / at the end": on the page shown it fills
-    its free space first, then new pages after it, of the format of the document.
 8. **The keys of the placement are commands** (Tab, ⇧Tab, the arrows, Return), registered while a
    placement is pending and listed in the menu Edit then; Escape cancels as the system back.
+9. **No "Insert text…" command yet**: a long text is pasted (the clipboard covers a text written
+   by a model elsewhere); a command reading a file is left for later.
+10. **The review keeps its choices** "on the page shown / at the end", after "by topic" when the
+    search is there: on the page shown it fills
+    its free space first, then new pages after it, of the format of the document.
+11. **A pasted text is not placed by topic**: where it is pasted says where it goes; only the
+    review, which has no place of its own, is placed by topic.
+12. **`TopicFinder` is an interface of `drawview-lecture`**: the lecture modules do not depend on
+    the search; the application connects them (Indirection, Low Coupling).
 
 To agree with the user:
 
 1. The form by kind (phase 7), and whether the assistant still writes in blue.
-2. Whether the review keeps its choice "after the page / at the end" or always goes by topic.
+2. Whether the review should go by topic by default (it does when the search is there), or on the
+   page shown.
 
 ## Left for later
 

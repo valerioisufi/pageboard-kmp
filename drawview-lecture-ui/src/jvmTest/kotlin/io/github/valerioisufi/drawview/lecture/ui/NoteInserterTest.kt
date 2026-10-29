@@ -95,6 +95,21 @@ class NoteInserterTest {
     }
 
     @Test
+    fun theSectionsOfAReviewGoNextToTheirPagesAndTheRestAtTheEnd() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope, pages = 3)
+        val parts = listOf(2 to "## Second topic\nAbout page 3.", 0 to "## First topic\nAbout page 1.", null to "## Elsewhere\nAbout nothing.")
+        assertTrue(NoteInserter(NoLayout).startReviewPlacement(controller, parts, "Review"))
+        assertTrue(controller.placementManager.confirm())
+
+        val pages = controller.document.pages
+        assertEquals(3, pages.size)
+        assertTrue(pages[0].texts.single().text.startsWith("## First topic"))
+        assertTrue(pages[1].texts.isEmpty())
+        // The last page holds its section, then the part of the end
+        assertEquals("## Second topic\nAbout page 3.\n\n## Elsewhere\nAbout nothing.", pages[2].texts.single().text)
+    }
+
+    @Test
     fun theReviewAfterAPageOfAnotherFormatTakesTheFormatOfTheDocument() = runTest(UnconfinedTestDispatcher()) {
         val document = DrawDocument(defaultBackground = PageBackground.Ruled())
         val controller = DrawViewController(document = document, coroutineScope = backgroundScope)

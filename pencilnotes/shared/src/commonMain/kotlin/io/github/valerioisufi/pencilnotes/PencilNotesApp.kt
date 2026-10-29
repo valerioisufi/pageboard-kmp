@@ -33,6 +33,7 @@ import io.github.valerioisufi.drawview.latex.LatexEngine
 import io.github.valerioisufi.drawview.lecture.ui.LectureDialogs
 import io.github.valerioisufi.drawview.lecture.ui.LectureRecordingIndicator
 import io.github.valerioisufi.drawview.lecture.ui.documentTag
+import io.github.valerioisufi.drawview.lecture.TopicFinder
 import io.github.valerioisufi.drawview.lecture.ui.editorExtension
 import io.github.valerioisufi.drawview.lecture.ui.onlineAnswerBackend
 import io.github.valerioisufi.drawview.lecture.ui.rememberLectureAssistant
@@ -143,6 +144,10 @@ fun PencilNotesApp(
             onlineBackend = onlineAnswerBackend,
             onOpenLecture = lectureAssistant::openLectureAt
         )
+        // The review of a lecture placed next to the pages each section is about
+        LaunchedEffect(lectureAssistant, search) {
+            lectureAssistant.topicFinder = TopicFinder { documentId, text -> search.engine.pagesAbout(documentId, text) }
+        }
         // The documents with a lecture: their badge and a filter of the library
         val lectureTag = remember(lectureAssistant) { lectureAssistant.documentTag() }
         val editorExtension = remember(lectureAssistant, collaboration, export) {

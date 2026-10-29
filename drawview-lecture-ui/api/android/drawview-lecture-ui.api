@@ -43,8 +43,8 @@ public final class io/github/valerioisufi/drawview/lecture/ui/ComposableSingleto
 public final class io/github/valerioisufi/drawview/lecture/ui/ComposableSingletons$LecturePanelKt {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/ui/ComposableSingletons$LecturePanelKt;
 	public fun <init> ()V
-	public final fun getLambda$-1314033298$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$-1374956263$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-1861696591$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$-1954855475$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$-234624718$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$-272093557$DrawView_KMP_drawview_lecture_ui ()Lkotlin/jvm/functions/Function3;

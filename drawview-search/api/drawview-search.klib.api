@@ -319,6 +319,7 @@ final class io.github.valerioisufi.drawview.search/SearchChunk { // io.github.va
 final class io.github.valerioisufi.drawview.search/SearchEngine { // io.github.valerioisufi.drawview.search/SearchEngine|null[0]
     constructor <init>(io.github.valerioisufi.drawview.search/SearchIndex, io.github.valerioisufi.drawview.ml/LoadedModels? = ..., io.github.valerioisufi.drawview.ml/InstalledModels? = ..., io.github.valerioisufi.drawview.ml/ModelSpec = ..., io.github.valerioisufi.drawview.ml/EmbedderOptions = ..., io.github.valerioisufi.drawview.ml/Embedder? = ...) // io.github.valerioisufi.drawview.search/SearchEngine.<init>|<init>(io.github.valerioisufi.drawview.search.SearchIndex;io.github.valerioisufi.drawview.ml.LoadedModels?;io.github.valerioisufi.drawview.ml.InstalledModels?;io.github.valerioisufi.drawview.ml.ModelSpec;io.github.valerioisufi.drawview.ml.EmbedderOptions;io.github.valerioisufi.drawview.ml.Embedder?){}[0]
 
+    final suspend fun pagesAbout(kotlin/String, kotlin/String, kotlin/Int = ...): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.drawview.search/SearchEngine.pagesAbout|pagesAbout(kotlin.String;kotlin.String;kotlin.Int){}[0]
     final suspend fun passages(kotlin/String, kotlin/Int = ...): kotlin.collections/List<io.github.valerioisufi.drawview.search/SearchHit> // io.github.valerioisufi.drawview.search/SearchEngine.passages|passages(kotlin.String;kotlin.Int){}[0]
     final suspend fun search(kotlin/String, kotlin/Int = ..., kotlin/Int = ...): kotlin.collections/List<io.github.valerioisufi.drawview.search/DocumentSearchResult> // io.github.valerioisufi.drawview.search/SearchEngine.search|search(kotlin.String;kotlin.Int;kotlin.Int){}[0]
 
@@ -327,6 +328,8 @@ final class io.github.valerioisufi.drawview.search/SearchEngine { // io.github.v
             final fun <get-DEFAULT_MAX_HITS_PER_DOCUMENT>(): kotlin/Int // io.github.valerioisufi.drawview.search/SearchEngine.Companion.DEFAULT_MAX_HITS_PER_DOCUMENT.<get-DEFAULT_MAX_HITS_PER_DOCUMENT>|<get-DEFAULT_MAX_HITS_PER_DOCUMENT>(){}[0]
         final const val DEFAULT_PASSAGE_LIMIT // io.github.valerioisufi.drawview.search/SearchEngine.Companion.DEFAULT_PASSAGE_LIMIT|{}DEFAULT_PASSAGE_LIMIT[0]
             final fun <get-DEFAULT_PASSAGE_LIMIT>(): kotlin/Int // io.github.valerioisufi.drawview.search/SearchEngine.Companion.DEFAULT_PASSAGE_LIMIT.<get-DEFAULT_PASSAGE_LIMIT>|<get-DEFAULT_PASSAGE_LIMIT>(){}[0]
+        final const val DEFAULT_TOPIC_PAGES // io.github.valerioisufi.drawview.search/SearchEngine.Companion.DEFAULT_TOPIC_PAGES|{}DEFAULT_TOPIC_PAGES[0]
+            final fun <get-DEFAULT_TOPIC_PAGES>(): kotlin/Int // io.github.valerioisufi.drawview.search/SearchEngine.Companion.DEFAULT_TOPIC_PAGES.<get-DEFAULT_TOPIC_PAGES>|<get-DEFAULT_TOPIC_PAGES>(){}[0]
     }
 }
 

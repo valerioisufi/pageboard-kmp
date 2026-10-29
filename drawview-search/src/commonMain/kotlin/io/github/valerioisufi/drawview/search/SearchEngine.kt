@@ -106,6 +106,23 @@ public class SearchEngine(
             .map { toSearchHit(it, trimmed) }
     }
 
+    /**
+     * The pages of document [documentId] about [text] (its typed text, its handwriting, its PDF
+     * pages; not its lectures), the closest first, at most [limit]: by meaning when the embedding
+     * model is installed, by words otherwise.
+     */
+    public suspend fun pagesAbout(documentId: String, text: String, limit: Int = DEFAULT_TOPIC_PAGES): List<String> {
+        val trimmed = text.trim()
+        if (trimmed.isEmpty() || limit <= 0) return emptyList()
+        val ranked = rankChunks(rawQuery = trimmed, formattedEmbeddingQuery = EmbeddingPrompts.query(trimmed), limit = SearchIndex.DEFAULT_SEARCH_LIMIT)
+        return ranked.asSequence()
+            .filter { it.indexed.chunk.kind != SearchChunkKind.LECTURE_TRANSCRIPT && it.indexed.chunk.kind != SearchChunkKind.LECTURE_NOTES }
+            .mapNotNull { (it.indexed.chunk.anchor as? SearchAnchor.Page)?.takeIf { page -> page.documentId == documentId }?.pageId }
+            .distinct()
+            .take(limit)
+            .toList()
+    }
+
     private suspend fun rankChunks(
         rawQuery: String,
         formattedEmbeddingQuery: String,
@@ -288,6 +305,7 @@ public class SearchEngine(
     public companion object {
         public const val DEFAULT_MAX_HITS_PER_DOCUMENT: Int = 3
         public const val DEFAULT_PASSAGE_LIMIT: Int = 10
+        public const val DEFAULT_TOPIC_PAGES: Int = 3
 
         private const val MIN_BOOST_COVERAGE = 0.5
         private const val HIGH_WORD_COVERAGE = 0.75

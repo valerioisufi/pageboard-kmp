@@ -47,6 +47,33 @@ class SearchIndexerAndEngineTest {
     }
 
     @Test
+    fun thePagesOfADocumentAboutATextTheClosestFirst() = runTest {
+        val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)
+        val document = store.createDocument("Reti")
+        val first = document.pages.single()
+        val second = document.addPage().also { store.savePage(document, it) }
+        for ((page, text) in listOf(first to "Kademlia usa la metrica XOR tra i nodi.", second to "Rate monotonic assegna le priorità per periodo.")) {
+            val element = DrawText().apply { this.text = text; x = 10f; y = 10f; width = 100f; height = 20f }
+            page.add(element)
+            store.saveText(page, element)
+        }
+        val other = store.createDocument("Altro")
+        val otherText = DrawText().apply { text = "Schedulazione deadline monotonic."; width = 100f; height = 20f }
+        other.pages.single().add(otherText)
+        store.saveText(other.pages.single(), otherText)
+        store.flush()
+
+        SearchIndex(SearchIndex.MEMORY_PATH, dimensions = 4).use { index ->
+            SearchIndexer(catalog = store, index = index, sources = listOf(DocumentSearchSource(store)), embedder = ConceptEmbedder(), quietMillis = 0L).indexNow()
+            val engine = SearchEngine(index, embedder = ConceptEmbedder())
+            // By meaning, only the pages of the document asked
+            assertEquals(second.id, engine.pagesAbout(document.id, "## Schedulazione\nIl deadline monotonic").first())
+            assertEquals(first.id, engine.pagesAbout(document.id, "Le DHT e i nodi vicini").first())
+            assertTrue(engine.pagesAbout(document.id, "   ").isEmpty())
+        }
+    }
+
+    @Test
     fun indexesIncrementallyAndSearchesByWordsAndByMeaning() = runTest {
         val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)
         val cryptoDoc = store.createDocument("Crittografia")

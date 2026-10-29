@@ -177,18 +177,31 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
      * a formula, a code block or a list item; at the end of the notebook when [startPageIndex] is
      * `null`. Shown before it is confirmed, undone at once; the first piece shown once inserted.
      */
-    fun startReviewPlacement(controller: DrawViewController, markdown: String, startPageIndex: Int?, label: String, onInserted: () -> Unit = {}): Boolean {
+    fun startReviewPlacement(controller: DrawViewController, markdown: String, startPageIndex: Int?, label: String, onInserted: () -> Unit = {}): Boolean =
+        startReviewPlacement(controller, listOf(startPageIndex to markdown), label, onInserted)
+
+    /**
+     * Lets the student place the [parts] of a review, each flowed from its page (see the other
+     * [startReviewPlacement]; `null`: the end of the notebook): the sections of a review next to
+     * the pages they are about. The parts of one page are flowed together, in their order; those
+     * of the end go after the last page.
+     */
+    fun startReviewPlacement(controller: DrawViewController, parts: List<Pair<Int?, String>>, label: String, onInserted: () -> Unit = {}): Boolean {
         val document = controller.document
         if (document.pages.isEmpty()) return false
-        val start = startPageIndex?.takeIf { it in document.pages.indices }
-        val anchorIndex = start ?: document.pages.lastIndex
-        val first = start?.let { controller.placementManager.occupancyOf(it) }
         val newPage = PageOccupancy(document.defaultWidthMm, document.defaultHeightMm, emptyList(), PageOccupancy.lineSpacingOf(document.defaultBackground))
-        val pieces = textFlow.flow(markdown, first, newPage) { text, width -> measureHeightMm(text, REVIEW_FONT_PT, width) }
-        if (pieces.isEmpty()) return false
-        val items = pieces.map { piece ->
-            PlacementItem(newText(piece.text, piece.box.width, piece.box.height, REVIEW_FONT_PT), listOf(PlacementSpot(anchorIndex, piece.box, piece.newPage)))
+        val items = mutableListOf<PlacementItem>()
+        val byPage = parts.filter { it.second.isNotBlank() }.groupBy({ it.first?.takeIf { index -> index in document.pages.indices } }, { it.second })
+        // The parts for the end after the parts of the last page, on the new pages after it
+        val atTheEnd = byPage[null].orEmpty()
+        val groups = byPage.entries.mapNotNull { (index, texts) -> index?.let { it to texts } }.sortedBy { it.first }
+        val last = document.pages.lastIndex
+        if (atTheEnd.isNotEmpty() && groups.none { it.first == last }) items += flowItems(controller, atTheEnd.joinToString("\n\n"), null, last, newPage)
+        for ((pageIndex, texts) in groups) {
+            val all = if (pageIndex == last) texts + atTheEnd else texts
+            items += flowItems(controller, all.joinToString("\n\n"), pageIndex, pageIndex, newPage)
         }
+        if (items.isEmpty()) return false
         controller.selectionManager.clearSelection()
         controller.placementManager.start(
             PlacementRequest(
@@ -200,13 +213,20 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
                             for ((index, spot) in spots.withIndex()) pages[index]?.let { place(controller, it, items[index].preview, spot) }
                         }
                     }
-                    pages.firstOrNull()?.let { showPageTop(controller, it.index) }
+                    pages.filterNotNull().minByOrNull { it.index }?.let { showPageTop(controller, it.index) }
                     onInserted()
                 }
             )
         )
-        if (start == null) controller.pageManager.jumpToPage(anchorIndex)
         return true
+    }
+
+    /** [markdown] flowed from the free space of page [startPageIndex] (none: straight on new pages) onto new pages after [anchorIndex]. */
+    private fun flowItems(controller: DrawViewController, markdown: String, startPageIndex: Int?, anchorIndex: Int, newPage: PageOccupancy): List<PlacementItem> {
+        val first = startPageIndex?.let { controller.placementManager.occupancyOf(it) }
+        return textFlow.flow(markdown, first, newPage) { text, width -> measureHeightMm(text, REVIEW_FONT_PT, width) }.map { piece ->
+            PlacementItem(newText(piece.text, piece.box.width, piece.box.height, REVIEW_FONT_PT), listOf(PlacementSpot(anchorIndex, piece.box, piece.newPage)))
+        }
     }
 
     /** Shows page [pageIndex] with its top edge near the top of the viewport. */

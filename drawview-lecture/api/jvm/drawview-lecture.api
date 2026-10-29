@@ -367,6 +367,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun getRequestMicrophone ()Lkotlin/jvm/functions/Function1;
 	public final fun getSettingsStore ()Lio/github/valerioisufi/drawview/lecture/AssistantSettingsStore;
 	public final fun getStartError ()Ljava/lang/String;
+	public final fun getTopicFinder ()Lio/github/valerioisufi/drawview/lecture/TopicFinder;
 	public final fun importRecording (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/NotebookSource;Lkotlin/jvm/functions/Function0;Lio/github/valerioisufi/drawview/lecture/platform/ChosenFile;)Z
 	public final fun isBusy ()Z
 	public final fun isPanelOpen ()Z
@@ -388,6 +389,7 @@ public final class io/github/valerioisufi/drawview/lecture/LectureAssistant {
 	public final fun setPanelOpen (Z)V
 	public final fun setPlacingNote (Lio/github/valerioisufi/drawview/lecture/NoteSuggestion;)V
 	public final fun setRequestMicrophone (Lkotlin/jvm/functions/Function1;)V
+	public final fun setTopicFinder (Lio/github/valerioisufi/drawview/lecture/TopicFinder;)V
 	public final fun shareAudio (Lio/github/valerioisufi/drawview/lecture/Lecture;Z)V
 	public final fun sharingOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/lecture/LectureSharingSettings;
 	public final fun show (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/LectureSummary;)V
@@ -1167,6 +1169,10 @@ public final synthetic class io/github/valerioisufi/drawview/lecture/TokenUsage$
 
 public final class io/github/valerioisufi/drawview/lecture/TokenUsage$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/lecture/TopicFinder {
+	public abstract fun pagesAbout (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/drawview/lecture/TranscriptSegment {

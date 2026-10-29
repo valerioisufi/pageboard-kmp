@@ -247,4 +247,5 @@
     <string name="lecture_notes_insert_all">Insert all (%1$d)</string>
     <string name="lecture_place_all_label">%1$d notes</string>
     <string name="lecture_review_placing">The review of the lecture</string>
+    <string name="lecture_review_insert_topic">Each section next to the pages it is about</string>
 </resources>
