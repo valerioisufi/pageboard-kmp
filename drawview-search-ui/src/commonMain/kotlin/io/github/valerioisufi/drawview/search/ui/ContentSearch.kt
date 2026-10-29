@@ -6,7 +6,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
@@ -178,7 +177,10 @@ public class ContentSearch(
             .map { hit -> toLibraryMatch(hit) }
     }
 
-    /** Starts the background indexer and reacts to query and index updates in [scope]. */
+    /**
+     * Starts the background indexer and reacts to query and index updates in [scope], until
+     * [scope] is cancelled: cancel it before closing the index.
+     */
     public fun start(scope: CoroutineScope) {
         activeScope = scope
         indexer.start(scope)
@@ -304,7 +306,6 @@ public fun rememberContentSearch(
     onOpenLecture: ((documentId: String, lectureId: String, startMs: Long) -> Unit)? = null,
     onOpenAnchor: ((SearchAnchor, openDocument: DocumentOpener) -> Unit)? = null
 ): ContentSearch {
-    val scope = rememberCoroutineScope()
     val index = remember(indexPath, embeddingSpec.id) {
         SearchIndex(path = indexPath, embeddingModel = embeddingSpec.id)
     }
@@ -350,8 +351,9 @@ public fun rememberContentSearch(
             onOpenAnchor = onOpenAnchor
         )
     }
+    // The indexer and the answers of a search replaced stop with it, before its index is closed
     LaunchedEffect(contentSearch) {
-        contentSearch.start(scope)
+        contentSearch.start(this)
     }
     return contentSearch
 }
