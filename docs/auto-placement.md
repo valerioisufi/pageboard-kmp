@@ -196,7 +196,7 @@ This changes the lecture records: a field added with a default, read by the olde
 |---|---|---|
 | 1 | `PageOccupancy`, `FreeSpace`, `PlacementPlanner`, `PlacementPolicy` (`BesideAnchor`, `ReadingOrder`) in `drawview-model`: tests on pages built in the tests (empty, full, a slide, ruled, rotated elements), deterministic results; `api/` recorded | done |
 | 2 | `PlacementRequest` of items with their places (`PlacementItem`, `PlacementSpot`) and the ghosts in `PlacementManager`: going through the places (‹ ›, Tab, arrows), confirm (Return), cancel, drag; the new page created on confirm (`pagesFor`); `PlacementBar` in `drawview-ui`. Screenshot | done |
-| 3 | `NoteInserter.startPlacement` on the planner: the anchor of the moment (`LectureAnchors`), the PDF text from the engine; "Insert all" | planned |
+| 3 | `NoteInserter.startPlacement` on the planner: the anchor of the moment (`LectureAnchors`), the PDF text from the engine; "Insert all" (`startPlacementAll`); the banner of the lecture replaced by `PlacementBar` | done |
 | 4 | `TextFlow`: the review and long pasted texts through the free space and onto new pages after them, with the preview; "Insert text…" | planned |
 | 5 | The pages a text is about from the search engine (sections of the review and of an imported text placed by topic), degrading to the page shown | planned |
 

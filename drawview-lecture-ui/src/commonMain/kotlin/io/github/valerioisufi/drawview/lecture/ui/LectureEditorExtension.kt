@@ -1,13 +1,11 @@
 package io.github.valerioisufi.drawview.lecture.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -21,17 +19,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.lecture.ArrivalNotification
 import io.github.valerioisufi.drawview.lecture.LectureArrival
 import io.github.valerioisufi.drawview.lecture.LectureAssistant
@@ -52,7 +44,6 @@ import io.github.valerioisufi.drawview.lecture.LectureStatus
 import io.github.valerioisufi.drawview.lecture.ModelProvider
 import io.github.valerioisufi.drawview.lecture.SuggestionStatus
 import io.github.valerioisufi.drawview.lecture.formatLectureTime
-import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.lecture.ui.generated.resources.*
 import io.github.valerioisufi.drawview.lecture.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.lecture.ui.generated.resources.lecture_action_cancel
@@ -60,11 +51,8 @@ import io.github.valerioisufi.drawview.lecture.ui.generated.resources.lecture_ac
 import io.github.valerioisufi.drawview.lecture.ui.generated.resources.lecture_exit_confirm
 import io.github.valerioisufi.drawview.lecture.ui.generated.resources.lecture_exit_message
 import io.github.valerioisufi.drawview.lecture.ui.generated.resources.lecture_exit_title
-import io.github.valerioisufi.drawview.lecture.ui.generated.resources.lecture_place_go_to_page
-import io.github.valerioisufi.drawview.lecture.ui.generated.resources.lecture_place_hint
 import io.github.valerioisufi.drawview.lecture.ui.generated.resources.lecture_title
 import io.github.valerioisufi.drawview.lecture.ui.platform.rememberMicrophoneAccess
-import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandGroup
 import io.github.valerioisufi.drawview.ui.components.BadgeTone
@@ -98,7 +86,6 @@ public fun LectureAssistant.editorExtension(): EditorExtension {
         toolbarActions = { context -> LectureToolbarButton(this@editorExtension, context.documentId, panel) },
         canvasOverlay = { context ->
             LectureEditorEffects(this@editorExtension, context.documentId, context.controller)
-            PlacementHint(this@editorExtension, context.controller)
             ArrivalsBanner(this@editorExtension, context.documentId)
             LectureSettings(this@editorExtension, panelState)
         },
@@ -353,67 +340,3 @@ private fun LectureToolbarButton(assistant: LectureAssistant, documentId: String
     }
 }
 
-/**
- * While a note is being placed: what to do, a shortcut to the page of the note when it is not on
- * screen, and the cancellation.
- */
-@Composable
-private fun BoxScope.PlacementHint(assistant: LectureAssistant, controller: DrawViewController) {
-    val note = assistant.placingNote ?: return
-    if (!controller.placementManager.isActive) return
-    // Recomputed at every redraw, recomposed only when the visible pages change
-    val visible by remember(controller) {
-        derivedStateOf {
-            controller.version
-            controller.viewport.camera.moveCount
-            controller.viewport.visiblePages().map { it.index }
-        }
-    }
-    val notePage = note.resolvedPageIndex(controller.document)?.takeIf { it !in visible }
-    val keyboard = currentAdaptiveInfo().input.hasKeyboard
-    val shape = RoundedCornerShape(24.dp)
-
-    Row(
-        modifier = Modifier
-            .align(Alignment.TopCenter)
-            .padding(top = 12.dp)
-            .elevation(DrawViewElevation.Level3, shape)
-            .background(MaterialTheme.colorScheme.inverseSurface, shape)
-            .padding(start = 16.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Icon(DrawViewIcons.Plus, contentDescription = null, tint = MaterialTheme.colorScheme.inverseOnSurface, modifier = Modifier.size(18.dp))
-        Text(stringResource(Res.string.lecture_place_hint), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.inverseOnSurface)
-        if (notePage != null) {
-            Button(
-                onClick = { controller.pageManager.jumpToPage(notePage) },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.inversePrimary, contentColor = MaterialTheme.colorScheme.onPrimaryContainer),
-                contentPadding = PaddingValues(horizontal = 16.dp)
-            ) {
-                Text(stringResource(Res.string.lecture_place_go_to_page, notePage + 1))
-            }
-        }
-        // Esc cancels where there is a keyboard: its key, else the button
-        if (keyboard) {
-            Text(
-                "Esc",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.8f),
-                modifier = Modifier
-                    .padding(end = 6.dp)
-                    .clip(RoundedCornerShape(6.dp))
-                    .border(1.dp, MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
-                    .clickable { controller.placementManager.cancel() }
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
-            )
-        } else {
-            TextButton(
-                onClick = { controller.placementManager.cancel() },
-                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.inversePrimary)
-            ) {
-                Text(stringResource(Res.string.lecture_action_cancel))
-            }
-        }
-    }
-}

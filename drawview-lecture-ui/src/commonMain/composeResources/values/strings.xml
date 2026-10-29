@@ -56,8 +56,7 @@
     <string name="lecture_review_none">When the recording stops, %1$s reviews the whole lecture and writes organized notes.</string>
     <string name="lecture_review_running">%1$s is reviewing the whole lecture…</string>
     <string name="lecture_review_failed">The final review failed.</string>
-    <string name="lecture_place_hint">Click or tap the page where to insert the note</string>
-    <string name="lecture_place_go_to_page">Go to p. %1$d</string>
+    <string name="lecture_place_hint">Confirm the place on the page, or choose another</string>
     <string name="lecture_review_insert_after">After page %1$d (the one you are looking at)</string>
     <string name="lecture_review_insert_end">At the end of the notebook</string>
     <string name="lecture_review_insert">Insert as new pages</string>
@@ -245,4 +244,6 @@
     <string name="lecture_settings_requests_hint">Each request runs online (Gemini) or on this computer (whisper.cpp and Ollama, free, nothing leaves the computer).</string>
     <string name="lecture_settings_api_key_title">API key</string>
     <string name="lecture_settings_ollama">Ollama</string>
+    <string name="lecture_notes_insert_all">Insert all (%1$d)</string>
+    <string name="lecture_place_all_label">%1$d notes</string>
 </resources>

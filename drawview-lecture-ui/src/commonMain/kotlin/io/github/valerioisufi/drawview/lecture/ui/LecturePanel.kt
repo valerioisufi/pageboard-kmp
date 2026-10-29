@@ -65,6 +65,7 @@ import io.github.valerioisufi.drawview.lecture.AssistantSettings
 import io.github.valerioisufi.drawview.lecture.AudioDownload
 import io.github.valerioisufi.drawview.lecture.ImportStep
 import io.github.valerioisufi.drawview.lecture.Lecture
+import io.github.valerioisufi.drawview.lecture.LectureAnchors
 import io.github.valerioisufi.drawview.lecture.LectureAssistant
 import io.github.valerioisufi.drawview.lecture.LectureProblem
 import io.github.valerioisufi.drawview.lecture.LectureRecorder
@@ -856,6 +857,9 @@ private fun LectureTabs(assistant: LectureAssistant, lecture: Lecture, controlle
     }
 }
 
+/** When the lecture was recorded (wall clock), with the time the writing about its end may take. */
+private fun Lecture.timeSpan(): LongRange = startedAt..(startedAt + elapsedMs + LectureAnchors.AFTER_MS)
+
 /** The notes suggested: the new ones on their cards, those handled under them (folded). */
 @Composable
 private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, controller: DrawViewController, inserter: NoteInserter) {
@@ -871,6 +875,29 @@ private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, controller: 
         if (newNotes.isEmpty()) {
             item { MutedText(stringResource(Res.string.lecture_notes_empty), Modifier.padding(4.dp)) }
         }
+        if (newNotes.size >= 2) {
+            item(key = "insert-all") {
+                val label = stringResource(Res.string.lecture_place_all_label, newNotes.size)
+                TonalButton(
+                    onClick = {
+                        assistant.placingNote = null
+                        inserter.startPlacementAll(
+                            controller = controller,
+                            suggestions = newNotes,
+                            lecture = lecture.timeSpan(),
+                            label = label,
+                            onInserted = { notes -> notes.forEach { lecture.updateSuggestion(it.id, SuggestionStatus.INSERTED) } },
+                            onCancel = {}
+                        )
+                    },
+                    contentPadding = PaddingValues(start = 16.dp, end = 20.dp)
+                ) {
+                    Icon(DrawViewIcons.Plus, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(Res.string.lecture_notes_insert_all, newNotes.size), maxLines = 1)
+                }
+            }
+        }
         items(newNotes, key = { it.id }) { note ->
             SuggestionCard(
                 note = note,
@@ -881,6 +908,7 @@ private fun NotesTab(assistant: LectureAssistant, lecture: Lecture, controller: 
                     val started = inserter.startPlacement(
                         controller = controller,
                         suggestion = note,
+                        lecture = lecture.timeSpan(),
                         onInserted = {
                             assistant.placingNote = null
                             lecture.updateSuggestion(note.id, SuggestionStatus.INSERTED)

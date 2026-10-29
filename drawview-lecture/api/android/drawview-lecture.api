@@ -285,6 +285,14 @@ public final class io/github/valerioisufi/drawview/lecture/Lecture {
 	public final fun updateSuggestion (Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/SuggestionStatus;)V
 }
 
+public final class io/github/valerioisufi/drawview/lecture/LectureAnchors {
+	public static final field $stable I
+	public static final field AFTER_MS J
+	public static final field BEFORE_MS J
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/LectureAnchors;
+	public final fun anchorOf (Lio/github/valerioisufi/drawview/model/DrawPage;JJJ)Lio/github/valerioisufi/drawview/model/geometry/Rect;
+}
+
 public final class io/github/valerioisufi/drawview/lecture/LectureArrival {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/LectureArrival$Kind;Ljava/lang/String;J)V
