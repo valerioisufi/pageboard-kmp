@@ -108,7 +108,15 @@ class SearchIndexerAndEngineTest {
             assertTrue(paraphraseResults.isNotEmpty())
             assertEquals(cryptoDoc.id, paraphraseResults.first().documentId)
 
-            // 3. Deleting a document removes it from the index
+            // 3. A document in the trash leaves the index, and is found again once restored
+            store.trashDocument(cryptoDoc.id)
+            indexer.indexNow()
+            assertTrue(wordEngine.search("cifratura blocchi").isEmpty())
+            store.restore(cryptoDoc.id)
+            indexer.indexNow()
+            assertEquals(cryptoDoc.id, wordEngine.search("cifratura blocchi").single().documentId)
+
+            // 4. Deleting a document removes it from the index
             store.deleteDocument(p2pDoc.id)
             indexer.indexNow()
             assertTrue(wordEngine.search("Kademlia").isEmpty())

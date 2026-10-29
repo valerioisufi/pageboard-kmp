@@ -68,6 +68,7 @@ import io.github.valerioisufi.pencilnotes.generated.resources.about_version
 import io.github.valerioisufi.pencilnotes.generated.resources.app_name
 import io.github.valerioisufi.pencilnotes.ui.theme.PencilNotesTheme
 import io.github.valerioisufi.pencilnotes.ui.theme.cherryBombOneFontFamily
+import kotlinx.coroutines.flow.combine
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -146,11 +147,12 @@ fun PencilNotesApp(
         val editorExtension = remember(lectureAssistant, collaboration, export) {
             lectureAssistant.editorExtension() + collaboration.editorExtension() + export.editorExtension
         }
-        // The lectures of the documents deleted go with them
+        // The lectures of the documents deleted for good go with them (not of the ones in the trash)
         LaunchedEffect(lectureAssistant) {
             var known: Set<String>? = null
-            documents.store.documents.collect { summaries ->
-                val ids = summaries.mapTo(mutableSetOf()) { it.id }
+            combine(documents.store.documents, documents.store.trash) { summaries, trash ->
+                summaries.mapTo(mutableSetOf()) { it.id } + trash.flatMap { it.documentIds }
+            }.collect { ids ->
                 known?.let { lectureAssistant.forgetDocuments(it - ids) }
                 known = ids
             }

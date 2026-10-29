@@ -20,7 +20,8 @@ public class StoreSharedDocuments(private val store: DocumentStore, private val 
         mutex.withLock { waiting[documentId] } ?: store.sharingSecrets()[documentId]?.let(SharingState::decode)
 
     override suspend fun save(documentId: String, state: SharingState, readOnly: Boolean) {
-        if (store.documents.first().none { it.id == documentId }) {
+        // Not received yet: neither in the library nor in the trash
+        if (store.documents.first().none { it.id == documentId } && store.trash.first().none { documentId in it.documentIds }) {
             mutex.withLock { waiting[documentId] = state }
             return
         }
