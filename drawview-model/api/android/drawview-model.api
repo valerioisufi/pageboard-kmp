@@ -2964,6 +2964,12 @@ public final class io/github/valerioisufi/drawview/model/text/RichTextParser$Spa
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class io/github/valerioisufi/drawview/model/text/TextCleanup {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/TextCleanup;
+	public static final field MAX_HEADING_CHARS I
+	public final fun toMarkdown (Ljava/lang/String;)Ljava/lang/String;
+}
+
 public final class io/github/valerioisufi/drawview/model/text/TextDefaults {
 	public static final field Companion Lio/github/valerioisufi/drawview/model/text/TextDefaults$Companion;
 	public fun <init> ()V

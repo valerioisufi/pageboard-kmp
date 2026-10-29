@@ -3364,6 +3364,13 @@ final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.g
     }
 }
 
+final object io.github.valerioisufi.drawview.model.text/TextCleanup { // io.github.valerioisufi.drawview.model.text/TextCleanup|null[0]
+    final const val MAX_HEADING_CHARS // io.github.valerioisufi.drawview.model.text/TextCleanup.MAX_HEADING_CHARS|{}MAX_HEADING_CHARS[0]
+        final fun <get-MAX_HEADING_CHARS>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/TextCleanup.MAX_HEADING_CHARS.<get-MAX_HEADING_CHARS>|<get-MAX_HEADING_CHARS>(){}[0]
+
+    final fun toMarkdown(kotlin/String): kotlin/String // io.github.valerioisufi.drawview.model.text/TextCleanup.toMarkdown|toMarkdown(kotlin.String){}[0]
+}
+
 final object io.github.valerioisufi.drawview.model.text/TextRoom { // io.github.valerioisufi.drawview.model.text/TextRoom|null[0]
     final const val CARET_MM // io.github.valerioisufi.drawview.model.text/TextRoom.CARET_MM|{}CARET_MM[0]
         final fun <get-CARET_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.text/TextRoom.CARET_MM.<get-CARET_MM>|<get-CARET_MM>(){}[0]
