@@ -816,10 +816,12 @@ public class DrawDocument(
     /**
      * Removes for good the pages and the elements hidden by a removal that [stable] says can be
      * forgotten (every device has it, and nothing made without seeing it is still on its way, see
-     * `SyncEngine`): nothing can show them again.
+     * `SyncEngine`): nothing can show them again. A page goes only once removed before
+     * [pagesRemovedBefore] (milliseconds): until then it can be put back from the trash (see
+     * `docs/trash.md`).
      */
-    public fun purgeHidden(stable: (Stamp) -> Boolean): PurgedContent {
-        val pages = removedPages.values.filter { page -> page.removed?.let(stable) == true }
+    public fun purgeHidden(pagesRemovedBefore: Long = Long.MAX_VALUE, stable: (Stamp) -> Boolean): PurgedContent {
+        val pages = removedPages.values.filter { page -> page.removed?.let { it.time < pagesRemovedBefore && stable(it) } == true }
         pages.forEach { removedPages.remove(it.id) }
         val elements = mutableListOf<Pair<DrawPage, DrawElement>>()
         for (page in this.pages + removedPages.values) {
@@ -934,6 +936,13 @@ public class DrawDocument(
     }
 
     public fun pageById(id: String): DrawPage? = pages.firstOrNull { it.id == id }
+
+    /**
+     * The pages removed since [time] (milliseconds), the most recent removal first: the ones the
+     * trash of the document shows (see `docs/trash.md`).
+     */
+    public fun removedPagesSince(time: Long): List<DrawPage> =
+        removedPages.values.filter { page -> page.removed.let { it != null && it.time >= time } }.sortedByDescending { it.removed }
 
     /** Every page, shown or removed (see [removedPages]). */
     public fun allPages(): List<DrawPage> = pages + removedPages.values

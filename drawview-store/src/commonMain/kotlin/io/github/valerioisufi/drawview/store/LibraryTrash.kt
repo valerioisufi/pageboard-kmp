@@ -23,15 +23,6 @@ public data class TrashedItem(
     public enum class Kind { DOCUMENT, FOLDER }
 }
 
-/** How long the trash keeps what is deleted before it is deleted for good. */
-public object TrashRetention {
-    /** 30 days, in milliseconds. */
-    public const val MILLIS: Long = 30L * 24 * 60 * 60 * 1000
-
-    /** The time before which what went to the trash is deleted for good, at [now]. */
-    public fun expiredBefore(now: Long): Long = now - MILLIS
-}
-
 /**
  * How the trash splits a library: what is out of it, the items in it, where an item goes back and
  * under which name. Built from every document and folder of a store, each with the time it went

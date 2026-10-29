@@ -271,7 +271,7 @@ final class io.github.valerioisufi.drawview.store/OpenDocument { // io.github.va
 }
 
 final class io.github.valerioisufi.drawview.store/OpenDocuments { // io.github.valerioisufi.drawview.store/OpenDocuments|null[0]
-    constructor <init>(io.github.valerioisufi.drawview.store/DocumentStore, kotlinx.coroutines/CoroutineDispatcher = ..., kotlinx.coroutines/CoroutineScope = ...) // io.github.valerioisufi.drawview.store/OpenDocuments.<init>|<init>(io.github.valerioisufi.drawview.store.DocumentStore;kotlinx.coroutines.CoroutineDispatcher;kotlinx.coroutines.CoroutineScope){}[0]
+    constructor <init>(io.github.valerioisufi.drawview.store/DocumentStore, kotlinx.coroutines/CoroutineDispatcher = ..., kotlinx.coroutines/CoroutineScope = ..., kotlin/Function0<kotlin/Long> = ...) // io.github.valerioisufi.drawview.store/OpenDocuments.<init>|<init>(io.github.valerioisufi.drawview.store.DocumentStore;kotlinx.coroutines.CoroutineDispatcher;kotlinx.coroutines.CoroutineScope;kotlin.Function0<kotlin.Long>){}[0]
 
     final val dispatcher // io.github.valerioisufi.drawview.store/OpenDocuments.dispatcher|{}dispatcher[0]
         final fun <get-dispatcher>(): kotlinx.coroutines/CoroutineDispatcher // io.github.valerioisufi.drawview.store/OpenDocuments.dispatcher.<get-dispatcher>|<get-dispatcher>(){}[0]
@@ -332,11 +332,4 @@ final class io.github.valerioisufi.drawview.store/TrashedItem { // io.github.val
         final fun valueOf(kotlin/String): io.github.valerioisufi.drawview.store/TrashedItem.Kind // io.github.valerioisufi.drawview.store/TrashedItem.Kind.valueOf|valueOf#static(kotlin.String){}[0]
         final fun values(): kotlin/Array<io.github.valerioisufi.drawview.store/TrashedItem.Kind> // io.github.valerioisufi.drawview.store/TrashedItem.Kind.values|values#static(){}[0]
     }
-}
-
-final object io.github.valerioisufi.drawview.store/TrashRetention { // io.github.valerioisufi.drawview.store/TrashRetention|null[0]
-    final const val MILLIS // io.github.valerioisufi.drawview.store/TrashRetention.MILLIS|{}MILLIS[0]
-        final fun <get-MILLIS>(): kotlin/Long // io.github.valerioisufi.drawview.store/TrashRetention.MILLIS.<get-MILLIS>|<get-MILLIS>(){}[0]
-
-    final fun expiredBefore(kotlin/Long): kotlin/Long // io.github.valerioisufi.drawview.store/TrashRetention.expiredBefore|expiredBefore(kotlin.Long){}[0]
 }

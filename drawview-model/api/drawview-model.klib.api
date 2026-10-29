@@ -2252,8 +2252,9 @@ final class io.github.valerioisufi.drawview.model/DrawDocument { // io.github.va
     final fun movePage(kotlin/Int, kotlin/Int) // io.github.valerioisufi.drawview.model/DrawDocument.movePage|movePage(kotlin.Int;kotlin.Int){}[0]
     final fun orderKeyAt(kotlin/Int): kotlin/String // io.github.valerioisufi.drawview.model/DrawDocument.orderKeyAt|orderKeyAt(kotlin.Int){}[0]
     final fun pageById(kotlin/String): io.github.valerioisufi.drawview.model/DrawPage? // io.github.valerioisufi.drawview.model/DrawDocument.pageById|pageById(kotlin.String){}[0]
-    final fun purgeHidden(kotlin/Function1<io.github.valerioisufi.drawview.model/Stamp, kotlin/Boolean>): io.github.valerioisufi.drawview.model/PurgedContent // io.github.valerioisufi.drawview.model/DrawDocument.purgeHidden|purgeHidden(kotlin.Function1<io.github.valerioisufi.drawview.model.Stamp,kotlin.Boolean>){}[0]
+    final fun purgeHidden(kotlin/Long = ..., kotlin/Function1<io.github.valerioisufi.drawview.model/Stamp, kotlin/Boolean>): io.github.valerioisufi.drawview.model/PurgedContent // io.github.valerioisufi.drawview.model/DrawDocument.purgeHidden|purgeHidden(kotlin.Long;kotlin.Function1<io.github.valerioisufi.drawview.model.Stamp,kotlin.Boolean>){}[0]
     final fun reindexPages() // io.github.valerioisufi.drawview.model/DrawDocument.reindexPages|reindexPages(){}[0]
+    final fun removedPagesSince(kotlin/Long): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawPage> // io.github.valerioisufi.drawview.model/DrawDocument.removedPagesSince|removedPagesSince(kotlin.Long){}[0]
     final fun restorePageOrder(kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawPage>) // io.github.valerioisufi.drawview.model/DrawDocument.restorePageOrder|restorePageOrder(kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawPage>){}[0]
 }
 
@@ -3197,6 +3198,13 @@ final object io.github.valerioisufi.drawview.model/FractionalIndex { // io.githu
 
 final object io.github.valerioisufi.drawview.model/KotlinStrokeModeller : io.github.valerioisufi.drawview.model/StrokeModeller { // io.github.valerioisufi.drawview.model/KotlinStrokeModeller|null[0]
     final fun buildMesh(kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint>, io.github.valerioisufi.drawview.model/BrushConfig, io.github.valerioisufi.drawview.model/InputToolType): io.github.valerioisufi.drawview.model/StrokeMesh? // io.github.valerioisufi.drawview.model/KotlinStrokeModeller.buildMesh|buildMesh(kotlin.collections.List<io.github.valerioisufi.drawview.model.StrokePoint>;io.github.valerioisufi.drawview.model.BrushConfig;io.github.valerioisufi.drawview.model.InputToolType){}[0]
+}
+
+final object io.github.valerioisufi.drawview.model/TrashRetention { // io.github.valerioisufi.drawview.model/TrashRetention|null[0]
+    final const val MILLIS // io.github.valerioisufi.drawview.model/TrashRetention.MILLIS|{}MILLIS[0]
+        final fun <get-MILLIS>(): kotlin/Long // io.github.valerioisufi.drawview.model/TrashRetention.MILLIS.<get-MILLIS>|<get-MILLIS>(){}[0]
+
+    final fun expiredBefore(kotlin/Long): kotlin/Long // io.github.valerioisufi.drawview.model/TrashRetention.expiredBefore|expiredBefore(kotlin.Long){}[0]
 }
 
 final const val io.github.valerioisufi.drawview.model/STROKE_UNIT_LENGTH_CM_MM // io.github.valerioisufi.drawview.model/STROKE_UNIT_LENGTH_CM_MM|{}STROKE_UNIT_LENGTH_CM_MM[0]

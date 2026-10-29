@@ -183,4 +183,13 @@
         <item quantity="other">“%2$s”의 %1$d페이지</item>
     </plurals>
     <string name="page_config_subtitle_document">“%1$s”의 페이지</string>
+    <string name="page_grid_deleted_pages">삭제한 페이지</string>
+    <string name="page_grid_deleted_pages_hint">최근 30일 동안 삭제한 페이지</string>
+    <string name="page_grid_action_restore">복원</string>
+    <plurals name="page_grid_days_left">
+        <item quantity="other">%1$d일 남음</item>
+    </plurals>
+    <plurals name="message_pages_deleted">
+        <item quantity="other">페이지 %1$d개를 삭제했습니다</item>
+    </plurals>
 </resources>

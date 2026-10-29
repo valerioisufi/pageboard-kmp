@@ -1326,6 +1326,35 @@ class SyncEngineTest {
     }
 
     @Test
+    fun aPageRemovedStaysInTheTrashAfterTheLogsAreCompacted() = syncTest { work ->
+        val network = InMemoryNetwork()
+        val devices = listOf("ada", "bob").map { Device(it, work, this, network) }
+        val (ada, bob) = devices
+        val document = ada.store.createDocument("Notes")
+        ada.change(document.id) { session ->
+            AddPage.of(DrawPage(orderKey = session.document.orderKeyAt(1)).apply { add(stroke(5f, 5f)) })
+        }
+        val invitation = ada.share(document.id, "Notes")
+        bob.join(invitation, "ada")
+        advanceUntilIdle()
+
+        // Bob removes the second page; both have everything and compact their logs
+        val removed = bob.snapshot(document.id).pages[1].data.id
+        bob.change(document.id) { RemovePage(removed) }
+        advanceUntilIdle()
+        for (device in devices) {
+            assertEquals(device.versionVector(document.id), device.compactedOperations(document.id), "the log of ${device.name}")
+            assertEquals(listOf(removed), device.snapshot(document.id).removedPages.map { it.data.id }, "kept in the trash on ${device.name}")
+        }
+
+        // Put back from the trash of Ada: shown again on both, with its stroke
+        ada.change(document.id) { session -> AddPage.of(assertNotNull(session.document.removedPages[removed])) }
+        advanceUntilIdle()
+        assertSame(document.id, devices)
+        assertEquals(1, bob.snapshot(document.id).pages.single { it.data.id == removed }.data.elements.size)
+    }
+
+    @Test
     fun whatAMemberHasIsSaidByThatMember() = syncTest { work ->
         val network = InMemoryNetwork()
         val (ada, bob, cy) = listOf("ada", "bob", "cy").map { Device(it, work, this, network) }

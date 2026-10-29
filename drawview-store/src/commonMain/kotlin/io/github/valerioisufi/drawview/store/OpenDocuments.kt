@@ -3,12 +3,14 @@ package io.github.valerioisufi.drawview.store
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawResource
 import io.github.valerioisufi.drawview.model.StrokeModeller
+import io.github.valerioisufi.drawview.model.TrashRetention
 import io.github.valerioisufi.drawview.model.change.ChangePersister
 import io.github.valerioisufi.drawview.model.change.DocumentSession
 import io.github.valerioisufi.drawview.model.change.Operation
 import io.github.valerioisufi.drawview.model.change.OperationId
 import io.github.valerioisufi.drawview.model.change.PersistenceQueue
 import io.github.valerioisufi.drawview.model.change.RenameDocument
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +26,8 @@ import kotlinx.coroutines.withContext
  * changes it: the editor and the synchronization with the other devices (which also changes the
  * documents that are not open in an editor). The changes of a session are stored as they are
  * applied. An application keeps one per store, given to the library, the editor, the
- * synchronization and the export.
+ * synchronization and the export; [clock] tells how long the pages removed are kept (see
+ * [OpenDocument.compact]).
  *
  * The sessions are used on [dispatcher], the thread of the documents (the UI thread in the
  * applications); [scope] runs the writes.
@@ -32,7 +35,8 @@ import kotlinx.coroutines.withContext
 public class OpenDocuments(
     public val store: DocumentStore,
     public val dispatcher: CoroutineDispatcher = Dispatchers.Main,
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+    private val clock: () -> Long = ::currentTimeMillis
 ) {
     private val mutex = Mutex()
     private val open = mutableMapOf<String, OpenDocument>()
@@ -49,7 +53,7 @@ public class OpenDocuments(
         val document = store.loadDocument(documentId) ?: return null
         val session = DocumentSession(document, store.replicaId(), store.versionVector(documentId))
         session.isReadOnly = store.isReadOnly(documentId)
-        OpenDocument(session, dispatcher, PersistenceQueue(scope, store.persistence), store).also { open[documentId] = it }
+        OpenDocument(session, dispatcher, PersistenceQueue(scope, store.persistence), store, clock).also { open[documentId] = it }
     }
 
     /**
@@ -109,7 +113,8 @@ public class OpenDocument internal constructor(
     public val session: DocumentSession,
     public val dispatcher: CoroutineDispatcher,
     private val queue: PersistenceQueue,
-    private val log: OperationLog
+    private val log: OperationLog,
+    private val clock: () -> Long = ::currentTimeMillis
 ) {
     internal var users = 1
     private val received = MutableSharedFlow<DrawResource>(extraBufferCapacity = 64)
@@ -147,13 +152,17 @@ public class OpenDocument internal constructor(
     /**
      * Removes from the log the operations up to [upTo] (the ones every device working on the
      * document has: no device will ask for them); with [purge] (nothing made without seeing them is
-     * on its way either), the pages and elements they removed are removed for good.
+     * on its way either), the pages and elements they removed are removed for good, but the pages
+     * removed less than [TrashRetention] ago: they stay in the trash of the document.
      */
     public suspend fun compact(upTo: Map<String, Long>, purge: Boolean) {
         flush()
         val stamps = log.compactOperations(document.id, upTo)
         if (!purge) return
-        val purged = edit { session -> session.document.purgeHidden { removed -> stamps[removed.replica]?.let { removed <= it } == true } }
+        val keptSince = TrashRetention.expiredBefore(clock())
+        val purged = edit { session ->
+            session.document.purgeHidden(pagesRemovedBefore = keptSince) { removed -> stamps[removed.replica]?.let { removed <= it } == true }
+        }
         if (purged.isEmpty) return
         queue.enqueue { deleteForGood(document, purged) }
         flush()

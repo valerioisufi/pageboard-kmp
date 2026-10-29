@@ -492,6 +492,8 @@ final class io.github.valerioisufi.drawview.canvas.controller/MediaManager { // 
 final class io.github.valerioisufi.drawview.canvas.controller/PageManager { // io.github.valerioisufi.drawview.canvas.controller/PageManager|null[0]
     constructor <init>(io.github.valerioisufi.drawview.canvas.controller/DrawViewController) // io.github.valerioisufi.drawview.canvas.controller/PageManager.<init>|<init>(io.github.valerioisufi.drawview.canvas.controller.DrawViewController){}[0]
 
+    final val deleted // io.github.valerioisufi.drawview.canvas.controller/PageManager.deleted|{}deleted[0]
+        final fun <get-deleted>(): kotlinx.coroutines.flow/SharedFlow<kotlin.collections/List<kotlin/String>> // io.github.valerioisufi.drawview.canvas.controller/PageManager.deleted.<get-deleted>|<get-deleted>(){}[0]
     final val selection // io.github.valerioisufi.drawview.canvas.controller/PageManager.selection|{}selection[0]
         final fun <get-selection>(): io.github.valerioisufi.drawview.canvas.controller/PageSelection // io.github.valerioisufi.drawview.canvas.controller/PageManager.selection.<get-selection>|<get-selection>(){}[0]
 
@@ -510,6 +512,7 @@ final class io.github.valerioisufi.drawview.canvas.controller/PageManager { // i
     final fun copyPages(kotlin.collections/Collection<kotlin/String>) // io.github.valerioisufi.drawview.canvas.controller/PageManager.copyPages|copyPages(kotlin.collections.Collection<kotlin.String>){}[0]
     final fun deletePage(kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/PageManager.deletePage|deletePage(kotlin.Int){}[0]
     final fun deletePages(kotlin.collections/Collection<kotlin/String>) // io.github.valerioisufi.drawview.canvas.controller/PageManager.deletePages|deletePages(kotlin.collections.Collection<kotlin.String>){}[0]
+    final fun deletedPagesAt(kotlin/Long): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawPage> // io.github.valerioisufi.drawview.canvas.controller/PageManager.deletedPagesAt|deletedPagesAt(kotlin.Long){}[0]
     final fun finishPageReorderMode() // io.github.valerioisufi.drawview.canvas.controller/PageManager.finishPageReorderMode|finishPageReorderMode(){}[0]
     final fun jumpToPage(kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/PageManager.jumpToPage|jumpToPage(kotlin.Int){}[0]
     final fun jumpToPage(kotlin/Int, io.github.valerioisufi.drawview.model.geometry/Rect?) // io.github.valerioisufi.drawview.canvas.controller/PageManager.jumpToPage|jumpToPage(kotlin.Int;io.github.valerioisufi.drawview.model.geometry.Rect?){}[0]
@@ -520,6 +523,7 @@ final class io.github.valerioisufi.drawview.canvas.controller/PageManager { // i
     final fun movePages(kotlin.collections/Collection<kotlin/String>, kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/PageManager.movePages|movePages(kotlin.collections.Collection<kotlin.String>;kotlin.Int){}[0]
     final fun pastePages(kotlin/Int) // io.github.valerioisufi.drawview.canvas.controller/PageManager.pastePages|pastePages(kotlin.Int){}[0]
     final fun pastePagesAfter(kotlin.collections/Collection<kotlin/String>) // io.github.valerioisufi.drawview.canvas.controller/PageManager.pastePagesAfter|pastePagesAfter(kotlin.collections.Collection<kotlin.String>){}[0]
+    final fun restorePages(kotlin.collections/Collection<kotlin/String>) // io.github.valerioisufi.drawview.canvas.controller/PageManager.restorePages|restorePages(kotlin.collections.Collection<kotlin.String>){}[0]
     final fun startPageReorderMode() // io.github.valerioisufi.drawview.canvas.controller/PageManager.startPageReorderMode|startPageReorderMode(){}[0]
 }
 

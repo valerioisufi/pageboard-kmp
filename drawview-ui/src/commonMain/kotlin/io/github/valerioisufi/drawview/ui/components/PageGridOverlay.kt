@@ -25,10 +25,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -42,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -68,13 +71,19 @@ import io.github.valerioisufi.drawview.canvas.controller.PageSelection
 import io.github.valerioisufi.drawview.canvas.observeChanges
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.TrashRetention
+import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.ui.adaptive.ShortcutModifier
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.DesignMenu
 import io.github.valerioisufi.drawview.ui.command.MenuDivider
 import io.github.valerioisufi.drawview.ui.command.MenuItem
-import io.github.valerioisufi.drawview.ui.screen.EditorCommands
 import io.github.valerioisufi.drawview.ui.generated.resources.*
+import io.github.valerioisufi.drawview.ui.generated.resources.page_grid_action_restore
+import io.github.valerioisufi.drawview.ui.generated.resources.page_grid_days_left
+import io.github.valerioisufi.drawview.ui.generated.resources.page_grid_deleted_pages
+import io.github.valerioisufi.drawview.ui.generated.resources.page_grid_deleted_pages_hint
+import io.github.valerioisufi.drawview.ui.screen.EditorCommands
 import io.github.valerioisufi.drawview.ui.theme.DrawViewElevation
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.elevation
@@ -190,6 +199,8 @@ internal fun PageGridOverlay(
         var dragOffset by remember { mutableStateOf(Offset.Zero) }
         // The pages selected dragged with the card (a card of a selection of several), in their order
         var draggedBlock by remember { mutableStateOf<List<String>?>(null) }
+        // The deleted pages shown after the others
+        var deletedExpanded by remember { mutableStateOf(false) }
 
         LazyVerticalGrid(
             state = gridState,
@@ -206,8 +217,9 @@ internal fun PageGridOverlay(
                                 offset.x.toInt() in item.offset.x..(item.offset.x + item.size.width) &&
                                     offset.y.toInt() in item.offset.y..(item.offset.y + item.size.height)
                             }?.let { item ->
-                                pageManager.startPageReorderMode()
+                                // The pages only (not the deleted ones after them)
                                 val page = document.pages.getOrNull(item.index) ?: return@let
+                                pageManager.startPageReorderMode()
                                 val block = selection.pageIds.takeIf { page.id in it && it.size > 1 }
                                 draggedBlock = block
                                 draggedIndex = item.index
@@ -268,7 +280,7 @@ internal fun PageGridOverlay(
                                         )
                                     }
                                     draggedIndex = newIndex
-                                } else if (targetItem != null && block == null && targetItem.index != draggedIdx) {
+                                } else if (targetItem != null && block == null && targetItem.index != draggedIdx && targetItem.index < document.pages.size) {
                                     // The dragged card keeps following the finger after the swap
                                     val offsetXFix = draggedItem.offset.x - targetItem.offset.x
                                     val offsetYFix = draggedItem.offset.y - targetItem.offset.y
@@ -459,9 +471,92 @@ internal fun PageGridOverlay(
                     }
                 }
             }
+            if (writable) deletedPages(controller, deletedExpanded, onToggle = { deletedExpanded = !deletedExpanded })
         }
     }
 }
+
+/**
+ * The pages removed in the last 30 days, after the others (see `docs/trash.md`): a row telling
+ * how many, which shows them when [expanded], each faded with the days it has left and Restore.
+ */
+private fun LazyGridScope.deletedPages(controller: DrawViewController, expanded: Boolean, onToggle: () -> Unit) {
+    val now = currentTimeMillis()
+    val deleted = controller.pageManager.deletedPagesAt(now)
+    if (deleted.isEmpty()) return
+    item(key = "deleted-pages", span = { GridItemSpan(maxLineSpan) }) {
+        val colors = MaterialTheme.colorScheme
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .clickable(onClick = onToggle)
+                .padding(horizontal = 8.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Icon(DrawViewIcons.Trash, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text("${stringResource(Res.string.page_grid_deleted_pages)} (${deleted.size})", style = MaterialTheme.typography.titleSmall, color = colors.onSurface)
+                Text(stringResource(Res.string.page_grid_deleted_pages_hint), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+            }
+            Icon(if (expanded) DrawViewIcons.ChevronUp else DrawViewIcons.ChevronDown, contentDescription = null, tint = colors.onSurfaceVariant)
+        }
+    }
+    if (!expanded) return
+    items(deleted.size, key = { "deleted:${deleted[it].id}" }) { index ->
+        val page = deleted[index]
+        val colors = MaterialTheme.colorScheme
+        val left = ((page.removed?.time ?: now) + TrashRetention.MILLIS - now)
+        val days = ((left + DAY_MILLIS - 1) / DAY_MILLIS).toInt().coerceAtLeast(1)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth().animateItem()) {
+            val aspectRatio = if (page.heightMm > 0f) page.widthMm / page.heightMm else (1f / 1.414f)
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(0.8f)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(colors.surfaceContainer)
+                    .padding(16.dp)
+            ) {
+                BoxWithConstraints(
+                    modifier = Modifier
+                        .aspectRatio(aspectRatio)
+                        .alpha(0.55f)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Color.White),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val widthPx = with(LocalDensity.current) { maxWidth.toPx() }.toInt().coerceIn(1, MAX_THUMBNAIL_WIDTH_PX)
+                    val thumbnail = rememberPageThumbnail(controller, page, widthPx)
+                    PageThumbnailBackground(page = page)
+                    if (thumbnail != null) {
+                        Image(bitmap = thumbnail, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
+                    }
+                }
+            }
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 6.dp)) {
+                Text(
+                    pluralStringResource(Res.plurals.page_grid_days_left, days, days),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = colors.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                DesignIconButton(
+                    icon = DrawViewIcons.RotateCcw,
+                    label = stringResource(Res.string.page_grid_action_restore),
+                    onClick = { controller.pageManager.restorePages(listOf(page.id)) },
+                    iconSize = 20.dp
+                )
+            }
+        }
+    }
+}
+
+/** A day, in milliseconds. */
+private const val DAY_MILLIS = 24L * 60 * 60 * 1000
 
 /**
  * Renders (off the main thread) and remembers the thumbnail of [page], refreshed when its

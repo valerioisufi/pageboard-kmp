@@ -183,4 +183,13 @@
         <item quantity="other">「%2$s」の %1$d ページ</item>
     </plurals>
     <string name="page_config_subtitle_document">「%1$s」のページ</string>
+    <string name="page_grid_deleted_pages">削除したページ</string>
+    <string name="page_grid_deleted_pages_hint">過去30日間に削除したページ</string>
+    <string name="page_grid_action_restore">復元</string>
+    <plurals name="page_grid_days_left">
+        <item quantity="other">残り %1$d 日</item>
+    </plurals>
+    <plurals name="message_pages_deleted">
+        <item quantity="other">%1$d ページを削除しました</item>
+    </plurals>
 </resources>

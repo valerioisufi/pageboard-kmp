@@ -156,8 +156,10 @@ public final class io/github/valerioisufi/drawview/model/DrawDocument {
 	public final fun movePage (II)V
 	public final fun orderKeyAt (I)Ljava/lang/String;
 	public final fun pageById (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/DrawPage;
-	public final fun purgeHidden (Lkotlin/jvm/functions/Function1;)Lio/github/valerioisufi/drawview/model/PurgedContent;
+	public final fun purgeHidden (JLkotlin/jvm/functions/Function1;)Lio/github/valerioisufi/drawview/model/PurgedContent;
+	public static synthetic fun purgeHidden$default (Lio/github/valerioisufi/drawview/model/DrawDocument;JLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/PurgedContent;
 	public final fun reindexPages ()V
+	public final fun removedPagesSince (J)Ljava/util/List;
 	public final fun restorePageOrder (Ljava/util/List;)V
 	public final fun setCreatedAt (J)V
 	public final fun setDefaultBackground (Lio/github/valerioisufi/drawview/model/PageBackground;)V
@@ -957,6 +959,12 @@ public final class io/github/valerioisufi/drawview/model/TextMarkupKind$Companio
 
 public final class io/github/valerioisufi/drawview/model/TextMarkupKt {
 	public static final fun pdfPointsToPageMm (FFFF)Lio/github/valerioisufi/drawview/model/geometry/Matrix2D;
+}
+
+public final class io/github/valerioisufi/drawview/model/TrashRetention {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/TrashRetention;
+	public static final field MILLIS J
+	public final fun expiredBefore (J)J
 }
 
 public final class io/github/valerioisufi/drawview/model/Versions {

@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel
+import io.github.valerioisufi.drawview.explorer.LocalLibraryClock
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_notes_count
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_root_folder
@@ -43,8 +44,7 @@ import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_tra
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_from
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_restore
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_trash_retention
-import io.github.valerioisufi.drawview.explorer.LocalLibraryClock
-import io.github.valerioisufi.drawview.store.TrashRetention
+import io.github.valerioisufi.drawview.model.TrashRetention
 import io.github.valerioisufi.drawview.store.TrashedItem
 import io.github.valerioisufi.drawview.ui.command.DesignMenu
 import io.github.valerioisufi.drawview.ui.command.MenuItem

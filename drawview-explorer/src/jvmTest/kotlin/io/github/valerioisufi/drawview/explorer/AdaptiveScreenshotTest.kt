@@ -14,6 +14,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performMouseInput
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.rightClick
 import androidx.compose.ui.unit.dp
@@ -149,6 +150,24 @@ class AdaptiveScreenshotTest {
         }
     }
 
+    /** The grid with a page deleted: the message with Undo, the deleted pages open after the others. */
+    @Test
+    fun editorPageGridDeleted() = listOf(ReferenceWindow.TABLET_LANDSCAPE to false, ReferenceWindow.PHONE to false, ReferenceWindow.TABLET_LANDSCAPE to true).forEach { (window, dark) ->
+        capture("editor-page-grid-deleted", window, dark = dark) { viewModels ->
+            openNote(viewModels)
+            runOnIdle {
+                val controller = viewModels.controller()
+                controller.pageManager.addNewPageAfter(0)
+                controller.pageManager.addNewPageAfter(1)
+                controller.pageManager.deletePages(listOf(controller.document.pages[1].id))
+                controller.togglePageGrid()
+            }
+            waitForIdle()
+            onNodeWithText("Deleted pages (1)").performScrollTo().performClick()
+            waitForIdle()
+        }
+    }
+
     /** A search without results: why, under the field. */
     @Test
     fun librarySearch() = capture("library-search", ReferenceWindow.PHONE, dark = false) {
@@ -161,7 +180,7 @@ class AdaptiveScreenshotTest {
         onNodeWithText("Analysis").performClick()
     }
 
-    /** The Trash, full (a folder and a note, the message with Undo) and empty. */
+    /** The Trash, full (a folder and a note, the message with Undo of both) and empty. */
     @Test
     fun libraryTrash() = listOf(
         ReferenceWindow.PHONE to false, ReferenceWindow.DESKTOP to false, ReferenceWindow.DESKTOP to true, ReferenceWindow.TABLET_PORTRAIT to false
@@ -169,8 +188,8 @@ class AdaptiveScreenshotTest {
         capture("library-trash", window, dark = dark) { viewModels ->
             runOnIdle {
                 val library = viewModels.library()
-                library.deleteFiles(library.currentDirectoryFiles.filter { it.name == "Physics" })
-                library.deleteFiles(library.currentDirectoryFiles.filter { it.name == "Lab report" })
+                // At once: one message, in the same order at every run
+                library.deleteFiles(library.currentDirectoryFiles.filter { it.name == "Physics" || it.name == "Lab report" })
                 library.showSection(FileExplorerViewModel.Section.TRASH)
             }
             waitForIdle()

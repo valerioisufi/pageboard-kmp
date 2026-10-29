@@ -8,6 +8,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.PageBackground
+import io.github.valerioisufi.drawview.model.TrashRetention
 import io.github.valerioisufi.drawview.model.change.AddPage
 import io.github.valerioisufi.drawview.model.change.CompositeChange
 import io.github.valerioisufi.drawview.model.change.CopiedPages
@@ -20,6 +21,9 @@ import io.github.valerioisufi.drawview.model.change.copyPages
 import io.github.valerioisufi.drawview.model.change.pasteInto
 import io.github.valerioisufi.drawview.model.geometry.Dimension
 import io.github.valerioisufi.drawview.model.geometry.Rect as MmRect
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 /**
  * Page management: insertion, deletion, copy and paste, reordering (drag & drop on the canvas
@@ -29,6 +33,11 @@ public class PageManager(private val controller: DrawViewController) {
 
     /** The pages selected in the page grid. */
     public val selection: PageSelection = PageSelection(controller.document)
+
+    private val deletedPages = MutableSharedFlow<List<String>>(extraBufferCapacity = 8)
+
+    /** The pages deleted here ([deletePages]), each time: told with Undo ([restorePages]). */
+    public val deleted: SharedFlow<List<String>> = deletedPages.asSharedFlow()
 
     /** Page targeted by the context menu / page grid actions. */
     public var contextMenuTargetPageIndex: Int by mutableIntStateOf(-1)
@@ -118,6 +127,23 @@ public class PageManager(private val controller: DrawViewController) {
         val editing = controller.textEditorManager.activeTextPageIndex
         if (pages.any { document.pages.indexOf(it) == editing }) controller.textEditorManager.cancelEditing()
         oneChange(pages.map { RemovePage(it.id) })?.let { controller.session.submit(it) }
+        deletedPages.tryEmit(pages.map { it.id })
+    }
+
+    /**
+     * The pages removed in the last [TrashRetention] at [now] (milliseconds), here or on another
+     * device, the most recent removal first: the trash of the document (see `docs/trash.md`).
+     */
+    public fun deletedPagesAt(now: Long): List<DrawPage> = document.removedPagesSince(TrashRetention.expiredBefore(now))
+
+    /**
+     * Puts the pages [ids] removed back where they were, in one change (one step to undo): the
+     * change undoing their removal, so that every device sees them again.
+     */
+    public fun restorePages(ids: Collection<String>) {
+        if (controller.isReadOnly) return
+        val pages = ids.toSet().mapNotNull { document.removedPages[it] }
+        oneChange(pages.map { AddPage.of(it) })?.let { controller.session.submit(it) }
     }
 
     /** Whether the pages [ids] can be deleted: some, not every page of the document. */

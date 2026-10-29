@@ -216,8 +216,8 @@ public final class io/github/valerioisufi/drawview/store/OpenDocument {
 }
 
 public final class io/github/valerioisufi/drawview/store/OpenDocuments {
-	public fun <init> (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineScope;)V
-	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineScope;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun close (Lio/github/valerioisufi/drawview/store/OpenDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun fileWithContent (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun getDispatcher ()Lkotlinx/coroutines/CoroutineDispatcher;
@@ -260,12 +260,6 @@ public abstract interface class io/github/valerioisufi/drawview/store/SharingSto
 
 public final class io/github/valerioisufi/drawview/store/SharingStore$DefaultImpls {
 	public static synthetic fun setSharingSecret$default (Lio/github/valerioisufi/drawview/store/SharingStore;Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-}
-
-public final class io/github/valerioisufi/drawview/store/TrashRetention {
-	public static final field INSTANCE Lio/github/valerioisufi/drawview/store/TrashRetention;
-	public static final field MILLIS J
-	public final fun expiredBefore (J)J
 }
 
 public final class io/github/valerioisufi/drawview/store/TrashedItem {

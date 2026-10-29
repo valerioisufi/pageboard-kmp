@@ -367,8 +367,10 @@ public final class io/github/valerioisufi/drawview/canvas/controller/PageManager
 	public final fun copyPages (Ljava/util/Collection;)V
 	public final fun deletePage (I)V
 	public final fun deletePages (Ljava/util/Collection;)V
+	public final fun deletedPagesAt (J)Ljava/util/List;
 	public final fun finishPageReorderMode ()V
 	public final fun getContextMenuTargetPageIndex ()I
+	public final fun getDeleted ()Lkotlinx/coroutines/flow/SharedFlow;
 	public final fun getSelection ()Lio/github/valerioisufi/drawview/canvas/controller/PageSelection;
 	public final fun jumpToPage (I)V
 	public final fun jumpToPage (ILio/github/valerioisufi/drawview/model/geometry/Rect;)V
@@ -380,6 +382,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/PageManager
 	public final fun movePages (Ljava/util/Collection;I)V
 	public final fun pastePages (I)V
 	public final fun pastePagesAfter (Ljava/util/Collection;)V
+	public final fun restorePages (Ljava/util/Collection;)V
 	public final fun setContextMenuTargetPageIndex (I)V
 	public final fun startPageReorderMode ()V
 }

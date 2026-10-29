@@ -186,4 +186,15 @@
         <item quantity="other">%1$d pages de « %2$s »</item>
     </plurals>
     <string name="page_config_subtitle_document">Les pages de « %1$s »</string>
+    <string name="page_grid_deleted_pages">Pages supprimées</string>
+    <string name="page_grid_deleted_pages_hint">Pages supprimées ces 30 derniers jours</string>
+    <string name="page_grid_action_restore">Restaurer</string>
+    <plurals name="page_grid_days_left">
+        <item quantity="one">%1$d jour restant</item>
+        <item quantity="other">%1$d jours restants</item>
+    </plurals>
+    <plurals name="message_pages_deleted">
+        <item quantity="one">%1$d page supprimée</item>
+        <item quantity="other">%1$d pages supprimées</item>
+    </plurals>
 </resources>

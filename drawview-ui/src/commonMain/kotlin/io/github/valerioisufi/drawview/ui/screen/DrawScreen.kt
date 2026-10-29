@@ -28,8 +28,10 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -70,6 +72,8 @@ import io.github.valerioisufi.drawview.ui.editor.TextEditorOverlay
 import io.github.valerioisufi.drawview.ui.editor.TextMarkupActionBar
 import io.github.valerioisufi.drawview.ui.extension.EditorPanel
 import io.github.valerioisufi.drawview.ui.generated.resources.*
+import io.github.valerioisufi.drawview.ui.generated.resources.common_action_undo
+import io.github.valerioisufi.drawview.ui.generated.resources.message_pages_deleted
 import io.github.valerioisufi.drawview.ui.platform.HideSystemBarsEffect
 import io.github.valerioisufi.drawview.ui.platform.PencilInteractionEffect
 import io.github.valerioisufi.drawview.ui.platform.PickerType
@@ -81,6 +85,7 @@ import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import io.github.valerioisufi.drawview.ui.theme.LocalCanvasColors
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
 import io.github.valerioisufi.drawview.ui.window.LocalWindowDecorInsets
+import org.jetbrains.compose.resources.getPluralString
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
@@ -177,6 +182,15 @@ private fun DrawScreenContent(
                 DrawViewController.Message.PASTED_WITHOUT_MISSING_FILES -> getString(Res.string.message_pasted_without_missing_files)
             }
             snackbarHostState.showSnackbar(text)
+        }
+    }
+
+    // The pages deleted, told with Undo: they come back from the trash of the document
+    LaunchedEffect(controller) {
+        controller.pageManager.deleted.collect { ids ->
+            val text = getPluralString(Res.plurals.message_pages_deleted, ids.size, ids.size)
+            val result = snackbarHostState.showSnackbar(text, actionLabel = getString(Res.string.common_action_undo), duration = SnackbarDuration.Long)
+            if (result == SnackbarResult.ActionPerformed) controller.pageManager.restorePages(ids)
         }
     }
 
@@ -367,12 +381,23 @@ private fun DrawScreenContent(
                 .fillMaxSize()
                 .zIndex(10f)
         ) {
-            PageGridOverlay(
-                controller = controller,
-                commands = commands,
-                onEditPageBackground = { configuredPageIds = null; showSinglePageConfigurator = true },
-                onEditPagesBackground = { ids -> configuredPageIds = ids; showSinglePageConfigurator = true }
-            )
+            Box(modifier = Modifier.fillMaxSize()) {
+                PageGridOverlay(
+                    controller = controller,
+                    commands = commands,
+                    onEditPageBackground = { configuredPageIds = null; showSinglePageConfigurator = true },
+                    onEditPagesBackground = { ids -> configuredPageIds = ids; showSinglePageConfigurator = true }
+                )
+                // The messages over the grid too (the pages deleted there, with Undo)
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    snackbar = { data -> DesignSnackbar(data) },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .windowInsetsPadding(WindowInsets.safeDrawing)
+                        .padding(16.dp)
+                )
+            }
         }
     }
 

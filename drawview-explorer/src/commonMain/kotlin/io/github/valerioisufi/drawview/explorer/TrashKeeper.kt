@@ -1,9 +1,9 @@
 package io.github.valerioisufi.drawview.explorer
 
 import androidx.compose.runtime.staticCompositionLocalOf
+import io.github.valerioisufi.drawview.model.TrashRetention
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.store.DocumentCatalog
-import io.github.valerioisufi.drawview.store.TrashRetention
 import kotlinx.coroutines.delay
 
 /** The time now of the library, in milliseconds: the days left in the trash, its purge (a fixed time in the screenshots). */

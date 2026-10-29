@@ -1,8 +1,8 @@
 package io.github.valerioisufi.drawview.explorer
 
+import io.github.valerioisufi.drawview.model.TrashRetention
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
-import io.github.valerioisufi.drawview.store.TrashRetention
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

@@ -73,8 +73,9 @@ Variations).
      (one or several), which puts them back where they were, as one step to undo;
    * not in a read-only document.
 8. **A page deleted is kept 30 days**, in a shared document too: the compaction does not drop a
-   page removed less than 30 days ago. A page removed longer ago is dropped as today (shared) or
-   on the daily pass (not shared).
+   page removed less than 30 days ago. A page removed longer ago leaves the trash of the document;
+   it is dropped by the compaction as today (shared), or stays stored unseen as today (not
+   shared).
 9. **Stored data**: a migration tested for the Room schema and for the index of
    `KeyValueDocumentStore`; the documents of the user never touched by it.
 
@@ -87,16 +88,16 @@ Variations).
 | Which documents and folders are in the trash, since when, from where; moving to it, restoring, deleting for good, the items older than a date | `DocumentCatalog` (`drawview-store`): `trash`, `trashDocument`, `trashFolder`, `restore`, `purgeTrash`; `RoomDocumentStore`, `KeyValueDocumentStore` | Information Expert (the store knows its documents), Protected Variations (one interface, two stores) |
 | An item of the trash | `TrashedItem` (`drawview-store`) | Information Expert |
 | The rules every store follows (what is hidden, names, restore, purge) | `TrashContract` (`drawview-store-testing`), run by both stores | Pure Fabrication |
-| How long the trash keeps things | `TrashRetention` (`drawview-store`, 30 days) | Pure Fabrication, Protected Variations |
+| How long the trash keeps things | `TrashRetention` (`drawview-model`, 30 days: the store and the editor read it) | Pure Fabrication, Protected Variations |
 | Purging when the application starts and every day | `TrashKeeper` (`drawview-explorer`), started by `DocumentLibrary` | Controller, Pure Fabrication |
 | Deleting from the library, Undo, the Trash section and its actions | `FileExplorerViewModel` (`trashFiles`, `restore`, `deleteForGood`, `emptyTrash`, `Section.TRASH`), `LibraryPanes`, a `TrashContent` (`drawview-explorer`) | Controller, High Cohesion |
 | How the trash splits a library (what is out of it, the items, where one goes back, the names free) | `LibraryTrash` (`drawview-store`), built by both stores from what they keep | Pure Fabrication, Information Expert |
 | Lectures forgotten only for documents deleted for good | `PencilNotesApp` (the ids gone from documents and trash together) | Information Expert stays the catalog, Low Coupling |
 | The sharing of a shared document in the trash kept as it changes | `StoreSharedDocuments.save` knowing a document in the trash (not one still to come) | Information Expert |
-| The pages removed of a document, the most recent first | `DrawDocument.removedPages` made public as a list (`drawview-model`) | Information Expert |
-| Restoring pages | `PageManager.restorePages(ids)` (`drawview-canvas`): `AddPage.of(page)` for each, one change | Controller, Creator |
-| Keeping a page removed 30 days in the compaction, dropping the older ones of a document not shared | `OpenDocuments.compact` (`drawview-store`) and `purgeExpired`, with the time of the removal (`Stamp.time`) | Information Expert |
-| The section "Deleted pages" of the grid | `PageGridOverlay` (`drawview-ui`) | Controller |
+| The pages removed of a document since a time, the most recent first | `DrawDocument.removedPagesSince` (`drawview-model`) | Information Expert |
+| The trash of a document, restoring pages, telling the pages deleted | `PageManager.deletedPagesAt(now)`, `restorePages(ids)` (`AddPage.of(page)` for each, one change), `deleted` (`drawview-canvas`) | Controller, Creator |
+| Keeping a page removed 30 days in the compaction | `DrawDocument.purgeHidden(pagesRemovedBefore)`, called by `OpenDocument.compact` with its clock (`drawview-store`), with the time of the removal (`Stamp.time`) | Information Expert |
+| The section "Deleted pages" of the grid, the message with Undo over the editor and the grid | `PageGridOverlay`, `DrawScreen` (`drawview-ui`) | Controller |
 
 ### The catalog
 
@@ -177,20 +178,21 @@ public interface DocumentCatalog {
 
 ### The pages
 
-* `DrawDocument.removedPages(): List<DrawPage>`, the pages hidden, the most recent removal first.
+* `DrawDocument.removedPagesSince(time)`, the pages hidden since then, the most recent removal
+  first; `PageManager.deletedPagesAt(now)`, the ones of the last 30 days.
 * `PageManager.restorePages(ids)`: `AddPage.of(page)` for each, in one `CompositeChange`: the
   same change as an undo of the removal, so nothing new travels. A page goes back to its order
   key, among the pages shown.
 * **The compaction** drops a hidden page only when every member has its removal (as today)
   **and** it was removed more than `TrashRetention` ago (`removed.time`, bounded to one hour ahead
   by `docs/untrusted-members.md`). A page kept stays hidden in the stored document after the
-  operations leave the log; a later compaction, or the daily pass, drops it.
-* **A document not shared** has no compaction: `OpenDocuments.purgeExpired(before)` drops its
-  pages removed before the date, called by `TrashKeeper` for the documents not shared.
+  operations leave the log; a later compaction drops it.
+* **A document not shared** has no compaction: its pages removed stay stored, unseen, as today;
+  after 30 days they leave the trash of the document only.
 * The grid: a row "Deleted pages (N)" after the last page, closed by default; open, the cards of
-  the pages removed, faded, with the days left; tapping one selects it, Restore in the bar of the
-  page selection (`docs/page-selection.md`). The snackbar "N pages deleted · Undo" in the grid and
-  in the editor (undo of the history).
+  the pages removed, faded, with the days left and Restore. The message "N pages deleted · Undo"
+  over the editor and the grid: Undo restores those pages (not the last change of the history,
+  which may be another one by then).
 
 ## Plan
 
@@ -199,7 +201,7 @@ public interface DocumentCatalog {
 | 1 | The trash in the stores: `TrashedItem`, `LibraryTrash` (shared by the stores), the new members of `DocumentCatalog`, `TrashRetention`; Room 22 (`trashedAt` on `documents` and `folders`) with its migration tested by `MigrationTestHelper` on a database of 21 filled with documents, folders, sharing; the index of `KeyValueDocumentStore` with `trashedAt`, an index stored before read as it was; `TrashContract` in `drawview-store-testing` (hidden from documents and folders, names, restore to the folder or the root, "name (2)", purge by date, an item inside a folder in the trash keeping its date, resources kept until the purge); ABI recorded on purpose. The library still deletes for good | Done |
 | 2 | The watchers: lectures forgotten only when deleted for good (`PencilNotesApp`); the search dropping a document in the trash and indexing it again once restored; the sharing of a shared document in the trash stored as it changes (`StoreSharedDocuments`); tests in `drawview-sync` (`StoreSharedDocumentsTest`, the sync modules also on the iOS simulator), `drawview-search` (`SearchIndexerAndEngineTest`) | Done |
 | 3 | The library: Delete moves to the trash at once, with a message and Undo (`TrashNotice`); the Trash section (the navigation pane, a button of the bar where the pane is not), its rows with Restore and Delete for good, Empty Trash, both asked first; `TrashKeeper` purging at start and every day (`LocalLibraryClock`, a fixed time in the screenshots); `DesignSnackbar` public; the strings in the seven languages; tests (`LibraryCommandsTest`, `TrashKeeperTest`); screenshots `library-trash` (phone, tablet, desktop light and dark) and `library-trash-empty`, the others with the Trash in the pane and the bar; the desktop application on a copy of the real database: Room 21 to 22, its 26 documents, 4 folders and 1144 pages kept | Done |
-| 4 | The pages: `removedPages`, `restorePages`, the compaction keeping 30 days, `purgeExpired` for documents not shared; the section of the grid and the snackbars; tests in `drawview-model`, `drawview-canvas`, `drawview-sync` (a page restored after the operations left the log, on two devices); screenshots of the grid | Planned |
+| 4 | The pages: `TrashRetention` moved to `drawview-model`; `removedPagesSince`, `purgeHidden(pagesRemovedBefore)`; `PageManager.deletedPagesAt`, `restorePages`, `deleted`; the compaction keeping a page removed 30 days (`OpenDocuments` with a clock); the section of the grid and the message with Undo over the editor and the grid; the strings; tests (`PageTrashPurgeTest`, `PageTrashTest`, `SyncEngineTest.aPageRemovedStaysInTheTrashAfterTheLogsAreCompacted`, the sync modules on the iOS simulator); screenshots `editor-page-grid-deleted`; the ABI of the model, the store, the canvas and the UI recorded on purpose | Done |
 
 ## Decisions
 
@@ -217,6 +219,11 @@ Taken alone, revertible:
 * **The rows of the Trash have their actions each**, no selection of several items.
 * **No editor on a document in the trash**: restore it to open it.
 * **The pages have no Delete for good**: in a shared document only the compaction may drop them.
+* **The pages removed of a document not shared are not dropped**: dropping them would leave
+  operations of its log naming them, for the day it is shared; they stay as today, out of the
+  trash after 30 days.
+* **A page of the trash is restored on its own**, from its card, not through the selection of the
+  grid.
 * **Elements deleted are not in the trash**: undo covers them.
 
 ## Left for later
