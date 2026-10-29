@@ -2,7 +2,9 @@ package io.github.valerioisufi.drawview.lecture.gemini
 
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.patch
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -16,7 +18,7 @@ import kotlinx.coroutines.delay
 import kotlinx.serialization.json.Json
 
 /**
- * Minimal REST client of the Gemini API: `generateContent` and the Files API.
+ * Minimal REST client of the Gemini API: `generateContent`, the Files API and the explicit caches.
  *
  * The API key is passed to every call (it is read from the settings, which may change).
  */
@@ -74,6 +76,31 @@ public class GeminiClient(
         }
         if (file.state == "FAILED") throw GeminiException(0, "The Files API could not process $displayName")
         return file
+    }
+
+    /** Creates an explicit cache of [request]: its tokens are billed once, then read at a tenth of the price. */
+    internal suspend fun createCache(apiKey: String, request: CreateCachedContentRequest): GeminiCachedContent {
+        val response = httpClient.post("$baseUrl/v1beta/cachedContents") {
+            header(API_KEY_HEADER, apiKey)
+            setBody(TextContent(json.encodeToString(CreateCachedContentRequest.serializer(), request), ContentType.Application.Json))
+        }
+        return json.decodeFromString(GeminiCachedContent.serializer(), response.checked())
+    }
+
+    /** Keeps the cache [name] for [ttlSeconds] from now. */
+    internal suspend fun extendCache(apiKey: String, name: String, ttlSeconds: Int) {
+        val response = httpClient.patch("$baseUrl/v1beta/$name") {
+            header(API_KEY_HEADER, apiKey)
+            setBody(TextContent(json.encodeToString(CachedContentTtl.serializer(), CachedContentTtl("${ttlSeconds}s")), ContentType.Application.Json))
+        }
+        response.checked()
+    }
+
+    internal suspend fun deleteCache(apiKey: String, name: String) {
+        val response = httpClient.delete("$baseUrl/v1beta/$name") {
+            header(API_KEY_HEADER, apiKey)
+        }
+        response.checked()
     }
 
     internal suspend fun getFile(apiKey: String, name: String): GeminiFile {

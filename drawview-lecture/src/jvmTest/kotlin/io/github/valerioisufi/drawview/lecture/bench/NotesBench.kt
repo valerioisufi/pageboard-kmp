@@ -19,6 +19,7 @@ import io.github.valerioisufi.drawview.lecture.formatLectureTime
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiClient
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiException
 import io.github.valerioisufi.drawview.lecture.model.GeminiBackend
+import io.github.valerioisufi.drawview.lecture.model.GeminiPromptCache
 import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
 import io.github.valerioisufi.drawview.lecture.model.PromptPart
 import io.github.valerioisufi.drawview.ml.EmbedderOptions
@@ -64,7 +65,8 @@ internal class NotesRun(
  * * `<gemini model>-text`, `<gemini model>-audio`: a model of the Gemini API (`GEMINI_API_KEY`),
  *   with the transcript or the audio of the interval in one piece, the notebook as the assistant
  *   sends it; no transcript is asked back. With `-cached`, the requests open with the slides of
- *   the notebook ([LectureStart]), as the recorder sends them to Gemini; with `-medium`, the
+ *   the notebook ([LectureStart]) kept in an explicit cache ([GeminiPromptCache]), as the recorder
+ *   sends them to Gemini; with `-medium`, the
  *   model thinks at the medium level.
  *
  * A configuration may end with `@<seconds>`, its own interval instead of [intervalMs].
@@ -124,6 +126,7 @@ internal class NotesBench(
         val model = if (device) null else base.removeSuffix("-audio").removeSuffix("-text")
         val start = if (cached) LectureStart(lecture.prepared.documentTitle, lecture.pagesAt(0)) else null
         val gemini = if (device) null else GeminiBackend(GeminiClient()) { System.getenv("GEMINI_API_KEY").orEmpty() }
+        val cache = if (cached && gemini != null) GeminiPromptCache(gemini.client) else null
         val search = if (device) NotebookSearch.build(bench, lecture.pagesAt(lecture.prepared.durationMs)) else null
         val answers = StringBuilder()
         var outline = ""
@@ -184,7 +187,7 @@ internal class NotesBench(
                     answers.appendLine("### ${formatLectureTime(startMs)}: stopped at ${"%.2f".format(spent)} dollars\n")
                     break
                 }
-                askGemini(gemini!!, prompt, model!!, answers, startMs)?.let { answer ->
+                askGemini(gemini!!, prompt, model!!, answers, startMs, cache)?.let { answer ->
                     val usage = answer.usage
                     if (usage != null) {
                         promptTokens += usage.promptTokens
@@ -230,16 +233,17 @@ internal class NotesBench(
             startMs = endMs
         }
         if (device) bench.loaded.unloadAll()
+        cache?.clear(System.getenv("GEMINI_API_KEY").orEmpty())
         bench.output("notes/$config.md").writeText(answers.toString())
         return NotesRun(config, lectureId, intervalMs, requests, failed, millis, promptTokens, outputTokens, byModality, cachedTokens, outline, notes)
     }
 
     /** [prompt] answered by [model] of Gemini, repeated on a temporary error; `null` when it could not be. */
-    private suspend fun askGemini(backend: GeminiBackend, prompt: ModelPrompt, model: String, answers: StringBuilder, startMs: Long) =
+    private suspend fun askGemini(backend: GeminiBackend, prompt: ModelPrompt, model: String, answers: StringBuilder, startMs: Long, cache: GeminiPromptCache?) =
         run {
             repeat(ATTEMPTS) { attempt ->
                 try {
-                    return@run backend.generate(prompt, model) {}
+                    return@run backend.generate(prompt, model, cache)
                 } catch (e: GeminiException) {
                     answers.appendLine("### ${formatLectureTime(startMs)}: ${e.statusCode} ${e.message?.take(300)}\n")
                     if (!e.isRetryable || attempt == ATTEMPTS - 1) return@run null

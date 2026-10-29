@@ -31,17 +31,35 @@ internal class GeminiBackend(public val client: GeminiClient, private val apiKey
     /**
      * @throws GeminiException also for a missing key (status 401).
      */
-    override suspend fun generate(prompt: ModelPrompt, model: String, onProgress: (Int) -> Unit): ModelAnswer {
+    override suspend fun generate(prompt: ModelPrompt, model: String, onProgress: (Int) -> Unit): ModelAnswer = generate(prompt, model, cache = null)
+
+    /**
+     * Answers [prompt] with [model], its start read from [cache] when it can be; sent whole when the
+     * cache is gone meanwhile. The tokens of a cache created for it count in its usage.
+     *
+     * @throws GeminiException also for a missing key (status 401).
+     */
+    suspend fun generate(prompt: ModelPrompt, model: String, cache: GeminiPromptCache?): ModelAnswer {
         val key = apiKey()
         if (key.isEmpty()) throw GeminiException(401, "API key not set")
+        val use = cache?.use(key, prompt, model)
         val response = try {
-            client.generateContent(key, model, toRequest(prompt, mediaResolution))
+            send(key, model, prompt, use?.name)
         } catch (e: GeminiException) {
-            if (mediaResolution == null || e.statusCode != 400 || !e.message.orEmpty().contains("resolution", ignoreCase = true)) throw e
-            mediaResolution = null
-            client.generateContent(key, model, toRequest(prompt, null))
+            if (use == null || e.statusCode !in CACHE_GONE_STATUSES || !e.message.orEmpty().contains("cache", ignoreCase = true)) throw e
+            cache.forget(use.name)
+            send(key, model, prompt, null)
         }
-        return ModelAnswer(response.text(), response.usageMetadata.toTokenUsage())
+        val usage = response.usageMetadata.toTokenUsage()
+        return ModelAnswer(response.text(), if (use != null && use.createdTokens > 0) usage + TokenUsage(promptTokens = use.createdTokens) else usage)
+    }
+
+    private suspend fun send(key: String, model: String, prompt: ModelPrompt, cachedContent: String?) = try {
+        client.generateContent(key, model, toRequest(prompt, mediaResolution, cachedContent))
+    } catch (e: GeminiException) {
+        if (mediaResolution == null || e.statusCode != 400 || !e.message.orEmpty().contains("resolution", ignoreCase = true)) throw e
+        mediaResolution = null
+        client.generateContent(key, model, toRequest(prompt, null, cachedContent))
     }
 
     /**
@@ -71,22 +89,22 @@ internal class GeminiBackend(public val client: GeminiClient, private val apiKey
          */
         const val MEDIA_RESOLUTION = "MEDIA_RESOLUTION_MEDIUM"
 
-        /** The request of the Gemini API for [prompt]. */
-        fun toRequest(prompt: ModelPrompt, mediaResolution: String? = MEDIA_RESOLUTION) = GenerateContentRequest(
+        /** The statuses of a request whose cache expired or was deleted. */
+        private val CACHE_GONE_STATUSES = setOf(400, 403, 404)
+
+        /**
+         * The request of the Gemini API for [prompt]; with [cachedContent], the cache that holds its
+         * system instruction and its [ModelPrompt.cachedParts], which the request leaves out.
+         */
+        fun toRequest(prompt: ModelPrompt, mediaResolution: String? = MEDIA_RESOLUTION, cachedContent: String? = null) = GenerateContentRequest(
             contents = listOf(
                 GeminiContent(
                     role = "user",
-                    parts = prompt.parts.map { part ->
-                        when (part) {
-                            is PromptPart.Text -> GeminiPart.text(part.text)
-                            is PromptPart.Image -> GeminiPart.inline("image/jpeg", Base64.encode(part.jpeg))
-                            is PromptPart.Audio -> GeminiPart.inline("audio/wav", Base64.encode(part.wav))
-                            is PromptPart.File -> GeminiPart.file(part.mimeType, part.uri)
-                        }
-                    }
+                    parts = (if (cachedContent != null) prompt.parts.drop(prompt.cachedParts) else prompt.parts).map(::partOf)
                 )
             ),
-            systemInstruction = GeminiContent(parts = listOf(GeminiPart.text(prompt.system))),
+            systemInstruction = if (cachedContent != null) null else GeminiContent(parts = listOf(GeminiPart.text(prompt.system))),
+            cachedContent = cachedContent,
             generationConfig = GenerationConfig(
                 responseMimeType = "application/json",
                 responseJsonSchema = prompt.schema,
@@ -95,6 +113,14 @@ internal class GeminiBackend(public val client: GeminiClient, private val apiKey
                 mediaResolution = mediaResolution
             )
         )
+
+        /** A part of a prompt as the API takes it. */
+        fun partOf(part: PromptPart): GeminiPart = when (part) {
+            is PromptPart.Text -> GeminiPart.text(part.text)
+            is PromptPart.Image -> GeminiPart.inline("image/jpeg", Base64.encode(part.jpeg))
+            is PromptPart.Audio -> GeminiPart.inline("audio/wav", Base64.encode(part.wav))
+            is PromptPart.File -> GeminiPart.file(part.mimeType, part.uri)
+        }
 
         internal fun GeminiUsage?.toTokenUsage(): TokenUsage = TokenUsage(
             requests = 1,

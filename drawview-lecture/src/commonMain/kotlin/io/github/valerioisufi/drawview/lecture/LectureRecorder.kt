@@ -10,6 +10,7 @@ import io.github.valerioisufi.drawview.lecture.audio.samplesToMs
 import io.github.valerioisufi.drawview.lecture.gemini.GeminiException
 import io.github.valerioisufi.drawview.lecture.handwriting.HandwritingReader
 import io.github.valerioisufi.drawview.lecture.local.OllamaException
+import io.github.valerioisufi.drawview.lecture.model.GeminiPromptCache
 import io.github.valerioisufi.drawview.lecture.model.ModelPrompt
 import io.github.valerioisufi.drawview.lecture.model.OllamaBackend
 import io.github.valerioisufi.drawview.lecture.transcription.StreamingTranscriber
@@ -115,6 +116,9 @@ public class LectureRecorder internal constructor(
 
     /** What opens the requests of Gemini, taken from the notebook at the first of them. */
     private var lectureStart: LectureStart? = null
+
+    /** The cache of Gemini holding [lectureStart], deleted when the recording ends. */
+    private val promptCache by lazy { GeminiPromptCache(backends.gemini.client) }
 
     private class QueuedChunk(val chunk: AudioChunk?, val catchUp: Boolean)
 
@@ -257,6 +261,7 @@ public class LectureRecorder internal constructor(
             if (analyzes) {
                 analysisJob?.join()
                 lecture.setState { isAnalyzing = false }
+                promptCache.clear(settingsStore.apiKey)
                 closeTranscriber()
                 reviewAtTheEnd()
             } else {
@@ -277,6 +282,7 @@ public class LectureRecorder internal constructor(
             audioJob?.join()
             analysisJob?.join()
             lecture.setState { isAnalyzing = false }
+            promptCache.clear(settingsStore.apiKey)
             closeTranscriber()
             reviewAtTheEnd()
             lecture.persist()
@@ -291,6 +297,7 @@ public class LectureRecorder internal constructor(
         stopMicrophone()
         audioJob?.cancelAndJoin()
         transcriber?.close()
+        promptCache.clear(settingsStore.apiKey)
         lecture.setState {
             isAnalyzing = false
             pendingUpdates = 0
@@ -523,7 +530,7 @@ public class LectureRecorder internal constructor(
                 val notebook = captureNotebook(imagePages = if (task.provider == ModelProvider.LOCAL) 1 else 2)
                 val prompt = build(notebook)
                 val answer = when (task.provider) {
-                    ModelProvider.GEMINI -> backends.gemini.generate(prompt, task.gemini)
+                    ModelProvider.GEMINI -> backends.gemini.generate(prompt, task.gemini, promptCache)
                     ModelProvider.LOCAL -> backends.local.generate(prompt, task.local, OllamaBackend.LIVE_KEEP_LOADED_SECONDS) {}
                 }
                 val analysis = LectureAnalysis.parseChunk(answer.text)

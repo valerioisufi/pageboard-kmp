@@ -74,12 +74,42 @@ internal data class GenerationConfig(
     val audioTranscriptionConfig: AudioTranscriptionConfig? = null
 )
 
+/**
+ * @param cachedContent the name of a [GeminiCachedContent] that opens the request: it holds the
+ *   system instruction, which the request then leaves out.
+ */
 @Serializable
 internal data class GenerateContentRequest(
     val contents: List<GeminiContent>,
     val systemInstruction: GeminiContent? = null,
-    val generationConfig: GenerationConfig? = null
+    val generationConfig: GenerationConfig? = null,
+    val cachedContent: String? = null
 )
+
+/** The content of an explicit cache: [model] as `models/<id>`, [ttl] as `"600s"`. */
+@Serializable
+internal data class CreateCachedContentRequest(
+    val model: String,
+    val contents: List<GeminiContent>,
+    val systemInstruction: GeminiContent? = null,
+    val ttl: String
+)
+
+/** The time to live of a cache, when it is extended. */
+@Serializable
+internal data class CachedContentTtl(val ttl: String)
+
+/** An explicit cache (`cachedContents/<id>`), deleted by itself at [expireTime]. */
+@Serializable
+internal data class GeminiCachedContent(
+    val name: String = "",
+    val model: String = "",
+    val expireTime: String? = null,
+    val usageMetadata: GeminiCacheUsage? = null
+)
+
+@Serializable
+internal data class GeminiCacheUsage(val totalTokenCount: Long = 0)
 
 @Serializable
 internal data class GenerateContentResponse(

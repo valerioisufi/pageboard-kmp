@@ -52,9 +52,10 @@ Variations).
    did not take a start of about 6,000 identical tokens, sent seconds apart: 3,906 cached tokens
    out of 148,000 in one run, none in the others.
 
-   **The grader is noisy.** The same set of notes, graded twice, got 72% and 63% of the questions,
-   and 4 notes of 16 changed verdict (9 and 8 that add to the slides). A difference of a few
-   points or of a few notes between two runs is not a result.
+   **The grader and the model are noisy.** The same set of notes, graded twice, got 72% and 63%
+   of the questions, and 4 notes of 16 changed verdict. The same configuration, run twice, wrote
+   10 and 13 notes (54% and 67%). A difference of ten points or of a few notes between two runs
+   is not a result.
 
 ## Requirements
 
@@ -121,7 +122,7 @@ output ~620 tokens a request ($0.04): about $0.12.
 |---|---|---|
 | 1 | The bench: `NotesBench` (the notes of a whole lecture, a configuration each: Gemini on the transcript or the audio, Gemma 4 E4B on LiteRT-LM with the search of the notebook; `-cached`, `-medium`, `@<seconds>`; the notebook without the assistant, `BenchLecture.untouched`), the price with the cached tokens, a cap on the dollars; the grader `tools/notes-bench/grade_notes.py`; the results of the Starting point | Done |
 | 2 | The prompt: `LectureStart` and `slidesText` (80,000 characters at most), the rule on the slides, `pagesText` without the slides of the start, `ModelPrompt.cachedParts`, the recorder taking the start for Gemini only; tests in `LecturePromptsTest` (the start the same across requests, with the notebook closed and in a catch-up; the slides not repeated, a page added keeping its text; nothing cached without slides; the bound); the bench on 3.8 Flash every 5 minutes: 16 notes, none wrong, 143,824 prompt tokens, 0 cached, $0.142 | Done |
-| 3 | The cache: `GeminiClient` (cachedContents), `GeminiPromptCache`, `GeminiBackend` with the cache, the deletion at stop; tests with the `MockEngine` (created once, reused, extended, a refusal, another model); the bench with the cache, its cost measured (about $0.10, asked first) | To do |
+| 3 | The cache: `GeminiClient` (`createCache`, `extendCache`, `deleteCache`), `GeminiPromptCache` (one for each recording, 10 minutes past every request, a start refused sent whole, a start changed cached again and the old cache deleted, a cache gone sent whole then created again), `GeminiBackend.generate(prompt, model, cache)` counting the tokens of the creation, the recorder deleting it at the end (stop, end of a lecture followed, abandon); tests with the `MockEngine` (`GeminiPromptCacheTest`); ABI recorded on purpose (synthetic properties of the serializers only). The bench twice, 3.8 Flash every 5 minutes: 106,890 cached tokens of about 150,000, $0.068 and $0.076 for 72 minutes (about $0.09 for 90 minutes with the storage); 10 and 13 notes, 7 and 12 that add, none wrong, 54% and 67% of the questions | Done |
 | 4 | How often: `notesSeconds` in the settings, the recorder gathering the chunks, the outline at every request; "I missed something" unchanged; the setting in the panel with its strings in the seven languages; a test reading a settings file of today; tests of the recorder (`LectureRecorderTest`) for the gathering; screenshots of the panel (`verifyRoborazziJvm`) | To do |
 | 5 | Checks: the desktop application on a scratch data directory, a lecture imported with the transcript of whisper, its tokens and cached tokens in the panel; the checks of CLAUDE.md | To do |
 
