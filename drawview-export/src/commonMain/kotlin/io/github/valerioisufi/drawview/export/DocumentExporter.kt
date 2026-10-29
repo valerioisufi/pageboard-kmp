@@ -28,10 +28,13 @@ public interface DocumentExporter {
  * @param pageIds the pages exported, all of them when `null`.
  * @param backgroundPattern whether the lines and the dots of the backgrounds are drawn (their
  *   color always is).
+ * @param pageIndices the pages exported by their place in the document (from 0), as well as in
+ *   [pageIds]; all of them when `null`.
  */
 public class ExportOptions(
     public val pageIds: Set<String>? = null,
-    public val backgroundPattern: Boolean = true
+    public val backgroundPattern: Boolean = true,
+    public val pageIndices: Set<Int>? = null
 )
 
 /**
@@ -91,11 +94,13 @@ public class DocumentContent(
 ) {
     public companion object {
         /**
-         * The content of [document]: the pages [pageIds] (all of them when `null`) in their order.
-         * Called on the thread of the document (see `OpenDocument.edit`).
+         * The content of [document]: the pages [pageIds] and at [pageIndices] (all of them when
+         * `null`) in their order. Called on the thread of the document (see `OpenDocument.edit`).
          */
-        public fun of(document: DrawDocument, pageIds: Set<String>? = null): DocumentContent {
-            val pages = document.pages.filter { pageIds == null || it.id in pageIds }
+        public fun of(document: DrawDocument, pageIds: Set<String>? = null, pageIndices: Set<Int>? = null): DocumentContent {
+            val pages = document.pages.filterIndexed { index, page ->
+                (pageIds == null || page.id in pageIds) && (pageIndices == null || index in pageIndices)
+            }
             return DocumentContent(
                 title = document.title,
                 pages = pages.map { it.snapshotContent().detached() },

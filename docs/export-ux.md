@@ -180,7 +180,7 @@ Variations).
 
 | Phase | Content | Status |
 |---|---|---|
-| 1 | `drawview-export`: `ExportScope`, `DocumentExport.resolve` → `ExportContents`, `ExportFormat` with `offeredFor` and `fileName`; the export of several notes (ZIP, combined) from a scope, `exportFolder` built on it; the PNGs of several pages in a ZIP; tests | Planned |
+| 1 | `drawview-export`: `ExportScope`, `DocumentExport.resolve` → `ExportContents`, `ExportFormat` with `offeredFor` and `fileName`; the export of several notes (ZIP, combined) from a scope, `exportFolder` built on it; the PNGs of several pages in a ZIP; tests | Done |
 | 2 | `ExportJobs`: queue, progress with "n of m" and the name, cancel, retry, `ExportFailure` from the exceptions of the platforms, skipped elements per note; tests with a fake exporter | Planned |
 | 3 | `drawview-ui`: `rememberFileSharer` (Android `FileProvider` + `ACTION_SEND`, iOS `UIActivityViewController`), `FileReveal` / open on the desktop, the save dialog in the last folder used | Planned |
 | 4 | `drawview-export-ui`: `ExportSheetState` (tested), `ExportSheet` (summary, formats, pages and range, options, name, actions by platform), `ExportPreferences`; `ExportDialog` and `FolderExportDialog` removed; strings rewritten in the seven languages; screenshots of every state on phone, tablet, desktop, light and dark | Planned |
