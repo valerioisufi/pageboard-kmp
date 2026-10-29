@@ -55,7 +55,24 @@ public class DocumentExportUi(documents: OpenDocuments, private val appName: Str
 
     private var editorExport by mutableStateOf<EditorExport?>(null)
 
-    /** "Export…" in the editor of [context]: the document, and the page on screen to export it alone. */
+    /**
+     * Opens the export sheet of the document of [context]: the page on screen can be exported
+     * alone, and the pages selected in the page grid are, when there are some.
+     */
+    private fun showSheet(context: EditorContext) {
+        val controller = context.controller
+        val pageOnScreen = controller.viewport.mostVisiblePageIndex()?.let { index ->
+            controller.document.pages.getOrNull(index)?.let { PageOnScreen(it.id, index) }
+        }
+        val selection = controller.pageManager.selection
+        val selected = if (selection.isActive) selection.pageIds.toSet() else emptySet()
+        editorExport = EditorExport(
+            context.documentId,
+            ExportSheetState(ExportScope.Pages(context.documentId), preferences, pageOnScreen, selected)
+        )
+    }
+
+    /** "Export…" in the editor of [context]: the document, the page on screen, the pages selected. */
     private fun exportCommand(context: EditorContext) = Command(
         id = "export",
         label = { stringResource(Res.string.export_action) },
@@ -63,16 +80,16 @@ public class DocumentExportUi(documents: OpenDocuments, private val appName: Str
         section = 1,
         icon = { rememberVectorPainter(DrawViewIcons.Share) },
         shortcuts = listOf(Shortcut(Key.E, primary = true, shift = true))
-    ) {
-        val controller = context.controller
-        val pageOnScreen = controller.viewport.mostVisiblePageIndex()?.let { index ->
-            controller.document.pages.getOrNull(index)?.let { PageOnScreen(it.id, index) }
-        }
-        editorExport = EditorExport(
-            context.documentId,
-            ExportSheetState(ExportScope.Pages(context.documentId), preferences, pageOnScreen)
-        )
-    }
+    ) { showSheet(context) }
+
+    /** "Export…" on the pages selected in the page grid of the editor of [context]. */
+    private fun exportPagesCommand(context: EditorContext) = Command(
+        id = "export-pages",
+        label = { stringResource(Res.string.export_action) },
+        group = CommandGroup.FILE,
+        icon = { rememberVectorPainter(DrawViewIcons.Share) },
+        isEnabled = { context.controller.pageManager.selection.count > 0 }
+    ) { showSheet(context) }
 
     /**
      * "Export…" on the items of the library, one or more notes and folders, and "Export folder…"
@@ -98,8 +115,9 @@ public class DocumentExportUi(documents: OpenDocuments, private val appName: Str
     )
 
     /**
-     * "Export…" in the top bar, the menus and the shortcuts of the editor: the page on screen can
-     * also be exported alone. The sheet is shown over the canvas.
+     * "Export…" in the top bar, the menus and the shortcuts of the editor, and on the pages
+     * selected in the page grid: the page on screen can also be exported alone. The sheet is shown
+     * over the canvas.
      */
     public val editorExtension: EditorExtension = EditorExtension(
         toolbarActions = { context ->
@@ -117,7 +135,8 @@ public class DocumentExportUi(documents: OpenDocuments, private val appName: Str
                 ExportSheet(it.state, export, jobs, appName, thumbnail = null, onDismiss = { editorExport = null })
             }
         },
-        commands = { context -> listOf(exportCommand(context)) }
+        commands = { context -> listOf(exportCommand(context)) },
+        pageGridActions = { context -> listOf(exportPagesCommand(context)) }
     )
 
     /**

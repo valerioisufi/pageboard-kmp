@@ -34,6 +34,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -75,7 +76,9 @@ import io.github.valerioisufi.drawview.model.TrashRetention
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.ui.adaptive.ShortcutModifier
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
+import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.DesignMenu
+import io.github.valerioisufi.drawview.ui.command.HoverTooltip
 import io.github.valerioisufi.drawview.ui.command.MenuDivider
 import io.github.valerioisufi.drawview.ui.command.MenuItem
 import io.github.valerioisufi.drawview.ui.generated.resources.*
@@ -110,6 +113,7 @@ internal fun PageGridOverlay(
     controller: DrawViewController,
     modifier: Modifier = Modifier,
     commands: EditorCommands? = null,
+    extensionActions: List<Command> = emptyList(),
     onEditPageBackground: (Int) -> Unit = {},
     onEditPagesBackground: (List<String>) -> Unit = {}
 ) {
@@ -151,7 +155,8 @@ internal fun PageGridOverlay(
                 onCopy = commands?.let { { it.copyPages(selection.pageIds) } },
                 onPaste = { commands?.pastePagesAfter(selection.pageIds) },
                 onEditBackground = { editBackground(selection.pageIds) },
-                onDelete = { pageManager.deletePages(selection.pageIds) }
+                onDelete = { pageManager.deletePages(selection.pageIds) },
+                extensionActions = extensionActions
             )
         } else Row(
             modifier = Modifier
@@ -712,7 +717,8 @@ private fun PageSelectionBar(
     onCopy: (() -> Unit)?,
     onPaste: () -> Unit,
     onEditBackground: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    extensionActions: List<Command> = emptyList()
 ) {
     val colors = MaterialTheme.colorScheme
     val count = selection.count
@@ -740,6 +746,15 @@ private fun PageSelectionBar(
         }
         if (onCopy != null) {
             DesignIconButton(DrawViewIcons.Copy, stringResource(Res.string.common_action_copy), onCopy, enabled = some, tint = colors.onSurface)
+        }
+        // The actions of the extensions (e.g. "Export…"), in read-only documents too
+        for (action in extensionActions) {
+            val label = action.label()
+            HoverTooltip(label) {
+                IconButton(onClick = { action.performIfEnabled() }, enabled = action.isEnabled()) {
+                    action.icon?.let { Icon(it(), contentDescription = label, tint = colors.onSurface, modifier = Modifier.size(22.dp)) }
+                }
+            }
         }
         if (writable && !compact) {
             if (canPaste) {

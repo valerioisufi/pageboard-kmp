@@ -103,6 +103,8 @@ import org.jetbrains.compose.resources.stringResource
  * @param canvasOverlay content drawn over the canvas (e.g. hints of an assistant).
  * @param extraCommands commands contributed to the editor (e.g. by its extensions), registered
  *   with those of the editor for the menu bar and the shortcuts.
+ * @param pageGridActions actions contributed on the pages selected in the page grid (e.g. their
+ *   export), in the bar of its selection.
  * @param location where the document is (its folder), shown under its title.
  * @param readOnlyNote why the document may only be read (e.g. who decides who edits), if known.
  *
@@ -119,11 +121,12 @@ internal fun DrawScreen(
     panels: List<EditorPanel> = emptyList(),
     canvasOverlay: @Composable BoxScope.() -> Unit = {},
     extraCommands: List<Command> = emptyList(),
+    pageGridActions: List<Command> = emptyList(),
     location: String? = null,
     readOnlyNote: @Composable () -> String? = { null }
 ) {
     CompositionLocalProvider(LocalDrawViewEngines provides controller.engines) {
-        DrawScreenContent(controller, onNavigateBack, modifier, isLoading, toolbarActions, panels, canvasOverlay, extraCommands, location, readOnlyNote)
+        DrawScreenContent(controller, onNavigateBack, modifier, isLoading, toolbarActions, panels, canvasOverlay, extraCommands, pageGridActions, location, readOnlyNote)
     }
 }
 
@@ -138,6 +141,7 @@ private fun DrawScreenContent(
     panels: List<EditorPanel>,
     canvasOverlay: @Composable BoxScope.() -> Unit,
     extraCommands: List<Command>,
+    pageGridActions: List<Command>,
     location: String?,
     readOnlyNote: @Composable () -> String?
 ) {
@@ -385,6 +389,7 @@ private fun DrawScreenContent(
                 PageGridOverlay(
                     controller = controller,
                     commands = commands,
+                    extensionActions = pageGridActions,
                     onEditPageBackground = { configuredPageIds = null; showSinglePageConfigurator = true },
                     onEditPagesBackground = { ids -> configuredPageIds = ids; showSinglePageConfigurator = true }
                 )

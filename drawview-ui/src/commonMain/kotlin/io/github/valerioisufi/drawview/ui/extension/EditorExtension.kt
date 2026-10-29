@@ -19,6 +19,9 @@ import io.github.valerioisufi.drawview.ui.command.Command
  *   beside the canvas or over it, by the space it has.
  * @param readOnlyNote why the document may only be read, when the extension knows (e.g. "Valerio’s
  *   Mac decides who edits"): shown by the editor beside "Read only".
+ * @param pageGridActions the actions of the extension on the pages selected in the page grid
+ *   (e.g. "Export…"), in the bar of the selection: they read the pages from
+ *   `controller.pageManager.selection`.
  *
  * Several extensions are combined with `+` (e.g. an assistant and the collaboration).
  */
@@ -27,11 +30,12 @@ public class EditorExtension(
     public val canvasOverlay: @Composable BoxScope.(context: EditorContext) -> Unit = {},
     public val commands: (context: EditorContext) -> List<Command> = { emptyList() },
     public val panels: (context: EditorContext) -> List<EditorPanel> = { emptyList() },
-    public val readOnlyNote: @Composable (context: EditorContext) -> String? = { null }
+    public val readOnlyNote: @Composable (context: EditorContext) -> String? = { null },
+    public val pageGridActions: (context: EditorContext) -> List<Command> = { emptyList() }
 ) {
     /**
-     * The contributions of this extension followed by those of [other]: toolbar actions, commands
-     * and panels in this order, [other]'s overlay drawn over this one, the note of the read only
+     * The contributions of this extension followed by those of [other]: toolbar actions, commands,
+     * panels and actions of the page grid in this order, [other]'s overlay drawn over this one, the note of the read only
      * documents of this one if it has one.
      */
     public operator fun plus(other: EditorExtension): EditorExtension {
@@ -47,7 +51,8 @@ public class EditorExtension(
             },
             commands = { context -> first.commands(context) + other.commands(context) },
             panels = { context -> first.panels(context) + other.panels(context) },
-            readOnlyNote = { context -> first.readOnlyNote(context) ?: other.readOnlyNote(context) }
+            readOnlyNote = { context -> first.readOnlyNote(context) ?: other.readOnlyNote(context) },
+            pageGridActions = { context -> first.pageGridActions(context) + other.pageGridActions(context) }
         )
     }
 }

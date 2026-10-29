@@ -39,6 +39,7 @@ public fun EditorScreen(
             EditorBackHandler(controller, onClose = onClose)
             val extensionCommands = remember(extension, context) { extension?.commands?.invoke(context).orEmpty() }
             val extensionPanels = remember(extension, context) { extension?.panels?.invoke(context).orEmpty() }
+            val extensionPageGridActions = remember(extension, context) { extension?.pageGridActions?.invoke(context).orEmpty() }
             DrawScreen(
                 controller = controller,
                 location = location,
@@ -47,6 +48,7 @@ public fun EditorScreen(
                 panels = extensionPanels,
                 canvasOverlay = { extension?.canvasOverlay?.invoke(this, context) },
                 extraCommands = extensionCommands,
+                pageGridActions = extensionPageGridActions,
                 readOnlyNote = { extension?.readOnlyNote?.invoke(context) }
             )
         }
