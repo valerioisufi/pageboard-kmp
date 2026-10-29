@@ -295,7 +295,7 @@ private fun LocalSection(draft: AssistantSettings, localModels: LocalModels, onC
     }
 }
 
-/** The language of the notes, how often the assistant looks at the lecture, the lectures received without a transcript. */
+/** The language of the notes, how often the assistant listens and writes notes, the lectures received without a transcript. */
 @Composable
 private fun LectureSection(draft: AssistantSettings, onChange: (AssistantSettings) -> Unit) {
     SettingsCard {
@@ -320,6 +320,19 @@ private fun LectureSection(draft: AssistantSettings, onChange: (AssistantSetting
             modifier = Modifier.fillMaxWidth()
         )
         Hint(stringResource(Res.string.lecture_settings_chunk_hint))
+    }
+    // With the audio in its request, the model writes the notes at every update
+    if (draft.transcription != TranscriptionMode.WITH_NOTES) SettingsCard {
+        Text(stringResource(Res.string.lecture_settings_notes, draft.notesSeconds / 60), style = MaterialTheme.typography.bodyLarge)
+        val range = AssistantSettings.NOTES_SECONDS_RANGE
+        DesignSlider(
+            value = draft.notesSeconds.toFloat(),
+            onValueChange = { onChange(draft.copy(notesSeconds = ((it / 60f).roundToInt() * 60).coerceIn(range))) },
+            valueRange = range.first.toFloat()..range.last.toFloat(),
+            steps = (range.last - range.first) / 60 - 1,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Hint(stringResource(Res.string.lecture_settings_notes_hint))
     }
     // The lectures recorded where the models are not
     SettingsCard(Res.string.lecture_settings_received) {

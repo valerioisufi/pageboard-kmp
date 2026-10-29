@@ -84,7 +84,8 @@ Variations).
 | The cachedContents of the API: create, extend, delete | `GeminiClient.createCache`, `extendCache`, `deleteCache` | Information Expert (the REST of Gemini) |
 | The cache of a lecture: created at the first request whose start is long enough, reused while the start is the same, extended at every request, deleted when the lecture stops; none after a refusal | `GeminiPromptCache` (`drawview-lecture`), one for each recording, given to `GeminiBackend.generate` | Pure Fabrication, Indirection (the recorder does not know the API) |
 | How often the notes are asked | `AssistantSettings.notesSeconds` (300 by default, 60–600) | Information Expert |
-| Gathering the chunks until the interval, asking the outline at every request when the interval is longer than `OUTLINE_INTERVAL_MS` | `LectureRecorder` | Controller |
+| Transcribing every chunk as it comes, gathering the transcripts until the interval, asking the notes with them as one; the outline at every request when the interval is longer than `OUTLINE_INTERVAL_MS` | `LectureRecorder` (`analyzeChunks`, `askNotes`) | Controller |
+| The transcript said before a request, without the one it carries | `Lecture.memory(elapsed, transcriptBeforeMs)` | Information Expert |
 | The setting in the panel of the assistant | `drawview-lecture-ui` | Controller |
 | Reading the settings stored before the new field | `AssistantSettingsStore`, a test on a stored file | Protected Variations |
 
@@ -123,7 +124,7 @@ output ~620 tokens a request ($0.04): about $0.12.
 | 1 | The bench: `NotesBench` (the notes of a whole lecture, a configuration each: Gemini on the transcript or the audio, Gemma 4 E4B on LiteRT-LM with the search of the notebook; `-cached`, `-medium`, `@<seconds>`; the notebook without the assistant, `BenchLecture.untouched`), the price with the cached tokens, a cap on the dollars; the grader `tools/notes-bench/grade_notes.py`; the results of the Starting point | Done |
 | 2 | The prompt: `LectureStart` and `slidesText` (80,000 characters at most), the rule on the slides, `pagesText` without the slides of the start, `ModelPrompt.cachedParts`, the recorder taking the start for Gemini only; tests in `LecturePromptsTest` (the start the same across requests, with the notebook closed and in a catch-up; the slides not repeated, a page added keeping its text; nothing cached without slides; the bound); the bench on 3.8 Flash every 5 minutes: 16 notes, none wrong, 143,824 prompt tokens, 0 cached, $0.142 | Done |
 | 3 | The cache: `GeminiClient` (`createCache`, `extendCache`, `deleteCache`), `GeminiPromptCache` (one for each recording, 10 minutes past every request, a start refused sent whole, a start changed cached again and the old cache deleted, a cache gone sent whole then created again), `GeminiBackend.generate(prompt, model, cache)` counting the tokens of the creation, the recorder deleting it at the end (stop, end of a lecture followed, abandon); tests with the `MockEngine` (`GeminiPromptCacheTest`); ABI recorded on purpose (synthetic properties of the serializers only). The bench twice, 3.8 Flash every 5 minutes: 106,890 cached tokens of about 150,000, $0.068 and $0.076 for 72 minutes (about $0.09 for 90 minutes with the storage); 10 and 13 notes, 7 and 12 that add, none wrong, 54% and 67% of the questions | Done |
-| 4 | How often: `notesSeconds` in the settings, the recorder gathering the chunks, the outline at every request; "I missed something" unchanged; the setting in the panel with its strings in the seven languages; a test reading a settings file of today; tests of the recorder (`LectureRecorderTest`) for the gathering; screenshots of the panel (`verifyRoborazziJvm`) | To do |
+| 4 | How often: `notesSeconds` in the settings (300 by default, 60–600); the recorder transcribing every chunk and gathering the transcripts until then, the last ones asked when the recording stops; the transcript said before a request without the one it carries; "I missed something" unchanged; the setting in the Lecture section of the settings, hidden when the model hears the audio, its strings in English and Italian; tests: a settings file of today read with 5 minutes, the bounds, the gathering in `LectureRecorderTest` (three tests of the transcription ask the notes every minute); the screenshot `lecture-settings-lecture`; the ABI of `AssistantSettings` recorded on purpose | Done |
 | 5 | Checks: the desktop application on a scratch data directory, a lecture imported with the transcript of whisper, its tokens and cached tokens in the panel; the checks of CLAUDE.md | To do |
 
 ## Decisions
@@ -133,6 +134,9 @@ Taken alone, revertible:
 * **Gemini 3.8 Flash stays the model of the live notes.** 3.5 Flash-Lite would cost about $0.05
   a lecture, but it answered 46% of the questions and restated the slides in most of its notes.
 * **Five minutes by default.** The notes arrive later; "I missed something" covers the moment.
+  The lectures recorded before keep their notes; the settings saved before read five minutes.
+* **With the audio in the request** (Gemini transcribes and suggests at once), the notes still
+  come at every update: they bring the transcript.
 * **The transcript, not the audio**, goes to the notes: the audio costs twice as much for worse
   notes.
 * **Low thinking**, as today for the live notes.

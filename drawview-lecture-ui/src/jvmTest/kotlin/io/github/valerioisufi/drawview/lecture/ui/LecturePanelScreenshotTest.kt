@@ -149,7 +149,7 @@ class LecturePanelScreenshotTest {
         captureToImage().captureRoboImage("screenshots/lecture-recording-notices.png")
     }
 
-    /** The settings in their sections: the requests and this computer. */
+    /** The settings in their sections: the requests, and the lecture. */
     @Test
     fun settings() {
         val store = AssistantSettingsStore(File(root, "settings.json").absolutePath, MemorySecrets())
@@ -171,6 +171,10 @@ class LecturePanelScreenshotTest {
             }
             waitForIdle()
             captureToImage().captureRoboImage("screenshots/lecture-settings.png")
+            // The lecture: how often the assistant listens and writes notes
+            onNodeWithText("Lecture").performClick()
+            waitForIdle()
+            captureToImage().captureRoboImage("screenshots/lecture-settings-lecture.png")
         }
     }
 

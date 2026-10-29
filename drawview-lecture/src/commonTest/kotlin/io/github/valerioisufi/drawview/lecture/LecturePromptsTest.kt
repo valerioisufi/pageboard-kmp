@@ -434,6 +434,22 @@ class AssistantSettingsTest {
     }
 
     @Test
+    fun theSettingsSavedBeforeTheIntervalOfTheNotesAskThemEveryFiveMinutes() {
+        val saved = """{"chunkSeconds":90,"thinkingLevel":"low","tasks":{"LIVE_NOTES":{"gemini":"gemini-3.8-flash"}},"spokenLanguage":"it","reviewAtTheEnd":false}"""
+        val settings = AssistantSettingsStore.json.decodeFromString(AssistantSettings.serializer(), saved)
+        assertEquals(300, settings.notesSeconds)
+        assertEquals(90, settings.chunkSeconds)
+        assertEquals("it", settings.spokenLanguage)
+        assertFalse(settings.reviewAtTheEnd)
+
+        val store = AssistantSettingsStore("/nonexistent-dir/settings.json", MemorySecrets())
+        store.update(settings.copy(notesSeconds = 10))
+        assertEquals(60, store.settings.notesSeconds)
+        store.update(settings.copy(notesSeconds = 3_600))
+        assertEquals(600, store.settings.notesSeconds)
+    }
+
+    @Test
     fun theLanguageSpokenIsACode() {
         val store = AssistantSettingsStore("/nonexistent-dir/settings.json", MemorySecrets())
         store.update(AssistantSettings(spokenLanguage = " IT "))

@@ -11,21 +11,22 @@ public final class io/github/valerioisufi/drawview/lecture/AssistantSettings {
 	public static final field Companion Lio/github/valerioisufi/drawview/lecture/AssistantSettings$Companion;
 	public static final field DEFAULT_SPEECH_MODEL Ljava/lang/String;
 	public fun <init> ()V
-	public fun <init> (Ljava/lang/String;ZILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;Z)V
-	public synthetic fun <init> (Ljava/lang/String;ZILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;Z)V
+	public synthetic fun <init> (Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun component10 ()Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;
-	public final fun component11 ()Z
+	public final fun component10 ()Ljava/lang/String;
+	public final fun component11 ()Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;
+	public final fun component12 ()Z
 	public final fun component2 ()Z
 	public final fun component3 ()I
-	public final fun component4 ()Ljava/lang/String;
+	public final fun component4 ()I
 	public final fun component5 ()Ljava/lang/String;
-	public final fun component6 ()Ljava/util/Map;
-	public final fun component7 ()Ljava/lang/String;
+	public final fun component6 ()Ljava/lang/String;
+	public final fun component7 ()Ljava/util/Map;
 	public final fun component8 ()Ljava/lang/String;
 	public final fun component9 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;ZILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;Z)Lio/github/valerioisufi/drawview/lecture/AssistantSettings;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/AssistantSettings;Ljava/lang/String;ZILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/AssistantSettings;
+	public final fun copy (Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;Z)Lio/github/valerioisufi/drawview/lecture/AssistantSettings;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/lecture/AssistantSettings;Ljava/lang/String;ZIILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/lecture/AssistantSettings;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getApiKey ()Ljava/lang/String;
 	public final fun getChunkSeconds ()I
@@ -34,6 +35,7 @@ public final class io/github/valerioisufi/drawview/lecture/AssistantSettings {
 	public final fun getLocalModel ()Ljava/lang/String;
 	public final fun getLocalUrl ()Ljava/lang/String;
 	public final fun getNotesLanguage ()Ljava/lang/String;
+	public final fun getNotesSeconds ()I
 	public final fun getOnlineTranscription ()Lio/github/valerioisufi/drawview/lecture/TranscriptionMode;
 	public final fun getReceivedLectures ()Lio/github/valerioisufi/drawview/lecture/ReceivedLectures;
 	public final fun getReviewAtTheEnd ()Z
@@ -67,6 +69,7 @@ public final synthetic class io/github/valerioisufi/drawview/lecture/AssistantSe
 public final class io/github/valerioisufi/drawview/lecture/AssistantSettings$Companion {
 	public final fun defaultTask (Lio/github/valerioisufi/drawview/lecture/LectureTask;)Lio/github/valerioisufi/drawview/lecture/TaskModel;
 	public final fun getCHUNK_SECONDS_RANGE ()Lkotlin/ranges/IntRange;
+	public final fun getNOTES_SECONDS_RANGE ()Lkotlin/ranges/IntRange;
 	public final fun getTHINKING_LEVELS ()Ljava/util/List;
 	public final fun recordedSpeechModel (Ljava/lang/String;)Ljava/lang/String;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;

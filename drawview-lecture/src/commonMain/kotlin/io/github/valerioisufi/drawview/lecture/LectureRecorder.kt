@@ -117,6 +117,9 @@ public class LectureRecorder internal constructor(
     /** What opens the requests of Gemini, taken from the notebook at the first of them. */
     private var lectureStart: LectureStart? = null
 
+    /** The transcript of the updates not sent to the notes yet ([AssistantSettings.notesSeconds]). */
+    private val gathered = mutableListOf<RequestTranscript>()
+
     /** The cache of Gemini holding [lectureStart], deleted when the recording ends. */
     private val promptCache by lazy { GeminiPromptCache(backends.gemini.client) }
 
@@ -162,6 +165,11 @@ public class LectureRecorder internal constructor(
                     group.add(updates.tryReceive().getOrNull() ?: break)
                 }
                 analyze(group)
+            }
+            // Stopped: the transcript gathered since the last notes
+            if (gathered.isNotEmpty()) {
+                lecture.setState { isAnalyzing = true }
+                askNotes(gathered.merged().also { gathered.clear() })
             }
         }
 
@@ -429,15 +437,30 @@ public class LectureRecorder internal constructor(
         while (recentChunks.size > 1 && latestEnd - recentChunks.first().endMs > CATCH_UP_MS) recentChunks.removeFirst()
     }
 
-    /** The live update of [chunks]: suggestions, outline and (with the audio) transcript. */
+    /**
+     * The live update of [chunks]: their transcript, and the suggestions and the outline when it is
+     * time ([AssistantSettings.notesSeconds]); with the audio, all of them at once.
+     */
     private suspend fun analyzeChunks(chunks: List<AudioChunk>) {
+        val heard = speech.speechOf(chunks) ?: return
+        if (heard !is RequestTranscript) return askNotes(heard)
+        gathered.add(heard)
+        if (heard.endMs - gathered.first().newStartMs < settingsStore.settings.notesSeconds * 1000L) return
+        askNotes(gathered.merged().also { gathered.clear() })
+    }
+
+    /** The transcripts gathered, as one. */
+    private fun List<RequestTranscript>.merged(): RequestTranscript =
+        singleOrNull() ?: RequestTranscript(emptyList(), flatMap { it.segments }, first().newStartMs, 0L, last().endMs)
+
+    /** The suggestions, the outline and (with the audio) the transcript of [speech]. */
+    private suspend fun askNotes(speech: RequestSpeech) {
         val settings = settingsStore.settings
-        val speech = speech.speechOf(chunks) ?: return
         var includeOutline = false
         val task = settings.task(LectureTask.LIVE_NOTES)
         val start = startOf(task)
         val result = request(task, settings) { notebook ->
-            val memory = lecture.memory(speech.endMs)
+            val memory = lecture.memory(speech.endMs, transcriptBeforeMs = speech.newStartMs)
             includeOutline = memory.outline.isBlank() || speech.endMs - lastOutlineMs >= OUTLINE_INTERVAL_MS
             LecturePrompts.chunkPrompt(settings, memory, notebook, speech, includeOutline = includeOutline, start = start)
         } ?: return

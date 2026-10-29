@@ -107,6 +107,8 @@ public data class TaskModel(
  * @param generateHere whether the models follow the lectures on this device (the computers by
  *   default); otherwise they are recorded only, and a device with the models writes their notes.
  * @param chunkSeconds new audio analyzed at every update.
+ * @param notesSeconds how often the notes are asked, when the speech is transcribed apart (on the
+ *   device or by a speech model): the transcript of the updates is gathered until then.
  * @param notesLanguage language of the notes (empty: the language of the lecture).
  * @param tasks provider and models of every kind of request (see [task]).
  * @param localUrl address of the Ollama server (the local models).
@@ -119,6 +121,7 @@ public data class AssistantSettings(
     @Transient val apiKey: String = "",
     val generateHere: Boolean = isComputer,
     val chunkSeconds: Int = 60,
+    val notesSeconds: Int = 300,
     val notesLanguage: String = "",
     val thinkingLevel: String = "low",
     val tasks: Map<LectureTask, TaskModel> = emptyMap(),
@@ -209,6 +212,7 @@ public data class AssistantSettings(
         internal const val DEFAULT_LOCAL_LIVE_MODEL = "gemma4:e4b"
         internal const val DEFAULT_LOCAL_URL = "http://localhost:11434"
         public val CHUNK_SECONDS_RANGE: IntRange = 30..120
+        public val NOTES_SECONDS_RANGE: IntRange = 60..600
         public val THINKING_LEVELS: List<String> = listOf("low", "medium", "high")
 
         public fun defaultTask(task: LectureTask): TaskModel = when (task) {
@@ -261,6 +265,7 @@ public class AssistantSettingsStore(
         val sanitized = newSettings.copy(
             apiKey = newSettings.apiKey.trim(),
             chunkSeconds = newSettings.chunkSeconds.coerceIn(AssistantSettings.CHUNK_SECONDS_RANGE),
+            notesSeconds = newSettings.notesSeconds.coerceIn(AssistantSettings.NOTES_SECONDS_RANGE),
             thinkingLevel = newSettings.thinkingLevel.takeIf { it in AssistantSettings.THINKING_LEVELS } ?: "low",
             tasks = LectureTask.entries.associateWith { newSettings.task(it) },
             localUrl = newSettings.localUrl.trim().trimEnd('/').ifEmpty { AssistantSettings.DEFAULT_LOCAL_URL },

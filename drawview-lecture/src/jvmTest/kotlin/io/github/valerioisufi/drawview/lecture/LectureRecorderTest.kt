@@ -699,7 +699,7 @@ class LectureRecorderTest {
         val local = TaskModel(provider = ModelProvider.LOCAL, local = "gemma4:e4b")
         val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets()).apply {
             update(
-                settings.copy(apiKey = "test-key", spokenLanguage = "it", reviewAtTheEnd = false)
+                settings.copy(apiKey = "test-key", spokenLanguage = "it", reviewAtTheEnd = false, notesSeconds = 60)
                     .withTask(LectureTask.TRANSCRIPTION, TaskModel(gemini = "gemini-3.5-transcribe"))
                     .withTask(LectureTask.LIVE_NOTES, local)
                     .withTask(LectureTask.CATCH_UP, local)
@@ -736,6 +736,70 @@ class LectureRecorderTest {
         assertTrue(seconds in 4.0..5.0, "$seconds s")
         assertEquals(2, lecture.transcript.size)
         assertEquals(ReviewStatus.NONE, lecture.reviewStatus)
+    }
+
+    @Test
+    fun theTranscriptIsGatheredUntilTheNotesAreAsked() = runBlocking<Unit> {
+        val said = listOf("Il teorema ponte vale per ogni successione.", "Ne segue la continuità.", "Le ultime parole.")
+        val speech = Collections.synchronizedList(mutableListOf<String>())
+        val ollamaRequests = Collections.synchronizedList(mutableListOf<String>())
+        val notes = """{"currentTopic":"Limiti","outline":"- Limiti","notes":[{"kind":"THEOREM","title":"Teorema ponte","content":"Vale per ogni successione","importance":3,"atSeconds":2}]}"""
+        val engine = MockEngine { request ->
+            val path = request.url.encodedPath
+            val body = request.body.toByteArray().decodeToString()
+            when {
+                path.endsWith("gemini-3.5-transcribe:generateContent") -> {
+                    val text = said[minOf(speech.size, said.size - 1)]
+                    speech.add(body)
+                    respond(geminiAnswer(text), HttpStatusCode.OK, jsonHeaders)
+                }
+                path == "/api/chat" -> {
+                    if (!body.contains("\"messages\":[]")) ollamaRequests.add(body)
+                    respond(ollamaAnswer(if (body.contains("\"messages\":[]")) "" else notes), HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/x-ndjson"))
+                }
+                else -> respond("", HttpStatusCode.NotFound)
+            }
+        }
+        val local = TaskModel(provider = ModelProvider.LOCAL, local = "gemma4:e4b")
+        val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets()).apply {
+            update(
+                settings.copy(apiKey = "test-key", spokenLanguage = "it", reviewAtTheEnd = false, notesSeconds = 120)
+                    .withTask(LectureTask.TRANSCRIPTION, TaskModel(gemini = "gemini-3.5-transcribe"))
+                    .withTask(LectureTask.LIVE_NOTES, local)
+                    .withTask(LectureTask.CATCH_UP, local)
+            )
+        }
+        val microphone = FakeMicrophone()
+        val lecture = newLecture(settingsStore, engine)
+        val recorder = LectureRecorder(lecture, settingsStore, microphone, FakeNotebook(), Transcribers(lecture.backends.gemini).forUpdates(settingsStore.settings))
+        recorder.start()
+        val random = Random(11)
+
+        // A minute: transcribed, no notes yet
+        microphone.speak(61.0, loud = true, random = random)
+        microphone.speak(1.0, loud = false, random = random)
+        withTimeout(20_000) { while (lecture.transcript.isEmpty()) delay(20) }
+        delay(300)
+        assertTrue(ollamaRequests.isEmpty())
+
+        // Two minutes: the notes of both
+        microphone.speak(61.0, loud = true, random = random)
+        microphone.speak(1.0, loud = false, random = random)
+        withTimeout(20_000) { while (lecture.suggestions.isEmpty()) delay(20) }
+        val first = ollamaRequests.single()
+        assertTrue(first.contains("Il teorema ponte vale per ogni successione.") && first.contains("Ne segue la continuità."), first)
+        // What is in the request is not repeated as the transcript said before it
+        assertFalse(first.contains("End of the previous transcript"), first)
+
+        // Stopped: the words since the last notes are not lost
+        microphone.speak(4.0, loud = true, random = random)
+        recorder.stop()
+        awaitFinished(lecture)
+        assertEquals(3, lecture.transcript.size)
+        assertEquals(2, ollamaRequests.size)
+        val last = ollamaRequests.last()
+        assertTrue(last.contains("Le ultime parole."), last)
+        assertTrue(last.contains("End of the previous transcript") && last.contains("Ne segue la continuità."), last)
     }
 
     /** A live transcription: an utterance every 10 s of audio, the last one at the end of the audio. */
@@ -784,7 +848,7 @@ class LectureRecorderTest {
             respond(geminiAnswer(plainChunkAnswer), HttpStatusCode.OK, jsonHeaders)
         }
         val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets()).apply {
-            update(settings.copy(apiKey = "test-key", reviewAtTheEnd = false))
+            update(settings.copy(apiKey = "test-key", reviewAtTheEnd = false, notesSeconds = 60))
         }
         assertEquals(TranscriptionMode.STREAMING, settingsStore.settings.transcription)
         val microphone = FakeMicrophone()
@@ -957,7 +1021,7 @@ class LectureRecorderTest {
         // No Gemini key: nothing goes online
         val settingsStore = AssistantSettingsStore(File(directory, "settings.json").absolutePath, MemorySecrets()).apply {
             update(
-                settings.withTask(LectureTask.TRANSCRIPTION, local)
+                settings.copy(notesSeconds = 60).withTask(LectureTask.TRANSCRIPTION, local)
                     .withTask(LectureTask.LIVE_NOTES, local.copy(local = "gemma4:e4b"))
                     .withTask(LectureTask.CATCH_UP, local.copy(local = "gemma4:e4b"))
                     .withTask(LectureTask.FINAL_REVIEW, local)

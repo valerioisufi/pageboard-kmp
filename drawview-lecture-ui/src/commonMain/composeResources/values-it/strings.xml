@@ -67,6 +67,8 @@
     <string name="lecture_settings_hide_key">Nascondi la chiave</string>
     <string name="lecture_settings_chunk">Aggiorna ogni %1$d s</string>
     <string name="lecture_settings_chunk_hint">Vale dalla prossima registrazione.</string>
+    <string name="lecture_settings_notes">Note ogni %1$d min</string>
+    <string name="lecture_settings_notes_hint">Chiedere le note meno spesso fa costare meno una lezione. La trascrizione arriva comunque a ogni aggiornamento, e “Mi sono perso qualcosa” risponde subito.</string>
     <string name="lecture_settings_language">Lingua degli appunti</string>
     <string name="lecture_settings_language_hint">Vuoto: la lingua della lezione.</string>
     <string name="lecture_settings_thinking">Ragionamento</string>

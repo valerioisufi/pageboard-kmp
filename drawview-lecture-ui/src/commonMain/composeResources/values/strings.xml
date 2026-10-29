@@ -67,6 +67,8 @@
     <string name="lecture_settings_hide_key">Hide the key</string>
     <string name="lecture_settings_chunk">Update every %1$d s</string>
     <string name="lecture_settings_chunk_hint">Applies to the next recording.</string>
+    <string name="lecture_settings_notes">Notes every %1$d min</string>
+    <string name="lecture_settings_notes_hint">Asking the notes less often makes a lecture cheaper. The transcript still comes at every update, and “I missed something” answers at once.</string>
     <string name="lecture_settings_language">Language of the notes</string>
     <string name="lecture_settings_language_hint">Empty: the language of the lecture.</string>
     <string name="lecture_settings_thinking">Reasoning</string>

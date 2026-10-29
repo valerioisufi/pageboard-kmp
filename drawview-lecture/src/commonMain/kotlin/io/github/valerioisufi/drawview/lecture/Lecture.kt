@@ -323,12 +323,13 @@ public class Lecture internal constructor(
     /** Reads the state on [stateContext]. */
     internal suspend fun <T> setStateResult(block: Lecture.() -> T): T = withContext(stateContext) { block() }
 
-    internal suspend fun memory(elapsed: Long): LectureMemory = withContext(stateContext) {
+    /** What the assistant remembers [elapsed] into the lecture, with the transcript said before [transcriptBeforeMs]. */
+    internal suspend fun memory(elapsed: Long, transcriptBeforeMs: Long = Long.MAX_VALUE): LectureMemory = withContext(stateContext) {
         LectureMemory(
             elapsedMs = elapsed,
             outline = outline,
             currentTopic = currentTopic,
-            previousTranscript = transcript.takeLast(3).joinToString(" ") { it.text }.takeLast(PREVIOUS_TRANSCRIPT_CHARS),
+            previousTranscript = transcript.filter { it.startMs < transcriptBeforeMs }.takeLast(3).joinToString(" ") { it.text }.takeLast(PREVIOUS_TRANSCRIPT_CHARS),
             suggestions = suggestions.toList(),
             courseContext = courseContext()
         )
