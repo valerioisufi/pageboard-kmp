@@ -774,6 +774,15 @@ public final class io/github/valerioisufi/drawview/lecture/NoteKind$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class io/github/valerioisufi/drawview/lecture/NotePlacement {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/lecture/NotePlacement;
+	public static final field MARGIN_WIDTH_MM F
+	public static final field NOTE_WIDTH_MM F
+	public final fun policyOf (Lio/github/valerioisufi/drawview/lecture/NoteKind;Lio/github/valerioisufi/drawview/model/geometry/Rect;)Lio/github/valerioisufi/drawview/model/placement/PlacementPolicy;
+	public final fun widthOf (Lio/github/valerioisufi/drawview/lecture/NoteKind;Lio/github/valerioisufi/drawview/model/geometry/Rect;F)F
+}
+
 public final class io/github/valerioisufi/drawview/lecture/NoteSuggestion {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/lecture/NoteSuggestion$Companion;

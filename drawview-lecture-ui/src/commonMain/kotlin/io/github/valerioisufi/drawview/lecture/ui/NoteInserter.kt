@@ -6,13 +6,14 @@ import io.github.valerioisufi.drawview.canvas.controller.PlacementRequest
 import io.github.valerioisufi.drawview.canvas.controller.PlacementSpot
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.lecture.LectureAnchors
+import io.github.valerioisufi.drawview.lecture.NoteKind
+import io.github.valerioisufi.drawview.lecture.NotePlacement
 import io.github.valerioisufi.drawview.lecture.NoteSuggestion
 import io.github.valerioisufi.drawview.lecture.resolvedPageIndex
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.geometry.Rect as MmRect
-import io.github.valerioisufi.drawview.model.placement.BesideAnchor
 import io.github.valerioisufi.drawview.model.placement.PageOccupancy
 import io.github.valerioisufi.drawview.model.placement.PlacementBlock
 import io.github.valerioisufi.drawview.model.placement.ReadingOrder
@@ -56,8 +57,9 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
         val pageIndex = suggestion.resolvedPageIndex(document) ?: controller.viewport.firstVisiblePageIndex() ?: return false
         val page = document.pages.getOrNull(pageIndex) ?: return false
         val content = contentOf(suggestion)
-        val block = noteBlock(content, page)
-        val spots = controller.placementManager.spotsFor(pageIndex, block, BesideAnchor(anchorOf(controller, page, suggestion, lecture, handwriting)))
+        val anchor = anchorOf(controller, page, suggestion, lecture, handwriting)
+        val block = noteBlock(content, page, suggestion.kind, anchor)
+        val spots = controller.placementManager.spotsFor(pageIndex, block, NotePlacement.policyOf(suggestion.kind, anchor))
         val first = spots.firstOrNull()?.box
         val widthMm = first?.width ?: block.preferredWidthMm
         val note = newText(content, widthMm, measureHeightMm(content, NOTE_FONT_PT, widthMm), NOTE_FONT_PT)
@@ -111,8 +113,9 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
             var newPage = PageOccupancy(page.widthMm, page.heightMm, emptyList(), PageOccupancy.lineSpacingOf(page.background))
             for (suggestion in notes.sortedBy { it.atMs }) {
                 val content = contentOf(suggestion)
-                val block = noteBlock(content, page)
-                val onPage = placement.planner.candidates(occupancy, block, BesideAnchor(anchorOf(controller, page, suggestion, lecture, handwriting))).firstOrNull()
+                val anchor = anchorOf(controller, page, suggestion, lecture, handwriting)
+                val block = noteBlock(content, page, suggestion.kind, anchor)
+                val onPage = placement.planner.candidates(occupancy, block, NotePlacement.policyOf(suggestion.kind, anchor)).firstOrNull()
                 val spot = if (onPage != null) {
                     occupancy += onPage.rect
                     PlacementSpot(page.index, onPage.rect)
@@ -154,9 +157,9 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
         append(suggestion.content.trim())
     }
 
-    /** A note of [content] to place on [page]: as wide as a note, its height laid out on its width. */
-    private fun noteBlock(content: String, page: DrawPage) =
-        PlacementBlock(noteWidthMm(page)) { width -> measureHeightMm(content, NOTE_FONT_PT, width) }
+    /** A note of [kind] and [content] to place on [page] next to [anchor]: as wide as its kind wants, its height laid out on its width. */
+    private fun noteBlock(content: String, page: DrawPage, kind: NoteKind, anchor: MmRect?) =
+        PlacementBlock(NotePlacement.widthOf(kind, anchor, page.widthMm)) { width -> measureHeightMm(content, NOTE_FONT_PT, width) }
 
     /**
      * What [suggestion] is about on [page]: the words it quotes (typed, handwritten as read in
@@ -247,9 +250,6 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
         if (rect.height > controller.viewport.height) controller.viewport.panBy(0f, PAGE_TOP_INSET_PX - rect.top)
     }
 
-    private fun noteWidthMm(page: DrawPage): Float =
-        min(NOTE_WIDTH_MM, page.widthMm * 0.45f).coerceAtLeast(min(30f, page.widthMm))
-
     private fun newText(content: String, widthMm: Float, heightMm: Float, fontSizePt: Float) = DrawText().apply {
         text = content
         width = widthMm
@@ -270,7 +270,6 @@ internal class NoteInserter(private val textAdapter: TextTileAdapter) {
     }
 
     private companion object {
-        const val NOTE_WIDTH_MM = 90f
         const val NOTE_FONT_PT = 11f
         const val REVIEW_FONT_PT = 11f
         const val PAGE_TOP_INSET_PX = 24f

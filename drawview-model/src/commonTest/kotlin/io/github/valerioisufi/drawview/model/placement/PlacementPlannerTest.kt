@@ -150,4 +150,25 @@ class PlacementPlannerTest {
         val occupancy = PageOccupancy.of(DrawPage().apply { add(note) }, excluded = setOf(note.id))
         assertTrue(occupancy.boxes.isEmpty())
     }
+
+    @Test
+    fun aShortNoteGoesBesideItsAnchorInTheMargin() {
+        // A line of writing on the left, the right column free
+        val page = DrawPage().apply { add(text(10f, 80f, 120f, 12f)) }
+        val occupancy = PageOccupancy.of(page)
+        val anchor = Rect(10f, 80f, 130f, 92f)
+        val best = planner.candidates(occupancy, block(width = 60f, area = 60f * 12f), InMargin(anchor)).first().rect
+        assertFreeOf(occupancy, best)
+        assertTrue(best.left >= 130f && best.top < anchor.bottom && best.bottom > anchor.top, "beside: $best")
+    }
+
+    @Test
+    fun anAnnouncementGoesAtTheBottomOfTheFreeSpace() {
+        val page = DrawPage().apply { add(text(10f, 10f, 190f, 100f)) }
+        val occupancy = PageOccupancy.of(page)
+        val best = planner.candidates(occupancy, block(width = 190f, area = 190f * 10f), PageBottom).first().rect
+        assertFreeOf(occupancy, best)
+        assertEquals(287f, best.bottom, 2.01f)
+        assertEquals(10f, best.left)
+    }
 }

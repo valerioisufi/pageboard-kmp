@@ -68,6 +68,38 @@ public class BesideAnchor(public val anchor: Rect?) : PlacementPolicy {
     }
 }
 
+/**
+ * Beside [anchor] first, at its height (in the margin or the free column next to it, to its right
+ * rather than its left), as a short note in the margin of a book; below it (see [BesideAnchor])
+ * when nothing is free beside it. Without an anchor, as [BesideAnchor].
+ */
+public class InMargin(public val anchor: Rect?) : PlacementPolicy {
+    private val below = BesideAnchor(anchor)
+
+    override fun cost(rect: Rect, block: PlacementBlock): Float {
+        val anchor = anchor ?: return below.cost(rect, block)
+        val beside = rect.top < anchor.bottom && rect.bottom > anchor.top
+        if (!beside) return below.cost(rect, block) + NOT_BESIDE_PENALTY
+        val gapX = max(0f, max(anchor.left - rect.right, rect.left - anchor.right))
+        val left = rect.right <= anchor.left
+        val narrowing = (block.preferredWidthMm - rect.width).coerceAtLeast(0f) / block.preferredWidthMm * NARROWING_COST
+        return gapX * (if (left) 2f else 1f) + abs(rect.top - anchor.top) * 0.5f + narrowing
+    }
+
+    private companion object {
+        const val NOT_BESIDE_PENALTY = 30f
+        const val NARROWING_COST = 25f
+    }
+}
+
+/** The bottom of the free space of the page, from the left (an announcement, apart from the notes). */
+public object PageBottom : PlacementPolicy {
+    override fun cost(rect: Rect, block: PlacementBlock): Float {
+        val narrowing = (block.preferredWidthMm - rect.width).coerceAtLeast(0f) / block.preferredWidthMm * 25f
+        return -rect.bottom + rect.left * 0.01f + narrowing
+    }
+}
+
 /** The first free place in reading order, from the top (the pieces of a text flowing through a page). */
 public object ReadingOrder : PlacementPolicy {
     override fun cost(rect: Rect, block: PlacementBlock): Float = rect.top * 1000f + rect.left

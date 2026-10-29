@@ -98,7 +98,8 @@ class NoteInserterTest {
         assertTrue(NoteInserter(NoLayout).startPlacement(controller, note, null, handwriting = mapOf(key to "serie geometrica di ragione q"), onInserted = {}, onCancel = {}))
 
         val spot = assertNotNull(controller.placementManager.spots.single())
-        assertTrue(spot.box.top >= stroke.bounds.bottom && spot.box.top < stroke.bounds.bottom + 25f, "below the handwriting: ${spot.box}")
+        // A definition: in the margin beside it
+        assertTrue(spot.box.left >= stroke.bounds.right && spot.box.top < stroke.bounds.bottom && spot.box.bottom > stroke.bounds.top, "beside the handwriting: ${spot.box}")
     }
 
     @Test

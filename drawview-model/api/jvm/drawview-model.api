@@ -2766,6 +2766,17 @@ public final class io/github/valerioisufi/drawview/model/placement/FreeSpace {
 public final class io/github/valerioisufi/drawview/model/placement/FreeSpace$Companion {
 }
 
+public final class io/github/valerioisufi/drawview/model/placement/InMargin : io/github/valerioisufi/drawview/model/placement/PlacementPolicy {
+	public fun <init> (Lio/github/valerioisufi/drawview/model/geometry/Rect;)V
+	public fun cost (Lio/github/valerioisufi/drawview/model/geometry/Rect;Lio/github/valerioisufi/drawview/model/placement/PlacementBlock;)F
+	public final fun getAnchor ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
+}
+
+public final class io/github/valerioisufi/drawview/model/placement/PageBottom : io/github/valerioisufi/drawview/model/placement/PlacementPolicy {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/placement/PageBottom;
+	public fun cost (Lio/github/valerioisufi/drawview/model/geometry/Rect;Lio/github/valerioisufi/drawview/model/placement/PlacementBlock;)F
+}
+
 public final class io/github/valerioisufi/drawview/model/placement/PageOccupancy {
 	public static final field Companion Lio/github/valerioisufi/drawview/model/placement/PageOccupancy$Companion;
 	public fun <init> (FFLjava/util/List;F)V

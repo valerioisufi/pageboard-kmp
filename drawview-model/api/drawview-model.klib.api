@@ -2069,6 +2069,15 @@ final class io.github.valerioisufi.drawview.model.placement/FreeSpace { // io.gi
     }
 }
 
+final class io.github.valerioisufi.drawview.model.placement/InMargin : io.github.valerioisufi.drawview.model.placement/PlacementPolicy { // io.github.valerioisufi.drawview.model.placement/InMargin|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.model.geometry/Rect?) // io.github.valerioisufi.drawview.model.placement/InMargin.<init>|<init>(io.github.valerioisufi.drawview.model.geometry.Rect?){}[0]
+
+    final val anchor // io.github.valerioisufi.drawview.model.placement/InMargin.anchor|{}anchor[0]
+        final fun <get-anchor>(): io.github.valerioisufi.drawview.model.geometry/Rect? // io.github.valerioisufi.drawview.model.placement/InMargin.anchor.<get-anchor>|<get-anchor>(){}[0]
+
+    final fun cost(io.github.valerioisufi.drawview.model.geometry/Rect, io.github.valerioisufi.drawview.model.placement/PlacementBlock): kotlin/Float // io.github.valerioisufi.drawview.model.placement/InMargin.cost|cost(io.github.valerioisufi.drawview.model.geometry.Rect;io.github.valerioisufi.drawview.model.placement.PlacementBlock){}[0]
+}
+
 final class io.github.valerioisufi.drawview.model.placement/PageOccupancy { // io.github.valerioisufi.drawview.model.placement/PageOccupancy|null[0]
     constructor <init>(kotlin/Float, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Rect>, kotlin/Float = ...) // io.github.valerioisufi.drawview.model.placement/PageOccupancy.<init>|<init>(kotlin.Float;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.Rect>;kotlin.Float){}[0]
 
@@ -3214,6 +3223,10 @@ final object io.github.valerioisufi.drawview.model.geometry/HitTesting { // io.g
     final fun pointInPolygon(kotlin/Float, kotlin/Float, kotlin/FloatArray): kotlin/Boolean // io.github.valerioisufi.drawview.model.geometry/HitTesting.pointInPolygon|pointInPolygon(kotlin.Float;kotlin.Float;kotlin.FloatArray){}[0]
     final fun polygonBounds(kotlin/FloatArray): io.github.valerioisufi.drawview.model.geometry/Rect // io.github.valerioisufi.drawview.model.geometry/HitTesting.polygonBounds|polygonBounds(kotlin.FloatArray){}[0]
     final fun rectIntersectsCapsule(io.github.valerioisufi.drawview.model.geometry/Rect, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float): kotlin/Boolean // io.github.valerioisufi.drawview.model.geometry/HitTesting.rectIntersectsCapsule|rectIntersectsCapsule(io.github.valerioisufi.drawview.model.geometry.Rect;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+}
+
+final object io.github.valerioisufi.drawview.model.placement/PageBottom : io.github.valerioisufi.drawview.model.placement/PlacementPolicy { // io.github.valerioisufi.drawview.model.placement/PageBottom|null[0]
+    final fun cost(io.github.valerioisufi.drawview.model.geometry/Rect, io.github.valerioisufi.drawview.model.placement/PlacementBlock): kotlin/Float // io.github.valerioisufi.drawview.model.placement/PageBottom.cost|cost(io.github.valerioisufi.drawview.model.geometry.Rect;io.github.valerioisufi.drawview.model.placement.PlacementBlock){}[0]
 }
 
 final object io.github.valerioisufi.drawview.model.placement/ReadingOrder : io.github.valerioisufi.drawview.model.placement/PlacementPolicy { // io.github.valerioisufi.drawview.model.placement/ReadingOrder|null[0]
