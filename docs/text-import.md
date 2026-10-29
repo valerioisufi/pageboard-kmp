@@ -83,9 +83,9 @@ Variations).
 | The pages of the document a text is about, given by the application (the search) | `PageTopics` (fun interface, `drawview-canvas`), an engine of `DrawViewEngines.topics` | Indirection, Protected Variations (the search behind an interface) |
 | The sections of a text placed by topic, from a page or at the end, at the size of their page, in the style given (the student's or the assistant's) | `TextPlacer` (`drawview-canvas`), out of `NoteInserter.startReviewPlacement` | Controller, Creator; the review uses it too (High Cohesion) |
 | The file chosen or dropped, the sheet of the import, the paste of a long text opening it | `TextImportSheet`, `PickerType.TEXT` (`drawview-ui`), `EditorCommands.importText` | Controller |
-| A text turned into notes of a kind by a model, with their page and anchor | `TextToNotes` (`drawview-lecture`): its prompt and schema next to those of the lecture | Information Expert (the assistant knows its models, its prompts and its notes) |
-| "As notes" offered in the sheet when the lecture assistant is there | a command of the extension of the lecture assistant (`EditorExtension.commands`, existing), opened by the sheet by its id | Polymorphism, Low Coupling (no new hook in `EditorExtension`) |
-| The estimate of a request before sending it | `TextToNotes.estimate` (characters and tokens, as `docs/lecture-cost.md` counts them) | Information Expert |
+| A text turned into notes of a kind by a model, with their page and anchor | `LectureAssistant.textNotes`, `LecturePrompts.textNotesPrompt`, `LectureAnalysis.textNotesSchema`, `TextNotes` (`drawview-lecture`) | Information Expert (the assistant knows its models, its prompts and its notes) |
+| "As notes" offered in the sheet when the lecture assistant is there | a command of the extension of the lecture assistant (`EditorExtension.commands`, existing) of id `TEXT_TO_NOTES_COMMAND_ID`, taking the text waiting in the controller; its dialog (`TextNotesDialog`) | Polymorphism, Low Coupling (no new hook in `EditorExtension`) |
+| The estimate of a request before sending it | `LectureAssistant.estimateTextNotes` (characters, and tokens at 4 characters each) | Information Expert |
 
 ### By topic for every text
 
@@ -104,15 +104,15 @@ of a new text. `pasteText` of a long text opens the sheet instead of placing dir
 
 ### Notes from a text
 
-`TextToNotes` asks the model of the task of the review (`LectureTask.FINAL_REVIEW`) with:
+`LectureAssistant.textNotes` asks the model of the task of the review (`LectureTask.FINAL_REVIEW`) with:
 
 * the instructions of the notes of the lecture (kinds, Markdown, anchor) adapted: "turn this text
   into notes for this notebook; keep everything important; never add what the text does not say";
 * the pages of the notebook described as for the review (`LecturePrompts.pagesText`, bounded);
 * the text, bounded (beyond the bound the sheet offers the text without notes).
 
-The answer is the list of notes of the review (`FinalReview.missing` without the Markdown of the
-review), read with `LectureAnalysis` (its depth checked as every answer). The notes are placed by
+The answer is a list of notes in the format of the notes of the lecture (`TextNotesAnswer`), read
+with `LectureAnalysis` (its depth checked as every answer). The notes are placed by
 `NoteInserter.startPlacementAll`, without becoming suggestions of a lecture.
 
 ## Phases
