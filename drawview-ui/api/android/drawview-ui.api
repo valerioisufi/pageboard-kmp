@@ -724,6 +724,16 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getTool_settings_text_hint (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
+public final class io/github/valerioisufi/drawview/ui/platform/DrawViewFileProvider : androidx/core/content/FileProvider {
+	public static final field $stable I
+	public static final field Companion Lio/github/valerioisufi/drawview/ui/platform/DrawViewFileProvider$Companion;
+	public fun <init> ()V
+}
+
+public final class io/github/valerioisufi/drawview/ui/platform/DrawViewFileProvider$Companion {
+	public final fun authority (Landroid/content/Context;)Ljava/lang/String;
+}
+
 public final class io/github/valerioisufi/drawview/ui/platform/FileDrop_androidKt {
 	public static final fun fileDropTarget (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Landroidx/compose/ui/Modifier;
 }
@@ -732,8 +742,17 @@ public final class io/github/valerioisufi/drawview/ui/platform/FilePicker_androi
 	public static final fun rememberFilePicker (Lio/github/valerioisufi/drawview/ui/platform/PickerType;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Lkotlin/jvm/functions/Function0;
 }
 
+public final class io/github/valerioisufi/drawview/ui/platform/FileReveal {
+	public static final field $stable I
+	public fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
+	public final fun getOpen ()Lkotlin/jvm/functions/Function1;
+	public final fun getShow ()Lkotlin/jvm/functions/Function1;
+}
+
 public final class io/github/valerioisufi/drawview/ui/platform/FileSaver_androidKt {
+	public static final fun fileReveal ()Lio/github/valerioisufi/drawview/ui/platform/FileReveal;
 	public static final fun rememberFileSaver (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Lkotlin/jvm/functions/Function1;
+	public static final fun rememberFileSharer (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Lkotlin/jvm/functions/Function1;
 }
 
 public final class io/github/valerioisufi/drawview/ui/platform/FileTarget {

@@ -732,8 +732,17 @@ public final class io/github/valerioisufi/drawview/ui/platform/FilePicker_jvmKt 
 	public static final fun rememberFilePicker (Lio/github/valerioisufi/drawview/ui/platform/PickerType;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Lkotlin/jvm/functions/Function0;
 }
 
+public final class io/github/valerioisufi/drawview/ui/platform/FileReveal {
+	public static final field $stable I
+	public fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
+	public final fun getOpen ()Lkotlin/jvm/functions/Function1;
+	public final fun getShow ()Lkotlin/jvm/functions/Function1;
+}
+
 public final class io/github/valerioisufi/drawview/ui/platform/FileSaver_jvmKt {
+	public static final fun fileReveal ()Lio/github/valerioisufi/drawview/ui/platform/FileReveal;
 	public static final fun rememberFileSaver (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Lkotlin/jvm/functions/Function1;
+	public static final fun rememberFileSharer (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Lkotlin/jvm/functions/Function1;
 }
 
 public final class io/github/valerioisufi/drawview/ui/platform/FileTarget {

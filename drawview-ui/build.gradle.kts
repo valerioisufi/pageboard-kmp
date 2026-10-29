@@ -36,6 +36,8 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
+            // The files shared with the other applications (DrawViewFileProvider)
+            implementation(libs.androidx.core.ktx)
         }
         jvmMain.dependencies {
             // The title bars of the windows, set through the APIs of macOS and Windows

@@ -1,5 +1,7 @@
 package io.github.valerioisufi.drawview.ui.platform
 
+import android.content.Context
+import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -7,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.FileProvider
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -38,3 +41,40 @@ public actual fun rememberFileSaver(title: String, mimeType: String, onTarget: (
         launcher.launch(name)
     }
 }
+
+/**
+ * The share sheet of the system: the file is written in the cache (where the files shared before
+ * are deleted first) and given to the application chosen through [DrawViewFileProvider].
+ */
+@Composable
+public actual fun rememberFileSharer(title: String, mimeType: String, onTarget: (FileTarget) -> Unit): ((suggestedName: String) -> Unit)? {
+    val context = LocalContext.current
+    val target by rememberUpdatedState(onTarget)
+    return remember(context, title, mimeType) {
+        { name ->
+            val directory = File(context.cacheDir, SHARED_DIRECTORY).apply {
+                deleteRecursively()
+                mkdirs()
+            }
+            target(FileTarget(File(directory, name.replace('/', '-')).absolutePath) { written ->
+                withContext(Dispatchers.Main) { share(context, File(written), title, mimeType) }
+            })
+        }
+    }
+}
+
+private fun share(context: Context, file: File, title: String, mimeType: String) {
+    val uri = FileProvider.getUriForFile(context, DrawViewFileProvider.authority(context), file)
+    val send = Intent(Intent.ACTION_SEND)
+        .setType(mimeType)
+        .putExtra(Intent.EXTRA_STREAM, uri)
+        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    val chooser = Intent.createChooser(send, title)
+    if (context !is android.app.Activity) chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(chooser)
+}
+
+public actual fun fileReveal(): FileReveal? = null
+
+/** The directory of the cache holding the files shared (see `res/xml/drawview_shared_files.xml`). */
+private const val SHARED_DIRECTORY = "drawview-shared"
