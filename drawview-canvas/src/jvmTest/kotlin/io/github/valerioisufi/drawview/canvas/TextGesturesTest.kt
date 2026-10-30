@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.canvas
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerButtons
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -30,7 +31,7 @@ import kotlinx.coroutines.cancel
 
 /**
  * The gestures of the text tool sent to a [DrawCanvas]: a box drawn with a mouse, a tap on another
- * text while one is written.
+ * text while one is written, the text being written dragged to another page.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 class TextGesturesTest {
@@ -109,5 +110,36 @@ class TextGesturesTest {
         // A tap on an empty spot: saved, nothing opened
         scene.click(assertNotNull(controller.viewport.pageMmToScreen(0)).mapPoint(150f, 250f).toCompose())
         assertFalse(editor.isEditing)
+    }
+
+    @Test
+    fun theTextBeingWrittenIsDraggedToTheNextPage() = withCanvas { scene, controller ->
+        controller.pageManager.addNewPageAtBottom()
+        // Both pages on screen
+        controller.viewport.zoomBy(0.5f)
+        scene.render()
+        val first = controller.document.pages[0]
+        val editor = controller.textEditorManager
+        // Wide enough to be grabbed away from its handles
+        editor.startDrawnText(0, Rect(40f, first.heightMm - 15f, 100f, first.heightMm - 7f))
+        editor.updateValue(TextFieldValue("Moved", TextRange(5)))
+        // As the field lays it out (no field in this scene)
+        editor.reportLayoutHeight(8f)
+        scene.render()
+
+        // From the middle of the box, 120 px down (over the second page)
+        val corner = assertNotNull(controller.viewport.pageMmToScreen(0)).mapPoint(editor.boxX, editor.boxY).toCompose()
+        val from = corner + Offset(50f, 5f)
+        scene.drag(from, from + Offset(0f, 120f))
+
+        assertEquals(1, editor.activeTextPageIndex, "the box on the page under its center")
+        val moved = assertNotNull(controller.viewport.pageMmToScreen(1)).mapPoint(editor.boxX, editor.boxY).toCompose()
+        val pxPerMm = controller.viewport.pixelsPerMm(1)
+        assertEquals(corner.x, moved.x, 5f * pxPerMm, "it follows the pointer, not shifted by the change of page")
+        assertEquals(corner.y + 120f, moved.y, 5f * pxPerMm)
+
+        editor.finishEditing()
+        assertEquals("Moved", controller.document.pages[1].texts.single().text)
+        assertTrue(first.texts.isEmpty())
     }
 }

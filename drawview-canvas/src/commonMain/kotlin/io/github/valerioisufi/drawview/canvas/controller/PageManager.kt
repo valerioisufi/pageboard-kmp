@@ -124,8 +124,10 @@ public class PageManager(private val controller: DrawViewController) {
         val pages = pagesOf(ids)
         if (pages.isEmpty() || pages.size >= document.pages.size) return
         controller.selectionManager.clearSelection()
-        val editing = controller.textEditorManager.activeTextPageIndex
-        if (pages.any { document.pages.indexOf(it) == editing }) controller.textEditorManager.cancelEditing()
+        // The page of the text being written, or of the text it changes
+        val editor = controller.textEditorManager
+        val editing = setOf(editor.activeTextPageIndex, editor.itemPageIndex)
+        if (pages.any { document.pages.indexOf(it) in editing }) editor.cancelEditing()
         oneChange(pages.map { RemovePage(it.id) })?.let { controller.session.submit(it) }
         deletedPages.tryEmit(pages.map { it.id })
     }

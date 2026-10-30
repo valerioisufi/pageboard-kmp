@@ -34,6 +34,7 @@ import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawImage
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.InputToolType
+import io.github.valerioisufi.drawview.model.geometry.Matrix2D
 import io.github.valerioisufi.drawview.model.StrokeMesh
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -166,6 +167,7 @@ internal class CanvasGestureHandler(
     private var freeGesture = false
 
     /** Where the box of the text being written was when the gesture started moving it, and the move so far (page mm). */
+    /** The corner of the text being written when its drag started, and the drag so far, in the world (its page may change). */
     private var editorMoveOrigin = Offset.Zero
     private var editorMoveOffset = Offset.Zero
 
@@ -370,7 +372,8 @@ internal class CanvasGestureHandler(
                 }
             }
             val editor = controller.textEditorManager
-            editorMoveOrigin = Offset(editor.boxX, editor.boxY)
+            editorMoveOrigin = controller.viewport.pageMmToWorld(editor.activeTextPageIndex)
+                ?.mapPoint(editor.boxX, editor.boxY)?.let { Offset(it.x, it.y) } ?: Offset.Zero
             editorMoveOffset = Offset.Zero
             return
         }
@@ -597,11 +600,9 @@ internal class CanvasGestureHandler(
             }
 
             Mode.EDITOR_MOVE -> {
-                val editor = controller.textEditorManager
-                val pxPerMm = controller.viewport.pixelsPerMm(editor.activeTextPageIndex).coerceAtLeast(0.01f)
-                val delta = position - lastPosition
-                editorMoveOffset += Offset(delta.x / pxPerMm, delta.y / pxPerMm)
-                editor.moveTo(editorMoveOrigin.x + editorMoveOffset.x, editorMoveOrigin.y + editorMoveOffset.y, freeGesture)
+                val scale = controller.viewport.camera.getCurrentScale().coerceAtLeast(0.0001f)
+                editorMoveOffset += (position - lastPosition) / scale
+                moveEditorBox()
                 updateAutoScroll(position)
             }
 
@@ -694,6 +695,18 @@ internal class CanvasGestureHandler(
         }
         if (mode != Mode.PAN && mode != Mode.PINCH && mode != Mode.IGNORED) reportActivity(position, inking = mode == Mode.INK)
         lastPosition = position
+    }
+
+    /**
+     * Moves the box of the text being written to the corner of its drag (in the world), given in
+     * the millimeters of the page it is on: the editor takes it to the page under its center.
+     */
+    private fun moveEditorBox() {
+        val editor = controller.textEditorManager
+        val worldToMm = Matrix2D()
+        if (controller.viewport.pageMmToWorld(editor.activeTextPageIndex)?.invert(worldToMm) != true) return
+        val corner = worldToMm.mapPoint(editorMoveOrigin.x + editorMoveOffset.x, editorMoveOrigin.y + editorMoveOffset.y)
+        editor.moveTo(corner.x, corner.y, freeGesture)
     }
 
     private fun onPinchMove(pressed: List<PointerInputChange>, touchSlop: Float) {
@@ -1194,10 +1207,9 @@ internal class CanvasGestureHandler(
             }
             Mode.EDITOR_MOVE -> {
                 // Keep the text being written under the pointer while the camera moves
-                val editor = controller.textEditorManager
-                val pxPerMm = controller.viewport.pixelsPerMm(editor.activeTextPageIndex).coerceAtLeast(0.01f)
-                editorMoveOffset += Offset(0f, -delta / pxPerMm)
-                editor.moveTo(editorMoveOrigin.x + editorMoveOffset.x, editorMoveOrigin.y + editorMoveOffset.y, freeGesture)
+                val scale = controller.viewport.camera.getCurrentScale().coerceAtLeast(0.0001f)
+                editorMoveOffset += Offset(0f, -delta / scale)
+                moveEditorBox()
             }
             Mode.PAGE_REORDER -> controller.pageManager.onCameraMovedWhileDragging()
             // Keep extending the text under the pointer while the camera moves

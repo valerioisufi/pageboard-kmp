@@ -20,7 +20,9 @@ import io.github.valerioisufi.drawview.model.text.TextRoom
 import io.github.valerioisufi.drawview.model.Versions
 import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.ChangeEffects
+import io.github.valerioisufi.drawview.model.change.CompositeChange
 import io.github.valerioisufi.drawview.model.change.RemoveElements
+import io.github.valerioisufi.drawview.model.change.ReorderElements
 import io.github.valerioisufi.drawview.model.change.TextData
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.model.change.toData
@@ -48,7 +50,12 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
     internal var activeTextItem: DrawText? by mutableStateOf(null)
         private set
 
+    /** The page the box is on: the one under its center, once it has been moved (see [moveTo]). */
     public var activeTextPageIndex: Int by mutableIntStateOf(-1)
+        private set
+
+    /** The page the text being changed is on in the document (`-1` for a new one). */
+    internal var itemPageIndex: Int = -1
         private set
 
     /** Left of the box in page millimeters. */
@@ -232,6 +239,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
         activeTextItem = item
         activeTextPageIndex = pageIndex
+        itemPageIndex = if (item != null) pageIndex else -1
         boxX = xMm
         boxY = yMm
         this.autoWidth = autoWidth
@@ -314,21 +322,23 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
 
     /**
      * Saves the text being written and closes the editor: a new text is added, a changed one
-     * updated, an emptied one removed. The text is measured as the canvas lays it out.
+     * updated, an emptied one removed. The text is measured as the canvas lays it out. A text
+     * moved to another page goes there, on top of its elements, in the same change.
      */
     public fun finishEditing() {
         val pageIndex = activeTextPageIndex
         if (pageIndex < 0) return
         val page = controller.document.pages.getOrNull(pageIndex)
         val existing = activeTextItem
-        if (page == null) {
+        val itemPage = if (existing != null) controller.document.pages.getOrNull(itemPageIndex) else page
+        if (page == null || itemPage == null) {
             cancelEditing()
             return
         }
 
         if (value.text.isBlank()) {
             existing?.let { controller.hiddenElements.setDragged(listOf(it.id), false) }
-            if (existing != null) controller.session.submit(RemoveElements.of(page, listOf(existing)))
+            if (existing != null) controller.session.submit(RemoveElements.of(itemPage, listOf(existing)))
             resetSession()
             return
         }
@@ -344,9 +354,14 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
             controller.hiddenElements.setDragged(listOf(existing.id), false)
             // Shown again even when nothing changed
             existing.markDirty()
-            controller.invalidatePageContent(page, existing.getRotatedBounds())
-            // Changed by the user (not only on another device meanwhile)
-            if (data != editedFrom) controller.session.submit(UpdateTexts(page.id, listOf(data)))
+            controller.invalidatePageContent(itemPage, existing.getRotatedBounds())
+            if (itemPage !== page) {
+                // Moved to the page (see UpdateTexts), on top of its elements
+                controller.session.submit(CompositeChange(listOf(UpdateTexts(page.id, listOf(data)), ReorderElements.onTop(page.id, listOf(existing.id)))))
+            } else if (data != editedFrom) {
+                // Changed by the user (not only on another device meanwhile)
+                controller.session.submit(UpdateTexts(page.id, listOf(data)))
+            }
         } else {
             controller.session.submit(AddElements.of(page, listOf(data.toElement())))
         }
@@ -359,7 +374,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
      */
     internal fun cancelEditing() {
         val item = activeTextItem
-        val page = controller.document.pages.getOrNull(activeTextPageIndex)
+        val page = controller.document.pages.getOrNull(itemPageIndex)
         if (item != null && page != null) {
             controller.hiddenElements.setDragged(listOf(item.id), false)
             item.markDirty()
@@ -377,6 +392,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
     private fun resetSession() {
         activeTextItem = null
         activeTextPageIndex = -1
+        itemPageIndex = -1
         caretRequest = null
         selectionSteps.clear()
         value = TextFieldValue()
@@ -512,26 +528,50 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
     // The box
     // ==========================================================
 
-    /** Moves the box by ([dxMm], [dyMm]) page millimeters, a part of it always on its page. */
+    /** Moves the box by ([dxMm], [dyMm]) page millimeters (see [moveTo]). */
     public fun moveBy(dxMm: Float, dyMm: Float): Unit = moveTo(boxX + dxMm, boxY + dyMm, free = true)
 
     /**
-     * Moves the box to ([xMm], [yMm]) of its page, a part of it always on the page; unless
-     * [free], snapped to what is around it (its first baseline on the rows of the paper).
+     * Moves the box to ([xMm], [yMm]) of its page; when its center is then over another page (the
+     * nearest one between the pages), the box goes to that page, its corner mapped there. A part
+     * of it always stays on the page it is on; unless [free], it is snapped to what is around it
+     * (its first baseline on the rows of the paper).
      */
     public fun moveTo(xMm: Float, yMm: Float, free: Boolean = false) {
+        if (!isEditing) return
+        val corner = toPageUnderCenter(xMm, yMm)
         val page = controller.document.pages.getOrNull(activeTextPageIndex) ?: return
-        val box = Rect(xMm, yMm, xMm + boxWidth, yMm + boxHeight)
-        val baseline = if (rotation == 0f) controller.textLineMetrics(fontSize)?.let { yMm + it.baseline } else null
+        val box = Rect(corner.x, corner.y, corner.x + boxWidth, corner.y + boxHeight)
+        val baseline = if (rotation == 0f) controller.textLineMetrics(fontSize)?.let { corner.y + it.baseline } else null
         val snap = if (free) {
             controller.snapManager.clearGuides()
             Point.Zero
         } else {
             controller.snapManager.snapBox(activeTextPageIndex, box.toModel(), listOfNotNull(activeTextItem), baseline)
         }
-        boxX = (xMm + snap.x).coerceIn(MIN_VISIBLE_MM - boxWidth, page.widthMm - MIN_VISIBLE_MM)
-        boxY = (yMm + snap.y).coerceIn(MIN_VISIBLE_MM - boxHeight, page.heightMm - MIN_VISIBLE_MM)
+        boxX = (corner.x + snap.x).coerceIn(MIN_VISIBLE_MM - boxWidth, page.widthMm - MIN_VISIBLE_MM)
+        boxY = (corner.y + snap.y).coerceIn(MIN_VISIBLE_MM - boxHeight, page.heightMm - MIN_VISIBLE_MM)
         reportDraft()
+    }
+
+    /**
+     * The corner ([xMm], [yMm]) of the box in the millimeters of the page under its center, which
+     * becomes the page of the box ([activeTextPageIndex]). The pages share the scale of the world,
+     * so the box keeps its size.
+     */
+    private fun toPageUnderCenter(xMm: Float, yMm: Float): Point {
+        val viewport = controller.viewport
+        val mmToWorld = viewport.pageMmToWorld(activeTextPageIndex) ?: return Point(xMm, yMm)
+        // Its center, turned with the text around its corner
+        val half = Matrix2D().postRotate(rotation).mapPoint(boxWidth / 2f, boxHeight / 2f)
+        val center = mmToWorld.mapPoint(xMm + half.x, yMm + half.y)
+        val target = viewport.findPageIndexAtWorld(Offset(center.x, center.y), nearest = true)
+        if (target < 0 || target == activeTextPageIndex) return Point(xMm, yMm)
+        val worldToTarget = Matrix2D()
+        if (viewport.pageMmToWorld(target)?.invert(worldToTarget) != true) return Point(xMm, yMm)
+        val world = mmToWorld.mapPoint(xMm, yMm)
+        activeTextPageIndex = target
+        return worldToTarget.mapPoint(world.x, world.y)
     }
 
     /**
