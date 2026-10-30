@@ -86,4 +86,20 @@ class PageGridUpdatesTest {
         assertEquals(listOf(1, 2, 3), cards())
         onNodeWithText("Notes · 3 pages").assertExists()
     }
+
+    @Test
+    fun theBarOfTheSelectionCountsThePagesStillShown() = runDesktopComposeUiTest {
+        val controller = grid()
+        val ids = controller.document.pages.map { it.id }
+        val selection = controller.pageManager.selection
+        runOnIdle {
+            selection.toggle(ids[1])
+            selection.toggle(ids[3])
+        }
+        onNodeWithText("2 pages selected").assertExists()
+
+        // Still some pages to delete, the bar is the same but for the number
+        runOnIdle { controller.session.receive(otherDevice(controller, RemovePage(ids[3]))) }
+        onNodeWithText("1 page selected").assertExists()
+    }
 }

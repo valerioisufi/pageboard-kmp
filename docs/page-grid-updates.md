@@ -83,7 +83,7 @@ the list as it is; its card follows it as today.
 | Phase | What | Status |
 |---|---|---|
 | 1 | The grid built from the pages and the deleted pages read in the composition; the ring on the page by its identifier; tests of the cards shown and of the deleted pages after delete, add, restore, undo and a removal by another device (`PageGridUpdatesTest`) | done |
-| 2 | The bar of the selection counting the pages selected still shown; its test | to do |
+| 2 | The bar of the selection counting the pages selected still shown; its test | done |
 
 ## Decisions
 

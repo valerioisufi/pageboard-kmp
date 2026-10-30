@@ -149,6 +149,8 @@ internal fun PageGridOverlay(
         if (selection.isActive) {
             PageSelectionBar(
                 selection = selection,
+                // Counted here, which follows the document: a page selected may be removed
+                count = selection.count,
                 writable = writable,
                 canPaste = commands?.canPastePages() == true,
                 canDelete = pageManager.canDeletePages(selection.pageIds),
@@ -709,12 +711,14 @@ private fun Modifier.pageClicks(
 }
 
 /**
- * The top bar of the grid while selecting: Done, how many pages are selected, Select all, and the
- * actions on all of them (in a read-only document, copying only).
+ * The top bar of the grid while selecting: Done, how many pages are selected ([count], the pages
+ * selected still in the document), Select all, and the actions on all of them (in a read-only
+ * document, copying only).
  */
 @Composable
 private fun PageSelectionBar(
     selection: PageSelection,
+    count: Int,
     writable: Boolean,
     canPaste: Boolean,
     canDelete: Boolean,
@@ -725,7 +729,6 @@ private fun PageSelectionBar(
     extensionActions: List<Command> = emptyList()
 ) {
     val colors = MaterialTheme.colorScheme
-    val count = selection.count
     Row(
         modifier = Modifier
             .fillMaxWidth()
