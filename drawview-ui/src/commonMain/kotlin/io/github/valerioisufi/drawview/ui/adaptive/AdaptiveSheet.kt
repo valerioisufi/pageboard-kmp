@@ -30,7 +30,9 @@ import androidx.compose.ui.window.DialogProperties
  *
  * @param title its title, if any.
  * @param actions its buttons (e.g. cancel, save), at the end of its bottom.
- * @param maxWidth the widest the dialog is (a wider window).
+ * @param maxWidth the widest the dialog is (a wider window). Up to 560 dp the dialog is as wide
+ *   as its content, as in Material 3; above it, the dialog is that wide, or as wide as the window
+ *   less its margins, since its content is laid out for it (panes, rows side by side).
  * @param padded whether the dialog keeps its margins above and below the content (else the content
  *   reaches its edges, e.g. a pane of navigation).
  * @param content what it shows; it scrolls its own content and gives it its margins.
@@ -52,10 +54,16 @@ public fun AdaptiveSheet(
             SheetActions(actions, Modifier.padding(bottom = 16.dp))
         }
     } else {
+        // BasicAlertDialog bounds its box to DialogWidth: only a fixed width before it wins
+        val wide = maxWidth > DialogWidth
         BasicAlertDialog(
             onDismissRequest = onDismissRequest,
-            modifier = Modifier.widthIn(max = maxWidth),
-            properties = DialogProperties(usePlatformDefaultWidth = maxWidth <= 560.dp)
+            modifier = if (wide) {
+                Modifier.padding(horizontal = DialogMargin).widthIn(max = maxWidth).fillMaxWidth()
+            } else {
+                Modifier.widthIn(max = maxWidth)
+            },
+            properties = DialogProperties(usePlatformDefaultWidth = !wide)
         ) {
             Surface(
                 shape = RoundedCornerShape(28.dp),
@@ -70,6 +78,12 @@ public fun AdaptiveSheet(
         }
     }
 }
+
+/** The widest a dialog of Material 3 is, and the widest [AdaptiveSheet] is as wide as its content. */
+internal val DialogWidth: Dp = 560.dp
+
+/** The margin between a wide dialog and the edges of the window. */
+private val DialogMargin: Dp = 24.dp
 
 @Composable
 private fun SheetTitle(title: (@Composable () -> Unit)?) {
