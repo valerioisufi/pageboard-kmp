@@ -198,14 +198,20 @@ internal fun PageGridOverlay(
 
         // --- Drag & drop state ---
         val gridState = rememberLazyGridState()
-        // The page looked at when the grid was opened
-        val currentPage = remember { controller.viewport.mostVisiblePageIndex() ?: 0 }
+        // The page looked at when the grid was opened, by its identifier: it follows the page
+        val currentPageId = remember { document.pages.getOrNull(controller.viewport.mostVisiblePageIndex() ?: 0)?.id }
         var draggedIndex by remember { mutableStateOf<Int?>(null) }
         var dragOffset by remember { mutableStateOf(Offset.Zero) }
         // The pages selected dragged with the card (a card of a selection of several), in their order
         var draggedBlock by remember { mutableStateOf<List<String>?>(null) }
         // The deleted pages shown after the others
         var deletedExpanded by remember { mutableStateOf(false) }
+        // The pages and the deleted ones as they are now (see `docs/page-grid-updates.md`): the
+        // model is not Compose state, so the content of the grid is built from what this
+        // composition read, another lambda after every change, counted again by the grid
+        val pages = document.pages
+        val now = currentTimeMillis()
+        val deleted = if (writable) pageManager.deletedPagesAt(now) else emptyList()
 
         LazyVerticalGrid(
             state = gridState,
@@ -304,7 +310,6 @@ internal fun PageGridOverlay(
         ) {
             // The pages as this composition shows them: the document may change before its items are
             // composed (pages removed), and an item reads the list it was counted from
-            val pages = document.pages
             items(
                 count = pages.size,
                 key = { index -> pages[index].id }
@@ -316,7 +321,7 @@ internal fun PageGridOverlay(
                 // Exact proportions of the sheet
                 val aspectRatio = if (page.heightMm > 0f) page.widthMm / page.heightMm else (1f / 1.414f)
 
-                val current = index == currentPage
+                val current = page.id == currentPageId
                 val selected = selection.isSelected(page.id)
                 // What the menu of the card acts on: the selection when the page is in it
                 val targets = if (selected) selection.pageIds else listOf(page.id)
@@ -476,18 +481,17 @@ internal fun PageGridOverlay(
                     }
                 }
             }
-            if (writable) deletedPages(controller, deletedExpanded, onToggle = { deletedExpanded = !deletedExpanded })
+            deletedPages(controller, deleted, now, deletedExpanded, onToggle = { deletedExpanded = !deletedExpanded })
         }
     }
 }
 
 /**
- * The pages removed in the last 30 days, after the others (see `docs/trash.md`): a row telling
- * how many, which shows them when [expanded], each faded with the days it has left and Restore.
+ * The pages removed in the last 30 days at [now] ([deleted]), after the others (see
+ * `docs/trash.md`): a row telling how many, which shows them when [expanded], each faded with the
+ * days it has left and Restore.
  */
-private fun LazyGridScope.deletedPages(controller: DrawViewController, expanded: Boolean, onToggle: () -> Unit) {
-    val now = currentTimeMillis()
-    val deleted = controller.pageManager.deletedPagesAt(now)
+private fun LazyGridScope.deletedPages(controller: DrawViewController, deleted: List<DrawPage>, now: Long, expanded: Boolean, onToggle: () -> Unit) {
     if (deleted.isEmpty()) return
     item(key = "deleted-pages", span = { GridItemSpan(maxLineSpan) }) {
         val colors = MaterialTheme.colorScheme
