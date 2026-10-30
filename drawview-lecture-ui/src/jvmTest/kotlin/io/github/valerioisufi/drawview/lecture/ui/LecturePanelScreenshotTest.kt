@@ -15,7 +15,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -157,16 +156,8 @@ class LecturePanelScreenshotTest {
         runDesktopComposeUiTest(width = 1000, height = 900) {
             setContent {
                 DrawViewTheme(darkTheme = false, dynamicColor = false) {
-                    Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk).padding(24.dp)) {
-                        Column(
-                            modifier = Modifier
-                                .width(940.dp)
-                                .clip(RoundedCornerShape(28.dp))
-                                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                        ) {
-                            AssistantSettingsContent(store, assistant.localModels, onDismiss = {}, compact = false)
-                        }
-                    }
+                    Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk))
+                    AssistantSettingsDialog(store, assistant.localModels, onDismiss = {})
                 }
             }
             waitForIdle()

@@ -21,6 +21,7 @@ import io.github.takahirom.roborazzi.captureRoboImage
 import io.github.valerioisufi.drawview.sync.JoinStatus
 import io.github.valerioisufi.drawview.sync.protocol.Role
 import io.github.valerioisufi.drawview.sync.protocol.Route
+import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
 import io.github.valerioisufi.drawview.ui.theme.InkPalette
 import io.github.valerioisufi.drawview.ui.theme.LocalCanvasColors
@@ -196,15 +197,10 @@ class SharingScreenshotTest {
         }
     }
 
-    /** The dialog of a wide window: the high container rounded 28. */
+    /** The dialog of a wide window, as the application opens it, [width] at most. */
     @Composable
     private fun Dialog(width: Dp, content: @Composable () -> Unit) {
-        Box(
-            modifier = Modifier
-                .width(width)
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(28.dp))
-                .padding(vertical = 24.dp)
-        ) { content() }
+        AdaptiveSheet(onDismissRequest = {}, maxWidth = width) { content() }
     }
 
     /** The sheet of a phone: the low container, its top rounded 28. */

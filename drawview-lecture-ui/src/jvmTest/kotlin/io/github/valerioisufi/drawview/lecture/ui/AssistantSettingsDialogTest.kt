@@ -6,6 +6,7 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.lecture.AssistantSettingsStore
@@ -60,10 +61,10 @@ class AssistantSettingsDialogTest {
             }
             val dialog = onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.PaneTitle)).getBoundsInRoot()
             assertEquals(940.dp, dialog.right - dialog.left)
-            // The choice of a request in the right half of its section, beside the name of the request
-            val section = dialog.left + 240.dp
+            // The choice of a request beside its name, not below it
+            val name = onNodeWithText("Suggestions during the lecture").getBoundsInRoot()
             val choice = onAllNodesWithText("Online").onFirst().getBoundsInRoot()
-            assertTrue(choice.left > section + (dialog.right - section) / 2, "the choice at ${choice.left}, the section from $section")
+            assertTrue(choice.left > name.right, "the choice at ${choice.left}, the name to ${name.right}")
         }
     }
 }

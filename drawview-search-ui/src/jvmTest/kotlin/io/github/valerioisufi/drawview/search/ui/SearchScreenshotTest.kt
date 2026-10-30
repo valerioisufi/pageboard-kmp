@@ -183,14 +183,17 @@ class SearchScreenshotTest {
                 downloads = downloads,
                 runtimeAvailable = true
             )
+            // The dialog as the application opens it
             for (dark in listOf(false, true)) {
-                capture(
-                    name = "search-settings-${if (dark) "dark" else "light"}",
-                    width = 620,
-                    height = 840,
-                    dark = dark
-                ) {
-                    SearchSettingsContent(search = search, onDismiss = {})
+                runDesktopComposeUiTest(width = 628, height = 840) {
+                    setContent {
+                        DrawViewTheme(darkTheme = dark, dynamicColor = false) {
+                            Box(modifier = Modifier.fillMaxSize().background(LocalCanvasColors.current.desk))
+                            SearchSettingsDialog(search = search, onDismiss = {})
+                        }
+                    }
+                    waitForIdle()
+                    captureToImage().captureRoboImage("screenshots/search-settings-${if (dark) "dark" else "light"}.png")
                 }
             }
         }

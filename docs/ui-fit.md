@@ -84,7 +84,7 @@ Variations).
 
 | Responsibility | Class (module) | GRASP |
 |---|---|---|
-| Knowing how wide a dialog is | `AdaptiveSheet` (`drawview-ui`): with `maxWidth` above 560 dp it gives the box of `BasicAlertDialog` a fixed width, `widthIn(max = maxWidth).fillMaxWidth()`, with a margin of 24 dp from the edges of the window (the platform width is off) | Information Expert (it has `maxWidth` and knows the dialog it uses), Protected Variations (the callers do not depend on the bounds of Material 3) |
+| Knowing how wide a dialog is | `AdaptiveSheet` (`drawview-ui`): with `maxWidth` above 560 dp it gives the box of `BasicAlertDialog` a fixed width, `widthIn(max = maxWidth).fillMaxWidth()`, with a margin of 24 dp from every edge of the window (the platform width is off, and with it the margins of the platform) | Information Expert (it has `maxWidth` and knows the dialog it uses), Protected Variations (the callers do not depend on the bounds of Material 3) |
 | Laying out the content in the width it gets | each content (`AssistantSettingsContent`, `ShareContent`, …), as today | Information Expert |
 | Checking the width a dialog gets | `AdaptiveSheetWidthTest` (`drawview-ui`): `AdaptiveSheet` in a window of 1280 or 800 dp, the box of the dialog measured (the node that names its pane); `AssistantSettingsDialogTest` (`drawview-lecture-ui`): the real settings, their requests beside their names | Pure Fabrication |
 | Following the shape on hover | each component: `clip(shape)` before `clickable`/`selectable`/`toggleable`, or `Surface(onClick = …)`/`Surface(selected = …, onClick = …)` | Information Expert (the component knows its shape) |
@@ -95,7 +95,7 @@ Variations).
 ```kotlin
 BasicAlertDialog(
     onDismissRequest = onDismissRequest,
-    modifier = if (maxWidth > DialogWidth) Modifier.padding(horizontal = 24.dp).widthIn(max = maxWidth).fillMaxWidth()
+    modifier = if (maxWidth > DialogWidth) Modifier.padding(24.dp).widthIn(max = maxWidth).fillMaxWidth()
         else Modifier.widthIn(max = maxWidth),
     properties = DialogProperties(usePlatformDefaultWidth = maxWidth <= DialogWidth)
 )
@@ -106,6 +106,14 @@ Material 3). The height does not change: the content bounds itself (the settings
 `heightIn(max = 820.dp).fillMaxHeight(0.92f)`).
 
 ### The checks after the fix
+
+Done in phase 3. What they found: the settings of the search, taller than a short window, reached
+its edges (a wide dialog has no margins of the platform), and the model of the transcription was
+still cut in its menu of 280 dp. The screenshot of the editor in the explorer
+(`document-background-*`) shows the configurator of the document at 760 dp, the preview beside the
+controls, as it was designed.
+
+The plan was:
 
 At the width they get, the wide dialogs are looked at on the desktop app (a scratch data
 directory) and in their screenshots, wide and in a window of 800 dp (where the dialog is 752 dp
@@ -118,7 +126,7 @@ still cut there (the model in the menu of a task, the segmented choices) is fixe
 |---|---|---|
 | 1 | `AdaptiveSheet` gives the wide dialogs their width; the tests of the width of `AdaptiveSheet` (`AdaptiveSheetWidthTest`: wide, in a narrower window, narrow), failing before the fix, and of the real settings of the assistant (`AssistantSettingsDialogTest`) | done |
 | 2 | The hovers in the shape of their component: `NavigationItem`, `SegmentedChoice`, `FormatCard`, `GenerateHereCard` (`PanelCardShape`), the actions of a file, `PaperOption`, the rows with a switch inside a padded content (`SwitchRow`, `ApprovalSwitch`, the internet switch); the rule in `docs/ui-design.md` | done |
-| 3 | The wide dialogs checked at their width and in a narrow window: labels and menus still cut fixed, the screenshots re-recorded (`verifyRoborazziJvm` of explorer, ui, sync-ui, lecture-ui, export-ui, search-ui), the desktop app looked at | proposed |
+| 3 | The wide dialogs checked at their width and in a narrow window; the screenshot tests of the wide dialogs on the real dialogs; the margins of a wide dialog above and below too (the settings of the search reached the edges of a short window); the choice of a request 320 dp wide (the model of whisper.cpp was cut); the screenshots re-recorded (explorer, ui, sync-ui, lecture-ui, export-ui, search-ui) | done |
 
 ## Decisions
 
@@ -128,9 +136,9 @@ Taken alone, revertible:
 2. **A wide dialog has its width, not up to it**: its content is laid out for that width (fixed
    panes of navigation, rows of 520 dp), and a dialog that changed width with its content would
    jump between sections. The narrow ones keep the behavior of Material 3.
-3. **The screenshot tests keep drawing the content at a fixed width**, since a dialog is a window
-   of its own and its screenshot does not show in the root; what they miss is caught by the tests
-   of the width (phase 1).
+3. **The screenshot tests draw the real dialogs** (`AdaptiveSheet`, `AssistantSettingsDialog`,
+   `SearchSettingsDialog`), not their content in a column of a fixed width: the capture of the
+   window shows the dialog over its scrim, so the screenshots show the width the dialog gets.
 4. **The full-width rows of a sheet stay rectangular** (list items in Material 3); only the rows
    inside a padded content are clipped.
 

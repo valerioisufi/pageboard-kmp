@@ -32,7 +32,8 @@ import androidx.compose.ui.window.DialogProperties
  * @param actions its buttons (e.g. cancel, save), at the end of its bottom.
  * @param maxWidth the widest the dialog is (a wider window). Up to 560 dp the dialog is as wide
  *   as its content, as in Material 3; above it, the dialog is that wide, or as wide as the window
- *   less its margins, since its content is laid out for it (panes, rows side by side).
+ *   less its margins, since its content is laid out for it (panes, rows side by side). A wide dialog
+ *   keeps its margins above and below too.
  * @param padded whether the dialog keeps its margins above and below the content (else the content
  *   reaches its edges, e.g. a pane of navigation).
  * @param content what it shows; it scrolls its own content and gives it its margins.
@@ -59,7 +60,7 @@ public fun AdaptiveSheet(
         BasicAlertDialog(
             onDismissRequest = onDismissRequest,
             modifier = if (wide) {
-                Modifier.padding(horizontal = DialogMargin).widthIn(max = maxWidth).fillMaxWidth()
+                Modifier.padding(DialogMargin).widthIn(max = maxWidth).fillMaxWidth()
             } else {
                 Modifier.widthIn(max = maxWidth)
             },
@@ -82,7 +83,7 @@ public fun AdaptiveSheet(
 /** The widest a dialog of Material 3 is, and the widest [AdaptiveSheet] is as wide as its content. */
 internal val DialogWidth: Dp = 560.dp
 
-/** The margin between a wide dialog and the edges of the window. */
+/** The margin between a wide dialog and the edges of the window, which the platform gives a narrow one. */
 private val DialogMargin: Dp = 24.dp
 
 @Composable

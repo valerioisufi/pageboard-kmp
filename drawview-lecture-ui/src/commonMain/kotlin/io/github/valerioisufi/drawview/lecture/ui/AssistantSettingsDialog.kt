@@ -438,7 +438,7 @@ private fun TaskModelRow(task: LectureTask, settings: AssistantSettings, localMo
             if (maxWidth >= TaskRowMinWidth) {
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
                     Box(modifier = Modifier.weight(1f)) { label() }
-                    Box(modifier = Modifier.width(280.dp)) { choice() }
+                    Box(modifier = Modifier.width(TaskChoiceWidth)) { choice() }
                 }
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -778,6 +778,9 @@ private fun Hint(text: String) {
 
 /** Narrower than this, the label of a request is above its choice. */
 private val TaskRowMinWidth = 520.dp
+
+/** The width of the choice of a request beside its label: the longest model of whisper.cpp with its size. */
+private val TaskChoiceWidth = 320.dp
 
 /** Ollama is checked again this long after its address was typed. */
 private const val URL_CHECK_DELAY_MS = 600L
