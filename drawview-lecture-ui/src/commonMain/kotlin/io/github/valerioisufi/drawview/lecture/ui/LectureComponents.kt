@@ -74,10 +74,13 @@ internal fun LectureNotice(icon: ImageVector, text: String, tone: NoticeTone, ac
     }
 }
 
+/** The shape of a [PanelCard], clipped by a card that is clicked. */
+internal val PanelCardShape = RoundedCornerShape(20.dp)
+
 /** A card of the panel: the lowest container rounded 20, outlined when it stands out (a suggestion, the context). */
 @Composable
 internal fun PanelCard(modifier: Modifier = Modifier, outlined: Boolean = false, content: @Composable ColumnScope.() -> Unit) {
-    val shape = RoundedCornerShape(20.dp)
+    val shape = PanelCardShape
     Column(
         modifier = modifier
             .fillMaxWidth()

@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -353,6 +354,7 @@ private fun ApprovalSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit)
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
             .toggleable(value = checked, role = SemanticsRole.Switch, onValueChange = onCheckedChange),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -414,6 +416,7 @@ private fun InternetSection(settings: InternetSettings, onChange: (InternetSetti
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
                 .toggleable(value = settings.enabled, role = SemanticsRole.Switch, onValueChange = { onChange(settings.copy(enabled = it)) }),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)

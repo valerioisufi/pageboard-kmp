@@ -417,12 +417,13 @@ private fun Label(text: StringResource) {
 @Composable
 private fun FormatCard(icon: ImageVector, name: String, hint: String, selected: Boolean, onSelect: () -> Unit, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
+    val shape = RoundedCornerShape(16.dp)
     Surface(
-        shape = RoundedCornerShape(16.dp),
+        shape = shape,
         color = if (selected) colors.primaryContainer else colors.surfaceContainer,
         contentColor = if (selected) colors.onPrimaryContainer else colors.onSurface,
         border = if (selected) BorderStroke(2.dp, colors.primary) else BorderStroke(1.dp, colors.outlineVariant),
-        modifier = modifier.selectable(selected = selected, role = Role.RadioButton, onClick = onSelect)
+        modifier = modifier.clip(shape).selectable(selected = selected, role = Role.RadioButton, onClick = onSelect)
     ) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Icon(icon, contentDescription = null, modifier = Modifier.size(22.dp))

@@ -58,9 +58,9 @@ Variations).
    controls, the cards of the library, the grid of the pages, …) clip before their `clickable`.
 8. **Rows with a switch** that reach the margins of their content, not the edges of the sheet
    (`SwitchRow` of the settings of the assistant, `ApprovalSwitch` and the internet switch of
-   sharing, `LicenseRow`): their hover is a rectangle floating inside the padding. The rows of a
-   sheet that reach its edges (`SheetCommand`, the rows of the library in a list) are list items,
-   rectangular in Material 3, and stay as they are.
+   sharing): their hover is a rectangle floating inside the padding. The rows of a sheet or of a
+   list that reach its edges (`SheetCommand`, `LicenseRow`, the rows of the library in a list) are
+   list items, rectangular in Material 3, and stay as they are.
 
 ## Requirements
 
@@ -88,7 +88,7 @@ Variations).
 | Laying out the content in the width it gets | each content (`AssistantSettingsContent`, `ShareContent`, …), as today | Information Expert |
 | Checking the width a dialog gets | `AdaptiveSheetWidthTest` (`drawview-ui`): `AdaptiveSheet` in a window of 1280 or 800 dp, the box of the dialog measured (the node that names its pane); `AssistantSettingsDialogTest` (`drawview-lecture-ui`): the real settings, their requests beside their names | Pure Fabrication |
 | Following the shape on hover | each component: `clip(shape)` before `clickable`/`selectable`/`toggleable`, or `Surface(onClick = …)`/`Surface(selected = …, onClick = …)` | Information Expert (the component knows its shape) |
-| Rows with a switch inside a padded content | the same `clip(RoundedCornerShape(12.dp))` the other rows already use (`TextImportSheet`, `ExportSheet`), with a small inner padding so the text does not touch the hover | High Cohesion (one look for the rows of the sheets) |
+| Rows with a switch inside a padded content | the same `clip(RoundedCornerShape(12.dp))` the other rows already use (`TextImportSheet`, `ExportSheet`), without an inner padding, so they stay aligned with the content above and below | High Cohesion (one look for the rows of the sheets) |
 
 ### The dialog
 
@@ -117,7 +117,7 @@ still cut there (the model in the menu of a task, the segmented choices) is fixe
 | Phase | What | Status |
 |---|---|---|
 | 1 | `AdaptiveSheet` gives the wide dialogs their width; the tests of the width of `AdaptiveSheet` (`AdaptiveSheetWidthTest`: wide, in a narrower window, narrow), failing before the fix, and of the real settings of the assistant (`AssistantSettingsDialogTest`) | done |
-| 2 | The hovers in the shape of their component: `NavigationItem`, `SegmentedChoice`, `FormatCard`, `GenerateHereCard`, the actions of a file, `PaperOption`, the rows with a switch inside a padded content; the rule in `docs/ui-design.md` | proposed |
+| 2 | The hovers in the shape of their component: `NavigationItem`, `SegmentedChoice`, `FormatCard`, `GenerateHereCard` (`PanelCardShape`), the actions of a file, `PaperOption`, the rows with a switch inside a padded content (`SwitchRow`, `ApprovalSwitch`, the internet switch); the rule in `docs/ui-design.md` | done |
 | 3 | The wide dialogs checked at their width and in a narrow window: labels and menus still cut fixed, the screenshots re-recorded (`verifyRoborazziJvm` of explorer, ui, sync-ui, lecture-ui, export-ui, search-ui), the desktop app looked at | proposed |
 
 ## Decisions

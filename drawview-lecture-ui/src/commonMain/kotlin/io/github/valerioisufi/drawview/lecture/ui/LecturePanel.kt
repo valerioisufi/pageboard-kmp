@@ -283,7 +283,7 @@ private fun GenerateHereCard(assistant: LectureAssistant) {
     if (!assistant.mayGenerate || assistant.canGenerate) return
     val store = assistant.settingsStore
     PanelCard(
-        modifier = Modifier.toggleable(value = false, role = Role.Switch) { store.update(store.settings.copy(generateHere = it)) }
+        modifier = Modifier.clip(PanelCardShape).toggleable(value = false, role = Role.Switch) { store.update(store.settings.copy(generateHere = it)) }
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(modifier = Modifier.weight(1f)) {

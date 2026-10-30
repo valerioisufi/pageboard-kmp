@@ -41,6 +41,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -262,7 +263,8 @@ public fun NavigationItem(
         modifier = modifier
             .fillMaxWidth()
             .height(48.dp)
-            .background(if (selected) colors.primaryContainer else Color.Transparent, CircleShape)
+            .clip(CircleShape)
+            .background(if (selected) colors.primaryContainer else Color.Transparent)
             .clickable(role = Role.Tab, onClick = onClick)
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -338,7 +340,8 @@ public fun <T> SegmentedChoice(
                     .weight(1f)
                     .fillMaxHeight()
                     .then(if (chosen) Modifier.elevation(DrawViewElevation.Level1, CircleShape) else Modifier)
-                    .background(if (chosen) colors.surfaceContainerLowest else Color.Transparent, CircleShape)
+                    .clip(CircleShape)
+                    .background(if (chosen) colors.surfaceContainerLowest else Color.Transparent)
                     .clickable(enabled = possible, role = Role.RadioButton) { onSelect(option) }
                     .padding(horizontal = 10.dp)
             ) {

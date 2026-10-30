@@ -404,7 +404,7 @@ internal fun NewNoteDialog(
 @Composable
 private fun PaperOption(paper: Paper, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val shape = RoundedCornerShape(10.dp)
-    Column(modifier = modifier.clickable(onClick = onClick), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(modifier = modifier.clip(shape).clickable(onClick = onClick), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()

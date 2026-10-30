@@ -68,6 +68,17 @@ Variations).
 | Text field, switch, avatar, snackbar | Material with the tokens | |
 | Selection frame, format bar, selection bar, markup bar | editor | already drawn by the code as in the file (`FrameStyle`); colors and sizes of the bars |
 
+**The states follow the shape** (docs/ui-fit.md). The hover, the press and the focus of a
+`clickable`, `selectable` or `toggleable` are drawn on the bounds of its node, clipped only by a
+`clip` before it: a rounded control clips its shape before them
+(`.clip(shape).background(color).clickable { … }`), never `background(color, shape)` alone, and a
+`Surface` takes its click as `Surface(onClick = …)` or after a `clip` of its shape. A row that
+reaches the edges of its sheet or of its list is a list item, rectangular; a row inside the
+margins of a content (a switch in a card) is clipped at 12 dp.
+
+**A dialog is as wide as its content up to 560 dp** (the bound of Material 3); `AdaptiveSheet`
+gives a wider `maxWidth` as it is, so a content laid out for a width gets it.
+
 ### Responsibilities
 
 | Responsibility | Class (module) | GRASP |
