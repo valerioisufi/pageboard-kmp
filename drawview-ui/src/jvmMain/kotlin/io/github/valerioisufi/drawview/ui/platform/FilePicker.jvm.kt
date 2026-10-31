@@ -51,7 +51,3 @@ public actual fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) ->
         }
     }
 }
-
-@Composable
-internal actual fun HideSystemBarsEffect() {
-}

@@ -13,7 +13,6 @@ import io.github.valerioisufi.drawview.canvas.controller.EditorClipboard
 import io.github.valerioisufi.drawview.canvas.controller.MediaManager
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.canvas.render.tile.TextFace
-import io.github.valerioisufi.drawview.explorer.platform.SystemBarsHidden
 import io.github.valerioisufi.drawview.explorer.ui.ExplorerScreen
 import io.github.valerioisufi.drawview.explorer.ui.aboutLibraryAction
 import io.github.valerioisufi.drawview.session.DocumentEditorViewModel
@@ -44,7 +43,8 @@ import kotlinx.coroutines.withContext
  *   per store in an application (e.g. `DrawViewStore.documents` of `drawview-store-room`).
  * @param actions actions of the application in the library (its bar or its navigation pane): the
  *   About & Licenses dialog by default.
- * @param fullScreenEditor hides the system bars while a document is open (Android).
+ * @param fullScreenEditor not used any more: the editor gives itself the room of the system bars
+ *   where it gains some (see `EditorScreen`). Kept so that the callers still build.
  * @param editorExtension content contributed to the editor (top bar actions, side panel).
  * @param libraryOverlay content drawn over the library (e.g. a recording in progress), given the
  *   function opening a document.
@@ -98,7 +98,6 @@ public fun DocumentLibrary(
     }
 
     val session = editorViewModel.session
-    SystemBarsHidden(hidden = fullScreenEditor && session != null)
     // The library and the editor adapt to the window, the input and the platform; their commands
     // reach the shortcuts and the menu bar of the application (see CommandRoot)
     CompositionLocalProvider(LocalDrawViewEngines provides engines) {

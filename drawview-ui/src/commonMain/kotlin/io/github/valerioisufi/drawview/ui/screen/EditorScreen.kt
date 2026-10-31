@@ -18,7 +18,8 @@ import io.github.valerioisufi.drawview.ui.extension.EditorExtension
  * panels, commands, overlays): the [DrawScreen], adapted to the window, the input and the
  * platform, its commands in the shortcuts and the menu bar. [onClose] is called by the back
  * button of the editor and by the system back; [location] is shown under the title (e.g. the
- * folder of the document).
+ * folder of the document). The editor takes the room of the system bars where it gains some
+ * (the status bar stays beside a notch or an island).
  *
  * Whoever keeps the document creates its editor; `EditorSessionScreen` of `drawview-session`
  * does it for the documents of a store.

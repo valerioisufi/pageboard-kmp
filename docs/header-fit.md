@@ -130,8 +130,8 @@ separately). The page grid gives way first, as today, then the extensions.
 | Whether hiding the status bar gives room: Android, no cutout on the top edge of the window (`WindowInsetsCompat.Type.displayCutout()` top = 0, read again when the insets change, so a rotation that moves the cutout to the side hides it); iOS, the top of the safe area of the window without the status bar is 0 | `ImmersiveSystemBars` (`drawview-ui`, `platform/SystemBars.*.kt`, expect/actual) | Information Expert, Protected Variations |
 | Hiding the navigation bar (Android) and the home indicator (iOS) as now | the same | High Cohesion |
 | Hiding them again when the window gets the focus back (Android: `ViewTreeObserver.OnWindowFocusChangeListener`), so a menu, a popover or a dialog never leaves them shown | the Android actual | Information Expert |
-| The one effect of the editor, asked by `DrawScreen` with a parameter `immersive` (default `true`, as today) | `DrawScreen` / `EditorScreen` | Controller |
-| `DocumentLibrary(fullScreenEditor)` passing it to the editor instead of an effect of its own; `SystemBarsHidden` of `drawview-explorer` removed | `DocumentLibrary` | Low Coupling |
+| The one effect of the editor, asked by `DrawScreen` (always, as today) | `DrawScreen` | Controller |
+| `SystemBarsHidden` of `drawview-explorer` removed; `DocumentLibrary(fullScreenEditor)` kept in its signature but not used: the editor hid the bars whatever it said | `DocumentLibrary` | Low Coupling |
 
 The iOS actual keeps one flag and installs its overrides once. The status bar shown in the editor
 on a device with a notch takes the colors of the bar of the editor (light or dark icons as the
@@ -151,10 +151,22 @@ after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
 
 | Phase | Content | Status |
 |---|---|---|
-| 1. System bars | `ImmersiveSystemBars` in `drawview-ui` (Android, iOS, JVM no-op): the status bar hidden only where it gives room, hidden again on focus; `DrawScreen(immersive)`, `DocumentLibrary.fullScreenEditor` passed through, `SystemBarsHidden` removed; ABI updated. Checked on the Pixel 9 emulator (punch hole: status bar kept in portrait, hidden in landscape), on an Android 10 emulator (menu opened and closed), on the iPhone and iPad simulators | proposed |
+| 1. System bars | `ImmersiveSystemBars` in `drawview-ui` (Android, iOS, JVM no-op): the status bar hidden only where it gives room, hidden again on focus; `DocumentLibrary.fullScreenEditor` not used any more, `SystemBarsHidden` removed. Checked on the Pixel 9 emulator (punch hole: status bar kept in portrait, hidden in landscape), on an Android 10 emulator (menu opened and closed), on the iPhone and iPad simulators | done |
 | 2. Bar of the library | `LibraryBarLayout.fit` with its tests; `LibraryAppBar` as a `Layout` with the "more" menu; screenshots of the library at 320, 360, 412, 600, 700, 840 dp recorded | proposed |
 | 3. Top bar of the editor | `ToolbarLayout.extensionsFit` with its tests; the extensions measured before they are drawn, in the bar or behind one button; screenshots of the editor with three extensions at 320, 360, 412 dp | proposed |
 | 4. Tools on a tablet | `ToolbarDensity`; the sizes measured on the tablet of the user first; `ToolbarLayout` counting them; screenshots of the editor on the reference tablets | proposed, waits for the measures of the tablet |
+
+### Phase 1 results
+
+* One effect, `ImmersiveSystemBarsEffect` (`drawview-ui`, `platform/SystemBars.*.kt`), called by
+  `DrawScreen`; `HideSystemBarsEffect` and `SystemBarsHidden` of `drawview-explorer` removed.
+  `DocumentLibrary(fullScreenEditor)` stays in its signature, not used any more (the editor was
+  already hiding the bars whatever it said); PencilNotes no longer passes it.
+* Pixel 9 emulator (Android 17, a punch hole on the top edge): in portrait the status bar stays in
+  the editor, the navigation bar is hidden; in landscape both are hidden; the "more" menu opened and
+  closed leaves them so; back in the library both are shown.
+* Android 10 (the old flags, the focus listener) is checked on the tablet of the user: no API 29
+  emulator here.
 
 ## Decisions
 
@@ -167,8 +179,8 @@ Revertible, taken alone:
   turned into commands: their shape is a decision of its own (see `CLAUDE.md`).
 * **The navigation bar stays hidden** where the status bar is kept: it gives room on every device
   with buttons, and comes back with a swipe.
-* **An Android 10 emulator** (system image API 29, about 1 GB) is needed to check phase 1; it is
-  downloaded only with the user's yes.
+* **Android 10 is checked on the tablet of the user**, not on an emulator (a system image of about
+  1 GB to download).
 
 ## Left for later
 

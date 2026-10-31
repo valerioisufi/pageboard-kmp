@@ -28,10 +28,3 @@ public enum class PickerType { IMAGE, PDF, TEXT }
  */
 @Composable
 public expect fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) -> Unit): () -> Unit
-
-/**
- * Hides the system bars while the editor is shown (immersive mode of the original app on
- * Android; no-op on the other platforms).
- */
-@Composable
-internal expect fun HideSystemBarsEffect()

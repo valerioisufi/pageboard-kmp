@@ -183,7 +183,6 @@ fun PencilNotesApp(
                         title = { PencilNotesBrand() },
                         documents = documents,
                         actions = listOf(collaboration.joinAction(), search.settingsAction(), aboutLibraryAction()),
-                        fullScreenEditor = true,
                         editorExtension = editorExtension,
                         itemsActions = listOf(export.libraryAction),
                         tags = listOf(lectureTag),

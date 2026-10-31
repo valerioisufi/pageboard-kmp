@@ -81,7 +81,7 @@ import io.github.valerioisufi.drawview.ui.extension.EditorPanel
 import io.github.valerioisufi.drawview.ui.generated.resources.*
 import io.github.valerioisufi.drawview.ui.generated.resources.common_action_undo
 import io.github.valerioisufi.drawview.ui.generated.resources.message_pages_deleted
-import io.github.valerioisufi.drawview.ui.platform.HideSystemBarsEffect
+import io.github.valerioisufi.drawview.ui.platform.ImmersiveSystemBarsEffect
 import io.github.valerioisufi.drawview.ui.platform.PencilInteractionEffect
 import io.github.valerioisufi.drawview.ui.platform.PickerType
 import io.github.valerioisufi.drawview.ui.platform.fileDropTarget
@@ -154,8 +154,8 @@ private fun DrawScreenContent(
 ) {
     // Whether some pages hold PDF pages, as it changes (not at every change of the document)
     val hasPdfPages by controller.document.observe { hasPdfPages() }
-    // Immersive editor (Android), as in the original app
-    HideSystemBarsEffect()
+    // The room of the system bars given to the editor, where it gains some
+    ImmersiveSystemBarsEffect()
 
     // Theme colors of the canvas (desk, paper, selection), updated with the Material theme
     val colorScheme = MaterialTheme.colorScheme

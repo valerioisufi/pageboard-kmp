@@ -1,23 +1,16 @@
 package io.github.valerioisufi.drawview.ui.platform
 
-import android.app.Activity
 import android.content.Context
-import android.content.ContextWrapper
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -59,26 +52,4 @@ private fun readUri(context: Context, uri: Uri): PickedFile? = try {
     PickedFile(name, bytes)
 } catch (e: Exception) {
     null
-}
-
-@Composable
-internal actual fun HideSystemBarsEffect() {
-    val view = LocalView.current
-    DisposableEffect(view) {
-        val window = view.context.findActivity()?.window
-        if (window == null) {
-            onDispose { }
-        } else {
-            val controller = WindowCompat.getInsetsController(window, view)
-            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            controller.hide(WindowInsetsCompat.Type.systemBars())
-            onDispose { controller.show(WindowInsetsCompat.Type.systemBars()) }
-        }
-    }
-}
-
-private tailrec fun Context.findActivity(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivity()
-    else -> null
 }
