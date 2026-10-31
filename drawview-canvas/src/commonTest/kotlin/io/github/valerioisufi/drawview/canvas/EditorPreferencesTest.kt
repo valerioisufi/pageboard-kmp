@@ -58,7 +58,8 @@ class EditorPreferencesTest {
             preferences
         )
         val tools = ToolManager().apply { applyPreferences(preferences!!) }
-        assertEquals(ToolManager.defaultPresets().getValue(Tool.ERASER), tools.presetsOf(Tool.ERASER))
+        // The presets are a snapshot list, equal to a plain list on the JVM only: their content is compared
+        assertEquals(ToolManager.defaultPresets().getValue(Tool.ERASER), tools.presetsOf(Tool.ERASER).toList())
     }
 
     @Test
