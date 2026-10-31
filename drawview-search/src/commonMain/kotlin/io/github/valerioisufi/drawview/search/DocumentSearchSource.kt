@@ -49,8 +49,8 @@ public class DocumentSearchSource(
                 text = titleText
             )
         )
-        val loaded = store.loadDocument(document.id) ?: return result
-        loaded.pages.forEachIndexed { pageIndex, page ->
+        val outline = store.loadOutline(document.id) ?: return result
+        outline.pages.forEachIndexed { pageIndex, page ->
             val pageNumber = pageIndex + 1
             for (textElement in page.texts.sortedWith(compareBy({ it.y }, { it.x }))) {
                 val cleaned = cleanMarkdownForSearch(textElement.text)

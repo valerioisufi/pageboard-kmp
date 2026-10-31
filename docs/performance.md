@@ -130,7 +130,7 @@ not a cost.
 | The stack of a page in one pass, the elements in the order they are painted | `PageElements` | Information Expert |
 | What the editor shows of the document | derived states in `DrawScreen` and `EditorToolbar` (ui) | Low Coupling (the view reads what it shows) |
 | Modeling a stroke whose inputs are all known | `InkStrokeModeller.buildMesh` (ink), with `ink_stroke_builder_add_points` (the bridge: the inputs given at once, the shape updated once) | Information Expert |
-| Modeling the pages of a document at the same time | `DrawDocumentRepository.loadDocument`, `KeyValueDocumentStore.loadDocument` | Controller |
+| Modeling the strokes of a document at the same time | `DrawDocumentRepository.loadDocument` (the key-value store on one thread, decision 11) | Controller |
 | The elements of a page in a region | `PageElements`: a grid of cells, `PageContentSnapshot.elementsIn` | Information Expert |
 | A PDF page kept loaded between its tiles | `pdfium_bridge` and `PdfiumEngine` (pdf) | Information Expert |
 
@@ -196,9 +196,22 @@ public interface DocumentStore {
 A `DrawDocument` without its strokes is not used for this: given by mistake to `OpenDocuments` or
 to the persistence, it would lose them.
 
-`PdfSearchSource.version` is made of the name of the document and, for each page, its identifier,
-the hash of its PDF resources and the indexes of its PDF pages: a stroke does not change it, a PDF
-page added, removed or moved does.
+The Room store reads the pages of the document with their texts, PDF pages and elements of the
+applications alone (`PageDao.getPageOutlines`, a relation without the strokes, the images and the
+marks), keeps the pages shown (`DrawPage.isHidden`) and the elements shown, in their order. The
+key-value store reads the outline from the document stored without taking it as the document
+open: its `loadDocument` does, and an outline read while the editor has the document open would
+replace the instance the editor changes (decision 13). `checkOutline` (`drawview-store-testing`)
+checks every store against the outline of the document it loads whole.
+
+`PdfSearchSource.version` is made of the name of the document and the hash of its pages in their
+order, each with the resource, the hash of its file and the index of its PDF pages: a stroke does
+not change it, a PDF page added, removed or moved does.
+
+`LectureSearchSource.version` stays as it is: it reads every lecture record of every document,
+twice (`LectureLibrary.list`, then `load`), which costs 53 ms a pass for 60 lectures of 90 minutes
+on the Mac (M2), as much as the rest of a pass with nothing changed, in the background after a
+quiet time (decision 14).
 
 ### The first page of a document
 
@@ -256,7 +269,7 @@ therefore called from several threads at once, which its KDoc now says.
 |---|---|---|
 | 0 | Measures: synthetic documents (`drawview-store-testing`), benchmarks run with `-Pdrawview.benchmarks=true` (out of `jvmTest`), a driver counting the statements; the numbers before, in this document | done |
 | 1 | `DocumentPersistence.transaction`, one per operation (test: an operation failing leaves none of its rows); the flows of `RoomDocumentStore` shared and distinct (test: one query of the documents per stroke, whatever the collectors) | proposed |
-| 2 | `DocumentStore.loadOutline` (both stores, contract test) used by the three search sources; the version of the PDFs from the outline; `LectureSearchSource.version` without reading every record, if it costs with lectures | proposed |
+| 2 | `DocumentStore.loadOutline` (both stores, contract test) used by the three search sources; the version of the PDFs from the outline (test: a stroke does not change it, a PDF page added does); `LectureSearchSource.version` measured and kept (decision 14) | done |
 | 3 | `DocumentStore.pageFingerprint` and `loadPage` (contract test: every kind of change of the first page changes the fingerprint, a change of another page does not); the thumbnails drawn from them | proposed |
 | 4 | The elements of a page by identifier, `DrawPage.load`, the stack in one pass, `paintOrder` made once per content (model tests; ABI) | proposed |
 | 5 | The editor: derived states instead of `observeChanges()` in `DrawScreenContent` and `EditorTools` (test: they do not change over 100 strokes); the position of `TextBoxEditor` read in the layout | proposed |
@@ -272,15 +285,17 @@ search, the thumbnails), 2, 3, 1, 4, 5; 7 and 8 only if a device shows the tiles
 
 On the Mac (M5, JVM), 2026-10-31, before and after each phase. Each benchmark runs alone:
 `./gradlew :<module>:jvmTest -Pdrawview.benchmarks=true` (`StoreBenchmark` in `drawview-store-room`,
-`IndexerBenchmark` in `drawview-search`, `ApplyBenchmark` in `drawview-model`, `ModelingBenchmark`
-in `drawview-ink`, `TileBenchmark` in `drawview-canvas`).
+`IndexerBenchmark` in `drawview-search`, `LectureSearchBenchmark` in `drawview-lecture-ui`,
+`ApplyBenchmark` in `drawview-model`, `ModelingBenchmark` in `drawview-ink`, `TileBenchmark` in
+`drawview-canvas`).
 
 | Measure | Before | After | Phase |
 |---|---|---|---|
 | M1 statements per stroke committed, with the collectors of PencilNotes (200 notes) | 42.9 (20.0 queries, 8.2 ms of them) | | 1 |
-| M2 a search pass after a stroke on a note of 30 pages × 400 strokes (101 notes) | 28.8 s | 0.82 s (phase 6) | 2, 6 |
-| M2 indexing 101 notes from nothing | 2 min 53 s | 5.4 s (phase 6) | 2, 6 |
-| M2 a search pass with nothing changed | 46 ms | 43 ms | — |
+| M2 a search pass after a stroke on a note of 30 pages × 400 strokes (101 notes) | 28.8 s | 0.82 s (phase 6), 57 ms (phase 2) | 2, 6 |
+| M2 indexing 101 notes from nothing | 2 min 53 s | 5.4 s (phase 6), 0.25 s (phase 2) | 2, 6 |
+| M2 a search pass with nothing changed | 46 ms | 41 ms | — |
+| M2 the versions of the lectures in a pass (101 notes, 20 with 3 lectures of 90 minutes, 294 KiB each) | 53 ms (measured in phase 2) | | — |
 | M3 the thumbnail of a note changed on its last page | the opening of the whole note (M5) | | 3 |
 | M4 1,000 operations received on a document of 100,000 elements | 483 ms (0.48 ms each) | | 4 |
 | M4 a stroke submitted on a document of 100,000 elements | 0.44 ms | | 4 |
@@ -316,6 +331,13 @@ Taken alone, revertible:
 10. **The order of the phases by what they gain** (above), not by their number.
 11. **The key-value store models its strokes on one thread**, as before: it loads a document under
     its lock, and only the tests use it; the applications use the Room store.
+13. **The outline of the key-value store not taken as the document open**: its `loadDocument`
+    makes the document loaded the one it writes back, so a search reading it while the editor
+    had it open replaced the instance the editor changed (the test of the version of the PDFs
+    lost a page that way). `loadDocument` keeps doing it: the thumbnails still call it (phase 3).
+14. **The version of the lectures kept**: 53 ms a pass on the Mac for 60 lectures of 90 minutes
+    (M2), in the background; reading every record once would halve it, with a new function of
+    `LectureLibrary`. Left for later (below).
 
 Decided by the user:
 
@@ -348,3 +370,6 @@ These change or delete stored data, or need a plan of their own; they are for th
 10. **`org.gradle.parallel`** for the build.
 11. **The tiles rasterized the most needed first** (a scheduler cancelling the tiles no longer
     shown), and the chunks to embed counted once per pass: no cost measured on the Mac (M6, M2).
+12. **The version of the lectures without reading every record** at every pass (53 ms on the Mac
+    for 60 lectures, decision 14): a version kept by `LectureLibrary` as it writes a record, or
+    the records read once.

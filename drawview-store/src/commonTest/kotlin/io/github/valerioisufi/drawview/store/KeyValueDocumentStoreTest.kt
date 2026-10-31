@@ -16,6 +16,7 @@ import io.github.valerioisufi.drawview.model.TextMarkupKind
 import io.github.valerioisufi.drawview.model.geometry.AffineTransform
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.store.testing.checkFolderOperations
+import io.github.valerioisufi.drawview.store.testing.checkOutline
 import io.github.valerioisufi.drawview.store.testing.checkTrash
 import io.github.valerioisufi.drawview.store.testing.checkOperationProofs
 import kotlin.test.Test
@@ -222,6 +223,11 @@ class KeyValueDocumentStoreTest {
     @Test
     fun theTrashIsKept() = runTest {
         checkTrash(KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope))
+    }
+
+    @Test
+    fun theOutlineIsTheDocumentWithoutItsStrokes() = runTest {
+        checkOutline(KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope))
     }
 
     @Test

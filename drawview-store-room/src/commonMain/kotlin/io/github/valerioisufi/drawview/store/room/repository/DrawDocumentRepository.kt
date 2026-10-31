@@ -30,6 +30,8 @@ import io.github.valerioisufi.drawview.model.change.toData
 import io.github.valerioisufi.drawview.model.newElementId
 import io.github.valerioisufi.drawview.model.text.TextSizes
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
+import io.github.valerioisufi.drawview.store.DocumentOutline
+import io.github.valerioisufi.drawview.store.PageOutline
 import io.github.valerioisufi.drawview.store.room.db.CustomElementEntity
 import io.github.valerioisufi.drawview.store.room.db.DocumentEntity
 import io.github.valerioisufi.drawview.store.room.db.DrawDatabase
@@ -110,11 +112,7 @@ internal class DrawDocumentRepository(
             doc.defaultsVersion = docEntity.defaultsVersion
             doc.titleVersion = docEntity.titleVersion
 
-            for (resource in resources) {
-                val type = DrawResource.ResourceType.entries.firstOrNull { it.name.equals(resource.type, ignoreCase = true) }
-                    ?: DrawResource.ResourceType.COLOR
-                doc.addResource(DrawResource(resource.id, type, resource.uri, resource.contentHash))
-            }
+            for (resource in resources) doc.addResource(mapResource(resource))
 
             val sortedPages = docWithPages.pages.sortedWith(compareBy({ it.page.orderKey }, { it.page.id }))
             // The strokes of all the pages modeled on every core, in the order of the pages
@@ -123,21 +121,7 @@ internal class DrawDocumentRepository(
             }.awaitAll().flatten()
             var nextStroke = 0
             for (pageWithContent in sortedPages) {
-                val pageEntity = pageWithContent.page
-                val page = DrawPage(
-                    widthMm = pageEntity.width,
-                    heightMm = pageEntity.height,
-                    background = pageEntity.background ?: docEntity.defaultBackground,
-                    id = pageEntity.id,
-                    orderKey = pageEntity.orderKey
-                )
-                page.hasCustomBackground = pageEntity.background != null
-                page.added = pageEntity.added
-                page.removed = pageEntity.removed
-                page.orderVersion = pageEntity.orderVersion
-                page.formatVersion = pageEntity.formatVersion
-                page.contentVersions = pageEntity.contentVersions
-                page.removalSaw = pageEntity.removalSaw
+                val page = mapPage(pageWithContent.page, docEntity)
 
                 val pageStrokes = strokes.subList(nextStroke, nextStroke + pageWithContent.strokes.size)
                 nextStroke += pageStrokes.size
@@ -156,6 +140,55 @@ internal class DrawDocumentRepository(
             doc.reindexPages()
             doc
         }
+    }
+
+    /**
+     * What can be read of a document without its strokes: its pages shown with their texts, PDF
+     * pages and elements of the applications, its resources.
+     */
+    suspend fun loadOutline(documentId: String): DocumentOutline? {
+        val docEntity = withContext(Dispatchers.IO) { documentDao.getDocumentById(documentId) } ?: return null
+        val pages = withContext(Dispatchers.IO) { pageDao.getPageOutlines(documentId) }
+        val resources = withContext(Dispatchers.IO) { resourceDao.getResourcesForDocument(documentId) }
+        val shown = pages.sortedWith(compareBy({ it.page.orderKey }, { it.page.id }))
+            .filterNot { mapPage(it.page, docEntity).isHidden }
+            .map { rows ->
+                PageOutline(
+                    id = rows.page.id,
+                    texts = rows.texts.filter { it.removed == null }
+                        .map { e -> mapText(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) }
+                        .sortedBy { it.order },
+                    customElements = rows.customs.filter { it.removed == null }
+                        .map { e -> mapCustomElement(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) }
+                        .sortedBy { it.order },
+                    pdfs = rows.pdfs.filter { it.removed == null }
+                        .map { e -> mapPdf(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) }
+                        .sortedBy { it.order }
+                )
+            }
+        return DocumentOutline(documentId, shown, resources.map(::mapResource))
+    }
+
+    private fun mapPage(entity: PageEntity, document: DocumentEntity): DrawPage = DrawPage(
+        widthMm = entity.width,
+        heightMm = entity.height,
+        background = entity.background ?: document.defaultBackground,
+        id = entity.id,
+        orderKey = entity.orderKey
+    ).apply {
+        hasCustomBackground = entity.background != null
+        added = entity.added
+        removed = entity.removed
+        orderVersion = entity.orderVersion
+        formatVersion = entity.formatVersion
+        contentVersions = entity.contentVersions
+        removalSaw = entity.removalSaw
+    }
+
+    private fun mapResource(entity: ResourceEntity): DrawResource {
+        val type = DrawResource.ResourceType.entries.firstOrNull { it.name.equals(entity.type, ignoreCase = true) }
+            ?: DrawResource.ResourceType.COLOR
+        return DrawResource(entity.id, type, entity.uri, entity.contentHash)
     }
 
     private fun <T : DrawElement> T.stored(order: ElementOrder, added: Stamp, removed: Stamp?, placed: Stamp, ordered: Stamp, updated: Stamp): T =

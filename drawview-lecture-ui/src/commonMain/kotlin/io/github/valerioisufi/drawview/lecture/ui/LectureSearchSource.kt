@@ -131,8 +131,8 @@ public class LectureSearchSource(
         if (handwritingBytes != null) {
             val entries = parseHandwriting(handwritingBytes)
             if (entries.isNotEmpty()) {
-                val loadedDoc = store?.loadDocument(document.id)
-                val pageNumbersById = loadedDoc?.pages
+                val outline = store?.loadOutline(document.id)
+                val pageNumbersById = outline?.pages
                     ?.mapIndexed { index, page -> page.id to (index + 1) }
                     ?.toMap()
                     .orEmpty()

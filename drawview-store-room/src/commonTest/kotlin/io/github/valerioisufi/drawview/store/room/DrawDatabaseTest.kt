@@ -37,6 +37,7 @@ import io.github.valerioisufi.drawview.store.room.db.*
 import io.github.valerioisufi.drawview.store.room.repository.DrawDocumentRepository
 import io.github.valerioisufi.drawview.store.room.repository.FileRepository
 import io.github.valerioisufi.drawview.store.testing.checkFolderOperations
+import io.github.valerioisufi.drawview.store.testing.checkOutline
 import io.github.valerioisufi.drawview.store.testing.checkTrash
 import io.github.valerioisufi.drawview.store.testing.checkOperationProofs
 import kotlin.test.*
@@ -391,6 +392,11 @@ class DrawDatabaseTest {
     @Test
     fun theTrashIsKept() = runTest {
         checkTrash(RoomDocumentStore(database))
+    }
+
+    @Test
+    fun theOutlineIsTheDocumentWithoutItsStrokes() = runTest {
+        checkOutline(RoomDocumentStore(database))
     }
 
     @Test

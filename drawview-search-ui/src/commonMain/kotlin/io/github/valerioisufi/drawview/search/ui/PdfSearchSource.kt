@@ -2,6 +2,7 @@ package io.github.valerioisufi.drawview.search.ui
 
 import io.github.valerioisufi.drawview.canvas.render.tile.PdfTileAdapter
 import io.github.valerioisufi.drawview.model.DrawResource
+import io.github.valerioisufi.drawview.platform.Sha256
 import io.github.valerioisufi.drawview.search.SearchAnchor
 import io.github.valerioisufi.drawview.search.SearchChunk
 import io.github.valerioisufi.drawview.search.SearchChunkKind
@@ -25,23 +26,33 @@ public class PdfSearchSource(
 
     override val changes: Flow<Unit> = emptyFlow()
 
+    /**
+     * The name of the document and its pages in their order with their PDF pages (file and index):
+     * a stroke does not change it, a PDF page added, removed or moved does.
+     */
     override suspend fun version(document: DocumentSummary): String? {
         if (!document.hasPdf) return null
         val adapter = pdfTiles?.invoke() ?: return null
         adapter.close()
-        return "${document.name}|${document.modifiedAt}|${document.pageCount}"
+        val outline = store.loadOutline(document.id) ?: return null
+        val pages = outline.pages.joinToString(";") { page ->
+            page.id + page.pdfs.joinToString("") { pdf ->
+                ",${pdf.resourceId}:${outline.findResource(pdf.resourceId)?.hash.orEmpty()}:${pdf.pdfPageIndex}"
+            }
+        }
+        return "${document.name}|${Sha256.of(pages.encodeToByteArray())}"
     }
 
     override suspend fun chunks(document: DocumentSummary): List<SearchChunk> {
         if (!document.hasPdf) return emptyList()
         val adapter = pdfTiles?.invoke() ?: return emptyList()
         try {
-            val loaded = store.loadDocument(document.id) ?: return emptyList()
+            val outline = store.loadOutline(document.id) ?: return emptyList()
             val result = mutableListOf<SearchChunk>()
-            loaded.pages.forEachIndexed { pageIndex, page ->
+            outline.pages.forEachIndexed { pageIndex, page ->
                 val pageNumber = pageIndex + 1
                 for (pdf in page.pdfs) {
-                    val resource = loaded.findResource(pdf.resourceId)
+                    val resource = outline.findResource(pdf.resourceId)
                         ?.takeIf { it.type == DrawResource.ResourceType.PDF }
                         ?: continue
                     val raw = try {

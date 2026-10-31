@@ -9,6 +9,9 @@ import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.DrawPdf
 import io.github.valerioisufi.drawview.model.DrawResource
 import io.github.valerioisufi.drawview.model.DrawText
+import io.github.valerioisufi.drawview.model.StrokePoint
+import io.github.valerioisufi.drawview.model.StrokeTool
+import io.github.valerioisufi.drawview.model.change.StrokeData
 import io.github.valerioisufi.drawview.model.geometry.Rect as MmRect
 import io.github.valerioisufi.drawview.search.DocumentSearchSource
 import io.github.valerioisufi.drawview.search.OnlineAnswerBackend
@@ -189,6 +192,27 @@ class ContentSearchTest {
         val absentSource = PdfSearchSource(store, pdfTiles = null)
         assertNull(absentSource.version(summary))
         assertTrue(absentSource.chunks(summary).isEmpty())
+
+        // A stroke leaves the text of the PDF as it is; a PDF page added changes it
+        val version = assertNotNull(pdfSource.version(summary))
+        val stroke = StrokeData(
+            id = "stroke-1",
+            points = listOf(StrokePoint(10f, 10f, 0.5f, 1L), StrokePoint(20f, 12f, 0.5f, 9L)),
+            tool = StrokeTool.PRESSURE_PEN,
+            size = 0.5f,
+            color = 0xFF000000.toInt()
+        ).toElement()
+        page2.add(stroke)
+        store.saveStrokes(page2, listOf(stroke))
+        store.flush()
+        assertEquals(version, pdfSource.version(store.documents.value.single()), "a stroke does not change the PDF pages")
+        val page3 = doc.addPage()
+        store.savePage(doc, page3)
+        val pdf3 = DrawPdf(1).apply { resourceId = resource.id }
+        page3.add(pdf3)
+        store.savePdf(page3, pdf3)
+        store.flush()
+        assertTrue(version != pdfSource.version(store.documents.value.single()), "a PDF page added changes them")
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

@@ -188,39 +188,44 @@ public class KeyValueDocumentStore(
         publishSummaries()
     }
 
-    override suspend fun loadDocument(documentId: String): DrawDocument? {
-        val document = syncLock(lock) {
-            val summary = index.documents.firstOrNull { it.id == documentId } ?: return null
-            // Loaded again while open: with its last changes
-            if (dirtyDocuments.remove(documentId)) openDocuments[documentId]?.let { writeDocumentLocked(it) }
-            val stored = storage.get(documentKey(documentId))?.let { decodeOrNull<StoredDocument>(it) }
-            val document = DrawDocument(
-                id = documentId,
-                title = summary.name,
-                defaultWidthMm = summary.defaultWidth,
-                defaultHeightMm = summary.defaultHeight,
-                defaultBackground = summary.defaultBackground,
-                createdAt = summary.createdAt,
-                modifiedAt = summary.modifiedAt,
-                addInitialPage = false,
-                strokeModeller = strokeModeller
-            )
-            document.lastOpenedAt = summary.lastOpenedAt
+    override suspend fun loadDocument(documentId: String): DrawDocument? = syncLock(lock) {
+        readDocumentLocked(documentId)?.also { openDocuments[documentId] = it }
+    }
 
-            stored?.resources?.forEach { resource ->
-                val type = DrawResource.ResourceType.entries.firstOrNull { it.name == resource.type }
-                    ?: DrawResource.ResourceType.IMAGE
-                restoreResourceFile(resource.uri)
-                document.addResource(DrawResource(resource.id, type, resource.uri, resource.hash))
-            }
-            document.defaultsVersion = stored?.defaultsVersion ?: Stamp.ZERO
-            document.titleVersion = stored?.titleVersion ?: Stamp.ZERO
-            stored?.pages?.forEach { storedPage -> document.appendPage(storedPage.toPage(document)) }
-            stored?.removedPages?.forEach { storedPage -> storedPage.toPage(document).let { document.removedPages[it.id] = it } }
-            document.reindexPages()
-            openDocuments[documentId] = document
-            document
+    /** Read from the document stored, not taken as the document open (which a search would replace). */
+    override suspend fun loadOutline(documentId: String): DocumentOutline? = syncLock(lock) {
+        readDocumentLocked(documentId)?.let { DocumentOutline.of(it) }
+    }
+
+    private fun readDocumentLocked(documentId: String): DrawDocument? {
+        val summary = index.documents.firstOrNull { it.id == documentId } ?: return null
+        // Loaded again while open: with its last changes
+        if (dirtyDocuments.remove(documentId)) openDocuments[documentId]?.let { writeDocumentLocked(it) }
+        val stored = storage.get(documentKey(documentId))?.let { decodeOrNull<StoredDocument>(it) }
+        val document = DrawDocument(
+            id = documentId,
+            title = summary.name,
+            defaultWidthMm = summary.defaultWidth,
+            defaultHeightMm = summary.defaultHeight,
+            defaultBackground = summary.defaultBackground,
+            createdAt = summary.createdAt,
+            modifiedAt = summary.modifiedAt,
+            addInitialPage = false,
+            strokeModeller = strokeModeller
+        )
+        document.lastOpenedAt = summary.lastOpenedAt
+
+        stored?.resources?.forEach { resource ->
+            val type = DrawResource.ResourceType.entries.firstOrNull { it.name == resource.type }
+                ?: DrawResource.ResourceType.IMAGE
+            restoreResourceFile(resource.uri)
+            document.addResource(DrawResource(resource.id, type, resource.uri, resource.hash))
         }
+        document.defaultsVersion = stored?.defaultsVersion ?: Stamp.ZERO
+        document.titleVersion = stored?.titleVersion ?: Stamp.ZERO
+        stored?.pages?.forEach { storedPage -> document.appendPage(storedPage.toPage(document)) }
+        stored?.removedPages?.forEach { storedPage -> storedPage.toPage(document).let { document.removedPages[it.id] = it } }
+        document.reindexPages()
         return document
     }
 

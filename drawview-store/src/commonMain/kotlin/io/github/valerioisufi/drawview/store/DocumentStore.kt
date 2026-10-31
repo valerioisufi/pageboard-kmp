@@ -29,6 +29,14 @@ public interface DocumentStore : DocumentCatalog, OperationLog, SharingStore {
     /** Loads the whole content of a document, or `null` when it does not exist. */
     public suspend fun loadDocument(documentId: String): DrawDocument?
 
+    /**
+     * What can be read of a document without modeling its strokes (see [DocumentOutline]), or
+     * `null` when it does not exist: from [loadDocument] by default, from its texts, PDF pages and
+     * elements of the applications alone in the stores of DrawView.
+     */
+    public suspend fun loadOutline(documentId: String): DocumentOutline? =
+        loadDocument(documentId)?.let { DocumentOutline.of(it) }
+
     /** Writes the pending changes (stores that write lazily). */
     public suspend fun flush() {}
 

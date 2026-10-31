@@ -9,6 +9,7 @@ import io.github.valerioisufi.drawview.model.change.DocumentPersistence
 import io.github.valerioisufi.drawview.model.change.Operation
 import io.github.valerioisufi.drawview.model.change.OperationId
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
+import io.github.valerioisufi.drawview.store.DocumentOutline
 import io.github.valerioisufi.drawview.store.DocumentStore
 import io.github.valerioisufi.drawview.store.DocumentSummary
 import io.github.valerioisufi.drawview.store.FolderSummary
@@ -79,6 +80,8 @@ public class RoomDocumentStore(
         repository.insertDocument(document, folderId, versionVector)
 
     override suspend fun loadDocument(documentId: String): DrawDocument? = repository.loadDocument(documentId)
+
+    override suspend fun loadOutline(documentId: String): DocumentOutline? = repository.loadOutline(documentId)
 
     override suspend fun isDocumentNameAvailable(documentId: String, name: String): Boolean =
         fileRepository.isDocumentNameAvailable(documentId, name)

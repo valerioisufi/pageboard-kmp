@@ -39,6 +39,7 @@ abstract interface io.github.valerioisufi.drawview.store/DocumentStore : io.gith
     abstract suspend fun loadDocument(kotlin/String): io.github.valerioisufi.drawview.model/DrawDocument? // io.github.valerioisufi.drawview.store/DocumentStore.loadDocument|loadDocument(kotlin.String){}[0]
     open fun closeDocument(kotlin/String) // io.github.valerioisufi.drawview.store/DocumentStore.closeDocument|closeDocument(kotlin.String){}[0]
     open suspend fun flush() // io.github.valerioisufi.drawview.store/DocumentStore.flush|flush(){}[0]
+    open suspend fun loadOutline(kotlin/String): io.github.valerioisufi.drawview.store/DocumentOutline? // io.github.valerioisufi.drawview.store/DocumentStore.loadOutline|loadOutline(kotlin.String){}[0]
 }
 
 abstract interface io.github.valerioisufi.drawview.store/KeyValueStorage { // io.github.valerioisufi.drawview.store/KeyValueStorage|null[0]
@@ -66,6 +67,23 @@ abstract interface io.github.valerioisufi.drawview.store/SharingStore { // io.gi
     abstract suspend fun isReadOnly(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store/SharingStore.isReadOnly|isReadOnly(kotlin.String){}[0]
     abstract suspend fun setSharingSecret(kotlin/String, kotlin/String?, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.store/SharingStore.setSharingSecret|setSharingSecret(kotlin.String;kotlin.String?;kotlin.Boolean){}[0]
     abstract suspend fun sharingSecrets(): kotlin.collections/Map<kotlin/String, kotlin/String> // io.github.valerioisufi.drawview.store/SharingStore.sharingSecrets|sharingSecrets(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.store/DocumentOutline { // io.github.valerioisufi.drawview.store/DocumentOutline|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.store/PageOutline>, kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawResource>) // io.github.valerioisufi.drawview.store/DocumentOutline.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.store.PageOutline>;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawResource>){}[0]
+
+    final val id // io.github.valerioisufi.drawview.store/DocumentOutline.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.store/DocumentOutline.id.<get-id>|<get-id>(){}[0]
+    final val pages // io.github.valerioisufi.drawview.store/DocumentOutline.pages|{}pages[0]
+        final fun <get-pages>(): kotlin.collections/List<io.github.valerioisufi.drawview.store/PageOutline> // io.github.valerioisufi.drawview.store/DocumentOutline.pages.<get-pages>|<get-pages>(){}[0]
+    final val resources // io.github.valerioisufi.drawview.store/DocumentOutline.resources|{}resources[0]
+        final fun <get-resources>(): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawResource> // io.github.valerioisufi.drawview.store/DocumentOutline.resources.<get-resources>|<get-resources>(){}[0]
+
+    final fun findResource(kotlin/String): io.github.valerioisufi.drawview.model/DrawResource? // io.github.valerioisufi.drawview.store/DocumentOutline.findResource|findResource(kotlin.String){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.store/DocumentOutline.Companion|null[0]
+        final fun of(io.github.valerioisufi.drawview.model/DrawDocument): io.github.valerioisufi.drawview.store/DocumentOutline // io.github.valerioisufi.drawview.store/DocumentOutline.Companion.of|of(io.github.valerioisufi.drawview.model.DrawDocument){}[0]
+    }
 }
 
 final class io.github.valerioisufi.drawview.store/DocumentSummary { // io.github.valerioisufi.drawview.store/DocumentSummary|null[0]
@@ -178,6 +196,7 @@ final class io.github.valerioisufi.drawview.store/KeyValueDocumentStore : io.git
     final suspend fun isDocumentNameAvailable(kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.isDocumentNameAvailable|isDocumentNameAvailable(kotlin.String;kotlin.String){}[0]
     final suspend fun isReadOnly(kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.isReadOnly|isReadOnly(kotlin.String){}[0]
     final suspend fun loadDocument(kotlin/String): io.github.valerioisufi.drawview.model/DrawDocument? // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.loadDocument|loadDocument(kotlin.String){}[0]
+    final suspend fun loadOutline(kotlin/String): io.github.valerioisufi.drawview.store/DocumentOutline? // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.loadOutline|loadOutline(kotlin.String){}[0]
     final suspend fun moveDocument(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.moveDocument|moveDocument(kotlin.String;kotlin.String?){}[0]
     final suspend fun moveFolder(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.moveFolder|moveFolder(kotlin.String;kotlin.String?){}[0]
     final suspend fun operationsAfter(kotlin/String, kotlin.collections/Map<kotlin/String, kotlin/Long>): kotlin.collections/List<io.github.valerioisufi.drawview.model.change/Operation> // io.github.valerioisufi.drawview.store/KeyValueDocumentStore.operationsAfter|operationsAfter(kotlin.String;kotlin.collections.Map<kotlin.String,kotlin.Long>){}[0]
@@ -287,6 +306,19 @@ final class io.github.valerioisufi.drawview.store/OpenDocuments { // io.github.v
     final suspend fun rename(kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.drawview.store/OpenDocuments.rename|rename(kotlin.String;kotlin.String){}[0]
     final suspend fun replicaId(): kotlin/String // io.github.valerioisufi.drawview.store/OpenDocuments.replicaId|replicaId(){}[0]
     final suspend fun setReadOnly(kotlin/String, kotlin/Boolean) // io.github.valerioisufi.drawview.store/OpenDocuments.setReadOnly|setReadOnly(kotlin.String;kotlin.Boolean){}[0]
+}
+
+final class io.github.valerioisufi.drawview.store/PageOutline { // io.github.valerioisufi.drawview.store/PageOutline|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawText>, kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawCustomElement>, kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawPdf>) // io.github.valerioisufi.drawview.store/PageOutline.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawText>;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawCustomElement>;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawPdf>){}[0]
+
+    final val customElements // io.github.valerioisufi.drawview.store/PageOutline.customElements|{}customElements[0]
+        final fun <get-customElements>(): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawCustomElement> // io.github.valerioisufi.drawview.store/PageOutline.customElements.<get-customElements>|<get-customElements>(){}[0]
+    final val id // io.github.valerioisufi.drawview.store/PageOutline.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.store/PageOutline.id.<get-id>|<get-id>(){}[0]
+    final val pdfs // io.github.valerioisufi.drawview.store/PageOutline.pdfs|{}pdfs[0]
+        final fun <get-pdfs>(): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawPdf> // io.github.valerioisufi.drawview.store/PageOutline.pdfs.<get-pdfs>|<get-pdfs>(){}[0]
+    final val texts // io.github.valerioisufi.drawview.store/PageOutline.texts|{}texts[0]
+        final fun <get-texts>(): kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawText> // io.github.valerioisufi.drawview.store/PageOutline.texts.<get-texts>|<get-texts>(){}[0]
 }
 
 final class io.github.valerioisufi.drawview.store/TrashedItem { // io.github.valerioisufi.drawview.store/TrashedItem|null[0]

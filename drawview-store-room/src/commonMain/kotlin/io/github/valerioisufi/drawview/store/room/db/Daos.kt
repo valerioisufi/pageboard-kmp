@@ -63,6 +63,32 @@ internal data class PageWithContent(
 )
 
 /**
+ * A page with what can be read of it without its strokes: its texts, its PDF pages and the elements
+ * of the applications (see `DocumentOutline`).
+ */
+internal data class PageOutlineRows(
+    @Embedded val page: PageEntity,
+
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "pageId"
+    )
+    val texts: List<TextEntity>,
+
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "pageId"
+    )
+    val pdfs: List<PdfEntity>,
+
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "pageId"
+    )
+    val customs: List<CustomElementEntity>
+)
+
+/**
  * Data model representing a document and its hierarchical content.
  */
 internal data class DocumentWithPages(
@@ -192,6 +218,10 @@ internal interface PageDao {
 
     @Query("SELECT * FROM pages WHERE documentId = :documentId ORDER BY orderKey, id")
     suspend fun getPagesForDocument(documentId: String): List<PageEntity>
+
+    @Transaction
+    @Query("SELECT * FROM pages WHERE documentId = :documentId")
+    suspend fun getPageOutlines(documentId: String): List<PageOutlineRows>
 }
 
 /**
