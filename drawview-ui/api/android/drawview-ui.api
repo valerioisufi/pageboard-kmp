@@ -267,9 +267,9 @@ public final class io/github/valerioisufi/drawview/ui/components/ComposableSingl
 public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$FontSizeControlKt {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$FontSizeControlKt;
 	public fun <init> ()V
+	public final fun getLambda$1045898949$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$1680744731$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$774743524$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$876647364$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
 }
 
 public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$PageGridOverlayKt {

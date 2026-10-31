@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.ui.generated.resources.*
+import io.github.valerioisufi.drawview.ui.platform.PopupSystemBarsEffect
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -144,6 +145,7 @@ public fun AboutLicensesDialog(
     val appInfo = LocalAboutAppInfo.current
     val appName = appInfo?.name ?: stringResource(Res.string.app_name)
     BasicAlertDialog(onDismissRequest = onDismiss, modifier = modifier.widthIn(max = 560.dp)) {
+        PopupSystemBarsEffect()
         Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
             Column(modifier = Modifier.padding(28.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {

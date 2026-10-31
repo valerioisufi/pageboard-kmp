@@ -5,6 +5,7 @@ import io.github.valerioisufi.drawview.ui.editor.TEXT_TO_NOTES_COMMAND_ID
 import io.github.valerioisufi.drawview.ui.editor.TextImportSheet
 import io.github.valerioisufi.drawview.model.text.TextCleanup
 import io.github.valerioisufi.drawview.canvas.controller.TextImport
+import io.github.valerioisufi.drawview.ui.platform.LocalHiddenSystemBars
 import io.github.valerioisufi.drawview.ui.platform.PickedFile
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -18,14 +19,12 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -82,7 +81,8 @@ import io.github.valerioisufi.drawview.ui.extension.EditorPanel
 import io.github.valerioisufi.drawview.ui.generated.resources.*
 import io.github.valerioisufi.drawview.ui.generated.resources.common_action_undo
 import io.github.valerioisufi.drawview.ui.generated.resources.message_pages_deleted
-import io.github.valerioisufi.drawview.ui.platform.ImmersiveSystemBarsEffect
+import io.github.valerioisufi.drawview.ui.platform.editorInsets
+import io.github.valerioisufi.drawview.ui.platform.immersiveSystemBars
 import io.github.valerioisufi.drawview.ui.platform.PencilInteractionEffect
 import io.github.valerioisufi.drawview.ui.platform.PickerType
 import io.github.valerioisufi.drawview.ui.platform.fileDropTarget
@@ -133,7 +133,10 @@ internal fun DrawScreen(
     location: String? = null,
     readOnlyNote: @Composable () -> String? = { null }
 ) {
-    CompositionLocalProvider(LocalDrawViewEngines provides controller.engines) {
+    // The room of the system bars given to the editor, where it gains some, and kept by the
+    // windows opened over it (menus, popovers, dialogs)
+    val hiddenBars = immersiveSystemBars()
+    CompositionLocalProvider(LocalDrawViewEngines provides controller.engines, LocalHiddenSystemBars provides hiddenBars) {
         DrawScreenContent(controller, onNavigateBack, modifier, isLoading, toolbarActions, panels, canvasOverlay, extraCommands, pageGridActions, location, readOnlyNote)
     }
 }
@@ -155,8 +158,6 @@ private fun DrawScreenContent(
 ) {
     // Whether some pages hold PDF pages, as it changes (not at every change of the document)
     val hasPdfPages by controller.document.observe { hasPdfPages() }
-    // The room of the system bars given to the editor, where it gains some
-    ImmersiveSystemBarsEffect()
 
     // Theme colors of the canvas (desk, paper, selection), updated with the Material theme
     val colorScheme = MaterialTheme.colorScheme
@@ -283,7 +284,7 @@ private fun DrawScreenContent(
                         modifier = Modifier
                             .zIndex(1f)
                             .background(MaterialTheme.colorScheme.surface)
-                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top))
+                            .windowInsetsPadding(editorInsets().only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top))
                     ) {
                         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
                             EditorTopBar(
@@ -382,7 +383,7 @@ private fun DrawScreenContent(
                             modifier = Modifier
                                 .align(Alignment.BottomCenter)
                                 .padding(bottom = bottomInset)
-                                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+                                .windowInsetsPadding(editorInsets().only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
                                 .padding(start = 8.dp, end = 8.dp, bottom = if (floating) 8.dp else 18.dp)
                         ) {
                             if (!isLoading && bottomInset == 0.dp && !controller.textEditorManager.isEditing) {
@@ -440,7 +441,7 @@ private fun DrawScreenContent(
                     snackbar = { data -> DesignSnackbar(data) },
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .windowInsetsPadding(WindowInsets.safeDrawing)
+                        .windowInsetsPadding(editorInsets())
                         .padding(16.dp)
                 )
             }

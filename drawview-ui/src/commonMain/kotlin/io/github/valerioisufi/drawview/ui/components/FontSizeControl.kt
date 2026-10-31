@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.model.text.TextSizes
 import io.github.valerioisufi.drawview.ui.command.DesignMenu
@@ -82,7 +83,7 @@ internal fun FontSizeControl(
                     .clickable(onClickLabel = label) { menuOpen = true }
                     .padding(horizontal = 6.dp, vertical = 6.dp)
             )
-            DesignMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+            DesignMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }, modifier = Modifier, offset = DpOffset.Zero, takesText = true) {
                 var typed by remember(fontSizePt) { mutableStateOf(formatSize(fontSizePt)) }
                 fun apply() {
                     typed.replace(',', '.').toFloatOrNull()?.let { onFontSizeChange(TextSizes.clamp(it)) }

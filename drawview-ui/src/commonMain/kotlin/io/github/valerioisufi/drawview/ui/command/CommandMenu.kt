@@ -31,7 +31,11 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
+import io.github.valerioisufi.drawview.ui.platform.UnfocusedPopupGuard
+import io.github.valerioisufi.drawview.ui.platform.PopupSystemBarsEffect
+import io.github.valerioisufi.drawview.ui.platform.popupTakesFocus
 import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import kotlin.jvm.JvmName
 
@@ -111,6 +115,24 @@ public fun DesignMenu(
     offset: DpOffset = DpOffset.Zero,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    DesignMenu(expanded, onDismissRequest, modifier, offset, takesText = false, content)
+}
+
+/**
+ * A [DesignMenu] with a text field when [takesText]: it takes the focus where the others do not
+ * (see `popupTakesFocus`).
+ */
+@Composable
+internal fun DesignMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    modifier: Modifier,
+    offset: DpOffset,
+    takesText: Boolean,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    val focusable = takesText || popupTakesFocus()
+    if (expanded && !focusable) UnfocusedPopupGuard(onDismissRequest)
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
@@ -119,8 +141,11 @@ public fun DesignMenu(
         shape = RoundedCornerShape(16.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         shadowElevation = 8.dp,
-        content = content
-    )
+        properties = PopupProperties(focusable = focusable)
+    ) {
+        if (focusable) PopupSystemBarsEffect()
+        content()
+    }
 }
 
 /**

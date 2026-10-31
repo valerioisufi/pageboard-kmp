@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import io.github.valerioisufi.drawview.ui.platform.PopupSystemBarsEffect
 
 /**
  * A sheet of the application (a configurator, the details of a file, settings): a bottom sheet in
@@ -50,6 +51,7 @@ public fun AdaptiveSheet(
 ) {
     if (currentAdaptiveInfo().window.isCompact) {
         ModalBottomSheet(onDismissRequest = onDismissRequest, containerColor = MaterialTheme.colorScheme.surfaceContainerLow) {
+            PopupSystemBarsEffect()
             SheetTitle(title)
             Column(modifier = Modifier.weight(1f, fill = false)) { content() }
             SheetActions(actions, Modifier.padding(bottom = 16.dp))
@@ -66,6 +68,7 @@ public fun AdaptiveSheet(
             },
             properties = DialogProperties(usePlatformDefaultWidth = !wide)
         ) {
+            PopupSystemBarsEffect()
             Surface(
                 shape = RoundedCornerShape(28.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh

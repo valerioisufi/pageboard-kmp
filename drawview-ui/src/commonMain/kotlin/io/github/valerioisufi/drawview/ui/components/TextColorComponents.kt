@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.ui.generated.resources.*
+import io.github.valerioisufi.drawview.ui.platform.PopupSystemBarsEffect
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -28,6 +29,7 @@ internal fun TextColorPickerDialog(
 ) {
     var workingColor by remember(initialColor) { mutableStateOf(initialColor) }
     BasicAlertDialog(onDismissRequest = onDismissRequest) {
+        PopupSystemBarsEffect()
         Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Text(

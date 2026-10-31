@@ -74,7 +74,7 @@ private fun rootOf(viewController: UIViewController): UIViewController {
 }
 
 @Composable
-internal actual fun ImmersiveSystemBarsEffect() {
+internal actual fun immersiveSystemBars(): HiddenSystemBars {
     val viewController = LocalUIViewController.current
     // An iPhone with a notch or the Dynamic Island keeps the height of the safe area without the
     // status bar: it stays, with its clock. No iPad has them (its status bar is 24 to 32 pt)
@@ -92,4 +92,13 @@ internal actual fun ImmersiveSystemBarsEffect() {
             rootOf(viewController).setNeedsStatusBarAppearanceUpdate()
         }
     }
+    return if (islandOnTop) HiddenSystemBars.NAVIGATION else HiddenSystemBars.ALL
 }
+
+/** The windows over the editor take the status bar of its view controller: nothing to keep. */
+@Composable
+internal actual fun PopupSystemBarsEffect() {
+}
+
+@Composable
+internal actual fun popupTakesFocus(): Boolean = true

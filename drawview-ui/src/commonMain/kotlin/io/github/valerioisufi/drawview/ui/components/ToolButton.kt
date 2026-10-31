@@ -29,8 +29,12 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandTooltip
+import io.github.valerioisufi.drawview.ui.platform.UnfocusedPopupGuard
+import io.github.valerioisufi.drawview.ui.platform.PopupSystemBarsEffect
+import io.github.valerioisufi.drawview.ui.platform.popupTakesFocus
 
 /** The shape of a tool button. */
 private val ToolShape = RoundedCornerShape(16.dp)
@@ -134,6 +138,8 @@ internal fun ToolPopover(
     offset: DpOffset = DpOffset(0.dp, 6.dp),
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val focusable = popupTakesFocus()
+    if (expanded && !focusable) UnfocusedPopupGuard(onDismissRequest)
     DropdownMenu(
         modifier = Modifier.width(300.dp).padding(horizontal = 16.dp, vertical = 8.dp),
         expanded = expanded,
@@ -142,6 +148,9 @@ internal fun ToolPopover(
         shape = RoundedCornerShape(24.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         shadowElevation = 8.dp,
-        content = content
-    )
+        properties = PopupProperties(focusable = focusable)
+    ) {
+        if (focusable) PopupSystemBarsEffect()
+        content()
+    }
 }

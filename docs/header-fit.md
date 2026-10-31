@@ -158,7 +158,7 @@ after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
 
 ### Phase 1 results
 
-* One effect, `ImmersiveSystemBarsEffect` (`drawview-ui`, `platform/SystemBars.*.kt`), called by
+* One effect, `immersiveSystemBars` (`drawview-ui`, `platform/SystemBars.*.kt`), called by
   `DrawScreen`; `HideSystemBarsEffect` and `SystemBarsHidden` of `drawview-explorer` removed.
   `DocumentLibrary(fullScreenEditor)` stays in its signature, not used any more (the editor was
   already hiding the bars whatever it said); PencilNotes no longer passes it.
@@ -180,6 +180,24 @@ after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
     `persistentSystemOverlays`, which an override on the root would undo.
   - The iPhone keeps its status bar beside the Dynamic Island in the editor; the iPad hides it in
     the editor and shows it again in the library.
+* **Android 10, the menus.** On the tablet of the user (Huawei MatePad 10.4, Android 10, density
+  320 for 224 ppi) and on an emulator of Android 10 at the same size and density, with main
+  (83c1c07c): a menu shows the status bar, the bars of the editor go down by its height, and it
+  stays after the menu. So it is Android 10, not the tablet. Three causes, three fixes:
+  - The bars follow the window that has the focus, and a menu is a window of its own: menus and
+    popovers do not take the focus under Android 11 where the editor hides the bars
+    (`popupTakesFocus`). One with a text field takes it anyway (`DesignMenu(takesText = true)`,
+    the size of the text). What a popup without the focus misses is given beside it
+    (`UnfocusedPopupGuard`): the system back closes it, and a touch outside of it closes it in a
+    transparent window under it, without reaching the page.
+  - The windows that take the focus (the dialogs, the sheets) get the flags of the editor
+    (`PopupSystemBarsEffect`): the status bar shows for a moment while they open, then hides.
+  - The editor kept clear of the status bar while another window had the focus: it now keeps
+    clear of the cutout, the keyboard and the bars it does not hide only (`editorInsets`).
+  - Checked on the tablet and on the emulator: the menu, the popover of the pen, the back, a touch
+    outside, the configurator of the page; the status bar never shows, the bars do not move, the
+    focus stays on the editor. The ABI of `drawview-ui` changes by the name of a lambda the Compose
+    compiler generates (`ComposableSingletons`), not by an API.
 * On a simulator that had an old database (version 9) PencilNotes stops at the start: Room has
   migrations from 16 only (the first version with documents to keep, see `Migrations.kt`). Not a
   change of this plan; the checks ran on new simulators, the old one left as it was.
@@ -241,6 +259,9 @@ Revertible, taken alone:
   1 GB to download).
 
 ## Left for later
+
+* The dialogs and the sheets over the editor on Android 10 show the status bar for a moment
+  while they open (they take the focus, for their text fields).
 
 * A short form of the brand of the application (the mark alone) for the narrowest windows.
 * The extensions as commands, with a place in the menus and in the menu bar.
