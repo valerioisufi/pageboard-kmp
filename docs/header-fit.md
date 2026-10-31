@@ -233,9 +233,10 @@ after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
 
 ### Phase 4 results
 
-* The Huawei MatePad 10.4 of the user: 2000 × 1200 pixels, 10.4 inches (about 224 ppi), Android 10.
-  Its density was not read (no `adb` to the tablet here): the sizes are those of a toolbar for a
-  pen, to confirm on it.
+* The Huawei MatePad 10.4 of the user: 2000 × 1200 pixels, 224 ppi, Android 10, read later with
+  `adb`: its density is 320, so it is 600 × 1000 dp and a dp is 1.43 times its nominal size. All
+  of the interface is that much larger on it, not only the tools; the group of the tools is
+  11.8 mm high there. Checked on it: one bar in landscape, two in portrait.
 * The group of the tools in the bars of a tablet: 52 dp high instead of 56, 40 dp buttons with
   20 dp icons instead of 44 dp with 24 dp, targets of 44 dp instead of 48; the buttons of the top
   bar (back, the page grid, the actions, "more") keep 48 dp.
