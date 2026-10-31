@@ -27,7 +27,8 @@ public object ListNumbering {
     /**
      * A list item of a text: its [span], its [depth] (0 for an item nested in none), the index of
      * its [parent] in the items (-1 for none), the [list] of its siblings (an index shared by them)
-     * and its [label]; [bullet] or [numbering] says how the label is drawn.
+     * and its [label]; [bullet] or [numbering] says how the label is drawn; [ordinal] is the
+     * number of a numbered item (0 for a bulleted one).
      */
     public class Item(
         public val span: Span,
@@ -36,7 +37,8 @@ public object ListNumbering {
         public val list: Int,
         public val label: String,
         public val bullet: Bullet?,
-        public val numbering: Numbering?
+        public val numbering: Numbering?,
+        public val ordinal: Int = 0
     )
 
     /** The list items of [text] among its [spans] (see [RichTextParser.parse]), in their order. */
@@ -76,15 +78,16 @@ public object ListNumbering {
             val label: String
             var bullet: Bullet? = null
             var numbering: Numbering? = null
+            val ordinal = if (span.ordered) group.first + group.count else 0
             if (span.ordered) {
                 val numberedAbove = open.count { result[it].span.ordered }
                 numbering = Numbering.entries[numberedAbove % Numbering.entries.size]
-                label = format(group.first + group.count, numbering) + "."
+                label = format(ordinal, numbering) + "."
             } else {
                 bullet = Bullet.entries[depth % Bullet.entries.size]
                 label = glyphOf(bullet)
             }
-            result += Item(span, depth, parent, group.list, label, bullet, numbering)
+            result += Item(span, depth, parent, group.list, label, bullet, numbering, ordinal)
             open += index
             previousEnd = span.end
         }

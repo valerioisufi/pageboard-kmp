@@ -18,6 +18,10 @@ import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.text.TextRoom
+import io.github.valerioisufi.drawview.model.change.DocumentChange
+import io.github.valerioisufi.drawview.model.change.AddPage
+import io.github.valerioisufi.drawview.model.text.TextChains
+import io.github.valerioisufi.drawview.model.text.ChainFlow
 import io.github.valerioisufi.drawview.model.Versions
 import io.github.valerioisufi.drawview.model.change.AddElements
 import io.github.valerioisufi.drawview.model.change.ChangeEffects
@@ -99,6 +103,10 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         private set
 
     override val takesBackground: Boolean get() = true
+
+    /** The text the one written goes on into, and whether it goes on the line of the one before (see `DrawText.next`). */
+    private var chainNext: String? = null
+    private var chainContinuesLine: Boolean = false
 
     /** The ARGB color of the fill of the box, or `null` for none (see `DrawText.background`). */
     override var background: Int? by mutableStateOf(null)
@@ -258,6 +266,8 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         fontSize = item?.fontSize ?: defaults.fontSize
         color = item?.color ?: defaults.color
         background = item?.background
+        chainNext = item?.next
+        chainContinuesLine = item?.continuesLine == true
         alignment = item?.alignment ?: defaults.alignment
         caretRequest = caretAt
         newTextId = newElementId()
@@ -343,6 +353,9 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
             cancelEditing()
             return
         }
+
+        // A text below the bottom of its page, or in a chain: flowed into its boxes
+        if (value.text.isNotBlank() && flowChain(caret = null)) return
 
         if (value.text.isBlank()) {
             existing?.let { controller.hiddenElements.setDragged(listOf(it.id), false) }
@@ -456,6 +469,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         if (reallyChanged) {
             fitWidth()
             reportDraft()
+            flowIfOverflowing()
         }
     }
 
@@ -724,6 +738,180 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         return box.copy(x = box.x + corner.x, y = box.y + corner.y, width = width)
     }
 
+    // ==========================================================
+    // Chains of boxes across the pages
+    // ==========================================================
+
+    /** Whether the text written goes on into another box or comes from one (see [TextChains]). */
+    public val inChain: Boolean
+        get() = activeTextItem?.let { TextChains.of(controller.document).isChained(it.id) } == true
+
+    /** Where the room of a box of a chain ends on [page]: its bottom margin. */
+    private fun roomBottom(page: DrawPage): Float = page.heightMm - CHAIN_MARGIN_MM
+
+    /** The height of [text] in the style of the text written, laid out on [widthMm]. */
+    private fun heightOf(text: String, widthMm: Float): Float {
+        val probe = DrawText().also {
+            it.text = text
+            it.width = widthMm
+            it.fontSize = fontSize
+            it.alignment = alignment
+        }
+        return controller.measureText(probe)?.height ?: TextSizes.estimatedHeightMm(text, fontSize)
+    }
+
+    /**
+     * After a change of the text: when its lines go below the bottom margin of its page, the text
+     * flows into the next boxes of its chain (a chain begins), and the caret goes where it is.
+     */
+    private fun flowIfOverflowing() {
+        if (!isEditing || rotation != 0f || value.text.isBlank()) return
+        val page = controller.document.pages.getOrNull(activeTextPageIndex) ?: return
+        val box = inItsRoom(draft(), page)
+        if (box.y + heightOf(value.text, box.width) <= roomBottom(page) + OVERFLOW_TOLERANCE_MM) return
+        flowChain(caret = value.selection.start)
+    }
+
+    /**
+     * Saves the text written with the boxes after it in its chain, their whole text flowed into
+     * them again (see [ChainFlow]): the boxes it takes added on new pages after the last one, the
+     * boxes it leaves empty removed, all in one change. With a [caret] (an offset of the text
+     * written), the editor opens again on the box where that offset went.
+     *
+     * @return `false` when the text needs no chain (it fits on its page and goes on into none),
+     *   nothing done.
+     */
+    private fun flowChain(caret: Int?): Boolean {
+        val pageIndex = activeTextPageIndex
+        val pages = controller.document.pages
+        val page = pages.getOrNull(pageIndex) ?: return false
+        val existing = activeTextItem
+        // Turned, or moved to another page while written: saved as a text alone
+        if (rotation != 0f || existing != null && itemPageIndex != pageIndex) return false
+        val chains = TextChains.of(controller.document)
+        val following = existing?.let { item ->
+            val chain = chains.chainOf(item.id)
+            chain.drop(chain.indexOfFirst { it.id == item.id } + 1)
+        }.orEmpty()
+        val base = inItsRoom(draft(versions = editedFrom?.versions ?: Versions.NONE), page)
+        val tail = value.text + following.joinToString("") { (if (it.continuesLine) "" else "\n") + it.text }
+        val pageOf = { text: DrawText -> pages[chains.pageOf(text.id)] }
+        val lastPageIndex = following.lastOrNull()?.let { chains.pageOf(it.id) } ?: pageIndex
+        val rooms = listOf(ChainFlow.Room(base.width, roomBottom(page) - base.y)) +
+            following.map { ChainFlow.Room(it.width, roomBottom(pageOf(it)) - it.y) }
+        val extra = ChainFlow.Room(base.width, roomBottom(pages[lastPageIndex]) - CHAIN_MARGIN_MM)
+        val pieces = ChainFlow { text, width -> heightOf(text, width) }.flow(tail, rooms, extra)
+        if (pieces.size <= 1 && following.isEmpty()) return false
+
+        val newPages = controller.pageManager.newPagesAfter(lastPageIndex, (pieces.size - 1 - following.size).coerceAtLeast(0))
+        val ids = listOf(base.id) + following.map { it.id } + newPages.map { newElementId() }
+        val changes = mutableListOf<DocumentChange>()
+        for (newPage in newPages) changes += AddPage.of(newPage)
+        // The style of the text written for the whole chain
+        fun styled(data: TextData, index: Int) = data.copy(
+            text = pieces[index].text,
+            next = ids.getOrNull(index + 1)?.takeIf { index + 1 < pieces.size },
+            continuesLine = if (index == 0) base.continuesLine else pieces[index].continuesLine,
+            fontSize = base.fontSize, color = base.color, alignment = base.alignment, background = base.background
+        )
+        val first = styled(base, 0)
+        if (existing == null) {
+            changes += AddElements.of(page, listOf(first.toElement()))
+        } else if (first != editedFrom) {
+            changes += UpdateTexts(page.id, listOf(first))
+        }
+        for (index in 1 until pieces.size) {
+            val box = following.getOrNull(index - 1)
+            if (box != null) {
+                val before = box.toData().copy(order = null)
+                val data = styled(before, index)
+                if (data != before) changes += UpdateTexts(pageOf(box).id, listOf(data))
+            } else {
+                val newPage = newPages[index - 1 - following.size]
+                val data = styled(base.copy(id = ids[index], y = CHAIN_MARGIN_MM, versions = Versions.NONE, order = null), index)
+                changes += AddElements.of(newPage, listOf(data.toElement()))
+            }
+        }
+        // The boxes the text no longer reaches
+        for (box in following.drop(pieces.size - 1)) changes += RemoveElements.of(pageOf(box), listOf(box))
+
+        existing?.let {
+            controller.hiddenElements.setDragged(listOf(it.id), false)
+            it.markDirty()
+            controller.invalidatePageContent(page, it.getRotatedBounds())
+        }
+        if (changes.isNotEmpty()) controller.session.submit(CompositeChange(changes))
+        controller.updateTextDefaults(TextDefaults(fontSize, color, alignment))
+        resetSession()
+        if (caret != null) {
+            // The box of the caret: its piece of the whole text
+            var start = 0
+            var target = pieces.lastIndex
+            for ((index, piece) in pieces.withIndex()) {
+                if (index > 0 && !piece.continuesLine) start++
+                if (caret <= start + piece.text.length) {
+                    target = index
+                    break
+                }
+                start += piece.text.length
+            }
+            openAt(ids[target], (caret - start).coerceIn(0, pieces[target].text.length), reveal = target != 0)
+        }
+        return true
+    }
+
+    /** Opens the editor on the text [id] with the caret at [offset]; with [reveal], its page shown. */
+    private fun openAt(id: String, offset: Int, reveal: Boolean) {
+        val pages = controller.document.pages
+        val pageIndex = pages.indexOfFirst { page -> page.texts.any { it.id == id } }
+        val text = pages.getOrNull(pageIndex)?.texts?.firstOrNull { it.id == id } ?: return
+        startEditing(text, pageIndex)
+        value = value.copy(selection = TextRange(offset.coerceIn(0, value.text.length)))
+        if (reveal && controller.viewport.mostVisiblePageIndex() != pageIndex) controller.viewport.showPage(pageIndex)
+    }
+
+    /**
+     * Moves the caret into the box before the one written in its chain (at its end) or, [forward],
+     * after it (at its start), the chain saved and flowed first. Returns `true` when it did.
+     */
+    public fun moveInChain(forward: Boolean): Boolean {
+        val item = activeTextItem ?: return false
+        val chains = TextChains.of(controller.document)
+        val target = (if (forward) chains.next(item.id) else chains.previous(item.id)) ?: return false
+        val targetId = target.id
+        if (forward) {
+            finishEditing()
+            openAt(targetId, 0, reveal = true)
+        } else {
+            // Saved from the box before, so that the chain flows from there
+            finishEditing()
+            openAt(targetId, Int.MAX_VALUE, reveal = true)
+        }
+        return isEditing
+    }
+
+    /**
+     * Backspace at the start of a box that goes on from another one: the line break between them
+     * taken away (the box goes on the last line of the one before, see `DrawText.continuesLine`),
+     * or the last character of the box before when there is none; the caret at the end of that box.
+     * Returns `true` when it did.
+     */
+    public fun backspaceIntoPreviousBox(): Boolean {
+        val item = activeTextItem ?: return false
+        val previous = TextChains.of(controller.document).previous(item.id) ?: return false
+        if (!value.selection.collapsed || value.selection.start != 0) return false
+        val joined = chainContinuesLine
+        chainContinuesLine = true
+        val previousId = previous.id
+        finishEditing()
+        openAt(previousId, Int.MAX_VALUE, reveal = true)
+        if (joined && isEditing && value.text.isNotEmpty()) {
+            val end = value.text.length
+            updateValue(TextFieldValue(value.text.substring(0, end - 1), TextRange(end - 1)), smartNewline = false)
+        }
+        return isEditing
+    }
+
     /** The text being written as it is now. */
     private fun draft(versions: Versions = Versions.NONE) = TextData(
         id = activeTextItem?.id ?: newTextId,
@@ -737,6 +925,8 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         color = color,
         fontSize = fontSize,
         background = background,
+        next = chainNext,
+        continuesLine = chainContinuesLine,
         versions = versions
     )
 
@@ -761,6 +951,12 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
 
         /** Millimeters of a moved box that always stay on its page. */
         const val MIN_VISIBLE_MM = 5f
+
+        /** The margin of a page under a box of a chain and above the boxes it goes on into. */
+        const val CHAIN_MARGIN_MM = TextRoom.PAGE_MARGIN_MM
+
+        /** How far the lines of a text may go below the bottom margin of its page before they flow on. */
+        const val OVERFLOW_TOLERANCE_MM = 0.5f
 
         /** A change of the laid out height smaller than this is not reported. */
         const val HEIGHT_EPSILON_MM = 0.01f

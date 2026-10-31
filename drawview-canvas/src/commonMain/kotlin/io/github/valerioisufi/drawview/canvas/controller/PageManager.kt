@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import io.github.valerioisufi.drawview.model.DrawPage
+import io.github.valerioisufi.drawview.model.FractionalIndex
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.TrashRetention
 import io.github.valerioisufi.drawview.model.change.AddPage
@@ -70,6 +71,30 @@ public class PageManager(private val controller: DrawViewController) {
             orderKey = document.orderKeyAt(index)
         ).apply { hasCustomBackground = ownBackground != null }
     }
+
+    /**
+     * [count] new pages to put right after [pageIndex], one after the other, of the format of that
+     * page, not added yet (the changes adding them are the caller's, see `AddPage`).
+     */
+    internal fun newPagesAfter(pageIndex: Int, count: Int): List<DrawPage> {
+        val template = pageBefore(pageIndex)
+        val index = if (pageIndex in document.pages.indices) pageIndex + 1 else document.pages.size
+        var before = document.pages.getOrNull(index - 1)?.orderKey
+        val after = document.pages.drop(index).firstOrNull { before == null || it.orderKey > before!! }?.orderKey
+        return List(count) { k ->
+            val key = FractionalIndex.between(before, after)
+            before = key
+            newPage(index + k, template).copyWithOrderKey(key)
+        }
+    }
+
+    private fun DrawPage.copyWithOrderKey(key: String): DrawPage = DrawPage(
+        index = index,
+        widthMm = widthMm,
+        heightMm = heightMm,
+        background = background,
+        orderKey = key
+    ).also { it.hasCustomBackground = hasCustomBackground }
 
     /** The page a new page put after [pageIndex] follows: that page, or the last one when it is not a page. */
     private fun pageBefore(pageIndex: Int): DrawPage? = document.pages.getOrNull(pageIndex) ?: document.pages.lastOrNull()

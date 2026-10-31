@@ -2354,6 +2354,44 @@ final class io.github.valerioisufi.drawview.model.text.code/CodeToken { // io.gi
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.text.code/CodeToken.toString|toString(){}[0]
 }
 
+final class io.github.valerioisufi.drawview.model.text/ChainFlow { // io.github.valerioisufi.drawview.model.text/ChainFlow|null[0]
+    constructor <init>(kotlin/Function2<kotlin/String, kotlin/Float, kotlin/Float>) // io.github.valerioisufi.drawview.model.text/ChainFlow.<init>|<init>(kotlin.Function2<kotlin.String,kotlin.Float,kotlin.Float>){}[0]
+
+    final fun flow(kotlin/String, kotlin.collections/List<io.github.valerioisufi.drawview.model.text/ChainFlow.Room>, io.github.valerioisufi.drawview.model.text/ChainFlow.Room): kotlin.collections/List<io.github.valerioisufi.drawview.model.text/ChainFlow.Piece> // io.github.valerioisufi.drawview.model.text/ChainFlow.flow|flow(kotlin.String;kotlin.collections.List<io.github.valerioisufi.drawview.model.text.ChainFlow.Room>;io.github.valerioisufi.drawview.model.text.ChainFlow.Room){}[0]
+
+    final class Piece { // io.github.valerioisufi.drawview.model.text/ChainFlow.Piece|null[0]
+        constructor <init>(kotlin/String, kotlin/Boolean = ...) // io.github.valerioisufi.drawview.model.text/ChainFlow.Piece.<init>|<init>(kotlin.String;kotlin.Boolean){}[0]
+
+        final val continuesLine // io.github.valerioisufi.drawview.model.text/ChainFlow.Piece.continuesLine|{}continuesLine[0]
+            final fun <get-continuesLine>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/ChainFlow.Piece.continuesLine.<get-continuesLine>|<get-continuesLine>(){}[0]
+        final val text // io.github.valerioisufi.drawview.model.text/ChainFlow.Piece.text|{}text[0]
+            final fun <get-text>(): kotlin/String // io.github.valerioisufi.drawview.model.text/ChainFlow.Piece.text.<get-text>|<get-text>(){}[0]
+
+        final fun component1(): kotlin/String // io.github.valerioisufi.drawview.model.text/ChainFlow.Piece.component1|component1(){}[0]
+        final fun component2(): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/ChainFlow.Piece.component2|component2(){}[0]
+        final fun copy(kotlin/String = ..., kotlin/Boolean = ...): io.github.valerioisufi.drawview.model.text/ChainFlow.Piece // io.github.valerioisufi.drawview.model.text/ChainFlow.Piece.copy|copy(kotlin.String;kotlin.Boolean){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/ChainFlow.Piece.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.text/ChainFlow.Piece.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.text/ChainFlow.Piece.toString|toString(){}[0]
+    }
+
+    final class Room { // io.github.valerioisufi.drawview.model.text/ChainFlow.Room|null[0]
+        constructor <init>(kotlin/Float, kotlin/Float) // io.github.valerioisufi.drawview.model.text/ChainFlow.Room.<init>|<init>(kotlin.Float;kotlin.Float){}[0]
+
+        final val heightMm // io.github.valerioisufi.drawview.model.text/ChainFlow.Room.heightMm|{}heightMm[0]
+            final fun <get-heightMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.text/ChainFlow.Room.heightMm.<get-heightMm>|<get-heightMm>(){}[0]
+        final val widthMm // io.github.valerioisufi.drawview.model.text/ChainFlow.Room.widthMm|{}widthMm[0]
+            final fun <get-widthMm>(): kotlin/Float // io.github.valerioisufi.drawview.model.text/ChainFlow.Room.widthMm.<get-widthMm>|<get-widthMm>(){}[0]
+
+        final fun component1(): kotlin/Float // io.github.valerioisufi.drawview.model.text/ChainFlow.Room.component1|component1(){}[0]
+        final fun component2(): kotlin/Float // io.github.valerioisufi.drawview.model.text/ChainFlow.Room.component2|component2(){}[0]
+        final fun copy(kotlin/Float = ..., kotlin/Float = ...): io.github.valerioisufi.drawview.model.text/ChainFlow.Room // io.github.valerioisufi.drawview.model.text/ChainFlow.Room.copy|copy(kotlin.Float;kotlin.Float){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.text/ChainFlow.Room.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.text/ChainFlow.Room.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.text/ChainFlow.Room.toString|toString(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.drawview.model.text/TableShape { // io.github.valerioisufi.drawview.model.text/TableShape|null[0]
     constructor <init>(kotlin.collections/List<kotlin.collections/List<kotlin.ranges/IntRange>>, kotlin.collections/List<io.github.valerioisufi.drawview.model/TextAlignment?>, kotlin.collections/List<kotlin.ranges/IntRange>) // io.github.valerioisufi.drawview.model.text/TableShape.<init>|<init>(kotlin.collections.List<kotlin.collections.List<kotlin.ranges.IntRange>>;kotlin.collections.List<io.github.valerioisufi.drawview.model.TextAlignment?>;kotlin.collections.List<kotlin.ranges.IntRange>){}[0]
 
@@ -3488,7 +3526,7 @@ final object io.github.valerioisufi.drawview.model.text/ListNumbering { // io.gi
     }
 
     final class Item { // io.github.valerioisufi.drawview.model.text/ListNumbering.Item|null[0]
-        constructor <init>(io.github.valerioisufi.drawview.model.text/RichTextParser.Span, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/String, io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet?, io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering?) // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.<init>|<init>(io.github.valerioisufi.drawview.model.text.RichTextParser.Span;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.String;io.github.valerioisufi.drawview.model.text.ListNumbering.Bullet?;io.github.valerioisufi.drawview.model.text.ListNumbering.Numbering?){}[0]
+        constructor <init>(io.github.valerioisufi.drawview.model.text/RichTextParser.Span, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/String, io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet?, io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering?, kotlin/Int = ...) // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.<init>|<init>(io.github.valerioisufi.drawview.model.text.RichTextParser.Span;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.String;io.github.valerioisufi.drawview.model.text.ListNumbering.Bullet?;io.github.valerioisufi.drawview.model.text.ListNumbering.Numbering?;kotlin.Int){}[0]
 
         final val bullet // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.bullet|{}bullet[0]
             final fun <get-bullet>(): io.github.valerioisufi.drawview.model.text/ListNumbering.Bullet? // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.bullet.<get-bullet>|<get-bullet>(){}[0]
@@ -3500,6 +3538,8 @@ final object io.github.valerioisufi.drawview.model.text/ListNumbering { // io.gi
             final fun <get-list>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.list.<get-list>|<get-list>(){}[0]
         final val numbering // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.numbering|{}numbering[0]
             final fun <get-numbering>(): io.github.valerioisufi.drawview.model.text/ListNumbering.Numbering? // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.numbering.<get-numbering>|<get-numbering>(){}[0]
+        final val ordinal // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.ordinal|{}ordinal[0]
+            final fun <get-ordinal>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.ordinal.<get-ordinal>|<get-ordinal>(){}[0]
         final val parent // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.parent|{}parent[0]
             final fun <get-parent>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.parent.<get-parent>|<get-parent>(){}[0]
         final val span // io.github.valerioisufi.drawview.model.text/ListNumbering.Item.span|{}span[0]

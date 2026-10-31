@@ -153,7 +153,7 @@ tiles, the sync of a single text and its conflicts work as they do. A box knows 
 | The link: the box this one goes on into | `DrawText.next: String?`, `TextData.next` (`drawview-model`); Room 24 (`MIGRATION_23_24`) | Information Expert |
 | Read the chains of a document: from its first box, links to texts of the document only, cycles cut | `TextChains` (`drawview-model`, pure) | Information Expert, Protected Variations |
 | Split a whole text into the rooms of the boxes: between lines; a line taller than an empty box between words (the next box marked `continuesLine`, its inline formatting closed and opened again); a table between rows | `ChainFlow` (`drawview-model`, pure, with `heightOf` like `TextFlow`) | Pure Fabrication |
-| Reflow while written: the whole text of the chain behind the editor, the box of the caret shown, the boxes after it updated live as drafts; the caret moving to the next box | `TextEditorManager` with a `ChainSession` (`drawview-canvas`) | Controller, Information Expert |
+| Reflow while written: when the lines of the box written go below the margin of its page, the chain is saved flowed and the editor opens again on the box of the caret; on closing, the chain flowed again from the box written (lines taken away pull the next ones back) | `TextEditorManager.flowChain` (`drawview-canvas`) | Controller, Information Expert |
 | Commit: the texts of the chain changed, boxes and pages added or removed, in one `CompositeChange` | `TextEditorManager.finishEditing` | Creator |
 | The style of the chain: applied to every box | `TextFormatTarget` for a chain | Polymorphism |
 | The mark of a chain on the frame (at the bottom of a box that goes on, at the top of one that continues) | `SelectionFrame` | High Cohesion |
@@ -175,7 +175,7 @@ joined with a line break (`\n`), or without one for a box marked `continuesLine`
 | 5 | Tables, notation and drawing: `Kind.TABLE`, `TableLayout` on the canvas, in the field and in the export; the search; tests and screenshots | done |
 | 6 | Tables, editing: `TableEditing`, the caret drawn in its cell (Tab, Enter, arrows, taps), the insert command with its size picker, the menu of the table, the Format menu and a shortcut; tests and screenshots | done |
 | 7 | Chains, stored: `DrawText.next`, `continuesLine`, Room 24 with its migration test, the sync (format test, protocol), `TextChains` with untrusted links (cycles, missing boxes) | done |
-| 8 | Chains, flow: `ChainFlow`; reflow while written, the caret across boxes, the next box and page created, emptied boxes removed, one change; the style on the chain; tests of the flow and of the editor | pending |
+| 8 | Chains, flow: `ChainFlow`; reflow while written, the caret across boxes, the next box and page created, emptied boxes removed, one change; the style on the chain; tests of the flow and of the editor | done |
 | 9 | Chains, around: the mark on the frame, the lasso on a box of a chain, long texts pasted and imported into chains, the export; screenshots; the desktop app on a scratch directory | pending |
 
 Stages are independent: lists (1-2), backgrounds (3-4), tables (5-6), chains (7-9); the order
@@ -304,6 +304,27 @@ above goes from what needs no stored change to what needs the most.
   not in the document, a cycle or a text another one takes already read as no link; the whole text
   of a chain (`joined`) (`TextChainsTest`).
 
+### Phase 8
+
+* `ChainFlow` (`drawview-model`, new, pure): the whole text cut into the rooms of the boxes (from
+  their corner to the bottom margin of their page), more boxes as needed; cut between lines, never
+  in a block of code, a table, a display formula or a list item with its lines; a line taller than
+  a new box cut between its words (`continuesLine`); a numbered list cut between two boxes goes on
+  with its number (`ListNumbering.Item.ordinal`) (`ChainFlowTest`).
+* `TextEditorManager`: the draft keeps `next` and `continuesLine`; after each change of the text,
+  lines below the bottom margin of the page flow into the chain (`flowIfOverflowing`): the box
+  written, the boxes after it, the new boxes on new pages (inserted after the last box, of its
+  format, at its top margin, at the left and width of the box written) and the boxes left empty
+  removed, in one `CompositeChange` (the new pages included: `PageManager.newPagesAfter`); the
+  editor opens again on the box of the caret, its page shown. Closing the editor flows the chain
+  again from the box written. The style of the box written goes to the whole chain.
+* At the ends of a box of a chain the arrows go into the box before or after, Backspace at its
+  start joins its first line to the last line of the box before (`moveInChain`,
+  `backspaceIntoPreviousBox`, called by the field).
+* Tests: `TextChainEditingTest` (a text going below its page, lines pulling back, the style, the
+  caret across the boxes, one step to undo).
+* A turned text, or one moved to another page while written, is saved alone (no flow).
+
 ## Decisions
 
 Taken by the user on 2026-10-31:
@@ -331,6 +352,11 @@ Taken alone, revertible:
    several boxes: the sync, the search, the export and the conflicts of a text stay as they are.
 9. **The room of a box of a chain ends at the bottom margin of its page**, not at a height set by
    the user.
+14. **The chain is saved when the text flows**, not kept as drafts of the other boxes while
+    written: the editor opens again on the box of the caret. Each flow is a step to undo (the
+    writing before it in the same box with it).
+15. **A new box goes on a new page**, inserted after the last box of the chain, never on a page
+    that has its own content (which a box at its top could cover).
 10. **The fill is outside the box** by a margin proportional to the font size, so that adding it
     does not move the text.
 11. **The two stored changes are two Room versions** (23 for the background, 24 for the chain),

@@ -532,6 +532,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public static final field $stable I
 	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
 	public fun applyTableAction (Lio/github/valerioisufi/drawview/canvas/text/TableEditing$Action;)V
+	public final fun backspaceIntoPreviousBox ()Z
 	public fun changeAlignment (Lio/github/valerioisufi/drawview/model/TextAlignment;)V
 	public fun changeBackground (Ljava/lang/Integer;)V
 	public fun changeColor (I)V
@@ -550,6 +551,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public fun getFontSize ()F
 	public fun getFormatsCharacters ()Z
 	public fun getInBulletList ()Z
+	public final fun getInChain ()Z
 	public fun getInCodeBlock ()Z
 	public fun getInHeading ()Z
 	public fun getInNumberedList ()Z
@@ -566,6 +568,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public final fun isEditing ()Z
 	public final fun lineBreakInItem ()Z
 	public final fun moveBy (FF)V
+	public final fun moveInChain (Z)Z
 	public final fun moveTo (FFZ)V
 	public static synthetic fun moveTo$default (Lio/github/valerioisufi/drawview/canvas/controller/TextEditorManager;FFZILjava/lang/Object;)V
 	public fun outdent ()V

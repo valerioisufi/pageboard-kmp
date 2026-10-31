@@ -3027,6 +3027,38 @@ public final class io/github/valerioisufi/drawview/model/shape/ShapeRecognizer {
 	public final fun recognize (Ljava/util/List;F)Lio/github/valerioisufi/drawview/model/shape/Shape;
 }
 
+public final class io/github/valerioisufi/drawview/model/text/ChainFlow {
+	public fun <init> (Lkotlin/jvm/functions/Function2;)V
+	public final fun flow (Ljava/lang/String;Ljava/util/List;Lio/github/valerioisufi/drawview/model/text/ChainFlow$Room;)Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/drawview/model/text/ChainFlow$Piece {
+	public fun <init> (Ljava/lang/String;Z)V
+	public synthetic fun <init> (Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Z
+	public final fun copy (Ljava/lang/String;Z)Lio/github/valerioisufi/drawview/model/text/ChainFlow$Piece;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/text/ChainFlow$Piece;Ljava/lang/String;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/text/ChainFlow$Piece;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getContinuesLine ()Z
+	public final fun getText ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/text/ChainFlow$Room {
+	public fun <init> (FF)V
+	public final fun component1 ()F
+	public final fun component2 ()F
+	public final fun copy (FF)Lio/github/valerioisufi/drawview/model/text/ChainFlow$Room;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/text/ChainFlow$Room;FFILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/text/ChainFlow$Room;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHeightMm ()F
+	public final fun getWidthMm ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class io/github/valerioisufi/drawview/model/text/ListNumbering {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/ListNumbering;
 	public final fun continuationIndentAt (Ljava/lang/String;I)Lkotlin/ranges/IntRange;
@@ -3046,12 +3078,14 @@ public final class io/github/valerioisufi/drawview/model/text/ListNumbering$Bull
 }
 
 public final class io/github/valerioisufi/drawview/model/text/ListNumbering$Item {
-	public fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;IIILjava/lang/String;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;)V
+	public fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;IIILjava/lang/String;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;I)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;IIILjava/lang/String;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getBullet ()Lio/github/valerioisufi/drawview/model/text/ListNumbering$Bullet;
 	public final fun getDepth ()I
 	public final fun getLabel ()Ljava/lang/String;
 	public final fun getList ()I
 	public final fun getNumbering ()Lio/github/valerioisufi/drawview/model/text/ListNumbering$Numbering;
+	public final fun getOrdinal ()I
 	public final fun getParent ()I
 	public final fun getSpan ()Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;
 }

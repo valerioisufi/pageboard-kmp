@@ -234,6 +234,19 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                         }
                         if (moved) return@onPreviewKeyEvent true
                     }
+                    val current = editor.value
+                    if (event.type == KeyEventType.KeyDown && current.selection.collapsed && !event.isShiftPressed && editor.inChain) {
+                        // At the ends of a box of a chain the caret goes on into the box before or after
+                        val atStart = current.selection.start == 0
+                        val atEnd = current.selection.start == current.text.length
+                        val moved = when (event.key) {
+                            Key.Backspace -> atStart && editor.backspaceIntoPreviousBox()
+                            Key.DirectionUp, Key.DirectionLeft -> atStart && editor.moveInChain(forward = false)
+                            Key.DirectionDown, Key.DirectionRight -> atEnd && editor.moveInChain(forward = true)
+                            else -> false
+                        }
+                        if (moved) return@onPreviewKeyEvent true
+                    }
                     if (event.type == KeyEventType.KeyDown) {
                         if (event.key == Key.Tab) {
                             if (event.isShiftPressed) {
