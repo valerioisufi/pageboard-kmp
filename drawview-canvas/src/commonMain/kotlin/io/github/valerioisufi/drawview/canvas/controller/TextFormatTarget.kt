@@ -18,6 +18,15 @@ public interface TextFormatTarget {
     public fun changeColor(argb: Int)
     public fun changeAlignment(newAlignment: TextAlignment)
 
+    /** Whether the boxes take a fill (see `DrawText.background`): the texts, not the style of a new one. */
+    public val takesBackground: Boolean get() = false
+
+    /** The ARGB color of the fill of the box shown (that of the first text), `null` for none. */
+    public val background: Int? get() = null
+
+    /** Gives the boxes the fill [argb], or takes it off (`null`). */
+    public fun changeBackground(argb: Int?) {}
+
     /** Whether the formats of the characters apply (bold, a formula…): to the text being written. */
     public val formatsCharacters: Boolean get() = false
 

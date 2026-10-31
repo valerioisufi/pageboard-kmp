@@ -179,6 +179,8 @@ internal data class TextEntity(
     val alignment: String = "START",
     /** Whether its width follows its text. */
     val autoWidth: Boolean = false,
+    /** The ARGB color of its fill, or `null` for none. */
+    val background: Int? = null,
     val added: Stamp,
     val removed: Stamp?,
     val placed: Stamp,

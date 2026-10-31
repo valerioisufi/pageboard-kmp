@@ -720,6 +720,17 @@ public class SelectionManager(private val controller: DrawViewController) {
         override fun changeFontSize(size: Float) = updateSelectedTextsFontSize(size)
         override fun changeColor(argb: Int) = updateSelectedTextsColor(argb)
         override fun changeAlignment(newAlignment: TextAlignment) = updateSelectedTextsAlignment(newAlignment)
+        override val takesBackground: Boolean get() = true
+        override val background: Int? get() = first.background
+        override fun changeBackground(argb: Int?) = updateSelectedTextsBackground(argb)
+    }
+
+    internal fun updateSelectedTextsBackground(background: Int?) {
+        val selection = currentSelection ?: return
+        if (selection.texts.isEmpty()) return
+        val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
+        controller.session.submit(UpdateTexts(page.id, selection.texts.map { it.toData().copy(background = background) }))
+        notifyChanged()
     }
 
     internal fun updateSelectedTextsColor(color: Int) {

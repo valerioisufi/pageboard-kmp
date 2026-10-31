@@ -1545,12 +1545,14 @@ final class io.github.valerioisufi.drawview.model.change/StrokePlacement : io.gi
 }
 
 final class io.github.valerioisufi.drawview.model.change/TextData : io.github.valerioisufi.drawview.model.change/ElementData { // io.github.valerioisufi.drawview.model.change/TextData|null[0]
-    constructor <init>(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.model/TextAlignment = ..., kotlin/Boolean = ..., kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float = ..., kotlin/Int, kotlin/Float, io.github.valerioisufi.drawview.model/ElementOrder? = ..., io.github.valerioisufi.drawview.model/Versions = ...) // io.github.valerioisufi.drawview.model.change/TextData.<init>|<init>(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.model.TextAlignment;kotlin.Boolean;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Float;io.github.valerioisufi.drawview.model.ElementOrder?;io.github.valerioisufi.drawview.model.Versions){}[0]
+    constructor <init>(kotlin/String, kotlin/String, io.github.valerioisufi.drawview.model/TextAlignment = ..., kotlin/Boolean = ..., kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float = ..., kotlin/Int, kotlin/Float, kotlin/Int? = ..., io.github.valerioisufi.drawview.model/ElementOrder? = ..., io.github.valerioisufi.drawview.model/Versions = ...) // io.github.valerioisufi.drawview.model.change/TextData.<init>|<init>(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.model.TextAlignment;kotlin.Boolean;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Float;kotlin.Int?;io.github.valerioisufi.drawview.model.ElementOrder?;io.github.valerioisufi.drawview.model.Versions){}[0]
 
     final val alignment // io.github.valerioisufi.drawview.model.change/TextData.alignment|{}alignment[0]
         final fun <get-alignment>(): io.github.valerioisufi.drawview.model/TextAlignment // io.github.valerioisufi.drawview.model.change/TextData.alignment.<get-alignment>|<get-alignment>(){}[0]
     final val autoWidth // io.github.valerioisufi.drawview.model.change/TextData.autoWidth|{}autoWidth[0]
         final fun <get-autoWidth>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/TextData.autoWidth.<get-autoWidth>|<get-autoWidth>(){}[0]
+    final val background // io.github.valerioisufi.drawview.model.change/TextData.background|{}background[0]
+        final fun <get-background>(): kotlin/Int? // io.github.valerioisufi.drawview.model.change/TextData.background.<get-background>|<get-background>(){}[0]
     final val color // io.github.valerioisufi.drawview.model.change/TextData.color|{}color[0]
         final fun <get-color>(): kotlin/Int // io.github.valerioisufi.drawview.model.change/TextData.color.<get-color>|<get-color>(){}[0]
     final val fontSize // io.github.valerioisufi.drawview.model.change/TextData.fontSize|{}fontSize[0]
@@ -1575,8 +1577,9 @@ final class io.github.valerioisufi.drawview.model.change/TextData : io.github.va
     final fun applyTo(io.github.valerioisufi.drawview.model/DrawText) // io.github.valerioisufi.drawview.model.change/TextData.applyTo|applyTo(io.github.valerioisufi.drawview.model.DrawText){}[0]
     final fun component1(): kotlin/String // io.github.valerioisufi.drawview.model.change/TextData.component1|component1(){}[0]
     final fun component10(): kotlin/Float // io.github.valerioisufi.drawview.model.change/TextData.component10|component10(){}[0]
-    final fun component11(): io.github.valerioisufi.drawview.model/ElementOrder? // io.github.valerioisufi.drawview.model.change/TextData.component11|component11(){}[0]
-    final fun component12(): io.github.valerioisufi.drawview.model/Versions // io.github.valerioisufi.drawview.model.change/TextData.component12|component12(){}[0]
+    final fun component11(): kotlin/Int? // io.github.valerioisufi.drawview.model.change/TextData.component11|component11(){}[0]
+    final fun component12(): io.github.valerioisufi.drawview.model/ElementOrder? // io.github.valerioisufi.drawview.model.change/TextData.component12|component12(){}[0]
+    final fun component13(): io.github.valerioisufi.drawview.model/Versions // io.github.valerioisufi.drawview.model.change/TextData.component13|component13(){}[0]
     final fun component2(): kotlin/String // io.github.valerioisufi.drawview.model.change/TextData.component2|component2(){}[0]
     final fun component3(): io.github.valerioisufi.drawview.model/TextAlignment // io.github.valerioisufi.drawview.model.change/TextData.component3|component3(){}[0]
     final fun component4(): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/TextData.component4|component4(){}[0]
@@ -1585,7 +1588,7 @@ final class io.github.valerioisufi.drawview.model.change/TextData : io.github.va
     final fun component7(): kotlin/Float // io.github.valerioisufi.drawview.model.change/TextData.component7|component7(){}[0]
     final fun component8(): kotlin/Float // io.github.valerioisufi.drawview.model.change/TextData.component8|component8(){}[0]
     final fun component9(): kotlin/Int // io.github.valerioisufi.drawview.model.change/TextData.component9|component9(){}[0]
-    final fun copy(kotlin/String = ..., kotlin/String = ..., io.github.valerioisufi.drawview.model/TextAlignment = ..., kotlin/Boolean = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Int = ..., kotlin/Float = ..., io.github.valerioisufi.drawview.model/ElementOrder? = ..., io.github.valerioisufi.drawview.model/Versions = ...): io.github.valerioisufi.drawview.model.change/TextData // io.github.valerioisufi.drawview.model.change/TextData.copy|copy(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.model.TextAlignment;kotlin.Boolean;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Float;io.github.valerioisufi.drawview.model.ElementOrder?;io.github.valerioisufi.drawview.model.Versions){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., io.github.valerioisufi.drawview.model/TextAlignment = ..., kotlin/Boolean = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Int = ..., kotlin/Float = ..., kotlin/Int? = ..., io.github.valerioisufi.drawview.model/ElementOrder? = ..., io.github.valerioisufi.drawview.model/Versions = ...): io.github.valerioisufi.drawview.model.change/TextData // io.github.valerioisufi.drawview.model.change/TextData.copy|copy(kotlin.String;kotlin.String;io.github.valerioisufi.drawview.model.TextAlignment;kotlin.Boolean;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Float;kotlin.Int?;io.github.valerioisufi.drawview.model.ElementOrder?;io.github.valerioisufi.drawview.model.Versions){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.change/TextData.equals|equals(kotlin.Any?){}[0]
     final fun estimatedHeight(): kotlin/Float // io.github.valerioisufi.drawview.model.change/TextData.estimatedHeight|estimatedHeight(){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.change/TextData.hashCode|hashCode(){}[0]
@@ -2784,6 +2787,8 @@ final class io.github.valerioisufi.drawview.model/DrawStroke : io.github.valerio
 final class io.github.valerioisufi.drawview.model/DrawText : io.github.valerioisufi.drawview.model/DrawElement, io.github.valerioisufi.drawview.model/RotatableItem { // io.github.valerioisufi.drawview.model/DrawText|null[0]
     constructor <init>(kotlin/String = ...) // io.github.valerioisufi.drawview.model/DrawText.<init>|<init>(kotlin.String){}[0]
 
+    final val backgroundOutset // io.github.valerioisufi.drawview.model/DrawText.backgroundOutset|{}backgroundOutset[0]
+        final fun <get-backgroundOutset>(): kotlin/Float // io.github.valerioisufi.drawview.model/DrawText.backgroundOutset.<get-backgroundOutset>|<get-backgroundOutset>(){}[0]
     final val boxLeft // io.github.valerioisufi.drawview.model/DrawText.boxLeft|{}boxLeft[0]
         final fun <get-boxLeft>(): kotlin/Float // io.github.valerioisufi.drawview.model/DrawText.boxLeft.<get-boxLeft>|<get-boxLeft>(){}[0]
     final val boxWidth // io.github.valerioisufi.drawview.model/DrawText.boxWidth|{}boxWidth[0]
@@ -2808,6 +2813,9 @@ final class io.github.valerioisufi.drawview.model/DrawText : io.github.valeriois
     final var autoWidth // io.github.valerioisufi.drawview.model/DrawText.autoWidth|{}autoWidth[0]
         final fun <get-autoWidth>(): kotlin/Boolean // io.github.valerioisufi.drawview.model/DrawText.autoWidth.<get-autoWidth>|<get-autoWidth>(){}[0]
         final fun <set-autoWidth>(kotlin/Boolean) // io.github.valerioisufi.drawview.model/DrawText.autoWidth.<set-autoWidth>|<set-autoWidth>(kotlin.Boolean){}[0]
+    final var background // io.github.valerioisufi.drawview.model/DrawText.background|{}background[0]
+        final fun <get-background>(): kotlin/Int? // io.github.valerioisufi.drawview.model/DrawText.background.<get-background>|<get-background>(){}[0]
+        final fun <set-background>(kotlin/Int?) // io.github.valerioisufi.drawview.model/DrawText.background.<set-background>|<set-background>(kotlin.Int?){}[0]
     final var color // io.github.valerioisufi.drawview.model/DrawText.color|{}color[0]
         final fun <get-color>(): kotlin/Int // io.github.valerioisufi.drawview.model/DrawText.color.<get-color>|<get-color>(){}[0]
         final fun <set-color>(kotlin/Int) // io.github.valerioisufi.drawview.model/DrawText.color.<set-color>|<set-color>(kotlin.Int){}[0]
@@ -3530,6 +3538,19 @@ final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.g
         final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.text/RichTextParser.Span.toString|toString(){}[0]
     }
+}
+
+final object io.github.valerioisufi.drawview.model.text/TextBackground { // io.github.valerioisufi.drawview.model.text/TextBackground|null[0]
+    final const val PADDING_EM // io.github.valerioisufi.drawview.model.text/TextBackground.PADDING_EM|{}PADDING_EM[0]
+        final fun <get-PADDING_EM>(): kotlin/Float // io.github.valerioisufi.drawview.model.text/TextBackground.PADDING_EM.<get-PADDING_EM>|<get-PADDING_EM>(){}[0]
+    final const val RADIUS_EM // io.github.valerioisufi.drawview.model.text/TextBackground.RADIUS_EM|{}RADIUS_EM[0]
+        final fun <get-RADIUS_EM>(): kotlin/Float // io.github.valerioisufi.drawview.model.text/TextBackground.RADIUS_EM.<get-RADIUS_EM>|<get-RADIUS_EM>(){}[0]
+
+    final val TINTS // io.github.valerioisufi.drawview.model.text/TextBackground.TINTS|{}TINTS[0]
+        final fun <get-TINTS>(): kotlin.collections/List<kotlin/Int> // io.github.valerioisufi.drawview.model.text/TextBackground.TINTS.<get-TINTS>|<get-TINTS>(){}[0]
+
+    final fun outsetMm(kotlin/Float): kotlin/Float // io.github.valerioisufi.drawview.model.text/TextBackground.outsetMm|outsetMm(kotlin.Float){}[0]
+    final fun radiusMm(kotlin/Float): kotlin/Float // io.github.valerioisufi.drawview.model.text/TextBackground.radiusMm|radiusMm(kotlin.Float){}[0]
 }
 
 final object io.github.valerioisufi.drawview.model.text/TextCleanup { // io.github.valerioisufi.drawview.model.text/TextCleanup|null[0]

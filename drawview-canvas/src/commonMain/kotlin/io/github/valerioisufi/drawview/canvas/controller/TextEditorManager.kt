@@ -97,6 +97,12 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
     override var alignment: TextAlignment by mutableStateOf(TextAlignment.START)
         private set
 
+    override val takesBackground: Boolean get() = true
+
+    /** The ARGB color of the fill of the box, or `null` for none (see `DrawText.background`). */
+    override var background: Int? by mutableStateOf(null)
+        private set
+
     override val formatsCharacters: Boolean get() = true
 
     /** The value whose block of code of the selection was last read, and that block. */
@@ -250,6 +256,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         value = TextFieldValue(content, TextRange(content.length))
         fontSize = item?.fontSize ?: defaults.fontSize
         color = item?.color ?: defaults.color
+        background = item?.background
         alignment = item?.alignment ?: defaults.alignment
         caretRequest = caretAt
         newTextId = newElementId()
@@ -528,6 +535,12 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         reportDraft()
     }
 
+    override fun changeBackground(argb: Int?) {
+        if (!isEditing || argb == background) return
+        background = argb
+        reportDraft()
+    }
+
     /** The height (page millimeters) the editor lays the text out. */
     public fun reportLayoutHeight(heightMm: Float) {
         if (!isEditing || abs(heightMm - boxHeight) < HEIGHT_EPSILON_MM) return
@@ -665,6 +678,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         rotation = rotation,
         color = color,
         fontSize = fontSize,
+        background = background,
         versions = versions
     )
 

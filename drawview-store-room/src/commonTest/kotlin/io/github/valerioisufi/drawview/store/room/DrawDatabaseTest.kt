@@ -198,6 +198,7 @@ class DrawDatabaseTest {
             autoWidth = true
             color = 0xFF112233.toInt()
             fontSize = 20f
+            background = 0xFFD7E8FA.toInt()
         }
         repository.saveText(page, text)
 
@@ -243,6 +244,7 @@ class DrawDatabaseTest {
         assertEquals(TextAlignment.CENTER, loadedText.alignment)
         assertTrue(loadedText.autoWidth)
         assertEquals(20f, loadedText.fontSize)
+        assertEquals(0xFFD7E8FA.toInt(), loadedText.background)
 
         val loadedImage = loaded.pages[0].images.single()
         assertEquals(15f, loadedImage.rotation)

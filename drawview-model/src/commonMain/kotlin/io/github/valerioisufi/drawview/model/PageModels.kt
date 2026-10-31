@@ -19,6 +19,7 @@ import io.github.valerioisufi.drawview.model.geometry.Dimension
 import io.github.valerioisufi.drawview.model.geometry.Point
 import io.github.valerioisufi.drawview.model.geometry.Rect
 import io.github.valerioisufi.drawview.model.geometry.mm
+import io.github.valerioisufi.drawview.model.text.TextBackground
 import io.github.valerioisufi.drawview.model.text.TextRoom
 import kotlin.concurrent.Volatile
 import kotlin.math.PI
@@ -256,12 +257,15 @@ public class DrawText(override val id: String = newElementId()) : RotatableItem,
     override val centerX: Float get() = x + turned(boxLeft + boxWidth / 2f, height / 2f).x
     override val centerY: Float get() = y + turned(boxLeft + boxWidth / 2f, height / 2f).y
 
-    /** The bounds of its box (see [boxWidth]) were it [height] high. */
+    /** The bounds of its box (see [boxWidth]) were it [height] high, its [background] included. */
     override fun getRotatedBounds(height: Float): Rect {
-        val left = boxLeft
-        val right = left + boxWidth
-        if (rotation == 0f) return Rect(x + left, y, x + right, y + height)
-        val corners = listOf(turned(left, 0f), turned(right, 0f), turned(left, height), turned(right, height))
+        val outset = backgroundOutset
+        val left = boxLeft - outset
+        val right = boxLeft + boxWidth + outset
+        val top = -outset
+        val bottom = height + outset
+        if (rotation == 0f) return Rect(x + left, y + top, x + right, y + bottom)
+        val corners = listOf(turned(left, top), turned(right, top), turned(left, bottom), turned(right, bottom))
         return Rect(x + corners.minOf { it.x }, y + corners.minOf { it.y }, x + corners.maxOf { it.x }, y + corners.maxOf { it.y })
     }
 
@@ -276,9 +280,11 @@ public class DrawText(override val id: String = newElementId()) : RotatableItem,
         return Point(dx * c + dy * s - boxLeft, -dx * s + dy * c)
     }
 
+    /** Whether the point is in its box, or on its [background]. */
     override fun containsPoint(px: Float, py: Float): Boolean {
         val local = toLocal(px, py)
-        return local.x >= 0f && local.x <= boxWidth && local.y >= 0f && local.y <= height
+        val outset = backgroundOutset
+        return local.x >= -outset && local.x <= boxWidth + outset && local.y >= -outset && local.y <= height + outset
     }
 
     /** The point ([dx], [dy]) of the text before its rotation, turned around its corner. */
@@ -289,6 +295,12 @@ public class DrawText(override val id: String = newElementId()) : RotatableItem,
 
     /** Font size in typographic points. */
     @Volatile public var fontSize: Float = 16f
+
+    /** The ARGB color of the fill under its box, or `null` for none (see [TextBackground]). */
+    @Volatile public var background: Int? = null
+
+    /** How far its [background] goes out of its box, in millimeters (0 without one). */
+    public val backgroundOutset: Float get() = if (background == null) 0f else TextBackground.outsetMm(fontSize)
 
 
     /** Incremented on every change, used to invalidate the render caches. */
@@ -331,6 +343,7 @@ public class DrawText(override val id: String = newElementId()) : RotatableItem,
         rotation = other.rotation
         color = other.color
         fontSize = other.fontSize
+        background = other.background
         markDirty()
     }
 }

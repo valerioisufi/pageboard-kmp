@@ -102,6 +102,8 @@ public data class TextData(
     val rotation: Float = 0f,
     val color: Int,
     val fontSize: Float,
+    /** The color of its fill, or `null` for none (see `DrawText.background`): part of its content. */
+    val background: Int? = null,
     override val order: ElementOrder? = null,
     val versions: Versions = Versions.NONE
 ) : ElementData {
@@ -113,7 +115,7 @@ public data class TextData(
 
     /** Whether its content (the text and its format) is the one of [other]. */
     internal fun hasContentOf(other: TextData): Boolean =
-        text == other.text && alignment == other.alignment && color == other.color
+        text == other.text && alignment == other.alignment && color == other.color && background == other.background
 
     /** Writes this content into [text] (its identifier and its order excepted). */
     public fun applyTo(text: DrawText) {
@@ -127,6 +129,7 @@ public data class TextData(
         text.rotation = rotation
         text.color = color
         text.fontSize = fontSize
+        text.background = background
         text.markDirty()
     }
 }
@@ -311,6 +314,7 @@ public fun DrawText.toData(): TextData = TextData(
     rotation = rotation,
     color = color,
     fontSize = fontSize,
+    background = background,
     order = dataOrder,
     versions = contentVersions
 )
@@ -382,6 +386,7 @@ internal fun writeContent(element: DrawElement, data: ElementData) {
             element.text = data.text
             element.alignment = data.alignment
             element.color = data.color
+            element.background = data.background
             element.markDirty()
         }
         element is DrawTextMarkup && data is TextMarkupData -> {

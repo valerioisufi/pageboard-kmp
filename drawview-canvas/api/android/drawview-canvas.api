@@ -532,12 +532,14 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public static final field $stable I
 	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
 	public fun changeAlignment (Lio/github/valerioisufi/drawview/model/TextAlignment;)V
+	public fun changeBackground (Ljava/lang/Integer;)V
 	public fun changeColor (I)V
 	public fun changeFontSize (F)V
 	public final fun finishEditing ()V
 	public final fun getActiveTextPageIndex ()I
 	public fun getAlignment ()Lio/github/valerioisufi/drawview/model/TextAlignment;
 	public final fun getAutoWidth ()Z
+	public fun getBackground ()Ljava/lang/Integer;
 	public final fun getBoxHeight ()F
 	public final fun getBoxWidth ()F
 	public final fun getBoxX ()F
@@ -552,6 +554,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public fun getInNumberedList ()Z
 	public final fun getRotation ()F
 	public final fun getSessionId ()I
+	public fun getTakesBackground ()Z
 	public final fun getValue ()Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun handleEnter ()Z
 	public fun indent ()V
@@ -584,9 +587,11 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 
 public abstract interface class io/github/valerioisufi/drawview/canvas/controller/TextFormatTarget {
 	public abstract fun changeAlignment (Lio/github/valerioisufi/drawview/model/TextAlignment;)V
+	public fun changeBackground (Ljava/lang/Integer;)V
 	public abstract fun changeColor (I)V
 	public abstract fun changeFontSize (F)V
 	public abstract fun getAlignment ()Lio/github/valerioisufi/drawview/model/TextAlignment;
+	public fun getBackground ()Ljava/lang/Integer;
 	public fun getCodeLineNumbers ()Z
 	public abstract fun getColor ()I
 	public abstract fun getFontSize ()F
@@ -595,6 +600,7 @@ public abstract interface class io/github/valerioisufi/drawview/canvas/controlle
 	public fun getInCodeBlock ()Z
 	public fun getInHeading ()Z
 	public fun getInNumberedList ()Z
+	public fun getTakesBackground ()Z
 	public fun indent ()V
 	public fun isActive (Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Z
 	public fun outdent ()V
@@ -607,12 +613,15 @@ public abstract interface class io/github/valerioisufi/drawview/canvas/controlle
 }
 
 public final class io/github/valerioisufi/drawview/canvas/controller/TextFormatTarget$DefaultImpls {
+	public static fun changeBackground (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;Ljava/lang/Integer;)V
+	public static fun getBackground (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Ljava/lang/Integer;
 	public static fun getCodeLineNumbers (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getFormatsCharacters (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getInBulletList (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getInCodeBlock (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getInHeading (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun getInNumberedList (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
+	public static fun getTakesBackground (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)Z
 	public static fun indent (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V
 	public static fun isActive (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/drawview/canvas/text/RichTextEditing$Format;)Z
 	public static fun outdent (Lio/github/valerioisufi/drawview/canvas/controller/TextFormatTarget;)V

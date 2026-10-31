@@ -390,6 +390,37 @@ class TextEditingTest {
     }
 
     @Test
+    fun theFillOfABoxIsChosenKeptAndUndone() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        val tint = 0xFFFFF1B8.toInt()
+        editor.startNewText(0, 10f, 50f)
+        assertTrue(editor.takesBackground)
+        editor.type("Filled")
+        editor.changeBackground(tint)
+        assertEquals(tint, controller.presence.activity.value?.text?.background, "the others see it")
+        editor.finishEditing()
+        val text = controller.document.pages[0].texts.single()
+        assertEquals(tint, text.background)
+
+        // Written again: the fill stays
+        editor.startEditing(text, 0)
+        assertEquals(tint, editor.background)
+        editor.type("Filled again")
+        editor.finishEditing()
+        assertEquals(tint, text.background)
+
+        // Taken off the texts selected, in one change
+        controller.selectionManager.selectText(0, text)
+        val selected = assertNotNull(controller.textFormatTarget)
+        assertEquals(tint, selected.background)
+        selected.changeBackground(null)
+        assertNull(text.background)
+        controller.undo()
+        assertEquals(tint, text.background)
+    }
+
+    @Test
     fun aTappedTextHasTheWidthOfItsText() = runTest(UnconfinedTestDispatcher()) {
         val controller = controller(backgroundScope)
         val page = controller.document.pages[0]

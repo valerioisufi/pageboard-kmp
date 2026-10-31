@@ -75,7 +75,8 @@ Variations).
 10. **A fill color for a box**: none by default; chosen from a palette of tints (and the custom
     color), with an inner margin and rounded corners, for the text written and the texts
     selected.
-11. The fill is part of the box: its frame, the lasso, the hit test and the tiles take it.
+11. The fill is part of the text: the lasso, the hit test and the tiles take it; the frame and
+    its handles stay on the box of the lines.
 
 ### Boxes across pages
 
@@ -169,7 +170,7 @@ joined with a line break (`\n`), or without one for a box marked `continuesLine`
 |---|---|---|
 | 1 | Lists, structure and look: continuation lines in the parser; `ListNumbering` (ordinals by position, `1.` / `a.` / `i.`, bullets by depth); labels in a column, numbers right-aligned, nested items at the text of their parent; tests of the parser and the numbering, screenshots of nested lists | done |
 | 2 | Lists, editing: Shift+Enter a line in the item, Enter on a continuation line, Backspace joining, the toggles and Tab on items with continuation lines; tests of `RichTextEditing` and of the field | done |
-| 3 | Backgrounds, stored: `DrawText.background`, `TextData`, Room 23 with its migration test, the operations log, the sync (the format test re-recorded, protocol to agree), the bounds with the margin | pending |
+| 3 | Backgrounds, stored: `DrawText.background`, `TextData`, Room 23 with its migration test, the operations log, the sync (the format test re-recorded, protocol to agree), the bounds with the margin | done |
 | 4 | Backgrounds, drawn and chosen: tiles, field, PDF export; the command, the palette in the format bar and the selection bar, the Format menu; screenshots | pending |
 | 5 | Tables, notation and drawing: `Kind.TABLE`, `TableLayout` on the canvas, in the field (caret out of it) and in the export; `TextFlow` keeping tables; tests and screenshots | pending |
 | 6 | Tables, editing: `TableEditing`, `TableCellEditor` (cells, Tab, Enter, arrows, taps), the insert command with its size picker, the table bar, the Format menu and shortcuts; tests and screenshots | pending |
@@ -212,6 +213,21 @@ above goes from what needs no stored change to what needs the most.
   stays a plain line break.
 * Tests: `RichTextEditingTest` (five new), the field driven by the keys in
   `text-list-line-break` (explorer, a screenshot and the text it writes).
+
+### Phase 3
+
+* `DrawText.background` (ARGB or `null`), `backgroundOutset`; `getRotatedBounds` and
+  `containsPoint` take the fill; `TextData.background`, part of the content (`hasContentOf`,
+  `writeContent`, `applyTo`, `toData`); `TextBackground` (`drawview-model`): margin and radius
+  0.35 em, the seven tints.
+* Room 23: `texts.background` (nullable), `Migration22To23` tested on a database of version 22 with
+  a text and an operation of the log written before the fill (`DrawDatabaseMigrationTest`); the
+  round trip of the repository keeps it (`DrawDatabaseTest`).
+* **The protocol changes**: `TextData` has `background` (optional, not sent when `null`), recorded
+  in `ProtocolFormats` under version 1 (decision 12). A device of the previous format reads the
+  texts without a fill and fails on one with a fill.
+* `TextFormatTarget.takesBackground`, `background`, `changeBackground` (the editor: its draft and
+  the presence carry the fill; the selection: one `UpdateTexts`), tested in `TextEditingTest`.
 
 ## Decisions
 

@@ -305,6 +305,7 @@ internal class DrawDocumentRepository(
         rotation = entity.rotation
         color = entity.color
         fontSize = entity.fontSize
+        background = entity.background
         // Until it is laid out
         height = TextSizes.estimatedHeightMm(entity.text, entity.fontSize)
         contentVersions = entity.contentVersions
@@ -556,6 +557,7 @@ internal class DrawDocumentRepository(
                 fontSize = text.fontSize,
                 alignment = text.alignment.name,
                 autoWidth = text.autoWidth,
+                background = text.background,
                 added = text.added,
                 removed = text.removed,
                 placed = text.placed,
