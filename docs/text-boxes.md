@@ -176,7 +176,7 @@ joined with a line break (`\n`), or without one for a box marked `continuesLine`
 | 6 | Tables, editing: `TableEditing`, the caret drawn in its cell (Tab, Enter, arrows, taps), the insert command with its size picker, the menu of the table, the Format menu and a shortcut; tests and screenshots | done |
 | 7 | Chains, stored: `DrawText.next`, `continuesLine`, Room 24 with its migration test, the sync (format test, protocol), `TextChains` with untrusted links (cycles, missing boxes) | done |
 | 8 | Chains, flow: `ChainFlow`; reflow while written, the caret across boxes, the next box and page created, emptied boxes removed, one change; the style on the chain; tests of the flow and of the editor | done |
-| 9 | Chains, around: the mark on the frame, the lasso on a box of a chain, long texts pasted and imported into chains, the export; screenshots; the desktop app on a scratch directory | pending |
+| 9 | Chains, around: the mark on the frame, the lasso on a box of a chain, long texts pasted and imported into chains, the export; screenshots; the desktop app on a scratch directory | done |
 
 Stages are independent: lists (1-2), backgrounds (3-4), tables (5-6), chains (7-9); the order
 above goes from what needs no stored change to what needs the most.
@@ -224,7 +224,7 @@ above goes from what needs no stored change to what needs the most.
   a text and an operation of the log written before the fill (`DrawDatabaseMigrationTest`); the
   round trip of the repository keeps it (`DrawDatabaseTest`).
 * **The protocol changes**: `TextData` has `background` (optional, not sent when `null`), recorded
-  in `ProtocolFormats` under version 1 (decision 12). A device of the previous format reads the
+  in `ProtocolFormats` under version 1 (decision 15). A device of the previous format reads the
   texts without a fill and fails on one with a fill.
 * `TextFormatTarget.takesBackground`, `background`, `changeBackground` (the editor: its draft and
   the presence carry the fill; the selection: one `UpdateTexts`), tested in `TextEditingTest`.
@@ -299,7 +299,7 @@ above goes from what needs no stored change to what needs the most.
 * Room 24: `texts.next` (nullable), `texts.continuesLine` (0 by default), `Migration23To24` tested
   on a database of version 23 with a text with a fill (`DrawDatabaseMigrationTest`).
 * **The protocol changes again** (`next`, `continuesLine` optional in `TextData`), recorded under
-  version 1 (decision 12).
+  version 1 (decision 15).
 * `TextChains` (`drawview-model`, new): the chains of a document from the links, a link to a text
   not in the document, a cycle or a text another one takes already read as no link; the whole text
   of a chain (`joined`) (`TextChainsTest`).
@@ -325,6 +325,25 @@ above goes from what needs no stored change to what needs the most.
   caret across the boxes, one step to undo).
 * A turned text, or one moved to another page while written, is saved alone (no flow).
 
+### Phase 9
+
+* The frame of a text of a chain, written or selected, has a chevron on the edge it goes on from
+  and on the one it goes on into (`SelectionFrame.chainedAbove`, `chainedBelow`,
+  `TextEditorManager.chainComesFrom`, `chainGoesOn`).
+* A long text imported (`TextPlacer`): a piece going on at the top of a new page is chained to
+  the piece before it (`EditorCoreTest`).
+* **A field of an ended session sends nothing**: after a flow the editor opens on another box, and
+  the field of the box before could still send its text into it (found by the screenshot of a
+  chain: the second box took the whole text). The field keeps the session it was made for and its
+  changes from another session are dropped.
+* The lasso moves a box of a chain alone (its link kept); the export draws each box with its part:
+  nothing to change.
+* Screenshot `text-chain-written` (the text written below its page going on at the top of a new
+  one, the box marked, its text checked).
+* Checked: all the JVM tests, the ABI, Android and iOS builds, the tests of the sync modules and of
+  Room on the iOS simulator, the screenshots, the consumer checks; PencilNotes desktop started on
+  a scratch directory (its database created at version 24).
+
 ## Decisions
 
 Taken by the user on 2026-10-31:
@@ -346,23 +365,26 @@ Taken alone, revertible:
 6. **The ordinal from the position** (CommonMark): the source keeps `1. 1. 1.` and shows `1. 2. 3.`;
    the number of the first item is kept as the start.
 7. **Cells without line breaks** (as in GitHub's notation); a long cell wraps.
-13. **The caret of a table is drawn by the editor** in the one field (not a field per cell): the
-    input methods, the undo and the drafts stay those of the text.
-8. **The parts of a chain are texts of their own** with a link to the next, not one text shared by
+8. **The caret of a table is drawn by the editor** in the one field (not a field per cell): the
+   input methods, the undo and the drafts stay those of the text.
+9. **The parts of a chain are texts of their own** with a link to the next, not one text shared by
    several boxes: the sync, the search, the export and the conflicts of a text stay as they are.
-9. **The room of a box of a chain ends at the bottom margin of its page**, not at a height set by
-   the user.
-14. **The chain is saved when the text flows**, not kept as drafts of the other boxes while
+10. **The room of a box of a chain ends at the bottom margin of its page**, not at a height set by
+    the user.
+11. **The chain is saved when the text flows**, not kept as drafts of the other boxes while
     written: the editor opens again on the box of the caret. Each flow is a step to undo (the
     writing before it in the same box with it).
-15. **A new box goes on a new page**, inserted after the last box of the chain, never on a page
+12. **A new box goes on a new page**, inserted after the last box of the chain, never on a page
     that has its own content (which a box at its top could cover).
-10. **The fill is outside the box** by a margin proportional to the font size, so that adding it
+13. **The fill is outside the box** by a margin proportional to the font size, so that adding it
     does not move the text.
-11. **The two stored changes are two Room versions** (23 for the background, 24 for the chain),
+14. **The two stored changes are two Room versions** (23 for the background, 24 for the chain),
     one per stage, each with its migration.
-12. **The protocol stays 1** for both, as on `feat/untrusted-members`, the two devices of the user
-    updated together: to confirm with the user at phase 3.
+15. **The protocol stays 1** for both, as on `feat/untrusted-members`, the two devices of the user
+    updated together (the plan approved by the user on 2026-10-31 said so; to raise it, change
+    `PROTOCOL_VERSION` and record the format under the new number).
+16. **A long text imported is chained where it goes on onto a new page**; its pieces in the free
+    space of a page with content stay texts of their own (their room would cover what is below).
 
 ## Left for later
 
@@ -371,3 +393,8 @@ Taken alone, revertible:
 - A line break in an item typed on a soft keyboard (no Shift): a key of the bar, if needed.
 - Checklists (`- [ ]`), still left for later from `docs/text-editing.md`.
 - Tables in the notes of the lecture assistant (its prompts).
+- The boxes of a chain while another box is written: drawn as they are until the text flows.
+- A keystroke typed in the frame during which the editor opens again on another box of a chain is
+  dropped (the field of the box before is not the one written any more).
+- The pieces of an imported text are joined with a blank line; chained, they are joined by one
+  line break when the chain flows again.

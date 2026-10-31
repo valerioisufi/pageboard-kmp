@@ -477,6 +477,9 @@ class EditorCoreTest {
         assertTrue(spots.last().newPageAfter)
         assertTrue(placement.confirm())
         assertTrue(controller.document.pages.size > 1)
+        // The pieces going on onto the new pages: one text across them
+        val chains = io.github.valerioisufi.drawview.model.text.TextChains.of(controller.document)
+        assertTrue(controller.document.pages.drop(1).all { page -> chains.previous(page.texts.minBy { it.y }.id) != null }, "each new page goes on from the piece before")
         val paragraphs = controller.document.pages.flatMap { p -> p.texts.drop(if (p === page) 1 else 0).sortedBy { it.y }.flatMap { it.text.split("\n\n") } }
         assertEquals((1..60).map { "Paragraph $it of a text written elsewhere." }, paragraphs)
 

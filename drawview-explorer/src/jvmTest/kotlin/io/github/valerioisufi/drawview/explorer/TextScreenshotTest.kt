@@ -252,6 +252,26 @@ class TextScreenshotTest {
         waitForIdle()
     }
 
+    /**
+     * A text written to the bottom of its page going on at the top of a new page: the box being
+     * written on the new page, its frame marked as going on from the box before.
+     */
+    @Test
+    fun textChainWritten() = capture("text-chain-written", ReferenceWindow.DESKTOP, dark = false) { viewModels ->
+        openNote(viewModels)
+        write(viewModels, 20f, 250f, (1..8).joinToString("\n") { "Line $it of a long note" }, drawnWidthMm = 120f)
+        runOnIdle {
+            val controller = viewModels.controller()
+            assertEquals(2, controller.document.pages.size, "a page added for the lines left")
+            assertEquals(1, controller.textEditorManager.activeTextPageIndex)
+            assertEquals((6..8).joinToString("\n") { "Line $it of a long note" }, controller.textEditorManager.value.text, "the field of the first box sends nothing to the second")
+            // The bottom of the first page and the top of the second in sight
+            val top = controller.viewport.pageMmToScreen(0)!!.mapPoint(0f, 230f).y
+            controller.viewport.panBy(0f, -top)
+        }
+        waitForIdle()
+    }
+
     /** A text selected: the frame of the selection. */
     @Test
     fun textSelected() = WINDOWS.forEach { window ->

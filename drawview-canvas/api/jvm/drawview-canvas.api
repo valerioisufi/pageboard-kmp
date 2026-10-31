@@ -36,7 +36,8 @@ public final class io/github/valerioisufi/drawview/canvas/FrameStyle {
 public final class io/github/valerioisufi/drawview/canvas/SelectionFrame {
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/canvas/SelectionFrame$Companion;
-	public synthetic fun <init> (Ljava/util/List;Landroidx/compose/ui/geometry/Offset;JLjava/util/List;ZLio/github/valerioisufi/drawview/model/geometry/Matrix2D;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/util/List;Landroidx/compose/ui/geometry/Offset;JLjava/util/List;ZLio/github/valerioisufi/drawview/model/geometry/Matrix2D;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/util/List;Landroidx/compose/ui/geometry/Offset;JLjava/util/List;ZLio/github/valerioisufi/drawview/model/geometry/Matrix2D;ZZLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun contains-3MmeM6k (JF)Z
 	public static synthetic fun contains-3MmeM6k$default (Lio/github/valerioisufi/drawview/canvas/SelectionFrame;JFILjava/lang/Object;)Z
 	public final fun getCenter-F1C5BW0 ()J
@@ -546,6 +547,8 @@ public final class io/github/valerioisufi/drawview/canvas/controller/TextEditorM
 	public final fun getBoxWidth ()F
 	public final fun getBoxX ()F
 	public final fun getBoxY ()F
+	public final fun getChainComesFrom ()Z
+	public final fun getChainGoesOn ()Z
 	public fun getCodeLineNumbers ()Z
 	public fun getColor ()I
 	public fun getFontSize ()F

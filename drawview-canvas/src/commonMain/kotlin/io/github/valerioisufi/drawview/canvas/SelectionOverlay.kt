@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -39,6 +40,9 @@ import kotlin.math.hypot
 public object FrameStyle {
     /** Room between the frame and what it frames. */
     internal const val PADDING_DP = 6f
+
+    /** The size of the chevrons marking a text of a chain. */
+    internal const val CHAIN_MARK_DP = 5f
     internal const val STROKE_DP = 1.5f
     internal const val CORNER_RADIUS_DP = 4f
     internal const val FILL_ALPHA = 0.06f
@@ -82,7 +86,10 @@ public class SelectionFrame(
     /** Whether the corners scale what is framed (a selection). */
     internal val scalesFromCorners: Boolean,
     /** Live transformation mapping the source page millimeters to the screen. */
-    public val mmToScreen: Matrix2D
+    public val mmToScreen: Matrix2D,
+    /** Whether the text framed goes on from a box before it, and into a box after it (see `TextChains`). */
+    internal val chainedAbove: Boolean = false,
+    internal val chainedBelow: Boolean = false
 ) {
     public val center: Offset
         get() = Offset(corners.sumOf { it.x.toDouble() }.toFloat() / 4f, corners.sumOf { it.y.toDouble() }.toFloat() / 4f)
@@ -127,7 +134,9 @@ public class SelectionFrame(
         internal fun compute(controller: DrawViewController, selection: SelectionGroup): SelectionFrame? {
             val pageToScreen = controller.viewport.pageMmToScreen(selection.pageIndex) ?: return null
             val mmToScreen = Matrix2D(selection.transform).postConcat(pageToScreen)
-            return of(mmToScreen, selection.boundingBox.toCompose(), selection.baseRotation, controller.viewport.density, sideHandles = selection.isSingleText, transformable = true)
+            val frame = of(mmToScreen, selection.boundingBox.toCompose(), selection.baseRotation, controller.viewport.density, sideHandles = selection.isSingleText, transformable = true)
+            val text = selection.texts.singleOrNull()?.takeIf { selection.isSingleText } ?: return frame
+            return frame?.chained(controller.document.pages.any { page -> page.texts.any { it.next == text.id } }, text.next != null)
         }
 
         /**
@@ -140,7 +149,12 @@ public class SelectionFrame(
             val mmToScreen = controller.viewport.pageMmToScreen(editor.activeTextPageIndex) ?: return null
             val box = Rect(editor.boxX, editor.boxY, editor.boxX + editor.boxWidth, editor.boxY + editor.boxHeight)
             return of(mmToScreen, box, editor.rotation, controller.viewport.density, sideHandles = true, transformable = false)
+                ?.chained(editor.chainComesFrom, editor.chainGoesOn)
         }
+
+        /** This frame marked as going on from a box before it ([above]) and into one after it ([below]). */
+        private fun SelectionFrame.chained(above: Boolean, below: Boolean): SelectionFrame =
+            if (!above && !below) this else SelectionFrame(corners, rotationHandle, rotationStemBase, sideHandles, scalesFromCorners, mmToScreen, above, below)
 
         private fun of(mmToScreen: Matrix2D, box: Rect, rotation: Float, density: Float, sideHandles: Boolean, transformable: Boolean): SelectionFrame? {
             val turn = Matrix2D().postRotate(rotation, box.center.x, box.center.y)
@@ -260,6 +274,22 @@ internal object SelectionOverlay {
             }
         }
 
+        // A text of a chain: a chevron on the edge it goes on from, and on the one it goes on into
+        // (toward their end, away from the knob turning the frame)
+        val ay = (frame.corners[3] - frame.corners[0]).normalized()
+        val ax = (frame.corners[1] - frame.corners[0]).normalized()
+        val size = FrameStyle.CHAIN_MARK_DP * density
+        fun chevron(tip: Offset) {
+            val path = Path().apply {
+                moveTo(tip.x - ax.x * size - ay.x * size, tip.y - ax.y * size - ay.y * size)
+                lineTo(tip.x, tip.y)
+                lineTo(tip.x + ax.x * size - ay.x * size, tip.y + ax.y * size - ay.y * size)
+            }
+            drawPath(path, primary, style = Stroke(width = stroke * 1.5f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+        }
+        if (frame.chainedAbove) chevron(frame.corners[0] + (frame.corners[1] - frame.corners[0]) * CHAIN_MARK_AT + ay * (size * 0.4f))
+        if (frame.chainedBelow) chevron(frame.corners[3] + (frame.corners[2] - frame.corners[3]) * CHAIN_MARK_AT + ay * (size * 1.6f))
+
         // Side (word-wrap) handles of a single text
         if (frame.sideHandles.isNotEmpty()) {
             val edge = frame.corners[3] - frame.corners[0]
@@ -279,6 +309,9 @@ internal object SelectionOverlay {
             }
         }
     }
+
+    /** Where the chevrons of a chain are along their edge. */
+    private const val CHAIN_MARK_AT = 0.85f
 
     /** Bounds of the frame in screen pixels (used for culling and menus). */
     fun bounds(frame: SelectionFrame): Rect {

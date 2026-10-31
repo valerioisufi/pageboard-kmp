@@ -128,7 +128,11 @@ public class TextPlacer(private val controller: DrawViewController) {
     public fun sizeOfPage(page: DrawPage): Float =
         TextSizePolicy.forNote(PageTextSizes.of(page, controller.placementManager.pdfTextOf(page.index)), controller.textDefaults.fontSize)
 
-    /** [markdown] at [fontSize] in [color], flowed from the free space of page [startPageIndex] (none: straight on new pages) onto new pages after [anchorIndex]. */
+    /**
+     * [markdown] at [fontSize] in [color], flowed from the free space of page [startPageIndex] (none:
+     * straight on new pages) onto new pages after [anchorIndex], the pieces going on onto a new page
+     * linked into a chain (see `TextChains`).
+     */
     private fun flowItems(
         markdown: String,
         startPageIndex: Int?,
@@ -139,9 +143,15 @@ public class TextPlacer(private val controller: DrawViewController) {
         measure: (DrawText) -> TextBlockSize?
     ): List<PlacementItem> {
         val first = startPageIndex?.let { controller.placementManager.occupancyOf(it) }
-        return textFlow.flow(markdown, first, newPage) { text, width -> heightOf(text, width, fontSize, color, measure) }.map { piece ->
+        val pieces = textFlow.flow(markdown, first, newPage) { text, width -> heightOf(text, width, fontSize, color, measure) }
+        val items = pieces.map { piece ->
             PlacementItem(newText(piece.text, piece.box.width, piece.box.height, fontSize, color), listOf(PlacementSpot(anchorIndex, piece.box, piece.newPage)))
         }
+        // A piece going on at the top of a new page goes on from the piece before it: one text across the pages
+        for (index in 1 until pieces.size) {
+            if (pieces[index].newPage > pieces[index - 1].newPage) items[index - 1].preview.next = items[index].preview.id
+        }
+        return items
     }
 
     /** Adds [text] to [page] in the box of [spot], its height laid out again on its width. */

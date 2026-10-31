@@ -108,6 +108,13 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
     private var chainNext: String? = null
     private var chainContinuesLine: Boolean = false
 
+    /** Whether the text written goes on into a box after it (see [TextChains]). */
+    public val chainGoesOn: Boolean get() = isEditing && chainNext != null
+
+    /** Whether the text written goes on from a box before it, read when the editor opens. */
+    public var chainComesFrom: Boolean = false
+        private set
+
     /** The ARGB color of the fill of the box, or `null` for none (see `DrawText.background`). */
     override var background: Int? by mutableStateOf(null)
         private set
@@ -268,6 +275,7 @@ public class TextEditorManager(private val controller: DrawViewController) : Tex
         background = item?.background
         chainNext = item?.next
         chainContinuesLine = item?.continuesLine == true
+        chainComesFrom = item != null && TextChains.of(controller.document).previous(item.id) != null
         alignment = item?.alignment ?: defaults.alignment
         caretRequest = caretAt
         newTextId = newElementId()

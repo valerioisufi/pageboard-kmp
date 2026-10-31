@@ -178,6 +178,8 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
 
     CompositionLocalProvider(LocalDensity provides unscaledDensity) {
+        // The session this field was made for
+        val session = remember { editor.sessionId }
         // Tracks Shift+Enter on a hardware keyboard out of the list items: a plain line break, no list continued
         var lastKeyWasShiftEnter by remember { mutableStateOf(false) }
 
@@ -186,6 +188,9 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
         BasicTextField(
             value = value,
             onValueChange = { newValue ->
+                // A field of a session that ended (the text flowed into another box of its chain)
+                // may still send what it had: not for the box written now
+                if (editor.sessionId != session) return@BasicTextField
                 if (lastKeyWasShiftEnter) {
                     lastKeyWasShiftEnter = false
                     editor.updateValue(newValue, smartNewline = false)

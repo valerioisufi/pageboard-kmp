@@ -732,6 +732,8 @@ final class io.github.valerioisufi.drawview.canvas.controller/SnapManager { // i
 final class io.github.valerioisufi.drawview.canvas.controller/TextEditorManager : io.github.valerioisufi.drawview.canvas.controller/TextFormatTarget { // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager|null[0]
     constructor <init>(io.github.valerioisufi.drawview.canvas.controller/DrawViewController) // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.<init>|<init>(io.github.valerioisufi.drawview.canvas.controller.DrawViewController){}[0]
 
+    final val chainGoesOn // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.chainGoesOn|{}chainGoesOn[0]
+        final fun <get-chainGoesOn>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.chainGoesOn.<get-chainGoesOn>|<get-chainGoesOn>(){}[0]
     final val codeLineNumbers // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.codeLineNumbers|{}codeLineNumbers[0]
         final fun <get-codeLineNumbers>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.codeLineNumbers.<get-codeLineNumbers>|<get-codeLineNumbers>(){}[0]
     final val formatsCharacters // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.formatsCharacters|{}formatsCharacters[0]
@@ -773,6 +775,8 @@ final class io.github.valerioisufi.drawview.canvas.controller/TextEditorManager 
         final fun <get-boxX>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.boxX.<get-boxX>|<get-boxX>(){}[0]
     final var boxY // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.boxY|{}boxY[0]
         final fun <get-boxY>(): kotlin/Float // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.boxY.<get-boxY>|<get-boxY>(){}[0]
+    final var chainComesFrom // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.chainComesFrom|{}chainComesFrom[0]
+        final fun <get-chainComesFrom>(): kotlin/Boolean // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.chainComesFrom.<get-chainComesFrom>|<get-chainComesFrom>(){}[0]
     final var color // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.color|{}color[0]
         final fun <get-color>(): kotlin/Int // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.color.<get-color>|<get-color>(){}[0]
     final var fontSize // io.github.valerioisufi.drawview.canvas.controller/TextEditorManager.fontSize|{}fontSize[0]
@@ -1273,7 +1277,7 @@ final class io.github.valerioisufi.drawview.canvas/DrawThemeColors { // io.githu
 }
 
 final class io.github.valerioisufi.drawview.canvas/SelectionFrame { // io.github.valerioisufi.drawview.canvas/SelectionFrame|null[0]
-    constructor <init>(kotlin.collections/List<androidx.compose.ui.geometry/Offset>, androidx.compose.ui.geometry/Offset?, androidx.compose.ui.geometry/Offset, kotlin.collections/List<androidx.compose.ui.geometry/Offset>, kotlin/Boolean, io.github.valerioisufi.drawview.model.geometry/Matrix2D) // io.github.valerioisufi.drawview.canvas/SelectionFrame.<init>|<init>(kotlin.collections.List<androidx.compose.ui.geometry.Offset>;androidx.compose.ui.geometry.Offset?;androidx.compose.ui.geometry.Offset;kotlin.collections.List<androidx.compose.ui.geometry.Offset>;kotlin.Boolean;io.github.valerioisufi.drawview.model.geometry.Matrix2D){}[0]
+    constructor <init>(kotlin.collections/List<androidx.compose.ui.geometry/Offset>, androidx.compose.ui.geometry/Offset?, androidx.compose.ui.geometry/Offset, kotlin.collections/List<androidx.compose.ui.geometry/Offset>, kotlin/Boolean, io.github.valerioisufi.drawview.model.geometry/Matrix2D, kotlin/Boolean = ..., kotlin/Boolean = ...) // io.github.valerioisufi.drawview.canvas/SelectionFrame.<init>|<init>(kotlin.collections.List<androidx.compose.ui.geometry.Offset>;androidx.compose.ui.geometry.Offset?;androidx.compose.ui.geometry.Offset;kotlin.collections.List<androidx.compose.ui.geometry.Offset>;kotlin.Boolean;io.github.valerioisufi.drawview.model.geometry.Matrix2D;kotlin.Boolean;kotlin.Boolean){}[0]
 
     final val center // io.github.valerioisufi.drawview.canvas/SelectionFrame.center|{}center[0]
         final fun <get-center>(): androidx.compose.ui.geometry/Offset // io.github.valerioisufi.drawview.canvas/SelectionFrame.center.<get-center>|<get-center>(){}[0]
