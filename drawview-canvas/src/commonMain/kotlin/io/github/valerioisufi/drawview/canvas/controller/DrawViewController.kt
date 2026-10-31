@@ -133,6 +133,9 @@ public class DrawViewController(
     public val textMarkupManager: TextMarkupManager = TextMarkupManager(this)
     public val snapManager: SnapManager = SnapManager(this)
 
+    /** Turns the strokes held still at their end into their shapes. */
+    public val shapeSnapper: ShapeSnapper = ShapeSnapper(this)
+
     /** The elements of the types added by the application. */
     public val customElementManager: CustomElementManager = CustomElementManager(this)
 
@@ -297,7 +300,7 @@ public class DrawViewController(
 
     /**
      * The preferences of the user, as they change (the presets of the tools, the stylus only
-     * mode, the last tool, the defaults of the texts, the snapping): whoever keeps them collects
+     * mode, the last tool, the defaults of the texts, the snapping, the shapes): whoever keeps them collects
      * them and gives them back with [applyPreferences].
      */
     public val preferences: StateFlow<DrawPreferences> = preferencesState.asStateFlow()
@@ -307,6 +310,7 @@ public class DrawViewController(
         isStylusOnlyMode = preferences.isStylusOnlyMode
         textDefaults = preferences.textDefaults
         snapManager.applyPreferences(preferences)
+        shapeSnapper.applyPreferences(preferences)
         toolManager.applyPreferences(preferences)
         preferencesState.value = currentPreferences()
     }
@@ -321,7 +325,8 @@ public class DrawViewController(
         lastSelectedTool = toolManager.selectedTool,
         textDefaults = textDefaults,
         isSnapEnabled = snapManager.isEnabled,
-        presets = ToolManager.PRESET_TOOLS.associateWith { toolManager.presetsOf(it).toList() }
+        presets = ToolManager.PRESET_TOOLS.associateWith { toolManager.presetsOf(it).toList() },
+        isShapeRecognitionEnabled = shapeSnapper.isEnabled
     )
 
     // ==========================================================

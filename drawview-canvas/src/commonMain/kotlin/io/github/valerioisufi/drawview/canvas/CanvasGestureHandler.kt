@@ -26,6 +26,7 @@ import androidx.compose.ui.input.pointer.isTertiaryPressed
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.controller.EditorActivity
+import io.github.valerioisufi.drawview.canvas.controller.ShapeSnapper
 import io.github.valerioisufi.drawview.canvas.geometry.toCompose
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.ink.InkStrokeEngine
@@ -155,6 +156,14 @@ internal class CanvasGestureHandler(
 
     /** The strokes drawn so far (the one in progress: the last one), see [reportActivity]. */
     private var strokeCount = 0L
+
+    /** Where and when the pen last stopped in the stroke being drawn, and whether that stop was tried as a shape. */
+    private var holdPosition = Offset.Zero
+    private var holdTime = 0L
+    private var holdTried = false
+
+    /** The stroke being drawn became its shape: the pen moving on leaves it as it is. */
+    private var strokeSnapped = false
     private var inkInputType = InputToolType.UNKNOWN
     private var lastTapTime = 0L
     private var lastTapPosition = Offset.Zero
@@ -197,6 +206,10 @@ internal class CanvasGestureHandler(
     private val wheelAxis = ScrollAxisLock { controller.viewport.density }
     private var lastWheelTime = 0L
 
+    /** Whether the pen held still now would turn the stroke being drawn into its shape. */
+    private val holdCandidate: Boolean
+        get() = mode == Mode.INK && movedBeyondSlop && !strokeSnapped && !holdTried && controller.shapeSnapper.isEnabled
+
     private val isDrawingTool: Boolean
         get() = controller.toolManager.isInkTool || controller.toolManager.isLassoTool || controller.toolManager.isEraserTool
 
@@ -207,15 +220,19 @@ internal class CanvasGestureHandler(
 
         awaitPointerEventScope {
             while (true) {
-                val event = if (longPressCandidate) {
-                    val remaining = longPressTimeout - (currentEventTime() - downTime)
-                    if (remaining <= 0L) null else withTimeoutOrNull(remaining) { awaitPointerEvent() }
-                } else {
-                    awaitPointerEvent()
+                val remaining = when {
+                    longPressCandidate -> longPressTimeout - (currentEventTime() - downTime)
+                    holdCandidate -> ShapeSnapper.HOLD_MS - (currentEventTime() - holdTime)
+                    else -> null
+                }
+                val event = when {
+                    remaining == null -> awaitPointerEvent()
+                    remaining <= 0L -> null
+                    else -> withTimeoutOrNull(remaining) { awaitPointerEvent() }
                 }
 
                 if (event == null) {
-                    onLongPress()
+                    if (longPressCandidate) onLongPress() else onHold()
                     continue
                 }
                 handle(event, touchSlop, doubleTapTimeout)
@@ -488,6 +505,10 @@ internal class CanvasGestureHandler(
             inkPageIndex = pageIndex
             inkBrush = brush
             mode = if (tool == Tool.LAZO) Mode.LASSO else Mode.INK
+            strokeSnapped = false
+            holdTried = false
+            holdPosition = position
+            holdTime = change.uptimeMillis
             engine.startStroke(brush)
             if (mode == Mode.INK) strokeCount++
             addInkInput(change, position, change.uptimeMillis, change.pressure)
@@ -564,11 +585,14 @@ internal class CanvasGestureHandler(
 
         when (mode) {
             Mode.INK, Mode.LASSO -> {
-                for (h in change.historical) {
-                    addInkInput(change, h.position, h.uptimeMillis, change.pressure)
+                if (!strokeSnapped) {
+                    for (h in change.historical) {
+                        addInkInput(change, h.position, h.uptimeMillis, change.pressure)
+                    }
+                    addInkInput(change, position, change.uptimeMillis, change.pressure)
+                    live.setLiveMesh(engine.currentMesh(), inkPageIndex)
+                    if (mode == Mode.INK) followHold(position, change.uptimeMillis)
                 }
-                addInkInput(change, position, change.uptimeMillis, change.pressure)
-                live.setLiveMesh(engine.currentMesh(), inkPageIndex)
             }
 
             Mode.ERASE -> {
@@ -769,7 +793,7 @@ internal class CanvasGestureHandler(
 
         when (mode) {
             Mode.INK -> {
-                if (activePointer == up.id) addInkInput(up, position, up.uptimeMillis, up.pressure)
+                if (activePointer == up.id && !strokeSnapped) addInkInput(up, position, up.uptimeMillis, up.pressure)
                 val mesh = engine.finishStroke()
                 val brush = inkBrush
                 live.setLiveMesh(null, -1)
@@ -871,6 +895,35 @@ internal class CanvasGestureHandler(
 
         mode = Mode.NONE
         activePointer = null
+    }
+
+    /**
+     * Follows the pen at [position] at [time] while it draws: it stops where it stays within a few
+     * dp, and held there long enough the stroke becomes its shape (here when the pen sends events
+     * while still, by the timer of [run] when it does not).
+     */
+    private fun followHold(position: Offset, time: Long) {
+        if ((position - holdPosition).getDistance() > ShapeSnapper.HOLD_SLOP_DP * controller.viewport.density) {
+            holdPosition = position
+            holdTime = time
+            holdTried = false
+        } else if (holdCandidate && time - holdTime >= ShapeSnapper.HOLD_MS) {
+            onHold()
+        }
+    }
+
+    /**
+     * The pen held still at the end of the stroke being drawn: the stroke becomes its shape, if it
+     * looks like one. For the other devices it is a new stroke, its inputs sent from the first.
+     */
+    private fun onHold() {
+        holdTried = true
+        val brush = inkBrush ?: return
+        if (mode != Mode.INK || !controller.shapeSnapper.snap(engine, inkPageIndex, brush, inkInputType)) return
+        strokeSnapped = true
+        strokeCount++
+        live.setLiveMesh(engine.currentMesh(), inkPageIndex)
+        reportActivity(lastPosition, inking = true)
     }
 
     private fun onLongPress() {

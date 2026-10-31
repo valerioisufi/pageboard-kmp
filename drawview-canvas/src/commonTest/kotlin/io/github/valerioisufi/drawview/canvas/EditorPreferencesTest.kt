@@ -57,7 +57,9 @@ class EditorPreferencesTest {
             ),
             preferences
         )
-        val tools = ToolManager().apply { applyPreferences(preferences!!) }
+        // Written before the shapes: they are on
+        assertTrue(preferences!!.isShapeRecognitionEnabled)
+        val tools = ToolManager().apply { applyPreferences(preferences) }
         // The presets are a snapshot list, equal to a plain list on the JVM only: their content is compared
         assertEquals(ToolManager.defaultPresets().getValue(Tool.ERASER), tools.presetsOf(Tool.ERASER).toList())
     }
@@ -67,6 +69,7 @@ class EditorPreferencesTest {
         val controller = DrawViewController(document = DrawDocument(), coroutineScope = backgroundScope)
         controller.updateStylusOnlyMode(true)
         controller.snapManager.updateEnabled(false)
+        controller.shapeSnapper.updateEnabled(false)
         controller.selectTool(Tool.INK_HIGHLIGHTER)
         val told = controller.preferences.value
         assertTrue(told.isStylusOnlyMode)
@@ -78,6 +81,7 @@ class EditorPreferencesTest {
         other.applyPreferences(DrawPreferences.decode(told.encode())!!)
         assertTrue(other.isStylusOnlyMode)
         assertEquals(false, other.snapManager.isEnabled)
+        assertEquals(false, other.shapeSnapper.isEnabled)
         assertEquals(Tool.INK_HIGHLIGHTER, other.selectedTool)
         assertEquals(told, other.preferences.value)
     }

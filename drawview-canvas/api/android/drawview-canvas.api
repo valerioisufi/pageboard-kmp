@@ -181,21 +181,23 @@ public final class io/github/valerioisufi/drawview/canvas/controller/DrawPrefere
 	public static final field $stable I
 	public static final field Companion Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences$Companion;
 	public fun <init> ()V
-	public fun <init> (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;)V
-	public synthetic fun <init> (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;Z)V
+	public synthetic fun <init> (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Z
 	public final fun component2 ()Lio/github/valerioisufi/drawview/canvas/tool/Tool;
 	public final fun component3 ()Lio/github/valerioisufi/drawview/model/text/TextDefaults;
 	public final fun component4 ()Z
 	public final fun component5 ()Ljava/util/Map;
-	public final fun copy (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;)Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;
-	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;
+	public final fun component6 ()Z
+	public final fun copy (ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;Z)Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;ZLio/github/valerioisufi/drawview/canvas/tool/Tool;Lio/github/valerioisufi/drawview/model/text/TextDefaults;ZLjava/util/Map;ZILjava/lang/Object;)Lio/github/valerioisufi/drawview/canvas/controller/DrawPreferences;
 	public final fun encode ()Ljava/lang/String;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getLastSelectedTool ()Lio/github/valerioisufi/drawview/canvas/tool/Tool;
 	public final fun getPresets ()Ljava/util/Map;
 	public final fun getTextDefaults ()Lio/github/valerioisufi/drawview/model/text/TextDefaults;
 	public fun hashCode ()I
+	public final fun isShapeRecognitionEnabled ()Z
 	public final fun isSnapEnabled ()Z
 	public final fun isStylusOnlyMode ()Z
 	public fun toString ()Ljava/lang/String;
@@ -247,6 +249,7 @@ public final class io/github/valerioisufi/drawview/canvas/controller/DrawViewCon
 	public final fun getSelectedTool ()Lio/github/valerioisufi/drawview/canvas/tool/Tool;
 	public final fun getSelectionManager ()Lio/github/valerioisufi/drawview/canvas/controller/SelectionManager;
 	public final fun getSession ()Lio/github/valerioisufi/drawview/model/change/DocumentSession;
+	public final fun getShapeSnapper ()Lio/github/valerioisufi/drawview/canvas/controller/ShapeSnapper;
 	public final fun getSnapManager ()Lio/github/valerioisufi/drawview/canvas/controller/SnapManager;
 	public final fun getTextAdapter ()Lio/github/valerioisufi/drawview/canvas/render/tile/TextTileAdapter;
 	public final fun getTextDefaults ()Lio/github/valerioisufi/drawview/model/text/TextDefaults;
@@ -508,6 +511,13 @@ public final class io/github/valerioisufi/drawview/canvas/controller/SelectionMa
 	public final fun rotateBy (F)V
 	public final fun selectText (ILio/github/valerioisufi/drawview/model/DrawText;)V
 	public final fun setLassoMode (Lio/github/valerioisufi/drawview/canvas/tool/LassoMode;)V
+}
+
+public final class io/github/valerioisufi/drawview/canvas/controller/ShapeSnapper {
+	public static final field $stable I
+	public fun <init> (Lio/github/valerioisufi/drawview/canvas/controller/DrawViewController;)V
+	public final fun isEnabled ()Z
+	public final fun updateEnabled (Z)V
 }
 
 public final class io/github/valerioisufi/drawview/canvas/controller/SnapManager {

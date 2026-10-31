@@ -78,9 +78,9 @@ Variations).
 | The shapes and the points that draw each one | `sealed interface Shape` with `Line`, `Arrow`, `Polyline`, `Ellipse`, `Polygon` and `points()` | Information Expert (each shape knows its geometry), Polymorphism (no `when` on a kind outside them) |
 | Regularizing a shape: angles to 0°/45°/90°, a circle, a square | `ShapeRecognizer` (after the fit) | Information Expert (it knows the fit and how far it is) |
 | Noticing that the pen is held still at the end of a stroke | `CanvasGestureHandler` (`drawview-canvas`), a timer like the one of the long press | Controller (it already owns the pointer events and the stroke in progress) |
-| Turning the stroke in progress into its shape: recognize, give the engine the points of the shape, show it | `ShapeSnapper` (`drawview-canvas`, internal), used by the gesture handler | Indirection (the gesture handler does not know the recognition), Low Coupling |
+| Turning the stroke in progress into its shape: recognize, give the engine the points of the shape, show it | `ShapeSnapper` (`drawview-canvas`, `controller.shapeSnapper`), used by the gesture handler | Indirection (the gesture handler does not know the recognition), Low Coupling |
 | Committing the shape | `DrawViewController.commitInkStroke`, as it is | Protected Variations (the shape enters the document as any stroke) |
-| The preference | `DrawPreferences.isShapeRecognitionEnabled`, `ToolManager` / controller state | Information Expert (the preferences of the editor live there) |
+| The preference | `DrawPreferences.isShapeRecognitionEnabled`, `ShapeSnapper.isEnabled` | Information Expert (the preferences of the editor live there) |
 | The switch | the settings of the pen and the highlighter (`drawview-ui`) | Low Coupling (the UI calls the controller only) |
 
 ### Recognition
@@ -141,7 +141,7 @@ noise, and strokes recorded by hand in the tests' resources).
 | Phase | Content | Status |
 |---|---|---|
 | 1 | `Shape` and `ShapeRecognizer` in `drawview-model` (`model/shape/`): line, arrow, broken line, ellipse, circle, triangle, rectangle, square, polygon, the regularization, the points of each shape; tests on synthetic strokes with noise and on strokes that are no shape (handwriting, spirals, scribbles) that must give nothing; a test that the Ink mesh of a rectangle and a triangle keeps its corners; ABI of `drawview-model` recorded on purpose | Done |
-| 2 | The hold at the end of a stroke in `CanvasGestureHandler` and `ShapeSnapper` in `drawview-canvas`: the live mesh replaced by the shape, committed on the up, undone in one step; `DrawPreferences.isShapeRecognitionEnabled` (default on) with a test reading the preferences written before it; tests of the gesture (held: a shape; lifted: the stroke; held on a scribble: the stroke) | Proposed |
+| 2 | The hold at the end of a stroke in `CanvasGestureHandler` and `ShapeSnapper` in `drawview-canvas`: the live mesh replaced by the shape, committed on the up, undone in one step; `DrawPreferences.isShapeRecognitionEnabled` (default on) with a test reading the preferences written before it; tests of the gesture (held: a shape; lifted: the stroke; held on a scribble: the stroke) | Done |
 | 3 | The switch in the settings of the pen and of the highlighter (`drawview-ui`), its screenshots (`verifyRoborazziJvm`); the desktop application on a scratch directory, the shapes drawn with the mouse and checked after a restart and in the PDF export | Proposed |
 
 ### Phase 1 results
@@ -167,6 +167,24 @@ noise, and strokes recorded by hand in the tests' resources).
   scribble, a curve, an open arc, a dot; each kind drawn by 30 hands at three amounts of drift, 990
   strokes, all right), `ShapeStrokeTest` in `drawview-ink` (the Ink mesh of a rectangle and of a
   triangle reaches past each corner by 80% of its half width or more, pressure pen and marker).
+
+### Phase 2 results
+
+* `ShapeSnapper` (`controller.shapeSnapper`, public like `SnapManager`, so that the settings can
+  switch it): `isEnabled` and `updateEnabled`, kept in
+  `DrawPreferences.isShapeRecognitionEnabled` (last of its fields, on by default); `snap` (internal)
+  recognizes the inputs of the engine with a tolerance of 4 dp at the zoom of the page and starts
+  the stroke again through the inputs of the shape.
+* `CanvasGestureHandler`: the pen stops where it stays within 6 dp; held 500 ms, the stroke is
+  tried once as a shape (again only after the pen moved on). Two ways of noticing it: the events a
+  pen sends while still (`followHold`, at their times), and the timer of the loop next to the one of
+  the long press, for a mouse held down that sends nothing. Snapped, the moves and the up add no
+  input; the up commits the stroke as any other. The snapped stroke counts as a new one for the
+  presence.
+* Tests: `ShapeGesturesTest` in `drawview-canvas` (a wavy line held with events and without them
+  becomes a level line, undone in one step; lifted at once, held on a scribble, or with the shapes
+  switched off, the stroke drawn), `EditorPreferencesTest` (the preference told and taken back, on
+  in the preferences written before it). ABI of `drawview-canvas` recorded again on purpose.
 
 ## Decisions
 

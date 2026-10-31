@@ -41,7 +41,9 @@ public data class DrawPreferences(
     val textDefaults: TextDefaults = TextDefaults(),
     /** Whether the boxes snap to what is around them (see `SnapManager`). */
     val isSnapEnabled: Boolean = true,
-    val presets: Map<Tool, List<ToolPreset>> = ToolManager.defaultPresets()
+    val presets: Map<Tool, List<ToolPreset>> = ToolManager.defaultPresets(),
+    /** Whether a stroke held still at its end becomes its shape (see `ShapeSnapper`). */
+    val isShapeRecognitionEnabled: Boolean = true
 ) {
     /** These preferences as text (JSON), read again by [decode]. */
     public fun encode(): String = json.encodeToString(serializer(), this)
