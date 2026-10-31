@@ -83,7 +83,7 @@ public object MarkdownTextUtil {
         Kind.CODE -> SpanStyle(fontFamily = monospace)
         Kind.CODE_BLOCK -> SpanStyle(fontFamily = monospace, fontSize = (baseFontSize * CodeBlockLayout.CODE_SCALE).sp)
         Kind.HEADING -> SpanStyle(fontWeight = FontWeight.Bold, fontSize = (baseFontSize * headingScale(span.level)).sp)
-        Kind.FORMULA, Kind.ESCAPE, Kind.LIST_ITEM -> null
+        Kind.FORMULA, Kind.ESCAPE, Kind.LIST_ITEM, Kind.TABLE -> null
     }
 
     /** How much bigger than the text a heading of [level] is. */

@@ -71,6 +71,7 @@ import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_formul
 import io.github.valerioisufi.drawview.ui.render.CodeBlockLayout
 import io.github.valerioisufi.drawview.ui.render.CodeBlockSource
 import io.github.valerioisufi.drawview.ui.render.CodeTheme
+import io.github.valerioisufi.drawview.ui.render.TableLayout
 import io.github.valerioisufi.drawview.ui.render.ComposeTextTileAdapter
 import io.github.valerioisufi.drawview.ui.render.FormulaImages
 import io.github.valerioisufi.drawview.ui.render.LruCache
@@ -158,7 +159,12 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
             measurePrefix = { prefix ->
                 codeMeasurer.measure(AnnotatedString(prefix), TextStyle(fontSize = fontSizePx.sp, fontFamily = notesFonts.text, letterSpacing = 0.sp), softWrap = false, skipCache = true)
                     .getHorizontalPosition(prefix.length, usePrimaryDirection = true)
-            }
+            },
+            // The tables laid out as the page lays them out
+            measureText = { cell, cellWidth, alignment ->
+                TableLayout.measureCell(codeMeasurer, cell, TextStyle(color = textColor, fontSize = fontSizePx.sp, fontFamily = notesFonts.text, letterSpacing = 0.sp), cellWidth, alignment)
+            },
+            paperColor = paper
         ) { latex, sizePx -> renderAtBucket(images, latex, sizePx, editor.color, scale / ComposeTextTileAdapter.LAYOUT_PX_PER_MM) }
         RichTextPresenter.present(value.text, presentation, reveal = value.selection)
     }
@@ -270,8 +276,11 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                         val origin = current.codeBlockOrigin(block)
                         drawIntoCanvas { block.layout.draw(it, origin.x, origin.y) }
                     }
-                    for (formula in shown.formulas) {
-                        val box = current.formulaRect(formula)
+                    for (table in shown.tables) {
+                        val origin = current.tableOrigin(table)
+                        drawIntoCanvas { table.layout.draw(it, origin.x, origin.y) }
+                    }
+                    for ((formula, box) in shown.formulas.map { it to current.formulaRect(it) } + current.tableFormulas(shown.tables)) {
                         drawImage(
                             formula.image,
                             srcSize = IntSize(formula.image.width, formula.image.height),

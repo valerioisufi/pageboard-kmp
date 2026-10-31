@@ -170,6 +170,23 @@ class TextScreenshotTest {
         }
     }
 
+    /**
+     * A table saved on the page, and one in the text being written: the header in bold, the
+     * alignments of the columns, a formula in a cell, a long cell wrapping, the columns sharing
+     * the width of the box.
+     */
+    @Test
+    fun textTables() = WINDOWS.forEach { window ->
+        capture("text-tables", window, dark = false) { viewModels ->
+            openNote(viewModels)
+            val limits = "Notable limits:\n| Limit | Value | Note |\n|---|:-:|---|\n| \$\\lim_{x \\to 0} \\frac{\\sin x}{x}\$ | **1** | " +
+                "the area of the sector between the two triangles |\n| \$\\lim_{x \\to 0} \\frac{e^x - 1}{x}\$ | 1 | |\nThen the derivatives."
+            write(viewModels, 20f, 20f, limits, drawnWidthMm = 120f)
+            save(viewModels)
+            write(viewModels, 20f, 100f, "| Day | Topic |\n|--:|---|\n| 1 | Limits |\n| 2 | Continuity |\n\nWritten now", drawnWidthMm = 80f)
+        }
+    }
+
     /** A text selected: the frame of the selection. */
     @Test
     fun textSelected() = WINDOWS.forEach { window ->

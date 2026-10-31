@@ -17,14 +17,15 @@ import kotlin.math.min
 public object RichTextParser {
 
     /** A kind of [Span]. */
-    public enum class Kind { BOLD, ITALIC, STRIKE, CODE, HEADING, FORMULA, ESCAPE, LIST_ITEM, CODE_BLOCK, LINK }
+    public enum class Kind { BOLD, ITALIC, STRIKE, CODE, HEADING, FORMULA, ESCAPE, LIST_ITEM, CODE_BLOCK, LINK, TABLE }
 
     /**
      * A part of a text written with the notation: from [start] to [end] (the delimiters
      * included), its content from [contentStart] to [contentEnd].
      *
      * A list item goes from the start of its line to the end of its last continuation line (see
-     * [ListNumbering] for its place in its list).
+     * [ListNumbering] for its place in its list). A table goes from the start of its header row to
+     * the end of its last row (see [TableShape] for its cells).
      *
      * A block of code goes from the start of the line of its opening fence to the end of the line
      * of its closing fence (or of the text, when no fence closes it); its content is the lines
@@ -108,7 +109,41 @@ public object RichTextParser {
             candidates += Span(Kind.LIST_ITEM, start, end, contentStart, end, level = level, ordered = true, number = number)
         }
         withContinuations(text, candidates, verbatim)
+        candidates += tables(text, masked)
         return nest(candidates)
+    }
+
+    /**
+     * The tables of [text] (GitHub's notation): a header row with a `|`, a delimiter row of as many
+     * cells (`---`, `:--`, `:-:`, `--:`), then the rows with a `|` up to a blank line or a line
+     * without one. The `|` are looked for in [masked]: one in code or escaped (`\|`) is text.
+     */
+    private fun tables(text: String, masked: String): List<Span> {
+        val tables = mutableListOf<Span>()
+        var lineStart = 0
+        while (lineStart < masked.length) {
+            val lineEnd = masked.indexOf('\n', lineStart).let { if (it < 0) masked.length else it }
+            val nextStart = lineEnd + 1
+            if (nextStart < masked.length && hasPipe(masked, lineStart, lineEnd)) {
+                val delimiterEnd = masked.indexOf('\n', nextStart).let { if (it < 0) masked.length else it }
+                val delimiter = masked.substring(nextStart, delimiterEnd)
+                val columns = TableShape.cellsOf(masked, lineStart, lineEnd).size
+                if ('|' in delimiter && TABLE_DELIMITER.matches(delimiter) && TableShape.cellsOf(masked, nextStart, delimiterEnd).size == columns) {
+                    var end = delimiterEnd
+                    while (end < masked.length) {
+                        val rowStart = end + 1
+                        val rowEnd = masked.indexOf('\n', rowStart).let { if (it < 0) masked.length else it }
+                        if (rowStart >= masked.length || masked.substring(rowStart, rowEnd).let { it.isBlank() || '|' !in it }) break
+                        end = rowEnd
+                    }
+                    tables += Span(Kind.TABLE, lineStart, end, lineStart, end)
+                    lineStart = end + 1
+                    continue
+                }
+            }
+            lineStart = nextStart
+        }
+        return tables
     }
 
     /**
@@ -136,6 +171,12 @@ public object RichTextParser {
             }
             if (end != item.end) candidates[index] = item.copy(end = end, contentEnd = end)
         }
+    }
+
+    /** Whether [masked] has a `|` from [start] to [end] (looked for in that line only: linear over the lines). */
+    private fun hasPipe(masked: String, start: Int, end: Int): Boolean {
+        for (k in start until end) if (masked[k] == '|') return true
+        return false
     }
 
     /** Whether [offset] is in one of [spans], sorted by start and not overlapping. */
@@ -632,6 +673,7 @@ public object RichTextParser {
     private val HEADING = Regex("""^#{1,6}[ \t]+\S.*$""", RegexOption.MULTILINE)
     private val BULLET_LIST = Regex("""^([ \t]*)([-*+])[ \t]+(.*)$""", RegexOption.MULTILINE)
     private val NUMBERED_LIST = Regex("""^([ \t]*)(\d+)\.[ \t]+(.*)$""", RegexOption.MULTILINE)
+    private val TABLE_DELIMITER = Regex("""^ {0,3}\|?[ \t]*:?-+:?[ \t]*(\|[ \t]*:?-+:?[ \t]*)*\|?[ \t]*$""")
 
     private fun indentLevel(indent: String): Int {
         var spaces = 0

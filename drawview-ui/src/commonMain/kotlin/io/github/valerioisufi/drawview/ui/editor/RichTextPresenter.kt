@@ -25,6 +25,8 @@ import io.github.valerioisufi.drawview.model.text.code.CodeHighlighter
 import io.github.valerioisufi.drawview.ui.render.CodeBlockLayout
 import io.github.valerioisufi.drawview.ui.render.CodeBlockSource
 import io.github.valerioisufi.drawview.ui.render.CodeTheme
+import io.github.valerioisufi.drawview.ui.render.TableLayout
+import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.ui.theme.NotesFonts
 import kotlin.math.max
 import kotlin.math.min
@@ -107,9 +109,11 @@ internal class Struts(
  * none, its formulas then all in the line and its blocks of code as code in the line), the
  * [monospace] of its code, the colors of the tokens of its code ([highlighter]), its blocks of code
  * laid out by [layoutCodeBlock], the prefixes of its list items measured by [measurePrefix] (`null`:
- * approximated), its formulas rendered by [renderFormula].
+ * approximated), the cells of its tables laid out by [measureText] (in the style of the text, on a
+ * width or on one line; `null`: the tables shown as their source), the color of its paper
+ * ([paperColor], ARGB, of no alpha when not known), its formulas rendered by [renderFormula].
  */
-internal class Presentation<T>(
+internal data class Presentation<T>(
     val fontSizePx: Float,
     val color: Color,
     val struts: Struts,
@@ -119,8 +123,13 @@ internal class Presentation<T>(
     val highlighter: CodeHighlighter? = null,
     val layoutCodeBlock: ((CodeBlockSource) -> CodeBlockLayout)? = null,
     val measurePrefix: ((String) -> Float)? = null,
+    val measureText: ((text: AnnotatedString, widthPx: Float?, alignment: TextAlignment) -> TextLayoutResult)? = null,
+    val paperColor: Int = 0,
     val renderFormula: (latex: String, fontSizePx: Float) -> MarkdownTextUtil.RenderedFormula<T>?
 )
+
+/** A table of a presented text, its three characters from [offset], taking its line: its [layout], drawn from the left of the line. */
+internal class PresentedTable<T>(val offset: Int, val layout: TableLayout<T>, val span: Span)
 
 /**
  * A formula of a presented text, its three characters from [offset]: its [image] ([widthPx] x
@@ -166,7 +175,8 @@ internal class PresentedText<T>(
     val inlineCode: List<MarkdownTextUtil.InlineCode>,
     val codeSources: List<IntRange>,
     val formulaAtCaret: Span?,
-    val writtenBlocks: List<WrittenCodeBlock> = emptyList()
+    val writtenBlocks: List<WrittenCodeBlock> = emptyList(),
+    val tables: List<PresentedTable<T>> = emptyList()
 )
 
 /**
@@ -223,6 +233,12 @@ internal object RichTextPresenter {
         val blockLeft = HashMap<Int, Float>()
         // The list items where their lines start, laid out in their columns
         val lists = listLayout(text, spans, p)
+        // The tables laid out as grids (the spans in them are presented by their cells)
+        val tableAt = HashMap<Int, Pair<Span, TableLayout<T>>>()
+        for (span in spans) {
+            if (span.kind == Kind.TABLE) TableLayout.layout(text, span, p)?.let { tableAt[span.start] = span to it }
+        }
+        var tableEnd = -1
         val errors = mutableListOf<Span>()
         val sources = mutableListOf<Span>()
         val written = mutableListOf<Pair<Span, CodeBlockLayout>>()
@@ -230,6 +246,8 @@ internal object RichTextPresenter {
         val keptRoomAt = HashMap<Int, Pair<Span, MarkdownTextUtil.RenderedFormula<T>>>()
         var atCaret: Span? = null
         for (span in spans) {
+            if (span.start in tableAt) tableEnd = span.end
+            if (span.start < tableEnd && span.kind != Kind.TABLE) continue
             val touched = touched(span)
             when (span.kind) {
                 Kind.LIST_ITEM -> Unit
@@ -285,6 +303,7 @@ internal object RichTextPresenter {
         val shown = Shown(text.length)
         val formulas = mutableListOf<PresentedFormula<T>>()
         val codeBlocks = mutableListOf<PresentedCodeBlock>()
+        val tables = mutableListOf<PresentedTable<T>>()
         // The struts of the objects, styled last over every other style
         class Room(val offset: Int, val widthPx: Float, val ascentPx: Float, val descentPx: Float)
         val rooms = mutableListOf<Room>()
@@ -357,6 +376,16 @@ internal object RichTextPresenter {
                     i = k
                     continue
                 }
+            }
+            val table = tableAt[i]
+            if (table != null) {
+                val (span, layout) = table
+                val offset = shown.obj(span.start, span.end)
+                val descent = p.struts.room.descent * p.fontSizePx
+                rooms += Room(offset, lineWidth * LINE_FILL, layout.heightPx - descent, descent)
+                tables += PresentedTable(offset, layout, span)
+                i = span.end
+                continue
             }
             val block = blockAt[i]
             if (block != null) {
@@ -491,7 +520,7 @@ internal object RichTextPresenter {
                 out.addStyle(strut, room.offset + k, room.offset + k + 1)
             }
         }
-        return PresentedText(out.toAnnotatedString(), mapping, formulas, codeBlocks, inlineCode, codeSources, atCaret, writtenBlocks)
+        return PresentedText(out.toAnnotatedString(), mapping, formulas, codeBlocks, inlineCode, codeSources, atCaret, writtenBlocks, tables)
     }
 
     /**
@@ -684,6 +713,16 @@ internal fun TextLayoutResult.formulaRect(formula: PresentedFormula<*>): Rect {
     val top = getLineBaseline(line) - formula.heightPx * formula.baselineRatio
     return Rect(left, top, left + formula.widthPx, top + formula.heightPx)
 }
+
+/** Where the top-left corner of [table] is drawn in this layout: at the left of its line, at its top. */
+internal fun TextLayoutResult.tableOrigin(table: PresentedTable<*>): Offset = Offset(0f, getLineTop(getLineForOffset(table.offset)))
+
+/** The formulas in the cells of [tables], where they are drawn in this layout. */
+internal fun <T> TextLayoutResult.tableFormulas(tables: List<PresentedTable<T>>): List<Pair<PresentedFormula<T>, Rect>> =
+    tables.flatMap { table ->
+        val origin = tableOrigin(table)
+        table.layout.formulas().map { (formula, rect) -> formula to rect.translate(origin) }
+    }
 
 /** Where the top-left corner of [block] is drawn in this layout: at the top of its line. */
 internal fun TextLayoutResult.codeBlockOrigin(block: PresentedCodeBlock): Offset =

@@ -3075,6 +3075,7 @@ public final class io/github/valerioisufi/drawview/model/text/RichTextParser$Kin
 	public static final field LINK Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
 	public static final field LIST_ITEM Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
 	public static final field STRIKE Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
+	public static final field TABLE Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
 	public static fun values ()[Lio/github/valerioisufi/drawview/model/text/RichTextParser$Kind;
@@ -3115,6 +3116,22 @@ public final class io/github/valerioisufi/drawview/model/text/RichTextParser$Spa
 	public final fun getStart ()I
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/text/TableShape {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/text/TableShape$Companion;
+	public fun <init> (Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
+	public final fun cellAt (I)Lkotlin/Pair;
+	public final fun getAlignments ()Ljava/util/List;
+	public final fun getColumns ()I
+	public final fun getLines ()Ljava/util/List;
+	public final fun getRows ()Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/drawview/model/text/TableShape$Companion {
+	public final fun cellsOf (Ljava/lang/String;III)Ljava/util/List;
+	public static synthetic fun cellsOf$default (Lio/github/valerioisufi/drawview/model/text/TableShape$Companion;Ljava/lang/String;IIIILjava/lang/Object;)Ljava/util/List;
+	public final fun of (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/text/RichTextParser$Span;)Lio/github/valerioisufi/drawview/model/text/TableShape;
 }
 
 public final class io/github/valerioisufi/drawview/model/text/TextBackground {

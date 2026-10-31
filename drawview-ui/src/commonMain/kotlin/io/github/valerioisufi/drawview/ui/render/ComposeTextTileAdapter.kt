@@ -48,10 +48,13 @@ import io.github.valerioisufi.drawview.platform.syncLock
 import io.github.valerioisufi.drawview.ui.editor.MarkdownTextUtil
 import io.github.valerioisufi.drawview.ui.editor.PresentedCodeBlock
 import io.github.valerioisufi.drawview.ui.editor.PresentedFormula
+import io.github.valerioisufi.drawview.ui.editor.PresentedTable
 import io.github.valerioisufi.drawview.ui.editor.Presentation
 import io.github.valerioisufi.drawview.ui.editor.RichTextPresenter
 import io.github.valerioisufi.drawview.ui.editor.codeBlockOrigin
 import io.github.valerioisufi.drawview.ui.editor.formulaRect
+import io.github.valerioisufi.drawview.ui.editor.tableFormulas
+import io.github.valerioisufi.drawview.ui.editor.tableOrigin
 import io.github.valerioisufi.drawview.ui.editor.struts
 import io.github.valerioisufi.drawview.ui.theme.NotesFonts
 import io.github.valerioisufi.drawview.ui.theme.rememberNotesFonts
@@ -124,8 +127,13 @@ public class ComposeTextTileAdapter(
         val codeBlocks: List<PresentedCodeBlock>,
         val chips: List<CodeChip>,
         val chipColor: Color,
-        val formulaSizes: Map<ImageBitmap, Float>
-    )
+        val formulaSizes: Map<ImageBitmap, Float>,
+        val tables: List<PresentedTable<ImageBitmap>>
+    ) {
+        /** The formulas of the text and of the cells of its tables, where they are drawn in its layout. */
+        val allFormulas: List<Pair<PresentedFormula<ImageBitmap>, Rect>>
+            get() = formulas.map { it to layout.formulaRect(it) } + layout.tableFormulas(tables)
+    }
 
 
     override fun drawText(canvas: Canvas, text: DrawText, mmToCanvas: Matrix2D, paperColor: Int) {
@@ -181,6 +189,9 @@ public class ComposeTextTileAdapter(
         for (block in prepared.codeBlocks) {
             blockLines[layout.getLineForOffset(block.offset)] = block.leftPx + block.layout.naturalWidthPx
         }
+        for (table in prepared.tables) {
+            blockLines[layout.getLineForOffset(table.offset)] = table.layout.widthPx
+        }
         var longest = 0f
         for (line in 0 until layout.lineCount) {
             longest = max(longest, blockLines[line] ?: (layout.getLineRight(line) - layout.getLineLeft(line)))
@@ -218,9 +229,16 @@ public class ComposeTextTileAdapter(
             }
             for (chip in prepared.chips) boxes += chip.rect.translate(left, 0f).toBox(chip.radius, prepared.chipColor, scale)
             addWords(layout, CharStyles(layout.layoutInput.text, text.color, fontPx, mono = false), scale, left, 0f, words)
-            val formulas = prepared.formulas.map { formula ->
-                val box = layout.formulaRect(formula).translate(left, 0f)
+            val formulas = prepared.allFormulas.map { (formula, rect) ->
+                val box = rect.translate(left, 0f)
                 TextFormula(formula.latex, text.color, box.left / scale, box.top / scale, box.width / scale, box.height / scale)
+            }
+            for (table in prepared.tables) {
+                val origin = layout.tableOrigin(table) + Offset(left, 0f)
+                for ((rect, color) in table.layout.backgrounds()) boxes += rect.translate(origin).toBox(0f, color, scale)
+                for (cell in table.layout.cells) {
+                    addWords(cell.layout, CharStyles(cell.layout.layoutInput.text, text.color, fontPx, mono = false), scale, origin.x + cell.left, origin.y + cell.top, words)
+                }
             }
             for (codeBlock in prepared.codeBlocks) {
                 val origin = layout.codeBlockOrigin(codeBlock)
@@ -400,8 +418,11 @@ public class ComposeTextTileAdapter(
             val origin = prepared.layout.codeBlockOrigin(block)
             block.layout.draw(canvas, origin.x, origin.y)
         }
-        for (formula in prepared.formulas) {
-            val box = prepared.layout.formulaRect(formula)
+        for (table in prepared.tables) {
+            val origin = prepared.layout.tableOrigin(table)
+            table.layout.draw(canvas, origin.x, origin.y)
+        }
+        for ((formula, box) in prepared.allFormulas) {
             // Rendered again at the size it is drawn, sharp at every zoom
             val image = prepared.formulaSizes[formula.image]
                 ?.let { formulaImages.render(formula.latex, it * scale / LAYOUT_PX_PER_MM, text.color)?.bitmap }
@@ -440,7 +461,9 @@ public class ComposeTextTileAdapter(
             measurePrefix = { prefix ->
                 measurer.measure(AnnotatedString(prefix), baseStyle.copy(textAlign = TextAlign.Start), softWrap = false, skipCache = true)
                     .getHorizontalPosition(prefix.length, usePrimaryDirection = true)
-            }
+            },
+            measureText = { cell, cellWidth, alignment -> TableLayout.measureCell(measurer, cell, baseStyle, cellWidth, alignment) },
+            paperColor = paperColor
         ) { latex, sizePx ->
             formulaImages.render(latex, sizePx, text.color)?.let {
                 formulaSizes[it.bitmap] = sizePx
@@ -457,7 +480,7 @@ public class ComposeTextTileAdapter(
             constraints = Constraints.fixedWidth(widthPx),
             skipCache = true
         )
-        return PreparedText(layout, shown.formulas, shown.codeBlocks, layout.codeChips(shown.inlineCode), CodeTheme.of(color, paperColor).background, formulaSizes)
+        return PreparedText(layout, shown.formulas, shown.codeBlocks, layout.codeChips(shown.inlineCode), CodeTheme.of(color, paperColor).background, formulaSizes, shown.tables)
     }
 
     public companion object {

@@ -38,7 +38,9 @@ class RichTextParserBoundsTest {
             "\$a ", "\$\$a\$\$", "\$\$a\$\$\n",
             "- **a** *b* ~~c~~ `d` \$e\$ \\* \$f\n## g \$\$h\$\$\n",
             // Items with their continuation lines
-            "- a\n  b\n", "1. a\n   b\n   c\n", "- a\n  b\n  - c\n    d\n"
+            "- a\n  b\n", "1. a\n   b\n   c\n", "- a\n  b\n  - c\n    d\n",
+            // Tables, and lines with pipes that are not
+            "| a | b |\n|---|---|\n| 1 | 2 |\n\n", "a | b\n", "| a |\n|-|\n| `x | y` |\n"
         )
         for (pattern in patterns) assertLinear(pattern)
         // One item over the whole text

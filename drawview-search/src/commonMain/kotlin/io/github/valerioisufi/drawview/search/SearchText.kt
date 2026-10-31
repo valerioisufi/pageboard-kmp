@@ -2,10 +2,11 @@ package io.github.valerioisufi.drawview.search
 
 import io.github.valerioisufi.drawview.model.text.RichTextParser
 import io.github.valerioisufi.drawview.model.text.RichTextParser.Kind
+import io.github.valerioisufi.drawview.model.text.TableShape
 
 /**
  * Removes the marks of Markdown from [text] while keeping its LaTeX formulas (`$…$` and `$$…$$`)
- * and the content of its code blocks intact.
+ * and the content of its code blocks intact; a table keeps the words of its cells.
  */
 public fun cleanMarkdownForSearch(text: String): String {
     if (text.isBlank()) return ""
@@ -13,9 +14,21 @@ public fun cleanMarkdownForSearch(text: String): String {
     val spans = RichTextParser.parse(normalized)
     if (spans.isEmpty()) return normalized.trim()
     val hidden = BooleanArray(normalized.length)
+    // The pipes between the cells of a table: a space, the words of two cells apart
+    val spaced = BooleanArray(normalized.length)
     for (span in spans) {
         when (span.kind) {
             Kind.FORMULA -> Unit
+            Kind.TABLE -> {
+                val shape = TableShape.of(normalized, span)
+                val inCells = BooleanArray(span.end - span.start)
+                for (row in shape.rows) for (cell in row) for (i in cell) inCells[i - span.start] = true
+                for ((index, line) in shape.lines.withIndex()) {
+                    for (i in line) {
+                        if (index == 1) hidden[i] = true else if (!inCells[i - span.start]) spaced[i] = true
+                    }
+                }
+            }
             Kind.LIST_ITEM -> for (i in span.start until span.contentStart) {
                 if (normalized[i] != '\n') hidden[i] = true
             }
@@ -28,7 +41,7 @@ public fun cleanMarkdownForSearch(text: String): String {
     }
     val out = StringBuilder(normalized.length)
     for (i in normalized.indices) {
-        if (!hidden[i]) out.append(normalized[i])
+        if (spaced[i]) out.append(' ') else if (!hidden[i]) out.append(normalized[i])
     }
     return out.toString()
         .lines()

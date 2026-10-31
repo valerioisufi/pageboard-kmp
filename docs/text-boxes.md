@@ -172,7 +172,7 @@ joined with a line break (`\n`), or without one for a box marked `continuesLine`
 | 2 | Lists, editing: Shift+Enter a line in the item, Enter on a continuation line, Backspace joining, the toggles and Tab on items with continuation lines; tests of `RichTextEditing` and of the field | done |
 | 3 | Backgrounds, stored: `DrawText.background`, `TextData`, Room 23 with its migration test, the operations log, the sync (the format test re-recorded, protocol to agree), the bounds with the margin | done |
 | 4 | Backgrounds, drawn and chosen: tiles, field, PDF export; the palette in the format bar and the selection bar; screenshots | done |
-| 5 | Tables, notation and drawing: `Kind.TABLE`, `TableLayout` on the canvas, in the field (caret out of it) and in the export; `TextFlow` keeping tables; tests and screenshots | pending |
+| 5 | Tables, notation and drawing: `Kind.TABLE`, `TableLayout` on the canvas, in the field and in the export; the search; tests and screenshots | done |
 | 6 | Tables, editing: `TableEditing`, `TableCellEditor` (cells, Tab, Enter, arrows, taps), the insert command with its size picker, the table bar, the Format menu and shortcuts; tests and screenshots | pending |
 | 7 | Chains, stored: `DrawText.next`, `continuesLine`, Room 24 with its migration test, the sync (format test, protocol), `TextChains` with untrusted links (cycles, missing boxes) | pending |
 | 8 | Chains, flow: `ChainFlow`; reflow while written, the caret across boxes, the next box and page created, emptied boxes removed, one change; the style on the chain; tests of the flow and of the editor | pending |
@@ -244,6 +244,27 @@ above goes from what needs no stored change to what needs the most.
   `text-backgrounds` (desktop, phone, tablet), the bars of the editor and of the selection
   recorded again.
 * No Format menu entry: a fill is a color to pick, as the color of the text, which has none.
+
+### Phase 5
+
+* `RichTextParser`: `Kind.TABLE` (a header row with a `|`, a delimiter row of as many cells with a
+  `|`, the rows with a `|` up to a blank line), looked for in the masked text (a `|` in code or
+  escaped is text), each line searched once (`RichTextParserBoundsTest`); the formatting in the
+  cells parsed as elsewhere.
+* `TableShape` (`drawview-model`, new): the cells of each row (the header first, as many as the
+  header), the alignments of the columns, the lines of the rows, the cell of an offset
+  (`TableShapeTest`).
+* `TableLayout` (`drawview-ui`, new): each cell presented by `RichTextPresenter` (its formatting,
+  its formulas), the header in bold on the faint background of the code, the columns as wide as
+  their content when the line has room, else the narrow ones keeping theirs and the others sharing
+  the rest (a column never narrower than its widest formula), the alignments, thin rules
+  (`TableLayoutTest`). `Presentation` gets `measureText` and `paperColor`; a table is an object of
+  the presenter taking its lines, drawn by the tiles, the field of the editor and `MarkdownText`;
+  the export gets its backgrounds, rules, words and formulas.
+* The search keeps the words of the cells, without the pipes and the delimiter row
+  (`SearchTextTest`).
+* `TextFlow.blocksOf` needed nothing: a table has no blank line, it is one block.
+* Screenshots: `text-tables` (desktop, phone, tablet: saved and being written).
 
 ## Decisions
 

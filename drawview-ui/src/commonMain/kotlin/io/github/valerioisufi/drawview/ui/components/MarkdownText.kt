@@ -42,6 +42,9 @@ import io.github.valerioisufi.drawview.ui.editor.Struts
 import io.github.valerioisufi.drawview.ui.editor.FontRoom
 import io.github.valerioisufi.drawview.ui.editor.codeBlockOrigin
 import io.github.valerioisufi.drawview.ui.editor.formulaRect
+import io.github.valerioisufi.drawview.ui.editor.tableFormulas
+import io.github.valerioisufi.drawview.ui.editor.tableOrigin
+import io.github.valerioisufi.drawview.ui.render.TableLayout
 import io.github.valerioisufi.drawview.ui.render.CodeBlockLayout
 import io.github.valerioisufi.drawview.ui.render.CodeTheme
 import io.github.valerioisufi.drawview.ui.render.LocalDrawViewEngines
@@ -88,7 +91,7 @@ public fun MarkdownText(
             content?.text ?: MarkdownTextUtil.toLiveAnnotatedString(markdown, TextRange(markdown.length + 1), color),
             // The lines with formulas or blocks of code take the room of their struts, as on the page:
             // a height of line set by the style would leave them on the text around them
-            style = if (content != null && (content.formulas.isNotEmpty() || content.codeBlocks.isNotEmpty())) style.copy(lineHeight = TextUnit.Unspecified) else style,
+            style = if (content != null && (content.formulas.isNotEmpty() || content.codeBlocks.isNotEmpty() || content.tables.isNotEmpty())) style.copy(lineHeight = TextUnit.Unspecified) else style,
             color = color,
             onTextLayout = { layout = it },
             modifier = Modifier.drawWithContent {
@@ -105,8 +108,11 @@ public fun MarkdownText(
                     val origin = current.codeBlockOrigin(block)
                     drawIntoCanvas { block.layout.draw(it, origin.x, origin.y) }
                 }
-                for (formula in content.formulas) {
-                    val box = current.formulaRect(formula)
+                for (table in content.tables) {
+                    val origin = current.tableOrigin(table)
+                    drawIntoCanvas { table.layout.draw(it, origin.x, origin.y) }
+                }
+                for ((formula, box) in content.formulas.map { it to current.formulaRect(it) } + current.tableFormulas(content.tables)) {
                     drawImage(
                         formula.image,
                         srcSize = IntSize(formula.image.width, formula.image.height),
@@ -153,7 +159,8 @@ private fun markdownContent(
         layoutCodeBlock = { source -> CodeBlockLayout.layout(measurer, fonts.monospace, source, fontPx, color, engines.code, TextTileAdapter.NO_PAPER, textFont) },
         measurePrefix = { prefix ->
             measurer.measure(AnnotatedString(prefix), prefixStyle, softWrap = false, skipCache = true).getHorizontalPosition(prefix.length, usePrimaryDirection = true)
-        }
+        },
+        measureText = { cell, cellWidth, alignment -> TableLayout.measureCell(measurer, cell, prefixStyle.copy(color = color), cellWidth, alignment) }
     ) { latex, sizePx ->
         formulas?.render(formulas.sanitize(latex), sizePx, color.toArgb())?.let {
             MarkdownTextUtil.RenderedFormula(it.bitmap, it.bitmap.width.toFloat(), it.bitmap.height.toFloat(), it.baselineRatio)

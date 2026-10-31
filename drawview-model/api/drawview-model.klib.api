@@ -2348,6 +2348,26 @@ final class io.github.valerioisufi.drawview.model.text.code/CodeToken { // io.gi
     final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.text.code/CodeToken.toString|toString(){}[0]
 }
 
+final class io.github.valerioisufi.drawview.model.text/TableShape { // io.github.valerioisufi.drawview.model.text/TableShape|null[0]
+    constructor <init>(kotlin.collections/List<kotlin.collections/List<kotlin.ranges/IntRange>>, kotlin.collections/List<io.github.valerioisufi.drawview.model/TextAlignment?>, kotlin.collections/List<kotlin.ranges/IntRange>) // io.github.valerioisufi.drawview.model.text/TableShape.<init>|<init>(kotlin.collections.List<kotlin.collections.List<kotlin.ranges.IntRange>>;kotlin.collections.List<io.github.valerioisufi.drawview.model.TextAlignment?>;kotlin.collections.List<kotlin.ranges.IntRange>){}[0]
+
+    final val alignments // io.github.valerioisufi.drawview.model.text/TableShape.alignments|{}alignments[0]
+        final fun <get-alignments>(): kotlin.collections/List<io.github.valerioisufi.drawview.model/TextAlignment?> // io.github.valerioisufi.drawview.model.text/TableShape.alignments.<get-alignments>|<get-alignments>(){}[0]
+    final val columns // io.github.valerioisufi.drawview.model.text/TableShape.columns|{}columns[0]
+        final fun <get-columns>(): kotlin/Int // io.github.valerioisufi.drawview.model.text/TableShape.columns.<get-columns>|<get-columns>(){}[0]
+    final val lines // io.github.valerioisufi.drawview.model.text/TableShape.lines|{}lines[0]
+        final fun <get-lines>(): kotlin.collections/List<kotlin.ranges/IntRange> // io.github.valerioisufi.drawview.model.text/TableShape.lines.<get-lines>|<get-lines>(){}[0]
+    final val rows // io.github.valerioisufi.drawview.model.text/TableShape.rows|{}rows[0]
+        final fun <get-rows>(): kotlin.collections/List<kotlin.collections/List<kotlin.ranges/IntRange>> // io.github.valerioisufi.drawview.model.text/TableShape.rows.<get-rows>|<get-rows>(){}[0]
+
+    final fun cellAt(kotlin/Int): kotlin/Pair<kotlin/Int, kotlin/Int>? // io.github.valerioisufi.drawview.model.text/TableShape.cellAt|cellAt(kotlin.Int){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.model.text/TableShape.Companion|null[0]
+        final fun cellsOf(kotlin/String, kotlin/Int, kotlin/Int, kotlin/Int = ...): kotlin.collections/List<kotlin.ranges/IntRange> // io.github.valerioisufi.drawview.model.text/TableShape.Companion.cellsOf|cellsOf(kotlin.String;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+        final fun of(kotlin/String, io.github.valerioisufi.drawview.model.text/RichTextParser.Span): io.github.valerioisufi.drawview.model.text/TableShape // io.github.valerioisufi.drawview.model.text/TableShape.Companion.of|of(kotlin.String;io.github.valerioisufi.drawview.model.text.RichTextParser.Span){}[0]
+    }
+}
+
 final class io.github.valerioisufi.drawview.model.text/TextDefaults { // io.github.valerioisufi.drawview.model.text/TextDefaults|null[0]
     constructor <init>(kotlin/Float = ..., kotlin/Int = ..., io.github.valerioisufi.drawview.model/TextAlignment = ...) // io.github.valerioisufi.drawview.model.text/TextDefaults.<init>|<init>(kotlin.Float;kotlin.Int;io.github.valerioisufi.drawview.model.TextAlignment){}[0]
 
@@ -3480,6 +3500,7 @@ final object io.github.valerioisufi.drawview.model.text/RichTextParser { // io.g
         enum entry LINK // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.LINK|null[0]
         enum entry LIST_ITEM // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.LIST_ITEM|null[0]
         enum entry STRIKE // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.STRIKE|null[0]
+        enum entry TABLE // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.TABLE|null[0]
 
         final val entries // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.entries|#static{}entries[0]
             final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.drawview.model.text/RichTextParser.Kind> // io.github.valerioisufi.drawview.model.text/RichTextParser.Kind.entries.<get-entries>|<get-entries>#static(){}[0]
