@@ -44,6 +44,7 @@ import io.github.valerioisufi.drawview.ui.generated.resources.command_previous_p
 import io.github.valerioisufi.drawview.ui.generated.resources.command_previous_tool
 import io.github.valerioisufi.drawview.ui.generated.resources.command_send_backward
 import io.github.valerioisufi.drawview.ui.generated.resources.command_send_to_back
+import io.github.valerioisufi.drawview.ui.generated.resources.command_shapes
 import io.github.valerioisufi.drawview.ui.generated.resources.command_snapping
 import io.github.valerioisufi.drawview.ui.generated.resources.command_zoom_in
 import io.github.valerioisufi.drawview.ui.generated.resources.command_zoom_out
@@ -314,6 +315,13 @@ internal class EditorCommands internal constructor(
         isChecked = { controller.snapManager.isEnabled }
     ) { controller.snapManager.updateEnabled(!controller.snapManager.isEnabled) }
 
+    /** Whether a stroke held still at its end becomes its shape (a line, a circle, a box...). */
+    val shapes = Command(
+        "shapes", label(Res.string.command_shapes), CommandGroup.VIEW, section = 2,
+        icon = { rememberVectorPainter(DrawViewIcons.Shapes) },
+        isChecked = { controller.shapeSnapper.isEnabled }
+    ) { controller.shapeSnapper.updateEnabled(!controller.shapeSnapper.isEnabled) }
+
     // ----- Insert -----
 
     val addPage = Command(
@@ -547,7 +555,7 @@ internal class EditorCommands internal constructor(
     val all: List<Command> = listOf(
         close,
         undo, redo, cut, copy, paste, delete,
-        zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, snapping,
+        zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, snapping, shapes,
         addPage, importPdf, importImage, importText,
         documentBackground,
         bringToFront, bringForward, sendBackward, sendToBack,

@@ -142,7 +142,7 @@ noise, and strokes recorded by hand in the tests' resources).
 |---|---|---|
 | 1 | `Shape` and `ShapeRecognizer` in `drawview-model` (`model/shape/`): line, arrow, broken line, ellipse, circle, triangle, rectangle, square, polygon, the regularization, the points of each shape; tests on synthetic strokes with noise and on strokes that are no shape (handwriting, spirals, scribbles) that must give nothing; a test that the Ink mesh of a rectangle and a triangle keeps its corners; ABI of `drawview-model` recorded on purpose | Done |
 | 2 | The hold at the end of a stroke in `CanvasGestureHandler` and `ShapeSnapper` in `drawview-canvas`: the live mesh replaced by the shape, committed on the up, undone in one step; `DrawPreferences.isShapeRecognitionEnabled` (default on) with a test reading the preferences written before it; tests of the gesture (held: a shape; lifted: the stroke; held on a scribble: the stroke) | Done |
-| 3 | The switch in the settings of the pen and of the highlighter (`drawview-ui`), its screenshots (`verifyRoborazziJvm`); the desktop application on a scratch directory, the shapes drawn with the mouse and checked after a restart and in the PDF export | Proposed |
+| 3 | The switch in the settings of the pen and of the highlighter (`drawview-ui`), its screenshots (`verifyRoborazziJvm`); the desktop application on a scratch directory, the shapes drawn with the mouse and checked after a restart and in the PDF export | Done, the drawing by hand left to the user |
 
 ### Phase 1 results
 
@@ -185,6 +185,23 @@ noise, and strokes recorded by hand in the tests' resources).
   becomes a level line, undone in one step; lifted at once, held on a scribble, or with the shapes
   switched off, the stroke drawn), `EditorPreferencesTest` (the preference told and taken back, on
   in the preferences written before it). ABI of `drawview-canvas` recorded again on purpose.
+
+### Phase 3 results
+
+* `SwitchSetting` (`drawview-ui`, `ToolSettings.kt`): a setting on or off, its title, what it does
+  and a switch, the whole row toggling it. "Hold to Draw Shapes" is the last setting of the pen and
+  of the highlighter (`InkSettings`), with its hint.
+* The command `shapes` (`EditorCommands`, menu View and the "more" menu of the editor, by
+  "Snap to Guides"), with the Lucide icon Shapes, so that the menu bar of the desktop has it too.
+* The strings in the seven languages of the interface (`command_shapes`,
+  `tool_settings_shapes_hint`).
+* Screenshots recorded again on purpose: `tool-popovers` (ui, light and dark) and
+  `editor-more-menu-phone-light` (explorer); the others of ui, explorer, sync-ui, lecture-ui and
+  export-ui unchanged. The consumer checks pass.
+* The desktop application starts on a scratch directory with the branch. The shapes were not drawn
+  in it by hand from the session (no control of the mouse there): drawing them, reopening the
+  document and exporting it to PDF is left to the user. The stored strokes and the export are the
+  ones of any stroke (requirement 4).
 
 ## Decisions
 

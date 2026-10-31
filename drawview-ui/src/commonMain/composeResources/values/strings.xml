@@ -155,6 +155,8 @@
     <string name="command_previous_page">Previous Page</string>
     <string name="command_previous_tool">Previous Tool</string>
     <string name="command_snapping">Snap to Guides</string>
+    <string name="command_shapes">Hold to Draw Shapes</string>
+    <string name="tool_settings_shapes_hint">Keep the pen still at the end of a line, a circle or a box to make it a clean shape.</string>
     <string name="command_bring_to_front">Bring to Front</string>
     <string name="command_bring_forward">Bring Forward</string>
     <string name="command_send_backward">Send Backward</string>

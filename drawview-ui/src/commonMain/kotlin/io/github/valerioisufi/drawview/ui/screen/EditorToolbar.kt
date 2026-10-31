@@ -85,6 +85,7 @@ import io.github.valerioisufi.drawview.ui.components.OptionCard
 import io.github.valerioisufi.drawview.ui.components.PopoverTitle
 import io.github.valerioisufi.drawview.ui.components.PresetCard
 import io.github.valerioisufi.drawview.ui.components.SettingHint
+import io.github.valerioisufi.drawview.ui.components.SwitchSetting
 import io.github.valerioisufi.drawview.ui.components.SettingLabel
 import io.github.valerioisufi.drawview.ui.components.SizeSetting
 import io.github.valerioisufi.drawview.ui.components.StrokePreview
@@ -450,7 +451,7 @@ private fun MoreMenu(commands: EditorCommands, arrangement: ToolbarArrangement, 
             sections = listOf(
                 listOfNotNull(commands.pageGrid.takeIf { !showPageGrid }, commands.addPage) +
                     (if (floating) listOf(commands.importPdf, commands.importImage, commands.importText) else emptyList()),
-                listOf(commands.fitWidth, commands.stylusOnly, commands.snapping, commands.documentBackground, commands.drawingMode),
+                listOf(commands.fitWidth, commands.stylusOnly, commands.snapping, commands.shapes, commands.documentBackground, commands.drawingMode),
                 listOf(commands.about)
             ),
             expanded = expanded,
@@ -642,6 +643,12 @@ internal fun ColumnScope.InkSettings(controller: DrawViewController, tool: Tool,
                 onCustom = { wheelOpen = true }
             )
         }
+        SwitchSetting(
+            title = stringResource(Res.string.command_shapes),
+            description = stringResource(Res.string.tool_settings_shapes_hint),
+            checked = controller.shapeSnapper.isEnabled,
+            onCheckedChange = controller.shapeSnapper::updateEnabled
+        )
     }
     if (wheelOpen) {
         TextColorPickerDialog(

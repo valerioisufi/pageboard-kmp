@@ -154,6 +154,8 @@
     <string name="command_previous_page">이전 페이지</string>
     <string name="command_previous_tool">이전 도구</string>
     <string name="command_snapping">안내선에 맞추기</string>
+    <string name="command_shapes">길게 눌러 도형 그리기</string>
+    <string name="tool_settings_shapes_hint">선, 원, 상자를 그린 끝에서 펜을 멈추면 반듯한 도형이 됩니다.</string>
     <string name="command_bring_to_front">맨 앞으로 가져오기</string>
     <string name="command_bring_forward">앞으로 가져오기</string>
     <string name="command_send_backward">뒤로 보내기</string>
