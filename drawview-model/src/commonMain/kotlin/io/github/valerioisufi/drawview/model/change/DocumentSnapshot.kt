@@ -83,7 +83,7 @@ public data class PageSnapshot(
         page.formatVersion = formatVersion
         page.contentVersions = contentVersions
         page.removalSaw = removalSaw
-        removedElements.forEach { page.removedElements.add(it.toElement(document.strokeModeller)) }
+        page.load(emptyList(), removedElements.map { it.toElement(document.strokeModeller) })
         for (element in page.elements() + page.removedElements) versions[element.id]?.applyTo(element)
         return page
     }

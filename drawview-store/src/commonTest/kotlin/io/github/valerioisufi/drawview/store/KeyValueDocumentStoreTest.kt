@@ -145,7 +145,7 @@ class KeyValueDocumentStoreTest {
         page.add(kept)
         removed.removed = Stamp(2L, 0, "device")
         removed.placed = Stamp(3L, 0, "device")
-        page.removedElements.add(removed)
+        page.load(emptyList(), listOf(removed))
         store.saveStrokes(page, listOf(kept, removed))
         val second = DrawPage(index = 1)
         second.removed = Stamp(4L, 0, "device")

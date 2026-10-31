@@ -129,11 +129,9 @@ internal class DrawDocumentRepository(
 
                 val pageStrokes = strokes.subList(nextStroke, nextStroke + pageWithContent.strokes.size)
                 nextStroke += pageStrokes.size
-                val elements = pageStrokes + elementsBesideStrokes(pageWithContent) { true }
+                val (removed, shown) = (pageStrokes + elementsBesideStrokes(pageWithContent) { true }).sortedBy { it.order }.partition { it.removed != null }
                 // The removed elements are kept, hidden
-                for (element in elements.sortedBy { it.order }) {
-                    if (element.removed != null) page.removedElements.add(element) else page.add(element)
-                }
+                page.load(shown, removed)
                 if (page.isHidden) doc.removedPages[page.id] = page else doc.appendPage(page)
             }
             doc.reindexPages()
@@ -151,8 +149,7 @@ internal class DrawDocumentRepository(
         val resources = withContext(Dispatchers.IO) { resourceDao.getResourcesForDocument(documentId) }
         return withContext(Dispatchers.Default) {
             val page = mapPage(rows.page, docEntity)
-            val elements = modelStrokes(rows.strokes.filter { it.removed == null }) + elementsBesideStrokes(rows) { it == null }
-            for (element in elements.sortedBy { it.order }) page.add(element)
+            page.load((modelStrokes(rows.strokes.filter { it.removed == null }) + elementsBesideStrokes(rows) { it == null }).sortedBy { it.order })
             LoadedPage(page.id, page.snapshotContent(), resources.map(::mapResource))
         }
     }

@@ -274,7 +274,7 @@ public data class PageData(
             orderKey = orderKey
         )
         page.hasCustomBackground = background != null
-        for (data in elements) page.add(data.toElement(document.strokeModeller))
+        page.load(elements.map { it.toElement(document.strokeModeller) })
         return page
     }
 }

@@ -126,8 +126,8 @@ not a cost.
 | Knowing whether the first page changed, and reading it alone | `DocumentStore.pageFingerprint`, `DocumentStore.loadPage` → `LoadedPage` (store), done by Room from the stamps of the rows and the rows of one page | Information Expert, Protected Variations (defaults from `loadDocument`), Pure Fabrication (a page that cannot be saved back) |
 | Drawing a thumbnail again only when its page changed | `DocumentThumbnails` | Controller |
 | Finding an element of a page by its identifier | `DrawPage`: an index of its elements, shown and removed | Information Expert |
-| Building a page from stored or received elements | `DrawPage.load` | Creator |
-| The stack of a page in one pass, the elements in the order they are painted | `PageElements` | Information Expert |
+| Building a page from stored or received elements | `DrawPage.load(shown, removed)`, used by the stores and the snapshots | Creator |
+| The stack of a page in one pass, the elements in the order they are painted | `PageElements`: kept as it is, measured (decision 20) | Information Expert |
 | What the editor shows of the document | derived states in `DrawScreen` and `EditorToolbar` (ui) | Low Coupling (the view reads what it shows) |
 | Modeling a stroke whose inputs are all known | `InkStrokeModeller.buildMesh` (ink), with `ink_stroke_builder_add_points` (the bridge: the inputs given at once, the shape updated once) | Information Expert |
 | Modeling the strokes of a document at the same time | `DrawDocumentRepository.loadDocument` (the key-value store on one thread, decision 11) | Controller |
@@ -262,11 +262,32 @@ the content it dates (phase 1), so the thumbnails read the store, not the docume
 
 ### Elements by identifier
 
-`DrawPage` keeps a map of its elements by identifier, shown and removed, changed with them by
-`add`, `remove` and the functions of the removed elements (`removedElements` becomes a `List`; the
-loaders use `DrawPage.load(elements)`, which puts each element shown or removed by its stamp).
-Like `add` and `remove`, it is used on the thread of the document. `DrawDocument.findElement`
-reads the map of each page (no list made): one lookup per page instead of a comparison per element.
+```kotlin
+public class DrawPage {
+    /** The elements removed from the page, hidden: put by [load] and by the changes of the document. */
+    public val removedElements: List<DrawElement>
+
+    /** The element [id] shown on this page, or `null`: on the thread of the document, like [add]. */
+    public fun find(id: String): DrawElement?
+
+    /** Puts [shown] and [removed] on this page at once, each kind in its stacking order (a page being built). */
+    public fun load(shown: Collection<DrawElement>, removed: Collection<DrawElement> = emptyList())
+}
+```
+
+`DrawPage` keeps two maps of its elements by identifier, the ones shown and the ones removed,
+changed with them by `add`, `remove` and the functions of the changes for the elements removed
+(`keepRemoved`, `forgetRemoved`: hidden, shown again, moved hidden to another page, purged);
+`removedElements` is no longer a `MutableList`. Like `add` and `remove`, they are used on the
+thread of the document (decision 21). `DrawDocument.findElement` and `findRemovedElement` read
+the maps of the pages shown, then of the pages removed (no list made): one lookup per page
+instead of a comparison per element.
+
+The stores and the snapshots build a page with `load`: the elements of each kind put in a list
+sorted once, where `add` copied the list of its kind for every element. An element without order
+gets the order `add` would give it (the next order of the elements of its layer built so, in the
+order given), so a page loaded is the page built element by element (`PageIndexTest`). The
+loaders say which elements are removed (decision 19).
 
 ### Modeling the strokes loaded
 
@@ -307,7 +328,7 @@ therefore called from several threads at once, which its KDoc now says.
 | 1 | `DocumentPersistence.transaction`, one per operation (test: an operation failing leaves none of its rows); the flows of `RoomDocumentStore` shared and distinct (test: one query of the documents per stroke, whatever the collectors, and a folder created read at once) | done |
 | 2 | `DocumentStore.loadOutline` (both stores, contract test) used by the three search sources; the version of the PDFs from the outline (test: a stroke does not change it, a PDF page added does); `LectureSearchSource.version` measured and kept (decision 14) | done |
 | 3 | `DocumentStore.pageFingerprint` and `loadPage` (contract test: every kind of change of the first page changes the fingerprint, a change of another page does not); the thumbnails drawn from them (test: a change of another page keeps the thumbnail, dated again) | done |
-| 4 | The elements of a page by identifier, `DrawPage.load`, the stack in one pass, `paintOrder` made once per content (model tests; ABI) | proposed |
+| 4 | The elements of a page by identifier, `DrawPage.load` used by the loaders (test: a page loaded is the page built element by element; the elements are found wherever 400 random changes put them, against the lists of the pages); the stack in one pass and `paintOrder` measured and kept as they are (decision 20) | done |
 | 5 | The editor: derived states instead of `observeChanges()` in `DrawScreenContent` and `EditorTools` (test: they do not change over 100 strokes); the position of `TextBoxEditor` read in the layout | proposed |
 | 6 | The inputs of a stroke loaded in one native call and its shape updated once (bridge, JNI, cinterop), the strokes of a document modeled on every core (test: the shape of every brush, as drawn, on the JVM and the iOS simulator) | done |
 | 7 | The tiles: the elements of a region (`elementsIn`), the paths of the outlines kept (if they gain) | proposed |
@@ -335,9 +356,11 @@ On the Mac (M5, JVM), 2026-10-31, before and after each phase. Each benchmark ru
 | M2 the versions of the lectures in a pass (101 notes, 20 with 3 lectures of 90 minutes, 294 KiB each) | 53 ms (measured in phase 2) | | — |
 | M3 the thumbnail of a note of 50 pages × 600 strokes changed on its last page | 1.88 s (the opening of the whole note, M5) | 2.1 ms | 3 |
 | M3 the same thumbnail changed on its first page | 1.97 s | 63 ms (the page alone) | 3 |
-| M4 1,000 operations received on a document of 100,000 elements | 483 ms (0.48 ms each) | | 4 |
-| M4 a stroke submitted on a document of 100,000 elements | 0.44 ms | | 4 |
-| M5 opening a note of 50 pages × 600 strokes, 10% erased | 71.9 s (24 ms of queries) | 1.89 s (26 ms of queries) | 6 |
+| M4 1,000 operations received on a document of 100,000 elements | 483 ms (0.48 ms each), 561 ms at the start of phase 4 | 21 ms (21 µs each) | 4 |
+| M4 a stroke submitted on a document of 100,000 elements | 0.44 ms | 7.2 µs | 4 |
+| M4 a page of 10,000 strokes built from the elements loaded | 39 ms (measured in phase 4) | 2.9 ms | 4 |
+| M4 the paint order of a page of 2,000 strokes read after a stroke | 0.042 ms (measured in phase 4) | 0.026 ms (unchanged code) | — |
+| M5 opening a note of 50 pages × 600 strokes, 10% erased | 71.9 s (24 ms of queries) | 1.89 s (26 ms of queries); 1.81 s after phase 4, within the noise | 6 |
 | M5 a stroke of 120 inputs modeled from its inputs at once / input by input | 0.93 ms / 0.93 ms | 0.15 ms / 0.92 ms | 6 |
 | M6 the screen filled after a jump of 20 pages / a fling over 20 pages | 21 ms / 18 ms | | — |
 | M7 a tile of a page of 1,500 strokes, level 0 / level 2 | 10.4 ms / 2.1 ms | | 7 |
@@ -395,6 +418,20 @@ Taken alone, revertible:
 18. **The keys of the thumbnails on disk with the fingerprint** (`date:width:fingerprint`): the
     old ones (`date:width`) are still read, and a thumbnail without a fingerprint is drawn again
     once its document changes. The thumbnails are a cache: nothing to migrate.
+
+19. **`DrawPage.load(shown, removed)`** rather than `load(elements)` putting each element shown or
+    removed by its stamp (the first version of this plan): the loaders know which elements are
+    removed (a snapshot keeps them in a list of its own, and gives them their stamps after
+    building them), so a page is loaded as they say, as before.
+20. **The stack in one pass and `paintOrder` made once per content, not done**: phase 4 measured
+    0.04 ms to read the paint order of a page of 2,000 strokes after a stroke (the sort of the
+    four lists, each in order already, finds their runs), once for the first tile drawn after
+    it, which takes about 10 ms (M7). Nothing to gain.
+21. **The maps of the elements used on the thread of the document**, not made part of the content
+    the tiles read: a copy of a map at every change would cost as much as the copies `load`
+    saves. `find` was safe on any thread (it read the content); its callers outside of the model
+    (`CustomElementManager`, `CollaboratorPresence`, `CollaboratorsLayer`) run on the main
+    thread, the thread of the documents of the applications.
 
 Decided by the user:
 

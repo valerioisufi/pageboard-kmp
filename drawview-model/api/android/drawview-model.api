@@ -260,6 +260,8 @@ public final class io/github/valerioisufi/drawview/model/DrawPage {
 	public final fun getTexts ()Ljava/util/List;
 	public final fun getWidthMm ()F
 	public final fun isHidden ()Z
+	public final fun load (Ljava/util/Collection;Ljava/util/Collection;)V
+	public static synthetic fun load$default (Lio/github/valerioisufi/drawview/model/DrawPage;Ljava/util/Collection;Ljava/util/Collection;ILjava/lang/Object;)V
 	public final fun rect ()Lio/github/valerioisufi/drawview/model/geometry/Rect;
 	public final fun remove (Lio/github/valerioisufi/drawview/model/DrawElement;)I
 	public final fun setAdded (Lio/github/valerioisufi/drawview/model/Stamp;)V

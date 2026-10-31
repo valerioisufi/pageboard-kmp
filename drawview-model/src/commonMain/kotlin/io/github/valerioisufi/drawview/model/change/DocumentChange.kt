@@ -254,12 +254,12 @@ private fun DrawDocument.findAnyElement(id: String, hint: DrawPage?): Pair<DrawP
 /** Hides the present [element] of this page (see [DrawPage.removedElements]). */
 private fun DrawPage.hide(element: DrawElement) {
     remove(element)
-    removedElements.add(element)
+    keepRemoved(element)
 }
 
 /** Shows the hidden [element] of this page again. */
 private fun DrawPage.show(element: DrawElement) {
-    removedElements.remove(element)
+    forgetRemoved(element)
     element.removed = null
     add(element)
 }
@@ -336,8 +336,8 @@ private fun ChangeContext.place(from: DrawPage, element: DrawElement, placement:
     if (shown) effects.dirty(from, from.boundsOf(element))
     placement?.applyTo(element)
     if (from !== to) {
-        if (shown) from.remove(element) else from.removedElements.remove(element)
-        if (shown) to.add(element) else to.removedElements.add(element)
+        if (shown) from.remove(element) else from.forgetRemoved(element)
+        if (shown) to.add(element) else to.keepRemoved(element)
     }
     element.placed = stamp
 }

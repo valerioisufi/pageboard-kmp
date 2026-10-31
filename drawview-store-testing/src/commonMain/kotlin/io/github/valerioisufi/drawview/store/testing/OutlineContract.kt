@@ -33,7 +33,7 @@ public suspend fun checkOutline(store: DocumentStore) {
     second.add(erased)
     second.remove(erased)
     erased.removed = Stamp(2L, 0, "outline")
-    second.removedElements.add(erased)
+    second.load(emptyList(), listOf(erased))
     // A page removed: kept, hidden
     document.restorePageOrder(listOf(first, second))
     third.removed = Stamp(3L, 0, "outline")

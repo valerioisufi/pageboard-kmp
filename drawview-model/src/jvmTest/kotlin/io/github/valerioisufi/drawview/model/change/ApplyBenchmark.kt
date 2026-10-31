@@ -2,7 +2,10 @@ package io.github.valerioisufi.drawview.model.change
 
 import io.github.valerioisufi.drawview.model.BrushConfig
 import io.github.valerioisufi.drawview.model.DrawDocument
+import io.github.valerioisufi.drawview.model.DrawElement
+import io.github.valerioisufi.drawview.model.DrawPage
 import io.github.valerioisufi.drawview.model.DrawStroke
+import io.github.valerioisufi.drawview.model.ElementOrder
 import io.github.valerioisufi.drawview.model.Stamp
 import io.github.valerioisufi.drawview.model.StrokeMesh
 import io.github.valerioisufi.drawview.model.StrokeTool
@@ -47,6 +50,37 @@ class ApplyBenchmark {
         report("M4 submitting a stroke on 100,000 elements", "${time / OPERATIONS} each")
     }
 
+    /** A page of 10,000 strokes built from the elements loaded (as the stores load a page). */
+    @Test
+    fun buildingAPage() {
+        val elements = List(LOADED) { i -> stroke().also { it.order = ElementOrder.built(ElementOrder.layerOf(it), i) } }
+        // Warm up
+        repeat(2) { build(elements) }
+        val times = List(5) { measureTime { build(elements) } }.sorted()
+        report("M4 building a page of $LOADED strokes loaded", "${times[times.size / 2]}")
+    }
+
+    /** The stack of a page of 1,000 strokes read after every stroke, as the first tile drawn after it reads it. */
+    @Test
+    fun readingTheStackAfterAStroke() {
+        val document = largeDocument()
+        val session = DocumentSession(document, replica = "here")
+        val page = document.pages.last()
+        repeat(OPERATIONS) {
+            session.submit(AddElements.of(page, listOf(stroke())))
+            page.snapshotContent().paintOrder.size
+        }
+        var read = 0L
+        repeat(OPERATIONS) {
+            session.submit(AddElements.of(page, listOf(stroke())))
+            read += measureTime { check(page.snapshotContent().paintOrder.isNotEmpty()) }.inWholeNanoseconds
+        }
+        report("M4 the paint order of a page of 2,000 strokes read after a stroke", "%.3f ms".format(read / 1e6 / OPERATIONS))
+    }
+
+    /** The page the stores build of [elements]. */
+    private fun build(elements: List<DrawElement>): DrawPage = DrawPage().apply { load(elements) }
+
     private fun largeDocument(): DrawDocument {
         val document = DrawDocument(addInitialPage = false)
         repeat(PAGES) {
@@ -74,5 +108,6 @@ class ApplyBenchmark {
         const val PAGES = 100
         const val STROKES_PER_PAGE = 1_000
         const val OPERATIONS = 1_000
+        const val LOADED = 10_000
     }
 }

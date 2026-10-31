@@ -487,9 +487,16 @@ public class DrawPage(
     /**
      * The elements removed from the page: hidden, they keep receiving the changes (the changes of
      * another device made before it saw the removal), so that an element put back is the same on
-     * every device.
+     * every device. Put by [load] and by the changes of the document.
      */
-    public val removedElements: MutableList<DrawElement> = mutableListOf()
+    public val removedElements: List<DrawElement> get() = hidden
+
+    private val hidden = mutableListOf<DrawElement>()
+
+    // The elements by identifier, shown and removed: changed with them, on the thread of the
+    // document (like add and remove)
+    private val shownById = HashMap<String, DrawElement>()
+    private val hiddenById = HashMap<String, DrawElement>()
 
     @Volatile public var widthMm: Float = widthMm
     @Volatile public var heightMm: Float = heightMm
@@ -551,12 +558,68 @@ public class DrawPage(
     public fun elements(): List<DrawElement> = content.let { it.pdfs + it.images + it.strokes + it.texts + it.markups + it.customs }
 
     /** The removed element [id] of this page (see [removedElements]), or `null`. */
-    internal fun findRemoved(id: String): DrawElement? = removedElements.firstOrNull { it.id == id }
+    internal fun findRemoved(id: String): DrawElement? = hiddenById[id]
 
-    /** The element [id] of this page, or `null`. */
-    public fun find(id: String): DrawElement? = content.let { c ->
-        c.strokes.firstOrNull { it.id == id } ?: c.texts.firstOrNull { it.id == id } ?: c.images.firstOrNull { it.id == id }
-            ?: c.markups.firstOrNull { it.id == id } ?: c.pdfs.firstOrNull { it.id == id } ?: c.customs.firstOrNull { it.id == id }
+    /** The element [id] shown on this page, or `null`: on the thread of the document, like [add]. */
+    public fun find(id: String): DrawElement? = shownById[id]
+
+    /** Keeps the removed [element] on this page, hidden (see [removedElements]). */
+    internal fun keepRemoved(element: DrawElement) {
+        hidden.add(element)
+        hiddenById[element.id] = element
+    }
+
+    /** Forgets the removed [element] of this page (shown again, moved or purged); whether it was there. */
+    internal fun forgetRemoved(element: DrawElement): Boolean {
+        if (!hidden.remove(element)) return false
+        if (hiddenById[element.id] === element) hiddenById.remove(element.id)
+        return true
+    }
+
+    /**
+     * Puts [shown] and [removed] (hidden, see [removedElements]) on this page at once, each kind in
+     * its stacking order: a page being built (the stores loading it), cheaper than [add] for each
+     * (which copies the elements of its kind). An element shown without order gets the one [add]
+     * would give it, in the order of [shown].
+     */
+    public fun load(shown: Collection<DrawElement>, removed: Collection<DrawElement> = emptyList()) {
+        val c = content
+        val strokes = ArrayList(c.strokes)
+        val texts = ArrayList(c.texts)
+        val images = ArrayList(c.images)
+        val pdfs = ArrayList(c.pdfs)
+        val markups = ArrayList(c.markups)
+        val customs = ArrayList(c.customs)
+        // The elements built so of each layer, as add counts them
+        val built = HashMap<Char, Int>()
+        fun <T : DrawElement> MutableList<T>.put(element: T) {
+            val layer = ElementOrder.layerOf(element)
+            var count = built.getOrPut(layer) { count { ElementOrder.isBuilt(it.order, layer) } }
+            if (element.order == ElementOrder.UNASSIGNED) element.order = ElementOrder.built(layer, count)
+            if (ElementOrder.isBuilt(element.order, layer)) count++
+            built[layer] = count
+            add(element)
+        }
+        for (element in shown) {
+            when (element) {
+                is DrawStroke -> strokes.put(element)
+                is DrawText -> texts.put(element)
+                is DrawImage -> images.put(element)
+                is DrawPdf -> pdfs.put(element)
+                is DrawTextMarkup -> markups.put(element)
+                is DrawCustomElement -> customs.put(element)
+            }
+            shownById[element.id] = element
+        }
+        content = PageElements(
+            strokes = strokes.sortedWith(stackOrder),
+            texts = texts.sortedWith(stackOrder),
+            images = images.sortedWith(stackOrder),
+            pdfs = pdfs.sortedWith(stackOrder),
+            markups = markups.sortedWith(stackOrder),
+            customs = customs.sortedWith(stackOrder)
+        )
+        removed.forEach(::keepRemoved)
     }
 
     /**
@@ -583,6 +646,7 @@ public class DrawPage(
             is DrawTextMarkup -> c.copy(markups = c.markups.inserted(element))
             is DrawCustomElement -> c.copy(customs = c.customs.inserted(element))
         }
+        shownById[element.id] = element
     }
 
     /** Removes [element]; returns its position among the elements of its kind, or -1. */
@@ -606,6 +670,7 @@ public class DrawPage(
             is DrawTextMarkup -> c.copy(markups = c.markups.without(element))
             is DrawCustomElement -> c.copy(customs = c.customs.without(element))
         }
+        if (shownById[element.id] === element) shownById.remove(element.id)
         return position
     }
 
@@ -827,7 +892,7 @@ public class DrawDocument(
         for (page in this.pages + removedPages.values) {
             val gone = page.removedElements.filter { element -> element.removed?.let(stable) == true }
             if (gone.isEmpty()) continue
-            page.removedElements.removeAll(gone)
+            gone.forEach(page::forgetRemoved)
             gone.forEach { elements.add(page to it) }
         }
         return PurgedContent(pages, elements)
@@ -959,16 +1024,15 @@ public class DrawDocument(
      */
     public fun findElement(id: String, hint: DrawPage? = null): Pair<DrawPage, DrawElement>? {
         hint?.find(id)?.let { return hint to it }
-        for (page in allPages()) {
-            if (page === hint) continue
-            page.find(id)?.let { return page to it }
-        }
+        for (page in pages) if (page !== hint) page.find(id)?.let { return page to it }
+        for (page in removedPages.values) if (page !== hint) page.find(id)?.let { return page to it }
         return null
     }
 
     /** The removed element [id] and the page holding it (see [DrawPage.removedElements]), or `null`. */
     internal fun findRemovedElement(id: String): Pair<DrawPage, DrawElement>? {
-        for (page in allPages()) page.findRemoved(id)?.let { return page to it }
+        for (page in pages) page.findRemoved(id)?.let { return page to it }
+        for (page in removedPages.values) page.findRemoved(id)?.let { return page to it }
         return null
     }
 

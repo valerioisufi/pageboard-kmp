@@ -81,7 +81,7 @@ public object SyntheticDocuments {
                 page.add(stroke)
                 page.remove(stroke)
                 stroke.removed = Stamp(1L, index, "synthetic")
-                page.removedElements.add(stroke)
+                page.load(emptyList(), listOf(stroke))
             } else {
                 page.add(stroke)
             }
