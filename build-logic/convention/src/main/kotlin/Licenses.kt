@@ -47,5 +47,10 @@ internal fun Project.licensesTask(): TaskProvider<LicensesTask> =
     else tasks.register("drawviewLicenses", LicensesTask::class.java) {
         licenses.from(rootProject.file("LICENSE"), rootProject.file("THIRD_PARTY_LICENSES.md"))
         module.set(project.name)
-        output.set(layout.buildDirectory.dir("generated/drawview-licenses"))
+        // A directory of its own: the Android plugin of a multiplatform library takes the assets,
+        // res and jniLibs next to each resource directory of androidMain. Directly under
+        // build/generated, the assets would be build/generated/assets, where the Compose resources
+        // of every component are copied (twice in the library, and the main assets would read
+        // those of the device tests)
+        output.set(layout.buildDirectory.dir("generated/drawview-licenses/resources"))
     }
