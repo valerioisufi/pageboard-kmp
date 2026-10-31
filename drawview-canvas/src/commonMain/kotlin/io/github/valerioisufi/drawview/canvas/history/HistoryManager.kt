@@ -1,5 +1,6 @@
 package io.github.valerioisufi.drawview.canvas.history
 
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateListOf
 import io.github.valerioisufi.drawview.model.change.ChangeObserver
 import io.github.valerioisufi.drawview.model.change.ChangeOrigin
@@ -27,8 +28,12 @@ public class HistoryManager(
     private var groupDepth = 0
     private val groupInverses = mutableListOf<DocumentChange>()
 
-    public val canUndo: Boolean get() = undoStack.isNotEmpty()
-    public val canRedo: Boolean get() = redoStack.isNotEmpty()
+    // What the views read: whether there is something to undo changes less often than the stacks
+    private val undoable = derivedStateOf { undoStack.isNotEmpty() }
+    private val redoable = derivedStateOf { redoStack.isNotEmpty() }
+
+    public val canUndo: Boolean get() = undoable.value
+    public val canRedo: Boolean get() = redoable.value
 
     init {
         session.addObserver(this)

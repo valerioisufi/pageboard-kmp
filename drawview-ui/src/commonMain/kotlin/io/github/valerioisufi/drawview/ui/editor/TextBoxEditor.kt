@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,7 +61,9 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.observe
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
+import io.github.valerioisufi.drawview.model.geometry.Point
 import io.github.valerioisufi.drawview.model.text.TextSizes.PT_TO_MM
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_formula_invalid
@@ -98,16 +101,16 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
     val editor = controller.textEditorManager
     // Edited with the fonts the canvas draws it with
     val notesFonts = rememberNotesFonts()
-    // Recomposes on every camera movement (fling and bounce included) and page change
-    @Suppress("UNUSED_VARIABLE")
-    val frame = controller.version
-    @Suppress("UNUSED_VARIABLE")
-    val camera = controller.viewport.camera.moveCount
-    val mmToScreen = controller.viewport.pageMmToScreen(editor.activeTextPageIndex) ?: return
-
-    // Scale and position anchored to the page (page millimeters -> screen pixels)
-    val scale = mmToScreen.scaleFactor.coerceAtLeast(0.01f)
-    val origin = mmToScreen.mapPoint(editor.boxX, editor.boxY)
+    // The scale of the page (page millimeters -> screen pixels): composed again by a zoom, not by
+    // the other movements of the camera, the field placed where the box is (editedBoxOrigin)
+    val pageScale by remember(controller) {
+        derivedStateOf {
+            controller.version
+            controller.viewport.camera.moveCount
+            controller.viewport.pageMmToScreen(editor.activeTextPageIndex)?.scaleFactor
+        }
+    }
+    val scale = (pageScale ?: return).coerceAtLeast(0.01f)
     // Read by the layout callback, which must see the scale of the layout it is given
     val currentScale by rememberUpdatedState(scale)
 
@@ -134,7 +137,7 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
     val highlighter = controller.engines.code
     val codeLayouts = remember(codeMeasurer, notesFonts, highlighter) { LruCache<CodeKey, CodeBlockLayout>(MAX_CODE_LAYOUTS) }
     // The code on the paper of its page, as the page draws it
-    val paper = controller.document.pages.getOrNull(editor.activeTextPageIndex)?.background?.backgroundColor ?: TextTileAdapter.NO_PAPER
+    val paper by controller.document.observe { pages.getOrNull(editor.activeTextPageIndex)?.background?.backgroundColor ?: TextTileAdapter.NO_PAPER }
     val value = editor.value
     val shown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, struts, latexReady, codeLayouts, paper) {
         val presentation = Presentation(
@@ -179,7 +182,10 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                 }
             },
             modifier = Modifier
-                .offset { IntOffset(origin.x.roundToInt(), origin.y.roundToInt()) }
+                .offset {
+                    val origin = controller.editedBoxOrigin()
+                    IntOffset(origin.x.roundToInt(), origin.y.roundToInt())
+                }
                 .width(widthDp)
                 .graphicsLayer {
                     // A text turns around its top-left corner (see DrawText)
@@ -289,8 +295,8 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
         val current = layout
         if (atCaret != null && current != null && latexReady && current.layoutInput.text.text == shown.text.text) {
             val start = shown.mapping.originalToTransformed(atCaret.start).coerceIn(0, shown.text.length)
-            val anchorX = origin.x + current.getHorizontalPosition(start, usePrimaryDirection = true)
-            val anchorY = origin.y + current.getLineTop(current.getLineForOffset(start))
+            val anchorX = current.getHorizontalPosition(start, usePrimaryDirection = true)
+            val anchorY = current.getLineTop(current.getLineForOffset(start))
             val previewPx = max(fontSizePx, with(unscaledDensity) { MIN_PREVIEW_TEXT.toPx() })
             val preview = remember(atCaret, value.text, previewPx, editor.color) {
                 images.render(MarkdownTextUtil.formulaSource(value.text, atCaret), MarkdownTextUtil.formulaSizePx(atCaret, previewPx), editor.color)
@@ -301,7 +307,8 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                     val placeable = measurable.measure(constraints)
                     val gap = PREVIEW_GAP.roundToPx()
                     layout(placeable.width, placeable.height) {
-                        placeable.place(anchorX.roundToInt(), (anchorY - placeable.height - gap).roundToInt().coerceAtLeast(0))
+                        val origin = controller.editedBoxOrigin()
+                        placeable.place((origin.x + anchorX).roundToInt(), (origin.y + anchorY - placeable.height - gap).roundToInt().coerceAtLeast(0))
                     }
                 }
             )
@@ -312,6 +319,17 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
         focusRequester.requestFocus()
         keyboardController?.show()
     }
+}
+
+/**
+ * Where the box of the text being written is on the screen. Read while placing, it follows the
+ * camera and the pages without composing the field again.
+ */
+private fun DrawViewController.editedBoxOrigin(): Point {
+    @Suppress("UNUSED_VARIABLE") val frame = version
+    @Suppress("UNUSED_VARIABLE") val camera = viewport.camera.moveCount
+    val editor = textEditorManager
+    return viewport.pageMmToScreen(editor.activeTextPageIndex)?.mapPoint(editor.boxX, editor.boxY) ?: Point(0f, 0f)
 }
 
 /** What a block of code is laid out from: the same key, the same layout. */

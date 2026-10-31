@@ -52,7 +52,7 @@ import androidx.compose.ui.unit.max
 import androidx.compose.ui.zIndex
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.controller.TextFormatTarget
-import io.github.valerioisufi.drawview.canvas.observeChanges
+import io.github.valerioisufi.drawview.canvas.observe
 import io.github.valerioisufi.drawview.canvas.tool.LassoMode
 import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.TextAlignment
@@ -274,8 +274,7 @@ internal fun EditorTopBar(
 /** "Analysis · 12 pages" beside the tools, "Page 3 of 12" on a phone (the page looked at). */
 @Composable
 private fun documentSubtitle(controller: DrawViewController, location: String?, pageOnly: Boolean): String {
-    controller.document.observeChanges()
-    val total = controller.document.pages.size
+    val total by controller.document.observe { pages.size }
     if (pageOnly) {
         val page by remember(controller) {
             androidx.compose.runtime.derivedStateOf {
@@ -387,8 +386,8 @@ private fun MoreMenu(commands: EditorCommands, arrangement: ToolbarArrangement, 
  */
 @Composable
 internal fun RowScope.EditorTools(controller: DrawViewController, commands: EditorCommands, withImports: Boolean) {
-    // Whether the document has PDF pages, as it changes
-    controller.document.observeChanges()
+    // Whether the document has PDF pages, as it changes (not at every change of the document)
+    val hasPdfPages by controller.document.observe { hasPdfPages() }
     val pdfImportAvailable = controller.tileManager.tileRenderer.pdfAdapter != null
     // The tool whose settings are open (null = none)
     var openSettings by remember { mutableStateOf<Tool?>(null) }
@@ -404,7 +403,6 @@ internal fun RowScope.EditorTools(controller: DrawViewController, commands: Edit
         // Much wider range for the highlighters, linear only up to 8 pt
         InkSettings(controller, Tool.INK_HIGHLIGHTER, stringResource(Res.string.tool_highlighter), InkPalette.highlights, HybridScale(1f..30f, linearThreshold = 8f, linearProportion = 0.3f))
     }
-    val hasPdfPages = controller.document.pages.any { it.pdfs.isNotEmpty() }
     if (pdfImportAvailable && (hasPdfPages || controller.selectedTool == Tool.TEXT_MARKUP)) {
         ToolWithSettings(controller, Tool.TEXT_MARKUP, commands.textMarkup, DrawViewIcons.TextMarkup, openSettings, { openSettings = it }) {
             MarkupSettings(controller)

@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.zIndex
 import io.github.valerioisufi.drawview.canvas.DrawCanvas
 import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
+import io.github.valerioisufi.drawview.canvas.observe
 import io.github.valerioisufi.drawview.canvas.observeChanges
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.model.geometry.Dimension
@@ -151,8 +152,8 @@ private fun DrawScreenContent(
     location: String?,
     readOnlyNote: @Composable () -> String?
 ) {
-    // The pages of the document (whether some hold PDF pages, the formats of the dialogs) as they change
-    controller.document.observeChanges()
+    // Whether some pages hold PDF pages, as it changes (not at every change of the document)
+    val hasPdfPages by controller.document.observe { hasPdfPages() }
     // Immersive editor (Android), as in the original app
     HideSystemBarsEffect()
 
@@ -258,7 +259,7 @@ private fun DrawScreenContent(
                 val button = LocalMinimumInteractiveComponentSize.current.takeIf { it.isSpecified } ?: 48.dp
                 var extensionsWidth by remember { mutableStateOf(0.dp) }
                 val pdfTools = if (controller.tileManager.tileRenderer.pdfAdapter != null) 1 else 0
-                val textMarkupShown = pdfTools == 1 && controller.document.pages.any { it.pdfs.isNotEmpty() }
+                val textMarkupShown = pdfTools == 1 && hasPdfPages
                 val toolCount = 2 + 6 + (if (textMarkupShown) 1 else 0) + 1 + pdfTools
                 // The top bar starts after the controls of the window (the traffic lights of macOS)
                 val decorWidth = LocalWindowDecorInsets.current.calculateStartPadding(LocalLayoutDirection.current)
@@ -446,10 +447,12 @@ private fun DrawScreenContent(
     if (showSinglePageConfigurator) {
         val pageIds = configuredPageIds
         val targetIndex = controller.pageManager.contextMenuTargetPageIndex
-        val targetPage = pageIds?.firstOrNull()?.let { controller.document.pageById(it) } ?: controller.document.pages.getOrNull(targetIndex)
         val close = { showSinglePageConfigurator = false; configuredPageIds = null }
 
         AdaptiveSheet(onDismissRequest = close, maxWidth = 760.dp) {
+            // The pages as they change, while the sheet is open
+            controller.document.observeChanges()
+            val targetPage = pageIds?.firstOrNull()?.let { controller.document.pageById(it) } ?: controller.document.pages.getOrNull(targetIndex)
             PageTemplateConfigurator(
                 subtitle = if (pageIds != null) {
                     pluralStringResource(Res.plurals.page_config_subtitle_pages, pageIds.size, pageIds.size, controller.document.name)
@@ -475,6 +478,8 @@ private fun DrawScreenContent(
     if (showDocumentConfigurator) {
         val document = controller.document
         AdaptiveSheet(onDismissRequest = { showDocumentConfigurator = false }, maxWidth = 760.dp) {
+            // The document as it changes, while the sheet is open
+            document.observeChanges()
             PageTemplateConfigurator(
                 subtitle = stringResource(Res.string.page_config_subtitle_document, document.name),
                 initialDimension = Dimension(document.defaultWidthMm.mm, document.defaultHeightMm.mm),

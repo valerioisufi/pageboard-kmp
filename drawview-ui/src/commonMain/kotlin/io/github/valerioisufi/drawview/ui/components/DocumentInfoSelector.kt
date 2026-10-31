@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import io.github.valerioisufi.drawview.canvas.observe
 import io.github.valerioisufi.drawview.canvas.observeChanges
 import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.ui.generated.resources.*
@@ -50,7 +51,8 @@ internal fun DocumentInfoSelector(
     location: String? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val title = document?.name ?: stringResource(Res.string.common_state_loading)
+    // Renamed elsewhere (another device), as it changes
+    val title = document?.observe { name }?.value ?: stringResource(Res.string.common_state_loading)
     Box(modifier = modifier) {
         Row(
             modifier = Modifier

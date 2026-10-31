@@ -24,6 +24,7 @@ import io.github.valerioisufi.drawview.canvas.controller.PageManager
 import io.github.valerioisufi.drawview.canvas.text.RichTextEditing.Format
 import io.github.valerioisufi.drawview.canvas.controller.SelectionManager
 import io.github.valerioisufi.drawview.canvas.tool.Tool
+import io.github.valerioisufi.drawview.model.DrawDocument
 import io.github.valerioisufi.drawview.model.change.CopiedElements
 import io.github.valerioisufi.drawview.model.change.CopiedPages
 import io.github.valerioisufi.drawview.model.change.StackMove
@@ -403,7 +404,7 @@ internal class EditorCommands internal constructor(
     val textMarkup = tool(
         Tool.TEXT_MARKUP, Res.string.draw_toolbar_action_text_markup, DrawViewIcons.TextMarkup, Key.U,
         // The text of the PDF pages, where the PDFs are drawn
-        available = { controller.tileManager.tileRenderer.pdfAdapter != null && controller.document.pages.any { it.pdfs.isNotEmpty() } }
+        available = { controller.tileManager.tileRenderer.pdfAdapter != null && controller.document.hasPdfPages() }
     )
     val eraser = tool(Tool.ERASER, Res.string.draw_toolbar_action_eraser, DrawViewIcons.Eraser, Key.E)
     val text = tool(Tool.TEXT, Res.string.draw_toolbar_action_text, DrawViewIcons.Text, Key.T)
@@ -619,3 +620,6 @@ internal fun rememberEditorCommands(
         )
     }
 }
+
+/** Whether a page of the document holds a page of a PDF, whose text can be marked. */
+internal fun DrawDocument.hasPdfPages(): Boolean = pages.any { it.pdfs.isNotEmpty() }

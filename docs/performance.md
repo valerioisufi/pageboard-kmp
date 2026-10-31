@@ -128,7 +128,9 @@ not a cost.
 | Finding an element of a page by its identifier | `DrawPage`: an index of its elements, shown and removed | Information Expert |
 | Building a page from stored or received elements | `DrawPage.load(shown, removed)`, used by the stores and the snapshots | Creator |
 | The stack of a page in one pass, the elements in the order they are painted | `PageElements`: kept as it is, measured (decision 20) | Information Expert |
-| What the editor shows of the document | derived states in `DrawScreen` and `EditorToolbar` (ui) | Low Coupling (the view reads what it shows) |
+| What the editor shows of the document, as it changes | `DrawDocument.observe` (canvas): a derived state, read by `DrawScreen`, `EditorToolbar` and `DocumentInfoSelector` (ui) | Information Expert (the view says what it reads), Low Coupling (the model stays out of Compose) |
+| Whether there is something to undo or redo | `HistoryManager.canUndo`, `canRedo` (canvas): derived from its stacks | Information Expert |
+| Where the field of the text being written is on the screen | `TextBoxEditor` (ui): its scale composed, its place read while it is placed | Information Expert |
 | Modeling a stroke whose inputs are all known | `InkStrokeModeller.buildMesh` (ink), with `ink_stroke_builder_add_points` (the bridge: the inputs given at once, the shape updated once) | Information Expert |
 | Modeling the strokes of a document at the same time | `DrawDocumentRepository.loadDocument` (the key-value store on one thread, decision 11) | Controller |
 | The elements of a page in a region | `PageElements`: a grid of cells, `PageContentSnapshot.elementsIn` | Information Expert |
@@ -289,6 +291,31 @@ gets the order `add` would give it (the next order of the elements of its layer 
 order given), so a page loaded is the page built element by element (`PageIndexTest`). The
 loaders say which elements are removed (decision 19).
 
+### The editor
+
+```kotlin
+/** What [read] reads of this document, as it changes: its readers composed again when it changes. */
+@Composable
+public fun <T> DrawDocument.observe(read: DrawDocument.() -> T): State<T>
+```
+
+The model is not Compose state: what shows the document follows its revision. `observeChanges()`
+composes its caller again at every change; `observe` gives a derived state of the revision and of
+what `read` reads, so that its readers are composed again only when what they read changes. The
+editor reads with it whether the document has PDF pages (`DrawScreen`, `EditorTools`), how many
+pages it has (the subtitle of the bar) and its title (`DocumentInfoSelector`). The sheets of the
+formats of the pages and of the document follow every change while they are open, their content
+calling `observeChanges()`; the information of the document (its popover) and the page grid
+follow every change while they are shown, as before.
+
+The buttons Undo and Redo read `HistoryManager.canUndo` and `canRedo`: derived from its stacks,
+they change only when a stack becomes empty or stops being.
+
+`TextBoxEditor` composes the scale of its page (a derived state of the camera and of the pages)
+and reads where its box is on the screen while it is placed (`offset`, and the place of the
+formula under the caret): a pan moves the field without composing it again. A zoom composes it at
+the new scale, as before (left for later, 9).
+
 ### Modeling the strokes loaded
 
 ```c
@@ -329,7 +356,7 @@ therefore called from several threads at once, which its KDoc now says.
 | 2 | `DocumentStore.loadOutline` (both stores, contract test) used by the three search sources; the version of the PDFs from the outline (test: a stroke does not change it, a PDF page added does); `LectureSearchSource.version` measured and kept (decision 14) | done |
 | 3 | `DocumentStore.pageFingerprint` and `loadPage` (contract test: every kind of change of the first page changes the fingerprint, a change of another page does not); the thumbnails drawn from them (test: a change of another page keeps the thumbnail, dated again) | done |
 | 4 | The elements of a page by identifier, `DrawPage.load` used by the loaders (test: a page loaded is the page built element by element; the elements are found wherever 400 random changes put them, against the lists of the pages); the stack in one pass and `paintOrder` measured and kept as they are (decision 20) | done |
-| 5 | The editor: derived states instead of `observeChanges()` in `DrawScreenContent` and `EditorTools` (test: they do not change over 100 strokes); the position of `TextBoxEditor` read in the layout | proposed |
+| 5 | The editor: `DrawDocument.observe` instead of `observeChanges()` in `DrawScreenContent`, `EditorTools` and the subtitle of the bar, Undo and Redo derived, the position of `TextBoxEditor` read while it is placed (test: over 100 strokes the editor enters no scope again, and shows a page added and a title renamed; over 100 frames of a pan the field of a text enters no scope again and moves with its box, and a zoom composes it at its scale) | done |
 | 6 | The inputs of a stroke loaded in one native call and its shape updated once (bridge, JNI, cinterop), the strokes of a document modeled on every core (test: the shape of every brush, as drawn, on the JVM and the iOS simulator) | done |
 | 7 | The tiles: the elements of a region (`elementsIn`), the paths of the outlines kept (if they gain) | proposed |
 | 8 | The PDF pages kept loaded between their tiles and drawn with one copy; the texts drawn outside of the lock of the caches (if the measurer allows it) | proposed |
@@ -345,7 +372,9 @@ On the Mac (M5, JVM), 2026-10-31, before and after each phase. Each benchmark ru
 `IndexerBenchmark` in `drawview-search`, `LectureSearchBenchmark` in `drawview-lecture-ui`,
 `ThumbnailBenchmark` in `drawview-explorer`,
 `ApplyBenchmark` in `drawview-model`, `ModelingBenchmark` in `drawview-ink`, `TileBenchmark` in
-`drawview-canvas`).
+`drawview-canvas`, `EditorBenchmark` in `drawview-ui`). M8 counts the scopes the composition enters
+again (a function called again, whether it runs or skips) with an observer of the compositions
+(`CompositionCounter`, from the experimental API of the Compose runtime, in the tests only).
 
 | Measure | Before | After | Phase |
 |---|---|---|---|
@@ -363,6 +392,8 @@ On the Mac (M5, JVM), 2026-10-31, before and after each phase. Each benchmark ru
 | M5 opening a note of 50 pages × 600 strokes, 10% erased | 71.9 s (24 ms of queries) | 1.89 s (26 ms of queries); 1.81 s after phase 4, within the noise | 6 |
 | M5 a stroke of 120 inputs modeled from its inputs at once / input by input | 0.93 ms / 0.93 ms | 0.15 ms / 0.92 ms | 6 |
 | M6 the screen filled after a jump of 20 pages / a fling over 20 pages | 21 ms / 18 ms | | — |
+| M8 a stroke drawn, in the editor (1280 × 800, the tools in the top bar) | 52 scopes entered again, 0.22 ms of composition (measured in phase 5) | none (5 derived states read again, unchanged), 0.040 ms | 5 |
+| M8 a frame of a pan while a text is written | 13 scopes entered again, 0.20 ms of composition (measured in phase 5) | none (1 derived state read again), 0.037 ms | 5 |
 | M7 a tile of a page of 1,500 strokes, level 0 / level 2 | 10.4 ms / 2.1 ms | | 7 |
 | A tile of a PDF page | measured at the start of phase 8 | | 8 |
 
@@ -432,6 +463,19 @@ Taken alone, revertible:
     saves. `find` was safe on any thread (it read the content); its callers outside of the model
     (`CustomElementManager`, `CollaboratorPresence`, `CollaboratorsLayer`) run on the main
     thread, the thread of the documents of the applications.
+
+22. **`DrawDocument.observe` public, in `drawview-canvas`** beside `observeChanges()` (its ABI
+    grows): the panels and overlays of the applications read the document as the editor does.
+    It could be internal to `drawview-ui`, its only user today.
+23. **The sheets of the formats follow the document while they are open**, their content calling
+    `observeChanges()`: they read it as before, and only while they are shown.
+24. **The title of the bar follows a rename** (`DocumentInfoSelector` reads it with `observe`):
+    the test of phase 5 found that it did not, before this phase too. The bar was composed again
+    at every change, but `DocumentInfoSelector`, given the same document, was skipped, so a title
+    renamed on another device showed only once the note was opened again.
+25. **Undo and Redo derived** (`HistoryManager`): they were composed again at every stroke, their
+    stacks being state lists read whole. Not in the first version of this plan: once the editor
+    read the document with `observe`, they were the 4 scopes still entered at a stroke (M8).
 
 Decided by the user:
 

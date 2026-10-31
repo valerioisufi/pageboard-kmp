@@ -1,4 +1,5 @@
 public final class io/github/valerioisufi/drawview/canvas/DocumentObservationKt {
+	public static final fun observe (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)Landroidx/compose/runtime/State;
 	public static final fun observeChanges (Lio/github/valerioisufi/drawview/model/DrawDocument;Landroidx/compose/runtime/Composer;I)J
 }
 
