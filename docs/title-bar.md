@@ -107,19 +107,26 @@ EditorTopBar ── DocumentInfoSelector ── popover ── DocumentTitleFiel
   the selection) is wrapped in `WindowDraggable`, the room the bar leaves to drag the window.
 * The bars of the grid are 56 dp tall, centered at 28 dp: beside the traffic lights, centered at 26
   points, as the bar of the editor.
-* The audit of the other screens runs the desktop application on a scratch directory and looks at
-  every screen whose bar touches the top-leading corner: the library in its three layouts (list,
-  grid, panes) with a selection and in the trash, the editor with the tools in one bar and
-  floating, the page grid and its selection, a sheet in a compact window (`AdaptiveSheet`), the
-  panels of the extensions (lecture, collaboration) and the search. What it finds is fixed in the
-  same phase and listed here.
+* The audit is a screenshot test (`AdaptiveScreenshotTest.macWindow`): the scene of the library
+  given the insets of macOS and the traffic lights drawn where macOS puts them (14 points wide, 6
+  apart, from 19 points, centered at 26), in a wide window (`DESKTOP`) and a narrow one (`PHONE`
+  wide), recorded as `<screen>-mac-<window>-light.png`. A button under the lights shows at once,
+  and it stays checked by `verifyRoborazziJvm`.
+* What it found:
+  * The page grid and its selection: their first button under the lights, in both windows. Fixed.
+  * The library (list, panes, a selection, the trash) and the editor (one bar, floating tools):
+    after the lights already.
+  * The sheet of the background of the document in a narrow window: it rises from the bottom,
+    under the bar of the editor, and leaves the corner alone.
+  * The panels of the extensions and the details of the library are at the trailing side, and the
+    dialogs are centered: none reaches the corner.
 
 ## Plan
 
 | Phase | Content | Status |
 |---|---|---|
 | 1. Rename from the title | `DocumentRenamer`, `DocumentNames`; the title a field in the popover of `DocumentInfoSelector`; "Rename…" in the "more" menu and the menu bar; `EditorSessionScreen` gives the renamer; the strings of the errors shared with the explorer; the title of the document window follows the name; tests of the field (Enter, Escape, errors, closing, read only, the command) and of a rename reaching the open session; ABI recorded | Done |
-| 2. The window controls on macOS | The bars of the page grid after the start inset and draggable; the audit of the other screens, with their fixes; screenshots with the insets of macOS | Planned |
+| 2. The window controls on macOS | The bars of the page grid after the start inset and draggable; the audit of the other screens as screenshots of a window of macOS (`macWindow`): only the page grid needed a fix | Done |
 
 ### Decisions
 

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.test.DesktopComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -18,6 +19,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.rightClick
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelStoreOwner
 import io.github.valerioisufi.drawview.ui.adaptive.ReferenceWindow
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.extension.EditorPanel
@@ -218,6 +220,38 @@ class AdaptiveScreenshotTest {
     fun libraryTrashEmpty() = capture("library-trash-empty", ReferenceWindow.PHONE, dark = false) { viewModels ->
         runOnIdle { viewModels.library().showSection(FileExplorerViewModel.Section.TRASH) }
         waitForIdle()
+    }
+
+    /**
+     * The screens in a window of macOS, whose traffic lights take the top-leading corner (see
+     * `docs/title-bar.md`): no button under them, in a wide window and in a narrow one.
+     */
+    @Test
+    fun macWindow() = listOf(ReferenceWindow.DESKTOP, ReferenceWindow.PHONE).forEach { window ->
+        val mac = { screen: String, actions: DesktopComposeUiTest.(ViewModelStoreOwner) -> Unit ->
+            capture(screen, window, dark = false, extension = actionsExtension(), macWindow = true, actions = actions)
+        }
+        mac("library") {}
+        mac("library-selection") { viewModels -> runOnIdle { viewModels.library().let { it.toggleSelection(it.currentDirectoryFiles.first { file -> file.name == NOTE }) } } }
+        mac("library-trash") { viewModels -> runOnIdle { viewModels.library().showSection(FileExplorerViewModel.Section.TRASH) } }
+        mac("editor") { viewModels -> openNote(viewModels) }
+        mac("editor-page-grid") { viewModels ->
+            openNote(viewModels)
+            runOnIdle { viewModels.controller().togglePageGrid() }
+        }
+        mac("editor-page-grid-selection") { viewModels ->
+            openNote(viewModels)
+            runOnIdle {
+                val controller = viewModels.controller()
+                controller.togglePageGrid()
+                controller.pageManager.selection.toggle(controller.document.pages[0].id)
+            }
+        }
+        mac("document-background") { viewModels ->
+            openNote(viewModels)
+            onNodeWithContentDescription("More options").performClick()
+            onNodeWithText("Document Background").performClick()
+        }
     }
 
     /** An extension with three actions in the top bar, as those of PencilNotes. */

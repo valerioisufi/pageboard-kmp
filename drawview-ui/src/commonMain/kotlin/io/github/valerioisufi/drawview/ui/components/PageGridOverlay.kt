@@ -1,5 +1,10 @@
 package io.github.valerioisufi.drawview.ui.components
 
+import io.github.valerioisufi.drawview.ui.window.WindowDraggable
+import io.github.valerioisufi.drawview.ui.window.LocalWindowDecorInsets
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -163,25 +168,28 @@ internal fun PageGridOverlay(
         } else Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 12.dp, end = 24.dp, top = 8.dp, bottom = 8.dp),
+                .padding(start = 12.dp + windowControlsWidth(), end = 24.dp, top = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             DesignIconButton(DrawViewIcons.Close, stringResource(Res.string.page_grid_action_close), { controller.togglePageGrid() }, tint = MaterialTheme.colorScheme.onSurface)
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(Res.string.page_grid_title),
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1
-                )
-                Text(
-                    text = document.name + " · " + pluralStringResource(Res.plurals.editor_pages_count, document.pages.size, document.pages.size),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+            // The title drags the window, as the bar of the editor
+            WindowDraggable(modifier = Modifier.weight(1f)) {
+                Column {
+                    Text(
+                        text = stringResource(Res.string.page_grid_title),
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1
+                    )
+                    Text(
+                        text = document.name + " · " + pluralStringResource(Res.plurals.editor_pages_count, document.pages.size, document.pages.size),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
             DesignIconButton(DrawViewIcons.SquareCheckBig, stringResource(Res.string.page_grid_action_select), { selection.start() }, tint = MaterialTheme.colorScheme.onSurface)
             if (writable) {
@@ -732,19 +740,20 @@ private fun PageSelectionBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 12.dp, end = 24.dp, top = 8.dp, bottom = 8.dp),
+            .padding(start = 12.dp + windowControlsWidth(), end = 24.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         DesignIconButton(DrawViewIcons.Check, stringResource(Res.string.page_grid_action_done), { selection.clear() }, tint = colors.onSurface)
-        Text(
-            text = pluralStringResource(Res.plurals.page_grid_selected_count, count, count),
-            style = MaterialTheme.typography.titleMedium,
-            color = colors.onSurface,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f)
-        )
+        WindowDraggable(modifier = Modifier.weight(1f)) {
+            Text(
+                text = pluralStringResource(Res.plurals.page_grid_selected_count, count, count),
+                style = MaterialTheme.typography.titleMedium,
+                color = colors.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
         val some = count > 0
         // In a compact window, Select all, Paste after and Background in a menu
         val compact = currentAdaptiveInfo().window.isCompact
@@ -801,3 +810,7 @@ private fun PageSelectionBar(
         }
     }
 }
+
+/** The room the controls of the window take at the start of a bar along its top (the traffic lights of macOS). */
+@Composable
+private fun windowControlsWidth(): Dp = LocalWindowDecorInsets.current.calculateStartPadding(LocalLayoutDirection.current)

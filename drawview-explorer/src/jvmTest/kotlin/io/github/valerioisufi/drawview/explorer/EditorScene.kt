@@ -1,11 +1,20 @@
 package io.github.valerioisufi.drawview.explorer
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.test.DesktopComposeUiTest
@@ -39,6 +48,7 @@ import io.github.valerioisufi.drawview.ui.adaptive.ReferenceWindow
 import io.github.valerioisufi.drawview.ui.adaptive.ShortcutModifier
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.theme.DrawViewTheme
+import io.github.valerioisufi.drawview.ui.window.LocalWindowDecorInsets
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -55,6 +65,9 @@ import kotlinx.coroutines.cancel
  *
  * @param clipboard the text in the clipboard of the scene, which has its own: what the computer
  * holds is neither shown (the paste of the menus) nor replaced.
+ * @param macWindow a window of macOS: the insets of its traffic lights ([LocalWindowDecorInsets],
+ * as `DrawViewWindowDecor` gives them), the lights drawn over the window where macOS puts them,
+ * recorded as `<screen>-mac-<window>-<theme>.png`.
  */
 @OptIn(ExperimentalTestApi::class)
 internal fun capture(
@@ -63,6 +76,7 @@ internal fun capture(
     dark: Boolean,
     extension: EditorExtension? = null,
     clipboard: String? = null,
+    macWindow: Boolean = false,
     actions: DesktopComposeUiTest.(viewModels: ViewModelStoreOwner) -> Unit = {}
 ) = runDesktopComposeUiTest(width = window.width.value.toInt(), height = window.height.value.toInt()) {
     val storeScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -91,15 +105,18 @@ internal fun capture(
             DrawViewTheme(darkTheme = dark, dynamicColor = false) {
                 // The shortcuts written as on a Mac on every system
                 AdaptiveRoot(hints = window.input, conventions = PlatformConventions(ShortcutModifier.COMMAND)) {
-                    DocumentLibrary(
-                        title = { Text("DrawView", modifier = Modifier.padding(horizontal = 16.dp)) },
-                        documents = documents,
-                        // The PDF pages and the formulas drawn as in the applications
-                        engines = ENGINES,
-                        thumbnails = rememberDocumentThumbnails(documents, directory = null, engines = ENGINES).also { thumbnails.value = it },
-                        editorExtension = extension,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                    CompositionLocalProvider(LocalWindowDecorInsets provides if (macWindow) MAC_DECOR_INSETS else PaddingValues(0.dp)) {
+                        DocumentLibrary(
+                            title = { Text("DrawView", modifier = Modifier.padding(horizontal = 16.dp)) },
+                            documents = documents,
+                            // The PDF pages and the formulas drawn as in the applications
+                            engines = ENGINES,
+                            thumbnails = rememberDocumentThumbnails(documents, directory = null, engines = ENGINES).also { thumbnails.value = it },
+                            editorExtension = extension,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                    if (macWindow) TrafficLights()
                 }
             }
         }
@@ -109,9 +126,26 @@ internal fun capture(
     awaitPagesDrawn(viewModels, thumbnails.value)
 
     val theme = if (dark) "dark" else "light"
-    captureToImage().captureRoboImage("screenshots/$screen-${window.name.lowercase().replace('_', '-')}-$theme.png")
+    val mac = if (macWindow) "-mac" else ""
+    captureToImage().captureRoboImage("screenshots/$screen$mac-${window.name.lowercase().replace('_', '-')}-$theme.png")
     viewModels.viewModelStore.clear()
     storeScope.cancel()
+}
+
+/** The insets of the traffic lights in a window of macOS, as `DrawViewWindowDecor` gives them. */
+private val MAC_DECOR_INSETS = PaddingValues(start = 78.dp, top = 52.dp)
+
+/**
+ * The traffic lights of a window of macOS in the title bar of a toolbar: 14 points wide, 6 apart,
+ * from 19 points of the edge, centered 26 points from the top (see `docs/window-integration.md`).
+ */
+@Composable
+private fun TrafficLights() {
+    Row(modifier = Modifier.padding(start = 19.dp, top = 19.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        for (color in listOf(Color(0xFFFF5F57), Color(0xFFFEBC2E), Color(0xFF28C840))) {
+            Box(modifier = Modifier.size(14.dp).background(color, CircleShape))
+        }
+    }
 }
 
 /** Opens [NOTE] in the editor. */
