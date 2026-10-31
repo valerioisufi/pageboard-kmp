@@ -10,6 +10,10 @@ public final class io/github/valerioisufi/drawview/store/testing/OutlineContract
 	public static final fun checkOutline (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public final class io/github/valerioisufi/drawview/store/testing/PageFingerprintContractKt {
+	public static final fun checkPageFingerprint (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class io/github/valerioisufi/drawview/store/testing/SyntheticDocuments {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/store/testing/SyntheticDocuments;
 	public final fun getNoMeshes ()Lio/github/valerioisufi/drawview/model/StrokeModeller;

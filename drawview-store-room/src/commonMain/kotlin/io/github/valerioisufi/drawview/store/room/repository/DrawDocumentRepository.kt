@@ -31,8 +31,10 @@ import io.github.valerioisufi.drawview.model.change.TextMarkupData
 import io.github.valerioisufi.drawview.model.change.toData
 import io.github.valerioisufi.drawview.model.newElementId
 import io.github.valerioisufi.drawview.model.text.TextSizes
+import io.github.valerioisufi.drawview.platform.Sha256
 import io.github.valerioisufi.drawview.platform.currentTimeMillis
 import io.github.valerioisufi.drawview.store.DocumentOutline
+import io.github.valerioisufi.drawview.store.LoadedPage
 import io.github.valerioisufi.drawview.store.PageOutline
 import io.github.valerioisufi.drawview.store.room.db.CustomElementEntity
 import io.github.valerioisufi.drawview.store.room.db.DocumentEntity
@@ -42,6 +44,7 @@ import io.github.valerioisufi.drawview.store.room.db.OperationBaseEntity
 import io.github.valerioisufi.drawview.store.room.db.OperationEntity
 import io.github.valerioisufi.drawview.store.room.db.OperationProofEntity
 import io.github.valerioisufi.drawview.store.room.db.PageEntity
+import io.github.valerioisufi.drawview.store.room.db.PageWithContent
 import io.github.valerioisufi.drawview.store.room.db.PdfEntity
 import io.github.valerioisufi.drawview.store.room.db.PreferenceEntity
 import io.github.valerioisufi.drawview.store.room.db.ReplicaEntity
@@ -53,6 +56,7 @@ import io.github.valerioisufi.drawview.store.room.db.TextMarkupEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -118,21 +122,14 @@ internal class DrawDocumentRepository(
 
             val sortedPages = docWithPages.pages.sortedWith(compareBy({ it.page.orderKey }, { it.page.id }))
             // The strokes of all the pages modeled on every core, in the order of the pages
-            val strokes = sortedPages.flatMap { it.strokes }.chunked(STROKES_PER_TASK).map { chunk ->
-                async { chunk.map { e -> mapStroke(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } }
-            }.awaitAll().flatten()
+            val strokes = modelStrokes(sortedPages.flatMap { it.strokes })
             var nextStroke = 0
             for (pageWithContent in sortedPages) {
                 val page = mapPage(pageWithContent.page, docEntity)
 
                 val pageStrokes = strokes.subList(nextStroke, nextStroke + pageWithContent.strokes.size)
                 nextStroke += pageStrokes.size
-                val elements = pageStrokes +
-                    pageWithContent.texts.map { e -> mapText(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
-                    pageWithContent.images.map { e -> mapImage(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
-                    pageWithContent.pdfs.map { e -> mapPdf(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
-                    pageWithContent.markups.mapNotNull { e -> mapTextMarkup(e)?.stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
-                    pageWithContent.customs.map { e -> mapCustomElement(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) }
+                val elements = pageStrokes + elementsBesideStrokes(pageWithContent) { true }
                 // The removed elements are kept, hidden
                 for (element in elements.sortedBy { it.order }) {
                     if (element.removed != null) page.removedElements.add(element) else page.add(element)
@@ -143,6 +140,73 @@ internal class DrawDocumentRepository(
             doc
         }
     }
+
+    /**
+     * The page at [index] of the document [documentId] among its pages shown, alone: its elements
+     * shown (the ones removed are not read further, nor modeled) and the resources of the document.
+     */
+    suspend fun loadPage(documentId: String, index: Int): LoadedPage? {
+        val (docEntity, pageEntity) = shownPage(documentId, index) ?: return null
+        val rows = withContext(Dispatchers.IO) { pageDao.getPageWithContent(pageEntity.id) } ?: return null
+        val resources = withContext(Dispatchers.IO) { resourceDao.getResourcesForDocument(documentId) }
+        return withContext(Dispatchers.Default) {
+            val page = mapPage(rows.page, docEntity)
+            val elements = modelStrokes(rows.strokes.filter { it.removed == null }) + elementsBesideStrokes(rows) { it == null }
+            for (element in elements.sortedBy { it.order }) page.add(element)
+            LoadedPage(page.id, page.snapshotContent(), resources.map(::mapResource))
+        }
+    }
+
+    /**
+     * The fingerprint of the page at [index] of the document [documentId] among its pages shown
+     * (see `DocumentStore.pageFingerprint`): read from the stamps of its elements shown as they
+     * are stored, nothing modeled.
+     */
+    suspend fun pageFingerprint(documentId: String, index: Int): String? {
+        val (docEntity, page) = shownPage(documentId, index) ?: return null
+        val elements = withContext(Dispatchers.IO) { pageDao.getShownElementStamps(page.id) }
+        val resourceIds = elements.mapNotNullTo(mutableSetOf()) { it.resourceId }
+        val resources = if (resourceIds.isEmpty()) emptyList() else withContext(Dispatchers.IO) { resourceDao.getResourcesForDocument(documentId) }
+        val text = StringBuilder()
+        text.append(page.id).append('|').append(page.width).append('|').append(page.height).append('|')
+            .append(page.background ?: docEntity.defaultBackground).append('\n')
+        for (element in elements.sortedBy { it.id }) {
+            text.append(element.id).append('|').append(element.added).append('|').append(element.placed).append('|')
+                .append(element.ordered).append('|').append(element.updated)
+            element.contentVersions?.let { text.append('|').append(it) }
+            text.append('\n')
+        }
+        for (id in resourceIds.sorted()) {
+            val resource = resources.firstOrNull { it.id == id }
+            text.append(id).append('|').append(resource?.uri).append('|').append(resource?.contentHash).append('\n')
+        }
+        return Sha256.of(text.toString().encodeToByteArray())
+    }
+
+    /** The document [documentId] and the page at [index] among its pages shown, or `null`. */
+    private suspend fun shownPage(documentId: String, index: Int): Pair<DocumentEntity, PageEntity>? {
+        val docEntity = withContext(Dispatchers.IO) { documentDao.getDocumentById(documentId) } ?: return null
+        val pages = withContext(Dispatchers.IO) { pageDao.getPagesForDocument(documentId) }
+        val page = pages.sortedWith(compareBy({ it.orderKey }, { it.id }))
+            .filterNot { mapPage(it, docEntity).isHidden }
+            .getOrNull(index) ?: return null
+        return docEntity to page
+    }
+
+    /** The strokes of [entities] modeled on every core, in their order, with their stamps. */
+    private suspend fun modelStrokes(entities: List<StrokeEntity>): List<DrawStroke> = coroutineScope {
+        entities.chunked(STROKES_PER_TASK).map { chunk ->
+            async { chunk.map { e -> mapStroke(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } }
+        }.awaitAll().flatten()
+    }
+
+    /** The elements of [rows] but its strokes whose removal is [read], with their order and stamps. */
+    private fun elementsBesideStrokes(rows: PageWithContent, read: (removed: Stamp?) -> Boolean): List<DrawElement> =
+        rows.texts.filter { read(it.removed) }.map { e -> mapText(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
+            rows.images.filter { read(it.removed) }.map { e -> mapImage(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
+            rows.pdfs.filter { read(it.removed) }.map { e -> mapPdf(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
+            rows.markups.filter { read(it.removed) }.mapNotNull { e -> mapTextMarkup(e)?.stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
+            rows.customs.filter { read(it.removed) }.map { e -> mapCustomElement(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) }
 
     /**
      * What can be read of a document without its strokes: its pages shown with their texts, PDF

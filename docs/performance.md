@@ -123,7 +123,7 @@ not a cost.
 | One query per change of the catalog, whoever follows it | `RoomDocumentStore`: the Room flows shared (`shareIn`) | Information Expert, Low Coupling (the collectors stay as they are) |
 | Reading what can be searched, without the strokes | `DocumentStore.loadOutline` → `DocumentOutline` (store), done by Room with the queries of the texts, the elements of the applications, the PDF pages and the resources | Information Expert, Protected Variations (default from `loadDocument`), Pure Fabrication (a value that cannot be saved back) |
 | The version of the text of the PDFs of a document | `PdfSearchSource.version`, from the PDF pages of the outline | Information Expert |
-| Knowing whether the first page changed, and reading it alone | `DocumentStore.pageFingerprint`, `DocumentStore.loadPage` (store) | Information Expert, Protected Variations |
+| Knowing whether the first page changed, and reading it alone | `DocumentStore.pageFingerprint`, `DocumentStore.loadPage` → `LoadedPage` (store), done by Room from the stamps of the rows and the rows of one page | Information Expert, Protected Variations (defaults from `loadDocument`), Pure Fabrication (a page that cannot be saved back) |
 | Drawing a thumbnail again only when its page changed | `DocumentThumbnails` | Controller |
 | Finding an element of a page by its identifier | `DrawPage`: an index of its elements, shown and removed | Information Expert |
 | Building a page from stored or received elements | `DrawPage.load` | Creator |
@@ -221,14 +221,44 @@ quiet time (decision 14).
 
 ### The first page of a document
 
-`DocumentStore.pageFingerprint(documentId, index)` reads, without modeling anything, what makes the
-page at [index] as it is drawn: its identifier, format and background, the number of its elements
-and the latest stamp of each (removed ones included: a removal changes its stamp, an element moved
-away changes the number), the paths of the files it shows. `DocumentStore.loadPage(documentId,
-index)` loads that page alone (a `PageContentSnapshot`, its resources). `DocumentThumbnails.of`
-keeps its parameters: when `modifiedAt` changes, it asks for the fingerprint, and draws the page
-again only when it changed. Written in the same transaction as the content (phase 1), the
-`modifiedAt` the library sees comes with the content it dates.
+```kotlin
+public interface DocumentStore {
+    /** A text that changes whenever the page at [index] (among the pages shown) changes as it is drawn, or `null`. */
+    public suspend fun pageFingerprint(documentId: String, index: Int): String? =
+        loadDocument(documentId)?.pageFingerprint(index)
+
+    /** The page at [index] (among the pages shown) loaded alone, to be drawn, or `null`. */
+    public suspend fun loadPage(documentId: String, index: Int): LoadedPage? =
+        loadDocument(documentId)?.let { LoadedPage.of(it, index) }
+}
+
+/** A page read alone to be drawn: a value, never saved back. */
+public class LoadedPage(public val id: String, public val content: PageContentSnapshot, public val resources: List<DrawResource>)
+```
+
+The fingerprint is the hash of what the page is drawn from: its identifier, format and background
+(the default of the document when it has none), the identifier of every element shown with every
+stamp of its changes (`added`, `placed`, `ordered`, `updated`, and the content versions of a text),
+the path and the hash of the files its images, PDF pages and marks show. Every change of an
+element that shows writes the stamp of its register; an element erased leaves the elements shown,
+one shown again or moved onto the page comes in, a page put before it or removed makes another
+page the first. The changes of another page, and of an element removed, change nothing.
+
+The Room store reads the fingerprint from the rows (`PageDao.getShownElementStamps`: the
+identifiers and stamps of the elements shown, as stored text, nothing decoded), and loads a page
+from its rows alone (`PageDao.getPageWithContent`), modeling its strokes shown only. The
+key-value store reads both from the document stored, as its outline (decision 13).
+`checkPageFingerprint` (`drawview-store-testing`) applies every kind of change to the first page of
+a document, and to the second one, and checks that the pages loaded alone are the ones of the
+document loaded whole. A store keeping the defaults loads a document whose first page changed
+twice (its fingerprint, then the page), once before: the stores of DrawView override both.
+
+`DocumentThumbnails.of` keeps its parameters. When the date of change of a document is not the one
+its thumbnail was drawn at, it reads the fingerprint of the first page: the same, the thumbnail is
+kept and dated again (in memory, and its key on disk, `date:width:fingerprint`); another one, the
+page is loaded alone and drawn. The date comes from the store, written in the same transaction as
+the content it dates (phase 1), so the thumbnails read the store, not the document open
+(decision 17).
 
 ### Elements by identifier
 
@@ -276,7 +306,7 @@ therefore called from several threads at once, which its KDoc now says.
 | 0 | Measures: synthetic documents (`drawview-store-testing`), benchmarks run with `-Pdrawview.benchmarks=true` (out of `jvmTest`), a driver counting the statements; the numbers before, in this document | done |
 | 1 | `DocumentPersistence.transaction`, one per operation (test: an operation failing leaves none of its rows); the flows of `RoomDocumentStore` shared and distinct (test: one query of the documents per stroke, whatever the collectors, and a folder created read at once) | done |
 | 2 | `DocumentStore.loadOutline` (both stores, contract test) used by the three search sources; the version of the PDFs from the outline (test: a stroke does not change it, a PDF page added does); `LectureSearchSource.version` measured and kept (decision 14) | done |
-| 3 | `DocumentStore.pageFingerprint` and `loadPage` (contract test: every kind of change of the first page changes the fingerprint, a change of another page does not); the thumbnails drawn from them | proposed |
+| 3 | `DocumentStore.pageFingerprint` and `loadPage` (contract test: every kind of change of the first page changes the fingerprint, a change of another page does not); the thumbnails drawn from them (test: a change of another page keeps the thumbnail, dated again) | done |
 | 4 | The elements of a page by identifier, `DrawPage.load`, the stack in one pass, `paintOrder` made once per content (model tests; ABI) | proposed |
 | 5 | The editor: derived states instead of `observeChanges()` in `DrawScreenContent` and `EditorTools` (test: they do not change over 100 strokes); the position of `TextBoxEditor` read in the layout | proposed |
 | 6 | The inputs of a stroke loaded in one native call and its shape updated once (bridge, JNI, cinterop), the strokes of a document modeled on every core (test: the shape of every brush, as drawn, on the JVM and the iOS simulator) | done |
@@ -292,6 +322,7 @@ search, the thumbnails), 2, 3, 1, 4, 5; 7 and 8 only if a device shows the tiles
 On the Mac (M5, JVM), 2026-10-31, before and after each phase. Each benchmark runs alone:
 `./gradlew :<module>:jvmTest -Pdrawview.benchmarks=true` (`StoreBenchmark` in `drawview-store-room`,
 `IndexerBenchmark` in `drawview-search`, `LectureSearchBenchmark` in `drawview-lecture-ui`,
+`ThumbnailBenchmark` in `drawview-explorer`,
 `ApplyBenchmark` in `drawview-model`, `ModelingBenchmark` in `drawview-ink`, `TileBenchmark` in
 `drawview-canvas`).
 
@@ -302,7 +333,8 @@ On the Mac (M5, JVM), 2026-10-31, before and after each phase. Each benchmark ru
 | M2 indexing 101 notes from nothing | 2 min 53 s | 5.4 s (phase 6), 0.25 s (phase 2) | 2, 6 |
 | M2 a search pass with nothing changed | 46 ms | 41 ms | — |
 | M2 the versions of the lectures in a pass (101 notes, 20 with 3 lectures of 90 minutes, 294 KiB each) | 53 ms (measured in phase 2) | | — |
-| M3 the thumbnail of a note changed on its last page | the opening of the whole note (M5) | | 3 |
+| M3 the thumbnail of a note of 50 pages × 600 strokes changed on its last page | 1.88 s (the opening of the whole note, M5) | 2.1 ms | 3 |
+| M3 the same thumbnail changed on its first page | 1.97 s | 63 ms (the page alone) | 3 |
 | M4 1,000 operations received on a document of 100,000 elements | 483 ms (0.48 ms each) | | 4 |
 | M4 a stroke submitted on a document of 100,000 elements | 0.44 ms | | 4 |
 | M5 opening a note of 50 pages × 600 strokes, 10% erased | 71.9 s (24 ms of queries) | 1.89 s (26 ms of queries) | 6 |
@@ -340,7 +372,8 @@ Taken alone, revertible:
 13. **The outline of the key-value store not taken as the document open**: its `loadDocument`
     makes the document loaded the one it writes back, so a search reading it while the editor
     had it open replaced the instance the editor changed (the test of the version of the PDFs
-    lost a page that way). `loadDocument` keeps doing it: the thumbnails still call it (phase 3).
+    lost a page that way). `loadDocument` keeps doing it, for `OpenDocuments`; the fingerprint
+    and the page loaded alone (phase 3) read the document stored too.
 14. **The version of the lectures kept**: 53 ms a pass on the Mac for 60 lectures of 90 minutes
     (M2), in the background; reading every record once would halve it, with a new function of
     `LectureLibrary`. Left for later (below).
@@ -349,6 +382,19 @@ Taken alone, revertible:
     write has the write. The store keeps its own scope (`SupervisorJob`, `Dispatchers.Default`):
     a scope given to it would change its constructor, and the queries stop 5 seconds after their
     last collector.
+
+16. **The fingerprint of a page from every stamp of every element shown** (the first version of
+    this plan counted the elements, removed ones included, with the latest stamp of each): a
+    change received from another device may have a stamp older than the latest one of the
+    element, when it wins a register of its own (its placement under a newer change of its
+    content). The stamps are read as they are stored, as text, without the elements removed.
+17. **The thumbnails read the store, not the document open**: they drew the document open in the
+    editor when it was, which the store has as soon as the library sees its date of change (the
+    key-value store writes a document open before reading it). The parameter `documents` of
+    `DocumentThumbnails` stays, for its store: the API does not change.
+18. **The keys of the thumbnails on disk with the fingerprint** (`date:width:fingerprint`): the
+    old ones (`date:width`) are still read, and a thumbnail without a fingerprint is drawn again
+    once its document changes. The thumbnails are a cache: nothing to migrate.
 
 Decided by the user:
 

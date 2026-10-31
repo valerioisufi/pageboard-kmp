@@ -13,6 +13,7 @@ import io.github.valerioisufi.drawview.store.DocumentOutline
 import io.github.valerioisufi.drawview.store.DocumentStore
 import io.github.valerioisufi.drawview.store.DocumentSummary
 import io.github.valerioisufi.drawview.store.FolderSummary
+import io.github.valerioisufi.drawview.store.LoadedPage
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.store.PreferenceStore
 import io.github.valerioisufi.drawview.store.TrashedItem
@@ -104,6 +105,10 @@ public class RoomDocumentStore(
     override suspend fun loadDocument(documentId: String): DrawDocument? = repository.loadDocument(documentId)
 
     override suspend fun loadOutline(documentId: String): DocumentOutline? = repository.loadOutline(documentId)
+
+    override suspend fun pageFingerprint(documentId: String, index: Int): String? = repository.pageFingerprint(documentId, index)
+
+    override suspend fun loadPage(documentId: String, index: Int): LoadedPage? = repository.loadPage(documentId, index)
 
     override suspend fun isDocumentNameAvailable(documentId: String, name: String): Boolean =
         fileRepository.isDocumentNameAvailable(documentId, name)

@@ -39,6 +39,7 @@ import io.github.valerioisufi.drawview.store.room.repository.DrawDocumentReposit
 import io.github.valerioisufi.drawview.store.room.repository.FileRepository
 import io.github.valerioisufi.drawview.store.testing.checkFolderOperations
 import io.github.valerioisufi.drawview.store.testing.checkOutline
+import io.github.valerioisufi.drawview.store.testing.checkPageFingerprint
 import io.github.valerioisufi.drawview.store.testing.checkTrash
 import io.github.valerioisufi.drawview.store.testing.checkOperationProofs
 import kotlin.test.*
@@ -398,6 +399,11 @@ class DrawDatabaseTest {
     @Test
     fun theOutlineIsTheDocumentWithoutItsStrokes() = runTest {
         checkOutline(RoomDocumentStore(database))
+    }
+
+    @Test
+    fun theFingerprintOfAPageChangesWithIt() = runTest {
+        checkPageFingerprint(RoomDocumentStore(database))
     }
 
     @Test

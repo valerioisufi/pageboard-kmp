@@ -44,6 +44,8 @@ public abstract interface class io/github/valerioisufi/drawview/store/DocumentSt
 	public static synthetic fun insertDocument$default (Lio/github/valerioisufi/drawview/store/DocumentStore;Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public abstract fun loadDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadOutline (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun loadPage (Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun pageFingerprint (Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/drawview/store/DocumentStore$DefaultImpls {
@@ -51,6 +53,8 @@ public final class io/github/valerioisufi/drawview/store/DocumentStore$DefaultIm
 	public static fun flush (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun insertDocument$default (Lio/github/valerioisufi/drawview/store/DocumentStore;Lio/github/valerioisufi/drawview/model/DrawDocument;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public static fun loadOutline (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun loadPage (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun pageFingerprint (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun proofs (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun saveProofs (Lio/github/valerioisufi/drawview/store/DocumentStore;Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -145,9 +149,11 @@ public final class io/github/valerioisufi/drawview/store/KeyValueDocumentStore :
 	public fun isReadOnly (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun loadOutline (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun loadPage (Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun moveDocument (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun moveFolder (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun operationsAfter (Ljava/lang/String;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun pageFingerprint (Ljava/lang/String;ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun preference (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun proofs (Ljava/lang/String;Ljava/util/Collection;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun purgeTrash (JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -215,6 +221,13 @@ public final class io/github/valerioisufi/drawview/store/LibraryTrash$Entry {
 	public fun hashCode ()I
 	public final fun isShared ()Z
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/store/LoadedPage {
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/drawview/model/PageContentSnapshot;Ljava/util/List;)V
+	public final fun getContent ()Lio/github/valerioisufi/drawview/model/PageContentSnapshot;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getResources ()Ljava/util/List;
 }
 
 public final class io/github/valerioisufi/drawview/store/OpenDocument {

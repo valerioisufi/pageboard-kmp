@@ -89,6 +89,21 @@ internal data class PageOutlineRows(
 )
 
 /**
+ * An element shown on a page with the stamps of its changes as they are stored (and the content
+ * versions of a text, the resource of an image, a PDF page or a mark): what the fingerprint of the
+ * page is made of (see `DocumentStore.pageFingerprint`).
+ */
+internal data class ShownElementStamps(
+    val id: String,
+    val added: String,
+    val placed: String,
+    val ordered: String,
+    val updated: String,
+    val contentVersions: String?,
+    val resourceId: String?
+)
+
+/**
  * Data model representing a document and its hierarchical content.
  */
 internal data class DocumentWithPages(
@@ -222,6 +237,20 @@ internal interface PageDao {
     @Transaction
     @Query("SELECT * FROM pages WHERE documentId = :documentId")
     suspend fun getPageOutlines(documentId: String): List<PageOutlineRows>
+
+    @Transaction
+    @Query("SELECT * FROM pages WHERE id = :pageId")
+    suspend fun getPageWithContent(pageId: String): PageWithContent?
+
+    @Query(
+        "SELECT id, added, placed, ordered, updated, NULL AS contentVersions, NULL AS resourceId FROM strokes WHERE pageId = :pageId AND removed IS NULL " +
+            "UNION ALL SELECT id, added, placed, ordered, updated, contentVersions, NULL FROM texts WHERE pageId = :pageId AND removed IS NULL " +
+            "UNION ALL SELECT id, added, placed, ordered, updated, NULL, resourceId FROM images WHERE pageId = :pageId AND removed IS NULL " +
+            "UNION ALL SELECT id, added, placed, ordered, updated, NULL, resourceId FROM pdfs WHERE pageId = :pageId AND removed IS NULL " +
+            "UNION ALL SELECT id, added, placed, ordered, updated, NULL, resourceId FROM text_markups WHERE pageId = :pageId AND removed IS NULL " +
+            "UNION ALL SELECT id, added, placed, ordered, updated, NULL, NULL FROM custom_elements WHERE pageId = :pageId AND removed IS NULL"
+    )
+    suspend fun getShownElementStamps(pageId: String): List<ShownElementStamps>
 }
 
 /**

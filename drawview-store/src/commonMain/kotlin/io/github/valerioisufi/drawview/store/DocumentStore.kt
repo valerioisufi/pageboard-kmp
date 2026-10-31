@@ -37,6 +37,24 @@ public interface DocumentStore : DocumentCatalog, OperationLog, SharingStore {
     public suspend fun loadOutline(documentId: String): DocumentOutline? =
         loadDocument(documentId)?.let { DocumentOutline.of(it) }
 
+    /**
+     * A text that changes whenever the page at [index] of the document [documentId] (among its
+     * pages shown, see [DrawDocument.pages]) changes as it is drawn, or `null` when there is no
+     * such page: the hash of its identifier, format and background, of the stamps of every element
+     * shown on it and of the files they show. From [loadDocument] by default, read without
+     * modeling anything in the stores of DrawView.
+     */
+    public suspend fun pageFingerprint(documentId: String, index: Int): String? =
+        loadDocument(documentId)?.pageFingerprint(index)
+
+    /**
+     * The page at [index] of the document [documentId] (among its pages shown) loaded alone, to be
+     * drawn (see [LoadedPage]), or `null` when there is no such page: from [loadDocument] by
+     * default, without the other pages and the elements removed in the stores of DrawView.
+     */
+    public suspend fun loadPage(documentId: String, index: Int): LoadedPage? =
+        loadDocument(documentId)?.let { LoadedPage.of(it, index) }
+
     /** Writes the pending changes (stores that write lazily). */
     public suspend fun flush() {}
 

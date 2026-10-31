@@ -197,6 +197,16 @@ public class KeyValueDocumentStore(
         readDocumentLocked(documentId)?.let { DocumentOutline.of(it) }
     }
 
+    /** Read from the document stored, as [loadOutline]. */
+    override suspend fun pageFingerprint(documentId: String, index: Int): String? = syncLock(lock) {
+        readDocumentLocked(documentId)?.pageFingerprint(index)
+    }
+
+    /** Read from the document stored, as [loadOutline]. */
+    override suspend fun loadPage(documentId: String, index: Int): LoadedPage? = syncLock(lock) {
+        readDocumentLocked(documentId)?.let { LoadedPage.of(it, index) }
+    }
+
     private fun readDocumentLocked(documentId: String): DrawDocument? {
         val summary = index.documents.firstOrNull { it.id == documentId } ?: return null
         // Loaded again while open: with its last changes

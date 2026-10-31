@@ -41,6 +41,10 @@ kotlin {
             implementation(project(":drawview-latex"))
             implementation(libs.compose.uiTest)
             implementation(libs.roborazzi.composeDesktop)
+            // The thumbnails of a note of the Room store (ThumbnailBenchmark)
+            implementation(project(":drawview-store-room"))
+            implementation(libs.androidx.room.runtime)
+            implementation(project(":drawview-store-testing"))
         }
     }
 }
