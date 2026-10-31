@@ -1,0 +1,317 @@
+# Performance
+
+Writing, opening a document, searching and scrolling do more work than they need: every stroke
+makes the library query the whole catalog again, the search and the thumbnails load whole
+documents (every stroke modeled again by Ink) to read their texts or their first page, and the
+model looks for an element by its identifier through the whole document. This document starts
+from the code as it is (main at c4a57f5b, 2026-10-31): what costs, then the design and the plan.
+Every change is measured before and after, and kept only when it gains.
+
+The responsibilities are assigned following the GRASP principles (Information Expert, Creator,
+Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected
+Variations).
+
+## Starting point
+
+The costs below are read from the code, not measured yet (phase 0 measures them).
+
+### Writing
+
+1. **An operation is written in 3 to 4 transactions** (`ChangePersister.onChange`): the elements
+   (`saveStrokes`, `saveText`…), the page (`savePage`: its `contentVersions` change at every
+   operation), the log (`appendOperation`) and the date of the document (`touchDocument`), each
+   DAO call in its own transaction.
+2. **The catalog flows are not shared** (`RoomDocumentStore.documents`, `folders`, `trash`): each
+   is a `combine` of Room flows, run again by every collector at every write of the tables it
+   reads. While a note is written in PencilNotes they are collected by `FileExplorerViewModel`
+   (documents, trash, folders), `SearchIndexer` (documents twice, folders), `EditorSessionScreen`
+   (documents and folders, for the name of the folder of the document) and `PencilNotesApp`
+   (documents and trash). The query of the documents (`getAllDocumentsWithContentFlow`) counts the
+   pages and looks for a PDF of every document.
+
+### Search and thumbnails
+
+3. **The search loads whole documents** to read their texts: `DocumentSearchSource.chunks`,
+   `PdfSearchSource.chunks` and `LectureSearchSource.chunks` (for the numbers of the pages) call
+   `DocumentStore.loadDocument`, which models every stroke again.
+4. **The text of the PDFs is extracted again at every change of the document**:
+   `PdfSearchSource.version` is made of `modifiedAt`, which a stroke changes.
+5. **A pass of the indexer counts the chunks to embed after every document**
+   (`SearchIndex.unembeddedCount`: a `COUNT(DISTINCT)` with a `LEFT JOIN` on every chunk), and
+   `DocumentSearchSource.version` reads the folders and the version vector of every document (3
+   queries). `LectureSearchSource.version` reads every lecture record of every document.
+6. **A thumbnail opens the whole document** to draw its first page (`DocumentThumbnails.draw`), and
+   is drawn again when `modifiedAt` changes: a stroke on the last page draws the first one again.
+
+### The model
+
+7. **An element is looked for in the whole document**: `AddElements` and `RemoveElements` call
+   `findAnyElement` for each element, which reads the page given, then every page
+   (`allPages()` makes a new list) and every removed element. A new stroke, which is not there,
+   reads them all. The stroke drawn is committed while `TileManager.bakeStrokesDirectlySync` holds
+   the lock of the tiles; the operations received are applied on the thread of the document (the
+   UI thread, `SyncEngine.onOperations`).
+8. **A page is built one element at a time**: `DrawPage.add` copies the list of its kind (the
+   tiles read the content of a page on other threads), so loading a page copies O(n²) elements.
+9. **The stack of a page is sorted again after every change** (`PageElements.stack`), though the
+   list of each kind is in order already, and `PageContentSnapshot.paintOrder` makes a new list at
+   every read (once per tile).
+
+### Opening a document
+
+10. **Every stroke is modeled again by Ink** (`DrawDocumentRepository.loadDocument`), the removed
+    ones too, on one thread: `InkStrokeEngine.buildMesh` creates and destroys a native builder for
+    each stroke, and gives it the inputs one JNI (or cinterop) call each.
+
+### The editor
+
+11. **The editor recomposes at every change of the document**: `DrawScreenContent` and
+    `EditorTools` call `observeChanges()`, to know whether the document has PDF pages and the
+    formats of its pages.
+    `TextBoxEditor` reads `controller.version` and the camera in its composition: the text field
+    being written recomposes at every frame of a pan.
+12. **The tiles are rasterized in the order they were asked for** (`TileManager.enqueueTile`, two
+    workers), and a tile asked for is rasterized even when it has left the screen: its job is
+    cancelled only when the page is laid out at another size. After a fling or a zoom across the
+    levels, the workers draw tiles no longer shown before the ones on screen. `drawTiles` reads
+    every page at every frame (`ensurePageGeometry` takes a lock for each).
+13. **A tile reads every element of its page** (`TileRenderer.renderPageContent`), and the path of
+    the outline of a stroke is built again at every draw (`StrokeMeshPainter`), for every tile and
+    level it is drawn in.
+14. **A PDF page is loaded and closed for every tile** (`pdfium_bridge.cpp`), and on the desktop
+    its pixels are copied three times (`IntArray`, `ByteBuffer`, Skia bitmap). The texts are
+    measured and drawn under one lock (`ComposeTextTileAdapter`): the two workers draw texts one
+    at a time.
+
+The images are decoded at most 2048 pixels on their longest side (`decodeImageFile`): they are
+not a cost.
+
+## Requirements
+
+1. **The notes are not touched**: no change of the Room schema or of a stored format. The search
+   index, a cache rebuilt by itself, may be chunked again once (its embeddings are kept by the hash
+   of their text).
+2. **Nothing sent changes**: the protocol as it is, `ProtocolFormatTest` unchanged.
+3. **What is drawn stays the same**: the screenshots of `verifyRoborazziJvm` unchanged, the meshes
+   modeled in batch the same, bit for bit, as the ones modeled one by one.
+4. **Measured**: every phase gives its numbers before and after (phase 0), written in this
+   document; a change that gains nothing is not kept.
+5. **The stores of the applications keep working**: every new read of `DocumentStore` has a
+   default made from `loadDocument`; the contract tests (`drawview-store-testing`) check it for the
+   Room store and the key-value store.
+6. **The measures never touch the data of the user**: in-memory databases or scratch directories.
+7. **Every platform**: Android, the desktop JVM and iOS; a change of a native bridge is built and
+   tested on each.
+8. **The public API changes are recorded** (`updateKotlinAbi`) and said in the commit.
+
+## Design
+
+### Responsibilities
+
+| Responsibility | Class (module) | GRASP |
+|---|---|---|
+| Writing the effects of an operation at once | `DocumentPersistence.transaction` (model), done by `DrawDocumentRepository` with `useWriterConnection` (store-room), used by `ChangePersister` | Protected Variations (by default the block runs as it is), Information Expert (the store knows its transactions) |
+| One query per change of the catalog, whoever follows it | `RoomDocumentStore`: the Room flows shared (`shareIn`) | Information Expert, Low Coupling (the collectors stay as they are) |
+| Reading what can be searched, without the strokes | `DocumentStore.loadOutline` → `DocumentOutline` (store), done by Room with the queries of the texts, the elements of the applications, the PDF pages and the resources | Information Expert, Protected Variations (default from `loadDocument`), Pure Fabrication (a value that cannot be saved back) |
+| The version of the text of the PDFs of a document | `PdfSearchSource.version`, from the PDF pages of the outline | Information Expert |
+| Counting the chunks to embed once per pass | `SearchIndexer` | Controller |
+| Knowing whether the first page changed, and reading it alone | `DocumentStore.pageFingerprint`, `DocumentStore.loadPage` (store) | Information Expert, Protected Variations |
+| Drawing a thumbnail again only when its page changed | `DocumentThumbnails` | Controller |
+| Finding an element of a page by its identifier | `DrawPage`: an index of its elements, shown and removed | Information Expert |
+| Building a page from stored or received elements | `DrawPage.load` | Creator |
+| The stack of a page in one pass, the elements in the order they are painted | `PageElements` | Information Expert |
+| What the editor shows of the document | derived states in `DrawScreen` and `EditorToolbar` (ui) | Low Coupling (the view reads what it shows) |
+| Which tiles to rasterize first, and which no longer | `TileScheduler` (canvas), used by `TileManager` | Pure Fabrication, High Cohesion (the manager keeps the cache and the drawing) |
+| Modeling many strokes with one native builder | `StrokeModeller.newBuilder()` → `StrokeBuilder` (model), `InkStrokeModeller` (ink: the inputs in one native call) | Protected Variations (by default a builder calls `buildMesh`), Information Expert |
+| Modeling the pages of a document at the same time | `DrawDocumentRepository.loadDocument`, `KeyValueDocumentStore.loadDocument` | Controller |
+| The elements of a page in a region | `PageElements`: a grid of cells, `PageContentSnapshot.elementsIn` | Information Expert |
+| A PDF page kept loaded between its tiles | `pdfium_bridge` and `PdfiumEngine` (pdf) | Information Expert |
+
+### Writing an operation at once
+
+```kotlin
+public interface DocumentPersistence {
+    /** Runs [block], whose writes are stored all or none (by default as it is). */
+    public suspend fun <T> transaction(block: suspend DocumentPersistence.() -> T): T = block()
+}
+
+// DrawDocumentRepository
+override suspend fun <T> transaction(block: suspend DocumentPersistence.() -> T): T =
+    database.useWriterConnection { transactor -> transactor.immediateTransaction { block() } }
+```
+
+`ChangePersister` writes each operation in one `transaction`. The DAO calls made in the block take
+the connection of the transaction from the coroutine context (`ConnectionElement`), which the
+`withContext(Dispatchers.IO)` of the repository keeps. The tables written by an operation are told
+once to the flows that read them, and `modifiedAt` is stored with the content it dates, which the
+thumbnails need (phase 3).
+
+The flows of `RoomDocumentStore` share the four Room flows they are made of (all the documents,
+with their content, the folders, the shared documents), in a scope of the store:
+
+```kotlin
+private val documentsWithContent = fileRepository.getAllDocumentsWithContentFlow()
+    .shareIn(scope, SharingStarted.WhileSubscribed(STOP_AFTER_MS), replay = 1)
+
+override val documents: Flow<List<DocumentSummary>> =
+    combine(documentsWithContent, allFolders, sharedIds) { … }
+        .distinctUntilChanged()
+        .shareIn(scope, SharingStarted.WhileSubscribed(STOP_AFTER_MS), replay = 1)
+```
+
+A collector gets the last list at once (`replay = 1`): `catalog.documents.first()` in the indexer
+and the folders read by `DocumentSearchSource.version` no longer query the database.
+
+### Reading what can be searched
+
+```kotlin
+/** The pages of a document with what can be read of them, without the strokes: a value, never saved. */
+public class DocumentOutline(
+    public val id: String,
+    /** The pages shown, in their order. */
+    public val pages: List<PageOutline>,
+    public val resources: List<DrawResource>
+)
+
+public class PageOutline(
+    public val id: String,
+    public val texts: List<DrawText>,
+    public val customElements: List<DrawCustomElement>,
+    public val pdfs: List<DrawPdf>
+)
+
+public interface DocumentStore {
+    /** What can be read of the document [documentId] (see [DocumentOutline]), or `null`. */
+    public suspend fun loadOutline(documentId: String): DocumentOutline? = loadDocument(documentId)?.outline()
+}
+```
+
+A `DrawDocument` without its strokes is not used for this: given by mistake to `OpenDocuments` or
+to the persistence, it would lose them.
+
+`PdfSearchSource.version` is made of the name of the document and, for each page, its identifier,
+the hash of its PDF resources and the indexes of its PDF pages: a stroke does not change it, a PDF
+page added, removed or moved does.
+
+### The first page of a document
+
+`DocumentStore.pageFingerprint(documentId, index)` reads, without modeling anything, what makes the
+page at [index] as it is drawn: its identifier, format and background, the number of its elements
+and the latest stamp of each (removed ones included: a removal changes its stamp, an element moved
+away changes the number), the paths of the files it shows. `DocumentStore.loadPage(documentId,
+index)` loads that page alone (a `PageContentSnapshot`, its resources). `DocumentThumbnails.of`
+keeps its parameters: when `modifiedAt` changes, it asks for the fingerprint, and draws the page
+again only when it changed. Written in the same transaction as the content (phase 1), the
+`modifiedAt` the library sees comes with the content it dates.
+
+### Elements by identifier
+
+`DrawPage` keeps a map of its elements by identifier, shown and removed, changed with them by
+`add`, `remove` and the functions of the removed elements (`removedElements` becomes a `List`; the
+loaders use `DrawPage.load(elements)`, which puts each element shown or removed by its stamp).
+Like `add` and `remove`, it is used on the thread of the document. `DrawDocument.findElement`
+reads the map of each page (no list made): one lookup per page instead of a comparison per element.
+
+### The tiles to rasterize
+
+```kotlin
+/** The tiles asked for by the frames, rasterized the most needed first (two workers). */
+internal class TileScheduler(private val workers: Int, private val rasterize: (TileRequest) -> Unit) {
+    /** [key] is needed by the frame [frame]: on screen ([visible]) or prefetched. */
+    fun request(key: TileKey, visible: Boolean, frame: Long, work: () -> TileRequest)
+
+    /** The frame [frame] is drawn: the tiles not asked for since [frame] - 1 leave the queue. */
+    fun endFrame(frame: Long)
+}
+```
+
+The tiles on screen of the current level go first, then the prefetched ones; a tile not asked for
+by the last two frames leaves the queue (one being rasterized ends). `drawTiles` finds the pages
+near the viewport by a binary search, as `CalcPage.getPagesRectOnWindowTransformation` does.
+
+### Modeling many strokes
+
+```kotlin
+public fun interface StrokeModeller {
+    public fun buildMesh(points: List<StrokePoint>, brush: BrushConfig, toolType: InputToolType): StrokeMesh?
+
+    /** A builder of many strokes, one after the other, on one thread. */
+    public fun newBuilder(): StrokeBuilder = StrokeBuilder(::buildMesh)
+}
+```
+
+The builder of `InkStrokeModeller` keeps one native stroke builder and gives it the inputs of a
+stroke in one call (`ink_stroke_builder_add_points`, through JNI on Android and the desktop and
+cinterop on iOS). The loaders model the pages at the same time, one builder per worker.
+
+## Phases
+
+| Phase | What | Status |
+|---|---|---|
+| 0 | Measures: synthetic documents (`drawview-store-testing`), benchmarks run with `-Pdrawview.benchmarks=true` (out of `jvmTest`), a driver counting the statements; the numbers before, in this document | proposed |
+| 1 | `DocumentPersistence.transaction`, one per operation (test: an operation failing leaves none of its rows); the flows of `RoomDocumentStore` shared and distinct (test: one query of the documents per stroke, whatever the collectors) | proposed |
+| 2 | `DocumentStore.loadOutline` (both stores, contract test) used by the three search sources; the version of the PDFs from the outline; the chunks to embed counted once per pass; `LectureSearchSource.version` without reading every record, if phase 0 shows it costs | proposed |
+| 3 | `DocumentStore.pageFingerprint` and `loadPage` (contract test: every kind of change of the first page changes the fingerprint, a change of another page does not); the thumbnails drawn from them | proposed |
+| 4 | The elements of a page by identifier, `DrawPage.load`, the stack in one pass, `paintOrder` made once per content (model tests; ABI) | proposed |
+| 5 | The editor: derived states instead of `observeChanges()` in `DrawScreenContent` and `EditorTools` (test: they do not change over 100 strokes); the position of `TextBoxEditor` read in the layout; `TileScheduler` (test: after a jump, the tiles on screen are rasterized first, the ones left are not) | proposed |
+| 6 | `StrokeModeller.newBuilder`, the inputs in one native call (bridge, JNI, cinterop), the pages modeled at the same time (test: the same meshes, bit for bit, on JVM and the iOS simulator) | proposed |
+| 7 | The tiles: the elements of a region (`elementsIn`), the paths of the outlines kept (if they gain) | proposed |
+| 8 | The PDF pages kept loaded between their tiles and drawn with one copy; the texts drawn outside of the lock of the caches (if the measurer allows it) | proposed |
+
+The phases after 1 do not depend on each other, but phase 3 needs phase 1.
+
+### Measures
+
+On the Mac (JVM), before and after each phase:
+
+| Measure | Before | After | Phase |
+|---|---|---|---|
+| Statements per stroke committed, with the collectors of PencilNotes | | | 1 |
+| A search pass after a stroke, 200 documents (20 with PDFs) | | | 2 |
+| The thumbnail of a document changed on its last page | | | 3 |
+| 1,000 operations received on a document of 100,000 elements | | | 4 |
+| Opening a document of 50 pages × 600 strokes (10% removed) | | | 6 |
+| The viewport filled after a jump of 20 pages | | | 5, 7 |
+| A dense page rasterized at level 2; a PDF page | | | 7, 8 |
+
+## Decisions
+
+Taken alone, revertible:
+
+1. **Measured first** (phase 0): every optimization is kept for what it gains, its numbers above.
+2. **An operation is stored all or none**: today a failure in the middle leaves elements without
+   their operation in the log (never sent to the other devices); with the transaction the content
+   and the log agree.
+3. **`modifiedAt` written at every operation**, as today: with the flows shared it costs one query,
+   and the library stays sorted exactly. (The analysis proposed writing it less often.)
+4. **`DocumentOutline` rather than a document without strokes**: one that could be saved would lose
+   them.
+5. **The index of the elements in each page**, not in the document: the pages are built apart (the
+   loaders, the snapshots) and an index per page needs no owner.
+6. **The synthetic documents in `drawview-store-testing`**, which the contract tests can use too
+   (its ABI grows).
+7. **The benchmarks out of `jvmTest`**, behind a Gradle property: the checks of a phase stay as
+   fast as today.
+
+## Left for later
+
+These change or delete stored data, or need a plan of their own; they are for the user to decide.
+
+1. **The log of the operations in CBOR**: today JSON (about 70 bytes a point of a stroke, against
+   20 in its row), every stroke stored twice. A new stored format, with a migration of every row
+   tested with `MigrationTestHelper`; the protocol does not change (CBOR already on the wire).
+2. **Compacting the log and purging the removed elements of the documents never shared**: today
+   only `SyncEngine.compact` does it, for the shared ones, so the others keep every operation and
+   every stroke erased, modeled again at every opening. It deletes stored data.
+3. **The removed strokes modeled only when shown again**: `DrawStroke` needs its mesh to be made.
+4. **R8 and a Baseline Profile in PencilNotes for Android**: the libraries need consumer rules for
+   their JNI members and kotlinx.serialization.
+5. **The recovery of the sync in pages** (`operationsAfter` decodes the whole tail at once), and
+   the proofs of the own operations kept rather than signed again.
+6. **The tiles**: a pool of bitmaps, a budget following the screen, fewer objects made per frame.
+7. **The points of a stroke in arrays**: `List<StrokePoint>` takes about 32 to 40 bytes a point;
+   `StrokeMesh.points` is public.
+8. **The stroke being drawn**: its whole mesh and outline are copied from Ink at every frame.
+9. **The scale of `TextBoxEditor` during a zoom** by a layer: the text being written must stay as
+   the page draws it (`docs/text-parity.md`).
+10. **`org.gradle.parallel`** for the build.
