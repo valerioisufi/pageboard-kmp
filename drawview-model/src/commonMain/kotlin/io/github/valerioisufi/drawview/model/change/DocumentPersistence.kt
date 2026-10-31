@@ -25,6 +25,13 @@ import kotlinx.coroutines.launch
  * document reach it through a [ChangePersister].
  */
 public interface DocumentPersistence {
+    /**
+     * Runs [block], whose writes are stored all or none: the effects of one operation, with the
+     * operation in the log ([ChangePersister]). By default the block runs as it is. The block is
+     * given the persistence to write with: a persistence wrapping another one passes itself.
+     */
+    public suspend fun <T> transaction(block: suspend DocumentPersistence.() -> T): T = block()
+
     public suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) {}
     public suspend fun saveText(page: DrawPage, text: DrawText) {}
     public suspend fun saveImage(page: DrawPage, image: DrawImage) {}

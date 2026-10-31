@@ -407,4 +407,45 @@ class DocumentChangeTest {
         write()
         assertEquals(listOf("page ${page.id} removed=true", "touch"), calls)
     }
+
+    @Test
+    fun theEffectsOfAnOperationAreWrittenInOneTransaction() = runBlocking {
+        val document = DrawDocument()
+        val session = DocumentSession(document)
+        val calls = mutableListOf<String>()
+        val persistence = object : DocumentPersistence {
+            override suspend fun <T> transaction(block: suspend DocumentPersistence.() -> T): T {
+                calls.add("begin")
+                return block().also { calls.add("end") }
+            }
+
+            override suspend fun savePage(document: DrawDocument, page: DrawPage) {
+                calls.add("page")
+            }
+
+            override suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) {
+                calls.add("strokes")
+            }
+
+            override suspend fun appendOperation(document: DrawDocument, operation: Operation) {
+                calls.add("operation")
+            }
+
+            override suspend fun touchDocument(document: DrawDocument, timestamp: Long) {
+                calls.add("touch")
+            }
+        }
+        val operations = mutableListOf<suspend DocumentPersistence.() -> Unit>()
+        session.addObserver(ChangePersister { operations.add(it) })
+
+        val page = DrawPage(id = newElementId()).apply { add(stroke(1f, 1f)) }
+        page.orderKey = document.orderKeyAt(1)
+        session.submit(AddPage.of(page))
+        session.submit(AddElements.of(page, listOf(stroke(2f, 2f))))
+        operations.forEach { persistence.it() }
+        assertEquals(
+            listOf("begin", "page", "strokes", "operation", "touch", "end") + listOf("begin", "strokes", "page", "operation", "touch", "end"),
+            calls
+        )
+    }
 }

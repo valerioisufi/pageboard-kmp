@@ -1,5 +1,7 @@
 package io.github.valerioisufi.drawview.store.room.repository
 
+import androidx.room.immediateTransaction
+import androidx.room.useWriterConnection
 import io.github.valerioisufi.drawview.ink.InkStrokeModeller
 import io.github.valerioisufi.drawview.model.DrawCustomElement
 import io.github.valerioisufi.drawview.model.DrawDocument
@@ -464,6 +466,14 @@ internal class DrawDocumentRepository(
         ordered = ordered,
         updated = updated
     )
+
+    /**
+     * Runs [block] in one write transaction: its writes are stored all or none, and the flows that
+     * read the tables it wrote are told once. The DAOs called in the block take its connection from
+     * the coroutine context, which the `withContext(Dispatchers.IO)` of the writes keeps.
+     */
+    override suspend fun <T> transaction(block: suspend DocumentPersistence.() -> T): T =
+        database.useWriterConnection { transactor -> transactor.immediateTransaction { block(this@DrawDocumentRepository) } }
 
     override suspend fun saveStrokes(page: DrawPage, strokes: List<DrawStroke>) {
         if (strokes.isEmpty()) return

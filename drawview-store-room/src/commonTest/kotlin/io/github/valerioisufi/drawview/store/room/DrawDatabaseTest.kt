@@ -27,6 +27,7 @@ import io.github.valerioisufi.drawview.model.change.Operation
 import io.github.valerioisufi.drawview.model.change.OperationId
 import io.github.valerioisufi.drawview.model.change.RemoveElements
 import io.github.valerioisufi.drawview.model.change.RemovePage
+import io.github.valerioisufi.drawview.model.change.StrokeData
 import io.github.valerioisufi.drawview.model.change.UpdateTexts
 import io.github.valerioisufi.drawview.model.change.snapshot
 import io.github.valerioisufi.drawview.model.change.toData
@@ -397,6 +398,38 @@ class DrawDatabaseTest {
     @Test
     fun theOutlineIsTheDocumentWithoutItsStrokes() = runTest {
         checkOutline(RoomDocumentStore(database))
+    }
+
+    @Test
+    fun anOperationFailingLeavesNoneOfItsRows() = runTest {
+        val store = RoomDocumentStore(database)
+        val document = store.createDocument("All or none")
+        val page = document.pages.single()
+        val modifiedAt = store.documents.first().single().modifiedAt
+        val stroke = StrokeData(
+            id = newElementId(),
+            points = listOf(StrokePoint(10f, 10f, 0.5f, 1L), StrokePoint(20f, 12f, 0.5f, 9L)),
+            tool = StrokeTool.PRESSURE_PEN,
+            size = 0.5f,
+            color = 0xFF000000.toInt()
+        ).toElement()
+
+        assertFailsWith<IllegalStateException> {
+            store.persistence.transaction {
+                saveStrokes(page, listOf(stroke))
+                touchDocument(document, modifiedAt + 1_000L)
+                error("the operation fails before its end")
+            }
+        }
+        assertTrue(assertNotNull(store.loadDocument(document.id)).pages.single().strokes.isEmpty(), "the stroke is not stored")
+        assertEquals(modifiedAt, store.documents.first().single().modifiedAt, "nor the time of the change")
+
+        store.persistence.transaction {
+            saveStrokes(page, listOf(stroke))
+            touchDocument(document, modifiedAt + 1_000L)
+        }
+        assertEquals(listOf(stroke.id), assertNotNull(store.loadDocument(document.id)).pages.single().strokes.map { it.id })
+        assertEquals(modifiedAt + 1_000L, store.documents.first().single().modifiedAt)
     }
 
     @Test

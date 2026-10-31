@@ -1324,6 +1324,7 @@ public abstract interface class io/github/valerioisufi/drawview/model/change/Doc
 	public fun saveText (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawText;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun saveTextMarkup (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawTextMarkup;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun touchDocument (Lio/github/valerioisufi/drawview/model/DrawDocument;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun transaction (Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun updateDocumentDefaults (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun updateDocumentTitle (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -1341,6 +1342,7 @@ public final class io/github/valerioisufi/drawview/model/change/DocumentPersiste
 	public static fun saveText (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawText;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun saveTextMarkup (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawTextMarkup;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun touchDocument (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawDocument;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun transaction (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun updateDocumentDefaults (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static fun updateDocumentTitle (Lio/github/valerioisufi/drawview/model/change/DocumentPersistence;Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -1647,6 +1649,7 @@ public final class io/github/valerioisufi/drawview/model/change/NoOpDocumentPers
 	public fun saveText (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawText;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun saveTextMarkup (Lio/github/valerioisufi/drawview/model/DrawPage;Lio/github/valerioisufi/drawview/model/DrawTextMarkup;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun touchDocument (Lio/github/valerioisufi/drawview/model/DrawDocument;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun transaction (Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun updateDocumentDefaults (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun updateDocumentTitle (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }

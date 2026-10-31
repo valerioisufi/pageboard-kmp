@@ -23,11 +23,17 @@ import io.github.valerioisufi.drawview.store.room.db.FolderEntity
 import io.github.valerioisufi.drawview.store.room.db.SharedDocumentEntity
 import io.github.valerioisufi.drawview.store.room.repository.DrawDocumentRepository
 import io.github.valerioisufi.drawview.store.room.repository.FileRepository
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onSubscription
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.withContext
 
 /**
@@ -42,25 +48,41 @@ public class RoomDocumentStore(
 
     private val sharedDocuments = database.sharedDocumentDao()
 
+    /** Where the queries of the library run once for all their collectors. */
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    private val allDocumentsWithContent = fileRepository.getAllDocumentsWithContentFlow().sharedQuery()
+    private val allDocuments = fileRepository.getAllDocumentsFlow().sharedQuery()
+    private val allFolders = fileRepository.getAllFoldersFlow().sharedQuery()
+    private val sharedIds = sharedDocuments.getIdsFlow().sharedQuery()
+
     override val documents: Flow<List<DocumentSummary>> =
-        combine(fileRepository.getAllDocumentsWithContentFlow(), fileRepository.getAllFoldersFlow(), sharedDocuments.getIdsFlow()) { list, folders, shared ->
+        combine(allDocumentsWithContent, allFolders, sharedIds) { list, folders, shared ->
             val sharedIds = shared.toSet()
             val trash = FileRepository.trashOf(list.map { it.document }, folders, sharedIds)
             list.filter { trash.isDocumentLive(it.document.id) }
                 .map { it.document.toSummary(isShared = it.document.id in sharedIds, pageCount = it.pageCount, hasPdf = it.hasPdf) }
-        }
+        }.distinctUntilChanged()
 
     override val folders: Flow<List<FolderSummary>> =
-        combine(fileRepository.getAllDocumentsFlow(), fileRepository.getAllFoldersFlow()) { documents, list ->
+        combine(allDocuments, allFolders) { documents, list ->
             val trash = FileRepository.trashOf(documents, list, emptySet())
             list.filter { trash.isFolderLive(it.id) }.map { it.toSummary() }
-        }
+        }.distinctUntilChanged()
 
     override val trash: Flow<List<TrashedItem>> =
-        combine(fileRepository.getAllDocumentsFlow(), fileRepository.getAllFoldersFlow(), sharedDocuments.getIdsFlow()) { documents, folders, shared ->
+        combine(allDocuments, allFolders, sharedIds) { documents, folders, shared ->
             FileRepository.trashOf(documents, folders, shared.toSet()).items
-        }
+        }.distinctUntilChanged()
 
+    /**
+     * This query run once for all its collectors, again as its tables change. A collector gets a
+     * value read for it first: what it reads after a write has the write.
+     */
+    private fun <T> Flow<T>.sharedQuery(): Flow<T> {
+        val query = this
+        return shareIn(scope, SharingStarted.WhileSubscribed(STOP_AFTER_MS)).onSubscription { emit(query.first()) }
+    }
 
     override val persistence: DocumentPersistence get() = repository
 
@@ -177,3 +199,6 @@ public object DrawViewStore {
      */
     public val documents: OpenDocuments by lazy { OpenDocuments(default) }
 }
+
+/** How long a query of the library keeps running after its last collector left (a screen shown again). */
+private const val STOP_AFTER_MS = 5_000L

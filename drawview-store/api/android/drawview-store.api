@@ -167,6 +167,7 @@ public final class io/github/valerioisufi/drawview/store/KeyValueDocumentStore :
 	public fun setSharingSecret (Ljava/lang/String;Ljava/lang/String;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun sharingSecrets (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun touchDocument (Lio/github/valerioisufi/drawview/model/DrawDocument;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun transaction (Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun trashDocument (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun trashFolder (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun updateDocumentDefaults (Lio/github/valerioisufi/drawview/model/DrawDocument;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

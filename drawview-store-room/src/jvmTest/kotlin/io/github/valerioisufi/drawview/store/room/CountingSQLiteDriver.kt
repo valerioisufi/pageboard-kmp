@@ -3,6 +3,7 @@ package io.github.valerioisufi.drawview.store.room
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.SQLiteDriver
 import androidx.sqlite.SQLiteStatement
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
@@ -15,6 +16,7 @@ internal class CountingSQLiteDriver(private val driver: SQLiteDriver) : SQLiteDr
     private val otherCount = AtomicInteger()
     private val queryNanos = AtomicLong()
     private val otherNanos = AtomicLong()
+    private val runs = ConcurrentHashMap<String, AtomicInteger>()
 
     /** The queries run (`SELECT`) since the last [reset]. */
     val queries: Int get() = queryCount.get()
@@ -30,7 +32,11 @@ internal class CountingSQLiteDriver(private val driver: SQLiteDriver) : SQLiteDr
     /** The time spent in the other statements since the last [reset], in milliseconds. */
     val otherMillis: Double get() = otherNanos.get() / 1e6
 
+    /** How many times the statements whose SQL contains [fragment] ran since the last [reset]. */
+    fun runsOf(fragment: String): Int = runs.entries.filter { fragment in it.key }.sumOf { it.value.get() }
+
     fun reset() {
+        runs.clear()
         queryCount.set(0)
         otherCount.set(0)
         queryNanos.set(0)
@@ -44,18 +50,19 @@ internal class CountingSQLiteDriver(private val driver: SQLiteDriver) : SQLiteDr
     private inner class CountingConnection(private val connection: SQLiteConnection) : SQLiteConnection by connection {
         override fun prepare(sql: String): SQLiteStatement {
             val query = sql.trimStart().let { it.startsWith("SELECT", ignoreCase = true) || it.startsWith("WITH", ignoreCase = true) }
-            return CountingStatement(connection.prepare(sql), query)
+            return CountingStatement(connection.prepare(sql), sql, query)
         }
     }
 
     /** A statement counted once per run: from its first step to its reset. */
-    private inner class CountingStatement(private val statement: SQLiteStatement, private val query: Boolean) : SQLiteStatement by statement {
+    private inner class CountingStatement(private val statement: SQLiteStatement, private val sql: String, private val query: Boolean) : SQLiteStatement by statement {
         private var counted = false
 
         override fun step(): Boolean {
             if (!counted) {
                 counted = true
                 (if (query) queryCount else otherCount).incrementAndGet()
+                runs.getOrPut(sql) { AtomicInteger() }.incrementAndGet()
             }
             val start = System.nanoTime()
             try {

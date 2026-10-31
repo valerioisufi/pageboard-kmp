@@ -11,7 +11,8 @@ import io.github.valerioisufi.drawview.model.DrawTextMarkup
 
 /**
  * Writes the effects of the changes of a document through [persist] (a [PersistenceQueue]):
- * the persistence knows nothing of the kinds of change.
+ * the persistence knows nothing of the kinds of change. The effects of an operation are written
+ * with the operation in one [DocumentPersistence.transaction].
  */
 public class ChangePersister(
     private val persist: (operation: suspend DocumentPersistence.() -> Unit) -> Unit
@@ -39,19 +40,21 @@ public class ChangePersister(
 
         // In this order: a page is stored before its elements, the files before what shows them
         persist {
-            resources.forEach { saveResource(document, it) }
-            for ((page, elements) in insertedPages) {
-                savePage(document, page)
-                saveElements(page, elements)
+            transaction {
+                resources.forEach { saveResource(document, it) }
+                for ((page, elements) in insertedPages) {
+                    savePage(document, page)
+                    saveElements(page, elements)
+                }
+                savedPages.forEach { savePage(document, it) }
+                for ((page, elements) in saved) saveElements(page, elements)
+                removedPages.forEach { savePage(document, it) }
+                versionedPages.forEach { savePage(document, it) }
+                if (defaultsChanged) updateDocumentDefaults(document)
+                if (renamed) updateDocumentTitle(document)
+                appendOperation(document, operation)
+                touchDocument(document, modifiedAt)
             }
-            savedPages.forEach { savePage(document, it) }
-            for ((page, elements) in saved) saveElements(page, elements)
-            removedPages.forEach { savePage(document, it) }
-            versionedPages.forEach { savePage(document, it) }
-            if (defaultsChanged) updateDocumentDefaults(document)
-            if (renamed) updateDocumentTitle(document)
-            appendOperation(document, operation)
-            touchDocument(document, modifiedAt)
         }
     }
 

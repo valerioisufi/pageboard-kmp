@@ -152,6 +152,7 @@ abstract interface <#A: kotlin/Any> io.github.valerioisufi.drawview.model/Elemen
 }
 
 abstract interface io.github.valerioisufi.drawview.model.change/DocumentPersistence { // io.github.valerioisufi.drawview.model.change/DocumentPersistence|null[0]
+    open suspend fun <#A1: kotlin/Any?> transaction(kotlin.coroutines/SuspendFunction1<io.github.valerioisufi.drawview.model.change/DocumentPersistence, #A1>): #A1 // io.github.valerioisufi.drawview.model.change/DocumentPersistence.transaction|transaction(kotlin.coroutines.SuspendFunction1<io.github.valerioisufi.drawview.model.change.DocumentPersistence,0:0>){0§<kotlin.Any?>}[0]
     open suspend fun appendOperation(io.github.valerioisufi.drawview.model/DrawDocument, io.github.valerioisufi.drawview.model.change/Operation) // io.github.valerioisufi.drawview.model.change/DocumentPersistence.appendOperation|appendOperation(io.github.valerioisufi.drawview.model.DrawDocument;io.github.valerioisufi.drawview.model.change.Operation){}[0]
     open suspend fun deleteForGood(io.github.valerioisufi.drawview.model/DrawDocument, io.github.valerioisufi.drawview.model/PurgedContent) // io.github.valerioisufi.drawview.model.change/DocumentPersistence.deleteForGood|deleteForGood(io.github.valerioisufi.drawview.model.DrawDocument;io.github.valerioisufi.drawview.model.PurgedContent){}[0]
     open suspend fun fileWithContent(kotlin/String): kotlin/String? // io.github.valerioisufi.drawview.model.change/DocumentPersistence.fileWithContent|fileWithContent(kotlin.String){}[0]

@@ -154,20 +154,26 @@ once to the flows that read them, and `modifiedAt` is stored with the content it
 thumbnails need (phase 3).
 
 The flows of `RoomDocumentStore` share the four Room flows they are made of (all the documents,
-with their content, the folders, the shared documents), in a scope of the store:
+with their content and without, the folders, the shared documents), in a scope of the store:
 
 ```kotlin
-private val documentsWithContent = fileRepository.getAllDocumentsWithContentFlow()
-    .shareIn(scope, SharingStarted.WhileSubscribed(STOP_AFTER_MS), replay = 1)
+private val allDocumentsWithContent = fileRepository.getAllDocumentsWithContentFlow().sharedQuery()
 
 override val documents: Flow<List<DocumentSummary>> =
-    combine(documentsWithContent, allFolders, sharedIds) { … }
-        .distinctUntilChanged()
-        .shareIn(scope, SharingStarted.WhileSubscribed(STOP_AFTER_MS), replay = 1)
+    combine(allDocumentsWithContent, allFolders, sharedIds) { … }.distinctUntilChanged()
+
+private fun <T> Flow<T>.sharedQuery(): Flow<T> {
+    val query = this
+    return shareIn(scope, SharingStarted.WhileSubscribed(STOP_AFTER_MS)).onSubscription { emit(query.first()) }
+}
 ```
 
-A collector gets the last list at once (`replay = 1`): `catalog.documents.first()` in the indexer
-and the folders read by `DocumentSearchSource.version` no longer query the database.
+A query runs once for all its collectors when its tables change. A new collector gets a value read
+for it first, not the last value shared: the library reads what it has just written
+(`Collaboration.sharedFolder` creates the folder of the documents received and looks for it in
+`folders.first()`, `StoreSharedDocuments.save` looks for a document just received), and a cache
+could still be the list before the write (decision 15). `documents.first()` therefore queries as
+before; the indexer reads it once a pass.
 
 ### Reading what can be searched
 
@@ -268,7 +274,7 @@ therefore called from several threads at once, which its KDoc now says.
 | Phase | What | Status |
 |---|---|---|
 | 0 | Measures: synthetic documents (`drawview-store-testing`), benchmarks run with `-Pdrawview.benchmarks=true` (out of `jvmTest`), a driver counting the statements; the numbers before, in this document | done |
-| 1 | `DocumentPersistence.transaction`, one per operation (test: an operation failing leaves none of its rows); the flows of `RoomDocumentStore` shared and distinct (test: one query of the documents per stroke, whatever the collectors) | proposed |
+| 1 | `DocumentPersistence.transaction`, one per operation (test: an operation failing leaves none of its rows); the flows of `RoomDocumentStore` shared and distinct (test: one query of the documents per stroke, whatever the collectors, and a folder created read at once) | done |
 | 2 | `DocumentStore.loadOutline` (both stores, contract test) used by the three search sources; the version of the PDFs from the outline (test: a stroke does not change it, a PDF page added does); `LectureSearchSource.version` measured and kept (decision 14) | done |
 | 3 | `DocumentStore.pageFingerprint` and `loadPage` (contract test: every kind of change of the first page changes the fingerprint, a change of another page does not); the thumbnails drawn from them | proposed |
 | 4 | The elements of a page by identifier, `DrawPage.load`, the stack in one pass, `paintOrder` made once per content (model tests; ABI) | proposed |
@@ -291,7 +297,7 @@ On the Mac (M5, JVM), 2026-10-31, before and after each phase. Each benchmark ru
 
 | Measure | Before | After | Phase |
 |---|---|---|---|
-| M1 statements per stroke committed, with the collectors of PencilNotes (200 notes) | 42.9 (20.0 queries, 8.2 ms of them) | | 1 |
+| M1 statements per stroke committed, with the collectors of PencilNotes (200 notes) | 42.9 (20.0 queries, 8.2 ms of them) | 22.0 (4.0 queries, 0.73 ms of them) | 1 |
 | M2 a search pass after a stroke on a note of 30 pages × 400 strokes (101 notes) | 28.8 s | 0.82 s (phase 6), 57 ms (phase 2) | 2, 6 |
 | M2 indexing 101 notes from nothing | 2 min 53 s | 5.4 s (phase 6), 0.25 s (phase 2) | 2, 6 |
 | M2 a search pass with nothing changed | 46 ms | 41 ms | — |
@@ -338,6 +344,11 @@ Taken alone, revertible:
 14. **The version of the lectures kept**: 53 ms a pass on the Mac for 60 lectures of 90 minutes
     (M2), in the background; reading every record once would halve it, with a new function of
     `LectureLibrary`. Left for later (below).
+15. **The queries of the library shared without a cache** (the first version of this plan kept the
+    last list, `replay = 1`): a collector reads its own first value, so that a read after a
+    write has the write. The store keeps its own scope (`SupervisorJob`, `Dispatchers.Default`):
+    a scope given to it would change its constructor, and the queries stop 5 seconds after their
+    last collector.
 
 Decided by the user:
 
