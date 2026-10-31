@@ -13,19 +13,22 @@ import kotlinx.cinterop.CFunction
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.staticCFunction
+import kotlinx.cinterop.toKString
+import platform.UIKit.UIDevice
+import platform.UIKit.UIUserInterfaceIdiomPhone
 import platform.UIKit.UIViewController
 import platform.objc.class_addMethod
 import platform.objc.class_replaceMethod
 import platform.objc.object_getClass
 import platform.objc.sel_registerName
 
-/** The tallest top of the safe area with the status bar and no notch or island (an iPad: 24 pt). */
+/** The tallest top of the safe area of an iPhone with the status bar and no notch or island (20 pt). */
 private const val StatusBarOnlyHeight = 24
 
-/** Whether the status bar is hidden, answered to UIKit by the view controller of the application. */
+/** Whether the status bar is hidden, answered to UIKit by the view controllers of the application. */
 private var statusBarHidden: Boolean = false
 
-/** Whether the home indicator hides itself, answered to UIKit by the view controller of the application. */
+/** Whether the home indicator hides itself, answered to UIKit by the view controller of Compose. */
 private var homeIndicatorHidden: Boolean = false
 
 @OptIn(ExperimentalForeignApi::class)
@@ -34,38 +37,59 @@ private val prefersStatusBarHiddenImp = staticCFunction { _: COpaquePointer?, _:
 @OptIn(ExperimentalForeignApi::class)
 private val prefersHomeIndicatorAutoHiddenImp = staticCFunction { _: COpaquePointer?, _: COpaquePointer? -> homeIndicatorHidden }
 
-private var overridesInstalled = false
+/** The classes of view controllers answering UIKit with the flags above. */
+private val classesWithOverrides = mutableSetOf<String>()
 
-/** Makes the view controller of Compose answer UIKit with the two flags above (once). */
+/**
+ * Makes the view controller of Compose answer UIKit with the two flags above, and those holding it
+ * (a `UIHostingController` of SwiftUI, asked by UIKit for the status bar) with the status bar
+ * flag: once per class. The home indicator of those holding it stays as the application set it
+ * (e.g. `persistentSystemOverlays`).
+ */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 private fun installOverrides(viewController: UIViewController) {
-    if (overridesInstalled) return
-    val cls = object_getClass(viewController) ?: return
-    val types = "B@:"
-    for ((name, imp) in listOf("prefersStatusBarHidden" to prefersStatusBarHiddenImp, "prefersHomeIndicatorAutoHidden" to prefersHomeIndicatorAutoHiddenImp)) {
-        val selector = sel_registerName(name)
-        val function = imp.reinterpret<CFunction<() -> Unit>>()
-        if (!class_addMethod(cls, selector, function, types)) class_replaceMethod(cls, selector, function, types)
+    var current: UIViewController? = viewController
+    while (current != null) {
+        val cls = object_getClass(current)
+        val name = cls?.let { platform.objc.class_getName(it)?.toKString() }
+        if (cls != null && name != null && classesWithOverrides.add(name)) {
+            val overrides = buildList {
+                add("prefersStatusBarHidden" to prefersStatusBarHiddenImp)
+                if (current === viewController) add("prefersHomeIndicatorAutoHidden" to prefersHomeIndicatorAutoHiddenImp)
+            }
+            for ((selectorName, imp) in overrides) {
+                val selector = sel_registerName(selectorName)
+                val function = imp.reinterpret<CFunction<() -> Unit>>()
+                if (!class_addMethod(cls, selector, function, "B@:")) class_replaceMethod(cls, selector, function, "B@:")
+            }
+        }
+        current = current.parentViewController
     }
-    overridesInstalled = true
+}
+
+/** The view controller holding [viewController] at the root, asked by UIKit for the status bar. */
+private fun rootOf(viewController: UIViewController): UIViewController {
+    var root = viewController
+    while (true) root = root.parentViewController ?: return root
 }
 
 @Composable
 internal actual fun ImmersiveSystemBarsEffect() {
     val viewController = LocalUIViewController.current
-    // With a notch or the Dynamic Island the safe area keeps its height without the status bar:
-    // it stays, with its clock. Without them, the top is the status bar (or nothing, hidden)
+    // An iPhone with a notch or the Dynamic Island keeps the height of the safe area without the
+    // status bar: it stays, with its clock. No iPad has them (its status bar is 24 to 32 pt)
     val density = LocalDensity.current
-    val islandOnTop = WindowInsets.safeDrawing.getTop(density) > with(density) { StatusBarOnlyHeight.dp.roundToPx() }
+    val islandOnTop = UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPhone &&
+        WindowInsets.safeDrawing.getTop(density) > with(density) { StatusBarOnlyHeight.dp.roundToPx() }
     DisposableEffect(viewController, islandOnTop) {
         installOverrides(viewController)
         statusBarHidden = !islandOnTop
         homeIndicatorHidden = true
-        viewController.setNeedsStatusBarAppearanceUpdate()
+        rootOf(viewController).setNeedsStatusBarAppearanceUpdate()
         onDispose {
             statusBarHidden = false
             homeIndicatorHidden = false
-            viewController.setNeedsStatusBarAppearanceUpdate()
+            rootOf(viewController).setNeedsStatusBarAppearanceUpdate()
         }
     }
 }

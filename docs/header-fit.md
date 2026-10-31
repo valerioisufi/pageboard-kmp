@@ -127,7 +127,7 @@ separately). The page grid gives way first, as today, then the extensions.
 
 | Responsibility | Assigned to | Pattern |
 |---|---|---|
-| Whether hiding the status bar gives room: Android, no cutout on the top edge of the window (`WindowInsetsCompat.Type.displayCutout()` top = 0, read again when the insets change, so a rotation that moves the cutout to the side hides it); iOS, the top of the safe area of the window without the status bar is 0 | `ImmersiveSystemBars` (`drawview-ui`, `platform/SystemBars.*.kt`, expect/actual) | Information Expert, Protected Variations |
+| Whether hiding the status bar gives room: Android, no cutout on the top edge of the window (`WindowInsetsCompat.Type.displayCutout()` top = 0, read again when the insets change, so a rotation that moves the cutout to the side hides it); iOS, not an iPhone with a notch or an island (an iPad, or a top of the safe area of 24 pt at most) | `ImmersiveSystemBars` (`drawview-ui`, `platform/SystemBars.*.kt`, expect/actual) | Information Expert, Protected Variations |
 | Hiding the navigation bar (Android) and the home indicator (iOS) as now | the same | High Cohesion |
 | Hiding them again when the window gets the focus back (Android: `ViewTreeObserver.OnWindowFocusChangeListener`), so a menu, a popover or a dialog never leaves them shown | the Android actual | Information Expert |
 | The one effect of the editor, asked by `DrawScreen` (always, as today) | `DrawScreen` | Controller |
@@ -167,6 +167,22 @@ after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
   closed leaves them so; back in the library both are shown.
 * Android 10 (the old flags, the focus listener) is checked on the tablet of the user: no API 29
   emulator here.
+* iOS, checked after the phase on the simulators (iPhone 17, iPad Air 11-inch, iOS 27), with two
+  fixes:
+  - **The status bar of an iPad is 32 pt high** on iPadOS 27 (24 pt before): the top of the safe
+    area took it for an island. No iPad has a notch or an island, so only an iPhone is asked
+    (`UIUserInterfaceIdiomPhone` and a top over 24 pt; an iPhone without them has 20 pt).
+  - **UIKit asks the status bar of the root view controller**, a `UIHostingController` of SwiftUI
+    in the applications, not the one of Compose: the status bar was never hidden on iOS, before
+    this plan too. The override of `prefersStatusBarHidden` is now installed on the view
+    controllers holding the one of Compose too, and the root is asked to update. The home
+    indicator stays with the one of Compose: the applications hide it with
+    `persistentSystemOverlays`, which an override on the root would undo.
+  - The iPhone keeps its status bar beside the Dynamic Island in the editor; the iPad hides it in
+    the editor and shows it again in the library.
+* On a simulator that had an old database (version 9) PencilNotes stops at the start: Room has
+  migrations from 16 only (the first version with documents to keep, see `Migrations.kt`). Not a
+  change of this plan; the checks ran on new simulators, the old one left as it was.
 
 ### Phase 2 results
 
