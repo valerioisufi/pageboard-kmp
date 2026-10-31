@@ -21,7 +21,7 @@ import org.jetbrains.kotlin.konan.target.KonanTarget
  * The Android namespace follows the name of the module (`drawview-sync-ui` →
  * `io.github.valerioisufi.drawview.sync.ui`). The explicit API mode is strict: every public
  * declaration says so, with its type. The tests run on a data directory of their own
- * ([TestDataConventionPlugin]).
+ * ([TestDataConventionPlugin]), the benchmarks apart ([BenchmarksConventionPlugin]).
  */
 class KmpLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
@@ -29,6 +29,7 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
         pluginManager.apply("com.android.kotlin.multiplatform.library")
         pluginManager.apply("drawview.publish")
         pluginManager.apply("drawview.test.data")
+        pluginManager.apply("drawview.benchmarks")
 
         val module = name
         extensions.configure<KotlinMultiplatformExtension> {

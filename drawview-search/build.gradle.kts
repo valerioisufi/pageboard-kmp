@@ -19,5 +19,11 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
         }
+        jvmTest.dependencies {
+            // The benchmark of the indexer, on the store of the applications (docs/performance.md)
+            implementation(project(":drawview-store-room"))
+            implementation(project(":drawview-store-testing"))
+            implementation(libs.androidx.room.runtime)
+        }
     }
 }

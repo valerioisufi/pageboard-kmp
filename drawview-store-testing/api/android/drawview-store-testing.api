@@ -6,6 +6,13 @@ public final class io/github/valerioisufi/drawview/store/testing/OperationProofs
 	public static final fun checkOperationProofs (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public final class io/github/valerioisufi/drawview/store/testing/SyntheticDocuments {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/store/testing/SyntheticDocuments;
+	public final fun getNoMeshes ()Lio/github/valerioisufi/drawview/model/StrokeModeller;
+	public final fun notebook (IIIIFLjava/lang/String;ILio/github/valerioisufi/drawview/model/StrokeModeller;)Lio/github/valerioisufi/drawview/model/DrawDocument;
+	public static synthetic fun notebook$default (Lio/github/valerioisufi/drawview/store/testing/SyntheticDocuments;IIIIFLjava/lang/String;ILio/github/valerioisufi/drawview/model/StrokeModeller;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/DrawDocument;
+}
+
 public final class io/github/valerioisufi/drawview/store/testing/TrashContractKt {
 	public static final fun checkTrash (Lio/github/valerioisufi/drawview/store/DocumentStore;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }

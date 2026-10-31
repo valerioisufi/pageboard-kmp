@@ -6,6 +6,13 @@
 // - Show declarations: true
 
 // Library unique name: <DrawView-KMP:drawview-store-testing>
+final object io.github.valerioisufi.drawview.store.testing/SyntheticDocuments { // io.github.valerioisufi.drawview.store.testing/SyntheticDocuments|null[0]
+    final val NoMeshes // io.github.valerioisufi.drawview.store.testing/SyntheticDocuments.NoMeshes|{}NoMeshes[0]
+        final fun <get-NoMeshes>(): io.github.valerioisufi.drawview.model/StrokeModeller // io.github.valerioisufi.drawview.store.testing/SyntheticDocuments.NoMeshes.<get-NoMeshes>|<get-NoMeshes>(){}[0]
+
+    final fun notebook(kotlin/Int, kotlin/Int, kotlin/Int = ..., kotlin/Int = ..., kotlin/Float = ..., kotlin/String = ..., kotlin/Int = ..., io.github.valerioisufi.drawview.model/StrokeModeller = ...): io.github.valerioisufi.drawview.model/DrawDocument // io.github.valerioisufi.drawview.store.testing/SyntheticDocuments.notebook|notebook(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Float;kotlin.String;kotlin.Int;io.github.valerioisufi.drawview.model.StrokeModeller){}[0]
+}
+
 final suspend fun io.github.valerioisufi.drawview.store.testing/checkFolderOperations(io.github.valerioisufi.drawview.store/DocumentStore) // io.github.valerioisufi.drawview.store.testing/checkFolderOperations|checkFolderOperations(io.github.valerioisufi.drawview.store.DocumentStore){}[0]
 final suspend fun io.github.valerioisufi.drawview.store.testing/checkOperationProofs(io.github.valerioisufi.drawview.store/DocumentStore, kotlin.coroutines/SuspendFunction0<io.github.valerioisufi.drawview.store/DocumentStore>) // io.github.valerioisufi.drawview.store.testing/checkOperationProofs|checkOperationProofs(io.github.valerioisufi.drawview.store.DocumentStore;kotlin.coroutines.SuspendFunction0<io.github.valerioisufi.drawview.store.DocumentStore>){}[0]
 final suspend fun io.github.valerioisufi.drawview.store.testing/checkTrash(io.github.valerioisufi.drawview.store/DocumentStore) // io.github.valerioisufi.drawview.store.testing/checkTrash|checkTrash(io.github.valerioisufi.drawview.store.DocumentStore){}[0]

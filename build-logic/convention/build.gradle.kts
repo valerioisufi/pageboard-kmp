@@ -40,5 +40,9 @@ gradlePlugin {
             id = "drawview.test.data"
             implementationClass = "TestDataConventionPlugin"
         }
+        register("benchmarks") {
+            id = "drawview.benchmarks"
+            implementationClass = "BenchmarksConventionPlugin"
+        }
     }
 }

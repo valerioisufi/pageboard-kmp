@@ -2,7 +2,7 @@ plugins {
     id("drawview.kmp.library")
 }
 
-description = "The contract tests every DrawView document store must pass"
+description = "The contract tests every DrawView document store must pass, and documents for the benchmarks"
 
 kotlin {
     sourceSets {

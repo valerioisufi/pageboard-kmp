@@ -13,7 +13,10 @@ Variations).
 
 ## Starting point
 
-The costs below are read from the code, not measured yet (phase 0 measures them).
+The costs below are read from the code; phase 0 measured them (see "Measures"). Modeling the
+strokes costs by far the most, and the search and the thumbnails pay it for whole documents; the
+writes of a stroke cost a little; the lookups of the model, the passes of the indexer with nothing
+changed and the order of the tiles cost almost nothing on the Mac.
 
 ### Writing
 
@@ -40,6 +43,7 @@ The costs below are read from the code, not measured yet (phase 0 measures them)
    (`SearchIndex.unembeddedCount`: a `COUNT(DISTINCT)` with a `LEFT JOIN` on every chunk), and
    `DocumentSearchSource.version` reads the folders and the version vector of every document (3
    queries). `LectureSearchSource.version` reads every lecture record of every document.
+   Measured: a pass with nothing changed takes 46 ms over 101 notes, without lectures.
 6. **A thumbnail opens the whole document** to draw its first page (`DocumentThumbnails.draw`), and
    is drawn again when `modifiedAt` changes: a stroke on the last page draws the first one again.
 
@@ -60,8 +64,11 @@ The costs below are read from the code, not measured yet (phase 0 measures them)
 ### Opening a document
 
 10. **Every stroke is modeled again by Ink** (`DrawDocumentRepository.loadDocument`), the removed
-    ones too, on one thread: `InkStrokeEngine.buildMesh` creates and destroys a native builder for
-    each stroke, and gives it the inputs one JNI (or cinterop) call each.
+    ones too, on one thread, about 1 to 2.4 ms each: the bridge updates the shape of the stroke at
+    every input (`UpdateShape` in `ink_stroke_builder_add_point`), as the stroke being drawn needs,
+    though the inputs of a stroke loaded are all known. `InkStrokeEngine.buildMesh` makes a native
+    builder for each stroke, which costs nothing more (measured: 0.93 ms a stroke of 120 inputs
+    either way).
 
 ### The editor
 
@@ -74,7 +81,8 @@ The costs below are read from the code, not measured yet (phase 0 measures them)
     workers), and a tile asked for is rasterized even when it has left the screen: its job is
     cancelled only when the page is laid out at another size. After a fling or a zoom across the
     levels, the workers draw tiles no longer shown before the ones on screen. `drawTiles` reads
-    every page at every frame (`ensurePageGeometry` takes a lock for each).
+    every page at every frame (`ensurePageGeometry` takes a lock for each). Measured: the screen
+    is filled about 20 ms after a jump or a fling of 20 pages on the Mac, the workers keeping up.
 13. **A tile reads every element of its page** (`TileRenderer.renderPageContent`), and the path of
     the outline of a stroke is built again at every draw (`StrokeMeshPainter`), for every tile and
     level it is drawn in.
@@ -114,15 +122,13 @@ not a cost.
 | One query per change of the catalog, whoever follows it | `RoomDocumentStore`: the Room flows shared (`shareIn`) | Information Expert, Low Coupling (the collectors stay as they are) |
 | Reading what can be searched, without the strokes | `DocumentStore.loadOutline` → `DocumentOutline` (store), done by Room with the queries of the texts, the elements of the applications, the PDF pages and the resources | Information Expert, Protected Variations (default from `loadDocument`), Pure Fabrication (a value that cannot be saved back) |
 | The version of the text of the PDFs of a document | `PdfSearchSource.version`, from the PDF pages of the outline | Information Expert |
-| Counting the chunks to embed once per pass | `SearchIndexer` | Controller |
 | Knowing whether the first page changed, and reading it alone | `DocumentStore.pageFingerprint`, `DocumentStore.loadPage` (store) | Information Expert, Protected Variations |
 | Drawing a thumbnail again only when its page changed | `DocumentThumbnails` | Controller |
 | Finding an element of a page by its identifier | `DrawPage`: an index of its elements, shown and removed | Information Expert |
 | Building a page from stored or received elements | `DrawPage.load` | Creator |
 | The stack of a page in one pass, the elements in the order they are painted | `PageElements` | Information Expert |
 | What the editor shows of the document | derived states in `DrawScreen` and `EditorToolbar` (ui) | Low Coupling (the view reads what it shows) |
-| Which tiles to rasterize first, and which no longer | `TileScheduler` (canvas), used by `TileManager` | Pure Fabrication, High Cohesion (the manager keeps the cache and the drawing) |
-| Modeling many strokes with one native builder | `StrokeModeller.newBuilder()` → `StrokeBuilder` (model), `InkStrokeModeller` (ink: the inputs in one native call) | Protected Variations (by default a builder calls `buildMesh`), Information Expert |
+| Modeling a stroke whose inputs are all known | `InkStrokeModeller.buildMesh` (ink), with `ink_stroke_builder_add_points` (the bridge: the inputs given at once, the shape updated once) | Information Expert |
 | Modeling the pages of a document at the same time | `DrawDocumentRepository.loadDocument`, `KeyValueDocumentStore.loadDocument` | Controller |
 | The elements of a page in a region | `PageElements`: a grid of cells, `PageContentSnapshot.elementsIn` | Information Expert |
 | A PDF page kept loaded between its tiles | `pdfium_bridge` and `PdfiumEngine` (pdf) | Information Expert |
@@ -212,67 +218,60 @@ loaders use `DrawPage.load(elements)`, which puts each element shown or removed 
 Like `add` and `remove`, it is used on the thread of the document. `DrawDocument.findElement`
 reads the map of each page (no list made): one lookup per page instead of a comparison per element.
 
-### The tiles to rasterize
+### Modeling the strokes loaded
 
-```kotlin
-/** The tiles asked for by the frames, rasterized the most needed first (two workers). */
-internal class TileScheduler(private val workers: Int, private val rasterize: (TileRequest) -> Unit) {
-    /** [key] is needed by the frame [frame]: on screen ([visible]) or prefetched. */
-    fun request(key: TileKey, visible: Boolean, frame: Long, work: () -> TileRequest)
-
-    /** The frame [frame] is drawn: the tiles not asked for since [frame] - 1 leave the queue. */
-    fun endFrame(frame: Long)
-}
+```c
+/** Adds the [count] inputs of a stroke at once and updates its shape once (a stroke loaded). */
+void ink_stroke_builder_add_points(InkStrokeBuilderHandle handle, const float* xs, const float* ys,
+    const float* pressures, const int64_t* times_ms, int32_t count, int32_t tool_type);
 ```
 
-The tiles on screen of the current level go first, then the prefetched ones; a tile not asked for
-by the last two frames leaves the queue (one being rasterized ends). `drawTiles` finds the pages
-near the viewport by a binary search, as `CalcPage.getPagesRectOnWindowTransformation` does.
-
-### Modeling many strokes
-
-```kotlin
-public fun interface StrokeModeller {
-    public fun buildMesh(points: List<StrokePoint>, brush: BrushConfig, toolType: InputToolType): StrokeMesh?
-
-    /** A builder of many strokes, one after the other, on one thread. */
-    public fun newBuilder(): StrokeBuilder = StrokeBuilder(::buildMesh)
-}
-```
-
-The builder of `InkStrokeModeller` keeps one native stroke builder and gives it the inputs of a
-stroke in one call (`ink_stroke_builder_add_points`, through JNI on Android and the desktop and
-cinterop on iOS). The loaders model the pages at the same time, one builder per worker.
+`InkStrokeModeller.buildMesh`, whose inputs are all known, gives them in one call (through JNI on
+Android and the desktop, cinterop on iOS) and the shape is updated once, after `FinishInputs`. The
+stroke being drawn keeps updating its shape at every input. The meshes must stay the same, bit for
+bit: Ink models the same inputs in the same order, but the test decides; if they differ, the user
+decides whether a stroke loaded may differ from the one drawn. The loaders model the pages at the
+same time, on `Dispatchers.Default`, each worker with its own engine.
 
 ## Phases
 
 | Phase | What | Status |
 |---|---|---|
-| 0 | Measures: synthetic documents (`drawview-store-testing`), benchmarks run with `-Pdrawview.benchmarks=true` (out of `jvmTest`), a driver counting the statements; the numbers before, in this document | proposed |
+| 0 | Measures: synthetic documents (`drawview-store-testing`), benchmarks run with `-Pdrawview.benchmarks=true` (out of `jvmTest`), a driver counting the statements; the numbers before, in this document | done |
 | 1 | `DocumentPersistence.transaction`, one per operation (test: an operation failing leaves none of its rows); the flows of `RoomDocumentStore` shared and distinct (test: one query of the documents per stroke, whatever the collectors) | proposed |
-| 2 | `DocumentStore.loadOutline` (both stores, contract test) used by the three search sources; the version of the PDFs from the outline; the chunks to embed counted once per pass; `LectureSearchSource.version` without reading every record, if phase 0 shows it costs | proposed |
+| 2 | `DocumentStore.loadOutline` (both stores, contract test) used by the three search sources; the version of the PDFs from the outline; `LectureSearchSource.version` without reading every record, if it costs with lectures | proposed |
 | 3 | `DocumentStore.pageFingerprint` and `loadPage` (contract test: every kind of change of the first page changes the fingerprint, a change of another page does not); the thumbnails drawn from them | proposed |
 | 4 | The elements of a page by identifier, `DrawPage.load`, the stack in one pass, `paintOrder` made once per content (model tests; ABI) | proposed |
-| 5 | The editor: derived states instead of `observeChanges()` in `DrawScreenContent` and `EditorTools` (test: they do not change over 100 strokes); the position of `TextBoxEditor` read in the layout; `TileScheduler` (test: after a jump, the tiles on screen are rasterized first, the ones left are not) | proposed |
-| 6 | `StrokeModeller.newBuilder`, the inputs in one native call (bridge, JNI, cinterop), the pages modeled at the same time (test: the same meshes, bit for bit, on JVM and the iOS simulator) | proposed |
+| 5 | The editor: derived states instead of `observeChanges()` in `DrawScreenContent` and `EditorTools` (test: they do not change over 100 strokes); the position of `TextBoxEditor` read in the layout | proposed |
+| 6 | The inputs of a stroke loaded in one native call and its shape updated once (bridge, JNI, cinterop), the pages modeled at the same time (test: the same meshes, bit for bit, on the JVM and the iOS simulator) | proposed |
 | 7 | The tiles: the elements of a region (`elementsIn`), the paths of the outlines kept (if they gain) | proposed |
 | 8 | The PDF pages kept loaded between their tiles and drawn with one copy; the texts drawn outside of the lock of the caches (if the measurer allows it) | proposed |
 
-The phases after 1 do not depend on each other, but phase 3 needs phase 1.
+The phases after 1 do not depend on each other, but phase 3 needs phase 1. By what phase 0
+measured, they go in this order: 6 (every document loaded pays the modeling: the editor, the
+search, the thumbnails), 2, 3, 1, 4, 5; 7 and 8 only if a device shows the tiles costing.
 
 ### Measures
 
-On the Mac (JVM), before and after each phase:
+On the Mac (M5, JVM), 2026-10-31, before and after each phase. Each benchmark runs alone:
+`./gradlew :<module>:jvmTest -Pdrawview.benchmarks=true` (`StoreBenchmark` in `drawview-store-room`,
+`IndexerBenchmark` in `drawview-search`, `ApplyBenchmark` in `drawview-model`, `ModelingBenchmark`
+in `drawview-ink`, `TileBenchmark` in `drawview-canvas`).
 
 | Measure | Before | After | Phase |
 |---|---|---|---|
-| Statements per stroke committed, with the collectors of PencilNotes | | | 1 |
-| A search pass after a stroke, 200 documents (20 with PDFs) | | | 2 |
-| The thumbnail of a document changed on its last page | | | 3 |
-| 1,000 operations received on a document of 100,000 elements | | | 4 |
-| Opening a document of 50 pages × 600 strokes (10% removed) | | | 6 |
-| The viewport filled after a jump of 20 pages | | | 5, 7 |
-| A dense page rasterized at level 2; a PDF page | | | 7, 8 |
+| M1 statements per stroke committed, with the collectors of PencilNotes (200 notes) | 42.9 (20.0 queries, 8.2 ms of them) | | 1 |
+| M2 a search pass after a stroke on a note of 30 pages × 400 strokes (101 notes) | 28.8 s | | 2 |
+| M2 indexing 101 notes from nothing | 2 min 53 s | | 2, 6 |
+| M2 a search pass with nothing changed | 46 ms | | — |
+| M3 the thumbnail of a note changed on its last page | the opening of the whole note (M5) | | 3 |
+| M4 1,000 operations received on a document of 100,000 elements | 483 ms (0.48 ms each) | | 4 |
+| M4 a stroke submitted on a document of 100,000 elements | 0.44 ms | | 4 |
+| M5 opening a note of 50 pages × 600 strokes, 10% erased | 71.9 s (24 ms of queries) | | 6 |
+| M5 a stroke of 120 inputs modeled, an engine for each / one for all | 0.93 ms / 0.93 ms | | 6 |
+| M6 the screen filled after a jump of 20 pages / a fling over 20 pages | 21 ms / 18 ms | | — |
+| M7 a tile of a page of 1,500 strokes, level 0 / level 2 | 10.4 ms / 2.1 ms | | 7 |
+| A tile of a PDF page | measured at the start of phase 8 | | 8 |
 
 ## Decisions
 
@@ -292,6 +291,12 @@ Taken alone, revertible:
    (its ABI grows).
 7. **The benchmarks out of `jvmTest`**, behind a Gradle property: the checks of a phase stay as
    fast as today.
+8. **Phase 6 without a builder of many strokes** (`StrokeModeller.newBuilder` in the first version
+   of this plan): an engine for all the strokes models them no faster (M5).
+9. **No scheduler of the tiles, and no count of the chunks once per pass**: phase 0 measured no
+   cost on the Mac (M6, M2 with nothing changed). They are left for later, for a device that
+   shows one.
+10. **The order of the phases by what they gain** (above), not by their number.
 
 ## Left for later
 
@@ -315,3 +320,5 @@ These change or delete stored data, or need a plan of their own; they are for th
 9. **The scale of `TextBoxEditor` during a zoom** by a layer: the text being written must stay as
    the page draws it (`docs/text-parity.md`).
 10. **`org.gradle.parallel`** for the build.
+11. **The tiles rasterized the most needed first** (a scheduler cancelling the tiles no longer
+    shown), and the chunks to embed counted once per pass: no cost measured on the Mac (M6, M2).

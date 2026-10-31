@@ -43,6 +43,8 @@ kotlin {
         }
         jvmTest.dependencies {
             implementation(compose.desktop.currentOs)
+            // The documents of the benchmarks (docs/performance.md)
+            implementation(project(":drawview-store-testing"))
         }
     }
 }
