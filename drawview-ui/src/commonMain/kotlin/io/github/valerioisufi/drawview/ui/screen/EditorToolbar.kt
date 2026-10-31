@@ -3,6 +3,9 @@ package io.github.valerioisufi.drawview.ui.screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,6 +41,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -64,6 +69,7 @@ import io.github.valerioisufi.drawview.ui.adaptive.WindowLayout
 import io.github.valerioisufi.drawview.ui.adaptive.currentAdaptiveInfo
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandMenu
+import io.github.valerioisufi.drawview.ui.command.DesignMenu
 import io.github.valerioisufi.drawview.ui.components.AddPresetCard
 import io.github.valerioisufi.drawview.ui.components.ColorSwatches
 import io.github.valerioisufi.drawview.ui.components.DesignIconButton
@@ -182,6 +188,14 @@ internal object ToolbarLayout {
         (width - topWidth(button, extensionsWidth, decorWidth = decorWidth) - toolsWidth(button, tools, groups) + TitleMinWidth)
             .coerceIn(TitleMinWidth, TitleMaxWidth)
 
+    /**
+     * Whether the actions of the extensions, [extensionsWidth] wide, keep their place in the top
+     * bar beside a title of [TitleMinWidth] and [buttons] other buttons (else they are behind one
+     * button).
+     */
+    fun extensionsFit(width: Dp, button: Dp, extensionsWidth: Dp, buttons: Int, decorWidth: Dp = 0.dp): Boolean =
+        topWidth(button, extensionsWidth, buttons, decorWidth) <= width
+
     /** Whether the page grid keeps its button in the top bar (else it goes to the "more" menu). */
     fun pageGridFits(width: Dp, button: Dp, extensionsWidth: Dp, decorWidth: Dp = 0.dp): Boolean =
         topWidth(button, extensionsWidth, decorWidth = decorWidth) <= width
@@ -195,6 +209,8 @@ internal object ToolbarLayout {
  * @param toolsMaxWidth the widest group of the tools, or "Read only", in the top bar.
  * @param titleMaxWidth the widest title beside the tools in the top bar.
  * @param location where the document is (its folder), shown under its title.
+ * @param extensionsInBar whether the actions of the extensions are in the bar, else behind one
+ *   button that shows them in a popover.
  * @param onExtensionsWidth the width the actions of the extensions take, measured.
  * @param readOnlyNote why the document may only be read, beside "Read only" where the tools would be.
  */
@@ -209,6 +225,7 @@ internal fun EditorTopBar(
     titleMaxWidth: Dp,
     toolbarActions: @Composable RowScope.() -> Unit,
     onExtensionsWidth: (Dp) -> Unit,
+    extensionsInBar: Boolean = true,
     location: String? = null,
     readOnlyNote: @Composable () -> String? = { null }
 ) {
@@ -259,15 +276,56 @@ internal fun EditorTopBar(
             WindowDraggable(modifier = Modifier.weight(1f)) { Spacer(modifier = Modifier.fillMaxWidth()) }
         }
 
-        Row(
-            modifier = Modifier.onSizeChanged { with(density) { onExtensionsWidth(it.width.toDp()) } },
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            toolbarActions()
+        if (extensionsInBar) {
+            Row(
+                modifier = Modifier.onSizeChanged { with(density) { onExtensionsWidth(it.width.toDp()) } },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                toolbarActions()
+            }
+        } else {
+            ExtensionsButton(toolbarActions, onExtensionsWidth)
         }
 
         MoreMenu(commands, arrangement, showPageGrid)
+    }
+}
+
+/**
+ * The actions of the extensions where they do not fit beside the title: one button showing them
+ * in a popover, closed once one of them is tapped (what they open is kept by their extension, not
+ * by their button). Their width is measured there too, so that they come back to the bar when it
+ * has room for them.
+ */
+@Composable
+private fun ExtensionsButton(toolbarActions: @Composable RowScope.() -> Unit, onExtensionsWidth: (Dp) -> Unit) {
+    val density = LocalDensity.current
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        DesignIconButton(
+            icon = DrawViewIcons.Zap,
+            label = stringResource(Res.string.editor_action_extensions),
+            onClick = { expanded = true },
+            selected = expanded,
+            tint = MaterialTheme.colorScheme.onSurface
+        )
+        DesignMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            Row(
+                modifier = Modifier
+                    .onSizeChanged { with(density) { onExtensionsWidth(it.width.toDp()) } }
+                    .pointerInput(Unit) {
+                        awaitEachGesture {
+                            awaitFirstDown(pass = PointerEventPass.Initial)
+                            if (waitForUpOrCancellation(pass = PointerEventPass.Initial) != null) expanded = false
+                        }
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                toolbarActions()
+            }
+        }
     }
 }
 

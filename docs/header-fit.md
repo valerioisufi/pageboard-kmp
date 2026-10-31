@@ -116,7 +116,7 @@ button. If the brand still does not fit (a window under ~300 dp) it is ellipsize
 |---|---|---|
 | Whether the actions of the extensions fit beside a title of `TitleMinWidth` | `ToolbarLayout.extensionsFit(width, button, extensionsWidth, buttons, decorWidth)` (pure, unit tested) | Pure Fabrication |
 | Showing them in the bar, or behind one button ("Extensions", its icon a puzzle or a grid of dots) that opens them in a small popover row | `EditorTopBar` | Information Expert |
-| Measuring them where they are not shown | a `SubcomposeLayout` measuring `toolbarActions` without placing it (their width is known before they are drawn, instead of `onExtensionsWidth` after) | Indirection |
+| Measuring them | where they are shown, in the bar or in the popover (`onExtensionsWidth`): the width last measured decides, so that they are composed once, never twice | Information Expert |
 
 The extensions keep their API (`toolbarActions` stays a composable): the same composables are shown
 in the popover, so the lecture keeps its time of recording and its state. `EditorExtension` is not
@@ -153,7 +153,7 @@ after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
 |---|---|---|
 | 1. System bars | `ImmersiveSystemBars` in `drawview-ui` (Android, iOS, JVM no-op): the status bar hidden only where it gives room, hidden again on focus; `DocumentLibrary.fullScreenEditor` not used any more, `SystemBarsHidden` removed. Checked on the Pixel 9 emulator (punch hole: status bar kept in portrait, hidden in landscape), on an Android 10 emulator (menu opened and closed), on the iPhone and iPad simulators | done |
 | 2. Bar of the library | `LibraryBarLayout.fit` with its tests; `LibraryAppBar` as a `Layout` with the "more" menu; screenshots of the library at 320, 360, 412, 600, 700, 840 dp recorded | done |
-| 3. Top bar of the editor | `ToolbarLayout.extensionsFit` with its tests; the extensions measured before they are drawn, in the bar or behind one button; screenshots of the editor with three extensions at 320, 360, 412 dp | proposed |
+| 3. Top bar of the editor | `ToolbarLayout.extensionsFit` with its tests; the extensions measured before they are drawn, in the bar or behind one button; screenshots of the editor with three extensions on a phone and a tablet in split screen | done |
 | 4. Tools on a tablet | `ToolbarDensity`; the sizes measured on the tablet of the user first; `ToolbarLayout` counting them; screenshots of the editor on the reference tablets | proposed, waits for the measures of the tablet |
 
 ### Phase 1 results
@@ -180,6 +180,22 @@ after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
   narrower and every button; at 840 dp everything. The brand is whole in all of them.
 * The Pixel 9 emulator (412 dp): PencilNotes whole, the Trash, joining a shared note and "more".
 * The other screenshots of the library are unchanged (`verifyRoborazziJvm`).
+
+### Phase 3 results
+
+* `ToolbarLayout.extensionsFit` (`ToolbarLayoutTest`): on a phone (411 dp) back, "more" and three
+  actions leave the title less than `TitleMinWidth`, two actions fit; a tablet in split screen
+  keeps three with the page grid.
+* `DrawScreen` decides with the width of the actions last measured: in the bar, or behind one
+  button ("Actions", `Zap`) whose popover holds them; once one is tapped the popover closes (the
+  dialogs and the panels they open are kept by their extensions, in the overlay of the canvas).
+  Where they are behind the button the page grid may come back to the bar.
+* The actions are not measured in a `SubcomposeLayout`, as first designed: they would be composed
+  twice (two lectures recording, two states).
+* A new string, `editor_action_extensions`, in the seven languages; the ABI of `drawview-ui`
+  updated for its generated accessor.
+* `AdaptiveScreenshotTest.editorExtensions` and `editorExtensionsMenu` recorded; the other
+  screenshots of `drawview-ui`, `-explorer`, `-sync-ui`, `-lecture-ui` and `-export-ui` unchanged.
 
 ## Decisions
 

@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.ui.adaptive.ReferenceWindow
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
 import io.github.valerioisufi.drawview.ui.extension.EditorPanel
+import io.github.valerioisufi.drawview.ui.screen.EditorActionButton
+import io.github.valerioisufi.drawview.ui.theme.DrawViewIcons
 import java.util.Locale
 import java.util.TimeZone
 import kotlin.test.BeforeTest
@@ -84,6 +86,22 @@ class AdaptiveScreenshotTest {
     fun editorMoreMenu() = capture("editor-more-menu", ReferenceWindow.PHONE, dark = false) { viewModels ->
         openNote(viewModels)
         onNodeWithContentDescription("More options").performClick()
+    }
+
+    /**
+     * Three actions of extensions (the lecture, the sharing, the export): beside the title where
+     * they leave it room, behind one button on a phone.
+     */
+    @Test
+    fun editorExtensions() = listOf(ReferenceWindow.PHONE, ReferenceWindow.TABLET_SPLIT_SCREEN).forEach { window ->
+        capture("editor-extensions", window, dark = false, extension = actionsExtension()) { viewModels -> openNote(viewModels) }
+    }
+
+    /** The actions of the extensions on a phone, shown by their button. */
+    @Test
+    fun editorExtensionsMenu() = capture("editor-extensions-menu", ReferenceWindow.PHONE, dark = false, extension = actionsExtension()) { viewModels ->
+        openNote(viewModels)
+        onNodeWithContentDescription("Actions").performClick()
     }
 
     /** A panel of an extension, placed by the editor: beside the canvas where it keeps room enough, else from the bottom. */
@@ -201,6 +219,15 @@ class AdaptiveScreenshotTest {
         runOnIdle { viewModels.library().showSection(FileExplorerViewModel.Section.TRASH) }
         waitForIdle()
     }
+
+    /** An extension with three actions in the top bar, as those of PencilNotes. */
+    private fun actionsExtension() = EditorExtension(
+        toolbarActions = {
+            EditorActionButton(DrawViewIcons.Sparkles, "Lecture", onClick = {})
+            EditorActionButton(DrawViewIcons.UserPlus, "Share", onClick = {})
+            EditorActionButton(DrawViewIcons.Share, "Export", onClick = {})
+        }
+    )
 
     /** An extension with a panel named after each of [titles], open, listing a few notes. */
     private fun panelsExtension(vararg titles: String) = EditorExtension(

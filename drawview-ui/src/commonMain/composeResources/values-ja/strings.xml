@@ -15,6 +15,7 @@
     <string name="draw_toolbar_action_grid_view">グリッド表示</string>
     <string name="draw_toolbar_action_draw">描画</string>
     <string name="common_action_more_options">その他のオプション</string>
+    <string name="editor_action_extensions">アクション</string>
     <string name="common_action_undo">元に戻す</string>
     <string name="common_action_redo">やり直す</string>
     <string name="common_label_color">色</string>

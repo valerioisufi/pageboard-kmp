@@ -15,6 +15,7 @@
     <string name="draw_toolbar_action_grid_view">그리드 뷰</string>
     <string name="draw_toolbar_action_draw">그리기</string>
     <string name="common_action_more_options">옵션 더보기</string>
+    <string name="editor_action_extensions">작업</string>
     <string name="common_action_undo">실행 취소</string>
     <string name="common_action_redo">다시 실행</string>
     <string name="common_label_color">색상</string>

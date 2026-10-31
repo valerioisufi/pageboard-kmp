@@ -263,10 +263,16 @@ private fun DrawScreenContent(
                 val toolCount = 2 + 6 + (if (textMarkupShown) 1 else 0) + 1 + pdfTools
                 // The top bar starts after the controls of the window (the traffic lights of macOS)
                 val decorWidth = LocalWindowDecorInsets.current.calculateStartPadding(LocalLayoutDirection.current)
-                val arrangement = ToolbarLayout.arrange(maxWidth, window.heightClass, button, extensionsWidth, toolCount, groups = 3, decorWidth)
-                val showPageGrid = arrangement != ToolbarArrangement.FLOATING_TOOLS || ToolbarLayout.pageGridFits(maxWidth, button, extensionsWidth, decorWidth)
-                val toolsMaxWidth = (maxWidth - ToolbarLayout.topWidth(button, extensionsWidth, decorWidth = decorWidth)).coerceAtLeast(0.dp)
-                val titleMaxWidth = ToolbarLayout.titleMaxWidth(maxWidth, button, extensionsWidth, toolCount, groups = 3, decorWidth)
+                // The actions of the extensions behind one button where they leave the title too
+                // little room (a phone: back and "more" beside them; else the page grid too)
+                val floating = ToolbarLayout.arrange(maxWidth, window.heightClass, button, 0.dp, toolCount, groups = 3, decorWidth) == ToolbarArrangement.FLOATING_TOOLS
+                val extensionsInBar = extensionsWidth == 0.dp ||
+                    ToolbarLayout.extensionsFit(maxWidth, button, extensionsWidth, buttons = if (floating) 2 else 3, decorWidth)
+                val barExtensionsWidth = if (extensionsInBar) extensionsWidth else button
+                val arrangement = ToolbarLayout.arrange(maxWidth, window.heightClass, button, barExtensionsWidth, toolCount, groups = 3, decorWidth)
+                val showPageGrid = arrangement != ToolbarArrangement.FLOATING_TOOLS || ToolbarLayout.pageGridFits(maxWidth, button, barExtensionsWidth, decorWidth)
+                val toolsMaxWidth = (maxWidth - ToolbarLayout.topWidth(button, barExtensionsWidth, decorWidth = decorWidth)).coerceAtLeast(0.dp)
+                val titleMaxWidth = ToolbarLayout.titleMaxWidth(maxWidth, button, barExtensionsWidth, toolCount, groups = 3, decorWidth)
 
                 Column(modifier = Modifier.fillMaxSize()) {
                     Column(
@@ -286,6 +292,7 @@ private fun DrawScreenContent(
                                 titleMaxWidth = titleMaxWidth,
                                 toolbarActions = toolbarActions,
                                 onExtensionsWidth = { extensionsWidth = it },
+                                extensionsInBar = extensionsInBar,
                                 location = location,
                                 readOnlyNote = readOnlyNote
                             )

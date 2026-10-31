@@ -76,4 +76,14 @@ class ToolbarLayoutTest {
         assertTrue(ToolbarLayout.pageGridFits(ReferenceWindow.PHONE.width, button, extensionsWidth = 0.dp))
         assertFalse(ToolbarLayout.pageGridFits(ReferenceWindow.PHONE.width, button, extensionsWidth = button * 3))
     }
+
+    @Test
+    fun theActionsOfTheExtensionsLeaveTheTitleItsRoom() {
+        val button = 48.dp
+        // A phone: back and "more" beside three actions leave the title too little room
+        assertFalse(ToolbarLayout.extensionsFit(ReferenceWindow.PHONE.width, button, button * 3, buttons = 2))
+        assertTrue(ToolbarLayout.extensionsFit(ReferenceWindow.PHONE.width, button, button * 2, buttons = 2))
+        // A tablet in split screen keeps them, with the page grid
+        assertTrue(ToolbarLayout.extensionsFit(ReferenceWindow.TABLET_SPLIT_SCREEN.width, button, button * 3, buttons = 3))
+    }
 }

@@ -16,6 +16,7 @@
     <string name="draw_toolbar_action_grid_view">Grid View</string>
     <string name="draw_toolbar_action_draw">Draw</string>
     <string name="common_action_more_options">More options</string>
+    <string name="editor_action_extensions">Actions</string>
     <string name="common_action_undo">Undo</string>
     <string name="common_action_redo">Redo</string>
     <string name="common_label_color">Color</string>
