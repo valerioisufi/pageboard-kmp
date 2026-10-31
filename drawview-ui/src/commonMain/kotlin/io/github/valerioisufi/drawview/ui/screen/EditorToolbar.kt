@@ -219,6 +219,7 @@ internal object ToolbarLayout {
  *   button that shows them in a popover.
  * @param onExtensionsWidth the width the actions of the extensions take, measured.
  * @param readOnlyNote why the document may only be read, beside "Read only" where the tools would be.
+ * @param renamer renames the document from its title (none: the title is not changed there).
  */
 @Composable
 internal fun EditorTopBar(
@@ -233,7 +234,8 @@ internal fun EditorTopBar(
     onExtensionsWidth: (Dp) -> Unit,
     extensionsInBar: Boolean = true,
     location: String? = null,
-    readOnlyNote: @Composable () -> String? = { null }
+    readOnlyNote: @Composable () -> String? = { null },
+    renamer: DocumentRenamer? = null
 ) {
     val density = LocalDensity.current
     val compact = arrangement == ToolbarArrangement.FLOATING_TOOLS
@@ -263,6 +265,8 @@ internal fun EditorTopBar(
             document = if (isLoading) null else controller.document,
             subtitle = subtitle,
             location = location,
+            renamer = renamer.takeIf { !controller.isReadOnly },
+            renameRequests = commands.renameRequests,
             modifier = when {
                 toolsInBar -> Modifier.widthIn(max = titleMaxWidth)
                 readOnlyInBar -> Modifier.widthIn(max = ToolbarLayout.TitleMaxWidth)
@@ -294,7 +298,7 @@ internal fun EditorTopBar(
             ExtensionsButton(toolbarActions, onExtensionsWidth)
         }
 
-        MoreMenu(commands, arrangement, showPageGrid)
+        MoreMenu(commands, arrangement, showPageGrid, renamable = renamer != null && !controller.isReadOnly)
     }
 }
 
@@ -434,10 +438,11 @@ private fun ToolDivider() {
 
 /**
  * The "more" button and its menu: the commands left out of the bars (the page grid, the imports
- * under floating tools), the view, the document, the drawing mode and about.
+ * under floating tools), the view, the document (its name when [renamable]), the drawing mode and
+ * about.
  */
 @Composable
-private fun MoreMenu(commands: EditorCommands, arrangement: ToolbarArrangement, showPageGrid: Boolean) {
+private fun MoreMenu(commands: EditorCommands, arrangement: ToolbarArrangement, showPageGrid: Boolean, renamable: Boolean) {
     var expanded by remember { mutableStateOf(false) }
     val floating = arrangement == ToolbarArrangement.FLOATING_TOOLS
     Box {
@@ -451,7 +456,7 @@ private fun MoreMenu(commands: EditorCommands, arrangement: ToolbarArrangement, 
             sections = listOf(
                 listOfNotNull(commands.pageGrid.takeIf { !showPageGrid }, commands.addPage) +
                     (if (floating) listOf(commands.importPdf, commands.importImage, commands.importText) else emptyList()),
-                listOf(commands.fitWidth, commands.stylusOnly, commands.snapping, commands.shapes, commands.documentBackground, commands.drawingMode),
+                listOfNotNull(commands.rename.takeIf { renamable }, commands.fitWidth, commands.stylusOnly, commands.snapping, commands.shapes, commands.documentBackground, commands.drawingMode),
                 listOf(commands.about)
             ),
             expanded = expanded,

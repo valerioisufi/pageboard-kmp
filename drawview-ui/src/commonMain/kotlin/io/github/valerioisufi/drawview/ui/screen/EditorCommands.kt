@@ -42,6 +42,7 @@ import io.github.valerioisufi.drawview.ui.generated.resources.command_fit_width
 import io.github.valerioisufi.drawview.ui.generated.resources.command_next_page
 import io.github.valerioisufi.drawview.ui.generated.resources.command_previous_page
 import io.github.valerioisufi.drawview.ui.generated.resources.command_previous_tool
+import io.github.valerioisufi.drawview.ui.generated.resources.command_rename
 import io.github.valerioisufi.drawview.ui.generated.resources.command_send_backward
 import io.github.valerioisufi.drawview.ui.generated.resources.command_send_to_back
 import io.github.valerioisufi.drawview.ui.generated.resources.command_shapes
@@ -99,7 +100,8 @@ internal class EditorScreenActions(
     val importImage: () -> Unit,
     val importText: () -> Unit,
     val editDocumentBackground: () -> Unit,
-    val showAbout: () -> Unit
+    val showAbout: () -> Unit,
+    val canRename: () -> Boolean = { false }
 )
 
 /**
@@ -118,6 +120,16 @@ internal class EditorCommands internal constructor(
     // ----- File -----
 
     val close = Command("close", label(Res.string.command_close), CommandGroup.FILE, shortcuts = listOf(primary(Key.W))) { actions.close() }
+
+    /** Asks the title of the document to open with its name to change (counted, read by the title). */
+    var renameRequests by mutableIntStateOf(0)
+        private set
+
+    val rename = Command(
+        "rename", label(Res.string.command_rename), CommandGroup.FILE,
+        icon = { rememberVectorPainter(DrawViewIcons.SquarePen) },
+        isEnabled = { writable() && actions.canRename() }
+    ) { renameRequests++ }
 
     // ----- Edit -----
 
@@ -553,7 +565,7 @@ internal class EditorCommands internal constructor(
 
     /** Every command, in the order of the menus. */
     val all: List<Command> = listOf(
-        close,
+        close, rename,
         undo, redo, cut, copy, paste, delete,
         zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, snapping, shapes,
         addPage, importPdf, importImage, importText,
@@ -604,7 +616,8 @@ internal fun rememberEditorCommands(
     onImportImage: () -> Unit,
     onImportText: () -> Unit,
     onEditDocumentBackground: () -> Unit,
-    onShowAbout: () -> Unit
+    onShowAbout: () -> Unit,
+    canRename: Boolean = false
 ): EditorCommands {
     val clipboard = LocalClipboardManager.current
     val close by rememberUpdatedState(onClose)
@@ -613,6 +626,7 @@ internal fun rememberEditorCommands(
     val importText by rememberUpdatedState(onImportText)
     val editDocumentBackground by rememberUpdatedState(onEditDocumentBackground)
     val showAbout by rememberUpdatedState(onShowAbout)
+    val renamable by rememberUpdatedState(canRename)
     return remember(controller, clipboard) {
         EditorCommands(
             controller = controller,
@@ -623,7 +637,8 @@ internal fun rememberEditorCommands(
                 importImage = { importImage() },
                 importText = { importText() },
                 editDocumentBackground = { editDocumentBackground() },
-                showAbout = { showAbout() }
+                showAbout = { showAbout() },
+                canRename = { renamable }
             )
         )
     }

@@ -31,9 +31,6 @@
     <string name="explorer_root_folder">Home</string>
     <string name="explorer_move_empty_state">Nessuna cartella trovata</string>
     <string name="explorer_move_here">Sposta qui</string>
-    <string name="explorer_error_name_empty">Il nome non può essere vuoto</string>
-    <string name="explorer_error_name_invalid_chars">Il nome non può contenere barre (slash)</string>
-    <string name="explorer_error_name_exists">Questo nome esiste già</string>
     <string name="explorer_error_create_failed">Errore durante la creazione</string>
     <string name="explorer_shared">Condiviso con altri dispositivi</string>
     <string name="explorer_action_open">Apri</string>

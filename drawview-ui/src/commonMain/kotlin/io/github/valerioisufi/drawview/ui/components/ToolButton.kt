@@ -129,16 +129,18 @@ internal fun ToolButton(
 
 /**
  * The popover of the settings of a tool, under its button: 300 dp wide, the high container rounded
- * 24 dp, the content with its margins.
+ * 24 dp, the content with its margins. With a text field ([takesText]) it takes the focus where
+ * the others do not (see `popupTakesFocus`).
  */
 @Composable
 internal fun ToolPopover(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     offset: DpOffset = DpOffset(0.dp, 6.dp),
+    takesText: Boolean = false,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val focusable = popupTakesFocus()
+    val focusable = takesText || popupTakesFocus()
     if (expanded && !focusable) UnfocusedPopupGuard(onDismissRequest)
     DropdownMenu(
         modifier = Modifier.width(300.dp).padding(horizontal = 16.dp, vertical = 8.dp),

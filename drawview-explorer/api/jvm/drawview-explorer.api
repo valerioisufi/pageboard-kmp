@@ -158,9 +158,6 @@ public final class io/github/valerioisufi/drawview/explorer/generated/resources/
 	public static final fun getExplorer_empty_shared_body (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_empty_shared_title (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_error_create_failed (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_error_name_empty (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_error_name_exists (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getExplorer_error_name_invalid_chars (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_fab_close_menu (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_fab_item_folder (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_fab_item_note (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -220,12 +217,12 @@ public final class io/github/valerioisufi/drawview/explorer/generated/resources/
 	public static final fun getExplorer_trash_cannot_undo (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_trash_delete_forever (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_trash_delete_forever_title (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-}
-
-public final class io/github/valerioisufi/drawview/explorer/generated/resources/String1_commonMainKt {
 	public static final fun getExplorer_trash_empty (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_trash_empty_state (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_trash_empty_state_body (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+}
+
+public final class io/github/valerioisufi/drawview/explorer/generated/resources/String1_commonMainKt {
 	public static final fun getExplorer_trash_empty_title (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_trash_from (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getExplorer_trash_moved_one (Lio/github/valerioisufi/drawview/explorer/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;

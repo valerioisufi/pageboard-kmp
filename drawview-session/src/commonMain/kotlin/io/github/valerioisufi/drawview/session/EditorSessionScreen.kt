@@ -18,13 +18,15 @@ import androidx.compose.ui.Modifier
 import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveRoot
 import io.github.valerioisufi.drawview.ui.extension.EditorContext
 import io.github.valerioisufi.drawview.ui.extension.EditorExtension
+import io.github.valerioisufi.drawview.ui.screen.DocumentRenamer
 import io.github.valerioisufi.drawview.ui.screen.EditorScreen
 import kotlinx.coroutines.flow.combine
 
 /**
  * The editor of an open document: a progress bar while the document is being loaded, then the
- * [EditorScreen], with the folder of the document under its title. [onClose] is called by the
- * back button of the editor and by the system back.
+ * [EditorScreen], with the folder of the document under its title, renamed there (the devices it is
+ * shared with rename it too). [onClose] is called by the back button of the editor and by the
+ * system back.
  *
  * @param extension content contributed to the editor by the application (top bar actions, panels,
  *   commands, overlays).
@@ -62,5 +64,7 @@ public fun EditorSessionScreen(
             folders.firstOrNull { it.id == folderId }?.name
         }
     }.collectAsState(null)
-    EditorScreen(context, onClose, modifier, location, extension)
+    // Renamed as in the library: by a change of the document, unless its folder has the name
+    val renamer = remember(session) { DocumentRenamer { name -> session.documents.rename(session.documentId, name) } }
+    EditorScreen(context, onClose, modifier, location, extension, renamer)
 }

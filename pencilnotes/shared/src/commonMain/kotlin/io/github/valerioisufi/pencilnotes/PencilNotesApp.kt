@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.drawview.canvas.controller.EditorClipboard
+import io.github.valerioisufi.drawview.canvas.observe
 import io.github.valerioisufi.drawview.canvas.controller.PageTopics
 import io.github.valerioisufi.drawview.canvas.render.DrawViewEngines
 import io.github.valerioisufi.drawview.explorer.DocumentLibrary
@@ -284,8 +285,11 @@ fun PencilNotesDocumentWindow(
             }
         }
         val session = editorViewModel.session
-        LaunchedEffect(session?.controller?.document?.name) {
-            session?.controller?.document?.name?.let(onTitleChange)
+        // The title of the window, renamed with the document (from its title, the library or
+        // another device)
+        val title = session?.controller?.document?.observe { name }?.value
+        LaunchedEffect(title) {
+            title?.let(onTitleChange)
         }
         AdaptiveRoot(modifier = Modifier.fillMaxSize()) {
             CommandRoot(host = commandHost) {

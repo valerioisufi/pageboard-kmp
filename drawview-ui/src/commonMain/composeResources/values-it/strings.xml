@@ -10,6 +10,11 @@
     <string name="document_info_label_format">Formato</string>
     <string name="document_info_label_elements_count">Elementi</string>
     <string name="document_info_value_dimensions">%1$d x %2$d mm</string>
+    <string name="document_info_label_name">Nome</string>
+    <string name="name_error_empty">Il nome non può essere vuoto</string>
+    <string name="name_error_invalid_chars">Il nome non può contenere barre (slash)</string>
+    <string name="name_error_exists">Questo nome esiste già</string>
+    <string name="command_rename">Rinomina…</string>
     <string name="common_button_cancel">Annulla</string>
     <string name="common_action_back">Indietro</string>
     <string name="draw_toolbar_action_grid_view">Vista Griglia</string>

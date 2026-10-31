@@ -115,6 +115,8 @@ import org.jetbrains.compose.resources.stringResource
  *   export), in the bar of its selection.
  * @param location where the document is (its folder), shown under its title.
  * @param readOnlyNote why the document may only be read (e.g. who decides who edits), if known.
+ * @param renamer renames the document from its title and the command "Rename…" (none: the title
+ *   is not changed in the editor).
  *
  * The engines of the controller ([DrawViewController.engines]) are the [LocalDrawViewEngines] of
  * what the editor composes (its panels and overlays included).
@@ -131,13 +133,14 @@ internal fun DrawScreen(
     extraCommands: List<Command> = emptyList(),
     pageGridActions: List<Command> = emptyList(),
     location: String? = null,
-    readOnlyNote: @Composable () -> String? = { null }
+    readOnlyNote: @Composable () -> String? = { null },
+    renamer: DocumentRenamer? = null
 ) {
     // The room of the system bars given to the editor, where it gains some, and kept by the
     // windows opened over it (menus, popovers, dialogs)
     val hiddenBars = immersiveSystemBars()
     CompositionLocalProvider(LocalDrawViewEngines provides controller.engines, LocalHiddenSystemBars provides hiddenBars) {
-        DrawScreenContent(controller, onNavigateBack, modifier, isLoading, toolbarActions, panels, canvasOverlay, extraCommands, pageGridActions, location, readOnlyNote)
+        DrawScreenContent(controller, onNavigateBack, modifier, isLoading, toolbarActions, panels, canvasOverlay, extraCommands, pageGridActions, location, readOnlyNote, renamer)
     }
 }
 
@@ -154,7 +157,8 @@ private fun DrawScreenContent(
     extraCommands: List<Command>,
     pageGridActions: List<Command>,
     location: String?,
-    readOnlyNote: @Composable () -> String?
+    readOnlyNote: @Composable () -> String?,
+    renamer: DocumentRenamer?
 ) {
     // Whether some pages hold PDF pages, as it changes (not at every change of the document)
     val hasPdfPages by controller.document.observe { hasPdfPages() }
@@ -239,9 +243,12 @@ private fun DrawScreenContent(
         onImportImage = imagePicker,
         onImportText = textPicker,
         onEditDocumentBackground = { showDocumentConfigurator = true },
-        onShowAbout = { showAboutDialog = true }
+        onShowAbout = { showAboutDialog = true },
+        canRename = renamer != null
     )
-    RegisterCommands(remember(commands, extraCommands) { commands.all + extraCommands })
+    // "Rename…" only where the document can be renamed
+    val renamable = renamer != null
+    RegisterCommands(remember(commands, extraCommands, renamable) { commands.all.filter { renamable || it !== commands.rename } + extraCommands })
     // The double tap and the squeeze of an Apple Pencil, as the user set them in the system
     PencilInteractionEffect(onAction = commands::perform)
 
@@ -299,7 +306,8 @@ private fun DrawScreenContent(
                                 onExtensionsWidth = { extensionsWidth = it },
                                 extensionsInBar = extensionsInBar,
                                 location = location,
-                                readOnlyNote = readOnlyNote
+                                readOnlyNote = readOnlyNote,
+                                renamer = renamer
                             )
 
                             // The group of the tools in a bar under the top one

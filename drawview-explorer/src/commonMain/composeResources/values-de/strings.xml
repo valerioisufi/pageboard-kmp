@@ -31,9 +31,6 @@
     <string name="explorer_root_folder">Startseite</string>
     <string name="explorer_move_empty_state">Keine Ordner gefunden</string>
     <string name="explorer_move_here">Hierher verschieben</string>
-    <string name="explorer_error_name_empty">Name darf nicht leer sein</string>
-    <string name="explorer_error_name_invalid_chars">Name darf keine Schrägstriche enthalten</string>
-    <string name="explorer_error_name_exists">Dieser Name existiert bereits</string>
     <string name="explorer_error_create_failed">Fehler beim Erstellen</string>
     <string name="explorer_shared">Mit anderen Geräten geteilt</string>
     <string name="explorer_action_open">Öffnen</string>

@@ -10,6 +10,11 @@
     <string name="document_info_label_format">Format</string>
     <string name="document_info_label_elements_count">Elemente</string>
     <string name="document_info_value_dimensions">%1$d x %2$d mm</string>
+    <string name="document_info_label_name">Name</string>
+    <string name="name_error_empty">Name darf nicht leer sein</string>
+    <string name="name_error_invalid_chars">Name darf keine Schrägstriche enthalten</string>
+    <string name="name_error_exists">Dieser Name existiert bereits</string>
+    <string name="command_rename">Umbenennen…</string>
     <string name="common_button_cancel">Abbrechen</string>
     <string name="common_action_back">Zurück</string>
     <string name="draw_toolbar_action_grid_view">Rasteransicht</string>

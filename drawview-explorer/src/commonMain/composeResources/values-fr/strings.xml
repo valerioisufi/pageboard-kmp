@@ -31,9 +31,6 @@
     <string name="explorer_root_folder">Accueil</string>
     <string name="explorer_move_empty_state">Aucun dossier trouvé</string>
     <string name="explorer_move_here">Déplacer ici</string>
-    <string name="explorer_error_name_empty">Le nom ne peut pas être vide</string>
-    <string name="explorer_error_name_invalid_chars">Le nom ne peut pas contenir de barres obliques</string>
-    <string name="explorer_error_name_exists">Ce nom existe déjà</string>
     <string name="explorer_error_create_failed">Erreur lors de la création</string>
     <string name="explorer_shared">Partagé avec d’autres appareils</string>
     <string name="explorer_action_open">Ouvrir</string>

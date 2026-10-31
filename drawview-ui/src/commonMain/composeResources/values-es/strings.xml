@@ -10,6 +10,11 @@
     <string name="document_info_label_format">Formato</string>
     <string name="document_info_label_elements_count">Elementos</string>
     <string name="document_info_value_dimensions">%1$d x %2$d mm</string>
+    <string name="document_info_label_name">Nombre</string>
+    <string name="name_error_empty">El nombre no puede estar vacío</string>
+    <string name="name_error_invalid_chars">El nombre no puede contener barras</string>
+    <string name="name_error_exists">Este nombre ya existe</string>
+    <string name="command_rename">Renombrar…</string>
     <string name="common_button_cancel">Cancelar</string>
     <string name="common_action_back">Atrás</string>
     <string name="draw_toolbar_action_grid_view">Vista de Cuadrícula</string>

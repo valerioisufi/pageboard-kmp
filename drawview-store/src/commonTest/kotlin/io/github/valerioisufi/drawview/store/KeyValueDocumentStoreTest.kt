@@ -195,6 +195,21 @@ class KeyValueDocumentStoreTest {
     }
 
     @Test
+    fun aDocumentOpenInAnEditorIsRenamedInItsSession() = runTest {
+        val store = KeyValueDocumentStore(InMemoryKeyValueStorage(), scope = backgroundScope)
+        val a = store.createDocument("A")
+        store.closeDocument(a.id)
+        val documents = OpenDocuments(store, StandardTestDispatcher(testScheduler), backgroundScope)
+        // The editor keeps the document open: its title renames the session it shows
+        val editor = assertNotNull(documents.open(a.id))
+
+        assertTrue(documents.rename(a.id, "Physics"))
+        assertEquals("Physics", editor.document.title)
+        assertEquals(listOf("Physics"), store.documents.first().map { it.name })
+        documents.close(editor)
+    }
+
+    @Test
     fun renameAndDelete() = runTest {
         val storage = InMemoryKeyValueStorage()
         val store = KeyValueDocumentStore(storage, scope = backgroundScope)

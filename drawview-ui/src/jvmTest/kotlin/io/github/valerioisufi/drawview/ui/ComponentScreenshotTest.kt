@@ -16,7 +16,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.dp
 import io.github.takahirom.roborazzi.captureRoboImage
@@ -39,6 +44,7 @@ import io.github.valerioisufi.drawview.ui.adaptive.AdaptiveSheet
 import io.github.valerioisufi.drawview.ui.command.MenuDivider
 import io.github.valerioisufi.drawview.ui.command.MenuItem
 import io.github.valerioisufi.drawview.ui.command.MenuLabel
+import io.github.valerioisufi.drawview.ui.components.DocumentInfoSelector
 import io.github.valerioisufi.drawview.ui.components.HybridScale
 import io.github.valerioisufi.drawview.ui.components.MarkdownText
 import io.github.valerioisufi.drawview.ui.components.PageTemplateConfigurator
@@ -143,6 +149,30 @@ class ComponentScreenshotTest {
                     onCancel = {}
                 )
             }
+        }
+    }
+
+    /**
+     * The title of the document opened by "Rename…": its name selected in the field, then a name
+     * the library would refuse, with its error.
+     */
+    @Test
+    fun documentRename() = listOf(false, true).forEach { invalid ->
+        runDesktopComposeUiTest(width = 420, height = 560) {
+            val controller = DrawViewController(document = DrawDocument(title = "Lecture 1 — Limits"), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+            var requests by mutableIntStateOf(0)
+            setContent {
+                DrawViewTheme(dynamicColor = false) {
+                    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface).padding(12.dp)) {
+                        DocumentInfoSelector(controller.document, subtitle = "1 page", location = "Analysis", renamer = { true }, renameRequests = requests)
+                    }
+                }
+            }
+            requests++
+            waitForIdle()
+            if (invalid) onNode(hasSetTextAction()).performTextReplacement("Limits/2")
+            waitForIdle()
+            captureToImage().captureRoboImage("screenshots/document-rename${if (invalid) "-error" else ""}.png")
         }
     }
 

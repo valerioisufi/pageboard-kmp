@@ -9,9 +9,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.valerioisufi.drawview.explorer.generated.resources.Res
 import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_create_failed
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_empty
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_exists
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_invalid_chars
 import io.github.valerioisufi.drawview.model.PageBackground
 import io.github.valerioisufi.drawview.store.DocumentStore
 import io.github.valerioisufi.drawview.store.DocumentSummary
@@ -19,6 +16,9 @@ import io.github.valerioisufi.drawview.store.FolderSummary
 import io.github.valerioisufi.drawview.store.OpenDocuments
 import io.github.valerioisufi.drawview.store.TrashedItem
 import io.github.valerioisufi.drawview.ui.extension.DocumentTag
+import io.github.valerioisufi.drawview.ui.generated.resources.Res as DrawViewRes
+import io.github.valerioisufi.drawview.ui.generated.resources.name_error_exists
+import io.github.valerioisufi.drawview.ui.screen.DocumentNames
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 
@@ -360,9 +360,8 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
 
     /** The error of a name for a new item (or for the new name of [renamedFile]), `null` when valid. */
     fun validateFileName(name: String, renamedFile: FileItem? = null): StringResource? {
-        if (name.isBlank()) return Res.string.explorer_error_name_empty
-        if (name.contains("/") || name.contains("\\")) return Res.string.explorer_error_name_invalid_chars
-        if (existNameInDirectory(name, except = renamedFile)) return Res.string.explorer_error_name_exists
+        DocumentNames.syntaxError(name)?.let { return it }
+        if (existNameInDirectory(name, except = renamedFile)) return DrawViewRes.string.name_error_exists
         return null
     }
 
@@ -403,9 +402,8 @@ internal class FileExplorerViewModel(private val openDocuments: OpenDocuments) :
 
     /** The error of [name] for a new note in [folderId] (`null`: the root), `null` when valid. */
     fun validateNoteName(name: String, folderId: String?): StringResource? {
-        if (name.isBlank()) return Res.string.explorer_error_name_empty
-        if (name.contains("/") || name.contains("\\")) return Res.string.explorer_error_name_invalid_chars
-        if (documents.any { it.folderId == folderId && it.name == name }) return Res.string.explorer_error_name_exists
+        DocumentNames.syntaxError(name)?.let { return it }
+        if (documents.any { it.folderId == folderId && it.name == name }) return DrawViewRes.string.name_error_exists
         return null
     }
 

@@ -31,9 +31,6 @@
     <string name="explorer_root_folder">Home</string>
     <string name="explorer_move_empty_state">No folders found</string>
     <string name="explorer_move_here">Move here</string>
-    <string name="explorer_error_name_empty">Name cannot be empty</string>
-    <string name="explorer_error_name_invalid_chars">Name cannot contain slashes</string>
-    <string name="explorer_error_name_exists">This name already exists</string>
     <string name="explorer_error_create_failed">Error during creation</string>
     <string name="explorer_shared">Shared with other devices</string>
     <string name="explorer_action_open">Open</string>

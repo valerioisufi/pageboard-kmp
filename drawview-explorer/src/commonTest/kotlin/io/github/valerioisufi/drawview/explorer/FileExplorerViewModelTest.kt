@@ -3,10 +3,10 @@ package io.github.valerioisufi.drawview.explorer
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileItem
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.FileType
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel.SortOption
-import io.github.valerioisufi.drawview.explorer.generated.resources.Res
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_empty
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_exists
-import io.github.valerioisufi.drawview.explorer.generated.resources.explorer_error_name_invalid_chars
+import io.github.valerioisufi.drawview.ui.generated.resources.Res
+import io.github.valerioisufi.drawview.ui.generated.resources.name_error_empty
+import io.github.valerioisufi.drawview.ui.generated.resources.name_error_exists
+import io.github.valerioisufi.drawview.ui.generated.resources.name_error_invalid_chars
 import io.github.valerioisufi.drawview.store.InMemoryKeyValueStorage
 import io.github.valerioisufi.drawview.store.KeyValueDocumentStore
 import io.github.valerioisufi.drawview.store.OpenDocuments
@@ -80,12 +80,12 @@ class FileExplorerViewModelTest {
         viewModel.createFile(FileType.FOLDER, "Math")
         var error: Any? = null
         viewModel.createFile(FileType.FILE, "Math", onError = { error = it })
-        assertEquals(Res.string.explorer_error_name_exists, error)
+        assertEquals(Res.string.name_error_exists, error)
         assertEquals(listOf("Math"), viewModel.names)
 
-        assertEquals(Res.string.explorer_error_name_empty, viewModel.validateFileName("  "))
-        assertEquals(Res.string.explorer_error_name_invalid_chars, viewModel.validateFileName("a/b"))
-        assertEquals(Res.string.explorer_error_name_invalid_chars, viewModel.validateFileName("a\\b"))
+        assertEquals(Res.string.name_error_empty, viewModel.validateFileName("  "))
+        assertEquals(Res.string.name_error_invalid_chars, viewModel.validateFileName("a/b"))
+        assertEquals(Res.string.name_error_invalid_chars, viewModel.validateFileName("a\\b"))
         assertNull(viewModel.validateFileName("Physics"))
         // An item can keep its own name when renamed
         assertNull(viewModel.validateFileName("Math", renamedFile = viewModel.item("Math")))

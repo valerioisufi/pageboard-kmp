@@ -10,6 +10,11 @@
     <string name="document_info_label_format">フォーマット</string>
     <string name="document_info_label_elements_count">要素数</string>
     <string name="document_info_value_dimensions">%1$d x %2$d mm</string>
+    <string name="document_info_label_name">名前</string>
+    <string name="name_error_empty">名前は空にできません</string>
+    <string name="name_error_invalid_chars">名前にスラッシュは使用できません</string>
+    <string name="name_error_exists">この名前は既に存在します</string>
+    <string name="command_rename">名前を変更…</string>
     <string name="common_button_cancel">キャンセル</string>
     <string name="common_action_back">戻る</string>
     <string name="draw_toolbar_action_grid_view">グリッド表示</string>

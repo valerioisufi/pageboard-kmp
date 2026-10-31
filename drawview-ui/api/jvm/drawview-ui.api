@@ -264,6 +264,12 @@ public final class io/github/valerioisufi/drawview/ui/components/ComposableSingl
 	public final fun getLambda$-1777682932$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
 }
 
+public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$DocumentInfoSelectorKt {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$DocumentInfoSelectorKt;
+	public fun <init> ()V
+	public final fun getLambda$-668621941$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+}
+
 public final class io/github/valerioisufi/drawview/ui/components/ComposableSingletons$FontSizeControlKt {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/components/ComposableSingletons$FontSizeControlKt;
 	public fun <init> ()V
@@ -599,6 +605,7 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getCommand_next_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_previous_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_previous_tool (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getCommand_rename (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_send_backward (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_send_to_back (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getCommand_shapes (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -636,6 +643,7 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getDocument_info_label_elements_count (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDocument_info_label_format (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDocument_info_label_modified_date (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getDocument_info_label_name (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDocument_info_label_pages (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDocument_info_value_dimensions (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getDraw_menu_about_licenses (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -681,11 +689,11 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getImport_text_from_page (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_insert (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_label (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_preview (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getImport_text_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
 public final class io/github/valerioisufi/drawview/ui/generated/resources/String1_commonMainKt {
+	public static final fun getImport_text_preview (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getImport_text_title (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getImport_text_where (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMenu_arrange (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMenu_edit (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -700,6 +708,9 @@ public final class io/github/valerioisufi/drawview/ui/generated/resources/String
 	public static final fun getMessage_pasted_without_missing_files (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMessage_pdf_not_supported (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMessage_pdf_page_without_text (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getName_error_empty (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getName_error_exists (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getName_error_invalid_chars (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getPage_config_bg_dotted (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getPage_config_bg_grid (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getPage_config_bg_ruled (Lio/github/valerioisufi/drawview/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -875,29 +886,39 @@ public final class io/github/valerioisufi/drawview/ui/render/LocalDrawViewEngine
 public final class io/github/valerioisufi/drawview/ui/screen/ComposableSingletons$DrawScreenKt {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/screen/ComposableSingletons$DrawScreenKt;
 	public fun <init> ()V
-	public final fun getLambda$-1086546646$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-109948471$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-988289219$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$1017553060$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$143522869$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$326707451$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$376454529$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$530227584$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$684000639$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-1276533048$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-430213811$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-79465578$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$1098177783$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$1209508106$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$1232389634$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$1704196940$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1730342734$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$426552433$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
 }
 
 public final class io/github/valerioisufi/drawview/ui/screen/ComposableSingletons$EditorToolbarKt {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/screen/ComposableSingletons$EditorToolbarKt;
 	public fun <init> ()V
-	public final fun getLambda$-1063846395$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$1135481116$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-1927006673$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-749618033$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1028665624$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$364959240$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$594827132$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$976313427$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$909128550$DrawView_KMP_drawview_ui ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class io/github/valerioisufi/drawview/ui/screen/DocumentNames {
+	public static final field $stable I
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/ui/screen/DocumentNames;
+	public final fun syntaxError (Ljava/lang/String;)Lorg/jetbrains/compose/resources/StringResource;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/ui/screen/DocumentRenamer {
+	public abstract fun rename (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class io/github/valerioisufi/drawview/ui/screen/EditorScreenKt {
-	public static final fun EditorScreen (Lio/github/valerioisufi/drawview/ui/extension/EditorContext;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;Landroidx/compose/runtime/Composer;II)V
+	public static final fun EditorScreen (Lio/github/valerioisufi/drawview/ui/extension/EditorContext;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Lio/github/valerioisufi/drawview/ui/extension/EditorExtension;Lio/github/valerioisufi/drawview/ui/screen/DocumentRenamer;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class io/github/valerioisufi/drawview/ui/screen/EditorToolbarKt {

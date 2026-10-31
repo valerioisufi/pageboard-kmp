@@ -18,7 +18,8 @@ import io.github.valerioisufi.drawview.ui.extension.EditorExtension
  * panels, commands, overlays): the [DrawScreen], adapted to the window, the input and the
  * platform, its commands in the shortcuts and the menu bar. [onClose] is called by the back
  * button of the editor and by the system back; [location] is shown under the title (e.g. the
- * folder of the document). The editor takes the room of the system bars where it gains some
+ * folder of the document); [renamer] renames the document from its title (none: the title is not
+ * changed in the editor). The editor takes the room of the system bars where it gains some
  * (the status bar stays beside a notch or an island).
  *
  * Whoever keeps the document creates its editor; `EditorSessionScreen` of `drawview-session`
@@ -30,7 +31,8 @@ public fun EditorScreen(
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
     location: String? = null,
-    extension: EditorExtension? = null
+    extension: EditorExtension? = null,
+    renamer: DocumentRenamer? = null
 ) {
     val controller = context.controller
     // The editor adapts to the window, the input and the platform, and its commands reach the
@@ -50,7 +52,8 @@ public fun EditorScreen(
                 canvasOverlay = { extension?.canvasOverlay?.invoke(this, context) },
                 extraCommands = extensionCommands,
                 pageGridActions = extensionPageGridActions,
-                readOnlyNote = { extension?.readOnlyNote?.invoke(context) }
+                readOnlyNote = { extension?.readOnlyNote?.invoke(context) },
+                renamer = renamer
             )
         }
     }
