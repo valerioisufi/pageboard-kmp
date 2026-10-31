@@ -171,7 +171,7 @@ joined with a line break (`\n`), or without one for a box marked `continuesLine`
 | 1 | Lists, structure and look: continuation lines in the parser; `ListNumbering` (ordinals by position, `1.` / `a.` / `i.`, bullets by depth); labels in a column, numbers right-aligned, nested items at the text of their parent; tests of the parser and the numbering, screenshots of nested lists | done |
 | 2 | Lists, editing: Shift+Enter a line in the item, Enter on a continuation line, Backspace joining, the toggles and Tab on items with continuation lines; tests of `RichTextEditing` and of the field | done |
 | 3 | Backgrounds, stored: `DrawText.background`, `TextData`, Room 23 with its migration test, the operations log, the sync (the format test re-recorded, protocol to agree), the bounds with the margin | done |
-| 4 | Backgrounds, drawn and chosen: tiles, field, PDF export; the command, the palette in the format bar and the selection bar, the Format menu; screenshots | pending |
+| 4 | Backgrounds, drawn and chosen: tiles, field, PDF export; the palette in the format bar and the selection bar; screenshots | done |
 | 5 | Tables, notation and drawing: `Kind.TABLE`, `TableLayout` on the canvas, in the field (caret out of it) and in the export; `TextFlow` keeping tables; tests and screenshots | pending |
 | 6 | Tables, editing: `TableEditing`, `TableCellEditor` (cells, Tab, Enter, arrows, taps), the insert command with its size picker, the table bar, the Format menu and shortcuts; tests and screenshots | pending |
 | 7 | Chains, stored: `DrawText.next`, `continuesLine`, Room 24 with its migration test, the sync (format test, protocol), `TextChains` with untrusted links (cycles, missing boxes) | pending |
@@ -228,6 +228,22 @@ above goes from what needs no stored change to what needs the most.
   texts without a fill and fails on one with a fill.
 * `TextFormatTarget.takesBackground`, `background`, `changeBackground` (the editor: its draft and
   the presence carry the fill; the selection: one `UpdateTexts`), tested in `TextEditingTest`.
+
+### Phase 4
+
+* Drawn under the lines, rounded: on the tiles (`ComposeTextTileAdapter.drawRichText`), as the
+  first background of the layout given to the PDF export (`layout`), under the field of the
+  editor (`TextBoxEditor`); the drafts of the other devices carry it (`applyTo`).
+* `TextBackgroundButton` (`TextStyleControls`): a box showing the fill, its popover with none, the
+  seven tints and the color wheel; in the bar of the editor and of the selection, not in the
+  settings of the tool (`takesBackground`). Strings in the seven languages.
+* The floating bar of the editor keeps its button closing the editor in sight, its controls
+  scrolling, and a gap on each side (it went out of a tablet held upright, already before this
+  phase, more so with one button more).
+* Tests: the fill in the layout of the export (`ComposeTextTileAdapterTest`); screenshots
+  `text-backgrounds` (desktop, phone, tablet), the bars of the editor and of the selection
+  recorded again.
+* No Format menu entry: a fill is a color to pick, as the color of the text, which has none.
 
 ## Decisions
 

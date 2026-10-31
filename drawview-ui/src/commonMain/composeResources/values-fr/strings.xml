@@ -95,6 +95,8 @@
     <string name="draw_toolbar_title_text_settings">Paramètres du texte</string>
     <string name="draw_toolbar_label_font_size">Taille de police</string>
     <string name="draw_toolbar_label_text_color">Couleur du texte</string>
+    <string name="text_background">Arrière-plan</string>
+    <string name="text_background_none">Aucun arrière-plan</string>
     <string name="draw_toolbar_action_edit_text">Modifier le texte</string>
     <string name="draw_toolbar_action_decrease_font_size">Réduire la taille de police</string>
     <string name="draw_toolbar_action_increase_font_size">Augmenter la taille de police</string>

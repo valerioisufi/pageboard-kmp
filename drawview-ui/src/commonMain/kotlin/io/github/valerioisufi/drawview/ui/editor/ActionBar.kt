@@ -31,10 +31,11 @@ import io.github.valerioisufi.drawview.ui.theme.elevation
 
 /**
  * A bar floating over the canvas (the formatting of a text, the selection, the text of the PDFs):
- * the high container rounded 24 dp, level 2, its actions in a row scrolled when they do not fit.
+ * the high container rounded 24 dp, level 2, its actions in a row scrolled when they do not fit
+ * (unless [scrolls] is `false`: the content scrolls a part of its own, see [TextFormatBar]).
  */
 @Composable
-internal fun ActionBar(modifier: Modifier = Modifier, height: Int = 48, content: @Composable RowScope.() -> Unit) {
+internal fun ActionBar(modifier: Modifier = Modifier, height: Int = 48, scrolls: Boolean = true, content: @Composable RowScope.() -> Unit) {
     val shape = RoundedCornerShape((height / 2).dp)
     Row(
         modifier = modifier
@@ -42,7 +43,7 @@ internal fun ActionBar(modifier: Modifier = Modifier, height: Int = 48, content:
             .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             .height(height.dp)
-            .horizontalScroll(rememberScrollState())
+            .then(if (scrolls) Modifier.horizontalScroll(rememberScrollState()) else Modifier)
             .padding(horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(2.dp),

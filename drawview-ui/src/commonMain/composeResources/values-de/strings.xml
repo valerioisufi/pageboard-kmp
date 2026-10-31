@@ -95,6 +95,8 @@
     <string name="draw_toolbar_title_text_settings">Textwerkzeug-Einstellungen</string>
     <string name="draw_toolbar_label_font_size">Schriftgröße</string>
     <string name="draw_toolbar_label_text_color">Textfarbe</string>
+    <string name="text_background">Hintergrund</string>
+    <string name="text_background_none">Kein Hintergrund</string>
     <string name="draw_toolbar_action_edit_text">Text bearbeiten</string>
     <string name="draw_toolbar_action_decrease_font_size">Schrift verkleinern</string>
     <string name="draw_toolbar_action_increase_font_size">Schrift vergrößern</string>

@@ -30,6 +30,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.canvas.controller.TextFormatTarget
 import io.github.valerioisufi.drawview.model.TextAlignment
+import io.github.valerioisufi.drawview.model.text.TextBackground
 import io.github.valerioisufi.drawview.ui.command.Command
 import io.github.valerioisufi.drawview.ui.command.CommandTooltip
 import io.github.valerioisufi.drawview.ui.components.ColorSwatches
@@ -38,6 +39,8 @@ import io.github.valerioisufi.drawview.ui.components.TextColorPickerDialog
 import io.github.valerioisufi.drawview.ui.components.ToolPopover
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.draw_toolbar_label_text_color
+import io.github.valerioisufi.drawview.ui.generated.resources.text_background
+import io.github.valerioisufi.drawview.ui.generated.resources.text_background_none
 import io.github.valerioisufi.drawview.ui.generated.resources.text_align_center
 import io.github.valerioisufi.drawview.ui.generated.resources.text_align_end
 import io.github.valerioisufi.drawview.ui.generated.resources.text_align_start
@@ -49,7 +52,7 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * The style of the texts of [target] (the text being written, the texts selected, the defaults of
- * the tool): size, color, alignment. The same controls in the formatting bar of the editor and in
+ * the tool): size, color, fill of the box (not for the defaults), alignment. The same controls in the formatting bar of the editor and in
  * the bar of the selection.
  *
  * @param commands the commands of the editor, whose tooltips the buttons show (none for the
@@ -59,7 +62,82 @@ import org.jetbrains.compose.resources.stringResource
 internal fun RowScope.TextStyleControls(target: TextFormatTarget, commands: EditorCommands?) {
     FontSizeControl(fontSizePt = target.fontSize, onFontSizeChange = target::changeFontSize)
     TextColorButton(target)
+    if (target.takesBackground) TextBackgroundButton(target)
     TextAlignmentButtons(target, commands)
+}
+
+/**
+ * The fill of the boxes of [target] (see [TextBackground]): a box showing it, opening the tints,
+ * none and the color wheel.
+ */
+@Composable
+internal fun TextBackgroundButton(target: TextFormatTarget) {
+    var paletteOpen by remember { mutableStateOf(false) }
+    var wheelOpen by remember { mutableStateOf(false) }
+    val fill = target.background?.let { Color(it) }
+    val label = stringResource(Res.string.text_background)
+    val none = stringResource(Res.string.text_background_none)
+    Box {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .clickable(onClickLabel = label) { paletteOpen = true }
+                .semantics { contentDescription = label }
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(width = 26.dp, height = 20.dp)
+                    .clip(RoundedCornerShape(5.dp))
+                    .background(fill ?: Color.Transparent)
+                    .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(5.dp))
+            ) {
+                if (fill == null) {
+                    Icon(DrawViewIcons.SquareDashed, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(14.dp))
+                }
+            }
+        }
+        ToolPopover(expanded = paletteOpen, onDismissRequest = { paletteOpen = false }) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // None: a box crossed out
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(CircleShape)
+                        .then(if (fill == null) Modifier.border(2.5.dp, MaterialTheme.colorScheme.primary, CircleShape) else Modifier)
+                        .clickable(role = Role.RadioButton) {
+                            target.changeBackground(null)
+                            paletteOpen = false
+                        }
+                        .semantics { contentDescription = none }
+                ) {
+                    Icon(DrawViewIcons.CircleX, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                }
+                ColorSwatches(
+                    colors = TextBackground.TINTS.map { Color(it) },
+                    selected = fill ?: Color.Transparent,
+                    onSelect = {
+                        target.changeBackground(it.toArgb())
+                        paletteOpen = false
+                    },
+                    onCustom = {
+                        paletteOpen = false
+                        wheelOpen = true
+                    }
+                )
+            }
+        }
+    }
+    if (wheelOpen) {
+        TextColorPickerDialog(
+            initialColor = fill ?: Color(TextBackground.TINTS.first()),
+            onDismissRequest = { wheelOpen = false },
+            onColorConfirmed = { target.changeBackground(it.toArgb()) }
+        )
+    }
 }
 
 /** The color of the texts of [target]: a swatch opening the palette and the color wheel. */

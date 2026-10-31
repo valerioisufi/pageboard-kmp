@@ -44,6 +44,8 @@
     <string name="draw_toolbar_title_text_settings">Text Tool Settings</string>
     <string name="draw_toolbar_label_font_size">Font Size</string>
     <string name="draw_toolbar_label_text_color">Text Color</string>
+    <string name="text_background">Background</string>
+    <string name="text_background_none">No background</string>
     <string name="draw_toolbar_action_edit_text">Edit Text</string>
     <string name="draw_toolbar_action_decrease_font_size">Decrease font size</string>
     <string name="draw_toolbar_action_increase_font_size">Increase font size</string>

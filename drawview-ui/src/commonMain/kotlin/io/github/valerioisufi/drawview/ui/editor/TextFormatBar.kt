@@ -30,8 +30,8 @@ import org.jetbrains.compose.resources.stringResource
  * [TextStyleControls]) and the button closing the editor ([onDone]). The buttons run the
  * [commands] of the editor, whose tooltips they show.
  *
- * @param docked a bar on the whole width above the keyboard (a phone), the button closing the
- *   editor always in sight; else a pill floating by the text.
+ * @param docked a bar on the whole width above the keyboard (a phone); else a pill floating by the
+ *   text. In both the button closing the editor is always in sight.
  */
 @Composable
 internal fun TextFormatBar(
@@ -74,8 +74,14 @@ internal fun TextFormatBar(
             }
         }
     } else {
-        ActionBar(modifier = modifier) {
-            controls()
+        // The button closing the editor always in sight: the controls scroll when the bar is too narrow
+        ActionBar(modifier = modifier, scrolls = false) {
+            Row(
+                modifier = Modifier.weight(1f, fill = false).horizontalScroll(rememberScrollState()),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                content = controls
+            )
             if (onDone != null) {
                 BarDivider()
                 DoneAction(stringResource(Res.string.text_editor_action_save), onDone, DrawViewIcons.Check)

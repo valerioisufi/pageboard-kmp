@@ -95,6 +95,8 @@
     <string name="draw_toolbar_title_text_settings">Ajustes de texto</string>
     <string name="draw_toolbar_label_font_size">Tamaño de fuente</string>
     <string name="draw_toolbar_label_text_color">Color del texto</string>
+    <string name="text_background">Fondo</string>
+    <string name="text_background_none">Sin fondo</string>
     <string name="draw_toolbar_action_edit_text">Editar texto</string>
     <string name="draw_toolbar_action_decrease_font_size">Reducir tamaño de fuente</string>
     <string name="draw_toolbar_action_increase_font_size">Aumentar tamaño de fuente</string>

@@ -95,6 +95,8 @@
     <string name="draw_toolbar_title_text_settings">テキスト設定</string>
     <string name="draw_toolbar_label_font_size">フォントサイズ</string>
     <string name="draw_toolbar_label_text_color">文字色</string>
+    <string name="text_background">背景</string>
+    <string name="text_background_none">背景なし</string>
     <string name="draw_toolbar_action_edit_text">テキストを編集</string>
     <string name="draw_toolbar_action_decrease_font_size">フォントを小さく</string>
     <string name="draw_toolbar_action_increase_font_size">フォントを大きく</string>

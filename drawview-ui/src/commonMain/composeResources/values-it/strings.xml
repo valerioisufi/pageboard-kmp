@@ -43,6 +43,8 @@
     <string name="draw_toolbar_title_text_settings">Impostazioni Testo</string>
     <string name="draw_toolbar_label_font_size">Dimensione Font</string>
     <string name="draw_toolbar_label_text_color">Colore Testo</string>
+    <string name="text_background">Sfondo</string>
+    <string name="text_background_none">Nessuno sfondo</string>
     <string name="draw_toolbar_action_edit_text">Modifica Testo</string>
     <string name="draw_toolbar_action_decrease_font_size">Riduci dimensione font</string>
     <string name="draw_toolbar_action_increase_font_size">Aumenta dimensione font</string>

@@ -95,6 +95,8 @@
     <string name="draw_toolbar_title_text_settings">텍스트 설정</string>
     <string name="draw_toolbar_label_font_size">글꼴 크기</string>
     <string name="draw_toolbar_label_text_color">텍스트 색상</string>
+    <string name="text_background">배경</string>
+    <string name="text_background_none">배경 없음</string>
     <string name="draw_toolbar_action_edit_text">텍스트 편집</string>
     <string name="draw_toolbar_action_decrease_font_size">글꼴 크기 줄이기</string>
     <string name="draw_toolbar_action_increase_font_size">글꼴 크기 늘리기</string>

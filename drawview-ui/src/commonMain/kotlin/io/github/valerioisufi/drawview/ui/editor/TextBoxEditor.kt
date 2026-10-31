@@ -64,6 +64,7 @@ import io.github.valerioisufi.drawview.canvas.controller.DrawViewController
 import io.github.valerioisufi.drawview.canvas.observe
 import io.github.valerioisufi.drawview.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.drawview.model.geometry.Point
+import io.github.valerioisufi.drawview.model.text.TextBackground
 import io.github.valerioisufi.drawview.model.text.TextSizes.PT_TO_MM
 import io.github.valerioisufi.drawview.ui.generated.resources.Res
 import io.github.valerioisufi.drawview.ui.generated.resources.text_editor_formula_invalid
@@ -235,6 +236,17 @@ internal fun TextBoxEditor(controller: DrawViewController, onLayout: (TextLayout
                 }
                 .drawWithContent {
                     val current = layout?.takeIf { it.layoutInput.text.text == shown.text.text }
+                    // Under everything: the fill of the box, around it as on the page (see TextBackground)
+                    editor.background?.let { fill ->
+                        val outset = TextBackground.outsetMm(editor.fontSize) * scale
+                        val radius = TextBackground.radiusMm(editor.fontSize) * scale
+                        drawRoundRect(
+                            Color(fill),
+                            topLeft = Offset(-outset, -outset),
+                            size = Size(size.width + 2 * outset, size.height + 2 * outset),
+                            cornerRadius = CornerRadius(radius)
+                        )
+                    }
                     // Under the text: the backgrounds of the code in the line and of the block of the caret
                     if (current != null) {
                         val radius = CornerRadius(CodeBlockLayout.cornerRadius(fontSizePx))

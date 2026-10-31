@@ -16,6 +16,7 @@ import io.github.valerioisufi.drawview.canvas.tool.Tool
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.change.TextPlacement
 import io.github.valerioisufi.drawview.model.change.PlaceElements
+import io.github.valerioisufi.drawview.model.text.TextBackground
 import io.github.valerioisufi.drawview.ui.adaptive.ReferenceWindow
 import java.util.Locale
 import java.util.TimeZone
@@ -149,6 +150,23 @@ class TextScreenshotTest {
         waitForIdle()
         runOnIdle {
             assertEquals("- Limits\n  the same item, on a line of its own\n- Continuity", viewModels.controller().textEditorManager.value.text)
+        }
+    }
+
+    /**
+     * Boxes with a fill: one saved on the page, one being written (its fill drawn by the editor,
+     * the fill button in the bar), their lines where they would be without it.
+     */
+    @Test
+    fun textBackgrounds() = WINDOWS.forEach { window ->
+        capture("text-backgrounds", window, dark = false) { viewModels ->
+            openNote(viewModels)
+            write(viewModels, 20f, 20f, "**Definition.** A function is continuous at \$a\$ when\n\$\$\\lim_{x \\to a} f(x) = f(a)\$\$", drawnWidthMm = 110f)
+            runOnIdle { viewModels.controller().textEditorManager.changeBackground(TextBackground.TINTS[2]) }
+            save(viewModels)
+            write(viewModels, 20f, 70f, "- a note in yellow\n- written now")
+            runOnIdle { viewModels.controller().textEditorManager.changeBackground(TextBackground.TINTS[0]) }
+            waitForIdle()
         }
     }
 

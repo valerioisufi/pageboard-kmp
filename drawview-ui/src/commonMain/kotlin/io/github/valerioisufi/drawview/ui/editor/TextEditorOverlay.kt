@@ -120,7 +120,9 @@ private fun TextEditorSession(controller: DrawViewController, commands: EditorCo
  * it when there is no room above; always inside the canvas.
  */
 private fun Modifier.besideEditedText(controller: DrawViewController): Modifier = layout { measurable, constraints ->
-    val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
+    // At most the width of the canvas less a gap on each side
+    val narrowest = if (constraints.hasBoundedWidth) (constraints.maxWidth - 2 * BAR_GAP.roundToPx()).coerceAtLeast(0) else constraints.maxWidth
+    val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0, maxWidth = narrowest))
     val width = if (constraints.hasBoundedWidth) constraints.maxWidth else placeable.width
     val height = if (constraints.hasBoundedHeight) constraints.maxHeight else placeable.height
     layout(width, height) {

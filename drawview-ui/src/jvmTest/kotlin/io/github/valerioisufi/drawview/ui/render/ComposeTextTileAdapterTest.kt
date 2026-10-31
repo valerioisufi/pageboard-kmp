@@ -94,6 +94,20 @@ class ComposeTextTileAdapterTest {
         assertTrue(laterLineWords.first().left > 0f, "Hanging indent indents wrapped lines")
     }
 
+    @Test
+    fun theFillOfABoxIsItsFirstBackgroundAroundIt() {
+        val filled = text("Filled", width = 40f).apply { background = 0xFFD7E8FA.toInt() }
+        val layout = assertNotNull(adapter.layout(filled, TextTileAdapter.NO_PAPER))
+        val fill = layout.boxes.first()
+        val outset = io.github.valerioisufi.drawview.model.text.TextBackground.outsetMm(filled.fontSize)
+        assertEquals(0xFFD7E8FA.toInt(), fill.color)
+        assertEquals(-outset, fill.left, 0.01f)
+        assertEquals(-outset, fill.top, 0.01f)
+        assertEquals(40f + 2 * outset, fill.width, 0.05f)
+        assertEquals(layout.height + 2 * outset, fill.height, 0.05f)
+        assertTrue(assertNotNull(adapter.layout(text("Plain"), TextTileAdapter.NO_PAPER)).boxes.isEmpty(), "no fill, no background")
+    }
+
     /** The words of [text] that are not spaces, with their text trimmed. */
     private fun words(text: DrawText) = assertNotNull(adapter.layout(text, TextTileAdapter.NO_PAPER)).words.filter { it.text.isNotBlank() }
 

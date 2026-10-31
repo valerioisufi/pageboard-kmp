@@ -38,6 +38,7 @@ import io.github.valerioisufi.drawview.canvas.render.tile.TextWord
 import io.github.valerioisufi.drawview.model.DrawText
 import io.github.valerioisufi.drawview.model.TextAlignment
 import io.github.valerioisufi.drawview.model.geometry.Matrix2D
+import io.github.valerioisufi.drawview.model.text.TextBackground
 import io.github.valerioisufi.drawview.model.text.TextRoom
 import io.github.valerioisufi.drawview.model.text.TextSizes.PT_TO_MM
 import io.github.valerioisufi.drawview.model.text.code.BuiltInCodeHighlighter
@@ -96,6 +97,7 @@ public class ComposeTextTileAdapter(
         filterQuality = FilterQuality.Medium
     }
     private val chipPaint = Paint().apply { isAntiAlias = true }
+    private val fillPaint = Paint().apply { isAntiAlias = true }
 
     private data class LayoutKey(
         val textId: String,
@@ -209,6 +211,11 @@ public class ComposeTextTileAdapter(
             val layout = prepared.layout
             val words = mutableListOf<TextWord>()
             val boxes = mutableListOf<TextBox>()
+            // The fill first, under the rest
+            text.background?.let { fill ->
+                boxes += fillRect(text, layout.size.width.toFloat(), layout.size.height.toFloat(), left)
+                    .toBox(TextBackground.radiusMm(text.fontSize) * scale, Color(fill), scale)
+            }
             for (chip in prepared.chips) boxes += chip.rect.translate(left, 0f).toBox(chip.radius, prepared.chipColor, scale)
             addWords(layout, CharStyles(layout.layoutInput.text, text.color, fontPx, mono = false), scale, left, 0f, words)
             val formulas = prepared.formulas.map { formula ->
@@ -276,6 +283,15 @@ public class ComposeTextTileAdapter(
                 start = stop
             }
         }
+    }
+
+    /**
+     * The fill of [text] (see [TextBackground]) around its lines laid out [widthPx] x [heightPx]
+     * from [left], in the pixels of the layout.
+     */
+    private fun fillRect(text: DrawText, widthPx: Float, heightPx: Float, left: Float): Rect {
+        val outset = TextBackground.outsetMm(text.fontSize) * LAYOUT_PX_PER_MM
+        return Rect(left - outset, -outset, left + widthPx + outset, heightPx + outset)
     }
 
     /** [this] rectangle in pixels as a background of [color] in millimeters, its corners of [radius] pixels. */
@@ -367,6 +383,12 @@ public class ComposeTextTileAdapter(
 
         canvas.save()
         canvas.concat(toCanvas.toComposeMatrix())
+        text.background?.let { fill ->
+            val box = fillRect(text, prepared.layout.size.width.toFloat(), prepared.layout.size.height.toFloat(), 0f)
+            val radius = TextBackground.radiusMm(text.fontSize) * LAYOUT_PX_PER_MM
+            fillPaint.color = Color(fill)
+            canvas.drawRoundRect(box.left, box.top, box.right, box.bottom, radius, radius, fillPaint)
+        }
         if (prepared.chips.isNotEmpty()) {
             chipPaint.color = prepared.chipColor
             for (chip in prepared.chips) {
