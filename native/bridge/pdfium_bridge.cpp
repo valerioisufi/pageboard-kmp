@@ -21,6 +21,57 @@
 static std::mutex g_pdfium_mutex;
 static bool g_pdfium_initialized = false;
 
+/** A page kept loaded between the calls that read it. */
+struct LoadedPage {
+    FPDF_DOCUMENT doc;
+    int index;
+    FPDF_PAGE page;
+};
+
+/**
+ * The pages last read, the most recent last: a page read again (every tile of it) is neither
+ * parsed again nor are its images decoded again, PDFium keeping them with the page loaded.
+ */
+static std::vector<LoadedPage> g_loaded_pages;
+static const size_t kMaxLoadedPages = 4;
+
+/**
+ * Page [index] of [doc] kept loaded among the last pages read, or null when it cannot be loaded.
+ * Called with g_pdfium_mutex held; the page is closed by the bridge, never by its caller.
+ */
+static FPDF_PAGE loaded_page(FPDF_DOCUMENT doc, int index) {
+    for (auto it = g_loaded_pages.begin(); it != g_loaded_pages.end(); ++it) {
+        if (it->doc != doc || it->index != index) continue;
+        LoadedPage found = *it;
+        g_loaded_pages.erase(it);
+        g_loaded_pages.push_back(found);
+        return found.page;
+    }
+    FPDF_PAGE page = FPDF_LoadPage(doc, index);
+    if (!page) return nullptr;
+    if (g_loaded_pages.size() >= kMaxLoadedPages) {
+        FPDF_ClosePage(g_loaded_pages.front().page);
+        g_loaded_pages.erase(g_loaded_pages.begin());
+    }
+    g_loaded_pages.push_back({doc, index, page});
+    return page;
+}
+
+/**
+ * Closes the pages of [doc] kept loaded (all of them when null), before it is closed or its pages
+ * change. Called with g_pdfium_mutex held.
+ */
+static void forget_pages(FPDF_DOCUMENT doc) {
+    for (auto it = g_loaded_pages.begin(); it != g_loaded_pages.end();) {
+        if (doc && it->doc != doc) {
+            ++it;
+            continue;
+        }
+        FPDF_ClosePage(it->page);
+        it = g_loaded_pages.erase(it);
+    }
+}
+
 extern "C" {
 
 void pdfium_init(void) {
@@ -37,6 +88,7 @@ void pdfium_init(void) {
 void pdfium_destroy(void) {
     std::lock_guard<std::mutex> lock(g_pdfium_mutex);
     if (g_pdfium_initialized) {
+        forget_pages(nullptr);
         FPDF_DestroyLibrary();
         g_pdfium_initialized = false;
     }
@@ -84,17 +136,14 @@ int32_t pdfium_render_page_bitmap(
     if (!doc_handle || !out_pixels || width_px <= 0 || height_px <= 0) return 0;
     std::lock_guard<std::mutex> lock(g_pdfium_mutex);
     FPDF_DOCUMENT doc = reinterpret_cast<FPDF_DOCUMENT>(doc_handle);
-    FPDF_PAGE page = FPDF_LoadPage(doc, page_index);
+    FPDF_PAGE page = loaded_page(doc, page_index);
     if (!page) return 0;
 
     // FPDFBitmap_BGRA with stride = width_px * 4
     FPDF_BITMAP bitmap = FPDFBitmap_CreateEx(
         width_px, height_px, FPDFBitmap_BGRA, out_pixels, width_px * 4
     );
-    if (!bitmap) {
-        FPDF_ClosePage(page);
-        return 0;
-    }
+    if (!bitmap) return 0;
 
     // Fill white
     FPDFBitmap_FillRect(bitmap, 0, 0, width_px, height_px, 0xFFFFFFFF);
@@ -108,7 +157,6 @@ int32_t pdfium_render_page_bitmap(
     );
 
     FPDFBitmap_Destroy(bitmap);
-    FPDF_ClosePage(page);
     return 1;
 }
 
@@ -116,20 +164,16 @@ int32_t pdfium_get_page_text(int64_t doc_handle, int32_t page_index, uint16_t* o
     if (!doc_handle) return -1;
     std::lock_guard<std::mutex> lock(g_pdfium_mutex);
     FPDF_DOCUMENT doc = reinterpret_cast<FPDF_DOCUMENT>(doc_handle);
-    FPDF_PAGE page = FPDF_LoadPage(doc, page_index);
+    FPDF_PAGE page = loaded_page(doc, page_index);
     if (!page) return -1;
     FPDF_TEXTPAGE text_page = FPDFText_LoadPage(page);
-    if (!text_page) {
-        FPDF_ClosePage(page);
-        return -1;
-    }
+    if (!text_page) return -1;
     int count = FPDFText_CountChars(text_page);
     if (count > 0 && out_text && capacity > count) {
         // Writes count characters and the terminator
         FPDFText_GetText(text_page, 0, count, reinterpret_cast<unsigned short*>(out_text));
     }
     FPDFText_ClosePage(text_page);
-    FPDF_ClosePage(page);
     return count < 0 ? -1 : count;
 }
 
@@ -137,13 +181,10 @@ int32_t pdfium_get_page_text_layout(int64_t doc_handle, int32_t page_index, int3
     if (!doc_handle) return -1;
     std::lock_guard<std::mutex> lock(g_pdfium_mutex);
     FPDF_DOCUMENT doc = reinterpret_cast<FPDF_DOCUMENT>(doc_handle);
-    FPDF_PAGE page = FPDF_LoadPage(doc, page_index);
+    FPDF_PAGE page = loaded_page(doc, page_index);
     if (!page) return -1;
     FPDF_TEXTPAGE text_page = FPDFText_LoadPage(page);
-    if (!text_page) {
-        FPDF_ClosePage(page);
-        return -1;
-    }
+    if (!text_page) return -1;
     int count = FPDFText_CountChars(text_page);
     if (count > 0 && out_chars && out_boxes && capacity >= count) {
         // The boxes are in the space of the PDF (origin at the bottom-left corner of the media
@@ -190,7 +231,6 @@ int32_t pdfium_get_page_text_layout(int64_t doc_handle, int32_t page_index, int3
         }
     }
     FPDFText_ClosePage(text_page);
-    FPDF_ClosePage(page);
     return count < 0 ? -1 : count;
 }
 
@@ -198,6 +238,7 @@ void pdfium_close_document(int64_t doc_handle) {
     if (!doc_handle) return;
     std::lock_guard<std::mutex> lock(g_pdfium_mutex);
     FPDF_DOCUMENT doc = reinterpret_cast<FPDF_DOCUMENT>(doc_handle);
+    forget_pages(doc);
     FPDF_CloseDocument(doc);
 }
 
@@ -222,6 +263,7 @@ int64_t pdfium_new_page(int64_t doc_handle, int32_t index, double width_pt, doub
     std::lock_guard<std::mutex> lock(g_pdfium_mutex);
     FPDF_DOCUMENT doc = reinterpret_cast<FPDF_DOCUMENT>(doc_handle);
     if (index < 0 || index > FPDF_GetPageCount(doc)) return 0;
+    forget_pages(doc);
     return reinterpret_cast<int64_t>(FPDFPage_New(doc, index, width_pt, height_pt));
 }
 
@@ -291,6 +333,9 @@ int32_t pdfium_import_pages(int64_t doc_handle, int64_t source_handle, const int
     std::lock_guard<std::mutex> lock(g_pdfium_mutex);
     FPDF_DOCUMENT doc = reinterpret_cast<FPDF_DOCUMENT>(doc_handle);
     FPDF_DOCUMENT source = reinterpret_cast<FPDF_DOCUMENT>(source_handle);
+    // The pages of the source are flattened, those of the document follow others
+    forget_pages(doc);
+    forget_pages(source);
     const int source_count = FPDF_GetPageCount(source);
     std::vector<int> indices(page_indices, page_indices + count);
     std::vector<std::vector<WebLink>> links(count);
@@ -325,6 +370,7 @@ int64_t pdfium_place_page(int64_t doc_handle, int32_t from_index, int32_t to_ind
     if (!doc_handle || !out_matrix) return 0;
     std::lock_guard<std::mutex> lock(g_pdfium_mutex);
     FPDF_DOCUMENT doc = reinterpret_cast<FPDF_DOCUMENT>(doc_handle);
+    forget_pages(doc);
     int from = from_index;
     if (from != to_index && !FPDF_MovePages(doc, &from, 1, to_index)) return 0;
     FPDF_PAGE page = FPDF_LoadPage(doc, to_index);
@@ -351,6 +397,7 @@ int32_t pdfium_delete_page(int64_t doc_handle, int32_t index) {
     std::lock_guard<std::mutex> lock(g_pdfium_mutex);
     FPDF_DOCUMENT doc = reinterpret_cast<FPDF_DOCUMENT>(doc_handle);
     if (index < 0 || index >= FPDF_GetPageCount(doc)) return 0;
+    forget_pages(doc);
     FPDFPage_Delete(doc, index);
     return 1;
 }
@@ -454,6 +501,7 @@ int32_t pdfium_page_add_pdf_page(int64_t doc_handle, int64_t page_handle, int64_
     if (!doc_handle || !page_handle || !source_handle || !matrix) return 0;
     std::lock_guard<std::mutex> lock(g_pdfium_mutex);
     FPDF_DOCUMENT source = reinterpret_cast<FPDF_DOCUMENT>(source_handle);
+    forget_pages(source);
     // The annotations shown with the page (FPDF_ANNOT when rendering) become part of it
     FPDF_PAGE source_page = FPDF_LoadPage(source, page_index);
     if (!source_page) return 0;

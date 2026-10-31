@@ -20,6 +20,12 @@ class PdfiumTest {
     }
 
     @Test
+    fun thePagesKeptLoadedAreDrawnAsTheyAre() {
+        val pdf = File.createTempFile("loaded_pages", ".pdf").apply { deleteOnExit() }
+        runLoadedPagesTest(pdf.absolutePath)
+    }
+
+    @Test
     fun readsTheTextOfAPage() {
         val textPdf = File.createTempFile("text_sample", ".pdf").apply {
             deleteOnExit()

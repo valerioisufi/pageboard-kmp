@@ -19,4 +19,15 @@ class PdfiumTest {
             pdf.delete()
         }
     }
+
+    @Test
+    fun thePagesKeptLoadedAreDrawnAsTheyAre() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val pdf = File(context.cacheDir, "loaded_pages.pdf")
+        try {
+            runLoadedPagesTest(pdf.absolutePath)
+        } finally {
+            pdf.delete()
+        }
+    }
 }

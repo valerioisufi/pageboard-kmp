@@ -37,6 +37,10 @@ int32_t pdfium_get_page_size(int64_t doc_handle, int32_t page_index, double* out
 /**
  * Renders a page (or scaled region) into an ARGB/BGRA pixel buffer (32-bit int array).
  * Returns 1 on success, 0 on failure.
+ *
+ * The last pages read (rendered, their text read) stay loaded, their images decoded with them,
+ * until other pages are read, their document changes or is closed: rendering the same page again
+ * (another region of it) neither parses it nor decodes its images again.
  */
 int32_t pdfium_render_page_bitmap(
     int64_t doc_handle,
@@ -70,7 +74,7 @@ int32_t pdfium_get_page_text(int64_t doc_handle, int32_t page_index, uint16_t* o
 int32_t pdfium_get_page_text_layout(int64_t doc_handle, int32_t page_index, int32_t* out_chars, float* out_boxes, int32_t capacity);
 
 /**
- * Closes the document handle.
+ * Closes the document handle, and its pages kept loaded.
  */
 void pdfium_close_document(int64_t doc_handle);
 

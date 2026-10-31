@@ -24,4 +24,15 @@ class PdfiumTest {
             NSFileManager.defaultManager.removeItemAtPath(path, error = null)
         }
     }
+
+    @OptIn(ExperimentalForeignApi::class)
+    @Test
+    fun thePagesKeptLoadedAreDrawnAsTheyAre() {
+        val path = NSTemporaryDirectory() + "loaded_pages.pdf"
+        try {
+            runLoadedPagesTest(path)
+        } finally {
+            NSFileManager.defaultManager.removeItemAtPath(path, error = null)
+        }
+    }
 }

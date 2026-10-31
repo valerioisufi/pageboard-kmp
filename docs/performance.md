@@ -134,7 +134,7 @@ not a cost.
 | Modeling a stroke whose inputs are all known | `InkStrokeModeller.buildMesh` (ink), with `ink_stroke_builder_add_points` (the bridge: the inputs given at once, the shape updated once) | Information Expert |
 | Modeling the strokes of a document at the same time | `DrawDocumentRepository.loadDocument` (the key-value store on one thread, decision 11) | Controller |
 | The elements of a page in a region | `PageElements`: a grid of cells, `PageContentSnapshot.elementsIn` | Information Expert |
-| A PDF page kept loaded between its tiles | `pdfium_bridge` and `PdfiumEngine` (pdf) | Information Expert |
+| A PDF page kept loaded between its tiles | `pdfium_bridge` (native): the pages last read, kept loaded with their images decoded | Information Expert (the bridge knows the pages of PDFium and their life), Protected Variations (the API of the bridge stays as it is) |
 
 ### Writing an operation at once
 
@@ -316,6 +316,28 @@ and reads where its box is on the screen while it is placed (`offset`, and the p
 formula under the caret): a pan moves the field without composing it again. A zoom composes it at
 the new scale, as before (left for later, 9).
 
+### The PDF pages kept loaded
+
+```c
+/** Page [index] of [doc] kept loaded among the last pages read (with g_pdfium_mutex held). */
+static FPDF_PAGE loaded_page(FPDF_DOCUMENT doc, int index);
+
+/** Closes the pages of [doc] kept loaded, before it changes or is closed. */
+static void forget_pages(FPDF_DOCUMENT doc);
+```
+
+The bridge loaded a page for every call that reads it (`FPDF_LoadPage`, then `FPDF_ClosePage`):
+every tile of a page parsed its content again, and decoded its images again, PDFium keeping the
+images decoded with the page loaded (M9). The bridge now keeps the last 4 pages read, of any
+document: a tile, the text of a page or the boxes of its characters read a page kept, and the
+page read the longest ago is closed when a fifth is loaded. Under the mutex of the bridge, as
+every call.
+
+A page kept is closed before its document changes in a way that would leave it stale: a document
+closed, a page added, moved, deleted or imported into it, a page of it flattened to be imported or
+drawn into another (`pdfium_import_pages`, `pdfium_page_add_pdf_page`). The calls of the bridge,
+JNI and cinterop do not change: the applications gain it without any change.
+
 ### Modeling the strokes loaded
 
 ```c
@@ -359,11 +381,12 @@ therefore called from several threads at once, which its KDoc now says.
 | 5 | The editor: `DrawDocument.observe` instead of `observeChanges()` in `DrawScreenContent`, `EditorTools` and the subtitle of the bar, Undo and Redo derived, the position of `TextBoxEditor` read while it is placed (test: over 100 strokes the editor enters no scope again, and shows a page added and a title renamed; over 100 frames of a pan the field of a text enters no scope again and moves with its box, and a zoom composes it at its scale) | done |
 | 6 | The inputs of a stroke loaded in one native call and its shape updated once (bridge, JNI, cinterop), the strokes of a document modeled on every core (test: the shape of every brush, as drawn, on the JVM and the iOS simulator) | done |
 | 7 | The tiles: the elements of a region (`elementsIn`), the paths of the outlines kept (if they gain) | proposed |
-| 8 | The PDF pages kept loaded between their tiles and drawn with one copy; the texts drawn outside of the lock of the caches (if the measurer allows it) | proposed |
+| 8 | The PDF pages last read kept loaded by `pdfium_bridge` (test on the JVM, the iOS simulator and an Android emulator: pages drawn again in another order, more of them than are kept, a document closed and opened again, a document whose pages change while one is kept); the copies of the desktop and the texts outside of the lock left for later (decision 28) | done |
 
 The phases after 1 do not depend on each other, but phase 3 needs phase 1. By what phase 0
 measured, they go in this order: 6 (every document loaded pays the modeling: the editor, the
-search, the thumbnails), 2, 3, 1, 4, 5; 7 and 8 only if a device shows the tiles costing.
+search, the thumbnails), 2, 3, 1, 4, 5; 7 and 8 only if a device shows the tiles costing. Phase 8
+was done once the Mac measured its cost (M9); phase 7 waits for a device.
 
 ### Measures
 
@@ -372,7 +395,7 @@ On the Mac (M5, JVM), 2026-10-31, before and after each phase. Each benchmark ru
 `IndexerBenchmark` in `drawview-search`, `LectureSearchBenchmark` in `drawview-lecture-ui`,
 `ThumbnailBenchmark` in `drawview-explorer`,
 `ApplyBenchmark` in `drawview-model`, `ModelingBenchmark` in `drawview-ink`, `TileBenchmark` in
-`drawview-canvas`, `EditorBenchmark` in `drawview-ui`). M8 counts the scopes the composition enters
+`drawview-canvas`, `EditorBenchmark` in `drawview-ui`, `PdfTileBenchmark` in `drawview-pdf`). M8 counts the scopes the composition enters
 again (a function called again, whether it runs or skips) with an observer of the compositions
 (`CompositionCounter`, from the experimental API of the Compose runtime, in the tests only).
 
@@ -395,7 +418,21 @@ again (a function called again, whether it runs or skips) with an observer of th
 | M8 a stroke drawn, in the editor (1280 × 800, the tools in the top bar) | 52 scopes entered again, 0.22 ms of composition (measured in phase 5) | none (5 derived states read again, unchanged), 0.040 ms | 5 |
 | M8 a frame of a pan while a text is written | 13 scopes entered again, 0.20 ms of composition (measured in phase 5) | none (1 derived state read again), 0.037 ms | 5 |
 | M7 a tile of a page of 1,500 strokes, level 0 / level 2 | 10.4 ms / 2.1 ms | | 7 |
-| A tile of a PDF page | measured at the start of phase 8 | | 8 |
+| M9 a tile of a slide (512 px, on its content, levels 0 to 2): text / photograph / diagram | 0.56–0.86 ms / 6.2–7.8 ms / 8.3–9.4 ms (measured at the start of phase 8) | 0.40–0.68 ms / 0.58–1.7 ms / 3.7–5.8 ms | 8 |
+| M9 the same tiles drawing only the pixel at their center: text / photograph / diagram | 0.06–0.13 ms / 5.5–6.0 ms / 3.6–4.8 ms | 0.008–0.063 ms / 0.004–0.009 ms / 0.60–0.71 ms | 8 |
+| M9 the copies of the pixels of a tile on the desktop | 0.44–0.83 ms | | — |
+
+M9 measures three slides of 16:9 written by `PdfWriter`: a title and twelve bullets in an embedded
+font, a title and a JPEG of 2000 × 1500 over most of the slide, a chart of 200 lines of 100 points
+and 500 circles. The tile drawing only its central pixel shows what every tile pays before it
+draws: PDFium loads the page again for every tile, and with it decodes the photograph again
+(85% of its tile) and reads the paths of the diagram again (45%); a slide of text loses nothing.
+A second run, with the Mac busier, was 1.3 to 2 times slower, in the same proportions.
+
+With the pages kept (phase 8), the tiles after the first of a page draw it only: the photograph
+4 to 11 times faster, the diagram twice, two runs giving the same numbers. A page kept holds its
+images decoded: 6 scanned pages of A4 at 300 dpi, drawn one after the other, held 20 to 25 MB each
+on the Mac, 86 MB from the fourth on (the pages kept are 4).
 
 ## Decisions
 
@@ -477,6 +514,18 @@ Taken alone, revertible:
     stacks being state lists read whole. Not in the first version of this plan: once the editor
     read the document with `observe`, they were the 4 scopes still entered at a stroke (M8).
 
+26. **The pages kept by the bridge**, not by the adapter of the tiles through new functions of the
+    bridge: the calls of the bridge, of JNI and of cinterop stay as they are, and every reader of
+    a PDF gains it (the text of its pages, the boxes of its characters). The adapter could keep
+    the pages it draws instead, with a page handle in the API of the bridge.
+27. **Four pages kept, of all the documents**: a tablet in portrait shows about 3 slides, whose
+    tiles come in turn; a page kept holds its images decoded (M9: 86 MB for 4 scanned pages of
+    A4 at 300 dpi). Fewer would hold less, and draw the tiles of 3 slides on screen loading their
+    pages again.
+28. **The copies of the desktop and the texts outside of the lock, not done**: the copies of a tile
+    on the desktop (0.44 to 1.4 ms, on the desktop only) and the texts drawn outside of the lock of
+    the caches (not measured) are left for later.
+
 Decided by the user:
 
 12. **A stroke loaded may differ from the one drawn** (2026-10-31, phase 6): its edges move by a
@@ -511,3 +560,6 @@ These change or delete stored data, or need a plan of their own; they are for th
 12. **The version of the lectures without reading every record** at every pass (53 ms on the Mac
     for 60 lectures, decision 14): a version kept by `LectureLibrary` as it writes a record, or
     the records read once.
+13. **The pixels of a PDF tile on the desktop copied once** (an `IntArray`, a `ByteBuffer`, a Skia
+    bitmap today: 0.44 to 1.4 ms a tile, M9), and **the texts drawn outside of the lock** of the
+    caches of `ComposeTextTileAdapter`, if its measurer allows it (decision 28).
