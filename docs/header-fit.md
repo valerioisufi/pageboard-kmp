@@ -152,7 +152,7 @@ after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
 | Phase | Content | Status |
 |---|---|---|
 | 1. System bars | `ImmersiveSystemBars` in `drawview-ui` (Android, iOS, JVM no-op): the status bar hidden only where it gives room, hidden again on focus; `DocumentLibrary.fullScreenEditor` not used any more, `SystemBarsHidden` removed. Checked on the Pixel 9 emulator (punch hole: status bar kept in portrait, hidden in landscape), on an Android 10 emulator (menu opened and closed), on the iPhone and iPad simulators | done |
-| 2. Bar of the library | `LibraryBarLayout.fit` with its tests; `LibraryAppBar` as a `Layout` with the "more" menu; screenshots of the library at 320, 360, 412, 600, 700, 840 dp recorded | proposed |
+| 2. Bar of the library | `LibraryBarLayout.fit` with its tests; `LibraryAppBar` as a `Layout` with the "more" menu; screenshots of the library at 320, 360, 412, 600, 700, 840 dp recorded | done |
 | 3. Top bar of the editor | `ToolbarLayout.extensionsFit` with its tests; the extensions measured before they are drawn, in the bar or behind one button; screenshots of the editor with three extensions at 320, 360, 412 dp | proposed |
 | 4. Tools on a tablet | `ToolbarDensity`; the sizes measured on the tablet of the user first; `ToolbarLayout` counting them; screenshots of the editor on the reference tablets | proposed, waits for the measures of the tablet |
 
@@ -167,6 +167,19 @@ after. The phone keeps its sizes (the thumb), the desktop its sizes (the mouse).
   closed leaves them so; back in the library both are shown.
 * Android 10 (the old flags, the focus listener) is checked on the tablet of the user: no API 29
   emulator here.
+
+### Phase 2 results
+
+* `LibraryBarLayout.fit` (`LibraryBarLayoutTest`) and `LibraryAppBar` as a `SubcomposeLayout`: the
+  brand is measured at its own width (its max intrinsic width), then the bar is composed with what
+  fits; the buttons left out are in a "more" menu (`MoreHorizontal`, as the menu of the folder).
+  `search` takes the modifier with its width.
+* `LibraryBarScreenshotTest`: a brand as wide as the one of PencilNotes and three actions. At
+  320 dp only "more"; at 360 dp the Trash and "more"; at 412 dp the Trash, the first action and
+  "more"; in the grid at 600 dp the search 200 dp wide, the Trash and "more"; at 700 dp the search
+  narrower and every button; at 840 dp everything. The brand is whole in all of them.
+* The Pixel 9 emulator (412 dp): PencilNotes whole, the Trash, joining a shared note and "more".
+* The other screenshots of the library are unchanged (`verifyRoborazziJvm`).
 
 ## Decisions
 

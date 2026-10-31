@@ -235,7 +235,7 @@ internal fun ExplorerScreen(
                             onAction = { libraryAction = it },
                             modifier = Modifier.padding(start = 28.dp + decorStartPad, end = 20.dp, top = 8.dp),
                             onOpenTrash = { viewModel.showSection(FileExplorerViewModel.Section.TRASH) },
-                            search = { LibrarySearchField(viewModel, commands, searchFocus, modifier = Modifier.width(260.dp).padding(end = 8.dp)) }
+                            search = { searchModifier -> LibrarySearchField(viewModel, commands, searchFocus, modifier = searchModifier) }
                         )
                         LibraryLayout.PANES -> Unit
                     }

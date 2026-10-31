@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -24,7 +25,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.valerioisufi.drawview.explorer.FileExplorerViewModel
@@ -83,9 +87,10 @@ import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * The bar of a narrow library: the brand of the application ([brand]), the search where there is
- * room for it ([search]), the Trash ([onOpenTrash], where there is no navigation pane holding it),
- * the actions of the application as icons.
+ * The bar of a narrow library: the brand of the application ([brand]), whole, the search where
+ * there is room for it ([search], [searchWidth] at most), the Trash ([onOpenTrash], where there is
+ * no navigation pane holding it), the actions of the application as icons. What does not fit
+ * beside the brand goes into a "more" menu, the search narrowing first (see [LibraryBarLayout]).
  */
 @Composable
 internal fun LibraryAppBar(
@@ -94,18 +99,59 @@ internal fun LibraryAppBar(
     onAction: (LibraryAction) -> Unit,
     modifier: Modifier = Modifier,
     onOpenTrash: (() -> Unit)? = null,
-    search: (@Composable RowScope.() -> Unit)? = null
+    search: (@Composable (Modifier) -> Unit)? = null
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth().height(56.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Box(modifier = Modifier.weight(1f)) { brand() }
-        search?.invoke(this)
-        if (onOpenTrash != null) DesignIconButton(DrawViewIcons.Trash, stringResource(Res.string.explorer_trash_open), onClick = onOpenTrash)
-        for (action in actions) {
-            DesignIconButton(action.icon, action.label(), onClick = { onAction(action) })
+    // The Trash, then the actions: the last ones leave the bar first
+    val trashLabel = stringResource(Res.string.explorer_trash_open)
+    val buttons = buildList {
+        if (onOpenTrash != null) add(BarEntry(DrawViewIcons.Trash, { trashLabel }, onOpenTrash))
+        for (action in actions) add(BarEntry(action.icon, action.label) { onAction(action) })
+    }
+    val button = LocalMinimumInteractiveComponentSize.current.takeIf { it.isSpecified }?.coerceAtLeast(40.dp) ?: 40.dp
+    SubcomposeLayout(modifier = modifier.fillMaxWidth().height(56.dp)) { constraints ->
+        val brandWidth = subcompose("brand", brand).maxOfOrNull { it.maxIntrinsicWidth(constraints.maxHeight) } ?: 0
+        val fit = LibraryBarLayout.fit(constraints.maxWidth.toDp(), brandWidth.toDp(), button, buttons.size, withSearch = search != null)
+        val bar = subcompose("bar") {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(LibraryBarLayout.Spacing)
+            ) {
+                Box(modifier = Modifier.weight(1f)) { brand() }
+                if (search != null && fit.searchWidth != null) {
+                    search(Modifier.width(fit.searchWidth).padding(end = LibraryBarLayout.SearchEndPadding))
+                }
+                for (entry in buttons.take(fit.buttonsInBar)) {
+                    DesignIconButton(entry.icon, entry.label(), onClick = entry.onClick)
+                }
+                if (fit.overflow) BarOverflowButton(buttons.drop(fit.buttonsInBar))
+            }
+        }.map { it.measure(constraints) }
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            bar.forEach { it.placeRelative(0, (constraints.maxHeight - it.height) / 2) }
+        }
+    }
+}
+
+/** A button of the bar of the library: the Trash or an action of the application. */
+private class BarEntry(val icon: ImageVector, val label: @Composable () -> String, val onClick: () -> Unit)
+
+/** The "more" button of the bar of the library and its menu, with the buttons that do not fit. */
+@Composable
+private fun BarOverflowButton(entries: List<BarEntry>) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        DesignIconButton(DrawViewIcons.MoreHorizontal, stringResource(Res.string.explorer_more_actions), { expanded = true })
+        DesignMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            for (entry in entries) {
+                MenuItem(
+                    text = entry.label(),
+                    onClick = {
+                        expanded = false
+                        entry.onClick()
+                    },
+                    icon = rememberVectorPainter(entry.icon)
+                )
+            }
         }
     }
 }
