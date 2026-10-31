@@ -289,6 +289,13 @@ sealed interface io.github.valerioisufi.drawview.model.change/Placement { // io.
     }
 }
 
+sealed interface io.github.valerioisufi.drawview.model.shape/Shape { // io.github.valerioisufi.drawview.model.shape/Shape|null[0]
+    abstract val path // io.github.valerioisufi.drawview.model.shape/Shape.path|{}path[0]
+        abstract fun <get-path>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.shape/Shape.path.<get-path>|<get-path>(){}[0]
+    open val hasCorners // io.github.valerioisufi.drawview.model.shape/Shape.hasCorners|{}hasCorners[0]
+        open fun <get-hasCorners>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/Shape.hasCorners.<get-hasCorners>|<get-hasCorners>(){}[0]
+}
+
 sealed interface io.github.valerioisufi.drawview.model/DrawElement { // io.github.valerioisufi.drawview.model/DrawElement|null[0]
     abstract val id // io.github.valerioisufi.drawview.model/DrawElement.id|{}id[0]
         abstract fun <get-id>(): kotlin/String // io.github.valerioisufi.drawview.model/DrawElement.id.<get-id>|<get-id>(){}[0]
@@ -2215,6 +2222,110 @@ final class io.github.valerioisufi.drawview.model.placement/TextFlow { // io.git
     }
 }
 
+final class io.github.valerioisufi.drawview.model.shape/Arrow : io.github.valerioisufi.drawview.model.shape/Shape { // io.github.valerioisufi.drawview.model.shape/Arrow|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.model.geometry/Point, io.github.valerioisufi.drawview.model.geometry/Point, kotlin/Float) // io.github.valerioisufi.drawview.model.shape/Arrow.<init>|<init>(io.github.valerioisufi.drawview.model.geometry.Point;io.github.valerioisufi.drawview.model.geometry.Point;kotlin.Float){}[0]
+
+    final val headLength // io.github.valerioisufi.drawview.model.shape/Arrow.headLength|{}headLength[0]
+        final fun <get-headLength>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/Arrow.headLength.<get-headLength>|<get-headLength>(){}[0]
+    final val path // io.github.valerioisufi.drawview.model.shape/Arrow.path|{}path[0]
+        final fun <get-path>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.shape/Arrow.path.<get-path>|<get-path>(){}[0]
+    final val tail // io.github.valerioisufi.drawview.model.shape/Arrow.tail|{}tail[0]
+        final fun <get-tail>(): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model.shape/Arrow.tail.<get-tail>|<get-tail>(){}[0]
+    final val tip // io.github.valerioisufi.drawview.model.shape/Arrow.tip|{}tip[0]
+        final fun <get-tip>(): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model.shape/Arrow.tip.<get-tip>|<get-tip>(){}[0]
+    final val wings // io.github.valerioisufi.drawview.model.shape/Arrow.wings|{}wings[0]
+        final fun <get-wings>(): kotlin/Pair<io.github.valerioisufi.drawview.model.geometry/Point, io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.shape/Arrow.wings.<get-wings>|<get-wings>(){}[0]
+
+    final fun component1(): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model.shape/Arrow.component1|component1(){}[0]
+    final fun component2(): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model.shape/Arrow.component2|component2(){}[0]
+    final fun component3(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/Arrow.component3|component3(){}[0]
+    final fun copy(io.github.valerioisufi.drawview.model.geometry/Point = ..., io.github.valerioisufi.drawview.model.geometry/Point = ..., kotlin/Float = ...): io.github.valerioisufi.drawview.model.shape/Arrow // io.github.valerioisufi.drawview.model.shape/Arrow.copy|copy(io.github.valerioisufi.drawview.model.geometry.Point;io.github.valerioisufi.drawview.model.geometry.Point;kotlin.Float){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/Arrow.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.shape/Arrow.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.shape/Arrow.toString|toString(){}[0]
+
+    final object Companion { // io.github.valerioisufi.drawview.model.shape/Arrow.Companion|null[0]
+        final const val HEAD_ANGLE // io.github.valerioisufi.drawview.model.shape/Arrow.Companion.HEAD_ANGLE|{}HEAD_ANGLE[0]
+            final fun <get-HEAD_ANGLE>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/Arrow.Companion.HEAD_ANGLE.<get-HEAD_ANGLE>|<get-HEAD_ANGLE>(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.drawview.model.shape/Ellipse : io.github.valerioisufi.drawview.model.shape/Shape { // io.github.valerioisufi.drawview.model.shape/Ellipse|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.model.geometry/Point, kotlin/Float, kotlin/Float, kotlin/Float = ...) // io.github.valerioisufi.drawview.model.shape/Ellipse.<init>|<init>(io.github.valerioisufi.drawview.model.geometry.Point;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+
+    final val center // io.github.valerioisufi.drawview.model.shape/Ellipse.center|{}center[0]
+        final fun <get-center>(): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model.shape/Ellipse.center.<get-center>|<get-center>(){}[0]
+    final val hasCorners // io.github.valerioisufi.drawview.model.shape/Ellipse.hasCorners|{}hasCorners[0]
+        final fun <get-hasCorners>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/Ellipse.hasCorners.<get-hasCorners>|<get-hasCorners>(){}[0]
+    final val isCircle // io.github.valerioisufi.drawview.model.shape/Ellipse.isCircle|{}isCircle[0]
+        final fun <get-isCircle>(): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/Ellipse.isCircle.<get-isCircle>|<get-isCircle>(){}[0]
+    final val path // io.github.valerioisufi.drawview.model.shape/Ellipse.path|{}path[0]
+        final fun <get-path>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.shape/Ellipse.path.<get-path>|<get-path>(){}[0]
+    final val radiusX // io.github.valerioisufi.drawview.model.shape/Ellipse.radiusX|{}radiusX[0]
+        final fun <get-radiusX>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/Ellipse.radiusX.<get-radiusX>|<get-radiusX>(){}[0]
+    final val radiusY // io.github.valerioisufi.drawview.model.shape/Ellipse.radiusY|{}radiusY[0]
+        final fun <get-radiusY>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/Ellipse.radiusY.<get-radiusY>|<get-radiusY>(){}[0]
+    final val rotation // io.github.valerioisufi.drawview.model.shape/Ellipse.rotation|{}rotation[0]
+        final fun <get-rotation>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/Ellipse.rotation.<get-rotation>|<get-rotation>(){}[0]
+
+    final fun component1(): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model.shape/Ellipse.component1|component1(){}[0]
+    final fun component2(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/Ellipse.component2|component2(){}[0]
+    final fun component3(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/Ellipse.component3|component3(){}[0]
+    final fun component4(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/Ellipse.component4|component4(){}[0]
+    final fun copy(io.github.valerioisufi.drawview.model.geometry/Point = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ...): io.github.valerioisufi.drawview.model.shape/Ellipse // io.github.valerioisufi.drawview.model.shape/Ellipse.copy|copy(io.github.valerioisufi.drawview.model.geometry.Point;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/Ellipse.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.shape/Ellipse.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.shape/Ellipse.toString|toString(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.model.shape/Line : io.github.valerioisufi.drawview.model.shape/Shape { // io.github.valerioisufi.drawview.model.shape/Line|null[0]
+    constructor <init>(io.github.valerioisufi.drawview.model.geometry/Point, io.github.valerioisufi.drawview.model.geometry/Point) // io.github.valerioisufi.drawview.model.shape/Line.<init>|<init>(io.github.valerioisufi.drawview.model.geometry.Point;io.github.valerioisufi.drawview.model.geometry.Point){}[0]
+
+    final val end // io.github.valerioisufi.drawview.model.shape/Line.end|{}end[0]
+        final fun <get-end>(): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model.shape/Line.end.<get-end>|<get-end>(){}[0]
+    final val path // io.github.valerioisufi.drawview.model.shape/Line.path|{}path[0]
+        final fun <get-path>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.shape/Line.path.<get-path>|<get-path>(){}[0]
+    final val start // io.github.valerioisufi.drawview.model.shape/Line.start|{}start[0]
+        final fun <get-start>(): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model.shape/Line.start.<get-start>|<get-start>(){}[0]
+
+    final fun component1(): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model.shape/Line.component1|component1(){}[0]
+    final fun component2(): io.github.valerioisufi.drawview.model.geometry/Point // io.github.valerioisufi.drawview.model.shape/Line.component2|component2(){}[0]
+    final fun copy(io.github.valerioisufi.drawview.model.geometry/Point = ..., io.github.valerioisufi.drawview.model.geometry/Point = ...): io.github.valerioisufi.drawview.model.shape/Line // io.github.valerioisufi.drawview.model.shape/Line.copy|copy(io.github.valerioisufi.drawview.model.geometry.Point;io.github.valerioisufi.drawview.model.geometry.Point){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/Line.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.shape/Line.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.shape/Line.toString|toString(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.model.shape/Polygon : io.github.valerioisufi.drawview.model.shape/Shape { // io.github.valerioisufi.drawview.model.shape/Polygon|null[0]
+    constructor <init>(kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point>) // io.github.valerioisufi.drawview.model.shape/Polygon.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.Point>){}[0]
+
+    final val path // io.github.valerioisufi.drawview.model.shape/Polygon.path|{}path[0]
+        final fun <get-path>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.shape/Polygon.path.<get-path>|<get-path>(){}[0]
+    final val vertices // io.github.valerioisufi.drawview.model.shape/Polygon.vertices|{}vertices[0]
+        final fun <get-vertices>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.shape/Polygon.vertices.<get-vertices>|<get-vertices>(){}[0]
+
+    final fun component1(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.shape/Polygon.component1|component1(){}[0]
+    final fun copy(kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point> = ...): io.github.valerioisufi.drawview.model.shape/Polygon // io.github.valerioisufi.drawview.model.shape/Polygon.copy|copy(kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.Point>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/Polygon.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.shape/Polygon.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.shape/Polygon.toString|toString(){}[0]
+}
+
+final class io.github.valerioisufi.drawview.model.shape/Polyline : io.github.valerioisufi.drawview.model.shape/Shape { // io.github.valerioisufi.drawview.model.shape/Polyline|null[0]
+    constructor <init>(kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point>) // io.github.valerioisufi.drawview.model.shape/Polyline.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.Point>){}[0]
+
+    final val path // io.github.valerioisufi.drawview.model.shape/Polyline.path|{}path[0]
+        final fun <get-path>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.shape/Polyline.path.<get-path>|<get-path>(){}[0]
+    final val vertices // io.github.valerioisufi.drawview.model.shape/Polyline.vertices|{}vertices[0]
+        final fun <get-vertices>(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.shape/Polyline.vertices.<get-vertices>|<get-vertices>(){}[0]
+
+    final fun component1(): kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point> // io.github.valerioisufi.drawview.model.shape/Polyline.component1|component1(){}[0]
+    final fun copy(kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point> = ...): io.github.valerioisufi.drawview.model.shape/Polyline // io.github.valerioisufi.drawview.model.shape/Polyline.copy|copy(kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.Point>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.drawview.model.shape/Polyline.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.drawview.model.shape/Polyline.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.drawview.model.shape/Polyline.toString|toString(){}[0]
+}
+
 final class io.github.valerioisufi.drawview.model.text.code/CodeToken { // io.github.valerioisufi.drawview.model.text.code/CodeToken|null[0]
     constructor <init>(io.github.valerioisufi.drawview.model.text.code/CodeTokenKind, kotlin/Int, kotlin/Int) // io.github.valerioisufi.drawview.model.text.code/CodeToken.<init>|<init>(io.github.valerioisufi.drawview.model.text.code.CodeTokenKind;kotlin.Int;kotlin.Int){}[0]
 
@@ -3281,6 +3392,10 @@ final object io.github.valerioisufi.drawview.model.placement/TextSizePolicy { //
     final fun smaller(kotlin/Float): kotlin/Float // io.github.valerioisufi.drawview.model.placement/TextSizePolicy.smaller|smaller(kotlin.Float){}[0]
 }
 
+final object io.github.valerioisufi.drawview.model.shape/ShapeRecognizer { // io.github.valerioisufi.drawview.model.shape/ShapeRecognizer|null[0]
+    final fun recognize(kotlin.collections/List<io.github.valerioisufi.drawview.model.geometry/Point>, kotlin/Float): io.github.valerioisufi.drawview.model.shape/Shape? // io.github.valerioisufi.drawview.model.shape/ShapeRecognizer.recognize|recognize(kotlin.collections.List<io.github.valerioisufi.drawview.model.geometry.Point>;kotlin.Float){}[0]
+}
+
 final object io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighlighter : io.github.valerioisufi.drawview.model.text.code/CodeHighlighter { // io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighlighter|null[0]
     final val languages // io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighlighter.languages|{}languages[0]
         final fun <get-languages>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.drawview.model.text.code/BuiltInCodeHighlighter.languages.<get-languages>|<get-languages>(){}[0]
@@ -3424,6 +3539,8 @@ final object io.github.valerioisufi.drawview.model/TrashRetention { // io.github
     final fun expiredBefore(kotlin/Long): kotlin/Long // io.github.valerioisufi.drawview.model/TrashRetention.expiredBefore|expiredBefore(kotlin.Long){}[0]
 }
 
+final const val io.github.valerioisufi.drawview.model.shape/SHAPE_INPUT_SPACING_MM // io.github.valerioisufi.drawview.model.shape/SHAPE_INPUT_SPACING_MM|{}SHAPE_INPUT_SPACING_MM[0]
+    final fun <get-SHAPE_INPUT_SPACING_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model.shape/SHAPE_INPUT_SPACING_MM.<get-SHAPE_INPUT_SPACING_MM>|<get-SHAPE_INPUT_SPACING_MM>(){}[0]
 final const val io.github.valerioisufi.drawview.model/STROKE_UNIT_LENGTH_CM_MM // io.github.valerioisufi.drawview.model/STROKE_UNIT_LENGTH_CM_MM|{}STROKE_UNIT_LENGTH_CM_MM[0]
     final fun <get-STROKE_UNIT_LENGTH_CM_MM>(): kotlin/Float // io.github.valerioisufi.drawview.model/STROKE_UNIT_LENGTH_CM_MM.<get-STROKE_UNIT_LENGTH_CM_MM>|<get-STROKE_UNIT_LENGTH_CM_MM>(){}[0]
 
@@ -3451,6 +3568,7 @@ final val io.github.valerioisufi.drawview.model.geometry/px // io.github.valerio
 final fun (io.github.valerioisufi.drawview.model.change/CopiedElements).io.github.valerioisufi.drawview.model.change/pasteInto(io.github.valerioisufi.drawview.model/DrawDocument, io.github.valerioisufi.drawview.model/DrawPage, kotlin/Float, kotlin/Float, kotlin/Function1<kotlin/String, kotlin/Boolean> = ...): io.github.valerioisufi.drawview.model.change/PastedElements // io.github.valerioisufi.drawview.model.change/pasteInto|pasteInto@io.github.valerioisufi.drawview.model.change.CopiedElements(io.github.valerioisufi.drawview.model.DrawDocument;io.github.valerioisufi.drawview.model.DrawPage;kotlin.Float;kotlin.Float;kotlin.Function1<kotlin.String,kotlin.Boolean>){}[0]
 final fun (io.github.valerioisufi.drawview.model.change/CopiedPages).io.github.valerioisufi.drawview.model.change/pasteInto(io.github.valerioisufi.drawview.model/DrawDocument, kotlin/Int, kotlin/Function1<kotlin/String, kotlin/Boolean> = ...): io.github.valerioisufi.drawview.model.change/PastedPages // io.github.valerioisufi.drawview.model.change/pasteInto|pasteInto@io.github.valerioisufi.drawview.model.change.CopiedPages(io.github.valerioisufi.drawview.model.DrawDocument;kotlin.Int;kotlin.Function1<kotlin.String,kotlin.Boolean>){}[0]
 final fun (io.github.valerioisufi.drawview.model.change/ElementData).io.github.valerioisufi.drawview.model.change/placement(): io.github.valerioisufi.drawview.model.change/Placement? // io.github.valerioisufi.drawview.model.change/placement|placement@io.github.valerioisufi.drawview.model.change.ElementData(){}[0]
+final fun (io.github.valerioisufi.drawview.model.shape/Shape).io.github.valerioisufi.drawview.model.shape/strokeInputs(kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint>, kotlin/Float = ...): kotlin.collections/List<io.github.valerioisufi.drawview.model/StrokePoint> // io.github.valerioisufi.drawview.model.shape/strokeInputs|strokeInputs@io.github.valerioisufi.drawview.model.shape.Shape(kotlin.collections.List<io.github.valerioisufi.drawview.model.StrokePoint>;kotlin.Float){}[0]
 final fun (io.github.valerioisufi.drawview.model/DrawCustomElement).io.github.valerioisufi.drawview.model.change/toData(): io.github.valerioisufi.drawview.model.change/CustomElementData // io.github.valerioisufi.drawview.model.change/toData|toData@io.github.valerioisufi.drawview.model.DrawCustomElement(){}[0]
 final fun (io.github.valerioisufi.drawview.model/DrawDocument).io.github.valerioisufi.drawview.model.change/copyElements(io.github.valerioisufi.drawview.model/DrawPage, kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawElement>, io.github.valerioisufi.drawview.model.geometry/Rect, kotlin/Float = ...): io.github.valerioisufi.drawview.model.change/CopiedElements // io.github.valerioisufi.drawview.model.change/copyElements|copyElements@io.github.valerioisufi.drawview.model.DrawDocument(io.github.valerioisufi.drawview.model.DrawPage;kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawElement>;io.github.valerioisufi.drawview.model.geometry.Rect;kotlin.Float){}[0]
 final fun (io.github.valerioisufi.drawview.model/DrawDocument).io.github.valerioisufi.drawview.model.change/copyPages(kotlin.collections/List<io.github.valerioisufi.drawview.model/DrawPage>): io.github.valerioisufi.drawview.model.change/CopiedPages // io.github.valerioisufi.drawview.model.change/copyPages|copyPages@io.github.valerioisufi.drawview.model.DrawDocument(kotlin.collections.List<io.github.valerioisufi.drawview.model.DrawPage>){}[0]

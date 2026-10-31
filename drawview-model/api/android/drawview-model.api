@@ -2909,6 +2909,111 @@ public final class io/github/valerioisufi/drawview/model/placement/TextSizePolic
 	public final fun smaller (F)F
 }
 
+public final class io/github/valerioisufi/drawview/model/shape/Arrow : io/github/valerioisufi/drawview/model/shape/Shape {
+	public static final field Companion Lio/github/valerioisufi/drawview/model/shape/Arrow$Companion;
+	public static final field HEAD_ANGLE F
+	public fun <init> (Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;F)V
+	public final fun component1 ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun component2 ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun component3 ()F
+	public final fun copy (Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;F)Lio/github/valerioisufi/drawview/model/shape/Arrow;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/shape/Arrow;Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;FILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/shape/Arrow;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getHasCorners ()Z
+	public final fun getHeadLength ()F
+	public fun getPath ()Ljava/util/List;
+	public final fun getTail ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun getTip ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun getWings ()Lkotlin/Pair;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/Arrow$Companion {
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/Ellipse : io/github/valerioisufi/drawview/model/shape/Shape {
+	public fun <init> (Lio/github/valerioisufi/drawview/model/geometry/Point;FFF)V
+	public synthetic fun <init> (Lio/github/valerioisufi/drawview/model/geometry/Point;FFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun component2 ()F
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun copy (Lio/github/valerioisufi/drawview/model/geometry/Point;FFF)Lio/github/valerioisufi/drawview/model/shape/Ellipse;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/shape/Ellipse;Lio/github/valerioisufi/drawview/model/geometry/Point;FFFILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/shape/Ellipse;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCenter ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public fun getHasCorners ()Z
+	public fun getPath ()Ljava/util/List;
+	public final fun getRadiusX ()F
+	public final fun getRadiusY ()F
+	public final fun getRotation ()F
+	public fun hashCode ()I
+	public final fun isCircle ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/Line : io/github/valerioisufi/drawview/model/shape/Shape {
+	public fun <init> (Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;)V
+	public final fun component1 ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun component2 ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public final fun copy (Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;)Lio/github/valerioisufi/drawview/model/shape/Line;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/shape/Line;Lio/github/valerioisufi/drawview/model/geometry/Point;Lio/github/valerioisufi/drawview/model/geometry/Point;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/shape/Line;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEnd ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public fun getHasCorners ()Z
+	public fun getPath ()Ljava/util/List;
+	public final fun getStart ()Lio/github/valerioisufi/drawview/model/geometry/Point;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/Polygon : io/github/valerioisufi/drawview/model/shape/Shape {
+	public fun <init> (Ljava/util/List;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun copy (Ljava/util/List;)Lio/github/valerioisufi/drawview/model/shape/Polygon;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/shape/Polygon;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/shape/Polygon;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getHasCorners ()Z
+	public fun getPath ()Ljava/util/List;
+	public final fun getVertices ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/Polyline : io/github/valerioisufi/drawview/model/shape/Shape {
+	public fun <init> (Ljava/util/List;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun copy (Ljava/util/List;)Lio/github/valerioisufi/drawview/model/shape/Polyline;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/drawview/model/shape/Polyline;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/drawview/model/shape/Polyline;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getHasCorners ()Z
+	public fun getPath ()Ljava/util/List;
+	public final fun getVertices ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class io/github/valerioisufi/drawview/model/shape/Shape {
+	public fun getHasCorners ()Z
+	public abstract fun getPath ()Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/Shape$DefaultImpls {
+	public static fun getHasCorners (Lio/github/valerioisufi/drawview/model/shape/Shape;)Z
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/ShapeKt {
+	public static final field SHAPE_INPUT_SPACING_MM F
+	public static final fun strokeInputs (Lio/github/valerioisufi/drawview/model/shape/Shape;Ljava/util/List;F)Ljava/util/List;
+	public static synthetic fun strokeInputs$default (Lio/github/valerioisufi/drawview/model/shape/Shape;Ljava/util/List;FILjava/lang/Object;)Ljava/util/List;
+}
+
+public final class io/github/valerioisufi/drawview/model/shape/ShapeRecognizer {
+	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/shape/ShapeRecognizer;
+	public final fun recognize (Ljava/util/List;F)Lio/github/valerioisufi/drawview/model/shape/Shape;
+}
+
 public final class io/github/valerioisufi/drawview/model/text/RichTextParser {
 	public static final field INSTANCE Lio/github/valerioisufi/drawview/model/text/RichTextParser;
 	public final fun getLINE_NUMBERS ()Ljava/util/Set;
